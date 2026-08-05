@@ -10,10 +10,10 @@
 // are named by the TOOL the unit must be holding for that state to be legal -
 // each site reads the unit's tool and, if it does not match, resets the state:
 //
-//   6   `st != PICKUP_GOOBER && m_battleState == 6` -> reset to ADVANCE
-//   9   `st != PICKUP_SPY    && m_battleState == 9` -> reset to ADVANCE
-//   0xa `st == PICKUP_BRICK  && m_battleState == 0` -> becomes 0xa
-//       and later `prim == PICKUP_BRICK && m_battleState == 0xa` -> ApplyTriggerB
+//   BZTASK_CARRY_GOOBER requires PICKUP_GOOBER or resets to ADVANCE.
+//   BZTASK_CARRY_SPY requires PICKUP_SPY or resets to ADVANCE.
+//   BZTASK_UNASSIGNED with PICKUP_BRICK becomes BZTASK_CARRY_BRICK, whose
+//   later PICKUP_BRICK guard applies Trigger B.
 //
 // The rest:
 //
@@ -28,7 +28,7 @@
 //   4   advancing. The state a cancelled task falls back to, and the only one
 //       that consults m_targetTeam - it measures the distance to that team's
 //       m_marker. CGrunt also keeps a unit's path list across a re-tool only
-//       when it is in this state (`m_battleState != 4` drops the coord list).
+//       when it is in this state; other states drop the coord list.
 //   0xb heading for a switch. Set where the cell query finds TRIGID_SWITCH_2,
 //       alongside m_defenderState = AISTATE_SEEK.
 //
@@ -41,12 +41,20 @@
 // 1, 5 and 8 do not appear at all.
 GZ_ENUM_BEGIN(BattlezTask)
     BZTASK_UNASSIGNED = 0,
+    BZTASK_STEP = 2,
     BZTASK_ASSIGNED_TARGET = 3,
     BZTASK_ADVANCE = 4,
     BZTASK_CARRY_GOOBER = 6,
+    BZTASK_CHECK_QUEUED_SPAWN = 7,
     BZTASK_CARRY_SPY = 9,
     BZTASK_CARRY_BRICK = 0xa,
     BZTASK_SEEK_SWITCH = 0xb
 GZ_ENUM_END(BattlezTask)
+
+GZ_ENUM_CONST_BEGIN(BattlezRoster)
+    BATTLEZ_TEAM_COUNT = 4,
+    BATTLEZ_UNIT_SLOT_COUNT = 15,
+    BATTLEZ_QUEUE_POSITION_UNSET = BATTLEZ_UNIT_SLOT_COUNT + 1
+GZ_ENUM_CONST_END(BattlezRoster)
 
 #endif // GRUNTZ_GRUNTZ_BATTLEZTASK_H

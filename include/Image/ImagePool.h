@@ -5,7 +5,9 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
+#include <Image/RezDecodeKind.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>
 
@@ -34,13 +36,13 @@ public:
     CImagePaletteNode* AddPaletteEntries(PALETTEENTRY* entries, i32 flags);
     CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);
     CImagePaletteNode* AddImageFile(char* path, i32 arg);
-    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl);
-    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag);
+    CImagePaletteNode* AddImageDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl);
+    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag);
     void B(CRezImage* node, void* paletteNode, i32 b);
 
-    CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);
-    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag);
-    CRezImage* AddSurfaceOp(void* buf, i32 kind, i32 ctrl);
+    CRezImage* AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag);
+    CRezImage* AddSurfaceBlit(void* src, i32 width, i32 height, ColorDepth bitCount, i32 flag);
+    CRezImage* AddSurfaceOp(void* buf, RezDecodeKind kind, i32 ctrl);
     CRezImage* AddSurfaceRez(char* name, i32 ctrl);
     CRezImage* AddSurfaceConvert(CRezImage* src, void* pal);
 

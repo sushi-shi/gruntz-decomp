@@ -193,8 +193,9 @@ i32 CMenuItem::Place(CDDrawSurfacePair* target, i32 x, i32 y) {
     }
     MenuItemState idx = m_state;
     CImage* row;
-    if (idx >= page->m_minIndex && idx <= page->m_maxIndex) {
-        row = static_cast<CImage*>(page->m_items.GetAt(idx));
+    i32 frameIndex = IDX(idx);
+    if (frameIndex >= page->m_minIndex && frameIndex <= page->m_maxIndex) {
+        row = static_cast<CImage*>(page->m_items.GetAt(frameIndex));
     } else {
         row = NULL;
     }

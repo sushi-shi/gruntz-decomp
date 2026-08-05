@@ -15,6 +15,10 @@ typedef u8 Bytef;
 typedef u32 uLong;
 typedef u32 uLongf;
 
+GZ_ENUM_CONST_BEGIN(WwdFormatConstants)
+    WWD_PLANE_HEADER_SIZE = 0xa0
+GZ_ENUM_CONST_END(WwdFormatConstants)
+
 struct WwdHeader {
     u32 wwdSignature;
     u32 field_4;
@@ -57,7 +61,7 @@ struct WwdPlaneHeader {
     u32 imageSetsOffset;
     u32 objectsOffset;
     i32 zCoord;
-    u8 pad_94[0xa0 - 0x94];
+    u8 pad_94[WWD_PLANE_HEADER_SIZE - 0x94];
 };
 SIZE(0xa0);
 

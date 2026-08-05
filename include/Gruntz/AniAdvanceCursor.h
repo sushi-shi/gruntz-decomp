@@ -15,6 +15,13 @@ class CAniRecordView;
 class CAniElement;
 class CFileMemBase;
 
+GZ_ENUM_CONST_BEGIN(AniAdvanceValue)
+    ANI_SCALE_ONE_BITS = 0x3f800000,
+    // Animation records use draw value 2 as an effect/event frame. The three
+    // consumers trigger attack, hazard, or dropped-object work on this value.
+    ANI_EVENT_FRAME = 2
+GZ_ENUM_CONST_END(AniAdvanceValue)
+
 class CAniAdvanceCursor : public CLoadable {
 public:
     CAniAdvanceCursor() {}

@@ -6,6 +6,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Wap32/CoordUnset.h>
@@ -33,9 +34,9 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         cy = level->m_mainPlane->m_gridH - 1;
     }
     i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
-    i32 typeCode;
+    TileCollisionKind typeCode;
     if (id == UNINIT_FILL || id == -1) {
-        typeCode = 0;
+        typeCode = TILEKIND_PASSABLE;
     } else {
         typeCode = (static_cast<CTileImageSet*>(level->m_imageSets.GetAt(id & 0xffff)))
                        ->GetCollisionAt(0, 0);
@@ -99,7 +100,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case TILEKIND_GAUNTLET_ROCK_B:
             cell->m_flags = 0x2021;
             break;
-        case 0x20:
+        case TILEKIND_SPIKES:
             cell->m_flags = 0x400;
             break;
         case TILEKIND_GIANT_ROCK:
@@ -109,9 +110,9 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
             cell->m_flags = 0x10000;
             break;
         case TILEKIND_REVEALED_POWERUP:
-            cell->m_flags = 0x42;
+            cell->m_flags = IDX(CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_SPECIAL);
             break;
-        case 0x24:
+        case TILEKIND_SINK_HAZARD:
             cell->m_flags = 0x800;
             break;
         case TILEKIND_SWITCH_A:
@@ -207,7 +208,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
         case TILEKIND_GAUNTLET_BRICK_C:
             cell->m_flags = 0x6021;
             break;
-        case 0x9a:
+        case TILEKIND_AI_PATH_BLOCKER:
             cell->m_flags = 0x2001;
             break;
         default:

@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGridIter.h>
@@ -17,7 +18,7 @@ class CDDrawSurfaceMgr;
 struct WwdSnapshot {
     i32 m_id;
     i32 m_objectId;
-    i32 m_classId;
+    LoadableClassId m_classId;
     i32 m_serialTypeId;
     LogicTypeId m_logicTypeId;
     char m_workerName[0x80];

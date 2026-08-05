@@ -856,7 +856,7 @@ bool CButeMgr::Parse() {
 
     for (;;) {
         i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
-        switch (cls) {
+        switch (static_cast<ButeLexAction>(cls)) {
             case LEXACT_ERROR:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
@@ -1019,7 +1019,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             break;
         }
-        case 16: {
+        case BUTETOK_FLOAT_SUFFIX: {
             vf = static_cast<float>(atof(m_token));
             if (m_writeMode) {
                 (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
@@ -1125,7 +1125,7 @@ bool CButeMgr::SkipToTag() {
         if (!Parse()) {
             return false;
         }
-        i16 t = m_tokType;
+        ButeToken t = static_cast<ButeToken>(m_tokType);
         if (t == BUTETOK_TAG_OPEN || t == BUTETOK_END) {
             return true;
         }
@@ -1249,7 +1249,7 @@ bool CButeMgr::ParseGroup() {
     if (!Parse()) {
         return false;
     }
-    i16 t = m_tokType;
+    ButeToken t = static_cast<ButeToken>(m_tokType);
     if (t == BUTETOK_END) {
         return true;
     }
@@ -1270,7 +1270,7 @@ bool CButeMgr::ParseGroup() {
         if (!Parse()) {
             return false;
         }
-        t = m_tokType;
+        t = static_cast<ButeToken>(m_tokType);
         if (t == BUTETOK_END) {
             return true;
         }
@@ -1282,7 +1282,7 @@ bool CButeMgr::ParseGroup() {
                 return false;
             }
         }
-        t = m_tokType;
+        t = static_cast<ButeToken>(m_tokType);
     }
     return true;
 }

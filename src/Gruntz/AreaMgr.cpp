@@ -53,94 +53,93 @@ i32 InitializeLevelArea(i32 arg) {
 // @early-stop
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::InitializeLevel(i32 index) {
-    if (index < QUESTLEVEL_FIRST || index > QUESTLEVEL_TRAINING_LAST) {
+    QuestLevel level = static_cast<QuestLevel>(index);
+    if (level < QUESTLEVEL_FIRST || level > QUESTLEVEL_TRAINING_LAST) {
         return 0;
     }
     Reset();
     m_currentLevelIndex = index;
-    // `index` is not a domain - it is the level ORDINAL, and every arm is that
-    // same number's InitializeLevelNN.
-    switch (index) {
-        case 1:
-            return InitializeLevel01();
-        case 2:
-            return InitializeLevel02();
-        case 3:
-            return InitializeLevel03();
-        case 4:
-            return InitializeLevel04();
-        case 5:
-            return InitializeLevel05();
-        case 6:
-            return InitializeLevel06();
-        case 7:
-            return InitializeLevel07();
-        case 8:
-            return InitializeLevel08();
-        case 9:
-            return InitializeLevel09();
-        case 10:
-            return InitializeLevel10();
-        case 11:
-            return InitializeLevel11();
-        case 12:
-            return InitializeLevel12();
-        case 13:
-            return InitializeLevel13();
-        case 14:
-            return InitializeLevel14();
-        case 15:
-            return InitializeLevel15();
-        case 16:
-            return InitializeLevel16();
-        case 17:
-            return InitializeLevel17();
-        case 18:
-            return InitializeLevel18();
-        case 19:
-            return InitializeLevel19();
-        case 20:
-            return InitializeLevel20();
-        case 21:
-            return InitializeLevel21();
-        case 22:
-            return InitializeLevel22();
-        case 23:
-            return InitializeLevel23();
-        case 24:
-            return InitializeLevel24();
-        case 25:
-            return InitializeLevel25();
-        case 26:
-            return InitializeLevel26();
-        case 27:
-            return InitializeLevel27();
-        case 28:
-            return InitializeLevel28();
-        case 29:
-            return InitializeLevel29();
-        case 30:
-            return InitializeLevel30();
-        case 31:
-            return InitializeLevel31();
-        case 32:
-            return InitializeLevel32();
-        case 33:
-            return InitializeLevel33();
-        case 34:
-            return InitializeLevel34();
-        case 35:
-            return InitializeLevel35();
-        case 36:
-            return InitializeLevel36();
-        case 37:
-            return InitializeLevel37();
-        case 38:
-            return InitializeLevel38();
-        case 39:
-            return InitializeLevel39();
-        case 40:
-            return InitializeLevel40();
+    switch (level) {
+        case QUESTLEVEL_AREA1_STAGE1:
+            return InitializeArea1Stage1();
+        case QUESTLEVEL_AREA1_STAGE2:
+            return InitializeArea1Stage2();
+        case QUESTLEVEL_AREA1_STAGE3:
+            return InitializeArea1Stage3();
+        case QUESTLEVEL_AREA1_STAGE4:
+            return InitializeArea1Stage4();
+        case QUESTLEVEL_AREA2_STAGE1:
+            return InitializeArea2Stage1();
+        case QUESTLEVEL_AREA2_STAGE2:
+            return InitializeArea2Stage2();
+        case QUESTLEVEL_AREA2_STAGE3:
+            return InitializeArea2Stage3();
+        case QUESTLEVEL_AREA2_STAGE4:
+            return InitializeArea2Stage4();
+        case QUESTLEVEL_AREA3_STAGE1:
+            return InitializeArea3Stage1();
+        case QUESTLEVEL_AREA3_STAGE2:
+            return InitializeArea3Stage2();
+        case QUESTLEVEL_AREA3_STAGE3:
+            return InitializeArea3Stage3();
+        case QUESTLEVEL_AREA3_STAGE4:
+            return InitializeArea3Stage4();
+        case QUESTLEVEL_AREA4_STAGE1:
+            return InitializeArea4Stage1();
+        case QUESTLEVEL_AREA4_STAGE2:
+            return InitializeArea4Stage2();
+        case QUESTLEVEL_AREA4_STAGE3:
+            return InitializeArea4Stage3();
+        case QUESTLEVEL_AREA4_STAGE4:
+            return InitializeArea4Stage4();
+        case QUESTLEVEL_AREA5_STAGE1:
+            return InitializeArea5Stage1();
+        case QUESTLEVEL_AREA5_STAGE2:
+            return InitializeArea5Stage2();
+        case QUESTLEVEL_AREA5_STAGE3:
+            return InitializeArea5Stage3();
+        case QUESTLEVEL_AREA5_STAGE4:
+            return InitializeArea5Stage4();
+        case QUESTLEVEL_AREA6_STAGE1:
+            return InitializeArea6Stage1();
+        case QUESTLEVEL_AREA6_STAGE2:
+            return InitializeArea6Stage2();
+        case QUESTLEVEL_AREA6_STAGE3:
+            return InitializeArea6Stage3();
+        case QUESTLEVEL_AREA6_STAGE4:
+            return InitializeArea6Stage4();
+        case QUESTLEVEL_AREA7_STAGE1:
+            return InitializeArea7Stage1();
+        case QUESTLEVEL_AREA7_STAGE2:
+            return InitializeArea7Stage2();
+        case QUESTLEVEL_AREA7_STAGE3:
+            return InitializeArea7Stage3();
+        case QUESTLEVEL_AREA7_STAGE4:
+            return InitializeArea7Stage4();
+        case QUESTLEVEL_AREA8_STAGE1:
+            return InitializeArea8Stage1();
+        case QUESTLEVEL_AREA8_STAGE2:
+            return InitializeArea8Stage2();
+        case QUESTLEVEL_AREA8_STAGE3:
+            return InitializeArea8Stage3();
+        case QUESTLEVEL_AREA8_STAGE4:
+            return InitializeArea8Stage4();
+        case QUESTLEVEL_RESERVED_33:
+            return InitializeReservedLevel33();
+        case QUESTLEVEL_RESERVED_34:
+            return InitializeReservedLevel34();
+        case QUESTLEVEL_RESERVED_35:
+            return InitializeReservedLevel35();
+        case QUESTLEVEL_RESERVED_36:
+            return InitializeReservedLevel36();
+        case QUESTLEVEL_TRAINING_STAGE1:
+            return InitializeTrainingStage1();
+        case QUESTLEVEL_TRAINING_STAGE2:
+            return InitializeTrainingStage2();
+        case QUESTLEVEL_TRAINING_STAGE3:
+            return InitializeTrainingStage3();
+        case QUESTLEVEL_TRAINING_STAGE4:
+            return InitializeTrainingStage4();
         default:
             return 0;
     }
@@ -448,202 +447,202 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
 }
 
 RVA(0x0009af30, 0x6)
-i32 CAreaMgr::InitializeLevel01() {
+i32 CAreaMgr::InitializeArea1Stage1() {
     return 1;
 }
 
 RVA(0x0009af50, 0x6)
-i32 CAreaMgr::InitializeLevel02() {
+i32 CAreaMgr::InitializeArea1Stage2() {
     return 1;
 }
 
 RVA(0x0009af70, 0x6)
-i32 CAreaMgr::InitializeLevel03() {
+i32 CAreaMgr::InitializeArea1Stage3() {
     return 1;
 }
 
 RVA(0x0009af90, 0x6)
-i32 CAreaMgr::InitializeLevel04() {
+i32 CAreaMgr::InitializeArea1Stage4() {
     return 1;
 }
 
 RVA(0x0009afb0, 0x6)
-i32 CAreaMgr::InitializeLevel05() {
+i32 CAreaMgr::InitializeArea2Stage1() {
     return 1;
 }
 
 RVA(0x0009afd0, 0x6)
-i32 CAreaMgr::InitializeLevel06() {
+i32 CAreaMgr::InitializeArea2Stage2() {
     return 1;
 }
 
 RVA(0x0009aff0, 0x6)
-i32 CAreaMgr::InitializeLevel07() {
+i32 CAreaMgr::InitializeArea2Stage3() {
     return 1;
 }
 
 RVA(0x0009b010, 0x6)
-i32 CAreaMgr::InitializeLevel08() {
+i32 CAreaMgr::InitializeArea2Stage4() {
     return 1;
 }
 
 RVA(0x0009b030, 0x6)
-i32 CAreaMgr::InitializeLevel09() {
+i32 CAreaMgr::InitializeArea3Stage1() {
     return 1;
 }
 
 RVA(0x0009b050, 0x6)
-i32 CAreaMgr::InitializeLevel10() {
+i32 CAreaMgr::InitializeArea3Stage2() {
     return 1;
 }
 
 RVA(0x0009b070, 0x6)
-i32 CAreaMgr::InitializeLevel11() {
+i32 CAreaMgr::InitializeArea3Stage3() {
     return 1;
 }
 
 RVA(0x0009b090, 0x6)
-i32 CAreaMgr::InitializeLevel12() {
+i32 CAreaMgr::InitializeArea3Stage4() {
     return 1;
 }
 
 RVA(0x0009b0b0, 0x6)
-i32 CAreaMgr::InitializeLevel13() {
+i32 CAreaMgr::InitializeArea4Stage1() {
     return 1;
 }
 
 RVA(0x0009b0d0, 0x6)
-i32 CAreaMgr::InitializeLevel14() {
+i32 CAreaMgr::InitializeArea4Stage2() {
     return 1;
 }
 
 RVA(0x0009b0f0, 0x6)
-i32 CAreaMgr::InitializeLevel15() {
+i32 CAreaMgr::InitializeArea4Stage3() {
     return 1;
 }
 
 RVA(0x0009b110, 0x6)
-i32 CAreaMgr::InitializeLevel16() {
+i32 CAreaMgr::InitializeArea4Stage4() {
     return 1;
 }
 
 RVA(0x0009b130, 0x6)
-i32 CAreaMgr::InitializeLevel17() {
+i32 CAreaMgr::InitializeArea5Stage1() {
     return 1;
 }
 
 RVA(0x0009b150, 0x6)
-i32 CAreaMgr::InitializeLevel18() {
+i32 CAreaMgr::InitializeArea5Stage2() {
     return 1;
 }
 
 RVA(0x0009b170, 0x6)
-i32 CAreaMgr::InitializeLevel19() {
+i32 CAreaMgr::InitializeArea5Stage3() {
     return 1;
 }
 
 RVA(0x0009b190, 0x6)
-i32 CAreaMgr::InitializeLevel20() {
+i32 CAreaMgr::InitializeArea5Stage4() {
     return 1;
 }
 
 RVA(0x0009b1b0, 0x6)
-i32 CAreaMgr::InitializeLevel21() {
+i32 CAreaMgr::InitializeArea6Stage1() {
     return 1;
 }
 
 RVA(0x0009b1d0, 0x6)
-i32 CAreaMgr::InitializeLevel22() {
+i32 CAreaMgr::InitializeArea6Stage2() {
     return 1;
 }
 
 RVA(0x0009b1f0, 0x6)
-i32 CAreaMgr::InitializeLevel23() {
+i32 CAreaMgr::InitializeArea6Stage3() {
     return 1;
 }
 
 RVA(0x0009b210, 0x6)
-i32 CAreaMgr::InitializeLevel24() {
+i32 CAreaMgr::InitializeArea6Stage4() {
     return 1;
 }
 
 RVA(0x0009b230, 0x6)
-i32 CAreaMgr::InitializeLevel25() {
+i32 CAreaMgr::InitializeArea7Stage1() {
     return 1;
 }
 
 RVA(0x0009b250, 0x6)
-i32 CAreaMgr::InitializeLevel26() {
+i32 CAreaMgr::InitializeArea7Stage2() {
     return 1;
 }
 
 RVA(0x0009b270, 0x6)
-i32 CAreaMgr::InitializeLevel27() {
+i32 CAreaMgr::InitializeArea7Stage3() {
     return 1;
 }
 
 RVA(0x0009b290, 0x6)
-i32 CAreaMgr::InitializeLevel28() {
+i32 CAreaMgr::InitializeArea7Stage4() {
     return 1;
 }
 
 RVA(0x0009b2b0, 0x6)
-i32 CAreaMgr::InitializeLevel29() {
+i32 CAreaMgr::InitializeArea8Stage1() {
     return 1;
 }
 
 RVA(0x0009b2d0, 0x6)
-i32 CAreaMgr::InitializeLevel30() {
+i32 CAreaMgr::InitializeArea8Stage2() {
     return 1;
 }
 
 RVA(0x0009b2f0, 0x6)
-i32 CAreaMgr::InitializeLevel31() {
+i32 CAreaMgr::InitializeArea8Stage3() {
     return 1;
 }
 
 RVA(0x0009b310, 0x6)
-i32 CAreaMgr::InitializeLevel32() {
+i32 CAreaMgr::InitializeArea8Stage4() {
     return 1;
 }
 
 RVA(0x0009b330, 0x6)
-i32 CAreaMgr::InitializeLevel33() {
+i32 CAreaMgr::InitializeReservedLevel33() {
     return 1;
 }
 
 RVA(0x0009b350, 0x6)
-i32 CAreaMgr::InitializeLevel34() {
+i32 CAreaMgr::InitializeReservedLevel34() {
     return 1;
 }
 
 RVA(0x0009b370, 0x6)
-i32 CAreaMgr::InitializeLevel35() {
+i32 CAreaMgr::InitializeReservedLevel35() {
     return 1;
 }
 
 RVA(0x0009b390, 0x6)
-i32 CAreaMgr::InitializeLevel36() {
+i32 CAreaMgr::InitializeReservedLevel36() {
     return 1;
 }
 
 RVA(0x0009b3b0, 0x6)
-i32 CAreaMgr::InitializeLevel37() {
+i32 CAreaMgr::InitializeTrainingStage1() {
     return 1;
 }
 
 RVA(0x0009b3d0, 0x6)
-i32 CAreaMgr::InitializeLevel38() {
+i32 CAreaMgr::InitializeTrainingStage2() {
     return 1;
 }
 
 RVA(0x0009b3f0, 0x6)
-i32 CAreaMgr::InitializeLevel39() {
+i32 CAreaMgr::InitializeTrainingStage3() {
     return 1;
 }
 
 RVA(0x0009b410, 0x6)
-i32 CAreaMgr::InitializeLevel40() {
+i32 CAreaMgr::InitializeTrainingStage4() {
     return 1;
 }
 

@@ -8,6 +8,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezUnitKind.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -19,6 +20,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HealthPct.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/PickupType.h>
@@ -73,7 +75,7 @@ i32 CTriggerMgr::PlaceObject(
     i32 x,
     i32 y,
     i32 z,
-    i32 mode,
+    GruntEntranceMode mode,
     i32 kindDefault,
     i32 typeKind,
     i32 vehicleKind,
@@ -91,7 +93,8 @@ i32 CTriggerMgr::PlaceObject(
         }
         i32 wantSlot = 0;
         i32 special = 0;
-        if (typeKind == 0x12) {
+        PickupType placedType = static_cast<PickupType>(typeKind);
+        if (placedType == PICKUP_TOOB) {
             special = 0x100;
             wantSlot = 1;
         }
@@ -119,7 +122,7 @@ i32 CTriggerMgr::PlaceObject(
         i32 onSpecialTile;
         if (wantSlot != col && (attr & 0x100) != 0) {
             onSpecialTile = 1;
-            if (mode != col) {
+            if (mode != GRUNT_ENTRANCE_NONE) {
                 goto fail;
             }
         } else {
@@ -154,7 +157,8 @@ i32 CTriggerMgr::PlaceObject(
         // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            switch (aiType) {
+            BattlezUnitKind battlezKind = static_cast<BattlezUnitKind>(aiType);
+            switch (battlezKind) {
                 case BZUNIT_BOMB:
                     kindId = IDX(PICKUP_BOMB);
                     break;
@@ -224,8 +228,9 @@ i32 CTriggerMgr::PlaceObject(
             goto fail;
         }
         if (slot->m_liveGate != 0
-            || (row != g_curPlayer && kindId == g_gameReg->m_options[g_curPlayer].m_colorIndex)) {
-            kindId = slot->m_colorIndex;
+            || (row != g_curPlayer
+                && kindId == IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex))) {
+            kindId = IDX(slot->m_colorIndex);
         }
         if (row == g_curPlayer && aiType != 0) {
             aiType = 0;
@@ -238,9 +243,9 @@ i32 CTriggerMgr::PlaceObject(
                 row,
                 col,
                 static_cast<PickupType>(kindId),
-                static_cast<PickupType>(typeKind),
+                placedType,
                 vehicleKind,
-                aiType,
+                static_cast<EnemyAiType>(aiType),
                 aiRadius,
                 placeArg9,
                 placeArg10,
@@ -252,7 +257,7 @@ i32 CTriggerMgr::PlaceObject(
             return -1;
         }
 
-        if (mode == 1) {
+        if (mode == GRUNT_ENTRANCE_WORMHOLE) {
             CWwdGameObjectA* hole =
                 m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
             if (hole == NULL) {
@@ -260,10 +265,10 @@ i32 CTriggerMgr::PlaceObject(
                 return -1;
             }
             hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
-        } else if (mode == 3 || mode == 2) {
+        } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
 
-            if (mode == 3) {
-                logic->m_health = 0x19;
+            if (mode == GRUNT_ENTRANCE_RESURRECT) {
+                logic->m_health = HEALTH_RESPAWN;
             }
         } else {
             if (onSpecialTile != 0) {
@@ -487,7 +492,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
-        tag = static_cast<TileCollisionKind>(ts->GetCollisionAt(subX, subY));
+        tag = ts->GetCollisionAt(subX, subY);
     }
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
@@ -755,7 +760,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
         case TILEKIND_ARROW_CURRENT:
             if (g != NULL && g->m_deathAnimStarted == 0) {
                 g->m_entranceActive = 1;
-                switch (g->m_entranceCell.direction) {
+                switch (static_cast<GruntDirection>(g->m_entranceCell.direction)) {
                     case DIR_NORTH:
                         g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
                         break;
@@ -914,7 +919,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     } else {
         CTileImageSet* ts = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(attr & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
-        kind = static_cast<TileCollisionKind>(ts->GetCollisionAt(subX, subY));
+        kind = ts->GetCollisionAt(subX, subY);
     }
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
@@ -1063,12 +1068,14 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::GridAction6(i32 a, i32 b) {
-    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, PLAYERCMD_GUARD_BEGIN, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr
+        ->EnqueueSingle(1, a, b, static_cast<char>(IDX(PLAYERCMD_GUARD_BEGIN)), 0, 0, 0, 0);
 }
 
 RVA(0x0006daa0, 0x27)
 void CTriggerMgr::GridAction7(i32 a, i32 b) {
-    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, PLAYERCMD_GUARD_END, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr
+        ->EnqueueSingle(1, a, b, static_cast<char>(IDX(PLAYERCMD_GUARD_END)), 0, 0, 0, 0);
 }
 
 // @early-stop
@@ -1150,7 +1157,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
     CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-    i32 bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
+    TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
     PickupType kind = cell->m_entranceReason;
     if (kind > PICKUP_EQUIPPABLE_LAST) {
         kind = cell->m_toolId;
@@ -1293,7 +1300,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
                 cell->m_moveTile.m_x,
                 cell->m_moveTile.m_y,
                 cell->m_entranceReason,
-                -1
+                TILE_ARRIVAL_FX_END
             );
         }
         cell->PlayMoveSound(bx, by);
@@ -1349,7 +1356,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             cell->m_moveTile.m_x,
             cell->m_moveTile.m_y,
             cell->m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
     }
     if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) == 0) {
@@ -1389,7 +1396,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
         cell->m_arrivalRerollWindowHi = 0;
         cell->m_arrivalFlags &= 0xe7fbfbfd;
         cell->m_tileClaimed = 0;
-        cell->m_arrivalState = 0;
+        cell->m_arrivalState = AI_NONE;
         cell->SetEntrancePos(1, 1);
     }
     if (cell->m_entranceActive != 0) {
@@ -1409,7 +1416,14 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
     bool isI = (strcmp(*typeRec, "I") == 0);
     if (isI) {
         Coord t = cell->m_moveTile;
-        this->LoadTileArrivalFx(col, row, t.m_x, t.m_y, cell->m_entranceReason, -1);
+        this->LoadTileArrivalFx(
+            col,
+            row,
+            t.m_x,
+            t.m_y,
+            cell->m_entranceReason,
+            TILE_ARRIVAL_FX_END
+        );
     }
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;

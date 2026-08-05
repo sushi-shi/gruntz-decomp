@@ -5,7 +5,10 @@
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
+#include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/StatusBarItemKind.h>
+#include <Gruntz/StatusBarTab.h>
 #include <Ints.h>
 
 #include <stddef.h>
@@ -23,8 +26,8 @@ public:
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 a10
@@ -40,9 +43,9 @@ public:
     virtual void SetSubtype();
 
     i32 m_enabled;
-    i32 m_kind;
-    i32 m_cmd;
-    i32 m_tab;
+    StatusBarItemKind m_kind;
+    SbiCommandId m_cmd;
+    StatusBarTab m_tab;
 
     RECT m_rect14;
     class CDDrawSurfaceMgr* m_host;

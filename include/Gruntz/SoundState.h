@@ -8,9 +8,9 @@
 // `CGruntzMgr` writes it from the volume slider (`m_soundVolume = v;
 // g_sndCueTag = v;`) and 100 is full scale (`abs(SND_CUE_NEUTRAL)` is used
 // as a percentage). Rename both the global and this domain before typing.
-GZ_ENUM_BEGIN(SoundCueTag)
+GZ_ENUM_CONST_BEGIN(SoundCueTag)
     SND_CUE_NEUTRAL = 100
-GZ_ENUM_END(SoundCueTag)
+GZ_ENUM_CONST_END(SoundCueTag)
 
 extern i32 g_sndEnabled;
 extern i32 g_sndCueTag;

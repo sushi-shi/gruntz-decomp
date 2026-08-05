@@ -5,8 +5,15 @@
 
 #include <AddrWord.h>
 #include <Bute/PTreeNode.h>
+#include <Enums.h>
 
 typedef void(__cdecl* VariantCallback)(i32 key, i32 value);
+
+GZ_ENUM_BEGIN(VariantSlotKind)
+    VARIANT_SLOT_RECORD_VALUE = 1,
+    VARIANT_SLOT_CALLBACK = 2,
+    VARIANT_SLOT_DIRECT_VALUE = 4
+GZ_ENUM_END(VariantSlotKind)
 
 struct CVariantSlot {
     CVariantSlot(char* label);
@@ -16,7 +23,7 @@ struct CVariantSlot {
     void(__cdecl* m_callback)(char* buf, i32 v);
     i32 m_searchIndex;
     u16 m_valueWord;
-    i32 m_typeTag;
+    VariantSlotKind m_typeTag;
     i32 m_reserved10;
     char* m_label;
 };

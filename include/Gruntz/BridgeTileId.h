@@ -1,0 +1,22 @@
+#ifndef GRUNTZ_GRUNTZ_BRIDGETILEID_H
+#define GRUNTZ_GRUNTZ_BRIDGETILEID_H
+
+#include <Enums.h>
+
+// Tile-image ids used by the bridge switch and easy-mode remap paths. The two
+// ALT ids are only evidenced by their deterministic remap to the corresponding
+// raised bridge; no stronger visual identity is asserted.
+GZ_ENUM_BEGIN(BridgeTileId)
+    BRIDGETILE_WATER_UP = 0x101,
+    BRIDGETILE_WATER_DOWN = 0x102,
+    BRIDGETILE_DEATH_UP = 0x103,
+    BRIDGETILE_DEATH_DOWN = 0x104,
+    BRIDGETILE_WATER_UP_ALT = 0x105,
+    BRIDGETILE_DEATH_UP_ALT = 0x106,
+    BRIDGETILE_TOGGLE_WATER_UP = 0x107,
+    BRIDGETILE_TOGGLE_WATER_DOWN = 0x108,
+    BRIDGETILE_TOGGLE_DEATH_UP = 0x109,
+    BRIDGETILE_TOGGLE_DEATH_DOWN = 0x10a
+GZ_ENUM_END(BridgeTileId)
+
+#endif // GRUNTZ_GRUNTZ_BRIDGETILEID_H

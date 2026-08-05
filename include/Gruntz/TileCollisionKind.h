@@ -42,9 +42,15 @@ GZ_ENUM_BEGIN(TileCollisionKind)
 
     TILEKIND_GAUNTLET_ROCK_A = 0x1e,
     TILEKIND_GAUNTLET_ROCK_B = 0x1f,
+    // Periodic contact damage (5 on easy single-player, otherwise 10), with
+    // gravity bootz and invulnerable Gruntz bypassing the damage path.
+    TILEKIND_SPIKES = 0x20,
     TILEKIND_GIANT_ROCK = 0x21,
     TILEKIND_COVERED_POWERUP = 0x22,
     TILEKIND_REVEALED_POWERUP = 0x23,
+    // A non-water sink hazard: it sinks rolling balls through the water effect
+    // path, but its cell classification bit is 0x800 rather than water's 0x100.
+    TILEKIND_SINK_HAZARD = 0x24,
 
     // Switch tiles come in DOWN/UP pairs, odd then even. CTriggerMgr::TileDown
     // dispatches the odd value to SwitchDown() and CTriggerMgr::TileUp the even
@@ -103,7 +109,10 @@ GZ_ENUM_BEGIN(TileCollisionKind)
     TILEKIND_HIDDEN_POWERUP = 0x96,
     TILEKIND_GAUNTLET_BRICK_A = 0x97,
     TILEKIND_GAUNTLET_BRICK_B = 0x98,
-    TILEKIND_GAUNTLET_BRICK_C = 0x99
+    TILEKIND_GAUNTLET_BRICK_C = 0x99,
+    // Battlez pathfinding rejects this value alongside its blocked-cell masks;
+    // the cell classifier gives it 0x2001 rather than the 0x6021 of 0x97..0x99.
+    TILEKIND_AI_PATH_BLOCKER = 0x9a
 GZ_ENUM_END(TileCollisionKind)
 
 #endif // GRUNTZ_TILECOLLISIONKIND_H

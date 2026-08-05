@@ -3,6 +3,12 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(SoundVoiceTag)
+    SOUND_VOICE_TAG_ALL = 0xffff
+GZ_ENUM_CONST_END(SoundVoiceTag)
+
 class DirectSoundMgr;
 
 struct DSoundLink {

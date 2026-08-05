@@ -942,28 +942,28 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
 
 // @early-stop
 RVA(0x001588f0, 0x1c5)
-i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, i32 bpp, i32 flags) {
+i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
     m_frontPair = new CDDrawSurfaceChildA(m_ownerCtx, 0, 0);
     m_backPair = new CDDrawSurfacePair(m_ownerCtx, 1, 0);
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, 2, 0);
 
     if (m_frontPair->SetGeometry(w, h, bpp) == 0) {
-        if (OwnerMgr()->m_lastError == 0) {
-            OwnerMgr()->m_lastError = 0x7d1;
+        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+            OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE;
         }
         return 0;
     }
     if (m_backPair->Create(w, h, bpp, 0) == 0) {
-        if (OwnerMgr()->m_lastError == 0) {
-            OwnerMgr()->m_lastError = 0x7d2;
+        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+            OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE;
         }
         return 0;
     }
     if (!(flags & 1)) {
         if (m_overlayPair->Create(w, h, bpp, 0) == 0) {
-            if (OwnerMgr()->m_lastError == 0) {
-                OwnerMgr()->m_lastError = 0x7d3;
+            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+                OwnerMgr()->m_lastError = WORLDERR_OVERLAY_SURFACE;
             }
             return 0;
         }
@@ -988,9 +988,9 @@ void CDDrawSubMgrPages::Unload() {
 }
 
 RVA(0x00158b10, 0x2c)
-i32 CDDrawSubMgrPages::ResolvePageImage(char* name, i32 pageIndex) {
+i32 CDDrawSubMgrPages::ResolvePageImage(char* name, DDrawPageKind pageIndex) {
     CDDrawSurfacePair* p;
-    if (pageIndex == 2) {
+    if (pageIndex == DDRAW_PAGE_OVERLAY) {
         p = m_overlayPair;
         if (!p) {
             return 0;
@@ -1005,9 +1005,9 @@ i32 CDDrawSubMgrPages::ResolvePageImage(char* name, i32 pageIndex) {
 }
 
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, i32 pageIndex) {
+i32 CDDrawSubMgrPages::LoadPageImage(CParseSource* src, DDrawPageKind pageIndex) {
     CDDrawSurfacePair* p;
-    if (pageIndex == 2) {
+    if (pageIndex == DDRAW_PAGE_OVERLAY) {
         p = m_overlayPair;
         if (!p) {
             return 0;
@@ -1042,7 +1042,7 @@ i32 CDDrawSubMgrPages::PagesReady() {
 }
 
 RVA(0x00158bf0, 0x7f)
-i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceChildA* p = m_frontPair;
     if (p->m_width != w || p->m_height != h || p->m_bpp != bpp) {
         if (!m_frontPair->SetGeom(w, h, bpp)) {
@@ -1234,7 +1234,7 @@ RVA_COMPGEN(0x00158f90, 0x1e, ??_GCDrawSubWorker@@UAEPAXI@Z)
 RVA_COMPGEN(0x00158fb0, 0x19, ??1CDrawSubWorker@@UAE@XZ)
 
 RVA(0x00158fd0, 0x41)
-i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
+i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -1249,7 +1249,7 @@ i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, i32 bpp) {
 }
 
 RVA(0x00159020, 0x55)
-i32 CDrawSubWorker::SetGeom(i32 w, i32 h, i32 bpp) {
+i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (w <= 0 || h <= 0) {
         return 0;
     }

@@ -463,12 +463,12 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
           "class name (python -m gruntz.audit.view_typedef)", "normal")
-    # Numeric domains: one belief per domain about retail's field width, no bare
-    # header enums outside the GZ_ENUM_* layer, and a synced review manifest.
+    # Numeric domains: one belief per domain about retail's field width and no
+    # bare header enums outside the GZ_ENUM_* layer.
     # See docs/enum-modeling-plan.md + docs/patterns/enum-domains.md.
     _gate("gruntz.audit.enum_domains", ["--gate"],
           "enum-domain gate violated - a split domain's storage width disagrees, a "
-          "header declares a bare enum, or config/cleanliness/enum-review.tsv is out of sync "
+          "header declares a bare enum, or a range test names a domain member "
           "(python -m gruntz.audit.enum_domains)", "normal")
     # Once a switch KEY is enum-typed, every integer label under it has exactly one
     # correct enumerator, so a raw one is an oversight rather than a judgement. This

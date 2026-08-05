@@ -273,7 +273,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     i32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);
-    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, flag);
+    CShadeTable* r = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), flag);
     CWwdGameObjectA* cb = m_object;
     cb->m_drawActive = 1;
     cb->m_drawFillCmd = SHADE_PAL_16;

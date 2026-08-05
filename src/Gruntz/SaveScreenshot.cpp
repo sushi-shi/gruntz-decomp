@@ -48,7 +48,7 @@ i32 SaveScreenshot(
     if (surf == NULL) {
         return 0;
     }
-    CDDSurface* img = surf->MakeAndAddB(width, height, 0x10, 0, -1);
+    CDDSurface* img = surf->MakeAndAddB(width, height, BPP_RGB_16, 0, -1);
     if (img == NULL) {
         return 0;
     }

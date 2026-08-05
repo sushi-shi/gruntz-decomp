@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
@@ -22,8 +23,8 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_light = 0x80;
     m_doubleScanlines = 0;
     m_palette = NULL;
-    m_srcBpp = 1;
-    m_dstBpp = 1;
+    m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+    m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
     m_colorKey = -1;
 }
 
@@ -131,7 +132,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
 }
 
 RVA(0x00148fc0, 0x104)
-i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
+i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     CFile file;
     if (!file.Open(name, 0x8000, 0)) {
         return 0;
@@ -146,23 +147,23 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
 
 // @early-stop
 RVA(0x001490d0, 0x173)
-i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
-    i32 flags = src->flags;
+i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, ColorDepth fmt) {
+    PidFlags flags = src->flags;
 
     if ((HAS(flags, PID_SRC_8BPP_SHADE)) || (HAS(flags, PID_SRC_8BPP))) {
-        if (static_cast<u8>(fmt) == 0x10) {
-            m_srcBpp = 1;
-            m_dstBpp = 2;
+        if (fmt == BPP_RGB_16) {
+            m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+            m_dstBpp = PIXEL16_BYTES_PER_PIXEL;
         } else {
-            m_srcBpp = 1;
-            m_dstBpp = 1;
+            m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+            m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
         }
-    } else if (static_cast<u8>(fmt) == 0x10) {
-        m_srcBpp = 2;
-        m_dstBpp = 2;
+    } else if (fmt == BPP_RGB_16) {
+        m_srcBpp = PIXEL16_BYTES_PER_PIXEL;
+        m_dstBpp = PIXEL16_BYTES_PER_PIXEL;
     } else {
-        m_srcBpp = 1;
-        m_dstBpp = 1;
+        m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+        m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
     }
 
     if (HAS(src->flags, PID_FILL_IS_WORD)) {
@@ -173,18 +174,20 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 
     i32 stride = size - 0x20;
     m_rleLen = stride;
-    if (static_cast<u8>(fmt) != 0x8 && static_cast<u8>(fmt) != 0x10) {
+    if (fmt != BPP_PALETTED_8 && fmt != BPP_RGB_16) {
         return 0;
     }
 
     if (HAS(src->flags, PID_EMBEDDED_PALETTE)) {
-        stride -= 0x300;
+        stride -= PALETTE_RGB_BYTE_COUNT;
         m_rleLen = stride;
-        if (static_cast<u8>(fmt) == 0x10) {
+        if (fmt == BPP_RGB_16) {
             if (m_palette != NULL) {
                 ::operator delete(m_palette);
             }
-            m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
+            m_palette = static_cast<PALETTEENTRY*>(
+                ::operator new(PALETTE_ENTRY_COUNT * sizeof(PALETTEENTRY))
+            );
 
             RecordBytes<PidHeader> blob;
             blob.m_rec = src;
@@ -209,7 +212,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, i32 fmt) {
 
     memcpy(m_rleData, src + 1, m_rleLen);
 
-    if (m_srcBpp == 2) {
+    if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
         void* remapped = EncodeRle16(m_rleData);
         ::operator delete(m_rleData);
         m_rleData = static_cast<u8*>(remapped);

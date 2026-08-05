@@ -41,7 +41,7 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_soundRegistry = NULL;
     m_animRegistry = NULL;
     m_flags = 0;
-    m_lastError = 0;
+    m_lastError = WORLDERR_NONE;
     m_callback = NULL;
     g_killCueClock = 0;
     g_engineFrameDelta = 0;
@@ -56,7 +56,7 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 }
 
 RVA(0x00155900, 0x519)
-i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
+i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_hWnd = hWnd;
     m_flags = flags;
 
@@ -73,44 +73,44 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
     m_soundStream = new SoundStream();
 
     if (!m_childGroup->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3e9;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_CHILD_GROUP;
         }
         return 0;
     }
     if (!m_workerList->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ea;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_WORKER_LIST;
         }
         return 0;
     }
     if (!m_imageRegistry->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3eb;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_IMAGE_REGISTRY;
         }
         return 0;
     }
     if (!m_workerCache->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ec;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_WORKER_CACHE;
         }
         return 0;
     }
     if (!m_workerMap->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ed;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_WORKER_MAP;
         }
         return 0;
     }
     if (!m_animRegistry->IsReady()) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ee;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_ANIM_REGISTRY;
         }
         return 0;
     }
     if (!m_level->SetCoordExtents(w, h)) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ef;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_LEVEL_EXTENTS;
         }
         return 0;
     }
@@ -118,8 +118,8 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
         m_level->m_flags |= 4;
     }
     if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3f0;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_CREATE_PAGES;
         }
         return 0;
     }
@@ -132,8 +132,8 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
         delete m_soundStream;
         m_soundStream = NULL;
         if (flags & 8) {
-            if (m_lastError == 0) {
-                m_lastError = 0x3f1;
+            if (m_lastError == WORLDERR_NONE) {
+                m_lastError = WORLDERR_SOUND_OUTPUT;
             }
             return 0;
         }
@@ -143,8 +143,8 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags) {
         m_soundStream = NULL;
     }
     if (!m_soundRegistry->BindSoundStream(1)) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3f2;
+        if (m_lastError == WORLDERR_NONE) {
+            m_lastError = WORLDERR_SOUND_REGISTRY;
         }
         return 0;
     }
@@ -236,11 +236,11 @@ void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
 }
 
 RVA(0x00155f60, 0x56)
-i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
+i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
     CDDrawSurfaceChildA* child = m_drawTarget->m_frontPair;
 
     if (child->m_width != x || child->m_height != y) {
-        if (m_drawTarget->ResizePages(x, y, flags) == 0) {
+        if (m_drawTarget->ResizePages(x, y, bpp) == 0) {
             return 0;
         }
         if (m_level != NULL) {

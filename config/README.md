@@ -17,7 +17,7 @@ the owning tool's merge/update rule.
   (`build/labels.py` gate). A count change must be ACKed here in the same
   commit that causes it.
 
-## `cleanliness/` tracked metrics and review state
+## `cleanliness/` tracked metrics
 
 These files belong to source-quality audits. Baselines are tool-rolled and
 merged per row; remeasure the merged tree rather than taking one side wholesale.
@@ -28,8 +28,6 @@ merged per row; remeasure the merged tree rather than taking one side wholesale.
 - **`bare-constants-baseline.tsv`**, **`data-tu-order-baseline.tsv`**,
   **`single-view-baseline.tsv`**, **`strict-enums-baseline.tsv`**, and
   **`tu-order-baseline.tsv`** — focused audit ratchets and frozen backlogs.
-- **`enum-review.tsv`** and **`naked-numbers-worklist.tsv`** — durable campaign
-  review/worklist state.
 - **`tidy-audit.yaml`** — curated checks for the read-only `gruntz audit tidy`
   de-hack finder; never auto-fix.
 

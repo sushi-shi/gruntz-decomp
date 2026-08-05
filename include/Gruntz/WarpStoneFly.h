@@ -5,6 +5,7 @@
 
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 
 class CStatusBarMgr;
@@ -16,13 +17,13 @@ class CWarpStoneFly {
 public:
     CWarpStoneFly();
 
-    i32 Init(void* owner, i32 srcX, i32 srcY, i32 phase);
+    i32 Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment);
     i32 Tick(i32 dt);
     i32 Draw();
 
     i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
-    i32 m_arrivalMode;
+    WarpStoneFragment m_arrivalMode;
     i32 m_targetX;
     i32 m_targetY;
     char m_padc[0x10 - 0xc];

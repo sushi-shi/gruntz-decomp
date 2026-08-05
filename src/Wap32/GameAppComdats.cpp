@@ -24,7 +24,7 @@ i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
 // (23 fns) came from the static library. It belongs to another compiland.
 RVA(0x00080d60, 0x18)
 i32 CGameApp::HasWindowAndManager() {
-    return m_gameWnd != 0 && m_gameMgr != 0;
+    return m_gameWnd != NULL && m_gameMgr != NULL;
 }
 
 // @identity-TODO HandleCommand@CGameApp - thunk oracle: retail gave this an incremental

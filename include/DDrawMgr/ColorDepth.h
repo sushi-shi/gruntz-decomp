@@ -7,7 +7,7 @@
 //
 // It earns a domain because the code branches on it rather than computing with
 // it. CGruntzMgr::SetColorDepth rejects anything that is not one of exactly
-// three - `depth != 8 && depth != 0x10 && depth != 0x18` - and then does
+// three supported depths - paletted 8-bit, RGB 16-bit, and RGB 24-bit - and does
 // something different for each: 8 clears the colour key outright, 16 packs one
 // through the g_r/g_g/g_b shift pair, 24 takes the third path.
 //
@@ -15,10 +15,13 @@
 // blit path, which is why it is listed but is not one of the three the game will
 // actually run at.
 //
-// Written both ways before this header - `bitcount == 8` beside
-// `m_bitDepth == 0x10` - so the decimal and hex spellings of the same three
-// values are unified here.
+// The original sources used decimal and hexadecimal spellings interchangeably;
+// the named members unify those spellings here.
 GZ_ENUM_BEGIN(ColorDepth)
+    BPP_UNSET = 0,
+    BPP_MONO_1 = 1,
+    BPP_PALETTED_2 = 2,
+    BPP_PALETTED_4 = 4,
     BPP_PALETTED_8 = 8,
     BPP_RGB_16 = 16,
     BPP_RGB_24 = 24,

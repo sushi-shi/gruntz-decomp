@@ -129,7 +129,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_wwdObject->m_flags |= 3;
-    i32 idx = g_gameReg->m_options[m_object->m_smarts].m_colorIndex;
+    i32 idx = IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdGameObjectA* spr = m_object;
     spr->m_drawActive = 1;
@@ -184,7 +184,7 @@ i32 CFortressFlag::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c
     }
     if (tag == SERIAL_POSTLOAD) {
         CWwdGameObjectA* spr = m_object;
-        i32 idx = g_gameReg->m_options[spr->m_smarts].m_colorIndex;
+        i32 idx = IDX(g_gameReg->m_options[spr->m_smarts].m_colorIndex);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
         spr->m_drawActive = 1;
@@ -220,9 +220,10 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 RVA(0x00046850, 0xf1)
 i32 CreateParticlez(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CParticlez(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -258,9 +259,10 @@ i32 CreateParticlez(CGameObject* owner) {
 RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CExplosion(owner);
             sub->Activate();
             rec->m_logic = sub;

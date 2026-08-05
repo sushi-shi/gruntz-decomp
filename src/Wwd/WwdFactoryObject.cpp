@@ -122,7 +122,7 @@ void CGameObject::Notify(void* p) {
         i32 d = m_health - (static_cast<CGameObject*>(p))->m_damage;
         m_health = d;
         if (d <= 0) {
-            m_animWorker->SetActKey(ACT_HEALTH_DEPLETED);
+            m_animWorker->SetActKey(IDX(ACT_HEALTH_DEPLETED));
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;
@@ -479,14 +479,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         ctx->m_plotDY = 0;
         d = m_element;
         switch (d->m_positionMode) {
-            case 1:
+            case WWDPOS_PLOT_OFFSET:
                 m_boundObject->m_plotDX = d->m_positionDeltaX;
                 m_boundObject->m_plotDY = d->m_positionDeltaY;
                 break;
-            case 2: {
+            case WWDPOS_MOVE_RELATIVE: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 x = c->m_screenX;
-                if (c->m_stateFlags & SPRITE_STATE_MIRROR_X) {
+                if (c->m_stateFlags & IDX(SPRITE_STATE_MIRROR_X)) {
                     i32 dy = d->m_positionDeltaY;
                     i32 dx = d->m_positionDeltaX;
                     c->m_screenX = x - dx;
@@ -499,7 +499,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 3:
+            case WWDPOS_MOVE_ABSOLUTE:
                 m_boundObject->m_screenX = d->m_positionDeltaX;
                 m_boundObject->m_screenY = d->m_positionDeltaY;
                 break;
@@ -549,20 +549,20 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         m_frameTicksLeft = reload;
         m_useElapsedTime = (~rd->m_flags) & 1;
 
-        if (m_scaleBits != 0x3f800000) {
+        if (m_scaleBits != ANI_SCALE_ONE_BITS) {
             m_frameTicksLeft =
                 static_cast<i32>((static_cast<double>(static_cast<u32>(reload)) * m_scale));
         }
 
-        i32 modeWord = rd->m_loopMode;
+        i32 modeWord = IDX(rd->m_loopMode);
         CAniElement* arr;
         i32 i;
         CAniRecordView* nd;
-        switch (modeWord & 0xffff) {
-            case 9:
+        switch (static_cast<WwdAnimLoopMode>(modeWord & 0xffff)) {
+            case WWDLOOP_FINISH:
                 m_finished = 1;
                 break;
-            case 8: {
+            case WWDLOOP_RESET_ANIMATION: {
                 if (m_animation != NULL) {
                     m_index = 0;
                     m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
@@ -573,7 +573,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 7: {
+            case WWDLOOP_RESTART_AT_SECOND: {
                 m_index = 1;
                 m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(1));
                 if (m_element == NULL) {
@@ -588,10 +588,10 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 1: {
+            case WWDLOOP_AT_PARAM: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 if (c2->m_frameIndex == m_element->m_param) {
-                    if (modeWord != 9) {
+                    if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         i32 j = m_index + 1;
                         m_index = j;
@@ -608,7 +608,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 2: {
+            case WWDLOOP_AT_FIRST: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_minIndex) {
@@ -616,7 +616,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 3: {
+            case WWDLOOP_AT_LAST: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_maxIndex) {
@@ -624,7 +624,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 4: {
+            case WWDLOOP_AFTER_FIRST: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_minIndex + 1) {
@@ -632,9 +632,9 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 }
                 break;
             }
-            case 0:
+            case WWDLOOP_NEXT:
             loop_restart:
-                if (modeWord != 9) {
+                if (rd->m_loopMode != WWDLOOP_FINISH) {
                     arr = m_animation;
                     i = m_index + 1;
                     m_index = i;
@@ -654,11 +654,11 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     }
                 }
                 break;
-            case 5: {
+            case WWDLOOP_BEFORE_LAST: {
                 CWwdGameObjectA* c2 = m_boundObject;
                 CDDrawWorker* seq = c2->m_frameSet;
                 if (c2->m_frameIndex == seq->m_maxIndex - 1) {
-                    if (modeWord != 9) {
+                    if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         i32 j = m_index + 1;
                         m_index = j;

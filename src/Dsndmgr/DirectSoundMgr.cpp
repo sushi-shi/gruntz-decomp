@@ -1025,7 +1025,7 @@ DSoundCloneInst* SoundDevice::Acquire(void* riff, u32 flags, u32 loadOpts) {
     if (m_force8Bit != 0 || (loadOpts & 1) == 1) {
         cvt = 1;
     }
-    if (fmt->wBitsPerSample != 0x10 || fmt->wFormatTag != 1) {
+    if (fmt->wBitsPerSample != sizeof(i16) * 8 || fmt->wFormatTag != WAVE_FORMAT_PCM) {
         cvt = 0;
     }
     if (cvt) {
@@ -1137,7 +1137,7 @@ i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 loadOpts) {
     if (m_force8Bit != 0 || (loadOpts & 1) == 1) {
         cvt = 1;
     }
-    if (fmt->wBitsPerSample != 0x10 || fmt->wFormatTag != 1) {
+    if (fmt->wBitsPerSample != sizeof(i16) * 8 || fmt->wFormatTag != WAVE_FORMAT_PCM) {
         cvt = 0;
     }
     if (cvt) {
@@ -1183,7 +1183,7 @@ RVA(0x00136d80, 0x56)
 void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
     if (m_initialized) {
 
-        m_voiceList.RemoveMatching(node, 0xffff);
+        m_voiceList.RemoveMatching(node, SOUND_VOICE_TAG_ALL);
         if (node->m_buffer) {
             node->m_buffer->Release();
             node->m_buffer = NULL;
@@ -1268,7 +1268,7 @@ void DSoundList::RemoveMatching(DirectSoundMgr* key, u32 tag) {
         DSoundLink* node = &e->m_link;
         DSoundLink* n = e->m_link.m_next;
         DSoundElem* next = elemOf<DSoundElem>(n);
-        if (tag != 0xffff && e->m_tag != tag) {
+        if (tag != SOUND_VOICE_TAG_ALL && e->m_tag != tag) {
             continue;
         }
         if (e->m_key == key) {

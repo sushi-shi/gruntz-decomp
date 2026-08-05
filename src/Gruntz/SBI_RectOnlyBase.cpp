@@ -10,8 +10,8 @@ RVA(0x000e86e0, 0x53)
 i32 CSBI_RectOnly::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 a10

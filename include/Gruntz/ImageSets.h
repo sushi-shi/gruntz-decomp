@@ -3,10 +3,21 @@
 
 #include <rva.h>
 
+#include <Enums.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
 #include <stddef.h>
+
+// Serialized tile-collision image encodings. Their payload layouts prove the
+// names: one value for the whole image, inside/outside values for a rectangle,
+// or a full byte-per-tile pixel map.
+GZ_ENUM_CONST_BEGIN(TileImageSetKind)
+    TILE_IMAGESET_UNIFORM = 1,
+    TILE_IMAGESET_RECT = 2,
+    TILE_IMAGESET_PIXELS = 3
+GZ_ENUM_CONST_END(TileImageSetKind)
 
 struct WwdTileImageRecord {
     char m_header[8];
@@ -21,7 +32,7 @@ public:
     virtual void FreePixels();
     virtual i32 GetKind();
 
-    virtual i32 GetCollisionAt(i32 x, i32 y);
+    virtual TileCollisionKind GetCollisionAt(i32 x, i32 y);
     virtual i32 GetStride();
 
     i32 m_width;
@@ -36,7 +47,7 @@ struct CImageSet1 : public CTileImageSet {
 
     virtual i32 GetKind() OVERRIDE;
 
-    virtual i32 GetCollisionAt(i32 x, i32 y) OVERRIDE;
+    virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
@@ -67,7 +78,7 @@ struct CImageSet2 : public CTileImageSet {
     virtual i32 Parse(void* record) OVERRIDE;
     virtual void FreePixels() OVERRIDE;
     virtual i32 GetKind() OVERRIDE;
-    virtual i32 GetCollisionAt(i32 x, i32 y) OVERRIDE;
+    virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);
@@ -103,7 +114,7 @@ struct CImageSet3 : public CTileImageSet {
     virtual i32 Parse(void* record) OVERRIDE;
     virtual void FreePixels() OVERRIDE;
     virtual i32 GetKind() OVERRIDE;
-    virtual i32 GetCollisionAt(i32 x, i32 y) OVERRIDE;
+    virtual TileCollisionKind GetCollisionAt(i32 x, i32 y) OVERRIDE;
     virtual i32 GetStride() OVERRIDE;
 
     virtual i32 ScanRunLeft(i32 x, i32 y, i32* outX, i32* outVal);

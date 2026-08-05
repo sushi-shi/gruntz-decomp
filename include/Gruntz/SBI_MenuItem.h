@@ -19,7 +19,7 @@ class CDDrawSurfaceMgr;
 class CSBI_MenuItem : public CSBI_Image {
 public:
     CSBI_MenuItem() {
-        m_kind = 2;
+        m_kind = SBI_KIND_MENU_ITEM;
         m_state = MENUITEM_UNSET;
         m_frame = NULL;
         m_record = NULL;
@@ -35,8 +35,8 @@ public:
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 frame,

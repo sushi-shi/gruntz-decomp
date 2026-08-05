@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
+#include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -13,6 +14,15 @@ class CFileMemBase;
 extern "C" u32 g_engineFrameDelta;
 
 extern "C" u32 g_frameTime;
+
+// The Teleporter WWD object's Smarts field selects its lifetime and destination
+// behavior. The shared WWD field remains raw because other logic classes give
+// Smarts unrelated meanings.
+GZ_ENUM_BEGIN(TeleporterKind)
+    TELEPORTER_NORMAL = 0,
+    TELEPORTER_SINGLE_USE = 1,
+    TELEPORTER_SECRET = 2
+GZ_ENUM_END(TeleporterKind)
 
 class CTeleporter : public CUserLogic, public CWapX {
 public:

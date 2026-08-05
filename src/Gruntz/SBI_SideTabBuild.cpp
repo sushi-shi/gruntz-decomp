@@ -29,8 +29,8 @@ i32 CStatusBarMgr::BuildSideTabs() {
         i32 ok = newobj->BuildStatzTabStatusBar(
             this,
             g_gameReg->m_world,
-            i + 0xb,
-            0,
+            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
+            TAB_CONTROLS,
             geomBase,
             strid - 0x11,
             geomVal,
@@ -38,7 +38,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             "GAME_STATUSBAR_TABZ_STATZTAB_TAB",
             g_curPlayer,
             i,
-            m_statFlags[i],
+            static_cast<StatusSampleMode>(m_statFlags[i]),
             m_position == STATUSBAR_DOCK_RIGHT
         );
         if (ok == 0) {

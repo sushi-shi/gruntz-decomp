@@ -755,16 +755,12 @@ class TestEnumDomainGate(unittest.TestCase):
             fp = root / name
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_text(text)
-        (root / "config" / "cleanliness").mkdir(parents=True, exist_ok=True)
-        saved = (enum_domains.REPO, enum_domains.REVIEW)
+        saved = enum_domains.REPO
         enum_domains.REPO = root
-        enum_domains.REVIEW = root / "config" / "cleanliness" / "enum-review.tsv"
         try:
-            with contextlib.redirect_stdout(io.StringIO()):
-                enum_domains.sync_review()
             return enum_domains.audit()
         finally:
-            enum_domains.REPO, enum_domains.REVIEW = saved
+            enum_domains.REPO = saved
             tmp.cleanup()
 
     def test_split_width_disagreement_is_caught(self):

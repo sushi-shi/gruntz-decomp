@@ -71,10 +71,10 @@ RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeW;
     i32 h = g_gameReg->m_savedModeH;
-    if (w == 0x400 && h == 0x300) {
+    if (w == DISPLAY_WIDTH_1024 && h == DISPLAY_HEIGHT_768) {
         return RES_1024X768;
     }
-    if (w == 0x320 && h == 0x258) {
+    if (w == DISPLAY_WIDTH_800 && h == DISPLAY_HEIGHT_600) {
         return RES_800X600;
     }
     return RES_640X480;
@@ -117,11 +117,11 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     EndDialog(hDlg, 1);
                     i32 w, h;
                     if (g_videoResolutionMode == RES_1024X768) {
-                        w = 0x400;
-                        h = 0x300;
+                        w = DISPLAY_WIDTH_1024;
+                        h = DISPLAY_HEIGHT_768;
                     } else if (g_videoResolutionMode == RES_800X600) {
-                        w = 0x320;
-                        h = 0x258;
+                        w = DISPLAY_WIDTH_800;
+                        h = DISPLAY_HEIGHT_600;
                     } else {
                         w = SCREEN_W_PX;
                         h = SCREEN_H_PX;
@@ -244,9 +244,9 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
     g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
     // The slider position IS the mode index the dialog offers.
-    Resolution res = static_cast<Resolution>(GetDialogScrollPosition(hDlg, 0x52c));
-    if (res >= RES_UNSET && res <= 100) {
-        g_videoResolutionMode = res;
+    i32 resIndex = GetDialogScrollPosition(hDlg, 0x52c);
+    if (resIndex >= IDX(RES_UNSET) && resIndex <= 100) {
+        g_videoResolutionMode = static_cast<Resolution>(resIndex);
     }
     if (g_disableAudio == 0) {
         if (g_disableSound == 0) {
@@ -361,7 +361,7 @@ i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
 }
 
 RVA(0x00036f30, 0x114)
-void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
+void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
     if (!hDlg) {
         return;
     }
@@ -377,7 +377,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel) {
     }
 
     pCtrl->SetRange(1, 3, 1);
-    SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, TRUE, nSel);
+    SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, TRUE, IDX(nSel));
 
     HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
     if (!hCaption) {
@@ -459,7 +459,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     si.fMask = SIF_POS;
     GetScrollInfo(hCtrl, SB_CTL, &si);
     i32 newpos;
-    if (code == 5) {
+    if (code == SB_THUMBTRACK) {
         newpos = pos;
     } else {
         newpos = si.nPos;
@@ -500,7 +500,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
         g_gameReg->SetVoiceVolume(newpos);
-        if (code == 5) {
+        if (code == SB_THUMBTRACK) {
             return;
         }
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
@@ -526,7 +526,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
         g_gameReg->SetSoundVolume(newpos);
-        if (code == 5) {
+        if (code == SB_THUMBTRACK) {
             return;
         }
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;

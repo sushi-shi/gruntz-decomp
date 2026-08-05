@@ -1,0 +1,22 @@
+#ifndef GRUNTZ_GRUNTZ_STATUSBARITEMKIND_H
+#define GRUNTZ_GRUNTZ_STATUSBARITEMKIND_H
+
+#include <Enums.h>
+
+// Runtime kind written by each CStatusBarItem-derived constructor. ClickToggle
+// uses it to accept only CSBI_MenuItem instances.
+GZ_ENUM_BEGIN(StatusBarItemKind)
+    SBI_KIND_BASE = 0,
+    SBI_KIND_RECT_ONLY = 1,
+    SBI_KIND_MENU_ITEM = 2,
+    SBI_KIND_IMAGE = 3,
+    SBI_KIND_IMAGE_SET = 4,
+    SBI_KIND_STATZ_TAB_ARROW = 5,
+    SBI_KIND_STATZ_TAB_GRUNT_BAR = 6,
+    SBI_KIND_WELL_GOO = 7,
+    SBI_KIND_IMAGE_SET_ANI = 8,
+    SBI_KIND_GRUNT_MACHINE = 9,
+    SBI_KIND_WARLORD_HEAD = 0xb
+GZ_ENUM_END(StatusBarItemKind)
+
+#endif // GRUNTZ_GRUNTZ_STATUSBARITEMKIND_H

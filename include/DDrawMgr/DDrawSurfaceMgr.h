@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/ColorDepth.h>
+#include <DDrawMgr/WorldInitError.h>
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -60,12 +62,12 @@ public:
     virtual ~CDDrawSurfaceMgr() OVERRIDE;
     virtual i32 IsReady();
 
-    virtual i32 Init(HWND hWnd, i32 w, i32 h, i32 bpp, i32 flags);
+    virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();
 
     void FreeContext();
     i32 PlayDefaultSound();
-    i32 SetDimensions(i32 x, i32 y, i32 flags);
+    i32 SetDimensions(i32 x, i32 y, ColorDepth bpp);
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
@@ -92,7 +94,7 @@ public:
 
     HWND m_hWnd;
     i32 m_flags;
-    i32 m_lastError;
+    WorldInitError m_lastError;
     HP_Callback m_callback;
 };
 SIZE(0x40);

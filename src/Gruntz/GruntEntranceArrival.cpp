@@ -15,6 +15,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -206,20 +207,20 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     m_combatActive = 1;
 
     i32 idx;
-    switch (IDX(m_entranceReason) - 2) {
-        case 0:
-            if (m_arrivalState != 0) {
+    switch (m_entranceReason) {
+        case PICKUP_BOOMERANG:
+            if (m_arrivalState != AI_NONE) {
                 m_entranceActive = 1;
             }
             idx = 1;
             break;
-        case 7:
-        case 8:
-        case 9:
-        case 15:
-        case 18:
-        case 19:
-        case 20:
+        case PICKUP_GUNHAT:
+        case PICKUP_NERFGUN:
+        case PICKUP_ROCK:
+        case PICKUP_TIMEBOMB:
+        case PICKUP_WARPSTONE:
+        case PICKUP_WELDER:
+        case PICKUP_WINGZ:
             idx = 1;
             break;
         default:
@@ -302,7 +303,7 @@ RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
-    if (advanced == 2) {
+    if (advanced == ANI_EVENT_FRAME) {
 
         switch (m_entranceReason) {
             case GRUNT_GUNHAT:
@@ -449,7 +450,7 @@ RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopStruckSlotSound();
-        if (m_arrivalPhase == 3 && m_arrivalActive != 0) {
+        if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
@@ -829,7 +830,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                     g->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != PICKUP_NONE) {
-                if (idx == 1) {
+                if (idx == GRUNT_IDLE_VARIANT_PRIMARY) {
                     if (CGameLevel::PointInBounds(
                             &g->m_world->m_level->m_mainPlane->m_viewRect,
                             m_object->m_screenX,
@@ -840,7 +841,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                         src.m_addr = this;
                         g->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
                     }
-                } else if (idx == 2) {
+                } else if (idx == GRUNT_IDLE_VARIANT_SECONDARY) {
                     if (CGameLevel::PointInBounds(
                             &g->m_world->m_level->m_mainPlane->m_viewRect,
                             m_object->m_screenX,
@@ -870,7 +871,7 @@ latch:
 
     i32 row = m_entranceCell.row;
     i32 column = m_entranceCell.column;
-    i32 direction = m_entranceCell.direction;
+    GruntDirection direction = m_entranceCell.direction;
     if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
         switch (direction) {
             case DIR_NORTHEAST:
@@ -964,7 +965,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                     }
                     m_arrivalCell.m_x = -1;
                     m_arrivalCell.m_y = -1;
-                    m_arrivalState = 4;
+                    m_arrivalState = AI_DEFENDER;
                     m_defenderState = AISTATE_SEEK;
                     m_arrivalActive = 0;
                     m_arrivalFlags |= 0x18040402;
@@ -1022,7 +1023,7 @@ i32 CGrunt::StepEntranceReinit() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
@@ -1266,7 +1267,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     StopStruckSlotSound();
     StopStruckVoiceSound();
 
-    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_object->m_stateFlags &= ~IDX(SPRITE_STATE_FLASHING);
     m_entranceCommitted = 0;
     m_deathAnimStarted = 1;
 
@@ -1428,7 +1429,7 @@ i32 CGrunt::StepCombatReaction(
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
         goto tail;
     }
@@ -1715,7 +1716,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
     } else {
         CWwdGameObjectA* h = m_object;
@@ -1740,7 +1741,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     if (m_entranceReason == PICKUP_BOMB) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeM);
-        m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+        m_object->m_stateFlags &= ~IDX(SPRITE_STATE_FLASHING);
         m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
         m_entranceActive = 1;
         m_bombRunActive = 1;
@@ -1800,9 +1801,10 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
 // @early-stop
 RVA(0x00065a60, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
-    i32 phase = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    if (phase > 0) {
-        if (phase == 0x63) {
+    i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
+    if (advanced > 0) {
+        TileArrivalFxCue cue = static_cast<TileArrivalFxCue>(advanced);
+        if (cue == TILE_ARRIVAL_FX_APPLY) {
             m_entranceActive = 1;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
@@ -1833,7 +1835,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            phase
+            cue
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
@@ -1847,15 +1849,16 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 // @early-stop
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (ready > 0) {
+    i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    if (advanced > 0) {
+        TileArrivalFxCue cue = static_cast<TileArrivalFxCue>(advanced);
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            ready
+            cue
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;

@@ -31,9 +31,9 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
     virtual i32 InitFromSurface(CDDSurface* src);
-    virtual i32 Create(i32 w, i32 h, i32 bpp, i32 flags);
+    virtual i32 Create(i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual i32 LoadImage(CParseSource* src);
     virtual i32 ResolveImageName(char* name);
 

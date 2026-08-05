@@ -17,7 +17,9 @@
 // NOT this constant, though they share the value: Blowfish's 256-entry S-boxes
 // and the 256-byte save-game obfuscation buffer. Both were left as they were.
 GZ_ENUM_CONST_BEGIN(PaletteSize)
-    PALETTE_ENTRY_COUNT = 256
+    PALETTE_ENTRY_COUNT = 256,
+    PALETTE_RGB_BYTE_COUNT = PALETTE_ENTRY_COUNT * 3,
+    LOGICAL_PALETTE_VERSION = 0x300
 GZ_ENUM_CONST_END(PaletteSize)
 
 #endif // DDRAWMGR_PALETTESIZE_H

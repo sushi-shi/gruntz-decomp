@@ -53,7 +53,7 @@ i32 CGameApp::InitInstance(
     if (g_gameAppInstanceCount > 1) {
         goto Fail;
     }
-    if (!pGameInfo || pGameInfo->size != 0x1d4) {
+    if (!pGameInfo || pGameInfo->size != sizeof(GameInfo)) {
         goto Fail;
     }
     if (pWndClass && (!pWndClass->lpszClassName || !*pWndClass->lpszClassName)) {

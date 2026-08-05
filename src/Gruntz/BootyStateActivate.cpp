@@ -25,6 +25,7 @@
 #include <Gruntz/BzState.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/DirectionRingIndex.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -38,11 +39,13 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WarpLetter.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -231,7 +234,9 @@ i32 CBootyState::ShowSecretBonusMessage() {
 
     i32 count = static_cast<i32>(((g_gameReg->m_scoreHud)->GroupRatio() * g_secretRatioScale));
     i32 rowBase = (g_gameReg->m_scoreHud->m_count - 1) / 4;
-    i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
+    SecretBonusTier category =
+        (count >= 0x64) ? SECRET_BONUS_TIER_THREE
+                        : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
 
     if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
         return 0;
@@ -242,12 +247,12 @@ i32 CBootyState::ShowSecretBonusMessage() {
     title.Format("Secret Bonus Acquired:");
     ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-    for (i32 j = 0; j < category; j++) {
+    for (i32 j = 0; j < IDX(category); j++) {
         RECT rA, rB;
-        if (category == 1) {
+        if (category == SECRET_BONUS_TIER_ONE) {
             SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
             SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
-        } else if (category == 2) {
+        } else if (category == SECRET_BONUS_TIER_TWO) {
             if (j == 0) {
                 SetRect(&rA, 0, -20, SCREEN_W_PX, 0x1cc);
                 SetRect(&rB, 0, 0x14, SCREEN_W_PX, 0x1f4);
@@ -300,10 +305,10 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
             return 0;
         }
         a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
-        a->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        a->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     }
     for (i32 k = 0; k <= m_letterIdx; k++) {
-        slot[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        slot[k]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     }
     CWwdGameObjectA* g =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
@@ -406,7 +411,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         }
 
         CString dir;
-        switch (i) {
+        switch (static_cast<GruntDirection>(i)) {
             case DIR_NORTH:
                 dir = "NORTH";
                 break;
@@ -456,7 +461,7 @@ void CBootyState::MoveLettersByDir() {
         do {
             CGameObject* e = *p;
             p++;
-            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            e->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         } while (--n);
         return;
     }
@@ -466,42 +471,38 @@ void CBootyState::MoveLettersByDir() {
         i32 x = e->m_screenX;
         i32 y = e->m_screenY;
         if (x < 0 || x > SCREEN_W_PX || y < 0 || y > SCREEN_H_PX) {
-            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            e->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         } else {
-            // The same eight-direction ring as the dir-name switch above, but
-            // 0-BASED: 0 is north, 1 north-east, and so on clockwise, each arm
-            // offsetting by 4px. Left numeric because GruntDirection is 1-based
-            // and `case DIR_NORTH - 1:` would read worse than the ring does.
-            switch (i) {
-                case 0:
+            switch (static_cast<DirectionRingIndex>(i)) {
+                case DIRECTION_RING_NORTH:
                     e->m_screenX = x;
                     (*p)->m_screenY = y - 4;
                     break;
-                case 1:
+                case DIRECTION_RING_NORTHEAST:
                     e->m_screenX = x + 4;
                     (*p)->m_screenY = y - 4;
                     break;
-                case 2:
+                case DIRECTION_RING_EAST:
                     e->m_screenX = x + 4;
                     (*p)->m_screenY = y;
                     break;
-                case 3:
+                case DIRECTION_RING_SOUTHEAST:
                     e->m_screenX = x + 4;
                     (*p)->m_screenY = y + 4;
                     break;
-                case 4:
+                case DIRECTION_RING_SOUTH:
                     e->m_screenX = x;
                     (*p)->m_screenY = y + 4;
                     break;
-                case 5:
+                case DIRECTION_RING_SOUTHWEST:
                     e->m_screenX = x - 4;
                     (*p)->m_screenY = y + 4;
                     break;
-                case 6:
+                case DIRECTION_RING_WEST:
                     e->m_screenX = x - 4;
                     (*p)->m_screenY = y;
                     break;
-                case 7:
+                case DIRECTION_RING_NORTHWEST:
                     e->m_screenX = x - 4;
                     (*p)->m_screenY = y - 4;
                     break;
@@ -712,7 +713,7 @@ i32 CBootyState::Render() {
                 CString s;
                 RECT rc;
                 CBattlezData* hud = g_gameReg->m_scoreHud;
-                if (hud->m_count > QUESTLEVEL_LAST) {
+                if (hud->m_count > IDX(QUESTLEVEL_LAST)) {
 
                     if (hud->m_allDone != 0) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
@@ -831,7 +832,7 @@ void CBootyState::ShowLevelCompleteMessage() {
         CString s;
         RECT r;
         CBattlezData* rec = g_gameReg->m_scoreHud;
-        if (rec->m_count > QUESTLEVEL_LAST) {
+        if (rec->m_count > IDX(QUESTLEVEL_LAST)) {
             if (rec->m_allDone != 0) {
                 s = "You have completed training! Now go and conquer the Battlez!";
             } else {
@@ -876,7 +877,7 @@ i32 CBootyState::OnPaint() {
 // @early-stop
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
-    i32 state = m_activation;
+    BootySeqPhase state = m_activation;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
         m_initGate = 1;
         return 1;
@@ -899,26 +900,26 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
             if (g_gameReg->m_scoreHud->m_count < 0x24) {
                 for (i32 p = 0; p < 4; p++) {
-                    m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_visSprites[p]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
                     m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                     m_animSprites[p]->m_screenY = 0xdc;
-                    m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    m_animSprites[p]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                     if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
                         m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
                         CString letter;
-                        switch (p) {
-                            case 0:
+                        switch (static_cast<WarpLetter>(p)) {
+                            case WARPLETTER_W:
                                 letter = "W";
                                 break;
-                            case 1:
+                            case WARPLETTER_A:
                                 letter = "A";
                                 break;
-                            case 2:
+                            case WARPLETTER_R:
                                 letter = "R";
                                 break;
-                            case 3:
+                            case WARPLETTER_P:
                                 letter = "P";
                                 break;
                         }
@@ -930,7 +931,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             for (i32 k = 0; k < 4; k++) {
                 m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
                 m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
-                m_trailSprites[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                m_trailSprites[k]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
             }
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -946,7 +947,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             ShowLevelCompleteMessage();
             return 1;
         }
-    } else if (rec->m_allDone != 0 && rec->m_count < QUESTLEVEL_LAST
+    } else if (rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
                && state == BOOTYSEQ_PERFECT_BONUS) {
         if ((rec)->GroupAllScored()) {
             if (!ShowSecretBonusMessage()) {
@@ -959,7 +960,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
         }
     }
 
-    if (m_activation == 0xfffffffe && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
+    if (m_activation == BOOTYSEQ_SECRET_PENDING && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
         && m_secretBannerOnce == 0) {
         m_secretBannerOnce = 1;
         if (!ShowSecretBonusMessage()) {
@@ -971,7 +972,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     }
 
     CBattlezData* rec2 = g_gameReg->m_scoreHud;
-    if (rec2->m_count == QUESTLEVEL_CAMPAIGN_LAST) {
+    if (rec2->m_count == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
         SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
         if (sub != NULL) {
             sub->Stop();
@@ -1048,7 +1049,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             continue;
         }
         CShadeTable* tint =
-            g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[i].m_colorIndex, 0);
+            g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_options[i].m_colorIndex), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1067,7 +1068,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_puddleSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_puddleSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
         if (i == QueryGruntSlots()) {
             m_gruntSprites[i] =
@@ -1095,7 +1096,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_gruntSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
         {
             i32 best = -1;
@@ -1122,7 +1123,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_weaponIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
         {
             CShadeTable* iconTint = g_gameReg->m_spriteFactory->GetSel(0x10, 0);
@@ -1154,7 +1155,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_toyIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
             {
                 i32 best = -1;
@@ -1181,7 +1182,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_powerupIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
             {
                 i32 best = -1;
@@ -1208,34 +1209,34 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_miscIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         }
 
         m_puddleSprites[i]->m_screenX = g_multiBootyGeom[5][i].m_x;
         m_puddleSprites[i]->m_screenY = g_multiBootyGeom[5][i].m_y;
-        m_puddleSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_puddleSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_gruntSprites[i]->m_screenX = g_multiBootyGeom[4][i].m_x;
         m_gruntSprites[i]->m_screenY = g_multiBootyGeom[4][i].m_y;
-        m_gruntSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_gruntSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_weaponIcons[i]->m_screenX = g_multiBootyGeom[3][i].m_x;
         m_weaponIcons[i]->m_screenY = g_multiBootyGeom[3][i].m_y;
-        m_weaponIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_weaponIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_toyIcons[i]->m_screenX = g_multiBootyGeom[2][i].m_x;
         m_toyIcons[i]->m_screenY = g_multiBootyGeom[2][i].m_y;
-        m_toyIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_toyIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_powerupIcons[i]->m_screenX = g_multiBootyGeom[1][i].m_x;
         m_powerupIcons[i]->m_screenY = g_multiBootyGeom[1][i].m_y;
-        m_powerupIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_powerupIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_miscIcons[i]->m_screenX = g_multiBootyGeom[0][i].m_x;
         m_miscIcons[i]->m_screenY = g_multiBootyGeom[0][i].m_y;
-        m_miscIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_miscIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     }
 
     for (i32 t = 0; t < 4; t++) {
         CString tabKey;
         CString flagKey;
         GruntzPlayer* pl = &g_gameReg->m_options[t];
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(pl->m_colorIndex, 0);
+        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(IDX(pl->m_colorIndex), 0);
         if (tint == NULL) {
             return 0;
         }
@@ -1255,7 +1256,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_tabSprites[t]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
         m_flagSprites[t] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
@@ -1270,7 +1271,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_flagSprites[t]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 
         m_tabSprites[t]->m_screenX = g_multiBootyGeom[7][t].m_x;
         m_tabSprites[t]->m_screenY = g_multiBootyGeom[7][t].m_y;
@@ -1290,12 +1291,12 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_frameIndex = frame;
             }
         }
-        m_tabSprites[t]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_tabSprites[t]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     }
 
     {
         CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
-            g_gameReg->m_options[QueryGruntSlots()].m_colorIndex,
+            IDX(g_gameReg->m_options[QueryGruntSlots()].m_colorIndex),
             0
         );
         if (tint == NULL) {
@@ -1314,10 +1315,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_fortSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_fortSprite->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         m_fortSprite->m_screenX = 0x64;
         m_fortSprite->m_screenY = 0x64;
-        m_fortSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_fortSprite->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
 
         CString joyKey;
         CString bootyKey;
@@ -1342,14 +1343,14 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_warlordBooty->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         m_warlordBooty->m_screenX = 0x64;
         m_warlordBooty->m_screenY = 0x64;
-        if (m_warlordBooty->m_sortKey != 2) {
-            m_warlordBooty->m_sortKey = 2;
+        if (m_warlordBooty->m_sortKey != SORTKEY_BOOTY_WARLORD) {
+            m_warlordBooty->m_sortKey = SORTKEY_BOOTY_WARLORD;
             m_warlordBooty->m_flags |= 0x20000;
         }
-        m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_warlordBooty->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
 
         for (i32 w = 0; w < 4; w++) {
             i32 held = g_gameReg->m_scoreHud->SumFlags(w);
@@ -1369,7 +1370,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                     m_flagSprites[c]->m_screenX =
                         (spread[held - 1][placed] << 4) + g_multiBootyGeom[6][w].m_x;
                     m_flagSprites[c]->m_screenY = g_multiBootyGeom[6][w].m_y;
-                    m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    m_flagSprites[c]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                     placed++;
                 }
             }
@@ -1496,8 +1497,9 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    for (c = 0; c <= BATTLEROW_LAST; c++) {
-        switch (c) {
+    for (c = 0; c <= IDX(BATTLEROW_LAST); c++) {
+        BattleStatRow row = static_cast<BattleStatRow>(c);
+        switch (row) {
             case BATTLEROW_FORTZ:
                 s = "Fortz:";
                 break;
@@ -1615,7 +1617,7 @@ i32 CMultiBootyState::Render() {
     }
     if (m_sequenceState == BOOTYSEQ_WARP_CUE) {
         DrawBattleStats();
-        m_sequenceState = 0xc7;
+        m_sequenceState = BOOTYSEQ_PERFECT_BONUS;
     }
     m_world->m_childGroup->TickKillCues(1);
     m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);

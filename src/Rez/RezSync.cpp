@@ -169,14 +169,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
     m_isHighDetail = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
     i32 vEasy = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
-    i32 res = m_settings->GetValueDword("Resolution", 1);
-    m_isEasyMode = res;
-    if (res == 3) {
-        m_savedModeW = 0x400;
-        m_savedModeH = 0x300;
-    } else if (res == 2) {
-        m_savedModeW = 0x320;
-        m_savedModeH = 0x258;
+    i32 resolutionRaw = m_settings->GetValueDword("Resolution", IDX(RES_640X480));
+    m_isEasyMode = resolutionRaw;
+    Resolution resolution = static_cast<Resolution>(resolutionRaw);
+    if (resolution == RES_1024X768) {
+        m_savedModeW = DISPLAY_WIDTH_1024;
+        m_savedModeH = DISPLAY_HEIGHT_768;
+    } else if (resolution == RES_800X600) {
+        m_savedModeW = DISPLAY_WIDTH_800;
+        m_savedModeH = DISPLAY_HEIGHT_600;
     } else {
         m_savedModeW = SCREEN_W_PX;
         m_savedModeH = SCREEN_H_PX;
@@ -200,7 +201,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_driveLetter = 0;
     GetGruntzDriveLetter();
 
-    i32 mode = 2;
+    GameStateId mode = GAMESTATE_ATTRACT;
     i32 noLogo = 0;
     char levelName[0x80];
     levelName[0] = 0;
@@ -209,16 +210,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         strcpy(buf, szCmdLine);
         _strupr(buf);
         if (strstr(buf, "PLAY")) {
-            mode = 3;
+            mode = GAMESTATE_PLAY;
         }
         if (strstr(buf, "MULTI")) {
-            mode = 0x11;
+            mode = GAMESTATE_MULTI;
         }
         if (strstr(buf, "DEMO")) {
-            mode = 7;
+            mode = GAMESTATE_DEMO;
         }
         if (strstr(buf, "SELECT")) {
-            mode = 0x10;
+            mode = GAMESTATE_LEVEL_SELECT;
         }
         if (strstr(buf, "NOLOGO")) {
             noLogo = 1;
@@ -252,7 +253,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         }
     }
     if (InitializeLobbyConnectionSettings()) {
-        mode = 0x11;
+        mode = GAMESTATE_MULTI;
         m_reservedb4 = 0;
     }
 
@@ -269,8 +270,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         flags |= 0x10;
     }
     m_colorDepth = BPP_RGB_16;
-    if (!world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, 0x10, flags)) {
-        ReportWorldStatus(0x407);
+    if (!world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
+        ReportWorldStatus(WORLD_REPORT_STARTUP_INIT);
         return 0;
     }
     {
@@ -305,12 +306,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         i32 ok =
             m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(fn)), 1, 0) != 0;
         if (!ok) {
-            ReportError(static_cast<GruntzCommandId>(0x800b), 0x409);
+            ReportError(IDX(static_cast<GruntzCommandId>(0x800b)), 0x409);
             return 0;
         }
     }
     if (!m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
-        ReportError(static_cast<GruntzCommandId>(0x8149), 0x460);
+        ReportError(IDX(static_cast<GruntzCommandId>(0x8149)), 0x460);
         return 0;
     }
     m_symParser->LoadEntry(const_cast<char*>("GRUNTZ.ZZZ"), 1);
@@ -581,12 +582,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
-        if (TransitionState(static_cast<GameStateId>(mode), 1, 0, 0)) {
+        if (TransitionState(mode, 1, 0, 0)) {
             g_frameDelta = 0;
-        } else if (mode == 0x11 && TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+        } else if (mode == GAMESTATE_MULTI && TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
             g_frameDelta = 0;
         } else {
-            ReportError(IDX(CMD_NEW_GAME), mode == 0x11 ? 0x41c : 0x41d);
+            ReportError(IDX(CMD_NEW_GAME), mode == GAMESTATE_MULTI ? 0x41c : 0x41d);
             return 0;
         }
     }

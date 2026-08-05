@@ -396,75 +396,75 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     // The UNSIGNED key is codegen steering, not a widening for its own sake:
     // cl emits the unsigned `ja` range check only for an unsigned switch key
     // (docs/patterns/switch-key-unsigned-ja-vs-jg.md).
-    switch (static_cast<u32>(config->m_entranceReason)) {
-        case PICKUP_NONE:
+    switch (static_cast<u32>(IDX(config->m_entranceReason))) {
+        case IDX(PICKUP_NONE):
             return VOICE_CUES_PER_BAND * 17 + cue;
-        case PICKUP_BOMB:
+        case IDX(PICKUP_BOMB):
             return VOICE_CUES_PER_BAND * 3 + cue;
-        case PICKUP_BOOMERANG:
+        case IDX(PICKUP_BOOMERANG):
             return VOICE_CUES_PER_BAND * 4 + cue;
-        case PICKUP_BRICK:
+        case IDX(PICKUP_BRICK):
             return VOICE_CUES_PER_BAND * 5 + cue;
-        case PICKUP_CLUB:
+        case IDX(PICKUP_CLUB):
             return VOICE_CUES_PER_BAND * 6 + cue;
-        case PICKUP_GAUNTLETZ:
+        case IDX(PICKUP_GAUNTLETZ):
             return VOICE_CUES_PER_BAND * 7 + cue;
-        case PICKUP_GLOVEZ:
+        case IDX(PICKUP_GLOVEZ):
             return VOICE_CUES_PER_BAND * 8 + cue;
-        case PICKUP_GOOBER:
+        case IDX(PICKUP_GOOBER):
             return VOICE_CUES_PER_BAND * 10 + cue;
-        case PICKUP_GRAVITYBOOTZ:
+        case IDX(PICKUP_GRAVITYBOOTZ):
             return VOICE_CUES_PER_BAND * 11 + cue;
-        case PICKUP_GUNHAT:
+        case IDX(PICKUP_GUNHAT):
             return VOICE_CUES_PER_BAND * 12 + cue;
-        case PICKUP_NERFGUN:
+        case IDX(PICKUP_NERFGUN):
             return VOICE_CUES_PER_BAND * 16 + cue;
-        case PICKUP_ROCK:
+        case IDX(PICKUP_ROCK):
             return VOICE_CUES_PER_BAND * 20 + cue;
-        case PICKUP_SHIELD:
+        case IDX(PICKUP_SHIELD):
             return VOICE_CUES_PER_BAND * 22 + cue;
-        case PICKUP_SHOVEL:
+        case IDX(PICKUP_SHOVEL):
             return VOICE_CUES_PER_BAND * 23 + cue;
-        case PICKUP_SPRING:
+        case IDX(PICKUP_SPRING):
             return VOICE_CUES_PER_BAND * 24 + cue;
-        case PICKUP_SPY:
+        case IDX(PICKUP_SPY):
             return VOICE_CUES_PER_BAND * 25 + cue;
-        case PICKUP_SWORD:
+        case IDX(PICKUP_SWORD):
             return VOICE_CUES_PER_BAND * 27 + cue;
-        case PICKUP_TIMEBOMB:
+        case IDX(PICKUP_TIMEBOMB):
             return VOICE_CUES_PER_BAND * 28 + cue;
-        case PICKUP_TOOB:
+        case IDX(PICKUP_TOOB):
             if (config->m_coordToggle != 0) {
                 return VOICE_CUES_PER_BAND * 30 + cue;
             }
             return VOICE_CUES_PER_BAND * 29 + cue;
-        case PICKUP_WAND:
+        case IDX(PICKUP_WAND):
             return VOICE_CUES_PER_BAND * 31 + cue;
-        case PICKUP_WARPSTONE:
+        case IDX(PICKUP_WARPSTONE):
             return VOICE_CUES_PER_BAND * 32 + cue;
-        case PICKUP_WELDER:
+        case IDX(PICKUP_WELDER):
             return VOICE_CUES_PER_BAND * 33 + cue;
-        case PICKUP_WINGZ:
+        case IDX(PICKUP_WINGZ):
             return VOICE_CUES_PER_BAND * 34 + cue;
-        case PICKUP_BABYWALKER:
+        case IDX(PICKUP_BABYWALKER):
             return cue;
-        case PICKUP_BEACHBALL:
+        case IDX(PICKUP_BEACHBALL):
             return VOICE_CUES_PER_BAND * 1 + cue;
-        case PICKUP_BIGWHEEL:
+        case IDX(PICKUP_BIGWHEEL):
             return VOICE_CUES_PER_BAND * 2 + cue;
-        case PICKUP_GOKART:
+        case IDX(PICKUP_GOKART):
             return VOICE_CUES_PER_BAND * 9 + cue;
-        case PICKUP_JACKINTHEBOX:
+        case IDX(PICKUP_JACKINTHEBOX):
             return VOICE_CUES_PER_BAND * 14 + cue;
-        case PICKUP_JUMPROPE:
+        case IDX(PICKUP_JUMPROPE):
             return VOICE_CUES_PER_BAND * 15 + cue;
-        case PICKUP_POGOSTICK:
+        case IDX(PICKUP_POGOSTICK):
             return VOICE_CUES_PER_BAND * 18 + cue;
-        case PICKUP_SCROLL:
+        case IDX(PICKUP_SCROLL):
             return VOICE_CUES_PER_BAND * 21 + cue;
-        case PICKUP_SQUEAKTOY:
+        case IDX(PICKUP_SQUEAKTOY):
             return VOICE_CUES_PER_BAND * 26 + cue;
-        case PICKUP_YOYO:
+        case IDX(PICKUP_YOYO):
             return VOICE_CUES_PER_BAND * 35 + cue;
         default:
             return 0;

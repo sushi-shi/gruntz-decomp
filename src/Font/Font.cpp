@@ -9,6 +9,7 @@
 #include <DDrawMgr/PixelShift.h>
 
 #include <ddraw.h>
+#include <limits.h>
 
 RVA(0x00179700, 0x10)
 Font::Font() {
@@ -310,7 +311,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                     u8 cover = glyphBuf[row * gw + col];
 
                     if (cover == 0) {
-                    } else if (cover != 0xff) {
+                    } else if (cover != UCHAR_MAX) {
                         i32 inv = 255 - cover;
                         u16 dp = *dst;
                         i32 dr = static_cast<u8>((static_cast<u8>((dp >> g_rUp)) << g_rDown));

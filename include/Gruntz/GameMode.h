@@ -217,7 +217,7 @@ public:
 
     i32 m_initGate;
     i32 m_secretHudHandled;
-    i32 m_activation;
+    BootySeqPhase m_activation;
 
     union {
         i64 m_frameStamp64;
@@ -275,7 +275,7 @@ class CMultiBootyState : public CState {
 public:
     CMultiBootyState() {
         m_reserved1b4 = 0;
-        m_sequenceState = 0x64;
+        m_sequenceState = BOOTYSEQ_WARP_CUE;
     }
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
@@ -313,7 +313,7 @@ public:
     i32 PostCommandIfKey();
 
     i32 m_reserved1b4;
-    i32 m_sequenceState;
+    BootySeqPhase m_sequenceState;
     CWwdGameObjectA* m_puddleSprites[4];
     CWwdGameObjectA* m_gruntSprites[4];
     CWwdGameObjectA* m_weaponIcons[4];

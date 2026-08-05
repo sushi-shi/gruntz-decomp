@@ -7,6 +7,7 @@
 
 #include <Enums.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/LevelArea.h>
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
@@ -166,9 +167,9 @@ public:
 
     CDDSurface* m_blitSurface1;
     i32 m_levelIndex;
-    i32 m_levelType;
+    LevelArea m_levelType;
 
-    i32 m_previousStateId;
+    GameStateId m_previousStateId;
 
     CSymTab* m_levelBank;
 
@@ -223,7 +224,7 @@ inline CState::CState() {
     m_reserved38 = 0;
     m_ready = 0;
     m_versionString[0] = 0;
-    m_previousStateId = 0;
+    m_previousStateId = GAMESTATE_NONE;
     m_scratchSurface0 = NULL;
     m_scratchSurface1 = NULL;
     m_cursorSaveSrc0.left = 0;

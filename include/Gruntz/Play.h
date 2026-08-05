@@ -14,8 +14,10 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/View.h>
 #include <Io/SaveGame.h>
@@ -167,7 +169,7 @@ public:
     i32 StepGridWalk(i32 dt);
     i32 ResetGoals(i32, i32);
 
-    i32 PositionBridgeToggle(i32 mode, i32 unused);
+    i32 PositionBridgeToggle(StatusBarDock mode, StatusBarDock unused);
 
     i32 PlaceStartGruntz();
     i32 ValidateLevelTiles();
@@ -190,7 +192,7 @@ public:
     i32 ExecCommand(
         i32 targetIndex,
         i32 gruntIndex,
-        i32 cmdKind,
+        PlayerCommandKind cmdKind,
         i32 posX,
         i32 posY,
         i32 extraByte,
@@ -220,7 +222,7 @@ public:
     i32 BuildSpriteImageKeyTable(CMulti* notify);
     i32 BuildAnizKeyTable(CMulti* notify);
 
-    i32 EnterMode(i32 mode);
+    i32 EnterMode(GameStateId mode);
     i32 ResetPlayState();
 
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY);

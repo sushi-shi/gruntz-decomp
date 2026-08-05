@@ -15,6 +15,7 @@
 // of the scale are exercised.
 GZ_ENUM_CONST_BEGIN(HealthPct)
     HEALTH_EMPTY = 0,
+    HEALTH_RESPAWN = 25,
     HEALTH_FULL = 100
 GZ_ENUM_CONST_END(HealthPct)
 

@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
+#include <Image/RezDecodeKind.h>
 #include <Io/FileStream.h>
 
 class CDDrawPtrCollections;
@@ -51,17 +52,17 @@ public:
     i32 LoadPid(char* name, HDC dc, i32 ctrl);
     i32 LoadDefault(char* name, HDC dc, i32 ctrl);
 
-    i32 DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
+    i32 DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
     i32 DecodePcxData(void* buf, HDC dc, i32 ctrl);
     i32 DecodeRidData(void* buf, HDC dc, i32 ctrl);
     i32 DecodePidData(void* buf, HDC dc, i32 ctrl);
     i32 DecodeBmpData(void* buf, HDC dc, i32 ctrl);
 
-    i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl);
+    i32 DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
 
-    i32 DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl);
+    i32 DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
     i32 Convert8To16(HDC dc, CRezImage* src, void* pal);
-    i32 EnsureSize(HDC dc, i32 w, i32 h, i32 bitCount, i32 flag);
+    i32 EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag);
     void Fill(i32 value);
     void Free();
     void SetPalette(void* paletteNode, i32 scalar);
@@ -87,7 +88,7 @@ public:
     i32 m_reserved434;
     i32 m_width;
     i32 m_height;
-    i32 m_bitCount;
+    ColorDepth m_bitCount;
     i32 m_stride;
     i32 m_rowPad;
     POSITION m_listPosition;
@@ -105,7 +106,8 @@ public:
     virtual i32
     ResolveEx(void* surf, void* buf, FileImageFormat type, u32 size, i32 ctrl, i32 trans);
     virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key);
-    virtual i32 LoadKeyed(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
+    virtual i32
+    LoadKeyed(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
 };
 SIZE(0xc0);
 

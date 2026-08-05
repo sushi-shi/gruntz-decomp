@@ -33,11 +33,11 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_reserved44 = -1;
     m_reserved48 = -1;
     m_reserved14c = 0;
-    m_previousStateId = prevStateId;
-    m_levelType = t / 4 + 1;
+    m_previousStateId = static_cast<GameStateId>(prevStateId);
+    m_levelType = static_cast<LevelArea>(t / 4 + 1);
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
-    sprintf(area, "AREA%i", m_levelType);
+    sprintf(area, "AREA%i", IDX(m_levelType));
     CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(area));
     m_levelBank = node;
     if (node == NULL) {
@@ -75,11 +75,11 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         if (coll == NULL) {
             return 0;
         }
-        m_scratchSurface0 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        m_scratchSurface0 = coll->MakeAndAddB(0x40, 0x40, BPP_RGB_16, 0, -1);
         if (m_scratchSurface0 == NULL) {
             return 0;
         }
-        m_scratchSurface1 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        m_scratchSurface1 = coll->MakeAndAddB(0x40, 0x40, BPP_RGB_16, 0, -1);
         if (m_scratchSurface1 == NULL) {
             return 0;
         }

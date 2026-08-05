@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Crypto/FecCrypt.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
@@ -41,6 +42,13 @@ GZ_ENUM_BEGIN(MovieLayout)
     // One copy blitted into the caller's explicit `rect`.
     MOVIE_DEST_RECT = 3
 GZ_ENUM_END(MovieLayout)
+
+GZ_ENUM_BEGIN(MoviePlaybackResult)
+    MOVIE_RESULT_ERROR = 0,
+    MOVIE_RESULT_KEY_SKIP = 1,
+    MOVIE_RESULT_MOUSE_SKIP = 0x100,
+    MOVIE_RESULT_FINISHED = 0x11111111
+GZ_ENUM_END(MoviePlaybackResult)
 
 struct PLAYLISTINFOSTRUCT {
     char* m_src;
@@ -121,11 +129,11 @@ public:
     void Teardown();
     i32 OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
     i32 OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect);
-    i32 Pump(i32 flags, i32 count);
+    MoviePlaybackResult Pump(i32 flags, i32 count);
 
     i32 Advance(IDirectDrawSurface* target, i32 loops);
     i32 CloseSmacker();
-    i32 PlayList(i32 loops);
+    MoviePlaybackResult PlayList(i32 loops);
     i32 Frame();
 
     HWND m_window;
@@ -158,7 +166,7 @@ public:
     u32 m_screenWidth;
     u32 m_screenHeight;
 
-    i32 m_bpp;
+    ColorDepth m_bpp;
     i32 m_tilesAcross;
     i32 m_tilesDown;
     i32 m_originX;

@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/BridgeTileId.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -21,7 +22,7 @@
 
 #include <stdlib.h>
 
-static __inline i32 PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
+static __inline BrickTileId PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {
         return BRICKTILE_BROWN_1;
@@ -34,7 +35,7 @@ static __inline i32 PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     }
     return (roll > t4) ? BRICKTILE_BLACK_1 : BRICKTILE_GOLD_1;
 }
-static __inline i32 PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
+static __inline BrickTileId PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {
         return BRICKTILE_BROWN_2;
@@ -50,7 +51,7 @@ static __inline i32 PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     }
     return (rand() % 100 + 1 <= 0x32) ? BRICKTILE_BLACK_2_TOP : BRICKTILE_BLACK_2_LOW;
 }
-static __inline i32 PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
+static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
     if (roll <= t1) {
         return BRICKTILE_BROWN_3;
@@ -119,23 +120,24 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             cell->m_tileId = -1;
 
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                if (tileId == 0x105) {
-                    tileId = 0x101;
-                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = 0x101;
-                } else if (tileId == 0x106) {
-                    tileId = 0x103;
-                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = 0x103;
+                BridgeTileId bridgeTile = static_cast<BridgeTileId>(tileId);
+                if (bridgeTile == BRIDGETILE_WATER_UP_ALT) {
+                    tileId = IDX(BRIDGETILE_WATER_UP);
+                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = IDX(BRIDGETILE_WATER_UP);
+                } else if (bridgeTile == BRIDGETILE_DEATH_UP_ALT) {
+                    tileId = IDX(BRIDGETILE_DEATH_UP);
+                    grid->m_tileGrid[grid->m_colOffsets[col] + row] = IDX(BRIDGETILE_DEATH_UP);
                 }
             }
 
             if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                switch (tileId) {
+                switch (static_cast<BrickTileId>(tileId)) {
                     case BRICKTILE_BROWN_1:
                     case BRICKTILE_RED_1:
                     case BRICKTILE_BLUE_1:
                     case BRICKTILE_GOLD_1:
                     case BRICKTILE_BLACK_1:
-                        tileId = PickA(total, t1, t2, t3, t4);
+                        tileId = IDX(PickA(total, t1, t2, t3, t4));
                         break;
                     case BRICKTILE_BROWN_2:
                     case BRICKTILE_RED_2_LOW:
@@ -146,7 +148,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     case BRICKTILE_GOLD_2_TOP:
                     case BRICKTILE_BLACK_2_LOW:
                     case BRICKTILE_BLACK_2_TOP:
-                        tileId = PickB(total, t1, t2, t3, t4);
+                        tileId = IDX(PickB(total, t1, t2, t3, t4));
                         break;
                     case BRICKTILE_BROWN_3:
                     case BRICKTILE_RED_3_LOW:
@@ -161,7 +163,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                     case BRICKTILE_BLACK_3_LOW:
                     case BRICKTILE_BLACK_3_MID:
                     case BRICKTILE_BLACK_3_TOP:
-                        tileId = PickC(total, t1, t2, t3, t4);
+                        tileId = IDX(PickC(total, t1, t2, t3, t4));
                         break;
                     default:
                         break;
@@ -169,7 +171,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 grid->m_tileGrid[grid->m_colOffsets[col] + row] = tileId;
             }
 
-            i32 typeCode = m_attrMgr->m_level->LookupTile(row, col);
+            TileCollisionKind typeCode = m_attrMgr->m_level->LookupTile(row, col);
             i32 oldFlags = cell->m_flags;
             i32 keep = oldFlags & 0x1bf40000;
             i32 edgeBit = oldFlags & 0x20000000;
@@ -228,7 +230,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 case TILEKIND_GAUNTLET_ROCK_B:
                     cell->m_flags = 0x2021;
                     break;
-                case 0x20:
+                case TILEKIND_SPIKES:
                     cell->m_flags = 0x400;
                     break;
                 case TILEKIND_GIANT_ROCK:
@@ -240,7 +242,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 case TILEKIND_REVEALED_POWERUP:
                     cell->m_flags = 0x42;
                     break;
-                case 0x24:
+                case TILEKIND_SINK_HAZARD:
                     cell->m_flags = 0x800;
                     break;
                 case TILEKIND_SWITCH_A:
@@ -336,7 +338,7 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
                 case TILEKIND_GAUNTLET_BRICK_C:
                     cell->m_flags = 0x6021;
                     break;
-                case 0x9a:
+                case TILEKIND_AI_PATH_BLOCKER:
                     cell->m_flags = 0x2001;
                     break;
                 default:

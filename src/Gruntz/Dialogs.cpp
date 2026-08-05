@@ -10,6 +10,7 @@
 #include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CustomMapSelection.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -122,8 +123,9 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastDiff%d", i);
             g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] = reg->GetValueDword(key, g_gameReg->m_options[i].m_colorIndex);
-            g_gameReg->m_options[i].m_colorIndex = g_battlezLastColors[i];
+            g_battlezLastColors[i] =
+                reg->GetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
+            g_gameReg->m_options[i].m_colorIndex = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
         CWnd* comboChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
@@ -269,8 +271,10 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)
         );
 
-        i32 customMap = reg->GetValueDword("CustomMap", 2);
-        if (customMap == 2) {
+        CustomMapSelection customMap = static_cast<CustomMapSelection>(
+            reg->GetValueDword("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED))
+        );
+        if (customMap == CUSTOM_MAP_UNINITIALIZED) {
             CString mapName;
             if (mapName.LoadStringA(0x81ab)) {
                 comboChild->SetWindowTextA(mapName);
@@ -295,8 +299,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             char mapName[0x100];
             DWORD size = sizeof(mapName);
             reg->GetValueString("LastMap", mapName, &size, g_emptyString);
-            m_customNameFlag = customMap;
-            if (customMap == 0) {
+            m_customNameFlag = IDX(customMap);
+            if (customMap == CUSTOM_MAP_STANDARD) {
                 comboChild->SetWindowTextA(mapName);
             } else {
                 sprintf(key, "custom\\%s", mapName);
@@ -345,7 +349,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 m_slots->m_options[i].m_liveGate == 0 ? -1 : m_slots->m_options[i].m_configId;
             reg->SetValueDword(key, difficulty);
             sprintf(key, "LastColour%d", i);
-            reg->SetValueDword(key, g_gameReg->m_options[i].m_colorIndex);
+            reg->SetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
         }
         g_sharedFlag = NULL;
     }
@@ -433,7 +437,7 @@ CBattlezDlgColors::CBattlezDlgColors(CGruntzMgr* mgr, i32 slotIndex, i32 network
     : CDialog(0xc2, pParent) {
     m_slots = mgr;
     m_slotIndex = slotIndex;
-    m_pickedColor = 0;
+    m_pickedColor = TINT_ORANGE;
     m_networked = networked;
 }
 
@@ -445,7 +449,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         pSend = ::SendMessageA;
         long sel = pSend(lb->m_hWnd, LB_GETCURSEL, 0, 0);
         long data = pSend(lb->m_hWnd, LB_GETITEMDATA, sel, 0);
-        m_pickedColor = data;
+        m_pickedColor = static_cast<ColorTint>(data);
         if (data >= TINT_COUNT) {
             m_pickedColor = TINT_WHITE;
         }
@@ -456,7 +460,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             i32 avail = 1;
             GruntzPlayer* rec = m_slots->m_options;
             for (i32 j = 0; j < 4; j++) {
-                if (rec->m_liveGate != 0 && rec->m_colorIndex == i) {
+                if (rec->m_liveGate != 0 && IDX(rec->m_colorIndex) == i) {
                     avail = 0;
                 }
                 rec++;
@@ -490,18 +494,18 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x500);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_TYPE0);
             break;
-        case 1:
-            result = GetDlgItem(0x50e);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_TYPE1);
             break;
-        case 2:
-            result = GetDlgItem(0x50f);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_TYPE2);
             break;
-        case 3:
-            result = GetDlgItem(0x510);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_TYPE3);
             break;
     }
     return result;
@@ -510,18 +514,18 @@ CWnd* CBattlezDlg::GetCtrlA(i32 index) {
 RVA(0x00015b40, 0x60)
 CWnd* CBattlezDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x50a);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_NAME0);
             break;
-        case 1:
-            result = GetDlgItem(0x50b);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_NAME1);
             break;
-        case 2:
-            result = GetDlgItem(0x50c);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_NAME2);
             break;
-        case 3:
-            result = GetDlgItem(0x50d);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_NAME3);
             break;
     }
     return result;
@@ -530,18 +534,18 @@ CWnd* CBattlezDlg::GetCtrlB(i32 index) {
 RVA(0x00015bc0, 0x60)
 CWnd* CBattlezDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x51e);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C0);
             break;
-        case 1:
-            result = GetDlgItem(0x520);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C1);
             break;
-        case 2:
-            result = GetDlgItem(0x521);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C2);
             break;
-        case 3:
-            result = GetDlgItem(0x522);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C3);
             break;
     }
     return result;
@@ -550,17 +554,17 @@ CWnd* CBattlezDlg::GetCtrlC(i32 index) {
 RVA(0x00015c40, 0x60)
 CWnd* CBattlezDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COLOR0);
             break;
-        case 1:
+        case PLAYER_SLOT_1:
             result = GetDlgItem(CTRL_PLAYER_COLOR1);
             break;
-        case 2:
+        case PLAYER_SLOT_2:
             result = GetDlgItem(CTRL_PLAYER_COLOR2);
             break;
-        case 3:
+        case PLAYER_SLOT_3:
             result = GetDlgItem(CTRL_PLAYER_COLOR3);
             break;
     }
@@ -592,7 +596,7 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
 }
 
 RVA(0x00017460, 0x22)
-i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
+i32 CBattlezDlg::SetSlotValue(i32 index, ColorTint val) {
     m_slots->m_options[index].m_colorIndex = val;
     return 1;
 }
@@ -682,7 +686,7 @@ RVA(0x00016cd0, 0x98)
 void CBattlezDlg::ApplyColorSlot0() {
     CBattlezDlgColors dlg(m_slots, 0, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(0, dlg.m_pickedColor)) {
+        if (SetSlotValue(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
             GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
         }
@@ -693,7 +697,7 @@ RVA(0x00016dc0, 0x97)
 void CBattlezDlg::ApplyColorSlot1() {
     CBattlezDlgColors dlg(m_slots, 1, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(1, dlg.m_pickedColor)) {
+        if (SetSlotValue(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
             GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
         }
@@ -704,7 +708,7 @@ RVA(0x00016e90, 0x98)
 void CBattlezDlg::ApplyColorSlot2() {
     CBattlezDlgColors dlg(m_slots, 2, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(2, dlg.m_pickedColor)) {
+        if (SetSlotValue(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
             GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
         }
@@ -715,7 +719,7 @@ RVA(0x00016f60, 0x98)
 void CBattlezDlg::ApplyColorSlot3() {
     CBattlezDlgColors dlg(m_slots, 3, 0, 0);
     if (dlg.DoModal() == 1) {
-        if (SetSlotValue(3, dlg.m_pickedColor)) {
+        if (SetSlotValue(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             RefreshOptionState();
             GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
         }

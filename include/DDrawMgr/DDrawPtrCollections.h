@@ -5,7 +5,9 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorldInitError.h>
 #include <Ints.h>
 
 struct PidHeader;
@@ -47,7 +49,14 @@ struct CDdModePair;
 
 class CDDrawPtrCollections {
 public:
-    i32 CreateDevice(void* hwnd, void* driverGuid, i32 width, i32 height, i32 bpp, u32 coopFlags);
+    i32 CreateDevice(
+        void* hwnd,
+        void* driverGuid,
+        i32 width,
+        i32 height,
+        ColorDepth bpp,
+        u32 coopFlags
+    );
 
     i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp);
 
@@ -63,14 +72,14 @@ public:
 
     static i32 __stdcall Compare(void* a, void* b);
 
-    i32 FindIndex(i32 k0, i32 k1, i32 k2);
+    i32 FindIndex(i32 k0, i32 k1, ColorDepth colorDepth);
     i32 FindLast(u32 k0, u32 k1, i32 k2);
-    CDdModePair FindFwd(i32 k0, i32 k1, i32 k2);
-    CDdModePair FindBack(i32 k0, i32 k1, i32 k2);
+    CDdModePair FindFwd(i32 k0, i32 k1, ColorDepth colorDepth);
+    CDdModePair FindBack(i32 k0, i32 k1, ColorDepth colorDepth);
 
     CDdModePair FindMatch(u32 k0, u32 k1, i32 k2);
 
-    i32 Init(void* factory, void* hwnd, i32 width, i32 height, i32 bpp, u32 coop);
+    i32 Init(void* factory, void* hwnd, i32 width, i32 height, ColorDepth bpp, u32 coop);
 
     i32 GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free);
 
@@ -88,7 +97,7 @@ public:
 
     CDDSurface*
     LoadSurfaceFromPid(PidHeader* hdr, FileImageFormat type, u32 size, i32 ctrl, i32 trans);
-    CDDSurface* CreateKeyedSurface(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
+    CDDSurface* CreateKeyedSurface(i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
     CDDSurface* CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc);
 
     CDDSurface* LoadFileSurface(char* path, i32 caps, i32 colorKey);
@@ -109,7 +118,7 @@ public:
     CDDSurface* Create24BitPaletteSurface(i32 a);
     CDDSurface* CreateBlit47Surface(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
     CDDSurface* CreateBlit47SurfaceFromDesc(const DDSURFACEDESC* desc);
-    CDDSurface* MakeAndAddB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key);
+    CDDSurface* MakeAndAddB(i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
     CDDPalette* CreateRgbPalette(void* rgb, i32 flags);
     CDDPalette* CreatePaletteFromEntries(i32 a, i32 b);
 
@@ -127,7 +136,7 @@ public:
 
     i32 ComputeColorMasks();
 
-    i32 ConfigureSurface(i32 width, i32 height, i32 bpp, i32 refreshRate, i32 flags);
+    i32 ConfigureSurface(i32 width, i32 height, ColorDepth bpp, i32 refreshRate, i32 flags);
 
     i32 GetCapsChecked();
 
@@ -144,12 +153,12 @@ public:
     char _pad4C8[0x534 - 0x4c8];
     i32 m_bltCaps;
 
-    i32 m_palBpp;
+    ColorDepth m_palBpp;
 
     PALETTEENTRY m_palette[0x100];
     i32 m_hasPalette;
     i32 m_paletteTag;
-    i32 m_lastError;
+    DDrawDeviceError m_lastError;
 };
 SIZE_UNKNOWN();
 SIZE(0x948);

@@ -31,8 +31,8 @@ RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 frame,

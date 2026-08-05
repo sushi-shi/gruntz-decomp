@@ -5,6 +5,7 @@
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <Enums.h>
+#include <Gruntz/CustomMapSelection.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -262,13 +263,15 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         HWND chatEdit = GetDlgItem(0x42d)->m_hWnd;
         pSend(chatEdit, EM_LIMITTEXT, 100, 0);
-        i32 customFlag = reg->GetValueDword("CustomMultiMap", 2);
-        if (g_multiState->m_isHost != 0 && customFlag != 2) {
+        CustomMapSelection customFlag = static_cast<CustomMapSelection>(
+            reg->GetValueDword("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
+        );
+        if (g_multiState->m_isHost != 0 && customFlag != CUSTOM_MAP_UNINITIALIZED) {
             char mapName[0x100];
             DWORD size = 0x100;
             reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
-            m_customWorldFlag = customFlag;
-            if (customFlag != 0) {
+            m_customWorldFlag = IDX(customFlag);
+            if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
                 sprintf(path, "custom\\%s", mapName);
                 FILE* f = fopen(path, "rb");
@@ -345,18 +348,18 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x500);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_TYPE0);
             break;
-        case 1:
-            result = GetDlgItem(0x50e);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_TYPE1);
             break;
-        case 2:
-            result = GetDlgItem(0x50f);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_TYPE2);
             break;
-        case 3:
-            result = GetDlgItem(0x510);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_TYPE3);
             break;
     }
     return result;
@@ -365,18 +368,18 @@ CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
 RVA(0x000c26c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x51f);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_CTRL_A0);
             break;
-        case 1:
-            result = GetDlgItem(0x523);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_CTRL_A1);
             break;
-        case 2:
-            result = GetDlgItem(0x524);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_CTRL_A2);
             break;
-        case 3:
-            result = GetDlgItem(0x525);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_CTRL_A3);
             break;
     }
     return result;
@@ -385,18 +388,18 @@ CWnd* CMultiStartDlg::GetCtrlA(i32 index) {
 RVA(0x000c2740, 0x60)
 CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x50a);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_NAME0);
             break;
-        case 1:
-            result = GetDlgItem(0x50b);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_NAME1);
             break;
-        case 2:
-            result = GetDlgItem(0x50c);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_NAME2);
             break;
-        case 3:
-            result = GetDlgItem(0x50d);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_NAME3);
             break;
     }
     return result;
@@ -405,18 +408,18 @@ CWnd* CMultiStartDlg::GetCtrlB(i32 index) {
 RVA(0x000c27c0, 0x60)
 CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
-            result = GetDlgItem(0x51e);
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C0);
             break;
-        case 1:
-            result = GetDlgItem(0x520);
+        case PLAYER_SLOT_1:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C1);
             break;
-        case 2:
-            result = GetDlgItem(0x521);
+        case PLAYER_SLOT_2:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C2);
             break;
-        case 3:
-            result = GetDlgItem(0x522);
+        case PLAYER_SLOT_3:
+            result = GetDlgItem(CTRL_PLAYER_COMBO_C3);
             break;
     }
     return result;
@@ -425,17 +428,17 @@ CWnd* CMultiStartDlg::GetCtrlC(i32 index) {
 RVA(0x000c2840, 0x60)
 CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     CWnd* result = 0;
-    switch (index) {
-        case 0:
+    switch (static_cast<PlayerSlot>(index)) {
+        case PLAYER_SLOT_0:
             result = GetDlgItem(CTRL_PLAYER_COLOR0);
             break;
-        case 1:
+        case PLAYER_SLOT_1:
             result = GetDlgItem(CTRL_PLAYER_COLOR1);
             break;
-        case 2:
+        case PLAYER_SLOT_2:
             result = GetDlgItem(CTRL_PLAYER_COLOR2);
             break;
-        case 3:
+        case PLAYER_SLOT_3:
             result = GetDlgItem(CTRL_PLAYER_COLOR3);
             break;
     }

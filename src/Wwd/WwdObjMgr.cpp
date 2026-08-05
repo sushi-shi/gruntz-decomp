@@ -315,7 +315,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
             AnimWorkerObj* rec = obj->m_animWorker;
-            rec->SetActKey(ACT_OBJECT_REMOVED);
+            rec->SetActKey(IDX(ACT_OBJECT_REMOVED));
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
@@ -512,7 +512,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     oi->m_health = v;
                                     if (v <= 0) {
 
-                                        oi->m_animWorker->SetActKey(ACT_HEALTH_DEPLETED);
+                                        oi->m_animWorker->SetActKey(IDX(ACT_HEALTH_DEPLETED));
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;
@@ -1117,7 +1117,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
         CGameObject* createdObj = 0;
         switch (desc.m_classId) {
-            case 5: {
+            case CLASSID_WWDOBJA: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
@@ -1135,7 +1135,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 }
                 break;
             }
-            case 0x16: {
+            case CLASSID_WWDOBJF: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
@@ -1149,7 +1149,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 );
                 break;
             }
-            case 0x1b: {
+            case CLASSID_WWDOBJB: {
                 CObject* val;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
@@ -1167,7 +1167,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 }
                 break;
             }
-            case 0x1c: {
+            case CLASSID_CALLBACKOBJ: {
 
                 void* out = 0;
                 // m_serialTypeId is NOT a LogicTypeId: this phase keys off the
@@ -1213,7 +1213,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         if (createdObj->m_animWorker == NULL) {
             return 0;
         }
-        if (desc.m_logicTypeId != 0) {
+        if (desc.m_logicTypeId != LOGIC_UNSET) {
 
             void* childOut = 0;
             if (OwnerMgr()->InvokeCallback(reader, SERIAL_CREATE, desc.m_logicTypeId, &childOut)

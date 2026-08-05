@@ -19,9 +19,9 @@
 #include <Io/FileStream.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDScreen.h>
+#include <DDrawMgr/PixelShift.h>
 #include <stdio.h>
 #include <string.h>
-#include <Wap32/CoordUnset.h>
 #include <Wap32/ScreenGeometry.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/PaletteSize.h>
@@ -58,7 +58,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         HandleError();
         return 0;
     }
-    if (m_directDraw2->SetDisplayMode(info.width, info.height, info.bpp, 0, 0) != 0) {
+    if (m_directDraw2->SetDisplayMode(info.width, info.height, IDX(info.bpp), 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -159,7 +159,7 @@ i32 CMoviePlayer::InitMode(
     m_borrowedDisplayResources = 1;
     m_primary = primary;
     Snapshot(wnd);
-    i32 bpp = static_cast<i32>(desc.ddpfPixelFormat.dwRGBBitCount);
+    ColorDepth bpp = static_cast<ColorDepth>(desc.ddpfPixelFormat.dwRGBBitCount);
     if (bpp == BPP_PALETTED_8) {
         if (m_directDraw2->CreatePalette(DDPCAPS_8BIT, m_palEntries, &m_palette, 0)) {
             HandleError();
@@ -322,9 +322,9 @@ i32 CMoviePlayer::Open(
 }
 
 RVA(0x0017c790, 0x14a)
-i32 CMoviePlayer::Pump(i32 flags, i32 count) {
+MoviePlaybackResult CMoviePlayer::Pump(i32 flags, i32 count) {
     if (!m_initialized || count < -1 || count == 0) {
-        return 0;
+        return MOVIE_RESULT_ERROR;
     }
     m_loopCount = 1;
     MSG msg;
@@ -338,14 +338,14 @@ i32 CMoviePlayer::Pump(i32 flags, i32 count) {
             }
             if (msg.message == WM_KEYDOWN) {
                 if (flags & 1) {
-                    return 1;
+                    return MOVIE_RESULT_KEY_SKIP;
                 }
                 continue;
             }
             if (msg.message == WM_LBUTTONDOWN || msg.message == WM_RBUTTONDOWN
                 || msg.message == WM_LBUTTONDBLCLK || msg.message == WM_RBUTTONDBLCLK) {
                 if (flags & 0x100) {
-                    return 0x100;
+                    return MOVIE_RESULT_MOUSE_SKIP;
                 }
                 continue;
             }
@@ -359,7 +359,7 @@ i32 CMoviePlayer::Pump(i32 flags, i32 count) {
                 continue;
             }
             if (count != -1 && ++m_loopCount > count) {
-                return 0x11111111;
+                return MOVIE_RESULT_FINISHED;
             }
             SmackSoundOnOff(m_smackHandle, 0);
             SmackGoto(m_smackHandle, 1);
@@ -418,11 +418,11 @@ i32 CMoviePlayer::CloseSmacker() {
 
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
-    if (m_smackHandle->NewPalette && m_bpp == 8) {
+    if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {
         UploadPalette();
     }
     i32 hr = m_srcSurf->Lock(0, &m_srcDesc, 1, 0);
-    while (hr == static_cast<i32>(0x887601c2)) {
+    while (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (m_srcSurf->Restore() != 0) {
             goto afterLock;
         }
@@ -479,7 +479,7 @@ i32 CMoviePlayer::CheckGrid() {
     if (m_srcSurfRaw->QueryInterface(IID_IDirectDrawSurface3, srcOut.m_asVoid) != 0) {
         return 0;
     }
-    if (m_bpp == 8) {
+    if (m_bpp == BPP_PALETTED_8) {
         m_srcSurf->SetPalette(m_palette);
     }
     return 1;
@@ -495,7 +495,7 @@ void CMoviePlayer::HandleError() {
         m_srcSurfRaw->Release();
         m_srcSurfRaw = NULL;
     }
-    if (m_bpp == 8) {
+    if (m_bpp == BPP_PALETTED_8) {
         ResetPalette();
     }
     if (m_primary) {
@@ -572,17 +572,18 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
         i32 hr;
         if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == NULL) {
             hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, 0x10);
-            if (hr != 0x887601c2) {
+            if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                 return hr;
             }
-            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
-                if (m_bpp == 8) {
+            if (m_primary->IsLost() == static_cast<i32>(DDERR_SURFACELOST)
+                && m_primary->Restore() == 0) {
+                if (m_bpp == BPP_PALETTED_8) {
                     m_primary->SetPalette(m_palette);
                     UploadPalette();
                 }
             } else {
                 hr = m_srcSurf->IsLost();
-                if (hr != 0x887601c2) {
+                if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                     return hr;
                 }
                 hr = m_srcSurf->Restore();
@@ -592,17 +593,18 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
             }
         } else {
             hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, 0);
-            if (hr != 0x887601c2) {
+            if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                 return hr;
             }
-            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
-                if (m_bpp == 8) {
+            if (m_primary->IsLost() == static_cast<i32>(DDERR_SURFACELOST)
+                && m_primary->Restore() == 0) {
+                if (m_bpp == BPP_PALETTED_8) {
                     m_primary->SetPalette(m_palette);
                     UploadPalette();
                 }
             } else {
                 hr = m_srcSurf->IsLost();
-                if (hr != 0x887601c2) {
+                if (hr != static_cast<i32>(DDERR_SURFACELOST)) {
                     return hr;
                 }
                 hr = m_srcSurf->Restore();
@@ -775,12 +777,12 @@ i32 CMoviePlayer::CheckMode16() {
         m >>= 1;
     }
 
-    if (r == 5 && g == 5 && b == 5) {
-        m_smackBufMode = COORD_UNSET;
+    if (r == RGB555_CHANNEL_BITS && g == RGB555_CHANNEL_BITS && b == RGB555_CHANNEL_BITS) {
+        m_smackBufMode = SMACKBUFFER555;
         return 1;
     }
-    if (r == 5 && g == 6 && b == 5) {
-        m_smackBufMode = static_cast<i32>(0xc0000000);
+    if (r == RGB555_CHANNEL_BITS && g == RGB565_GREEN_BITS && b == RGB555_CHANNEL_BITS) {
+        m_smackBufMode = SMACKBUFFER565;
         return 1;
     }
     return 0;
@@ -874,16 +876,16 @@ i32 CMoviePlayer::FreeAll() {
 }
 
 RVA(0x0017d720, 0x188)
-i32 CMoviePlayer::PlayList(i32 loops) {
+MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
     if (!m_initialized || loops < -1 || loops == 0) {
-        return 0;
+        return MOVIE_RESULT_ERROR;
     }
     i32 iter = 1;
     do {
         for (i32 i = 0; i < m_playlist.GetSize(); i++) {
             PLAYLISTINFOSTRUCT* clip = m_playlist[i];
             if (clip->m_src == NULL) {
-                return 0;
+                return MOVIE_RESULT_ERROR;
             }
             if (clip->m_openArg == 0) {
                 if (OpenLo(
@@ -894,7 +896,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                         clip->m_rect
                     )
                     == 0) {
-                    return 0;
+                    return MOVIE_RESULT_ERROR;
                 }
             } else {
                 if (Open(
@@ -906,12 +908,12 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                         clip->m_rect
                     )
                     == 0) {
-                    return 0;
+                    return MOVIE_RESULT_ERROR;
                 }
             }
             PLAYLISTINFOSTRUCT* c2 = m_playlist[i];
-            i32 result = Pump(c2->m_flags, c2->m_count);
-            if (result != 0x11111111) {
+            MoviePlaybackResult result = Pump(c2->m_flags, c2->m_count);
+            if (result != MOVIE_RESULT_FINISHED) {
                 CloseSmacker();
                 return result;
             }
@@ -933,5 +935,5 @@ i32 CMoviePlayer::PlayList(i32 loops) {
         }
         iter++;
     } while (iter <= loops);
-    return 0x11111111;
+    return MOVIE_RESULT_FINISHED;
 }

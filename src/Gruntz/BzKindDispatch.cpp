@@ -6,7 +6,8 @@
 RVA(0x00037910, 0x70)
 i32 CLatencyList::Dispatch(i32 mode) {
     m_mode = mode;
-    switch (mode) {
+    NetConnectionType connectionType = static_cast<NetConnectionType>(mode);
+    switch (connectionType) {
         case NETCONN_IPX:
             if (PopulateIpxOptions()) {
                 break;

@@ -75,7 +75,7 @@ i32 CPlay::ScanBuildTiles() {
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_powerup == PICKUP_MEGAPHONE) {
+            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
@@ -113,10 +113,8 @@ i32 CPlay::ScanBuildTiles() {
             } else {
 
                 // Ingest: the raw WWD attribute byte for this cell.
-                tile = static_cast<TileCollisionKind>(
-                    (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
-                        ->GetCollisionAt(subX, subY)
-                );
+                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
+                           ->GetCollisionAt(subX, subY);
             }
             if (m_beginMarker->AddLogic(
                     tile,
@@ -141,7 +139,7 @@ i32 CPlay::ScanBuildTiles() {
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
-            if (p->m_powerup == PICKUP_MEGAPHONE) {
+            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
                 m_guts->InsertPtr(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;

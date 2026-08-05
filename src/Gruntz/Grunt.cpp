@@ -79,6 +79,7 @@
 #include <Wap32/zBitVec.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
+#include <Wwd/WwdObjectType.h>
 
 #include <math.h>
 #include <new>
@@ -341,7 +342,7 @@ CGrunt::CGrunt(void* owner)
     memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupGeoSrc = NULL;
     m_arrived = 0;
-    m_wwdObject->m_objectType = 0x100000;
+    m_wwdObject->m_objectType = WWD_OBJECT_TYPE_GRUNT;
     m_wwdObject->m_hitTypeFlags = 0x3d1;
     m_wwdObject->m_flags |= 0x2000100;
     m_wwdObject->m_collMask |= 0x103f;
@@ -667,7 +668,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     } else {
         m_frameSetName = s_GRUNTZ_ + m_animSetName;
     }
-    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, kind);
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), kind);
     CWwdGameObjectA* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
@@ -1183,48 +1184,49 @@ commitPhase:
 nudgeTarget:
     nudged = 0;
 
-    if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != 0x21) {
+    if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != IDX(TILEKIND_GIANT_ROCK)) {
         goto nudgeDone;
     }
-    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == TILEKIND_GIANT_ROCK)
-                ? ROCKADJ_BELOW
+    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
+                ? IDX(ROCKADJ_BELOW)
                 : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_ABOVE
+    free4 |=
+        (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
+            ? IDX(ROCKADJ_ABOVE)
+            : 0;
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == IDX(TILEKIND_GIANT_ROCK))
+                 ? IDX(ROCKADJ_RIGHT)
                  : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_RIGHT
-                 : 0;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == TILEKIND_GIANT_ROCK)
-                 ? ROCKADJ_LEFT
+    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == IDX(TILEKIND_GIANT_ROCK))
+                 ? IDX(ROCKADJ_LEFT)
                  : 0;
     switch (free4) {
-        case ROCKADJ_RIGHT | ROCKADJ_BELOW:
+        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_BELOW):
             tileX++;
             tileY++;
             break;
-        case ROCKADJ_RIGHT | ROCKADJ_ABOVE:
+        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE):
             tileX++;
             tileY--;
             break;
-        case ROCKADJ_RIGHT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
+        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE) | IDX(ROCKADJ_BELOW):
             tileX++;
             break;
-        case ROCKADJ_LEFT | ROCKADJ_BELOW:
+        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_BELOW):
             tileX--;
             tileY++;
             break;
-        case ROCKADJ_LEFT | ROCKADJ_ABOVE:
+        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_ABOVE):
             tileX--;
             tileY--;
             break;
-        case ROCKADJ_LEFT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
+        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_ABOVE) | IDX(ROCKADJ_BELOW):
             tileX--;
             break;
-        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_BELOW:
+        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_BELOW):
             tileY++;
             break;
-        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_ABOVE:
+        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE):
             tileY--;
             break;
         default:
@@ -1264,7 +1266,7 @@ nudgeTarget:
         }
     }
     if (nudged != 0) {
-        if (CoordCount() == 1 && arrivalPhase == PICKUP_BOOMERANG
+        if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
             m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, pxX, pxY);
             SetEntrancePos(1, 1);
@@ -2087,15 +2089,14 @@ i32 CGrunt::Place(
     PickupType moveIcon,
     PickupType typeKind,
     i32 vehicleKind,
-    i32 kind,
+    EnemyAiType kind,
     i32 a8,
     i32 a9,
     i32 a10,
     RECT* span,
-    i32 entranceMode
+    GruntEntranceMode entranceMode
 ) {
-
-    if (kind != 0) {
+    if (kind != AI_NONE) {
         if (kind != AI_BATTLEZ_PATH) {
             m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
         } else {
@@ -2174,14 +2175,14 @@ i32 CGrunt::Place(
     if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_MOVEICON_END) {
         m_moveIcon = PICKUP_NONE;
     }
-    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(m_moveIcon, 0);
+    CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), 0);
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     m_object->m_drawFillArg = shade;
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = SHADE_PAL_16;
-    if (entranceMode != 0) {
+    if (entranceMode != GRUNT_ENTRANCE_NONE) {
         BuildEntranceAnimation(entranceMode);
         return 1;
     }
@@ -2939,7 +2940,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BABYWALKER: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2962,7 +2963,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BEACHBALL: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2984,7 +2985,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BIGWHEEL: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3007,7 +3008,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_GOKART: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3029,7 +3030,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JACKINTHEBOX: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3051,7 +3052,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_JUMPROPE: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3074,7 +3075,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_POGOSTICK: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3097,7 +3098,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SCROLL: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3120,7 +3121,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_SQUEAKTOY: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3142,7 +3143,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_YOYO: {
-            if (m_arrivalState == 1) {
+            if (m_arrivalState == AI_DUMBCHASER) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -3350,7 +3351,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     sb->RefreshState();
                 }
                 if (sb->m_activeTab != TAB_RESOURCE) {
-                    sb->SetTabState(TAB_RESOURCE, MENUITEM_SELECTED);
+                    sb->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
                 }
                 sb->Deactivate();
                 play->m_guts->UpdateRezMachineWakeStatusBar();
@@ -3519,10 +3520,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     i32 col = m_lastTilePx.m_x >> TILE_SHIFT_PX;
                     i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-                    i32 tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
-                    if (tk == 0x41) {
+                    TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
+                    if (tk == TILEKIND_CHECKPOINT) {
                         UpdateArrival(col, row);
-                    } else if (tk == 0x42) {
+                    } else if (tk == TILEKIND_CHECKPOINT_UP) {
                         if (m_object->m_screenX == m_lastTilePx.m_x
                             && m_object->m_screenY == m_lastTilePx.m_y) {
                             m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -3742,9 +3743,9 @@ void CGrunt::XferName(char*) {
                 cy = level->m_mainPlane->m_gridH - 1;
             }
             i32 raw = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
-            i32 kind;
+            TileCollisionKind kind;
             if (raw == UNINIT_FILL || raw == -1) {
-                kind = 0;
+                kind = TILEKIND_PASSABLE;
             } else {
                 CTileImageSet* ts =
                     static_cast<CTileImageSet*>(level->m_imageSets.GetAt(raw & 0xffff));
@@ -3754,15 +3755,15 @@ void CGrunt::XferName(char*) {
             i32 gate = 1;
             GruntDeathType hazard;
             switch (kind) {
-                case 0x23:
+                case TILEKIND_REVEALED_POWERUP:
                     hazard = DEATH_HOLE;
                     break;
-                case 0xa:
-                case 0x6c:
-                case 0x72:
+                case TILEKIND_WATER:
+                case TILEKIND_WATERBRIDGE_UP:
+                case TILEKIND_TOGGLEWATERBRIDGE_UP:
                     hazard = DEATH_SINK;
                     break;
-                case 0x20:
+                case TILEKIND_SPIKES:
                     // Unrecovered: a tile COLUMN into a death-cause slot is not a
                     // real conversion, and gate=0 keeps it from CellDispatch - but
                     // dropping the store changes .text, so the assignment is real.
@@ -3788,9 +3789,9 @@ void CGrunt::XferName(char*) {
                     }
                     break;
                 }
-                case 4:
-                case 0x6e:
-                case 0x74:
+                case TILEKIND_SPECIAL:
+                case TILEKIND_DEATHBRIDGE_UP:
+                case TILEKIND_TOGGLEDEATHBRIDGE_UP:
                     hazard = g_areaPitDeath;
                     break;
             }
@@ -3894,7 +3895,8 @@ afterTile:
         }
         {
             i32 hp = m_health;
-            if (hp <= 5 && hp > 0 && (m_arrivalState == 2 || m_arrivalState == 3)) {
+            if (hp <= 5 && hp > 0
+                && (m_arrivalState == AI_SMARTCHASER || m_arrivalState == AI_HITANDRUNNER)) {
                 if (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
 
                     i32 baseRow = sy >> TILE_SHIFT_PX;
@@ -4168,7 +4170,7 @@ kindDispatch:
             if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_shimmerClock64
                 >= m_shimmerWindow64) {
                 i32 pick = rand() % 16;
-                if (pick == m_moveIcon) {
+                if (pick == IDX(m_moveIcon)) {
                     pick = 0x10;
                 }
                 CShadeTable* sel =
@@ -4200,10 +4202,10 @@ kindDispatch:
                 obj->m_fillFraction = frac;
             } else {
                 CWwdGameObjectA* obj = m_object;
-                if ((obj->m_stateFlags & SPRITE_STATE_FLASHING) == 0) {
+                if ((obj->m_stateFlags & IDX(SPRITE_STATE_FLASHING)) == 0) {
                     obj->m_flashInterval = 0x7d;
                     obj->m_flashCountdown = 0;
-                    m_object->m_stateFlags |= SPRITE_STATE_FLASHING;
+                    m_object->m_stateFlags |= IDX(SPRITE_STATE_FLASHING);
                 }
             }
             if (leftMs == 0) {
@@ -4242,7 +4244,7 @@ kindDispatch:
                         break;
                     }
                 }
-                m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+                m_object->m_stateFlags &= ~IDX(SPRITE_STATE_FLASHING);
                 ReadConfigFromButeMgr();
                 PickupType reason = m_entranceReason;
                 i32 vehicle = (reason >= PICKUP_TOYZ_FIRST) ? 1 : 0;
@@ -4309,18 +4311,18 @@ void CGrunt::FinalizeStep(char* name) {
         }
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
-        if (row == 0) {
-            row = 2;
-        } else if (row == 2) {
-            row = 0;
+        if (row == GRUNT_DIRECTION_GRID_LOW) {
+            row = GRUNT_DIRECTION_GRID_HIGH;
+        } else if (row == GRUNT_DIRECTION_GRID_HIGH) {
+            row = GRUNT_DIRECTION_GRID_LOW;
         }
         i32 column = c.column;
-        if (column == 0) {
-            column = 2;
-        } else if (column == 2) {
-            column = 0;
+        if (column == GRUNT_DIRECTION_GRID_LOW) {
+            column = GRUNT_DIRECTION_GRID_HIGH;
+        } else if (column == GRUNT_DIRECTION_GRID_HIGH) {
+            column = GRUNT_DIRECTION_GRID_LOW;
         }
-        i32 base = 3 * row + column;
+        i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
         double d48 = m_cells[base].m_motion.m_direction.x;
         double d50 = m_cells[base].m_motion.m_direction.y;
         m_movePosX =
@@ -4452,9 +4454,9 @@ void CGrunt::AdvanceMotion() {
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = 0;
 
-            if (m_arrivalPhase != 0) {
+            if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
                 i32 result = -1;
-                if (m_arrivalPhase == 2) {
+                if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
                     if (m_coordToggle == 0) {
                         result = m_tileMgr->ApplyTriggerA(
                             m_tileOwnerHi,
@@ -4473,8 +4475,8 @@ void CGrunt::AdvanceMotion() {
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
-                                if (StepArrivalDrop(x, y, 2, -1, 1, 0) == 0) {
-                                    m_arrivalPhase = 0;
+                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_A, -1, 1, 0) == 0) {
+                                    m_arrivalPhase = ARRIVAL_TAG_NONE;
                                 }
                             }
 
@@ -4499,7 +4501,7 @@ void CGrunt::AdvanceMotion() {
                                     ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
                         }
                     }
-                } else if (m_arrivalPhase == 3) {
+                } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
                     if (m_coordToggle == 0) {
                         result = m_tileMgr->ApplyTriggerB(
                             m_tileOwnerHi,
@@ -4518,8 +4520,8 @@ void CGrunt::AdvanceMotion() {
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
-                                if (StepArrivalDrop(x, y, 3, -1, 1, 0) == 0) {
-                                    m_arrivalPhase = 0;
+                                if (StepArrivalDrop(x, y, ARRIVAL_TAG_TRIGGER_B, -1, 1, 0) == 0) {
+                                    m_arrivalPhase = ARRIVAL_TAG_NONE;
                                 }
                             }
 

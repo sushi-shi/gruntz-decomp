@@ -7,15 +7,23 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Gruntz/DestructWarningState.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameTabContent.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
+#include <Gruntz/SbiBeltPhase.h>
 #include <Gruntz/SbiConfig.h>
+#include <Gruntz/SbiFallingItemState.h>
+#include <Gruntz/SbiHlRowState.h>
+#include <Gruntz/SbiMachineState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarDock.h>
+#include <Gruntz/StatusBarHighlightRow.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarTab.h>
+#include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 
 class CSBI_ImageSet;
@@ -83,12 +91,15 @@ extern CButeMgr g_buteMgr;
 
 const i32 kSlotCommitLevel = 0x1a;
 
-const i32 kSubtypeTag = 2;
-
 const i32 kActivateErrId = 0x80e4;
 const i32 kActivateErrTag = 0x44b;
 
 const i32 kSetTabErrTag = 0x44a;
+
+GZ_ENUM_CONST_BEGIN(SbiGaugePct)
+    SBI_GAUGE_EMPTY = 0,
+    SBI_GAUGE_FULL = 100
+GZ_ENUM_CONST_END(SbiGaugePct)
 
 class CStatusBarMgr {
 public:
@@ -103,7 +114,7 @@ public:
     i32 BuildGameMenu();
 
     void UpdateDestructButton(i32 arg);
-    i32 EnsureSub(i32 a, i32 b, i32 c);
+    i32 EnsureSub(i32 a, i32 b, WarpStoneFragment fragment);
     void ResetCounters();
     void ResetSlots();
     void ArmSlot(i32 idx);
@@ -115,10 +126,10 @@ public:
     void RefreshAll();
     void Reset();
     void ToggleStat(i32 idx);
-    void SetHudRectA(i32 y0, i32 x0, i32 z);
-    void SetHudRectB(i32 y0, i32 x0, i32 z);
+    void SetHudRectA(i32 y0, SbiMachineState x0, i32 z);
+    void SetHudRectB(i32 y0, SbiMachineState x0, i32 z);
     void CommitSlot(i32 active);
-    void ClearHlCell(i32 row, i32 group);
+    void ClearHlCell(i32 group, StatusBarHighlightRow row);
     i32 SetHlCell(i32 row, i32 handle, i32 group);
     i32 SetHlCellByTier(i32 handle, i32 group);
     i32 FindReadySlot();
@@ -156,16 +167,16 @@ public:
     void NotifyAllSlots();
     void UpdateDestructButtonStatusBar();
     i32 Activate();
-    i32 SetTabState(StatusBarTab tab, SbiMenuItemState state);
+    i32 SetTabState(SbiCommandId cmd, SbiMenuItemState state);
 
     void Teardown();
     i32 TryActivate();
     i32 Deactivate();
-    i32 HlClickGroup0(i32 row);
-    i32 HlClickGroup1(i32 row);
-    i32 HlClickGroup2(i32 row);
-    i32 SetTab(i32 tab, i32 flag);
-    i32 ClearTabSprites(i32 idx);
+    i32 HlClickGroup0(StatusBarHighlightRow row);
+    i32 HlClickGroup1(StatusBarHighlightRow row);
+    i32 HlClickGroup2(StatusBarHighlightRow row);
+    i32 SetTab(GameTabContent tab, i32 flag);
+    i32 ClearTabSprites(StatusBarTab idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
     i32 Deserialize(CFileMemBase* s);
@@ -226,7 +237,7 @@ public:
 
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
-    i32 m_itemKind;
+    GameTabContent m_itemKind;
     i32 m_statFlags[15];
     CSBI_SideTab* m_hitRects[15];
 
@@ -273,7 +284,7 @@ public:
     i32 m_hitTestDisabled;
     i32 m_tabsBuilt;
     i32 m_activeSlot;
-    i32 m_pendingHlRow;
+    StatusBarHighlightRow m_pendingHlRow;
     CStatusBarItem* m_notify0;
     CStatusBarItem* m_notify1;
     CStatusBarItem* m_notify2;
@@ -281,13 +292,13 @@ public:
     char m_pad374[0x378 - 0x374];
     CSbiHlRow m_hlGrid[12];
     CSBI_ImageSet* m_hlNotify[12];
-    i32 m_machinePhase;
+    SbiBeltPhase m_machinePhase;
     i32 m_extraNotifyArg0;
     i64 m_beltLast;
     i64 m_beltInterval;
     CSBI_ImageSet* m_extraNotify0;
     char m_pad4e4[0x4e8 - 0x4e4];
-    i32 m_fallActive;
+    SbiFallingItemState m_fallActive;
     i32 m_extraNotifyArg1;
     i64 m_fallLast;
     i64 m_fallDelay;
@@ -305,8 +316,8 @@ public:
     CWarpStoneFly* m_retabNotify;
     i32 m_toggleActive;
     i32 m_toggleHandle;
-    i32 m_destructWarnActive;
-    i32 m_modeState;
+    DestructWarningState m_destructWarnActive;
+    DestructButtonFrame m_modeState;
     i64 m_destructWarnLast;
     i64 m_destructWarnDelay;
     CSBI_ImageSet* m_modeNotify;
@@ -392,8 +403,8 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_modeNotify = NULL;
     m_gaugeNotify = NULL;
     m_gaugeSink = NULL;
-    m_gaugeTarget = 0;
-    m_gauge = 0;
+    m_gaugeTarget = SBI_GAUGE_EMPTY;
+    m_gauge = SBI_GAUGE_EMPTY;
     m_reserved544 = 1;
     m_hlBusy = 0;
     m_retabNotify = NULL;

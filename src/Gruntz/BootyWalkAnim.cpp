@@ -46,7 +46,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_scoreHud->m_isCustomLevel != 0) {
         return 1;
     }
-    if (g_gameReg->m_scoreHud->m_count > QUESTLEVEL_LAST) {
+    if (g_gameReg->m_scoreHud->m_count > IDX(QUESTLEVEL_LAST)) {
         return 1;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
@@ -61,7 +61,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         }
         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
-        m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_animSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         m_animSprites[i]->m_drawActive = 1;
         m_animSprites[i]->m_drawFillCmd = SHADE_PAL_16;
         m_animSprites[i]->m_drawFillArg = sel;
@@ -102,16 +102,16 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         if (n < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
                 if (i <= (g_gameReg->m_scoreHud->m_count - 1) % 4) {
-                    m_visSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_visSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
-                    m_animSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    m_animSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                     if ((g_gameReg->m_scoreHud)->GetRecordValue(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
                         CString letter;
-                        switch (i) {
+                        switch (static_cast<WarpLetter>(i)) {
                             case WARPLETTER_W:
                                 letter = "W";
                                 break;
@@ -131,8 +131,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 } else {
                     m_visSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_visSprites[i]->m_screenY = 0xdc;
-                    m_visSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_visSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                    m_animSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
                 }
             }
         }
@@ -145,8 +145,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             m_visSprites[k]->m_screenX -= 10;
         }
     }
-    if (m_stepIndex == 0 && (m_animSprites[0]->m_stateFlags & SPRITE_STATE_HIDDEN)) {
-        m_animSprites[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    if (m_stepIndex == 0 && (m_animSprites[0]->m_stateFlags & IDX(SPRITE_STATE_HIDDEN))) {
+        m_animSprites[0]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         m_animSprites[0]->m_screenX = g_idleSpriteIds[0];
         m_animSprites[0]->m_screenY = 0x1f4;
     }
@@ -175,14 +175,14 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         if (res->m_sound->IsPlaying() != 0) {
             m_visSprites[m_stepIndex]->m_stateFlags ^= 1;
         } else {
-            m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_visSprites[m_stepIndex]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         }
     }
 
     if (m_walkStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
         {
             CString letter;
-            switch (m_stepIndex) {
+            switch (static_cast<WarpLetter>(m_stepIndex)) {
                 case WARPLETTER_W:
                     letter = "W";
                     break;
@@ -217,7 +217,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawActive = 1;
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
-                    m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
                     u32 x;
                     if (!(g_randSeeded & 1)) {
                         g_randSeeded |= 1;
@@ -242,7 +242,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawActive = 1;
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
-                    m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
                     m_stepIndex++;
                     g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
                     if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
@@ -250,7 +250,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         return 1;
                     }
                     if (m_stepIndex < 4) {
-                        m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                        m_animSprites[m_stepIndex]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                         m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
                         m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
                         m_soundStarted = 0;
@@ -269,7 +269,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 return 1;
             }
             if (m_stepIndex < 4) {
-                m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                m_animSprites[m_stepIndex]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                 m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
                 m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
                 m_walkStarted = 0;

@@ -9,6 +9,7 @@
 #include <Net/DPlaySessionFlags.h>
 #include <Net/InterfaceObject.h>
 #include <Net/NetGuids.h>
+#include <Net/NetProviderFindKind.h>
 
 #include <dplay.h>
 #include <string.h>
@@ -899,26 +900,18 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
     InterfaceObject* item =
         m_groupSelId != NULL ? static_cast<InterfaceObject*>(m_groups.GetNext(m_groupSelId)) : 0;
     while (item) {
-        // NOT NetConnectionType, despite the overlap - and the transposition is
-        // RETAIL'S, verified in the disasm: kind == 1 branches to the block that
-        // calls IsTcpIpProvider and kind == 2 to the one that calls
-        // IsIpxProvider. Every other site in the tree numbers them the other way
-        // round (CLatencyList::Dispatch, CMultiStartDlg's provider count,
-        // CMulti's "IPX"/"TcpIp"/... prefix ladder). Find has no caller in the
-        // tree, so nothing pins which numbering it expects; the labels stay bare
-        // rather than assert a domain that would make this look like our bug.
         switch (kind) {
-            case 1:
+            case NETPROVIDER_FIND_TCPIP:
                 if (item->IsTcpIpProvider()) {
                     return item;
                 }
                 break;
-            case 2:
+            case NETPROVIDER_FIND_IPX:
                 if (item->IsIpxProvider()) {
                     return item;
                 }
                 break;
-            case 5:
+            case NETPROVIDER_FIND_GENERIC:
                 if (item->MatchesUnclassifiedProvider()) {
                     return item;
                 }

@@ -45,8 +45,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x25c,
-                    2,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_GRUNTZ,
                     r,
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
                     -1,
@@ -72,8 +72,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            0x64 + i,
-                            2,
+                            static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
+                            TAB_GRUNTZ,
                             r,
                             "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
                             *bptr,
@@ -87,7 +87,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[2].AddTail(set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[g_curPlayer].m_colorIndex,
+                        IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex),
                         0
                     );
                     if (sel == NULL) {
@@ -108,8 +108,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x69,
-                    2,
+                    SBICMD_GRUNT_WELL,
+                    TAB_GRUNTZ,
                     r,
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
                     -1,
@@ -130,8 +130,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x6b,
-                    2,
+                    SBICMD_GRUNT_OVENS_TEXT,
+                    TAB_GRUNTZ,
                     r,
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
                     -1,
@@ -151,8 +151,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x6c,
-                    2,
+                    SBICMD_GRUNT_WELL_TEXT,
+                    TAB_GRUNTZ,
                     r,
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
                     -1,
@@ -172,8 +172,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x6a,
-                    2,
+                    SBICMD_GRUNT_WELL_GOO,
+                    TAB_GRUNTZ,
                     r,
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
                     m_gauge,
@@ -197,8 +197,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x25c,
-                    3,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
                     -1,
@@ -218,8 +218,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xc8,
-                    3,
+                    SBICMD_RESOURCE_MAIN_BACKGROUND,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
                     -1,
@@ -240,8 +240,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xc9,
-                    3,
+                    SBICMD_RESOURCE_UPPER_BACKGROUND,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
                     -1,
@@ -262,8 +262,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xca,
-                    3,
+                    SBICMD_RESOURCE_WINDOW_BACKGROUND,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
                     -1,
@@ -285,8 +285,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xcb,
-                    3,
+                    SBICMD_RESOURCE_BELT_GROUP0,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[0].m_value,
@@ -307,8 +307,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xcc,
-                    3,
+                    SBICMD_RESOURCE_BELT_GROUP1,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[1].m_value,
@@ -329,8 +329,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xcd,
-                    3,
+                    SBICMD_RESOURCE_BELT_GROUP2,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[2].m_value,
@@ -352,8 +352,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xdf,
-                    3,
+                    SBICMD_RESOURCE_CURRENT_ITEM,
+                    TAB_RESOURCE,
                     r,
                     "GAME_INGAMEICONZ_GREYCHIPZ",
                     m_extraNotifyArg0,
@@ -372,7 +372,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* cfgp = &m_hlGrid[4].m_value;
                 CSBI_ImageSet** cachep = &m_hlNotify[4];
                 i32 y = by + 0x155;
-                i32 c = SBICMD_HL_GROUP1_FIRST;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
                     r.left = bx + 0x1d;
@@ -382,8 +381,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            c - 4,
-                            3,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP0_FIRST) + i),
+                            TAB_RESOURCE,
                             r,
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[-24],
@@ -404,8 +403,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            c,
-                            3,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP1_FIRST) + i),
+                            TAB_RESOURCE,
                             r,
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[0],
@@ -426,8 +425,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!set->SetupImage(
                             this,
                             code,
-                            c + 4,
-                            3,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP2_FIRST) + i),
+                            TAB_RESOURCE,
                             r,
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[24],
@@ -443,7 +442,6 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     cfgp += 6;
                     cachep += 1;
                     y += 0x20;
-                    c++;
                 }
             }
 
@@ -455,8 +453,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!mach->BuildResourceTabStatusBar(
                     this,
                     code,
-                    0xd1,
-                    3,
+                    SBICMD_RESOURCE_MACHINE_BACKGROUND,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
                     m_machineA.m_counter,
@@ -478,8 +476,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xd2,
-                    3,
+                    SBICMD_RESOURCE_MACHINE_FOREGROUND,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEFOREGROUND",
                     -1,
@@ -501,8 +499,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!ani->Init(
                     this,
                     code,
-                    0xce,
-                    3,
+                    SBICMD_CONVEYOR_TOP,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORTOP",
                     -1,
@@ -526,8 +524,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0xe0,
-                    3,
+                    SBICMD_RESOURCE_FALLING_ITEM,
+                    TAB_RESOURCE,
                     r,
                     "GAME_INGAMEICONZ_NORMCHIPZ",
                     m_extraNotifyArg1,
@@ -550,8 +548,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!ani->Init(
                     this,
                     code,
-                    0xd0,
-                    3,
+                    SBICMD_CONVEYOR_BOTTOM,
+                    TAB_RESOURCE,
                     r,
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORBOTTOM",
                     -1,
@@ -577,8 +575,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x25c,
-                    4,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_MULTIPLAYER,
                     r,
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
                     -1,
@@ -599,8 +597,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x190,
-                    4,
+                    SBICMD_MULTIPLAYER_HEAD1,
+                    TAB_MULTIPLAYER,
                     r,
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
                     1,
@@ -621,8 +619,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x191,
-                    4,
+                    SBICMD_MULTIPLAYER_HEAD2,
+                    TAB_MULTIPLAYER,
                     r,
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
                     1,
@@ -643,8 +641,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x192,
-                    4,
+                    SBICMD_MULTIPLAYER_HEAD3,
+                    TAB_MULTIPLAYER,
                     r,
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
                     1,
@@ -665,8 +663,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x193,
-                    4,
+                    SBICMD_MULTIPLAYER_HEAD4,
+                    TAB_MULTIPLAYER,
                     r,
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
                     1,
@@ -687,7 +685,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 do {
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
-                        sel = g_gameReg->m_spriteFactory->GetSel(p->m_colorIndex, 0);
+                        sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_colorIndex), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
                         }
@@ -716,8 +714,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
-                            SBICMD_CURSOR_TARGET_FIRST + i,
-                            4,
+                            static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
+                            TAB_MULTIPLAYER,
                             r,
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_tabCycle,
@@ -744,8 +742,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x25c,
-                    1,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_STATZ,
                     r,
                     "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
                     -1,
@@ -771,7 +769,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
                 for (i = 0; i < 15; i++) {
-                    i32 id = SBICMD_CURSOR_TARGET_FIRST + i;
+                    SbiCommandId id =
+                        static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
                     arrow = new CSBI_StatzTabArrow;
                     r.left = arrowL;
                     r.top = y - 0x11;
@@ -780,8 +779,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!arrow->Init(
                             this,
                             code,
-                            id - 0xf,
-                            1,
+                            static_cast<SbiCommandId>(IDX(SBICMD_STAT_TOGGLE_FIRST) + i),
+                            TAB_STATZ,
                             r,
                             "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
                             -1,
@@ -810,7 +809,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             this,
                             code,
                             id,
-                            1,
+                            TAB_STATZ,
                             r,
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             g_curPlayer,
@@ -837,8 +836,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x25c,
-                    5,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_GAME,
                     r,
                     "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
                     -1,
@@ -859,8 +858,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if (!it->SetupImage(
                     this,
                     code,
-                    0x2bc,
-                    5,
+                    SBICMD_WARPSTONE_BASE,
+                    TAB_GAME,
                     r,
                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                     1,
@@ -872,7 +871,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_tabLists[5].AddTail(it);
-            if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->ByteTableHas(1)) {
+            if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                    ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
                 it = new CSBI_ImageSet;
                 r.left = bx + 0x17;
                 r.top = by + 0xe;
@@ -881,8 +881,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 if (!it->SetupImage(
                         this,
                         code,
-                        0x2bd,
-                        5,
+                        SBICMD_WARPSTONE_FRAGMENT1,
+                        TAB_GAME,
                         r,
                         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                         2,
@@ -894,7 +894,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     return 0;
                 }
                 m_tabLists[5].AddTail(it);
-                if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->ByteTableHas(2)) {
+                if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                        ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
                     it = new CSBI_ImageSet;
                     r.left = bx + 0x4c;
                     r.top = by + 0xf;
@@ -903,8 +904,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (!it->SetupImage(
                             this,
                             code,
-                            0x2be,
-                            5,
+                            SBICMD_WARPSTONE_FRAGMENT2,
+                            TAB_GAME,
                             r,
                             "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                             3,
@@ -916,7 +917,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         return 0;
                     }
                     m_tabLists[5].AddTail(it);
-                    if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->ByteTableHas(3)) {
+                    if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                            ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
                         it = new CSBI_ImageSet;
                         r.left = bx + 0x1b;
                         r.top = by + 0x3b;
@@ -925,8 +927,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         if (!it->SetupImage(
                                 this,
                                 code,
-                                0x2bf,
-                                5,
+                                SBICMD_WARPSTONE_FRAGMENT3,
+                                TAB_GAME,
                                 r,
                                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                 4,
@@ -938,7 +940,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             return 0;
                         }
                         m_tabLists[5].AddTail(it);
-                        if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->ByteTableHas(4)) {
+                        if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                                ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
                             it = new CSBI_ImageSet;
                             r.left = bx + 0x4a;
                             r.top = by + 0x35;
@@ -947,8 +950,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             if (!it->SetupImage(
                                     this,
                                     code,
-                                    0x2c0,
-                                    5,
+                                    SBICMD_WARPSTONE_FRAGMENT4,
+                                    TAB_GAME,
                                     r,
                                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                     5,

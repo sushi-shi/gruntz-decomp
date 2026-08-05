@@ -95,7 +95,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         if (found != 0) {
             break;
         }
-        if (m_wp[i].x == 0x10 && m_wp[i].y == 0x10) {
+        if (m_wp[i].x == TILE_HALF_PX && m_wp[i].y == TILE_HALF_PX) {
             found = 1;
         } else {
             i++;

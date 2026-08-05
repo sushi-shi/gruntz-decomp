@@ -18,7 +18,7 @@ class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     CSBI_WarlordHead() {
         m_frame = NULL;
-        m_kind = 0xb;
+        m_kind = SBI_KIND_WARLORD_HEAD;
         m_frameSet = NULL;
     }
 
@@ -31,8 +31,8 @@ public:
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 frame,

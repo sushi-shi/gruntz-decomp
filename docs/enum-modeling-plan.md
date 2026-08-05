@@ -260,7 +260,6 @@ are variables that genuinely carry two things, and typing them would be a lie:
   it into two locals was tried and **changes `.text`**, so retail reused the slot.
 - `CGruntzMgr::ReportError`'s first parameter — takes both 0x8xxx resource ids
   and the 0x4xx ids the `WARP` macro passes. Two spaces, one slot.
-- `CGrunt::m_toyBlendPct` — a blend percentage in one file, a Brickz id in another.
 - `CHash::FindInt` — a generic integer lookup; one caller passes a fourcc, another
   an arbitrary symbol key.
 
@@ -284,14 +283,11 @@ are annotated with the measurement showing the shape is byte-evidenced.
 - **`gruntz audit enum-domains`** (`scripts/gruntz/audit/enum_domains.py`,
   `--gate` at the `normal` tier) — a `_SPLIT` domain's declared storage must match
   every `GZ_ENUM_STORAGE` width used for it (FATAL); no bare `enum X {` outside
-  the macros; every enumerator has an explicit value; `config/cleanliness/enum-review.tsv`
-  states are consistent.
-- **`config/cleanliness/enum-review.tsv`** — a durable per-file `pending` / `reviewed` /
-  `third-party` checklist. A file cannot be `reviewed` while it still has an
-  unexplained code literal.
-- **Worklist** — `readability-magic-numbers` in `config/cleanliness/tidy-audit.yaml`, read via
-  `gruntz audit tidy`. Enabling it reverses that file's standing "matching-neutral
-  floods are intentionally left OUT" note; the flood is now the queue.
+  the macros; range tests use domain boundaries; enumerators follow the naming
+  convention. Implicit enumerator values are reported for review.
+- **Periodic search** — `readability-magic-numbers` in
+  `config/cleanliness/tidy-audit.yaml`, read via `gruntz audit tidy`, helps find
+  newly introduced candidate domains without maintaining a permanent file ledger.
 
 ## Verification
 

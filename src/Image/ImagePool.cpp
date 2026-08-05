@@ -9,6 +9,7 @@
 #include <DDrawMgr/DirPal.h>
 #include <DDrawMgr/PaletteSize.h>
 #include <Enums.h>
+#include <Image/ByteRunEncoding.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
@@ -98,7 +99,7 @@ void CImagePool::ClearPalettes() {
 }
 
 RVA(0x00174fe0, 0xfe)
-CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
+CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->DecodeBmpHeader(hdc, width, height, bitCount, flag) == 0) {
@@ -124,7 +125,8 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
 }
 
 RVA(0x001750e0, 0x103)
-CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitCount, i32 flag) {
+CRezImage*
+CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, ColorDepth bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->DecodeBlit(src, hdc, width, height, bitCount, flag) == 0) {
@@ -150,7 +152,7 @@ CRezImage* CImagePool::AddSurfaceBlit(void* src, i32 width, i32 height, i32 bitC
 }
 
 RVA(0x001751f0, 0xf9)
-CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
+CRezImage* CImagePool::AddSurfaceOp(void* buf, RezDecodeKind kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
     if (node->DispatchDecode(buf, kind, hdc, ctrl) == 0) {
@@ -275,7 +277,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
 }
 
 RVA(0x00175680, 0x85)
-CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
+CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl) {
     CImagePaletteNode* node = new CImagePaletteNode();
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
@@ -290,7 +292,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 }
 
 RVA(0x00175710, 0x69)
-i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, i32 flag) {
+i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     if (img == NULL) {
         return 0;
     }
@@ -314,7 +316,7 @@ void CImagePool::B(CRezImage* node, void* paletteNode, i32 b) {
 }
 
 RVA(0x001757c0, 0x16f)
-i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
+i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
     m_reserved434 = 0;
     m_width = width;
     m_height = (height < 0) ? -height : height;
@@ -330,7 +332,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     m_transparent = true;
     memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
     m_bih.biWidth = m_width;
-    m_bih.biBitCount = static_cast<WORD>(m_bitCount);
+    m_bih.biBitCount = static_cast<WORD>(IDX(m_bitCount));
     m_bih.biSize = sizeof(BITMAPINFOHEADER);
     m_bih.biHeight = height;
     m_bih.biPlanes = 1;
@@ -355,19 +357,19 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, i32 bitcount, i32 
     }
     m_rowOffsets = static_cast<i32*>(::operator new(m_height * 4));
     for (i32 i = 0; i < m_height; i++) {
-        m_rowOffsets[i] = (m_height - i - 1) * (m_bitCount / 8) * m_stride;
+        m_rowOffsets[i] = (m_height - i - 1) * (IDX(m_bitCount) / 8) * m_stride;
     }
     return 1;
 }
 
 // @early-stop
 RVA(0x00175930, 0xc6)
-i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount, i32 ctrl) {
+i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
     if (m_rowPad == 0) {
-        memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * bitcount)) >> 3);
+        memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * IDX(bitcount))) >> 3);
         return 1;
     }
     char* s = static_cast<char*>(src);
@@ -383,7 +385,7 @@ i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, i32 bitcount
 // SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
 // against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x00175a00, 0x90)
-i32 CRezImage::DispatchDecode(void* buf, i32 kind, HDC dc, i32 ctrl) {
+i32 CRezImage::DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     switch (kind) {
         case DECODE_BMP:
             return DecodeBmpData(buf, dc, ctrl);
@@ -424,7 +426,7 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
     if (palette == NULL) {
         return 0;
     }
-    if (!DecodeBmpHeader(dc, src->m_width, src->m_height, 0x10, 0)) {
+    if (!DecodeBmpHeader(dc, src->m_width, src->m_height, BPP_RGB_16, 0)) {
         return 0;
     }
     for (i32 y = 0; y < m_height; y++) {
@@ -462,7 +464,7 @@ void CRezImage::Free() {
 }
 
 RVA(0x00175ce0, 0x6b)
-i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, i32 bitCount, i32 flag) {
+i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     if (m_dibSection && m_pixels && m_rowOffsets && m_width == w && m_height == h) {
         return 1;
     }
@@ -495,10 +497,10 @@ i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
-    i32 bitcount = ih->biBitCount;
+    ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
     void* src = static_cast<u8*>(buf) + sizeof(BITMAPINFOHEADER) + 4;
     if (bitcount == BPP_PALETTED_8) {
-        src = static_cast<u8*>(buf) + ih->biSize + 0x400;
+        src = static_cast<u8*>(buf) + ih->biSize + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
     }
     i32 r = DecodeBlit(src, dc, width, height, bitcount, ctrl);
     return r;
@@ -522,13 +524,13 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 
     i32 height = ih.biHeight;
     i32 width = ih.biWidth;
-    i32 bitcount = ih.biBitCount & 0xffff;
+    ColorDepth bitcount = static_cast<ColorDepth>(ih.biBitCount & 0xffff);
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
 
     file.Seek(fh.bfOffBits, 0);
-    u32 size = (bitcount / 8) * m_stride * height;
+    u32 size = (IDX(bitcount) / 8) * m_stride * height;
     if (file.Read(m_pixels, size) != size) {
         return 0;
     }
@@ -540,25 +542,30 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
-    if (hdr->m_bitsPerPixel != 8) {
+    if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
         return 0;
     }
-    if (!DecodeBmpHeader(dc, width, height, static_cast<i8>(hdr->m_planes) * 8, ctrl)) {
+    if (!DecodeBmpHeader(
+            dc,
+            width,
+            height,
+            static_cast<ColorDepth>(IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel)),
+            ctrl
+        )) {
         return 0;
     }
 
     u8* src = hdr->m_pixels;
-    i32 scanBytes =
-        (width * static_cast<i8>(hdr->m_planes) * static_cast<i8>(hdr->m_bitsPerPixel) + 7) / 8;
+    i32 scanBytes = (width * IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel) + 7) / 8;
     u8* scan = static_cast<u8*>(::operator new(scanBytes));
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
-        i32 n = width * static_cast<i8>(hdr->m_planes);
+        i32 n = width * IDX(hdr->m_planes);
         while (n > 0) {
             u8 c = *src++;
-            if ((c & 0xc0) == 0xc0) {
-                i32 count = c & 0x3f;
+            if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                i32 count = c & BYTE_RUN_LENGTH_MASK;
                 u8 v = *src++;
                 if (count > 0) {
                     do {
@@ -572,11 +579,11 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
             }
         }
 
-        if (static_cast<i8>(hdr->m_planes) == 1) {
+        if (hdr->m_planes == PCX_PLANES_PALETTED) {
             for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
             }
-        } else if (static_cast<i8>(hdr->m_planes) == 3) {
+        } else if (hdr->m_planes == PCX_PLANES_RGB) {
             u8* g = scan + width * 2;
             u8* b = g + width;
             for (i32 x = width; x != 0; x--) {
@@ -621,7 +628,7 @@ i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     i32 width = hdr->width;
     i32 height = hdr->height;
 
-    i32 ok = DecodeBlit(hdr->pixels, dc, width, height, 8, ctrl);
+    i32 ok = DecodeBlit(hdr->pixels, dc, width, height, BPP_PALETTED_8, ctrl);
     if (!(ctrl & 1)) {
         m_transparent = false;
     }
@@ -657,10 +664,10 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     u8* src = hdr->pixels;
     i32 width = hdr->width;
     i32 height = hdr->height;
-    i32 flags = hdr->flags;
+    PidFlags flags = hdr->flags;
     i32 fill = hdr->fill;
 
-    if (!DecodeBmpHeader(dc, width, height, 8, ctrl)) {
+    if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
     }
     if (!(ctrl & 1)) {
@@ -707,8 +714,8 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
             i32 n = width;
             while (n > 0) {
                 u8 c = *src++;
-                if ((c & 0xc0) == 0xc0) {
-                    i32 count = c & 0x3f;
+                if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                    i32 count = c & BYTE_RUN_LENGTH_MASK;
                     u8 v = *src++;
                     if (count > 0) {
                         memset(dst, v, count);
@@ -851,9 +858,9 @@ void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
 RVA(0x00176b00, 0x2c)
 i32 CRezImage::Save(const char* filename, void* paletteObj) {
     switch (m_bitCount) {
-        case 8:
+        case BPP_PALETTED_8:
             return SaveBmp(filename, paletteObj);
-        case 0x10:
+        case BPP_RGB_16:
             return 0;
     }
     return 0;
@@ -935,7 +942,7 @@ RVA(0x00176df0, 0x71)
 i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     m_flags = flags;
     m_pal.palNumEntries = 0x100;
-    m_pal.palVersion = 0x300;
+    m_pal.palVersion = LOGICAL_PALETTE_VERSION;
     PALETTEENTRY* s = src;
     PALETTEENTRY* d = m_pal.palPalEntry;
     i32 i = 0x100;
@@ -1005,8 +1012,8 @@ i32 CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
 }
 
 RVA(0x00177040, 0x23)
-i32 CImagePaletteNode::ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
-    if (type == 3) {
+i32 CImagePaletteNode::ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl) {
+    if (type == DECODE_PCX) {
         return ParsePaletteTail(buf, size, ctrl);
     }
     return 0;
@@ -1057,7 +1064,7 @@ void ResetSystemPalette() {
 
     LogPal256 lp;
     HDC hdc = GetDC(0);
-    lp.palVersion = 0x300;
+    lp.palVersion = LOGICAL_PALETTE_VERSION;
     lp.palNumEntries = 256;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         lp.palPalEntry[i].peRed = 0;
@@ -1077,15 +1084,15 @@ void ResetSystemPalette() {
 RVA(0x001771f0, 0xe2)
 i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     CFile file;
-    char rgb[0x300];
+    char rgb[PALETTE_RGB_BYTE_COUNT];
 
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
-    if (file.GetLength() != 0x300) {
+    if (file.GetLength() != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
-    file.Read(rgb, 0x300);
+    file.Read(rgb, PALETTE_RGB_BYTE_COUNT);
     return ProcessPal(rgb, arg);
 }
 
@@ -1093,15 +1100,15 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
 RVA(0x001772e0, 0x117)
 i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFile file;
-    u8 rgb[0x300];
+    u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
     PALETTEENTRY rgbq[PALETTE_ENTRY_COUNT];
 
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
-    file.Seek(-0x300, 2);
-    if (file.Read(rgb, 0x300) == 0) {
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) == 0) {
         return 0;
     }
 
@@ -1121,10 +1128,10 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
 RVA(0x00177400, 0x76)
 i32 CImagePaletteNode::ParsePaletteTail(void* buf, u32 size, i32 ctrl) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
-    if (size < 0x300) {
+    if (size < PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
-    u8* s = static_cast<u8*>(buf) + size - 0x300;
+    u8* s = static_cast<u8*>(buf) + size - PALETTE_RGB_BYTE_COUNT;
     PALETTEENTRY* d = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         d->peRed = *s++;

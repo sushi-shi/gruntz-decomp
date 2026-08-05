@@ -37,8 +37,11 @@ GZ_ENUM_BEGIN_SPLIT(ColorTint, u8)
     TINT_DKYELLOW = 13,
     TINT_GREY = 14,
     TINT_CYAN = 15,
-    TINT_WHITE = 16,
-    TINT_COUNT = 17
+    TINT_WHITE = 16
 GZ_ENUM_END_SPLIT(ColorTint, u8)
+
+GZ_ENUM_CONST_BEGIN(ColorTintConstants)
+    TINT_COUNT = 17
+GZ_ENUM_CONST_END(ColorTintConstants)
 
 #endif // GRUNTZ_GRUNTZ_COLORTINT_H

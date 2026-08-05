@@ -9,19 +9,19 @@
 // Read off the three things that write it and the sixteen that test it:
 //
 //   0  EMPTY   what CNetCmdSlot's constructor and ResetAll() leave behind.
-//   1  DONE    always set together with `m_desc->m_doneFlag = 1`, and always
-//              immediately after FullReset() - the player has left or been
-//              dropped.
-//   3  ACTIVE  the only state the session treats as a live participant. These
-//              are the slots whose m_latency accrues each tick, the ones counted
-//              before the "Waiting for other playerz..." wait, and the ones a
-//              drop turns into DONE.
-//
-// 2 never appears - nothing writes or tests it.
+//   1  INACTIVE/DONE  assigned to an unoccupied roster entry at creation and
+//                     after a participant leaves or is dropped.
+//   2  LOCAL          assigned when the roster entry's slot key is the host id.
+//   3  REMOTE         assigned to other live human participants; these are the
+//                     slots whose latency accrues and whose incoming commands
+//                     are processed.
 GZ_ENUM_BEGIN(NetSlotState)
     NETSLOT_EMPTY = 0,
-    NETSLOT_DONE = 1,
-    NETSLOT_ACTIVE = 3
+    NETSLOT_INACTIVE = 1,
+    NETSLOT_DONE = NETSLOT_INACTIVE,
+    NETSLOT_LOCAL = 2,
+    NETSLOT_REMOTE = 3,
+    NETSLOT_ACTIVE = NETSLOT_REMOTE
 GZ_ENUM_END(NetSlotState)
 
 // How many command slots a session has. CNetSession::m_slots is declared

@@ -32,8 +32,8 @@ RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 frame,
@@ -49,7 +49,7 @@ i32 CSBI_MenuItem::SetupImage(
     m_owner = owner;
     m_host = host;
     m_tab = tab;
-    m_kind = 2;
+    m_kind = SBI_KIND_MENU_ITEM;
     m_frame = NULL;
 
     m_rect14 = rc;
@@ -128,7 +128,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
         // The domain ingest: CSBI_MenuItem::m_cmd is a general command id, but a
         // TAB menu item's command IS its tab - CStatusBarMgr bounds it at
         // `cmd <= 0 || cmd > TAB_LAST` before dispatching. Converted once, here.
-        m_owner->m_activeTab = static_cast<StatusBarTab>(m_cmd);
+        m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
         m_owner->LoadTabSprites();
         m_owner->Deactivate();
     } else if (state == MENUITEM_HIGHLIGHT && a) {
@@ -156,8 +156,9 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
     }
     CDDrawWorker* r = m_record;
     CImage* frame;
-    if (state >= r->m_minIndex && state <= r->m_maxIndex) {
-        frame = static_cast<CImage*>(r->m_items.GetAt(state));
+    i32 frameIndex = IDX(state);
+    if (frameIndex >= r->m_minIndex && frameIndex <= r->m_maxIndex) {
+        frame = static_cast<CImage*>(r->m_items.GetAt(frameIndex));
     } else {
         frame = NULL;
     }

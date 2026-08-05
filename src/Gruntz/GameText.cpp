@@ -84,7 +84,7 @@ static CString g_statLabel[8] = {
 
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
-    switch (id) {
+    switch (static_cast<WarlordOwner>(id)) {
         case WARLORDZ_KING:
             return CString("KING");
         case WARLORDZ_NAPOLEAN:

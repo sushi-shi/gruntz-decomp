@@ -15,6 +15,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
@@ -31,8 +32,8 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
-    if (m_object->m_sortKey != 5) {
-        m_object->m_sortKey = 5;
+    if (m_object->m_sortKey != SORTKEY_GRUNT_CREATION) {
+        m_object->m_sortKey = SORTKEY_GRUNT_CREATION;
         m_object->m_flags |= 0x20000;
     }
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -43,7 +44,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CW
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         idx = key;
     } else if (g_gameReg->m_options[key].m_liveGate != 0) {
-        idx = g_gameReg->m_options[key].m_colorIndex;
+        idx = IDX(g_gameReg->m_options[key].m_colorIndex);
     } else {
         m_wwdObject->m_flags |= 0x10000;
 
@@ -82,7 +83,7 @@ i32 CGruntCreationPoint::SerializeMove(
         i32 idx;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             if (g_gameReg->m_options[m_object->m_smarts].m_liveGate != 0) {
-                idx = g_gameReg->m_options[m_object->m_smarts].m_colorIndex;
+                idx = IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex);
             } else {
                 idx = ChannelSlots_FindFree();
             }

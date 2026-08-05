@@ -5,6 +5,13 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(CustomWorldCtrlId)
+    CTRL_CUSTOM_WORLD_LIST = 0x3fc,
+    CTRL_CUSTOM_WORLD_INFO = 0x42a
+GZ_ENUM_CONST_END(CustomWorldCtrlId)
+
 class CDDrawSurfaceMgr;
 extern class CDDrawSurfaceMgr* g_dat62c268;
 extern char g_mapNameBuf[0x200];

@@ -2,6 +2,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -28,7 +29,7 @@ RVA(0x000d1b60, 0xd30)
 i32 CPlay::ExecCommand(
     i32 targetIndex,
     i32 gruntIndex,
-    i32 cmdKind,
+    PlayerCommandKind cmdKind,
     i32 posX,
     i32 posY,
     i32 extraByte,
@@ -40,7 +41,7 @@ i32 CPlay::ExecCommand(
     }
     i32 res;
 
-    switch (static_cast<u8>(cmdKind)) {
+    switch (cmdKind) {
         case PLAYERCMD_PLACE_GRUNT: {
 
             i32 r = mgr->m_cmdGrid->PlaceObject(
@@ -48,7 +49,7 @@ i32 CPlay::ExecCommand(
                 static_cast<u16>(posX),
                 static_cast<u16>(posY),
                 100000,
-                2,
+                GRUNT_ENTRANCE_DROP,
                 g_groupSentinel,
                 0,
                 0,
@@ -76,7 +77,7 @@ i32 CPlay::ExecCommand(
             return 0;
         }
 
-        case 2: {
+        case PLAYERCMD_MOVE: {
             u32 player = static_cast<u8>(targetIndex);
             u32 gi = static_cast<u8>(gruntIndex);
             CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
@@ -135,7 +136,7 @@ i32 CPlay::ExecCommand(
                     }
                     g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalCell.m_x = -1;
-                    g->m_arrivalState = 4;
+                    g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = 0;
@@ -163,13 +164,13 @@ i32 CPlay::ExecCommand(
             g->m_arrivalRerollHi = 0;
             g->m_arrivalRerollWindowHi = 0;
             g->m_tileClaimed = 0;
-            g->m_arrivalState = 0;
+            g->m_arrivalState = AI_NONE;
             g->m_arrivalFlags &= 0xe7fbfbfd;
             g->SetEntrancePos(1, 1);
             return 1;
         }
 
-        case 3: {
+        case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(targetIndex);
             gruntIndex = static_cast<u8>(gruntIndex);
             CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
@@ -182,18 +183,19 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
 
+            i32 hitRow;
             CGrunt* node =
-                m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, TM_GRID_ROW_ALL);
+                m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &extraByte, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
-                    cmdKind,
+                    hitRow,
                     extraByte,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
@@ -231,7 +233,7 @@ i32 CPlay::ExecCommand(
             return 0;
         }
 
-        case 9: {
+        case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(targetIndex);
             gruntIndex = static_cast<u8>(gruntIndex);
             CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
@@ -244,7 +246,7 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
@@ -292,7 +294,7 @@ i32 CPlay::ExecCommand(
             return 0;
         }
 
-        case 4: {
+        case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(targetIndex);
             gruntIndex = static_cast<u8>(gruntIndex);
             CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
@@ -305,17 +307,18 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
+            i32 hitRow;
             CGrunt* node =
-                m_mgr->m_cmdGrid->CellHitTest(px, py, &cmdKind, &extraByte, TM_GRID_ROW_ALL);
+                m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &extraByte, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
-                    cmdKind,
+                    hitRow,
                     extraByte,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
@@ -353,7 +356,7 @@ i32 CPlay::ExecCommand(
             return 0;
         }
 
-        case 10: {
+        case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(targetIndex);
             gruntIndex = static_cast<u8>(gruntIndex);
             CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
@@ -366,7 +369,7 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
@@ -428,7 +431,7 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }
@@ -475,7 +478,7 @@ i32 CPlay::ExecCommand(
                 g->m_arrivalRerollHi = 0;
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = 0;
-                g->m_arrivalState = 0;
+                g->m_arrivalState = AI_NONE;
                 g->m_arrivalFlags &= 0xe7fbfbfd;
                 g->SetEntrancePos(1, 1);
             }

@@ -6,6 +6,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/StatusBarDock.h>
 #include <Ints.h>
 
 #include <stddef.h>
@@ -14,7 +15,7 @@ class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
     CSBI_ImageSetAni() {
         m_frame = NULL;
-        m_kind = 8;
+        m_kind = SBI_KIND_IMAGE_SET_ANI;
         m_frameSet = NULL;
         m_loop = 0;
         m_interval = 0x64;
@@ -30,8 +31,8 @@ public:
     virtual i32 Init(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 b0,
@@ -59,13 +60,13 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
 public:
     CSBI_StatzTabArrow() {
-        m_kind = 5;
+        m_kind = SBI_KIND_STATZ_TAB_ARROW;
     }
 
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
 
-    void SetDirection(i32 position, i32 animate);
-    void SetDirectionAlt(i32 position, i32 animate);
+    void SetDirection(StatusBarDock position, i32 animate);
+    void SetDirectionAlt(StatusBarDock position, i32 animate);
 };
 SIZE(0x54);
 VTBL(CSBI_StatzTabArrow, 0x001eac94);

@@ -42,13 +42,13 @@ void CChatBoxOwner::Deactivate() {
 
 // @early-stop
 RVA(0x00020530, 0x61)
-void CChatBoxOwner::Configure(i32 mode) {
+void CChatBoxOwner::Configure(ChatBoxLayout mode) {
     m_mode = mode;
 
-    if (mode == 1 || mode == 3) {
+    if (mode == CHATBOX_WITH_RIGHT_STATUSBAR || mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         m_originX = 0;
         m_originY = g_gameReg->m_modeH - 66;
-    } else if (mode == 2) {
+    } else if (mode == CHATBOX_WITH_LEFT_STATUSBAR) {
         m_originX = 0xa0;
         m_originY = g_gameReg->m_modeH - 66;
     }
@@ -182,7 +182,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    if (self->m_mode == 3) {
+    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_maxIndex));
         if (!frame) {
             return 0;
@@ -206,7 +206,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetBkColor(hdc, 0);
 
     RECT rect;
-    if (self->m_mode == 3) {
+    if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         rect.left = self->m_originX + 0x4c;
         rect.right = self->m_originX + 0x267;
         rect.top = self->m_originY + 0x2b;
@@ -226,7 +226,7 @@ RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
 
-        if (m_mode == 3) {
+        if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
             if (x < 0x40) {
                 if (y >= g_gameReg->m_modeH - 0x40) {
                     return 1;

@@ -50,6 +50,7 @@
 #include <Net/InterfaceObject.h>
 #include <Net/LobbyDialogs.h>
 #include <Net/NetLobby.h>
+#include <Net/NetLobbyCtrlId.h>
 #include <Net/NetMgr.h>
 #include <Net/NetMgrReportError.h>
 #include <Net/NetMsgId.h>
@@ -115,13 +116,6 @@ DATA(0x00248d10)
 i32 g_dropGuard;
 DATA(0x00248d14)
 u32 g_ackThrottleDeadline;
-
-enum {
-    DISPATCH_RESYNC = 0x4cc,
-    DISPATCH_RESET = 0x4cd,
-    DISPATCH_ABORT = 0x4ce,
-    DISPATCH_PLAYERLEFT = 0x4ea,
-};
 
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;
@@ -295,7 +289,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     m_hitTest->m_inputActive = 0;
-    m_hitTest->Configure(1);
+    m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_guts = sess;
@@ -355,7 +349,7 @@ CNetMgr::~CNetMgr() {
 RVA(0x000b6110, 0xc7)
 void CMulti::ReleaseResources() {
     if (m_netGate && m_localPlayer && m_session && m_connected) {
-        SendNetStat(0x402, 0x4d2, 1);
+        SendNetStat(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
         SendStatFlag(NETMSG_PLAYER_LEFT, 1);
     }
 
@@ -411,7 +405,7 @@ i32 CMulti::EnterState(GameStateId arg) {
     m_accumTime = 0;
     m_lastFrameSyncTime = tg();
     if (m_connected != 0) {
-        SendNetStat(0x402, 0x4d2, 1);
+        SendNetStat(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), 1);
     }
     return 1;
 }
@@ -995,7 +989,7 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             goto ret_false;
     }
 
-    if (wParam == 2) {
+    if (wParam == IDCANCEL) {
         EndDialog(hDlg, 0);
         return 1;
     }
@@ -1097,7 +1091,7 @@ INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             goto close;
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 KillTimer(hDlg, 1);
                 EndDialog(hDlg, 0);
                 return 1;
@@ -1204,7 +1198,7 @@ i32 CMulti::DetectConnectionConfig() {
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
 
     ch0->m_name = GetString5a0();
-    ch0->m_colorIndex = 0;
+    ch0->m_colorIndex = TINT_ORANGE;
 
     CNetPlayerListNode* r = JoinAndRegisterChannel();
     if (r == NULL) {
@@ -1238,7 +1232,7 @@ i32 CMulti::ShowMultiStartDlg() {
                 return 0;
             }
             rec->m_liveGate = 0;
-            ChannelSlots_Set(rec->m_colorIndex, 1);
+            ChannelSlots_Set(IDX(rec->m_colorIndex), 1);
             BroadcastChannelTable(0);
         }
         if (m_isHost == 0 && m_removedByHost == 0) {
@@ -1347,7 +1341,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
 
     m_hostIndex = node->m_id;
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
-    i32 chField = ch0->m_colorIndex;
+    ColorTint chField = static_cast<ColorTint>(ch0->m_colorIndex);
 
     i32 failed = (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0);
     return failed ? 0 : enumResult;
@@ -1474,16 +1468,16 @@ RVA(0x000b9240, 0x38)
 void CMulti::SendStatFlag(NetMsgId id, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = id;
+    pkt.m_statId = IDX(id);
     pkt.m_value = LocalPlayer()->m_id;
     SendStatBuf(&pkt, flag);
 }
 
 RVA(0x000b9290, 0x32)
-void CMulti::SendNetStat(i32 id, u32 value, i32 flag) {
+void CMulti::SendNetStat(NetMsgId id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = id;
+    pkt.m_statId = IDX(id);
     pkt.m_value = value;
     SendStatBuf(&pkt, flag);
 }
@@ -1508,22 +1502,22 @@ i32 CMulti::SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c)
 }
 
 RVA(0x000b93a0, 0x47)
-i32 CMulti::SendStatTo(CNetSessionNode* recipient, i32 id, i32 c) {
+i32 CMulti::SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c) {
     if (recipient == NULL) {
         return 0;
     }
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = id;
+    pkt.m_statId = IDX(id);
     pkt.m_value = LocalPlayer()->m_id;
     return SendStatPair(recipient, &pkt, c);
 }
 
 RVA(0x000b9410, 0x51)
-i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
+i32 CMulti::SendStat3(i32 id, NetMsgId statId, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = value;
+    pkt.m_statId = IDX(statId);
     pkt.m_value = LocalPlayer()->m_id;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
@@ -1557,7 +1551,7 @@ RVA(0x000b9570, 0x53)
 i32 CMulti::SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = statId;
+    pkt.m_statId = IDX(statId);
     pkt.m_value = value;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
@@ -1712,7 +1706,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                ->AddItem(text, 0x30, player->m_colorIndex);
+                ->AddItem(text, 0x30, IDX(player->m_colorIndex));
             CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
@@ -1797,10 +1791,10 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == NULL) {
                 return 0;
             }
-            if (player->SwapChannel(chan->m_colorIndex) == 0) {
-                i32 colour = player->m_colorIndex;
-                chan->m_colorIndex = static_cast<u8>(colour);
-                SendStatTo(pd, 0x419, 1);
+            if (player->SwapChannel(static_cast<ColorTint>(chan->m_colorIndex)) == 0) {
+                ColorTint colour = static_cast<ColorTint>(player->m_colorIndex);
+                chan->m_colorIndex = static_cast<u8>(IDX(colour));
+                SendStatTo(pd, NETMSG_COLOR_REJECTED, 1);
             }
             ParseOneChannel(chan);
             BroadcastChannelTable(0);
@@ -2025,7 +2019,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         g_activePlayerCount--;
     }
     slot->m_liveGate = 0;
-    ChannelSlots_Set(slot->m_colorIndex, 1);
+    ChannelSlots_Set(IDX(slot->m_colorIndex), 1);
 
     CString line = slot->GetName() + " has left the game.";
     (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
@@ -2079,7 +2073,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     if (m_customLevelVerificationPending == 0 && m_connected == 0) {
         if (m_isHost != 0) {
             if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
-                SendStat3(ev->m_id, 0x3fe, 1);
+                SendStat3(ev->m_id, NETMSG_GAME_FULL, 1);
                 return 0;
             }
             if (m_isHost != 0) {
@@ -2105,7 +2099,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
         }
         return 1;
     }
-    SendStat3(ev->m_id, 0x3fd, 1);
+    SendStat3(ev->m_id, NETMSG_GAME_CLOSED, 1);
     return 1;
 }
 
@@ -2123,15 +2117,14 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     CNetChannelTablePacket packet;
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= 0x80;
-    packet.m_statId = STAT_CHANNEL_TABLE;
+    packet.m_statId = IDX(STAT_CHANNEL_TABLE);
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != NULL) {
             i32 v = ch->m_liveGate;
             packet.m_rows[i].m_liveGate = static_cast<u8>(v);
-            v = ch->m_colorIndex;
-            packet.m_rows[i].m_colorIndex = static_cast<u8>(v);
+            packet.m_rows[i].m_colorIndex = ch->m_colorIndex;
             v = ch->m_humanControlled;
             packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
             v = ch->m_configId;
@@ -2171,7 +2164,7 @@ i32 CMulti::ParseChannelTable(void* packet) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
         if (ch != NULL) {
             ch->m_liveGate = p->m_rows[i].m_liveGate;
-            ch->m_colorIndex = p->m_rows[i].m_colorIndex;
+            ch->m_colorIndex = static_cast<ColorTint>(p->m_rows[i].m_colorIndex);
             ch->m_humanControlled = p->m_rows[i].m_humanControlled;
             ch->m_configId = p->m_rows[i].m_configId;
             if (p->m_rows[i].m_readyFlag != 0) {
@@ -2183,7 +2176,7 @@ i32 CMulti::ParseChannelTable(void* packet) {
             ch->m_name = p->m_rows[i].m_name;
             ch->m_slotKey = p->m_rows[i].m_slotKey;
             if (m_isHost == 0 && ch->m_liveGate != 0) {
-                ChannelSlots_Set(ch->m_colorIndex, 0);
+                ChannelSlots_Set(IDX(ch->m_colorIndex), 0);
             }
         }
     }
@@ -2191,12 +2184,12 @@ i32 CMulti::ParseChannelTable(void* packet) {
 }
 
 RVA(0x000baa90, 0x20)
-i32 CMulti::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
-    return RegisterChannel(name, b, 1, 0, e, f);
+i32 CMulti::RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f) {
+    return RegisterChannel(name, color, 1, 0, e, f);
 }
 
 RVA(0x000baac0, 0x12e)
-i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
+i32 CMulti::RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e) {
     if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
         return 0;
     }
@@ -2224,10 +2217,10 @@ i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32
         }
     }
 
-    ChannelSlots_Set(id, 0);
+    ChannelSlots_Set(IDX(color), 0);
 
     ch->m_name = CString(name);
-    ch->m_colorIndex = id;
+    ch->m_colorIndex = color;
     ch->m_humanControlled = c;
     ch->m_configId = d;
     ch->m_readyFlag = 0;
@@ -2244,7 +2237,7 @@ i32 CMulti::RegisterChannelRec(void* rec) {
     if (r->m_present != 0) {
         RegisterChannel(
             r->m_name,
-            r->m_kind,
+            static_cast<ColorTint>(r->m_kind),
             r->m_slot,
             r->m_flagsB,
             r->m_configId,
@@ -2264,7 +2257,7 @@ i32 CMulti::RemoveChannel(i32 idx) {
         return 0;
     }
     ch->m_liveGate = 0;
-    ChannelSlots_Set(ch->m_colorIndex, 1);
+    ChannelSlots_Set(IDX(ch->m_colorIndex), 1);
     return 1;
 }
 
@@ -2286,11 +2279,12 @@ void CMulti::OnMultiPause() {
 
     m_waitDialogReplyReceived = 0;
     g_pauseGuard = 1;
-    i32 r = RunErrorDialog("MULTI_PAUSE", NetLobby::HostWaitDlgProc, 0);
+    NetLobbyCtrlId result =
+        static_cast<NetLobbyCtrlId>(RunErrorDialog("MULTI_PAUSE", NetLobby::HostWaitDlgProc, 0));
     g_pauseGuard = 0;
     g_sharedFlag = NULL;
 
-    if (r == DISPATCH_RESYNC) {
+    if (result == IDC_NET_RESTART) {
         HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
         PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_CONNECT), ResyncLParam());
     }
@@ -2317,16 +2311,18 @@ void CMulti::OnOutOfSync() {
 
     m_outOfSync = 1;
     m_waitDialogReplyReceived = 0;
-    i32 r = RunErrorDialog("MULTI_OUTOFSYNC", NetLobby::SessionWaitDlgProc, 0);
+    NetLobbyCtrlId result = static_cast<NetLobbyCtrlId>(
+        RunErrorDialog("MULTI_OUTOFSYNC", NetLobby::SessionWaitDlgProc, 0)
+    );
     g_sharedFlag = NULL;
 
-    switch (r) {
-        case DISPATCH_RESYNC: {
+    switch (result) {
+        case IDC_NET_RESTART: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MULTI_CONNECT), ResyncLParam());
             break;
         }
-        case DISPATCH_RESET:
+        case IDC_NET_CONTINUE:
             break;
         default: {
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
@@ -2341,12 +2337,11 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     CNetOneChannelPacket packet;
     memset(&packet, 0, 0x2c);
     packet.m_flags |= 0x80;
-    packet.m_statId = STAT_CHANNEL_ONE;
+    packet.m_statId = IDX(STAT_CHANNEL_ONE);
     packet.m_playerIndex = ch->m_playerIndex;
 
-    i32 v = ch->m_colorIndex;
-    packet.m_colorIndex = static_cast<u8>(v);
-    v = ch->m_humanControlled;
+    packet.m_colorIndex = ch->m_colorIndex;
+    i32 v = ch->m_humanControlled;
     packet.m_humanControlled = static_cast<u8>(v);
     v = ch->m_configId;
     packet.m_configId = static_cast<u8>(v);
@@ -2378,7 +2373,7 @@ i32 CMulti::ParseOneChannel(void* rec) {
     }
 
     ch->m_name = r->m_name;
-    ch->m_colorIndex = r->m_colorIndex;
+    ch->m_colorIndex = static_cast<ColorTint>(r->m_colorIndex);
     ch->m_configId = r->m_configId;
     if (r->m_readyFlag != 0) {
         ch->m_readyFlag = 1;
@@ -2458,10 +2453,10 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
             return 0;
         }
         (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-            ->AddItem(line, 0x30, player->m_colorIndex);
+            ->AddItem(line, 0x30, IDX(player->m_colorIndex));
     }
 
-    g_chatPacket.m_id = STAT_CHAT;
+    g_chatPacket.m_id = IDX(STAT_CHAT);
 
     i32 n = strlen(line);
     g_chatPacket.m_val = 0;
@@ -2791,15 +2786,15 @@ i32 CMulti::CreateSession() {
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
-        i32 code = 1;
+        NetSlotState state = NETSLOT_INACTIVE;
         if (ch->m_liveGate != 0 && ch->m_humanControlled != 0) {
 
-            code = 2;
+            state = NETSLOT_LOCAL;
             if (ch->m_slotKey != m_hostIndex) {
-                code = 3;
+                state = NETSLOT_REMOTE;
             }
         }
-        if (Session()->CreateSlot(i, code) == NULL) {
+        if (Session()->CreateSlot(i, state) == NULL) {
             return 0;
         }
     }
@@ -2899,21 +2894,23 @@ void CMulti::OnDropPlayer() {
 
     m_waitDialogReplyReceived = 0;
     g_dropGuard = 1;
-    i32 r = RunErrorDialog("MULTI_DROPPLAYER", NetLobby::NetGameDlgProc, 0);
+    NetLobbyCtrlId result = static_cast<NetLobbyCtrlId>(
+        RunErrorDialog("MULTI_DROPPLAYER", NetLobby::NetGameDlgProc, 0)
+    );
     g_dropGuard = 0;
     g_sharedFlag = NULL;
 
-    switch (r) {
-        case DISPATCH_RESET:
+    switch (result) {
+        case IDC_NET_CONTINUE:
             Session()->ResetCmdBuffers();
             break;
-        case DISPATCH_ABORT: {
+        case IDC_NET_ABORT: {
             Session()->ResetCmdBuffers();
             HWND hwnd = NetGameMgr()->m_gameWnd->m_hwnd;
             PostMessageA(hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             break;
         }
-        case DISPATCH_PLAYERLEFT:
+        case IDC_NET_DROP_PLAYER:
             if (g_dropPlayerId != -999) {
                 if (Peer()->FindPlayerById(g_dropPlayerId)) {
                     SendStat3(g_dropPlayerId, STAT_PLAYERLEFT_LOCAL, 1);
@@ -2953,7 +2950,7 @@ void CMulti::DropTimeout() {
     }
     g_dropPlayerId = slot->m_desc->m_slotKey;
     g_sessionName = slot->BuildHostName();
-    SendNetStat(0x40c, g_dropPlayerId, 1);
+    SendNetStat(NETMSG_DROP_TIMEOUT, g_dropPlayerId, 1);
     OnDropPlayer();
 }
 
@@ -2991,7 +2988,7 @@ i32 CMulti::SetupTcpIpConfig() {
     GruntzPlayer* ch0 = NetGameMgr()->m_options;
 
     ch0->m_name = GetString5a0();
-    ch0->m_colorIndex = 0;
+    ch0->m_colorIndex = TINT_ORANGE;
 
     m_localPlayer = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
         const_cast<char*>(static_cast<const char*>(ch0->GetName())),
@@ -3004,7 +3001,7 @@ i32 CMulti::SetupTcpIpConfig() {
     }
 
     m_hostIndex = LocalPlayer()->m_id;
-    i32 chField = ch0->m_colorIndex;
+    ColorTint chField = static_cast<ColorTint>(ch0->m_colorIndex);
 
     if (RegisterChannelFrom(ch0->GetName(), chField, -1, m_hostIndex) == 0) {
         return 0;
@@ -3036,7 +3033,7 @@ i32 CMulti::CreateLocalPlayer() {
     memset(&pkt, 0, 0x28);
 
     pkt.m_flags |= 0x80;
-    pkt.m_statId = STAT_PLAYER_JOINED;
+    pkt.m_statId = IDX(STAT_PLAYER_JOINED);
     pkt.m_present = 1;
     pkt.m_kind = 0;
     pkt.m_slot = 1;
@@ -3081,7 +3078,7 @@ i32 CMulti::OpenHostChannel(
         return 0;
     }
     m_hostIndex = m_localPlayer->m_id;
-    return RegisterChannelFrom(name, channelId, -1, m_hostIndex) != 0;
+    return RegisterChannelFrom(name, static_cast<ColorTint>(channelId), -1, m_hostIndex) != 0;
 }
 
 RVA(0x000bca50, 0x155)
@@ -3165,7 +3162,7 @@ i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
     blob.m_flags |= 0x80;
-    blob.m_statId = STAT_CONFIG;
+    blob.m_statId = IDX(STAT_CONFIG);
     blob.m_customLevel = m_customLevel;
     {
         wsprintfA(blob.m_nameA, static_cast<const char*>(GetConfigNameA()));
@@ -3304,7 +3301,7 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
     packet.m_cfgWord = g_cfgWord;
     packet.m_butePos = g_buteMgr.m_pos;
     packet.m_localVersion = g_localVersion;
-    packet.m_statId = STAT_VERSIONPACKET;
+    packet.m_statId = IDX(STAT_VERSIONPACKET);
 
     SendStatPairRaw(param, &packet, 0x20, 1);
 }

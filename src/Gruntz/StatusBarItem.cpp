@@ -12,7 +12,7 @@ void CStatusBarItem::SetSubtype() {
 RVA(0x001005d0, 0x17)
 CStatusBarItem::CStatusBarItem() {
     m_enabled = 0;
-    m_kind = 0;
+    m_kind = SBI_KIND_BASE;
     m_host = NULL;
     m_redrawFrames = 0;
 }
@@ -27,8 +27,8 @@ RVA(0x00100660, 0x50)
 i32 CStatusBarItem::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 a10

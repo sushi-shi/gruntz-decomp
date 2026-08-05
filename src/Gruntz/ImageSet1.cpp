@@ -7,15 +7,15 @@ void CImageSet1::FreePixels() {}
 
 RVA(0x00161340, 0x6)
 i32 CImageSet1::GetKind() {
-    return 1;
+    return TILE_IMAGESET_UNIFORM;
 }
 
 RVA(0x00161370, 0x7)
 CImageSet1::~CImageSet1() {}
 
 RVA(0x00161380, 0x6)
-i32 CImageSet1::GetCollisionAt(i32, i32) {
-    return m_collisionValue;
+TileCollisionKind CImageSet1::GetCollisionAt(i32, i32) {
+    return static_cast<TileCollisionKind>(m_collisionValue);
 }
 
 RVA(0x00161390, 0x5)

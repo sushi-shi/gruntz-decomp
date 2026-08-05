@@ -10,6 +10,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/MultiStartDlg.h>
 #include <Gruntz/Random.h>
 #include <MsgParam.h>
 #include <Net/LatencyList.h>
@@ -109,24 +110,25 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
                 g_multiState->DropChannelPlayer(s->m_playerIndex);
             }
         } else if (s->m_liveGate != 0) {
-            ChannelSlots_Set(s->m_colorIndex, 1);
+            ChannelSlots_Set(IDX(s->m_colorIndex), 1);
         }
         s->m_liveGate = 0;
         s->m_readyFlag = 0;
         c1->EnableWindow(0);
         c2->EnableWindow(0);
     } else {
-        if (pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0) != 4) {
+        if (static_cast<MultiplayerPlayerKind>(pSend(owner->m_hWnd, CB_GETCURSEL, 0, 0))
+            != MULTI_PLAYER_HUMAN) {
             if (s->m_humanControlled != 0) {
                 if (s->m_liveGate != 0) {
                     g_multiState->DropChannelPlayer(s->m_playerIndex);
                 }
                 i32 free = ChannelSlots_FindFree();
-                s->m_colorIndex = free;
+                s->m_colorIndex = static_cast<ColorTint>(free);
                 ChannelSlots_Set(free, 0);
             } else if (s->m_liveGate == 0) {
                 i32 free = ChannelSlots_FindFree();
-                s->m_colorIndex = free;
+                s->m_colorIndex = static_cast<ColorTint>(free);
                 ChannelSlots_Set(free, 0);
             }
             s->m_readyFlag = 1;
@@ -481,7 +483,7 @@ void CMultiStartDlg::OnColorSlot0() {
     }
     CBattlezDlgColors dlg(m_host, 0, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (SelectColor(0, dlg.m_pickedColor)) {
+        if (SelectColor(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
             GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(0, 1);
         }
@@ -498,7 +500,7 @@ void CMultiStartDlg::OnColorSlot1() {
     }
     CBattlezDlgColors dlg(m_host, 1, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (SelectColor(1, dlg.m_pickedColor)) {
+        if (SelectColor(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
             GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(0, 1);
         }
@@ -515,7 +517,7 @@ void CMultiStartDlg::OnColorSlot2() {
     }
     CBattlezDlgColors dlg(m_host, 2, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (SelectColor(2, dlg.m_pickedColor)) {
+        if (SelectColor(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
             GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(0, 1);
         }
@@ -532,7 +534,7 @@ void CMultiStartDlg::OnColorSlot3() {
     }
     CBattlezDlgColors dlg(m_host, 3, 1, 0);
     if (dlg.DoModal() == 1) {
-        if (SelectColor(3, dlg.m_pickedColor)) {
+        if (SelectColor(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             Drive();
             GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(0, 1);
         }
@@ -617,7 +619,7 @@ void CMultiStartDlg::Drive() {
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableControls() {
     GetDlgItem(IDCANCEL)->EnableWindow(1);
-    GetDlgItem(IDC_NETCHAT_SEND)->EnableWindow(1);
+    GetDlgItem(IDX(IDC_NETCHAT_SEND))->EnableWindow(1);
     GetDlgItem(0x42d)->EnableWindow(1);
     GetDlgItem(0x511)->EnableWindow(1);
     CString s1;
@@ -732,7 +734,7 @@ void CMultiStartDlg::Watchdog() {
     g_multiState->ResolveLocalPlayer();
     if (g_watchBlinkA == 0) {
         u32 t = timeGetTime();
-        g_multiState->SendNetStat(0x41f, static_cast<i32>(t), 0);
+        g_multiState->SendNetStat(NETMSG_STAT_REQUEST, static_cast<i32>(t), 0);
     }
     if (g_multiState->m_isHost == 0) {
         if (g_watchBlinkA == 0) {
@@ -762,22 +764,22 @@ void CMultiStartDlg::Watchdog() {
             GruntzPlayer* slot = &g_gameReg->m_options[i];
             CWnd* item1;
             CWnd* item2;
-            switch (i) {
-                case 0:
-                    item1 = GetDlgItem(0x531);
-                    item2 = GetDlgItem(0x534);
+            switch (static_cast<PlayerSlot>(i)) {
+                case PLAYER_SLOT_0:
+                    item1 = GetDlgItem(CTRL_PLAYER_LATENCY0);
+                    item2 = GetDlgItem(CTRL_PLAYER_READY0);
                     break;
-                case 1:
-                    item1 = GetDlgItem(0x532);
-                    item2 = GetDlgItem(0x536);
+                case PLAYER_SLOT_1:
+                    item1 = GetDlgItem(CTRL_PLAYER_LATENCY1);
+                    item2 = GetDlgItem(CTRL_PLAYER_READY1);
                     break;
-                case 2:
-                    item1 = GetDlgItem(0x533);
-                    item2 = GetDlgItem(0x537);
+                case PLAYER_SLOT_2:
+                    item1 = GetDlgItem(CTRL_PLAYER_LATENCY2);
+                    item2 = GetDlgItem(CTRL_PLAYER_READY2);
                     break;
-                case 3:
-                    item1 = GetDlgItem(0x535);
-                    item2 = GetDlgItem(0x538);
+                case PLAYER_SLOT_3:
+                    item1 = GetDlgItem(CTRL_PLAYER_LATENCY3);
+                    item2 = GetDlgItem(CTRL_PLAYER_READY3);
                     break;
             }
             if (slot->m_liveGate != 0 && slot->m_humanControlled != 0) {
@@ -854,18 +856,18 @@ i32 CMultiStartDlg::GetSlotIndex() {
 
 // @early-stop
 RVA(0x000c4b60, 0x77)
-i32 CMultiStartDlg::SelectColor(i32 colorIndex, i32 playerId) {
+i32 CMultiStartDlg::SelectColor(i32 colorIndex, ColorTint playerColor) {
     GruntzPlayer* colorSlot = &m_host->m_options[colorIndex];
     if (g_multiState->m_isHost != 0) {
-        i32 r = ChannelSlots_Get(playerId);
+        i32 r = ChannelSlots_Get(IDX(playerColor));
         if (r == 0) {
             g_multiState->ReportVersionMsg("Someone has already selected that color.", r);
             return 0;
         }
-        ChannelSlots_Set(colorSlot->m_colorIndex, 1);
-        ChannelSlots_Set(playerId, 0);
+        ChannelSlots_Set(IDX(colorSlot->m_colorIndex), 1);
+        ChannelSlots_Set(IDX(playerColor), 0);
     }
-    colorSlot->m_colorIndex = playerId;
+    colorSlot->m_colorIndex = playerColor;
     return 1;
 }
 

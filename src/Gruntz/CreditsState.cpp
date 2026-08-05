@@ -187,7 +187,7 @@ i32 CCreditsState::Render() {
             if (L->m_items[j]->m_currentKeys & 0xffffff) {
 
                 u32 wp = IDX(CMD_ATTRACT);
-                if (m_previousStateId == 5) {
+                if (m_previousStateId == GAMESTATE_MENU) {
                     wp = IDX(CMD_MAIN_MENU);
                 }
                 PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
@@ -247,7 +247,7 @@ i32 CCreditsState::RestoreDisplay() {
 RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
-        if (m_previousStateId == 5) {
+        if (m_previousStateId == GAMESTATE_MENU) {
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         } else {
             PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
@@ -272,7 +272,7 @@ i32 CCreditsState::OnLButtonDown(i32 x, i32 unused, i32 y) {
         return 1;
     }
     i32 cmd;
-    if (m_previousStateId == 5) {
+    if (m_previousStateId == GAMESTATE_MENU) {
         cmd = 0x8023;
     } else {
         cmd = 0x8027;

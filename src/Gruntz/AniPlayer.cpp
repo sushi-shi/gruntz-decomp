@@ -21,8 +21,8 @@ RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 b0,

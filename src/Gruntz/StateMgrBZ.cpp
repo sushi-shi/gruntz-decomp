@@ -46,7 +46,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
     m_deviceList = NULL;
     m_device = NULL;
     m_mode = INPUTDEV_NONE;
-    switch (static_cast<u32>(mode)) {
+    switch (mode) {
         case INPUTDEV_KEYBOARD: {
             CInputDevice* d = static_cast<CInputDevice*>(src->m_deviceA);
             m_keyboard = d;

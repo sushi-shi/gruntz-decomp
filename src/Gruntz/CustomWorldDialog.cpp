@@ -75,7 +75,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     NetLobby::g_curDlg = hDlg;
     switch (msg) {
         case WM_INITDIALOG:
-            g_customLevelList = GetDlgItem(hDlg, 0x3fc);
+            g_customLevelList = GetDlgItem(hDlg, CTRL_CUSTOM_WORLD_LIST);
             if (g_customLevelList) {
                 FillCustomLevelList(hDlg);
             }
@@ -85,7 +85,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 0x42a) {
+            if (wParam == CTRL_CUSTOM_WORLD_INFO) {
                 LoadCustomWorldInfo(hDlg);
                 return 1;
             }
@@ -114,7 +114,7 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 // @early-stop
 RVA(0x0003af90, 0x194)
 i32 FillCustomLevelList(HWND hWnd) {
-    HWND lb = GetDlgItem(hWnd, 0x3fc);
+    HWND lb = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
     if (!lb) {
         return 0;
     }

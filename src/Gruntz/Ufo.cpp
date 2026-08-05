@@ -72,9 +72,9 @@ i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameO
     return 1;
 }
 
-static inline void SerQuadPair(CFileMemBase* s, i32 tag, CHazardTimer* p) {
-    if (tag != 4) {
-        if (tag == 7) {
+static inline void SerQuadPair(CFileMemBase* s, SerialMode tag, CHazardTimer* p) {
+    if (tag != SERIAL_SAVE) {
+        if (tag == SERIAL_LOAD) {
             s->Read(&p->m_deadline, sizeof(p->m_deadline));
             s->Read(&p->m_window, sizeof(p->m_window));
         }

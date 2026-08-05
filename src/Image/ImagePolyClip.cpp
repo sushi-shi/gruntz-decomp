@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
+#include <Image/PolygonWinding.h>
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
 #include <Ints.h>
@@ -75,7 +76,7 @@ i32 WarpIsPow2(i32 x) {
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     i32 sign = 0;
-    i32 dir = 0;
+    PolygonWinding dir = POLYGON_WINDING_UNSET;
     for (i32 i = 0; i <= count; i++) {
         ClipVtx* v0 = &verts[i % count];
         ClipVtx* v1 = &verts[(i + 1) % count];
@@ -87,19 +88,19 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float cross = dx1 * dy2 - dx2 * dy1;
         if (cross != 0.0f) {
             if (cross > 0.0f) {
-                sign = 1;
+                sign = IDX(POLYGON_WINDING_COUNTERCLOCKWISE);
             } else {
-                sign = 2;
+                sign = IDX(POLYGON_WINDING_CLOCKWISE);
             }
         }
         if (sign != 0) {
-            if (dir != 0 && dir != sign) {
+            if (dir != POLYGON_WINDING_UNSET && IDX(dir) != sign) {
                 return 0;
             }
-            dir = sign;
+            dir = static_cast<PolygonWinding>(sign);
         }
     }
-    return dir == 2;
+    return dir == POLYGON_WINDING_CLOCKWISE;
 }
 
 // @early-stop

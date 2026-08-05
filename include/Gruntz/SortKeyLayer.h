@@ -21,17 +21,33 @@
 //                    toy, toy-time, wingz-time
 //   SORTKEY_OVERLAY  the front-most layer - front candy, the status bar's
 //                    sprites, the fortress flag's banner
+//   SORTKEY_INGAME_INFO the in-game pickup icon and help-text classes
+//   SORTKEY_TELEPORT    wormholes and teleporters
 //
-// The single-class layers (Warlord at 800000, InGameIcon at 95000, Wormhole at
-// 99999, ExitTrigger at 75000) keep their literals: naming a layer after the one
-// class that uses it would say nothing the assignment does not already say.
 GZ_ENUM_CONST_BEGIN(SortKeyLayer)
+    SORTKEY_BOOTY_WARLORD = 2,
+    SORTKEY_GRUNT_CREATION = 5,
+    SORTKEY_ACTION_AREA = 6,
+    SORTKEY_GRUNT_PUDDLE = 10,
+    SORTKEY_TOOB_SPIKE = 12,
+    SORTKEY_PROJECTILE = 15,
+    SORTKEY_KITCHEN_SLIME = 19,
+    SORTKEY_GRUNT_SELECTED = 20,
+    SORTKEY_GRUNT_POWERUP = 21,
+    SORTKEY_EXIT_TRIGGER = 75000,
+    SORTKEY_GRUNT_DEATH = 90000,
+    SORTKEY_TELEPORT = 0x1869f,
+    SORTKEY_ROLLING_BALL_BASE = 100000,
+    SORTKEY_INGAME_INFO = 0x17318,
+    SORTKEY_INGAME_INFO_FX = 0x17319,
     SORTKEY_ACTOR = 0xcf850,
     // One either side of the actor layer, for a sprite that belongs among the
     // grunts but must resolve behind or in front of them.
     SORTKEY_ACTOR_BEHIND = 0xcf84f,
     SORTKEY_ACTOR_FRONT = 0xcf851,
     SORTKEY_GRUNT_HUD = 0xdbba0,
+    SORTKEY_GRUNT_VOICE = 0xdbba1,
+    SORTKEY_WARLORD = 800000,
     SORTKEY_OVERLAY = 0xf4240
 GZ_ENUM_CONST_END(SortKeyLayer)
 

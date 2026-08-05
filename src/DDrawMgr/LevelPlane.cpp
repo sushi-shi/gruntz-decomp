@@ -55,7 +55,7 @@ i32 CDDrawWorkerHost::Read(
     const char* blockBase,
     LevelCoordRect* bounds
 ) {
-    if (pd->headerSize != 0xa0) {
+    if (pd->headerSize != WWD_PLANE_HEADER_SIZE) {
         return 0;
     }
 
@@ -410,13 +410,13 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
 #define DRAW_CELL(handle, xp, yp, srcp)                                                            \
     do {                                                                                           \
         u32 h_ = static_cast<u32>(handle);                                                         \
-        if (h_ == 0xeeeeeeee) {                                                                    \
+        if (h_ == UNINIT_FILL) {                                                                   \
             dr.left = (xp);                                                                        \
             dr.top = (yp);                                                                         \
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_bltFx);                                           \
-        } else if (h_ != 0xffffffff) {                                                             \
+        } else if (h_ != static_cast<u32>(TILE_CLEAR)) {                                           \
             CDDrawWorker* fr_ = FrameSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & 0xffff);                                              \
             CImage* e_ = fr_->GetAt(idx_);                                                         \
@@ -944,7 +944,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     for (i32 row = 0; row < m_gridH; row++) {
         for (i32 col = 0; col < m_gridW; col++) {
             i32 handle = m_tileGrid[m_colOffsets[row] + col];
-            if (handle == -1 || static_cast<u32>(handle) == 0xeeeeeeee) {
+            if (handle == TILE_CLEAR || static_cast<u32>(handle) == UNINIT_FILL) {
                 continue;
             }
             u32 setIdx = static_cast<u32>(handle) >> 16;
@@ -988,11 +988,11 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
 // @early-stop
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
-    i32 format = OwnerMgr()->m_drawTarget->m_frontPair->m_bpp;
-    if (format == 8) {
+    ColorDepth format = OwnerMgr()->m_drawTarget->m_frontPair->m_bpp;
+    if (format == BPP_PALETTED_8) {
         return;
     }
-    if (format != 0x10) {
+    if (format != BPP_RGB_16) {
         return;
     }
 

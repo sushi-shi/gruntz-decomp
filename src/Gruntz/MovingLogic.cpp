@@ -157,7 +157,7 @@ void CMovingLogic::AdvanceMotion() {
         Motion()->m_position.y = static_cast<double>(m_object->m_screenY);
     }
 
-    if (m_object->m_moveMode == 1) {
+    if (m_object->m_moveMode == MOVE_GROUNDED) {
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.x),
@@ -194,7 +194,7 @@ void CMovingLogic::AdvanceMotion() {
         ms->m_step.y = a8new;
     }
 
-    if (m_object->m_moveMode != 7) {
+    if (m_object->m_moveMode != MOVE_DIRECT) {
         i32 f = m_collisionFlags;
         if (f & 0x800000) {
             Motion()->m_velocity.y = -Motion()->m_velocity.y;

@@ -5,7 +5,16 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
+
+// Chat-box geometry follows the status-bar layout, but its retail values are
+// one-based and therefore form a distinct domain from StatusBarDock.
+GZ_ENUM_BEGIN(ChatBoxLayout)
+    CHATBOX_WITH_RIGHT_STATUSBAR = 1,
+    CHATBOX_WITH_LEFT_STATUSBAR = 2,
+    CHATBOX_WITH_HIDDEN_STATUSBAR = 3
+GZ_ENUM_END(ChatBoxLayout)
 
 class CDDrawSurfaceMgr;
 class CDDrawSurfacePair;
@@ -21,14 +30,14 @@ public:
         m_inputActive = 0;
         m_originX = 0;
         m_originY = 0;
-        m_mode = 1;
+        m_mode = CHATBOX_WITH_RIGHT_STATUSBAR;
     }
 
     i32 Attach(CDDrawSurfaceMgr* world, CFontConfig* host);
 
     void Deactivate();
 
-    void Configure(i32 mode);
+    void Configure(ChatBoxLayout mode);
 
     i32 HitTest(i32 x, i32 y);
 
@@ -38,7 +47,7 @@ public:
 
     i32 m_originX;
     i32 m_originY;
-    i32 m_mode;
+    ChatBoxLayout m_mode;
     i32 m_attached;
     i32 m_inputActive;
     CFontConfig* m_fontConfig;

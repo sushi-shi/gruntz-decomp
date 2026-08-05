@@ -5,12 +5,14 @@
 #include <Mfc.h>
 
 #include <Bute/ButeTree.h>
+#include <Gruntz/ActionAreaOwner.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeColl2.h>
@@ -57,13 +59,13 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_object->m_sortKey != 6) {
-        m_object->m_sortKey = 6;
+    if (m_object->m_sortKey != SORTKEY_ACTION_AREA) {
+        m_object->m_sortKey = SORTKEY_ACTION_AREA;
         m_object->m_flags |= 0x20000;
     }
     m_phase = 1;
     m_duration = 0;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 }
 
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
@@ -123,15 +125,15 @@ i32 CActionArea::Tick() {
 
 RVA(0x00008580, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
-    switch (owner) {
-        case 1: {
+    switch (static_cast<ActionAreaOwner>(owner)) {
+        case ACTION_AREA_BLUE_OWNER: {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_BLUE");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
             rec->SetAllTypes(SHADE_ALPHA_16);
             break;
         }
-        case 2: {
+        case ACTION_AREA_RED_OWNER: {
             m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
 
             CDDrawWorker* rec = m_wwdObject->m_frameSet;
@@ -141,7 +143,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
         default:
             return 0;
     }
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     return 1;
 }
 

@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/AniRecordBase2.h>
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -33,7 +34,7 @@ CAniRecordView::~CAniRecordView() {
     if (r->m_cues != NULL) {
         ::operator delete(r->m_cues);
     }
-    r->m_loopMode = 0xffff;
+    r->m_loopMode = WWDLOOP_INVALID;
     r->m_cueCount = 0;
     r->m_cues = NULL;
 }
@@ -59,9 +60,9 @@ RVA(0x00168c60, 0xa0)
 i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
-    m_stepMode = *p++;
-    m_loopMode = *p++;
-    m_positionMode = *p++;
+    m_stepMode = static_cast<WwdAnimStepMode>(*p++);
+    m_loopMode = static_cast<WwdAnimLoopMode>(*p++);
+    m_positionMode = static_cast<WwdAnimPositionMode>(*p++);
     m_param = *p++;
     m_frameTime = *p++;
     m_drawValue = *p++;
@@ -207,7 +208,7 @@ void CAniRecordBase2::Unload() {
 RVA(0x00168fd0, 0x24)
 i32 CAniRecordBase2::PushPalette() {
     CDDrawSurfaceChildA* sd = OwnerMgr()->m_drawTarget->m_frontPair;
-    if (sd->m_bpp != 8) {
+    if (sd->m_bpp != BPP_PALETTED_8) {
         return 1;
     }
     return sd->m_surface->SetPalette(m_buf, 0);

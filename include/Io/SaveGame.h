@@ -8,9 +8,24 @@
 #include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/QuestLevel.h>
 #include <Io/FileStream.h>
 
 #include <string.h>
+
+GZ_ENUM_CONST_BEGIN(SaveSlotFlags)
+    SAVESLOT_EMPTY = 0,
+    SAVESLOT_PRESENT = 0x1,
+    SAVESLOT_CHEATS_USED = 0x2
+GZ_ENUM_CONST_END(SaveSlotFlags)
+
+GZ_ENUM_CONST_BEGIN(SaveGameStringId)
+    SAVE_STRING_SAVING_GAME = 0x81a6
+GZ_ENUM_CONST_END(SaveGameStringId)
+
+enum {
+    SAVE_SLOT_COUNT = 10
+};
 
 struct SaveSlot {
     union {
@@ -75,15 +90,15 @@ public:
     CString m_name;
 
     i32 m_header[4];
-    u32 m_maxLevel;
-    u32 m_curLevel;
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_maxLevel;
+    GZ_ENUM_STORAGE(QuestLevel, u32) m_curLevel;
     u32 m_magic;
     char m_pad24[0x51];
     char m_pad75[0x83];
     i32 m_tailF8;
     i32 m_tailFC;
     char m_pad100[0x924];
-    SaveSlot m_slots[10];
+    SaveSlot m_slots[SAVE_SLOT_COUNT];
 };
 SIZE_UNKNOWN();
 

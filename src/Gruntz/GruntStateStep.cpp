@@ -58,11 +58,11 @@ static i32 iabs(i32 v) {
 // @early-stop
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
-    i32 state = g->m_defenderState;
-    if (state == 3) {
+    GruntAiState state = g->m_defenderState;
+    if (state == AISTATE_RETURN) {
         return 1;
     }
-    if (state != 2) {
+    if (state != AISTATE_ATTACK) {
 
         Coord tp;
         g->GetScreenPos(&tp);

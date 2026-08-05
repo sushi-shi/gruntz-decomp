@@ -25,5 +25,5 @@ VTBL(CWayPoint, 0x001e74b4);
 // write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 }

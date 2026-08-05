@@ -310,7 +310,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
 // @early-stop
 RVA(0x00116a40, 0xf5)
 CTileActionEvent* CTileTriggerContainer::AddToList3(
-    i32 actionCode,
+    BrickTileId actionCode,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
@@ -346,7 +346,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
 // @early-stop
 RVA(0x00116b80, 0x120)
 CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
-    i32 actionCode,
+    BrickTileId actionCode,
     i32 tileX,
     i32 tileY,
     i32 cellKey,
@@ -357,20 +357,20 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
         return 0;
     }
     i32 a = 0, b = 0, c = 0, d = 0;
-    switch (playerSlot) {
-        case 0:
+    switch (static_cast<PlayerSlot>(playerSlot)) {
+        case PLAYER_SLOT_0:
             d = 1;
             break;
-        case 1:
+        case PLAYER_SLOT_1:
             c = 1;
             break;
-        case 2:
+        case PLAYER_SLOT_2:
             b = 1;
             break;
-        case 3:
+        case PLAYER_SLOT_3:
             a = 1;
             break;
-        case PLAYERSLOT_ALL:
+        case PLAYER_SLOT_ALL:
             a = 1;
             b = 1;
             c = 1;
@@ -910,7 +910,7 @@ void* CTileTriggerContainer::LoadElement(
                 CTileImageSet* rec =
                     static_cast<CTileImageSet*>(level->m_imageSets.GetData()[tile & 0xffff]);
                 // Ingest: the raw WWD attribute byte for this cell.
-                tileKind = static_cast<TileCollisionKind>(rec->GetCollisionAt(0, 0));
+                tileKind = rec->GetCollisionAt(0, 0);
             }
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
@@ -994,7 +994,7 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     i32 key = (tileX << 8) + tileY;
     CTileActionEvent* elem = FindActionByCellKey(key);
     if (elem != NULL) {
-        if (playerSlot == PLAYERSLOT_ALL) {
+        if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
             elem->m_playerFlags[0] = 1;
             elem->m_playerFlags[1] = 1;
             elem->m_playerFlags[2] = 1;

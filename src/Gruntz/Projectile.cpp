@@ -99,7 +99,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_wwdObject = static_cast<CWwdGameObjectA*>(owner);
     m_animWorker = owner->m_animWorker;
     m_wwdObject->m_flags |= 0x2000002;
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_ACTOR) {
         o->m_sortKey = SORTKEY_ACTOR;
@@ -926,8 +926,8 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj), CWapX(obj), m_startTime(0), m_duration(0) {
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0xf) {
-        o->m_sortKey = 0xf;
+    if (o->m_sortKey != SORTKEY_PROJECTILE) {
+        o->m_sortKey = SORTKEY_PROJECTILE;
         o->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyName("GAME_TIMEBOMB");

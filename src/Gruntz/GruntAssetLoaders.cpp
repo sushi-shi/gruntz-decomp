@@ -6,13 +6,17 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/TileGeometry.h>
@@ -98,7 +102,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     StopStruckSlotSound();
     StopStruckVoiceSound();
 
-    m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
+    m_object->m_stateFlags &= ~IDX(SPRITE_STATE_FLASHING);
     m_deathAnimStarted = 1;
     m_health = 0;
     m_entranceCommitted = 0;
@@ -145,8 +149,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_objAux->m_actKey = ActFindId(s_dAnimKeyC);
 
     m_wwdObject->m_flags |= 1;
-    if (m_object->m_sortKey != 0x15f90) {
-        m_object->m_sortKey = 0x15f90;
+    if (m_object->m_sortKey != SORTKEY_GRUNT_DEATH) {
+        m_object->m_sortKey = SORTKEY_GRUNT_DEATH;
         m_object->m_flags |= 0x20000;
     }
 
@@ -235,11 +239,11 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            i32 attr = ((
-                grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX]
-            ))[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4];
+            TileCollisionKind attr = static_cast<TileCollisionKind>((
+                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
+            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
             i32 tag = 0x355;
-            if (attr == 0x6e || attr == 0x74) {
+            if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath = static_cast<CAniElement*>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
                 );
@@ -265,11 +269,11 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            i32 attr = ((
-                grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX]
-            ))[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4];
+            TileCollisionKind attr = static_cast<TileCollisionKind>((
+                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
+            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
             i32 tag = 0x355;
-            if (attr == 0x6e || attr == 0x74) {
+            if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath = static_cast<CAniElement*>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL2)
                 );
@@ -375,7 +379,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 }
             }
 
-            if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != PICKUP_BOMB) {
+            if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 m_wwdObject->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
                 m_wwdObject->ApplyName(s_NORMALGRUNT_DEATH);
             }
@@ -402,10 +406,10 @@ finalize:
 
 tail:
 
-    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != PICKUP_BOMB) {
+    if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
         SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
-    if (m_arrivalState == 0xd) {
+    if (m_arrivalState == AI_TOOLTHIEF) {
         TryPowerupAtTile();
     }
     m_gruntKind = GRUNT_NORMAL;

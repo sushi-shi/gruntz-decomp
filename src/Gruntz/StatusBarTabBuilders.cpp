@@ -34,8 +34,8 @@ RVA(0x000e8a70, 0x18c)
 i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT g,
     const char* key,
     i32 idxA,
@@ -91,7 +91,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     CShadeTable* sel =
-        g_gameReg->m_spriteFactory->GetSel(g_gameReg->m_options[g_curPlayer].m_colorIndex, 0);
+        g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex), 0);
     if (sel == NULL) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
@@ -315,8 +315,8 @@ RVA(0x000e9600, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     i32 left,
     i32 top,
     i32 right,
@@ -324,7 +324,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     const char* unused,
     i32 rowIndex,
     i32 colIndex,
-    i32 enabled,
+    StatusSampleMode enabled,
     i32 onLeft
 ) {
     static_cast<void>(unused);
@@ -341,7 +341,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_rect14.bottom = bottom;
     m_cmd = cmd;
 
-    if (enabled != 0) {
+    if (enabled != STATUS_SAMPLE_NONE) {
         m_enabled = 1;
     } else {
         m_enabled = 0;
@@ -414,8 +414,8 @@ i32 CSBI_SideTab::Refresh(i32 unused) {
 // @early-stop
 RVA(0x000e9850, 0x111)
 i32 CSBI_SideTab::BuildHandle() {
-    i32 mode = m_sampleMode;
-    if (mode == 0) {
+    StatusSampleMode mode = m_sampleMode;
+    if (mode == STATUS_SAMPLE_NONE) {
         return 0;
     }
     CGrunt* unit = g_gameReg->m_cmdGrid->m_grid[m_colIndex + 15 * m_rowIndex];
@@ -424,26 +424,26 @@ i32 CSBI_SideTab::BuildHandle() {
         return 0;
     }
     i32 val;
-    if (mode == 2) {
+    if (mode == STATUS_SAMPLE_TOOL) {
         PickupType level = unit->m_entranceReason;
         if (level > PICKUP_EQUIPPABLE_LAST) {
-            val = unit->m_toolId;
-            if (val == 0) {
-                m_sampleMode = 1;
+            val = IDX(unit->m_toolId);
+            if (unit->m_toolId == PICKUP_NONE) {
+                m_sampleMode = STATUS_SAMPLE_HEALTH;
             }
         } else {
-            val = level;
-            if (val == 0) {
-                m_sampleMode = 1;
+            val = IDX(level);
+            if (level == PICKUP_NONE) {
+                m_sampleMode = STATUS_SAMPLE_HEALTH;
             }
         }
-    } else if (mode == 3) {
-        val = unit->m_vehiclePickupType;
-        if (val == 0) {
-            m_sampleMode = 1;
+    } else if (mode == STATUS_SAMPLE_VEHICLE) {
+        val = IDX(unit->m_vehiclePickupType);
+        if (unit->m_vehiclePickupType == PICKUP_NONE) {
+            m_sampleMode = STATUS_SAMPLE_HEALTH;
         }
     }
-    if (m_sampleMode == 1) {
+    if (m_sampleMode == STATUS_SAMPLE_HEALTH) {
         i32 hp = unit->m_health;
         if (hp >= 0x50) {
             val = 0x24;
@@ -587,8 +587,8 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
 }
 
 RVA(0x000ea0f0, 0x5c)
-void CSBI_StatzTabArrow::SetDirection(i32 position, i32 animate) {
-    if (position == 0) {
+void CSBI_StatzTabArrow::SetDirection(StatusBarDock position, i32 animate) {
+    if (position == STATUSBAR_DOCK_RIGHT) {
         if (animate == 0) {
             SetRange(4, -1, 0, 0, -1);
         } else {
@@ -604,8 +604,8 @@ void CSBI_StatzTabArrow::SetDirection(i32 position, i32 animate) {
 }
 
 RVA(0x000ea170, 0x5c)
-void CSBI_StatzTabArrow::SetDirectionAlt(i32 position, i32 animate) {
-    if (position == 0) {
+void CSBI_StatzTabArrow::SetDirectionAlt(StatusBarDock position, i32 animate) {
+    if (position == STATUSBAR_DOCK_RIGHT) {
         if (animate == 0) {
             SetRange(1, -1, 0, 0, -1);
         } else {
@@ -625,8 +625,8 @@ RVA(0x000ea1f0, 0x1fa)
 i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT g,
     const char* key,
     i32 unitRow,

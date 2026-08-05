@@ -93,7 +93,7 @@ INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wPara
             return 1;
 
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hWnd, 0);
                 return 1;
             }

@@ -491,11 +491,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved3 = w3->m_actKey;
-            w3->SetActKey(ACT_PREPARE_SAVE);
+            w3->SetActKey(IDX(ACT_PREPARE_SAVE));
 
             m_animWorker->m_notify(this);
             w3 = m_animWorker;
-            if (w3->ActKey() == ACT_PREPARE_SAVE) {
+            if (w3->ActKey() == IDX(ACT_PREPARE_SAVE)) {
                 w3->m_actKey = saved3;
             }
             break;
@@ -509,11 +509,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved4 = w4->m_actKey;
-            w4->SetActKey(ACT_AFTER_SAVE);
+            w4->SetActKey(IDX(ACT_AFTER_SAVE));
 
             m_animWorker->m_notify(this);
             w4 = m_animWorker;
-            if (w4->ActKey() == ACT_AFTER_SAVE) {
+            if (w4->ActKey() == IDX(ACT_AFTER_SAVE)) {
                 w4->m_actKey = saved4;
             }
             break;
@@ -527,11 +527,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved7 = w7->m_actKey;
-            w7->SetActKey(ACT_AFTER_LOAD);
+            w7->SetActKey(IDX(ACT_AFTER_LOAD));
 
             m_animWorker->m_notify(this);
             w7 = m_animWorker;
-            if (w7->ActKey() == ACT_AFTER_LOAD) {
+            if (w7->ActKey() == IDX(ACT_AFTER_LOAD)) {
                 w7->m_actKey = saved7;
             }
             break;
@@ -554,11 +554,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved8 = w8->m_actKey;
-            w8->SetActKey(ACT_AFTER_LOAD_REFERENCES);
+            w8->SetActKey(IDX(ACT_AFTER_LOAD_REFERENCES));
 
             m_animWorker->m_notify(this);
             w8 = m_animWorker;
-            if (w8->ActKey() == ACT_AFTER_LOAD_REFERENCES) {
+            if (w8->ActKey() == IDX(ACT_AFTER_LOAD_REFERENCES)) {
                 w8->m_actKey = saved8;
             }
             break;
@@ -778,7 +778,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     CUserLogic* logic = w->m_logic;
     // Seeded with 0, NOT LOGIC_NONE(-1): retail writes 0 into the record when
     // the worker has no logic, and 0 is not a member of this domain.
-    LogicTypeId typeTag = static_cast<LogicTypeId>(0);
+    LogicTypeId typeTag = LOGIC_UNSET;
     if (logic != NULL) {
         typeTag = logic->GetTypeTag();
     }
@@ -1054,8 +1054,8 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
     while (sym != NULL) {
         void* val = tab->NextSym2(sym);
         while (val != NULL) {
-            i32 tag = (static_cast<CParseSource*>(val))->GetEntryTag();
-            if (tag == 'PCX' || tag == 'BMP' || tag == 'RID' || tag == 'PID') {
+            RezTypeTag tag = (static_cast<CParseSource*>(val))->GetEntryTag();
+            if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
                 char* p = (static_cast<CParseSource*>(val))->m_name;
                 while (*p != 0) {
                     if (*p >= '0' && *p <= '9') {

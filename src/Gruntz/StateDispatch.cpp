@@ -25,10 +25,10 @@ RVA_COMPGEN(0x00011a50, 0x44, ??1CLevelTime@@UAE@XZ)
 RVA(0x0009b770, 0xf1)
 i32 CreateLevelTime(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-
-    switch (static_cast<u32>(aux->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(ACT_LIVE);
+            aux->SetActKey(IDX(ACT_LIVE));
             CLevelTime* h = new CLevelTime(obj);
             h->Activate();
             aux->m_logic = h;

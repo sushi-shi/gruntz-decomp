@@ -81,17 +81,17 @@ void CDDrawWorkerList::ClearWorkers() {
 
 // @early-stop
 RVA(0x00163c90, 0x116)
-i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
+i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
     if (w <= 0 || h <= 0) {
 
         if (m_id == 1) {
-            if (OwnerMgr()->m_lastError == 0) {
-                OwnerMgr()->m_lastError = 0xfa1;
+            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+                OwnerMgr()->m_lastError = WORLDERR_FRONT_DIMENSIONS;
             }
         } else {
-            if (OwnerMgr()->m_lastError == 0) {
-                OwnerMgr()->m_lastError = 0xfa2;
+            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+                OwnerMgr()->m_lastError = WORLDERR_BACK_DIMENSIONS;
             }
         }
         return 0;
@@ -113,21 +113,21 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 flags) {
             4
         ));
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == 0) {
-                OwnerMgr()->m_lastError = 0xfa3;
+            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+                OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
             }
             return 0;
         }
     }
     if (m_id != 1) {
         if (m_flags & 0x10000) {
-            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, 0, 0, -1);
+            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, BPP_UNSET, 0, -1);
         } else {
-            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, 0, 0, -1);
+            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == 0) {
-                OwnerMgr()->m_lastError = 0xfa4;
+            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
+                OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE_CREATE;
             }
             return 0;
         }
@@ -144,7 +144,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
         return 0;
     }
     i32 w = src->m_width;
-    i32 bpp = src->m_bitDepth;
+    ColorDepth bpp = src->m_bitDepth;
     i32 h = src->m_height;
     if (w <= 0 || h <= 0) {
         return 0;
@@ -246,7 +246,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     u8 c = static_cast<u8>(color);
     i32 w = rect->right - rect->left + 1;
 
-    if (m_bpp == 0x10) {
+    if (m_bpp == BPP_RGB_16) {
         i32 n = 2 * w;
         i32 offTop = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->top;
         if (n > 0) {
@@ -270,7 +270,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     {
         i32 h = rect->bottom - rect->top + 1;
         for (i32 y = 0; y < h; ++y) {
-            if (m_bpp == 0x10) {
+            if (m_bpp == BPP_RGB_16) {
                 i32 lo =
                     (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;
                 base[lo] = c;
@@ -342,10 +342,10 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 
 // @early-stop
 RVA(0x00164250, 0x12b)
-i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
-        if (m_id == 2) {
+        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
             DDSCAPS caps;
             if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
                 sysmem = 0x800 & caps.dwCaps;
@@ -355,7 +355,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
         }
         OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
         m_surface = NULL;
-        if (m_id == 1) {
+        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
             CDDrawSurfaceMgr* mgr = OwnerMgr();
             m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
                 static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
@@ -375,7 +375,9 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, i32 bpp) {
                 return 0;
             }
         }
-        if (w > 0 && h > 0 && (8 == bpp || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || 32 == bpp)) {
+        if (w > 0 && h > 0
+            && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24
+                || bpp == BPP_RGB_32)) {
             m_srcRect[0] = 0;
             m_srcRect[1] = 0;
             m_width = w;
@@ -428,7 +430,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 
 // @early-stop
 RVA(0x001644a0, 0x1b0)
-i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
     m_width = w;
     m_height = h;
@@ -456,54 +458,54 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
         );
     }
     if (hr == 0) {
-        i32 err = pool->m_lastError;
-        if (err != 0) {
+        DDrawDeviceError err = pool->m_lastError;
+        if (err != DDRAWERR_NONE) {
             switch (err) {
-                case 0x3e9: {
+                case DDRAWERR_CREATE: {
                     CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == 0) {
-                        m->m_lastError = 0x80e9;
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_DDRAW_CREATE;
                     }
                     return 0;
                 }
-                case 0x3ea: {
+                case DDRAWERR_COOPERATIVE_LEVEL: {
                     CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == 0) {
-                        m->m_lastError = 0x80ea;
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_DDRAW_COOPERATIVE_LEVEL;
                     }
                     return 0;
                 }
-                case 0x3eb: {
+                case DDRAWERR_CAPABILITIES: {
                     CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == 0) {
-                        m->m_lastError = 0x80eb;
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_DDRAW_CAPABILITIES;
                     }
                     return 0;
                 }
-                case 0x3ec: {
+                case DDRAWERR_DISPLAY_MODE: {
                     CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == 0) {
-                        m->m_lastError = 0x80ec;
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_DDRAW_DISPLAY_MODE;
                     }
                     return 0;
                 }
-                case 0x3ed: {
+                case DDRAWERR_COLOR_MASKS: {
                     CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == 0) {
-                        m->m_lastError = 0x80ed;
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_DDRAW_COLOR_MASKS;
                     }
                     return 0;
                 }
             }
             CDDrawSurfaceMgr* md = OwnerMgr();
-            if (md->m_lastError == 0) {
-                md->m_lastError = 0xbb9;
+            if (md->m_lastError == WORLDERR_NONE) {
+                md->m_lastError = WORLDERR_CREATE_DEVICE;
             }
             return 0;
         }
         CDDrawSurfaceMgr* m4 = OwnerMgr();
-        if (m4->m_lastError == 0) {
-            m4->m_lastError = 0xbb9;
+        if (m4->m_lastError == WORLDERR_NONE) {
+            m4->m_lastError = WORLDERR_CREATE_DEVICE;
         }
         return 0;
     }
@@ -518,8 +520,8 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, i32 bpp) {
         return 1;
     }
     CDDrawSurfaceMgr* m3 = OwnerMgr();
-    if (m3->m_lastError == 0) {
-        m3->m_lastError = 0xbba;
+    if (m3->m_lastError == WORLDERR_NONE) {
+        m3->m_lastError = WORLDERR_CREATE_PALETTE_SURFACE;
     }
     return 0;
 }
@@ -546,7 +548,7 @@ i32 CDrawSubWorker::Probe() {
 }
 
 RVA(0x001646b0, 0xde)
-i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, i32 bpp) {
+i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
     }

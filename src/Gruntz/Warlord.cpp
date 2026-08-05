@@ -146,15 +146,15 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
 
     CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey != 0xc3500) {
-        o->m_sortKey = 0xc3500;
+    if (o->m_sortKey != SORTKEY_WARLORD) {
+        o->m_sortKey = SORTKEY_WARLORD;
         o->m_flags |= 0x20000;
     }
     m_wwdObject->m_flags |= 0x2000002;
 
     // The WWD `Smarts` slot is per-logic; for a warlord it is the owner id.
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
-    i32 cfg = g_gameReg->m_options[owner].m_colorIndex;
+    i32 cfg = IDX(g_gameReg->m_options[IDX(owner)].m_colorIndex);
     if (cfg < 0 || cfg >= TINT_COUNT) {
         cfg = 0;
     }
@@ -484,7 +484,7 @@ i32 CWarlord::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId a3, C
         case SERIAL_POSTLOAD: {
 
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
-                g_gameReg->m_options[m_object->m_smarts].m_colorIndex,
+                IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex),
                 0
             );
             if (sel == NULL) {
@@ -629,7 +629,7 @@ i32 CWarlord::AdvanceMovingAnim() {
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
     if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
-        if (h->m_phase != 0 && m_object->m_smarts == g_curPlayer) {
+        if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
             CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
             tm->m_window = 0x3e8;
@@ -670,7 +670,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         }
 
         CTriggerMgr* h = g_gameReg->m_cmdGrid;
-        if (h->m_phase != 0 && m_object->m_smarts == g_curPlayer) {
+        if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
             CueTimer* tm = &g_gameReg->m_cmdGrid->m_cueTimer;
             tm->m_window = 0x3e8;

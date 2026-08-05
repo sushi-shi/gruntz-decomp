@@ -37,6 +37,12 @@ struct CParserHash : public CHashBase {
 SIZE(0x8);
 
 #pragma pack(push, 1)
+GZ_ENUM_CONST_BEGIN(SymTabFileMagic)
+    SYMTAB_MAGIC_CR = '\r',
+    SYMTAB_MAGIC_LF = '\n',
+    SYMTAB_MAGIC_EOF = 0x1a
+GZ_ENUM_CONST_END(SymTabFileMagic)
+
 struct SymTabFileHeader {
     u8 m_magic0;
     char m_pad001[0x3f - 0x01];

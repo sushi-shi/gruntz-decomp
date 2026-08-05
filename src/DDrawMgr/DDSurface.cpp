@@ -7,10 +7,13 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WallProject.h>
 #include <Enums.h>
+#include <Image/ByteRunEncoding.h>
 #include <Image/Image.h>
 #include <Image/ImageRotate.h>
+#include <Image/PcxFormat.h>
 #include <Image/RasterVtx.h>
 #include <Io/FileStream.h>
 #include <Pix16.h>
@@ -69,7 +72,7 @@ i32 CDDSurface::CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* des
 }
 
 RVA(0x0013e0d0, 0x66)
-i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps) {
+i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps) {
     i32* desc = this->m_descWords;
     for (i32 i = 0x1b; i != 0; i--) {
         *desc++ = 0;
@@ -79,10 +82,10 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 ca
     this->m_height = height;
     this->m_descSize = sizeof(DDSURFACEDESC);
     this->m_descFlags = 7;
-    if (bitDepth != 0 && bitDepth != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
+    if (bitDepth != BPP_UNSET && bitDepth != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
         this->m_descFlags = 0x1007;
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
-        this->m_srcBitDepth = bitDepth;
+        this->m_srcBitDepth = IDX(bitDepth);
     }
     return this->BlitIntoDesc(surf);
 }
@@ -101,23 +104,21 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
 
-    i32 bits = m_srcBitDepth;
+    ColorDepth bits = static_cast<ColorDepth>(m_srcBitDepth);
     m_hasColorKey = 0;
     m_bitDepth = bits;
 
-    // `bits` is not a domain - it IS the bits-per-pixel count, and each arm just
-    // divides it by 8 (16 -> width*2). A symbolic name would say nothing extra.
     switch (bits) {
-        case 8:
+        case BPP_PALETTED_8:
             m_bytesPerRow = m_width;
             break;
-        case 16:
+        case BPP_RGB_16:
             m_bytesPerRow = m_width * 2;
             break;
-        case 24:
+        case BPP_RGB_24:
             m_bytesPerRow = m_width * 3;
             break;
-        case 32:
+        case BPP_RGB_32:
             m_bytesPerRow = m_width * 4;
             break;
         default:
@@ -126,16 +127,16 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     }
 
     switch (bits) {
-        case 8:
+        case BPP_PALETTED_8:
             m_bytesPerPixel = 1;
             break;
-        case 16:
+        case BPP_RGB_16:
             m_bytesPerPixel = 2;
             break;
-        case 24:
+        case BPP_RGB_24:
             m_bytesPerPixel = 3;
             break;
-        case 32:
+        case BPP_RGB_32:
             m_bytesPerPixel = 4;
             break;
         default:
@@ -184,20 +185,20 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xeb, hr);
     }
 
-    i32 bits = m_srcBitDepth;
+    ColorDepth bits = static_cast<ColorDepth>(m_srcBitDepth);
     m_hasColorKey = 0;
     m_bitDepth = bits;
     switch (bits) {
-        case 8:
+        case BPP_PALETTED_8:
             m_bytesPerRow = m_width;
             break;
-        case 16:
+        case BPP_RGB_16:
             m_bytesPerRow = m_width * 2;
             break;
-        case 24:
+        case BPP_RGB_24:
             m_bytesPerRow = m_width * 3;
             break;
-        case 32:
+        case BPP_RGB_32:
             m_bytesPerRow = m_width * 4;
             break;
         default:
@@ -206,16 +207,16 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
     }
 
     switch (bits) {
-        case 8:
+        case BPP_PALETTED_8:
             m_bytesPerPixel = 1;
             break;
-        case 16:
+        case BPP_RGB_16:
             m_bytesPerPixel = 2;
             break;
-        case 24:
+        case BPP_RGB_24:
             m_bytesPerPixel = 3;
             break;
-        case 32:
+        case BPP_RGB_32:
             m_bytesPerPixel = 4;
             break;
         default:
@@ -563,13 +564,13 @@ void CDDSurface::FlipVertical() {
 }
 
 RVA(0x0013ece0, 0xc7)
-i32 CDDSurface::BlitDirect(void* src, i32 mode) {
+i32 CDDSurface::BlitDirect(void* src, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
     u8* p = static_cast<u8*>(src);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             u8* sp = p;
@@ -705,7 +706,7 @@ i32 CDDSurface::ShadeBlt(
     RECT dr, sr;
     CopyRect(&dr, dstRect);
     CopyRect(&sr, srcRect);
-    if (m_bytesPerPixel != 2) {
+    if (m_bytesPerPixel != PIXEL16_BYTES_PER_PIXEL) {
         return 0;
     }
     i32 srcW = sr.right - sr.left;
@@ -755,10 +756,11 @@ i32 CDDSurface::ShadeBlt(
     u16* temp = static_cast<u16*>(::operator new(dstW * 4));
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
-    if (g_rDown != 3) {
+    if (g_rDown != PIXEL16_RED_DOWN) {
         goto reject;
     }
-    if (g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    if (g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
+        && g_gUp == PIXEL16_GREEN_UP) {
 
         i32 rows = dstH;
         if (rows > 0) {
@@ -792,7 +794,9 @@ i32 CDDSurface::ShadeBlt(
                 srcPtr += srcRowAdv;
             } while (--rows != 0);
         }
-    } else if (g_rDown == 3 && g_gDown == 2 && g_bDown == 3 && g_rUp == 0xb && g_gUp == 5) {
+    } else if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN
+               && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB565_RED_UP
+               && g_gUp == PIXEL16_GREEN_UP) {
 
         i32 rows = dstH;
         if (rows > 0) {
@@ -877,8 +881,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     u16* scratch = static_cast<u16*>(operator new(width * 4));
     i32 off = scale << 11;
 
-    if (g_rDown == 3) {
-        if (g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    if (g_rDown == PIXEL16_RED_DOWN) {
+        if (g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
+            && g_gUp == PIXEL16_GREEN_UP) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -895,7 +900,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 }
                 srcPix += stride;
             }
-        } else if (g_gDown == 2 && g_bDown == 3 && g_rUp == 0xb && g_gUp == 5) {
+        } else if (g_gDown == RGB565_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
+                   && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -931,7 +937,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 // @early-stop
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
-    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
+        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
         i32 bShift = g_bUp;
         i32 a = 0;
         i32 stepA = 0x20;
@@ -1055,34 +1062,34 @@ i32 CDDSurface::GetColorKey() {
 }
 
 RVA(0x0013faa0, 0x108)
-i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
-    i32 dest = this->m_bitDepth;
-    if ((dest == 0) == bitcount) {
-        return BlitDirect(src, mode);
+i32 CDDSurface::Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrder rowOrder) {
+    ColorDepth dest = this->m_bitDepth;
+    if (static_cast<ColorDepth>(dest == BPP_UNSET) == bitcount) {
+        return BlitDirect(src, rowOrder);
     }
     switch (dest) {
-        case 8:
+        case BPP_PALETTED_8:
             switch (bitcount) {
-                case 0x10:
-                    return Blit816(src, palette, mode);
-                case 0x18:
-                    return Blit824(src, palette, mode);
+                case BPP_RGB_16:
+                    return Blit816(src, palette, rowOrder);
+                case BPP_RGB_24:
+                    return Blit824(src, palette, rowOrder);
             }
             return 0;
-        case 0x10:
+        case BPP_RGB_16:
             switch (bitcount) {
-                case 8:
-                    return Blit168(src, palette, mode);
-                case 0x18:
-                    return Blit1624(src, mode);
+                case BPP_PALETTED_8:
+                    return Blit168(src, palette, rowOrder);
+                case BPP_RGB_24:
+                    return Blit1624(src, rowOrder);
             }
             return 0;
-        case 0x18:
+        case BPP_RGB_24:
             switch (bitcount) {
-                case 8:
-                    return Blit248(src, palette, mode);
-                case 0x10:
-                    return Blit2416(src, mode);
+                case BPP_PALETTED_8:
+                    return Blit248(src, palette, rowOrder);
+                case BPP_RGB_16:
+                    return Blit2416(src, rowOrder);
             }
             return 0;
     }
@@ -1091,7 +1098,7 @@ i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
 
 // @early-stop
 RVA(0x0013fbb0, 0x126)
-i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
     u8* pal = static_cast<u8*>(palv);
     if (pal == NULL) {
         return 0;
@@ -1111,7 +1118,7 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
         return 0;
     }
     u8* src = static_cast<u8*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1134,13 +1141,13 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
 
 // @early-stop
 RVA(0x0013fce0, 0x17f)
-i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
+i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
     u8* src = static_cast<u8*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1179,7 +1186,7 @@ i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
 
 // @early-stop
 RVA(0x0013fe60, 0x11e)
-i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit248(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == NULL) {
         return 0;
@@ -1189,7 +1196,7 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
         return 0;
     }
     u8* src = static_cast<u8*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1215,13 +1222,13 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
 }
 
 RVA(0x0013ff80, 0x184)
-i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
+i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
     u16* src = static_cast<u16*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1258,7 +1265,7 @@ i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
 
 // @early-stop
 RVA(0x00140110, 0x30b)
-i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == NULL) {
         return 0;
@@ -1268,7 +1275,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
         return 0;
     }
     u8* src = static_cast<u8*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1335,7 +1342,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
 
 // @early-stop
 RVA(0x00140420, 0x34f)
-i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
+i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
     if (pal == NULL) {
         return 0;
@@ -1345,7 +1352,7 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
         return 0;
     }
     u16* src = static_cast<u16*>(srcv);
-    if (mode == 2) {
+    if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1429,7 +1436,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     }
 
     if (detailed == 0) {
-        i32 depth = 0;
+        ColorDepth depth = BPP_UNSET;
         switch (desc->ddpfPixelFormat.dwRGBBitCount) {
             case DDBD_32:
                 depth = BPP_RGB_32;
@@ -1441,20 +1448,20 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
                 depth = BPP_PALETTED_8;
                 break;
             case DDBD_4:
-                depth = 4;
+                depth = BPP_PALETTED_4;
                 break;
             case DDBD_2:
-                depth = 2;
+                depth = BPP_PALETTED_2;
                 break;
             case DDBD_1:
-                depth = 1;
+                depth = BPP_MONO_1;
                 break;
         }
         DDrawLogLine(
             "Surface: width = %i, height = %i, depth = %i, pitch = %i\n",
             m_width,
             m_height,
-            depth,
+            IDX(depth),
             m_pitch
         );
         return;
@@ -1462,7 +1469,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
 
     u32 caps = desc->ddsCaps.dwCaps;
     i32 colorKey = GetColorKey();
-    i32 depth = 0;
+    ColorDepth depth = BPP_UNSET;
     switch (desc->ddpfPixelFormat.dwRGBBitCount) {
         case DDBD_32:
             depth = BPP_RGB_32;
@@ -1474,13 +1481,13 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
             depth = BPP_PALETTED_8;
             break;
         case DDBD_4:
-            depth = 4;
+            depth = BPP_PALETTED_4;
             break;
         case DDBD_2:
-            depth = 2;
+            depth = BPP_PALETTED_2;
             break;
         case DDBD_1:
-            depth = 1;
+            depth = BPP_MONO_1;
             break;
     }
     DDrawLogLine("Surface Information for surface pointer %p:\n", this);
@@ -1488,7 +1495,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         "width = %i, height = %i, depth = %i, pitch = %i\n",
         m_width,
         m_height,
-        depth,
+        IDX(depth),
         m_pitch
     );
     if (depth == BPP_RGB_16) {
@@ -1609,8 +1616,8 @@ i32 CDDSurface::DecodeRun8(void* src) {
         while (nleft > 0) {
             tok = *sp;
             sp++;
-            if ((tok & 0xc0) == 0xc0) {
-                runx = tok & 0x3f;
+            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                runx = tok & BYTE_RUN_LENGTH_MASK;
                 tok = *sp;
                 sp++;
                 if (runx > nleft) {
@@ -1668,8 +1675,8 @@ i32 CDDSurface::DecodeRun24(void* src) {
         while (cols > 0) {
             pm = *inp;
             inp++;
-            if ((pm & 0xc0) == 0xc0) {
-                cnt = pm & 0x3f;
+            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                cnt = pm & BYTE_RUN_LENGTH_MASK;
                 pm = *inp;
                 inp++;
                 if (cnt > cols) {
@@ -1700,8 +1707,8 @@ i32 CDDSurface::DecodeRun24(void* src) {
         while (cols > 0) {
             pm = *inp;
             inp++;
-            if ((pm & 0xc0) == 0xc0) {
-                cnt = pm & 0x3f;
+            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                cnt = pm & BYTE_RUN_LENGTH_MASK;
                 pm = *inp;
                 inp++;
                 if (cnt > cols) {
@@ -1732,8 +1739,8 @@ i32 CDDSurface::DecodeRun24(void* src) {
         while (cols > 0) {
             pm = *inp;
             inp++;
-            if ((pm & 0xc0) == 0xc0) {
-                cnt = pm & 0x3f;
+            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                cnt = pm & BYTE_RUN_LENGTH_MASK;
                 pm = *inp;
                 inp++;
                 if (cnt > cols) {

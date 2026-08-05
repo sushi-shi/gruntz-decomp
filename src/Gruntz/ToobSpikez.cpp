@@ -8,6 +8,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/XferArchive.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
@@ -22,9 +23,10 @@ RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 RVA(0x00114480, 0xf1)
 i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CToobSpikez* inst = new CToobSpikez(obj);
             inst->Activate();
             rec->m_logic = inst;
@@ -70,8 +72,8 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
-    if (m_object->m_sortKey != 0xc) {
-        m_object->m_sortKey = 0xc;
+    if (m_object->m_sortKey != SORTKEY_TOOB_SPIKE) {
+        m_object->m_sortKey = SORTKEY_TOOB_SPIKE;
         m_object->m_flags |= 0x20000;
     }
 }

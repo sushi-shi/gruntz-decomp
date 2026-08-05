@@ -151,7 +151,7 @@ public:
 
     void SendStatFlag(NetMsgId code, i32 flag);
 
-    void SendNetStat(i32 id, u32 value, i32 flag);
+    void SendNetStat(NetMsgId id, u32 value, i32 flag);
 
     i32 DropChannelPlayer(i32 idx);
     i32 Poll(i32 token);
@@ -166,7 +166,7 @@ public:
     i32 BroadcastChannelTable(CNetSessionNode* recipient);
     i32 BroadcastOneChannel(GruntzPlayer* ch);
 
-    i32 RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f);
+    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
 
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd);
     i32 ReadGroupSel();
@@ -187,8 +187,8 @@ public:
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
     i32 SendStatFrom(void* pkt, i32 b, i32 c);
     i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
-    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c);
-    i32 SendStat3(i32 id, u32 value, i32 flag);
+    i32 SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c);
+    i32 SendStat3(i32 id, NetMsgId statId, i32 flag);
     i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
     i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
     i32 SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag);
@@ -203,7 +203,7 @@ public:
     i32 WaitForOtherPlayers();
     i32 LoadMenuSelectSprite(void* evp);
     i32 ParseChannelTable(void* packet);
-    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e);
+    i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
     i32 RegisterChannelRec(void* rec);
     i32 RemoveChannel(i32 idx);
     i32 OnPauseChannel();

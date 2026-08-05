@@ -15,8 +15,8 @@ public:
     i32 Start(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 b0,

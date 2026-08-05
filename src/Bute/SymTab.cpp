@@ -390,7 +390,7 @@ CSymTab::~CSymTab() {
 
 RVA(0x0013a000, 0x37)
 CParseSource* CSymTab::Insert(const char* key, RezTypeTag fourcc) {
-    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(fourcc));
+    CSymRec* rec = static_cast<CSymRec*>(m_symbols.FindInt(IDX(fourcc)));
     if (!rec) {
         return 0;
     }
@@ -992,7 +992,8 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_longestLeafNameLen = hdr.m_longestLeafNameLen;
     m_largestCommentSize = hdr.m_largestCommentSize;
     m_sorted = hdr.m_sorted;
-    if (hdr.m_magic0 != 0x0d || hdr.m_magic3f != 0x0a || hdr.m_magic7e != 0x1a || b != 1) {
+    if (hdr.m_magic0 != SYMTAB_MAGIC_CR || hdr.m_magic3f != SYMTAB_MAGIC_LF
+        || hdr.m_magic7e != SYMTAB_MAGIC_EOF || b != 1) {
         return 0;
     }
     CSymTab* node = new CSymTab(

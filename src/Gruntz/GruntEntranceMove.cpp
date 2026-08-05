@@ -23,6 +23,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -262,7 +263,7 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 // Regalloc: retail spills `found` into the dead `mode` param home (one fewer
 // frame dword) and keeps `base` on the stack instead of a register.
 RVA(0x00067bd0, 0x2ef)
-void CGrunt::BuildEntranceAnimation(i32 mode) {
+void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_animKeyK);
 
@@ -282,7 +283,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     CAniElement* found;
     const char* base;
 
-    if (mode == 1) {
+    if (mode == GRUNT_ENTRANCE_WORMHOLE) {
         i32 onScreen = 0;
         CGruntzMgr* g = g_gameReg;
         {
@@ -301,7 +302,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                     i32 b = vec[1];
                     focus = tm->m_grid[a * TM_GRID_COLS + b];
                 } else {
-                    focus = 0;
+                    focus = NULL;
                 }
                 if (this == focus && m_tileOwnerHi == g_curPlayer) {
                     onScreen = 1;
@@ -311,7 +312,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 
         i32 r = rand() % 0x1e1;
         if (r > 0x140) {
-            found = 0;
+            found = NULL;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_ONE,
@@ -322,7 +323,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
-            found = 0;
+            found = NULL;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_TWO,
@@ -333,7 +334,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
-            found = 0;
+            found = NULL;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_THREE,
@@ -344,8 +345,8 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             }
             base = s_GRUNTZ_ENTRANCEZ;
         }
-    } else if (mode == 2) {
-        found = 0;
+    } else if (mode == GRUNT_ENTRANCE_DROP) {
+        found = NULL;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_GRUNTZ_ENTRANCEZ_DROP,
@@ -353,7 +354,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         );
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
-        found = 0;
+        found = NULL;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_GRUNTZ_ENTRANCEZ_RESSURECT,
@@ -833,7 +834,7 @@ i32 CGrunt::StepArrivalCommit() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
         if (m_entranceReason != PICKUP_BOMB) {
             goto finalize;
@@ -1103,7 +1104,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
         tileId = b->m_rowInts[tileY][tileX * 7 + 3];
     }
 
-    i32 area = state->m_levelType;
+    LevelArea area = state->m_levelType;
 
 #define MV_VEC(V) m_entranceCell = g_gruntDir##V
 #define MV_N                                                                                       \
@@ -1136,98 +1137,98 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_lastTilePx.m_y += 0x10
 
     if (area < AREA_TILESET_B_FIRST) {
-        switch (tileId) {
-            case 0x69:
-            case 0x6a:
+        switch (static_cast<MovingDeathTileSetAId>(tileId)) {
+            case MOVING_DEATH_A_S_1:
+            case MOVING_DEATH_A_S_2:
                 MV_S;
                 break;
-            case 0x6b:
-            case 0x70:
-            case 0x71:
+            case MOVING_DEATH_A_SW_1:
+            case MOVING_DEATH_A_SW_2:
+            case MOVING_DEATH_A_SW_3:
                 MV_SW;
                 break;
-            case 0x78:
-            case 0x80:
+            case MOVING_DEATH_A_W_1:
+            case MOVING_DEATH_A_W_2:
                 MV_W;
                 break;
-            case 0x86:
-            case 0x87:
-            case 0x8b:
+            case MOVING_DEATH_A_NW_1:
+            case MOVING_DEATH_A_NW_2:
+            case MOVING_DEATH_A_NW_3:
                 MV_NW;
                 break;
-            case 0x89:
-            case 0x8a:
+            case MOVING_DEATH_A_N_1:
+            case MOVING_DEATH_A_N_2:
                 MV_N;
                 break;
-            case 0x82:
-            case 0x83:
-            case 0x88:
+            case MOVING_DEATH_A_NE_1:
+            case MOVING_DEATH_A_NE_2:
+            case MOVING_DEATH_A_NE_3:
                 MV_NE;
                 break;
-            case 0x73:
-            case 0x7b:
+            case MOVING_DEATH_A_E_1:
+            case MOVING_DEATH_A_E_2:
                 MV_E;
                 break;
-            case 0x68:
-            case 0x6c:
-            case 0x6d:
+            case MOVING_DEATH_A_SE_1:
+            case MOVING_DEATH_A_SE_2:
+            case MOVING_DEATH_A_SE_3:
                 MV_SE;
                 break;
             default:
                 return 0;
         }
     } else {
-        switch (tileId) {
-            case 0x86:
-            case 0x87:
-            case 0x88:
-            case 0x89:
+        switch (static_cast<MovingDeathTileSetBId>(tileId)) {
+            case MOVING_DEATH_B_N_1:
+            case MOVING_DEATH_B_N_2:
+            case MOVING_DEATH_B_N_3:
+            case MOVING_DEATH_B_N_4:
                 MV_N;
                 break;
-            case 0x79:
-            case 0x7f:
-            case 0x80:
-            case 0x81:
-            case 0x85:
+            case MOVING_DEATH_B_NE_1:
+            case MOVING_DEATH_B_NE_2:
+            case MOVING_DEATH_B_NE_3:
+            case MOVING_DEATH_B_NE_4:
+            case MOVING_DEATH_B_NE_5:
                 MV_NE;
                 break;
-            case 0x6f:
-            case 0x70:
-            case 0x77:
-            case 0x78:
+            case MOVING_DEATH_B_E_1:
+            case MOVING_DEATH_B_E_2:
+            case MOVING_DEATH_B_E_3:
+            case MOVING_DEATH_B_E_4:
                 MV_E;
                 break;
-            case 0x63:
-            case 0x64:
-            case 0x69:
-            case 0x6a:
-            case 0x6b:
-            case 0x71:
+            case MOVING_DEATH_B_SE_1:
+            case MOVING_DEATH_B_SE_2:
+            case MOVING_DEATH_B_SE_3:
+            case MOVING_DEATH_B_SE_4:
+            case MOVING_DEATH_B_SE_5:
+            case MOVING_DEATH_B_SE_6:
                 MV_SE;
                 break;
-            case 0x65:
-            case 0x66:
+            case MOVING_DEATH_B_S_1:
+            case MOVING_DEATH_B_S_2:
                 MV_S;
                 break;
-            case 0x67:
-            case 0x68:
-            case 0x6c:
-            case 0x6d:
-            case 0x6e:
-            case 0x74:
+            case MOVING_DEATH_B_SW_1:
+            case MOVING_DEATH_B_SW_2:
+            case MOVING_DEATH_B_SW_3:
+            case MOVING_DEATH_B_SW_4:
+            case MOVING_DEATH_B_SW_5:
+            case MOVING_DEATH_B_SW_6:
                 MV_SW;
                 break;
-            case 0x75:
-            case 0x76:
-            case 0x7d:
-            case 0x7e:
+            case MOVING_DEATH_B_W_1:
+            case MOVING_DEATH_B_W_2:
+            case MOVING_DEATH_B_W_3:
+            case MOVING_DEATH_B_W_4:
                 MV_W;
                 break;
-            case 0x7c:
-            case 0x82:
-            case 0x83:
-            case 0x84:
-            case 0x8a:
+            case MOVING_DEATH_B_NW_1:
+            case MOVING_DEATH_B_NW_2:
+            case MOVING_DEATH_B_NW_3:
+            case MOVING_DEATH_B_NW_4:
+            case MOVING_DEATH_B_NW_5:
                 MV_NW;
                 break;
             default:
@@ -1275,7 +1276,7 @@ i32 CGrunt::FinishActiveAction() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
         return 1;
     }

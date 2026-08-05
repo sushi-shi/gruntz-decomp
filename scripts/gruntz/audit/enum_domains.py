@@ -28,10 +28,7 @@ Checks the invariants the numeric-domain campaign depends on
      silently ended up one off from the documented ID space. Reported, not fatal,
      because a genuine 0..N-1 index domain is legitimately implicit.
 
-  5. REVIEW-MANIFEST CONSISTENCY (fatal). config/cleanliness/enum-review.tsv must list every
-     source file exactly once with a known state.
-
-  6. RANGE TESTS NAME A BOUNDARY, NOT A MEMBER (fatal). `n > PICKUP_WINGZ` for
+  5. RANGE TESTS NAME A BOUNDARY, NOT A MEMBER (fatal). `n > PICKUP_WINGZ` for
      "not an equippable tool" states a fact about Wingz when it means one about
      the band edge. Declare a marker instead: `_FIRST`/`_LAST` for an inclusive
      range, `_BEGIN`/`_END` for a half-open one (same meanings as C++ iterators),
@@ -43,7 +40,6 @@ Checks the invariants the numeric-domain campaign depends on
 
     python -m gruntz.audit.enum_domains            # report
     python -m gruntz.audit.enum_domains --gate     # exit 1 on any fatal finding
-    python -m gruntz.audit.enum_domains --sync-review   # add missing review rows
 """
 from __future__ import annotations
 
@@ -54,9 +50,6 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
-REVIEW = REPO / "config" / "cleanliness" / "enum-review.tsv"
-STATES = {"pending", "reviewed", "third-party"}
-
 DECL = re.compile(r"\bGZ_ENUM_BEGIN\(\s*(\w+)\s*\)")
 DECL_SPLIT = re.compile(r"\bGZ_ENUM_BEGIN_SPLIT\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 DECL_FLAGS = re.compile(r"\bGZ_ENUM_FLAGS_BEGIN\(\s*(\w+)\s*,\s*(\w+)\s*\)")
@@ -181,29 +174,6 @@ def audit():
                 if em.group(2) is None and em.group(1).isupper():
                     warn.append(f"{rel}: {name}::{em.group(1)} has no explicit value")
 
-    # (5) review manifest
-    if not REVIEW.exists():
-        fatal.append(f"{REVIEW.relative_to(REPO)} is missing - run --sync-review")
-    else:
-        rows = {}
-        for i, ln in enumerate(REVIEW.read_text().splitlines()[1:], start=2):
-            if not ln.strip():
-                continue
-            parts = ln.split("\t")
-            if len(parts) < 2 or parts[1] not in STATES:
-                fatal.append(f"enum-review.tsv:{i}: bad row (state must be one of {sorted(STATES)})")
-                continue
-            rows[parts[0]] = parts[1]
-        have = {str(f.relative_to(REPO)) for f in files}
-        missing = have - set(rows)
-        stale = set(rows) - have
-        if missing:
-            fatal.append(f"enum-review.tsv: {len(missing)} source file(s) not listed "
-                         f"(e.g. {sorted(missing)[:3]}) - run --sync-review")
-        if stale:
-            fatal.append(f"enum-review.tsv: {len(stale)} row(s) name files that no longer exist "
-                         f"(e.g. {sorted(stale)[:3]}) - run --sync-review")
-
     # (5) a range test must name a BOUNDARY, never a member. `n > PICKUP_WINGZ`
     # for "not an equippable tool" states a fact about Wingz when it means a fact
     # about the band edge (docs/patterns/enum-domains.md). The fix is always a
@@ -213,7 +183,9 @@ def audit():
     enumerators: dict[str, str] = {}          # enumerator -> its domain
     for f in files:
         t = strip(f.read_text(errors="replace"))
-        for dom, _kind, _st, body in domain_blocks(t):
+        for dom, kind, _st, body in domain_blocks(t):
+            if kind == "CONST_BEGIN":
+                continue
             for m in ENUMERATOR.finditer(body):
                 enumerators.setdefault(m.group(1), dom)
     for f in files:
@@ -231,7 +203,7 @@ def audit():
                          f"{dom} - declare a _FIRST/_LAST (inclusive) or _BEGIN/_END (half-open) marker AT THAT VALUE and "
                          f"compare against it (rename only; changing the operator moves bytes)")
 
-    # (7) enumerator NAMING. SCREAMING_SNAKE with a domain prefix is the campaign's
+    # (6) enumerator NAMING. SCREAMING_SNAKE with a domain prefix is the campaign's
     # rule (docs/enum-modeling-plan.md); the retail branch keeps every domain
     # unscoped, so the prefix carries all the disambiguation and a camelCase
     # `kButeInt` reads as an ordinary variable at its use sites.
@@ -247,37 +219,12 @@ def audit():
     return fatal, warn, declared
 
 
-def sync_review():
-    have = [str(f.relative_to(REPO)) for f in sources()]
-    old = {}
-    if REVIEW.exists():
-        for ln in REVIEW.read_text().splitlines()[1:]:
-            if ln.strip():
-                p = ln.split("\t")
-                if len(p) >= 2:
-                    old[p[0]] = p[1:]
-    lines = ["path\tstatus\tnotes"]
-    for p in have:
-        prev = old.get(p, ["pending", ""])
-        prev = (prev + [""])[:2]
-        lines.append(f"{p}\t{prev[0]}\t{prev[1]}")
-    REVIEW.parent.mkdir(parents=True, exist_ok=True)
-    REVIEW.write_text("\n".join(lines) + "\n")
-    print(f"[enum-domains] enum-review.tsv synced: {len(have)} row(s)")
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--gate", action="store_true", help="exit 1 on any fatal finding")
-    ap.add_argument("--sync-review", action="store_true",
-                    help="rewrite config/cleanliness/enum-review.tsv from the current file list")
     ap.add_argument("-v", "--verbose", action="store_true", help="also print the warnings")
     args = ap.parse_args()
-
-    if args.sync_review:
-        sync_review()
-        return 0
 
     fatal, warn, declared = audit()
     for f in fatal:

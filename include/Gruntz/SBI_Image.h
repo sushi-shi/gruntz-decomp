@@ -18,15 +18,15 @@ class CImage;
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     CSBI_RectOnly() {
-        m_kind = 1;
+        m_kind = SBI_KIND_RECT_ONLY;
     }
     virtual ~CSBI_RectOnly() OVERRIDE;
 
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 a10
@@ -43,7 +43,7 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 class CSBI_Image : public CSBI_RectOnly {
 public:
     CSBI_Image() {
-        m_kind = 3;
+        m_kind = SBI_KIND_IMAGE;
         m_frame = NULL;
     }
     virtual ~CSBI_Image() OVERRIDE;
@@ -56,8 +56,8 @@ public:
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 frame,

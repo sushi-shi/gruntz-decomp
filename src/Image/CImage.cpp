@@ -110,7 +110,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         return 0;
     }
 
-    if (mode == PID_SYSTEM_MEMORY && (HAS(desc->flags, PID_GRAMMAR_SKIPRUN))) {
+    if (mode == FMT_PID && (HAS(desc->flags, PID_GRAMMAR_SKIPRUN))) {
         if (!BuildShadeBlitter(desc, size)) {
             return 0;
         }
@@ -164,7 +164,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
         capArg = 0x800;
     }
     CDDSurface* item =
-        m_ownerCtx->m_ptrColl->CreateKeyedSurface(width, height, 0, capArg, flagsArg);
+        m_ownerCtx->m_ptrColl->CreateKeyedSurface(width, height, BPP_UNSET, capArg, flagsArg);
     m_surface = item;
     if (item == NULL) {
         return 0;
@@ -251,8 +251,8 @@ i32 CImage::CopyFrom(CImage* other) {
 }
 
 RVA(0x00153330, 0x36)
-i32 CImage::SetOrigin(PidHeader* desc, i32 mode) {
-    if (mode == 4 || mode == 3) {
+i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
+    if (mode == FMT_PID || mode == FMT_RID) {
         i32 oy = desc->offsetY;
         i32 ox = desc->offsetX;
         m_originX = ox;

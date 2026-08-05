@@ -288,7 +288,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
         voice->m_feeder.FeederReset(0);
 
-        m_voiceList.RemoveMatching(voice, 0xffff);
+        m_voiceList.RemoveMatching(voice, SOUND_VOICE_TAG_ALL);
         voice->m_buffer->Release();
         voice->m_buffer = NULL;
         m_voices.Unlink(voice ? &voice->m_link : 0);
@@ -371,10 +371,10 @@ i32 SoundStream::ParseWave(
     src->Read(&riffTag, 4, -1);
     src->Read(&riffSize, 4, -1);
     src->Read(&waveTag, 4, -1);
-    if (riffTag != 0x46464952) {
+    if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
-    if (waveTag != 0x45564157) {
+    if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
 
@@ -387,7 +387,7 @@ i32 SoundStream::ParseWave(
         u32 chunkSize;
         src->Read(&chunkId, 4, -1);
         src->Read(&chunkSize, 4, -1);
-        if (chunkId == 0x20746d66) {
+        if (chunkId == mmioFOURCC('f', 'm', 't', ' ')) {
             i32 next = src->m_cursor + chunkSize;
 
             u32 n = 0x12;
@@ -397,7 +397,7 @@ i32 SoundStream::ParseWave(
             src->Read(fmtBuf, static_cast<i32>(n), -1);
             src->SetPos(next);
             gotFmt = 1;
-        } else if (chunkId == 0x61746164) {
+        } else if (chunkId == mmioFOURCC('d', 'a', 't', 'a')) {
             *outDataOff = src->m_cursor;
             *outDataLen = chunkSize;
             gotData = 1;
@@ -685,7 +685,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DSERR_OTHERAPPHASPRIO");
             strcpy(szMsg, "No message");
             break;
-        case 0:
+        case DS_OK:
             strcpy(szCode, "DS_OK");
             strcpy(szMsg, "No error");
             break;

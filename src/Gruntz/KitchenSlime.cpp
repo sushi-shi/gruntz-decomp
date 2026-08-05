@@ -20,6 +20,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -63,8 +64,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_posX = static_cast<double>(snapX);
     m_object->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (m_object->m_sortKey != 0x13) {
-        m_object->m_sortKey = 0x13;
+    if (m_object->m_sortKey != SORTKEY_KITCHEN_SLIME) {
+        m_object->m_sortKey = SORTKEY_KITCHEN_SLIME;
         m_object->m_flags |= 0x20000;
     }
     m_tilePosition.m_y = snapY;
@@ -101,13 +102,13 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = frameSet->m_name;
         const char* s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_KITCHENSLIME_NORTH") == 0) {
-            m_object->m_smarts = CARDINAL_NORTH;
+            m_object->m_smarts = IDX(CARDINAL_NORTH);
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_EAST") == 0) {
-            m_object->m_smarts = CARDINAL_EAST;
+            m_object->m_smarts = IDX(CARDINAL_EAST);
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_SOUTH") == 0) {
-            m_object->m_smarts = CARDINAL_SOUTH;
+            m_object->m_smarts = IDX(CARDINAL_SOUTH);
         } else if (strcmp(s, "LEVEL_KITCHENSLIME_WEST") == 0) {
-            m_object->m_smarts = CARDINAL_WEST;
+            m_object->m_smarts = IDX(CARDINAL_WEST);
         }
     }
 
@@ -299,7 +300,7 @@ i32 CKitchenSlime::LoadSprites() {
     for (i32 i = 0; i <= 4;) {
         CGameObject* lvl = Level();
         i32 sw = lvl->m_smarts;
-        switch (sw) {
+        switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH:
                 tileX = m_tilePosition.m_x;
                 tileY = m_tilePosition.m_y - 0x20;
@@ -359,7 +360,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_posX = 0;
     m_posY = 0;
     i32 changed = (Level()->m_smarts != savedDir);
-    switch (Level()->m_smarts) {
+    switch (static_cast<CardinalDir>(Level()->m_smarts)) {
         case CARDINAL_NORTH:
             m_posY = -m_stepMag;
             m_dirX = 0.0;

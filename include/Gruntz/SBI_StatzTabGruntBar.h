@@ -25,7 +25,7 @@ public:
         m_timerWindowLo = 0;
         m_timerAnchorHi = 0;
         m_timerWindowHi = 0;
-        m_kind = 6;
+        m_kind = SBI_KIND_STATZ_TAB_GRUNT_BAR;
         m_statusGlyphLatched = NULL;
         m_abilityGlyphLatched = NULL;
         m_overrideGlyphLatched = NULL;
@@ -54,8 +54,8 @@ public:
     i32 BuildMultiplayerTabStatusBar(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT g,
         const char* key,
         i32 unitRow,

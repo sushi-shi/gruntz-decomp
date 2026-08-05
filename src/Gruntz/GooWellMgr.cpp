@@ -73,7 +73,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == 2
+    if (count <= 1 && m_phase == FINISH_STATE_DEFEAT
         && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleActive == 0
         && (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_toggleHandle == 0
         && m_pendingFx == NULL) {
@@ -86,7 +86,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         goto done;
     }
 
-    if (m_phase == 2) {
+    if (m_phase == FINISH_STATE_DEFEAT) {
         if (m_pendingFx != NULL) {
             goto done;
         }
@@ -102,7 +102,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         goto done;
     }
 
-    if (m_phase == 1) {
+    if (m_phase == FINISH_STATE_VICTORY) {
         if (static_cast<i64>(g_frameTime) - m_timerBase < m_timerWindow) {
             goto done;
         }
@@ -124,7 +124,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                 for (i = 0; i < 4; i++) {
                     if (i != idx) {
                         if (g_curPlayer == i) {
-                            LoadFinishLevelSprite(5);
+                            LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
                         }
                         GruntzPlayer* slot = &g_gameReg->m_options[i];
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
@@ -145,7 +145,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                         }
                     } else {
                         if (g_curPlayer == i) {
-                            g_gameReg->m_cmdGrid->LoadFinishLevelSprite(2);
+                            g_gameReg->m_cmdGrid->LoadFinishLevelSprite(
+                                FINISH_REASON_BATTLEZ_VICTORY
+                            );
                         }
                         if (lastSlot && lastSlot->m_joined && !lastSlot->m_doneFlag
                             && !lastSlot->m_clearedRound) {
@@ -175,7 +177,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         }
         if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
             if (obj->m_winLoseBanner != 0 && m_rowCount[g_curPlayer] == 0) {
-                LoadFinishLevelSprite(4);
+                LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
         }
@@ -184,9 +186,9 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                 goto done;
             }
             if (obj->m_winLoseBanner != 0) {
-                LoadFinishLevelSprite(4);
+                LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
             } else {
-                LoadFinishLevelSprite(3);
+                LoadFinishLevelSprite(FINISH_REASON_NO_GRUNTZ_REMAIN);
             }
             return 0;
         }
@@ -212,7 +214,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
                 goto done;
             }
         }
-        LoadFinishLevelSprite(2);
+        LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_VICTORY);
     }
 done:
     return 0;

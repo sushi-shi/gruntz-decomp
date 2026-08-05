@@ -429,7 +429,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DIERR_ALREADYINITIALIZED");
             strcpy(szMsg, "This object is already initialized.");
             break;
-        case 0:
+        case DI_OK:
             strcpy(szCode, "DD_OK");
             strcpy(szMsg, "No error");
             break;

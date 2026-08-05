@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Clock64.h>
+#include <Enums.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -19,6 +20,19 @@
 extern "C" u32 g_frameTime;
 
 class LeafCue;
+
+GZ_ENUM_BEGIN(InGameIconGlitter)
+    ICON_GLITTER_NONE = 0,
+    ICON_GLITTER_CURSE_GREEN = 1,
+    ICON_GLITTER_POWERUP_RED = 2
+GZ_ENUM_END(InGameIconGlitter)
+
+// The help-box WWD Health field is a visibility policy for CInGameText.
+GZ_ENUM_BEGIN(InGameTextVisibility)
+    INGAME_TEXT_ALWAYS = 0,
+    INGAME_TEXT_EASY_ONLY = 1,
+    INGAME_TEXT_NORMAL_ONLY = 2
+GZ_ENUM_END(InGameTextVisibility)
 
 class CInGameIcon : public CUserLogic, public CWapX {
 public:

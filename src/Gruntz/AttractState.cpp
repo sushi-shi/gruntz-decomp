@@ -61,7 +61,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
         } while (ShowCursor(0) >= 0);
     }
 
-    if (mode == 3) {
+    if (static_cast<GameStateId>(mode) == GAMESTATE_PLAY) {
         m_activeFlag = 0;
         m_host = NULL;
     } else {

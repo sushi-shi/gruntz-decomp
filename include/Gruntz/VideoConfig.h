@@ -24,7 +24,7 @@ void OnToggleVoiceOption(HWND hDlg);
 void OnToggleSpeechOption(HWND hDlg);
 void OnToggleEasyModeOption(HWND hDlg);
 void OnToggleCk5Option(HWND hDlg);
-void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, i32 nSel);
+void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel);
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32 code, i32 pos);
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);
 

@@ -351,7 +351,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 RVA(0x0016d850, 0x11e)
 
 void CVariantSlot::Set(void* key, void* name, i32 value) {
-    if (m_typeTag == 4) {
+    if (m_typeTag == VARIANT_SLOT_DIRECT_VALUE) {
         m_valueWord = static_cast<u16>(value);
         return;
     }
@@ -365,23 +365,23 @@ void CVariantSlot::Set(void* key, void* name, i32 value) {
         idx = -1;
     }
     if (idx == -1) {
-        if (m_typeTag == 2) {
+        if (m_typeTag == VARIANT_SLOT_CALLBACK) {
 
             char buf[0xa0];
             strcpy(buf, m_label);
 
             strncat(buf, static_cast<const char*>(name), 0x4f);
             m_callback(buf, value);
-        } else if (m_typeTag == 1) {
+        } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
             m_valueWord = static_cast<u16>(value);
         }
     } else {
-        if (m_typeTag == 2) {
+        if (m_typeTag == VARIANT_SLOT_CALLBACK) {
 
             AddrWord<char> rec;
             rec.m_addr = static_cast<char*>(name);
             g_recs23[idx].m_callback(rec.m_word, value);
-        } else if (m_typeTag == 1) {
+        } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
             g_recs23[idx].m_value = static_cast<short>(value);
         }
     }
@@ -674,7 +674,7 @@ i32 zBitVec::SetSize(i32 nbits) {
 
 RVA(0x0016e1a0, 0x23)
 CVariantSlot::CVariantSlot(char* label) {
-    m_typeTag = 2;
+    m_typeTag = VARIANT_SLOT_CALLBACK;
     m_reserved10 = 2;
 
     m_callback = TmErrorHandler;

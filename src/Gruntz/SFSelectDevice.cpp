@@ -111,7 +111,7 @@ i32 SFManager_SelectBestDevice() {
             );
             u8 r = static_cast<u8>(((g_ratingRaw_64da84 >> 0x13) + 0x40));
             g_ratings_64e0c0[g_idx_64da80] = r;
-            if (r == 0x40) {
+            if (r == SF_DEVICE_RATING_UNUSABLE) {
                 g_ratings_64e0c0[g_idx_64da80] = 0;
             }
             g_sfDevice->SF_Close(g_idx_64da80);

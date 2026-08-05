@@ -17,9 +17,9 @@ void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
 
 RVA(0x001192d0, 0x39)
 i32 BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    if (msg == 0x112) {
+    if (msg == WM_SYSCOMMAND) {
         i32 sc = wParam & 0xfff0;
-        if (sc == 0xf140 || sc == 0xf170) {
+        if (sc == SC_SCREENSAVE || sc == SC_MONITORPOWER) {
             if (!IsIconic(hWnd)) {
                 return 1;
             }

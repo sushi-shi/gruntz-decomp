@@ -7,18 +7,18 @@ void CImageSet2::FreePixels() {}
 
 RVA(0x00161430, 0x6)
 i32 CImageSet2::GetKind() {
-    return 2;
+    return TILE_IMAGESET_RECT;
 }
 
 RVA(0x00161460, 0x7)
 CImageSet2::~CImageSet2() {}
 
 RVA(0x00161470, 0x2c)
-i32 CImageSet2::GetCollisionAt(i32 x, i32 y) {
+TileCollisionKind CImageSet2::GetCollisionAt(i32 x, i32 y) {
     if (x < m_left || x > m_right || y < m_top || y > m_bottom) {
-        return m_outsideValue;
+        return static_cast<TileCollisionKind>(m_outsideValue);
     }
-    return m_insideValue;
+    return static_cast<TileCollisionKind>(m_insideValue);
 }
 
 RVA(0x001614a0, 0x6)

@@ -109,7 +109,7 @@ namespace Utils {
                     static_cast<LPBYTE>(pBuffer),
                     pBufferSize
                 ) == 0
-                && dwType == 3) {
+                && dwType == REG_BINARY) {
                 return pBuffer;
             }
         }
@@ -141,7 +141,7 @@ namespace Utils {
                     (data.m_dword = &dwData, data.m_bytes),
                     &cbData
                 ) == 0
-                && dwType == 4) {
+                && dwType == REG_DWORD) {
                 return dwData;
             }
         }

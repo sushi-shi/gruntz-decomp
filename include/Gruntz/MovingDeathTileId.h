@@ -1,0 +1,71 @@
+#ifndef GRUNTZ_GRUNTZ_MOVINGDEATHTILEID_H
+#define GRUNTZ_GRUNTZ_MOVINGDEATHTILEID_H
+
+#include <Enums.h>
+
+// Per-tileset WWD image ids whose shoreline art determines the direction in
+// which a sinking actor moves. The visual variants within one direction are
+// distinct tile images but have identical gameplay semantics.
+GZ_ENUM_BEGIN(MovingDeathTileSetAId)
+    MOVING_DEATH_A_SE_1 = 0x68,
+    MOVING_DEATH_A_S_1 = 0x69,
+    MOVING_DEATH_A_S_2 = 0x6a,
+    MOVING_DEATH_A_SW_1 = 0x6b,
+    MOVING_DEATH_A_SE_2 = 0x6c,
+    MOVING_DEATH_A_SE_3 = 0x6d,
+    MOVING_DEATH_A_SW_2 = 0x70,
+    MOVING_DEATH_A_SW_3 = 0x71,
+    MOVING_DEATH_A_E_1 = 0x73,
+    MOVING_DEATH_A_W_1 = 0x78,
+    MOVING_DEATH_A_E_2 = 0x7b,
+    MOVING_DEATH_A_W_2 = 0x80,
+    MOVING_DEATH_A_NE_1 = 0x82,
+    MOVING_DEATH_A_NE_2 = 0x83,
+    MOVING_DEATH_A_NW_1 = 0x86,
+    MOVING_DEATH_A_NW_2 = 0x87,
+    MOVING_DEATH_A_NE_3 = 0x88,
+    MOVING_DEATH_A_N_1 = 0x89,
+    MOVING_DEATH_A_N_2 = 0x8a,
+    MOVING_DEATH_A_NW_3 = 0x8b
+GZ_ENUM_END(MovingDeathTileSetAId)
+
+GZ_ENUM_BEGIN(MovingDeathTileSetBId)
+    MOVING_DEATH_B_SE_1 = 0x63,
+    MOVING_DEATH_B_SE_2 = 0x64,
+    MOVING_DEATH_B_S_1 = 0x65,
+    MOVING_DEATH_B_S_2 = 0x66,
+    MOVING_DEATH_B_SW_1 = 0x67,
+    MOVING_DEATH_B_SW_2 = 0x68,
+    MOVING_DEATH_B_SE_3 = 0x69,
+    MOVING_DEATH_B_SE_4 = 0x6a,
+    MOVING_DEATH_B_SE_5 = 0x6b,
+    MOVING_DEATH_B_SW_3 = 0x6c,
+    MOVING_DEATH_B_SW_4 = 0x6d,
+    MOVING_DEATH_B_SW_5 = 0x6e,
+    MOVING_DEATH_B_E_1 = 0x6f,
+    MOVING_DEATH_B_E_2 = 0x70,
+    MOVING_DEATH_B_SE_6 = 0x71,
+    MOVING_DEATH_B_SW_6 = 0x74,
+    MOVING_DEATH_B_W_1 = 0x75,
+    MOVING_DEATH_B_W_2 = 0x76,
+    MOVING_DEATH_B_E_3 = 0x77,
+    MOVING_DEATH_B_E_4 = 0x78,
+    MOVING_DEATH_B_NE_1 = 0x79,
+    MOVING_DEATH_B_NW_1 = 0x7c,
+    MOVING_DEATH_B_W_3 = 0x7d,
+    MOVING_DEATH_B_W_4 = 0x7e,
+    MOVING_DEATH_B_NE_2 = 0x7f,
+    MOVING_DEATH_B_NE_3 = 0x80,
+    MOVING_DEATH_B_NE_4 = 0x81,
+    MOVING_DEATH_B_NW_2 = 0x82,
+    MOVING_DEATH_B_NW_3 = 0x83,
+    MOVING_DEATH_B_NW_4 = 0x84,
+    MOVING_DEATH_B_NE_5 = 0x85,
+    MOVING_DEATH_B_N_1 = 0x86,
+    MOVING_DEATH_B_N_2 = 0x87,
+    MOVING_DEATH_B_N_3 = 0x88,
+    MOVING_DEATH_B_N_4 = 0x89,
+    MOVING_DEATH_B_NW_5 = 0x8a
+GZ_ENUM_END(MovingDeathTileSetBId)
+
+#endif // GRUNTZ_GRUNTZ_MOVINGDEATHTILEID_H

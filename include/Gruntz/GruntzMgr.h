@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -11,6 +12,8 @@
 #include <Gruntz/TileTriggerLogic.h>
 
 GZ_ENUM_FORWARD(GameModeId);
+
+GZ_ENUM_FORWARD(WorldInitReportTag);
 
 GZ_ENUM_FORWARD(MovieId);
 
@@ -127,7 +130,7 @@ public:
     i32 PopTopIfMatches(CState* s);
     void ClearStateStack();
     i32 CheckMovieFileExists();
-    CState* FindStateById(i32 id);
+    CState* FindStateById(GameStateId id);
 
     i32 GoToNextLevel();
     i32 GoToPrevLevel();
@@ -139,7 +142,7 @@ public:
     i32 ShowToggleMessage(char* itemName, i32 on);
 
     i32 IsMoviePathValid();
-    void ReportWorldStatus(i32 a);
+    void ReportWorldStatus(WorldInitReportTag tag);
     i32 LoadMonologoSprite();
     i32 CheatRevealTreasures();
 
@@ -152,8 +155,8 @@ public:
     i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user);
 
     i32 ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user);
-    i32 SetColorDepth(i32 depth);
-    i32 LoadWorldMode(i32 mode);
+    i32 SetColorDepth(ColorDepth depth);
+    i32 LoadWorldMode(ColorDepth mode);
     i32 ResetWorldState();
     void StopBankIfActive();
     void StopBank0IfActive();
@@ -290,7 +293,7 @@ public:
     CBattlezData* m_scoreHud;
     i32 m_numRuns;
     i32 m_numMovies;
-    i32 m_colorDepth;
+    ColorDepth m_colorDepth;
     i32 m_modeW, m_modeH;
     i32 m_savedModeW, m_savedModeH;
     i32 m_lobbyResult;

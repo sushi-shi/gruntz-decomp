@@ -60,7 +60,7 @@ public:
 
     i32 BuildShadeBlitter(PidHeader* desc, u32 size);
     i32 CopyFrom(CImage* other);
-    i32 SetOrigin(PidHeader* desc, i32 mode);
+    i32 SetOrigin(PidHeader* desc, FileImageFormat mode);
     void RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags);
     void RenderFrameClipped(CDDrawSurfacePair* target, i32 x, i32 y, RECT* clipRect, i32 flags);
 

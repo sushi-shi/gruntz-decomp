@@ -14,12 +14,12 @@ void CImageSet3::FreePixels() {
 
 RVA(0x001614d0, 0x6)
 i32 CImageSet3::GetKind() {
-    return 3;
+    return TILE_IMAGESET_PIXELS;
 }
 
 RVA(0x00161570, 0x1d)
-i32 CImageSet3::GetCollisionAt(i32 x, i32 y) {
-    return m_pixels[(y << m_heightLog2) + x];
+TileCollisionKind CImageSet3::GetCollisionAt(i32 x, i32 y) {
+    return static_cast<TileCollisionKind>(m_pixels[(y << m_heightLog2) + x]);
 }
 
 RVA(0x00161590, 0xb)

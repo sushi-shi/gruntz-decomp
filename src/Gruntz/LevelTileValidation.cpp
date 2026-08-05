@@ -4,6 +4,7 @@
 
 #include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/BrickTileId.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -30,7 +31,7 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
     return holder->m_level;
 }
 
-static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
+static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
     if (x < 0) {
         x = 0;
@@ -48,7 +49,7 @@ static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
     i32 subY = y - (ty << g->m_shiftY);
     i32 cell = g->GetTileHandle(tx, ty);
     if (cell == UNINIT_FILL || cell == -1) {
-        return 0;
+        return TILEKIND_PASSABLE;
     }
 
     CImageSet1* tc = static_cast<CImageSet1*>(level->m_imageSets.GetAt(cell & 0xffff));
@@ -67,9 +68,9 @@ i32 CPlay::PlaceStartGruntz() {
     POSITION pos = list->GetHeadPosition();
     i32 result = 1;
     i32 counter = 0;
-    i32 flag14 = 0;
+    GruntEntranceMode entranceMode = GRUNT_ENTRANCE_NONE;
     if (reg->m_gameMode == GAMEMODE_SINGLE) {
-        flag14 = 1;
+        entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
     if (pos == NULL) {
         return result;
@@ -88,7 +89,7 @@ i32 CPlay::PlaceStartGruntz() {
                     (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
                     (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
                     100000,
-                    flag14,
+                    entranceMode,
                     obj->m_score,
                     obj->m_powerup,
                     obj->m_damage,
@@ -120,7 +121,7 @@ i32 CPlay::PlaceStartGruntz() {
                         result,
                         static_cast<char>(obj->m_smarts),
                         0,
-                        PLAYERCMD_PLACE_GRUNT,
+                        static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
                         (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
                         (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
                         0,
@@ -163,7 +164,8 @@ i32 CPlay::ValidateLevelTiles() {
 
         if (who == CreateTileTriggerSwitch) {
             CGameLevel* grid = LevelOf(m_world);
-            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type =
+                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
                 void* hit = 0;
@@ -470,7 +472,8 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == CreateTileTrigger) {
             CGameLevel* grid = LevelOf(m_world);
-            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type =
+                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
                 void* hit = 0;
@@ -592,9 +595,10 @@ i32 CPlay::ValidateLevelTiles() {
                 obj->m_flags |= 0x10000;
             }
         } else if (who == CreateTileSecretTrigger) {
-            i32 type = LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type =
+                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (!m_beginMarker->AddLogic(
-                    static_cast<TileCollisionKind>(type),
+                    type,
                     TRIGID_SECRET_TRIGGER_25,
                     obj->m_speedX,
                     obj->m_speedY,
@@ -620,7 +624,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateLevelTime) {
 
             if (m_frameMarker != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
-                && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == ok) {
+                && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 i32 a = obj->m_points;
                 i32 b = obj->m_score;
                 a += a;
@@ -633,7 +637,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
             obj->m_flags |= 0x10000;
         } else if (who == CreateInGameIcon) {
-            if (obj->m_smarts == PICKUP_MEGAPHONE) {
+            if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
 
                 m_guts->InsertPtr(obj->m_points, obj->m_score);
             }
@@ -655,7 +659,7 @@ i32 CPlay::ValidateLevelTiles() {
             i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_speedY] + obj->m_speedX];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_beginMarker->AddToList3(
-                        tile,
+                        static_cast<BrickTileId>(tile),
                         obj->m_speedX,
                         obj->m_speedY,
                         obj->m_id,
@@ -704,14 +708,14 @@ i32 CPlay::ValidateLevelTiles() {
                     if (static_cast<u32>(kind) > 3) {
                         bit = 0;
                     } else {
-                        switch (kind) {
-                            case 0:
+                        switch (static_cast<PlayerSlot>(kind)) {
+                            case PLAYER_SLOT_0:
                                 bit = 0x100000;
                                 break;
-                            case 1:
+                            case PLAYER_SLOT_1:
                                 bit = 0x200000;
                                 break;
-                            case 2:
+                            case PLAYER_SLOT_2:
                                 bit = 0x400000;
                                 break;
                             default:
@@ -737,7 +741,7 @@ i32 CPlay::ValidateLevelTiles() {
                 gg->m_rowInts[cx][cy * 7] |= 0x2000000;
             }
         } else if (who == CreateWarpStonePad) {
-            if (g_gameReg->m_gameMode != ok) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 Coord* slot = 0;
                 if (cell->m_next != NULL) {
@@ -757,27 +761,27 @@ i32 CPlay::ValidateLevelTiles() {
 
 // @early-stop
 RVA(0x000d5b20, 0xbb)
-i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
+i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
     i32 ex = w->m_modeW;
     i32 ey = w->m_modeH;
     CTimer* pt;
-    if (mode == 1) {
-        m_hitTest->Configure(2);
+    if (mode == STATUSBAR_DOCK_LEFT) {
+        m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         pt = m_frameMarker;
         if (pt == NULL) {
             goto done;
         }
         ex -= 0x37;
-    } else if (mode == 0) {
-        m_hitTest->Configure(1);
+    } else if (mode == STATUSBAR_DOCK_RIGHT) {
+        m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_frameMarker;
         if (pt == NULL) {
             goto done;
         }
         ex -= 0xd7;
     } else {
-        m_hitTest->Configure(3);
+        m_hitTest->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_frameMarker;
         if (pt == NULL) {
             goto done;

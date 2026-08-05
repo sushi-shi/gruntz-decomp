@@ -19,6 +19,7 @@
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/TriggerMgr.h>
@@ -40,7 +41,7 @@ VTBL(CRollingBall, 0x001e86fc);
 static const double kRollingBallSpeedNum = 16.0;
 
 static __inline i32 VtblResolve(void* ent) {
-    return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
+    return IDX(static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0));
 }
 
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
@@ -64,8 +65,8 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_subX = static_cast<double>(snapX);
     o->m_screenY = snapY;
     m_subY = static_cast<double>(snapY);
-    if (o->m_sortKey != 0x186a0 + snapY) {
-        o->m_sortKey = snapY + 0x186a0;
+    if (o->m_sortKey != SORTKEY_ROLLING_BALL_BASE + snapY) {
+        o->m_sortKey = snapY + SORTKEY_ROLLING_BALL_BASE;
         o->m_flags |= 0x20000;
     }
 
@@ -76,19 +77,19 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         const char* s;
         s = static_cast<LPCTSTR>(name);
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
-            o->m_direction = CARDINAL_NORTH;
+            o->m_direction = IDX(CARDINAL_NORTH);
             m_stepDirX = 0;
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
-            o->m_direction = CARDINAL_EAST;
+            o->m_direction = IDX(CARDINAL_EAST);
             m_stepDirY = 0;
             m_stepDirX = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
-            o->m_direction = CARDINAL_SOUTH;
+            o->m_direction = IDX(CARDINAL_SOUTH);
             m_stepDirY = 1;
             m_stepDirX = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
-            o->m_direction = CARDINAL_WEST;
+            o->m_direction = IDX(CARDINAL_WEST);
             m_stepDirY = 0;
             m_stepDirX = -1;
         }
@@ -249,7 +250,7 @@ i32 CRollingBall::Update() {
                 act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
             }
 
-            switch (act) {
+            switch (static_cast<TileCollisionKind>(act)) {
                 case TILEKIND_SPECIAL:
                 case TILEKIND_DEATHBRIDGE_UP:
                 case TILEKIND_TOGGLEDEATHBRIDGE_UP: {
@@ -296,7 +297,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName(fall);
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry(explosion, 0);
-                    if (act != TILEKIND_SPECIAL) {
+                    if (act != IDX(TILEKIND_SPECIAL)) {
                         m_explodeLatch = 1;
                         return 0;
                     }
@@ -321,56 +322,56 @@ i32 CRollingBall::Update() {
                     // names. The DIRECTION is what the arms carry - each shoreline
                     // image sinks the ball toward its own edge. The same ids with
                     // the same offsets drive CGrunt::LoadGruntMovingDeathConfig.
-                    switch (sink) {
-                        case 0x68:
+                    switch (static_cast<MovingDeathTileSetAId>(sink)) {
+                        case MOVING_DEATH_A_SE_1:
                             m_target.m_x += 0x10;
                             m_target.m_y += 0x10;
                             break;
-                        case 0x69:
-                        case 0x6a:
+                        case MOVING_DEATH_A_S_1:
+                        case MOVING_DEATH_A_S_2:
                             m_target.m_y += 0x10;
                             break;
-                        case 0x6b:
+                        case MOVING_DEATH_A_SW_1:
                             m_target.m_x -= 0x10;
                             m_target.m_y += 0x10;
                             break;
-                        case 0x6c:
+                        case MOVING_DEATH_A_SE_2:
                             m_target.m_x += 0x10;
                             m_target.m_y += 0x10;
                             break;
-                        case 0x71:
+                        case MOVING_DEATH_A_SW_3:
                             m_target.m_x -= 0x10;
                             m_target.m_y += 0x10;
                             break;
-                        case 0x73:
+                        case MOVING_DEATH_A_E_1:
                             m_target.m_x += 0x10;
                             break;
-                        case 0x78:
+                        case MOVING_DEATH_A_W_1:
                             m_target.m_x -= 0x10;
                             break;
-                        case 0x7b:
+                        case MOVING_DEATH_A_E_2:
                             m_target.m_x += 0x10;
                             break;
-                        case 0x80:
+                        case MOVING_DEATH_A_W_2:
                             m_target.m_x -= 0x10;
                             break;
-                        case 0x82:
+                        case MOVING_DEATH_A_NE_1:
                             m_target.m_x += 0x10;
                             m_target.m_y -= 0x10;
                             break;
-                        case 0x87:
+                        case MOVING_DEATH_A_NW_2:
                             m_target.m_x -= 0x10;
                             m_target.m_y -= 0x10;
                             break;
-                        case 0x88:
+                        case MOVING_DEATH_A_NE_3:
                             m_target.m_x += 0x10;
                             m_target.m_y -= 0x10;
                             break;
-                        case 0x89:
-                        case 0x8a:
+                        case MOVING_DEATH_A_N_1:
+                        case MOVING_DEATH_A_N_2:
                             m_target.m_y -= 0x10;
                             break;
-                        case 0x8b:
+                        case MOVING_DEATH_A_NW_3:
                             m_target.m_x -= 0x10;
                             m_target.m_y -= 0x10;
                             break;
@@ -382,9 +383,7 @@ i32 CRollingBall::Update() {
                 }
 
                 case TILEKIND_WATER:
-                // 0x24: sinks like water but carries cell bit 0x800 rather than
-                // water's 0x100, and nothing names it - left a literal.
-                case 36:
+                case TILEKIND_SINK_HAZARD:
                 case TILEKIND_WATERBRIDGE_UP:
                 case TILEKIND_TOGGLEWATERBRIDGE_UP: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
@@ -414,8 +413,9 @@ i32 CRollingBall::Update() {
                 }
 
                 case TILEKIND_REVEALED_POWERUP: {
-                    i32 kind = g_gameReg->m_curState->m_levelType;
-                    if (kind >= 4 && (kind <= 5 || kind == 8)) {
+                    LevelArea kind = static_cast<LevelArea>(g_gameReg->m_curState->m_levelType);
+                    if (kind == AREA_HIGH_ON_SWEETZ || kind == AREA_HIGH_ROLLERZ
+                        || kind == AREA_GRUNTZ_IN_SPACE) {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_FALL");
                         m_value = m_wwdObject->m_animCursor.m_animation;
                         m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLFALL", 0);
@@ -466,22 +466,22 @@ i32 CRollingBall::Update() {
             if (raw2 != UNINIT_FILL && raw2 != -1) {
                 act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
             }
-            switch (act2) {
+            switch (static_cast<TileCollisionKind>(act2)) {
                 case TILEKIND_ARROW_UP_A:
                 case TILEKIND_ARROW_UP_B:
-                    m_object->m_direction = CARDINAL_NORTH;
+                    m_object->m_direction = IDX(CARDINAL_NORTH);
                     break;
                 case TILEKIND_ARROW_RIGHT_A:
                 case TILEKIND_ARROW_RIGHT_B:
-                    m_object->m_direction = CARDINAL_EAST;
+                    m_object->m_direction = IDX(CARDINAL_EAST);
                     break;
                 case TILEKIND_ARROW_DOWN_A:
                 case TILEKIND_ARROW_DOWN_B:
-                    m_object->m_direction = CARDINAL_SOUTH;
+                    m_object->m_direction = IDX(CARDINAL_SOUTH);
                     break;
                 case TILEKIND_ARROW_LEFT_A:
                 case TILEKIND_ARROW_LEFT_B:
-                    m_object->m_direction = CARDINAL_WEST;
+                    m_object->m_direction = IDX(CARDINAL_WEST);
                     break;
             }
         }
@@ -489,7 +489,7 @@ i32 CRollingBall::Update() {
         CWwdGameObjectA* dirObj2 = m_object;
         m_subX = 0.0;
         m_subY = 0.0;
-        switch (dirObj2->m_direction) {
+        switch (static_cast<CardinalDir>(dirObj2->m_direction)) {
             case CARDINAL_NORTH:
                 m_subY = -m_moveDelta;
                 m_stepDirX = 0;

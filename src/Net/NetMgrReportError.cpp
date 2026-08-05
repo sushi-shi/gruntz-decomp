@@ -233,7 +233,7 @@ void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {
                 "IDirectPlayLobby::RunApplication"
             );
             break;
-        case 0:
+        case DP_OK:
             strcpy(g_szCode, "DP_OK");
             strcpy(g_szMsg, "No error");
             break;

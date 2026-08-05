@@ -22,6 +22,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -103,9 +104,10 @@ RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    switch (static_cast<u32>(aux->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(ACT_LIVE);
+            aux->SetActKey(IDX(ACT_LIVE));
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
             aux->m_logic = h;
@@ -141,9 +143,10 @@ i32 CreateObjectDropper(CGameObject* obj) {
 RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    switch (static_cast<u32>(aux->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(ACT_LIVE);
+            aux->SetActKey(IDX(ACT_LIVE));
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
             aux->m_logic = h;
@@ -179,9 +182,10 @@ i32 CreateDroppedObject(CGameObject* obj) {
 RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    switch (static_cast<u32>(aux->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(ACT_LIVE);
+            aux->SetActKey(IDX(ACT_LIVE));
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
             aux->m_logic = h;
@@ -243,19 +247,19 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         name = obj38->m_frameSet->m_name;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
-            o->m_direction = CARDINAL_NORTH;
+            o->m_direction = IDX(CARDINAL_NORTH);
             m_travelDx = 0;
             m_travelDy = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
-            o->m_direction = CARDINAL_EAST;
+            o->m_direction = IDX(CARDINAL_EAST);
             m_travelDx = 1;
             m_travelDy = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
-            o->m_direction = CARDINAL_SOUTH;
+            o->m_direction = IDX(CARDINAL_SOUTH);
             m_travelDx = 0;
             m_travelDy = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
-            o->m_direction = CARDINAL_WEST;
+            o->m_direction = IDX(CARDINAL_WEST);
             m_travelDx = -1;
             m_travelDy = 0;
         }
@@ -546,8 +550,8 @@ i32 CDroppedObject::AdvanceFall() {
             }
         }
         if ((cell & 0x900) == 0) {
-            if (cell & 2) {
-                if (cell == 0x40) {
+            if (cell & IDX(CELL_FLAG_SPECIAL)) {
+                if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     m_wwdObject->m_flags |= 0x10000;
                 } else {
                     switch (g_gameReg->m_curState->m_levelType) {
@@ -688,7 +692,7 @@ void CDroppedObjectShadow::RegisterActs() {
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 2) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == ANI_EVENT_FRAME) {
         CWwdGameObjectA* o = m_object;
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);

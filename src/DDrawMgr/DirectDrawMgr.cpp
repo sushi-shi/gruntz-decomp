@@ -274,7 +274,7 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
-        case 0:
+        case DD_OK:
             strcpy(szCode, "DD_OK");
             strcpy(szMsg, "No error");
             break;
@@ -308,10 +308,10 @@ CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_poo
     m_device = NULL;
     m_directDraw1 = NULL;
     m_bltCaps = 0;
-    m_palBpp = 0;
+    m_palBpp = BPP_UNSET;
     m_hasPalette = 0;
     m_paletteTag = 0;
-    m_lastError = 0;
+    m_lastError = DDRAWERR_NONE;
 }
 
 RVA(0x00141d50, 0x6f)
@@ -325,7 +325,7 @@ i32 CDDrawPtrCollections::CreateDevice(
     void* driverGuid,
     i32 width,
     i32 height,
-    i32 bpp,
+    ColorDepth bpp,
     u32 coopFlags
 ) {
     m_hasPalette = 0;
@@ -337,8 +337,8 @@ i32 CDDrawPtrCollections::CreateDevice(
         i32 chr = DirectDrawCreate(static_cast<GUID*>(driverGuid), &m_directDraw1, 0);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x88, chr);
-            if (m_lastError == 0) {
-                m_lastError = 0x3e9;
+            if (m_lastError == DDRAWERR_NONE) {
+                m_lastError = DDRAWERR_CREATE;
             }
             return 0;
         }
@@ -347,8 +347,8 @@ i32 CDDrawPtrCollections::CreateDevice(
         chr = m_directDraw1->QueryInterface(IID_IDirectDraw2, devOut.m_asVoid);
         if (chr != 0) {
             CDDrawPtrCollections::GetErrorString(0, 0, chr);
-            if (m_lastError == 0) {
-                m_lastError = 0x3ef;
+            if (m_lastError == DDRAWERR_NONE) {
+                m_lastError = DDRAWERR_QUERY_INTERFACE;
             }
             return 0;
         }
@@ -359,8 +359,8 @@ i32 CDDrawPtrCollections::CreateDevice(
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_H_FILE, 0x120, hr);
     }
     if (hr != 0) {
-        if (m_lastError == 0) {
-            m_lastError = 0x3ea;
+        if (m_lastError == DDRAWERR_NONE) {
+            m_lastError = DDRAWERR_COOPERATIVE_LEVEL;
         }
         return 0;
     }
@@ -380,21 +380,21 @@ i32 CDDrawPtrCollections::CreateDevice(
         hr = ConfigureSurface(width, height, bpp, 0, 0);
         if (hr != 0) {
             CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0xc2, hr);
-            if (m_lastError == 0) {
-                m_lastError = 0x3ec;
+            if (m_lastError == DDRAWERR_NONE) {
+                m_lastError = DDRAWERR_DISPLAY_MODE;
             }
             return 0;
         }
         m_palBpp = bpp;
     }
 
-    if (bpp == 0) {
+    if (bpp == BPP_UNSET) {
         DDSURFACEDESC desc;
         memset(&desc, 0, sizeof(desc));
         desc.dwSize = sizeof(desc);
         hr = m_device->GetDisplayMode(&desc);
         if (hr == 0) {
-            m_palBpp = desc.ddpfPixelFormat.dwRGBBitCount;
+            m_palBpp = static_cast<ColorDepth>(desc.ddpfPixelFormat.dwRGBBitCount);
         }
     }
 
@@ -408,7 +408,7 @@ i32 CDDrawPtrCollections::Init(
     void* hwnd,
     i32 width,
     i32 height,
-    i32 bpp,
+    ColorDepth bpp,
     u32 coop
 ) {
     if (factory == NULL) {
@@ -503,8 +503,13 @@ RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {}
 
 RVA(0x001423c0, 0xd2)
-CDDSurface*
-CDDrawPtrCollections::CreateKeyedSurface(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key) {
+CDDSurface* CDDrawPtrCollections::CreateKeyedSurface(
+    i32 width,
+    i32 height,
+    ColorDepth bitDepth,
+    i32 caps,
+    i32 key
+) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->LoadKeyed(this, width, height, bitDepth, caps, key)) {
         delete item;
@@ -663,7 +668,7 @@ CDDSurface* CDDrawPtrCollections::CreateBlit47SurfaceFromDesc(const DDSURFACEDES
 
 RVA(0x00142e60, 0x27)
 CDDSurface*
-CDDrawPtrCollections::MakeAndAddB(i32 width, i32 height, i32 bitDepth, i32 caps, i32 key) {
+CDDrawPtrCollections::MakeAndAddB(i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key) {
     return CreateKeyedSurface(width, height, bitDepth, caps | 0x840, key);
 }
 
@@ -759,9 +764,9 @@ CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
-    file.Seek(-0x300, 2);
-    char buf[0x300];
-    if (file.Read(buf, 0x300) != 0x300) {
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    char buf[PALETTE_RGB_BYTE_COUNT];
+    if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     return CreateRgbPalette(buf, z);
@@ -857,11 +862,11 @@ i32 CDDrawPtrCollections::FindLast(u32 k0, u32 k1, i32 k2) {
 }
 
 RVA(0x001434c0, 0x45)
-i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
+i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, ColorDepth colorDepth) {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
         DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[i]);
         if (e->dwWidth == static_cast<u32>(k0) && e->dwHeight == static_cast<u32>(k1)
-            && e->ddpfPixelFormat.dwRGBBitCount == k2) {
+            && e->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
             return i;
         }
     }
@@ -869,15 +874,15 @@ i32 CDDrawPtrCollections::FindIndex(i32 k0, i32 k1, i32 k2) {
 }
 
 RVA(0x00143510, 0x71)
-CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
+CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, ColorDepth colorDepth) {
     CDdModePair r;
-    i32 idx = FindIndex(k0, k1, k2);
+    i32 idx = FindIndex(k0, k1, colorDepth);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx++;
         if (idx < m_poolItems.GetSize()) {
             for (; idx < m_poolItems.GetSize(); idx++) {
                 DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[idx]);
-                if (e->ddpfPixelFormat.dwRGBBitCount == k2) {
+                if (e->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
                     r.a = e->dwWidth;
                     r.b = e->dwHeight;
                     return r;
@@ -891,15 +896,15 @@ CDdModePair CDDrawPtrCollections::FindFwd(i32 k0, i32 k1, i32 k2) {
 }
 
 RVA(0x00143590, 0x7e)
-CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, i32 k2) {
+CDdModePair CDDrawPtrCollections::FindBack(i32 k0, i32 k1, ColorDepth colorDepth) {
     CDdModePair r;
-    i32 idx = FindIndex(k0, k1, k2);
+    i32 idx = FindIndex(k0, k1, colorDepth);
     if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
                 DDSURFACEDESC* e = static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[idx]);
-                if (e->ddpfPixelFormat.dwRGBBitCount == k2) {
+                if (e->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
                     r.a = e->dwWidth;
                     r.b = e->dwHeight;
                     return r;
@@ -1076,7 +1081,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 
     if (static_cast<u32>(size) < 0x3e8) {
         return 0;
     }
-    return SetDisplayPaletteFromRgb(buf + size - 0x300, tag);
+    return SetDisplayPaletteFromRgb(buf + size - PALETTE_RGB_BYTE_COUNT, tag);
 }
 
 RVA(0x00143a30, 0xe9)
@@ -1085,9 +1090,9 @@ CDDPalette* CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
-    file.Seek(-0x300, 2);
-    char buf[0x300];
-    if (file.Read(buf, 0x300) != 0x300) {
+    file.Seek(-PALETTE_RGB_BYTE_COUNT, 2);
+    char buf[PALETTE_RGB_BYTE_COUNT];
+    if (file.Read(buf, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     return SetDisplayPaletteFromRgb(buf, z);
@@ -1157,22 +1162,22 @@ RVA(0x00143c20, 0x84)
 i32 CDDrawPtrCollections::ConfigureSurface(
     i32 width,
     i32 height,
-    i32 bpp,
+    ColorDepth bpp,
     i32 refreshRate,
     i32 flags
 ) {
-    i32 hr = m_device->SetDisplayMode(width, height, bpp, refreshRate, flags);
+    i32 hr = m_device->SetDisplayMode(width, height, IDX(bpp), refreshRate, flags);
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
-        if (m_lastError == 0) {
-            m_lastError = 0x3ec;
+        if (m_lastError == DDRAWERR_NONE) {
+            m_lastError = DDRAWERR_DISPLAY_MODE;
         }
         return hr;
     }
     if (ComputeColorMasks() == 0) {
         hr = static_cast<i32>(0x80004005);
-        if (m_lastError == 0) {
-            m_lastError = 0x3ed;
+        if (m_lastError == DDRAWERR_NONE) {
+            m_lastError = DDRAWERR_COLOR_MASKS;
         }
     }
     return hr;

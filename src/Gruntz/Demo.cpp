@@ -9,6 +9,7 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/AnimWorker.h>
 #include <Gruntz/DemoHelpers.h>
+#include <Gruntz/DemoMoverState.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FortressFlag.h>
@@ -125,8 +126,8 @@ i32 CDemo::Render() {
 RVA(0x0003c300, 0x183)
 i32 CreateDemoMover(CGameObject* owner) {
     AnimWorkerObj* st = owner->m_animWorker;
-    switch (st->ActKey()) {
-        case 1: {
+    switch (static_cast<DemoMoverState>(st->ActKey())) {
+        case DEMO_MOVER_SCROLL_TO_TARGET: {
 
             CGameLevel* gh = st->m_ownerCtx->m_level;
             i32 curX = gh->m_mainPlane->m_viewRect.left;
@@ -167,17 +168,17 @@ i32 CreateDemoMover(CGameObject* owner) {
             }
 
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
-                st->m_actKey = 0;
+                st->m_actKey = IDX(DEMO_MOVER_CHOOSE_TARGET);
             }
             return 1;
         }
-        case 0: {
+        case DEMO_MOVER_CHOOSE_TARGET: {
 
             i32 rx = st->m_ownerCtx->m_level->m_mainPlane->m_wrapW;
             st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
             i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_wrapH;
             st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
-            st->SetActKey(1);
+            st->SetActKey(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }
     }
@@ -202,7 +203,7 @@ void GruntDirectionCell::RotateClockwise(i32 steps) {
             const i32* e = &g_directionClockwiseTable[(row * 3 + column) * 3];
             row = e[0];
             column = e[1];
-            direction = e[2];
+            direction = static_cast<GruntDirection>(e[2]);
         } while (--steps);
     }
 }
@@ -215,7 +216,7 @@ void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
             const i32* e = &g_directionCounterclockwiseTable[(row * 3 + column) * 3];
             row = e[0];
             column = e[1];
-            direction = e[2];
+            direction = static_cast<GruntDirection>(e[2]);
         } while (--steps);
     }
 }
@@ -353,9 +354,10 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -391,9 +393,10 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -429,9 +432,10 @@ i32 CreateExitTrigger(CGameObject* owner) {
 RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -467,9 +471,10 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CWormhole(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -505,9 +510,10 @@ i32 CreateWormhole(CGameObject* owner) {
 RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -543,9 +549,10 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -581,9 +588,10 @@ i32 CreateTeleporter(CGameObject* owner) {
 RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -619,9 +627,10 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CWarlord(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -657,9 +666,10 @@ i32 CreateWarlord(CGameObject* owner) {
 RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -695,9 +705,10 @@ i32 CreateFortressFlag(CGameObject* owner) {
 RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;

@@ -159,17 +159,17 @@ i32 CSBI_StatzTabGruntBar::Update() {
             cap = unit->m_toolId;
         }
         if (cap != PICKUP_NONE) {
-            abilityVal = level;
+            abilityVal = IDX(level);
             if (level > PICKUP_EQUIPPABLE_LAST) {
-                abilityVal = unit->m_toolId;
+                abilityVal = IDX(unit->m_toolId);
             }
-            if (abilityVal == 3) {
+            if (cap == PICKUP_BRICK) {
                 abilityVal = IDX(unit->m_brickPickupType) + 0x11;
             }
         }
         PickupType badge = unit->m_vehiclePickupType;
         if (badge != PICKUP_NONE) {
-            overrideVal = badge;
+            overrideVal = IDX(badge);
         }
 
         if (m_selectKey != NULL) {

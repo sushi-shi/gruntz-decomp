@@ -84,7 +84,7 @@ public:
     void AddLogicFromRecord(TileCollisionKind tileType, TrigLogicId logicType, CGameObject* object);
 
     CTileActionEvent* AddToList3(
-        i32 actionCode,
+        BrickTileId actionCode,
         i32 tileX,
         i32 tileY,
         i32 cellKey,
@@ -105,7 +105,7 @@ public:
     );
 
     CTileActionEvent*
-    AddToList3Switch(i32 actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
+    AddToList3Switch(BrickTileId actionCode, i32 tileX, i32 tileY, i32 cellKey, i32 playerSlot);
 
     i32 GetFlag74();
     i32 RemoveByKeys(i32 k1, TrigLogicId k2);

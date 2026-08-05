@@ -9,7 +9,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/MenuItemState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/TriggerMgr.h>
@@ -30,8 +29,8 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_buttonFrame[1] = NULL;
     m_buttonIcon[0] = PICKUP_NONE;
     m_buttonIcon[1] = PICKUP_NONE;
-    m_buttonState[0] = 0;
-    m_buttonState[1] = 0;
+    m_buttonState[0] = ACTIONOPTION_HIDDEN;
+    m_buttonState[1] = ACTIONOPTION_HIDDEN;
     m_loaded = 0;
 }
 
@@ -80,7 +79,14 @@ i32 CActionOptionsMenuBar::LoadAssets() {
 
 // @early-stop
 RVA(0x00009220, 0x8f)
-i32 CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
+i32 CActionOptionsMenuBar::Init(
+    ActionOptionButtonState primaryState,
+    ActionOptionButtonState secondaryState,
+    i32 x,
+    i32 y,
+    i32 gx,
+    i32 gy
+) {
     if (m_active) {
         return 0;
     }
@@ -100,11 +106,11 @@ i32 CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
         yy = y + 0x34;
     }
     m_screenX = x;
-    m_gridX = b;
+    m_gridX = gx;
     m_screenY = yy;
-    m_buttonState[1] = a;
+    m_buttonState[1] = secondaryState;
     m_gridY = gy;
-    m_buttonState[0] = gx;
+    m_buttonState[0] = primaryState;
     if (Refresh() == 0) {
         return 0;
     }
@@ -134,9 +140,9 @@ i32 CActionOptionsMenuBar::Refresh() {
     } else {
         m_buttonIcon[1] = grunt->m_vehiclePickupType;
         if (grunt->m_entranceReason >= PICKUP_TOYZ_FIRST) {
-            m_buttonState[1] = 3;
-        } else if (m_buttonState[1] == 3) {
-            m_buttonState[1] = 1;
+            m_buttonState[1] = ACTIONOPTION_DISABLED;
+        } else if (m_buttonState[1] == ACTIONOPTION_DISABLED) {
+            m_buttonState[1] = ACTIONOPTION_NORMAL;
         }
         PickupType prim = (grunt->m_entranceReason > PICKUP_EQUIPPABLE_LAST)
                               ? grunt->m_toolId
@@ -150,26 +156,26 @@ i32 CActionOptionsMenuBar::Refresh() {
             m_buttonIcon[0] = grunt->m_brickPickupType;
         }
         if (!grunt->CanShowStamina()) {
-            m_buttonState[0] = 3;
-        } else if (m_buttonState[0] == 3) {
-            m_buttonState[0] = 1;
+            m_buttonState[0] = ACTIONOPTION_DISABLED;
+        } else if (m_buttonState[0] == ACTIONOPTION_DISABLED) {
+            m_buttonState[0] = ACTIONOPTION_NORMAL;
         }
     }
 
     for (i32 i = 0; i < 2; i++) {
         if (m_buttonIcon[i] == PICKUP_NONE) {
-            m_buttonState[i] = 0;
-        } else if (m_buttonState[i] == 0) {
-            m_buttonState[i] = 1;
+            m_buttonState[i] = ACTIONOPTION_HIDDEN;
+        } else if (m_buttonState[i] == ACTIONOPTION_HIDDEN) {
+            m_buttonState[i] = ACTIONOPTION_NORMAL;
         }
         switch (m_buttonState[i]) {
-            case MENUSTATE_NORMAL:
+            case ACTIONOPTION_NORMAL:
                 m_buttonFrame[i] = m_normChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
-            case MENUSTATE_SELECTED:
+            case ACTIONOPTION_SELECTED:
                 m_buttonFrame[i] = m_highChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
-            case MENUSTATE_DISABLED:
+            case ACTIONOPTION_DISABLED:
                 m_buttonFrame[i] = m_greyChipSprite->GetAt(IDX(m_buttonIcon[i]));
                 break;
             default:
@@ -217,12 +223,12 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         return 1;
     }
 
-    i32* btn = m_buttonState;
-    i32* p = btn;
+    ActionOptionButtonState* btn = m_buttonState;
+    ActionOptionButtonState* p = btn;
     i32 k = 2;
     do {
-        if (*p == 2) {
-            *p = 1;
+        if (*p == ACTIONOPTION_SELECTED) {
+            *p = ACTIONOPTION_NORMAL;
         }
         ++p;
     } while (--k != 0);
@@ -233,15 +239,15 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     i32 x0 = m_screenX;
 
     if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo) {
-        if (*btn == 1) {
-            *btn = 2;
+        if (*btn == ACTIONOPTION_NORMAL) {
+            *btn = ACTIONOPTION_SELECTED;
         }
         return 1;
     }
 
     if (mx < x0 + 0x1c && mx >= x0 + 0x4 && my < yhi && my >= ylo) {
-        if (m_buttonState[1] == 1) {
-            m_buttonState[1] = 2;
+        if (m_buttonState[1] == ACTIONOPTION_NORMAL) {
+            m_buttonState[1] = ACTIONOPTION_SELECTED;
         }
     }
     return 1;
@@ -249,22 +255,24 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
 
 // @early-stop
 RVA(0x00009760, 0x6c)
-i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
+ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
-        return 0;
+        return ACTIONOPTION_HIT_NONE;
     }
     i32 y0 = m_screenY;
     i32 x0 = m_screenX;
     i32 ylo = y0 - 0xc;
     i32 yhi = y0 + 0xc;
-    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo && m_buttonState[0] != 3) {
-        return 2;
+    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo
+        && m_buttonState[0] != ACTIONOPTION_DISABLED) {
+        return ACTIONOPTION_HIT_PRIMARY;
     }
 
-    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo && m_buttonState[1] != 3) {
-        return 3;
+    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo
+        && m_buttonState[1] != ACTIONOPTION_DISABLED) {
+        return ACTIONOPTION_HIT_SECONDARY;
     }
-    return 0;
+    return ACTIONOPTION_HIT_NONE;
 }
 
 RVA(0x000097f0, 0x8)

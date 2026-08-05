@@ -25,7 +25,7 @@ class CDDrawShadeBlit;
 class CSBI_WellGoo : public CSBI_Image {
 public:
     CSBI_WellGoo() {
-        m_kind = 7;
+        m_kind = SBI_KIND_WELL_GOO;
         m_frame = NULL;
     }
 
@@ -36,8 +36,8 @@ public:
     virtual i32 Setup(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT rc,
         const char* key,
         i32 fillScale

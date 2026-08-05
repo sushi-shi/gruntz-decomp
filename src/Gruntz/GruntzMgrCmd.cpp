@@ -159,7 +159,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             m_strWorldFile.Empty();
             m_gameMode = GAMEMODE_SINGLE;
 
-            if (!PassClickToPlayState(m_saveSink->m_maxLevel, 0, 1)) {
+            if (!PassClickToPlayState(IDX(m_saveSink->m_maxLevel), 0, 1)) {
                 ReportError(IDX(CMD_NEW_GAME), 0x41f);
             }
             return 1;
@@ -965,9 +965,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         case CMD_SHOW_BOOTY_STATE: {
             GameStateId st = m_curState->Update();
-            if (st == GAMESTATE_HELP || st == GAMESTATE_BOOTY_OVER_CURRENT || st == 0xf
-                || st == GAMESTATE_SPLASH || st == GAMESTATE_CREDITS || st == GAMESTATE_BOOTY
-                || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_MULTI) {
+            if (st == GAMESTATE_HELP || st == GAMESTATE_BOOTY_OVER_CURRENT
+                || st == GAMESTATE_RESERVED_0F || st == GAMESTATE_SPLASH || st == GAMESTATE_CREDITS
+                || st == GAMESTATE_BOOTY || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_MULTI) {
                 return 1;
             }
             if (TransitionState(GAMESTATE_HELP, 1, 1, 0)) {

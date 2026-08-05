@@ -25,6 +25,7 @@ GZ_ENUM_BEGIN(NetMsgId)
     NETMSG_OUT_OF_SYNC_REPORT = 0x403,  // SendStatFlag + OnOutOfSync
     NETMSG_OUT_OF_SYNC = 0x404,         // OnOutOfSync
     NETMSG_PAUSE = 0x407,               // OnMultiPause
+    NETMSG_DROP_TIMEOUT = 0x40c,        // DropTimeout notifies peers before OnDropPlayer
     NETMSG_SAVE_CONFIG = 0x415,         // SaveConfig
     NETMSG_LOAD_CONFIG = 0x416,         // LoadConfig, sets m_connectAccepted
     NETMSG_VERSION_CHECK = 0x417,       // HandleVersionCheck

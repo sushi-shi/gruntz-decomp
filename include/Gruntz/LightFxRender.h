@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/LevelArea.h>
 
 class CGruntzMgr;
 class CTriggerMgr;
@@ -40,7 +41,7 @@ public:
 
     void DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color);
 
-    i32 BuildShape(i32 shape);
+    i32 BuildShape(LevelArea shape);
 
     i32 BuildRockyRoadzPalette();
     i32 BuildGruntziclezPalette();

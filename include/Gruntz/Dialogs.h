@@ -6,7 +6,9 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/ObList.h>
+#include <Gruntz/PlayerSlot.h>
 #include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetLobby.h>
@@ -22,16 +24,35 @@ struct tagDRAWITEMSTRUCT;
 // (CMultiStartDlg). A constant BAG, never a variable's type - every carrier is
 // an MFC `int nID` (GetDlgItem, OnDrawItem, the ON_* message-map entries).
 //
-// Only the four owner-draw colour swatches are named: each is wired by
-// ON_BN_CLICKED to that slot's ApplyColorSlotN, returned by GetCtrlD(N),
-// invalidated after SetSlotValue(N, ...), and painted by OnDrawItem from
-// m_options[N].m_colorIndex. The rest of the 0x4xx-0x5xx space is the same
-// domain but has no per-value evidence, so it stays literal.
 GZ_ENUM_CONST_BEGIN(DialogCtrlId)
+    CTRL_PLAYER_TYPE0 = 0x500,
     CTRL_PLAYER_COLOR0 = 0x501,
     CTRL_PLAYER_COLOR1 = 0x503,
     CTRL_PLAYER_COLOR2 = 0x505,
-    CTRL_PLAYER_COLOR3 = 0x507
+    CTRL_PLAYER_COLOR3 = 0x507,
+    CTRL_PLAYER_NAME0 = 0x50a,
+    CTRL_PLAYER_NAME1 = 0x50b,
+    CTRL_PLAYER_NAME2 = 0x50c,
+    CTRL_PLAYER_NAME3 = 0x50d,
+    CTRL_PLAYER_TYPE1 = 0x50e,
+    CTRL_PLAYER_TYPE2 = 0x50f,
+    CTRL_PLAYER_TYPE3 = 0x510,
+    CTRL_PLAYER_COMBO_C0 = 0x51e,
+    CTRL_PLAYER_CTRL_A0 = 0x51f,
+    CTRL_PLAYER_COMBO_C1 = 0x520,
+    CTRL_PLAYER_COMBO_C2 = 0x521,
+    CTRL_PLAYER_COMBO_C3 = 0x522,
+    CTRL_PLAYER_CTRL_A1 = 0x523,
+    CTRL_PLAYER_CTRL_A2 = 0x524,
+    CTRL_PLAYER_CTRL_A3 = 0x525,
+    CTRL_PLAYER_LATENCY0 = 0x531,
+    CTRL_PLAYER_LATENCY1 = 0x532,
+    CTRL_PLAYER_LATENCY2 = 0x533,
+    CTRL_PLAYER_READY0 = 0x534,
+    CTRL_PLAYER_LATENCY3 = 0x535,
+    CTRL_PLAYER_READY1 = 0x536,
+    CTRL_PLAYER_READY2 = 0x537,
+    CTRL_PLAYER_READY3 = 0x538
 GZ_ENUM_CONST_END(DialogCtrlId)
 
 extern "C" HWND g_sharedFlag;
@@ -70,7 +91,7 @@ public:
 
     void SetCtrlBText(i32 index, const char* text);
 
-    i32 SetSlotValue(i32 index, i32 val);
+    i32 SetSlotValue(i32 index, ColorTint val);
 
     void ReadPlayerName(i32 index);
 
@@ -152,7 +173,7 @@ public:
 
     class CGruntzMgr* m_slots;
     i32 m_slotIndex;
-    i32 m_pickedColor;
+    ColorTint m_pickedColor;
     i32 m_networked;
 };
 SIZE_UNKNOWN();
@@ -187,7 +208,7 @@ public:
     void OnSlotSelect3();
     void ToggleReady(i32 idx);
 
-    i32 SelectColor(i32 colorIndex, i32 playerId);
+    i32 SelectColor(i32 colorIndex, ColorTint playerColor);
     void OnColorSlot0();
     void OnColorSlot1();
     void OnColorSlot2();

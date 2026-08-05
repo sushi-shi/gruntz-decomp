@@ -138,7 +138,7 @@ SIZE(0x88);
 #pragma pack(pop)
 
 struct CNetCmdSlot {
-    i32 m_state;
+    NetSlotState m_state;
     i32 m_isRemote;
 
     i32 m_latchedSeq;
@@ -175,7 +175,7 @@ struct CNetCmdSlot {
     void FullReset();
     void ClearAckFlags();
     CString BuildHostName();
-    i32 Init(CMulti* owner, GruntzPlayer* desc, i32 state);
+    i32 Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state);
     i32 ProcessCmd(i32 playerId, void* rec, i32 size);
 
     i32 Ready();
@@ -242,7 +242,7 @@ struct CNetSession {
     void AdvanceAllSlots(i32 id);
     void RaiseAllSlotsMax(i32 v);
     i32 CheckLatency(i32 cap);
-    CNetCmdSlot* CreateSlot(i32 index, i32 owner);
+    CNetCmdSlot* CreateSlot(i32 index, NetSlotState state);
     i32 Verify();
     void ResetAll();
     void Reset();
@@ -621,11 +621,11 @@ public:
 
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);
     void SendStatFlag(NetMsgId id, i32 flag);
-    void SendNetStat(i32 id, u32 value, i32 flag);
+    void SendNetStat(NetMsgId id, u32 value, i32 flag);
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);
     i32 SendStatPair(CNetSessionNode* recipient, CNetStatPacket* pkt, i32 c);
 
-    i32 SendStatTo(CNetSessionNode* recipient, i32 id, i32 c);
+    i32 SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c);
 
     i32 SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c);
     i32 SendStatPairRaw(CNetSessionNode* recipient, void* pkt, i32 size, i32 c);
@@ -644,8 +644,8 @@ public:
     i32 ResolveLocalPlayer();
     i32 BroadcastChannelTable(CNetSessionNode* recipient);
     i32 ParseChannelTable(void* packet);
-    i32 RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f);
-    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e);
+    i32 RegisterChannelFrom(const char* name, ColorTint color, i32 e, i32 f);
+    i32 RegisterChannel(const char* name, ColorTint color, i32 c, i32 d, i32 idx, i32 e);
     i32 RegisterChannelRec(void* rec);
     i32 RemoveChannel(i32 idx);
     i32 OnPauseChannel();
@@ -663,7 +663,7 @@ public:
     void ReportStatusId(UINT strId, i32 level);
     void AckDropPlayer(i32 id);
 
-    i32 SendStat3(i32 id, u32 value, i32 flag);
+    i32 SendStat3(i32 id, NetMsgId statId, i32 flag);
     i32 PollSession();
     i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);
 

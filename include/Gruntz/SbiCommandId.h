@@ -26,13 +26,57 @@
 // the low end of THIS domain - which is why those call sites convert rather
 // than compare.
 GZ_ENUM_BEGIN(SbiCommandId)
+    SBICMD_NONE = 0,
+    SBICMD_TAB_STATZ = 1,
+    SBICMD_TAB_FIRST = SBICMD_TAB_STATZ,
+    SBICMD_TAB_GRUNTZ = 2,
+    SBICMD_TAB_RESOURCE = 3,
+    SBICMD_TAB_MULTIPLAYER = 4,
+    SBICMD_TAB_GAME = 5,
+    SBICMD_TAB_LAST = SBICMD_TAB_GAME,
+
+    SBICMD_SIDE_TAB_FIRST = 0xb,
+    SBICMD_SIDE_TAB_LAST = 0x19,
+
+    SBICMD_GRUNT_SLOT_FIRST = 0x64,
+    SBICMD_GRUNT_SLOT_LAST = 0x68,
+    SBICMD_GRUNT_WELL = 0x69,
+    SBICMD_GRUNT_WELL_GOO = 0x6a,
+    SBICMD_GRUNT_OVENS_TEXT = 0x6b,
+    SBICMD_GRUNT_WELL_TEXT = 0x6c,
+
+    SBICMD_RESOURCE_MAIN_BACKGROUND = 0xc8,
+    SBICMD_RESOURCE_UPPER_BACKGROUND = 0xc9,
+    SBICMD_RESOURCE_WINDOW_BACKGROUND = 0xca,
+    SBICMD_RESOURCE_BELT_GROUP0 = 0xcb,
+    SBICMD_RESOURCE_BELT_GROUP1 = 0xcc,
+    SBICMD_RESOURCE_BELT_GROUP2 = 0xcd,
+
+    // Resource-tab conveyor widgets. SetFallRect accepts either belt segment.
+    SBICMD_CONVEYOR_TOP = 0xce,
+    SBICMD_CONVEYOR_BOTTOM = 0xd0,
+    SBICMD_RESOURCE_MACHINE_BACKGROUND = 0xd1,
+    SBICMD_RESOURCE_MACHINE_FOREGROUND = 0xd2,
+    SBICMD_RESOURCE_CURRENT_ITEM = 0xdf,
+    SBICMD_RESOURCE_FALLING_ITEM = 0xe0,
+
+    SBICMD_MULTIPLAYER_HEAD1 = 0x190,
+    SBICMD_MULTIPLAYER_HEAD_FIRST = SBICMD_MULTIPLAYER_HEAD1,
+    SBICMD_MULTIPLAYER_HEAD2 = 0x191,
+    SBICMD_MULTIPLAYER_HEAD3 = 0x192,
+    SBICMD_MULTIPLAYER_HEAD4 = 0x193,
+    SBICMD_MULTIPLAYER_HEAD_LAST = SBICMD_MULTIPLAYER_HEAD4,
+
     SBICMD_PAUSE = 0x1f4,
     SBICMD_LOAD_GAME = 0x1f5,
     SBICMD_SAVE_GAME = 0x1f6,
     SBICMD_SETTINGS = 0x1f7,
     SBICMD_BOOTY_STATE = 0x1f8,
+    SBICMD_QUIT = 0x1f9,
     SBICMD_GAME_TAB = 0x1fa,
+    SBICMD_MISSION_STATUS = 0x1fb,
     SBICMD_DESTRUCT = 0x1fc,
+
     // The dock trio is dispatched as a binary split - `cmd > SBICMD_DOCK_FIRST`
     // selects the other two - so the boundary gets its own name at the value the
     // test actually compares against.
@@ -40,12 +84,23 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_DOCK_FIRST = SBICMD_DOCK_LEFT,
     SBICMD_DOCK_RIGHT = 0x25a,
     SBICMD_HIDE = 0x25b,
-    SBICMD_RELOAD_LEVEL = 0x324,
-    // Two widgets raise CMD_MAIN_MENU with identical bodies, differing only in which
-    // cue they play (HiCueLookup vs HiCueTimed), so they are distinguished the same
-    // way TileCollisionKind distinguishes its indistinguishable arrow pairs.
-    SBICMD_MAIN_MENU_A = 0x325,
-    SBICMD_MAIN_MENU_B = 0x327,
+    SBICMD_TAB_TITLE_TEXT = 0x25c,
+
+    SBICMD_WARPSTONE_BASE = 0x2bc,
+    SBICMD_WARPSTONE_FRAGMENT1 = 0x2bd,
+    SBICMD_WARPSTONE_FRAGMENT2 = 0x2be,
+    SBICMD_WARPSTONE_FRAGMENT3 = 0x2bf,
+    SBICMD_WARPSTONE_FRAGMENT4 = 0x2c0,
+
+    SBICMD_DIALOG_FRAME = 0x321,
+    SBICMD_DIALOG_MISSION_STATUS = 0x322,
+    // The displayed labels vary by level and game mode: next/replay/observe on
+    // the primary button and main-menu/statz on the secondary button.
+    SBICMD_DIALOG_PRIMARY = 0x324,
+    SBICMD_DIALOG_SECONDARY = 0x325,
+    SBICMD_DIALOG_REASON = 0x326,
+    SBICMD_DIALOG_YES = 0x327,
+    SBICMD_DIALOG_NO = 0x328,
 
     // Three BANDS of per-slot widgets. Each band's base is proven by the
     // subtraction its own arm performs - the id is turned straight back into a
@@ -76,9 +131,5 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_HL_GROUP2_FIRST = 0xdb,
     SBICMD_HL_GROUP2_LAST = 0xde
 GZ_ENUM_END(SbiCommandId)
-
-// 0x1f9 and 0x328 are DELIBERATELY absent. 0x1f9 toggles m_frameGate and calls
-// FinishLevel with it before entering an overlay drag, and 0x328 only plays a
-// cue; neither arm says what the widget IS.
 
 #endif // GRUNTZ_GRUNTZ_SBICOMMANDID_H

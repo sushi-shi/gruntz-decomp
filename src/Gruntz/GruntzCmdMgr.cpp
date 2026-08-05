@@ -305,7 +305,7 @@ RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32) {
     char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
-    m_commandKind = *buf++;
+    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
     m_targetType = *buf++;
     m_posX = PeekI16(buf);
     buf += 2;
@@ -324,7 +324,7 @@ RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32) {
     char* buf = static_cast<char*>(data) + 1;
     m_targetIndex = *buf++;
-    m_commandKind = *buf++;
+    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
     m_targetType = *buf++;
     m_posX = PeekI16(buf);
     buf += 2;
@@ -340,7 +340,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
-    *++buf = m_commandKind;
+    *++buf = static_cast<char>(IDX(m_commandKind));
     *++buf = m_targetType;
     char* w = buf + 1;
     PokeI16(w, static_cast<i16>(m_posX));
@@ -361,7 +361,7 @@ i32 CGruntzMultiCommand::Pack(char* buf, i32) {
     char* start = buf;
     *buf = static_cast<char>(GetTag());
     *++buf = m_targetIndex;
-    *++buf = m_commandKind;
+    *++buf = static_cast<char>(IDX(m_commandKind));
     *++buf = m_targetType;
     char* w = buf + 1;
     PokeI16(w, static_cast<i16>(m_posX));
@@ -383,7 +383,7 @@ i32 CGruntzSingleCommand::Select(CState* state) {
     return p->ExecCommand(
         m_targetIndex,
         m_gruntIndex,
-        m_commandKind,
+        static_cast<PlayerCommandKind>(m_commandKind),
         m_posX,
         m_posY,
         m_extraByte,
@@ -403,7 +403,7 @@ i32 CGruntzMultiCommand::Select(CState* state) {
             if (!p->ExecCommand(
                     m_targetIndex,
                     static_cast<char>(i),
-                    m_commandKind,
+                    static_cast<PlayerCommandKind>(m_commandKind),
                     m_posX,
                     m_posY,
                     0,
@@ -432,7 +432,7 @@ i32 CGruntzSingleCommand::UnusedCommandQuery() {
 
 RVA(0x00024280, 0x3)
 char CGruntzSingleCommand::GetTag() {
-    return 1;
+    return static_cast<char>(IDX(COMMAND_RECORD_SINGLE));
 }
 
 RVA(0x000242a0, 0xc)
@@ -466,7 +466,7 @@ i32 CGruntzMultiCommand::UnusedCommandQuery() {
 
 RVA(0x000243c0, 0x3)
 char CGruntzMultiCommand::GetTag() {
-    return 2;
+    return static_cast<char>(IDX(COMMAND_RECORD_MULTI));
 }
 
 RVA(0x000243e0, 0xc)
@@ -632,12 +632,13 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
         stream->Read(&count, sizeof(count));
         u32 idx = 0;
         while (idx < static_cast<u32>(count)) {
-            i32 tag;
-            stream->Read(&tag, sizeof(tag));
+            i32 tagWord;
+            stream->Read(&tagWord, sizeof(tagWord));
+            GruntzCommandRecordKind tag = static_cast<GruntzCommandRecordKind>(tagWord);
             CGruntzCommand* cmd;
-            if (tag == 1) {
+            if (tag == COMMAND_RECORD_SINGLE) {
                 cmd = CGruntzSingleCommand::Allocate();
-            } else if (tag == 2) {
+            } else if (tag == COMMAND_RECORD_MULTI) {
                 cmd = CGruntzMultiCommand::Allocate();
             } else {
                 return 0;
@@ -660,8 +661,8 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
     POSITION pos = m_base.GetHeadPosition();
     while (pos != NULL) {
         CGruntzCommand* cmd = static_cast<CGruntzCommand*>(m_base.GetNext(pos));
-        i32 tag = cmd->GetTag() & 0xff;
-        stream->Write(&tag, sizeof(tag));
+        i32 tagWord = cmd->GetTag() & 0xff;
+        stream->Write(&tagWord, sizeof(tagWord));
         if (!cmd->Serialize(stream, SERIAL_SAVE, typeId, pObj)) {
             return 0;
         }
@@ -710,11 +711,11 @@ i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
             SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
             return 1;
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 g_dlgVal_64526c = GetDlgItemInt(hDlg, 0x4db, 0, 0);
                 g_dlgVal_6452d0 = GetDlgItemInt(hDlg, 0x4da, 0, 0);
                 g_dlgVal_645268 = GetDlgItemInt(hDlg, 0x4dc, 0, 0);

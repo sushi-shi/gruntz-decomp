@@ -69,8 +69,10 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
 
     i32 mode = src->m_bytesPerPixel;
     m_dstBpp = static_cast<u8>(mode);
-    if (static_cast<u8>(mode) == 2) {
-        if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    if (static_cast<u8>(mode) == PIXEL16_BYTES_PER_PIXEL) {
+        if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN
+            && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
+            && g_gUp == PIXEL16_GREEN_UP) {
             m_blendVariant = 1;
         } else {
             m_blendVariant = 0;
@@ -88,12 +90,14 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
 
     if (drawType == SHADE_DST_BY_SRC_16) {
-        if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
+        if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL
+            || static_cast<u8>(mode) != PIXEL16_BYTES_PER_PIXEL) {
             return 0;
         }
     }
     if (drawType == SHADE_PAL_16 || drawType == SHADE_PAL_ALPHA_16) {
-        if (m_srcBpp != 1 || static_cast<u8>(mode) != 2) {
+        if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL
+            || static_cast<u8>(mode) != PIXEL16_BYTES_PER_PIXEL) {
             return 0;
         }
     }

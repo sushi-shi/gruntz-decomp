@@ -63,6 +63,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayPlaneScan.h>
+#include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
@@ -221,7 +222,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             ctl->m_inputActive = 0;
             ctl->m_originX = 0;
             ctl->m_originY = 0;
-            ctl->m_mode = 1;
+            ctl->m_mode = CHATBOX_WITH_RIGHT_STATUSBAR;
         } else {
             ctl = NULL;
         }
@@ -236,7 +237,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
         m_hitTest->m_inputActive = 0;
-        m_hitTest->Configure(1);
+        m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
 
         m_guts = new CStatusBarMgr;
         if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
@@ -307,7 +308,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         CWwdGameObjectA* peer = m_scrollSink;
         if (peer) {
-            peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            peer->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         }
         return 1;
     }
@@ -327,7 +328,7 @@ i32 CPlay::LeaveState(GameStateId arg) {
     RECT r;
     m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
-    s.LoadString(0x81a9);
+    s.LoadString(IDS_PLEASE_WAIT);
     r.right = m_mgr->m_modeW;
     r.bottom = m_mgr->m_modeH;
     r.left = 0;
@@ -781,7 +782,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_levelIndex = level;
     {
         i32 r = (level - 1) % 0x24;
-        self->m_levelType = r / 4 + 1;
+        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
     }
 
     gameReg = g_gameReg;
@@ -871,10 +872,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         i32 r = (level - 1) % 0x24;
         self->m_levelIndex = level;
-        self->m_levelType = r / 4 + 1;
+        self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
     }
 
-    sprintf(nameBuf, "AREA%i", self->m_levelType);
+    sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
     set = self->m_symParser->ResolvePath(nameBuf);
     self->m_levelBank = static_cast<CSymTab*>(set);
     if (set == NULL) {
@@ -882,8 +883,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        i32 page = self->m_levelType;
-        switch (static_cast<u32>(page)) {
+        LevelArea page = self->m_levelType;
+        switch (page) {
             case AREA_ROCKY_ROADZ:
                 g_areaPitDeath = DEATH_SINK;
                 break;
@@ -1126,7 +1127,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (gameReg->m_gameMode != GAMEMODE_SINGLE) {
         CString warp;
         i32 same = 0;
-        if (warp.LoadString(0x81ab)) {
+        if (warp.LoadString(IDS_TRAINING_WORLD_NAME)) {
             char* a = const_cast<char*>(static_cast<const char*>(gameReg->GetWorldFileName()));
             char* b = const_cast<char*>(static_cast<const char*>(warp));
             i32 eq = 1;
@@ -1242,7 +1243,7 @@ okContinue:
         rect.top = 0;
         rect.right = SCREEN_W_PX;
         rect.bottom = SCREEN_H_PX;
-        if (scr.LoadString(0x8128)) {
+        if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
             EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     } else {
@@ -1400,7 +1401,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
     if (m_renderDisabled != 0) {
         m_renderDisabled = 0;
         m_hudSuppressed = 1;
-        EnterMode(3);
+        EnterMode(GAMESTATE_PLAY);
         m_inGame = 1;
         return 1;
     }
@@ -1438,9 +1439,9 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
             m_guts->RefreshState();
 
             if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-                m_hitTest->Configure(2);
+                m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
             } else {
-                m_hitTest->Configure(1);
+                m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
             }
             return 1;
         }
@@ -1479,7 +1480,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (key == 'Y' || key == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                    if (g_gameReg->m_cmdGrid->m_phase == 1) {
+                    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
                     PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1500,7 +1501,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (key == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                    if (g_gameReg->m_cmdGrid->m_phase == 1) {
+                    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                         g_gameReg->UpdateScoreHud();
                     }
                     PostMessageA(host->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -1513,7 +1514,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
             }
             if (key == 'R') {
-                if (host->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_cmdGrid->m_phase != 1) {
+                if (host->m_gameMode == GAMEMODE_SINGLE
+                    && g_gameReg->m_cmdGrid->m_phase != FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
@@ -1521,7 +1523,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
             if (key == 'N') {
-                if (host->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_cmdGrid->m_phase == 1) {
+                if (host->m_gameMode == GAMEMODE_SINGLE
+                    && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
                 }
@@ -1784,7 +1787,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GRUNTZ) {
-            lv->SetTabState(TAB_GRUNTZ, MENUITEM_SELECTED);
+            lv->SetTabState(SBICMD_TAB_GRUNTZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1809,7 +1812,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_RESOURCE) {
-            lv->SetTabState(TAB_RESOURCE, MENUITEM_SELECTED);
+            lv->SetTabState(SBICMD_TAB_RESOURCE, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1830,7 +1833,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_STATZ) {
-            lv->SetTabState(TAB_STATZ, MENUITEM_SELECTED);
+            lv->SetTabState(SBICMD_TAB_STATZ, MENUITEM_SELECTED);
             lv->Deactivate();
         } else {
             lv->Deactivate();
@@ -1863,9 +1866,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             lv->RefreshState();
         }
         if (lv->m_activeTab != TAB_GAME) {
-            lv->SetTabState(TAB_GAME, MENUITEM_SELECTED);
+            lv->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        lv->SetTab(5, 1);
+        lv->SetTab(GAME_TAB_MENU, 1);
         lv->Deactivate();
         return 1;
     }
@@ -2081,7 +2084,7 @@ recorder_place:
         goto tail_default2;
     }
     i32 st = self->m_cursorFrame;
-    i32 ph = self->m_guts->m_pendingHlRow;
+    StatusBarHighlightRow ph = self->m_guts->m_pendingHlRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
@@ -2097,13 +2100,13 @@ recorder_place:
     level->EnterHlRow(0, st);
     this->SetCursorFrame(0);
     if (lvl == 0) {
-        if (ph == 0) {
+        if (ph == STATUS_HL_ROW_CATEGORY) {
             if (key != VK_NUMLOCK) {
                 goto tail_default;
             }
             return 1;
         }
-        if (ph == 1) {
+        if (ph == STATUS_HL_ROW_UPPER) {
             if (key == VK_NUMPAD7) {
                 return 1;
             }
@@ -2112,7 +2115,7 @@ recorder_place:
             }
             return 1;
         }
-        if (ph == 2) {
+        if (ph == STATUS_HL_ROW_MIDDLE) {
             if (key == VK_NUMPAD4) {
                 return 1;
             }
@@ -2130,13 +2133,13 @@ recorder_place:
         return 1;
     }
     if (lvl == 1) {
-        if (ph == 0) {
+        if (ph == STATUS_HL_ROW_CATEGORY) {
             if (key != VK_DIVIDE) {
                 goto tail_default;
             }
             return 1;
         }
-        if (ph == 1) {
+        if (ph == STATUS_HL_ROW_UPPER) {
             if (key == VK_NUMPAD8) {
                 return 1;
             }
@@ -2145,7 +2148,7 @@ recorder_place:
             }
             return 1;
         }
-        if (ph == 2) {
+        if (ph == STATUS_HL_ROW_MIDDLE) {
             if (key != VK_CLEAR) {
                 goto tail_default;
             }
@@ -2159,13 +2162,13 @@ recorder_place:
         }
         return 1;
     }
-    if (ph == 0) {
+    if (ph == STATUS_HL_ROW_CATEGORY) {
         if (key != VK_MULTIPLY) {
             goto tail_default;
         }
         return 1;
     }
-    if (ph == 1) {
+    if (ph == STATUS_HL_ROW_UPPER) {
         if (key == VK_NUMPAD9) {
             return 1;
         }
@@ -2174,7 +2177,7 @@ recorder_place:
         }
         return 1;
     }
-    if (ph == 2) {
+    if (ph == STATUS_HL_ROW_MIDDLE) {
         if (key == VK_NUMPAD6) {
             return 1;
         }
@@ -2208,70 +2211,70 @@ tail_default2:
         CStatusBarMgr* lv = self->m_guts;
         switch (key) {
             case VK_CLEAR:
-                lv->HlClickGroup1(2);
+                lv->HlClickGroup1(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_PRIOR:
-                lv->HlClickGroup2(1);
+                lv->HlClickGroup2(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_NEXT:
-                lv->HlClickGroup2(3);
+                lv->HlClickGroup2(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_END:
-                lv->HlClickGroup0(3);
+                lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_HOME:
-                lv->HlClickGroup0(1);
+                lv->HlClickGroup0(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_LEFT:
-                lv->HlClickGroup0(2);
+                lv->HlClickGroup0(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_UP:
-                lv->HlClickGroup1(1);
+                lv->HlClickGroup1(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_RIGHT:
-                lv->HlClickGroup2(2);
+                lv->HlClickGroup2(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_DOWN:
-                lv->HlClickGroup1(3);
+                lv->HlClickGroup1(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_INSERT:
                 lv->ActivateSlot(-1);
                 return 1;
             case VK_NUMPAD1:
-                lv->HlClickGroup0(3);
+                lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_NUMPAD2:
-                lv->HlClickGroup1(3);
+                lv->HlClickGroup1(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_NUMPAD3:
-                lv->HlClickGroup2(3);
+                lv->HlClickGroup2(STATUS_HL_ROW_LOWER);
                 return 1;
             case VK_NUMPAD4:
-                lv->HlClickGroup0(2);
+                lv->HlClickGroup0(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_NUMPAD5:
-                lv->HlClickGroup1(2);
+                lv->HlClickGroup1(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_NUMPAD6:
-                lv->HlClickGroup2(2);
+                lv->HlClickGroup2(STATUS_HL_ROW_MIDDLE);
                 return 1;
             case VK_NUMPAD7:
-                lv->HlClickGroup0(1);
+                lv->HlClickGroup0(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_NUMPAD8:
-                lv->HlClickGroup1(1);
+                lv->HlClickGroup1(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_NUMPAD9:
-                lv->HlClickGroup2(1);
+                lv->HlClickGroup2(STATUS_HL_ROW_UPPER);
                 return 1;
             case VK_MULTIPLY:
-                lv->HlClickGroup2(0);
+                lv->HlClickGroup2(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_DIVIDE:
-                lv->HlClickGroup1(0);
+                lv->HlClickGroup1(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_NUMLOCK:
-                lv->HlClickGroup0(0);
+                lv->HlClickGroup0(STATUS_HL_ROW_CATEGORY);
                 return 1;
         }
     }
@@ -2362,7 +2365,8 @@ i32 CPlay::SyncState(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 
             if (m_gridHasSprite) {
                 CGruntzMgr* w = m_mgr;
                 i32 id = g_curPlayer;
-                CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_colorIndex, 0);
+                CShadeTable* spr =
+                    w->m_spriteFactory->GetSel(IDX(w->m_options[id].m_colorIndex), 0);
                 if (spr == NULL) {
                     spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
                 }
@@ -3453,28 +3457,28 @@ i32 CPlay::DrawLevelInfoText() {
 
     switch (m_levelType) {
         case AREA_ROCKY_ROADZ:
-            s0.LoadString(0x81ae);
+            s0.LoadString(IDS_AREA1_TITLE);
             break;
         case AREA_GRUNTZICLEZ:
-            s0.LoadString(0x81af);
+            s0.LoadString(IDS_AREA2_TITLE);
             break;
         case AREA_TROUBLE_IN_THE_TROPICZ:
-            s0.LoadString(0x81b0);
+            s0.LoadString(IDS_AREA3_TITLE);
             break;
         case AREA_HIGH_ON_SWEETZ:
-            s0.LoadString(0x81b1);
+            s0.LoadString(IDS_AREA4_TITLE);
             break;
         case AREA_HIGH_ROLLERZ:
-            s0.LoadString(0x81b2);
+            s0.LoadString(IDS_AREA5_TITLE);
             break;
         case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
-            s0.LoadString(0x81b3);
+            s0.LoadString(IDS_AREA6_TITLE);
             break;
         case AREA_MINIATURE_MASTERZ:
-            s0.LoadString(0x81b4);
+            s0.LoadString(IDS_AREA7_TITLE);
             break;
         case AREA_GRUNTZ_IN_SPACE:
-            s0.LoadString(0x81b5);
+            s0.LoadString(IDS_AREA8_TITLE);
             break;
         default:
             s0 = g_emptyString;
@@ -3483,22 +3487,22 @@ i32 CPlay::DrawLevelInfoText() {
     GameModeId mode = g_gameReg->m_gameMode;
     if (mode == GAMEMODE_SINGLE) {
         if (g_gameReg->m_isCustomLevel != 0) {
-            s1.LoadString(0x81a0);
+            s1.LoadString(IDS_CUSTOM_QUEST_LEVEL);
         } else {
             i32 stage = m_levelIndex;
-            if (stage > QUESTLEVEL_LAST) {
-                switch (stage) {
+            if (stage > IDX(QUESTLEVEL_LAST)) {
+                switch (static_cast<QuestLevel>(stage)) {
                     case QUESTLEVEL_TRAINING_FIRST:
-                        s1.LoadString(0x81a2);
+                        s1.LoadString(IDS_TRAINING_STAGE1);
                         break;
-                    case 0x26:
-                        s1.LoadString(0x81a3);
+                    case QUESTLEVEL_TRAINING_STAGE2:
+                        s1.LoadString(IDS_TRAINING_STAGE2);
                         break;
-                    case 0x27:
-                        s1.LoadString(0x81a4);
+                    case QUESTLEVEL_TRAINING_STAGE3:
+                        s1.LoadString(IDS_TRAINING_STAGE3);
                         break;
                     case QUESTLEVEL_TRAINING_LAST:
-                        s1.LoadString(0x81a5);
+                        s1.LoadString(IDS_TRAINING_STAGE4);
                         break;
                     default:
                         s1 = g_emptyString;
@@ -3506,134 +3510,134 @@ i32 CPlay::DrawLevelInfoText() {
             } else {
                 s1.Format("Stage %d", ((stage - 1) % QUESTLEVEL_PER_AREA) + 1);
             }
-            switch (m_levelIndex) {
-                case 1:
-                    s2.LoadString(0x8177);
+            switch (static_cast<QuestLevel>(m_levelIndex)) {
+                case QUESTLEVEL_AREA1_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE1);
                     break;
-                case 2:
-                    s2.LoadString(0x8178);
+                case QUESTLEVEL_AREA1_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE2);
                     break;
-                case 3:
-                    s2.LoadString(0x8179);
+                case QUESTLEVEL_AREA1_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE3);
                     break;
-                case 4:
-                    s2.LoadString(0x817a);
+                case QUESTLEVEL_AREA1_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE4);
                     break;
-                case 5:
-                    s2.LoadString(0x817b);
+                case QUESTLEVEL_AREA2_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE1);
                     break;
-                case 6:
-                    s2.LoadString(0x817c);
+                case QUESTLEVEL_AREA2_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE2);
                     break;
-                case 7:
-                    s2.LoadString(0x817d);
+                case QUESTLEVEL_AREA2_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE3);
                     break;
-                case 8:
-                    s2.LoadString(0x817e);
+                case QUESTLEVEL_AREA2_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA2_STAGE4);
                     break;
-                case 9:
-                    s2.LoadString(0x817f);
+                case QUESTLEVEL_AREA3_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE1);
                     break;
-                case 10:
-                    s2.LoadString(0x8180);
+                case QUESTLEVEL_AREA3_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE2);
                     break;
-                case 0xb:
-                    s2.LoadString(0x8181);
+                case QUESTLEVEL_AREA3_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE3);
                     break;
-                case 0xc:
-                    s2.LoadString(0x8182);
+                case QUESTLEVEL_AREA3_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA3_STAGE4);
                     break;
-                case 0xd:
-                    s2.LoadString(0x8183);
+                case QUESTLEVEL_AREA4_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE1);
                     break;
-                case 0xe:
-                    s2.LoadString(0x8184);
+                case QUESTLEVEL_AREA4_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE2);
                     break;
-                case 0xf:
-                    s2.LoadString(0x8185);
+                case QUESTLEVEL_AREA4_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE3);
                     break;
-                case 0x10:
-                    s2.LoadString(0x8186);
+                case QUESTLEVEL_AREA4_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA4_STAGE4);
                     break;
-                case 0x11:
-                    s2.LoadString(0x8187);
+                case QUESTLEVEL_AREA5_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE1);
                     break;
-                case 0x12:
-                    s2.LoadString(0x8188);
+                case QUESTLEVEL_AREA5_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE2);
                     break;
-                case 0x13:
-                    s2.LoadString(0x8189);
+                case QUESTLEVEL_AREA5_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE3);
                     break;
-                case 0x14:
-                    s2.LoadString(0x818a);
+                case QUESTLEVEL_AREA5_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA5_STAGE4);
                     break;
-                case 0x15:
-                    s2.LoadString(0x818b);
+                case QUESTLEVEL_AREA6_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE1);
                     break;
-                case 0x16:
-                    s2.LoadString(0x818c);
+                case QUESTLEVEL_AREA6_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE2);
                     break;
-                case 0x17:
-                    s2.LoadString(0x818d);
+                case QUESTLEVEL_AREA6_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE3);
                     break;
-                case 0x18:
-                    s2.LoadString(0x818e);
+                case QUESTLEVEL_AREA6_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA6_STAGE4);
                     break;
-                case 0x19:
-                    s2.LoadString(0x818f);
+                case QUESTLEVEL_AREA7_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE1);
                     break;
-                case 0x1a:
-                    s2.LoadString(0x8190);
+                case QUESTLEVEL_AREA7_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE2);
                     break;
-                case 0x1b:
-                    s2.LoadString(0x8191);
+                case QUESTLEVEL_AREA7_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE3);
                     break;
-                case 0x1c:
-                    s2.LoadString(0x8192);
+                case QUESTLEVEL_AREA7_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA7_STAGE4);
                     break;
-                case 0x1d:
-                    s2.LoadString(0x8193);
+                case QUESTLEVEL_AREA8_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE1);
                     break;
-                case 0x1e:
-                    s2.LoadString(0x8194);
+                case QUESTLEVEL_AREA8_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE2);
                     break;
-                case 0x1f:
-                    s2.LoadString(0x8195);
+                case QUESTLEVEL_AREA8_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE3);
                     break;
-                case 0x20:
-                    s2.LoadString(0x8196);
+                case QUESTLEVEL_AREA8_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE4);
                     break;
                 default:
                     s2.Format(g_emptyString);
                     break;
-                case 0x25:
-                    s2.LoadString(0x8197);
+                case QUESTLEVEL_TRAINING_STAGE1:
+                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE1);
                     break;
-                case 0x26:
-                    s2.LoadString(0x8198);
+                case QUESTLEVEL_TRAINING_STAGE2:
+                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE2);
                     break;
-                case 0x27:
-                    s2.LoadString(0x8199);
+                case QUESTLEVEL_TRAINING_STAGE3:
+                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE3);
                     break;
-                case 0x28:
-                    s2.LoadString(0x819a);
+                case QUESTLEVEL_TRAINING_STAGE4:
+                    s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE4);
             }
             if (g_levelBias100 != 0) {
-                s1.LoadString(0x81ac);
-                s2.LoadString(0x81ad);
+                s1.LoadString(IDS_SECRET_LEVEL_STAGE);
+                s2.LoadString(IDS_SECRET_LEVEL_TITLE);
             }
         }
     } else if (mode == GAMEMODE_REPLAY) {
         if (g_gameReg->m_isCustomLevel != 0) {
-            s1.LoadString(0x819f);
+            s1.LoadString(IDS_CUSTOM_BATTLEZ_LEVEL);
         } else {
-            s1.LoadString(0x819e);
+            s1.LoadString(IDS_BATTLEZ_LEVEL);
         }
     } else if (mode == GAMEMODE_MULTIPLAYER) {
         if (g_gameReg->m_isCustomLevel != 0) {
-            s1.LoadString(0x819d);
+            s1.LoadString(IDS_CUSTOM_MULTIPLAYER_LEVEL);
         } else {
-            s1.LoadString(0x819c);
+            s1.LoadString(IDS_MULTIPLAYER_LEVEL);
         }
     } else {
         s0.Format(g_emptyString);
@@ -3654,7 +3658,7 @@ i32 CPlay::DrawLevelInfoText() {
         }
     }
 
-    s3.LoadString(0x819b);
+    s3.LoadString(IDS_LOADING);
 
     RECT r1;
     RECT r2;
@@ -3718,7 +3722,7 @@ i32 CPlay::ClearPlacedObjects() {
                     g_coordPool.m_freeHead = node;
                     return -1;
                 }
-                stillPlaced = (result->m_smarts == PICKUP_WARPSTONE);
+                stillPlaced = (result->m_smarts == IDX(PICKUP_WARPSTONE));
             }
 
             if (!stillPlaced) {
@@ -3819,7 +3823,7 @@ GruntzPlayer::GruntzPlayer() {
     m_joined = 0;
     m_humanControlled = 1;
     m_name = g_emptyString;
-    m_colorIndex = 0;
+    m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
@@ -3843,7 +3847,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_humanControlled = 1;
     m_name = g_emptyString;
 
-    m_colorIndex = index;
+    m_colorIndex = static_cast<ColorTint>(index);
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
@@ -3862,7 +3866,7 @@ void GruntzPlayer::Clear() {
     m_liveGate = 0;
     m_humanControlled = 1;
     m_name = g_emptyString;
-    m_colorIndex = 0;
+    m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
@@ -3879,7 +3883,7 @@ i32 GruntzPlayer::Reset() {
     m_liveGate = 0;
     m_humanControlled = 1;
     m_name = g_emptyString;
-    m_colorIndex = 0;
+    m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;
     m_focusY = 0;
@@ -3915,7 +3919,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
         pSend(
             cb,
             CB_ADDSTRING,
-            0,
+            IDX(GRUNT_ENTRANCE_NONE),
             reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, 0)))
         );
     }
@@ -4049,13 +4053,13 @@ void ChannelSlots_InitAll() {
 }
 
 RVA(0x000db200, 0x51)
-i32 GruntzPlayer::SwapChannel(i32 channel) {
+i32 GruntzPlayer::SwapChannel(ColorTint channel) {
     if (m_colorIndex == channel) {
         return 1;
     }
-    if (ChannelSlots_Get(channel)) {
-        ChannelSlots_Set(m_colorIndex, 1);
-        ChannelSlots_Set(channel, 0);
+    if (ChannelSlots_Get(IDX(channel))) {
+        ChannelSlots_Set(IDX(m_colorIndex), 1);
+        ChannelSlots_Set(IDX(channel), 0);
         m_colorIndex = channel;
         return 1;
     }
@@ -4173,9 +4177,9 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
         }
         m_guts->RefreshState();
         if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
-            m_hitTest->Configure(2);
+            m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         } else {
-            m_hitTest->Configure(1);
+            m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         }
         return 1;
     }
@@ -4231,7 +4235,16 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
             char ab = static_cast<char>(g_curPlayer);
             px = (px & 0xffe0) + 0x10;
             py = (py & 0xffe0) + 0x10;
-            m_mgr->m_cmdSubMgr->EnqueueSingle(1, ab, 0, PLAYERCMD_PLACE_GRUNT, px, py, 0, 0);
+            m_mgr->m_cmdSubMgr->EnqueueSingle(
+                1,
+                ab,
+                0,
+                static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
+                px,
+                py,
+                0,
+                0
+            );
             return 1;
         }
     }
@@ -4257,7 +4270,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     if (hasGrid != 0) {
         CGruntzMgr* w = m_mgr;
         i32 id = g_curPlayer;
-        CShadeTable* spr = w->m_spriteFactory->GetSel(w->m_options[id].m_colorIndex, 0);
+        CShadeTable* spr = w->m_spriteFactory->GetSel(IDX(w->m_options[id].m_colorIndex), 0);
         if (spr == NULL) {
             spr = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
@@ -4319,7 +4332,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     if (x >= left && x <= right && y >= top && y <= bottom) {
 
         if (m_dragInProgress != 0) {
-            m_guts->ClearTabSprites(-1);
+            m_guts->ClearTabSprites(TAB_ALL);
         }
         m_dragInProgress = 0;
         if (m_worldReady != 0) {
@@ -4338,16 +4351,16 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             if (s2 == NULL) {
                 return 1;
             }
-            s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            s2->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
             return 1;
         }
         if (m_levelId != 0) {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
             }
         } else {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
             }
         }
         CGameLevel* v = m_world->m_level;
@@ -4358,7 +4371,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     }
     m_dragInProgress = 1;
     m_guts->ClickToggle(a, x, y);
@@ -4395,7 +4408,7 @@ rearm:
     if (s == NULL) {
         return 1;
     }
-    s->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    s->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     return 1;
 }
 
@@ -4413,7 +4426,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_scrollSink) {
-        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     }
     return 1;
 }
@@ -4511,7 +4524,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     if (m_renderDisabled != 0) {
         m_hudSuppressed = 1;
         m_renderDisabled = 0;
-        EnterMode(3);
+        EnterMode(GAMESTATE_PLAY);
         m_inGame = 1;
         return 1;
     }
@@ -4563,7 +4576,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                         1,
                         tok,
                         0,
-                        PLAYERCMD_PLACE_GRUNT,
+                        static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
                         static_cast<i16>(x),
                         static_cast<i16>(y),
                         0,
@@ -4618,7 +4631,7 @@ mode_36c:
                 1,
                 static_cast<char>(a),
                 static_cast<char>(y),
-                PLAYERCMD_GIVE_TOOL,
+                static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
                 0,
                 0,
                 static_cast<char>(tok),
@@ -4644,7 +4657,7 @@ mode_36c:
             1,
             static_cast<char>(a),
             static_cast<char>(y),
-            PLAYERCMD_GIVE_TOOL,
+            static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
             0,
             0,
             static_cast<char>(tok),
@@ -4712,11 +4725,12 @@ drag_box: {
     if (m_dragEndNotify != 0) {
         i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 lv = m_levelId - CURSOR_TOOL_HANDZ;
-        if (lv <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 2, 1);
-        } else if (lv >= PICKUP_TOYZ_FIRST && lv <= PICKUP_TOYZ_LAST) {
-            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 3, 1);
+        i32 lv = m_levelId - IDX(CURSOR_TOOL_HANDZ);
+        PickupType item = static_cast<PickupType>(lv);
+        if (item <= PICKUP_EQUIPPABLE_LAST) {
+            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+        } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
+            g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
         g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
         LoadCursorSprites(0, 0);
@@ -4802,7 +4816,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_renderDisabled != 0) {
         m_hudSuppressed = 1;
         m_renderDisabled = 0;
-        EnterMode(3);
+        EnterMode(GAMESTATE_PLAY);
         m_inGame = 1;
         return 1;
     }
@@ -4868,7 +4882,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
             w->OverlayTick();
             return 1;
         }
-        w->ResetGroup(snapX, snapY, rawX, rawY, 1, 0, 1);
+        w->ResetGroup(snapX, snapY, rawX, rawY, 1, TARGET_SELECTION_AUTO, 1);
     }
     return 1;
 }
@@ -5059,9 +5073,9 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
             g->RefreshState();
         }
         if (g->m_activeTab != TAB_GAME) {
-            g->SetTabState(TAB_GAME, MENUITEM_SELECTED);
+            g->SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        g->SetTab(0x1fb, 1);
+        g->SetTab(GAME_TAB_MISSION_STATUS, 1);
         g->Deactivate();
     }
     m_guts->BuildGameTabResumeButton(1);
@@ -5215,7 +5229,8 @@ void CPlay::TickStateMgrs() {
 
 RVA(0x000cfbd0, 0x8f)
 i32 CPlay::CompleteLevel() {
-    if (m_levelIndex == QUESTLEVEL_CAMPAIGN_LAST) {
+    QuestLevel level = static_cast<QuestLevel>(m_levelIndex);
+    if (level == QUESTLEVEL_CAMPAIGN_LAST) {
         m_completedFinalLevel = 1;
         m_notifyLatch = 1;
 
@@ -5251,7 +5266,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -5265,7 +5280,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            this->m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
@@ -5278,7 +5293,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -5465,7 +5480,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
     }
     if (this->m_scrollSink != NULL) {
-        this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
     }
     this->m_cursorOffset.m_x = 0;
     this->m_cursorOffset.m_y = 0;
@@ -5937,28 +5952,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* levelSet = static_cast<CSymTab*>(m_levelBank->ResolvePath("MIDIZ"));
     if (levelSet) {
-        CParseSource* e = levelSet->Insert("AMBIENT0", IDX(REZ_TAG_XMI));
+        CParseSource* e = levelSet->Insert("AMBIENT0", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
-        e = levelSet->Insert("AMBIENT1", IDX(REZ_TAG_XMI));
+        e = levelSet->Insert("AMBIENT1", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
-        e = levelSet->Insert("INTRO0", IDX(REZ_TAG_XMI));
+        e = levelSet->Insert("INTRO0", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "INTRO0");
             }
         }
-        e = levelSet->Insert("INTRO1", IDX(REZ_TAG_XMI));
+        e = levelSet->Insert("INTRO1", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
@@ -5969,21 +5984,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 
     CSymTab* gameSet = static_cast<CSymTab*>(m_gameBank->ResolvePath("MIDIZ"));
     if (gameSet) {
-        CParseSource* e = gameSet->Insert("POWERUP", IDX(REZ_TAG_XMI));
+        CParseSource* e = gameSet->Insert("POWERUP", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "POWERUP");
             }
         }
-        e = gameSet->Insert("CURSE", IDX(REZ_TAG_XMI));
+        e = gameSet->Insert("CURSE", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
                 m_mgr->m_sound->CreateBank(res, e->m_length, "CURSE");
             }
         }
-        e = gameSet->Insert("MONOLITH", IDX(REZ_TAG_XMI));
+        e = gameSet->Insert("MONOLITH", REZ_TAG_XMI);
         if (e) {
             void* res = e->BeginParse();
             if (res) {
@@ -6132,13 +6147,13 @@ i32 CState::BuildAssetNamespacePrefixes(
     CMulti* finishGate
 ) {
     i32 result;
-    if (mode != GAMEMODE_NONE) {
+    if (mode != 0) {
         if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) == 0) {
             g_gameReg->m_cueSink->PauseAllVoices();
             (static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))->DestroyAllAnims();
             if (lightGate != 0) {
                 CString cs;
-                cs.LoadString(0x819b);
+                cs.LoadString(IDS_LOADING);
                 RECT r = *(&g_gameReg->m_world->m_level->m_planeCtx);
                 RECT r2;
                 CopyRect(&r2, &r);
@@ -6374,7 +6389,7 @@ i32 CPlay::EnterState(GameStateId mode) {
     }
     if (mode == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
-        if (!EnterMode(9)) {
+        if (!EnterMode(GAMESTATE_HELP)) {
             return 0;
         }
         m_stepCountdown = 2;
@@ -6492,7 +6507,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     }
     m_inGame = 0;
     if (!PlaceStartGruntz()) {
@@ -6516,7 +6531,7 @@ i32 CPlay::ResetPlayState() {
     }
     CTriggerMgr* tl = m_mgr->m_cmdGrid;
     tl->m_countdownActive = 1;
-    tl->m_phase = 0;
+    tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
     tl->m_gooTimerBaseLo = 0;
     tl->m_gooIntervalLo = 0;
@@ -6526,7 +6541,7 @@ i32 CPlay::ResetPlayState() {
     tl->m_resourceIntervalLo = 0;
     tl->m_resourceTimerBaseHi = 0;
     tl->m_resourceIntervalHi = 0;
-    tl->m_finishReasonFrame = 0;
+    tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = 0;
     tl->m_teleportWanted = 0;
     tl->m_groupFlag = 1;
@@ -6698,7 +6713,7 @@ void CPlay::ReleaseResources() {
 }
 
 RVA(0x000d6fa0, 0x1fa)
-i32 CPlay::EnterMode(i32 mode) {
+i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->CheckSavedMode();
     m_guts->Deactivate();
     m_guts->LoadDestructButtonSprite(0);
@@ -6737,7 +6752,7 @@ i32 CPlay::EnterMode(i32 mode) {
         }
         m_guts->Deactivate();
         m_guts->LoadMainStatusBarSprite();
-        if (mode == 9) {
+        if (mode == GAMESTATE_HELP) {
             if (m_world->m_drawTarget->HasOverlay() != 0) {
                 goto finish;
             }
@@ -6761,10 +6776,10 @@ finish:
     m_inputWarmup1 = 0;
     m_inputWarmup2 = 0;
     m_inputHalfSel = 0;
-    if (m_mgr->m_soundEnabled != 0 && mode != 9) {
+    if (m_mgr->m_soundEnabled != 0 && mode != GAMESTATE_HELP) {
         m_mgr->m_inputState->Resume();
     }
-    if (mode == 9) {
+    if (mode == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
     }
     m_guts->Deactivate();
@@ -6798,7 +6813,7 @@ i32 CPlay::AddLevelGruntz() {
             y,
             x,
             0x186a0,
-            0,
+            GRUNT_ENTRANCE_NONE,
             g->m_score,
             g->m_powerup,
             g->m_damage,
@@ -6966,7 +6981,8 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[v] = 1;
                     }
                 }
-                switch (obj->m_points) {
+                EnemyAiType aiType = static_cast<EnemyAiType>(obj->m_points);
+                switch (aiType) {
                     case AI_BOMBER:
                         if (!BuildGruntTypeNameTable(PICKUP_BOMB, 1, 0, ctx)) {
                             return 0;
@@ -7041,7 +7057,9 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         break;
                 }
             } else if (marker == static_cast<void*>(CreateInGameIcon)) {
-                i32 cv = obj->m_smarts == PICKUP_MEGAPHONE ? obj->m_points : obj->m_smarts;
+                PickupType smarts = static_cast<PickupType>(obj->m_smarts);
+                PickupType cv =
+                    smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
@@ -7053,8 +7071,9 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 d = obj->m_smarts;
-                if (d <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(d), 1, 0, ctx)) {
+                PickupType item = static_cast<PickupType>(d);
+                if (item <= PICKUP_TOYZ_LAST) {
+                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_smarts] == 0) {
@@ -7077,7 +7096,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (d == PICKUP_TOYBOX) {
+                } else if (item == PICKUP_TOYBOX) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
@@ -7090,7 +7109,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[obj->m_points] = 1;
                     }
-                } else if (d == PICKUP_MEGAPHONE) {
+                } else if (item == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
@@ -7106,7 +7125,9 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                 }
             } else if (marker == static_cast<void*>(CreateCoveredPowerup)
                        || marker == static_cast<void*>(CreateGiantRock)) {
-                i32 cv = obj->m_powerup == PICKUP_MEGAPHONE ? obj->m_points : obj->m_powerup;
+                PickupType powerup = static_cast<PickupType>(obj->m_powerup);
+                PickupType cv =
+                    powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
                 if (cv >= PICKUP_EQUIPPABLE_FIRST && cv <= PICKUP_EQUIPPABLE_LAST
                     && cv != PICKUP_WARPSTONE) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
@@ -7118,8 +7139,9 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
                 }
                 i32 e = obj->m_powerup;
-                if (e <= PICKUP_TOYZ_LAST) {
-                    if (!BuildGruntTypeNameTable(static_cast<PickupType>(e), 1, 0, ctx)) {
+                PickupType item = static_cast<PickupType>(e);
+                if (item <= PICKUP_TOYZ_LAST) {
+                    if (!BuildGruntTypeNameTable(item, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_powerup] == 0) {
@@ -7142,7 +7164,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (e == PICKUP_TOYBOX) {
+                } else if (item == PICKUP_TOYBOX) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
@@ -7155,7 +7177,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[obj->m_points] = 1;
                     }
-                } else if (e == PICKUP_MEGAPHONE) {
+                } else if (item == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,

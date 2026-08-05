@@ -16,7 +16,7 @@ class CSBI_ImageSet : public CSBI_Image {
 public:
     CSBI_ImageSet() {
         m_frame = NULL;
-        m_kind = 4;
+        m_kind = SBI_KIND_IMAGE_SET;
         m_frameSet = NULL;
     }
     virtual ~CSBI_ImageSet() OVERRIDE;
@@ -26,8 +26,16 @@ public:
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
     virtual i32 Render() OVERRIDE;
-    virtual i32 SetupImage(CStatusBarMgr*, CDDrawSurfaceMgr*, i32, i32, RECT, const char*, i32, i32)
-        OVERRIDE;
+    virtual i32 SetupImage(
+        CStatusBarMgr*,
+        CDDrawSurfaceMgr*,
+        SbiCommandId,
+        StatusBarTab,
+        RECT,
+        const char*,
+        i32,
+        i32
+    ) OVERRIDE;
 
     virtual void Notify(i32 on);
 

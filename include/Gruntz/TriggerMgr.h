@@ -5,12 +5,18 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/FinishLevelReason.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntEntranceMode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TargetSelectionKind.h>
+#include <Gruntz/TileArrivalFxCue.h>
+#include <Gruntz/WarpStoneFragment.h>
 
 extern FreeNodePool g_coordPool;
 
@@ -59,7 +65,7 @@ public:
 
     i32 OverlayRelease();
 
-    i32 ByteTableHas(i32 b);
+    i32 ByteTableHas(WarpStoneFragment fragment);
 
     void ResetAll();
 
@@ -108,7 +114,7 @@ public:
         i32 x,
         i32 y,
         i32 z,
-        i32 mode,
+        GruntEntranceMode mode,
         i32 kindDefault,
         i32 typeKind,
         i32 vehicleKind,
@@ -148,8 +154,15 @@ public:
     void GridAction6(i32 hi, i32 lo);
     void GridAction7(i32 hi, i32 lo);
 
-    i32
-    ResetGroup(i32 x, i32 y, i32 worldX, i32 worldY, i32 unused5, i32 selector, i32 spawnCursor);
+    i32 ResetGroup(
+        i32 x,
+        i32 y,
+        i32 worldX,
+        i32 worldY,
+        i32 unused5,
+        TargetSelectionKind selector,
+        i32 spawnCursor
+    );
 
     i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY);
 
@@ -180,7 +193,7 @@ public:
 
     i32 LoadTeleporterGooConfig(i32 clock);
 
-    void LoadFinishLevelSprite(i32 state);
+    void LoadFinishLevelSprite(FinishLevelReason state);
 
     i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
 
@@ -188,10 +201,16 @@ public:
 
     i32 CenterOnGroup(i32 doSelect);
 
-    i32
-    LoadTileArrivalFx(i32 ownerHi, i32 ownerLo, i32 tileX, i32 tileY, PickupType reason, i32 sel);
+    i32 LoadTileArrivalFx(
+        i32 ownerHi,
+        i32 ownerLo,
+        i32 tileX,
+        i32 tileY,
+        PickupType reason,
+        TileArrivalFxCue cue
+    );
 
-    i32 CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag);
+    i32 CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 flag);
 
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag);
 
@@ -235,7 +254,7 @@ public:
     char m_reserved274[0x10];
     i32 m_groupInitialized;
 
-    i32 m_phase;
+    FinishLevelState m_phase;
     char _pad28c[0x4];
 
     union {
@@ -261,7 +280,7 @@ public:
     i32 m_resourceIntervalHi;
     CPtrList m_selLists[10];
     i32 m_selSentinel;
-    i32 m_finishReasonFrame;
+    FinishLevelReason m_finishReasonFrame;
 
     DirectSoundMgr* m_rollingballLoop;
     DirectSoundMgr* m_teleportLoop;

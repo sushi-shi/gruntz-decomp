@@ -16,7 +16,7 @@ i32 CFileImageSurface::LoadKeyed(
     void* surf,
     i32 width,
     i32 height,
-    i32 bitDepth,
+    ColorDepth bitDepth,
     i32 caps,
     i32 key
 ) {

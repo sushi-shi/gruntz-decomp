@@ -22,6 +22,7 @@
 #include <new>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/EnemyAiType.h>
 #include <rva.h>
 
 #pragma intrinsic(strcmp)
@@ -2968,7 +2969,7 @@ i32 CGrunt::PhaseStep() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
 
-    if (m_defenderState == 0x19) {
+    if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
         GetScreenPos(&pa);
         i32 ax = pa.m_x >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
@@ -2981,7 +2982,7 @@ i32 CGrunt::PhaseStep() {
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
-    if (m_defenderState == 0x1a) {
+    if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
         GetScreenPos(&pa);
         i32 ax = pa.m_x >> TILE_SHIFT_PX;
         GetScreenPos(&pb);
@@ -3149,12 +3150,8 @@ s0_reset:
 }
 
 common: {
-    // 0x19 / 0x1a are PhaseStep-local: set here when a coord on the path lands on
-    // a cell carrying flag 0x20, consumed at the top of the next tick, which
-    // mirrors the grunt to the far side of that cell. No other function reads
-    // them, so they have no cross-checkable meaning and stay literals.
-    i32 st = m_defenderState;
-    if (st != AISTATE_COOLDOWN && st != 0x19 && CoordCount() >= 2) {
+    GruntAiState st = m_defenderState;
+    if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
         CoordNode* head = CoordHead();
         i32 bx = head->m_coord->m_x;
         i32 by = head->m_coord->m_y;
@@ -3178,7 +3175,7 @@ common: {
                 ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
             m_arrivalCell.m_x = bx;
             m_arrivalCell.m_y = by;
-            m_defenderState = 0x19;
+            m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
             return 1;
         }
     }
@@ -3205,7 +3202,7 @@ common: {
         RECYCLE_COORDS(CoordHead());
         m_coordList.RemoveAll();
     }
-    m_defenderState = 0x1a;
+    m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;
 }
 }
@@ -3490,7 +3487,7 @@ i32 CGrunt::StepPeerTracking() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
     if (m_vehiclePickupType == PICKUP_NONE) {
-        m_arrivalState = 5;
+        m_arrivalState = AI_POSTGUARD;
         m_defenderState = AISTATE_SEEK;
         m_dwell = 0;
         return 1;

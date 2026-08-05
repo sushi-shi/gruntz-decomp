@@ -39,7 +39,10 @@ GZ_ENUM_BEGIN_SPLIT(ButeToken, i16)
     BUTETOK_VECTOR = 12,
     BUTETOK_RANGE = 13,
     BUTETOK_KEYWORD_DWORD = 14,
-    BUTETOK_KEYWORD_FLOAT = 15
+    BUTETOK_KEYWORD_FLOAT = 15,
+    // A float value whose writer appends the retail float suffix rather than
+    // the `Float` keyword used by BUTETOK_KEYWORD_FLOAT.
+    BUTETOK_FLOAT_SUFFIX = 16
 GZ_ENUM_END_SPLIT(ButeToken, i16)
 
 #endif // GRUNTZ_BUTE_BUTETOKEN_H

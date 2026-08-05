@@ -3,13 +3,14 @@
 
 #include <rva.h>
 
+#include <Gruntz/FxModeKind.h>
 #include <Ints.h>
 
 class CFxModeDesc {
 public:
     CFxModeDesc();
 
-    i32 m_type;
+    FxModeKind m_type;
     class CDDSurface* m_targetSurface;
     class CDDSurface* m_sourceSurface;
 };

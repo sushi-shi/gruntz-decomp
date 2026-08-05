@@ -422,7 +422,8 @@ CShadeTable* CShadeTableCache::GreyTable() {
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
-    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
+        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
         for (i32 v = 0; v < 0x10000; v++) {
             *out++ = static_cast<u16>(
                 ((((static_cast<u8>((v >> 0xb)) << 4) + ((v >> 6) & 0xf)) << 4) + ((v >> 1) & 0xf))

@@ -18,7 +18,7 @@ RVA(0x0009dff0, 0x8c)
 i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
-            if (wParam == 2 || wParam == 1) {
+            if (wParam == IDCANCEL || wParam == IDOK) {
 
                 CPlay* obj = g_gameReg->PickPlayOrPausedState();
                 if (obj) {

@@ -6,12 +6,19 @@
 #include <Mfc.h>
 
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Utils/PtrListPool.h>
 
 typedef u32 gz_size_t;
 void* operator new(gz_size_t);
+
+GZ_ENUM_BEGIN(GruntzCommandRecordKind)
+    COMMAND_RECORD_INVALID = 0,
+    COMMAND_RECORD_SINGLE = 1,
+    COMMAND_RECORD_MULTI = 2
+GZ_ENUM_END(GruntzCommandRecordKind)
 
 class CPlay;
 
@@ -22,7 +29,7 @@ class CState;
 class CGruntzCommand {
 public:
     u8 m_targetIndex;
-    char m_commandKind;
+    GZ_ENUM_STORAGE(PlayerCommandKind, char) m_commandKind;
     u8 m_targetType;
     char m_pad07;
     i16 m_posX;

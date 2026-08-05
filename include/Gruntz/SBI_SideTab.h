@@ -16,13 +16,21 @@
 
 class CStatusBarMgr;
 
+GZ_ENUM_BEGIN(StatusSampleMode)
+    STATUS_SAMPLE_UNINITIALIZED = -1,
+    STATUS_SAMPLE_NONE = 0,
+    STATUS_SAMPLE_HEALTH = 1,
+    STATUS_SAMPLE_TOOL = 2,
+    STATUS_SAMPLE_VEHICLE = 3
+GZ_ENUM_END(StatusSampleMode)
+
 class CSBI_SideTab : public CStatusBarItem {
 public:
     CSBI_SideTab() {
         m_topFrame = NULL;
         m_bottomFrame = NULL;
         m_sampledValue = -1;
-        m_sampleMode = -1;
+        m_sampleMode = STATUS_SAMPLE_UNINITIALIZED;
     }
     virtual ~CSBI_SideTab() OVERRIDE;
 
@@ -34,8 +42,8 @@ public:
     i32 BuildStatzTabStatusBar(
         CStatusBarMgr* parent,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         i32 left,
         i32 top,
         i32 right,
@@ -44,7 +52,7 @@ public:
 
         i32 rowIndex,
         i32 colIndex,
-        i32 enabled,
+        StatusSampleMode enabled,
         i32 onLeft
     );
 
@@ -55,7 +63,7 @@ public:
     i32 m_sampledValue;
     i32 m_rowIndex;
     i32 m_colIndex;
-    i32 m_sampleMode;
+    StatusSampleMode m_sampleMode;
     Coord m_drawPosition;
     i32 m_bottomFrameDy;
     i32 m_onLeft;

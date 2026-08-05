@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 
@@ -35,7 +36,7 @@ public:
     void Clear();
     i32 Reset();
 
-    i32 SwapChannel(i32 channel);
+    i32 SwapChannel(ColorTint channel);
     i32 ClearRoundState();
     RVA(0x0001f450, 0x20)
     CString GetName() {
@@ -47,7 +48,7 @@ public:
 
     i32 m_playerIndex;
     CString m_name;
-    i32 m_colorIndex;
+    ColorTint m_colorIndex;
 
     i32 m_warlordObjectId;
     i32 m_configId;

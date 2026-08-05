@@ -74,7 +74,7 @@ void CGruntzApp::ShowError() {
     i32 id = m_errorCode;
     i32 detailVal = m_errorDetail;
     if (id == 0) {
-        id = IDS_DEFAULT_ERROR;
+        id = IDX(IDS_DEFAULT_ERROR);
     }
 
     char detail[0x20];
@@ -84,7 +84,7 @@ void CGruntzApp::ShowError() {
     }
 
     if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0
-        && LoadStringA(m_hInstance, IDS_DEFAULT_ERROR, g_errorText, 0xfa) <= 0) {
+        && LoadStringA(m_hInstance, IDX(IDS_DEFAULT_ERROR), g_errorText, 0xfa) <= 0) {
         strcpy(g_errorText, "Unable to continue game.");
     }
 

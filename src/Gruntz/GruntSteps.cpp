@@ -40,23 +40,23 @@
 #include <string.h>
 
 DATA(0x002448d8)
-GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, 1);
+GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
 DATA(0x00244908)
-GruntDirectionCell g_gruntMoveDirNorthEast = GruntDirectionCell(0, 2, 2);
+GruntDirectionCell g_gruntMoveDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
 DATA(0x002448c8)
-GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, 3);
+GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, DIR_EAST);
 DATA(0x00244928)
-GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, 4);
+GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
 DATA(0x00244938)
-GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, 0);
+GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
 DATA(0x002448e8)
-GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, 5);
+GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
 DATA(0x00244948)
-GruntDirectionCell g_gruntMoveDirSouthWest = GruntDirectionCell(2, 0, 6);
+GruntDirectionCell g_gruntMoveDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 DATA(0x002448f8)
-GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, 7);
+GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, DIR_WEST);
 DATA(0x00244918)
-GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, 8);
+GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";
@@ -179,9 +179,9 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 }
 
 RVA(0x00050ca0, 0x2b)
-i32 CGrunt::LoadTypeTableClearMove(i32 typeId) {
+i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 
-    i32 r = LoadGruntTypeTable(static_cast<PickupType>(typeId), 0, 0, 0);
+    i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
     m_entrancePickup = PICKUP_INVALID;
     m_helpCueId = 0;
     return r;
@@ -259,7 +259,8 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
 
     i32 code = g_gameReg->m_tileGrid->m_rowInts[m_lastTilePx.m_y >> TILE_SHIFT_PX]
                                                [(m_lastTilePx.m_x >> TILE_SHIFT_PX) * 7 + 4];
-    if (code == TILEKIND_CHECKPOINT || code == TILEKIND_CHECKPOINT_UP) {
+    TileCollisionKind tileKind = static_cast<TileCollisionKind>(code);
+    if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
 
             m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -537,7 +538,7 @@ i32 CGrunt::StepCompassMove() {
     if (s_TileFlags(board, tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
-        switch (cmd) {
+        switch (static_cast<TileCollisionKind>(cmd)) {
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
                 moveY = y - 0x20;
@@ -621,19 +622,17 @@ i32 CGrunt::StepCompassMove() {
     if (m_toyTileIndex != 0) {
         CString str;
         // The bias is LOAD-BEARING: switching on the domain directly and using
-        // PICKUP_* case labels compiles to different .text (measured), so the
-        // toy-ordinal jump table stays. IDX marks the two domain exits.
-        switch (IDX(m_entranceReason) - IDX(PICKUP_BABYWALKER)) {
-            case 0:
+        switch (m_entranceReason) {
+            case PICKUP_BABYWALKER:
                 str = s_BABYWALKERGRUNT;
                 break;
-            case 2:
+            case PICKUP_BIGWHEEL:
                 str = s_BIGWHEELGRUNT;
                 break;
-            case 3:
+            case PICKUP_GOKART:
                 str = s_GOKARTGRUNT;
                 break;
-            case 6:
+            case PICKUP_POGOSTICK:
                 str = s_POGOSTICKGRUNT;
                 break;
             default:
@@ -717,7 +716,7 @@ i32 CGrunt::StepCompassMove() {
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
-            switch (dir) {
+            switch (static_cast<GruntDirection>(dir)) {
                 case DIR_NORTH:
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
@@ -923,7 +922,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
         if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;

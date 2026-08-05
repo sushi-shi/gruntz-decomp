@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Enums.h>
 #include <Ints.h>
@@ -31,10 +32,10 @@ class CDDrawShadeBlit {
 public:
     CDDrawShadeBlit();
     i32 BuildRle(void* pixels, i32 width, i32 height, i32 stride, i32 keyVal, void* palette);
-    i32 LoadFromFile(CString name, i32 fmt);
+    i32 LoadFromFile(CString name, ColorDepth fmt);
 
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette);
-    i32 Build(PidHeader* src, i32 size, i32 fmt);
+    i32 Build(PidHeader* src, i32 size, ColorDepth fmt);
 
     void* EncodeRle16(const u8* src);
     void Teardown();

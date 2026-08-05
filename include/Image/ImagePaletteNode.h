@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Image/RezDecodeKind.h>
 #include <Ints.h>
 
 struct CImagePaletteNode {
@@ -25,7 +26,7 @@ struct CImagePaletteNode {
     i32 ProcessPal(void* rgb, i32 flags);
     i32 ProcessPalQuad(void* bgr, i32 flags);
     i32 ProcessPalBGR(void* bgr, i32 flags);
-    i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl);
+    i32 ParseDispatch(void* buf, u32 size, RezDecodeKind type, i32 ctrl);
     i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);
     void Run();
     i32 LoadByExtension(char* path, i32 arg);

@@ -23,6 +23,7 @@ GZ_ENUM_BEGIN(LevelArea)
     AREA_HONEY_I_SHRUNK_THE_GRUNTZ = 6,
     AREA_MINIATURE_MASTERZ = 7,
     AREA_GRUNTZ_IN_SPACE = 8,
+    AREA_LAST = AREA_GRUNTZ_IN_SPACE,
     AREA_COUNT = 8,
     // The eight areas split into two tile sets at this boundary, and two
     // unrelated files agree on where: CGrunt's entrance-move switch takes the

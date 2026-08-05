@@ -114,7 +114,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
     m_object->m_animCursor.m_consumeDraw = 0;
-    m_object->m_smarts = g_areaHazardDeath;
+    m_object->m_smarts = IDX(g_areaHazardDeath);
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
@@ -291,7 +291,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 2) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == ANI_EVENT_FRAME) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != NULL) {

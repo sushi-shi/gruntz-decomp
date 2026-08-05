@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
 #include <Gruntz/Loadable.h>
 #include <Ints.h>
@@ -14,6 +15,11 @@ class CDDrawSurfaceMgr;
 class CDDSurface;
 class CDDrawSurfacePair;
 class CDDrawSurfaceChildA;
+
+GZ_ENUM_BEGIN(DDrawPageKind)
+    DDRAW_PAGE_BACK = 1,
+    DDRAW_PAGE_OVERLAY = 2
+GZ_ENUM_END(DDrawPageKind)
 
 class CDDrawSubMgrPages : public CLoadable {
 public:
@@ -31,13 +37,13 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_SUBMGRPAGES;
     }
-    virtual i32 CreateChildren(i32 w, i32 h, i32 bpp, i32 flags);
+    virtual i32 CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags);
 
-    i32 ResolvePageImage(char* name, i32 pageIndex);
-    i32 LoadPageImage(struct CParseSource* src, i32 pageIndex);
+    i32 ResolvePageImage(char* name, DDrawPageKind pageIndex);
+    i32 LoadPageImage(struct CParseSource* src, DDrawPageKind pageIndex);
     void FlipAndNotify();
     i32 PagesReady();
-    i32 ResizePages(i32 w, i32 h, i32 bpp);
+    i32 ResizePages(i32 w, i32 h, ColorDepth bpp);
     i32 CreateOverlay(i32 copyFromBack, i32 createFlag);
     void ClearAllPages(u32 color);
     i32 BlitPage(CDDrawSurfacePair* dst);
@@ -71,9 +77,9 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual i32 SetGeometry(i32 w, i32 h, i32 bpp);
+    virtual i32 SetGeometry(i32 w, i32 h, ColorDepth bpp);
 
-    virtual i32 SetGeom(i32 w, i32 h, i32 bpp);
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp);
 
     i32 Probe();
 
@@ -83,7 +89,7 @@ public:
 
     i32 m_width;
     i32 m_height;
-    i32 m_bpp;
+    ColorDepth m_bpp;
     i32 m_srcRect[4];
     CDDSurface* m_surface;
 };
@@ -101,8 +107,8 @@ public:
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual i32 SetGeometry(i32 w, i32 h, i32 bpp) OVERRIDE;
-    virtual i32 SetGeom(i32 w, i32 h, i32 bpp) OVERRIDE;
+    virtual i32 SetGeometry(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
+    virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
 };
 SIZE(0x30);
 

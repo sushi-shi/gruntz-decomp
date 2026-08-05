@@ -117,7 +117,8 @@ Two companion gates run beside them:
 
 - **`gruntz audit enum-domains`** (`--gate`, normal tier) - split-domain storage
   widths must agree tree-wide, no bare `enum` in a header (single-enumerator tag
-  types exempt), `config/cleanliness/enum-review.tsv` in sync. Negative controls live in
+  types exempt), range tests name boundaries rather than members, and enumerator
+  names follow the domain convention. Negative controls live in
   `gruntz.match.gate_selftest`.
 - **`gruntz audit strict-enums`** - compiles the tree at `/std:c++20`, where the
   domains become `enum class`, and reports what the MSVC build cannot see: a

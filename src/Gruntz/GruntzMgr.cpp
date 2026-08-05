@@ -30,6 +30,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
@@ -291,7 +292,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
     {
         CState* st = m_curState;
 
-        i32 ok = st->LoadGameAssetNamespaces(this, areaArg, local10);
+        i32 ok = st->LoadGameAssetNamespaces(this, areaArg, IDX(local10));
         st = m_curState;
         if (ok == 0) {
             if (st != NULL) {
@@ -359,10 +360,10 @@ i32 CGruntzMgr::GoToNextLevel() {
     m_strWorldFile.Empty();
     CState* st = m_curState;
     i32 next = st->m_levelIndex + 1;
-    if (next > QUESTLEVEL_TRAINING_LAST) {
-        next = QUESTLEVEL_FIRST;
+    if (next > IDX(QUESTLEVEL_TRAINING_LAST)) {
+        next = IDX(QUESTLEVEL_FIRST);
     }
-    if (next <= QUESTLEVEL_CAMPAIGN_LAST || next >= QUESTLEVEL_TRAINING_FIRST) {
+    if (next <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || next >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
         st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(next, 1)) {
             st->EnterState(st->Update());
@@ -382,9 +383,9 @@ i32 CGruntzMgr::GoToPrevLevel() {
     CState* st = m_curState;
     i32 prev = st->m_levelIndex - 1;
     if (prev <= 0) {
-        prev = QUESTLEVEL_TRAINING_LAST;
+        prev = IDX(QUESTLEVEL_TRAINING_LAST);
     }
-    if (prev <= QUESTLEVEL_CAMPAIGN_LAST || prev >= QUESTLEVEL_TRAINING_FIRST) {
+    if (prev <= IDX(QUESTLEVEL_CAMPAIGN_LAST) || prev >= IDX(QUESTLEVEL_TRAINING_FIRST)) {
         st->LeaveState(st->Update());
         if ((static_cast<CPlay*>(st))->LoadByMode(prev, 1)) {
             st->EnterState(st->Update());
@@ -631,7 +632,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
         if (view) {
             i32 count = view->m_planes.GetSize();
 
-            i32 idx = (count == 4 ? count - 1 : count) - 1;
+            i32 idx = (count == LEVEL_EXTENDED_PLANE_COUNT ? count - 1 : count) - 1;
             CDDrawWorkerHost* layer =
                 (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
             if (layer && !(layer->m_flags & 1)) {
@@ -1101,64 +1102,64 @@ i32 CGruntzMgr::IsMoviePathValid() {
 
 RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
-    if (code > 0 && code <= QUESTLEVEL_POST_LAST) {
-        i32 v = (code == QUESTLEVEL_RESTART) ? QUESTLEVEL_FIRST : code;
+    if (code > 0 && code <= IDX(QUESTLEVEL_POST_LAST)) {
+        i32 v = (code == IDX(QUESTLEVEL_RESTART)) ? IDX(QUESTLEVEL_FIRST) : code;
         PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), v);
     }
 }
 
 // @early-stop
 RVA(0x00090ac0, 0x1cc)
-void CGruntzMgr::ReportWorldStatus(i32 a) {
+void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
-        ReportError(IDX(CMD_TOGGLE_MUSIC), a);
+        ReportError(IDX(CMD_TOGGLE_MUSIC), IDX(tag));
     }
-    u32 status = m_world->m_lastError;
-    if (status == 0) {
-        ReportError(IDX(CMD_TOGGLE_MUSIC), a);
+    WorldInitError status = m_world->m_lastError;
+    if (status == WORLDERR_NONE) {
+        ReportError(IDX(CMD_TOGGLE_MUSIC), IDX(tag));
     }
     switch (status) {
-        case 0x3f0:
-            ReportError(static_cast<GruntzCommandId>(0x8015), 0x3f0);
+        case WORLDERR_CREATE_PAGES:
+            ReportError(IDX(IDS_WORLD_CREATE_PAGES), IDX(WORLDERR_CREATE_PAGES));
             return;
-        case 0x3f1:
-            ReportError(static_cast<GruntzCommandId>(0x8013), 0x3f1);
+        case WORLDERR_SOUND_OUTPUT:
+            ReportError(IDX(IDS_WORLD_SOUND_OUTPUT), IDX(WORLDERR_SOUND_OUTPUT));
             return;
-        case 0x3f2:
-            ReportError(static_cast<GruntzCommandId>(0x8012), 0x3f2);
+        case WORLDERR_SOUND_REGISTRY:
+            ReportError(IDX(IDS_WORLD_SOUND_REGISTRY), IDX(WORLDERR_SOUND_REGISTRY));
             return;
-        case 0x7d1:
-            ReportError(static_cast<GruntzCommandId>(0x8019), 0x7d1);
+        case WORLDERR_FRONT_SURFACE:
+            ReportError(IDX(IDS_WORLD_FRONT_SURFACE), IDX(WORLDERR_FRONT_SURFACE));
             return;
-        case 0x7d2:
-            ReportError(static_cast<GruntzCommandId>(0x8018), 0x7d2);
+        case WORLDERR_BACK_SURFACE:
+            ReportError(IDX(IDS_WORLD_BACK_SURFACE), IDX(WORLDERR_BACK_SURFACE));
             return;
-        case 0x7d3:
-            ReportError(static_cast<GruntzCommandId>(0x8017), 0x7d3);
+        case WORLDERR_OVERLAY_SURFACE:
+            ReportError(IDX(IDS_WORLD_OVERLAY_SURFACE), IDX(WORLDERR_OVERLAY_SURFACE));
             return;
-        case 0xbb9:
-            ReportError(static_cast<GruntzCommandId>(0x8014), 0xbb9);
+        case WORLDERR_CREATE_DEVICE:
+            ReportError(IDX(IDS_WORLD_CREATE_DEVICE), IDX(WORLDERR_CREATE_DEVICE));
             return;
-        case 0xbba:
-            ReportError(static_cast<GruntzCommandId>(0x8016), status);
+        case WORLDERR_CREATE_PALETTE_SURFACE:
+            ReportError(IDX(IDS_WORLD_CREATE_PALETTE_SURFACE), IDX(status));
             return;
-        case CHEAT_GIVE_GAUNTLET:
-            ReportError(static_cast<GruntzCommandId>(0x801e), 0x80e9);
+        case WORLDERR_DDRAW_CREATE:
+            ReportError(IDX(IDS_WORLD_DDRAW_CREATE), IDX(WORLDERR_DDRAW_CREATE));
             return;
-        case CHEAT_GIVE_GLOVE:
-            ReportError(static_cast<GruntzCommandId>(0x801a), status);
+        case WORLDERR_DDRAW_COOPERATIVE_LEVEL:
+            ReportError(IDX(IDS_WORLD_DDRAW_COOPERATIVE_LEVEL), IDX(status));
             return;
-        case CHEAT_GIVE_GOOBER:
-            ReportError(static_cast<GruntzCommandId>(0x801b), status);
+        case WORLDERR_DDRAW_CAPABILITIES:
+            ReportError(IDX(IDS_WORLD_DDRAW_CAPABILITIES), IDX(status));
             return;
-        case CHEAT_GIVE_GRAVITY_BOOT:
-            ReportError(static_cast<GruntzCommandId>(0x801c), status);
+        case WORLDERR_DDRAW_DISPLAY_MODE:
+            ReportError(IDX(IDS_WORLD_DDRAW_DISPLAY_MODE), IDX(status));
             return;
-        case CHEAT_GIVE_GUN_HAT:
-            ReportError(static_cast<GruntzCommandId>(0x801d), status);
+        case WORLDERR_DDRAW_COLOR_MASKS:
+            ReportError(IDX(IDS_WORLD_DDRAW_COLOR_MASKS), IDX(status));
             return;
         default:
-            ReportError(static_cast<GruntzCommandId>(0x8011), status);
+            ReportError(IDX(IDS_WORLD_UNKNOWN), IDX(status));
             return;
     }
 }
@@ -1465,7 +1466,7 @@ i32 CGruntzMgr::MakeRezPath() {
     }
 
     if (!found) {
-        ReportError(static_cast<GruntzCommandId>(0x800b), 0x43e);
+        ReportError(IDX(static_cast<GruntzCommandId>(0x800b)), 0x43e);
         return 0;
     }
     return 1;
@@ -1533,7 +1534,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
 
 // @early-stop
 RVA(0x00091170, 0xad)
-i32 CGruntzMgr::SetColorDepth(i32 depth) {
+i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
     if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
         return 0;
     }
@@ -1561,14 +1562,14 @@ i32 CGruntzMgr::SetColorDepth(i32 depth) {
 
 // @early-stop
 RVA(0x00091a40, 0x2f9)
-i32 CGruntzMgr::LoadWorldMode(i32 mode) {
+i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     if (m_world == NULL) {
         return 0;
     }
     if (m_colorDepth == mode) {
         return 1;
     }
-    if (mode != 8 && mode != 0x10) {
+    if (mode != BPP_PALETTED_8 && mode != BPP_RGB_16) {
         return 0;
     }
 
@@ -1596,7 +1597,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         kind = 5;
     }
     if (m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, m_colorDepth, kind) == 0) {
-        ReportWorldStatus(0x43f);
+        ReportWorldStatus(WORLD_REPORT_COLOR_DEPTH_REINIT);
         return 0;
     }
 
@@ -1624,7 +1625,7 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
             m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0) == 0;
     }
     if (parseFailed) {
-        ReportError(static_cast<GruntzCommandId>(0x800b), 0x441);
+        ReportError(IDX(static_cast<GruntzCommandId>(0x800b)), 0x441);
         return 0;
     }
 
@@ -1684,13 +1685,13 @@ i32 CGruntzMgr::ResetWorldState() {
     CWaitCursor waitCursor;
 
     if (m_colorDepth == BPP_PALETTED_8) {
-        if (LoadWorldMode(0x10) == 0) {
-            ReportError(static_cast<GruntzCommandId>(0x801f), 0x443);
+        if (LoadWorldMode(BPP_RGB_16) == 0) {
+            ReportError(IDX(static_cast<GruntzCommandId>(0x801f)), 0x443);
             return 0;
         }
     } else {
-        if (LoadWorldMode(8) == 0) {
-            ReportError(static_cast<GruntzCommandId>(0x801f), 0x444);
+        if (LoadWorldMode(BPP_PALETTED_8) == 0) {
+            ReportError(IDX(static_cast<GruntzCommandId>(0x801f)), 0x444);
             return 0;
         }
     }
@@ -1751,11 +1752,11 @@ INT_PTR CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_INITDIALOG:
             return 1;
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 EndDialog(hDlg, 1);
                 return 1;
             }
@@ -1879,7 +1880,7 @@ void CGruntzMgr::SetRunState(i32 v) {
 }
 
 RVA(0x00092900, 0x6e)
-CState* CGruntzMgr::FindStateById(i32 id) {
+CState* CGruntzMgr::FindStateById(GameStateId id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
     }
@@ -1895,16 +1896,16 @@ CState* CGruntzMgr::FindStateById(i32 id) {
 
 RVA(0x00092990, 0x8)
 CPlay* CGruntzMgr::PickPlayOrPausedState() {
-    return static_cast<CPlay*>(FindStateById(3));
+    return static_cast<CPlay*>(FindStateById(GAMESTATE_PLAY));
 }
 
 RVA(0x000929b0, 0x19)
 CState* CGruntzMgr::PickPausedThenPlayState() {
-    CState* s = FindStateById(0x11);
+    CState* s = FindStateById(GAMESTATE_MULTI);
     if (s) {
         return s;
     }
-    return FindStateById(3);
+    return FindStateById(GAMESTATE_PLAY);
 }
 
 RVA(0x000923b0, 0x47)
@@ -2370,7 +2371,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         i32 done = 0;
         CNetCmdSlot* s = static_cast<CMulti*>(m_curState)->m_session->m_slots;
         for (i32 d = 4; d != 0; d--) {
-            if (s != NULL && s->m_state == 3) {
+            if (s != NULL && s->m_state == NETSLOT_ACTIVE) {
                 done++;
             }
             s++;
@@ -2693,12 +2694,12 @@ void CGruntzMgr::Close() {
         m_settings->SetValueDword("Scroll_Speed", m_scrollSpeed);
         m_settings->SetValueDword("Easy_Mode", m_isEasyMode);
         Resolution res = RES_640X480;
-        if (m_savedModeW == 0x400 && m_savedModeH == 0x300) {
+        if (m_savedModeW == DISPLAY_WIDTH_1024 && m_savedModeH == DISPLAY_HEIGHT_768) {
             res = RES_1024X768;
-        } else if (m_savedModeW == 0x320 && m_savedModeH == 0x258) {
+        } else if (m_savedModeW == DISPLAY_WIDTH_800 && m_savedModeH == DISPLAY_HEIGHT_600) {
             res = RES_800X600;
         }
-        m_settings->SetValueDword("Resolution", res);
+        m_settings->SetValueDword("Resolution", IDX(res));
         m_settings->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
         m_settings->SetValueDword("Enable_HiColor", m_colorDepth == BPP_RGB_16 ? 1 : 0);
         m_settings->SetValueDword("Enable_TrueColor", 0);
@@ -2825,7 +2826,7 @@ RVA(0x000861e0, 0xc5)
 void CGruntzMgr::AccrueScoreTime() {
     CState* st = m_curState;
     if (m_gameMode == GAMEMODE_SINGLE) {
-        if (m_cmdGrid->m_phase == 1) {
+        if (m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
             UpdateScoreHud();
         }
         TransitionState(GAMESTATE_BOOTY, 1, 0, 0);
@@ -3134,11 +3135,11 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 i32 valX = GetDlgItemInt(hDlg, 0x40e, 0, 0);
                 i32 valY = GetDlgItemInt(hDlg, 0x40f, 0, 0);
                 g_warpX = valX;
@@ -3168,11 +3169,11 @@ INT_PTR CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
             return 1;
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
                 return 1;
             }
@@ -3188,11 +3189,11 @@ INT_PTR CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPA
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
             return 1;
         case WM_COMMAND:
-            if (wParam == 2) {
+            if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (wParam == 1) {
+            if (wParam == IDOK) {
                 EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
                 return 1;
             }

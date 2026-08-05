@@ -33,7 +33,8 @@ i32 EngStr_RenderText(
     if (drawSurface == NULL) {
         return 0;
     }
-    switch (fontSel) {
+    FontSel font = static_cast<FontSel>(fontSel);
+    switch (font) {
         case FONTSEL_TINY:
             g_textObj.SetFont(&g_tinyFont);
             break;

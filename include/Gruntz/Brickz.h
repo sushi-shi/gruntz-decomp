@@ -5,6 +5,7 @@
 
 #include <Enums.h>
 #include <Gruntz/MapMgr.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
 
 class CBattlezData;
@@ -65,7 +66,7 @@ struct BrickzCell {
 
     i32 m_objectId;
     i32 m_tileId;
-    i32 m_typeCode;
+    TileCollisionKind m_typeCode;
     i32 m_count;
     BrickzNode* m_head;
 };

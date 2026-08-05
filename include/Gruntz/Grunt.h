@@ -14,6 +14,8 @@
 #include <Gruntz/DoubleVector.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntEntranceMode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/PickupType.h>
@@ -28,6 +30,17 @@
 #include <Ints.h>
 
 GZ_ENUM_FORWARD(BattlezTask);
+GZ_ENUM_FORWARD(EnemyAiType);
+GZ_ENUM_FORWARD(GruntAiState);
+
+GZ_ENUM_CONST_BEGIN(GruntCombatScan)
+    GRUNT_COMBAT_FULL_SCAN_HITS = 5
+GZ_ENUM_CONST_END(GruntCombatScan)
+
+GZ_ENUM_CONST_BEGIN(GruntIdleVariant)
+    GRUNT_IDLE_VARIANT_PRIMARY = 1,
+    GRUNT_IDLE_VARIANT_SECONDARY = 2
+GZ_ENUM_CONST_END(GruntIdleVariant)
 
 class CAniElement;
 
@@ -53,26 +66,43 @@ class CGrunt;
 
 struct CTriRecord {
     CTriRecord() {}
-    CTriRecord(i32 row_, i32 column_, i32 direction_)
+    CTriRecord(i32 row_, i32 column_, GruntDirection direction_)
         : row(row_), column(column_), direction(direction_) {}
 
     i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
 
     i32 row;
     i32 column;
-    i32 direction;
+    GruntDirection direction;
 };
 SIZE(0xc);
 
 struct GruntDirectionCell : public CTriRecord {
     GruntDirectionCell() {}
-    GruntDirectionCell(i32 row_, i32 column_, i32 direction_)
+    GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_)
         : CTriRecord(row_, column_, direction_) {}
 
     void RotateClockwise(i32 steps);
     void RotateCounterclockwise(i32 steps);
 };
 SIZE(0xc);
+
+// Coordinates inside the 3x3 direction-cell table. These are extents and
+// indices rather than a variable value domain.
+GZ_ENUM_CONST_BEGIN(GruntDirectionGrid)
+    GRUNT_DIRECTION_GRID_LOW = 0,
+    GRUNT_DIRECTION_GRID_CENTER = 1,
+    GRUNT_DIRECTION_GRID_HIGH = 2,
+    GRUNT_DIRECTION_GRID_WIDTH = 3
+GZ_ENUM_CONST_END(GruntDirectionGrid)
+
+// Special tags carried by m_arrivalPhase. The same slot can also carry a path
+// mask as an opaque nonzero tag, so it is deliberately not narrowed to an enum.
+GZ_ENUM_CONST_BEGIN(GruntArrivalTag)
+    ARRIVAL_TAG_NONE = 0,
+    ARRIVAL_TAG_TRIGGER_A = 2,
+    ARRIVAL_TAG_TRIGGER_B = 3
+GZ_ENUM_CONST_END(GruntArrivalTag)
 
 extern GruntDirectionCell g_gruntDirNorth;
 extern GruntDirectionCell g_gruntDirNorthEast;
@@ -98,12 +128,12 @@ class CArchive;
 
 struct CGruntCellRec {
     GZ_ENUM_BEGIN(NameSlot)
-        NAME_ATTACK,
-        NAME_STRUCK,
-        NAME_WALK,
-        NAME_IDLE,
-        NAME_ITEM,
-        NAME_COUNT
+        NAME_ATTACK = 0,
+        NAME_STRUCK = 1,
+        NAME_WALK = 2,
+        NAME_IDLE = 3,
+        NAME_ITEM = 4,
+        NAME_COUNT = 5
     GZ_ENUM_END(NameSlot)
 
     CString AT(m_names, NAME_COUNT);
@@ -264,7 +294,7 @@ public:
 
     i32 LoadGruntTypeTable(PickupType a, i32 b, i32 c, i32 d);
 
-    i32 LoadTypeTableClearMove(i32 typeId);
+    i32 LoadTypeTableClearMove(PickupType typeId);
 
     void PlayMoveSoundAtTile(i32 tx, i32 ty);
     void SnapToLastTile(i32 a);
@@ -383,8 +413,8 @@ public:
 
     RECT m_toyRectA;
     RECT m_toyRectB;
-    i32 m_arrivalState;
-    i32 m_defenderState;
+    EnemyAiType m_arrivalState;
+    GruntAiState m_defenderState;
     BattlezTask m_battleState;
     i32 m_defenderRadius;
     i32 m_defenderQueuePosition;
@@ -700,7 +730,7 @@ public:
     void ResetEntranceAnimation(i32 a, i32 b, i32 c);
     i32 ResolveEntranceArrival();
     void ClearAllSprites();
-    void BuildEntranceAnimation(i32 mode);
+    void BuildEntranceAnimation(GruntEntranceMode mode);
     i32 LoadEntranceConfig();
 
     void SetEntrancePos(i32 a, i32 b);
@@ -832,12 +862,12 @@ public:
         PickupType moveIcon,
         PickupType typeKind,
         i32 vehicleKind,
-        i32 kind,
+        EnemyAiType kind,
         i32 a8,
         i32 a9,
         i32 a10,
         RECT* span,
-        i32 entranceMode
+        GruntEntranceMode entranceMode
     );
 
     i32 ArrivalReticleScan();

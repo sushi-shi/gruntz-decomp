@@ -24,7 +24,7 @@ i32 CUserBase::SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject
 
 RVA(0x000087f0, 0x3)
 LogicTypeId CUserBase::GetTypeTag() {
-    return static_cast<LogicTypeId>(0);
+    return LOGIC_UNSET;
 }
 
 RVA(0x00008840, 0x4)

@@ -2,10 +2,13 @@
 
 #include <Net/NetCmdSlot.h>
 
+#include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/PickupType.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 #include <Net/CmdPool.h>
 #include <Net/NetMgr.h>
@@ -15,6 +18,7 @@
 
 #include <dplay.h>
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
 #pragma intrinsic(memcpy)
@@ -410,7 +414,7 @@ i32 CNetSession::SendOne(CNetCmdSlot* slot, i32 val) {
 }
 
 RVA(0x000bfff0, 0x5d)
-CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
+CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
     if (index < 0 || index >= NET_SLOT_COUNT) {
         return 0;
     }
@@ -419,7 +423,7 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
         return 0;
     }
     (static_cast<CNetCmdSlot*>(slot))->ResetAll();
-    return slot->Init(m_session, &m_mgr->m_options[index], owner) ? slot : 0;
+    return slot->Init(m_session, &m_mgr->m_options[index], state) ? slot : 0;
 }
 
 RVA(0x000c0070, 0x15)
@@ -449,11 +453,11 @@ void CNetSession::Reconcile() {
         i32 n = 4;
         do {
             if (s) {
-                i32 type = s->m_state;
-                if (type == 3 && s->m_isRemote != 0) {
+                NetSlotState type = s->m_state;
+                if (type == NETSLOT_ACTIVE && s->m_isRemote != 0) {
                     withFlag++;
                 }
-                if (type == 3 && s->m_isRemote == 0) {
+                if (type == NETSLOT_ACTIVE && s->m_isRemote == 0) {
                     withoutFlag++;
                 }
             }
@@ -624,8 +628,114 @@ i32 CNetSession::Verify() {
 }
 
 // @early-stop
+RVA(0x000c0590, 0x21c)
+i32 CNetSession::Checksum() {
+    i32 sum = 0;
+    i32 idx = 0;
+    do {
+        i32 count = 15;
+        do {
+            CGrunt* grunt = static_cast<CGrunt*>(m_session->m_mgr->m_cmdGrid->m_grid[idx]);
+            if (grunt != NULL) {
+                CGameObject* object = grunt->m_object;
+                sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
+                       + grunt->m_health + object->m_screenY + object->m_sortKey + object->m_screenX
+                       + grunt->m_lastTilePx.m_x + grunt->m_lastTilePx.m_y;
+
+                PickupType carried = grunt->m_entranceReason;
+                PickupType effective = carried;
+                if (carried > PICKUP_EQUIPPABLE_LAST) {
+                    effective = grunt->m_toolId;
+                }
+                sum += IDX(grunt->m_vehiclePickupType) + grunt->m_entranceCommitted
+                       + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
+
+                PickupType next;
+                switch (carried) {
+                    case PICKUP_BOMB:
+                        next = PICKUP_BOOMERANG;
+                        break;
+                    case PICKUP_BOOMERANG:
+                        next = PICKUP_BRICK;
+                        break;
+                    case PICKUP_BRICK:
+                        next = PICKUP_CLUB;
+                        break;
+                    case PICKUP_CLUB:
+                        next = PICKUP_GAUNTLETZ;
+                        break;
+                    case PICKUP_GAUNTLETZ:
+                        next = PICKUP_GLOVEZ;
+                        break;
+                    case PICKUP_GLOVEZ:
+                        next = PICKUP_GOOBER;
+                        break;
+                    case PICKUP_GOOBER:
+                        next = PICKUP_GRAVITYBOOTZ;
+                        break;
+                    case PICKUP_GRAVITYBOOTZ:
+                        next = PICKUP_GUNHAT;
+                        break;
+                    case PICKUP_GUNHAT:
+                        next = PICKUP_NERFGUN;
+                        break;
+                    case PICKUP_NERFGUN:
+                        next = PICKUP_ROCK;
+                        break;
+                    case PICKUP_ROCK:
+                        next = PICKUP_SHIELD;
+                        break;
+                    case PICKUP_SHIELD:
+                        next = PICKUP_SHOVEL;
+                        break;
+                    case PICKUP_SHOVEL:
+                        next = PICKUP_SPRING;
+                        break;
+                    case PICKUP_SPRING:
+                        next = PICKUP_SPY;
+                        break;
+                    case PICKUP_SPY:
+                        next = PICKUP_SWORD;
+                        break;
+                    case PICKUP_SWORD:
+                        next = PICKUP_TIMEBOMB;
+                        break;
+                    case PICKUP_TIMEBOMB:
+                        next = PICKUP_TOOB;
+                        break;
+                    case PICKUP_TOOB:
+                        next = PICKUP_WAND;
+                        break;
+                    case PICKUP_WAND:
+                        next = PICKUP_WARPSTONE;
+                        break;
+                    case PICKUP_WARPSTONE:
+                        next = PICKUP_WELDER;
+                        break;
+                    case PICKUP_WELDER:
+                        next = PICKUP_WINGZ;
+                        break;
+                    case PICKUP_WINGZ:
+                        next = PICKUP_BABYWALKER;
+                        break;
+                    default:
+                        next = PICKUP_BABYWALKER;
+                        break;
+                }
+
+                sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled + grunt->m_combatActive
+                       + grunt->m_neighborValid + grunt->m_poweredUp + g_frameTime + IDX(next);
+                sum += rand();
+            }
+            idx++;
+        } while (--count);
+    } while (idx < 0x3c);
+    return sum;
+}
+
+// @early-stop
 RVA(0x000c0b10, 0x72)
-i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, i32 state) {
+i32 CNetCmdSlot::Init(CMulti* owner, GruntzPlayer* desc, NetSlotState state) {
     if (desc == NULL) {
         return 0;
     }

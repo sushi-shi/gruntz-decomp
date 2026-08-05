@@ -26,6 +26,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCombatDirection.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntEntranceArrival.h>
@@ -103,23 +104,23 @@ DATA(0x00244970)
 i32 g_dirVec[9][4];
 
 DATA(0x00244ab0)
-GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, 1);
+GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
 DATA(0x00244ae0)
-GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, 2);
+GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
 DATA(0x00244aa0)
-GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, 3);
+GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, DIR_EAST);
 DATA(0x00244b28)
-GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, 4);
+GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
 DATA(0x00244ac0)
-GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, 5);
+GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
 DATA(0x00244b48)
-GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, 6);
+GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 DATA(0x00244ad0)
-GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, 7);
+GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, DIR_WEST);
 DATA(0x00244b18)
-GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, 8);
+GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 DATA(0x00244b38)
-GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, 0);
+GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
 
 DATA(0x0020d7fc)
 char s_codeH[] = "H";
@@ -212,9 +213,9 @@ static inline void GruntScratchTeardown() {
 
 #define SETDIR(k, nx, ny)                                                                          \
     do {                                                                                           \
-        this->m_entranceCell.row = g_dirVec[k][0];                                                 \
-        this->m_entranceCell.column = g_dirVec[k][1];                                              \
-        this->m_entranceCell.direction = g_dirVec[k][2];                                           \
+        this->m_entranceCell.row = AT(g_dirVec, k)[0];                                             \
+        this->m_entranceCell.column = AT(g_dirVec, k)[1];                                          \
+        this->m_entranceCell.direction = static_cast<GruntDirection>(AT(g_dirVec, k)[2]);          \
         newX = (nx);                                                                               \
         newY = (ny);                                                                               \
     } while (0)
@@ -398,7 +399,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef(s_Spellz, s_FreezeRadius, 8),
-                4,
+                CUE_FREEZE,
                 -1
             );
         }
@@ -418,7 +419,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef(s_Spellz, s_HealthRadius, 8),
-                3,
+                CUE_HEAL,
                 -1
             );
         }
@@ -456,7 +457,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef(s_Spellz, s_ToyzRadius, 8),
-                5,
+                CUE_GIVE_TOY,
                 -1
             );
         }
@@ -476,7 +477,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
                 g_buteMgr.GetIntDef(s_Spellz, s_TeleportRadius, 8),
-                2,
+                CUE_TELEPORT,
                 -1
             );
         }
@@ -553,7 +554,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
 RVA(0x00057800, 0x64)
 void CGrunt::SelectMoveIcon(i32 a) {
-    if (m_moveIcon == a) {
+    if (IDX(m_moveIcon) == a) {
         return;
     }
     m_moveIcon = static_cast<PickupType>(a);
@@ -561,7 +562,7 @@ void CGrunt::SelectMoveIcon(i32 a) {
         m_moveIcon = PICKUP_NONE;
     }
     CShadeTable* sel =
-        g_gameReg->m_spriteFactory->GetSel(m_moveIcon, m_entranceReason >= PICKUP_TOYZ_FIRST);
+        g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdGameObjectA* h = m_object;
     h->m_drawActive = 1;
     h->m_drawFillCmd = SHADE_PAL_16;
@@ -836,7 +837,7 @@ i32 CGrunt::PathScan() {
             }
         }
 
-        if (hits == 5) {
+        if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
             SCAN_BOUNDS(grid);
             break;
         }
@@ -1068,22 +1069,23 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         }
 
         i32 phase = m_arrivalPhase;
-        if ((phase == 3 || phase == 2) && m_arrivalActive != 0) {
+        if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
+            && m_arrivalActive != 0) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
                 i32 yMasked = (inner->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 xMasked = (inner->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 hit;
-                if (phase == 3) {
+                if (phase == ARRIVAL_TAG_TRIGGER_B) {
                     hit = RectContains(xMasked, yMasked);
                 } else {
                     hit = RectContainsGated(xMasked, yMasked);
                 }
                 if (hit != 0) {
-                    BuildEntranceAnimation(0);
+                    BuildEntranceAnimation(GRUNT_ENTRANCE_RESURRECT_DIRECT);
                 }
-                if (phase == 3) {
+                if (phase == ARRIVAL_TAG_TRIGGER_B) {
                     m_tileMgr->ApplyTriggerB(
                         m_tileOwnerHi,
                         m_tileOwnerLo,
@@ -1183,7 +1185,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                    this->m_tileOwnerHi,
                    this->m_tileOwnerLo,
                    srcRow,
-                   enemy->m_moveIcon
+                   IDX(enemy->m_moveIcon)
                ) != 0) {
             i32 h = enemy->m_health + 0x19;
             if (h >= HEALTH_FULL) {
@@ -1447,30 +1449,62 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 newX;
     i32 newY;
     if (attackKind == PICKUP_WINGZ) {
-        switch (rand() % 8 - 1) {
-            case 0:
-                SETDIR(8, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y - 0x20);
+        switch (static_cast<WingzKnockbackChoice>(rand() % 8 - 1)) {
+            case WINGZ_KNOCKBACK_NORTHEAST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_NORTHEAST,
+                    this->m_lastTilePx.m_x + 0x20,
+                    this->m_lastTilePx.m_y - 0x20
+                );
                 break;
-            case 1:
-                SETDIR(3, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y);
+            case WINGZ_KNOCKBACK_EAST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_EAST,
+                    this->m_lastTilePx.m_x + 0x20,
+                    this->m_lastTilePx.m_y
+                );
                 break;
-            case 2:
-                SETDIR(5, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y + 0x20);
+            case WINGZ_KNOCKBACK_SOUTHEAST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_SOUTHEAST,
+                    this->m_lastTilePx.m_x + 0x20,
+                    this->m_lastTilePx.m_y + 0x20
+                );
                 break;
-            case 3:
-                SETDIR(1, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
+            case WINGZ_KNOCKBACK_SOUTH:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_SOUTH,
+                    this->m_lastTilePx.m_x,
+                    this->m_lastTilePx.m_y + 0x20
+                );
                 break;
-            case 4:
-                SETDIR(4, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y + 0x20);
+            case WINGZ_KNOCKBACK_SOUTHWEST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_SOUTHWEST,
+                    this->m_lastTilePx.m_x - 0x20,
+                    this->m_lastTilePx.m_y + 0x20
+                );
                 break;
-            case 5:
-                SETDIR(0, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
+            case WINGZ_KNOCKBACK_WEST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_WEST,
+                    this->m_lastTilePx.m_x - 0x20,
+                    this->m_lastTilePx.m_y
+                );
                 break;
-            case 6:
-                SETDIR(6, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y - 0x20);
+            case WINGZ_KNOCKBACK_NORTHWEST:
+                SETDIR(
+                    GRUNT_DIR_VECTOR_NORTHWEST,
+                    this->m_lastTilePx.m_x - 0x20,
+                    this->m_lastTilePx.m_y - 0x20
+                );
                 break;
             default:
-                SETDIR(2, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
+                SETDIR(
+                    GRUNT_DIR_VECTOR_NORTH,
+                    this->m_lastTilePx.m_x,
+                    this->m_lastTilePx.m_y - 0x20
+                );
                 break;
         }
     } else if (dx == 0) {
@@ -1692,7 +1726,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            -1
+            TILE_ARRIVAL_FX_END
         );
     } else {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
@@ -1824,9 +1858,10 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
 RVA(0x0005baf0, 0xf4)
 i32 CreateGrunt(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    switch (static_cast<u32>(rec->ActKey())) {
+    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(ACT_LIVE);
+            rec->SetActKey(IDX(ACT_LIVE));
             CUserLogic* sub = new CGrunt(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -1965,7 +2000,7 @@ void CGrunt::Activate() {
     m_wingzTime = 0;
     m_entranceActive = 0;
     m_arrivalPending = 0;
-    m_arrivalState = 0;
+    m_arrivalState = AI_NONE;
     m_poweredUp = 0;
     m_resetApplied = 0;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;

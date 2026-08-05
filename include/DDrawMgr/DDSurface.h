@@ -5,7 +5,9 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/RasterRowOrder.h>
 #include <Enums.h>
 #include <Ints.h>
 
@@ -49,7 +51,7 @@ GZ_ENUM_FLAGS_OPS(PidFlags)
 struct PidHeader {
 
     u32 formatTag;
-    u32 flags;
+    PidFlags flags;
     i32 width;
     i32 height;
     i32 offsetX;
@@ -87,7 +89,7 @@ public:
     virtual i32 Refresh(IDirectDrawSurface* surf);
 
     virtual i32 CreateFromDesc(CDDrawPtrCollections* h, const DDSURFACEDESC* desc);
-    virtual i32 BlitSurf(void* surf, i32 width, i32 height, i32 bitDepth, i32 caps);
+    virtual i32 BlitSurf(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps);
     virtual void FreeSurfaces();
     virtual i32 IsValid();
 
@@ -192,8 +194,8 @@ public:
     i32 LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode);
     i32 Load(CDDrawPtrCollections* a, char* name, i32 c);
 
-    i32 Blit(void* src, i32 bitcount, void* palette, i32 mode);
-    i32 BlitDirect(void* src, i32 mode);
+    i32 Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrder rowOrder);
+    i32 BlitDirect(void* src, RasterRowOrder rowOrder);
     i32 DecodeRun8(void* dst);
     i32 DecodeRun24(void* dst);
     i32 RunDecode1(void* dst, void* src, i32 width, i32 height);
@@ -201,12 +203,12 @@ public:
     void FillPalette(u32 key);
     i32 ShadeRect(i32 pct, RECT* clip);
 
-    i32 Blit248(void* src, void* palette, i32 mode);
-    i32 Blit2416(void* src, i32 mode);
-    i32 Blit1624(void* src, i32 mode);
-    i32 Blit168(void* src, void* palette, i32 mode);
-    i32 Blit824(void* src, void* palette, i32 mode);
-    i32 Blit816(void* src, void* palette, i32 mode);
+    i32 Blit248(void* src, void* palette, RasterRowOrder rowOrder);
+    i32 Blit2416(void* src, RasterRowOrder rowOrder);
+    i32 Blit1624(void* src, RasterRowOrder rowOrder);
+    i32 Blit168(void* src, void* palette, RasterRowOrder rowOrder);
+    i32 Blit824(void* src, void* palette, RasterRowOrder rowOrder);
+    i32 Blit816(void* src, void* palette, RasterRowOrder rowOrder);
 
     POSITION m_pos;
     IDirectDrawSurface* m_ddSurface;
@@ -244,7 +246,7 @@ public:
     i32 m_imageBytes;
     CPtrArray m_elements;
 
-    i32 m_bitDepth;
+    ColorDepth m_bitDepth;
     i32 m_bytesPerRow;
     i32 m_bytesPerPixel;
     i32 m_pixelsPerRow;
@@ -261,7 +263,7 @@ inline CDDSurface::CDDSurface() {
     m_ddSurfaceBack = NULL;
     m_pos = NULL;
     m_dontOwn = 0;
-    m_bitDepth = 0;
+    m_bitDepth = BPP_UNSET;
     m_restoreCallback = NULL;
 }
 

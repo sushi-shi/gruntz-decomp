@@ -49,8 +49,7 @@ static const i32 TILE_CLEAR = -1;
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
-            /* Ingest: GetCollisionAt hands back the raw WWD attribute byte. */                    \
-            (RESULT) = static_cast<TileCollisionKind>(set_->GetCollisionAt(subX_, subY_));         \
+            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
 
@@ -68,6 +67,12 @@ struct LevelDims {
     i32 h;
 };
 SIZE(0x8);
+
+GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
+// ToggleObjectLayer selects the penultimate plane only in this layout;
+// layouts with fewer planes select their final plane.
+    LEVEL_EXTENDED_PLANE_COUNT = 4
+GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CLoadable {
 public:
@@ -115,7 +120,7 @@ public:
 
     static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
 
-    i32 LookupTile(i32 x, i32 y);
+    TileCollisionKind LookupTile(i32 x, i32 y);
 
     i32 ActivateVisibleObjectsOnMainPlane();
     i32 DeactivateDistantObjectsOnMainPlane();

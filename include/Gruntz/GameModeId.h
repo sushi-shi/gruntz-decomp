@@ -14,7 +14,7 @@
 //      multiplayer session
 //   3  CMD_NEW_GAME_REPLAY, and re-entering a level whose save record says
 //      `si->m_isWon` - which is why CGruntzMgr writes the flag straight back out
-//      as `dst->m_isWon = (m_gameMode == 3)`
+//      by comparing m_gameMode with GAMEMODE_BATTLEZ.
 //
 // This is NOT the Questz/Battlez axis: m_isBattlezLevel and m_isCustomLevel are
 // separate flags, set alongside this one at the same sites.

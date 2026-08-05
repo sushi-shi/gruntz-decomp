@@ -46,7 +46,7 @@ char CheckCdRomRegistry() {
             && static_cast<i8>(value[0]) > 0x14) {
             letter = value[0];
             sprintf(drivePath, "%c:\\", letter);
-            if (GetDriveTypeA(drivePath) == 5) {
+            if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
                 return letter;
             }
         }
@@ -54,7 +54,7 @@ char CheckCdRomRegistry() {
 
     GetCurrentDirectoryA(0xff, cwdPath);
     cwdPath[3] = 0;
-    if (GetDriveTypeA(cwdPath) == 5) {
+    if (GetDriveTypeA(cwdPath) == DRIVE_CDROM) {
         letter = cwdPath[0];
         return letter;
     }
@@ -62,7 +62,7 @@ char CheckCdRomRegistry() {
     letter = 'A';
     for (i = 0; i < 26; i++) {
         sprintf(cwdPath, "%c:\\", letter);
-        if (GetDriveTypeA(cwdPath) == 5) {
+        if (GetDriveTypeA(cwdPath) == DRIVE_CDROM) {
             return letter;
         }
         letter++;
@@ -90,7 +90,7 @@ char GetGruntzDriveLetter() {
                 && static_cast<i8>(value[0]) > 0x14) {
                 letter = value[0];
                 sprintf(drivePath, "%c:\\", letter);
-                if (GetDriveTypeA(drivePath) == 5) {
+                if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
                     sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
                     if (FileExistsCopy(exePath)) {
                         goto found;
@@ -101,7 +101,7 @@ char GetGruntzDriveLetter() {
 
         for (letter = 'A'; letter <= 'Z'; letter++) {
             sprintf(drivePathScan, "%c:\\", letter);
-            if (GetDriveTypeA(drivePathScan) == 5) {
+            if (GetDriveTypeA(drivePathScan) == DRIVE_CDROM) {
                 sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
                 if (FileExistsCopy(exePath)) {
                     goto found;

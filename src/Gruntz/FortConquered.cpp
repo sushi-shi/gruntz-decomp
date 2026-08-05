@@ -90,7 +90,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[owningPlayer].m_colorIndex,
+                        IDX(g_gameReg->m_options[owningPlayer].m_colorIndex),
                         0
                     );
                     cur->m_drawActive = 1;
@@ -115,7 +115,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayer;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
-                        g_gameReg->m_options[owningPlayer].m_colorIndex,
+                        IDX(g_gameReg->m_options[owningPlayer].m_colorIndex),
                         0
                     );
                     cur->m_drawActive = 1;
@@ -124,7 +124,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 }
             }
             if (owningPlayer == g_curPlayer) {
-                g_gameReg->m_cmdGrid->LoadFinishLevelSprite(5);
+                g_gameReg->m_cmdGrid->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_options[owningPlayer];
                 if (board != NULL && board->m_humanControlled == 0) {

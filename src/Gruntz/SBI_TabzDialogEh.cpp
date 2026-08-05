@@ -9,6 +9,7 @@
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SBI_MenuItem.h>
+#include <Gruntz/SbiCommandId.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
@@ -39,8 +40,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!areYouSure->SetupImage(
                 this,
                 m_world,
-                0x321,
-                6,
+                SBICMD_DIALOG_FRAME,
+                TAB_DIALOG,
                 SbGeom(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
                 "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
                 -1,
@@ -55,8 +56,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!yes->SetupImage(
                 this,
                 m_world,
-                0x327,
-                6,
+                SBICMD_DIALOG_YES,
+                TAB_DIALOG,
                 SbGeom(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
                 "GAME_STATUSBAR_TABZ_DIALOG_YES",
                 -1,
@@ -72,8 +73,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!no->SetupImage(
                 this,
                 m_world,
-                0x328,
-                6,
+                SBICMD_DIALOG_NO,
+                TAB_DIALOG,
                 SbGeom(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
                 "GAME_STATUSBAR_TABZ_DIALOG_NO",
                 -1,
@@ -91,8 +92,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     if (!dialog->SetupImage(
             this,
             m_world,
-            0x321,
-            6,
+            SBICMD_DIALOG_FRAME,
+            TAB_DIALOG,
             SbGeom(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
             "GAME_STATUSBAR_TABZ_DIALOG",
             -1,
@@ -103,16 +104,16 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
     m_tabLists[6].AddTail(dialog);
 
-    i32 reason = g_gameReg->m_cmdGrid->m_finishReasonFrame;
+    i32 reason = IDX(g_gameReg->m_cmdGrid->m_finishReasonFrame);
 
-    if (g_gameReg->m_cmdGrid->m_phase == 1) {
+    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
 
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 this,
                 m_world,
-                0x322,
-                6,
+                SBICMD_DIALOG_MISSION_STATUS,
+                TAB_DIALOG,
                 SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
                 "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
                 1,
@@ -127,8 +128,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!rsn->SetupImage(
                 this,
                 m_world,
-                0x326,
-                6,
+                SBICMD_DIALOG_REASON,
+                TAB_DIALOG,
                 SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
                 "GAME_STATUSBAR_TABZ_DIALOG_REASON",
                 reason,
@@ -144,8 +145,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             if (!next->SetupImage(
                     this,
                     m_world,
-                    0x324,
-                    6,
+                    SBICMD_DIALOG_PRIMARY,
+                    TAB_DIALOG,
                     SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
                     -1,
@@ -161,8 +162,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             if (!quit->SetupImage(
                     this,
                     m_world,
-                    0x325,
-                    6,
+                    SBICMD_DIALOG_SECONDARY,
+                    TAB_DIALOG,
                     SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                     -1,
@@ -178,8 +179,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             if (!statz->SetupImage(
                     this,
                     m_world,
-                    0x325,
-                    6,
+                    SBICMD_DIALOG_SECONDARY,
+                    TAB_DIALOG,
                     SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
                     "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                     -1,
@@ -198,8 +199,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     if (!status->SetupImage(
             this,
             m_world,
-            0x322,
-            6,
+            SBICMD_DIALOG_MISSION_STATUS,
+            TAB_DIALOG,
             SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
             "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
             2,
@@ -214,8 +215,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     if (!rsn->SetupImage(
             this,
             m_world,
-            0x326,
-            6,
+            SBICMD_DIALOG_REASON,
+            TAB_DIALOG,
             SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
             reason,
@@ -231,8 +232,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!replay->SetupImage(
                 this,
                 m_world,
-                0x324,
-                6,
+                SBICMD_DIALOG_PRIMARY,
+                TAB_DIALOG,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
                 -1,
@@ -248,8 +249,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!quit->SetupImage(
                 this,
                 m_world,
-                0x325,
-                6,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                 -1,
@@ -276,8 +277,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!observe->SetupImage(
                 this,
                 m_world,
-                0x324,
-                6,
+                SBICMD_DIALOG_PRIMARY,
+                TAB_DIALOG,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
                 -1,
@@ -294,8 +295,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!statz->SetupImage(
                 this,
                 m_world,
-                0x325,
-                6,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,
@@ -312,8 +313,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         if (!statz->SetupImage(
                 this,
                 m_world,
-                0x325,
-                6,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
                 SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
                 "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
                 -1,

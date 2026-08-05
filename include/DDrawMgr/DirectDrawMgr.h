@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 
@@ -89,7 +90,7 @@ SIZE(0x38);
 struct DDModeInfo {
     i32 width;
     i32 height;
-    i32 bpp;
+    ColorDepth bpp;
 };
 SIZE_UNKNOWN();
 

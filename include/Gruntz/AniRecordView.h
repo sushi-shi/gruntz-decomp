@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Ints.h>
+#include <Wwd/WwdAnimStepMode.h>
 
 class CDDrawSubMgrLeafScan;
 class CDDrawSurfaceMgr;
@@ -23,14 +24,14 @@ struct CAniRecordView : public CObject {
     inline CAniRecordView() {
         m_cueCount = 0;
         m_cues = NULL;
-        m_loopMode = 0xffff;
+        m_loopMode = WWDLOOP_INVALID;
     }
 
     u16 m_flags;
     u16 m_pad06;
-    i32 m_stepMode;
-    i32 m_loopMode;
-    i32 m_positionMode;
+    WwdAnimStepMode m_stepMode;
+    WwdAnimLoopMode m_loopMode;
+    WwdAnimPositionMode m_positionMode;
     i32 m_param;
     i32 m_frameTime;
     i32 m_drawValue;

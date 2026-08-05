@@ -80,19 +80,19 @@ int HeapCheckDump(int walkOnBad) {
 RVA(0x00118b50, 0x80)
 void ReportHeapStatus(i32 status) {
     switch (status) {
-        case -3:
+        case _HEAPBADBEGIN:
             OutputDebugStringA("Heap return value: _HEAPBADBEGIN\n");
             return;
-        case -4:
+        case _HEAPBADNODE:
             OutputDebugStringA("Heap return value: _HEAPBADNODE\n");
             return;
-        case -6:
+        case _HEAPBADPTR:
             OutputDebugStringA("Heap return value: _HEAPBADPTR\n");
             return;
-        case -1:
+        case _HEAPEMPTY:
             OutputDebugStringA("Heap return value: _HEAPEMPTY\n");
             return;
-        case -2:
+        case _HEAPOK:
             OutputDebugStringA("Heap return value: _HEAPOK\n");
             return;
         default:

@@ -24,8 +24,8 @@ i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {
     i32 prevY = s->m_screenY;
     MoveMode kind = s->m_moveMode;
 
-    if (kind > 0) {
-        if (kind > 2) {
+    if (kind > MOVE_NONE) {
+        if (kind > MOVE_GROUNDED_LAST) {
             if (kind == MOVE_DIRECT) {
                 s->m_screenX = a;
                 s->m_screenY = b;
@@ -112,7 +112,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
                 // Ingest: the raw WWD attribute byte for this cell.
-                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
+                result = set->GetCollisionAt(subX, subY);
             }
         }
         if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
@@ -194,7 +194,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
                 // Ingest: the raw WWD attribute byte for this cell.
-                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
+                result = set->GetCollisionAt(subX, subY);
             }
         }
         if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
@@ -276,7 +276,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
                 // Ingest: the raw WWD attribute byte for this cell.
-                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
+                result = set->GetCollisionAt(subX, subY);
             }
         }
         if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
@@ -358,7 +358,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             } else {
                 CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
                 // Ingest: the raw WWD attribute byte for this cell.
-                result = static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
+                result = set->GetCollisionAt(subX, subY);
             }
         }
         if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {

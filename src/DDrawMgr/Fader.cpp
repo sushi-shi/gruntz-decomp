@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <EmptyString.h>
 #include <Gruntz/Fader.h>
@@ -94,12 +95,12 @@ void CFader::EndFade() {}
 
 RVA(0x0017e7b0, 0x9)
 CFxModeDesc::CFxModeDesc() {
-    m_type = 0;
+    m_type = FXMODE_UNTAGGED;
 }
 
 RVA(0x0017e7c0, 0x7a)
 CFxModeT1::CFxModeT1() {
-    m_type = 1;
+    m_type = FXMODE_SHAPE;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_warpSourceSurface = NULL;
@@ -115,7 +116,7 @@ CFxModeT1::CFxModeT1() {
 // @early-stop
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
-    m_type = 2;
+    m_type = FXMODE_LIGHT;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_clearMode = 1;
@@ -127,7 +128,7 @@ CFxModeT2::CFxModeT2() {
 
 RVA(0x0017e880, 0x28)
 CFxModeT3::CFxModeT3() {
-    m_type = 3;
+    m_type = FXMODE_SINE;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_clearToBlack = 1;
@@ -136,7 +137,7 @@ CFxModeT3::CFxModeT3() {
 
 RVA(0x0017e8b0, 0x27)
 CFxModeT4::CFxModeT4() {
-    m_type = 4;
+    m_type = FXMODE_RADIAL;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_palette = NULL;
@@ -146,7 +147,7 @@ CFxModeT4::CFxModeT4() {
 
 RVA(0x0017e8e0, 0x27)
 CFxModeT5::CFxModeT5() {
-    m_type = 5;
+    m_type = FXMODE_FLAT;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_param0c = 0;
@@ -156,7 +157,7 @@ CFxModeT5::CFxModeT5() {
 
 RVA(0x0017e910, 0x29)
 CFxModeT6::CFxModeT6() {
-    m_type = 6;
+    m_type = FXMODE_MESH;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_flipTarget = NULL;
@@ -885,7 +886,7 @@ i32 CFaderLight::GetFrameCount() {
 RVA(0x00181660, 0x40)
 void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_lightGate != 0) {
-        CDDSurface* h = m_ptrColl->MakeAndAddB(m_surfWidth, m_surfHeight, 0, 0, -1);
+        CDDSurface* h = m_ptrColl->MakeAndAddB(m_surfWidth, m_surfHeight, BPP_UNSET, 0, -1);
         m_overlay = h;
         h->Blt(m_surface);
     }
@@ -1500,18 +1501,18 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
                 u8 b = rowSrcB[m_warpTable[k]];
                 m_lineBuf[x0 + k] = lut[(b << 6) + m_shadeRamp[k]];
             }
-        } else if (bpp == 1) {
+        } else if (bpp == PIXEL8_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
                 m_lineBuf[x0 + k] = rowSrcB[m_warpTable[k]];
             }
-        } else if (bpp == 2) {
+        } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
                 u8* s = rowSrcB + m_warpTable[k] * 2;
                 u8* d = m_lineBuf + (x0 + k) * 2;
                 d[0] = s[0];
                 d[1] = s[1];
             }
-        } else if (bpp == 3) {
+        } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
                 u8* s = rowSrcB + m_warpTable[k] * 3;
                 u8* d = m_lineBuf + (x0 + k) * 3;
@@ -1575,7 +1576,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
                 u8* ssrc = m_rowOfsB[col] + base + m_straightBase;
                 if (m_useLut == 0) {
-                    if (bpp == 1) {
+                    if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                         i32 i = 0;
                         i32 t = colBase;
                         if (colBase > 0) {
@@ -1587,7 +1588,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                         for (; t < stride; t++) {
                             m_lineBuf[t] = gsrc[m_warpTable[t]];
                         }
-                    } else if (bpp == 2) {
+                    } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
                         i32 i = 0;
                         i32 t = colBase;
                         if (colBase > 0) {
@@ -1604,7 +1605,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                             m_lineBuf[e * 2 - 1] = gsrc[m_warpTable[t] * 2 + 1];
                             t = e;
                         }
-                    } else if (bpp == 3) {
+                    } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
                         if (colBase > 0) {
                             i32 d = 0;
                             u8* sp = ssrc + 2;
@@ -1686,7 +1687,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
             u8* ssrc = m_rowOfsB[col] + base + m_straightBase;
             if (m_useLut == 0) {
-                if (bpp == 1) {
+                if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                     i32 i = 0;
                     i32 t = colBase;
                     i32 e;
@@ -1700,7 +1701,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     for (; t < stride; t++) {
                         m_lineBuf[t] = ssrc[t];
                     }
-                } else if (bpp == 2) {
+                } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
                     i32 i = 0;
                     i32 t = colBase;
                     if (colBase > 0) {
@@ -1716,7 +1717,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                         m_lineBuf[o] = ssrc[o];
                         m_lineBuf[o + 1] = ssrc[o + 1];
                     }
-                } else if (bpp == 3) {
+                } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
                     i32 k = 0;
                     if (colBase > 0) {
                         i32 d = 0;

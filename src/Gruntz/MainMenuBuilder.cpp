@@ -204,7 +204,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
 
     CMenuPage* page;
     CMenuItem* it;
-    i32 progress;
+    QuestLevel progress;
 
     page = new CMenuPage;
     if (page->Configure(menu, s_MAIN, s_MENU_MAINMENU_TITLE, 0, 0) == 0) {
@@ -262,7 +262,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
     it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
@@ -280,60 +280,99 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
     page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
-    page->AddSubItem(s_AREA1, s_MENU_QUESTZ_AREA1, 0x8149, AREA_ROCKY_ROADZ, 0, s_AREA1, 0);
-    it = page->AddSubItem(s_AREA2, s_MENU_QUESTZ_AREA2, 0x8149, AREA_GRUNTZICLEZ, 0, s_AREA2, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x4) {
+    page->AddSubItem(
+        s_AREA1,
+        s_MENU_QUESTZ_AREA1,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_ROCKY_ROADZ),
+        0,
+        s_AREA1,
+        0
+    );
+    it = page->AddSubItem(
+        s_AREA2,
+        s_MENU_QUESTZ_AREA2,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_GRUNTZICLEZ),
+        0,
+        s_AREA2,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(
         s_AREA3,
         s_MENU_QUESTZ_AREA3,
-        0x8149,
-        AREA_TROUBLE_IN_THE_TROPICZ,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_TROUBLE_IN_THE_TROPICZ),
         0,
         s_AREA3,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < 0x8) {
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_AREA4, s_MENU_QUESTZ_AREA4, 0x8149, AREA_HIGH_ON_SWEETZ, 0, s_AREA4, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xc) {
+    it = page->AddSubItem(
+        s_AREA4,
+        s_MENU_QUESTZ_AREA4,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_HIGH_ON_SWEETZ),
+        0,
+        s_AREA4,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_AREA5, s_MENU_QUESTZ_AREA5, 0x8149, AREA_HIGH_ROLLERZ, 0, s_AREA5, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x10) {
+    it = page->AddSubItem(
+        s_AREA5,
+        s_MENU_QUESTZ_AREA5,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_HIGH_ROLLERZ),
+        0,
+        s_AREA5,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(
         s_AREA6,
         s_MENU_QUESTZ_AREA6,
-        0x8149,
-        AREA_HONEY_I_SHRUNK_THE_GRUNTZ,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_HONEY_I_SHRUNK_THE_GRUNTZ),
         0,
         s_AREA6,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < 0x14) {
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
     it = page->AddSubItem(
         s_AREA7,
         s_MENU_QUESTZ_AREA7,
-        0x8149,
-        AREA_MINIATURE_MASTERZ,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_MINIATURE_MASTERZ),
         0,
         s_AREA7,
         0
     );
-    if (progress > QUESTLEVEL_LAST || progress < 0x18) {
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it =
-        page->AddSubItem(s_AREA8, s_MENU_QUESTZ_AREA8, 0x8149, AREA_GRUNTZ_IN_SPACE, 0, s_AREA8, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1c) {
+    it = page->AddSubItem(
+        s_AREA8,
+        s_MENU_QUESTZ_AREA8,
+        IDX(CMD_SET_QUEST_AREA),
+        IDX(AREA_GRUNTZ_IN_SPACE),
+        0,
+        s_AREA8,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_BACK, s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
@@ -346,23 +385,39 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
     page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
         IDX(CMD_LOAD_WORLD),
-        QUESTLEVEL_TRAINING_FIRST,
+        IDX(QUESTLEVEL_TRAINING_STAGE1),
         0,
         0,
         0
     );
-    page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x26, 0, 0, 0);
-    page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x27, 0, 0, 0);
+    page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_TRAINING_STAGE2),
+        0,
+        0,
+        0
+    );
+    page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_TRAINING_STAGE3),
+        0,
+        0,
+        0
+    );
     page->AddSubItem(
         s_STAGE4,
         s_MENU_AREAS_STAGE4,
         IDX(CMD_LOAD_WORLD),
-        QUESTLEVEL_TRAINING_LAST,
+        IDX(QUESTLEVEL_TRAINING_STAGE4),
         0,
         0,
         0
@@ -377,21 +432,53 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x1, 0, 0, 0);
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x2, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA1_STAGE1),
+        0,
+        0,
+        0
+    );
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA1_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x3, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x2) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA1_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x4, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x3) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA1_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -401,24 +488,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x5, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x4) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA2_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x6, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x5) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA2_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x7, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x6) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA2_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x8, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x7) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA2_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -428,24 +547,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x9, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x8) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA3_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0xa, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x9) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA3_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0xb, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xa) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA3_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0xc, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xb) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA3_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -455,24 +606,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0xd, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xc) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA4_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0xe, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xd) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA4_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0xf, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xe) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA4_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x10, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0xf) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA4_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -482,24 +665,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x11, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x10) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA5_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x12, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x11) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA5_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x13, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x12) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA5_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x14, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x13) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA5_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -509,24 +724,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x15, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x14) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA6_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x16, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x15) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA6_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x17, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x16) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA6_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x18, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x17) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA6_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -536,24 +783,56 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x19, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x18) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA7_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x1a, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x19) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA7_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x1b, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1a) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA7_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x1c, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1b) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA7_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -563,23 +842,55 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = g_gameReg->m_saveSink->m_curLevel;
-    it = page->AddSubItem(s_STAGE1, s_MENU_AREAS_STAGE1, IDX(CMD_LOAD_WORLD), 0x1d, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1c) {
+    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    it = page->AddSubItem(
+        s_STAGE1,
+        s_MENU_AREAS_STAGE1,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA8_STAGE1),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE2, s_MENU_AREAS_STAGE2, IDX(CMD_LOAD_WORLD), 0x1e, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1d) {
+    it = page->AddSubItem(
+        s_STAGE2,
+        s_MENU_AREAS_STAGE2,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA8_STAGE2),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE1_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE3, s_MENU_AREAS_STAGE3, IDX(CMD_LOAD_WORLD), 0x1f, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1e) {
+    it = page->AddSubItem(
+        s_STAGE3,
+        s_MENU_AREAS_STAGE3,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA8_STAGE3),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE2_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    it = page->AddSubItem(s_STAGE4, s_MENU_AREAS_STAGE4, IDX(CMD_LOAD_WORLD), 0x20, 0, 0, 0);
-    if (progress > QUESTLEVEL_LAST || progress < 0x1f) {
+    it = page->AddSubItem(
+        s_STAGE4,
+        s_MENU_AREAS_STAGE4,
+        IDX(CMD_LOAD_WORLD),
+        IDX(QUESTLEVEL_AREA8_STAGE4),
+        0,
+        0,
+        0
+    );
+    if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, 0x8149, 0, 0, s_QUESTZ, 0);
+    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     return menu->AddNode(page) != 0;
 }

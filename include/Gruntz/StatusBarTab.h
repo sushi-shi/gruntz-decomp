@@ -3,7 +3,8 @@
 
 #include <Enums.h>
 
-// The five tabs of the in-game status bar.
+// The item groups of the in-game status bar. Values 1..5 are selectable tabs;
+// 0 holds the permanent bar controls and 6 holds the modal result dialog.
 //
 // Named by RETAIL'S OWN resource strings, not by guesswork:
 // CStatusBarMgr::SetTabState(tab, state) gives exactly one of five sprites
@@ -20,23 +21,20 @@
 // sprite 1), which is why the mapping has to be read off the code rather than
 // assumed from the field names.
 GZ_ENUM_BEGIN(StatusBarTab)
-// No tab active. CStatusBarMgr::ClearTabGroup returns early on it before it
-// would index m_tabLists, and the constructor seeds m_activeTab with it.
+    TAB_ALL = -1,
+    // The same zero is the permanent-controls group for CStatusBarItem::m_tab
+    // and the no-active-tab sentinel for CStatusBarMgr::m_activeTab.
+    TAB_CONTROLS = 0,
     TAB_NONE = 0,
     TAB_STATZ = 1,
     TAB_GRUNTZ = 2,
     TAB_RESOURCE = 3,
     TAB_MULTIPLAYER = 4,
     TAB_GAME = 5,
+    TAB_DIALOG = 6,
     // The command handler bounds its tab argument with `cmd <= 0 || cmd > 5`, so
     // this is that bound, spelled inclusively the way retail spells it.
     TAB_LAST = TAB_GAME
 GZ_ENUM_END(StatusBarTab)
-
-// Values 0 and 6 are DELIBERATELY absent. CStatusBarItem::m_tab is dispatched
-// over 0..6, so it is a WIDER space than SetTabState's five: 0 is the arm that
-// handles the bar's own commands (dock/hide/refresh plus the 1..5 tab picks) and
-// 6 has a single site under m_toggleActive. Neither has evidence for a name, so
-// both stay literal at the switches that read them.
 
 #endif // GRUNTZ_GRUNTZ_STATUSBARTAB_H

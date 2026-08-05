@@ -6,6 +6,7 @@
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
@@ -37,7 +38,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 tileX,
     i32 tileY,
     PickupType reason,
-    i32 sel
+    TileArrivalFxCue cue
 ) {
     CString diag;
 
@@ -69,7 +70,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     } else {
         CTileImageSet* tc = static_cast<CTileImageSet*>(grid->m_imageSets.GetAt(cell & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
-        cellType = static_cast<TileCollisionKind>(tc->GetCollisionAt(0, 0));
+        cellType = tc->GetCollisionAt(0, 0);
     }
 
     i32 px = tileX * 32 + 0x10;
@@ -79,32 +80,32 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     switch (reason) {
         case PICKUP_BRICK:
-            if (sel != 0x63 || unit == NULL) {
+            if (cue != TILE_ARRIVAL_FX_APPLY || unit == NULL) {
                 return 1;
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
-                i32 actionCode;
-                switch (unit->m_toyBlendPct) {
+                BrickTileId actionCode;
+                switch (unit->m_brickPickupType) {
                     case PICKUP_REDBRICK:
-                        actionCode = 0x132;
+                        actionCode = BRICKTILE_RED_1;
                         break;
                     case PICKUP_BLUEBRICK:
-                        actionCode = 0x138;
+                        actionCode = BRICKTILE_BLUE_1;
                         break;
                     case PICKUP_GOLDBRICK:
-                        actionCode = 0x13e;
+                        actionCode = BRICKTILE_GOLD_1;
                         break;
                     case PICKUP_BLACKBRICK:
-                        actionCode = 0x144;
+                        actionCode = BRICKTILE_BLACK_1;
                         break;
                     default:
-                        actionCode = 0x12f;
+                        actionCode = BRICKTILE_BROWN_1;
                         break;
                 }
                 if (triggers->AddToList3Switch(actionCode, tileX, tileY, cellKey, ownerHi)
                     != NULL) {
                     unit->m_pendingTriggerPx.m_x = px;
-                    unit->m_toyBlendPct = 0x22;
+                    unit->m_brickPickupType = PICKUP_BROWNBRICK;
                     unit->m_entrancePickup = PICKUP_INVALID;
                     unit->m_pendingTriggerPx.m_y = py;
                     unit->m_pendingTrigger = 1;
@@ -112,8 +113,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                        || cellType == TILEKIND_GAUNTLET_BRICK_B) {
                 CTileActionEvent* event = triggers->FindActionByCellKey(cellKey);
-                if (event != NULL && event->MorphByTool(unit->m_toyBlendPct, ownerHi) != 0) {
-                    unit->m_toyBlendPct = 0x22;
+                if (event != NULL
+                    && event->MorphByTool(unit->m_brickPickupType, static_cast<PlayerSlot>(ownerHi))
+                           != 0) {
+                    unit->m_brickPickupType = PICKUP_BROWNBRICK;
                     unit->m_entrancePickup = PICKUP_INVALID;
                     if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
                         unit->m_pendingTriggerPx.m_x = px;
@@ -125,10 +128,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_GAUNTLETZ:
-            if (sel == -1) {
+            if (cue == TILE_ARRIVAL_FX_END) {
                 return 1;
             }
-            if (sel == 2) {
+            if (cue == TILE_ARRIVAL_FX_IMPACT) {
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
@@ -144,7 +147,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 return 1;
             }
-            if (sel != 0x63) {
+            if (cue != TILE_ARRIVAL_FX_APPLY) {
                 return 1;
             }
 
@@ -210,8 +213,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (puddle->m_tileX != tileX || puddle->m_tileY != tileY) {
                     continue;
                 }
-                if (sel == -1) {
-                    puddle->m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                if (cue == TILE_ARRIVAL_FX_END) {
+                    puddle->m_object->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
                     puddle->SetBute("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2");
                     puddle->m_pending = 1;
                     puddle->m_placed = 0;
@@ -231,10 +234,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
         }
 
         case PICKUP_SHOVEL:
-            if (sel == -1) {
+            if (cue == TILE_ARRIVAL_FX_END) {
                 return 1;
             }
-            if (sel == 2) {
+            if (cue == TILE_ARRIVAL_FX_IMPACT) {
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
@@ -249,7 +252,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 return 1;
             }
-            if (sel != 0x63) {
+            if (cue != TILE_ARRIVAL_FX_APPLY) {
                 return 1;
             }
 
@@ -272,7 +275,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_SPY:
-            if (sel == 0x63) {
+            if (cue == TILE_ARRIVAL_FX_APPLY) {
                 CMapMgr* pathGrid = g_gameReg->m_tileGrid;
                 for (i32 radius = 1; radius <= 2; radius++) {
                     i32 topY = tileY - radius;
@@ -306,7 +309,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
+                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -371,7 +374,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
+                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -441,7 +444,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
+                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -506,7 +509,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(mapped);
                                 CInGameIcon* icon =
                                     static_cast<CInGameIcon*>(obj->m_animWorker->m_logic);
-                                if (icon->m_object->m_smarts == PICKUP_TOYBOX) {
+                                if (icon->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                                     icon->m_object->m_score = ownerHi;
                                     icon->HandleInput();
                                     if (ownerHi == g_curPlayer) {
@@ -549,7 +552,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_TOOB:
-            if (sel == 0x63 && unit != NULL) {
+            if (cue == TILE_ARRIVAL_FX_APPLY && unit != NULL) {
                 i32 waterX = unit->m_object->m_screenX;
                 i32 waterY = unit->m_object->m_screenY;
                 POINT pt;

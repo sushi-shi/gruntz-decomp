@@ -19,6 +19,7 @@
 #include <Wap32/Object.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
+#include <Wwd/WwdObjectType.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +54,7 @@ RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
 
-    if (hdr->wwdSignature > 0x5f4) {
+    if (hdr->wwdSignature > sizeof(*hdr)) {
         return 0;
     }
 
@@ -341,13 +342,13 @@ CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     }
     CTileImageSet* set;
     switch (*static_cast<i32*>(record)) {
-        case 1:
+        case TILE_IMAGESET_UNIFORM:
             set = new CImageSet1;
             break;
-        case 2:
+        case TILE_IMAGESET_RECT:
             set = new CImageSet2;
             break;
-        case 3:
+        case TILE_IMAGESET_PIXELS:
             set = new CImageSet3;
             break;
         default:
@@ -447,8 +448,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-    // Ingest: the raw WWD attribute byte for this cell.
-    return static_cast<TileCollisionKind>(set->GetCollisionAt(subX, subY));
+    return set->GetCollisionAt(subX, subY);
 }
 
 // @identity-TODO PointInBounds@CGameLevel - thunk oracle: retail gave this an incremental
@@ -466,7 +466,7 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (73 fns) came from the static library. It belongs to another compiland.
 RVA(0x00082600, 0x73)
-i32 CGameLevel::LookupTile(i32 x, i32 y) {
+TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     CDDrawWorkerHost* mp;
     if (x < 0) {
         x = 0;
@@ -487,7 +487,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     mp = m_mainPlane;
     i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-        return 0;
+        return TILEKIND_PASSABLE;
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
     return set->GetCollisionAt(0, 0);
@@ -800,8 +800,8 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 
     switch (kind) {
         case MOVE_GROUNDED:
-        case 2:
-        case 5:
+        case MOVE_GROUNDED_2:
+        case MOVE_GROUNDED_5:
             eax = MoveGrounded(s, destX, destY, moveFlags);
             break;
         case MOVE_RISING:
@@ -1287,7 +1287,7 @@ i32 CGameLevel::StepAxisAlt(CGameObject* t, i32 destX, i32 destY, i32* outY, i32
     POSITION pos = chain.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* pl = static_cast<CGameObject*>(chain.GetNext(pos));
-        if (pl->m_objectType == 0x80) {
+        if (pl->m_objectType == WWD_OBJECT_TYPE_PLATFORM) {
             if (AltStepValidate(t, pl, destX, destY, outY, moveFlags) != 0) {
                 t->m_moveMode = MOVE_GROUNDED;
                 t->m_carrier = pl;
@@ -1376,7 +1376,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
     if ((moveFlags & 8) == 0) {
         return 0;
     }
-    if (p->m_objectType != 0x80) {
+    if (p->m_objectType != WWD_OBJECT_TYPE_PLATFORM) {
         return 0;
     }
     if (p->m_area.left == -1) {
@@ -1462,11 +1462,11 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
         return 0;
     }
 
-    if (stream.Read(headerBuf, 0x5f4) != 0x5f4) {
+    if (stream.Read(headerBuf, sizeof(WwdHeader)) != sizeof(WwdHeader)) {
         return 0;
     }
 
-    if (*static_cast<u32*>(headerBuf) > 0x5f4) {
+    if (*static_cast<u32*>(headerBuf) > sizeof(WwdHeader)) {
         return 0;
     }
 
@@ -1490,11 +1490,11 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
         return 0;
     }
 
-    if (stream.Read(&header, sizeof(header)) != 0x5f4) {
+    if (stream.Read(&header, sizeof(header)) != sizeof(header)) {
         return 0;
     }
 
-    if (header.wwdSignature > 0x5f4) {
+    if (header.wwdSignature > sizeof(header)) {
         return 0;
     }
 
@@ -1514,7 +1514,7 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
         return 0;
     }
 
-    if (src->wwdSignature > 0x5f4) {
+    if (src->wwdSignature > sizeof(*src)) {
         return 0;
     }
     if ((src->flags & 0x2) == 0) {

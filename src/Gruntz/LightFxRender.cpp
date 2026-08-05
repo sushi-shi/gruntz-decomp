@@ -17,6 +17,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/SpriteTeamColorVariant.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
@@ -104,7 +105,7 @@ i32 CLightFxRender::AllocSurface() {
 
     SIZE
     dims = GridSize(info);
-    m_surface = mgr->m_ptrColl->MakeAndAddB(dims.cx, dims.cy, 0, 0, -1);
+    m_surface = mgr->m_ptrColl->MakeAndAddB(dims.cx, dims.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
     }
@@ -167,20 +168,20 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
                         >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
                     if (node == NULL) {
                         *dst = 0;
                         continue;
                     }
 
-                    switch (alt) {
-                        case 0:
+                    switch (static_cast<SpriteTeamColorVariant>(alt)) {
+                        case SPRITE_TEAM_COLOR_PRIMARY:
                             *dst = node->m_teamColor1;
                             break;
-                        case 1:
+                        case SPRITE_TEAM_COLOR_SECONDARY:
                             *dst = node->m_teamColor2;
                             break;
-                        case 2:
+                        case SPRITE_TEAM_COLOR_TERTIARY:
                             *dst = node->m_teamColor3;
                             break;
                         default:
@@ -201,7 +202,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         *dst = m_buf[idx];
                     }
                 } else {
-                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(desc->m_moveIcon);
+                    CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
                     if (node == NULL) {
                         *dst = 0;
                         continue;
@@ -357,8 +358,8 @@ void CLightFxRender::DrawBorder(RECT* r, CDDrawSurfacePair* ctx, i32 color) {
 }
 
 RVA(0x000a3c90, 0xe8)
-i32 CLightFxRender::BuildShape(i32 shape) {
-    if (shape > 8) {
+i32 CLightFxRender::BuildShape(LevelArea shape) {
+    if (shape > AREA_LAST) {
         return 0;
     }
     memset(m_buf, 0, sizeof(m_buf));
@@ -1382,7 +1383,8 @@ i32 CLightFxRender::IssueMinimapCommand(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    g_gameReg->m_cmdGrid->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
+    g_gameReg->m_cmdGrid
+        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, TARGET_SELECTION_AUTO, 1);
     return 1;
 }
 

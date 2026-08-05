@@ -10,6 +10,7 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -30,11 +31,11 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_wwdObject->ApplyName("GAME_LIGHTING_POWERUP");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_object->m_sortKey != 0x15) {
-        m_object->m_sortKey = 0x15;
+    if (m_object->m_sortKey != SORTKEY_GRUNT_POWERUP) {
+        m_object->m_sortKey = SORTKEY_GRUNT_POWERUP;
         m_object->m_flags |= 0x20000;
     }
-    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
 }
 
 RVA(0x00080020, 0x102)
@@ -76,7 +77,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     r->m_drawActive = 1;
     r->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     r->m_drawFillArg = rec;
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     return 1;

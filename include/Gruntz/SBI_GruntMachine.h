@@ -19,7 +19,7 @@ class CDDrawSurfaceMgr;
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
     CSBI_GruntMachine() {
-        m_kind = 9;
+        m_kind = SBI_KIND_GRUNT_MACHINE;
         m_frameA = NULL;
         m_frameB = NULL;
         m_standaloneFrame = NULL;
@@ -36,8 +36,8 @@ public:
     i32 BuildResourceTabStatusBar(
         CStatusBarMgr* owner,
         CDDrawSurfaceMgr* host,
-        i32 cmd,
-        i32 tab,
+        SbiCommandId cmd,
+        StatusBarTab tab,
         RECT g,
         const char* key,
         i32 idxA,

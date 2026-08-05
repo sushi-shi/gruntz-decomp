@@ -12,6 +12,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Warlord.h>
@@ -34,8 +35,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (m_object->m_sortKey != 0x124f8) {
-        m_object->m_sortKey = 0x124f8;
+    if (m_object->m_sortKey != SORTKEY_EXIT_TRIGGER) {
+        m_object->m_sortKey = SORTKEY_EXIT_TRIGGER;
         m_object->m_flags |= 0x20000;
     }
     m_object->m_area.left = 1;

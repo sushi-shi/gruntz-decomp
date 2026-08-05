@@ -64,14 +64,14 @@ i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
         return 0;
     }
 
-    i32 mode = 1;
+    DDrawPageKind mode = DDRAW_PAGE_BACK;
     if (e != 0) {
-        mode = 2;
+        mode = DDRAW_PAGE_OVERLAY;
     }
 
     if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
         if (e != 0) {
-            if (menuRoot()->m_drawTarget->LoadPageImage(page, 1) == 0) {
+            if (menuRoot()->m_drawTarget->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
         }

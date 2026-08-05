@@ -5,6 +5,12 @@
 
 #include <Win32.h>
 
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(SoundFontDeviceRating)
+    SF_DEVICE_RATING_UNUSABLE = 0x40
+GZ_ENUM_CONST_END(SoundFontDeviceRating)
+
 extern u16 g_idx_64da80;
 extern DWORD g_ratingRaw_64da84;
 extern i32 g_factoryRc_64da88;

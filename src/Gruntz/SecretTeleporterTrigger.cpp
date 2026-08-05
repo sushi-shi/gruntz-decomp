@@ -84,7 +84,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
             m_object->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
         g_gameReg->m_scoreHud->m_secretsAvailable++;
@@ -136,7 +136,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
             m_object->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
-        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
     } else {
@@ -193,10 +193,10 @@ i32 CSecretLevelTrigger::Tick() {
         i32 lvl = spr->m_powerup;
         i32 lyr = spr->m_damage;
 
-        if (lvl != PICKUP_NONE && hit->m_entranceReason != lvl) {
+        if (lvl != IDX(PICKUP_NONE) && IDX(hit->m_entranceReason) != lvl) {
             ok = 0;
         }
-        if (lyr != PICKUP_NONE && hit->m_vehiclePickupType != lyr) {
+        if (lyr != IDX(PICKUP_NONE) && IDX(hit->m_vehiclePickupType) != lyr) {
             ok = 0;
         }
         if (ok) {

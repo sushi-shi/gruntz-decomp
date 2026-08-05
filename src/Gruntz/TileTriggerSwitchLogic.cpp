@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/BridgeTileId.h>
 #include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameLevel.h>
@@ -131,7 +132,7 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
 
     // Ingest: the raw WWD attribute byte for this cell.
     CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
-    return static_cast<TileCollisionKind>(set->GetCollisionAt(0, 0));
+    return set->GetCollisionAt(0, 0);
 }
 
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
@@ -151,7 +152,7 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
     }
     // Ingest: the raw WWD attribute byte for this cell.
     CTileImageSet* set = static_cast<CTileImageSet*>(level->m_imageSets[cell & 0xffff]);
-    return static_cast<TileCollisionKind>(set->GetCollisionAt(0, 0));
+    return set->GetCollisionAt(0, 0);
 }
 
 static __inline char* PbStr(const CString& s) {
@@ -542,11 +543,11 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             if (now == TILEKIND_WATERBRIDGE_UP) {
-                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, 0x101);
-                reg->m_tileGrid->ComputeCellFlags(tx, ty, 0x101);
+                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, IDX(BRIDGETILE_WATER_UP));
+                reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(BRIDGETILE_WATER_UP));
             } else {
-                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, 0x102);
-                reg->m_tileGrid->ComputeCellFlags(tx, ty, 0x102);
+                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, IDX(BRIDGETILE_WATER_DOWN));
+                reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(BRIDGETILE_WATER_DOWN));
             }
             break;
         }
@@ -563,11 +564,11 @@ i32 CTileTriggerLogic::Tick() {
             i32 tx = m_tileX;
             CGruntzMgr* reg = g_gameReg;
             if (now == TILEKIND_DEATHBRIDGE_UP) {
-                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, 0x103);
-                reg->m_tileGrid->ComputeCellFlags(tx, ty, 0x103);
+                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, IDX(BRIDGETILE_DEATH_UP));
+                reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(BRIDGETILE_DEATH_UP));
             } else {
-                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, 0x104);
-                reg->m_tileGrid->ComputeCellFlags(tx, ty, 0x104);
+                reg->m_world->m_level->m_mainPlane->SetCell(tx, ty, IDX(BRIDGETILE_DEATH_DOWN));
+                reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(BRIDGETILE_DEATH_DOWN));
             }
             break;
         }
@@ -580,11 +581,10 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "LEVEL_BRIDGEDOWN";
             }
-            if (world->m_level->LookupTile(m_tileX, m_tileY)
-                == IDX(TILEKIND_TOGGLEWATERBRIDGE_UP)) {
-                g_gameReg->SetCellHeight(m_tileX, m_tileY, 0x107);
+            if (world->m_level->LookupTile(m_tileX, m_tileY) == TILEKIND_TOGGLEWATERBRIDGE_UP) {
+                g_gameReg->SetCellHeight(m_tileX, m_tileY, IDX(BRIDGETILE_TOGGLE_WATER_UP));
             } else {
-                g_gameReg->SetCellHeight(m_tileX, m_tileY, 0x108);
+                g_gameReg->SetCellHeight(m_tileX, m_tileY, IDX(BRIDGETILE_TOGGLE_WATER_DOWN));
             }
             break;
         }
@@ -596,11 +596,10 @@ i32 CTileTriggerLogic::Tick() {
             } else {
                 anim = "LEVEL_BRIDGEDOWN";
             }
-            if (world->m_level->LookupTile(m_tileX, m_tileY)
-                == IDX(TILEKIND_TOGGLEDEATHBRIDGE_UP)) {
-                g_gameReg->SetCellHeight(m_tileX, m_tileY, 0x109);
+            if (world->m_level->LookupTile(m_tileX, m_tileY) == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
+                g_gameReg->SetCellHeight(m_tileX, m_tileY, IDX(BRIDGETILE_TOGGLE_DEATH_UP));
             } else {
-                g_gameReg->SetCellHeight(m_tileX, m_tileY, 0x10a);
+                g_gameReg->SetCellHeight(m_tileX, m_tileY, IDX(BRIDGETILE_TOGGLE_DEATH_DOWN));
             }
             break;
         }
@@ -1126,9 +1125,10 @@ CTileActionEvent::CTileActionEvent() {
 
 // @early-stop
 RVA(0x00112da0, 0x100)
-i32 CTileActionEvent::SetActionCode(i32 code) {
+i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     m_actionCode = code;
-    if (m_playerFlags[g_curPlayer] == 0 && static_cast<u32>((code - BRICKTILE_BROWN_1)) <= 0x1a) {
+    if (m_playerFlags[g_curPlayer] == 0
+        && static_cast<u32>(IDX(code) - IDX(BRICKTILE_BROWN_1)) <= 0x1a) {
         switch (code) {
             case BRICKTILE_BROWN_1:
             case BRICKTILE_RED_1:
@@ -1171,14 +1171,14 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
     i32 tx = m_tileX;
     if (reg->m_world->m_level->m_mainPlane
             ->m_tileGrid[reg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx]
-        == code) {
+        == IDX(code)) {
         return 0;
     }
     // The write goes through the UN-CACHED global on purpose: it defeats the
     // read/write address CSE so cl re-walks the chain, as retail does.
     g_gameReg->m_world->m_level->m_mainPlane
-        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = code;
-    reg->m_tileGrid->ComputeCellFlags(tx, ty, code);
+        ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = IDX(code);
+    reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));
     return 1;
 }
 
@@ -1187,7 +1187,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
 // flag stores, and `add edi,-0x132` where retail keeps edi with `lea eax,[edi-0x132]`.
 RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::Process(CGrunt* brick) {
-    i32 newCode = m_actionCode;
+    BrickTileId newCode = m_actionCode;
     i32 effect = 0;
     // Arm order is proven by the retail jump table at 0x113278: the tiers are
     // written across the four colours (all the 1s, then the 2-TOPs, the 2-LOWs,
@@ -1195,43 +1195,43 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
     // sits last - cl suffix-merges each brown arm into the black arm above it.
     switch (m_actionCode) {
         case BRICKTILE_RED_1:
-            effect = BRICKTILE_RED_1;
+            effect = IDX(BRICKTILE_RED_1);
             newCode = BRICKTILE_CLEARED;
             break;
         case BRICKTILE_BLUE_1:
-            effect = BRICKTILE_BLUE_1;
+            effect = IDX(BRICKTILE_BLUE_1);
             newCode = BRICKTILE_CLEARED;
             break;
         case BRICKTILE_GOLD_1:
-            effect = BRICKTILE_GOLD_1;
+            effect = IDX(BRICKTILE_GOLD_1);
             if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_CLEARED;
             break;
         case BRICKTILE_BLACK_1:
-            effect = BRICKTILE_BLACK_1;
+            effect = IDX(BRICKTILE_BLACK_1);
             // fall through
         case BRICKTILE_BROWN_1:
             newCode = BRICKTILE_CLEARED;
             break;
         case BRICKTILE_RED_2_TOP:
-            effect = BRICKTILE_RED_1;
+            effect = IDX(BRICKTILE_RED_1);
             newCode = BRICKTILE_BROWN_1;
             break;
         case BRICKTILE_BLUE_2_TOP:
-            effect = BRICKTILE_BLUE_1;
+            effect = IDX(BRICKTILE_BLUE_1);
             newCode = BRICKTILE_BROWN_1;
             break;
         case BRICKTILE_GOLD_2_TOP:
-            effect = BRICKTILE_GOLD_1;
+            effect = IDX(BRICKTILE_GOLD_1);
             if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_1;
             break;
         case BRICKTILE_BLACK_2_TOP:
-            effect = BRICKTILE_BLACK_1;
+            effect = IDX(BRICKTILE_BLACK_1);
             // fall through
         case BRICKTILE_BROWN_2:
             newCode = BRICKTILE_BROWN_1;
@@ -1249,22 +1249,22 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             newCode = BRICKTILE_BLACK_1;
             break;
         case BRICKTILE_RED_3_TOP:
-            effect = BRICKTILE_RED_1;
+            effect = IDX(BRICKTILE_RED_1);
             newCode = BRICKTILE_BROWN_2;
             break;
         case BRICKTILE_BLUE_3_TOP:
-            effect = BRICKTILE_BLUE_1;
+            effect = IDX(BRICKTILE_BLUE_1);
             newCode = BRICKTILE_BROWN_2;
             break;
         case BRICKTILE_GOLD_3_TOP:
-            effect = BRICKTILE_GOLD_1;
+            effect = IDX(BRICKTILE_GOLD_1);
             if (brick != NULL) {
                 break;
             }
             newCode = BRICKTILE_BROWN_2;
             break;
         case BRICKTILE_BLACK_3_TOP:
-            effect = BRICKTILE_BLACK_1;
+            effect = IDX(BRICKTILE_BLACK_1);
             // fall through
         case BRICKTILE_BROWN_3:
             newCode = BRICKTILE_BROWN_2;
@@ -1295,11 +1295,12 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             break;
     }
 
+    BrickTileId brickEffect = static_cast<BrickTileId>(effect);
     if (effect != 0 && brick != NULL) {
-        if (effect == BRICKTILE_RED_1) {
+        if (brickEffect == BRICKTILE_RED_1) {
             brick->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
             brick->m_entranceActive = 0;
-        } else if (effect == BRICKTILE_BLUE_1) {
+        } else if (brickEffect == BRICKTILE_BLUE_1) {
             g_gameReg->m_cmdGrid->CombatCue(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1307,7 +1308,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                 CUE_TELEPORT,
                 -1
             );
-        } else if (effect == BRICKTILE_GOLD_1) {
+        } else if (brickEffect == BRICKTILE_GOLD_1) {
             i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
@@ -1321,7 +1322,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
                 }
             }
             i32 slot = brick->m_tileOwnerHi;
-            if (slot == PLAYERSLOT_ALL) {
+            if (slot == IDX(PLAYER_SLOT_ALL)) {
                 i32* flags = m_playerFlags;
                 flags[0] = 1;
                 flags[1] = 1;
@@ -1333,7 +1334,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             m_playerFlags[slot] = 1;
             SetActionCode(m_actionCode);
             return 0;
-        } else if (effect == BRICKTILE_BLACK_1) {
+        } else if (brickEffect == BRICKTILE_BLACK_1) {
             g_gameReg->m_cmdGrid->LoadExplosionSprites(
                 (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1353,7 +1354,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
         if (spr != NULL) {
             spr->ApplyLookupGeometry("GAME_BRICKBREAK", 0);
 
-            switch (effect) {
+            switch (brickEffect) {
                 case BRICKTILE_RED_1:
                     spr->ApplyName("GAME_REDBRICKBREAK");
                     break;
@@ -1387,7 +1388,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
 // above the playerSlot test, retail keeps it an immediate at the else store
 // and the return and materializes it inside the taken arm.
 RVA(0x00113420, 0x358)
-i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
+i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
         switch (m_actionCode) {
             case BRICKTILE_BROWN_1:
@@ -1397,13 +1398,13 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
 
                 i32* flags = m_playerFlags;
                 memset(flags, 0, sizeof(m_playerFlags));
-                if (playerSlot == PLAYERSLOT_ALL) {
+                if (playerSlot == PLAYER_SLOT_ALL) {
                     flags[0] = 1;
                     flags[1] = 1;
                     flags[2] = 1;
                     flags[3] = 1;
                 } else {
-                    m_playerFlags[playerSlot] = 1;
+                    m_playerFlags[IDX(playerSlot)] = 1;
                 }
                 SetActionCode(m_actionCode);
                 return 1;

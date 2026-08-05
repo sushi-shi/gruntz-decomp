@@ -457,7 +457,7 @@ i32 CGruntzSoundInnerZ::IsBusy() {
         return 0;
     }
     i32 status = AIL_sequence_status(m_seqHandle);
-    if (status == 4 || status == 0x10) {
+    if (status == SEQ_PLAYING || status == SEQ_PLAYINGBUTRELEASED) {
         return 1;
     }
     return 0;

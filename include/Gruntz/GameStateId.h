@@ -4,6 +4,7 @@
 #include <Enums.h>
 
 GZ_ENUM_BEGIN(GameStateId)
+    GAMESTATE_NONE = 0,
     GAMESTATE_BASE = 1,
     GAMESTATE_ATTRACT = 2,
     GAMESTATE_PLAY = 3,
@@ -18,6 +19,13 @@ GZ_ENUM_BEGIN(GameStateId)
     GAMESTATE_DEMO = 7,
     GAMESTATE_HELP = 9,
     GAMESTATE_SPLASH = 0xe,
+    // Observed only as a state guard; the factory has no construction arm for
+    // it, so no stronger semantic name is currently justified.
+    GAMESTATE_RESERVED_0F = 0xf,
+    // Command-line SELECT launch. The current state factory has no recovered
+    // construction arm for it, but CGruntzMgr::Run carries it through the same
+    // state-id dispatch as PLAY, DEMO, and MULTI.
+    GAMESTATE_LEVEL_SELECT = 0x10,
     // 0x11 is the MULTIPLAYER play state, not an absence: CGruntzMgr's state
     // factory maps 17 -> `new CMulti`, and CMulti::Update() returns it. Every
     // reader pairs it with GAMESTATE_PLAY to ask "are we in gameplay?" - one

@@ -19,7 +19,7 @@ i32 g_monoRow = 0;
 DATA(0x002bf8d8)
 i32 g_monoCol = 0;
 DATA(0x002bf8dc)
-i32 g_debugPrintMode = 0;
+DebugPrintMode g_debugPrintMode = DEBUG_PRINT_DISABLED;
 DATA(0x002bf8e0)
 FILE* g_debugLogFile = 0;
 
@@ -100,7 +100,7 @@ void CRangeSet::AddFromString(char* str) {
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
-    if (++g_monoRow == 25) {
+    if (++g_monoRow == DEBUG_MONO_ROW_COUNT) {
         i32 i = 0xa0;
         do {
             i += 2;
@@ -147,7 +147,7 @@ void DiscardDebugOutput(char* line) {}
 RVA(0x00184e00, 0x55)
 void RezAssertFail(char* fmt, ...) {
     char buf[256];
-    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
         va_list ap;
         va_start(ap, fmt);
@@ -159,7 +159,7 @@ void RezAssertFail(char* fmt, ...) {
 RVA(0x00184e60, 0x6d)
 void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     char buf[256];
-    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
         DebugSetCursorXY(x, y);
         va_list ap;
@@ -172,7 +172,7 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
 RVA(0x00184ed0, 0x5b)
 void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     char buf[256];
-    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
         va_list ap;
         va_start(ap, fmt);
@@ -184,7 +184,7 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
 RVA(0x00184f30, 0x73)
 void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     char buf[256];
-    if (g_debugPrintMode != 1 && g_debugPrintMode != 0
+    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
         && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
         DebugSetCursorXY(x, y);
         va_list ap;
@@ -206,46 +206,48 @@ RVA(0x00185000, 0x1a6)
 CDebugConfig::CDebugConfig() {
     char buf[256];
     g_debugChannels.m_count = 0;
-    g_debugPrintMode = 1;
+    g_debugPrintMode = DEBUG_PRINT_DISCARD;
     char* env = getenv("DPRINTF");
     if (env != NULL) {
         strcpy(buf, env);
         _strupr(buf);
         if (strstr(buf, "MONO")) {
-            g_debugPrintMode = 2;
+            g_debugPrintMode = DEBUG_PRINT_MONO;
         }
         if (strstr(buf, "FILE")) {
-            g_debugPrintMode = 5;
+            g_debugPrintMode = DEBUG_PRINT_FILE;
         }
         if (strstr(buf, "FILEAPPEND")) {
-            g_debugPrintMode = 6;
+            g_debugPrintMode = DEBUG_PRINT_FILE_APPEND;
         }
         if (strstr(buf, "COM1")) {
-            g_debugPrintMode = 3;
+            g_debugPrintMode = DEBUG_PRINT_COM1;
         }
         if (strstr(buf, "COM2")) {
-            g_debugPrintMode = 4;
+            g_debugPrintMode = DEBUG_PRINT_COM2;
         }
         if (strstr(buf, "STDOUT")) {
-            g_debugPrintMode = 7;
+            g_debugPrintMode = DEBUG_PRINT_STDOUT;
         }
         if (strstr(buf, "LPT1")) {
-            g_debugPrintMode = 8;
+            g_debugPrintMode = DEBUG_PRINT_LPT;
         }
         if (strstr(buf, "LPT2")) {
-            g_debugPrintMode = 8;
+            g_debugPrintMode = DEBUG_PRINT_LPT;
         }
         if (strstr(buf, "PRN")) {
-            g_debugPrintMode = 10;
+            g_debugPrintMode = DEBUG_PRINT_PRN;
         }
         g_debugChannels.AddFromString(buf);
     }
-    g_debugPrintMode = 2;
+    g_debugPrintMode = DEBUG_PRINT_MONO;
 }
 
 RVA(0x001851b0, 0x23)
 CDebugConfig::~CDebugConfig() {
-    if (g_debugPrintMode == 5 || (g_debugPrintMode > 7 && g_debugPrintMode <= 10)) {
+    if (g_debugPrintMode == DEBUG_PRINT_FILE
+        || (IDX(g_debugPrintMode) > IDX(DEBUG_PRINT_STDOUT)
+            && IDX(g_debugPrintMode) <= IDX(DEBUG_PRINT_PRN))) {
         fclose(g_debugLogFile);
     }
 }

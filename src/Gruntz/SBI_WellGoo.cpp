@@ -29,8 +29,8 @@ RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
-    i32 cmd,
-    i32 tab,
+    SbiCommandId cmd,
+    StatusBarTab tab,
     RECT rc,
     const char* key,
     i32 fillScale
@@ -62,11 +62,11 @@ i32 CSBI_WellGoo::Setup(
     if (key == NULL) {
         goto fail;
     }
-    m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+    m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
     if (m_gooSrc == NULL) {
         goto fail;
     }
-    sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
+    sel = IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex);
     node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
     if (node == NULL) {
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
@@ -254,11 +254,11 @@ i32 CSBI_WellGoo::SerializeFields(
         }
         case SERIAL_POSTLOAD: {
 
-            m_gooSrc = mgr->m_ptrColl->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+            m_gooSrc = mgr->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
             if (m_gooSrc == NULL) {
                 return 0;
             }
-            i32 sel = g_gameReg->m_options[g_curPlayer].m_colorIndex;
+            i32 sel = IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex);
             CShadeTable* node = g_gameReg->m_spriteFactory->GetSel(sel, 0);
             if (node == NULL) {
                 node = g_gameReg->m_spriteFactory->GetSel(1, 0);

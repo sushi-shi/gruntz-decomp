@@ -23,12 +23,13 @@ GZ_ENUM_CONST_END(SerialSyncMarker)
 
 RVA(0x00013610, 0x8c)
 i32 SerializeSyncMarker(CFileMemBase* arc, i32 mode, const char* name, i32 line) {
-    if (mode == SERIAL_SAVE) {
+    SerialMode serialMode = static_cast<SerialMode>(mode);
+    if (serialMode == SERIAL_SAVE) {
         i32 marker = g_serialCounter + SERIAL_SYNC_MARKER_BASE;
         arc->Write(&marker, sizeof(marker));
         return 1;
     }
-    if (mode == SERIAL_LOAD) {
+    if (serialMode == SERIAL_LOAD) {
         i32 readVal;
         arc->Read(&readVal, sizeof(readVal));
         if (readVal != g_serialCounter + SERIAL_SYNC_MARKER_BASE) {

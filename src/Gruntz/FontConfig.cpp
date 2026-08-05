@@ -244,7 +244,7 @@ i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     if (m_inputActive == 0) {
         return 0;
     }
-    if (ch == 8) {
+    if (ch == '\b') {
         i32 len = m_inputText.GetLength();
         if (len <= 0) {
             return 0;
