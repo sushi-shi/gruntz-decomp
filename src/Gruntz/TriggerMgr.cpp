@@ -1599,14 +1599,15 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 lo->ApplyMove(type);
                 root->m_beginMarker->DelFromList1(lo);
             } else {
-                CDDrawWorkerHost* wg = g_gameReg->m_world->m_level->m_mainPlane;
+                CGruntzMgr* reg = g_gameReg;
+                CDDrawWorkerHost* wg = reg->m_world->m_level->m_mainPlane;
                 i32 off = wg->m_colOffsets[ty];
                 if (type == TILEKIND_GAUNTLET_ROCK_A) {
                     wg->m_tileGrid[off + tx] = 0x5a;
-                    (g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
+                    (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
                     wg->m_tileGrid[off + tx] = 0x5b;
-                    (g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
+                    (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
 
@@ -1632,10 +1633,11 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 set->m_cues.Lookup("LEVEL_ROCKBREAK", e_ob);
                 LeafCue* e = static_cast<LeafCue*>(e_ob);
                 if (e != NULL && g_sndEnabled != 0) {
+                    i32 tag = g_sndCueTag;
                     u32 now = g_killCueClock;
                     if (now - e->m_lastPlayTime >= e->m_replayDelay) {
                         e->m_lastPlayTime = now;
-                        e->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        e->m_sound->ConfigureItem(tag, 0, 0, 0);
                     }
                 }
             }

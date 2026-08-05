@@ -1,3 +1,5 @@
+#define MOTIONSTATE_OOL_CTOR
+#define USERLOGIC_OOL_CTOR
 #define CMOVINGLOGIC_INLINE_DTOR
 
 #include <rva.h>
@@ -59,7 +61,7 @@ DATA(0x001f04b8)
 const double g_movingLogicMax = 2147483646.0;
 
 DATA(0x001eaa88)
-const double g_motionZScale = 0.0;
+const double g_motionZScale = 0.001;
 DATA(0x001eab00)
 const double g_projPhase1 = 6.2831854;
 DATA(0x001f04e8)
@@ -93,56 +95,6 @@ void CMovingLogic::FinalizeStep(char*) {
 // @early-stop
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
-
-    i32 lo0 = m_objAux->m_minX;
-    if (lo0 == 0) {
-        Motion()->m_minBounds.x = g_movingLogicMin;
-    } else {
-        Motion()->m_minBounds.x = static_cast<double>(lo0);
-    }
-    i32 lo1 = m_objAux->m_minY;
-    if (lo1 == 0) {
-        Motion()->m_minBounds.y = g_movingLogicMin;
-    } else {
-        Motion()->m_minBounds.y = static_cast<double>(lo1);
-    }
-    i32 hi0 = m_objAux->m_maxX;
-    if (hi0 == 0) {
-        Motion()->m_maxBounds.x = g_movingLogicMax;
-    } else {
-        Motion()->m_maxBounds.x = static_cast<double>(hi0);
-    }
-    i32 hi1 = m_objAux->m_maxY;
-    if (hi1 == 0) {
-        Motion()->m_maxBounds.y = g_movingLogicMax;
-    } else {
-        Motion()->m_maxBounds.y = static_cast<double>(hi1);
-    }
-    Motion()->SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
-        0.0,
-        static_cast<double>(m_object->m_speedX),
-        static_cast<double>(m_object->m_speedY),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        static_cast<double>(g_frameTime) * g_motionZScale,
-        0.0
-    );
-
-    CMotionState* m = Motion();
-    double z = static_cast<double>(g_defaultZ);
-    m->m_maxStep.x = z;
-    m->m_maxStep.y = z;
-    m->m_maxStep.z = z;
-    m_collisionFlags = 0;
-    m_moveFlags = 0;
-    m_object->m_moveMode = MOVE_DIRECT;
-
-    CMovingLogic::AdvanceMotion();
-
     m_gameObject = owner;
     m_wwdObject = static_cast<CWwdGameObjectA*>(owner);
     m_animWorker = owner->m_animWorker;

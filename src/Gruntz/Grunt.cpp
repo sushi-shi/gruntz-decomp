@@ -1,3 +1,6 @@
+#define MOTIONSTATE_OOL_CTOR
+#define USERLOGIC_OOL_CTOR
+
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
@@ -257,52 +260,6 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner) : CMovingLogic(static_cast<CGameObject*>(owner)) {
-
-    CMotionState* m = Motion();
-    i32 lo0 = m_objAux->m_minX;
-    if (lo0 == 0) {
-        m->m_minBounds.x = g_movingLogicMin;
-    } else {
-        m->m_minBounds.x = static_cast<double>(lo0);
-    }
-    i32 lo1 = m_objAux->m_minY;
-    if (lo1 == 0) {
-        m->m_minBounds.y = g_movingLogicMin;
-    } else {
-        m->m_minBounds.y = static_cast<double>(lo1);
-    }
-    i32 hi0 = m_objAux->m_maxX;
-    if (hi0 == 0) {
-        m->m_maxBounds.x = g_movingLogicMax;
-    } else {
-        m->m_maxBounds.x = static_cast<double>(hi0);
-    }
-    i32 hi1 = m_objAux->m_maxY;
-    if (hi1 == 0) {
-        m->m_maxBounds.y = g_movingLogicMax;
-    } else {
-        m->m_maxBounds.y = static_cast<double>(hi1);
-    }
-    m->SetParams(
-        static_cast<double>(m_object->m_screenX),
-        static_cast<double>(m_object->m_screenY),
-        0.0,
-        static_cast<double>(m_object->m_speedX),
-        static_cast<double>(m_object->m_speedY),
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        static_cast<double>(g_frameTime) * 0.001,
-        0.0
-    );
-    m->SetZ(static_cast<double>(g_defaultZ));
-
-    m_collisionFlags = 0;
-    m_moveFlags = 0;
-    m_object->m_moveMode = MOVE_DIRECT;
-
-    CMovingLogic::AdvanceMotion();
     CGameObject* obj = static_cast<CGameObject*>(owner);
     m_gameObject = obj;
     m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
