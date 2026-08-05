@@ -442,10 +442,13 @@ static inline i16* Span16(u8* row) {
     return p.m_swords;
 }
 
+// @early-stop
+// Frame/spill residue: retail's ebp frame is 0x28 (two more spill slots) and the
+// pow2-shift loop is not peeled; cl peels the first `w & 1` test to `test al,cl`.
 RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
-    i32 minY = 0x1001;
     i32 maxY = -1;
+    i32 minY = 0x1001;
     if (WarpIsPow2(src->m_width) == 0) {
         return 0;
     }
@@ -454,12 +457,12 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     i32 shift = 0;
     {
         i32 m = 1;
-        for (i32 b = 0; b < 0x20; b++) {
-            if (src->m_width & m) {
-                shift = b;
+        while ((src->m_width & m) == 0) {
+            m <<= 1;
+            shift++;
+            if (static_cast<u32>(shift) >= 0x20) {
                 break;
             }
-            m <<= 1;
         }
     }
 
