@@ -56,10 +56,6 @@ i32 g_rasterVtxCount = 0;
 DATA(0x002becfc)
 i16 g_warpColorkey = 0;
 
-static i32 warpFtol(double v) {
-    return static_cast<i32>(v);
-}
-
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;
@@ -472,8 +468,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         ClipVtx* cur = va;
         i32 count = n;
         do {
-            i32 prevYi = warpFtol(prev->y);
-            i32 curYi = warpFtol(cur->y);
+            i32 prevYi = static_cast<i32>(prev->y);
+            i32 curYi = static_cast<i32>(cur->y);
             if (prevYi != curYi) {
                 ClipVtx* top;
                 ClipVtx* bot;
@@ -488,17 +484,20 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     table = g_rasterEdgeR;
                 }
 
-                i32 topU = warpFtol(static_cast<double>(top->u) * g_rasterScale);
-                i32 topV = warpFtol(static_cast<double>(top->v) * g_rasterScale);
-                i32 topX = warpFtol(static_cast<double>(top->x) * g_rasterScale);
-                i32 topYi = warpFtol(static_cast<double>(top->y) * g_rasterScale) >> 0xe;
-                i32 botYi = warpFtol(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
+                i32 topU = static_cast<i32>(static_cast<double>(top->u) * g_rasterScale);
+                i32 topV = static_cast<i32>(static_cast<double>(top->v) * g_rasterScale);
+                i32 topX = static_cast<i32>(static_cast<double>(top->x) * g_rasterScale);
+                i32 topYi = static_cast<i32>(static_cast<double>(top->y) * g_rasterScale) >> 0xe;
+                i32 botYi = static_cast<i32>(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
                 i32 h = botYi - topYi;
 
                 ClipVtx* rec = &table[topYi];
-                i32 dx = (-topX - warpFtol(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
-                i32 du = (-topU - warpFtol(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
-                i32 dv = (-topV - warpFtol(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
+                i32 dx =
+                    (-topX - static_cast<i32>(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
+                i32 du =
+                    (-topU - static_cast<i32>(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
+                i32 dv =
+                    (-topV - static_cast<i32>(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
 
                 i32 x = topX;
                 i32 u = topU;
@@ -513,7 +512,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     rec++;
                 }
             }
-            i32 vy = warpFtol(prev->y);
+            i32 vy = static_cast<i32>(prev->y);
             if (vy < minY) {
                 minY = vy;
             }
@@ -542,24 +541,36 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 span = lx - rx;
             if (span > 0) {
                 i32 u = rrow->fu;
-                i32 vv = rrow->fv;
                 g_warpU = u;
-                g_warpV = vv;
+                g_warpV = rrow->fv;
                 g_warpUStep = (lrow->fu - u) / span;
-                i32 dv = (lrow->fv - vv) / span;
-                g_warpV = vv << shift;
+                i32 dv = (lrow->fv - g_warpV) / span;
+                g_warpV = g_warpV << shift;
                 g_warpVStep = dv << shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
-                i16* d = g_rasterDestPtr;
-                i16* tex = g_warpTexBase;
-                i32 uu = g_warpU;
-                i32 va2 = g_warpV;
-                for (i32 c = span; c != 0; c--) {
-                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
-                    va2 += g_warpVStep;
-                    uu += g_warpUStep;
-                    *d++ = tex[idx];
+                __asm {
+                    mov  edi, g_rasterDestPtr
+                    mov  esi, g_warpTexBase
+                    mov  ebx, g_warpU
+                    mov  edx, g_warpV
+                    mov  ecx, span
+                    push ebp
+                    mov  ebp, g_warpVStep
+                lpOpaque:
+                    mov  eax, edx
+                    add  edx, ebp
+                    and  eax, g_warpUMask
+                    or   eax, ebx
+                    shr  eax, 0eh
+                    add  ebx, g_warpUStep
+                    mov  ax, word ptr [esi + eax * 2]
+                    mov  word ptr [edi], ax
+                    inc  edi
+                    inc  edi
+                    dec  ecx
+                    jne  lpOpaque
+                    pop  ebp
                 }
             }
             lrow++;
@@ -576,28 +587,39 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 span = lx - rx;
             if (span > 0) {
                 i32 u = rrow->fu;
-                i32 vv = rrow->fv;
                 g_warpU = u;
-                g_warpV = vv;
+                g_warpV = rrow->fv;
                 g_warpUStep = (lrow->fu - u) / span;
-                i32 dv = (lrow->fv - vv) / span;
-                g_warpV = vv << shift;
+                i32 dv = (lrow->fv - g_warpV) / span;
+                g_warpV = g_warpV << shift;
                 g_warpVStep = dv << shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
-                i16* d = g_rasterDestPtr;
-                i16* tex = g_warpTexBase;
-                i32 uu = g_warpU;
-                i32 va2 = g_warpV;
-                for (i32 c = span; c != 0; c--) {
-                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
-                    va2 += g_warpVStep;
-                    uu += g_warpUStep;
-                    i16 t = tex[idx];
-                    if (t != 0) {
-                        *d = t;
-                    }
-                    d++;
+                __asm {
+                    mov  edi, g_rasterDestPtr
+                    mov  esi, g_warpTexBase
+                    mov  ebx, g_warpU
+                    mov  edx, g_warpV
+                    mov  ecx, span
+                    push ebp
+                    mov  ebp, g_warpVStep
+                lpZeroKey:
+                    mov  eax, edx
+                    add  edx, ebp
+                    and  eax, g_warpUMask
+                    or   eax, ebx
+                    shr  eax, 0eh
+                    add  ebx, g_warpUStep
+                    mov  ax, word ptr [esi + eax * 2]
+                    or   ax, ax
+                    je   nextZeroKey
+                    mov  word ptr [edi], ax
+                nextZeroKey:
+                    inc  edi
+                    inc  edi
+                    dec  ecx
+                    jne  lpZeroKey
+                    pop  ebp
                 }
             }
             lrow++;
@@ -614,28 +636,39 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 span = lx - rx;
             if (span > 0) {
                 i32 u = rrow->fu;
-                i32 vv = rrow->fv;
                 g_warpU = u;
-                g_warpV = vv;
+                g_warpV = rrow->fv;
                 g_warpUStep = (lrow->fu - u) / span;
-                i32 dv = (lrow->fv - vv) / span;
-                g_warpV = vv << shift;
+                i32 dv = (lrow->fv - g_warpV) / span;
+                g_warpV = g_warpV << shift;
                 g_warpVStep = dv << shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
-                i16* d = g_rasterDestPtr;
-                i16* tex = g_warpTexBase;
-                i32 uu = g_warpU;
-                i32 va2 = g_warpV;
-                for (i32 c = span; c != 0; c--) {
-                    i32 idx = ((va2 & g_warpUMask) | uu) >> 0xe;
-                    va2 += g_warpVStep;
-                    uu += g_warpUStep;
-                    i16 t = tex[idx];
-                    if (t != g_warpColorkey) {
-                        *d = t;
-                    }
-                    d++;
+                __asm {
+                    mov  edi, g_rasterDestPtr
+                    mov  esi, g_warpTexBase
+                    mov  ebx, g_warpU
+                    mov  edx, g_warpV
+                    mov  ecx, span
+                    push ebp
+                    mov  ebp, g_warpVStep
+                lpColorKey:
+                    mov  eax, edx
+                    add  edx, ebp
+                    and  eax, g_warpUMask
+                    or   eax, ebx
+                    shr  eax, 0eh
+                    add  ebx, g_warpUStep
+                    mov  ax, word ptr [esi + eax * 2]
+                    cmp  ax, g_warpColorkey
+                    je   nextColorKey
+                    mov  word ptr [edi], ax
+                nextColorKey:
+                    inc  edi
+                    inc  edi
+                    dec  ecx
+                    jne  lpColorKey
+                    pop  ebp
                 }
             }
             lrow++;
