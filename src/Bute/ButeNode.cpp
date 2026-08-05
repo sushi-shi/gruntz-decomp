@@ -9,6 +9,10 @@ VTBL(CButeNode, 0x001f051c);
 
 // @early-stop
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
+// @early-stop
+// Scoring artifact, not a source defect: the switch's case bodies compile into a
+// SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
+// against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x00174df0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);

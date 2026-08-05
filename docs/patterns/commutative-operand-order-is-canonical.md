@@ -51,6 +51,21 @@ the SIB base/index roles in `MonoClear`/`CHashBase::Insert`/`CHashElement::Prev`
 the vptr-stamp transposition in the `CWayPoint`/`CGuardPoint` ctor family, and the
 scratch-register rotation in `SaveVideoCheckboxes`.
 
+## The parity is NARROW — measured
+
+The probe was run against 28 sub-100 functions across 22 TUs. It flipped exactly two
+(`GetMemoryUsage`, `Save`) and was **codegen-neutral on the other 26** — not one diff line
+moved, including four `CGameLevel` probe helpers, five `CLightFxRender` palette builders,
+`CMulti::Render`, `SoundStream::ParseWave` and `CSBI_GruntMachine::SerializeFields`. So
+"adding a definition to the TU perturbs everything" is FALSE here; it perturbs this one
+canonicalisation. That also means the probe is a safe, cheap diagnostic.
+
+The 2-term member add is canonical too, and its canonical order is not a function of the
+operand pair alone: `ProbeColumn` and `ProbeHeadSoft` add the SAME two members
+(`m_screenY` + `m_extent.top`) and cl picks OPPOSITE orders for them, because
+`ProbeHeadSoft` has a third term. Swapping the source operands in all four `CGameLevel`
+probes was byte-identical.
+
 ## How to use this
 
 1. If the residue is an `imul`/`add` pair of member loads on ONE object, stop editing the

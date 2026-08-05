@@ -615,6 +615,9 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 }
 
 // @early-stop
+// Scoring artifact, not a source defect: the switch's case bodies compile into a
+// SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
+// against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* rect) {
     if (origin) {
