@@ -13,6 +13,7 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
@@ -81,7 +82,7 @@ i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (surf == NULL || surf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0xfa0);
+            m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
     }

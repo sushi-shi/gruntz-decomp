@@ -491,11 +491,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved3 = w3->m_actKey;
-            w3->SetActKey(IDX(ACT_PREPARE_SAVE));
+            w3->SetWorkerAct(ACT_PREPARE_SAVE);
 
             m_animWorker->m_notify(this);
             w3 = m_animWorker;
-            if (w3->ActKey() == IDX(ACT_PREPARE_SAVE)) {
+            if (w3->WorkerAct() == ACT_PREPARE_SAVE) {
                 w3->m_actKey = saved3;
             }
             break;
@@ -509,11 +509,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved4 = w4->m_actKey;
-            w4->SetActKey(IDX(ACT_AFTER_SAVE));
+            w4->SetWorkerAct(ACT_AFTER_SAVE);
 
             m_animWorker->m_notify(this);
             w4 = m_animWorker;
-            if (w4->ActKey() == IDX(ACT_AFTER_SAVE)) {
+            if (w4->WorkerAct() == ACT_AFTER_SAVE) {
                 w4->m_actKey = saved4;
             }
             break;
@@ -527,11 +527,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved7 = w7->m_actKey;
-            w7->SetActKey(IDX(ACT_AFTER_LOAD));
+            w7->SetWorkerAct(ACT_AFTER_LOAD);
 
             m_animWorker->m_notify(this);
             w7 = m_animWorker;
-            if (w7->ActKey() == IDX(ACT_AFTER_LOAD)) {
+            if (w7->WorkerAct() == ACT_AFTER_LOAD) {
                 w7->m_actKey = saved7;
             }
             break;
@@ -554,11 +554,11 @@ i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, voi
                 goto fail;
             }
             i32 saved8 = w8->m_actKey;
-            w8->SetActKey(IDX(ACT_AFTER_LOAD_REFERENCES));
+            w8->SetWorkerAct(ACT_AFTER_LOAD_REFERENCES);
 
             m_animWorker->m_notify(this);
             w8 = m_animWorker;
-            if (w8->ActKey() == IDX(ACT_AFTER_LOAD_REFERENCES)) {
+            if (w8->WorkerAct() == ACT_AFTER_LOAD_REFERENCES) {
                 w8->m_actKey = saved8;
             }
             break;

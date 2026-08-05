@@ -12,6 +12,7 @@
 #include <Gruntz/BridgeTileId.h>
 #include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CurPlayer.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -777,14 +778,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 cx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 cy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    g_gameReg->m_cmdGrid->LoadPowerupIconSprites(
-        static_cast<PickupType>(m_powerupType),
-        cx,
-        cy,
-        static_cast<i32>(m_dutyOffSpan),
-        1,
-        0
-    );
+    g_gameReg->m_cmdGrid
+        ->LoadPowerupIconSprites(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
     if (m_textId != 0) {
         CGameObject* txt = g_gameReg->m_world->m_childGroup
@@ -928,7 +923,7 @@ RVA(0x001128b0, 0x88)
 i32 CTileSecretTriggerLogic::Tick() {
     i32 oldTok = m_tileToken;
     if (oldTok == 0) {
-        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x451);
+        g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x451);
         return 0;
     }
     CGruntzMgr* mgr = g_gameReg;

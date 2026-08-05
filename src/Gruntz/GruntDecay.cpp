@@ -80,7 +80,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
     if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
-        m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);

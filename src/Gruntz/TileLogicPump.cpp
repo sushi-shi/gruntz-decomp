@@ -74,10 +74,10 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_animWorker;                                                        \
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(ctl->ActKey());                                 \
+    AnimWorkerAct act = ctl->WorkerAct();                                                          \
     switch (act) {                                                                                 \
         case ACT_UNINITIALISED: {                                                                  \
-            ctl->SetActKey(IDX(ACT_LIVE));                                                         \
+            ctl->SetWorkerAct(ACT_LIVE);                                                           \
             LEAF* t = new LEAF(obj);                                                               \
             t->Activate();                                                                         \
             ctl->m_logic = t;                                                                      \
@@ -279,10 +279,10 @@ i32 CreateTileTriggerTransition(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTr
 RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(ctl->ActKey());
+    AnimWorkerAct act = ctl->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            ctl->SetActKey(IDX(ACT_LIVE));
+            ctl->SetWorkerAct(ACT_LIVE);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -330,7 +330,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_wwdObject->m_flags |= 0x10000;
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -380,7 +380,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWap
 
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 RVA(0x0010dea0, 0x102)
@@ -425,7 +425,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
@@ -473,7 +473,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdGameObjectA* o = m_object;
     i32 tileX = o->m_screenX >> TILE_SHIFT_PX;

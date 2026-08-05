@@ -65,7 +65,7 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_phase = 1;
     m_duration = 0;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
@@ -143,7 +143,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
         default:
             return 0;
     }
-    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 1;
 }
 

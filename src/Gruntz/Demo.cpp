@@ -354,10 +354,10 @@ INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
 RVA(0x0003d2b0, 0xf1)
 i32 CreateGruntStartingPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CGruntStartingPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -393,10 +393,10 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 RVA(0x0003d3f0, 0xf1)
 i32 CreateExitTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CExitTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -432,10 +432,10 @@ i32 CreateExitTrigger(CGameObject* owner) {
 RVA(0x0003d530, 0xf1)
 i32 CreateGruntCreationPoint(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CGruntCreationPoint(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -471,10 +471,10 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 RVA(0x0003d670, 0xf1)
 i32 CreateWormhole(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CWormhole(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -510,10 +510,10 @@ i32 CreateWormhole(CGameObject* owner) {
 RVA(0x0003d7b0, 0xf1)
 i32 CreateGruntPuddle(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CGruntPuddle(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -549,10 +549,10 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 RVA(0x0003d8f0, 0xf1)
 i32 CreateTeleporter(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CTeleporter(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -588,10 +588,10 @@ i32 CreateTeleporter(CGameObject* owner) {
 RVA(0x0003da30, 0xf1)
 i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CSecretTeleporterTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -627,10 +627,10 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 RVA(0x0003db70, 0xf4)
 i32 CreateWarlord(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CWarlord(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -666,10 +666,10 @@ i32 CreateWarlord(CGameObject* owner) {
 RVA(0x0003dcb0, 0xf1)
 i32 CreateFortressFlag(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CFortressFlag(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -705,10 +705,10 @@ i32 CreateFortressFlag(CGameObject* owner) {
 RVA(0x0003ddf0, 0xf1)
 i32 CreateSecretLevelTrigger(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CSecretLevelTrigger(owner);
             sub->Activate();
             rec->m_logic = sub;

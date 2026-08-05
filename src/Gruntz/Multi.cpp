@@ -22,6 +22,7 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -173,7 +174,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_region0Gate = 0;
     m_region1Gate = 0;
     m_region2Gate = 0;
-    m_viewMode = 0;
+    m_viewMode = VIEW_MODE_IDLE;
     m_hudSuppressed = 1;
     m_cameraBookmarkIndex = -1;
     m_snapshotActive = 0;
@@ -511,7 +512,7 @@ i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
     m_allPlayersReady = 0;
     if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
-        Mgr()->ReportError(IDX(CMD_NEW_GAME), 0x446);
+        Mgr()->ReportError(IDX(IDS_SET_GAME_STATE), 0x446);
         return 0;
     }
     m_pumpGuard = 1;
@@ -1388,7 +1389,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     CNetChannelPacket packet;
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= 0x80;
-    packet.m_statId = 0x3f9;
+    packet.m_statId = NETMSG_READY_COUNT;
 
     packet.m_hostIndex = m_hostIndex;
     packet.m_present = 1;
@@ -1468,7 +1469,7 @@ RVA(0x000b9240, 0x38)
 void CMulti::SendStatFlag(NetMsgId id, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(id);
+    pkt.m_statId = id;
     pkt.m_value = LocalPlayer()->m_id;
     SendStatBuf(&pkt, flag);
 }
@@ -1477,7 +1478,7 @@ RVA(0x000b9290, 0x32)
 void CMulti::SendNetStat(NetMsgId id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(id);
+    pkt.m_statId = id;
     pkt.m_value = value;
     SendStatBuf(&pkt, flag);
 }
@@ -1508,7 +1509,7 @@ i32 CMulti::SendStatTo(CNetSessionNode* recipient, NetMsgId id, i32 c) {
     }
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(id);
+    pkt.m_statId = id;
     pkt.m_value = LocalPlayer()->m_id;
     return SendStatPair(recipient, &pkt, c);
 }
@@ -1517,7 +1518,7 @@ RVA(0x000b9410, 0x51)
 i32 CMulti::SendStat3(i32 id, NetMsgId statId, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(statId);
+    pkt.m_statId = statId;
     pkt.m_value = LocalPlayer()->m_id;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
@@ -1530,7 +1531,7 @@ i32 CMulti::SendNetStatTo(CNetSessionNode* recipient, i32 id, u32 value, i32 c) 
     }
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = id;
+    pkt.m_statId = static_cast<NetMsgId>(id);
     pkt.m_value = value;
     return SendStatPair(recipient, &pkt, c);
 }
@@ -1551,7 +1552,7 @@ RVA(0x000b9570, 0x53)
 i32 CMulti::SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(statId);
+    pkt.m_statId = statId;
     pkt.m_value = value;
     i32 hr = Peer()->SetData(LocalPlayer()->m_id, id, flag, &pkt, 0x10);
     return hr == 0;
@@ -2117,7 +2118,7 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
     CNetChannelTablePacket packet;
     memset(&packet, 0, sizeof(packet));
     packet.m_flags |= 0x80;
-    packet.m_statId = IDX(STAT_CHANNEL_TABLE);
+    packet.m_statId = STAT_CHANNEL_TABLE;
 
     for (i32 i = 0; i < 4; i++) {
         GruntzPlayer* ch = &NetGameMgr()->m_options[i];
@@ -2337,7 +2338,7 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     CNetOneChannelPacket packet;
     memset(&packet, 0, 0x2c);
     packet.m_flags |= 0x80;
-    packet.m_statId = IDX(STAT_CHANNEL_ONE);
+    packet.m_statId = STAT_CHANNEL_ONE;
     packet.m_playerIndex = ch->m_playerIndex;
 
     packet.m_colorIndex = ch->m_colorIndex;
@@ -2456,7 +2457,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
             ->AddItem(line, 0x30, IDX(player->m_colorIndex));
     }
 
-    g_chatPacket.m_id = IDX(STAT_CHAT);
+    g_chatPacket.m_id = STAT_CHAT;
 
     i32 n = strlen(line);
     g_chatPacket.m_val = 0;
@@ -3033,7 +3034,7 @@ i32 CMulti::CreateLocalPlayer() {
     memset(&pkt, 0, 0x28);
 
     pkt.m_flags |= 0x80;
-    pkt.m_statId = IDX(STAT_PLAYER_JOINED);
+    pkt.m_statId = STAT_PLAYER_JOINED;
     pkt.m_present = 1;
     pkt.m_kind = 0;
     pkt.m_slot = 1;
@@ -3162,7 +3163,7 @@ i32 CMulti::SaveConfig(CNetSessionNode* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
     blob.m_flags |= 0x80;
-    blob.m_statId = IDX(STAT_CONFIG);
+    blob.m_statId = STAT_CONFIG;
     blob.m_customLevel = m_customLevel;
     {
         wsprintfA(blob.m_nameA, static_cast<const char*>(GetConfigNameA()));
@@ -3301,7 +3302,7 @@ void CMulti::AnnounceVersion(CNetSessionNode* param) {
     packet.m_cfgWord = g_cfgWord;
     packet.m_butePos = g_buteMgr.m_pos;
     packet.m_localVersion = g_localVersion;
-    packet.m_statId = IDX(STAT_VERSIONPACKET);
+    packet.m_statId = STAT_VERSIONPACKET;
 
     SendStatPairRaw(param, &packet, 0x20, 1);
 }

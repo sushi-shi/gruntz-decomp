@@ -262,7 +262,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     page->AddItem(s_LOGO, s_MENU_MOVIEZ_LOGO, 0x8170, 0, 0);
     page->AddItem(s_INTRO, s_MENU_MOVIEZ_INTRO, 0x8171, 0, 0);
     it = page->AddItem(s_FINAL, s_MENU_MOVIEZ_FINAL, 0x8173, 0, 0);
@@ -280,7 +280,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
     page->AddSubItem(
         s_AREA1,
@@ -385,7 +385,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -432,7 +432,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -488,7 +488,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -547,7 +547,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -606,7 +606,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -665,7 +665,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -724,7 +724,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -783,7 +783,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,
@@ -842,7 +842,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         delete page;
         return 0;
     }
-    progress = static_cast<QuestLevel>(g_gameReg->m_saveSink->m_curLevel);
+    progress = g_gameReg->m_saveSink->CurrentLevel();
     it = page->AddSubItem(
         s_STAGE1,
         s_MENU_AREAS_STAGE1,

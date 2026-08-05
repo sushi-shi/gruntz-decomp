@@ -46,7 +46,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 static inline CString* TypeLookup(i32 key) {

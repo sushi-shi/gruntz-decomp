@@ -405,15 +405,15 @@ void* CSymTab::Find(const char* path) {
     char drive[4];
     char tmp[8];
     _splitpath(path, drive, dir, fname, ext);
-    u32 fourcc;
+    RezTypeTag fourcc;
     if (strlen(ext) != 0) {
         strcpy(tmp, ext + 1);
         _strupr(tmp);
-        fourcc = static_cast<u32>(m_owner->PackTag(tmp));
+        fourcc = m_owner->PackTag(tmp);
     } else {
-        fourcc = 0;
+        fourcc = REZ_TAG_NONE;
     }
-    return Insert(fname, static_cast<RezTypeTag>(fourcc));
+    return Insert(fname, fourcc);
 }
 
 RVA(0x0013a0f0, 0x99)
@@ -1130,7 +1130,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             i++;
         }
         i32 key = (i >= nleft) ? atoi(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
-        u32 extKey = 0;
+        RezTypeTag extKey = REZ_TAG_NONE;
         char extName[0x10];
         char unpackedTag[0x10];
         if (ext[0] != 0) {
@@ -1139,8 +1139,8 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             extKey = PackTag(extName);
         }
         UnpackTag(extKey, unpackedTag);
-        CSymRec* rec = node->FindOrAddSym(static_cast<i32>(extKey));
-        CParseSource* entry = node->Insert(fname, static_cast<RezTypeTag>(extKey));
+        CSymRec* rec = node->FindOrAddSym(IDX(extKey));
+        CParseSource* entry = node->Insert(fname, extKey);
         CParseSource* source = 0;
         if (entry == NULL) {
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
@@ -1195,9 +1195,9 @@ CSymTab* CSymParser::GetRoot() {
 }
 
 RVA(0x0013b910, 0x58)
-u32 CSymParser::PackTag(const char* s) {
+RezTypeTag CSymParser::PackTag(const char* s) {
     if (!s) {
-        return 0;
+        return REZ_TAG_NONE;
     }
     DwordBytes r;
     r.m_value = 0;
@@ -1215,16 +1215,16 @@ u32 CSymParser::PackTag(const char* s) {
     if (len > 3) {
         rb[len - 4] = s[3];
     }
-    return r.m_value;
+    return static_cast<RezTypeTag>(r.m_value);
 }
 
 RVA(0x0013b970, 0x72)
-void __stdcall UnpackTag(u32 tag, char* dst) {
+void __stdcall UnpackTag(RezTypeTag tag, char* dst) {
     if (!dst) {
         return;
     }
     DwordBytes tagBytes;
-    tagBytes.m_value = tag;
+    tagBytes.m_value = IDX(tag);
     u8* tb = tagBytes.m_bytes;
     i32 len = 0;
     if (tb[3]) {

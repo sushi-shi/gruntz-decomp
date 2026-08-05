@@ -15,6 +15,7 @@ GZ_ENUM_BEGIN(RezTypeTag)
     REZ_TAG_WAV = 0x574156,
     REZ_TAG_ANI = 0x414e49,
     REZ_TAG_TXT = 0x545854,
+    REZ_TAG_PAL = 0x50414c,
     // 'XMI' - the MIDIZ bank format, handed to the same CSymTab::Insert
     // type-tag parameter as REZ_TAG_WWD (CPlay::BuildMusicCategoryTable).
     REZ_TAG_XMI = 0x584d49,

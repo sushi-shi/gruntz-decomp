@@ -350,7 +350,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", name);
-    CParseSource* pal = (src)->ResolveQualified(buf, static_cast<RezTypeTag>(0x50414c));
+    CParseSource* pal = (src)->ResolveQualified(buf, REZ_TAG_PAL);
     if (!pal) {
         return 0;
     }

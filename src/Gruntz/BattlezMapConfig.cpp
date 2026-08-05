@@ -3037,7 +3037,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     CGameObject* g = static_cast<CGameObject*>(coll->Drain());
     while (g != NULL) {
         if (g->m_animWorker->m_notify == &CreateInGameIcon
-            && (g->m_stateFlags & IDX(SPRITE_STATE_HIDDEN)) == 0) {
+            && !HAS(g->m_stateFlags, SPRITE_STATE_HIDDEN)) {
             i32 special = 0;
 
             switch (static_cast<PickupType>(g->m_smarts)) {

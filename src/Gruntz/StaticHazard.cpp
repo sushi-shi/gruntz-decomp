@@ -10,6 +10,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDeathType.h>
@@ -125,7 +126,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_total;
     } else {
-        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x461);
+        g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);
     }
     if (m_object->m_damage == 0) {
         m_idleWindow = m_activeWindow;

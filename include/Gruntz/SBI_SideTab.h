@@ -9,20 +9,13 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItem.h>
+#include <Gruntz/StatusSampleMode.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 
 #include <stddef.h>
 
 class CStatusBarMgr;
-
-GZ_ENUM_BEGIN(StatusSampleMode)
-    STATUS_SAMPLE_UNINITIALIZED = -1,
-    STATUS_SAMPLE_NONE = 0,
-    STATUS_SAMPLE_HEALTH = 1,
-    STATUS_SAMPLE_TOOL = 2,
-    STATUS_SAMPLE_VEHICLE = 3
-GZ_ENUM_END(StatusSampleMode)
 
 class CSBI_SideTab : public CStatusBarItem {
 public:

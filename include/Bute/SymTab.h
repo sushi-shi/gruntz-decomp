@@ -22,7 +22,7 @@ struct CSymTabNode : public CHashElement {
 };
 SIZE(0x18);
 
-void __stdcall UnpackTag(u32 tag, char* dst);
+void __stdcall UnpackTag(RezTypeTag tag, char* dst);
 
 class CSymParser;
 

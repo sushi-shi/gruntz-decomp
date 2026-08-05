@@ -1858,10 +1858,10 @@ CObject* CDDrawSubMgrLeafScan::Lookup(const char* key) {
 RVA(0x0005baf0, 0xf4)
 i32 CreateGrunt(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CGrunt(owner);
             sub->Activate();
             rec->m_logic = sub;

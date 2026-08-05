@@ -1040,7 +1040,8 @@ i32 CGrunt::StepArrivalDrop(
     i32 maskC, cnt, headFlags, lastFlags, hit;
     i32 reinit;
     i32 nudged;
-    i32 free4, step, acc, err, walkX, walkY, blocked;
+    RockNeighborMask free4;
+    i32 step, acc, err, walkX, walkY, blocked;
     i32 saved[3][3];
     i32 sx, sy;
     bool eq;
@@ -1188,45 +1189,45 @@ nudgeTarget:
         goto nudgeDone;
     }
     free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
-                ? IDX(ROCKADJ_BELOW)
-                : 0;
+                ? ROCKADJ_BELOW
+                : ROCKADJ_NONE;
     free4 |=
         (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
-            ? IDX(ROCKADJ_ABOVE)
-            : 0;
+            ? ROCKADJ_ABOVE
+            : ROCKADJ_NONE;
     free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == IDX(TILEKIND_GIANT_ROCK))
-                 ? IDX(ROCKADJ_RIGHT)
-                 : 0;
+                 ? ROCKADJ_RIGHT
+                 : ROCKADJ_NONE;
     free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == IDX(TILEKIND_GIANT_ROCK))
-                 ? IDX(ROCKADJ_LEFT)
-                 : 0;
+                 ? ROCKADJ_LEFT
+                 : ROCKADJ_NONE;
     switch (free4) {
-        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_BELOW):
+        case ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileX++;
             tileY++;
             break;
-        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE):
+        case ROCKADJ_RIGHT | ROCKADJ_ABOVE:
             tileX++;
             tileY--;
             break;
-        case IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE) | IDX(ROCKADJ_BELOW):
+        case ROCKADJ_RIGHT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
             tileX++;
             break;
-        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_BELOW):
+        case ROCKADJ_LEFT | ROCKADJ_BELOW:
             tileX--;
             tileY++;
             break;
-        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_ABOVE):
+        case ROCKADJ_LEFT | ROCKADJ_ABOVE:
             tileX--;
             tileY--;
             break;
-        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_ABOVE) | IDX(ROCKADJ_BELOW):
+        case ROCKADJ_LEFT | ROCKADJ_ABOVE | ROCKADJ_BELOW:
             tileX--;
             break;
-        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_BELOW):
+        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileY++;
             break;
-        case IDX(ROCKADJ_LEFT) | IDX(ROCKADJ_RIGHT) | IDX(ROCKADJ_ABOVE):
+        case ROCKADJ_LEFT | ROCKADJ_RIGHT | ROCKADJ_ABOVE:
             tileY--;
             break;
         default:
@@ -3444,7 +3445,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             play->BuildAssetNamespacePrefixes(m_animSetName, 1, 1, 0);
         }
     }
-    m_entranceReason = static_cast<PickupType>(kind);
+    m_entranceReason = kind;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
@@ -4202,10 +4203,10 @@ kindDispatch:
                 obj->m_fillFraction = frac;
             } else {
                 CWwdGameObjectA* obj = m_object;
-                if ((obj->m_stateFlags & IDX(SPRITE_STATE_FLASHING)) == 0) {
+                if (!HAS(obj->m_stateFlags, SPRITE_STATE_FLASHING)) {
                     obj->m_flashInterval = 0x7d;
                     obj->m_flashCountdown = 0;
-                    m_object->m_stateFlags |= IDX(SPRITE_STATE_FLASHING);
+                    m_object->m_stateFlags |= SPRITE_STATE_FLASHING;
                 }
             }
             if (leftMs == 0) {
@@ -4244,7 +4245,7 @@ kindDispatch:
                         break;
                     }
                 }
-                m_object->m_stateFlags &= ~IDX(SPRITE_STATE_FLASHING);
+                m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
                 ReadConfigFromButeMgr();
                 PickupType reason = m_entranceReason;
                 i32 vehicle = (reason >= PICKUP_TOYZ_FIRST) ? 1 : 0;

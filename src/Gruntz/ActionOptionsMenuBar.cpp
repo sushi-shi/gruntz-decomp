@@ -149,9 +149,7 @@ i32 CActionOptionsMenuBar::Refresh() {
                               : grunt->m_entranceReason;
         m_buttonIcon[0] = prim;
         if (prim == PICKUP_NONE) {
-            // 0x21 sits just below the engine's Brickz boundary (0x22) and is
-            // not a documented pickup id - the bare-hands button icon.
-            m_buttonIcon[0] = static_cast<PickupType>(0x21);
+            m_buttonIcon[0] = PICKUP_BARE_HANDS_ICON;
         } else if (prim == PICKUP_BRICK) {
             m_buttonIcon[0] = grunt->m_brickPickupType;
         }

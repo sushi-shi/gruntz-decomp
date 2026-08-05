@@ -38,7 +38,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             "GAME_STATUSBAR_TABZ_STATZTAB_TAB",
             g_curPlayer,
             i,
-            static_cast<StatusSampleMode>(m_statFlags[i]),
+            m_statFlags[i],
             m_position == STATUSBAR_DOCK_RIGHT
         );
         if (ok == 0) {

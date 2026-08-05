@@ -209,7 +209,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_pending = 1;
@@ -287,7 +287,7 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     obj->m_drawActive = 1;
     obj->m_drawFillCmd = SHADE_PAL_16;
     obj->m_drawFillArg = rec;
-    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("B");
     if (placeIndex == 0) {
@@ -331,7 +331,7 @@ i32 CGruntPuddle::Remove() {
     CWwdGameObjectA* o = m_wwdObject;
     if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
         if (m_placed != 0) {
-            o->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            o->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } else {
             m_value = o->m_animCursor.m_animation;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
@@ -438,7 +438,7 @@ i32 CTeleporter::ReapplyConfig() {
     m_objAux->m_actKey = ActFindId("A");
     m_armed = 1;
     m_tickHandled = 0;
-    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 1;
 }
 
@@ -561,7 +561,7 @@ i32 CTeleporter::Update() {
         if (kind == TELEPORTER_SINGLE_USE) {
             a->m_flags |= 0x10000;
         } else {
-            a->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            a->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         return 0;
     }

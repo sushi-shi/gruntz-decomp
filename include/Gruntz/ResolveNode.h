@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/SpriteStateFlags.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
 
@@ -73,7 +74,7 @@ public:
     WwdDirtyRect m_dirty;
 
     class CGameLevel* m_level;
-    i32 m_stateFlags;
+    SpriteStateFlags m_stateFlags;
     i32 m_flashCountdown;
     i32 m_flashInterval;
     CShadeTable* m_drawFillArg;
@@ -97,7 +98,7 @@ inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 fiel
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
-    m_stateFlags = 0;
+    m_stateFlags = SPRITE_STATE_NONE;
 }
 #endif
 

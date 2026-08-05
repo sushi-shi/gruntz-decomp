@@ -99,7 +99,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_wwdObject = static_cast<CWwdGameObjectA*>(owner);
     m_animWorker = owner->m_animWorker;
     m_wwdObject->m_flags |= 0x2000002;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_ACTOR) {
         o->m_sortKey = SORTKEY_ACTOR;
@@ -552,7 +552,7 @@ void CProjectile::AdvanceMotion() {
 
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
-    m_wwdObject->m_stateFlags &= ~1u;
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* r = m_wwdObject;

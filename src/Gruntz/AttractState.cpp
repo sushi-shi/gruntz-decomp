@@ -10,6 +10,7 @@
 #include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -156,7 +157,7 @@ i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            owner()->ReportError(IDX(CMD_RETURN_TO_MENU), 0x3e8);
+            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0x3e8);
             return 0;
         }
     }

@@ -14,9 +14,9 @@ inline void Worker_DefaultPump(CUserLogic* sub) {
 
 #define LOGIC_WORKER_PUMP(LEAF)                                                                    \
     AnimWorkerObj* rec = owner->m_animWorker;                                                      \
-    switch (static_cast<AnimWorkerAct>(rec->m_actKey)) {                                           \
+    switch (rec->WorkerAct()) {                                                                    \
         case ACT_UNINITIALISED: {                                                                  \
-            rec->m_actKey = IDX(ACT_LIVE);                                                         \
+            rec->SetWorkerAct(ACT_LIVE);                                                           \
             CUserLogic* sub = new LEAF(owner);                                                     \
             sub->Activate();                                                                       \
             rec->m_logic = sub;                                                                    \

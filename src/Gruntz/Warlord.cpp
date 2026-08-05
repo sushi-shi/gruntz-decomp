@@ -11,6 +11,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/Grunt.h>
@@ -186,7 +187,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             break;
         default:
 
-            (g_gameReg)->ReportError(IDX(CMD_TOGGLE_SOUND), 0x3e9);
+            (g_gameReg)->ReportError(IDX(IDS_DEFAULT_ERROR), 0x3e9);
             return;
     }
 

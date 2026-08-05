@@ -421,7 +421,7 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     for (i32 i = 0; i < 9; i++) {
         e->m_matrix[i] = block9[i];
     }
-    e->m_powerupType = powerupType;
+    e->m_powerupType = static_cast<PickupType>(powerupType);
     e->m_textId = textId;
     e->m_tileY = tileY;
     e->m_typeTag = TRIGID_GIANT_ROCK_22;

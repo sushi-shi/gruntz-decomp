@@ -10,6 +10,7 @@
 #include <Gruntz/DestructWarningState.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameTabContent.h>
+#include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiBeltPhase.h>
@@ -23,6 +24,7 @@
 #include <Gruntz/StatusBarHighlightRow.h>
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarTab.h>
+#include <Gruntz/StatusSampleMode.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 
@@ -160,7 +162,7 @@ public:
     i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 GetActiveValue();
-    i32 LoadStatzTabToggleSprite(i32 value, i32 idx);
+    i32 LoadStatzTabToggleSprite(i32 idx, i32 value);
     void UpdateGruntOvenStatusBar();
     void TickGauge();
     void UpdateChipGrinderStatusBar();
@@ -238,7 +240,7 @@ public:
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
     GameTabContent m_itemKind;
-    i32 m_statFlags[15];
+    StatusSampleMode m_statFlags[15];
     CSBI_SideTab* m_hitRects[15];
 
     CSBI_StatzTabArrow* m_statObj[15];

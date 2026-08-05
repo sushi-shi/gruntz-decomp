@@ -85,7 +85,7 @@ i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, ColorDepth bitDepth,
     if (bitDepth != BPP_UNSET && bitDepth != (static_cast<CDDrawPtrCollections*>(surf))->m_palBpp) {
         this->m_descFlags = 0x1007;
         this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
-        this->m_srcBitDepth = IDX(bitDepth);
+        this->m_srcBitDepth = bitDepth;
     }
     return this->BlitIntoDesc(surf);
 }
@@ -104,7 +104,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0x7e, hr);
     }
 
-    ColorDepth bits = static_cast<ColorDepth>(m_srcBitDepth);
+    ColorDepth bits = m_srcBitDepth;
     m_hasColorKey = 0;
     m_bitDepth = bits;
 
@@ -185,7 +185,7 @@ i32 CDDSurface::BlitIntoDesc(void* a) {
         CDDrawPtrCollections::GetErrorString(DIRSURF_FILE, 0xeb, hr);
     }
 
-    ColorDepth bits = static_cast<ColorDepth>(m_srcBitDepth);
+    ColorDepth bits = m_srcBitDepth;
     m_hasColorKey = 0;
     m_bitDepth = bits;
     switch (bits) {

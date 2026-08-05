@@ -19,6 +19,7 @@
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
@@ -86,7 +87,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
 
     CSymTab* midiz = static_cast<CSymTab*>(SymTab2c()->ResolvePath("MIDIZ"));
     if (midiz) {
-        CParseSource* e = midiz->Insert("PLAY", static_cast<RezTypeTag>(0x584d49));
+        CParseSource* e = midiz->Insert("PLAY", REZ_TAG_XMI);
         if (e) {
             char* val = e->BeginParse();
             if (val) {
@@ -96,7 +97,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     }
 
     if (midiz) {
-        CParseSource* e2 = midiz->Insert("MONOLITH", static_cast<RezTypeTag>(0x584d49));
+        CParseSource* e2 = midiz->Insert("MONOLITH", REZ_TAG_XMI);
         if (e2) {
             char* val = e2->BeginParse();
             if (val) {
@@ -163,7 +164,7 @@ i32 CCreditsState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
-            Owner(this)->ReportError(IDX(CMD_RETURN_TO_MENU), 0xfa0);
+            Owner(this)->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
     }
@@ -383,7 +384,7 @@ i32 CCreditsState::DrawScrollingCredits() {
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
 
-    CParseSource* sect = SymTab2c()->Insert("CREDITZ", static_cast<RezTypeTag>('TXT'));
+    CParseSource* sect = SymTab2c()->Insert("CREDITZ", REZ_TAG_TXT);
     if (sect) {
         char* src = sect->BeginParse();
         if (!src) {

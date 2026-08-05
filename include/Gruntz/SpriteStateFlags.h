@@ -27,6 +27,7 @@
 // word on the same objects (0x10000, 0x20000, 0x2000, ...), whose bits are still
 // unrecovered.
 GZ_ENUM_FLAGS_BEGIN(SpriteStateFlags, i32)
+    SPRITE_STATE_NONE = 0,
     SPRITE_STATE_HIDDEN = 0x1,
     SPRITE_STATE_MIRROR_X = 0x2,
     SPRITE_STATE_FLASHING = 0x8

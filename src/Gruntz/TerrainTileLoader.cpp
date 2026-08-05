@@ -214,7 +214,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     continue;
                 }
                 if (cue == TILE_ARRIVAL_FX_END) {
-                    puddle->m_object->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                    puddle->m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     puddle->SetBute("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2");
                     puddle->m_pending = 1;
                     puddle->m_placed = 0;

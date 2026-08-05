@@ -11,6 +11,8 @@
 #include <Gruntz/String.h>
 #include <Wap32/ZVec.h>
 
+GZ_ENUM_FORWARD(ButeLexAction);
+
 void ButeStoreFreeAdapter(void* p);
 struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
@@ -77,7 +79,7 @@ public:
 
     i16 CharClass(char c);
 
-    i16 PeekState(i16 state, char c);
+    GZ_ENUM_RETURN(ButeLexAction, i16) PeekState(i16 state, char c);
     i16 PeekState2(i16 state, char c);
     void ScanState(i16 state, char c);
 

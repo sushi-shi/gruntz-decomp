@@ -832,7 +832,7 @@ i16 CButeMgr::CharClass(char c) {
 }
 
 RVA(0x00170400, 0x2f)
-i16 CButeMgr::PeekState(i16 state, char c) {
+GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::PeekState(i16 state, char c) {
     return g_transTable[state][CharClass(c)][LEXSLOT_ACTION];
 }
 
@@ -855,8 +855,8 @@ bool CButeMgr::Parse() {
     g_tokenLen = 0;
 
     for (;;) {
-        i16 cls = PeekState(static_cast<i16>(kind), m_curChar);
-        switch (static_cast<ButeLexAction>(cls)) {
+        GZ_ENUM_RETURN(ButeLexAction, i16) cls = PeekState(static_cast<i16>(kind), m_curChar);
+        switch (cls) {
             case LEXACT_ERROR:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;

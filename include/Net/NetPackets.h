@@ -9,7 +9,7 @@
 struct CNetConfigBlob {
     u8 m_flags;
     char m_pad1[3];
-    i32 m_statId;
+    NetMsgId m_statId;
     i32 m_customLevel;
     char m_nameA[0x80];
     char m_nameB[0x80];

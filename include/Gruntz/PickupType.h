@@ -80,6 +80,10 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     PICKUP_YOYO = 32,
     PICKUP_TOYZ_LAST = PICKUP_YOYO,
 
+    // Status-bar-only bare-hands frame. CActionOptionsMenuBar selects this
+    // between the Toyz and Brickz bands when a Grunt has no equipped tool.
+    PICKUP_BARE_HANDS_ICON = 0x21,
+
     // --- Brickz (34-38): Brick-Layer construction materials -----------------
     // The plain brick. CTileActionEvent::MorphByTool dispatches the five brick
     // tools 0x22-0x26 side by side, and 0x22's arm is the one that adds a BROWN

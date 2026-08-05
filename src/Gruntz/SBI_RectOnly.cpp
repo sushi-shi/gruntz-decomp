@@ -211,7 +211,7 @@ i32 CStatusBarMgr::RefreshA() {
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
-            g_gameReg->ReportError(IDX(static_cast<GruntzCommandId>(kActivateErrId)), 0x448);
+            g_gameReg->ReportError(kActivateErrId, 0x448);
             return 0;
         }
         SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -236,7 +236,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
-        g_gameReg->ReportError(IDX(static_cast<GruntzCommandId>(kActivateErrId)), 0x449);
+        g_gameReg->ReportError(kActivateErrId, 0x449);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -1082,7 +1082,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     if (keepHost) {
         if (m_barSprite) {
 
-            m_barSprite->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            m_barSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_barSprite->m_flags |= 0x10000;
         }
     }
@@ -1744,7 +1744,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
     m_itemKind = tab;
 
     if (!LoadTabSprites()) {
-        g_gameReg->ReportError(IDX(static_cast<GruntzCommandId>(kActivateErrId)), kSetTabErrTag);
+        g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
     }
     Deactivate();
@@ -1785,7 +1785,7 @@ i32 CStatusBarMgr::TryActivate() {
         return Activate();
     }
     if (!BuildStatusBarTabs()) {
-        g_gameReg->ReportError(IDX(static_cast<GruntzCommandId>(kActivateErrId)), kActivateErrTag);
+        g_gameReg->ReportError(kActivateErrId, kActivateErrTag);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -1813,8 +1813,9 @@ i32 CStatusBarMgr::Activate() {
 
 // @early-stop
 RVA(0x00104e60, 0xed)
-i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
-    if (m_statFlags[idx] == value) {
+i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, i32 value) {
+    StatusSampleMode mode = static_cast<StatusSampleMode>(value);
+    if (m_statFlags[idx] == mode) {
         return 1;
     }
 
@@ -1826,7 +1827,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     CSBI_SideTab* item = m_hitRects[idx];
     i32 one = 1;
     if (item) {
-        item->m_sampleMode = static_cast<StatusSampleMode>(value);
+        item->m_sampleMode = mode;
         item->m_enabled = one;
         if (m_activeTab == TAB_STATZ) {
             m_statObj[idx]->SetDirectionAlt(m_position, one);
@@ -1847,7 +1848,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             }
         }
     }
-    m_statFlags[idx] = value;
+    m_statFlags[idx] = mode;
     return 1;
 }
 
@@ -1881,7 +1882,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
             }
         }
     }
-    m_statFlags[idx] = 0;
+    m_statFlags[idx] = STATUS_SAMPLE_NONE;
     return 1;
 }
 
@@ -2945,10 +2946,10 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
 // @early-stop
 RVA(0x00107aa0, 0x23)
 void CStatusBarMgr::ToggleStat(i32 idx) {
-    if (m_statFlags[idx]) {
+    if (m_statFlags[idx] != STATUS_SAMPLE_NONE) {
         ClearStat(idx);
     } else {
-        LoadStatzTabToggleSprite(idx, 1);
+        LoadStatzTabToggleSprite(idx, IDX(STATUS_SAMPLE_HEALTH));
     }
 }
 
@@ -3377,7 +3378,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_itemKind, sizeof(m_itemKind));
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
-    i32* p = m_statFlags;
+    StatusSampleMode* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
         s->Write(p, sizeof(*p));
         p += 1;
@@ -3482,7 +3483,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_itemKind, sizeof(m_itemKind));
     s->Read(&m_tabCycle, sizeof(m_tabCycle));
 
-    i32* p = m_statFlags;
+    StatusSampleMode* p = m_statFlags;
     for (i32 i = 0; i < 15; i++) {
         s->Read(p, sizeof(*p));
         p += 1;
@@ -3707,7 +3708,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
         case DESTRUCT_WARNING_FORWARD: {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_destructWarnLast;
             if (d >= m_destructWarnDelay) {
-                m_modeState = static_cast<DestructButtonFrame>(IDX(m_modeState) + 1);
+                m_modeState = static_cast<DestructButtonFrame>(m_modeState + 1);
                 if (m_modeState >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_LAST;
                     m_destructWarnActive = DESTRUCT_WARNING_REVERSE;
@@ -3726,7 +3727,7 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
         case DESTRUCT_WARNING_REVERSE: {
             i64 d = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_destructWarnLast;
             if (d >= m_destructWarnDelay) {
-                m_modeState = static_cast<DestructButtonFrame>(IDX(m_modeState) - 1);
+                m_modeState = static_cast<DestructButtonFrame>(m_modeState - 1);
                 if (m_modeState <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
                     m_destructWarnActive = DESTRUCT_WARNING_FORWARD;

@@ -909,25 +909,25 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
 }
 
 RVA(0x000e5620, 0x27)
-void CSaveGame::SetMaxLevel(i32 v) {
+void CSaveGame::SetMaxLevel(QuestLevel v) {
     u32 maxLevel = static_cast<u32>(IDX(m_maxLevel));
-    if ((v < IDX(QUESTLEVEL_CAMPAIGN_END)
-         && (static_cast<u32>(v) > maxLevel || maxLevel > IDX(QUESTLEVEL_LAST)))
-        || (maxLevel > IDX(QUESTLEVEL_LAST) && static_cast<u32>(v) > maxLevel)) {
-        m_maxLevel = static_cast<QuestLevel>(v);
+    if ((v < QUESTLEVEL_CAMPAIGN_END
+         && (static_cast<u32>(IDX(v)) > maxLevel || maxLevel > IDX(QUESTLEVEL_LAST)))
+        || (maxLevel > IDX(QUESTLEVEL_LAST) && static_cast<u32>(IDX(v)) > maxLevel)) {
+        m_maxLevel = v;
     }
 }
 
 RVA(0x000e5660, 0x1e)
-void CSaveGame::SetCurLevel(i32 v) {
-    if (v >= IDX(QUESTLEVEL_CAMPAIGN_END)) {
+void CSaveGame::SetCurLevel(QuestLevel v) {
+    if (v >= QUESTLEVEL_CAMPAIGN_END) {
         return;
     }
-    if (v <= IDX(m_curLevel)) {
+    if (v <= CurrentLevel()) {
         return;
     }
-    m_curLevel = static_cast<QuestLevel>(v);
-    if (v == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
+    m_curLevel = v;
+    if (v == QUESTLEVEL_CAMPAIGN_LAST) {
         SetMagic();
     }
 }

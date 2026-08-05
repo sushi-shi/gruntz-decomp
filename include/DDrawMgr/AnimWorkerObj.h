@@ -7,6 +7,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wwd/AnimWorkerAct.h>
 
 #include <stddef.h>
 
@@ -62,6 +63,12 @@ struct AnimWorkerObj : public CLoadable {
     }
     void SetActKey(i32 id) {
         m_actKey = id;
+    }
+    AnimWorkerAct WorkerAct() const {
+        return static_cast<AnimWorkerAct>(m_actKey);
+    }
+    void SetWorkerAct(AnimWorkerAct act) {
+        m_actKey = IDX(act);
     }
     i32 m_actKey;
 

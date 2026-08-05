@@ -6,6 +6,7 @@
 #include <Enums.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>
 #include <Ints.h>
@@ -125,7 +126,7 @@ public:
     i32 DeserializeMatrix(CFileMemBase* s);
 
     i32 m_matrix[9];
-    i32 m_powerupType;
+    PickupType m_powerupType;
     i32 m_textId;
 };
 SIZE(0xc8);

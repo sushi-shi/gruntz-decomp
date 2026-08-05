@@ -232,7 +232,7 @@ public:
             i32 m_pixelFormatSize;
             i32 m_pixelFormatFlags;
             i32 m_pixelFormatFourCC;
-            i32 m_srcBitDepth;
+            ColorDepth m_srcBitDepth;
             i32 m_rMask;
             i32 m_gMask;
             i32 m_bMask;

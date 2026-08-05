@@ -10,10 +10,10 @@
 RVA(0x00095750, 0xf4)
 i32 CreateInGameIcon(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CInGameIcon(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -49,10 +49,10 @@ i32 CreateInGameIcon(CGameObject* owner) {
 RVA(0x00095890, 0xf1)
 i32 CreateInGameText(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CInGameText(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -88,10 +88,10 @@ i32 CreateInGameText(CGameObject* owner) {
 RVA(0x000959d0, 0xf1)
 i32 CreateToyPeek(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CToyPeek(owner);
             sub->Activate();
             rec->m_logic = sub;

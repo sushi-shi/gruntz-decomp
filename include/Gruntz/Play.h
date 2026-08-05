@@ -15,6 +15,8 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
+#include <Gruntz/PlayViewMode.h>
+#include <Gruntz/QuestLevel.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
@@ -48,6 +50,10 @@ class CDDrawWorker;
 
 class CPlay : public CState {
 public:
+    QuestLevel CurrentQuestLevel() const {
+        return static_cast<QuestLevel>(m_levelIndex);
+    }
+
     void DrawCustomLevelBanner();
 
     void DrawDebugStatsFull();
@@ -378,7 +384,7 @@ public:
     i32 m_region1Gate;
     i32 m_region2Gate;
     i32 m_region3Gate;
-    i32 m_viewMode;
+    PlayViewMode m_viewMode;
     i32 m_hudSuppressed;
 
     CPtrArray m_cameraBookmarks;

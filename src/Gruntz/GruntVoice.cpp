@@ -83,10 +83,10 @@ void ButeParseErrorSink(const char* msg) {
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(ctl->ActKey());
+    AnimWorkerAct act = ctl->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            ctl->SetActKey(IDX(ACT_LIVE));
+            ctl->SetWorkerAct(ACT_LIVE);
             CGruntVoice* t = new CGruntVoice(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -122,10 +122,10 @@ i32 CreateGruntVoice(CGameObject* obj) {
 RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(ctl->ActKey());
+    AnimWorkerAct act = ctl->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            ctl->SetActKey(IDX(ACT_LIVE));
+            ctl->SetWorkerAct(ACT_LIVE);
             CVoiceTrigger* t = new CVoiceTrigger(obj);
             t->Activate();
             ctl->m_logic = t;
@@ -176,7 +176,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startStampHi = 0;
     m_durationHi = 0;
     m_wwdObject->m_flags |= 0x4000002;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_playFlags = 0;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
@@ -191,7 +191,7 @@ RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 RVA(0x00119b50, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -343,7 +343,7 @@ void CGruntVoice::Reset() {
 
 RVA(0x0011a8c0, 0xf)
 i32 CGruntVoice::IdleHidden() {
-    m_object->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 0;
 }
 
@@ -352,7 +352,7 @@ i32 CGruntVoice::Update() {
     if (m_sample == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
         m_sample = NULL;
         m_source = 0;
-        m_object->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
         m_playFlags = 0;
@@ -376,7 +376,7 @@ i32 CGruntVoice::Update() {
         if (logic == NULL) {
             goto stopped;
         }
-        m_object->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_object->m_screenX = logic->m_object->m_screenX;
         m_object->m_screenY = logic->m_object->m_screenY - 0x32;
     } else {
@@ -392,7 +392,7 @@ i32 CGruntVoice::Update() {
         }
 
         if (resolved != NULL) {
-            m_object->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+            m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             i32 dx = 0, dy = 0;
             CImage* layer = static_cast<CWwdGameObjectA*>(resolved)->m_layer;
             if (layer != NULL) {
@@ -408,6 +408,6 @@ i32 CGruntVoice::Update() {
     return 0;
 
 stopped:
-    m_object->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 0;
 }

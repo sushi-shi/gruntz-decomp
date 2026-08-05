@@ -8,6 +8,7 @@
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Enums.h>
 #include <Gruntz/CheatMgr.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -61,7 +62,7 @@
         m_gameMode = GAMEMODE_SINGLE;                                                              \
         m_strWorldFile.Empty();                                                                    \
         if (!PassClickToPlayState((N), 0, 1))                                                      \
-            ReportError(IDX(CMD_NEW_GAME), (ERR));                                                 \
+            ReportError(IDX(IDS_SET_GAME_STATE), (ERR));                                           \
         return 1;                                                                                  \
     }
 #define BRICKPICKUP(ID, MSG)                                                                       \
@@ -145,14 +146,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_NEW_GAME_ALT:
             m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(1, 0, 1)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x41e);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
             m_strWorldFile.Empty();
             m_gameMode = GAMEMODE_SINGLE;
             if (!PassClickToPlayState(lParam, 0, 1)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x41f);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
@@ -160,13 +161,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             m_gameMode = GAMEMODE_SINGLE;
 
             if (!PassClickToPlayState(IDX(m_saveSink->m_maxLevel), 0, 1)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x41f);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_NEW_GAME_REPLAY:
             m_gameMode = GAMEMODE_REPLAY;
             if (!PassClickToPlayState(1, 0, 1)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x420);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x420);
             }
             return 1;
         case CMD_SAVE_GAME_AS:
@@ -494,7 +495,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_CHEATELSON:
                         PLAYCUE("GAME_MAJORCHEAT");
                         if (m_saveSink) {
-                            m_saveSink->SetCurLevel(0x20);
+                            m_saveSink->SetCurLevel(QUESTLEVEL_CAMPAIGN_LAST);
                             m_saveSink->SetMagic();
                         }
                         AppendChatMessage(
@@ -515,32 +516,32 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     case CHEAT_WARP_TROPICZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Trouble in the Tropicz activated!");
-                        m_saveSink->SetCurLevel(8);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA2_STAGE4);
                         return 1;
                     case CHEAT_WARP_SWEETZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High on Sweetz activated!");
-                        m_saveSink->SetCurLevel(0xc);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA3_STAGE4);
                         return 1;
                     case CHEAT_WARP_ROLLERZ:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to High Rollerz activated!");
-                        m_saveSink->SetCurLevel(0x10);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA4_STAGE4);
                         return 1;
                     case CHEAT_WARP_HONEY_SHRUNK:
                         PLAYCUE("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Honey, I Shrunk the Gruntz activated!");
-                        m_saveSink->SetCurLevel(0x14);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA5_STAGE4);
                         return 1;
                     case CHEAT_WARP_MINIATURE_MASTERZ:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to The Miniature Masterz activated!");
-                        m_saveSink->SetCurLevel(0x18);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA6_STAGE4);
                         return 1;
                     case CHEAT_WARP_GRUNTZ_IN_SPACE:
                         PLAYCUE_MAP("GAME_MINORCHEAT");
                         AppendChatMessage("Warp to Gruntz in Space activated!");
-                        m_saveSink->SetCurLevel(0x1c);
+                        m_saveSink->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
@@ -596,10 +597,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 m_isCustomLevel = 0;
             }
             if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x421);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x421);
             }
             if (!ParseSerial(this, si->m_serial)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x465);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
             }
             CheckSavedMode();
             m_loadingSaveGame = 0;
@@ -805,7 +806,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x424);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x424);
             return 1;
         case CMD_MULTI_HOST:
             m_gameMode = GAMEMODE_MULTIPLAYER;
@@ -816,31 +817,31 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x425);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x425);
             return 1;
         case CMD_MAIN_MENU:
             if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x426);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x426);
             return 1;
         case CMD_SHOW_CREDITS:
             if (TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, 1, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x427);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x427);
             return 1;
         case CMD_SHOW_BOOTY:
             if (TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, 1, lParam)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x428);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x428);
             return 1;
         case CMD_NEXT_STATE:
             if (SwitchToNextState()) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x429);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x429);
             return 1;
         case CMD_SHOW_HELP:
             if (TransitionState(GAMESTATE_CREDITS, 1, 0, 0)) {
@@ -849,17 +850,17 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x42a);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x42a);
             return 1;
         case CMD_ATTRACT:
             if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x42b);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x42b);
             return 1;
         case CMD_RETURN_TO_ATTRACT:
             if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                ReportError(IDX(CMD_NEW_GAME), 0x42c);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42c);
                 return 1;
             }
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -868,13 +869,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x42d);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x42d);
             return 1;
         case CMD_SHOW_STATE07:
             if (TransitionState(GAMESTATE_DEMO, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x42e);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x42e);
             return 1;
         case CMD_PAUSE_TOGGLE: {
             GameStateId st = m_curState->Update();
@@ -916,7 +917,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (static_cast<CPlay*>(m_curState)->DrawWorldPresent()) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x42f);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x42f);
             return 1;
         case CMD_LOBBY_RESET:
             m_lobbyProbed = 0;
@@ -933,7 +934,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x430);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
             return 1;
         case CMD_CAPTURE_WORLD:
             if (g_cdPromptResult) {
@@ -945,7 +946,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (GoToNextLevel()) {
                 return 1;
             }
-            ReportError(IDX(CMD_PAUSE_TOGGLE), 0x431);
+            ReportError(IDX(IDS_CHANGE_LEVEL), 0x431);
             return 1;
         case CMD_PREV_LEVEL:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
@@ -958,7 +959,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x432);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x432);
             return 1;
         case CMD_QUIT:
             DelayedQuit();
@@ -973,7 +974,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (TransitionState(GAMESTATE_HELP, 1, 1, 0)) {
                 return 1;
             }
-            ReportError(IDX(CMD_NEW_GAME), 0x433);
+            ReportError(IDX(IDS_SET_GAME_STATE), 0x433);
             return 1;
         }
         case CMD_CONFIG_SETTINGS: {
@@ -1056,7 +1057,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             m_strWorldFile = m_strWorldFile;
             if (!PassClickToPlayState(m_curState->m_levelIndex, 0, 1)) {
-                ReportError(IDX(CMD_PAUSE_TOGGLE), 0x434);
+                ReportError(IDX(IDS_CHANGE_LEVEL), 0x434);
             }
             return 1;
         }

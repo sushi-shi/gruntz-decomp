@@ -315,7 +315,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
         if (obj->m_flags & 0x80000) {
             AnimWorkerObj* rec = obj->m_animWorker;
-            rec->SetActKey(IDX(ACT_OBJECT_REMOVED));
+            rec->SetWorkerAct(ACT_OBJECT_REMOVED);
             rec->m_notify(static_cast<CGameObject*>(obj));
         }
         if (obj->m_flags & 0x800) {
@@ -512,7 +512,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                                     oi->m_health = v;
                                     if (v <= 0) {
 
-                                        oi->m_animWorker->SetActKey(IDX(ACT_HEALTH_DEPLETED));
+                                        oi->m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
                                     }
                                 } else {
                                     AnimWorkerObj* nf = oi->m_hitWorker;

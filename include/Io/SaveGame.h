@@ -81,8 +81,11 @@ public:
     i32 StoreSlot(i32 idx, const SaveSlot* src);
 
     i32 CloseTempFile(SaveSlot* r);
-    void SetMaxLevel(i32 v);
-    void SetCurLevel(i32 v);
+    void SetMaxLevel(QuestLevel v);
+    void SetCurLevel(QuestLevel v);
+    QuestLevel CurrentLevel() const {
+        return static_cast<QuestLevel>(m_curLevel);
+    }
     i32 CheckMagic();
     void SetMagic();
 

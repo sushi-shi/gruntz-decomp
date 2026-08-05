@@ -58,7 +58,7 @@ struct CNetVersionPacket {
     u8 m_flags;
     char m_pad1[3];
 
-    i32 m_statId;
+    NetMsgId m_statId;
     i32 m_cfgWord;
     i32 m_butePos;
     char m_pad10[8];
@@ -72,7 +72,7 @@ class CNetSessionNode;
 struct CNetStatPacket {
     u8 m_flags;
     char m_pad1[3];
-    i32 m_statId;
+    NetMsgId m_statId;
     i32 m_value;
     char m_padc[4];
 };
@@ -82,7 +82,7 @@ SIZE_UNKNOWN();
 struct CNetChannelPacket {
     u8 m_flags;
     char m_pad01[3];
-    i32 m_statId;
+    NetMsgId m_statId;
     u8 m_present;
     u8 m_kind;
     u8 m_slot;
@@ -99,7 +99,7 @@ SIZE(0x28);
 struct CNetOneChannelPacket {
     u8 m_flags;
     char m_pad01[3];
-    i32 m_statId;
+    NetMsgId m_statId;
     i32 m_playerIndex;
     u8 m_present;
     GZ_ENUM_STORAGE(ColorTint, u8) m_colorIndex;
@@ -131,7 +131,7 @@ SIZE(0x20);
 struct CNetChannelTablePacket {
     u8 m_flags;
     char m_pad01[3];
-    i32 m_statId;
+    NetMsgId m_statId;
     CNetChannelRow m_rows[4];
 };
 SIZE(0x88);

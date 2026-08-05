@@ -796,7 +796,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_tabLists[1].AddTail(arrow);
                     m_statObj[i] = arrow;
-                    if (m_statFlags[i] != 0) {
+                    if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
                     } else {
                         arrow->SetDirection(m_position, 0);
                     }

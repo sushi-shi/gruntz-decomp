@@ -423,7 +423,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
             cell0[0] &= ~0x40000;
         }
     }
-    m_object->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 }
 
 RVA(0x00097680, 0x110)
@@ -770,7 +770,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     ClearTileBit(reg, m_object);
     CWwdGameObjectA* owner = m_wwdObject;
     if (owner->m_damage > 0) {
-        owner->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
         AnimWorkerObj* aux = m_objAux;
         m_prevAnimSetNode = aux->m_actKey;
         aux->m_actKey = ActFindId("B");
@@ -798,7 +798,7 @@ i32 CInGameIcon::Reposition() {
     i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
     if (delta >= m_driftThresh.m_v) {
         CWwdGameObjectA* r = m_wwdObject;
-        r->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
 
@@ -1100,11 +1100,11 @@ i32 CInGameText::Update() {
 
         m_cachedAreaId = areaId;
         m_cachedSubId = subId;
-        m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         return 0;
     }
     m_cachedSubId = -1;
-    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 0;
 }
 

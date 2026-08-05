@@ -13,7 +13,7 @@ g_*Vtbl globals	0
 m_vtbl/m_vptr members	0
 magic case labels	0
 unnamed domain compares	0
-.cpp-local enums	20
+.cpp-local enums	19
 C-style casts	0
 reinterpret_casts	37
 unexplained casts	0

@@ -36,6 +36,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/EnemyAiType.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -123,12 +124,6 @@ GZ_ENUM_CONST_BEGIN(PlayIntervalMs)
     AMBIENT_INTRO_INTERVAL_MS = 0x1f40
 GZ_ENUM_CONST_END(PlayIntervalMs)
 
-GZ_ENUM_BEGIN(PlayViewMode)
-    VIEW_MODE_IDLE = 0,
-    VIEW_MODE_A = 1,
-    VIEW_MODE_B = 2
-GZ_ENUM_END(PlayViewMode)
-
 GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_POINTER = 0,
     CURSOR_CHIP_FIRST = 1,
@@ -201,7 +196,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_region1Gate = 0;
         m_region2Gate = 0;
         m_region3Gate = 0;
-        m_viewMode = 0;
+        m_viewMode = VIEW_MODE_IDLE;
         m_hudSuppressed = 1;
         m_cameraBookmarkIndex = -1;
         m_snapshotActive = 0;
@@ -308,7 +303,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
         CWwdGameObjectA* peer = m_scrollSink;
         if (peer) {
-            peer->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            peer->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         return 1;
     }
@@ -1408,7 +1403,7 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
     if (m_inGame != 0) {
 
         if (ResetPlayState() == 0) {
-            m_mgr->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x456);
+            m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x456);
         }
         return 1;
     }
@@ -2775,7 +2770,7 @@ i32 CPlay::ResetViewport() {
         r.right = r.right + (0x60 - halfW);
         r.bottom = r.bottom + (0x60 - halfH);
     }
-    m_viewMode = IDX(VIEW_MODE_IDLE);
+    m_viewMode = VIEW_MODE_IDLE;
     m_world->m_level->BuildAllPlanes((&r));
     m_mgr->RecomputeViewScale();
     return 1;
@@ -2783,7 +2778,7 @@ i32 CPlay::ResetViewport() {
 
 RVA(0x000d8d90, 0x1e)
 i32 CPlay::StepViewportResize() {
-    PlayViewMode mode = static_cast<PlayViewMode>(m_viewMode);
+    PlayViewMode mode = m_viewMode;
     if (mode == VIEW_MODE_IDLE) {
         return 0;
     }
@@ -2903,11 +2898,11 @@ i32 CPlay::SetTinyViewportCurse(i32 active) {
     if (active != 0) {
         m_region0Gate = 1;
         RegionEnter();
-        m_viewMode = IDX(VIEW_MODE_A);
+        m_viewMode = VIEW_MODE_A;
     } else {
         m_region0Gate = 0;
         RegionLeave();
-        m_viewMode = IDX(VIEW_MODE_B);
+        m_viewMode = VIEW_MODE_B;
     }
     m_region0Interval = REGION_INTERVAL_MS;
     m_region0IntervalHi = 0;
@@ -3491,7 +3486,7 @@ i32 CPlay::DrawLevelInfoText() {
         } else {
             i32 stage = m_levelIndex;
             if (stage > IDX(QUESTLEVEL_LAST)) {
-                switch (static_cast<QuestLevel>(stage)) {
+                switch (CurrentQuestLevel()) {
                     case QUESTLEVEL_TRAINING_FIRST:
                         s1.LoadString(IDS_TRAINING_STAGE1);
                         break;
@@ -3510,7 +3505,7 @@ i32 CPlay::DrawLevelInfoText() {
             } else {
                 s1.Format("Stage %d", ((stage - 1) % QUESTLEVEL_PER_AREA) + 1);
             }
-            switch (static_cast<QuestLevel>(m_levelIndex)) {
+            switch (CurrentQuestLevel()) {
                 case QUESTLEVEL_AREA1_STAGE1:
                     s2.LoadString(IDS_LEVEL_TITLE_AREA1_STAGE1);
                     break;
@@ -3919,7 +3914,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
         pSend(
             cb,
             CB_ADDSTRING,
-            IDX(GRUNT_ENTRANCE_NONE),
+            0,
             reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, 0)))
         );
     }
@@ -4351,16 +4346,16 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
             if (s2 == NULL) {
                 return 1;
             }
-            s2->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
             return 1;
         }
         if (m_levelId != 0) {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+                m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
             }
         } else {
             if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             }
         }
         CGameLevel* v = m_world->m_level;
@@ -4371,7 +4366,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     m_dragInProgress = 1;
     m_guts->ClickToggle(a, x, y);
@@ -4408,7 +4403,7 @@ rearm:
     if (s == NULL) {
         return 1;
     }
-    s->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    s->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 1;
 }
 
@@ -4426,7 +4421,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
 
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_scrollSink) {
-        m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     return 1;
 }
@@ -4532,7 +4527,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         if (ResetPlayState()) {
             goto ret1;
         }
-        m_mgr->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x457);
+        m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x457);
         return 1;
     }
     if (m_paused != 0) {
@@ -4824,7 +4819,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         if (ResetPlayState()) {
             return 1;
         }
-        m_mgr->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x458);
+        m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x458);
         return 1;
     }
     if (m_paused != 0) {
@@ -5229,7 +5224,7 @@ void CPlay::TickStateMgrs() {
 
 RVA(0x000cfbd0, 0x8f)
 i32 CPlay::CompleteLevel() {
-    QuestLevel level = static_cast<QuestLevel>(m_levelIndex);
+    QuestLevel level = CurrentQuestLevel();
     if (level == QUESTLEVEL_CAMPAIGN_LAST) {
         m_completedFinalLevel = 1;
         m_notifyLatch = 1;
@@ -5266,7 +5261,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -5280,7 +5275,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+            this->m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
@@ -5293,7 +5288,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
@@ -5480,7 +5475,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
     }
     if (this->m_scrollSink != NULL) {
-        this->m_scrollSink->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     this->m_cursorOffset.m_x = 0;
     this->m_cursorOffset.m_y = 0;
@@ -6489,7 +6484,8 @@ i32 CPlay::ResetPlayState() {
             if (reg->m_cheatMgr->m_cheatsUsed == 0) {
                 i32 id = m_levelIndex;
                 if (id > 0x24 || id == 1) {
-                    (static_cast<CSaveGame*>(reg->m_saveSink))->SetMaxLevel(id);
+                    (static_cast<CSaveGame*>(reg->m_saveSink))
+                        ->SetMaxLevel(static_cast<QuestLevel>(id));
                     reg = g_gameReg;
                 }
             }
@@ -6507,7 +6503,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
     m_inGame = 0;
     if (!PlaceStartGruntz()) {

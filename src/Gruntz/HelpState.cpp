@@ -14,6 +14,7 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/Demo.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
@@ -98,7 +99,7 @@ i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x445);
+            m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x445);
             return 0;
         }
     }

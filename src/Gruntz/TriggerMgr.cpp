@@ -11,6 +11,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CombatCueKind.h>
 #include <Gruntz/EnemyAiType.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -846,7 +847,7 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
                 operator delete(o2);
                 m_overlay = NULL;
             }
-            g_gameReg->ReportError(IDX(CMD_TOGGLE_MUSIC), 0x3ff);
+            g_gameReg->ReportError(IDX(IDS_INITIALIZE_GAME), 0x3ff);
         }
         return 0;
     }
@@ -1078,7 +1079,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     CWwdGameObjectA* sprite = fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == NULL) {
 
-        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x400);
+        g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x400);
         return 0;
     }
     sprite->m_animWorker->m_notify(sprite);
@@ -1098,7 +1099,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_smarts, sprite->m_score, color, d) == 0) {
         tgt->m_wwdObject->m_flags |= 0x10000;
-        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x401);
+        g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x401);
         return 0;
     }
     POSITION pos = m_baseList.GetHeadPosition();
@@ -1153,14 +1154,14 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
 
     CWwdGameObjectA* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
-        g_gameReg->ReportError(IDX(CMD_TOGGLE_SOUND), 0x402);
+        g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x402);
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
     spr->m_points = IDX(kind);
     spr->m_score = col;
     spr->m_faceDirection = moveKind;
-    spr->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    spr->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 1;
 }
 

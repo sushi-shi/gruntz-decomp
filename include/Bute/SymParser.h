@@ -89,7 +89,7 @@ public:
 
     i32 Classify(char* buf);
 
-    u32 PackTag(const char* s);
+    RezTypeTag PackTag(const char* s);
 
     i32 ReParse();
 

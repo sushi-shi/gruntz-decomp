@@ -33,7 +33,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj)
     m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     if (m_object->m_sortKey != SORTKEY_GRUNT_HUD) {
         m_object->m_sortKey = SORTKEY_GRUNT_HUD;
         m_object->m_flags |= 0x20000;
@@ -74,7 +74,7 @@ RVA(0x0007f920, 0x21)
 i32 CGruntToySprite::SetCell(i32 x, i32 y) {
     m_cell.m_x = x;
     m_cell.m_y = y;
-    m_wwdObject->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 1;
 }
 

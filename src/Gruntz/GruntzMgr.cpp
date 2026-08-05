@@ -202,7 +202,7 @@ i32 PumpIdleFrame() {
         return 0;
     }
     if (mgr->m_curState->InputVirtual() == 0) {
-        g_gameReg->ReportError(IDX(CMD_RETURN_TO_MENU), 0x435);
+        g_gameReg->ReportError(IDX(IDS_RESTORE_GAME), 0x435);
         return 0;
     }
     g_gameReg->RefreshGameClock();
@@ -218,7 +218,7 @@ i32 PumpIdleFrame() {
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
-    GameStateId local10 = static_cast<GameStateId>(0);
+    GameStateId local10 = GAMESTATE_NONE;
     if (m_curState != NULL) {
         local10 = m_curState->Update();
         i32 savedSub = m_curState->m_levelIndex;
@@ -370,7 +370,7 @@ i32 CGruntzMgr::GoToNextLevel() {
             return 1;
         }
     }
-    ReportError(IDX(CMD_PAUSE_TOGGLE), 0x436);
+    ReportError(IDX(IDS_CHANGE_LEVEL), 0x436);
     return 0;
 }
 
@@ -392,7 +392,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
             return 1;
         }
     }
-    ReportError(IDX(CMD_PAUSE_TOGGLE), 0x437);
+    ReportError(IDX(IDS_CHANGE_LEVEL), 0x437);
     return 0;
 }
 
@@ -414,7 +414,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj) {
-            obj->m_stateFlags ^= mask;
+            obj->m_stateFlags ^= static_cast<SpriteStateFlags>(mask);
         }
     }
 }
@@ -471,7 +471,7 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
         return 1;
     }
     if (!SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, save)) {
-        ReportError(IDX(CMD_QUIT), 0x438);
+        ReportError(IDX(IDS_SET_VIDEO_MODE), 0x438);
         return 0;
     }
     return 1;
@@ -953,7 +953,7 @@ i32 CGruntzMgr::CheckSavedMode() {
         || SetVideoMode(m_savedModeW, m_savedModeH, 1) || RestoreVideoMode(1)) {
         return 1;
     }
-    ReportError(IDX(CMD_QUIT), 0x45e);
+    ReportError(IDX(IDS_SET_VIDEO_MODE), 0x45e);
     return 0;
 }
 
@@ -1112,11 +1112,11 @@ void CGruntzMgr::Post(i32 code) {
 RVA(0x00090ac0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
-        ReportError(IDX(CMD_TOGGLE_MUSIC), IDX(tag));
+        ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
     WorldInitError status = m_world->m_lastError;
     if (status == WORLDERR_NONE) {
-        ReportError(IDX(CMD_TOGGLE_MUSIC), IDX(tag));
+        ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
     switch (status) {
         case WORLDERR_CREATE_PAGES:
@@ -1264,7 +1264,7 @@ i32 CGruntzMgr::WarpCheat() {
             i32 last = m_settings->GetValueDword("Last Warp Level", -1);
             if (last != -1) {
                 if (!PassClickToPlayState(last, 0, 1)) {
-                    ReportError(IDX(CMD_NEW_GAME), 0x43b);
+                    ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
                     return 0;
                 }
                 PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x80ca, 0);
@@ -1466,7 +1466,7 @@ i32 CGruntzMgr::MakeRezPath() {
     }
 
     if (!found) {
-        ReportError(IDX(static_cast<GruntzCommandId>(0x800b)), 0x43e);
+        ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x43e);
         return 0;
     }
     return 1;
@@ -1625,7 +1625,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
             m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0) == 0;
     }
     if (parseFailed) {
-        ReportError(IDX(static_cast<GruntzCommandId>(0x800b)), 0x441);
+        ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x441);
         return 0;
     }
 
@@ -1639,7 +1639,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_inputState = ni;
     if (ni->Init(m_world->m_soundRegistry, m_soundVolume) == 0) {
-        ReportError(IDX(CMD_TOGGLE_MUSIC), 0x442);
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x442);
         return 0;
     }
 
@@ -1686,12 +1686,12 @@ i32 CGruntzMgr::ResetWorldState() {
 
     if (m_colorDepth == BPP_PALETTED_8) {
         if (LoadWorldMode(BPP_RGB_16) == 0) {
-            ReportError(IDX(static_cast<GruntzCommandId>(0x801f)), 0x443);
+            ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x443);
             return 0;
         }
     } else {
         if (LoadWorldMode(BPP_PALETTED_8) == 0) {
-            ReportError(IDX(static_cast<GruntzCommandId>(0x801f)), 0x444);
+            ReportError(IDX(IDS_CHANGE_COLOR_DEPTH), 0x444);
             return 0;
         }
     }
@@ -2239,8 +2239,10 @@ void CGruntzMgr::UpdateScoreHud() {
 
     if (m_cheatMgr->m_cheatsUsed == 0) {
         m_scoreHud->FillRecord(sub->m_levelIndex, 0);
-        g_gameReg->m_saveSink->SetCurLevel(sub->m_levelIndex);
-        g_gameReg->m_saveSink->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
+        g_gameReg->m_saveSink->SetCurLevel(static_cast<QuestLevel>(sub->m_levelIndex));
+        g_gameReg->m_saveSink->SetMaxLevel(
+            static_cast<QuestLevel>((sub->m_levelIndex % IDX(QUESTLEVEL_TRAINING_LAST)) + 1)
+        );
         g_gameReg->m_saveSink->Save(0, 0x81a6);
     }
     m_scoreHud->SetCount(sub->m_levelIndex);
@@ -2514,7 +2516,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (m_curState == next) {
         return 0;
     }
-    GameStateId oldId = static_cast<GameStateId>(0);
+    GameStateId oldId = GAMESTATE_NONE;
     if (m_curState) {
         oldId = m_curState->Update();
         m_curState->LeaveState(next->Update());
@@ -3080,7 +3082,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
         return 1;
     }
-    ReportError(IDX(CMD_QUIT), 0x439);
+    ReportError(IDX(IDS_SET_VIDEO_MODE), 0x439);
     return 0;
 }
 
@@ -3102,7 +3104,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
     if (SetVideoMode(SCREEN_W_PX, SCREEN_H_PX, 1)) {
         return 1;
     }
-    ReportError(IDX(CMD_QUIT), 0x43a);
+    ReportError(IDX(IDS_SET_VIDEO_MODE), 0x43a);
     return 0;
 }
 

@@ -18,6 +18,7 @@
 // combinations read: RIGHT|BELOW moves down-right, RIGHT|ABOVE|BELOW moves right
 // only because the vertical pair cancels, LEFT|RIGHT|BELOW moves down only.
 GZ_ENUM_FLAGS_BEGIN(RockNeighborMask, i32)
+    ROCKADJ_NONE = 0,
     ROCKADJ_BELOW = 1,
     ROCKADJ_ABOVE = 2,
     ROCKADJ_RIGHT = 4,

@@ -122,7 +122,7 @@ void CGameObject::Notify(void* p) {
         i32 d = m_health - (static_cast<CGameObject*>(p))->m_damage;
         m_health = d;
         if (d <= 0) {
-            m_animWorker->SetActKey(IDX(ACT_HEALTH_DEPLETED));
+            m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
         }
     } else {
         AnimWorkerObj* h = m_hitWorker;
@@ -486,7 +486,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             case WWDPOS_MOVE_RELATIVE: {
                 CWwdGameObjectA* c = m_boundObject;
                 i32 x = c->m_screenX;
-                if (c->m_stateFlags & IDX(SPRITE_STATE_MIRROR_X)) {
+                if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
                     i32 dy = d->m_positionDeltaY;
                     i32 dx = d->m_positionDeltaX;
                     c->m_screenX = x - dx;

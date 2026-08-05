@@ -33,10 +33,10 @@ RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(rec->ActKey());
+    AnimWorkerAct act = rec->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            rec->SetActKey(IDX(ACT_LIVE));
+            rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CCursorSnapSprite(owner);
             sub->Activate();
             rec->m_logic = sub;
@@ -78,7 +78,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
-    m_wwdObject->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
 // @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across

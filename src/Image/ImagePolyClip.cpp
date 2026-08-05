@@ -75,7 +75,7 @@ i32 WarpIsPow2(i32 x) {
 // the two idivs; cl computes the cross product entirely in x87 registers.
 RVA(0x00145e30, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
-    i32 sign = 0;
+    PolygonWinding sign = POLYGON_WINDING_UNSET;
     PolygonWinding dir = POLYGON_WINDING_UNSET;
     for (i32 i = 0; i <= count; i++) {
         ClipVtx* v0 = &verts[i % count];
@@ -88,16 +88,16 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float cross = dx1 * dy2 - dx2 * dy1;
         if (cross != 0.0f) {
             if (cross > 0.0f) {
-                sign = IDX(POLYGON_WINDING_COUNTERCLOCKWISE);
+                sign = POLYGON_WINDING_COUNTERCLOCKWISE;
             } else {
-                sign = IDX(POLYGON_WINDING_CLOCKWISE);
+                sign = POLYGON_WINDING_CLOCKWISE;
             }
         }
-        if (sign != 0) {
-            if (dir != POLYGON_WINDING_UNSET && IDX(dir) != sign) {
+        if (sign != POLYGON_WINDING_UNSET) {
+            if (dir != POLYGON_WINDING_UNSET && dir != sign) {
                 return 0;
             }
-            dir = static_cast<PolygonWinding>(sign);
+            dir = sign;
         }
     }
     return dir == POLYGON_WINDING_CLOCKWISE;

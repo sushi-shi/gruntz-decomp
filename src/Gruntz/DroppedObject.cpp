@@ -104,10 +104,10 @@ RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 RVA(0x000c5630, 0xf4)
 i32 CreateObjectDropper(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    AnimWorkerAct act = aux->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(IDX(ACT_LIVE));
+            aux->SetWorkerAct(ACT_LIVE);
             CObjectDropper* h = new CObjectDropper(obj);
             h->Activate();
             aux->m_logic = h;
@@ -143,10 +143,10 @@ i32 CreateObjectDropper(CGameObject* obj) {
 RVA(0x000c5770, 0xf1)
 i32 CreateDroppedObject(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    AnimWorkerAct act = aux->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(IDX(ACT_LIVE));
+            aux->SetWorkerAct(ACT_LIVE);
             CDroppedObject* h = new CDroppedObject(obj);
             h->Activate();
             aux->m_logic = h;
@@ -182,10 +182,10 @@ i32 CreateDroppedObject(CGameObject* obj) {
 RVA(0x000c58b0, 0xf1)
 i32 CreateDroppedObjectShadow(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    AnimWorkerAct act = static_cast<AnimWorkerAct>(aux->ActKey());
+    AnimWorkerAct act = aux->WorkerAct();
     switch (act) {
         case ACT_UNINITIALISED: {
-            aux->SetActKey(IDX(ACT_LIVE));
+            aux->SetWorkerAct(ACT_LIVE);
             CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
             h->Activate();
             aux->m_logic = h;

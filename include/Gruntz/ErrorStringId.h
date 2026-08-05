@@ -9,15 +9,9 @@
 // `LoadStringA(m_hInstance, id, g_errorText, 0xfa)`, falling back to
 // IDS_DEFAULT_ERROR when that fails.
 //
-// KNOWN CONFLATION, recorded here rather than papered over. Roughly 100
-// ReportError call sites currently spell this argument with GruntzCommandId
-// names - CMD_NEW_GAME, CMD_TOGGLE_MUSIC, TRIGERR_* - because the two id spaces
-// overlap in 0x80xx. They are NOT the same domain, and the collision below
-// proves it: IDS_DEFAULT_ERROR is 0x8009, which GruntzCommandId.h also calls
-// CMD_TOGGLE_SOUND. "Toggle sound" is not the default error message; the two
-// spaces simply happen to share numbers. Unwinding those call sites needs the
-// binary's string table read out, so it is one job, not a hundred - until then
-// this header holds only what retail itself named.
+// These values are decoded directly from retail's RT_STRING resources. They
+// overlap numerically with GruntzCommandId, but are a separate domain: for
+// example, 0x8009 is both CMD_TOGGLE_SOUND and the default error string.
 //
 // The SECOND argument of ReportError is a different thing again and needs no
 // domain at all: ShowError prints it verbatim with `sprintf(detail, "(%i)",
@@ -25,7 +19,13 @@
 // only job is to be unique, which is why its ~113 values (0x141 .. 0x1232) mean
 // nothing individually and can never be named.
 GZ_ENUM_BEGIN(ErrorStringId)
+    IDS_SET_GAME_STATE = 0x8005,
+    IDS_RESTORE_GAME = 0x8006,
+    IDS_CHANGE_LEVEL = 0x8007,
+    IDS_SET_VIDEO_MODE = 0x8008,
     IDS_DEFAULT_ERROR = 0x8009,
+    IDS_INITIALIZE_GAME = 0x800a,
+    IDS_LOAD_RESOURCE_FILE = 0x800b,
     IDS_WORLD_UNKNOWN = 0x8011,
     IDS_WORLD_SOUND_REGISTRY = 0x8012,
     IDS_WORLD_SOUND_OUTPUT = 0x8013,
@@ -39,7 +39,9 @@ GZ_ENUM_BEGIN(ErrorStringId)
     IDS_WORLD_DDRAW_CAPABILITIES = 0x801b,
     IDS_WORLD_DDRAW_DISPLAY_MODE = 0x801c,
     IDS_WORLD_DDRAW_COLOR_MASKS = 0x801d,
-    IDS_WORLD_DDRAW_CREATE = 0x801e
+    IDS_WORLD_DDRAW_CREATE = 0x801e,
+    IDS_CHANGE_COLOR_DEPTH = 0x801f,
+    IDS_LOAD_VOICE_RESOURCE_FILE = 0x8149
 GZ_ENUM_END(ErrorStringId)
 
 #endif // GRUNTZ_GRUNTZ_ERRORSTRINGID_H

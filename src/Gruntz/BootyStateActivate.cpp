@@ -26,6 +26,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DirectionRingIndex.h>
+#include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -305,10 +306,10 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
             return 0;
         }
         a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
-        a->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        a->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     for (i32 k = 0; k <= m_letterIdx; k++) {
-        slot[k]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        slot[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
     CWwdGameObjectA* g =
         g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
@@ -461,7 +462,7 @@ void CBootyState::MoveLettersByDir() {
         do {
             CGameObject* e = *p;
             p++;
-            e->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } while (--n);
         return;
     }
@@ -471,7 +472,7 @@ void CBootyState::MoveLettersByDir() {
         i32 x = e->m_screenX;
         i32 y = e->m_screenY;
         if (x < 0 || x > SCREEN_W_PX || y < 0 || y > SCREEN_H_PX) {
-            e->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } else {
             switch (static_cast<DirectionRingIndex>(i)) {
                 case DIRECTION_RING_NORTH:
@@ -623,7 +624,7 @@ i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
+            m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
             return 0;
         }
     }
@@ -900,10 +901,10 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             }
             if (g_gameReg->m_scoreHud->m_count < 0x24) {
                 for (i32 p = 0; p < 4; p++) {
-                    m_visSprites[p]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+                    m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                     m_animSprites[p]->m_screenY = 0xdc;
-                    m_animSprites[p]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                    m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
                         m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
@@ -931,7 +932,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             for (i32 k = 0; k < 4; k++) {
                 m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
                 m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
-                m_trailSprites[k]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                m_trailSprites[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             }
             if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
@@ -1068,7 +1069,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_puddleSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_puddleSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         if (i == QueryGruntSlots()) {
             m_gruntSprites[i] =
@@ -1096,7 +1097,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_gruntSprites[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         {
             i32 best = -1;
@@ -1123,7 +1124,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_weaponIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         {
             CShadeTable* iconTint = g_gameReg->m_spriteFactory->GetSel(0x10, 0);
@@ -1155,7 +1156,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_toyIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
             {
                 i32 best = -1;
@@ -1182,7 +1183,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_powerupIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
             {
                 i32 best = -1;
@@ -1209,27 +1210,27 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
-            m_miscIcons[i]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+            m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
 
         m_puddleSprites[i]->m_screenX = g_multiBootyGeom[5][i].m_x;
         m_puddleSprites[i]->m_screenY = g_multiBootyGeom[5][i].m_y;
-        m_puddleSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_puddleSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_gruntSprites[i]->m_screenX = g_multiBootyGeom[4][i].m_x;
         m_gruntSprites[i]->m_screenY = g_multiBootyGeom[4][i].m_y;
-        m_gruntSprites[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_gruntSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_weaponIcons[i]->m_screenX = g_multiBootyGeom[3][i].m_x;
         m_weaponIcons[i]->m_screenY = g_multiBootyGeom[3][i].m_y;
-        m_weaponIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_weaponIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_toyIcons[i]->m_screenX = g_multiBootyGeom[2][i].m_x;
         m_toyIcons[i]->m_screenY = g_multiBootyGeom[2][i].m_y;
-        m_toyIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_toyIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_powerupIcons[i]->m_screenX = g_multiBootyGeom[1][i].m_x;
         m_powerupIcons[i]->m_screenY = g_multiBootyGeom[1][i].m_y;
-        m_powerupIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_powerupIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         m_miscIcons[i]->m_screenX = g_multiBootyGeom[0][i].m_x;
         m_miscIcons[i]->m_screenY = g_multiBootyGeom[0][i].m_y;
-        m_miscIcons[i]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_miscIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
     for (i32 t = 0; t < 4; t++) {
@@ -1256,7 +1257,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_tabSprites[t]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_flagSprites[t] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "DoNothing", 3);
@@ -1271,7 +1272,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_flagSprites[t]->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_tabSprites[t]->m_screenX = g_multiBootyGeom[7][t].m_x;
         m_tabSprites[t]->m_screenY = g_multiBootyGeom[7][t].m_y;
@@ -1291,7 +1292,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                 o->m_frameIndex = frame;
             }
         }
-        m_tabSprites[t]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_tabSprites[t]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
     {
@@ -1315,10 +1316,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_fortSprite->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_fortSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_fortSprite->m_screenX = 0x64;
         m_fortSprite->m_screenY = 0x64;
-        m_fortSprite->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_fortSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
         CString joyKey;
         CString bootyKey;
@@ -1343,14 +1344,14 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
-        m_warlordBooty->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_warlordBooty->m_screenX = 0x64;
         m_warlordBooty->m_screenY = 0x64;
         if (m_warlordBooty->m_sortKey != SORTKEY_BOOTY_WARLORD) {
             m_warlordBooty->m_sortKey = SORTKEY_BOOTY_WARLORD;
             m_warlordBooty->m_flags |= 0x20000;
         }
-        m_warlordBooty->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+        m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
         for (i32 w = 0; w < 4; w++) {
             i32 held = g_gameReg->m_scoreHud->SumFlags(w);
@@ -1370,7 +1371,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                     m_flagSprites[c]->m_screenX =
                         (spread[held - 1][placed] << 4) + g_multiBootyGeom[6][w].m_x;
                     m_flagSprites[c]->m_screenY = g_multiBootyGeom[6][w].m_y;
-                    m_flagSprites[c]->m_stateFlags &= ~IDX(SPRITE_STATE_HIDDEN);
+                    m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     placed++;
                 }
             }
@@ -1611,7 +1612,7 @@ i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
         if (InputVirtual() == 0) {
-            m_mgr->ReportError(IDX(CMD_RETURN_TO_MENU), 0x459);
+            m_mgr->ReportError(IDX(IDS_RESTORE_GAME), 0x459);
             return 0;
         }
     }

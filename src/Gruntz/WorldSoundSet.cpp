@@ -686,7 +686,7 @@ i32 CreateAmbientSound(CGameObject* obj) {
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     if (aux->m_actKey == 0) {
         obj->m_flags |= 1;
-        obj->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+        obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
         if (aux->m_notify == CreateGlobalAmbientSound) {
             obj->m_flags |= 2;
         } else {
@@ -763,7 +763,7 @@ i32 CreateSpotAmbientSound(CGameObject* obj) {
         return 1;
     }
 
-    obj->m_stateFlags |= IDX(SPRITE_STATE_HIDDEN);
+    obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
     obj->m_flags = (obj->m_flags & ~2) | 0x100001;
     aux->m_positionedSound = NULL;
     LeafCue* layer = sprite->m_soundCue;
