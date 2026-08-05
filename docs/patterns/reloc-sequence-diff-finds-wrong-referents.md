@@ -73,6 +73,18 @@ and since cl emits arms in SOURCE order, that is retail's source order directly.
 also exposes arms that do not exist in the reconstruction at all -
 `PlaceObjectFull`'s GOOBER case was found this way.
 
+## Second trap: the delinked obj's string names disagree with the raw disasm
+
+The reloc NAMES on the target side come from whatever `symbol_names.csv` resolved
+retail's address to, and for one-character literals that resolution is often a
+different literal at a nearby address. A sequence diff that reports retail
+comparing against `"J"` and `"R"` where you compare against `"L"` and `"P"` is
+usually this artifact, not a wrong letter. **Confirm every string finding against
+`gruntz sema disasm <rva> --target`**, whose reloc table prints the raw retail
+address - then map addresses to letters once (they are consecutive in `.rdata`)
+and reuse that map. `CTriggerMgr::ApplyTriggerB` looked like three wrong letters
+and was in fact three missing re-resolutions of the same name.
+
 ## Confidence
 
 c9 - reproduced across ten functions in one session; the only false positives are the
