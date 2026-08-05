@@ -510,8 +510,8 @@ i32 CBattlezMapConfig::StepBoard() {
 // @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     i32 occupied = 0;
+    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     for (i32 c = 15; c != 0; c--) {
         if (*row != NULL) {
             occupied++;
@@ -4820,10 +4820,14 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
 }
 
 // @early-stop
+// ebx/ebp are transposed: retail parks the shared 0 in ebx and `occupied` in
+// ebp, we do the reverse, and every store that uses either follows. Declaration
+// order of `occupied`/`row` does not move it. The argument order to PlaceObject
+// and the store order are both retail's now.
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
-    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     i32 occupied = 0;
+    CGrunt** row = &m_triggerMgr->m_grid[m_ownerId * 15];
     for (i32 c = 15; c != 0; c--) {
         if (*row != NULL) {
             occupied++;
@@ -4835,8 +4839,8 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     }
     i32 cell = m_triggerMgr->PlaceObject(
         m_ownerId,
-        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         (ax << TILE_SHIFT_PX) + TILE_HALF_PX,
+        (ay << TILE_SHIFT_PX) + TILE_HALF_PX,
         0x186a0,
         3,
         m_ctx->m_options[m_ownerId].m_colorIndex,
