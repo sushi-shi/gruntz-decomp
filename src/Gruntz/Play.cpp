@@ -6906,13 +6906,9 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     }
 
     CObList* head = &this->m_world->m_childGroup->m_list;
-    if (!head) {
-        return 0;
-    }
-    CObList& chain = this->m_world->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
+    POSITION pos = head == NULL ? NULL : head->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
+        CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
         if (obj) {
             void* marker = static_cast<void*>(obj->m_animWorker->m_notify);
             if (marker == static_cast<void*>(CreateGruntStartingPoint)) {
@@ -7017,7 +7013,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
                     m_mgr->m_scoreHud->m_toyzAvailable++;
-                } else if (cv >= PICKUP_POWERUPZ_FIRST && cv <= PICKUP_POWERUPZ_LAST) {
+                } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
                     m_mgr->m_scoreHud->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
@@ -7047,7 +7043,20 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (d == PICKUP_TOYBOX || d == PICKUP_MEGAPHONE) {
+                } else if (d == PICKUP_TOYBOX) {
+                    if (!BuildGruntTypeNameTable(
+                            static_cast<PickupType>(obj->m_points),
+                            1,
+                            0,
+                            ctx
+                        )) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_points] == 0) {
+                        BuildHelpReveal(0);
+                        loaded[obj->m_points] = 1;
+                    }
+                } else if (d == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
@@ -7069,7 +7078,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                     m_mgr->m_scoreHud->m_toolzAvailable++;
                 } else if (cv >= PICKUP_TOYZ_FIRST && cv <= PICKUP_TOYZ_LAST) {
                     m_mgr->m_scoreHud->m_toyzAvailable++;
-                } else if (cv >= PICKUP_POWERUPZ_FIRST && cv <= PICKUP_POWERUPZ_LAST) {
+                } else if (cv >= PICKUP_TIMEDPOWERUP_FIRST && cv <= PICKUP_TIMEDPOWERUP_LAST) {
                     m_mgr->m_scoreHud->m_powerupzAvailable++;
                 } else if (cv == PICKUP_COIN) {
                     m_mgr->m_scoreHud->m_coinsAvailable++;
@@ -7099,7 +7108,20 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         BuildHelpReveal(0);
                         loaded[0x22] = 1;
                     }
-                } else if (e == PICKUP_TOYBOX || e == PICKUP_MEGAPHONE) {
+                } else if (e == PICKUP_TOYBOX) {
+                    if (!BuildGruntTypeNameTable(
+                            static_cast<PickupType>(obj->m_points),
+                            1,
+                            0,
+                            ctx
+                        )) {
+                        return 0;
+                    }
+                    if (loaded[obj->m_points] == 0) {
+                        BuildHelpReveal(0);
+                        loaded[obj->m_points] = 1;
+                    }
+                } else if (e == PICKUP_MEGAPHONE) {
                     if (!BuildGruntTypeNameTable(
                             static_cast<PickupType>(obj->m_points),
                             1,
