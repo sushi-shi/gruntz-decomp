@@ -126,21 +126,19 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             g_gameReg->m_options[i].m_colorIndex = g_battlezLastColors[i];
         }
 
-        CWnd* combo = GetDlgItem(0x4ff);
-        CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
+        CWnd* comboChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
         if (comboChild == NULL) {
             return;
         }
         ::SendMessageA(comboChild->m_hWnd, EM_SETREADONLY, 1, 0);
         comboChild->SetWindowTextA(g_emptyString);
 
+        CWnd* combo = GetDlgItem(0x4ff);
         CSymTab* worlds = static_cast<CSymTab*>(m_slots->m_symParser->ResolvePath("GAME_BATTLEZ"));
         if (worlds == NULL) {
             return;
         }
-        CSymRec* record = static_cast<CSymRec*>(worlds->FirstSym());
-        CParseSource* entry =
-            record == NULL ? 0 : static_cast<CParseSource*>(worlds->NextSym2(record));
+        CParseSource* entry = static_cast<CParseSource*>(worlds->NextSym2(worlds->FirstSym()));
         i32 first = 1;
         while (entry != NULL) {
             CString upper(entry->m_name);
