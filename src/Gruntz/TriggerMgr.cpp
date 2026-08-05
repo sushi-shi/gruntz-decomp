@@ -2127,14 +2127,14 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
         case PICKUP_GHOST:
             name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
             break;
+        case PICKUP_INVULNERABILITY:
+            name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
+            break;
         case PICKUP_REACTIVEARMOR:
             name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
             break;
         case PICKUP_ROIDZ:
             name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
-            break;
-        case PICKUP_INVULNERABILITY:
-            name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
             break;
         case PICKUP_SUPERSPEED:
             name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
