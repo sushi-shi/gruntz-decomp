@@ -219,6 +219,7 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     if (!bih) {
         return 0;
     }
+    i32 width = bih->biWidth;
     i32 height = bih->biHeight;
     if (bih->biBitCount != 8) {
         return 0;
@@ -226,8 +227,8 @@ i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     memset(m_descWords, 0, sizeof(DDSURFACEDESC));
     m_descSize = sizeof(DDSURFACEDESC);
     m_surfaceCaps = c | 0x40;
-    m_width = bih->biWidth;
     m_descFlags = 7;
+    m_width = width;
     m_height = height;
     if (!CDDSurface::CreateFromDesc(a, 0)) {
         return 0;
