@@ -1949,10 +1949,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 result.Format("*** A player had a different version of the game.");
             }
             if (g_sharedFlag != NULL) {
-                AppendEditLine(
-                    g_sharedFlag,
-                    const_cast<char*>(static_cast<const char*>(result))
-                );
+                AppendEditLine(g_sharedFlag, const_cast<char*>(static_cast<const char*>(result)));
             } else {
                 (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))->AddItem(result, 0, 0x11);
             }
