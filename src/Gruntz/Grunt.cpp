@@ -1068,7 +1068,7 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 // @early-stop
 // objdiff pairs the symbol but scores 0; retail also carries one more
 // 4-byte local, so every parameter offset in our frame is short by four.
-RVA(0x0004b370, 0xafd)
+RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
     i32 pxY,
