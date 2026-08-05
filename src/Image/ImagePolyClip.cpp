@@ -83,10 +83,10 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float dy2 = v2->y - v0->y;
         float cross = dx1 * dy2 - dx2 * dy1;
         if (cross != 0.0f) {
-            if (cross < 0.0f) {
-                sign = 2;
-            } else {
+            if (cross > 0.0f) {
                 sign = 1;
+            } else {
+                sign = 2;
             }
         }
         if (sign != 0) {
