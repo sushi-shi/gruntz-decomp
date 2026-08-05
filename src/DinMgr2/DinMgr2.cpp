@@ -493,6 +493,16 @@ void CInputDevice::ReleaseDevices() {
 }
 
 // @early-stop
+// 94.59%, scheduling-only: retail's else-arm pops edi BETWEEN the 0x32c and 0x330
+// stores; cl puts it ahead of all four. Same 201 bytes, same instructions, one
+// transposition - and retail is asymmetric (its if-arm pops after all four, which
+// we match). Inert (all byte-identical to this form): permuter 40 iters, 30
+// AST/TU-state variants, all five return placements, memset-vs-loop, goto join, an
+// arrow base pointer, inline member helpers in both arms, in ONE arm only, and
+// wrapping just the last store. Strictly worse: helpers taking a pointer (75.7), a
+// table-driven inline member (60.0). TU flags swept too - /Ob1 /Ot /Gy- /Gf are
+// codegen-identical here and /Ob0 /Oy- /Oi- /Os /Og- /O1 all regress the unit, so
+// our /O2 /MT /GX is right (115/140 exact) and no inlining setting reaches it.
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
     u32* keyTable = m_keyTable;
