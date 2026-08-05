@@ -47,3 +47,26 @@ expression refuses to move at all, the pick is TU-state, not source.
 hunk (`mov eax,[t+0x13c]; mov ebx,[t+0x5c]` where retail has `mov eax,[t+0x5c];
 mov ebx,[t+0x13c]`). Operand swapping changed nothing; the named local took all four to
 **100% EXACT**. `CDDrawWorkerHost::CenterScrollB`'s `(right + left)` hunk closed the same way.
+
+## The lever runs BOTH ways — removing a local can flip the operand order too
+
+The same knob decides which register a *derived* value ends up in, and therefore which way
+round a later commutative operator is written. `CStatusBarMgr::DrainGauge` @0x105780 is a
+three-line clamp:
+
+```cpp
+// NO  - the named difference lands in edx, cl emits `and edx,eax` / stores edx
+i32 v = m_gauge - delta;
+m_gaugeTarget = v > 0 ? v : 0;
+
+// YES - written inline the value stays in eax: `and eax,edx` / stores eax  (retail)
+m_gaugeTarget = m_gauge - delta > 0 ? m_gauge - delta : 0;
+```
+
+98.50 -> 100 EXACT. Inverting the ternary (`v <= 0 ? 0 : v`) was byte-identical, which is
+the usual tell that the residue is an operand-order canonicalisation rather than a
+comparison-polarity one. So when a commutative operator is transposed, test BOTH
+directions of the local: introduce one on the operand you want first, and remove any local
+that is holding the value you want in the accumulator.
+
+related: derived-value-local-forces-in-place-arith.md, commutative-operand-order-is-canonical.md

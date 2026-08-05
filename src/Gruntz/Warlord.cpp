@@ -773,9 +773,8 @@ i32 CWarlord::ResolveDeathAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, m_ownerTag, -1, -1, -1);
     }
 
-    CAniElement* anim = m_animDeath;
     m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(anim);
+    m_wwdObject->m_animCursor.Setup(m_animDeath);
 
     m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__DEATH);
 
