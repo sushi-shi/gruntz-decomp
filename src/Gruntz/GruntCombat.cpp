@@ -1034,6 +1034,10 @@ RVA(0x00059230, 0x450)
 i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     if (mode == 0) {
         switch (m_arrivalState) {
+            // Retail's dense range starts at 0 with its own jump-table entry:
+            // an empty AI_NONE arm, distinct from the default (slot 8).
+            case AI_NONE:
+                break;
             case AI_SMARTCHASER:
                 m_arrivalCell.m_x = d;
                 m_arrivalCell.m_y = e;
