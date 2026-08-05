@@ -3390,21 +3390,16 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
 
     g_serialCounter++;
 
-    CGameObject* obj = 0;
-
     i32 seq;
     s->Read(&seq, sizeof(seq));
 
-    i32 kind = 0;
-    if (MapLookupById(gm->m_childGroup->m_map48, seq, obj)) {
-
-        if (obj == NULL) {
-            kind = 0;
-        } else {
-            kind = obj->GetClassId();
-        }
+    CGameObject* obj = 0;
+    CWwdGameObjectA* m8;
+    if (MapLookupById(gm->m_childGroup->m_map48, seq, obj) && obj != NULL) {
+        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
+    } else {
+        m8 = 0;
     }
-    CWwdGameObjectA* m8 = (kind == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
     m_barSprite = m8;
     if (m8 == NULL && seq != 0) {
         return 0;
