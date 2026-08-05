@@ -1,3 +1,5 @@
+#define WORLDSOUNDSET_OOL_DTOR
+
 #include <rva.h>
 
 #include <Gruntz/WorldSoundSet.h>

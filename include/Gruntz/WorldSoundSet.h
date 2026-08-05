@@ -89,6 +89,12 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_volume = kSoundVolumeMax;
 }
 
+#ifndef WORLDSOUNDSET_OOL_DTOR
+inline CWorldSoundSet::~CWorldSoundSet() {
+    Deactivate();
+}
+#endif
+
 extern i32 g_posSoundReq;
 
 struct CGameObject;

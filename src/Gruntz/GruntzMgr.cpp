@@ -1572,11 +1572,8 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CWorldSoundSet* in = m_inputState;
-    if (in) {
-        in->Deactivate();
-        in->m_list.CPtrList::~CPtrList();
-        ::operator delete(in);
+    if (m_inputState != NULL) {
+        delete m_inputState;
     }
     m_inputState = NULL;
 
@@ -1594,7 +1591,10 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     }
 
     m_world->Cleanup();
-    i32 kind = (g_disableAudio == 0) ? 1 : 5;
+    i32 kind = 1;
+    if (g_disableAudio != 0) {
+        kind = 5;
+    }
     if (m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, m_colorDepth, kind) == 0) {
         ReportWorldStatus(0x43f);
         return 0;
@@ -1617,19 +1617,21 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 
     m_symParser = new CSymParser;
 
-    CString path = GetRezPath();
-    if (m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0)) {
+    bool parseFailed;
+    {
+        CString path = GetRezPath();
+        parseFailed =
+            m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0) == 0;
+    }
+    if (parseFailed) {
         ReportError(static_cast<GruntzCommandId>(0x800b), 0x441);
         return 0;
     }
 
     SetColorDepth(m_colorDepth);
 
-    CWorldSoundSet* in2 = m_inputState;
-    if (in2) {
-        in2->Deactivate();
-        in2->m_list.CPtrList::~CPtrList();
-        ::operator delete(in2);
+    if (m_inputState != NULL) {
+        delete m_inputState;
     }
     m_inputState = NULL;
 
