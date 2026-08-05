@@ -512,6 +512,13 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     return 0;
 }
 
+// @early-stop
+// The whole body is present (base 3284 B vs retail 3356 B) but the register
+// budget is spent the other way round: retail spills `result` and `this` to
+// the frame and keeps moveX/moveY in esi/edi, so every direction arm ends
+// `mov esi,ebx / mov edi,ebp` plus three inline voice stores; cl pins 0 in ebx
+// for `result`, keeps `this` in edi, spills moveX/moveY, and then cross-jumps
+// the last voice store out of each arm. 400 AST variants moved none of it.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
