@@ -113,6 +113,7 @@ public:
 
     void* FirstSub();
     void* NextSub(void* rec);
+    void* FindSymKey(u32 key);
     void* FirstSym();
     void* NextSym(void* rec);
     void* NextSym2(void* rec);

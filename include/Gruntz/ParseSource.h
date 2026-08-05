@@ -53,7 +53,11 @@ struct CParseSource {
     void Teardown();
     i32 SetPos(i32 pos);
     i32 ReadAt(void* dst, i32 pos, u32 len);
+    i32 ReadAll(void* dst);
     i32 Read(void* dst, u32 len, i32 seekPos);
+    char ReadChar();
+    i32 IsResident();
+    i32 AtEnd();
 
     char* m_name;
     CSymRec* m_entry;

@@ -199,6 +199,19 @@ i32 CParseSource::EndParse() {
     return 1;
 }
 
+RVA(0x00139a00, 0x1b)
+i32 CParseSource::IsResident() {
+    if (m_owner->m_mappedBuf != NULL) {
+        return 1;
+    }
+    return m_buffer != NULL;
+}
+
+RVA(0x00139a20, 0x13)
+i32 CParseSource::ReadAll(void* dst) {
+    return ReadAt(dst, 0, m_length);
+}
+
 RVA(0x00139a40, 0x95)
 i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
     CSymTab* sd = m_owner;
@@ -256,6 +269,18 @@ i32 CParseSource::Read(void* dst, u32 len, i32 seekPos) {
     return 0;
 }
 
+RVA(0x00139bc0, 0xc)
+i32 CParseSource::AtEnd() {
+    return static_cast<u32>(m_cursor) >= m_length;
+}
+
+RVA(0x00139bd0, 0x15)
+char CParseSource::ReadChar() {
+    char c;
+    Read(&c, 1, -1);
+    return c;
+}
+
 // @early-stop
 RVA(0x00139bf0, 0x71)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTable(d) {
@@ -263,6 +288,10 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTa
     m_scope = owner;
     m_key = key;
 }
+
+// cl's unwind helper for the member-init list above: an out-of-line copy of the
+// inline ~CHash(), which is just `RemoveAll()` and so tail-jumps to the base.
+RVA_COMPGEN(0x00139c70, 0x5, ??1CHash@@QAE@XZ)
 
 RVA(0x00139c80, 0x6c)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
@@ -320,6 +349,8 @@ CSymTab::CSymTab(
     m_parent = parent;
     m_node20.m_symTab = this;
 }
+
+RVA_COMPGEN(0x00139ec0, 0x5, ??1CHashB@@QAE@XZ)
 
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
@@ -463,6 +494,11 @@ void* CSymTab::NextSub(void* rec) {
         return n;
     }
     return n->m_symTab;
+}
+
+RVA(0x0013a2a0, 0x10)
+void* CSymTab::FindSymKey(u32 key) {
+    return m_symbols.FindInt(key);
 }
 
 RVA(0x0013a2b0, 0x11)
@@ -1238,6 +1274,19 @@ i32 CSymParser::CheckNodes() {
     return ok;
 }
 
+RVA(0x0013ba50, 0x1d)
+void CSymParser::SetBucketCounts(
+    i32 valueBuckets,
+    i32 keyBuckets,
+    i32 subTabBuckets,
+    i32 symbolBuckets
+) {
+    m_valueBucketCount = valueBuckets;
+    m_keyBucketCount = keyBuckets;
+    m_subTabBucketCount = subTabBuckets;
+    m_symbolBucketCount = symbolBuckets;
+}
+
 RVA(0x0013ba70, 0x10)
 i32 CSymParser::MakeTimestamp() {
     time_t t;
@@ -1360,6 +1409,11 @@ CParseSource* CSymTab::ResolveQualified(const char* name, RezTypeTag fourcc) {
 RVA(0x0013bff0, 0x19)
 CParseSource* CSymParser::ResolveQualified(const char* name, RezTypeTag fourcc) {
     return GetRoot()->ResolveQualified(name, fourcc);
+}
+
+RVA(0x0013c010, 0x13)
+void* CSymParser::FindQualified(const char* name) {
+    return GetRoot()->FindQualified(name);
 }
 
 RVA(0x0013c030, 0x14)

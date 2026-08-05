@@ -825,6 +825,8 @@ LoadableClassId AnimWorkerObj::GetClassId() {
     return CLASSID_ANIMWORKER;
 }
 
+RVA_COMPGEN(0x00151d80, 0x1e, ??_GAnimWorkerObj@@UAEPAXI@Z)
+
 RVA(0x00151da0, 0x80)
 AnimWorkerObj::~AnimWorkerObj() {
     m_notify = NULL;

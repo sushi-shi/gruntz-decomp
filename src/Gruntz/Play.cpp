@@ -5714,8 +5714,7 @@ i32 CPlay::DrawStateMessage() {
 
     CObject* lookup_ob = 0;
     m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
-    CDDrawWorker* lookup = static_cast<CDDrawWorker*>(lookup_ob);
-    CDDrawWorker* set = lookup;
+    CDDrawWorker* set = static_cast<CDDrawWorker*>(lookup_ob);
     if (set == NULL) {
         return 0;
     }
