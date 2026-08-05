@@ -2935,14 +2935,17 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* objArg, SerialMode kindArg, 
             break;
     }
 
+    // retail materialises this+0x78 once, ahead of the dispatch, and reaches
+    // the second timer as +8 off that cursor rather than off `this`.
+    Clock64* p = m_routeTimers;
     switch (kind) {
         case SERIAL_SAVE:
-            obj->Write(&m_routeClock, sizeof(m_routeClock));
-            obj->Write(&m_routeWindow, sizeof(m_routeWindow));
+            obj->Write(&p[0], sizeof(Clock64));
+            obj->Write(&p[1], sizeof(Clock64));
             break;
         case SERIAL_LOAD:
-            obj->Read(&m_routeClock, sizeof(m_routeClock));
-            obj->Read(&m_routeWindow, sizeof(m_routeWindow));
+            obj->Read(&p[0], sizeof(Clock64));
+            obj->Read(&p[1], sizeof(Clock64));
             break;
     }
     return 1;
