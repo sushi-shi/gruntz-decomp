@@ -245,8 +245,8 @@ void CTriggerMgr::ReportRecordsA(i32 tag, i32 gx, i32 gy) {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
-        firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
+        firstByte = static_cast<u8>(payload[0]);
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = static_cast<u8>(payload[1]);
             count++;
@@ -289,8 +289,8 @@ void CTriggerMgr::ReportRecordsB(i32 tag, i32 gx, i32 gy, i32 flag) {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         i32* payload = static_cast<i32*>(m_recList.GetNext(pos));
-        firstByte = static_cast<u8>(payload[0]);
         CGrunt* cell = m_grid[payload[1] + payload[0] * TM_GRID_COLS];
+        firstByte = static_cast<u8>(payload[0]);
         if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = static_cast<u8>(payload[1]);
             count++;
