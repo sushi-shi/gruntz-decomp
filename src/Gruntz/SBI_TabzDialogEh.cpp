@@ -13,8 +13,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 
-RVA_COMPGEN(0x001005d0, 0x17, ??0CStatusBarItem@@QAE@XZ)
-
 // @early-stop
 // Retail CALLS ??0CStatusBarItem@@QAE@XZ at each `new` site; the in-class ctor
 // body lets cl splice it (and drop its dead stores) instead.

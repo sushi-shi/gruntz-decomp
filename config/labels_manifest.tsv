@@ -241,7 +241,7 @@ sbi_rectonlybase	3
 sbi_sidetab_build	1
 sbi_statztabarrow_eh	1
 sbi_statztabgruntbar	6
-sbi_tabzdialog_eh	2
+sbi_tabzdialog_eh	1
 sbi_warlordhead	7
 sbi_wellgoo	7
 scattersamples	2
@@ -267,7 +267,7 @@ statedispatch	5
 statemgrbz	7
 statereleaseresources	1
 statichazard	9
-statusbaritem	3
+statusbaritem	4
 statusbarmgr	4
 statusbarspriteacts	9
 statusbartabbuilders	17

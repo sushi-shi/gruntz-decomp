@@ -15,12 +15,7 @@ class CDDrawSurfaceMgr;
 
 class CStatusBarItem {
 public:
-    CStatusBarItem() {
-        m_enabled = 0;
-        m_kind = 0;
-        m_host = NULL;
-        m_redrawFrames = 0;
-    }
+    CStatusBarItem();
     virtual ~CStatusBarItem();
 
     virtual i32 SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b);

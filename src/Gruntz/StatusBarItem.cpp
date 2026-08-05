@@ -9,6 +9,14 @@ void CStatusBarItem::SetSubtype() {
     m_redrawFrames = 2;
 }
 
+RVA(0x001005d0, 0x17)
+CStatusBarItem::CStatusBarItem() {
+    m_enabled = 0;
+    m_kind = 0;
+    m_host = NULL;
+    m_redrawFrames = 0;
+}
+
 RVA(0x00100600, 0x8)
 i32 CStatusBarItem::Refresh(i32) {
     return 1;
