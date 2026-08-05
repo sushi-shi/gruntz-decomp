@@ -766,6 +766,10 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
 #undef LOAD_POSE
 
+// @early-stop
+// residue is the FP shape of the second difference (retail loads both operands
+// and fxch/fsubp where cl folds one into fsubr) plus the ebx/edi swap that
+// follows from it.
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
@@ -1939,6 +1943,10 @@ i32 CGrunt::CreateHealthSprite() {
     return 1;
 }
 
+// @early-stop
+// 2-arg sibling of the SetHealthGlyph family: retail defers the m_tileOwnerHi
+// load past the reg=inner->m_logic step and reuses eax, cl hoists it into edx.
+// 600 AST + TU-state variants moved none of it.
 RVA(0x0004d220, 0x9c)
 i32 CGrunt::CreateToySprite() {
     if (m_toySprite) {
@@ -2060,6 +2068,8 @@ i32 CGrunt::CreateWingzTimeSprite() {
     return 1;
 }
 
+// @early-stop
+// four bytes: ecx and edx are swapped for the a / m_tileOwnerLo argument pair.
 RVA(0x0004d650, 0xa1)
 i32 CGrunt::CreatePowerupSprite(i32 a) {
     if (m_powerupSprite) {
@@ -2086,6 +2096,9 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     return 1;
 }
 
+// @early-stop
+// same wall as CreateToySprite: retail defers the m_tileOwnerHi load past the
+// reg=inner->m_logic step and reuses eax, cl hoists it into edx.
 RVA(0x0004d730, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {

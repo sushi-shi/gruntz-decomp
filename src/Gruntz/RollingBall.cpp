@@ -145,6 +145,11 @@ void CRollingBall::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
+// @early-stop
+// cl pins 0 in ebp and compares members against it (`cmp mem,ebp`) where retail
+// loads and tests (`mov eax,mem; test eax,eax`), which also costs it the register
+// retail spends on the i64 timer's high dword; and it lays the fall/sink block
+// out after the movement code instead of before it.
 RVA(0x000b0140, 0xba8)
 i32 CRollingBall::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

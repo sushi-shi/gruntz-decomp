@@ -252,6 +252,10 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     }
 }
 
+// @early-stop
+// referent set matches retail exactly; residue is a this=ebp/edi swap and a
+// zero-register phase (retail pins 0 in ebx and compares against it where cl
+// uses test reg,reg).
 RVA(0x00110c10, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
@@ -1162,6 +1166,9 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
     return 1;
 }
 
+// @early-stop
+// three residues: the px/py + g_gameReg schedule, an eax/edx swap on the player
+// flag stores, and `add edi,-0x132` where retail keeps edi with `lea eax,[edi-0x132]`.
 RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;
