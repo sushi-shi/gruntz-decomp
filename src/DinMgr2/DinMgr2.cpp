@@ -503,6 +503,9 @@ void CInputDevice::ReleaseDevices() {
 // table-driven inline member (60.0). TU flags swept too - /Ob1 /Ot /Gy- /Gf are
 // codegen-identical here and /Ob0 /Oy- /Oi- /Os /Og- /O1 all regress the unit, so
 // our /O2 /MT /GX is right (115/140 exact) and no inlining setting reaches it.
+// NOT the Pentium-pairing scheduler: /G3 /G4 /G5 /GB and the default all emit these
+// bytes identically (only /G6 differs, and it regresses), so the interleave is cl's
+// fixed emission order for this block, invariant across processor targets.
 RVA(0x00133c30, 0xc9)
 void CInputDevice::SetupKeyTable() {
     u32* keyTable = m_keyTable;

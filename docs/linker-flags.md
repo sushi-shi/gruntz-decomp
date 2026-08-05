@@ -37,6 +37,15 @@ phase doesn't second-guess them. Authority: `docs/zlib-matching.md`.
   byte-neutral no-op [VERIFIED]; `/GF` would move the pooled literal COMDATs from
   writable `.data` to `.rdata` — retail's literals are in writable `.data`, so
   `/GF` is OFF [VERIFIED]. See `zlib-matching.md` and `string-pooling.md`.
+- **`/G<n>` (processor target) — unconstrained except `/G6` is EXCLUDED** [VERIFIED
+  on `directinputmgr2`, 2026-08-05]. `/G3`, `/G4`, `/G5`, `/GB` and the default all
+  emit that unit **byte-identically** (115/140 fns exact, mean 99.28); only `/G6`
+  (Pentium Pro) differs and it *regresses* to 97/140, so retail was not built with
+  it. Useful corollary: because the 386 target (no dual pipeline) matches the
+  Pentium target byte-for-byte here, MSVC 5.0's instruction ORDER in these blocks is
+  not produced by a processor-targeted pairing scheduler — do not attribute an
+  instruction-transposition residue to one. Same sweep: `/Ob1`, `/Ot`, `/Gy-`, `/Gf`
+  are codegen-identical; `/Ob0`, `/Oy-`, `/Oi-`, `/Os`, `/Og-`, `/O1` all regress.
 - `/Zi` or `/Z7` (PDB / debug info) [HEURISTIC] — **no codegen change**; affects
   only the debug stream, so it neither helps nor hurts byte-matching. (We synth our
   own PDB; see `synth_pdb`.)
