@@ -521,13 +521,13 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         gruntKind = cell->m_toolId;
     }
 
-    if (hitFlag != 0) {
-        if (pfk == 0) {
-            world->LoadCursorSprites(0, 0);
-            return 1;
-        }
-        if (gruntKind != GRUNT_BOOMERANG && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
-            && gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_WINGZ) {
+    if (hitFlag != 0 && pfk != 0) {
+        // Retail's compare chain is written POSITIVE and in this order: rock,
+        // welder, boomerang, gunhat, nerfgun, wingz.  A pfk of 0 falls all the
+        // way through to the shared tail instead of returning here.
+        if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
+            && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
+            && gruntKind != GRUNT_WINGZ) {
             world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
             return 1;
         }
@@ -551,131 +551,136 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    switch (gruntKind) {
-        case PICKUP_GAUNTLETZ:
-            if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
-                || collision == TILEKIND_GIANT_ROCK || collision == TILEKIND_GAUNTLET_BRICK_A
-                || collision == TILEKIND_GAUNTLET_BRICK_B
-                || collision == TILEKIND_GAUNTLET_BRICK_C) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                return 1;
-            }
-            break;
-
-        case PICKUP_SHOVEL:
-            if (collision == TILEKIND_COVERED_POWERUP || collision == TILEKIND_REVEALED_POWERUP) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                return 1;
-            }
-            break;
-
-        case PICKUP_GOOBER: {
-            POSITION pos = m_baseList.GetHeadPosition();
-            while (pos != NULL) {
-                CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == 0) {
+    if (hitFlag == 0) {
+        switch (gruntKind) {
+            case PICKUP_GAUNTLETZ:
+                if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
+                    || collision == TILEKIND_GIANT_ROCK || collision == TILEKIND_GAUNTLET_BRICK_A
+                    || collision == TILEKIND_GAUNTLET_BRICK_B
+                    || collision == TILEKIND_GAUNTLET_BRICK_C) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     return 1;
                 }
-            }
-            break;
-        }
-        case PICKUP_BRICK:
-            if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
-                || collision == TILEKIND_GAUNTLET_BRICK_B) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                return 1;
-            }
-            break;
+                break;
 
-        case PICKUP_BOMB:
-            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
-            return 1;
+            case PICKUP_SHOVEL:
+                if (collision == TILEKIND_COVERED_POWERUP
+                    || collision == TILEKIND_REVEALED_POWERUP) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    return 1;
+                }
+                break;
 
-        case PICKUP_WARPSTONE:
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
-                return 1;
-            }
-            break;
-        case PICKUP_SPRING:
-            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
-            return 1;
-
-        case PICKUP_SPY: {
-            if (pfk != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
-                || collision == TILEKIND_GAUNTLET_ROCK_B || collision == TILEKIND_GIANT_ROCK
-                || collision == TILEKIND_GAUNTLET_BRICK_A || collision == TILEKIND_GAUNTLET_BRICK_B
-                || collision == TILEKIND_GAUNTLET_BRICK_C) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                return 1;
-            }
-            // the spy also lights up over a hidden object parked on this cell
-            CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-            i32 occupantId;
-            if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-                || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-                occupantId = 0;
-            } else {
-                occupantId = plane->m_rowInts[ty][tx * 7 + 2];
-            }
-            if (occupantId != 0) {
-                void* out = 0;
-                CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
-                CGameObject* occupant =
-                    MapLookupById(*map, occupantId, out) ? static_cast<CGameObject*>(out) : NULL;
-                if (occupant != NULL) {
-                    CUserLogic* logic = occupant->m_animWorker->m_logic;
-                    if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+            case PICKUP_GOOBER: {
+                POSITION pos = m_baseList.GetHeadPosition();
+                while (pos != NULL) {
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                    if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == 0) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                         return 1;
                     }
                 }
+                break;
             }
-            break;
-        }
-
-        case PICKUP_BOOMERANG:
-        case PICKUP_GUNHAT:
-        case PICKUP_NERFGUN:
-        case PICKUP_ROCK:
-        case PICKUP_WELDER:
-        case PICKUP_WINGZ:
-            if (pfk != 0) {
-                POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                view->m_mainPlane->WrapCoord(&source.x, &source.y);
-                POINT destination = {x, y};
-                view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
-                u16 color;
-                if (cell->RectContains(x, y)) {
-                    color = PackRgb16(0xff, 0, 0);
+            case PICKUP_BRICK:
+                if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
+                    || collision == TILEKIND_GAUNTLET_BRICK_B) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                } else {
-                    color = PackRgb16(0x20, 0x20, 0x20);
-                    world->LoadCursorSprites(pfk, 0);
+                    return 1;
                 }
-                world->m_pathPreviewSource = source;
-                world->m_pathPreviewDestination = destination;
-                world->m_pathPreviewColor = color;
-                world->m_drewThisFrame = 1;
-                return 1;
-            }
-            break;
+                break;
 
-        case PICKUP_TIMEBOMB: {
-            CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-            i32 attr;
-            if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-                || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-                attr = 1;
-            } else {
-                attr = plane->m_rowInts[ty][tx * 7];
-            }
-            if (pfk != 0 && (attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+            case PICKUP_BOMB:
+                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
                 return 1;
+
+            case PICKUP_WARPSTONE:
+                if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                    world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                    return 1;
+                }
+                break;
+            case PICKUP_SPRING:
+                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                return 1;
+
+            case PICKUP_SPY: {
+                if (pfk != 0 || collision == TILEKIND_GAUNTLET_ROCK_A
+                    || collision == TILEKIND_GAUNTLET_ROCK_B || collision == TILEKIND_GIANT_ROCK
+                    || collision == TILEKIND_GAUNTLET_BRICK_A
+                    || collision == TILEKIND_GAUNTLET_BRICK_B
+                    || collision == TILEKIND_GAUNTLET_BRICK_C) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    return 1;
+                }
+                // the spy also lights up over a hidden object parked on this cell
+                CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+                i32 occupantId;
+                if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+                    || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+                    occupantId = 0;
+                } else {
+                    occupantId = plane->m_rowInts[ty][tx * 7 + 2];
+                }
+                if (occupantId != 0) {
+                    void* out = 0;
+                    CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
+                    CGameObject* occupant = MapLookupById(*map, occupantId, out)
+                                                ? static_cast<CGameObject*>(out)
+                                                : NULL;
+                    if (occupant != NULL) {
+                        CUserLogic* logic = occupant->m_animWorker->m_logic;
+                        if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
+                            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                            return 1;
+                        }
+                    }
+                }
+                break;
             }
-            break;
+
+            case PICKUP_BOOMERANG:
+            case PICKUP_GUNHAT:
+            case PICKUP_NERFGUN:
+            case PICKUP_ROCK:
+            case PICKUP_WELDER:
+            case PICKUP_WINGZ:
+                if (pfk != 0) {
+                    POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+                    view->m_mainPlane->WrapCoord(&source.x, &source.y);
+                    POINT destination = {x, y};
+                    view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+                    u16 color;
+                    if (cell->RectContains(x, y)) {
+                        color = PackRgb16(0xff, 0, 0);
+                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    } else {
+                        color = PackRgb16(0x20, 0x20, 0x20);
+                        world->LoadCursorSprites(pfk, 0);
+                    }
+                    world->m_pathPreviewSource = source;
+                    world->m_pathPreviewDestination = destination;
+                    world->m_pathPreviewColor = color;
+                    world->m_drewThisFrame = 1;
+                    return 1;
+                }
+                break;
+
+            case PICKUP_TIMEBOMB: {
+                CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
+                i32 attr;
+                if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+                    || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+                    attr = 1;
+                } else {
+                    attr = plane->m_rowInts[ty][tx * 7];
+                }
+                if (pfk != 0 && (attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    return 1;
+                }
+                break;
+            }
         }
     }
 
