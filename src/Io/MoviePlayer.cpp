@@ -1,3 +1,5 @@
+#define MOVIEPLAYER_OOL_DTOR
+
 #include <rva.h>
 
 #include <Io/MoviePlayer.h>

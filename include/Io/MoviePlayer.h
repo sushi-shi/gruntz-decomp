@@ -169,4 +169,11 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
+
+#ifndef MOVIEPLAYER_OOL_DTOR
+inline CMoviePlayer::~CMoviePlayer() {
+    Teardown();
+}
+#endif
+
 #endif // GRUNTZ_CMOVIEPLAYER_H
