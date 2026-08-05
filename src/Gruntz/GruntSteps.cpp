@@ -535,46 +535,6 @@ i32 CGrunt::StepCompassMove() {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         switch (cmd) {
-            case TILEKIND_ARROW_CURRENT:
-                switch (m_entranceCell.direction) {
-                    case DIR_NORTH:
-                        moveY = y - 0x20;
-                        voice = g_gruntMoveDirNorth;
-                        break;
-                    case DIR_NORTHEAST:
-                        moveX = x + 0x20;
-                        moveY = y - 0x20;
-                        voice = g_gruntMoveDirNorthEast;
-                        break;
-                    case DIR_EAST:
-                        moveX = x + 0x20;
-                        voice = g_gruntMoveDirEast;
-                        break;
-                    case DIR_SOUTHEAST:
-                        moveY = y + 0x20;
-                        moveX = x + 0x20;
-                        voice = g_gruntMoveDirSouthEast;
-                        break;
-                    case DIR_SOUTH:
-                        moveY = y + 0x20;
-                        voice = g_gruntMoveDirSouth;
-                        break;
-                    case DIR_SOUTHWEST:
-                        moveY = y + 0x20;
-                        moveX = x - 0x20;
-                        voice = g_gruntMoveDirSouthWest;
-                        break;
-                    case DIR_WEST:
-                        moveX = x - 0x20;
-                        voice = g_gruntMoveDirWest;
-                        break;
-                    case DIR_NORTHWEST:
-                        moveX = x - 0x20;
-                        moveY = y - 0x20;
-                        voice = g_gruntMoveDirNorthWest;
-                        break;
-                }
-                break;
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
                 moveY = y - 0x20;
@@ -594,6 +554,48 @@ i32 CGrunt::StepCompassMove() {
             case TILEKIND_ARROW_LEFT_B:
                 moveX = x - 0x20;
                 voice = g_gruntMoveDirWest;
+                break;
+            case TILEKIND_ARROW_CURRENT:
+                // cardinals first, then diagonals: that arm order is what lets
+                // cl fold each cardinal arm into the matching ARROW_* arm below
+                switch (m_entranceCell.direction) {
+                    case DIR_NORTH:
+                        moveY = y - 0x20;
+                        voice = g_gruntMoveDirNorth;
+                        break;
+                    case DIR_EAST:
+                        moveX = x + 0x20;
+                        voice = g_gruntMoveDirEast;
+                        break;
+                    case DIR_SOUTH:
+                        moveY = y + 0x20;
+                        voice = g_gruntMoveDirSouth;
+                        break;
+                    case DIR_WEST:
+                        moveX = x - 0x20;
+                        voice = g_gruntMoveDirWest;
+                        break;
+                    case DIR_NORTHEAST:
+                        moveX = x + 0x20;
+                        moveY = y - 0x20;
+                        voice = g_gruntMoveDirNorthEast;
+                        break;
+                    case DIR_SOUTHEAST:
+                        moveY = y + 0x20;
+                        moveX = x + 0x20;
+                        voice = g_gruntMoveDirSouthEast;
+                        break;
+                    case DIR_SOUTHWEST:
+                        moveY = y + 0x20;
+                        moveX = x - 0x20;
+                        voice = g_gruntMoveDirSouthWest;
+                        break;
+                    case DIR_NORTHWEST:
+                        moveX = x - 0x20;
+                        moveY = y - 0x20;
+                        voice = g_gruntMoveDirNorthWest;
+                        break;
+                }
                 break;
         }
         i32 mtx = moveX >> TILE_SHIFT_PX;
@@ -634,8 +636,9 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        i32 toyCount =
-            g_buteMgr.GetIntDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
+        i32 toyCount = static_cast<i32>(
+            g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1)
+        );
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:
@@ -698,7 +701,16 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 7);
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
-            i32 idx = rand() % bag.GetSize();
+            // retail keeps the degenerate empty-bag arm: cl cannot prove
+            // count != 0 here, so both rand() calls survive
+            i32 last = bag.GetUpperBound();
+            i32 count = last + 1;
+            i32 idx;
+            if (count == 0) {
+                idx = (rand() & 1) != 0 ? 0 : last;
+            } else {
+                idx = rand() % count;
+            }
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
@@ -746,9 +758,9 @@ i32 CGrunt::StepCompassMove() {
                 break;
             }
         }
-    }
-    if (result == 0) {
-        return 0;
+        if (result == 0) {
+            return 0;
+        }
     }
 
 commit:
