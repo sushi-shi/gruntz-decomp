@@ -259,42 +259,45 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     m_toolzPct = g_buteMgr.GetInt("Battlez", "ToolzPercent");
     m_toyzPct = m_toolzPct + g_buteMgr.GetInt("Battlez", "ToyzPercent");
     m_brickzPct = m_toyzPct + g_buteMgr.GetInt("Battlez", "BrickzPercent");
+    // The brick CDF: RedBrick through BlackBrick.
     m_redBrickPct = g_buteMgr.GetInt("Battlez", "RedBrick");
     m_blueBrickPct = m_redBrickPct + g_buteMgr.GetInt("Battlez", "BlueBrick");
-    m_goldBrickPct = g_buteMgr.GetInt("Battlez", "GoldBrick");
+    m_goldBrickPct = m_blueBrickPct + g_buteMgr.GetInt("Battlez", "GoldBrick");
     m_blackBrickPct = m_goldBrickPct + g_buteMgr.GetInt("Battlez", "BlackBrick");
+    // The toy CDF: one running total per key, from BabyWalkerz to Yoyoz.
     m_babyWalkerzPct = g_buteMgr.GetInt("Battlez", "BabyWalkerz");
     m_beachBallzPct = m_babyWalkerzPct + g_buteMgr.GetInt("Battlez", "BeachBallz");
-    m_bigWheelzPct = g_buteMgr.GetInt("Battlez", "BigWheelz");
+    m_bigWheelzPct = m_beachBallzPct + g_buteMgr.GetInt("Battlez", "BigWheelz");
     m_goKartzPct = m_bigWheelzPct + g_buteMgr.GetInt("Battlez", "GoKartz");
-    m_jackInTheBoxzPct = g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
+    m_jackInTheBoxzPct = m_goKartzPct + g_buteMgr.GetInt("Battlez", "JackInTheBoxz");
     m_jumpRopezPct = m_jackInTheBoxzPct + g_buteMgr.GetInt("Battlez", "JumpRopez");
-    m_pogoStickzPct = g_buteMgr.GetInt("Battlez", "PogoStickz");
+    m_pogoStickzPct = m_jumpRopezPct + g_buteMgr.GetInt("Battlez", "PogoStickz");
     m_scrollzPct = m_pogoStickzPct + g_buteMgr.GetInt("Battlez", "Scrollz");
-    m_squeakToyzPct = g_buteMgr.GetInt("Battlez", "SqueakToyz");
+    m_squeakToyzPct = m_scrollzPct + g_buteMgr.GetInt("Battlez", "SqueakToyz");
     m_yoyozPct = m_squeakToyzPct + g_buteMgr.GetInt("Battlez", "Yoyoz");
+
+    // The tool CDF: Bombz through Wingz, the last entry being the grand total.
     m_bombzPct = g_buteMgr.GetInt("Battlez", "Bombz");
     m_boomerangzPct = m_bombzPct + g_buteMgr.GetInt("Battlez", "Boomerangz");
-    g_buteMgr.GetInt("Battlez", "Brickz");
-    m_clubzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Clubz");
-    m_gauntletzPct = g_buteMgr.GetInt("Battlez", "Gauntletz");
+    m_toolBrickzPct = m_boomerangzPct + g_buteMgr.GetInt("Battlez", "Brickz");
+    m_clubzPct = m_toolBrickzPct + g_buteMgr.GetInt("Battlez", "Clubz");
+    m_gauntletzPct = m_clubzPct + g_buteMgr.GetInt("Battlez", "Gauntletz");
     m_glovezPct = m_gauntletzPct + g_buteMgr.GetInt("Battlez", "Glovez");
-    m_gooberzPct = g_buteMgr.GetInt("Battlez", "Gooberz");
+    m_gooberzPct = m_glovezPct + g_buteMgr.GetInt("Battlez", "Gooberz");
     m_gravityBootzPct = m_gooberzPct + g_buteMgr.GetInt("Battlez", "GravityBootz");
-    m_gunHatzPct = g_buteMgr.GetInt("Battlez", "GunHatz");
+    m_gunHatzPct = m_gravityBootzPct + g_buteMgr.GetInt("Battlez", "GunHatz");
     m_nerfGunzPct = m_gunHatzPct + g_buteMgr.GetInt("Battlez", "NerfGunz");
-    m_rockzPct = g_buteMgr.GetInt("Battlez", "Rockz");
+    m_rockzPct = m_nerfGunzPct + g_buteMgr.GetInt("Battlez", "Rockz");
     m_shieldzPct = m_rockzPct + g_buteMgr.GetInt("Battlez", "Shieldz");
-    m_shovelzPct = g_buteMgr.GetInt("Battlez", "Shovelz");
+    m_shovelzPct = m_shieldzPct + g_buteMgr.GetInt("Battlez", "Shovelz");
     m_springzPct = m_shovelzPct + g_buteMgr.GetInt("Battlez", "Springz");
-    m_spyzPct = g_buteMgr.GetInt("Battlez", "Spyz");
+    m_spyzPct = m_springzPct + g_buteMgr.GetInt("Battlez", "Spyz");
     m_swordzPct = m_spyzPct + g_buteMgr.GetInt("Battlez", "Swordz");
-    m_timeBombzPct = g_buteMgr.GetInt("Battlez", "TimeBombz");
+    m_timeBombzPct = m_swordzPct + g_buteMgr.GetInt("Battlez", "TimeBombz");
     m_toobzPct = m_timeBombzPct + g_buteMgr.GetInt("Battlez", "Toobz");
-    m_wandzPct = g_buteMgr.GetInt("Battlez", "Wandz");
+    m_wandzPct = m_toobzPct + g_buteMgr.GetInt("Battlez", "Wandz");
     m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
-    m_wingzPct = g_buteMgr.GetInt("Battlez", "Wingz");
-    m_toolThresholdTotal = m_wingzPct + g_buteMgr.GetInt("Battlez", "Wingz");
+    m_wingzPct = m_welderzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
     m_scratch78 = 0;
     m_scratch80 = 0;
@@ -4331,57 +4334,60 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             return 1;
         }
         i32 roll;
-        if (m_toolThresholdTotal == 0) {
+        if (m_wingzPct == 0) {
             roll = rand() & 1;
         } else {
-            roll = rand() % m_toolThresholdTotal + 1;
+            roll = rand() % m_wingzPct + 1;
         }
+        // Every arm yields the PickupType id of the key its bucket accumulates;
+        // 0x14 is not a droppable tool, so the chain skips straight to Wingz.
         i32 mode;
         if (roll <= m_bombzPct) {
-            mode = 1;
+            mode = PICKUP_BOMB;
         } else if (roll <= m_boomerangzPct) {
-            mode = 2;
+            mode = PICKUP_BOOMERANG;
+        } else if (roll <= m_toolBrickzPct) {
+            mode = PICKUP_BRICK;
         } else if (roll <= m_clubzPct) {
-            mode = 3;
+            mode = PICKUP_CLUB;
         } else if (roll <= m_gauntletzPct) {
-            mode = 4;
+            mode = PICKUP_GAUNTLETZ;
         } else if (roll <= m_glovezPct) {
-            mode = 5;
+            mode = PICKUP_GLOVEZ;
         } else if (roll <= m_gooberzPct) {
-            mode = 6;
+            mode = PICKUP_GOOBER;
         } else if (roll <= m_gravityBootzPct) {
-            mode = 7;
+            mode = PICKUP_GRAVITYBOOTZ;
         } else if (roll <= m_gunHatzPct) {
-            mode = 8;
+            mode = PICKUP_GUNHAT;
         } else if (roll <= m_nerfGunzPct) {
-            mode = 9;
+            mode = PICKUP_NERFGUN;
         } else if (roll <= m_rockzPct) {
-            mode = 0xa;
+            mode = PICKUP_ROCK;
         } else if (roll <= m_shieldzPct) {
-            mode = 0xb;
+            mode = PICKUP_SHIELD;
         } else if (roll <= m_shovelzPct) {
-            mode = 0xc;
+            mode = PICKUP_SHOVEL;
         } else if (roll <= m_springzPct) {
-            mode = 0xd;
+            mode = PICKUP_SPRING;
         } else if (roll <= m_spyzPct) {
-            mode = 0xe;
+            mode = PICKUP_SPY;
         } else if (roll <= m_swordzPct) {
-            mode = 0xf;
+            mode = PICKUP_SWORD;
         } else if (roll <= m_timeBombzPct) {
-            mode = 0x10;
+            mode = PICKUP_TIMEBOMB;
         } else if (roll <= m_toobzPct) {
-            mode = 0x11;
+            mode = PICKUP_TOOB;
         } else if (roll <= m_wandzPct) {
-            mode = 0x12;
+            mode = PICKUP_WAND;
         } else if (roll <= m_welderzPct) {
-            mode = 0x13;
-        } else if (roll <= m_wingzPct) {
-            mode = 0x15;
+            mode = PICKUP_WELDER;
         } else {
-            mode = 0x16;
+            mode = PICKUP_WINGZ;
         }
-        if (mode == 0x14) {
-            mode = 5;
+        // 0x14 has no Battlez bute key of its own; retail folds it onto Gauntletz.
+        if (mode == PICKUP_WARPSTONE) {
+            mode = PICKUP_GAUNTLETZ;
         }
         if (mode == 3) {
 
