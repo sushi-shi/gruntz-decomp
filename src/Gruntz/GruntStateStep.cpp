@@ -161,8 +161,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         }
 
         Coord here, np;
-        g->GetTilePos(&here);
-        cur->GetTilePos(&np);
+        here = g->GetTilePos();
+        np = cur->GetTilePos();
         i32 dx = np.m_x - here.m_x;
         i32 dy = np.m_y - here.m_y;
         i32 dist = static_cast<i32>(

@@ -3179,11 +3179,11 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     i32 fcy = fc->m_y;
 
     Coord a;
-    g->GetTilePos(&a);
+    a = g->GetTilePos();
     i32 gy = a.m_y >> TILE_SHIFT_PX;
     i32 gx = a.m_x >> TILE_SHIFT_PX;
     Coord b;
-    g->GetTilePos(&b);
+    b = g->GetTilePos();
     i32 bx = b.m_x >> TILE_SHIFT_PX;
 
     BrickzCell dest;
@@ -3218,7 +3218,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (own.m_flags & 0x4000) {
 
             Coord da;
-            g->GetTilePos(&da);
+            da = g->GetTilePos();
             for (i32 drow = m_board->m_bounds.top; drow < m_board->m_bounds.bottom; drow++) {
                 for (i32 dcol = m_board->m_bounds.left; dcol < m_board->m_bounds.right; dcol++) {
                     CPtrList cs(0xa);
@@ -3255,7 +3255,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
         Coord tp;
         i32 keyHi = g->m_object->m_screenX >> TILE_SHIFT_PX;
-        g->GetTilePos(&tp);
+        tp = g->GetTilePos();
         i32 key = (keyHi << 8) + (tp.m_y >> TILE_SHIFT_PX);
         static_cast<void>((tp.m_x >> TILE_SHIFT_PX));
         CTileTriggerSwitchLogic* r = m_cellQuery->FindChild(key, TRIGID_ANY);
@@ -5216,7 +5216,7 @@ inflight: {
         i32 x5 = here.m_x >> TILE_SHIFT_PX;
         i32 y5 = here.m_y >> TILE_SHIFT_PX;
         Coord nbpos;
-        cur->GetTilePos((&nbpos));
+        nbpos = cur->GetTilePos();
         i32 dx = nbpos.m_x - x5;
         i32 dy = nbpos.m_y - y5;
         i32 adx = dx < 0 ? -dx : dx;
@@ -5262,13 +5262,16 @@ L_clear:
 #undef MOVE_RECYCLE
 
 // @early-stop
+// @early-stop
+// cl keeps the hidden return pointer in eax and writes through it; retail parks
+// it in edx and copies (`mov eax,edx`) at the end. The member load order
+// (m_screenX then m_screenY) only comes out right in the by-value form.
 RVA(0x00031c70, 0x1d)
-Coord* CGrunt::GetTilePos(Coord* out) {
+Coord CGrunt::GetTilePos() {
+    Coord out;
     CWwdGameObjectA* h = m_object;
-    i32 x = h->m_screenX >> TILE_SHIFT_PX;
-    i32 y = h->m_screenY >> TILE_SHIFT_PX;
-    out->m_x = x;
-    out->m_y = y;
+    out.m_x = h->m_screenX >> TILE_SHIFT_PX;
+    out.m_y = h->m_screenY >> TILE_SHIFT_PX;
     return out;
 }
 

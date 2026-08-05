@@ -717,7 +717,7 @@ public:
     void ReapplyVoiceParams();
     void DestroyAnims();
 
-    Coord* GetTilePos(Coord* out);
+    Coord GetTilePos();
 
     void EnsureStruckVoice(const char* key);
 
