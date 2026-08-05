@@ -10,7 +10,7 @@ no-cross-casts-nothing-is-a-keep): recover the ONE real class/type and delete th
 view.
 
   (default)   report every global declared with >1 distinct (type, linkage)
-  --ratchet   FATAL if a split not in config/single-view-baseline.tsv appears
+  --ratchet   FATAL if a split not in config/cleanliness/single-view-baseline.tsv appears
   --write-baseline   (re)freeze the current split backlog
 
 The backlog is frozen and driven to 0; the ratchet keeps NEW splits from landing.
@@ -26,7 +26,7 @@ DECL_RE = re.compile(
     r'([A-Za-z_][\w:<>]*(?:\s*\*+)?)\s+'
     r'\**([A-Za-z_]\w*)\s*(?:\[[^\]]*\])?\s*;',
     re.M)
-BASELINE = os.path.join("config", "single-view-baseline.tsv")
+BASELINE = os.path.join("config", "cleanliness", "single-view-baseline.tsv")
 
 
 def repo_root():

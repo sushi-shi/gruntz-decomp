@@ -1,35 +1,37 @@
 # config/ — tracked configuration and recovered evidence
 
-Three kinds, three handling rules. NEVER resolve a merge conflict here with a
-blanket `--ours`/`--theirs` (that broke main twice) — see the per-kind rule.
+Configuration is grouped by the thing it describes. NEVER resolve a merge
+conflict here with a blanket `--ours`/`--theirs` (that broke main twice) — use
+the owning tool's merge/update rule.
 
-## Hand-maintained source of truth (edit deliberately)
+## Root build and matching contracts
 
 - **`units.toml`** — THE per-TU manifest: unit → source path + compile-flags
   profile (`[flags]`: base=/O2, eh=/O2+/GX, framed=/O2 /Oy-, mfc=/O1+/GX —
   recovered from the retail bytes, not chosen). Read by everything via
   `gruntz.core.manifest`. Add a TU = add an `[[unit]]` block.
-- **`tidy-audit.yaml`** — the curated clang-tidy check set for
-  `gruntz audit tidy` (read-only de-hack finder; never auto-fix).
+- **`match_baseline.tsv`** — per-function best-fuzzy% regression baseline
+  (`gruntz.match.status`). Bless reviewed dips/losses via
+  `status update --accept-regressions`.
+- **`labels_manifest.tsv`** — ACK-record: expected source-label count per unit
+  (`build/labels.py` gate). A count change must be ACKed here in the same
+  commit that causes it.
 
-## Ratchet / baseline records (tool-rolled; bless deliberately, merge per ROW)
+## `cleanliness/` tracked metrics and review state
 
-Written ONLY by `gruntz build`'s gate tail (status/report are pure reads).
-A conflict means both sides measured — re-run the build on the merge result
-and let the tool re-roll; never hand-pick a whole file.
+These files belong to source-quality audits. Baselines are tool-rolled and
+merged per row; remeasure the merged tree rather than taking one side wholesale.
 
 - **`cleanliness-baseline.tsv`** — the drive-to-0 scoreboard floors
   (`gruntz.cleanliness.board`). Ratcheted rows are DOWN-ONLY; a rise fails
   the build. Bless a lower floor via `board --update`.
-- **`match_baseline.tsv`** — per-function best-fuzzy% regression baseline
-  (`gruntz.match.status`). Bless reviewed dips/losses via
-  `status update --accept-regressions`.
-- **`tu-order-baseline.tsv`** — frozen backlog of linker-order violations
-  (`gruntz.audit.tu_order_check --gate`): per-TU intra counts + the
-  interleave-pair total. Any rise fails the build; improvements auto-roll down.
-- **`labels_manifest.tsv`** — ACK-record: expected source-label count per unit
-  (`build/labels.py` gate). A count change must be ACKed here in the same
-  commit that causes it.
+- **`bare-constants-baseline.tsv`**, **`data-tu-order-baseline.tsv`**,
+  **`single-view-baseline.tsv`**, **`strict-enums-baseline.tsv`**, and
+  **`tu-order-baseline.tsv`** — focused audit ratchets and frozen backlogs.
+- **`enum-review.tsv`** and **`naked-numbers-worklist.tsv`** — durable campaign
+  review/worklist state.
+- **`tidy-audit.yaml`** — curated checks for the read-only `gruntz audit tidy`
+  de-hack finder; never auto-fix.
 
 ## `retail/` executable labels (regenerate/extend deliberately; merge per ROW)
 

@@ -7,13 +7,13 @@ Each metric is matching-neutral to drive toward its target unless noted.
 **Live tracking.** These counts are computed by `gruntz.cleanliness.board`
 (comment- and string-stripped, so prose/`//` annotations don't inflate) and printed
 in the **`gruntz build` report** right under the match summary, each with a **delta
-vs the committed baseline** (`config/cleanliness-baseline.tsv`) — `down = good`. So a
+vs the committed baseline** (`config/cleanliness/cleanliness-baseline.tsv`) — `down = good`. So a
 matcher sees its own cast/placeholder/view change the moment it builds and steers on
 it. Bless a new baseline with `python -m gruntz.cleanliness.board --update` (the
 orchestrator refreshes it at integration, like `match_baseline.tsv`).
 
 **No counts are written down here.** The tables below name each metric's row key in
-`config/cleanliness-baseline.tsv` — read the live number there or from the build
+`config/cleanliness/cleanliness-baseline.tsv` — read the live number there or from the build
 report. A pasted snapshot silently rots (this doc once carried figures that were off
 by 2×–30×), and the `rg` commands are *approximations* of the board's
 comment-/string-stripped count, kept only to show what each metric looks for.
@@ -117,13 +117,13 @@ Two companion gates run beside them:
 
 - **`gruntz audit enum-domains`** (`--gate`, normal tier) - split-domain storage
   widths must agree tree-wide, no bare `enum` in a header (single-enumerator tag
-  types exempt), `config/enum-review.tsv` in sync. Negative controls live in
+  types exempt), `config/cleanliness/enum-review.tsv` in sync. Negative controls live in
   `gruntz.match.gate_selftest`.
 - **`gruntz audit strict-enums`** - compiles the tree at `/std:c++20`, where the
   domains become `enum class`, and reports what the MSVC build cannot see: a
   domain used as a raw array index, a domain silently widened through an `i32`
   parameter, two domains conflated behind one `i32`. Floor in
-  `config/strict-enums-baseline.tsv`. **Expect the count to RISE before it falls**
+  `config/cleanliness/strict-enums-baseline.tsv`. **Expect the count to RISE before it falls**
   — it measures how much of the tree still treats domains as ints, so declaring a
   new domain increases it until that domain's consumers are typed. It is NOT
   drivable to zero mechanically: the residual sites each need a judgement about

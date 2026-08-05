@@ -3,7 +3,7 @@
 
 A READ-ONLY worklist generator for the matching campaign. It runs clang-tidy
 (21.x, from the Nix shell) over src/ with a curated finder config
-(config/tidy-audit.yaml) and reports the de-hack backlog the campaign cares
+(config/cleanliness/tidy-audit.yaml) and reports the de-hack backlog the campaign cares
 about: C-style pointer-punning casts (`(char*)this`, `(CFoo*)m_8`,
 `*(i32*)(B+0xNN)`, `(T*)0xADDR`), explicit reinterpret_casts, dead/unused
 declarations, and a few bugprone smells. Because clang parses each TU, every
@@ -12,7 +12,7 @@ a string literal (the false positives an `rg ')this'` sweep would hit).
 
 WHY A SEPARATE CONFIG (not a root .clang-tidy): clangd auto-discovers a file
 named `.clang-tidy` and would run these checks LIVE in the editor. The config
-lives at config/tidy-audit.yaml (a non-magic name, off the editor path) and is
+lives at config/cleanliness/tidy-audit.yaml (a non-magic name, off the editor path) and is
 passed explicitly via `--config-file`. And it is NEVER run with `-fix`: the
 real fix is always a later, manual, objdiff-verified de-hack.
 
@@ -46,7 +46,7 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
-CONFIG = REPO / "config" / "tidy-audit.yaml"
+CONFIG = REPO / "config" / "cleanliness" / "tidy-audit.yaml"
 COMPDB_DIR = REPO / "build" / "clangd"
 COMPDB = COMPDB_DIR / "compile_commands.json"
 
@@ -264,7 +264,7 @@ def main() -> None:
     ap.add_argument("-j", "--jobs", type=int, default=(os.cpu_count() or 8),
                     help="parallel clang-tidy jobs (default: nproc)")
     ap.add_argument("--config", type=Path, default=CONFIG,
-                    help="clang-tidy config file (default: config/tidy-audit.yaml)")
+                    help="clang-tidy config file (default: config/cleanliness/tidy-audit.yaml)")
     ap.add_argument("-p", "--compdb-dir", type=Path, default=COMPDB_DIR,
                     help="dir holding compile_commands.json (default: build/clangd)")
     args = ap.parse_args()
@@ -273,7 +273,7 @@ def main() -> None:
     if not clang_tidy:
         die("clang-tidy not on PATH - run inside `nix develop`.")
     if not args.config.is_file():
-        die(f"no config at {args.config} (expected config/tidy-audit.yaml).")
+        die(f"no config at {args.config} (expected config/cleanliness/tidy-audit.yaml).")
 
     db_files = load_db_files()
     targets, skipped = resolve_targets(args.paths, db_files)

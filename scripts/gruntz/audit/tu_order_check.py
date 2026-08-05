@@ -176,7 +176,7 @@ def check_inter(tus):
     return out
 
 
-BASELINE = REPO / "config" / "tu-order-baseline.tsv"
+BASELINE = REPO / "config" / "cleanliness" / "tu-order-baseline.tsv"
 
 
 def _gate(intra, inter) -> int:
@@ -245,7 +245,7 @@ def main():
                          "is the actionable worklist, not the pair total.")
     ap.add_argument("--gate", action="store_true",
                     help="build-tail ratchet: compare per-TU intra violations + the "
-                         "interleave-pair count vs config/tu-order-baseline.tsv; any "
+                         "interleave-pair count vs config/cleanliness/tu-order-baseline.tsv; any "
                          "RISE fails (exit 2); improvements roll the baseline DOWN "
                          "(the frozen-backlog pattern, like vtable-slot-binding)")
     args = ap.parse_args()

@@ -225,7 +225,7 @@ Findings the type system produced (each evidenced, not guessed):
 
 ## The strict drain
 
-`config/strict-enums-baseline.tsv` stands at **89** distinct defects across 29
+`config/cleanliness/strict-enums-baseline.tsv` stands at **89** distinct defects across 29
 units, down from **1326**. Units with any error: 217 -> 29.
 
 The number does not fall monotonically — it MEASURES how much of the tree still
@@ -284,12 +284,12 @@ are annotated with the measurement showing the shape is byte-evidenced.
 - **`gruntz audit enum-domains`** (`scripts/gruntz/audit/enum_domains.py`,
   `--gate` at the `normal` tier) — a `_SPLIT` domain's declared storage must match
   every `GZ_ENUM_STORAGE` width used for it (FATAL); no bare `enum X {` outside
-  the macros; every enumerator has an explicit value; `config/enum-review.tsv`
+  the macros; every enumerator has an explicit value; `config/cleanliness/enum-review.tsv`
   states are consistent.
-- **`config/enum-review.tsv`** — a durable per-file `pending` / `reviewed` /
+- **`config/cleanliness/enum-review.tsv`** — a durable per-file `pending` / `reviewed` /
   `third-party` checklist. A file cannot be `reviewed` while it still has an
   unexplained code literal.
-- **Worklist** — `readability-magic-numbers` in `config/tidy-audit.yaml`, read via
+- **Worklist** — `readability-magic-numbers` in `config/cleanliness/tidy-audit.yaml`, read via
   `gruntz audit tidy`. Enabling it reverses that file's standing "matching-neutral
   floods are intentionally left OUT" note; the flood is now the queue.
 

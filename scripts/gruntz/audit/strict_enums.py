@@ -35,7 +35,7 @@ from pathlib import Path
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 DB = REPO / "build" / "clangd" / "compile_commands.json"
-BASELINE = REPO / "config" / "strict-enums-baseline.tsv"
+BASELINE = REPO / "config" / "cleanliness" / "strict-enums-baseline.tsv"
 
 ERR = re.compile(r"^(?P<path>[^:()]+)[(](?P<line>\d+),(?P<col>\d+)[)]\s*:\s*error:\s*(?P<msg>.*)$")
 

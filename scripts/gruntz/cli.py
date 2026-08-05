@@ -468,7 +468,7 @@ def cmd_build(args) -> None:
     # See docs/enum-modeling-plan.md + docs/patterns/enum-domains.md.
     _gate("gruntz.audit.enum_domains", ["--gate"],
           "enum-domain gate violated - a split domain's storage width disagrees, a "
-          "header declares a bare enum, or config/enum-review.tsv is out of sync "
+          "header declares a bare enum, or config/cleanliness/enum-review.tsv is out of sync "
           "(python -m gruntz.audit.enum_domains)", "normal")
     # Once a switch KEY is enum-typed, every integer label under it has exactly one
     # correct enumerator, so a raw one is an oversight rather than a judgement. This
@@ -481,7 +481,7 @@ def cmd_build(args) -> None:
     # The rest of the same problem: a literal written where the surrounding TYPE
     # already says what it means - a 0 against a pointer, a byte count that is
     # sizeof the thing beside it, a bare value against an enum. Ratcheted
-    # down-only against config/bare-constants-baseline.tsv. FULL tier: libclang.
+    # down-only against config/cleanliness/bare-constants-baseline.tsv. FULL tier: libclang.
     _gate("gruntz.audit.bare_constants", ["--gate", "--detail"],
           "bare-constants ratchet regressed - a literal was added where a type "
           "already names it (python -m gruntz.audit.bare_constants --detail)", "full")

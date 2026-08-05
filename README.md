@@ -67,6 +67,7 @@ include/                      shared headers (mirror retail `incs\`): rva.h (RVA
 vendor/                       third-party source (miles-6.0c, sfman-1.01, smacker-3.2f,
                               zlib-1.0.4) — kept verbatim, never formatted
 config/                       units.toml (per-TU build manifest), reconstruction baselines
+  cleanliness/               tracked source-quality metrics and audit review state
   retail/                    labels and boundary evidence for the retail executable
 docs/                         build system, matching notes, gotchas, and the confirmed
                               non-reconstructed-function inventory

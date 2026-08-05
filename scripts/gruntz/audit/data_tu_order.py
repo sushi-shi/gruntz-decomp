@@ -302,7 +302,7 @@ def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None, ran
     return defs, bands, crossings, pools, contains
 
 
-BASELINE = os.path.join("config", "data-tu-order-baseline.tsv")
+BASELINE = os.path.join("config", "cleanliness", "data-tu-order-baseline.tsv")
 
 
 def real_crossings(root, pool_threshold=4):
@@ -345,7 +345,7 @@ def main():
     ap.add_argument("--pool-threshold", type=int, default=4)
     ap.add_argument("--ratchet", action="store_true",
                     help="FATAL if an ordinary-data def lands in another TU's band "
-                         "and is not in config/data-tu-order-baseline.tsv")
+                         "and is not in config/cleanliness/data-tu-order-baseline.tsv")
     ap.add_argument("--write-baseline", action="store_true",
                     help="(re)write the baseline from the current crossings")
     ap.add_argument("--root", default=None)

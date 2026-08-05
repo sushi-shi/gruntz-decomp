@@ -20,7 +20,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 EXTS = {".cpp", ".cc", ".cxx", ".h", ".hpp", ".inl"}
-BASELINE = REPO / "config" / "cleanliness-baseline.tsv"
+BASELINE = REPO / "config" / "cleanliness" / "cleanliness-baseline.tsv"
 
 _BLOCK = re.compile(r"/\*.*?\*/", re.DOTALL)
 _LINE = re.compile(r"//[^\n]*")

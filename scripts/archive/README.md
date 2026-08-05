@@ -15,7 +15,7 @@ tools, because there's nothing left for them to fix.
 
 ## One-shot cast converters — cast metrics are all 0 (DONE)
 The whole cast-cleanliness campaign is complete: `)this`, `)m_`, `(char*)`, `(const char*)`,
-C-style numeric, and offset-cast-macro counts are all **0** in `config/cleanliness-baseline.tsv`.
+C-style numeric, and offset-cast-macro counts are all **0** in `config/cleanliness/cleanliness-baseline.tsv`.
 - `cast_ptr_to_named.py`, `cast_to_static.py`, `cast_str_to_named.py` — AST C-style-cast →
   named-cast converters (byte-neutral, build-verified). Their job is finished.
 - `cast_drivers.py` — ranked offset-cast *drivers* (not files); the banned `(char*)x+N` pattern

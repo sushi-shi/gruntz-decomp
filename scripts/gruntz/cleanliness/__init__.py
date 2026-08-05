@@ -2,7 +2,7 @@
 per concern (all run in the `gruntz build` gate tail; each also `python -m`):
 
     board.py               the scoreboard: cast/placeholder/view/extern counts,
-                           the down-only RATCHET + config/cleanliness-baseline.tsv
+                           the down-only RATCHET + config/cleanliness/cleanliness-baseline.tsv
     view_debt.py           the UNGAMEABLE fake-view metric (phantom classes,
                            declared-only methods)
     foldable_views.py      which pure-phantom classes fold cleanly (worklist)

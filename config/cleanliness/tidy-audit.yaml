@@ -15,7 +15,7 @@
 #      a file named `.clang-tidy` and would then run these checks live in the
 #      editor on every keystroke. This file lives under config/ with a
 #      non-magic name so the editor never picks it up; the runner passes it
-#      explicitly via `clang-tidy --config-file=config/tidy-audit.yaml`.
+#      explicitly via `clang-tidy --config-file=config/cleanliness/tidy-audit.yaml`.
 #   3. It is a FINDER, not a linter gate: WarningsAsErrors is empty, so it never
 #      fails a build. Consume its output as a backlog (`gruntz lint`).
 #
@@ -26,7 +26,7 @@
 # EXCEPTION, added with the numeric-domain campaign (docs/enum-modeling-plan.md):
 # `readability-magic-numbers` IS enabled. It is a flood - thousands of hits - but
 # it is now the campaign's WORKLIST rather than noise, and it is bounded by
-# config/enum-review.tsv, which records which files have been through it. The
+# config/cleanliness/enum-review.tsv, which records which files have been through it. The
 # cleanliness board's `magic case labels` / `unnamed domain compares` rows are the
 # ratcheted summary; this check is how you find the individual sites.
 Checks: >

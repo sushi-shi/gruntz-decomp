@@ -64,7 +64,7 @@ import clang.cindex as cidx
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 CDB = REPO / "build" / "clangd" / "compile_commands.json"
-BASELINE = REPO / "config" / "bare-constants-baseline.tsv"
+BASELINE = REPO / "config" / "cleanliness" / "bare-constants-baseline.tsv"
 DETAIL = REPO / "build" / "gen" / "bare_constants.tsv"
 
 CLASSES = ("pointer-vs-0", "enum-vs-int", "sizeof-literal", "bool-vs-int")

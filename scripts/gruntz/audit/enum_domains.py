@@ -28,7 +28,7 @@ Checks the invariants the numeric-domain campaign depends on
      silently ended up one off from the documented ID space. Reported, not fatal,
      because a genuine 0..N-1 index domain is legitimately implicit.
 
-  5. REVIEW-MANIFEST CONSISTENCY (fatal). config/enum-review.tsv must list every
+  5. REVIEW-MANIFEST CONSISTENCY (fatal). config/cleanliness/enum-review.tsv must list every
      source file exactly once with a known state.
 
   6. RANGE TESTS NAME A BOUNDARY, NOT A MEMBER (fatal). `n > PICKUP_WINGZ` for
@@ -54,7 +54,7 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
-REVIEW = REPO / "config" / "enum-review.tsv"
+REVIEW = REPO / "config" / "cleanliness" / "enum-review.tsv"
 STATES = {"pending", "reviewed", "third-party"}
 
 DECL = re.compile(r"\bGZ_ENUM_BEGIN\(\s*(\w+)\s*\)")
@@ -271,7 +271,7 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--gate", action="store_true", help="exit 1 on any fatal finding")
     ap.add_argument("--sync-review", action="store_true",
-                    help="rewrite config/enum-review.tsv from the current file list")
+                    help="rewrite config/cleanliness/enum-review.tsv from the current file list")
     ap.add_argument("-v", "--verbose", action="store_true", help="also print the warnings")
     args = ap.parse_args()
 

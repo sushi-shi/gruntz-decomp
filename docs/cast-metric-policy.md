@@ -1,7 +1,7 @@
 # Cleanliness endgame: drive every metric to 0 + the cast policy
 
 **Governing directive (2026-07-16).** After the reconstruction/fold work, the campaign's job is to
-drive **every** metric in `config/cleanliness-baseline.tsv` to **0**, then move to other tasks
+drive **every** metric in `config/cleanliness/cleanliness-baseline.tsv` to **0**, then move to other tasks
 (next: DATA-section attribution + the objdiff DATA-match loop — see the roadmap). The tracked
 metrics, all drive-to-0:
 
