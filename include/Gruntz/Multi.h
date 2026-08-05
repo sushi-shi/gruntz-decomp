@@ -94,6 +94,8 @@ public:
         return m_netGate;
     }
 
+    void AppendEditLine(HWND edit, char* str);
+
     CNetSessionNode* LocalPlayer() {
         return m_localPlayer;
     }

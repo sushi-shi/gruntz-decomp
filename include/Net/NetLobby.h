@@ -6,8 +6,6 @@
 namespace NetLobby {
 
     extern HWND g_curDlg;
-
-    void WINAPI AppendEditLine(HWND edit, char* str);
 } // namespace NetLobby
 
 #endif // NET_NETLOBBY_H

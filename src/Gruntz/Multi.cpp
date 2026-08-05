@@ -1699,8 +1699,9 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
 
         case NETMSG_CHAT_LINE: {
+            char* text = msg->m_payload;
             if (g_sharedFlag != NULL) {
-                NetLobby::AppendEditLine(g_sharedFlag, msg->m_payload);
+                AppendEditLine(g_sharedFlag, text);
                 break;
             }
             if (m_connected == 0) {
@@ -1711,7 +1712,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             (static_cast<CFontConfig*>(NetGameMgr()->m_chatLog))
-                ->AddItem(msg->m_payload, 0x30, player->m_colorIndex);
+                ->AddItem(text, 0x30, player->m_colorIndex);
             CDDrawSubMgrLeafScan* host = m_world->m_soundRegistry;
             if (host->m_emitGate != 0) {
                 break;
@@ -1797,7 +1798,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 0;
             }
             if (player->SwapChannel(chan->m_colorIndex) == 0) {
-                chan->m_colorIndex = static_cast<u8>(player->m_colorIndex);
+                i32 colour = player->m_colorIndex;
+                chan->m_colorIndex = static_cast<u8>(colour);
                 SendStatTo(pd, 0x419, 1);
             }
             ParseOneChannel(chan);
@@ -1939,16 +1941,15 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case NETMSG_PLAYER_NAME: {
             CString result;
             if (pd != NULL) {
-                CString name = pd->GetName();
                 result.Format(
                     "*** %s has a different version of the game.",
-                    static_cast<const char*>(name)
+                    static_cast<const char*>(pd->GetName())
                 );
             } else {
                 result.Format("*** A player had a different version of the game.");
             }
             if (g_sharedFlag != NULL) {
-                NetLobby::AppendEditLine(
+                AppendEditLine(
                     g_sharedFlag,
                     const_cast<char*>(static_cast<const char*>(result))
                 );
@@ -2452,7 +2453,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     }
 
     if (showWnd != 0 && hWnd != NULL) {
-        NetLobby::AppendEditLine(static_cast<HWND>(hWnd), line);
+        AppendEditLine(static_cast<HWND>(hWnd), line);
     } else if (showWnd != 0) {
 
         GruntzPlayer* player = static_cast<GruntzPlayer*>(Mgr()->FindOptionsSlot(m_hostIndex));
@@ -2473,31 +2474,32 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     return 1;
 }
 
-namespace NetLobby {
-
-    RVA(0x000bb3e0, 0xe5)
-    void WINAPI AppendEditLine(HWND edit, char* str) {
-        if (!edit || !str || !str[0]) {
-            return;
-        }
-        i32 len = GetWindowTextLengthA(edit);
-        if (len == 0) {
-            SendMessageA(edit, EM_SETSEL, len, -1);
-        } else {
-            SendMessageA(edit, EM_SETSEL, len, len);
-        }
-        char buf[0x80];
-        buf[0] = 0;
-        if (len > 0) {
-            strcat(buf, "\r\n");
-        }
-        strcat(buf, str);
-        MsgParam text;
-        text.m_str = buf;
-        SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
-        SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
+// Retail's two call sites (DispatchRecvMsg 0xb98e2, BroadcastChatLine 0xbb290)
+// both load ecx with the CMulti before `call 0x3e31`, so this is a __thiscall
+// member, not the free __stdcall it was reconstructed as. The body never
+// touches `this`, which is why it byte-matched either way.
+RVA(0x000bb3e0, 0xe5)
+void CMulti::AppendEditLine(HWND edit, char* str) {
+    if (!edit || !str || !str[0]) {
+        return;
     }
-} // namespace NetLobby
+    i32 len = GetWindowTextLengthA(edit);
+    if (len == 0) {
+        SendMessageA(edit, EM_SETSEL, len, -1);
+    } else {
+        SendMessageA(edit, EM_SETSEL, len, len);
+    }
+    char buf[0x80];
+    buf[0] = 0;
+    if (len > 0) {
+        strcat(buf, "\r\n");
+    }
+    strcat(buf, str);
+    MsgParam text;
+    text.m_str = buf;
+    SendMessageA(edit, EM_REPLACESEL, 0, text.m_lparam);
+    SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
+}
 
 // @early-stop
 RVA(0x000bb510, 0x9d)
