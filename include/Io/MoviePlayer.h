@@ -85,6 +85,16 @@ public:
 
     i32 Init(HWND window, DDModeInfo* mode, u32 coopFlags);
     i32 CheckMode16();
+    i32 AddToPlaylist(
+        const char* src,
+        i32 openArg,
+        MovieLayout mode,
+        i32 useDS,
+        POINT* origin,
+        RECT* rect,
+        i32 flags,
+        i32 count
+    );
     i32 RemoveAt(i32 idx);
     i32 FreeAll();
 

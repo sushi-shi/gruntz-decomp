@@ -786,6 +786,49 @@ i32 CMoviePlayer::CheckMode16() {
     return 0;
 }
 
+RVA(0x0017d3a0, 0x259)
+i32 CMoviePlayer::AddToPlaylist(
+    const char* src,
+    i32 openArg,
+    MovieLayout mode,
+    i32 useDS,
+    POINT* origin,
+    RECT* rect,
+    i32 flags,
+    i32 count
+) {
+    if (!m_initialized) {
+        return 0;
+    }
+    if (src == NULL) {
+        return 0;
+    }
+
+    PLAYLISTINFOSTRUCT* rec =
+        static_cast<PLAYLISTINFOSTRUCT*>(::operator new(sizeof(PLAYLISTINFOSTRUCT)));
+    rec->m_src = static_cast<char*>(::operator new(strlen(src) + 1));
+    strcpy(rec->m_src, src);
+    rec->m_openArg = openArg;
+    rec->m_blitMode = mode;
+    rec->m_useDS = useDS;
+    if (origin != NULL) {
+        rec->m_origin = static_cast<POINT*>(::operator new(sizeof(POINT)));
+        *rec->m_origin = *origin;
+    } else {
+        rec->m_origin = NULL;
+    }
+    if (rect != NULL) {
+        rec->m_rect = static_cast<RECT*>(::operator new(sizeof(RECT)));
+        *rec->m_rect = *rect;
+    } else {
+        rec->m_rect = NULL;
+    }
+    rec->m_flags = flags;
+    rec->m_count = count;
+    m_playlist.Add(rec);
+    return 1;
+}
+
 RVA(0x0017d600, 0xad)
 i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
