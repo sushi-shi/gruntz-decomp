@@ -4017,8 +4017,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    i32 tx = 0;
-    i32 ty = 0;
+    // retail leaves the target cell uninitialised - it is only read on the
+    // found == 1 path.
+    i32 tx;
+    i32 ty;
     i32 found = 0;
     if (useArg != 0) {
         tx = ax;
@@ -4059,9 +4061,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != NULL) {
-                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    g_coordPool.Push(cur->m_coord);
                 }
             }
             unit->m_coordList.RemoveAll();
@@ -4135,16 +4135,16 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                     if (dx * dx + dy * dy <= 0x190) {
 
                         i32 flags = 0x4020;
-                        PickupType sec = unit->m_entranceReason;
+                        PickupType sec = cand->m_entranceReason;
                         if (sec > PICKUP_EQUIPPABLE_LAST) {
-                            sec = unit->m_toolId;
+                            sec = cand->m_toolId;
                         }
                         if (sec == PICKUP_WINGZ) {
                             flags = 0x4962;
                         }
-                        PickupType prim = unit->m_entranceReason;
+                        PickupType prim = cand->m_entranceReason;
                         if (prim > PICKUP_EQUIPPABLE_LAST) {
-                            prim = unit->m_toolId;
+                            prim = cand->m_toolId;
                         }
                         if (prim == PICKUP_TOOB) {
                             flags |= 0x100;
@@ -4165,12 +4165,24 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                             )
                             != 0) {
                             if (list.GetHeadPosition() != NULL) {
-
                                 void* head = list.RemoveHead();
                                 if (head != NULL) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(head);
                                     node->m_next = g_coordPool.m_freeHead;
                                     g_coordPool.m_freeHead = node;
+                                }
+                            }
+                            if (list.GetHeadPosition() != NULL) {
+                                if (cand->CoordCount() != 0) {
+                                    CoordNode* cn = cand->CoordHead();
+                                    while (cn != NULL) {
+                                        CoordNode* cur = cn;
+                                        cn = cn->m_next;
+                                        if (cur->m_coord != NULL) {
+                                            g_coordPool.Push(cur->m_coord);
+                                        }
+                                    }
+                                    cand->m_coordList.RemoveAll();
                                 }
                                 if (unit->CoordCount() != 0) {
                                     CoordNode* nn = unit->CoordHead();
@@ -4178,9 +4190,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                         CoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != NULL) {
-                                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                                            fn->m_next = g_coordPool.m_freeHead;
-                                            g_coordPool.m_freeHead = fn;
+                                            g_coordPool.Push(cur->m_coord);
                                         }
                                     }
                                     unit->m_coordList.RemoveAll();
