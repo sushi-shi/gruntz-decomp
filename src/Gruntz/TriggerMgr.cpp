@@ -813,8 +813,7 @@ reportError:
 // @early-stop
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
-    CActionOptionsMenuBar* ov = m_overlay;
-    if (ov == NULL) {
+    if (m_overlay == NULL) {
         m_overlay = new CActionOptionsMenuBar;
         if (m_overlay->LoadAssets() == 0) {
             CActionOptionsMenuBar* o2 = m_overlay;
@@ -827,15 +826,21 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
         }
         return 0;
     }
-    if (ov->m_active != 0 || m_recList.GetCount() != 1) {
+    if (m_overlay->m_active != 0) {
+        return 0;
+    }
+    if (m_recList.GetCount() != 1) {
         return 0;
     }
     i32* rec = static_cast<i32*>(m_recList.GetHead());
     CGrunt* cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
-    if (cellp == NULL || cellp->m_tileOwnerHi != g_curPlayer) {
+    if (cellp == NULL) {
         return 0;
     }
-    if (ov->Init(0, 0, screenX, screenY, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
+    if (cellp->m_tileOwnerHi != g_curPlayer) {
+        return 0;
+    }
+    if (m_overlay->Init(0, 0, screenX, screenY, cellp->m_tileOwnerHi, cellp->m_tileOwnerLo) == 0) {
         return 0;
     }
     CGameLevel* view = m_world->m_level;
