@@ -717,6 +717,9 @@ i32 CGrunt::RecordFrameTick() {
     return 1;
 }
 
+// @early-stop
+// Regalloc only: retail spills the RECT* param and reloads it for the x-edge
+// blocks (frame 0x10), cl keeps it in edx and recycles the arg slot (frame 0xc).
 RVA(0x00062b70, 0x205)
 i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     i32 e1y = e1->y;
@@ -769,11 +772,11 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     return 0;
 }
 
-RVA(0x00062e10, 0x47e)
+RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
 
-    i32 notIdle = strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_animKeyA) != 0;
+    bool notIdle = strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_animKeyA) != 0;
     i32 applied = 0;
 
     if (notIdle && cycle == 0) {
