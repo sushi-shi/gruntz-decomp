@@ -350,6 +350,10 @@ i32 SoundStream::TickSubManagers(i32 time) {
 }
 
 // @early-stop
+// Frame is 4 bytes bigger than retail's: retail parks one header word in the DEAD
+// incoming-argument home (src is copied to esi at entry) and we allocate a fourth
+// local slot instead. Dropping the `end` local reaches sub esp,0xc but recolours
+// the bound computation; scoping the chunk locals to the function is worse.
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,

@@ -95,6 +95,8 @@ void CRangeSet::AddFromString(char* str) {
 }
 
 // @early-stop
+// Same one SIB byte as MonoClear, at all three of its address sites.
+// docs/patterns/sib-base-index-follows-local-decl-order.md
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
@@ -122,6 +124,8 @@ void MonoNewline() {
 }
 
 // @early-stop
+// One SIB byte; docs/patterns/sib-base-index-follows-local-decl-order.md (the
+// single-local corollary). MonoNewline carries the same inversion at 3 sites.
 RVA(0x00184db0, 0x28)
 void MonoClear() {
     i32 i = 0;

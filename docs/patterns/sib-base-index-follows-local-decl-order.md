@@ -65,6 +65,15 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
   local: `CHashBase::Insert` 0x184a70 / `Remove` 0x184ab0 / `Lookup` 0x184b40 and
   `CHashElement::Prev` 0x184900 (one SIB byte each; note Insert/Remove and Last want
   OPPOSITE roles, so it is not a global convention). `Last` 0x184b10 has since gone EXACT.
+- 2026-08-05 re-audit of the three open ones adds a FOURTH and FIFTH non-lever. `MonoClear`
+  (0x184db0): `i + g_monoBuffer` (cl canonicalizes the addition), `&g_monoBuffer[i]`
+  (subscript+address-of builds the same tree), and a `(u8*)` cast on the base all emit the
+  identical SIB byte; giving the buffer a local declared AFTER the counter - the exact form
+  the rule above prescribes - is still the `rep stosd` collapse, so the corollary holds.
+  `MonoNewline` (0x184d50) carries the SAME inversion at all three of its sites, so it is
+  one defect, not four. And the TU-STATE parity probe that flips a canonical `imul`
+  ([`commutative-operand-order-is-canonical.md`](commutative-operand-order-is-canonical.md))
+  leaves all four SIB sites untouched - the SIB role is NOT that mechanism.
 - `CHashElement::Prev` (0x184900), 2026-07-29, adds a THIRD non-lever to the list above:
   the address there is strength-reduced into a loop-preheader `lea` rather than re-formed
   per iteration, and neither declaration order flips it (counter-first and pointer-first

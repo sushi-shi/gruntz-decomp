@@ -211,6 +211,9 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 }
 
 // @early-stop
+// Whole-function esi/edi role swap. Declaration order is not the lever: all three
+// orders of the two surface locals (including declare-then-assign, which keeps the
+// load order) emit the identical registers.
 RVA(0x000fa790, 0x104)
 i32 CSoundFxEmitter::FadeScene2(i32 pct, i32 dur, i32 lead) {
     CFaderMgr* mgr = m_faderMgr;

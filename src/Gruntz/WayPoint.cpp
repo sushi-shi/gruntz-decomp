@@ -20,6 +20,9 @@ RVA_COMPGEN(0x000102e0, 0x44, ??1CWayPoint@@UAE@XZ)
 VTBL(CWayPoint, 0x001e74b4);
 
 // @early-stop
+// The vptr stamp and the body's first member re-read are transposed. Every body
+// spelling is byte-identical (named local for the receiver, explicit read-modify-
+// write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x000ae3f0, 0x18f)
 CWayPoint::CWayPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;

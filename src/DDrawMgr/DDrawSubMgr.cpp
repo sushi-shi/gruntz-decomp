@@ -533,6 +533,9 @@ void CDDrawSubMgrLeafScan::Unload() {
 }
 
 // @early-stop
+// The CString local and the POSITION local hold each other's stack slots. All four
+// declaration orders were measured: two are byte-identical to this one and two are
+// strictly worse (they move the CString ctor ahead of GetStartPosition).
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == NULL) {

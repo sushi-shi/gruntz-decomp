@@ -33,6 +33,8 @@ CHashElement* CHashElement::Next() {
 }
 
 // @early-stop
+// One SIB byte, pointer-from-a-member sub-family.
+// docs/patterns/sib-base-index-follows-local-decl-order.md
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* e = CHashBase::FromLink(m_link.m_prev);
@@ -79,6 +81,8 @@ void CHashBase::RemoveAll() {
 }
 
 // @early-stop
+// One SIB byte, pointer-from-a-member sub-family.
+// docs/patterns/sib-base-index-follows-local-decl-order.md
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
     node->m_owner = this;

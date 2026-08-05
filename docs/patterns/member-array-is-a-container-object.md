@@ -64,6 +64,25 @@ scheduler* produced the interleave those could not agree — **do not attribute 
 instruction-transposition residue to Pentium pairing.** `/Ob1 /Ot /Gy- /Gf` are likewise
 codegen-identical; `/Ob0 /Oy- /Oi- /Os /Og- /O1` all regress.
 
+## Counter-example: the local cursor is sometimes RETAIL'S OWN shape
+
+Do not apply this blind to every member array walked through a cursor. `CLightFxRender`'s
+eight palette builders write `m_buf[0x1f4]` through exactly that idiom
+(`u16* buf = m_buf; … buf[257] = c07;`) and are 99.1-99.5% with a ONE-instruction residue,
+which is the trigger signature above — but here the cursor is load-bearing:
+
+| shape | diff lines (BuildRockyRoadzPalette @0x000a3dc0) |
+|---|---|
+| `u16* buf = m_buf;` cursor (current) | **2** |
+| drop the cursor, index `m_buf[i]` directly | 82 |
+| container class with `operator[]`, indexed directly | 80 |
+
+So the container recovered 2 of the 80 the cursor removal cost — the cursor is what
+retail wrote, and the remaining transposition is elsewhere. **Test the cursor removal
+FIRST (one compile): if dropping the cursor explodes the diff, retail has the cursor and
+the container is not your lever.** Reach for the container only where the array is filled
+and indexed with NO cursor in retail's shape, as in `SetupKeyTable`.
+
 ## When to reach for this
 
 Trigger: a member array (fixed size, filled then indexed) in a function that is byte-complete

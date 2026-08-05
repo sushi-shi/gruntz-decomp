@@ -409,6 +409,11 @@ i32 CLightFxRender::BuildShape(i32 shape) {
 }
 
 // @early-stop
+// One member store sits one push earlier in retail inside the FillSpan argument
+// setup. Swapping or moving the two stores is byte-identical; dropping the
+// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// recovers only 2 of those - the cursor is retail's own.
+// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a3dc0, 0x85f)
 i32 CLightFxRender::BuildRockyRoadzPalette() {
     u16* buf = m_buf;
@@ -531,6 +536,11 @@ void CLightFxRender::FillSpan(u32 x1, u32 x2, u16 color) {
 }
 
 // @early-stop
+// One member store sits one push earlier in retail inside the FillSpan argument
+// setup. Swapping or moving the two stores is byte-identical; dropping the
+// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// recovers only 2 of those - the cursor is retail's own.
+// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a4890, 0x852)
 i32 CLightFxRender::BuildGruntziclezPalette() {
     u16* buf = m_buf;
@@ -641,6 +651,11 @@ i32 CLightFxRender::BuildGruntziclezPalette() {
     return 1;
 }
 // @early-stop
+// One member store sits one push earlier in retail inside the FillSpan argument
+// setup. Swapping or moving the two stores is byte-identical; dropping the
+// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// recovers only 2 of those - the cursor is retail's own.
+// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a5310, 0x855)
 i32 CLightFxRender::BuildTropiczPalette() {
     u16* buf = m_buf;
@@ -862,6 +877,11 @@ i32 CLightFxRender::BuildHighOnSweetzPalette() {
     return 1;
 }
 // @early-stop
+// One member store sits one push earlier in retail inside the FillSpan argument
+// setup. Swapping or moving the two stores is byte-identical; dropping the
+// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// recovers only 2 of those - the cursor is retail's own.
+// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a67d0, 0x864)
 i32 CLightFxRender::BuildHighRollerzPalette() {
     u16* buf = m_buf;
@@ -1208,6 +1228,11 @@ i32 CLightFxRender::BuildMiniatureMasterzPalette() {
     return 1;
 }
 // @early-stop
+// One member store sits one push earlier in retail inside the FillSpan argument
+// setup. Swapping or moving the two stores is byte-identical; dropping the
+// `u16* buf = m_buf` cursor costs 80 diff lines and the container-object shape
+// recovers only 2 of those - the cursor is retail's own.
+// docs/patterns/member-array-is-a-container-object.md (counter-example)
 RVA(0x000a8900, 0x926)
 i32 CLightFxRender::BuildSpacePalette() {
     u16* buf = m_buf;

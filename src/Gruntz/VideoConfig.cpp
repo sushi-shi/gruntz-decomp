@@ -235,6 +235,8 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 }
 
 // @early-stop
+// Same one-scratch-register rotation as SaveVideoCheckboxes (ecx vs edx on the
+// g_gameReg re-read).
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == NULL) {
@@ -581,6 +583,9 @@ void DialogInit(HWND hDlg) {
 }
 
 // @early-stop
+// One scratch register: retail reuses ecx for the second g_gameReg re-read where cl
+// rotates to edx. Named locals for the results, one reused local, and the TU-state
+// probe all leave it unchanged.
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == NULL) {

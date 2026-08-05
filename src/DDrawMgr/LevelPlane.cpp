@@ -1050,6 +1050,9 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
 }
 
 // @early-stop
+// Same canonical-imul TU-state parity as CDDrawWorker::GetMemoryUsage - a probe
+// definition placed before it takes the diff to nothing.
+// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {

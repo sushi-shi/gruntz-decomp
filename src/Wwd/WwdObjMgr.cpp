@@ -1004,6 +1004,10 @@ void CDDrawChildGroup::PruneList() {
 }
 
 // @early-stop
+// cl canonicalises the four-term sum's operand order from the operands: source
+// order, every parenthesization, per-term statement splits and the distributed
+// i*a+i*b+... all emit the identical order. The TU-state probe does NOT flip it.
+// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x0015aaf0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;

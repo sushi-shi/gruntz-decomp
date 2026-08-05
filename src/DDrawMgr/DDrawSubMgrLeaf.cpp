@@ -33,6 +33,8 @@ void CDDrawSubMgrLeaf::Unload() {
 }
 
 // @early-stop
+// Same swapped CString/POSITION stack slots as CDDrawSubMgrLeafScan::RemoveByValue;
+// declaration order is not the lever there either.
 RVA(0x00152660, 0xb2)
 void CDDrawSubMgrLeaf::RemoveValue(CAniElement* target) {
     if (target == NULL) {
