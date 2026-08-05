@@ -4275,8 +4275,6 @@ kindDispatch:
 }
 
 // @early-stop
-// retail re-evaluates the m_entranceCell index at each use and inlines
-// GruntPosScratchTeardown; both are still folded here.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
