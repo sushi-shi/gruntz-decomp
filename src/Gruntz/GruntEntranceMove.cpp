@@ -266,45 +266,49 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
     m_entranceActive = 1;
-    if (m_object->m_sortKey != SORTKEY_ACTOR) {
-        m_object->m_sortKey = SORTKEY_ACTOR;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* h = m_object;
+    if (h->m_sortKey != SORTKEY_ACTOR) {
+        h->m_sortKey = SORTKEY_ACTOR;
+        h->m_flags |= 0x20000;
     }
 
     ClearAllSprites();
 
     CString key;
 
-    i32 onScreen = 0;
-    CGruntzMgr* g = g_gameReg;
-    {
-        i32 x = m_object->m_screenX;
-        i32 y = m_object->m_screenY;
-        if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
-            && y >= g->m_viewBounds.top) {
-            onScreen = 1;
-        } else {
-
-            CGrunt* focus = 0;
-            CTriggerMgr* tm = g->m_cmdGrid;
-            if (tm->m_recList.GetCount() == 1) {
-                i32* vec = static_cast<i32*>(tm->m_recList.GetHead());
-                i32 a = vec[0];
-                i32 b = vec[1];
-                focus = tm->m_grid[a * TM_GRID_COLS + b];
-            }
-            if (this == focus && m_tileOwnerHi == g_curPlayer) {
-                onScreen = 1;
-            }
-        }
-    }
-
-    CAniElement* found = 0;
+    CAniElement* found;
     const char* base;
 
     if (mode == 1) {
+        i32 onScreen = 0;
+        CGruntzMgr* g = g_gameReg;
+        {
+            i32 x = m_object->m_screenX;
+            i32 y = m_object->m_screenY;
+            if (x < g->m_viewBounds.right && x >= g->m_viewBounds.left && y < g->m_viewBounds.bottom
+                && y >= g->m_viewBounds.top) {
+                onScreen = 1;
+            } else {
+
+                CGrunt* focus;
+                CTriggerMgr* tm = g->m_cmdGrid;
+                if (tm->m_recList.GetCount() == 1) {
+                    i32* vec = static_cast<i32*>(tm->m_recList.GetHead());
+                    i32 a = vec[0];
+                    i32 b = vec[1];
+                    focus = tm->m_grid[a * TM_GRID_COLS + b];
+                } else {
+                    focus = 0;
+                }
+                if (this == focus && m_tileOwnerHi == g_curPlayer) {
+                    onScreen = 1;
+                }
+            }
+        }
+
         i32 r = rand() % 0x1e1;
         if (r > 0x140) {
+            found = 0;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_ONE,
@@ -315,6 +319,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else if (r > 0xa0) {
+            found = 0;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_TWO,
@@ -325,6 +330,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             }
             base = s_GRUNTZ_ENTRANCEZ;
         } else {
+            found = 0;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_GRUNTZ_ENTRANCEZ_THREE,
@@ -336,6 +342,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
             base = s_GRUNTZ_ENTRANCEZ;
         }
     } else if (mode == 2) {
+        found = 0;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_GRUNTZ_ENTRANCEZ_DROP,
@@ -343,6 +350,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
         );
         base = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
+        found = 0;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_GRUNTZ_ENTRANCEZ_RESSURECT,
@@ -435,7 +443,7 @@ i32 CGrunt::LoadEntranceConfig() {
         CAniElement* found = 0;
         CAniElement* cached = p->m_animCursor.m_animation;
         MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_GRUNTZ_ENTRANCEZ_DROP, found);
-        if (found == cached) {
+        if (cached == found) {
             if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
             }
