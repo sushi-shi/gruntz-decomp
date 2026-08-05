@@ -300,37 +300,14 @@ i32 CGrunt::RearmAttackAnim2() {
 
 RVA(0x00061cb0, 0x34a)
 i32 CGrunt::StepAttackFire() {
+    i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == 2) {
+    if (advanced == 2) {
 
         switch (m_entranceReason) {
             case GRUNT_GUNHAT:
             case GRUNT_NERFGUN:
-            case GRUNT_ROCK: {
-                CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
-                    0,
-                    m_object->m_screenX,
-                    m_object->m_screenY,
-                    0,
-                    "Projectile",
-                    0x40003
-                );
-                spr->m_animWorker->m_notify(spr);
-                CProjectile* s = static_cast<CProjectile*>(spr->m_animWorker->m_logic);
-                if (s->LoadProjectileSprites(
-                        m_entranceReason,
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        m_attackTargetPx.m_x,
-                        m_attackTargetPx.m_y,
-                        m_object->m_screenX,
-                        m_object->m_screenY
-                    )
-                    == 0) {
-                    s->m_wwdObject->m_flags |= 0x10000;
-                }
-                break;
-            }
+            case GRUNT_ROCK:
             case GRUNT_WELDER:
             case GRUNT_WINGZ: {
                 CWwdGameObjectA* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -396,33 +373,33 @@ i32 CGrunt::StepAttackFire() {
 
                 CGrunt* tgt =
                     m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
-                if (tgt == NULL) {
-                    flag = 1;
-                    break;
-                }
-                tgt->StepCombatReaction(
-                    m_entranceReason,
-                    m_struckPose,
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
-                    m_object->m_screenX,
-                    m_object->m_screenY,
-                    0,
-                    m_gruntKind
-                );
-                PickupType t = tgt->m_entranceReason;
-                if (t > PICKUP_EQUIPPABLE_LAST) {
-                    t = tgt->m_toolId;
-                }
-                if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
-                    m_tileMgr->CellDispatch(
+                if (tgt != NULL) {
+                    tgt->StepCombatReaction(
+                        m_entranceReason,
+                        m_struckPose,
                         m_tileOwnerHi,
                         m_tileOwnerLo,
-                        DEATH_EXPLODE,
-                        m_neighborCell.m_x
+                        m_object->m_screenX,
+                        m_object->m_screenY,
+                        0,
+                        m_gruntKind
                     );
-                    return 0;
+                    PickupType t = tgt->m_entranceReason;
+                    if (t > PICKUP_EQUIPPABLE_LAST) {
+                        t = tgt->m_toolId;
+                    }
+                    if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
+                        m_tileMgr->CellDispatch(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            DEATH_EXPLODE,
+                            m_neighborCell.m_x
+                        );
+                        return 0;
+                    }
+                    break;
                 }
+                flag = 1;
                 break;
             }
         }
@@ -444,8 +421,8 @@ i32 CGrunt::StepAttackFire() {
         m_combatActive = 0;
     }
 
-    CWwdGameObjectA* r = m_wwdObject;
-    if ((r->m_animCursor.m_finished == 0 || r->m_animCursor.m_frameTicksLeft != 0) && flag == 0) {
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    if ((cur->m_finished == 0 || cur->m_frameTicksLeft != 0) && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
