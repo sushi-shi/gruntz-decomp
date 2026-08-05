@@ -6090,7 +6090,6 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000dca70, 0x4a4)
 i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
@@ -6143,16 +6142,16 @@ i32 CState::BuildAssetNamespacePrefixes(
         goto done;
     }
 
-    if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
+    if (m_world->m_imageRegistry->HasKeyEqual("GRUNTZ_" + name)) {
         m_world->m_imageRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
         if (finishGate != NULL) {
             finishGate->AckJoinFailure();
         }
     }
-    if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name) != 0) {
+    if (m_world->m_soundRegistry->HasKeyEqual("GRUNTZ_" + name)) {
         m_world->m_soundRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
     }
-    if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name) != 0) {
+    if (m_world->m_animRegistry->HasKeyPrefix("GRUNTZ_" + name)) {
         m_world->m_animRegistry->RemoveKeysEqual("GRUNTZ_" + name, "_");
     }
     result = 1;
