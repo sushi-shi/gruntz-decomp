@@ -1023,14 +1023,22 @@ fail:
     return 0;
 }
 
+// @early-stop
+// second walk is byte-correct now; cl still colours colOffsets/tileGrid into
+// ebx/ebp the other way round and buys a 4-byte spill slot for layer2.
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CGruntzMgr* reg = g_gameReg;
+    i32 tileX = m_tileX;
+    i32 tileY = m_tileY;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_tileY]] + 1;
-    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_tileY]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
+    i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] + 1;
+    // write through the un-cached global: defeats the address-CSE so the store
+    // re-walks m_world->m_level->m_mainPlane exactly as retail does
+    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    i32 idx2 = tileX + layer2->m_colOffsets[tileY];
+    layer2->m_tileGrid[idx2] = v;
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 1;
     return 1;
 }
@@ -1039,11 +1047,16 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CGruntzMgr* reg = g_gameReg;
+    i32 tileX = m_tileX;
+    i32 tileY = m_tileY;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileGrid[m_tileX + layer->m_colOffsets[m_tileY]] - 1;
-    CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    layer2->m_tileGrid[m_tileX + layer2->m_colOffsets[m_tileY]] = v;
-    (reg->m_tileGrid)->ComputeCellFlags(m_tileX, m_tileY, v);
+    i32 v = layer->m_tileGrid[tileX + layer->m_colOffsets[tileY]] - 1;
+    // write through the un-cached global: defeats the address-CSE so the store
+    // re-walks m_world->m_level->m_mainPlane exactly as retail does
+    CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
+    i32 idx2 = tileX + layer2->m_colOffsets[tileY];
+    layer2->m_tileGrid[idx2] = v;
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
     m_linkGate = 0;
     return 1;
 }
