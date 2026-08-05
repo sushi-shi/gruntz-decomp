@@ -1863,6 +1863,9 @@ void CGrunt::FireActivation(i32 id) {
     }
 }
 
+// @early-stop
+// Only the last (DERIVED) entry differs: retail pushes the operator= argument
+// before evaluating SlotOf(); cl emits the object expression first. 3 bytes.
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);

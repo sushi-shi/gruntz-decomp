@@ -32,7 +32,13 @@ public:
     }
 
     CString* SlotOf(i32 id) {
-        return AsSlot(_zdvec::IndexToPtr(id));
+
+        union {
+            char* m_bytes;
+            CString* m_elem;
+        } band;
+        band.m_bytes = _zdvec::IndexToPtr(id);
+        return band.m_elem;
     }
     CString* Slots() {
         return AsSlot(m_alloc);
