@@ -45,7 +45,7 @@ public:
     void EnqueueMulti(
         i32 enqueueFlag,
         char targetIndex,
-        i32 count,
+        u8 count,
         u8* gruntList,
         char cmdKind,
         i16 posX,

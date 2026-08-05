@@ -196,7 +196,7 @@ RVA(0x00023ca0, 0x47)
 void CGruntzCmdMgr::EnqueueMulti(
     i32 enqueueFlag,
     char targetIndex,
-    i32 count,
+    u8 count,
     u8* gruntList,
     char cmdKind,
     i16 posX,
@@ -280,13 +280,13 @@ i32 CGruntzCommand::SetMaskFromList(
     char targetType,
     i16 posX,
     i16 posY,
-    i32 count,
+    u8 count,
     u8* gruntList
 ) {
     if (!gruntList) {
         return 0;
     }
-    if (static_cast<u8>(count) > 0x10) {
+    if (count > 0x10) {
         return 0;
     }
     if (!CGruntzCommand::SetParams(targetIndex, cmdKind, targetType, posX, posY)) {
@@ -294,7 +294,7 @@ i32 CGruntzCommand::SetMaskFromList(
     }
 
     m_gruntMask = 0;
-    for (i32 i = 0; i < (count & 0xff); i++) {
+    for (i32 i = 0; i < count; i++) {
         m_gruntMask |= g_cmdBitTable[gruntList[i]];
     }
     return 1;

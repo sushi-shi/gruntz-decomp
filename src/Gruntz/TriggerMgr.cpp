@@ -2579,7 +2579,6 @@ i32 CTriggerMgr::ToggleRegionB() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0007d6e0, 0xea)
 i32 CTriggerMgr::EnqueueGroupCells() {
     if (m_groupFlag == 0) {

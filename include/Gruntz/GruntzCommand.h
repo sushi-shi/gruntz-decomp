@@ -73,7 +73,7 @@ public:
         char targetType,
         i16 posX,
         i16 posY,
-        i32 count,
+        u8 count,
         u8* gruntList
     );
 };
