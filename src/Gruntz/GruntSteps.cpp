@@ -438,17 +438,20 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 px = x >> TILE_SHIFT_PX;
     i32 py = y >> TILE_SHIFT_PX;
 
+    RECT* src1 = &m_reachRect;
+    RECT* src2 = &m_reachExclusionRect;
+
     RECT r1;
-    r1.left = m_reachRect.left + dx;
-    r1.top = m_reachRect.top + dy;
-    r1.right = m_reachRect.right + dx + 1;
-    r1.bottom = m_reachRect.bottom + dy + 1;
+    r1.left = src1->left + dx;
+    r1.top = src1->top + dy;
+    r1.right = src1->right + dx + 1;
+    r1.bottom = src1->bottom + dy + 1;
 
     RECT r2;
-    r2.left = m_reachExclusionRect.left + dx;
-    r2.top = m_reachExclusionRect.top + dy;
-    r2.right = m_reachExclusionRect.right + dx;
-    r2.bottom = m_reachExclusionRect.bottom + dy;
+    r2.left = src2->left + dx;
+    r2.top = src2->top + dy;
+    r2.right = src2->right + dx;
+    r2.bottom = src2->bottom + dy;
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
