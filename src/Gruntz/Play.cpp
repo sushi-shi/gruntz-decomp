@@ -3353,6 +3353,9 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
 }
 
 // @early-stop
+// SIB base/index transposition in the three inlined CByteArray::GetAt loads
+// ([edx+ecx] vs retail's [ecx+edx*1]); operator[]/ElementAt spellings are
+// byte-identical to GetAt here. Everything else is instruction-for-instruction.
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
@@ -3369,14 +3372,36 @@ i32 CPlay::ScanShuffleQuads() {
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);
     arr.SetAtGrow(arr.GetSize(), 3);
+    // retail keeps the degenerate empty-bag arm at every pick: cl cannot prove
+    // count != 0, so both rand() calls survive.
+    i32 last;
+    i32 count;
     i32 r;
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[0] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[1] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    r = rand() % arr.GetSize();
+    last = arr.GetUpperBound();
+    count = last + 1;
+    if (count == 0) {
+        r = (rand() & 1) != 0 ? 0 : last;
+    } else {
+        r = rand() % count;
+    }
     perm[2] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
     perm[3] = arr.GetAt(0);
