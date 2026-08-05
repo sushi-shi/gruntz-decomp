@@ -1402,6 +1402,47 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 }
 
 // @early-stop
+RVA(0x00171b80, 0x478)
+void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_INT, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_INT, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_INT, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_INT, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_INT, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_INT, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_INT, val));
+}
+
 RVA(0x00172000, 0x31)
 CButeValue* CButeValue::SetDword(ButeType type, u32 val) {
     this->type = type;
@@ -1409,69 +1450,9 @@ CButeValue* CButeValue::SetDword(ButeType type, u32 val) {
     return this;
 }
 
-RVA(0x00172040, 0x120)
-CButeValue* CButeValue::CopyValue(CButeValue* other) {
-    // The retail jump table (0x17213c) proves the ButeType values AND that the
-    // arms are written in value order: 1 and 3 share one arm because cl folded
-    // the (identical) BUTE_DWORD body into the BUTE_FLOAT one.  Every payload is
-    // copied as a whole object so both pointers stay in registers - a per-field
-    // copy makes cl reload other->pValue for each word.
-    switch (type) {
-        case BUTE_INT:
-            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
-            break;
-        case BUTE_DWORD:
-            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
-            break;
-        case BUTE_DOUBLE:
-            *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
-            break;
-        case BUTE_FLOAT:
-            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
-            break;
-        case BUTE_STRING:
-            *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
-            break;
-        case BUTE_RECT:
-            *static_cast<ButeIntRect*>(pValue) = *static_cast<ButeIntRect*>(other->pValue);
-            break;
-        case BUTE_POINT:
-            *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
-            break;
-        case BUTE_VECTOR:
-            *static_cast<ButeDoubleVector*>(pValue) =
-                *static_cast<ButeDoubleVector*>(other->pValue);
-            break;
-        case BUTE_RANGE:
-            *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
-            break;
-    }
-    return this;
-}
+RVA_COMPGEN(0x00172040, 0x120, ?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z)
 
-// @early-stop
-RVA(0x00172160, 0x80)
-CButeValue::~CButeValue() {
-    switch (type) {
-        case BUTE_STRING:
-            delete static_cast<CString*>(pValue);
-            break;
-        case BUTE_DOUBLE:
-        case BUTE_POINT:
-            delete static_cast<double*>(pValue);
-            break;
-        case BUTE_INT:
-        case BUTE_FLOAT:
-        case BUTE_VECTOR:
-            delete static_cast<i32*>(pValue);
-            break;
-        case BUTE_DWORD:
-        case BUTE_RECT:
-        case BUTE_RANGE:
-            delete static_cast<u32*>(pValue);
-            break;
-    }
-}
+RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
@@ -1507,6 +1488,47 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return 0;
+}
+
+RVA(0x001722c0, 0x3bc)
+void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_DWORD, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_DWORD, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_DWORD, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_DWORD, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_DWORD, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_DWORD, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_DWORD, val));
 }
 
 RVA(0x00172680, 0x31)
@@ -1556,6 +1578,47 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     return s_floatErr;
 }
 
+RVA(0x001727d0, 0x3c0)
+void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_FLOAT, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_FLOAT, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_FLOAT, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_FLOAT, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_FLOAT, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_FLOAT, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_FLOAT, val));
+}
+
 RVA(0x00172b90, 0x31)
 CButeValue* CButeValue::SetInt(ButeType type, i32 val) {
     this->type = type;
@@ -1601,6 +1664,47 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return s_doubleErr;
+}
+
+RVA(0x00172ce0, 0x454)
+void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_DOUBLE, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_DOUBLE, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_DOUBLE, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
 RVA(0x00173140, 0x38)
@@ -1650,6 +1754,47 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     return empty.m_bytes;
 }
 
+RVA(0x001732a0, 0x3fc)
+void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_STRING, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_STRING, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_STRING, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_STRING, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_STRING, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_STRING, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_STRING, val));
+}
+
 RVA(0x001736a0, 0x5f)
 CButeValue* CButeValue::SetString(ButeType type, const CString& src) {
     this->type = type;
@@ -1691,6 +1836,47 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     }
     ReportError(s_fmtInvalidTag, tag);
     return &s_default;
+}
+
+RVA(0x00173850, 0x404)
+void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_RECT, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_RECT, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_RECT, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_RECT, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_RECT, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_RECT, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_RECT, val));
 }
 
 RVA(0x00173c60, 0x49)
@@ -1777,11 +1963,7 @@ void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->Insert(key, new CButeValue(BUTE_POINT, val));
 }
-RVA(0x001741b0, 0x39)
-CButeValue::CButeValue(ButeType type, CButeValue* src) {
-    this->type = type;
-    this->pValue = new CButeValue(*src);
-}
+RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAU0@@Z)
 
 RVA(0x001741f0, 0x4e)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
@@ -1820,6 +2002,47 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
+RVA(0x00174340, 0x3e8)
+void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_VECTOR, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_VECTOR, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_VECTOR, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_VECTOR, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_VECTOR, val));
+}
+
 RVA(0x00174730, 0x3c)
 CButeValue* CButeValue::SetVector(ButeType type, const ButeRefLarge* src) {
     this->type = type;
@@ -1863,9 +2086,59 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     return &s_default;
 }
 
+RVA(0x001748a0, 0x404)
+void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
+    CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
+    if (grp) {
+        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        if (hit) {
+            CButeValue box(BUTE_RANGE, val);
+            hit->CopyValue(&box);
+            return;
+        }
+        CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
+        if (g48) {
+            CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
+            if (hit48) {
+                CButeValue box(BUTE_RANGE, val);
+                hit48->CopyValue(&box);
+                return;
+            }
+            g48->Insert(key, new CButeValue(BUTE_RANGE, val));
+            return;
+        }
+        CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
+        made->Insert(key, new CButeValue(BUTE_RANGE, val));
+        return;
+    }
+
+    CButeNode* g74 = static_cast<CButeNode*>(m_tree74.Find(tag));
+    if (g74) {
+        CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
+        if (hit74) {
+            CButeValue box(BUTE_RANGE, val);
+            hit74->CopyValue(&box);
+            return;
+        }
+        g74->Insert(key, new CButeValue(BUTE_RANGE, val));
+        return;
+    }
+    CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
+    made74->Insert(key, new CButeValue(BUTE_RANGE, val));
+}
+
 RVA(0x00174cb0, 0x49)
 CButeValue* CButeValue::SetRange(ButeType type, const ButeRefSmall* src) {
     this->type = type;
     this->pValue = new ButeRefSmall(*src);
     return this;
 }
+
+// Retail reaches CopyValue's out-of-line COMDAT from CButeMgr::SetPoint's third
+// path; cl folds it at every site here, so force the standalone copy out.
+static CButeValue* volatile g_copyValueSink;
+#pragma inline_depth(0)
+void ForceEmitCButeValueCopyValue() {
+    g_copyValueSink->CopyValue(g_copyValueSink);
+}
+#pragma inline_depth()

@@ -31,40 +31,6 @@ struct CButeTail {
 };
 SIZE(0x1);
 
-struct ButeIntRect {
-    ButeIntRect() : a(0), b(0), c(0), d(0) {}
-    ~ButeIntRect() {}
-    DWORD a, b, c, d;
-};
-SIZE(0x10);
-struct ButeIntPoint {
-    ButeIntPoint() : a(0), b(0) {}
-    ~ButeIntPoint() {}
-    DWORD a, b;
-};
-SIZE(0x8);
-
-struct ButeDoubleVector {
-    ButeDoubleVector() {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
-    ~ButeDoubleVector() {}
-    double x, y, z;
-};
-SIZE(0x18);
-
-struct ButeDoubleRange {
-    ButeDoubleRange() {
-        x = 0;
-        y = 0;
-    }
-    ~ButeDoubleRange() {}
-    double x, y;
-};
-SIZE(0x10);
-
 #include <stdlib.h>
 
 typedef void(__cdecl* ErrCallback)(const char*);
@@ -120,6 +86,16 @@ public:
     bool ParseGroup();
 
     void SetValue(const char* tag, const char* key, struct CButeValue* val);
+
+    // The Set<T> family; retail lays each one out directly after its Get<T>.
+    void SetInt(const char* tag, const char* key, i32 val);
+    void SetDword(const char* tag, const char* key, DWORD val);
+    void SetFloat(const char* tag, const char* key, float val);
+    void SetDouble(const char* tag, const char* key, double val);
+    void SetString(const char* tag, const char* key, const CString& val);
+    void SetRect(const char* tag, const char* key, struct ButeIntRect* val);
+    void SetVector(const char* tag, const char* key, struct ButeDoubleVector* val);
+    void SetRange(const char* tag, const char* key, struct ButeDoubleRange* val);
 
     bool Exists(const char* tag, const char* key);
 

@@ -20,11 +20,48 @@ GZ_ENUM_BEGIN(ButeType)
     BUTE_RANGE = 8
 GZ_ENUM_END(ButeType)
 
+struct ButeIntRect {
+    ButeIntRect() : a(0), b(0), c(0), d(0) {}
+    ~ButeIntRect() {}
+    DWORD a, b, c, d;
+};
+SIZE(0x10);
+struct ButeIntPoint {
+    ButeIntPoint() : a(0), b(0) {}
+    ~ButeIntPoint() {}
+    DWORD a, b;
+};
+SIZE(0x8);
+
+struct ButeDoubleVector {
+    ButeDoubleVector() {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+    ~ButeDoubleVector() {}
+    double x, y, z;
+};
+SIZE(0x18);
+
+struct ButeDoubleRange {
+    ButeDoubleRange() {
+        x = 0;
+        y = 0;
+    }
+    ~ButeDoubleRange() {}
+    double x, y;
+};
+SIZE(0x10);
+
 struct CButeValue {
     ButeType type;
     void* pValue;
 
-    CButeValue(ButeType type, CButeValue* src);
+    CButeValue(ButeType type, CButeValue* src) {
+        this->type = type;
+        this->pValue = new CButeValue(*src);
+    }
 
     // Parse-arm ctors: ParseAttributeFile's retail arms are `new CButeValue(type, v)`
     // new-expressions - each EH state guards the outer cell across the inlined
@@ -72,6 +109,18 @@ struct CButeValue {
     CButeValue(ButeType t, const CString& s) {
         type = t;
         pValue = new CString(s);
+    }
+    CButeValue(ButeType t, ButeIntRect* src) {
+        type = t;
+        pValue = new ButeIntRect(*src);
+    }
+    CButeValue(ButeType t, ButeDoubleVector* src) {
+        type = t;
+        pValue = new ButeDoubleVector(*src);
+    }
+    CButeValue(ButeType t, ButeDoubleRange* src) {
+        type = t;
+        pValue = new ButeDoubleRange(*src);
     }
     CButeValue(ButeType t, i32 a, i32 b) {
         type = t;
@@ -121,7 +170,7 @@ struct CButeValue {
         }
     }
 
-    ~CButeValue();
+    inline ~CButeValue();
 
     CButeValue* SetInt(ButeType type, i32 val);
     CButeValue* SetDword(ButeType type, u32 val);
@@ -133,7 +182,7 @@ struct CButeValue {
     CButeValue* SetVector(ButeType type, const struct ButeRefLarge* src);
     CButeValue* SetRange(ButeType type, const struct ButeRefSmall* src);
 
-    CButeValue* CopyValue(CButeValue* other);
+    inline CButeValue* CopyValue(CButeValue* other);
 };
 SIZE(0x8);
 
@@ -146,6 +195,67 @@ struct ButeRefLarge {
     i32 w[6];
 };
 SIZE(0x18);
+
+inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
+    // The retail jump table (0x17213c) proves the ButeType values AND that the
+    // arms are written in value order: 1 and 3 share one arm because cl folded
+    // the (identical) BUTE_DWORD body into the BUTE_FLOAT one.  Every payload is
+    // copied as a whole object so both pointers stay in registers - a per-field
+    // copy makes cl reload other->pValue for each word.
+    switch (type) {
+        case BUTE_INT:
+            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
+            break;
+        case BUTE_DWORD:
+            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
+            break;
+        case BUTE_DOUBLE:
+            *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
+            break;
+        case BUTE_FLOAT:
+            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
+            break;
+        case BUTE_STRING:
+            *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
+            break;
+        case BUTE_RECT:
+            *static_cast<ButeIntRect*>(pValue) = *static_cast<ButeIntRect*>(other->pValue);
+            break;
+        case BUTE_POINT:
+            *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
+            break;
+        case BUTE_VECTOR:
+            *static_cast<ButeDoubleVector*>(pValue) =
+                *static_cast<ButeDoubleVector*>(other->pValue);
+            break;
+        case BUTE_RANGE:
+            *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
+            break;
+    }
+    return this;
+}
+
+inline CButeValue::~CButeValue() {
+    switch (type) {
+        case BUTE_STRING:
+            delete static_cast<CString*>(pValue);
+            break;
+        case BUTE_DOUBLE:
+        case BUTE_POINT:
+            delete static_cast<double*>(pValue);
+            break;
+        case BUTE_INT:
+        case BUTE_FLOAT:
+        case BUTE_VECTOR:
+            delete static_cast<i32*>(pValue);
+            break;
+        case BUTE_DWORD:
+        case BUTE_RECT:
+        case BUTE_RANGE:
+            delete static_cast<u32*>(pValue);
+            break;
+    }
+}
 
 void __cdecl ButeValueTeardown(void* pValue);
 
