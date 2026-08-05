@@ -425,16 +425,14 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-// Two things are still open. (1) The tool switch's ARM ORDER: retail emits
-// GAUNTLETZ, SHOVEL, <a m_baseList walk we do not have>, BRICK, a pfk-only
-// arm, WARPSTONE, the other pfk-only arm, the shared LoadCursorSprites(0,0)
-// tail, SPY, then the boomerang group. The unplaced arm walks m_baseList and
-// shows the icon when an entry matches (tx,ty) with its +0x5c word zero -
-// most likely retail's TIMEBOMB body, which would mean ours is wrong.
-// (2) A whole-function regalloc divergence: retail keeps `view` in the scratch
-// ecx and cx in edi, while cl parks view in ebx and spills cx, which costs a
-// frame word (0x1c vs 0x18) and lets cl cross-jump tails retail emits
-// separately.
+// The case order above is read off retail's own jump table (slot -> arm
+// address), which is also the source order because cl emits arms in source
+// order. Two residues remain. (1) cl merges GAUNTLETZ's six collision
+// compares into SPY's identical chain; retail emits both, and it places the
+// post-switch LoadCursorSprites(pfk, 0) tail immediately after the GOOBER arm
+// instead of after the last one. (2) A whole-function regalloc divergence:
+// retail keeps `view` in the scratch ecx and cx in edi, while cl parks view in
+// ebx and spills cx, which costs a frame word (0x1c vs 0x18).
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -551,45 +549,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     switch (gruntKind) {
-        case PICKUP_BOMB:
-            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
-            return 1;
-
-        case PICKUP_BOOMERANG:
-        case PICKUP_GUNHAT:
-        case PICKUP_NERFGUN:
-        case PICKUP_ROCK:
-        case PICKUP_WELDER:
-        case PICKUP_WINGZ:
-            if (pfk != 0) {
-                POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-                view->m_mainPlane->WrapCoord(&source.x, &source.y);
-                POINT destination = {x, y};
-                view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
-                u16 color;
-                if (cell->RectContains(x, y)) {
-                    color = PackRgb16(0xff, 0, 0);
-                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                } else {
-                    color = PackRgb16(0x20, 0x20, 0x20);
-                    world->LoadCursorSprites(pfk, 0);
-                }
-                world->m_pathPreviewSource = source;
-                world->m_pathPreviewDestination = destination;
-                world->m_pathPreviewColor = color;
-                world->m_drewThisFrame = 1;
-                return 1;
-            }
-            break;
-
-        case PICKUP_BRICK:
-            if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
-                || collision == TILEKIND_GAUNTLET_BRICK_B) {
-                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-                return 1;
-            }
-            break;
-
         case PICKUP_GAUNTLETZ:
             if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
                 || collision == TILEKIND_GIANT_ROCK || collision == TILEKIND_GAUNTLET_BRICK_A
@@ -607,6 +566,35 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
             break;
 
+        case PICKUP_GOOBER: {
+            POSITION pos = m_baseList.GetHeadPosition();
+            while (pos != NULL) {
+                CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                if (cand->m_tileX == tx && cand->m_tileY == ty && cand->m_pending == 0) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    return 1;
+                }
+            }
+            break;
+        }
+        case PICKUP_BRICK:
+            if (collision == TILEKIND_HIDDEN_POWERUP || collision == TILEKIND_GAUNTLET_BRICK_A
+                || collision == TILEKIND_GAUNTLET_BRICK_B) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                return 1;
+            }
+            break;
+
+        case PICKUP_BOMB:
+            world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+            return 1;
+
+        case PICKUP_WARPSTONE:
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                return 1;
+            }
+            break;
         case PICKUP_SPRING:
             world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
             return 1;
@@ -644,6 +632,33 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             break;
         }
 
+        case PICKUP_BOOMERANG:
+        case PICKUP_GUNHAT:
+        case PICKUP_NERFGUN:
+        case PICKUP_ROCK:
+        case PICKUP_WELDER:
+        case PICKUP_WINGZ:
+            if (pfk != 0) {
+                POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+                view->m_mainPlane->WrapCoord(&source.x, &source.y);
+                POINT destination = {x, y};
+                view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+                u16 color;
+                if (cell->RectContains(x, y)) {
+                    color = PackRgb16(0xff, 0, 0);
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                } else {
+                    color = PackRgb16(0x20, 0x20, 0x20);
+                    world->LoadCursorSprites(pfk, 0);
+                }
+                world->m_pathPreviewSource = source;
+                world->m_pathPreviewDestination = destination;
+                world->m_pathPreviewColor = color;
+                world->m_drewThisFrame = 1;
+                return 1;
+            }
+            break;
+
         case PICKUP_TIMEBOMB: {
             CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
             i32 attr;
@@ -659,13 +674,6 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             }
             break;
         }
-
-        case PICKUP_WARPSTONE:
-            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
-                return 1;
-            }
-            break;
     }
 
     world->LoadCursorSprites(pfk, 0);
