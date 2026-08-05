@@ -58,7 +58,14 @@ class CMulti;
 
 class CMulti : public CPlay {
 public:
-    CMulti();
+    // inline: retail expands this whole ctor into CGruntzMgr::TransitionState
+    CMulti() {
+        m_session = NULL;
+        m_netGate = NULL;
+        m_savedEffectsEnabled = 1;
+        m_customLevel = 0;
+        m_autoCommandDelay = 1;
+    }
     virtual ~CMulti() OVERRIDE;
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;

@@ -765,9 +765,6 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     case DIR_WEST:
                         g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
                         break;
-                    default:
-                        g->StepArrivalDrop(x, y, 0, -1, 1, 0);
-                        break;
                 }
                 return 1;
             }

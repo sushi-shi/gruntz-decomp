@@ -209,14 +209,6 @@ i32 PumpIdleFrame() {
     return 1;
 }
 
-CMulti::CMulti() {
-    m_session = NULL;
-    m_netGate = NULL;
-    m_savedEffectsEnabled = 1;
-    m_customLevel = 0;
-    m_autoCommandDelay = 1;
-}
-
 // @early-stop
 // arm order + default-arm shape are byte-proven; residue is one whole-function
 // regalloc swap - retail colours this=edi / stateId=ebp (it materializes the
