@@ -5219,10 +5219,10 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_flags |= 1;
+            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_dragClampMaxX = 0;
-        this->m_dragClampMaxY = 0;
+        this->m_cursorOffset.m_x = 0;
+        this->m_cursorOffset.m_y = 0;
         this->m_dragInhibit2 = 1;
         this->m_dragEndNotify = 0;
         this->m_levelId = frame;
@@ -5233,10 +5233,10 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_flags &= ~1;
+            this->m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
-        this->m_dragClampMaxX = 0x10;
-        this->m_dragClampMaxY = 0x10;
+        this->m_cursorOffset.m_x = 0x10;
+        this->m_cursorOffset.m_y = 0x10;
         this->m_dragEndNotify = 0;
         this->m_levelId = frame;
         return 1;
@@ -5246,10 +5246,10 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_flags |= 1;
+            this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_dragClampMaxX = 0;
-        this->m_dragClampMaxY = 0;
+        this->m_cursorOffset.m_x = 0;
+        this->m_cursorOffset.m_y = 0;
         this->m_dragInhibit1 = 1;
         this->m_dragEndNotify = 0;
         g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
@@ -5430,10 +5430,10 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
     }
     if (this->m_scrollSink != NULL) {
-        this->m_scrollSink->m_flags |= 1;
+        this->m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
-    this->m_dragClampMaxX = 0;
-    this->m_dragClampMaxY = 0;
+    this->m_cursorOffset.m_x = 0;
+    this->m_cursorOffset.m_y = 0;
     this->m_dragEndNotify = flag;
     this->m_levelId = frame;
     return 1;

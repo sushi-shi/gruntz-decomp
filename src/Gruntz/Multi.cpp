@@ -1972,26 +1972,17 @@ CString CNetSessionNode::GetName() {
     return m_name;
 }
 
-// @early-stop
 RVA(0x000ba1a0, 0x1a0)
 i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
     if (msg == NULL) {
         return 0;
     }
 
-    // DirectPlay system message ids, from the SDK's dplay.h.
-    //
-    // NOTE a contradiction this naming makes visible rather than hides: the SDK
-    // has DPSYS_SESSIONLOST = 0x31 and DPSYS_HOST = 0x101, but the arms below
-    // set m_isHost on the former and m_sessionTerminated on the latter. The ids
-    // are the SDK's and are not in doubt; m_isHost and m_sessionTerminated are
-    // THIS reconstruction's guesses, and they look transposed. Not renamed here
-    // because HandleControlMsg does not match yet - its body is still truncated
-    // against retail - so there is nothing to check a rename against.
+    // DirectPlay system message ids, from the SDK's dplay.h. The retail byte
+    // index table (0xba238) maps code 0x101 -> the +0x528 arm and 0x31 -> the
+    // +0x52c arm, so DPSYS_HOST sets m_isHost and DPSYS_SESSIONLOST sets
+    // m_sessionTerminated - the labels, not the member names, were transposed.
     switch (msg->m_code) {
-        case DPSYS_CREATEPLAYERORGROUP:
-            LoadMenuSelectSprite(msg);
-            return 1;
         case DPSYS_DESTROYPLAYERORGROUP:
             if (msg->m_subCode != 1) {
                 return 1;
@@ -1999,10 +1990,13 @@ i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 unused) {
             OnPlayerLeft(msg->m_playerId);
             g_playerLeftFlag = 1;
             return 1;
-        case DPSYS_SESSIONLOST:
-            m_isHost = 1;
+        case DPSYS_CREATEPLAYERORGROUP:
+            LoadMenuSelectSprite(msg);
             return 1;
         case DPSYS_HOST:
+            m_isHost = 1;
+            return 1;
+        case DPSYS_SESSIONLOST:
             m_sessionTerminated = 1;
             return 1;
         default:
