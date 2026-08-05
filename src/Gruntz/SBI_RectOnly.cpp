@@ -3405,10 +3405,12 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
 
     CGameObject* obj = 0;
     CWwdGameObjectA* m8;
-    if (MapLookupById(gm->m_childGroup->m_map48, seq, obj) && obj != NULL) {
-        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
-    } else {
+    if (MapLookupById(gm->m_childGroup->m_map48, seq, obj) == 0) {
         m8 = 0;
+    } else if (obj == NULL) {
+        m8 = 0;
+    } else {
+        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdGameObjectA*>(obj) : 0;
     }
     m_barSprite = m8;
     if (m8 == NULL && seq != 0) {
