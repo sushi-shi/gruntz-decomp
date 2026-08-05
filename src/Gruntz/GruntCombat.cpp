@@ -220,7 +220,7 @@ static inline void GruntScratchTeardown() {
     } while (0)
 
 // @early-stop
-RVA(0x00056f80, 0x8e)
+RVA(0x00056f80, 0xb0)
 void CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
