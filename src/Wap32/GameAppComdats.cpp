@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-VTBL(CGameMgr, 0x001e9b8c);
 RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
 
 // @identity-TODO InitDefault@CGameApp - thunk oracle: retail gave this an incremental
