@@ -635,7 +635,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     MapLookupById(*map, occupantId, out) ? static_cast<CGameObject*>(out) : NULL;
                 if (occupant != NULL) {
                     CUserLogic* logic = occupant->m_animWorker->m_logic;
-                    if (logic != NULL && logic->m_object->m_smarts == 0x55) {
+                    if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                         return 1;
                     }
