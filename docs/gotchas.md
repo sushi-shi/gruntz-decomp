@@ -20,7 +20,7 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
   static-init helpers after refresh is evidence that old ordinal pins or stale
   normalized copies inflated the report; keep the real static objects, remove
   the pins, and preserve their observed rows in
-  `config/compiler-generated-functions.tsv`. See
+  `config/retail/compiler-generated-functions.tsv`. See
   `docs/patterns/volatile-compiler-ordinal-refresh-dip.md`.
 - **Inline `.text` jump tables defeat objdiff alignment.** A function with one or two inline
   jump tables can't be aligned across the table region, so its *current* % measures
@@ -216,7 +216,7 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   `cast_str_to_named`, `cast_drivers`) are ARCHIVED in `scripts/archive/`.
 - Live gates run every `gruntz build` (fail the build): `vtable_slot_binding`,
   `vtable_coverage`, `vtable_virtuality`, `vtable_bans`, `class_vtables`, `class_sizes`,
-  `view_debt`, `high_water` (MAX-fuzzy), `verify_stubs`, `verify_unique_names`,
+  `view_debt`, `verify_stubs`, `verify_unique_names`,
   `verify_library_overlap`, `gate_selftest`, `tu_order_check`. **Caveat:** a cleanliness
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh
   identifier enumeration, not proof.

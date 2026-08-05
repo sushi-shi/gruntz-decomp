@@ -22,7 +22,7 @@ CString g_name;
 ```
 
 ```text
-# config/compiler-generated-functions.tsv
+# config/retail/compiler-generated-functions.tsv
 0x000bd7f0  0xa  _$E776176  netlobbydialogs  src/Net/LobbyDialogs.cpp:70
 0x000bd810  0xe  _$E776208  netlobbydialogs  src/Net/LobbyDialogs.cpp:71
 0x000bd830  0xa  _$E776240  netlobbydialogs  src/Net/LobbyDialogs.cpp:72
@@ -213,7 +213,7 @@ wrapper would repeat the original modeling error.
 
 These structural corrections can move the current aggregate fuzzy percentage:
 removing false named helpers changes the denominator, while header/emission
-state can recolor unrelated bodies. Preserve the MAX high-water mark, compare
+state can recolor unrelated bodies. Preserve the per-function MAX ledger, compare
 the affected functions and ordered relocations, and record the cause. Do not
 undo the object model merely to restore the current percentage.
 
@@ -222,7 +222,7 @@ undo the object model merely to restore the current percentage.
 Historical `RVA_COMPGEN(..., _$E<n>)` claims named retail helpers but could not
 rename VC5's emitted local symbol. A retail observation such as `_$E1136016`
 can correspond to a base-object symbol named `_$E28`. Keep that observation in
-`config/compiler-generated-functions.tsv`; a source/retail disassembly query by
+`config/retail/compiler-generated-functions.tsv`; a source/retail disassembly query by
 the ordinal may otherwise report the base symbol missing even when `llvm-nm`
 and `llvm-objdump -dr` show the complete compiler-emitted family. Compare the
 actual base and target local definitions, meaningful body lengths, and ordered

@@ -154,7 +154,7 @@ def main():
 
     # ---- FID library RVAs (exclude: MFC/CRT/COM ctors are link-artifacts, not targets) ----
     lib = set()
-    libcsv = REPO / "config/library_labels.csv"
+    libcsv = REPO / "config/retail/library_labels.csv"
     if libcsv.exists():
         for r in csv.DictReader(open(libcsv)):
             try: lib.add(int(r["rva"], 16))

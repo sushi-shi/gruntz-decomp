@@ -267,12 +267,12 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                description="gen_labels $unit",
                restat=True)
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
-        zlib_dep = (["config/zlib_labels.csv"]
-                    if (REPO / "config/zlib_labels.csv").exists() else [])
+        zlib_dep = (["config/retail/zlib_labels.csv"]
+                    if (REPO / "config/retail/zlib_labels.csv").exists() else [])
         # the deterministic ??_7 vtable-name map labels.py auto-applies (gruntz
         # build re-runs gen_labels when it changes).
-        zlib_dep += (["config/vtable_names.csv"]
-                     if (REPO / "config/vtable_names.csv").exists() else [])
+        zlib_dep += (["config/retail/vtable_names.csv"]
+                     if (REPO / "config/retail/vtable_names.csv").exists() else [])
         frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"

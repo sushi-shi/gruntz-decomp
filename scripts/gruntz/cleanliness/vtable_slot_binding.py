@@ -49,7 +49,7 @@ CLASSIFICATION
   (c) UNBOUND        nothing in src/ claims R_i - unreconstructed. Expected for the
                      stub backlog: reported as INFO, never a failure.
 
-Library vtables (config/library_vtables.csv) are exempt, as in the sibling gates.
+Library vtables (config/retail/library_vtables.csv) are exempt, as in the sibling gates.
 Pure-virtual slots (``__purecall``) are correct-by-construction and pass.
 
 THE RATCHET (RETIRED 2026-07-22 - the gate is now PURE fail-closed)
@@ -77,7 +77,7 @@ from gruntz.core.class_meta import rel, vtbl_annotations
 from gruntz.cleanliness.vtable_virtuality import _index_classes
 
 REPO = vs.REPO
-LIB_CSV = REPO / "config" / "library_vtables.csv"
+LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
 BASELINE = REPO / "config" / "vtable-slot-binding-baseline.tsv"
 IB = vs.IMAGEBASE
 

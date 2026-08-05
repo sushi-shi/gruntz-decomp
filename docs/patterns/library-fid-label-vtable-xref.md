@@ -18,7 +18,7 @@ python -m gruntz.core.vtable_scan --holds 0x00......
 - If the RVA is held by a source-owned game-class vtable, the library row is
   false. Remove it and bind the real per-class compiler-generated method with
   `RVA_COMPGEN` in the class's evidence-backed owner TU.
-- If it is held only by a vtable listed in `config/library_vtables.csv`, the
+- If it is held only by a vtable listed in `config/retail/library_vtables.csv`, the
   library category is supported, although the generic sibling name may still be
   wrong. Use RTTI and the vtable owner to relabel it.
 - If no vtable holds it, continue through callers, thunks, RTTI, and surrounding

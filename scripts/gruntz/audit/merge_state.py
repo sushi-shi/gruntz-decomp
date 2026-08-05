@@ -1,15 +1,8 @@
 #!/usr/bin/env python3
 """merge_state.py - resolve the generated-state files a lane merge always conflicts on.
 
-Three files conflict on essentially every lane integration, and each has exactly one
-correct resolution that is NOT "take a side". Getting either of the first two backwards
-is silently destructive, and neither the build nor any gate would complain:
-
-  config/match-max.tsv          take the HIGHER value. It is the MAX-fuzzy high-water,
-                                and MAX is the campaign metric. Taking the lower side
-                                DISCARDS best-ever records that a lane legitimately
-                                earned - and since the build only ever raises it, the
-                                loss is permanent and invisible.
+Two files conflict on essentially every lane integration, and each has exactly one
+correct resolution that is NOT "take a side":
 
   config/cleanliness-baseline.tsv
                                 take the LOWER value, per metric row, THEN RE-MEASURE.
@@ -63,12 +56,6 @@ def conflicted():
     return [p for p in r.stdout.split("\n") if p]
 
 
-def pick_max(ours, theirs):
-    """One line: `<float>\t<count>`. Keep the higher float."""
-    a, b = ours.strip().split("\t"), theirs.strip().split("\t")
-    return (ours if float(a[0]) >= float(b[0]) else theirs)
-
-
 def pick_min_rows(ours, theirs):
     """`<metric>\t<count>` rows. Keep the LOWER count per metric, union of rows."""
     def rows(t):
@@ -103,9 +90,7 @@ def main() -> int:
         if ours is None or theirs is None:
             left.append(path)
             continue
-        if path == "config/match-max.tsv":
-            text, why = pick_max(ours, theirs), "HIGHER (MAX high-water)"
-        elif path == "config/cleanliness-baseline.tsv":
+        if path == "config/cleanliness-baseline.tsv":
             text, why = pick_min_rows(ours, theirs), "LOWER per row (ratchet)"
         elif path == "README.md":
             text, why = ours, "ours; regenerate with `gruntz build`"

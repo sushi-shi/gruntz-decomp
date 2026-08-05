@@ -11,10 +11,10 @@ Data sources (all products of `gruntz build`):
       name); the master ORDERED list of the .text function layout.
   build/gen/symbol_names.csv                 - what src/ CLAIMS (rva->mangled,unit):
       the "owned by a TU" set, regenerated every build from the `RVA()` annotations.
-  config/library_labels.csv                  - FID-identified CRT/MFC/zlib/EH library
+  config/retail/library_labels.csv           - FID-identified CRT/MFC/zlib/EH library
       code (rva->name,lib,confidence).
-  config/compiler-generated-functions.tsv   - compiler-private `$E<n>` helpers.
-  config/compiler-helper-functions.tsv      - proven forwarding helpers.
+  config/retail/compiler-generated-functions.tsv - compiler-private `$E<n>` helpers.
+  config/retail/compiler-helper-functions.tsv - proven forwarding helpers.
   config/units.toml                          - unit -> source path (the FILENAME an
       owned function maps back to).
 

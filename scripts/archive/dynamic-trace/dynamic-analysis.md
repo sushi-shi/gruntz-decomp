@@ -30,7 +30,7 @@ The gdb driver is kept at `scripts/gruntz/analysis/gdb_trace_this.py` as a fallb
   gotchas) so the game never resolves the (missing) `SFManager` export from the gadget.
 - **The hook set** `build/trace/thiscall_discovery.csv`: Ghidra calling-convention dump
   (`ghidra/scripts/dump_cc.py` → `build/trace/cc_all.csv`) filtered to `cc ∈
-  {__thiscall, unknown}` and **minus MFC/CRT/zlib** (`config/library_labels.csv`) =
+  {__thiscall, unknown}` and **minus MFC/CRT/zlib** (`config/retail/library_labels.csv`) =
   ~7.3k engine functions (named thiscall anchors + unknown `FUN_` discovery targets).
   `gen_frida_script` then drops Frida-unsafe targets — `jmp`/padding starts and the MFC
   window/dialog band `0x1b9000–0x1c2000` (see gotchas) — leaving ~3.1k real engine bodies.

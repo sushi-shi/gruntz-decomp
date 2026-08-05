@@ -17,7 +17,7 @@ is never in one worklist under a stricter definition than another):
     and forward declarations (``class X;`` - a ``;`` before any ``{``).
   * A def immediately preceded by a ``template`` line is SKIPPED: a templated
     class has a mangled ``??_7?$Name@...@@6B@`` vtable that VTBL(Name)'s simple
-    ``??_7Name@@6B@`` cannot express (those stay in config/vtable_names.csv).
+    ``??_7Name@@6B@`` cannot express (those stay in config/retail/vtable_names.csv).
   * Results are keyed by class NAME. The same name defined in several per-TU shim
     headers is ONE logical class: annotating the name once (anywhere) satisfies
     every def, so the worklist is a set of NAMES, each with a representative def
@@ -255,10 +255,10 @@ _RTTI_VTBL_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
 
 def rtti_vtables() -> dict:
     """{class_name: rva} for the simple (global-namespace) ``??_7<Name>@@6B@``
-    vtables in config/vtable_names.csv."""
+    vtables in config/retail/vtable_names.csv."""
     import csv
     out = {}
-    path = REPO / "config" / "vtable_names.csv"
+    path = REPO / "config" / "retail" / "vtable_names.csv"
     if not path.exists():
         return out
     for r in csv.reader(path.open()):

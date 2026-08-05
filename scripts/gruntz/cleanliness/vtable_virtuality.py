@@ -15,7 +15,7 @@ A ``VTBL(Name, rva)`` is a VIOLATION when:
     through its source/library bases) is LESS than the vtable's slot count (a
     de-virtualized or under-modelled class - some slots have no virtual behind them).
 
-MFC/CRT vtables (config/library_vtables.csv) are exempt - they are library, catalogued
+MFC/CRT vtables (config/retail/library_vtables.csv) are exempt - they are library, catalogued
 not reconstructed. Prints every violation and exits nonzero; wired into ``gruntz build``
 as a FATAL gate. Runnable as ``python -m gruntz.cleanliness.vtable_virtuality`` (``--list``).
 """
@@ -32,7 +32,7 @@ from gruntz.core.class_meta import _blank_comments, source_files
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-LIB_CSV = REPO / "config" / "library_vtables.csv"
+LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
 
 _CLASS_HEAD = re.compile(r"\b(?:struct|class)\s+(\w+)\b([^;{]*)\{")
 _VTBL = re.compile(r"\bVTBL\s*\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")

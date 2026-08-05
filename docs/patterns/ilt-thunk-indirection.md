@@ -125,7 +125,7 @@ confidence — `__fpclear` was claimed at **four** distinct RVAs at once, which 
 refuting (one CRT function cannot be at four addresses). The vtable evidence arbitrates:
 `0x88d0` is reached from **69 vtable slots, always slot 6** (`??_7CUserLogic@@6B@`,
 `??_7CActionArea@@6B@`, …). A CRT routine cannot be slot 6 of 69 game vtables — the rows
-were pruned from `config/library_labels.csv`.
+were pruned from `config/retail/library_labels.csv`.
 
 ## Related
 

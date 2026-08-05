@@ -16,7 +16,7 @@ VTBL(CButeNode) also binds). There the rva stays covered by the plain VTBL, so
 dropping the through-base VTBL2 silently regresses the NAME with no gate firing.
 This gate closes that hole by locking the through-base secondary vtable NAMES.
 
-Two FATAL checks (both drive to the frozen census config/secondary-vtables.tsv):
+Two FATAL checks (both drive to the frozen census config/retail/secondary-vtables.tsv):
 
   * STRUCTURE - the set of source VTBL2(C, base, rva) -> (rva,
     ??_7<C>@@6B<base>@@@) pairs must EQUAL the census. A dropped VTBL2 (deletion),
@@ -44,7 +44,7 @@ from pathlib import Path
 
 from gruntz.core.class_meta import REPO, rel, source_files, _blank_comments
 
-CENSUS = REPO / "config" / "secondary-vtables.tsv"
+CENSUS = REPO / "config" / "retail" / "secondary-vtables.tsv"
 SYMS = REPO / "build" / "gen" / "symbol_names.csv"
 
 # VTBL2(derived, base, 0xrva) - the same spelling labels.py text-scans. The
@@ -70,7 +70,7 @@ def source_vtbl2():
 
 
 def load_census():
-    """{rva: name} from config/secondary-vtables.tsv (rva<TAB>name; # comments)."""
+    """{rva: name} from config/retail/secondary-vtables.tsv (rva<TAB>name; # comments)."""
     out = {}
     if not CENSUS.exists():
         return out
@@ -153,7 +153,7 @@ def main() -> int:
     if added or removed:
         rc = 1
         print("secondary-vtable census DRIFT - source VTBL2 set != "
-              "config/secondary-vtables.tsv:", file=sys.stderr)
+              "config/retail/secondary-vtables.tsv:", file=sys.stderr)
         for rva, nm in sorted(removed):
             reason = ("rva now bound to " + src[rva]) if rva in src else "VTBL2 DELETED/renamed"
             print(f"  MISSING from source: 0x{rva:06x} {nm}  ({reason})", file=sys.stderr)

@@ -99,7 +99,7 @@ DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 # FID list is committed. Absent (fresh worktree, no build) -> None and callers
 # fall back to objdiff's started-unit scope.
 FUNCS_CSV = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
-FID_CSV = REPO / "config" / "library_labels.csv"
+FID_CSV = REPO / "config" / "retail" / "library_labels.csv"
 
 README = REPO / "README.md"
 RM_START = "<!-- match-score:start -->"

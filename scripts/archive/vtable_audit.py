@@ -25,7 +25,7 @@ and categorizes the discrepancies:
                            the vtable owner nor any ancestor on the owner's RTTI spine.
   [D] MISSING              the slot's function is not reconstructed / not bound anywhere.
 
-Library vtables (config/library_vtables.csv - statically-linked MFC/CRT) are excluded from
+Library vtables (config/retail/library_vtables.csv - statically-linked MFC/CRT) are excluded from
 [A]/[C]/[D] (we model them minimally, never reconstruct), but their slots ARE counted in
 the "occupies a retail slot" set so a legit override of an MFC virtual is not flagged [B].
 
@@ -91,7 +91,7 @@ def load_symbols():
 
 def library_vtable_rvas():
     out = set()
-    p = REPO / "config/library_vtables.csv"
+    p = REPO / "config/retail/library_vtables.csv"
     if p.exists():
         for r in csv.reader(p.open()):
             if len(r) >= 2:
@@ -107,7 +107,7 @@ def library_fn_rvas():
     slot whose body is one of these is an INHERITED library virtual (an MFC CWnd/CDialog
     method), NOT a game gap we are expected to reconstruct - split it out of [D]."""
     out = set()
-    p = REPO / "config/library_labels.csv"
+    p = REPO / "config/retail/library_labels.csv"
     if p.exists():
         for r in csv.DictReader(p.open()):
             try:

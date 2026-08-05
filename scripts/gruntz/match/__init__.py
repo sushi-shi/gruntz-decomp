@@ -2,7 +2,6 @@
 
   status         make matching progress + REGRESSIONS queriable (the match CLI).
   fingerprints   per-function source fingerprints (the helper status imports).
-  high_water     the MAX-% high-water ratchet (config/match-max.tsv).
   residual_queue the exhaustive live non-exact function queue.
   verify_stubs / verify_unique_names / verify_library_overlap
                  measurement-integrity build gates.

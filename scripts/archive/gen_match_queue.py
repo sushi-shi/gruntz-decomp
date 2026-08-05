@@ -8,7 +8,7 @@ Inputs (all already in the repo):
   src/**/*.cpp                     - @stub / source label metadata
   build/gen/symbol_names.csv       - the byte-MATCHED set (exclude: already done)
   build/ghidra-enrich/exports/functions.csv - function boundaries + sizes
-  config/library_labels.csv        - library funcs (exclude: not engine)
+  config/retail/library_labels.csv - library funcs (exclude: not engine)
   build/patch-diff/validated_changed.pkl - 52 v1.01-changed funcs (exclude)
   $GRUNTZ_EXE (flake)              - scanned for E8 call edges (leaf-readiness)
 
@@ -28,7 +28,7 @@ EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE")
 FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
 STUB_LABELS = REPO / "src"
 MATCHED = REPO / "build/gen/symbol_names.csv"   # generated (was config/symbol_names.csv)
-FID = REPO / "config/library_labels.csv"
+FID = REPO / "config/retail/library_labels.csv"
 CHANGED = REPO / "build/patch-diff/validated_changed.pkl"
 OUT = REPO / "config/match-queue.md"
 

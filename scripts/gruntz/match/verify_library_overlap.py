@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Fatal guard: no src claim may also be a config/library_labels.csv row.
+"""Fatal guard: no src claim may also be a config/retail/library_labels.csv row.
 
 GRUNTZ.EXE statically links MFC (NAFXCW) + CRT. Library code is NEVER
-hand-reconstructed in src/ - it gets a row in config/library_labels.csv (which
+hand-reconstructed in src/ - it gets a row in config/retail/library_labels.csv (which
 excludes it from the match denominator) and game code calls it through the real
 headers (<Mfc.h>). A retail RVA must therefore be claimed by EXACTLY ONE of:
 
@@ -38,12 +38,12 @@ not see (macro-only overlap was already 0 while the full set overlapped at 45).
 THE ONE DELIBERATE COEXISTENCE (vendored library). zlib 1.0.4 is compiled from
 real vendored source (vendor/zlib-1.0.4/*.c) AND FID-identifies as library. Its
 functions therefore sit in BOTH build/gen/symbol_names.csv (named for the
-delinker via config/zlib_labels.csv, the vendored static-config table) AND
-config/library_labels.csv (FID-tagged). status.py resolves this with "claimed
+delinker via config/retail/zlib_labels.csv, the vendored static-config table) AND
+config/retail/library_labels.csv (FID-tagged). status.py resolves this with "claimed
 wins": a carve-out that is also reconstructed counts as a real target. That is a
 THIRD category - vendored library, source held - not a double-claim, and the
 names AGREE (_deflate_stored == _deflate_stored). This guard excludes it by
-SOURCE (the config/zlib_labels.csv vendored table), NOT by an RVA allowlist:
+SOURCE (the config/retail/zlib_labels.csv vendored table), NOT by an RVA allowlist:
 every retail RVA is still a src reconstruction xor a library carve-out xor a
 vendored-library body.
 
@@ -68,11 +68,11 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
 INCLUDE = REPO / "include"
-LIBRARY_LABELS = REPO / "config" / "library_labels.csv"
+LIBRARY_LABELS = REPO / "config" / "retail" / "library_labels.csv"
 GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 # The vendored static-config table (zlib 1.0.4): library code we hold source for,
 # co-listed in symbol_names.csv AND library_labels.csv by design ("claimed wins").
-VENDORED_CONFIG = REPO / "config" / "zlib_labels.csv"
+VENDORED_CONFIG = REPO / "config" / "retail" / "zlib_labels.csv"
 
 # rva-macro: RVA(0x.., 0x..) - a reconstructed body's retail address.
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*\)")
@@ -87,7 +87,7 @@ def norm_addr(value: str) -> str:
 
 
 def vendored_rvas() -> set:
-    """RVAs of the vendored static-config TUs (config/zlib_labels.csv). These are
+    """RVAs of the vendored static-config TUs (config/retail/zlib_labels.csv). These are
     library bodies we hold source for; they are DELIBERATELY in both the generated
     symbol set and library_labels.csv ("claimed wins", status.py) and are excluded
     from the overlap by source category, not by an RVA allowlist."""
@@ -107,7 +107,7 @@ def src_claims() -> dict:
     """rva -> (claim-kind, "path:line") for every src-authored claim. Parses src/
     and include/ directly, so it is always available (the never-vacuous fallback)
     and carries the claim kind + source location for the diagnostic. Naturally
-    excludes the vendored table (those names live in config/zlib_labels.csv, not
+    excludes the vendored table (those names live in config/retail/zlib_labels.csv, not
     in src comments)."""
     claims = {}
     files = list(SRC.rglob("*.cpp")) + list(SRC.rglob("*.h")) + list(INCLUDE.rglob("*.h"))
@@ -194,7 +194,7 @@ def main() -> int:
 
     overlap = sorted(set(claims) & set(lib))
     if overlap:
-        print(f"{len(overlap)} RVA(s) double-claimed by src AND config/library_labels.csv:",
+        print(f"{len(overlap)} RVA(s) double-claimed by src AND config/retail/library_labels.csv:",
               file=sys.stderr)
         print(f"  {'rva':>10}  {'claim-kind':<10}  src <-> csv", file=sys.stderr)
         for rva in overlap:

@@ -41,7 +41,7 @@ stands (those are masked too). See `docs/matching-patterns.md` §215.
 
 **UPDATE (2026-07, measured — largely OBSOLETE; its DIR32 half is now REFUTED, see CORRECTION above):**
 The vtable/global **DIR32** half is
-FIXED — a NAMED DIR32 data referent (vtable via `config/vtable_names.csv`, global via `DATA()`,
+FIXED — a NAMED DIR32 data referent (vtable via `config/retail/vtable_names.csv`, global via `DATA()`,
 pooled string via the `coff_oracle`) now scores exact; an unnamed one is fixed by naming it. The
 **`__imp__`/import + `REL32`-call half is a NON-issue**: objdiff MASKS `REL32` call/branch reloc
 names and `call [disp32]` import operands, so those never cap the score (measured: renaming 5909

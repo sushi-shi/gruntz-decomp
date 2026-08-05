@@ -34,7 +34,7 @@ from pathlib import Path
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 FUNCS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
-FID = REPO / "config" / "library_labels.csv"
+FID = REPO / "config" / "retail" / "library_labels.csv"
 SRC = REPO / "src" / "Stub" / "Unmatched.cpp"
 LIB_SRC = REPO / "src" / "Stub" / "UnmatchedLibrary.cpp"
 EXE = Path(os.environ.get("GRUNTZ_EXE") or REPO / "build" / "exe" / "GRUNTZ.EXE")
@@ -103,7 +103,7 @@ def load_labeled():
         except OSError:
             pass
     for c in ("library_labels.csv", "zlib_labels.csv"):
-        p = REPO / "config" / c
+        p = REPO / "config" / "retail" / c
         if p.exists():
             for r in csv.reader(open(p)):
                 try:

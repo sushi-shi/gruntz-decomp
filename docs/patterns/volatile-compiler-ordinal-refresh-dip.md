@@ -27,9 +27,9 @@ the old explanation were wrong.
 - Keep the real source-level static object and its authentic construction/destruction.
 - Do not write `RVA_COMPGEN` for `_$E<n>`.
 - Record observed RVA, size, ordinal, unit, and former source location in
-  `config/compiler-generated-functions.tsv`; the file is navigation evidence and is
+  `config/retail/compiler-generated-functions.tsv`; the file is navigation evidence and is
   intentionally outside the label/objdiff pipeline.
-- Preserve MAX/high-water history. Never lower it to make the refreshed current report
+- Preserve per-function MAX history. Never lower it to make the refreshed current report
   look clean.
 
 ## Reverse audit

@@ -10,7 +10,7 @@ this covers the NON-RTTI WAP/engine vtables too, not just the 224 RTTI classes.
 A vtable (rva) is COVERED when EITHER:
   * its rva is named in build/gen/symbol_names.csv - the reconstruction binds it
     (a real polymorphic ``??_7`` / a ``VTBL(...)`` / a ``DATA()`` datum), OR
-  * its rva is listed in config/library_vtables.csv - an MFC/CRT/iostream library
+  * its rva is listed in config/retail/library_vtables.csv - an MFC/CRT/iostream library
     vtable we deliberately DON'T reconstruct (statically linked), catalogued there
     instead of in source.
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-LIB_CSV = REPO / "config" / "library_vtables.csv"
+LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
 SYMS = REPO / "build" / "gen" / "symbol_names.csv"
 
 # vtable_scan confidences that ARE real vtables (it excludes 'unref' = EH/switch tables).
@@ -114,7 +114,7 @@ def main() -> int:
         n_sec = sum(1 for g in gaps if g[4])
         print(f"vtable-coverage: {len(gaps)} of {len(vts)} analysed vtable(s) UNCOVERED "
               f"({n_sec} secondary/MI; bind in source via VTBL()/VTBL2()/DATA(), or add "
-              f"MFC/CRT to config/library_vtables.csv):", file=sys.stderr)
+              f"MFC/CRT to config/retail/library_vtables.csv):", file=sys.stderr)
         for rva, size, conf, cls, boff in sorted(gaps):
             sec = f" +{boff} (SECONDARY)" if boff else ""
             print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {cls or '(non-rtti)'}{sec}", file=sys.stderr)

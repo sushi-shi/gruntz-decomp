@@ -4,7 +4,7 @@ must be CATALOGUED, so its delinked vtable datum can be named (single source of
 truth for the vtable set).
 
 A class "has a vtable" when ANY of:
-  * it has an RTTI ``??_7<Name>@@6B@`` entry in config/vtable_names.csv, OR
+  * it has an RTTI ``??_7<Name>@@6B@`` entry in config/retail/vtable_names.csv, OR
   * its body declares a real C++ ``virtual``, OR
   * its body carries a manual vtable stamp (``&...Vtbl`` / ``&..._vftable`` /
     an ``m_vtbl`` / ``m_vptr`` field - the WAP-engine hand-rolled-vtable idiom).
@@ -81,11 +81,11 @@ def vtbl2_vtable_classes():
 
 
 def library_vtable_rvas():
-    """RVAs of MFC/CRT library vtables (config/library_vtables.csv). Statically linked, so
+    """RVAs of MFC/CRT library vtables (config/retail/library_vtables.csv). Statically linked, so
     present_rvas() (our emitted base objs) misses them; a class whose RTTI vtable is here IS
     catalogued - we model it as a minimal view, never reconstruct the library class."""
     out = set()
-    path = REPO / "config" / "library_vtables.csv"
+    path = REPO / "config" / "retail" / "library_vtables.csv"
     if not path.exists():
         return out
     for r in csv.reader(path.open()):

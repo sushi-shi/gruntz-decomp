@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""gruntz.audit.fid_generate - regenerate config/library_labels.csv (the FID library labels).
+"""gruntz.audit.fid_generate - regenerate config/retail/library_labels.csv (the FID library labels).
 
-`config/library_labels.csv` (rva,name,lib,confidence,source) is the TRACKED output
+`config/retail/library_labels.csv` (rva,name,lib,confidence,source) is the TRACKED output
 of a custom **masked-byte COFF-signature matcher** (NOT Ghidra FID). `apply.py`
 names CRT/MFC/zlib library functions from it and `gen_match_queue.py` excludes
 them. The committed CSV is canonical and survives `git clean`; regenerate only
@@ -24,12 +24,12 @@ Pipeline (stages in the gruntz.audit.fid subpackage):
   3. fid.classify   -> build/fid/library_labels.csv  (anchored: matches at known
                        function starts; prepends zlib from build/gen/symbol_names.csv)
   4. fid.unanchored -> build/fid/offstart_matches.csv (bodies at starts Ghidra missed)
-  5. merge (3)+(4) with a `source` column -> config/library_labels.csv
+  5. merge (3)+(4) with a `source` column -> config/retail/library_labels.csv
 
 Stages 2-4 (coff_sig/classify/unanchored) are the original matcher, verbatim. The
 .obj unpack (1) and the source-tagged merge (5) are RECONSTRUCTED here - the
 original glue was never committed - so on the first regeneration, diff the result
-against the tracked config/library_labels.csv before trusting it.
+against the tracked config/retail/library_labels.csv before trusting it.
 
 Run inside `nix develop`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
 build/ghidra-enrich/exports/functions.csv (produce it with `gruntz init`).
@@ -41,7 +41,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 WORK = REPO / "build" / "fid"                            # scratch (gitignored)
 FUNCS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
-OUT = REPO / "config" / "library_labels.csv"             # tracked, canonical
+OUT = REPO / "config" / "retail" / "library_labels.csv"  # tracked, canonical
 
 
 def sh(*cmd, cwd=None):
@@ -92,7 +92,7 @@ def main() -> None:
     sh(sys.executable, "-m", "gruntz.audit.fid.unanchored",
        sigs, exe, FUNCS, WORK / "offstart_matches.csv")
 
-    # 5. merge with a `source` column -> config/library_labels.csv
+    # 5. merge with a `source` column -> config/retail/library_labels.csv
     rows, seen = [], set()
     with open(WORK / "library_labels.csv", newline="") as f:
         for r in csv.DictReader(f):

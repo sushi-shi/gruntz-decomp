@@ -252,11 +252,11 @@ functions newly moved below their saved values:
 `CGrunt::PhaseStep` recovered 38.5960→39.7717 without a body edit.
 `CGrunt::ArrivalRecycle` changed directly and is not a butterfly control. The
 full field map and callee relocations prove the cleanup, so retain it and the
-saved MAX values. The same rebuild raised two high-water marks:
+saved per-function MAX values. The same rebuild raised two per-function marks:
 `zBitVec::SetSize` 85.2979→98.7234 and
 `CTriggerMgr::PlaceObjectFull` 18.3538→18.3988. Thus the authentic declaration
-state both repaired and displaced schedules; the rounded overall MAX remained
-73.73. This firing is especially useful in reverse: an unexplained schedule in
+state both repaired and displaced schedules. This firing is especially useful in
+reverse: an unexplained schedule in
 a `Grunt.h`/`TypeKeyColl.h` consumer may respond to completing the authentic
 vector API or removing another interior-field alias.
 

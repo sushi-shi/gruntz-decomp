@@ -41,7 +41,7 @@ def run(args) -> None:
     else:
         print("  src claim : (none - not reconstructed under src/)")
 
-    librow = csv_find(REPO / "config" / "library_labels.csv", def_rva)
+    librow = csv_find(REPO / "config" / "retail" / "library_labels.csv", def_rva)
     if librow:
         print(f"  library   : {librow['name']}  {librow['lib']} / "
               f"{librow['confidence']} / {librow['source']}  "

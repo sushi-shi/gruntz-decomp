@@ -110,7 +110,7 @@ The last three functions (`_inflate`, `_inflate_blocks`, `_inflate_codes` — th
 `switch(state->mode)` state machines) were byte-exact all along but mis-measured:
 Ghidra's carve ends at the code, so the delinked target dropped each function's INLINE
 `.text` jump table while the base COMDAT contains it. Fix: the `size` column of their
-`config/zlib_labels.csv` rows now carries the FULL COMDAT span (`0x430`/`0xcb0`/`0x7b0`
+`config/retail/zlib_labels.csv` rows now carries the FULL COMDAT span (`0x430`/`0xcb0`/`0x7b0`
 — for each, retail next-symbol gap == base COMDAT size), which synth_pdb honors, so the
 delinker carves the table into the function; normalize's jump-table reloc rewrite then
 pairs the table dwords. Two `data` rows complete the reloc naming: `_border$S454`

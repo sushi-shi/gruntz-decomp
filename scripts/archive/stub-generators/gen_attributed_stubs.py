@@ -59,7 +59,7 @@ def load_labeled():
         except OSError:
             pass
     for c in ("library_labels.csv", "zlib_labels.csv"):
-        p = REPO / "config" / c
+        p = REPO / "config" / "retail" / c
         if p.exists():
             for r in csv.reader(open(p)):
                 try:

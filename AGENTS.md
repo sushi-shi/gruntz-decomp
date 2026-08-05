@@ -149,7 +149,7 @@ comments. Keep their enforced spelling:
 - Never bind volatile compiler ordinals such as `_$E<n>` with
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   Keep observed RVA/name/size evidence in
-  `config/compiler-generated-functions.tsv` instead.
+  `config/retail/compiler-generated-functions.tsv` instead.
 - A `$S*` `DATA_SYMBOL` is narrower: use it only for a real named source
   static whose exact emitted COFF symbol proves the semantic prefix and whose
   sole ambiguity is the unstable numeric suffix.

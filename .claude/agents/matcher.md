@@ -312,7 +312,7 @@ ALSO a cleanup brief for its owned files. While reconstructing/cracking function
 MUST, in the same files: type members instead of casting, name every `m_<hex>` your
 disasm work proves, fold/delete local view structs onto the canonicals, and convert
 `*Vtbl` structs / `m_vtbl`/`m_vptr` fields / PMF tables to real C++ virtuals (slot order
-from `gruntz sema class` + config/vtable_names.csv; the PMF→real-virtual conversion is
+from `gruntz sema class` + config/retail/vtable_names.csv; the PMF→real-virtual conversion is
 PROVEN better, the MFC wall is dead, the foreign-vtable view exception is abolished).
 **ALL manual vtables go (user mandate 2026-07-05): stamp-position/EH-frame/ctor-layout
 "walls" are NOT keeps — realize the real polymorphic class anyway and take the % drop

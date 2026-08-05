@@ -15,7 +15,7 @@ METHOD (pure coverage arithmetic - no disassembly guesswork for membership):
        - size >= MIN_BODY (default 32; smaller = ILT thunk / adjustor / tiny stub),
        - starts with a plausible MSVC prologue byte,
        - ENDS with a terminator (ret / ret-imm / tail jmp rel32 into .text),
-       - its start RVA is not in config/library_labels.csv (FID carve-outs).
+       - its start RVA is not in config/retail/library_labels.csv (FID carve-outs).
   Blocks that fail (thunks, data/jump-tables, EH funclets) are counted but not stubbed.
 
     python -m gruntz.analysis.discover_gaps                 # report: coverage + counts
@@ -31,7 +31,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parent)
 FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
 GEN = REPO / "build/gen/symbol_names.csv"
-LIBS = REPO / "config/library_labels.csv"
+LIBS = REPO / "config/retail/library_labels.csv"
 IB = vs.IMAGEBASE
 
 MIN_BODY = 32

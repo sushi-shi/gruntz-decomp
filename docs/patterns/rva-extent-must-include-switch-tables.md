@@ -153,6 +153,6 @@ including four the "slop" heuristic could not see because the table starts withi
 the claim end (`CTileTriggerLogic::Tick` @0x110c10, table at 0x111a50, claim ended 0x111a4f).
 Measured on the ten: CRollingBall::Update 54.9 -> 83.1, CTileActionEvent::Process 58.9 -> 89.8,
 CTileTriggerLogic::Tick 84.1 -> 94.9, CTriggerMgr::WireTileSwitchLogic 76.8 -> 88.4,
-CButeValue::CopyValue 91.3 -> 100 EXACT; overall MAX 84.81% -> 84.98%.
+CButeValue::CopyValue 91.3 -> 100 EXACT.
 
 related: bss-symbol-size-inference-hole.md, delinker-jumptable-dup-symbol-undercount.md

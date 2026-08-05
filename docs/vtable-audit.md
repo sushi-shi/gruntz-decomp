@@ -7,7 +7,7 @@ history if you need a specific class's decision. Read alongside `docs/vtable-map
 this answers the campaign's open question **"when are vtables DONE?"**
 
 Method: grep the tree for the three form families, then classify each hit against
-the retail `.rdata` (VA = RVA + 0x400000), `config/vtable_names.csv` (the realized
+the retail `.rdata` (VA = RVA + 0x400000), `config/retail/vtable_names.csv` (the realized
 `??_7` catalog; the old `include/UnknownVTables.h` tracking header is retired), and the
 Ghidra/delinker symbol names. Categories:
 

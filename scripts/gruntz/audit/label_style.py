@@ -97,7 +97,7 @@ def scan(path: Path):
             out.append((
                 i,
                 "volatile _$E<n> ordinal is evidence, not a source label "
-                "(use config/compiler-generated-functions.tsv)",
+                "(use config/retail/compiler-generated-functions.tsv)",
                 ln.strip()[:90],
             ))
         for m in FIND_RE.finditer(ln):

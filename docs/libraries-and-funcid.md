@@ -231,13 +231,13 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 > **Implemented differently.** The library labels were ultimately produced by a
 > custom **masked-byte COFF-signature matcher** (`scripts/gruntz/audit/fid/`, driven by
 > `python -m gruntz.audit.fid_generate`) — NOT Ghidra FID. Its output is the tracked
-> `config/library_labels.csv`. The Ghidra-FID route below is kept for context: it
+> `config/retail/library_labels.csv`. The Ghidra-FID route below is kept for context: it
 > explains why no stock MSVC-5.0 fidb exists and what a signature db must capture.
 
 > **Single-claim invariant (FATAL build gate) — TOTAL over the full generated symbol
 > set.** Every retail RVA is claimed by EXACTLY ONE side: a **src reconstruction** (a
 > GAME body/global) **xor** an active HIGH/MED/AMBIG
-> `config/library_labels.csv` row (a carved LIBRARY body, excluded from the match
+> `config/retail/library_labels.csv` row (a carved LIBRARY body, excluded from the match
 > denominator). LOW rows are retained only as diagnostic leads: they do not color
 > the DNA strip, leave the reconstruction queue, or shrink the denominator. Claiming
 > the same RVA in both is a
@@ -284,12 +284,12 @@ match code. Low priority; obtain only for naming the import stubs if desired.
 >
 > **The one deliberate coexistence — vendored library.** zlib 1.0.4 is compiled from
 > real vendored source (`vendor/zlib-1.0.4/*.c`, named for the delinker via
-> `config/zlib_labels.csv`) **and** FID-identifies as library, so its ~42 functions
+> `config/retail/zlib_labels.csv`) **and** FID-identifies as library, so its ~42 functions
 > sit in BOTH the generated set and `library_labels.csv`. `status.py` resolves this
 > with **"claimed wins"** (a carve-out that is also reconstructed counts as a real
 > target) and the names AGREE (`_deflate_stored == _deflate_stored`). This is a THIRD
 > category — vendored library, source held — not a defect. The gate excludes it by
-> **source** (the `config/zlib_labels.csv` vendored table), NOT by an RVA allowlist,
+> **source** (the `config/retail/zlib_labels.csv` vendored table), NOT by an RVA allowlist,
 > so the xor invariant reads: src reconstruction **xor** library carve-out **xor**
 > vendored-library body.
 

@@ -596,7 +596,7 @@ class Audit:
     def vtable_bearing(self):
         """Sorted src class NAMES carrying a vtable signal: a real virtual, a manual
         &g_*Vtbl / m_vtbl / m_vptr stamp, a hand-rolled ``* vtbl;`` field, a VTBL()
-        annotation, or an RTTI ??_7 in config/vtable_names.csv."""
+        annotation, or an RTTI ??_7 in config/retail/vtable_names.csv."""
         return sorted(n for n in self.where
                       if n in self.virtual or n in self.manual or n in self.vtbl_field
                       or n in self.vtbl_ann or n in self.rtti_cfg)
@@ -662,7 +662,7 @@ def cmd_coverage(aud):
     total = len(anchored) + len(unanchored)
     print("# vtable-coverage audit - every src/+include/ class carrying a vtable")
     print("# signal (declares a real virtual / a manual &g_*Vtbl|m_vtbl|m_vptr stamp /")
-    print("# named in config/vtable_names.csv), and whether the analyzer can ANCHOR")
+    print("# named in config/retail/vtable_names.csv), and whether the analyzer can ANCHOR")
     print("# its vtable rva (RTTI COL / VTBL / emitted ??_7 / resolvable manual stamp /")
     print("# unique structural slot match).")
     print(f"# total vtable-bearing classes : {total}")
@@ -807,12 +807,12 @@ def cmd_audit(aud):
     clang -Wsuggest-override for the precise per-method missing-override list)."""
     known = known_base_vtables(aud)
     inter = reconstruct_intermediates(aud)
-    # MFC/CRT library classes (config/library_vtables.csv) are statically linked, NOT
+    # MFC/CRT library classes (config/retail/library_vtables.csv) are statically linked, NOT
     # reconstructed - we model them as minimal views to reach their methods, so their
     # "missing" slots / unmarked overrides vs the FULL library vtable are not our bug.
     # The audit judges only GAME/engine classes, so exclude the library catalog.
     lib_rvas = set()
-    _libcsv = REPO / "config/library_vtables.csv"
+    _libcsv = REPO / "config/retail/library_vtables.csv"
     if _libcsv.exists():
         for _r in csv.reader(_libcsv.open()):
             if len(_r) >= 2:

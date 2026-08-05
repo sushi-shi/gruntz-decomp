@@ -187,7 +187,7 @@ ratchet, not a finished job — see "What the strict count means".**
 ## What landed
 
 All byte-neutral: the score returned to its pre-campaign value (3260/4272 exact,
-84.76% fuzzy) and `MAX %` held at 84.80 throughout.
+84.76% fuzzy), with the per-function MAX ledger preserved throughout.
 
 - `include/Enums.h` — the `GZ_ENUM_*` layer; both branches compile-tested.
 - **39 domains declared**, zero raw `enum` left in `include/` outside
@@ -299,8 +299,8 @@ are annotated with the measurement showing the shape is byte-evidenced.
   vs after. Object identity, not `%` — a value-identical edit renumbers `$L`/`$T`
   labels, which objdiff scoring cannot see.
 - **Per edit:** `gruntz build --fast`, read the touched unit's `%`.
-- **Per commit:** full `gruntz build` — cleanliness ratchet, `label_style`,
-  `include_order`, `verify_unique_names`, MAX high-water.
+- **Per commit:** `gruntz build --normal` — cleanliness ratchet, `label_style`,
+  `include_order`, `verify_unique_names`, and the per-function MAX report.
 - **After any member retype:** `gruntz build --full` runs `class_sizes`, which is
   what catches an accidental 1→4 byte widening.
 

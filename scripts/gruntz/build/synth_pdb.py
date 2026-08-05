@@ -925,7 +925,7 @@ def main():
     # Curated src rows always win; the unit stays empty, so this only RENAMES -
     # library code is still partitioned into the linker bucket, never into a TU.
     nlib = 0
-    for row in library_active_rows(REPO / "config/library_labels.csv"):
+    for row in library_active_rows(REPO / "config/retail/library_labels.csv"):
         raw = (row.get("rva") or "").strip()
         name = (row.get("name") or "").strip()
         if not raw or not name:

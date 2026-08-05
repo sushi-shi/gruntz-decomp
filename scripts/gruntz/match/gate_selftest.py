@@ -12,8 +12,6 @@ nobody had ever falsified:
   * ``class_sizes`` matched ``SIZE(C, N)`` in PROSE, and ``out[name]`` let the last
     writer win - so a COMMENT beat the real declaration and turned a FATAL gate red
     against correct code.
-  * the MAX-% high-water absorbed a 0/0 report's published 100% via ``max(prev, cur)``
-    and pinned config/match-max.tsv at 100.0000 permanently (bb4d94cef).
   * ``cleanliness`` dropped a ratcheted metric's row whenever its subprocess failed,
     and the next ``save_baseline`` deleted that metric's floor.
 
@@ -48,7 +46,7 @@ from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
-from gruntz.match import high_water, status
+from gruntz.match import status
 from gruntz.permute import permute_sweep
 from gruntz.match import verify_unique_names as vun
 
@@ -119,7 +117,7 @@ class TestFunctionUniverse(unittest.TestCase):
             root = Path(tmp)
             (root / "build/ghidra-enrich/exports").mkdir(parents=True)
             (root / "build/gen").mkdir(parents=True)
-            (root / "config").mkdir()
+            (root / "config/retail").mkdir(parents=True)
             (root / "build/ghidra-enrich/exports/functions.csv").write_text(
                 "entry_rva,byte_size,name\n"
                 "0x1000,8,data_at_code\n"
@@ -134,13 +132,13 @@ class TestFunctionUniverse(unittest.TestCase):
                 "rva,name,unit,size,kind\n"
                 "0x1000,data_label,u,,data\n"
                 "0x1100,source_function,u,0x8,func\n")
-            (root / "config/library_labels.csv").write_text(
+            (root / "config/retail/library_labels.csv").write_text(
                 "rva,name,lib,confidence,source\n"
                 "0x1300,library_high,LIBCMT,HIGH,test\n"
                 "0x1400,library_low,LIBCMT,LOW,test\n")
-            (root / "config/compiler-generated-functions.tsv").write_text(
+            (root / "config/retail/compiler-generated-functions.tsv").write_text(
                 "0x00001200\t0xa\t_$E1\tu\ttest\n")
-            (root / "config/compiler-helper-functions.tsv").write_text(
+            (root / "config/retail/compiler-helper-functions.tsv").write_text(
                 "0x00001700\t0x5\t0x00001800\tforward\ttest\n")
 
             rows, meta = function_universe.classify(root, strict=False)
@@ -488,69 +486,6 @@ class TestClassSizesProse(unittest.TestCase):
         self.assertIn("CReal", lb, "a real `new CReal()` must be load-bearing")
         for prose in ("CGameMgr", "CObject", "tile", "fader"):
             self.assertNotIn(prose, lb, f"prose word {prose!r} counted as load-bearing")
-
-
-# --------------------------------------------------------------------------- #
-# high_water: a 0/0 report publishes 100% - it must never become the peak      #
-# --------------------------------------------------------------------------- #
-class TestHighWater(unittest.TestCase):
-    def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory()
-        self.f = Path(self._tmp.name) / "match-max.tsv"
-
-    def tearDown(self):
-        self._tmp.cleanup()
-
-    def test_degenerate_empty_report_cannot_poison_the_peak(self):
-        """THE ORIGINAL BUG: total_functions == 0 -> objdiff publishes 100% ->
-        max(prev, cur) locked config/match-max.tsv at 100.0000 forever."""
-        high_water.write(72.7691, 3975, self.f)
-        peak, note, wrote = high_water.update(100.0, 0, self.f)
-        self.assertAlmostEqual(peak, 72.7691, places=3)
-        self.assertIn("REFUSED", note)
-        self.assertFalse(wrote)
-        self.assertAlmostEqual(high_water.read(self.f)[0], 72.7691, places=3)
-
-    def test_partial_build_cannot_raise_the_peak(self):
-        """A report covering a fraction of the tree is not comparable."""
-        high_water.write(72.7691, 3975, self.f)
-        peak, note, wrote = high_water.update(99.9, 120, self.f)
-        self.assertAlmostEqual(peak, 72.7691, places=3)
-        self.assertIn("REFUSED", note)
-        self.assertFalse(wrote)
-
-    def test_a_real_improvement_still_raises_the_peak(self):
-        """The guard must not brick the ratchet: a comparable reading still counts."""
-        high_water.write(72.7691, 3975, self.f)
-        peak, note, wrote = high_water.update(73.1693, 3975, self.f)
-        self.assertAlmostEqual(peak, 73.1693, places=3)
-        self.assertIn("NEW HIGH", note)
-        self.assertTrue(wrote)
-        self.assertAlmostEqual(high_water.read(self.f)[0], 73.1693, places=3)
-
-    def test_a_dip_never_lowers_the_peak(self):
-        high_water.write(73.1693, 3975, self.f)
-        peak, _note, _w = high_water.update(70.0, 3975, self.f)
-        self.assertAlmostEqual(peak, 73.1693, places=3)
-
-    def test_growing_the_tree_is_comparable(self):
-        """Adding units RAISES total_functions - that must not trip the guard."""
-        high_water.write(73.0, 3975, self.f)
-        peak, note, _w = high_water.update(74.0, 4200, self.f)
-        self.assertAlmostEqual(peak, 74.0, places=3)
-        self.assertIn("NEW HIGH", note)
-
-    def test_legacy_one_token_file_is_adopted_not_trusted(self):
-        self.f.write_text("72.7691\n")
-        self.assertEqual(high_water.read(self.f), (72.7691, None))
-        peak, _note, _w = high_water.update(73.1693, 3975, self.f)
-        self.assertAlmostEqual(peak, 72.7691, places=3)   # cannot compare -> no raise
-        self.assertEqual(high_water.read(self.f)[1], 3975)  # scale adopted for next time
-
-    def test_peak_is_still_readable_by_a_split_zero_reader(self):
-        """Back-compat: anything doing `read_text().split()[0]` keeps working."""
-        high_water.write(73.1693, 3975, self.f)
-        self.assertAlmostEqual(float(self.f.read_text().split()[0]), 73.1693, places=3)
 
 
 # --------------------------------------------------------------------------- #

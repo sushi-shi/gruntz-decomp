@@ -180,8 +180,8 @@ def _pct(n: int, d: int) -> float:
 
 def summarize(report: dict, full: bool = True, table: bool = False,
               write: bool = False, vtable_health: bool = True) -> None:
-    """The report tail. `write=True` (the BUILD only) rolls the high-water +
-    cleanliness baselines and enforces the hard ratchet gate; `gruntz status`/
+    """The report tail. `write=True` (the BUILD only) rolls the cleanliness
+    baselines and enforces the hard ratchet gate; `gruntz status`/
     `report` are pure READS - same scoreboard vs the committed baselines,
     ratchet violations print as warnings, nothing is written."""
     m = report.get("measures", {})
@@ -212,29 +212,8 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     # DOCTRINE reminder is NOT printed here every build - it fires only on a %-drop,
     # from the regressions reporter (gruntz.match.status check), where a matcher is
     # actually tempted to revert to chase %. That is the teachable moment.
-    if not full:   # --fast: just the objdiff %, skip the high-water/cleanliness/vtable probes
+    if not full:   # --fast: just the objdiff %, skip cleanliness/vtable probes
         return
-    # MAX % high-water. The fuzzy % is a RATIO, so it barely moves even when structural
-    # work (e.g. the inline-header migration) drops matched+total together - the quality
-    # held. Track/print the peak so matchers judge by MAX %, not the raw count, and don't
-    # panic (or revert correct work) when the absolute number dips. Never break the report.
-    # The ratchet lives in gruntz.match.high_water: a bare `max(prev, cur)` absorbed a
-    # 0/0 report's published 100% and pinned this file at 100.0000 forever (bb4d94cef),
-    # so a reading is only allowed to raise the peak when it covers a comparable
-    # population. See that module's docstring.
-    try:
-        if write:
-            from gruntz.match.high_water import update as _hw_update
-            peak, note, _wrote = _hw_update(float(m.get("fuzzy_match_percent", 0.0) or 0.0),
-                                            _i(m.get("total_functions")))
-            print(f"  MAX %: {peak:.2f}% fuzzy (high-water) - {note}")
-        else:  # read-only: the committed peak, never raised from an unverified state
-            from gruntz.match.high_water import read as _hw_read
-            peak, _scale = _hw_read()
-            print(f"  MAX %: {peak:.2f}% fuzzy (high-water)" if peak is not None
-                  else "  MAX %: (no high-water file yet - run `gruntz build`)")
-    except Exception as exc:  # never let the high-water probe break a build report
-        print(f"  MAX %: (unavailable: {exc})")
     # Cleanliness scoreboard - part of the report so agents see their cast /
     # placeholder / view deltas (vs the committed baseline) immediately alongside
     # the match %, and steer on their own change. See docs/cleanliness-metrics.md.
@@ -459,7 +438,7 @@ def cmd_build(args) -> None:
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
           "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "normal")
 
-    # normal+ only: the FULL scoreboard (high-water + cleanliness board) and the ONE
+    # normal+ only: the cleanliness scoreboard and the ONE
     # write of the baselines - this is the ~several-second src/include cleanliness scan.
     started = time.monotonic()
     summarize(_report, write=True, vtable_health=False)
@@ -516,7 +495,7 @@ def cmd_build(args) -> None:
     # SECONDARY (MI) vtable coverage: every through-base ??_7<C>@@6B<Base>@@@ name a
     # VTBL2 binds must stay bound. A dropped VTBL2 that shares its rva with a plain VTBL
     # (a through-base primary alias) keeps the rva covered, so vtable_coverage can't see
-    # the NAME regress - this census (config/secondary-vtables.tsv) locks it. Source-only,
+    # the NAME regress - this census (config/retail/secondary-vtables.tsv) locks it. Source-only,
     # sub-second (no binary scan), so it runs at normal tier alongside the other ratchets.
     _gate("gruntz.cleanliness.vtable_secondary", [],
           "secondary-vtable coverage violated - a VTBL2 through-base vtable name was "
@@ -602,10 +581,10 @@ def cmd_build(args) -> None:
           "VTBL2(), dissolve the view, or prove VTBL_ABSENT "
           "(python -m gruntz.cleanliness.class_vtables)", "full")
     # Vtable COVERAGE: every vtable our analysis finds must be bound in source or catalogued
-    # as MFC/CRT in config/library_vtables.csv.
+    # as MFC/CRT in config/retail/library_vtables.csv.
     _gate("gruntz.cleanliness.vtable_coverage", [],
           "vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
-          "or add MFC/CRT to config/library_vtables.csv "
+          "or add MFC/CRT to config/retail/library_vtables.csv "
           "(python -m gruntz.cleanliness.vtable_coverage --list)", "full")
     # Vtable OWNERSHIP: re-derive every VTBL() binding from the image (the ??_7 slot ->
     # scalar-deleting dtor -> ??1 chain). Slowest of the vtable gates -> full.
@@ -814,7 +793,7 @@ def _build_ghidra_db(reimport: bool = False) -> None:
     enrich + export functions.csv/symbols.csv via ghidra-refresh. HEAVY; idempotent.
 
     apply.py CONSUMES the tracked config/{engine,library}_labels.csv - FID labels are
-    NOT regenerated here (the committed config/library_labels.csv is canonical;
+    NOT regenerated here (the committed config/retail/library_labels.csv is canonical;
     regenerate it explicitly with `python -m gruntz.audit.fid_generate`).
     """
     if GHIDRA_FUNCTIONS.exists() and not reimport:
@@ -910,7 +889,7 @@ def cmd_init(args) -> None:
       - the Ghidra DB: PyGhidra (ghidra_metadata_apply.py) imports + auto-analyzes GRUNTZ.EXE
         -> build/ghidra-named, then runs apply.py + export.py (as GhidraScripts
         under PyGhidra) -> functions.csv/symbols.csv. apply.py CONSUMES the tracked
-        config/library_labels.csv; FID labels are NOT regenerated here.
+        config/retail/library_labels.csv; FID labels are NOT regenerated here.
 
     Then WARMS the Ghidra DB (unless --no-warmup): build -> ghidra-refresh ->
     build. The cold DB carves only FID/auto-analysis functions; the warmup runs

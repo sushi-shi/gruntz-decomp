@@ -6,7 +6,7 @@ Why this exists
 MFC's containers are byte-identical to each other.  `CObArray`/`CPtrArray`/
 `CDWordArray`/`CUIntArray` all compile to the same code (a 4-byte element array);
 `CObList`/`CPtrList` likewise; the map families likewise.  So a byte-signature
-matcher (our FID, `config/library_labels.csv`) CANNOT tell them apart: every row
+matcher (our FID, `config/retail/library_labels.csv`) CANNOT tell them apart: every row
 in those bands comes back `AMBIG`, and the tree has been *trusting* those rows -
 which means it has been binding calls to the wrong NAFXCW symbol.  objdiff masks
 relocations, so a wrong class costs ~0% and displays "100.00%" while being a link
@@ -45,7 +45,7 @@ Recovery chain (all four steps read GRUNTZ.EXE and nothing else)
                       than an anchor - always reported as BAND, never as DIRECT.
 
 Self-validation: run `--map` and check it against everything independently known.
-It reproduces the RTTI-less MFC vtable catalog in config/library_vtables.csv exactly
+It reproduces the RTTI-less MFC vtable catalog in config/retail/library_vtables.csv exactly
 (CDWordArray@0x1ec29c, CPtrArray@0x1ec2dc, CByteArray@0x1ed28c, CObArray@0x1ed494,
 CObList@0x1ed4b4, CPtrList@0x1eb054, CMapPtrToPtr@0x1ed264, ...), and it names, from
 the binary alone, every band the FID could only call AMBIG.
@@ -735,7 +735,7 @@ def retail_container_classes(mm, rva, size):
 
 
 def label_rows():
-    p = REPO / "config/library_labels.csv"
+    p = REPO / "config/retail/library_labels.csv"
     rows = list(csv.reader(open(p)))
     return rows[0], rows[1:]
 
@@ -826,14 +826,14 @@ def relabel(mm, write):
         print("  %-10s 0x%06x  %-44s -> (dropped: NAFXCW defines no such symbol)"
               % ("fabricated", rva, old))
     if write:
-        p = REPO / "config/library_labels.csv"
+        p = REPO / "config/retail/library_labels.csv"
         with open(p, "w", newline="") as f:
             w = csv.writer(f, lineterminator="\n")
             w.writerow(hdr)
             w.writerows(out)
         print("\nwrote %s" % p)
     else:
-        print("\n(dry run - pass --write to rewrite config/library_labels.csv)")
+        print("\n(dry run - pass --write to rewrite config/retail/library_labels.csv)")
     return 0
 
 

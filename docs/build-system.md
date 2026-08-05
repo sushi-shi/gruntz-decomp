@@ -334,7 +334,7 @@ setup runs in `gruntz init`: a stable retail copy at `build/exe/GRUNTZ.EXE`, and
 the heavy Ghidra DB build + `functions.csv`/`symbols.csv` export (import +
 auto-analyze GRUNTZ.EXE, then `apply.py`/`export.py`). The FID library labels are
 tracked
-(`config/library_labels.csv`, so they survive `git clean`); regenerate them with
+(`config/retail/library_labels.csv`, so they survive `git clean`); regenerate them with
 `python -m gruntz.audit.fid_generate`.
 
 The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
@@ -346,7 +346,7 @@ The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>
 Beyond names, the Ghidra DB is enriched from generated, source-derived metadata so
 nothing important lives only in the `.gpr` blob — it is all reproducible:
 
-- `config/ghidra_function_fixes.csv`: audited **function-boundary corrections**
+- `config/retail/ghidra_function_fixes.csv`: audited **function-boundary corrections**
   to Ghidra auto-analysis. `apply.py` validates the observed child/owner sizes,
   applies merges/removals/creations before any naming, and makes the corrected
   model the source of the exported `functions.csv`. A false analyzer entry is
@@ -377,7 +377,7 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
 `apply.py` layers names in a fixed order so the outcome is deterministic and the
 `src/` labels are the SOURCE OF TRUTH at every RVA they claim:
 
-1. **FID library labels** (`config/library_labels.csv`; HIGH/MED/AMBIG only — LOW
+1. **FID library labels** (`config/retail/library_labels.csv`; HIGH/MED/AMBIG only — LOW
    rows are deliberately skipped as noise) name only the RVAs `src/` does **not**
    claim. A FID row at an `src`-claimed RVA is skipped (counted as `src-claimed
    skipped`): FID's AMBIG collisions — `??0CMetaFileDC@@` at a real ctor,
@@ -490,7 +490,7 @@ but that does **not** make the ordinal a stable binding. Retail delinking may
 omit relocation records that exist in the recompiled object; the resulting
 digest then retains different address bytes and cannot establish identity.
 These helpers remain unlabelled and are recorded only in
-`config/compiler-generated-functions.tsv`.
+`config/retail/compiler-generated-functions.tsv`.
 
 ## Pairing (objdiff)
 
@@ -533,7 +533,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
      deterministically named compiler-generated function with no source body
      (such as a `??_G` deleting dtor) that cannot hold an attribute. Volatile
      ordinal names such as `_$E<n>` are forbidden here and belong in
-     `config/compiler-generated-functions.tsv`.
+     `config/retail/compiler-generated-functions.tsv`.
 
    `labels.py` reads `RVA` from **LLVM IR** (`@llvm.global.annotations`
    pairs the mangled symbol DIRECTLY with the annotation — no positional join;
@@ -542,7 +542,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The
    label map regenerates from these annotations — never hand-edit the CSV. (The
    vendored zlib C TUs keep PRISTINE source — no labels in it; their rva→symbol
-   map is the static `config/zlib_labels.csv`, emitted directly. See
+   map is the static `config/retail/zlib_labels.csv`, emitted directly. See
    `docs/zlib-matching.md`.)
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 

@@ -110,7 +110,7 @@ class Image:
 
 def operator_new_rvas():
     out = set()
-    p = REPO / "config/library_labels.csv"
+    p = REPO / "config/retail/library_labels.csv"
     if p.is_file():
         for r in csv.reader(open(p)):
             if len(r) >= 2 and r[1].startswith("??2@YAPAXI@Z"):
@@ -532,7 +532,7 @@ def main():
     img = Image(exe)
     opnew = operator_new_rvas()
     if not opnew:
-        print("stale_walls: could not find ??2@YAPAXI@Z in config/library_labels.csv")
+        print("stale_walls: could not find ??2@YAPAXI@Z in config/retail/library_labels.csv")
         return 2
 
     findings, oracle, sizes, unknown = audit(img, opnew)

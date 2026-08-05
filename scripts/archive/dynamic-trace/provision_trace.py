@@ -31,7 +31,7 @@ the shared Ghidra export). What it builds:
   build/trace/cc_all.csv    per-function calling-convention dump (READ-ONLY Ghidra
                             cc dump; NEVER overwrites the shared functions.csv).
   build/trace/thiscall_discovery.csv  the hook set: cc in {__thiscall,unknown} minus
-                            config/library_labels.csv (MFC/CRT/zlib).
+                            config/retail/library_labels.csv (MFC/CRT/zlib).
   build/trace/cache/        the downloaded+decompressed frida gadget (pinned).
 
 The Ghidra cc dump runs `dump_cc.py` under the PyGhidra driver with --no-analyze
@@ -104,7 +104,7 @@ GHIDRA_PROJECT_DIR = BUILD / "ghidra-named"
 GHIDRA_PROJECT = "gruntz"
 GHIDRA_DRIVER = SCRIPTS / "gruntz" / "ghidra" / "ghidra_metadata_apply.py"
 DUMP_CC = SCRIPTS / "gruntz" / "ghidra" / "scripts" / "dump_cc.py"
-LIBRARY_LABELS = REPO / "config" / "library_labels.csv"
+LIBRARY_LABELS = REPO / "config" / "retail" / "library_labels.csv"
 # $GRUNTZ_DATA overrides where retail assets live/are fetched to.
 RETAIL_ASSET_DIR_ENV = "GRUNTZ_DATA"
 
@@ -235,7 +235,7 @@ def build_hookset(cc_all):
     """thiscall_discovery.csv = cc in {__thiscall,unknown} minus library_labels.csv.
 
     The named __thiscall functions are class anchors; the cc=unknown FUN_ bodies are
-    the discovery targets. MFC/CRT/zlib RVAs (config/library_labels.csv) are dropped
+    the discovery targets. MFC/CRT/zlib RVAs (config/retail/library_labels.csv) are dropped
     so we only hook engine code. gen_frida_script then drops jmp/padding starts + the
     MFC window/dialog band, leaving the real engine bodies."""
     lib_rvas = set()

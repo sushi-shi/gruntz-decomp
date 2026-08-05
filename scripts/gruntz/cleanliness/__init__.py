@@ -16,8 +16,8 @@ per concern (all run in the `gruntz build` gate tail; each also `python -m`):
 
 (The shared class-definition scanner these build on is gruntz.core.class_meta.)
 
-Match scoring lives in gruntz/match (status, fingerprints, high_water,
-residual_queue + the measurement-integrity verify_* gates); the negative-control
+Match scoring lives in gruntz/match (status, fingerprints, residual_queue + the
+measurement-integrity verify_* gates); the negative-control
 suite gruntz.match.gate_selftest covers both packages. Metric doctrine:
 docs/cast-metric-policy.md + docs/cleanliness-metrics.md.
 """

@@ -130,7 +130,7 @@ def load_exact_names():
 
 def load_libnames():
     lib = set()
-    p = REPO / "config/library_labels.csv"
+    p = REPO / "config/retail/library_labels.csv"
     if p.is_file():
         for r in csv.reader(open(p)):
             if r and r[0].startswith("0x"):
