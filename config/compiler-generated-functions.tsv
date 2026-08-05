@@ -79,6 +79,7 @@
 0x000445c0	0x15	_$E29	warlord	src/Gruntz/Warlord.cpp:326
 0x000445f0	0xe	_$E32	warlord	src/Gruntz/Warlord.cpp:327
 0x00044610	0x1f	_$E30	warlord	src/Gruntz/Warlord.cpp:328
+0x000455d0	0xa	_$E36	warlord	src/Gruntz/Warlord.cpp NotifyFortUnderAttack local static CString
 0x00045fe0	0xa	_$E286688	fortressflag	src/Gruntz/FortressFlag.cpp:169
 0x00046000	0x15	_$E286720	fortressflag	src/Gruntz/FortressFlag.cpp:170
 0x00046030	0xe	_$E286768	fortressflag	src/Gruntz/FortressFlag.cpp:171
