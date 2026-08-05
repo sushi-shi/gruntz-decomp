@@ -174,7 +174,9 @@ public:
         m_frameSet = NULL;
         m_soundCue = NULL;
     }
-    virtual ~CWwdGameObjectA() OVERRIDE;
+    virtual ~CWwdGameObjectA() OVERRIDE {
+        Unload();
+    }
 
     RVA(0x0015b980, 0x96)
     virtual void Unload() OVERRIDE {

@@ -161,11 +161,7 @@ LoadableClassId CWwdGameObjectA::GetClassId() {
 }
 
 RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
-RVA(0x0015b790, 0x1a6)
-CWwdGameObjectA::~CWwdGameObjectA() {
-    Unload();
-}
-
+RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_soundCue = NULL;
