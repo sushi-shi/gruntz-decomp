@@ -138,4 +138,21 @@ by the `ActA` delinker bug above), started-units MAX 81.73% → 82.30%.
 **A drop after extending is therefore not a signal to revert** when the body references the
 table VA. Judge the extension by that reference, and judge the score afterwards.
 
+
+## Third detector (2026-08-04): decode the `jmp` itself
+
+Both sweeps above scan forward from the claim end and *guess* which dwords are a table. A
+strictly cheaper and exact test decodes the dispatch instruction instead: MSVC5 always emits
+`ff 24 <mod=00,rm=100,SIB scale=2>` + `disp32`, i.e. `jmp DWORD PTR [reg*4+TABLE]`, so a scan
+of the claimed BYTES for `ff 24 8d/85/95/9d/b5/bd` yields the table's VA directly. Any table
+VA `>= rva+size` is a short claim, with no false positives and no base obj needed - it also
+catches the multi-table case for free (collect every match, not the first).
+
+Residue after the two sweeps: **28 more functions** (10 in the Bute/Gruntz lane, 18 elsewhere),
+including four the "slop" heuristic could not see because the table starts within 2 bytes of
+the claim end (`CTileTriggerLogic::Tick` @0x110c10, table at 0x111a50, claim ended 0x111a4f).
+Measured on the ten: CRollingBall::Update 54.9 -> 83.1, CTileActionEvent::Process 58.9 -> 89.8,
+CTileTriggerLogic::Tick 84.1 -> 94.9, CTriggerMgr::WireTileSwitchLogic 76.8 -> 88.4,
+CButeValue::CopyValue 91.3 -> 100 EXACT; overall MAX 84.81% -> 84.98%.
+
 related: bss-symbol-size-inference-hole.md, delinker-jumptable-dup-symbol-undercount.md

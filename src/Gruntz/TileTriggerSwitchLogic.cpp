@@ -1153,57 +1153,18 @@ RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::Process(CGrunt* brick) {
     i32 newCode = m_actionCode;
     i32 effect = 0;
+    // Arm order is proven by the retail jump table at 0x113278: the tiers are
+    // written across the four colours (all the 1s, then the 2-TOPs, the 2-LOWs,
+    // the 3-TOPs), the plain 3-LOW/3-MID demotions follow, and the brown chain
+    // sits last - cl suffix-merges each brown arm into the black arm above it.
     switch (m_actionCode) {
-        case BRICKTILE_BROWN_1:
-            newCode = BRICKTILE_CLEARED;
-            break;
-        case BRICKTILE_BROWN_2:
-            newCode = BRICKTILE_BROWN_1;
-            break;
-        case BRICKTILE_BROWN_3:
-            newCode = BRICKTILE_BROWN_2;
-            break;
         case BRICKTILE_RED_1:
             effect = BRICKTILE_RED_1;
             newCode = BRICKTILE_CLEARED;
             break;
-        case BRICKTILE_RED_2_LOW:
-            newCode = BRICKTILE_RED_1;
-            break;
-        case BRICKTILE_RED_2_TOP:
-            effect = BRICKTILE_RED_1;
-            newCode = BRICKTILE_BROWN_1;
-            break;
-        case BRICKTILE_RED_3_LOW:
-            newCode = BRICKTILE_RED_2_LOW;
-            break;
-        case BRICKTILE_RED_3_MID:
-            newCode = BRICKTILE_RED_2_TOP;
-            break;
-        case BRICKTILE_RED_3_TOP:
-            effect = BRICKTILE_RED_1;
-            newCode = BRICKTILE_BROWN_2;
-            break;
         case BRICKTILE_BLUE_1:
             effect = BRICKTILE_BLUE_1;
             newCode = BRICKTILE_CLEARED;
-            break;
-        case BRICKTILE_BLUE_2_LOW:
-            newCode = BRICKTILE_BLUE_1;
-            break;
-        case BRICKTILE_BLUE_2_TOP:
-            effect = BRICKTILE_BLUE_1;
-            newCode = BRICKTILE_BROWN_1;
-            break;
-        case BRICKTILE_BLUE_3_LOW:
-            newCode = BRICKTILE_BLUE_2_LOW;
-            break;
-        case BRICKTILE_BLUE_3_MID:
-            newCode = BRICKTILE_BLUE_2_TOP;
-            break;
-        case BRICKTILE_BLUE_3_TOP:
-            effect = BRICKTILE_BLUE_1;
-            newCode = BRICKTILE_BROWN_2;
             break;
         case BRICKTILE_GOLD_1:
             effect = BRICKTILE_GOLD_1;
@@ -1212,8 +1173,19 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             }
             newCode = BRICKTILE_CLEARED;
             break;
-        case BRICKTILE_GOLD_2_LOW:
-            newCode = BRICKTILE_GOLD_1;
+        case BRICKTILE_BLACK_1:
+            effect = BRICKTILE_BLACK_1;
+            // fall through
+        case BRICKTILE_BROWN_1:
+            newCode = BRICKTILE_CLEARED;
+            break;
+        case BRICKTILE_RED_2_TOP:
+            effect = BRICKTILE_RED_1;
+            newCode = BRICKTILE_BROWN_1;
+            break;
+        case BRICKTILE_BLUE_2_TOP:
+            effect = BRICKTILE_BLUE_1;
+            newCode = BRICKTILE_BROWN_1;
             break;
         case BRICKTILE_GOLD_2_TOP:
             effect = BRICKTILE_GOLD_1;
@@ -1222,11 +1194,31 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             }
             newCode = BRICKTILE_BROWN_1;
             break;
-        case BRICKTILE_GOLD_3_LOW:
-            newCode = BRICKTILE_GOLD_2_LOW;
+        case BRICKTILE_BLACK_2_TOP:
+            effect = BRICKTILE_BLACK_1;
+            // fall through
+        case BRICKTILE_BROWN_2:
+            newCode = BRICKTILE_BROWN_1;
             break;
-        case BRICKTILE_GOLD_3_MID:
-            newCode = BRICKTILE_GOLD_2_TOP;
+        case BRICKTILE_RED_2_LOW:
+            newCode = BRICKTILE_RED_1;
+            break;
+        case BRICKTILE_BLUE_2_LOW:
+            newCode = BRICKTILE_BLUE_1;
+            break;
+        case BRICKTILE_GOLD_2_LOW:
+            newCode = BRICKTILE_GOLD_1;
+            break;
+        case BRICKTILE_BLACK_2_LOW:
+            newCode = BRICKTILE_BLACK_1;
+            break;
+        case BRICKTILE_RED_3_TOP:
+            effect = BRICKTILE_RED_1;
+            newCode = BRICKTILE_BROWN_2;
+            break;
+        case BRICKTILE_BLUE_3_TOP:
+            effect = BRICKTILE_BLUE_1;
+            newCode = BRICKTILE_BROWN_2;
             break;
         case BRICKTILE_GOLD_3_TOP:
             effect = BRICKTILE_GOLD_1;
@@ -1235,26 +1227,35 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
             }
             newCode = BRICKTILE_BROWN_2;
             break;
-        case BRICKTILE_BLACK_1:
+        case BRICKTILE_BLACK_3_TOP:
             effect = BRICKTILE_BLACK_1;
-            newCode = BRICKTILE_CLEARED;
+            // fall through
+        case BRICKTILE_BROWN_3:
+            newCode = BRICKTILE_BROWN_2;
             break;
-        case BRICKTILE_BLACK_2_LOW:
-            newCode = BRICKTILE_BLACK_1;
+        case BRICKTILE_RED_3_LOW:
+            newCode = BRICKTILE_RED_2_LOW;
             break;
-        case BRICKTILE_BLACK_2_TOP:
-            effect = BRICKTILE_BLACK_1;
-            newCode = BRICKTILE_BROWN_1;
+        case BRICKTILE_RED_3_MID:
+            newCode = BRICKTILE_RED_2_TOP;
+            break;
+        case BRICKTILE_BLUE_3_LOW:
+            newCode = BRICKTILE_BLUE_2_LOW;
+            break;
+        case BRICKTILE_BLUE_3_MID:
+            newCode = BRICKTILE_BLUE_2_TOP;
+            break;
+        case BRICKTILE_GOLD_3_LOW:
+            newCode = BRICKTILE_GOLD_2_LOW;
+            break;
+        case BRICKTILE_GOLD_3_MID:
+            newCode = BRICKTILE_GOLD_2_TOP;
             break;
         case BRICKTILE_BLACK_3_LOW:
             newCode = BRICKTILE_BLACK_2_LOW;
             break;
         case BRICKTILE_BLACK_3_MID:
             newCode = BRICKTILE_BLACK_2_TOP;
-            break;
-        case BRICKTILE_BLACK_3_TOP:
-            effect = BRICKTILE_BLACK_1;
-            newCode = BRICKTILE_BROWN_2;
             break;
     }
 
