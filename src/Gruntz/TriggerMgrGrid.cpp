@@ -1313,8 +1313,9 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
 
-    char* hitName = *g_typeColl.GetNameRecord(hit->m_objAux->m_actKey);
-    if (strcmp(hitName, "G") == 0 || strcmp(hitName, "L") == 0 || strcmp(hitName, "P") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "G") == 0
+        || strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "L") == 0
+        || strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "P") == 0) {
         return 0;
     }
 
@@ -1330,8 +1331,18 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         cell->ResetEntranceAnimation(1, 0, 0);
     }
 
-    char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_actKey);
-    if (strcmp(name, "I") == 0) {
+    CString* typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    CString* slot = g_typeColl.Slots();
+    i32 grown = g_typeColl.m_grown;
+    if (grown != 0) {
+        do {
+            if (slot != NULL) {
+                slot->CString::CString();
+            }
+            slot++;
+        } while (--grown != 0);
+    }
+    if (strcmp(*typeRec, "I") == 0) {
         LoadTileArrivalFx(
             col,
             row,

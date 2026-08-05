@@ -36,7 +36,8 @@ CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 VTBL(CRollingBall, 0x001e86fc);
 
-static const double kMsPerSecond = 1000.0;
+// Half a tile per RollingBallTimePerTile ms - retail's divisor at 0x5ea3e8.
+static const double kRollingBallSpeedNum = 16.0;
 
 static __inline i32 VtblResolve(void* ent) {
     return static_cast<CTileImageSet*>(ent)->GetCollisionAt(0, 0);
@@ -301,7 +302,7 @@ i32 CRollingBall::Update() {
                     }
                     DWORD perTile =
                         g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                    m_moveSpeed = kMsPerSecond / static_cast<double>(perTile);
+                    m_moveSpeed = kRollingBallSpeedNum / static_cast<double>(perTile);
 
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdGameObjectA* o2 = m_object;
