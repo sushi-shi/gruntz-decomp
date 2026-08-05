@@ -93,11 +93,15 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     AllocGrid(width, height, 0);
     m_reserved90 = 0;
 
-    i32 t1 = g_buteMgr.GetInt("Brickz", "Brown");
-    i32 t2 = t1 + g_buteMgr.GetInt("Brickz", "Red");
-    i32 t3 = t2 + g_buteMgr.GetInt("Brickz", "Blue");
-    i32 t4 = t3 + g_buteMgr.GetInt("Brickz", "Gold");
-    i32 total = t4 + g_buteMgr.GetInt("Brickz", "Black");
+    i32 total = g_buteMgr.GetInt("Brickz", "Brown");
+    i32 t1 = total;
+    total += g_buteMgr.GetInt("Brickz", "Red");
+    i32 t2 = total;
+    total += g_buteMgr.GetInt("Brickz", "Blue");
+    i32 t3 = total;
+    total += g_buteMgr.GetInt("Brickz", "Gold");
+    i32 t4 = total;
+    total += g_buteMgr.GetInt("Brickz", "Black");
 
     BrickzCell* cell = m_cellPool;
     for (u32 col = 0; col < m_height; col++) {
