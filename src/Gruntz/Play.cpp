@@ -4419,10 +4419,12 @@ i32 CPlay::PostActionCue(i32 cueId) {
 }
 
 // @early-stop
+// Retail emits the loop guard `cmp edi,0x37 / jge` TWICE back to back before the
+// strip loop; cl folds the second away from every spelling tried (if+for, if+if+
+// do/while, `||` with one or two predecessors on the preheader). Nothing else
+// differs.
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
-    static_cast<void>(final);
-
     CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
     if (view == NULL) {
         return 0;
@@ -4441,18 +4443,20 @@ i32 CPlay::BuildHelpReveal(i32 final) {
 
     i32 counter = m_revealFrame;
     i32 col = static_cast<i32>((static_cast<float>(counter) * 3.7857143878936768f));
-    if (counter < 0x37) {
-        i32 i = counter;
-        do {
-            i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
-            LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
-            i++;
-        } while (i < 0x37);
-    } else {
+    // `final` picks the shape: a mid-reveal frame slides ONE strip to col+0xe0
+    // and stops there; the final frame paints every remaining strip and then
+    // caps the run. cl cross-jumps the two LayerBlitFrame calls into one.
+    if (counter < 0x37 && final != 1) {
         LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), col + 0xe0, 0x1a6, 1, 0);
+    } else {
+        if (counter < 0x37) {
+            for (i32 i = counter; i < 0x37; i++) {
+                i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
+                LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
+            }
+        }
+        LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, 1, 0);
     }
-
-    LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapEnd), 0x1b4, 0x1a6, 1, 0);
     m_revealFrame = m_revealFrame + 1;
     return 1;
 }
