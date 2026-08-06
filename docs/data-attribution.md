@@ -398,3 +398,22 @@ spellings (pairs with `assert_relocs`).
 What does NOT port: homm2's NB09/`sstModule`-sourced ordering, contribution ranges, and
 `cv-public-data` inventory (no debug stream in GRUNTZ.EXE — use Ghidra + candidate `.map` +
 `DATA()`); and homm2's VC4.0 LINK 3.00 `/Od` flags (Gruntz is VC5 `/O2` LINK 5.10).
+
+## The access map (`gruntz.audit.data_access`)
+
+The mis-typed-globals audit: `python -m gruntz.audit.data_access` decodes EVERY
+`.text` reloc site into `.rdata`/`.data` (objdump over the whole section, one
+pass) into an access event — width, direct/indexed/imm/lea/indcall mode,
+read/write, movzx/movsx signedness, FPU f32/f64 witness — plus every data-side
+reloc cell (fn-ptr vs data-ptr content). Attribution charges a symbol only up
+to its DECLARED size (reviewed `symbol_names.csv`, else `globals.json` sizeof);
+everything past coverage clusters into candidate missing-global RUNS, with the
+unpinnable string pool down-ranked by a byte peek. A `TypeOracle` over
+`structs.json` keeps the verdict flags honest (a struct whose fields contain
+pointers/floats never flags; unresolvable typedefs are conservative). Output:
+`build/gen/data_access.tsv` + `--flagged` / `--unclaimed` / `--rva 0x...`
+views. Runs with the same site-count/width fingerprint are instances of the
+SAME unmodelled struct type — that is the shape a dynamic trace would have
+given us, recovered statically and exhaustively (the deferred debugger trace is
+a second producer into the same event schema, for pointer-mediated interior
+accesses only code-flow can reveal).
