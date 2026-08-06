@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MapMgr.h>
 
 #include <Mfc.h>
@@ -8,6 +7,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>

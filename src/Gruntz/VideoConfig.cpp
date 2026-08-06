@@ -1,11 +1,11 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/VideoConfig.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Multi.h>

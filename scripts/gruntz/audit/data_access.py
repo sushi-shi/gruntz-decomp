@@ -495,12 +495,20 @@ def unclaimed_runs(pe, unclaimed, extents):
     except Exception:
         vendorish = set()
     lib_fns = sorted(int((r.get("rva") or "0"), 16)
-                     for r in active_rows(_REPO / "config/library_labels.csv")
+                     for r in active_rows(_REPO / "config/retail/library_labels.csv")
                      if (r.get("rva") or "").startswith("0x"))
 
+    claimed_starts = sorted(set(db.fstarts) & set(db.names))
+
     def in_lib(rva):
+        # nearest-below owner: a gap accessor is library code when the closest
+        # thing below it is an active carve row rather than a claimed game fn
         k = bisect.bisect_right(lib_fns, rva) - 1
-        return k >= 0 and rva - lib_fns[k] < 0x100
+        if k < 0:
+            return False
+        j = bisect.bisect_right(claimed_starts, rva) - 1
+        fn_below = claimed_starts[j] if j >= 0 else -1
+        return lib_fns[k] >= fn_below
     for r in runs:
         k = bisect.bisect_right(starts, r["start"]) - 1
         r["prev_sym"] = extents[k][2].name if k >= 0 else ""
@@ -510,7 +518,7 @@ def unclaimed_runs(pe, unclaimed, extents):
         no_write = all("w" not in e.rw for e in r["events"])
         aus = {(_owner(e.insn_rva, db.fstarts, db.fsize)) for e in r["events"]}
         units_of = {db.names.get(f, ("", None))[1] if f else None for f in aus}
-        libs = units_of and all(u in vendorish or u == "ghidra" for u in units_of if u)
+        libs = units_of and all(u in vendorish or u in ("ghidra", "retail") for u in units_of if u)
         gap_only = units_of == {None}
         if gap_only and all(in_lib(e.insn_rva) for e in r["events"]):
             libs, gap_only = True, False   # every accessor is in carved library code

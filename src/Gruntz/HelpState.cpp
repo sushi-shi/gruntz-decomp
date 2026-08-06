@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HelpState.h>
 
 #include <Mfc.h>
@@ -19,6 +18,7 @@
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SplashState.h>

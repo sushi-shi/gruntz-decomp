@@ -1,11 +1,11 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HeapDiag.h>
 
 #include <Win32.h>
 
 #include <Enums.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <ProcAddr.h>
 
 #include <malloc.h>

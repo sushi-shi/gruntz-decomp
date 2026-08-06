@@ -1,12 +1,12 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/WorldSoundSet.h>
 
 #include <Mfc.h>
 
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
 #include <Gruntz/RandomAmbientSound.h>

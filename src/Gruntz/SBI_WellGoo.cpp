@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/SBI_WellGoo.h>
 
 #include <Mfc.h>
@@ -12,6 +11,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

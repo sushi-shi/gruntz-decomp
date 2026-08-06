@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LightFxRender.h>
 
 #include <Mfc.h>
@@ -14,6 +13,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/Play.h>

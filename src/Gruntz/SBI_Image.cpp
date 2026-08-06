@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/SBI_Image.h>
 
 #include <Mfc.h>
@@ -11,6 +10,7 @@
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>

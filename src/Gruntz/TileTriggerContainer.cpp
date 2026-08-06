@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/TileTriggerContainer.h>
 
 #include <Mfc.h>
@@ -12,6 +11,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

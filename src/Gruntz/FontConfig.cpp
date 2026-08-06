@@ -1,7 +1,6 @@
 #include <rva.h>
 
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/GruntDirStatics.h>
 
 #include <Mfc.h>
 #include <MfcWin.h>
@@ -9,6 +8,7 @@
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>
 #include <Enums.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>

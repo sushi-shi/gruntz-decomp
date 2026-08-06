@@ -1,9 +1,9 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/StateDispatch.h>
 
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelTime.h>
 #include <Wwd/AnimWorkerAct.h>
 

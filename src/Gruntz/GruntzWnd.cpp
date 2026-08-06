@@ -1,9 +1,9 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzWnd.h>
 
 #include <Dsndmgr/GruntzSoundZ.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Net/NetLobby.h>
 #include <Wap32/Wap32.h>

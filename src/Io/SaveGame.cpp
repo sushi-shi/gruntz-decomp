@@ -2,8 +2,6 @@
 
 #include <Io/SaveGame.h>
 
-#include <MsgParam.h>
-
 #include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -22,6 +20,7 @@
 #include <Image/ImagePool.h>
 #include <Image/RezDecodeKind.h>
 #include <Io/GameSave.h>
+#include <MsgParam.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/ScreenGeometry.h>
 

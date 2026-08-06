@@ -64,29 +64,6 @@ extern i32 g_movingSeed;
 
 class CGrunt;
 
-struct CTriRecord {
-    CTriRecord() {}
-    CTriRecord(i32 row_, i32 column_, GruntDirection direction_)
-        : row(row_), column(column_), direction(direction_) {}
-
-    i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
-
-    i32 row;
-    i32 column;
-    GruntDirection direction;
-};
-SIZE(0xc);
-
-struct GruntDirectionCell : public CTriRecord {
-    GruntDirectionCell() {}
-    GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_)
-        : CTriRecord(row_, column_, direction_) {}
-
-    void RotateClockwise(i32 steps);
-    void RotateCounterclockwise(i32 steps);
-};
-SIZE(0xc);
-
 // Coordinates inside the 3x3 direction-cell table. These are extents and
 // indices rather than a variable value domain.
 GZ_ENUM_CONST_BEGIN(GruntDirectionGrid)

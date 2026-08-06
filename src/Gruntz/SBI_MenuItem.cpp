@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/SBI_MenuItem.h>
 
 #include <Mfc.h>
@@ -11,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>

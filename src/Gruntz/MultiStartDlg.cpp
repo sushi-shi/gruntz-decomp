@@ -405,46 +405,6 @@ const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-RVA(0x000c2c80, 0x0)
-// @stub
-void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
-
-RVA(0x000c30d0, 0x0)
-// @stub
-void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
-
-RVA(0x000c4e40, 0x0)
-// @stub
-void CMultiStartDlg::OnEnChange50a() {}
-
-RVA(0x000c4e60, 0x0)
-// @stub
-void CMultiStartDlg::OnEnChange50b() {}
-
-RVA(0x000c4e80, 0x0)
-// @stub
-void CMultiStartDlg::OnEnChange50c() {}
-
-RVA(0x000c4ea0, 0x0)
-// @stub
-void CMultiStartDlg::OnEnChange50d() {}
-
-RVA(0x000c51c0, 0x0)
-// @stub
-void CMultiStartDlg::OnCmd51f() {}
-
-RVA(0x000c51e0, 0x0)
-// @stub
-void CMultiStartDlg::OnCmd523() {}
-
-RVA(0x000c5200, 0x0)
-// @stub
-void CMultiStartDlg::OnCmd524() {}
-
-RVA(0x000c5220, 0x0)
-// @stub
-void CMultiStartDlg::OnCmd525() {}
-
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {
     CWnd* result = 0;
@@ -570,3 +530,63 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     }
     return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
 }
+
+RVA(0x000c2c80, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
+
+RVA(0x000c30d0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
+
+RVA(0x000c4e40, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50a() {}
+
+RVA(0x000c4e60, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50b() {}
+
+RVA(0x000c4e80, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50c() {}
+
+RVA(0x000c4ea0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50d() {}
+
+RVA(0x000c51c0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd51f() {}
+
+RVA(0x000c51e0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd523() {}
+
+RVA(0x000c5200, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd524() {}
+
+RVA(0x000c5220, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd525() {}

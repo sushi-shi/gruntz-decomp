@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_GRUNTZ_GRUNTDIRECTION_H
 #define GRUNTZ_GRUNTZ_GRUNTDIRECTION_H
 
+#include <rva.h>
+
 #include <Enums.h>
 
 // The eight-way step direction carried in GruntDirectionCell::direction, plus
@@ -42,5 +44,33 @@ GZ_ENUM_BEGIN(GruntDirection)
     // direction happens to be last.
     DIR_COUNT = 9
 GZ_ENUM_END(GruntDirection)
+
+class CFileMemBase;
+class CGameObject;
+GZ_ENUM_FORWARD(SerialMode);
+GZ_ENUM_FORWARD(LogicTypeId);
+
+struct CTriRecord {
+    CTriRecord() {}
+    CTriRecord(i32 row_, i32 column_, GruntDirection direction_)
+        : row(row_), column(column_), direction(direction_) {}
+
+    i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
+
+    i32 row;
+    i32 column;
+    GruntDirection direction;
+};
+SIZE(0xc);
+
+struct GruntDirectionCell : public CTriRecord {
+    GruntDirectionCell() {}
+    GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_)
+        : CTriRecord(row_, column_, direction_) {}
+
+    void RotateClockwise(i32 steps);
+    void RotateCounterclockwise(i32 steps);
+};
+SIZE(0xc);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTDIRECTION_H

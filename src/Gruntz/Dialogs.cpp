@@ -413,6 +413,11 @@ RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
 RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
+RVA(0x00017b10, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {}
 
 RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
@@ -504,10 +509,6 @@ RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
     return &messageMap;
 }
-
-RVA(0x00017b10, 0x0)
-// @stub
-void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {}
 
 RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {

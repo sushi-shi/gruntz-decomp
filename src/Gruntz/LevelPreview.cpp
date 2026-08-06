@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelPreview.h>
 
 #include <Mfc.h>
@@ -16,6 +15,7 @@
 #include <Enums.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/PreviewState.h>
