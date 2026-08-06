@@ -10,30 +10,28 @@
 
 class CBattlezData;
 struct tagRECT;
+struct BrickzNode;
+
+struct BrickzCellNode {
+    BrickzNode* m_searchNode;
+    BrickzCellNode* m_cellPrev;
+    BrickzCellNode* m_cellNext;
+};
+SIZE(0xc);
 
 struct BrickzNode {
-
-    union {
-        i32 m_col;
-        BrickzNode* m_searchNode;
-    };
-    union {
-        i32 m_row;
-        BrickzNode* m_cellPrev;
-    };
-    union {
-        BrickzNode* m_cellNext;
-        i32 m_gCost;
-    };
+    i32 m_col;
+    i32 m_row;
+    i32 m_gCost;
     i32 m_hCost;
     i32 m_fCost;
     BrickzNode* m_openNext;
     BrickzNode* m_openPrev;
 
     BrickzNode* m_parent;
-    BrickzNode* m_cellLink;
+    BrickzCellNode* m_cellLink;
 };
-SIZE_UNKNOWN();
+SIZE(0x24);
 
 // Every bit in BrickzCell::m_flags that makes a cell not free to move through.
 //
@@ -68,7 +66,7 @@ struct BrickzCell {
     i32 m_tileId;
     TileCollisionKind m_typeCode;
     i32 m_count;
-    BrickzNode* m_head;
+    BrickzCellNode* m_head;
 };
 SIZE_UNKNOWN();
 

@@ -11,6 +11,7 @@
 #include <Ints.h>
 
 struct BrickzCell;
+struct BrickzCellNode;
 struct BrickzNode;
 class CDDrawSurfaceMgr;
 struct tagRECT;
@@ -35,8 +36,8 @@ public:
     ~CMapArrayB();
     i32 Allocate(u32 count);
 
-    BrickzNode* m_storage;
-    BrickzNode* m_freeList;
+    BrickzCellNode* m_storage;
+    BrickzCellNode* m_freeList;
     u32 m_count;
 };
 SIZE_UNKNOWN();
