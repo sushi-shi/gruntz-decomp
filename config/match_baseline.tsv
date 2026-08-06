@@ -20,7 +20,7 @@
 # Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
 actionarea	14	10
-actionoptionsmenubar	12	3
+actionoptionsmenubar	12	4
 adler32	1	1
 advancedoptions	5	5
 anicycle	7	6
@@ -348,7 +348,7 @@ actionarea	?RegisterType@CProjActObj@@SAXXZ	100.0000	100.0000	6	343eca9f9359	0x8
 actionarea	?SerializeMove@CActionArea@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	92.7000	92.7000	1	ea3af479189d	0x8600
 actionarea	?Tick@CActionArea@@QAEHXZ	94.9318	94.9318	6	c4aa3eba5fef	0x8440
 actionarea	_CreateActionArea	97.8571	97.8571	2	3f5de5e43482	0x7c60
-actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	5	594ffcabf436	0x9090
+actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	100.0000	100.0000	6	9df962d90fdf	0x9090
 actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	4	08f36f03c780	0x9300
 actionoptionsmenubar	?Clear@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	e4120f31ae64	0x92e0
 actionoptionsmenubar	?Deactivate@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	c9319d779db1	0x97f0

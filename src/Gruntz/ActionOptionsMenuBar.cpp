@@ -18,19 +18,15 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x00009090, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_frame = NULL;
     m_normChipSprite = NULL;
     m_highChipSprite = NULL;
     m_greyChipSprite = NULL;
-    m_buttonFrame[0] = NULL;
-    m_buttonFrame[1] = NULL;
-    m_buttonIcon[0] = PICKUP_NONE;
-    m_buttonIcon[1] = PICKUP_NONE;
-    m_buttonState[0] = ACTIONOPTION_HIDDEN;
-    m_buttonState[1] = ACTIONOPTION_HIDDEN;
+    memset(m_buttonFrame, 0, sizeof(m_buttonFrame));
+    memset(m_buttonIcon, 0, sizeof(m_buttonIcon));
+    memset(m_buttonState, 0, sizeof(m_buttonState));
     m_loaded = 0;
 }
 
