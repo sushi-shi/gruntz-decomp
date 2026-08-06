@@ -416,8 +416,8 @@ i32 CMulti::LeaveState(GameStateId arg) {
     m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
     s.LoadString(0x81a9);
-    r.right = m_mgr->m_modeW;
-    r.bottom = m_mgr->m_modeH;
+    r.right = m_mgr->m_modeSize.cx;
+    r.bottom = m_mgr->m_modeSize.cy;
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -739,8 +739,8 @@ void CMulti::PumpB() {
             if (fx->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = g_gameReg->m_modeH;
-                i32 cy = g_gameReg->m_modeW;
+                i32 cx = g_gameReg->m_modeSize.cy;
+                i32 cy = g_gameReg->m_modeSize.cx;
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
@@ -2598,8 +2598,8 @@ i32 CMulti::WaitForOtherPlayers() {
 
             SIZE
             mode;
-            mode.cx = g->m_modeW;
-            mode.cy = g->m_modeH;
+            mode.cx = g->m_modeSize.cx;
+            mode.cy = g->m_modeSize.cy;
             RECT rc;
             rc.left = 0;
             rc.top = 0;

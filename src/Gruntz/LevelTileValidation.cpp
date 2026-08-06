@@ -756,8 +756,8 @@ i32 CPlay::ValidateLevelTiles() {
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
-    i32 ex = w->m_modeW;
-    i32 ey = w->m_modeH;
+    i32 ex = w->m_modeSize.cx;
+    i32 ey = w->m_modeSize.cy;
     CTimer* pt;
     if (mode == STATUSBAR_DOCK_LEFT) {
         m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);

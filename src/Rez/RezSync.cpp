@@ -129,8 +129,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
-    m_savedModeW = SCREEN_W_PX;
-    m_savedModeH = SCREEN_H_PX;
+    m_savedModeSize.cx = SCREEN_W_PX;
+    m_savedModeSize.cy = SCREEN_H_PX;
     m_numRuns = m_settings->GetValueDword("Num Runs", 0);
     m_numMovies = m_settings->GetValueDword("Num Movies", 0);
     g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
@@ -172,14 +172,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isEasyMode = resolutionRaw;
     Resolution resolution = static_cast<Resolution>(resolutionRaw);
     if (resolution == RES_1024X768) {
-        m_savedModeW = DISPLAY_WIDTH_1024;
-        m_savedModeH = DISPLAY_HEIGHT_768;
+        m_savedModeSize.cx = DISPLAY_WIDTH_1024;
+        m_savedModeSize.cy = DISPLAY_HEIGHT_768;
     } else if (resolution == RES_800X600) {
-        m_savedModeW = DISPLAY_WIDTH_800;
-        m_savedModeH = DISPLAY_HEIGHT_600;
+        m_savedModeSize.cx = DISPLAY_WIDTH_800;
+        m_savedModeSize.cy = DISPLAY_HEIGHT_600;
     } else {
-        m_savedModeW = SCREEN_W_PX;
-        m_savedModeH = SCREEN_H_PX;
+        m_savedModeSize.cx = SCREEN_W_PX;
+        m_savedModeSize.cy = SCREEN_H_PX;
     }
     i32 vMusVol = m_settings->GetValueDword("Music Volume", 0x64);
     i32 vSndVol = m_settings->GetValueDword("Sound Volume", 0x3c);
@@ -279,8 +279,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         rect.top = 0;
         rect.right = 0x1df;
         rect.bottom = 0x1df;
-        m_modeW = SCREEN_W_PX;
-        m_modeH = SCREEN_H_PX;
+        m_modeSize.cx = SCREEN_W_PX;
+        m_modeSize.cy = SCREEN_H_PX;
         world->m_level->BuildAllPlanes(&rect);
     }
     world->SetRestoreHandler(&PumpIdleFrame);

@@ -69,8 +69,8 @@ HWND g_optHwndCk8 = 0;
 
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
-    i32 w = g_gameReg->m_savedModeW;
-    i32 h = g_gameReg->m_savedModeH;
+    i32 w = g_gameReg->m_savedModeSize.cx;
+    i32 h = g_gameReg->m_savedModeSize.cy;
     if (w == DISPLAY_WIDTH_1024 && h == DISPLAY_HEIGHT_768) {
         return RES_1024X768;
     }
@@ -127,8 +127,8 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         h = SCREEN_H_PX;
                     }
                     CGruntzMgr* reg = g_gameReg;
-                    reg->m_savedModeW = w;
-                    reg->m_savedModeH = h;
+                    reg->m_savedModeSize.cx = w;
+                    reg->m_savedModeSize.cy = h;
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

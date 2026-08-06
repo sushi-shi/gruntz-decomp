@@ -62,10 +62,10 @@ i32 SaveScreenshot(
     descB[1] = 0;
     descB[2] = 0;
     descB[3] = 0;
-    descA[2] = mgr->m_modeW;
-    descB[5] = mgr->m_modeH;
-    descA[3] = mgr->m_modeH;
-    descB[4] = mgr->m_modeW;
+    descA[2] = mgr->m_modeSize.cx;
+    descB[5] = mgr->m_modeSize.cy;
+    descA[3] = mgr->m_modeSize.cy;
+    descB[4] = mgr->m_modeSize.cx;
     descB[2] = width;
     descB[3] = height;
     if (img->BltEx(descB, src, descA, 0x1000000, 0)) {

@@ -53,8 +53,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         }
     }
 
-    i32 cx = g_gameReg->m_modeW / 2;
-    i32 cy = g_gameReg->m_modeH / 2;
+    i32 cx = g_gameReg->m_modeSize.cx / 2;
+    i32 cy = g_gameReg->m_modeSize.cy / 2;
     if (bar->m_position != STATUSBAR_HIDDEN) {
         cx -= 0xa0;
     }

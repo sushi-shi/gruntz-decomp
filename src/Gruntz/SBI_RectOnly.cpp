@@ -97,8 +97,8 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
     m_position = STATUSBAR_DOCK_RIGHT;
-    i32 vx = g_gameReg->m_modeW;
-    i32 vy = g_gameReg->m_modeH;
+    i32 vx = g_gameReg->m_modeSize.cx;
+    i32 vy = g_gameReg->m_modeSize.cy;
     SetRect(&m_rect10, vx - 0xa0, 0, vx, SCREEN_H_PX);
     m_redrawFrames = 0;
     m_barX = vx - 0x45;
@@ -229,9 +229,9 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     }
     ResetWidgets(1);
 
-    i32 w = g_gameReg->m_modeW;
+    i32 w = g_gameReg->m_modeSize.cx;
     volatile POINT pt;
-    pt.y = g_gameReg->m_modeH;
+    pt.y = g_gameReg->m_modeSize.cy;
     SetRect(&m_rect10, w - 0xa0, 0, w, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
@@ -1212,8 +1212,8 @@ RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == STATUSBAR_HIDDEN) {
 
-        i32 w = g_gameReg->m_modeW;
-        i32 h = g_gameReg->m_modeH;
+        i32 w = g_gameReg->m_modeSize.cx;
+        i32 h = g_gameReg->m_modeSize.cy;
         m_barX = w - 0x45;
         m_barY = h - 0x30;
         SetSpritePos(w - 0x45, h - 0x30);
@@ -1797,8 +1797,8 @@ i32 CStatusBarMgr::Activate() {
     if (m_barSprite != NULL) {
         return 0;
     }
-    i32 w = g_gameReg->m_modeW;
-    i32 d = g_gameReg->m_modeH;
+    i32 w = g_gameReg->m_modeSize.cx;
+    i32 d = g_gameReg->m_modeSize.cy;
     if (m_barX > w - 0x22) {
         m_barX = w - 0x22;
     }

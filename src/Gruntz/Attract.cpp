@@ -368,8 +368,8 @@ i32 CState::InputVirtual() {
     if (g_playActive == 0) {
         SplashParams sp;
         sp.text.LoadString(0x81a9);
-        sp.rect.right = m_mgr->m_modeW;
-        sp.rect.bottom = m_mgr->m_modeH;
+        sp.rect.right = m_mgr->m_modeSize.cx;
+        sp.rect.bottom = m_mgr->m_modeSize.cy;
         sp.rect.left = 0;
         sp.rect.top = 0;
         EngStr_DrawText(m_world, &sp.text, &sp.rect, 0x78, 1, 0xff, 0xff, 0, 1);

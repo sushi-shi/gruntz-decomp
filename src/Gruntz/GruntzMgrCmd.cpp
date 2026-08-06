@@ -1047,7 +1047,14 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             CheckDisplayBoundsB();
             return 1;
         case CMD_SCREENSHOT: {
-            SaveFrontBufferShot(m_settings, this, g_gameReg->m_modeW, g_gameReg->m_modeH, 0, 0);
+            SaveFrontBufferShot(
+                m_settings,
+                this,
+                g_gameReg->m_modeSize.cx,
+                g_gameReg->m_modeSize.cy,
+                0,
+                0
+            );
             return 1;
         }
         case CMD_RELOAD_LEVEL: {

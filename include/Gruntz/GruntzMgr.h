@@ -294,8 +294,8 @@ public:
     i32 m_numRuns;
     i32 m_numMovies;
     ColorDepth m_colorDepth;
-    i32 m_modeW, m_modeH;
-    i32 m_savedModeW, m_savedModeH;
+    tagSIZE m_modeSize;
+    tagSIZE m_savedModeSize;
     i32 m_lobbyResult;
     i32 m_lobbyProbed;
     i32 m_delayedQuitPending;

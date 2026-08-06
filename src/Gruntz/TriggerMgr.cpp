@@ -391,8 +391,8 @@ i32 CTriggerMgr::LoadCameraSprite() {
         return 0;
     }
 
-    i32 vx = g_gameReg->m_modeW;
-    i32 vy = g_gameReg->m_modeH;
+    i32 vx = g_gameReg->m_modeSize.cx;
+    i32 vy = g_gameReg->m_modeSize.cy;
     StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_guts->m_position;
 
     i32 ax, cx;

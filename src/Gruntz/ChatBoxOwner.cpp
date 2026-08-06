@@ -40,17 +40,18 @@ void CChatBoxOwner::Deactivate() {
     m_attached = false;
 }
 
-// @early-stop
 RVA(0x00020530, 0x61)
 void CChatBoxOwner::Configure(ChatBoxLayout mode) {
     m_mode = mode;
 
     if (mode == CHATBOX_WITH_RIGHT_STATUSBAR || mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
         m_originX = 0;
-        m_originY = g_gameReg->m_modeH - 66;
+        tagSIZE screenSize = g_gameReg->m_modeSize;
+        m_originY = screenSize.cy - 66;
     } else if (mode == CHATBOX_WITH_LEFT_STATUSBAR) {
         m_originX = 0xa0;
-        m_originY = g_gameReg->m_modeH - 66;
+        tagSIZE screenSize = g_gameReg->m_modeSize;
+        m_originY = screenSize.cy - 66;
     }
     m_fontConfig->m_reserved34 = 1;
 }
@@ -63,10 +64,8 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
-        char* input =
-            const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
-        static_cast<CMulti*>(g_gameReg->m_curState)
-            ->BroadcastChatLine(input, 1, 1, 0);
+        char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
+        static_cast<CMulti*>(g_gameReg->m_curState)->BroadcastChatLine(input, 1, 1, 0);
     } else {
         if (_strcmpi(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
             CString args = m_fontConfig->GetInputText();
@@ -136,15 +135,13 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                         i32 nonCheat = bute.GetIntDef(groupName, "NonCheat", 0);
                         i32 value = bute.GetIntDef(groupName, "Value", 0x807b);
                         if (nonCheat == 1) {
-                            if (g_gameReg->m_cheatMgr->AddCheat(
-                                    static_cast<const char*>(code), value, 1
-                                )) {
+                            if (g_gameReg->m_cheatMgr
+                                    ->AddCheat(static_cast<const char*>(code), value, 1)) {
                                 enabled++;
                             }
                         } else {
-                            if (g_gameReg->m_cheatMgr->AddCheat(
-                                    static_cast<const char*>(code), value, 0
-                                )) {
+                            if (g_gameReg->m_cheatMgr
+                                    ->AddCheat(static_cast<const char*>(code), value, 0)) {
                                 enabled++;
                             }
                         }
@@ -238,14 +235,14 @@ RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
         if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-            if ((x < 0x40 && y >= g_gameReg->m_modeH - 0x40)
-                || (x > 0x40 && y >= g_gameReg->m_modeH - 0x20)) {
+            if ((x < 0x40 && y >= g_gameReg->m_modeSize.cy - 0x40)
+                || (x > 0x40 && y >= g_gameReg->m_modeSize.cy - 0x20)) {
                 return 1;
             }
         } else {
-            if ((x < 0x40 && y >= g_gameReg->m_modeH - 0x40)
+            if ((x < 0x40 && y >= g_gameReg->m_modeSize.cy - 0x40)
                 || (x > m_originX + 0x40 && x < m_originX + 0x1e0
-                    && y >= g_gameReg->m_modeH - 0x20)) {
+                    && y >= g_gameReg->m_modeSize.cy - 0x20)) {
                 return 1;
             }
         }

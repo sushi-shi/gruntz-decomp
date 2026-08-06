@@ -302,8 +302,8 @@ i32 CPlay::LeaveState(GameStateId arg) {
     m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
     CString s;
     s.LoadString(IDS_PLEASE_WAIT);
-    r.right = m_mgr->m_modeW;
-    r.bottom = m_mgr->m_modeH;
+    r.right = m_mgr->m_modeSize.cx;
+    r.bottom = m_mgr->m_modeSize.cy;
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -471,8 +471,8 @@ i32 CPlay::Render() {
             if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = g_gameReg->m_modeH;
-                i32 cy = g_gameReg->m_modeW;
+                i32 cx = g_gameReg->m_modeSize.cy;
+                i32 cy = g_gameReg->m_modeSize.cx;
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
@@ -2726,9 +2726,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
-    i32 right = w->m_modeW;
+    i32 right = w->m_modeSize.cx;
     StatusBarDock state = m_guts->m_position;
-    i32 bottom = w->m_modeH;
+    i32 bottom = w->m_modeSize.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
         SetRect(&r, 0xa0, 0, right - 1, bottom - 1);
@@ -2805,8 +2805,8 @@ i32 CPlay::ClampViewport2(i32 stride) {
 
     SIZE
     limit;
-    limit.cx = w->m_modeW;
-    limit.cy = w->m_modeH;
+    limit.cx = w->m_modeSize.cx;
+    limit.cy = w->m_modeSize.cy;
 
     if (r.right - r.left < (guts->m_position == STATUSBAR_HIDDEN ? limit.cx : limit.cx - 0xa0)) {
         r.left -= stride;
@@ -4883,14 +4883,14 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     if (dst->left < 0) {
         dst->left = 0;
     }
-    if (dst->right > m_mgr->m_modeW) {
-        dst->right = m_mgr->m_modeW;
+    if (dst->right > m_mgr->m_modeSize.cx) {
+        dst->right = m_mgr->m_modeSize.cx;
     }
     if (dst->top < 0) {
         dst->top = 0;
     }
-    if (dst->bottom > m_mgr->m_modeH) {
-        dst->bottom = m_mgr->m_modeH;
+    if (dst->bottom > m_mgr->m_modeSize.cy) {
+        dst->bottom = m_mgr->m_modeSize.cy;
     }
     src->right = dst->right - dst->left;
     src->bottom = dst->bottom - dst->top;
@@ -5000,10 +5000,10 @@ i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    i32 savedW = m_mgr->m_savedModeW;
-    i32 liveW = m_mgr->m_modeW;
-    i32 savedH = m_mgr->m_savedModeH;
-    i32 liveH = m_mgr->m_modeH;
+    i32 savedW = m_mgr->m_savedModeSize.cx;
+    i32 liveW = m_mgr->m_modeSize.cx;
+    i32 savedH = m_mgr->m_savedModeSize.cy;
+    i32 liveH = m_mgr->m_modeSize.cy;
     if (savedW != liveW || savedH != liveH) {
         if (m_mgr->SetVideoMode(savedW, savedH, 1) == 0) {
             return 0;
@@ -5498,8 +5498,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     SIZE
     extent;
-    extent.cx = w->m_modeW;
-    extent.cy = w->m_modeH;
+    extent.cx = w->m_modeSize.cx;
+    extent.cy = w->m_modeSize.cy;
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {

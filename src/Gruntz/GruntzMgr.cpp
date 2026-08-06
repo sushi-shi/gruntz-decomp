@@ -448,17 +448,11 @@ i32 CDDrawPtrCollections::GetCapsChecked() {
     return hr;
 }
 
-// @early-stop
-// Retail RELOADS m_modeW/m_modeH for the save (load,load,store,store - the
-// 8-byte struct-copy shape) and keeps 0x280/0x1e0 as immediates; cl promotes
-// both constants to registers for the compare + the SetVideoMode args and then
-// constant-propagates them into the two stores.
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(i32 save) {
-    if (m_modeW == SCREEN_W_PX && m_modeH == SCREEN_H_PX) {
+    if (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX) {
         if (save) {
-            m_savedModeW = m_modeW;
-            m_savedModeH = m_modeH;
+            m_savedModeSize = m_modeSize;
         }
         return 1;
     }
@@ -486,7 +480,7 @@ i32 CGruntzMgr::HandleDebugPosition() {
 
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
-    if (m_modeW == SCREEN_W_PX && m_modeH == SCREEN_H_PX) {
+    if (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX) {
         return 1;
     }
     return 0;
@@ -945,8 +939,8 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 a, i32 b, i32 c) {
 RVA(0x0008de70, 0x61)
 i32 CGruntzMgr::CheckSavedMode() {
 
-    if ((m_modeW == m_savedModeW && m_modeH == m_savedModeH)
-        || SetVideoMode(m_savedModeW, m_savedModeH, 1) || RestoreVideoMode(1)) {
+    if ((m_modeSize.cx == m_savedModeSize.cx && m_modeSize.cy == m_savedModeSize.cy)
+        || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, 1) || RestoreVideoMode(1)) {
         return 1;
     }
     ReportError(IDX(IDS_SET_VIDEO_MODE), 0x45e);
@@ -2692,9 +2686,10 @@ void CGruntzMgr::Close() {
         m_settings->SetValueDword("Scroll_Speed", m_scrollSpeed);
         m_settings->SetValueDword("Easy_Mode", m_isEasyMode);
         Resolution res = RES_640X480;
-        if (m_savedModeW == DISPLAY_WIDTH_1024 && m_savedModeH == DISPLAY_HEIGHT_768) {
+        if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
             res = RES_1024X768;
-        } else if (m_savedModeW == DISPLAY_WIDTH_800 && m_savedModeH == DISPLAY_HEIGHT_600) {
+        } else if (m_savedModeSize.cx == DISPLAY_WIDTH_800
+                   && m_savedModeSize.cy == DISPLAY_HEIGHT_600) {
             res = RES_800X600;
         }
         m_settings->SetValueDword("Resolution", IDX(res));
@@ -3041,8 +3036,8 @@ CGruntzMgr::CGruntzMgr() {
     m_numRuns = 0;
     m_numMovies = 0;
     m_reservedcc = 0x1e;
-    m_modeW = 0;
-    m_modeH = 0;
+    m_modeSize.cx = 0;
+    m_modeSize.cy = 0;
     m_colorDepth = BPP_RGB_16;
     m_inGameDir = 1;
     m_haveRez = false;
@@ -3068,7 +3063,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CDdModePair pt;
-    pt = m_world->m_ptrColl->FindFwd(m_modeW, m_modeH, m_colorDepth);
+    pt = m_world->m_ptrColl->FindFwd(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x > 0x514 || x == -1 || y == -1) {
@@ -3090,7 +3085,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CDdModePair pt;
-    pt = m_world->m_ptrColl->FindBack(m_modeW, m_modeH, m_colorDepth);
+    pt = m_world->m_ptrColl->FindBack(m_modeSize.cx, m_modeSize.cy, m_colorDepth);
     i32 x = pt.a;
     i32 y = pt.b;
     if (x == -1 || y == -1 || x < SCREEN_HALF_W_PX || y < 0xc8) {
@@ -3204,7 +3199,7 @@ INT_PTR CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPA
 
 RVA(0x0008df00, 0x238)
 i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
-    if (w == m_modeW && h == m_modeH) {
+    if (w == m_modeSize.cx && h == m_modeSize.cy) {
         return 1;
     }
     if (m_world == NULL) {
@@ -3218,7 +3213,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                     CPlay* st = static_cast<CPlay*>(m_curState);
                     st->ResetViewport();
                     if (st->m_guts != NULL) {
-                        st->m_guts->m_barFrameGate = m_modeH;
+                        st->m_guts->m_barFrameGate = m_modeSize.cy;
                         if (st->m_guts->m_position == STATUSBAR_DOCK_RIGHT) {
                             st->m_guts->RefreshA();
                             st->m_guts->DockStatusBarRight();
@@ -3249,12 +3244,12 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     while (ShowCursor(0) >= 0) {
     }
-    m_modeW = w;
-    m_modeH = h;
+    m_modeSize.cx = w;
+    m_modeSize.cy = h;
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
         if (flag) {
-            m_savedModeW = w;
-            m_savedModeH = h;
+            m_savedModeSize.cx = w;
+            m_savedModeSize.cy = h;
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
@@ -3275,7 +3270,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         g_resolutionChanged = 0;
         char buf[SERIAL_NAME_LEN];
 
-        sprintf(buf, "Resolution is now %ix%ix%i", m_modeW, m_modeH, m_colorDepth);
+        sprintf(buf, "Resolution is now %ix%ix%i", m_modeSize.cx, m_modeSize.cy, m_colorDepth);
         AppendChatMessage(buf);
     }
     return 1;
