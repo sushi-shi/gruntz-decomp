@@ -97,17 +97,7 @@ inline CMenuItem::~CMenuItem() {
 }
 
 inline CMenuItem::CMenuItem() {
-    m_host = NULL;
-    m_template = NULL;
-    m_sprite = NULL;
-    m_owner = NULL;
-    m_listPos = NULL;
-    m_hitLeft = UNINIT_FILL;
-    m_fixedX = UNINIT_FILL;
-    m_leftName.Empty();
-    m_rightName.Empty();
-    m_upName.Empty();
-    m_downName.Empty();
+    Reset();
 }
 
 #endif // GRUNTZ_MENUITEM_H

@@ -884,103 +884,103 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     CBattlezData* rec = g_gameReg->m_scoreHud;
     if (rec->m_isCustomLevel != 0) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
-        return 1;
-    }
-    if (m_initOnce == 0) {
-        if (rec->m_allDone != 0) {
-            m_initOnce = 1;
-            CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
-            if (ss->m_emitGate == 0) {
-                LeafCue* res = 0;
-                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
-                if (res != NULL) {
-                    res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
-                }
-            }
-            if (g_gameReg->m_scoreHud->m_count < 0x24) {
-                for (i32 p = 0; p < 4; p++) {
-                    m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-                    m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
-                    m_animSprites[p]->m_screenY = 0xdc;
-                    m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
-                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
-                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
-                    } else {
-                        CString letter;
-                        switch (static_cast<WarpLetter>(p)) {
-                            case WARPLETTER_W:
-                                letter = "W";
-                                break;
-                            case WARPLETTER_A:
-                                letter = "A";
-                                break;
-                            case WARPLETTER_R:
-                                letter = "R";
-                                break;
-                            case WARPLETTER_P:
-                                letter = "P";
-                                break;
-                        }
-                        m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
-                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+    } else {
+        if (m_initOnce == 0) {
+            if (rec->m_allDone != 0) {
+                m_initOnce = 1;
+                CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+                if (ss->m_emitGate == 0) {
+                    LeafCue* res = 0;
+                    MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
+                    if (res != NULL) {
+                        res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                     }
                 }
+                if (g_gameReg->m_scoreHud->m_count < 0x24) {
+                    for (i32 p = 0; p < 4; p++) {
+                        m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                        m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
+                        m_animSprites[p]->m_screenY = 0xdc;
+                        m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                        if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
+                            m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                            m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                        } else {
+                            CString letter;
+                            switch (static_cast<WarpLetter>(p)) {
+                                case WARPLETTER_W:
+                                    letter = "W";
+                                    break;
+                                case WARPLETTER_A:
+                                    letter = "A";
+                                    break;
+                                case WARPLETTER_R:
+                                    letter = "R";
+                                    break;
+                                case WARPLETTER_P:
+                                    letter = "P";
+                                    break;
+                            }
+                            m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
+                            m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+                        }
+                    }
+                }
+                for (i32 k = 0; k < 4; k++) {
+                    m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
+                    m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
+                    m_trailSprites[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                }
+                if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                    return 0;
+                }
+                ShowLevelCompleteMessage();
+                m_world->m_drawTarget->TransExit();
+                m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
+                m_world->m_drawTarget->TransTitle();
+                RetireScene(0x50, 0x3e8, 0, 1);
+                if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+                    return 0;
+                }
+                ShowLevelCompleteMessage();
+                return 1;
             }
-            for (i32 k = 0; k < 4; k++) {
-                m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
-                m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
-                m_trailSprites[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        } else if (rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
+                   && state == BOOTYSEQ_PERFECT_BONUS) {
+            if ((rec)->GroupAllScored()) {
+                if (!ShowSecretBonusMessage()) {
+                    return 0;
+                }
+                m_world->m_drawTarget->TransExit();
+                RetireScene(0x50, 0x3e8, 0, 1);
+                m_activation = BOOTYSEQ_SECRET_PENDING;
+                return 1;
             }
-            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
-                return 0;
-            }
-            ShowLevelCompleteMessage();
-            m_world->m_drawTarget->TransExit();
-            m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
-            m_world->m_drawTarget->TransTitle();
-            RetireScene(0x50, 0x3e8, 0, 1);
-            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
-                return 0;
-            }
-            ShowLevelCompleteMessage();
-            return 1;
         }
-    } else if (rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
-               && state == BOOTYSEQ_PERFECT_BONUS) {
-        if ((rec)->GroupAllScored()) {
+
+        if (m_activation == BOOTYSEQ_SECRET_PENDING && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
+            && m_secretBannerOnce == 0) {
+            m_secretBannerOnce = 1;
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
             m_world->m_drawTarget->TransExit();
             RetireScene(0x50, 0x3e8, 0, 1);
-            m_activation = BOOTYSEQ_SECRET_PENDING;
             return 1;
         }
-    }
 
-    if (m_activation == BOOTYSEQ_SECRET_PENDING && (g_gameReg->m_scoreHud)->AllRecordsInBounds()
-        && m_secretBannerOnce == 0) {
-        m_secretBannerOnce = 1;
-        if (!ShowSecretBonusMessage()) {
-            return 0;
+        CBattlezData* rec2 = g_gameReg->m_scoreHud;
+        if (rec2->m_count == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
+            SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
+            if (sub != NULL) {
+                sub->Stop();
+            }
+            g_gameReg->ChangeState(3);
+            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
+        } else {
+
+            g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
         }
-        m_world->m_drawTarget->TransExit();
-        RetireScene(0x50, 0x3e8, 0, 1);
-        return 1;
-    }
-
-    CBattlezData* rec2 = g_gameReg->m_scoreHud;
-    if (rec2->m_count == IDX(QUESTLEVEL_CAMPAIGN_LAST)) {
-        SoundStream* sub = m_world->m_soundRegistry->m_soundStream;
-        if (sub != NULL) {
-            sub->Stop();
-        }
-        g_gameReg->ChangeState(3);
-        PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
-    } else {
-
-        g_gameReg->PassClickToPlayState((rec2->m_count % 0x28) + 1, 0, 1);
     }
     return 1;
 }

@@ -152,7 +152,6 @@ CMenuItem2* CMenuPage::AddItem2(
     return Append(item) ? item : 0;
 }
 
-// @early-stop
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
     const char* name,
