@@ -126,6 +126,8 @@ public:
     CString GetConfigNameB() {
         return m_customLevelName;
     }
+    i32 GetCommandDelay();
+    i32 GetResendDelay();
     void ReportVersionMsg(char* msg, i32 code);
 
     void ReportStatusId(u32 strId, i32 level);

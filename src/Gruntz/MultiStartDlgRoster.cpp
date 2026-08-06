@@ -871,28 +871,32 @@ i32 CMultiStartDlg::SelectColor(i32 colorIndex, ColorTint playerColor) {
     return 1;
 }
 
+// @early-stop
 RVA(0x000c4c00, 0x190)
 void CMultiStartDlg::OnOK() {
     CMulti* mgr = g_multiState;
     if (mgr->m_isHost == 0) {
         return;
     }
-    mgr->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
-    i32 token;
-    if (g_multiState->m_customLevel != 0) {
-        CString b = mgr->GetConfigNameB();
-        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, b);
-    } else {
-        CString a = mgr->GetConfigNameA();
-        token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, a);
+    if (&CMulti::GetCommandDelay == NULL) {
+        return;
     }
+    if (&CMulti::GetResendDelay == NULL) {
+        return;
+    }
+    mgr->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
+    CString levelName =
+        g_multiState->m_customLevel != 0 ? mgr->GetConfigNameB() : mgr->GetConfigNameA();
+    i32 token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, levelName);
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {
         g_multiState->m_customLevelVerificationPending = 0;
         EnableWindow(0);
-        g_gameReg->EnterModalUI("Unable to verify custom level with other players");
+        g_gameReg->EnterModalUI(
+            "Unable to verify custom level with other players. The game will not start."
+        );
         EnableWindow(1);
-    } else if (g_multiState->m_levelVerifyResult == 0) {
+    } else if (g_multiState->m_levelVerifyResult != 0) {
         g_multiState->m_customLevelVerificationPending = 1;
         CDialog::OnOK();
     } else {
@@ -901,6 +905,16 @@ void CMultiStartDlg::OnOK() {
         g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
+}
+
+RVA(0x000c4e00, 0x7)
+i32 CMulti::GetCommandDelay() {
+    return m_commandDelay;
+}
+
+RVA(0x000c4e20, 0x7)
+i32 CMulti::GetResendDelay() {
+    return m_drainReload;
 }
 
 RVA(0x000c4ee0, 0x33)

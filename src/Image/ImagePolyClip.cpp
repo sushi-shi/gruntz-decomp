@@ -692,18 +692,18 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 // @early-stop
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
-    ClipVtx* prev = &verts[count - 1];
-    ClipVtx* cur = verts;
     i32 minYi = 0x1001;
     i32 maxYi = -1;
+    ClipVtx* prev = &verts[count - 1];
+    ClipVtx* cur = verts;
     if (count > 0) {
         i32 n = count;
         do {
-            if (static_cast<i32>(prev->y) != static_cast<i32>(cur->y)) {
+            if (static_cast<i32>(cur->y) != static_cast<i32>(prev->y)) {
                 ClipVtx* top = prev;
                 ClipVtx* table;
                 ClipVtx* bottom;
-                if (prev->y > cur->y) {
+                if (prev->y < cur->y) {
                     bottom = cur;
                     table = g_rasterEdgeL;
                 } else {
@@ -761,11 +761,13 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             if (width > 0) {
 
                 g_rasterDestPtr = Span16(rowPtr) + lo;
-                i16* p = g_rasterDestPtr;
-                i32 w = width;
-                do {
-                    *p++ = color;
-                } while (--w != 0);
+                __asm {
+                    xor eax, eax
+                    mov ax, color
+                    mov ecx, width
+                    mov edi, g_rasterDestPtr
+                    rep stosw
+                }
                 rowPtr = g_rasterDestRow;
             }
             rowPtr += surf->m_pitch;
