@@ -851,7 +851,6 @@ i32 LeafCue::LoadSoundB(void* src) {
     return m_sound != NULL;
 }
 
-// @early-stop
 RVA(0x00158760, 0x59)
 i32 LeafCue::Configure(CParseSource* src) {
     char* blob = src->BeginParse();
@@ -859,13 +858,13 @@ i32 LeafCue::Configure(CParseSource* src) {
         return 0;
     }
     SoundDevice* dev = OwnerMgr()->m_soundStream;
+    i32 ok;
     if (dev == NULL) {
-        src->EndParse();
-        return 0;
+        ok = 0;
+    } else {
+        m_sound = dev->Acquire(blob, 0x100ea, 0);
+        ok = m_sound != NULL;
     }
-    DSoundCloneInst* buf = dev->Acquire(blob, 0x100ea, 0);
-    m_sound = buf;
-    i32 ok = buf != NULL;
     src->EndParse();
     return ok;
 }

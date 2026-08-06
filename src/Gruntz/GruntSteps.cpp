@@ -434,30 +434,27 @@ void CGrunt::SnapToLastTile(i32 a) {
 // @early-stop
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
+    x >>= TILE_SHIFT_PX;
+    y >>= TILE_SHIFT_PX;
     i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    i32 px = x >> TILE_SHIFT_PX;
-    i32 py = y >> TILE_SHIFT_PX;
 
-    RECT* src1 = &m_reachRect;
-    RECT* src2 = &m_reachExclusionRect;
+    RECT r1 = m_reachRect;
+    r1.left += dx;
+    r1.top += dy;
+    r1.right += dx + 1;
+    r1.bottom += dy + 1;
 
-    RECT r1;
-    r1.left = src1->left + dx;
-    r1.top = src1->top + dy;
-    r1.right = src1->right + dx + 1;
-    r1.bottom = src1->bottom + dy + 1;
-
-    RECT r2;
-    r2.left = src2->left + dx;
-    r2.top = src2->top + dy;
-    r2.right = src2->right + dx;
-    r2.bottom = src2->bottom + dy;
+    RECT r2 = m_reachExclusionRect;
+    r2.left += dx;
+    r2.top += dy;
+    r2.right += dx;
+    r2.bottom += dy;
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
 
-            if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+            if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
                 return 1;
             }
             return 0;
@@ -465,9 +462,9 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+    if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
 
-        if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
+        if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;
         }
     }
