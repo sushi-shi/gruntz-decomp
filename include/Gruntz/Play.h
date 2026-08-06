@@ -177,7 +177,7 @@ public:
 
     i32 PositionBridgeToggle(StatusBarDock mode, StatusBarDock unused);
 
-    i32 PlaceStartGruntz();
+    b32 PlaceStartGruntz();
     i32 ValidateLevelTiles();
 
     i32 BuildHelpReveal(i32 final);

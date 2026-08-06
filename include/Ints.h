@@ -10,4 +10,6 @@ typedef unsigned int u32;
 typedef __int64 i64;
 typedef unsigned __int64 u64;
 
+typedef i32 b32;
+
 #endif // GRUNTZ_INTS_H

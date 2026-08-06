@@ -56,38 +56,34 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
     return tc->GetCollisionAt(subX, subY);
 }
 
-// @early-stop
 RVA(0x000d2b20, 0x21f)
-i32 CPlay::PlaceStartGruntz() {
+b32 CPlay::PlaceStartGruntz() {
 
     CObList* list = &m_world->m_childGroup->m_list;
     if (list == NULL) {
-        return 0;
+        return false;
     }
-    CGruntzMgr* reg = m_mgr;
-    POSITION pos = list->GetHeadPosition();
-    i32 result = 1;
     i32 counter = 0;
     GruntEntranceMode entranceMode = GRUNT_ENTRANCE_NONE;
-    if (reg->m_gameMode == GAMEMODE_SINGLE) {
+    POSITION pos = list->GetHeadPosition();
+    if (m_mgr->m_gameMode == GAMEMODE_SINGLE) {
         entranceMode = GRUNT_ENTRANCE_WORMHOLE;
     }
-    if (pos == NULL) {
-        return result;
-    }
-    do {
+    while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != NULL) {
             AnimWorkerObj* aux = obj->m_animWorker;
 
             GameObjNotifyFn who = aux->m_notify;
             if (who == CreateGruntStartingPoint) {
+                i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 AddrWord<long> extentArg;
                 extentArg.m_addr = &obj->m_extent.left;
-                i32 idx = reg->m_cmdGrid->PlaceObject(
+                i32 idx = m_mgr->m_cmdGrid->PlaceObject(
                     obj->m_smarts,
-                    (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
-                    (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
+                    x,
+                    y,
                     100000,
                     entranceMode,
                     obj->m_score,
@@ -102,14 +98,9 @@ i32 CPlay::PlaceStartGruntz() {
                 );
                 if (idx == -1) {
                     CString s;
-                    s.Format(
-                        "Could not add Grunt: Player=%d, x=%d, y=%d",
-                        obj->m_smarts,
-                        (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
-                        (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX
-                    );
+                    s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->m_smarts, x, y);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
-                    return 0;
+                    return false;
                 }
                 obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_gameMode != GAMEMODE_SINGLE && who == CreateGruntCreationPoint
@@ -117,13 +108,15 @@ i32 CPlay::PlaceStartGruntz() {
 
                 GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
                 if (e != NULL && counter < e->m_comboSel) {
-                    reg->m_cmdSubMgr->EnqueueSingle(
-                        result,
+                    i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    m_mgr->m_cmdSubMgr->EnqueueSingle(
+                        true,
                         static_cast<char>(obj->m_smarts),
                         0,
                         static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
-                        (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
-                        (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX,
+                        x,
+                        y,
                         0,
                         0
                     );
@@ -131,8 +124,8 @@ i32 CPlay::PlaceStartGruntz() {
                 }
             }
         }
-    } while (pos != NULL);
-    return result;
+    }
+    return true;
 }
 
 // @early-stop
