@@ -16,6 +16,7 @@
 
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define HSV_CLAMP_MAX(value, maximum) ((value) >= (maximum) ? (maximum) : (value))
 
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = 0;
@@ -233,12 +234,9 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
             float factor = static_cast<float>(pow(static_cast<double>(x), dGamma));
             float scale = static_cast<float>(j) / fSteps * (factor * fPct * g_p01) - g_negone;
-            float fr = static_cast<float>((base + r)) * scale;
-            i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>((base + g)) * scale;
-            i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>((base + b)) * scale;
-            i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
+            i32 rn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + r) * scale, g_255));
+            i32 gn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + g) * scale, g_255));
+            i32 bn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + b) * scale, g_255));
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
