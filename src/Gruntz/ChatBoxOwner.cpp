@@ -237,36 +237,18 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
 RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
-
         if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-            if (x < 0x40) {
-                if (y >= g_gameReg->m_modeH - 0x40) {
-                    return 1;
-                }
+            if ((x < 0x40 && y >= g_gameReg->m_modeH - 0x40)
+                || (x > 0x40 && y >= g_gameReg->m_modeH - 0x20)) {
+                return 1;
             }
-            if (x <= 0x40) {
-                return 0;
-            }
-            if (y < g_gameReg->m_modeH - 0x20) {
-                return 0;
-            }
-            return 1;
-        }
-        if (x < 0x40) {
-            if (y >= g_gameReg->m_modeH - 0x40) {
+        } else {
+            if ((x < 0x40 && y >= g_gameReg->m_modeH - 0x40)
+                || (x > m_originX + 0x40 && x < m_originX + 0x1e0
+                    && y >= g_gameReg->m_modeH - 0x20)) {
                 return 1;
             }
         }
-        if (x <= m_originX + 0x40) {
-            return 0;
-        }
-        if (x >= m_originX + 0x1e0) {
-            return 0;
-        }
-        if (y < g_gameReg->m_modeH - 0x20) {
-            return 0;
-        }
-        return 1;
     }
     return 0;
 }

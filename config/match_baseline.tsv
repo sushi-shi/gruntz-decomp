@@ -753,7 +753,7 @@ chatboxowner	?Attach@CChatBoxOwner@@QAEHPAVCDDrawSurfaceMgr@@PAVCFontConfig@@@Z	
 chatboxowner	?Configure@CChatBoxOwner@@QAEXW4ChatBoxLayout@@@Z	60.9200	60.9200	1	e3ecbbcbd426	0x20530
 chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	3	eb73b4fa90d4	0x20510
 chatboxowner	?GetInputText@CFontConfig@@QAE?AVCString@@XZ	100.0000	100.0000	1	5dab2982a8d3	0x20ef0
-chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	63.0606	63.0606	6	b530d98bdb55	0x21140
+chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	71.0909	71.0909	7	eeab2f7c349a	0x21140
 chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	85.9857	85.9857	4	332a87f9f940	0x20f40
 chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	62.3215	62.3215	6	a9575e820a2d	0x205c0
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	14	98260a187bb1	0x85e60
