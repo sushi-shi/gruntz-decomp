@@ -137,18 +137,9 @@ CNetMgr* g_groupEnumMgr;
 DATA(0x00248cf8)
 CMulti* g_connectRptMgr;
 
-// @early-stop
 RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
-
     CMulti::ReleaseResources();
-
-    m_readyPlayerIds.~CDWordArray();
-    m_customLevelName.~CString();
-    m_builtInLevelName.~CString();
-    m_hostName.~CString();
-    m_groupName.~CString();
-    m_providerConfigPrefix.~CString();
 }
 
 DATA(0x00246778)
