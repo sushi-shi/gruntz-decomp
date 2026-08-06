@@ -45,12 +45,16 @@ void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
 // (freenodepool) and Drain (queuedrainhost): a first-use placement.
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
+    Coord result;
     i32 sx = m_shiftX;
     i32 sy = m_shiftY;
-    i32 rx = ((x >> sx) << sx) + m_tilePxW / 2;
-    i32 ry = ((y >> sy) << sy) + m_tilePxH / 2;
-    out->m_x = rx;
-    out->m_y = ry;
+    result.m_x = x >> sx;
+    result.m_y = y >> sy;
+    result.m_x <<= sx;
+    result.m_y <<= sy;
+    result.m_x += m_tilePxW / 2;
+    result.m_y += m_tilePxH / 2;
+    *out = result;
 }
 
 // @interleaver GetTileHandle - 25 B lone body at 0xd53a0, between ValidateLevelTiles

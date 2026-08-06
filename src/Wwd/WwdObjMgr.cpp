@@ -5,6 +5,7 @@
 
 #define CRESOLVENODE_OOL_CTOR
 #define ANIMWORKEROBJ_OOL_CTOR
+#define CGAMEOBJECT_OOL_CTOR
 
 #include <rva.h>
 
@@ -234,7 +235,6 @@ i32 CDDrawChildGroup::AttachSprite(
     return 1;
 }
 
-// @early-stop
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
