@@ -285,6 +285,81 @@ unit = "gruntarrivalscan"
 source = "src/Gruntz/GruntArrivalScan.cpp"
 flags = "cpp" # REHOME M2: merged the arrival-band over-split files; Reticle/PhaseStep need /GX
 
+
+[[unit]]
+unit = "gruntbricklayerstep"
+source = "src/Gruntz/GruntBrickLayerStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntwanderstep"
+source = "src/Gruntz/GruntWanderStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntreticlescan"
+source = "src/Gruntz/GruntReticleScan.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntchargestep"
+source = "src/Gruntz/GruntChargeStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntarrivalupdate"
+source = "src/Gruntz/GruntArrivalUpdate.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntgoosuckerstep"
+source = "src/Gruntz/GruntGooSuckerStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntdefensealt"
+source = "src/Gruntz/GruntDefenseAlt.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntarrivalneighbor"
+source = "src/Gruntz/GruntArrivalNeighbor.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntdefensestep"
+source = "src/Gruntz/GruntDefenseStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntdiggerstep"
+source = "src/Gruntz/GruntDiggerStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntscantarget"
+source = "src/Gruntz/GruntScanTarget.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntphasestep"
+source = "src/Gruntz/GruntPhaseStep.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntseektarget"
+source = "src/Gruntz/GruntSeekTarget.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntpeertracking"
+source = "src/Gruntz/GruntPeerTracking.cpp"
+flags = "cpp"
+
+[[unit]]
+unit = "gruntdefenselean"
+source = "src/Gruntz/GruntDefenseLean.cpp"
+flags = "cpp"
 [[unit]]
 unit = "playplanescan"
 source = "src/Gruntz/PlayPlaneScan.cpp"

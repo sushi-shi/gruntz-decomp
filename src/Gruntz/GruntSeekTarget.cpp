@@ -178,95 +178,276 @@
             break;                                                                                 \
     }
 
-RVA(0x000ec670, 0x298)
-i32 CGrunt::ResolveArrivalReposition() {
-    CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
-    if (occ != NULL && GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0) {
-        if (static_cast<u32>(m_dwell) > 0xfa) {
-            CGameObject* oh = occ->m_object;
-            if (TileSwitch(
-                    oh->m_screenX >> TILE_SHIFT_PX,
-                    oh->m_screenY >> TILE_SHIFT_PX,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                )
-                != 0) {
-                CGameObject* oh2 = occ->m_object;
-                if (m_tileMgr->ApplyTriggerA(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        oh2->m_screenX,
-                        oh2->m_screenY
-                    )
-                    == -1) {
-                    m_dwell = 0;
-                    if (m_blockedVoicePending != 0) {
-                        CWwdGameObjectA* h = m_object;
-                        i32 vx = h->m_screenX;
-                        i32 vy = h->m_screenY;
-                        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                        if (vx < rect->right && vx >= rect->left && vy < rect->bottom
-                            && vy >= rect->top) {
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+// @early-stop
+RVA(0x000f71c0, 0x721)
+i32 CGrunt::SeekTarget() {
+    this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
+    this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+    if (this->CoordCount() != 0
+        && g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x] == NULL) {
+        CoordNode* p = this->CoordHead();
+        while (p != NULL) {
+            CoordNode* next = p->m_next;
+            Coord** link = &p->m_coord;
+            p = next;
+            if (*link != NULL) {
+                g_coordPool.Push(*link);
+            }
+        }
+        m_coordList.RemoveAll();
+        this->m_arrivalCell.m_x = 0;
+    }
+
+    // NOT a PickupType local: it is seeded from m_entranceReason/m_toolId but
+    // then REUSED to hold a cell x-coordinate below, so it carries two
+    // domains. Left as i32 until the reuse is untangled.
+    i32 reason = IDX(this->m_entranceReason);
+    if (reason > 0x16) {
+        reason = IDX(this->m_toolId);
+    }
+    if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
+        CGrunt* slot = g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + reason];
+        if (slot == NULL || slot->m_entranceCommitted == 0) {
+            if (this->CoordCount() != 0) {
+                CoordNode* p = this->CoordHead();
+                while (p != NULL) {
+                    CoordNode* next = p->m_next;
+                    Coord** link = &p->m_coord;
+                    p = next;
+                    if (*link != NULL) {
+                        g_coordPool.Push(*link);
+                    }
+                }
+                m_coordList.RemoveAll();
+            }
+            this->m_arrivalCell.m_x = -1;
+            return 1;
+        }
+
+        Coord selfTile;
+        GetScreenPos(&selfTile);
+        selfTile.m_x >>= 5;
+        selfTile.m_y >>= 5;
+        Coord slotTile;
+        slot->GetScreenPos(&slotTile);
+        slotTile.m_x >>= 5;
+        slotTile.m_y >>= 5;
+        Coord selfTileB;
+        GetScreenPos(&selfTileB);
+        selfTileB.m_x >>= 5;
+        selfTileB.m_y >>= 5;
+        Coord slotTileB;
+        slot->GetScreenPos(&slotTileB);
+        slotTileB.m_x >>= 5;
+        slotTileB.m_y >>= 5;
+        i32 dx = selfTile.m_x - slotTile.m_x;
+        i32 dy = selfTileB.m_y - slotTileB.m_y;
+        if (((dx ^ (dx >> 31)) - (dx >> 31)) < 2 && ((dy ^ (dy >> 31)) - (dy >> 31)) < 2) {
+            PickupType r2 = slot->m_entranceReason;
+            if (r2 > PICKUP_EQUIPPABLE_LAST) {
+                r2 = slot->m_toolId;
+            }
+            if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
+                slot->LoadGruntTypeTable(r2, 1, 0, 0);
+                slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+                this->m_defenderState = AISTATE_COOLDOWN;
+                if (this->CoordCount() == 0) {
+                    return 1;
+                }
+                CoordNode* p = this->CoordHead();
+                while (p != NULL) {
+                    CoordNode* next = p->m_next;
+                    Coord** link = &p->m_coord;
+                    p = next;
+                    if (*link != NULL) {
+                        g_coordPool.Push(*link);
+                    }
+                }
+                m_coordList.RemoveAll();
+                return 1;
+            }
+        }
+    }
+
+    reason = IDX(this->m_entranceReason);
+    if (reason > 0x16) {
+        reason = IDX(this->m_toolId);
+    }
+    if (reason == 0) {
+        if (this->CoordCount() == 0) {
+            if (this->m_defenderState != AISTATE_SEEK) {
+                return 1;
+            }
+            i32 best = INT_MAX;
+            i32 bestIdx = -1;
+            CGrunt** slots = g_gameReg->m_cmdGrid->m_grid;
+            i32 i = 0;
+            do {
+                CGrunt* sv = slots[i];
+                if (sv != NULL && sv->m_entranceCommitted != 0) {
+                    PickupType k = sv->m_entranceReason;
+                    PickupType kk = k;
+                    if (k > PICKUP_EQUIPPABLE_LAST) {
+                        kk = sv->m_toolId;
+                    }
+                    if (kk != PICKUP_NONE && kk != PICKUP_WARPSTONE && kk != PICKUP_BOMB
+                        && !(
+                            k > PICKUP_EQUIPPABLE_LAST ? (sv->m_toolId == PICKUP_WARPSTONE) : false
+                        )
+                        && sv->m_gruntKind != GRUNT_GHOST) {
+                        i32 ex = sv->m_object->m_screenX >> TILE_SHIFT_PX;
+                        i32 ddx = ex - (this->m_object->m_screenX >> TILE_SHIFT_PX);
+                        i32 ey = (sv->m_object->m_screenY >> TILE_SHIFT_PX)
+                                 - (this->m_object->m_screenY >> TILE_SHIFT_PX);
+                        i32 dist = ddx * ddx + ey * ey;
+                        if (dist < best
+                            && dist <= this->m_defenderRadius * this->m_defenderRadius) {
+                            best = dist;
+                            bestIdx = i;
                         }
-                        m_blockedVoicePending = 0;
-                        m_dwell = 0;
-                        return 1;
+                    }
+                }
+                i++;
+            } while (i < 0xf);
+            if (bestIdx != -1) {
+                this->m_arrivalCell.m_x = bestIdx;
+                CGameObject* base = slots[bestIdx]->m_object;
+                if (TileSwitch(
+                        base->m_screenX >> TILE_SHIFT_PX,
+                        base->m_screenY >> TILE_SHIFT_PX,
+                        0,
+                        this->m_arrivalFlags,
+                        1,
+                        0
+                    )
+                    != 0) {
+                    i32 by = this->m_object->m_screenY;
+                    i32 bx = this->m_object->m_screenX;
+                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    if (bx < board->right && board->left <= bx && by < board->bottom
+                        && board->top <= by) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }
             }
-            goto L8a2;
+            this->m_dwell = 0;
+            return 1;
         }
-        return 1;
-    }
+        if (this->m_defenderState != AISTATE_SEEK) {
+            return 1;
+        }
+        if (static_cast<u32>(this->m_dwell) < 0x3e9) {
+            return 1;
+        }
+        CGameObject* base =
+            g_gameReg->m_cmdGrid->m_grid[0 * TM_GRID_COLS + this->m_arrivalCell.m_x]->m_object;
+        TileSwitch(
+            base->m_screenX >> TILE_SHIFT_PX,
+            base->m_screenY >> TILE_SHIFT_PX,
+            0,
+            this->m_arrivalFlags,
+            1,
+            0
+        );
+    } else {
+        CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+        i32 atTarget = 0;
+        if (g != NULL) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
 
-    {
-        u32 dwell = static_cast<u32>(m_dwell);
-        if (dwell > 0x3e8 && m_resetApplied == 0 && m_hasExtent != 0 && dwell > 0xbb8) {
-
-            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
-
-                CWwdGameObjectA* h = m_object;
-                i32 spanX = abs(h->m_extent.right - h->m_extent.left);
-                i32 spanY = abs(h->m_extent.bottom - h->m_extent.top);
-                i32 outX = h->m_extent.left;
-                i32 outY = h->m_extent.top;
-                if (spanX != 0) {
-                    outX += rand() % spanX;
-                }
-                if (spanY != 0) {
-                    outY += rand() % spanY;
-                }
-                TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
-                i32 m328 = CoordCount();
-                if (m328 != 0) {
-                    i32 mx = spanX > spanY ? spanX : spanY;
-                    if (m328 > mx) {
-                        SetEntrancePos(1, 1);
-                    }
-                }
-            } else {
-                ResetEntranceAnimation(1, 1, 0);
-                m_arrivalRerollLo = 0;
-                m_arrivalRerollWindowLo = 0;
-                m_arrivalRerollHi = 0;
-                m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
-                m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-                m_arrivalRerollHi = 0;
+                && RectContains(x, g->m_object->m_screenY) != 0) {
+                atTarget = 1;
             }
-            m_blockedVoicePending = 1;
-            goto L8a2;
+        }
+        if (this->m_poweredUp != 0) {
+            if (this->m_neighborValid != 0) {
+                this->m_neighborValid = 0;
+                return 1;
+            }
+            if (this->m_combatActive != 0) {
+                return 1;
+            }
+            if (this->m_stamina < STAMINA_FULL) {
+                if (atTarget) {
+                    return 1;
+                }
+                if (this->m_poweredUp == 0) {
+                    return 1;
+                }
+                this->m_entranceActive = 0;
+                this->m_combatActive = 0;
+                this->m_neighborValid = 0;
+                this->m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
+                return 1;
+            }
+            if (FindGridNeighbor(1) != NULL) {
+                return 1;
+            }
+            if (atTarget && g == NULL) {
+                return 1;
+            }
+            if (this->m_poweredUp == 0) {
+                return 1;
+            }
+            if (this->m_neighborValid != 0) {
+                return 1;
+            }
+            this->m_entranceActive = 0;
+            this->m_combatActive = 0;
+            this->m_neighborValid = 0;
+            this->m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
+        }
+        this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
+        this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+        if (g == NULL || g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+            this->m_blockedVoicePending = 0;
+            return 1;
+        }
+        if (this->m_poweredUp == 0 && this->m_stamina > 99) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+
+                && RectContains(x, g->m_object->m_screenY) != 0) {
+                CommitNeighbor(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    g->m_lastTilePx.m_x,
+                    g->m_lastTilePx.m_y
+                );
+            }
+        }
+        if (static_cast<u32>(this->m_dwell) < 0x1f5) {
+            return 1;
+        }
+        if (TileSwitch(
+                g->m_object->m_screenX >> TILE_SHIFT_PX,
+                g->m_object->m_screenY >> TILE_SHIFT_PX,
+                0,
+                this->m_arrivalFlags,
+                1,
+                0
+            )
+            == 0) {
+            return 1;
+        }
+        if (this->m_blockedVoicePending != 0) {
+            i32 r = CGameLevel::PointInBounds(
+                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                this->m_object->m_screenX,
+                this->m_object->m_screenY
+            );
+            if (r != 0) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+            }
+            this->m_blockedVoicePending = 0;
+            this->m_dwell = 0;
+            return 1;
         }
     }
-    return 1;
-
-L8a2:
-    m_dwell = 0;
+    this->m_dwell = 0;
     return 1;
 }
