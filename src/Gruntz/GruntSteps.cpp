@@ -477,22 +477,22 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 // @early-stop
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
-    i32 px = x >> TILE_SHIFT_PX;
-    i32 py = y >> TILE_SHIFT_PX;
+    x >>= TILE_SHIFT_PX;
+    y >>= TILE_SHIFT_PX;
     i32 dx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
-    RECT r1;
-    r1.left = m_toyRectA.left + dx;
-    r1.top = m_toyRectA.top + dy;
-    r1.right = m_toyRectA.right + dx + 1;
-    r1.bottom = m_toyRectA.bottom + dy + 1;
+    RECT r1 = m_toyRectA;
+    r1.left += dx;
+    r1.top += dy;
+    r1.right += dx + 1;
+    r1.bottom += dy + 1;
 
-    RECT r2;
-    r2.left = m_toyRectB.left + dx;
-    r2.top = m_toyRectB.top + dy;
-    r2.right = m_toyRectB.right + dx;
-    r2.bottom = m_toyRectB.bottom + dy;
+    RECT r2 = m_toyRectB;
+    r2.left += dx;
+    r2.top += dy;
+    r2.right += dx;
+    r2.bottom += dy;
 
     if (m_vehiclePickupType == PICKUP_NONE) {
         return 0;
@@ -500,16 +500,16 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
-            if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+            if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
                 return 1;
             }
             return 0;
         }
         return 0;
     }
-    if (px < r1.right && px >= r1.left && py < r1.bottom && py >= r1.top) {
+    if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
 
-        if (px >= r2.right || px < r2.left || py >= r2.bottom || py < r2.top) {
+        if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;
         }
     }
