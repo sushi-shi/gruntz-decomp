@@ -67,9 +67,9 @@ clamps that RE-load (`right`, `top`, `bottom`) needed the statement form.
 
 `CKitchenSlime::CKitchenSlime` 0x0b23a0 — three `=dest` POLARITY rows
 (`jg`→`jle`, `jl`→`jge`, `jg`→`jle`), 96.97 → 97.60 with the branch sequences
-now AGREEING. `config/axes/kitchenslime-clamp.json` had already spent 64 cells on
-min/max **ternary** spellings and recorded NEGATIVE ("not condition-spelling
-steerable"); the statement form was the class it never enumerated.
+now AGREEING. An earlier 64-cell matrix over min/max **ternary** spellings was entirely
+negative ("not condition-spelling steerable"); the statement form was the class it never
+enumerated.
 
 Distinct from [`default-hoists-into-destination-no-jmp`](default-hoists-into-destination-no-jmp.md),
 whose "assign-then-override" applies to a two-way select with a `jmp`-joined arm

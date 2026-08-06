@@ -14,8 +14,8 @@ Two more reasons the prose is the wrong home:
   * PERCENTAGES ROT. They are a snapshot of OUR state, regenerable from
     `build/objdiff/report.json` in one command - and they go stale silently. One note
     claimed ~95.6% for a function that measured 72.33.
-  * SEARCH RECORDS BELONG IN `config/axes/*.json`. A manifest records exactly which
-    spellings were ruled out and can be re-run; prose cannot.
+  * SEARCH RESULTS BELONG IN `docs/patterns/` once they establish a reusable rule or
+    falsify one. Transient permutation matrices are working state, not configuration.
 
 WHAT IS DELETED. Only the contiguous `//` comment lines BETWEEN `// @early-stop` and the
 next non-comment line (normally the `RVA(...)` pin). Nothing else.

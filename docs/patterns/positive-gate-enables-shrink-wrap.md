@@ -379,8 +379,8 @@ return form on both sides.
 ```
 
 The loop body is **byte-identical** (including the `neg/sbb/and` null-mask landing in eax);
-only the prologue placement differs. A 4-cell matrix over the guard
-(`config/axes/freesamples.json`) refutes the rule here:
+only the prologue placement differs. A 4-cell matrix over the guard refutes the rule
+here:
 
 | spelling | score |
 |---|---|
@@ -396,8 +396,8 @@ gate was never the variable.
 **The screen.** Its sibling `DSoundCloneInst::GetItem` @0x135d70 needs the OPPOSITE shrink-wrap
 decision (retail saves only `edi` at entry and defers `push esi`/`push ebx` past the guard,
 where cl pushes all three up front) from the *same* guard shape, and all four of its guard
-spellings tie at 90.31 (`config/axes/getitem.json`). Two functions in one TU, one guard shape,
-opposite required outcomes ⇒ the decision is the allocator's, not the source's.
+spellings tie at 90.31. Two functions in one TU, one guard shape, opposite required outcomes
+⇒ the decision is the allocator's, not the source's.
 
 So before reaching for the positive form, check that retail's exit actually lands **below** a
 `pop` (the proof quoted at the top of this doc). If retail's early exit pops *everything*, the

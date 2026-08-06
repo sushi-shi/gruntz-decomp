@@ -71,13 +71,17 @@ Enumerate every suspect SITE and every legal SPELLING per site, put the whole fa
 one manifest, and score the product in one run:
 
 ```bash
-python -m gruntz.permute.batch_source_variants config/axes/<fn>.json --top 10 --output /tmp/<fn>-out
+python -m gruntz.permute.batch_source_variants /tmp/<fn>-axes.json --top 10 --output /tmp/<fn>-out
 ```
 
 Use `batch_source_variants` directly when the axes are hand-authored - it runs only the
 manifest. (`match_variants --axes-from` also emits AST mutations, which can overlap a
 hand-authored axis and abort the run with `axis <name> overlaps an edit in candidate ...`;
 `--max-depth 0` suppresses them where the flag is supported.)
+
+Treat the manifest as transient working state. Preserve the measured result and reusable
+rule in this pattern document, rather than accumulating completed search matrices under
+`config/`.
 
 `find` spans must be **globally unique in the file**. In a file of near-identical
 siblings there may be no unique line in the region you care about - anchor the axis on
