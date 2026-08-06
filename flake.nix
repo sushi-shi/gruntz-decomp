@@ -323,21 +323,19 @@
           # piping (e.g. gruntz status ... --json | jq).
           echo "[gruntz] target EXE : $GRUNTZ_EXE" >&2
           echo "[gruntz] MSVC 5.0   : $MSVC_DIR/bin/cl.exe   (run under wine)" >&2
-          echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), ghidra, llvm-pdbutil (analysis + delink + objdiff)" >&2
+          echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), llvm-pdbutil; ghidra is optional" >&2
           echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
           echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
           echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
           echo "[gruntz] shell      : ONE shell - 'nix develop' (== '.#build'); everything (analysis + build/init) is here" >&2
           ${nvimShimHook}
-          # `gruntz init` is idempotent - run it on startup (set GRUNTZ_SKIP_INIT=1
-          # to skip, e.g. when you only need clang/ghidra_metadata_generate and not the Ghidra DB).
-          # First run builds the local env incl. the Ghidra DB (minutes); afterwards
-          # the heavy Ghidra step self-skips (exports present), so it is a fast no-op.
+          # `gruntz init` is idempotent and Ghidra-free; run it on startup.
+          # Set GRUNTZ_SKIP_INIT=1 when even the cheap configure/toolchain check is unwanted.
           if [ -n "$GRUNTZ_SKIP_INIT" ]; then
             echo "[gruntz] init       : skipped (GRUNTZ_SKIP_INIT set)" >&2
           else
-            if [ ! -f "$GRUNTZ_DIR/build/ghidra-enrich/exports/functions.csv" ]; then
-              echo "[gruntz] init       : first-time setup - building the Ghidra DB (~minutes) ..." >&2
+            if [ ! -f "$GRUNTZ_DIR/build.ninja" ]; then
+              echo "[gruntz] init       : first-time local setup ..." >&2
             fi
             python3 -m gruntz init \
               || echo "[gruntz] init       : failed - fix + re-run 'gruntz init'" >&2

@@ -1,8 +1,7 @@
 """gruntz.core.symbols - the rva<->name database, loaded once.
 
-Merges build/gen/symbol_names.csv (matched src/ names + units + sizes - the
-reconstructed authority) with the Ghidra exports (functions.csv boundaries,
-symbols.csv labels), plus demangled aliases (`CClass::Member`, bare `Member`,
+Merges source-derived names with the tracked retail function boundaries, plus
+demangled aliases (`CClass::Member`, bare `Member`,
 ctor/dtor spellings). Owns size-bounded owner attribution and name->rva
 resolution. Get one via gruntz.core.get_context().symbols.
 """
@@ -11,10 +10,10 @@ import csv
 import sys
 
 from gruntz.core.pe import ILT_HI, ILT_LO, REPO
+from gruntz.core.retail_functions import FUNCTIONS, read as read_retail_functions
 
 SYMCSV = REPO / "build/gen/symbol_names.csv"
-FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
-GSYMS = REPO / "build/ghidra-enrich/exports/symbols.csv"
+FUNCS = FUNCTIONS
 
 
 # special member codes we can still attribute to a class (ctor/dtor/deleting
@@ -78,7 +77,7 @@ def owner(rva, fstarts, fsize):
 
 def _psize(x):
     """Parse a size cell -> int bytes or None. symbol_names is hex (0x2e),
-    functions.csv is decimal (46); int(_, 0) reads both. 0/blank -> None."""
+    tracked/source sizes may be decimal (46) or hex (0x2e). 0/blank -> None."""
     x = str(x).strip()
     if not x:
         return None
@@ -91,8 +90,8 @@ def _psize(x):
 class SymbolDb:
     """names: rva -> (name, unit); kind: rva -> symbol_names kind; byname: exact
     names -> rva (int) and demangled aliases -> {rva,...}; fstarts/fsize: recovered
-    function starts + byte sizes (symbol_names sizes win); gsyms: ghidra symbol
-    labels (secondary, for data/table naming)."""
+    function starts + byte sizes (symbol_names sizes win); gsyms: source-derived
+    data labels."""
 
     def __init__(self):
         names, kind, fsize, starts, byname, gsyms = {}, {}, {}, set(), {}, {}
@@ -111,30 +110,14 @@ class SymbolDb:
                         if sz:
                             fsize[rva] = sz
         if FUNCS.exists():
-            with open(FUNCS) as f:
-                for r in csv.DictReader(f):
-                    try:
-                        rva = int(r["entry_rva"], 16)
-                    except Exception:
-                        continue
-                    starts.add(rva)
-                    if rva not in fsize:   # symbol_names size wins
-                        sz = _psize(r.get("byte_size", ""))
-                        if sz:
-                            fsize[rva] = sz
-                    names.setdefault(rva, (r["name"], "ghidra"))
-                    byname.setdefault(r["name"], rva)
-        if GSYMS.exists():
-            with open(GSYMS) as f:
-                for r in csv.DictReader(f):
-                    a = r.get("address_rva", "")
-                    try:
-                        rva = int(a, 16) if not a.startswith("0x-") else -int(a[3:], 16)
-                    except Exception:
-                        continue
-                    if rva not in gsyms or r.get("is_primary") == "1":
-                        gsyms[rva] = r["name"]
-                    byname.setdefault(r["name"], rva)
+            for r in read_retail_functions(FUNCS):
+                rva = r["rva"]
+                starts.add(rva)
+                fsize.setdefault(rva, r["size"])
+                names.setdefault(rva, (r["name"], "retail"))
+        for rva, (name, _unit) in names.items():
+            if kind.get(rva) == "data":
+                gsyms[rva] = name
         for rva, (nm, _u) in names.items():
             byname.setdefault(nm, rva)
         # demangled aliases: `CClass::Member` and bare `Member` resolve too. An alias
@@ -159,7 +142,7 @@ class SymbolDb:
                 elif isinstance(cur, set):
                     cur.add(rva)
                 elif not alias.startswith("?"):
-                    byname[alias] = {cur, rva}  # ghidra flat name (often the ILT
+                    byname[alias] = {cur, rva}  # another flat name (often the ILT
                     #                     thunk) + the body: surface both as candidates
         self.names, self.kind, self.byname = names, kind, byname
         self.fstarts, self.fsize, self.gsyms = sorted(starts), fsize, gsyms
@@ -173,7 +156,7 @@ class SymbolDb:
         return f"0x{rva:08x} {nm} [{unit}]"
 
     def resolve(self, arg):
-        """RVA for a hex string / exact mangled / ghidra / `CClass::Member` / bare
+        """RVA for a hex string / exact mangled / `CClass::Member` / bare
         `Member` name. Ambiguity or a miss exits with the candidate list (rc=2)."""
         try:
             return int(arg, 16)
@@ -181,8 +164,8 @@ class SymbolDb:
             pass
         hit = self.byname.get(arg)
         if hit is None:
-            print(f"[symbols] '{arg}' not an RVA and not found in symbol_names/"
-                  f"functions.csv (exact mangled, ghidra, `CClass::Member` and bare "
+            print(f"[symbols] '{arg}' not an RVA and not found in the source/retail "
+                  f"inventory (exact mangled, `CClass::Member` and bare "
                   f"`Member` names resolve)", file=sys.stderr)
             sys.exit(2)
         if isinstance(hit, int):
@@ -221,7 +204,7 @@ class SymbolDb:
         return self.name_of(rva)[0].startswith("thunk_")
 
     def is_matched(self, rva):
-        """Reconstructed in src/ (a real symbol_names unit), vs a ghidra-only /
+        """Reconstructed in src/ (a real symbol_names unit), vs a retail-only /
         FUN_ body not matched yet (the attribution frontier)."""
         nm, unit = self.name_of(rva)
-        return unit not in ("", "?", "ghidra") and not nm.startswith("FUN_")
+        return unit not in ("", "?", "retail") and not nm.startswith("FUN_")

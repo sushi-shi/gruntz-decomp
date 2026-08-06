@@ -38,14 +38,13 @@ def _disasm(ctx, rva, size):
 
 
 def _resolve_name(ctx, rva):
-    """Best label for a reloc target: ghidra symbol, then any known fn name."""
+    """Best source-derived label for a relocation target."""
     db = ctx.symbols
     return db.gsyms.get(rva) or db.names.get(rva, (None,))[0]
 
 
 def _boundary(ctx, rva):
-    """(name, size) for the fn at `rva`: ghidra boundary first, the src RVA()+size
-    claim as the authority for functions Ghidra never carved."""
+    """(name, size) from the source overlay plus admitted retail boundary."""
     db = ctx.symbols
     nm, unit = db.names.get(rva, (None, None))
     size = db.fsize.get(rva, 0)
@@ -61,7 +60,7 @@ def dump_text(ctx, target, no_disasm=False) -> str:
     out = [f"\n{'=' * 72}\n{name}  @ RVA 0x{rva:06x}  (VA 0x{rva + IMAGEBASE:08x})  "
            f"size {size} B\n{'=' * 72}"]
     if size == 0:
-        out.append("  (no boundary in functions.csv / symbol_names.csv — recovery gap; "
+        out.append("  (no boundary in functions.tsv / symbol_names.csv — recovery gap; "
                    "size unknown)")
         return "\n".join(out)
     rl = []

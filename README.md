@@ -110,16 +110,12 @@ and the VC5 toolchain) automatically and exports `$GRUNTZ_EXE`.
 **2. Build the local environment (one-time; auto-run on shell entry).**
 
 ```sh
-gruntz init          # Wine prefix + clangd DB + Ghidra project
+gruntz init          # Wine prefix + clangd DB; cheap after initial setup
 ```
 
-`gruntz init` creates the imperative state Nix does not: the Wine prefix, the clangd
-compile DB, and the **Ghidra project** (import + auto-analyze `GRUNTZ.EXE`). Cold it
-is ~2–3 min; it is idempotent and self-skips once the Ghidra exports exist. How the
-*named* Ghidra DB is populated — name precedence (`src` > FID > Ghidra), byte-exact
-stack locals, and incremental `gruntz ghidra-refresh` — is detailed in
-[Populating the Ghidra database](#populating-the-ghidra-database)
-below; **read that section first** if you plan to touch names.
+`gruntz init` creates the Wine prefix and clangd compile DB. The build and delink
+never create or read a Ghidra database. Run `gruntz ghidra-refresh` explicitly only
+when an optional disposable decompiler viewer is useful.
 
 **3. Run the matching loop.**
 
@@ -152,13 +148,6 @@ this member, which vtable slot). See
 + CLI in depth), [`.claude/agents/matcher.md`](.claude/agents/matcher.md) (the matching
 doctrine). Run `gruntz status` for the live match state.
 
-> **Known issue (cold `gruntz init` only):** the struct-metadata step (`gruntz structs`,
-> a clang AST-dump that feeds Ghidra) currently fails on `src/Dsndmgr/DirectSoundMgr.cpp`
-> — the LSP compile-DB include order lets the toolchain `dsound.h` shadow the vendored
-> `dx/Include` one, so `DSBLOCK_ENTIREBUFFER` is undeclared (fix tracked separately). A
-> warm/seeded Ghidra DB skips this step, so `gruntz init` and `gruntz build` are
-> unaffected on an already-analyzed checkout.
-
 ## Formatting
 
 The reconstructed C++ follows a **Rust-like clang-format style** (root
@@ -171,13 +160,11 @@ as a CI gate. **`vendor/` is kept verbatim and never formatted.** See
 
 ## The pipeline
 
-**Target side** — built **once** and cached in `build/`. The retail EXE never
-changes, so Ghidra is **not** re-analysed per iteration (this whole leg is skipped
-on an incremental `gruntz build`):
+**Target side** — rebuilt only when source labels or the tracked retail inventory change:
 
 ```
-GRUNTZ.EXE → Ghidra (auto-analyse + RTTI + FLIRT + import leaked names)
-           → fake PDB  (synth_pdb.py: llvm-pdbutil yaml2pdb over the Ghidra exports + a DBI-header patch)
+GRUNTZ.EXE + config/retail/functions.tsv + source labels
+           → fake PDB  (synth_pdb.py: tracked functions + PE relocation targets)
            → vostok-delinker  → per-symbol COFF "target" objects
 ```
 
@@ -191,20 +178,15 @@ edit C++ in src/  →  compile "base" objs (MSVC 5.0 under Wine)
 
 ## Populating the Ghidra database
 
-The delink needs a **named** Ghidra DB (`build/ghidra-named`). It is built + enriched
-by two commands (both under `nix develop .#build`):
-
-- **`gruntz init`** — cold, one-time: imports + auto-analyzes `GRUNTZ.EXE` (several
-  minutes, Aggressive Instruction Finder on), then runs the enrichment + export.
-- **`gruntz ghidra-refresh`** — incremental: regenerates `build/gen/*` (incl.
-  `locals.json`) and re-runs the enrichment (`apply.py`) + export on the
-  already-analyzed DB (`--no-analyze`), so the labels reflect the latest `src/`.
+Ghidra is an optional viewer, not pipeline state. `gruntz ghidra-refresh` creates it
+on first use, enforces `config/retail/functions.tsv`, and applies generated names,
+types, enums, and byte-exact locals. Later refreshes skip auto-analysis. Nothing is
+exported back into delinking, matching, status, or gates.
 
 **Names come from three layers, in precedence order (`src/` is the source of truth):**
 
 1. **`src/` `RVA()`/`DATA()` macros** → `build/gen/symbol_names.csv`: the authority.
-   A `src`-claimed RVA always gets the `src` name — it wins over FID **and** Ghidra's
-   own analysis/demangler.
+   A `src`-claimed RVA always gets the `src` name.
 2. **`config/retail/library_labels.csv`** (FID HIGH/MED/AMBIG; LOW is skipped as noise):
    library labels for everything `src/` does **not** claim.
 3. **byte-exact (100%-matched) functions** additionally get their **stack locals**

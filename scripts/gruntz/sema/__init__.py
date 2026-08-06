@@ -4,7 +4,7 @@ subcommand (browse this directory to see every tool):
     xref.py         retail caller/callee graph        (in-process over core)
     disasm.py       target/base/rich/diff disassembly (dump_target + llvm-objdump)
     dump_target.py  retail fn dump: bytes+disasm+relocs (in-process over core)
-    rva.py          address dossier (claim/lib/ghidra/%) (in-process over core)
+    rva.py          address dossier (claim/lib/retail boundary/%) (in-process over core)
     strings.py      per-fn string set / reverse find  (in-process over core)
     match.py        per-function/unit match summary   (in-process: match/status)
     classof.py      class vtable slots / fn->slot     (in-process: vtable_hierarchy)

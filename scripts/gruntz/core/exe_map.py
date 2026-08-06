@@ -7,8 +7,8 @@ an EH funclet / a linker jump thunk / still-unknown), and where the GAPS between
 functions are.
 
 Data sources (all products of `gruntz build`):
-  build/ghidra-enrich/exports/functions.csv - every carved fn (entry_rva,byte_size,
-      name); the master ORDERED list of the .text function layout.
+  config/retail/functions.tsv               - admitted function starts/extents;
+      the master ordered list of the .text function layout.
   build/gen/symbol_names.csv                 - what src/ CLAIMS (rva->mangled,unit):
       the "owned by a TU" set, regenerated every build from the `RVA()` annotations.
   config/retail/library_labels.csv           - FID-identified CRT/MFC/zlib/EH library
@@ -50,7 +50,7 @@ from gruntz.core.function_universe import classify as classify_function_universe
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-FUNCS_CSV = REPO / "build/ghidra-enrich/exports/functions.csv"
+FUNCS_CSV = REPO / "config/retail/functions.tsv"
 UNITS_TOML = REPO / "config/units.toml"
 
 # FID `lib` column -> our category. NAFXCW is the static MFC lib; LIBCMT/LIBCIMT the
@@ -150,7 +150,7 @@ def load():
     """Build the ordered, classified function list.
 
     Returns (funcs, meta) where funcs is a list of records sorted by rva:
-      {rva,end,size,ghidra_name,category,tag,name,owner,unit,source,lib,confidence}
+      {rva,end,size,retail_name,category,tag,name,owner,unit,source,lib,confidence}
     and meta carries text bounds + the unit->source table + FID/symbol maps."""
     if not FUNCS_CSV.is_file():
         raise SystemExit("missing %s - run `gruntz build` first" % FUNCS_CSV)
@@ -160,27 +160,27 @@ def load():
 
     funcs = []
     for row in universe:
-        rva, sz, gname = row["rva"], row["size"], row["ghidra_name"]
-        rec = {"rva": rva, "size": sz, "end": rva + sz, "ghidra_name": gname,
-               "unit": "", "source": "", "lib": "", "confidence": "", "name": gname}
+        rva, sz, rname = row["rva"], row["size"], row["retail_name"]
+        rec = {"rva": rva, "size": sz, "end": rva + sz, "retail_name": rname,
+               "unit": "", "source": "", "lib": "", "confidence": "", "name": rname}
 
         if row["category"] == "target" and row["claimed"]:
             cat = "unit"
             rec["unit"] = row["unit"]
             rec["source"] = units.get(row["unit"], "")
-            rec["name"] = row["source_name"] or gname
+            rec["name"] = row["source_name"] or rname
         elif row["category"] == "target":
             cat = "unknown"
         elif row["category"] == "thunk":
             cat = "thunk"
         elif row["category"] == "compiler":
             cat = "compiler"
-            rec["name"] = row["role"] or gname
+            rec["name"] = row["role"] or rname
         elif row["category"] == "library":
             cat = LIB_CATEGORY.get(row["lib"], "crt")
             rec["lib"] = row["lib"]
             rec["confidence"] = row["confidence"]
-            rec["name"] = row["source_name"] or gname
+            rec["name"] = row["source_name"] or rname
         elif row["category"] == "eh":
             cat = "eh"
         else:
@@ -495,7 +495,7 @@ def cmd_units(funcs, meta, args):
 
 def cmd_find(funcs, meta, args):
     rx = re.compile(args.pattern, re.I)
-    sel = [r for r in funcs if rx.search(r["name"]) or rx.search(r["ghidra_name"])]
+    sel = [r for r in funcs if rx.search(r["name"]) or rx.search(r["retail_name"])]
     if args.json:
         print(json.dumps([_json_rec(r) for r in sel], indent=2))
         return
@@ -505,7 +505,7 @@ def cmd_find(funcs, meta, args):
 
 def _json_rec(r):
     return {k: r[k] for k in ("rva", "size", "end", "category", "name",
-                              "ghidra_name", "unit", "source", "lib", "confidence")}
+                              "retail_name", "unit", "source", "lib", "confidence")}
 
 
 def main(argv=None):

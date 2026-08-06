@@ -14,7 +14,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 MANIFEST = REPO / "config" / "units.toml"
 GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 REPORT = REPO / "build" / "objdiff" / "report.json"
-GHIDRA_FUNCTIONS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+RETAIL_FUNCTIONS = REPO / "config" / "retail" / "functions.tsv"
 
 
 def die(msg: str) -> None:

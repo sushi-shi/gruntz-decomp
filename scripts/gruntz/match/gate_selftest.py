@@ -115,44 +115,37 @@ class TestFunctionUniverse(unittest.TestCase):
     def test_every_filter_uses_typed_source_claims_and_tracked_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / "build/ghidra-enrich/exports").mkdir(parents=True)
             (root / "build/gen").mkdir(parents=True)
             (root / "config/retail").mkdir(parents=True)
-            (root / "build/ghidra-enrich/exports/functions.csv").write_text(
-                "entry_rva,byte_size,name\n"
-                "0x1000,8,data_at_code\n"
-                "0x1100,8,source_function\n"
-                "0x1200,10,FUN_1200\n"
-                "0x1300,20,library_high\n"
-                "0x1400,20,library_low\n"
-                "0x1500,8,Unwind@1500\n"
-                "0x1600,5,thunk_FUN_1600\n"
-                "0x1700,5,named_forward\n")
+            (root / "config/retail/functions.tsv").write_text(
+                "rva\tsize\tkind\n"
+                "0x8100\t8\t\n0x8200\t8\t\n0x8300\t10\t\n0x8400\t20\t\n"
+                "0x8500\t20\t\n0x8600\t8\teh\n0x1600\t5\tthunk\n0x8700\t5\t\n")
             (root / "build/gen/symbol_names.csv").write_text(
                 "rva,name,unit,size,kind\n"
-                "0x1000,data_label,u,,data\n"
-                "0x1100,source_function,u,0x8,func\n")
+                "0x8100,data_label,u,,data\n"
+                "0x8200,source_function,u,0x8,func\n")
             (root / "config/retail/library_labels.csv").write_text(
                 "rva,name,lib,confidence,source\n"
-                "0x1300,library_high,LIBCMT,HIGH,test\n"
-                "0x1400,library_low,LIBCMT,LOW,test\n")
+                "0x8400,library_high,LIBCMT,HIGH,test\n"
+                "0x8500,library_low,LIBCMT,LOW,test\n")
             (root / "config/retail/compiler-generated-functions.tsv").write_text(
-                "0x00001200\t0xa\t_$E1\tu\ttest\n")
+                "0x00008300\t0xa\t_$E1\tu\ttest\n")
             (root / "config/retail/compiler-helper-functions.tsv").write_text(
-                "0x00001700\t0x5\t0x00001800\tforward\ttest\n")
+                "0x00008700\t0x5\t0x00008800\tforward\ttest\n")
 
             rows, meta = function_universe.classify(root, strict=False)
             cats = {row["rva"]: (row["category"], row["claimed"]) for row in rows}
-            self.assertEqual(cats[0x1000], ("target", False))
-            self.assertEqual(cats[0x1100], ("target", True))
-            self.assertEqual(cats[0x1200], ("compiler", False))
-            self.assertEqual(cats[0x1300], ("library", False))
-            self.assertEqual(cats[0x1400], ("target", False))
-            self.assertEqual(cats[0x1500], ("eh", False))
+            self.assertEqual(cats[0x8100], ("target", False))
+            self.assertEqual(cats[0x8200], ("target", True))
+            self.assertEqual(cats[0x8300], ("compiler", False))
+            self.assertEqual(cats[0x8400], ("library", False))
+            self.assertEqual(cats[0x8500], ("target", False))
+            self.assertEqual(cats[0x8600], ("eh", False))
             self.assertEqual(cats[0x1600], ("thunk", False))
-            self.assertEqual(cats[0x1700], ("compiler", False))
+            self.assertEqual(cats[0x8700], ("compiler", False))
             self.assertEqual([row["rva"] for row in meta["unmatched"]],
-                             [0x1000, 0x1400])
+                             [0x8100, 0x8500])
 
 
 # --------------------------------------------------------------------------- #
@@ -181,7 +174,7 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
     def test_curated_body_name_propagates_through_leading_ilt_thunk(self):
         with tempfile.TemporaryDirectory() as tmp:
             exe = Path(tmp) / "tiny.exe"
-            functions = Path(tmp) / "functions.csv"
+            functions = Path(tmp) / "functions.tsv"
 
             image = bytearray(0x400)
             struct.pack_into("<I", image, 0x3C, 0x80)
@@ -194,8 +187,8 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
             struct.pack_into("<i", image, 0x201, 0x2000 - (0x1000 + 5))
             exe.write_bytes(image)
             functions.write_text(
-                "entry_rva,byte_size,name\n"
-                "0x1000,5,stale_ghidra_name\n"
+                "rva\tsize\tkind\n"
+                "0x1000\t5\t\n"
             )
 
             saved_bounds = synth_pdb.TEXT_BASE, synth_pdb.TEXT_END

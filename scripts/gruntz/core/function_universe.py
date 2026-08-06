@@ -1,6 +1,6 @@
-"""Authoritative classification of every carved retail ``.text`` function.
+"""Authoritative classification of every admitted retail ``.text`` function.
 
-Ghidra supplies boundaries, not ownership.  This module joins those boundaries
+The tracked retail table supplies boundaries, not ownership. This module joins them
 to source function claims, tracked library identities, compiler-private helper
 evidence, and the retail opcodes used to recognize linker/import thunks.  Every
 consumer of the full-engine denominator must use this module so the filters
@@ -15,6 +15,8 @@ import struct
 from pathlib import Path
 
 from gruntz.core.library_labels import active_rows
+from gruntz.core.pe import ILT_HI, ILT_LO
+from gruntz.core.retail_functions import read as read_retail_functions
 
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
@@ -27,25 +29,8 @@ def _rint(value: str) -> int:
 
 
 def _functions(path: Path) -> list[dict]:
-    rows = []
-    with path.open(newline="") as stream:
-        for row in csv.DictReader(stream):
-            try:
-                rva = _rint(row["entry_rva"])
-                size = int(row["byte_size"])
-            except (KeyError, ValueError):
-                continue
-            if row.get("in_text", "1") != "1":
-                continue
-            rows.append({
-                "rva": rva,
-                "size": size,
-                "ghidra_name": row.get("name", ""),
-                "is_thunk": row.get("name", "").startswith("thunk_")
-                or row.get("is_thunk", "0") == "1",
-            })
-    rows.sort(key=lambda row: row["rva"])
-    return rows
+    return [{**row, "retail_name": row["name"], "is_thunk": row["kind"] == "thunk"}
+            for row in read_retail_functions(path)]
 
 
 def _source_functions(path: Path) -> dict[int, dict]:
@@ -141,7 +126,7 @@ def _pe_reader(exe: Path):
 def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dict]:
     """Return the classified function rows and universe metadata."""
     repo = Path(repo)
-    funcs_path = repo / "build/ghidra-enrich/exports/functions.csv"
+    funcs_path = repo / "config/retail/functions.tsv"
     if not funcs_path.is_file():
         raise FileNotFoundError(funcs_path)
     rows = _functions(funcs_path)
@@ -157,7 +142,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
         for rva, helper in helpers.items():
             row = by_rva.get(rva)
             if row is None:
-                raise ValueError(f"compiler helper 0x{rva:08x} is not a Ghidra function")
+                raise ValueError(f"compiler helper 0x{rva:08x} is not in the retail inventory")
             if row["size"] != helper["size"]:
                 raise ValueError(
                     f"compiler helper 0x{rva:08x} size {row['size']}, "
@@ -172,7 +157,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
                         f"compiler helper 0x{rva:08x} jumps to 0x{target:08x}, "
                         f"expected 0x{helper['target_rva']:08x}")
 
-    ilt_end = min((row["rva"] for row in rows if row["size"] > 5), default=0)
+    ilt_end = ILT_HI
     iat = set()
     if read is not None:
         for row in rows:
@@ -183,7 +168,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
                 iat.add(row["rva"])
 
     for row in rows:
-        rva, size, name = row["rva"], row["size"], row["ghidra_name"]
+        rva, size, name = row["rva"], row["size"], row["retail_name"]
         row.update({"category": "target", "claimed": False, "unit": "",
                     "source_name": "", "lib": "", "confidence": "",
                     "role": "", "evidence": ""})
@@ -192,9 +177,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
             row.update({"category": "target", "claimed": True,
                         "unit": (info.get("unit") or "").strip(),
                         "source_name": (info.get("name") or "").strip()})
-        elif rva < ilt_end or row["is_thunk"] or rva in iat \
-                or (size <= 7 and (name.startswith("FUN_")
-                                    or name.startswith("Unmatched_"))):
+        elif ILT_LO <= rva < ilt_end or row["is_thunk"] or rva in iat:
             row["category"] = "thunk"
         elif rva in helpers:
             row.update({"category": "compiler", **helpers[rva]})
@@ -211,7 +194,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
             row.update({"category": "library", "lib": (info.get("lib") or "").strip(),
                         "confidence": (info.get("confidence") or "").strip(),
                         "source_name": (info.get("name") or "").strip()})
-        elif name.startswith("Unwind@"):
+        elif row["kind"] == "eh":
             row["category"] = "eh"
 
     counts = {}

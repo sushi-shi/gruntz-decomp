@@ -179,29 +179,19 @@ def load_exact(path):
     return exact
 
 
-def load_ghidra_functions(path):
-    """rva -> (size, name) from ghidra functions.csv."""
-    m = {}
-    if not Path(path).exists():
-        return m
-    with open(path, newline="") as f:
-        for row in csv.DictReader(f):
-            m[int(row["entry_rva"], 16)] = (int(row["byte_size"]), row["name"])
-    return m
+def load_retail_functions():
+    """rva -> (size, generic name) from the admitted retail inventory."""
+    from gruntz.core.retail_functions import read
+    return {row["rva"]: (row["size"], row["name"]) for row in read()}
 
 
-def load_ghidra_symbols(path):
-    """rva -> name from ghidra symbols.csv (data/strings)."""
-    m = {}
-    if not Path(path).exists():
-        return m
-    with open(path, newline="") as f:
-        for row in csv.DictReader(f):
-            a = row["address_rva"]
-            if a.startswith("0x-"):
-                continue
-            m.setdefault(int(a, 16), row["name"])
-    return m
+def load_source_symbols(path):
+    """rva -> source-derived name for both functions and data."""
+    out = {}
+    if Path(path).is_file():
+        for row in csv.DictReader(open(path, newline="")):
+            out[int(row["rva"], 16)] = row["name"]
+    return out
 
 
 # --- classification (engine vs library, for the report only) -----------------
@@ -236,8 +226,6 @@ def main():
     ap.add_argument("--base-dir", default=str(REPO / "build/objdiff/base"))
     ap.add_argument("--exe", default=str(REPO / "build/exe/GRUNTZ.EXE"))
     ap.add_argument("--names", default=str(REPO / "build/gen/symbol_names.csv"))
-    ap.add_argument("--gh-funcs", default=str(REPO / "build/ghidra-enrich/exports/functions.csv"))
-    ap.add_argument("--gh-syms", default=str(REPO / "build/ghidra-enrich/exports/symbols.csv"))
     ap.add_argument("--report", default=str(REPO / "build/objdiff/report.json"),
                     help="objdiff report.json; correlate only from fuzzy-100 callers.")
     ap.add_argument("--out", help="write the full inventory as TSV here too.")
@@ -247,8 +235,8 @@ def main():
     exe = Exe(Path(args.exe))
     names = load_symbol_names(args.names)
     exact = load_exact(args.report)
-    gh_funcs = load_ghidra_functions(args.gh_funcs)
-    gh_syms = load_ghidra_symbols(args.gh_syms)
+    gh_funcs = load_retail_functions()
+    gh_syms = load_source_symbols(args.names)
 
     objs = sorted(Path(args.base_dir).glob("*.obj"))
     coffs = [(o, Coff(o)) for o in objs]

@@ -31,9 +31,10 @@ The four measurements it consolidates (2026-07-10 investigation):
     fall out as the MOVE list; units with core presence in several intervals are
     conflated (SPLIT list); multi-core intervals are MERGE groups.
 
-Inputs: $GRUNTZ_EXE, build/gen/symbol_names.csv, build/ghidra-enrich exports (via
-gruntz.core.exe_map), flags.json, and optionally demo_oracle.json (from
-demo_oracle.py; skipped cleanly if absent). Run under `nix develop`."""
+Inputs: $GRUNTZ_EXE, build/gen/symbol_names.csv,
+config/retail/functions.tsv (via gruntz.core.exe_map), flags.json, and optionally
+demo_oracle.json (from demo_oracle.py; skipped cleanly if absent). Run under
+`nix develop`."""
 import bisect
 import csv
 import json

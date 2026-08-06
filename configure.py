@@ -119,8 +119,7 @@ COMPDB = "build/clangd/compile_commands.json"
 
 # Target (delink) inputs.
 EXE = "build/exe/GRUNTZ.EXE"
-FUNCTIONS = "build/ghidra-enrich/exports/functions.csv"
-SYMBOLS = "build/ghidra-enrich/exports/symbols.csv"
+FUNCTIONS = "config/retail/functions.tsv"
 
 # Out-dir layout (under build/, git-ignored).
 OBJDIFF_DIR = "build/objdiff"
@@ -326,13 +325,13 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         delink_stamp = f"{OBJDIFF_DIR}/.delink.stamp"
         w.rule("delink",
                command=(f"{PY} {DELINK} --exe {EXE} --functions {FUNCTIONS} "
-                        f"--symbols {SYMBOLS} --names-map {GEN_NAMES} "
+                        f"--names-map {GEN_NAMES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
                         f"--target-dir {TARGET_DIR} --stamp {delink_stamp} {unit_args}"),
                description="delink GRUNTZ.EXE -> target objs")
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
         w.build(delink_stamp, "delink",
-                inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
+                inputs=[EXE, FUNCTIONS, GEN_NAMES],
                 # data_manifest.py (+ the data_audit PE classifier it imports):
                 # delink.py regenerates the data/section manifests in-process on every
                 # run, so editing either must re-delink too - otherwise objdiff keeps

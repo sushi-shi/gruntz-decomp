@@ -3,7 +3,7 @@ imported by more than one package lives here.
 
     pe.py            the retail EXE parsed once: sections, relocs, ILT band,
                      the whole-.text call index, the string table
-    symbols.py       the rva<->name db: symbol_names + ghidra + demangled
+    symbols.py       the rva<->name db: source + retail inventory + demangled
                      aliases, size-bounded owner attribution, name resolution
     report.py        the objdiff report.json accessor
     vtable_scan.py   recover every vtable in the EXE (gates/sema/build import it)

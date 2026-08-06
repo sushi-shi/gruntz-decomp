@@ -28,7 +28,7 @@ from pathlib import Path
 from gruntz.core.function_universe import classify as classify_function_universe
 
 REPO = Path(__file__).resolve().parents[3]
-FUNCS_CSV = REPO / "build/ghidra-enrich/exports/functions.csv"
+FUNCS_CSV = REPO / "config/retail/functions.tsv"
 SYM_CSV = REPO / "build/gen/symbol_names.csv"
 
 
@@ -59,7 +59,7 @@ def unmatched_targets():
     """The shared universe's genuine targets with no source function claim."""
     _rows, meta = classify_function_universe(REPO)
     code_syms = _load_code_symbols()
-    out = [(row["rva"], row["size"], row["ghidra_name"])
+    out = [(row["rva"], row["size"], row["retail_name"])
            for row in meta["unmatched"]]
     return out, code_syms
 
@@ -93,7 +93,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if not FUNCS_CSV.is_file():
-        print("error: Ghidra export missing; run a build first.", file=sys.stderr)
+        print("error: tracked retail function inventory is missing.", file=sys.stderr)
         return 1
 
     targets, code_syms = unmatched_targets()

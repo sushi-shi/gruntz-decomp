@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesize a fabricated PDB for vostok-delinker from the Ghidra inventory.
+"""Synthesize a fabricated PDB for vostok-delinker from tracked retail data.
 
 No real PDB exists for Gruntz (1999); this builds one good enough for the
 delinker (srp-survarium/vostok-delinker) to slice GRUNTZ.EXE into per-symbol
@@ -7,8 +7,8 @@ COFF .obj files. It is a preservation / matching-decompilation tool for a
 binary the project owns.
 
 Pipeline:
-  1. Read build/ghidra/exports/functions.csv (.text functions w/ sizes) and
-     symbols.csv (.rdata constants, .data statics).
+  1. Read config/retail/functions.tsv and derive relocation-target data symbols
+     directly from the retail PE.
   2. Emit an llvm-pdbutil yaml2pdb YAML description:
        - one DBI module whose symbol stream holds S_GPROC32 (function,
          section:offset, code length) + S_LDATA32 (rdata/data) records.
@@ -36,6 +36,7 @@ import csv
 from pathlib import Path as _Path
 
 from gruntz.core.library_labels import active_rows as library_active_rows
+from gruntz.core.retail_functions import read as read_retail_functions
 
 REPO = _Path(__file__).resolve().parents[3]
 import os
@@ -349,9 +350,8 @@ def read_names_map(path):
     symbols (``_adler32``) and records WHICH translation unit each belongs to,
     so the delinker can emit one ``<unit>.c.obj`` per source TU instead of
     address-bucketed segs. The optional ``size`` is the authoritative byte extent
-    used to SYNTHESIZE a function record for a matched RVA that Ghidra's
-    auto-analysis never recovered as an object (so it is absent from
-    functions.csv) - this keeps a single build self-contained.
+    used to synthesize a function record for a matched RVA absent from the
+    tracked table, keeping a single build self-contained.
 
     Returns ``{rva: (name, unit, size, kind)}`` (size is an int, 0 when
     absent/empty; kind is ``"func"`` or ``"data"``, defaulting to ``"func"`` for
@@ -380,76 +380,56 @@ def read_functions(path, names_map=None, thunk_names=None):
     """Yield (rva, size, name) for .text functions with size > 0.
 
     If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
-    RVA, its curated name overrides the Ghidra ``FUN_<rva>`` placeholder.
+    RVA, its curated name overrides the generic retail placeholder.
 
-    A matched function that Ghidra's auto-analysis never recovered as an object
-    (e.g. a vtable-slot-only target with no direct ``call``) is ABSENT from
-    functions.csv, so the delinker would never emit it. For any names-map RVA
-    not present here we SYNTHESIZE a record from the curated ``@size`` boundary,
-    making a single build self-contained (no ghidra-refresh round-trip). The
-    Ghidra boundary always wins for RVAs already in functions.csv - ``@size`` is
-    purely the fallback for the missing ones, so the functions that already work
-    stay byte-identical.
+    Source sizes may grow an admitted code-only boundary to include an inline
+    jump table that belongs to the function's original /Gy COMDAT.
     """
     names_map = names_map or {}
     thunk_names = thunk_names or {}
     out = []
     seen = set()
-    with open(path, newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            rva = int(row["entry_rva"], 16)
-            size = int(row["byte_size"])
-            name = row["name"]
-            if size <= 0:
-                continue
-            if not (TEXT_BASE <= rva < TEXT_END):
-                continue
-            if rva in names_map:
-                name = names_map[rva][0]
-                at_size = names_map[rva][2]
-                # Ghidra's recovered boundary wins for RVAs already in
-                # functions.csv (keeps the working set byte-identical), but if the
-                # curated @size disagrees, one of the two is wrong - surface it so
-                # a bad boundary isn't silently delinked.
-                if at_size and at_size != size:
-                    # Ghidra usually wins (keeps the working set byte-identical). BUT a
-                    # tiny Ghidra boundary (<= 8 B) where the src annotates a much larger
-                    # @size is a MIS-CARVE - Ghidra failed to recover the function (e.g. a
-                    # spurious 1-byte carve blocks the delinker from extracting the target
-                    # bytes, so the fn scores 0%). The curated @size (matcher-verified) is
-                    # then authoritative: use it and delink the real extent. Durable across
-                    # ghidra reimports (functions.csv is regenerated, this logic is not).
-                    if size <= 8 and at_size > size:
-                        print("[synth_pdb] 0x%x %r: Ghidra mis-carve %d B -> @size %d B"
-                              % (rva, name, size, at_size), file=sys.stderr)
-                        size = at_size
-                    elif at_size > size:
-                        # A curated @size GROWN past Ghidra's boundary is deliberate:
-                        # Ghidra's function model ends at the code (ret) while the
-                        # matcher-verified extent includes the fn's INLINE jump tables
-                        # (cl emits them inside the /Gy COMDAT, so the base obj's
-                        # symbol spans code+tables). Carving code-only leaves objdiff
-                        # comparing a 498-B target against an 836-B base -> false 0%.
-                        print("[synth_pdb] 0x%x %r: @size grows Ghidra boundary "
-                              "%d B -> %d B (inline-table span)"
-                              % (rva, name, size, at_size), file=sys.stderr)
-                        size = at_size
-                    else:
-                        print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
-                              "functions.csv=%d B, @size=%d B; using functions.csv "
-                              "(Ghidra wins). Check the @size or the recovered boundary."
-                              % (rva, name, size, at_size), file=sys.stderr)
-            elif rva in thunk_names:
-                # A retail incremental-link thunk is not part of the owning TU,
-                # but every reference through it denotes the body it forwards
-                # to. Give the thunk the body's curated symbol spelling while
-                # leaving its source-file attribution in the linker bucket.
-                name = thunk_names[rva]
-            out.append((rva, size, name))
-            seen.add(rva)
+    for row in read_retail_functions(_Path(path)):
+        rva = row["rva"]
+        size = row["size"]
+        name = row["name"]
+        if size <= 0:
+            continue
+        if not (TEXT_BASE <= rva < TEXT_END):
+            continue
+        if rva in names_map:
+            name = names_map[rva][0]
+            at_size = names_map[rva][2]
+            # Surface disagreements: the tracked table is the admitted
+            # baseline, while a source size may deliberately include inline
+            # data that an analyzer originally excluded.
+            if at_size and at_size != size:
+                # A tiny admitted boundary where src annotates a much larger
+                # @size is a mis-carve; the matcher-verified source extent wins.
+                if size <= 8 and at_size > size:
+                    print("[synth_pdb] 0x%x %r: tiny admitted boundary %d B -> @size %d B"
+                          % (rva, name, size, at_size), file=sys.stderr)
+                    size = at_size
+                elif at_size > size:
+                    # Source sizes can include inline jump tables in the /Gy
+                    # COMDAT beyond the admitted code-body boundary.
+                    print("[synth_pdb] 0x%x %r: @size grows admitted boundary "
+                          "%d B -> %d B (inline-table span)"
+                          % (rva, name, size, at_size), file=sys.stderr)
+                    size = at_size
+                else:
+                    print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
+                          "inventory=%d B, @size=%d B; using tracked inventory. "
+                          "Check the annotation or update config/retail/functions.tsv."
+                          % (rva, name, size, at_size), file=sys.stderr)
+        elif rva in thunk_names:
+            # A retail incremental-link thunk is not part of the owning TU,
+            # but every reference through it denotes the body it forwards.
+            name = thunk_names[rva]
+        out.append((rva, size, name))
+        seen.add(rva)
 
-    # A band thunk Ghidra never carved still needs a record so its callers'
+    # A band thunk absent from the inventory still needs a record so its callers'
     # relocations resolve to the curated name; every ILT entry is exactly the
     # 5-byte `E9 rel32`.
     synth_thunks = 0
@@ -460,7 +440,7 @@ def read_functions(path, names_map=None, thunk_names=None):
         seen.add(rva)
         synth_thunks += 1
     if synth_thunks:
-        print("[synth_pdb] synthesized %d ILT thunk record(s) not carved by Ghidra"
+        print("[synth_pdb] synthesized %d ILT thunk record(s) absent from the inventory"
               % synth_thunks, file=sys.stderr)
 
     synth = 0
@@ -470,7 +450,7 @@ def read_functions(path, names_map=None, thunk_names=None):
         if not (TEXT_BASE <= rva < TEXT_END):
             continue
         if size <= 0:
-            print("[synth_pdb] WARN: 0x%x %r absent from functions.csv and has "
+            print("[synth_pdb] WARN: 0x%x %r absent from functions.tsv and has "
                   "no @size - cannot synthesize a boundary; skipping." % (rva, name),
                   file=sys.stderr)
             continue
@@ -479,7 +459,7 @@ def read_functions(path, names_map=None, thunk_names=None):
         synth += 1
     if synth:
         print("[synth_pdb] synthesized %d function record(s) from @size for "
-              "matched RVAs absent from functions.csv" % synth, file=sys.stderr)
+              "matched RVAs absent from functions.tsv" % synth, file=sys.stderr)
     out.sort()
     return out
 
@@ -487,13 +467,9 @@ def read_functions(path, names_map=None, thunk_names=None):
 def read_ilt_thunk_names(exe_path, functions_path, names_map):
     """Map 5-byte retail ILT forwarding thunks to curated body names.
 
-    The stripped Ghidra export commonly preserves an old semantic guess on the
-    thunk (for example ``Construct``) even after source evidence proves that its
-    target is a template constructor. The delinker can then define the body
-    under the curated name while leaving callers with an undefined relocation
-    to the stale thunk name. Parse only the mechanically recognizable
-    ``E9 rel32`` entries in the leading ILT band and inherit a name only when
-    their exact target RVA is already present in ``names_map``.
+    Parse only the mechanically recognizable ``E9 rel32`` entries in the
+    leading ILT band and inherit a name only when their exact target RVA is
+    already present in ``names_map``.
     """
     with open(exe_path, "rb") as f:
         data = f.read()
@@ -514,22 +490,21 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
         raise ValueError("PE has no .text section")
 
     aliases = {}
-    with open(functions_path, newline="") as f:
-        for row in csv.DictReader(f):
-            rva = int(row["entry_rva"], 16)
-            size = int(row["byte_size"])
-            if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, 0x7C20):
-                continue
-            off = text_raw + rva - text_rva
-            if not text_raw <= off <= text_raw + text_raw_size - 5:
-                continue
-            if data[off] != 0xE9:
-                continue
-            target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
-            if target in names_map:
-                aliases[rva] = names_map[target][0]
-    # Ghidra does not carve every band entry as a function (address-taken-only
-    # thunks have no direct `call`), so ALSO walk the raw band: any E9 whose
+    for row in read_retail_functions(_Path(functions_path)):
+        rva = row["rva"]
+        size = row["size"]
+        if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, 0x7C20):
+            continue
+        off = text_raw + rva - text_rva
+        if not text_raw <= off <= text_raw + text_raw_size - 5:
+            continue
+        if data[off] != 0xE9:
+            continue
+        target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
+        if target in names_map:
+            aliases[rva] = names_map[target][0]
+    # The inventory need not contain every band entry, so also walk the raw band:
+    # any E9 whose
     # exact target is curated is a forwarding thunk to a known body - e.g. the
     # GameObjectFactory creator table references `_CreateGrunt` through its ILT
     # slot. Same target-in-names_map guard; a stray E9 byte inside another
@@ -547,29 +522,30 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
     return aliases
 
 
-def read_data_symbols(path):
-    """Return (rdata_syms, data_syms), each a list of (rva, name).
+def read_data_symbols(exe_path):
+    """Derive relocation-relevant data symbols directly from the retail PE.
 
-    Deduplicates by RVA (keeps the first / primary symbol seen) so we emit one
-    record per address; the delinker keys its constant/static maps by RVA.
+    Every absolute address operand is listed in the PE's HIGHLOW relocation
+    directory.  Its stored value identifies the exact target that needs a PDB
+    symbol; source/library names are overlaid later.  This is both smaller and
+    more complete than preserving incidental labels from an analysis database.
     """
+    from gruntz.core.pe import PE
+
+    pe = PE(exe_path)
     rdata = {}
     data = {}
-    with open(path, newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            addr = row["address_rva"]
-            if addr.startswith("0x-"):
-                continue  # imported / negative pseudo-RVA
-            rva = int(addr, 16)
-            name = row["name"]
-            if RDATA_BASE <= rva < RDATA_END:
-                rdata.setdefault(rva, name)
-            elif DATA_BASE <= rva < DATA_END:
-                data.setdefault(rva, name)
-    rdata_list = sorted((rva, nm) for rva, nm in rdata.items())
-    data_list = sorted((rva, nm) for rva, nm in data.items())
-    return rdata_list, data_list
+    for site in pe.reloc_sites:
+        value = pe.u32(site)
+        if value is None:
+            continue
+        rva = value - pe.image_base
+        name = "DAT_%08x" % value
+        if RDATA_BASE <= rva < RDATA_END:
+            rdata.setdefault(rva, name)
+        elif DATA_BASE <= rva < DATA_END:
+            data.setdefault(rva, name)
+    return sorted(rdata.items()), sorted(data.items())
 
 
 def func_source_file(rva, bucket_shift, names_map=None):
@@ -825,8 +801,8 @@ def apply_named_data(rdata_syms, data_syms, data_names):
 
     ``data_names`` is ``{rva: mangled-name}`` - clang's MS-ABI name for a global
     a source `extern` references (`?g_foo@@3...` / `_g_foo`), already authority-
-    checked against the base object. Overrides the Ghidra `DAT_`/`s_` placeholder
-    at that RVA (adding the symbol if Ghidra never recorded one) so the delinked
+    checked against the base object. Overrides the generic `DAT_` placeholder
+    at that RVA (adding the symbol when needed) so the delinked
     reference matches the recompiled one by name. Mutates the lists; returns the
     count applied.
     """
@@ -881,7 +857,6 @@ def main():
     ap.add_argument("--exe", required=True,
                     help="PE EXE to read .text/.rdata/.data section bounds from.")
     ap.add_argument("--functions", required=True)
-    ap.add_argument("--symbols", required=True)
     ap.add_argument("--out-yaml", required=True)
     ap.add_argument("--out-pdb", required=True)
     ap.add_argument("--module-path", default=r"c:\proj\gruntz.obj",
@@ -899,11 +874,11 @@ def main():
                          "symbol_names.csv): renames matched FUN_<rva> to the source "
                          "symbol and groups them into a per-unit <unit>.c.obj (requires "
                          "--bucket-shift>0). The optional @size column synthesizes a "
-                         "function record for any matched RVA absent from functions.csv.")
+                         "function record for any matched RVA absent from functions.tsv.")
     ap.add_argument("--base-dir",
                     help="dir of cl.exe-compiled base objects (build/objdiff/base). "
                          "Their ??_C@... string-pool symbols are used as an oracle to "
-                         "rename string constants from Ghidra's DAT_/s_ placeholders to "
+                         "rename string constants from generic DAT_ placeholders to "
                          "the exact MSVC mangling, so source string literals match.")
     args = ap.parse_args()
 
@@ -943,7 +918,7 @@ def main():
               file=sys.stderr)
     data_names = {rva: t[0] for rva, t in overlay.items() if t[3] == "data"}
     # A tracked library symbol outside .text is library DATA (filebuf::openprot,
-    # the dxguid IIDs when untracked by Ghidra): name it for the delink side too.
+    # the dxguid IIDs): name it for the delink side too.
     # Src overlay rows keep priority; function RVAs never land here (.text only).
     for rva, (name, _unit, _size) in names_map.items():
         if not (TEXT_BASE <= rva < TEXT_END):
@@ -953,7 +928,7 @@ def main():
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"
               % len(thunk_names), file=sys.stderr)
     funcs = read_functions(args.functions, names_map, thunk_names)
-    rdata_syms, data_syms = read_data_symbols(args.symbols)
+    rdata_syms, data_syms = read_data_symbols(args.exe)
     if data_names:
         ndat = apply_named_data(rdata_syms, data_syms, data_names)
         print("[synth_pdb] named %d global data symbol(s) from symbol_names.csv" % ndat,

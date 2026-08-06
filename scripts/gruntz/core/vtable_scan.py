@@ -42,10 +42,10 @@ def _require(p, hint):
 
 EXE = _require(os.environ.get("GRUNTZ_EXE") or REPO / "build/exe/GRUNTZ.EXE",
                "export $GRUNTZ_EXE (nix develop) or run `gruntz init`")
-FUNCS = _require(REPO / "build/ghidra-enrich/exports/functions.csv", "run `gruntz init`")
-SYMS = _require(REPO / "build/ghidra-enrich/exports/symbols.csv", "run `gruntz init`")
+FUNCS = _require(REPO / "config/retail/functions.tsv", "restore the tracked retail inventory")
 SRC = _require(REPO / "src", "not a gruntz checkout?")
 from gruntz.core.pe import IMAGEBASE
+from gruntz.core.retail_functions import read as read_retail_functions
 
 # the ONE shared EXE load: gruntz.core.pe (no second parse in this process)
 from gruntz.core import get_context as _get_context
@@ -76,10 +76,8 @@ REL = list(_pe.reloc_sites); RELSET = set(REL)
 # --- functions for labeling ---
 FN = {}
 if FUNCS:
-    with open(FUNCS) as f:
-        for r in csv.DictReader(f):
-            try: FN[int(r['entry_rva'], 16)] = (r['name'], int(r['byte_size']))
-            except Exception: pass
+    for r in read_retail_functions(FUNCS):
+        FN[r["rva"]] = (r["name"], r["size"])
 FN_STARTS = sorted(FN)
 def fn_label(rva):
     if rva in FN: return FN[rva][0]

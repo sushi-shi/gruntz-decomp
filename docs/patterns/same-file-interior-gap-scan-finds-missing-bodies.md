@@ -6,10 +6,10 @@ symptoms: a TU is "complete" by every function-count check yet several of its fu
   the exe map shows the contribution contiguous
 confidence: 10/10
 
-Ghidra does not carve every retail function — small accessors, forwarders and
-compiler-generated thunks are routinely missing from `functions.csv`, so
-"unclaimed RVAs in the span" computed against it UNDERCOUNTS badly. The reliable
-census is purely address arithmetic over our own claims:
+An analyzer-derived function inventory does not necessarily carve every retail
+function — small accessors, forwarders and compiler-generated thunks can be
+missing, so "unclaimed RVAs in the span" computed against it UNDERCOUNTS badly.
+The reliable census is purely address arithmetic over our own claims:
 
 1. sort every `RVA()`/`RVA_COMPGEN()` claim tree-wide by address;
 2. for each adjacent PAIR THAT COMES FROM THE SAME FILE, take `[a+size, b)`;

@@ -19,16 +19,16 @@
 #     5. STRUCTS / ENUMS  - build/gen/structs.json + enums.json (clang record layouts
 #                           over the src/ TUs), defined in the DTM; each struct
 #                           is applied as the `this` type on its class's methods.
-#     6. FUNCTION BOUNDARIES - config/retail/ghidra_function_fixes.csv: audited fixes to
-#                           auto-analysis splits/omissions, applied before export.
+#     6. FUNCTION BOUNDARIES - config/retail/functions.tsv: the complete admitted
+#                           start/size inventory, applied to this disposable viewer.
 #   Win32/CRT types resolve against the windows_vs12_32 archive in the DTM; custom
 #   types against the generated structs; anything unresolved falls back to void*/int.
 #
 #   Idempotent: re-runnable, reasserts source-derived names, and keeps prior [LABEL]
 #   plate comments. Run as a GhidraScript under PyGhidra (CPython3 + JPype),
 #   driven by scripts/gruntz/ghidra/ghidra_metadata_apply.py (which boots PyGhidra,
-#   imports/analyzes GRUNTZ.EXE, then runs this + export.py); invoked via `gruntz
-#   init` / `gruntz ghidra-refresh`. Flat-API globals (currentProgram, monitor, ...)
+#   imports/analyzes GRUNTZ.EXE, then runs this); invoked via explicit
+#   `gruntz ghidra-refresh`. Flat-API globals (currentProgram, monitor, ...)
 #   are injected by pyghidra.ghidra_script.
 #
 #   Writes build/ghidra-named/exports/enrichment_apply_report.txt
@@ -62,7 +62,7 @@ ROOT = os.environ.get("GRUNTZ_DIR") or str(next(
 #   build/gen/globals.json      <- labels.py   (rva -> declared global type)
 #   build/gen/structs.json      <- ghidra_metadata_generate.py  (clang record layouts of the src/ TUs)
 #   build/gen/enums.json        <- ghidra_metadata_generate.py  (clang over the src/ TUs)
-#   config/retail/ghidra_function_fixes.csv <- manually audited analyzer boundary corrections
+#   config/retail/functions.tsv <- admitted complete retail function boundaries
 CSV_SYMBOL   = ROOT + "/build/gen/symbol_names.csv"
 FUNCTIONS_JSON = ROOT + "/build/gen/functions.json"
 LOCALS_JSON  = ROOT + "/build/gen/locals.json"
@@ -70,7 +70,7 @@ GLOBALS_JSON = ROOT + "/build/gen/globals.json"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
 CSV_FID    = ROOT + "/config/retail/library_labels.csv"
-CSV_FUNCTION_FIXES = ROOT + "/config/retail/ghidra_function_fixes.csv"
+FUNCTION_INVENTORY = ROOT + "/config/retail/functions.tsv"
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
 prog     = currentProgram
@@ -139,6 +139,23 @@ def load_csv_rows(path):
                     cur += ch
             parts.append(cur)
             rows.append(parts)
+    finally:
+        fh.close()
+    return rows
+
+
+def load_function_inventory(path):
+    rows = []
+    fh = open(path)
+    try:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or line.startswith("rva\t"):
+                continue
+            fields = line.split("\t")
+            if len(fields) < 2:
+                raise RuntimeError("malformed retail function row: %r" % line)
+            rows.append((int(fields[0], 0), int(fields[1], 0)))
     finally:
         fh.close()
     return rows
@@ -502,73 +519,47 @@ ok = False
 try:
     init_fallbacks()
 
-    # ---- (0) repair proven Ghidra function-boundary mistakes ----
-    # The auto-analyzer is an input, not ground truth.  Corrections are tracked so
-    # a cold database and every ghidra-refresh reproduce the same authoritative
-    # functions.csv.  Validate the observed split before changing it; accepting an
-    # unexpected body would silently corrupt the delink model.
-    n_fnfix_merged = 0; n_fnfix_removed = 0; n_fnfix_created = 0; n_fnfix_already = 0
-    fnfix_rows = load_csv_rows(CSV_FUNCTION_FIXES) if os.path.exists(CSV_FUNCTION_FIXES) else []
-    for row in fnfix_rows:
-        if not row or row[0] == "action":
+    # ---- (0) populate the viewer's function model from the admitted inventory ----
+    n_inventory_created = 0; n_inventory_resized = 0; n_inventory_already = 0
+    n_inventory_removed = 0
+    inventory = load_function_inventory(FUNCTION_INVENTORY)
+    inventory_entries = set(rva for rva, _size in inventory)
+    # Drop analyzer-only entries first. In particular this removes an incidental
+    # split nested inside a larger admitted body before setBody() grows its owner.
+    current_entries = [fn.getEntryPoint() for fn in fm.getFunctions(True)]
+    for entry in current_entries:
+        block = prog.getMemory().getBlock(entry)
+        if block is None or str(block.getName()) != ".text":
             continue
-        if len(row) < 6:
-            raise RuntimeError("malformed ghidra function fix row: %r" % (row,))
-        action = row[0].strip().lower()
-        rva = int(row[1], 16)
-        size = int(row[2], 16)
-        owner_rva = int(row[3], 16) if row[3] else 0
-        owner_size = int(row[4], 16) if row[4] else 0
+        rva = entry.getOffset() - IMAGE_BASE
+        if rva not in inventory_entries and fm.removeFunction(entry):
+            n_inventory_removed += 1
+    for rva, size in inventory:
         addr = toaddr(rva)
+        body = AddressSet(addr, addr.add(size - 1))
         fn = fm.getFunctionAt(addr)
-
-        if action == "merge":
-            owner_addr = toaddr(owner_rva)
-            owner = fm.getFunctionAt(owner_addr)
-            if owner is None:
-                raise RuntimeError("function-fix merge owner missing at 0x%08x" % owner_rva)
+        if fn is None:
+            fn = fm.createFunction(None, addr, body, GEN)
             if fn is None:
-                if owner.getBody().getNumAddresses() == owner_size \
-                        and owner.getBody().contains(addr):
-                    n_fnfix_already += 1
-                    continue
-                raise RuntimeError("function-fix child missing at 0x%08x" % rva)
-            if fn.getBody().getNumAddresses() != size:
-                raise RuntimeError("function-fix child 0x%08x size %d, expected %d" %
-                                   (rva, fn.getBody().getNumAddresses(), size))
-            body = AddressSet(owner.getBody())
-            body.add(fn.getBody())
-            if body.getNumAddresses() != owner_size:
-                raise RuntimeError("function-fix merged 0x%08x body size %d, expected %d" %
-                                   (owner_rva, body.getNumAddresses(), owner_size))
-            if not fm.removeFunction(addr):
-                raise RuntimeError("function-fix could not remove child at 0x%08x" % rva)
-            owner.setBody(body)
-            n_fnfix_merged += 1
-        elif action == "remove":
+                # Auto-analysis may have placed a function whose body contains
+                # this admitted entry. Remove that incidental carve and retry.
+                containing = fm.getFunctionContaining(addr)
+                containing_rva = (containing.getEntryPoint().getOffset() - IMAGE_BASE
+                                  if containing is not None else None)
+                if containing is not None and containing_rva not in inventory_entries:
+                    fm.removeFunction(containing.getEntryPoint())
+                    fn = fm.createFunction(None, addr, body, GEN)
             if fn is None:
-                n_fnfix_already += 1
-                continue
-            if fn.getBody().getNumAddresses() != size:
-                raise RuntimeError("function-fix remove 0x%08x size mismatch" % rva)
-            if not fm.removeFunction(addr):
-                raise RuntimeError("function-fix could not remove 0x%08x" % rva)
-            n_fnfix_removed += 1
-        elif action == "create":
-            if fn is not None:
-                if fn.getBody().getNumAddresses() != size:
-                    raise RuntimeError("function-fix create 0x%08x already has wrong size" % rva)
-                n_fnfix_already += 1
-                continue
-            body = AddressSet(addr, addr.add(size - 1))
-            created = fm.createFunction(None, addr, body, GEN)
-            if created is None:
-                raise RuntimeError("function-fix could not create 0x%08x" % rva)
-            n_fnfix_created += 1
+                raise RuntimeError("could not create admitted function 0x%08x" % rva)
+            n_inventory_created += 1
+        elif fn.getBody().getNumAddresses() != size:
+            fn.setBody(body)
+            n_inventory_resized += 1
         else:
-            raise RuntimeError("unknown ghidra function-fix action %r" % action)
-    R("function-boundary fixes: merged=%d removed=%d created=%d already=%d" %
-      (n_fnfix_merged, n_fnfix_removed, n_fnfix_created, n_fnfix_already))
+            n_inventory_already += 1
+    R("retail function inventory: created=%d resized=%d removed=%d already=%d" %
+      (n_inventory_created, n_inventory_resized, n_inventory_removed,
+       n_inventory_already))
 
     # ---- (A) define structs (generated JSON preferred; hardcoded = fallback) ----
     import json as _json

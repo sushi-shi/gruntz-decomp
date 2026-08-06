@@ -4,8 +4,8 @@
 This is the TARGET (delink) half of the matching pipeline, run as one ninja rule
 (its declared outputs are the per-unit <unit>.c.obj target objects):
 
-    build/gen/symbol_names.csv  (generated rva -> name,unit)
-            |  overlay onto build/ghidra-enrich/exports/functions.csv
+    config/retail/functions.tsv (admitted function boundaries)
+            |  overlay build/gen/symbol_names.csv (generated rva -> name,unit)
             v
     scripts/gruntz/build/synth_pdb.py  -> build/pdb/gruntz_named.{yaml,pdb}
             |
@@ -58,8 +58,7 @@ def tool(name: str) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--exe", required=True, help="the retail GRUNTZ.EXE.")
-    ap.add_argument("--functions", required=True, help="ghidra functions.csv.")
-    ap.add_argument("--symbols", required=True, help="ghidra symbols.csv.")
+    ap.add_argument("--functions", required=True, help="tracked retail functions.tsv.")
     ap.add_argument("--names-map", required=True, help="build/gen/symbol_names.csv.")
     ap.add_argument("--pdb-dir", required=True, help="dir for the synth PDB/YAML.")
     ap.add_argument("--delink-dir", required=True, help="raw delinker output dir.")
@@ -74,14 +73,13 @@ def main() -> None:
 
     exe = Path(args.exe)
     functions = Path(args.functions)
-    symbols = Path(args.symbols)
     names = Path(args.names_map)
     pdb_dir = Path(args.pdb_dir)
     delink_dir = Path(args.delink_dir)
     target_dir = Path(args.target_dir)
     units = args.unit
 
-    for f in (exe, functions, symbols, names):
+    for f in (exe, functions, names):
         if not f.exists():
             die(f"missing input: {f}")
 
@@ -89,12 +87,11 @@ def main() -> None:
     named_yaml = pdb_dir / "gruntz_named.yaml"
     named_pdb = pdb_dir / "gruntz_named.pdb"
 
-    log("Synthesising named PDB from functions.csv + symbol_names.csv ...")
+    log("Synthesising named PDB from retail functions + source labels ...")
     subprocess.run(
         [sys.executable, str(SCRIPT_DIR / "synth_pdb.py"),
          "--exe", str(exe),
          "--functions", str(functions),
-         "--symbols", str(symbols),
          "--out-yaml", str(named_yaml),
          "--out-pdb", str(named_pdb),
          "--bucket-shift", str(BUCKET_SHIFT),

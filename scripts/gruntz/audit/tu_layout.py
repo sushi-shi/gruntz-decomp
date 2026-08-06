@@ -88,7 +88,7 @@ DEFAULT_NEAR = 0x2000
 # below 0x10000, where it used to begin and miss the 0x0f4xx-0x0ffxx group.
 POOLS = ((0x0f400, 0x13600), (0x80000, 0x90000))
 # the Ghidra boundary export feeding --attribute (all .text starts + sizes + names).
-DEFAULT_FUNCTIONS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+DEFAULT_FUNCTIONS = REPO / "config" / "retail" / "functions.tsv"
 # subsystem keywords: an attribution that misses the exact class usually lands on a
 # sibling of the SAME family (intermingling is within-family, not cross-subsystem).
 FAMILY_KEYS = ("Bute", "State", "Attract", "Menu", "Booty", "Credits", "Multi",
@@ -387,14 +387,9 @@ def is_thunk(name: str, size: int) -> bool:
 
 
 def load_boundaries(path: Path):
-    """All .text function boundaries from the Ghidra export: [(rva, size, name)]."""
-    import csv
-    out = []
-    with path.open() as fh:
-        for r in csv.DictReader(fh):
-            out.append((int(r["entry_rva"], 16), int(r["byte_size"]), r["name"]))
-    out.sort()
-    return out
+    """All admitted .text function boundaries: [(rva, size, generic name)]."""
+    from gruntz.core.retail_functions import read
+    return [(row["rva"], row["size"], row["name"]) for row in read(path)]
 
 
 def _attribute_targets(seq, back, fwd, gap, target_rvas):
@@ -528,8 +523,7 @@ def report_attribution(funcs, functions_csv: Path, gap: int, emit) -> None:
     print("ATTRIBUTION  (tie unnamed FUN_ bodies to a class by same-class bracket)")
     print("=" * 72)
     if not functions_csv.exists():
-        print(f"  needs the Ghidra boundary export: {functions_csv}")
-        print("  run `gruntz build` (or point --functions at an existing functions.csv).")
+        print(f"  needs the tracked retail boundary inventory: {functions_csv}")
         return
     boundaries = load_boundaries(functions_csv)
     attr, n_unnamed = attribute(funcs, boundaries, gap, load_claimed_extents())
@@ -571,7 +565,7 @@ def main() -> None:
     ap.add_argument("--neighbors", type=lambda s: int(s, 0), default=None,
                     metavar="0xRVA", help="show the probable siblings of one function")
     ap.add_argument("--functions", type=Path, default=DEFAULT_FUNCTIONS,
-                    help="Ghidra boundary export for --attribute (functions.csv)")
+                    help="tracked retail boundary inventory for --attribute")
     ap.add_argument("--attribute", action="store_true",
                     help="tie unnamed FUN_ bodies to a class by same-class bracketing")
     ap.add_argument("--intermingled", action="store_true",

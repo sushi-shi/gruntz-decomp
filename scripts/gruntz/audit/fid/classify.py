@@ -23,6 +23,7 @@ Trailing alignment padding (0x90 NOP / 0xCC INT3) is trimmed from the END of a
 signature for length/overrun accounting (it is not part of the function body).
 """
 import sys, pickle, json, csv
+from pathlib import Path
 from collections import defaultdict
 from gruntz.audit.fid.common import pe_text, trim_pad
 
@@ -43,10 +44,11 @@ def main():
     sigs_pkl,exe,funcs_csv,out_csv = sys.argv[1:5]
     text,trva,base=pe_text(exe)
     func_size={}; offs=[]
-    for row in csv.DictReader(open(funcs_csv)):
-        rva=int(row['entry_rva'],16); off=rva-trva
+    from gruntz.core.retail_functions import read as read_retail_functions
+    for row in read_retail_functions(Path(funcs_csv)):
+        rva=row['rva']; off=rva-trva
         if 0<=off<len(text):
-            func_size[rva]=int(row['byte_size']); offs.append(off)
+            func_size[rva]=row['size']; offs.append(off)
     start_set=set(offs); sorted_starts=sorted(start_set)
     next_start={o:(sorted_starts[i+1] if i+1<len(sorted_starts) else len(text))
                 for i,o in enumerate(sorted_starts)}

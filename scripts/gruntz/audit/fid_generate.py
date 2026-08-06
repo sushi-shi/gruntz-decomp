@@ -5,7 +5,7 @@
 of a custom **masked-byte COFF-signature matcher** (NOT Ghidra FID). `apply.py`
 names CRT/MFC/zlib library functions from it and `gen_match_queue.py` excludes
 them. The committed CSV is canonical and survives `git clean`; regenerate only
-when the VC5 libs, GRUNTZ.EXE, or the Ghidra function boundaries change.
+when the VC5 libs, GRUNTZ.EXE, or the admitted function boundaries change.
 
 CAUTION - the committed CSV is INTENTIONALLY tracked, not generated in `init`.
 It was produced from a **Ghidra 11.4.2** export (14,411 function starts). The
@@ -32,7 +32,7 @@ original glue was never committed - so on the first regeneration, diff the resul
 against the tracked config/retail/library_labels.csv before trusting it.
 
 Run inside `nix develop`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
-build/ghidra-enrich/exports/functions.csv (produce it with `gruntz init`).
+config/retail/functions.tsv.
 """
 import csv, os, shutil, subprocess, sys
 from pathlib import Path
@@ -40,7 +40,7 @@ from pathlib import Path
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 WORK = REPO / "build" / "fid"                            # scratch (gitignored)
-FUNCS = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+FUNCS = REPO / "config" / "retail" / "functions.tsv"
 OUT = REPO / "config" / "retail" / "library_labels.csv"  # tracked, canonical
 
 
@@ -71,7 +71,7 @@ def main() -> None:
     if not Path(exe).exists():
         sys.exit(f"[fid] EXE not found ({exe}) - set $GRUNTZ_EXE or run `gruntz init`.")
     if not FUNCS.exists():
-        sys.exit(f"[fid] {FUNCS} missing - run `gruntz init` first.")
+        sys.exit(f"[fid] tracked inventory missing: {FUNCS}")
     WORK.mkdir(parents=True, exist_ok=True)
 
     # 1. unpack the static libs to .obj members

@@ -1,6 +1,6 @@
 """gruntz.sema.rva - `gruntz sema rva`: one-shot address dossier.
 
-Joins the symbol db (symbol_names + ghidra), library_labels.csv and the
+Joins the source/retail symbol inventory, library_labels.csv and the
 objdiff report - pure lookups over gruntz.core, no analysis. A vtable-slot RVA
 (an ILT jmp-thunk) is chased to the body and THAT is reported, so
 `sema rva <slot>` and nvim's vg resolve the method.
@@ -9,7 +9,8 @@ import sys
 
 from gruntz.core import get_context
 from gruntz.core.pe import REPO
-from gruntz.sema._common import GHIDRA_FUNCTIONS, csv_find, die, src_loc_of
+from gruntz.core.retail_functions import by_rva as retail_functions_by_rva
+from gruntz.sema._common import csv_find, die, src_loc_of
 
 
 def run(args) -> None:
@@ -23,7 +24,7 @@ def run(args) -> None:
 
     def src_claim(r):
         nm_unit = db.names.get(r)
-        return None if nm_unit is None or nm_unit[1] == "ghidra" else nm_unit
+        return None if nm_unit is None or nm_unit[1] == "retail" else nm_unit
 
     claim, def_rva, via = src_claim(rva), rva, None
     if not claim:
@@ -47,11 +48,11 @@ def run(args) -> None:
               f"{librow['confidence']} / {librow['source']}  "
               f"(carve-out: excluded from the match %)")
 
-    grow = csv_find(GHIDRA_FUNCTIONS, def_rva, key="entry_rva")
-    if grow:
-        print(f"  ghidra    : {grow['name']}  size {grow['byte_size']} B")
+    retail = retail_functions_by_rva().get(def_rva)
+    if retail:
+        print(f"  retail    : admitted function boundary, size {retail['size']} B")
     else:
-        print("  ghidra    : (no function start at this RVA in the export)")
+        print("  retail    : (no function start at this RVA)")
 
     if claim:
         pct = ctx.report.fn_pct(claim[0], unit=claim[1] or None)

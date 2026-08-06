@@ -16,7 +16,7 @@ Subcommands
 
             src/<unit>.cpp --cl(wine)--> base/<unit>.obj
             ALL src @address + ALL base objs --gen_labels--> build/gen/symbol_names.csv
-            symbol_names.csv + ghidra functions.csv/symbols.csv + GRUNTZ.EXE
+            symbol_names.csv + config/retail/functions.tsv + GRUNTZ.EXE
                 --delink(synth_pdb -> vostok-delinker)--> target/<unit>.c.obj
             base vs target --objdiff--> report.json
 
@@ -26,12 +26,10 @@ Subcommands
 
   labels        Just (re)generate build/gen/symbol_names.csv from src @address.
   structs       Just (re)generate build/gen/structs.json + enums.json (clang).
-  ghidra-refresh  Apply generated names/structs/enums to the Ghidra DB and
-                  re-export functions.csv/symbols.csv (the Part-2 loop that feeds
-                  the delink). See the docstring on cmd_ghidra_refresh.
+  ghidra-refresh  Populate an optional disposable Ghidra viewer database from
+                  tracked retail boundaries and generated source data.
   init          One-time FULL local setup: dirs + configure + retail EXE copy +
-                wine prefix + clangd compdb + the Ghidra DB (import+analyze
-                GRUNTZ.EXE -> functions.csv/symbols.csv). HEAVY first run.
+                wine prefix + clangd compdb. Ghidra is not part of setup/build.
   clangd        (Re)generate the clangd compile DB (editor; after adding a unit).
   format [--check]
                 clang-format src/ + include/ to the Rust-like house style
@@ -40,7 +38,7 @@ Subcommands
   status        Print the last objdiff match summary (no rebuild).
   todo          List obj symbols that lack an @address (matching worklist).
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
-                for a from-scratch init + build. HEAVY re-init (wine + Ghidra DB).
+                for a from-scratch init + build.
   sema <cmd>    Semantic navigation (one entrypoint; `gruntz sema -h` lists all):
                 xref, refs/hover/rename (clangd LSP), rva/class/match dossiers,
                 disasm, strings, vtable, map (.text layout), `-` (batch). Thin
@@ -69,13 +67,12 @@ SCRIPTS            = REPO / "scripts"
 PKG                = SCRIPTS / "gruntz"       # the pipeline package (grouped by area)
 BUILD              = PKG / "build"            # labels, structs, synth_pdb, delink, ...
 GHIDRA             = PKG / "ghidra"           # the PyGhidra driver (a normal runnable module)
-GHIDRA_DRIVER      = GHIDRA / "ghidra_metadata_apply.py" # PyGhidra driver: import/analyze + apply + export
+GHIDRA_DRIVER      = GHIDRA / "ghidra_metadata_apply.py" # optional PyGhidra viewer importer
 # GhidraScripts run INSIDE Ghidra (PyGhidra injects currentProgram/monitor/state);
 # they are NOT importable and NOT `python -m`-runnable — the driver passes them by
 # PATH. They live in ghidra/scripts/ (no __init__.py) so the boundary is explicit.
 GHIDRA_SCRIPTS     = GHIDRA / "scripts"       # GhidraScripts: path-only, never imported/-m'd
 GHIDRA_APPLY       = GHIDRA_SCRIPTS / "apply.py"   # enrichment GhidraScript (run under PyGhidra)
-GHIDRA_EXPORT      = GHIDRA_SCRIPTS / "export.py"  # functions.csv/symbols.csv dump GhidraScript
 INIT               = PKG / "init"             # environment setup
 LINK               = BUILD / "link.py"        # phase-2 VC5 link wrapper (candidate EXE + map)
 MANIFEST           = REPO / "config" / "units.toml"
@@ -109,7 +106,7 @@ def _ghidra_project_dir() -> Path:
 
 GHIDRA_PROJECT_DIR = _ghidra_project_dir()
 GHIDRA_PROJECT     = "gruntz"                                          # project name (gruntz.{gpr,rep})
-GHIDRA_FUNCTIONS   = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"  # delink input
+RETAIL_FUNCTIONS   = REPO / "config" / "retail" / "functions.tsv"
 RETAIL_EXE         = REPO / "build" / "exe" / "GRUNTZ.EXE"             # stable copy of $GRUNTZ_EXE (delink input + Ghidra import)
 CONFIGURE          = REPO / "configure.py"
 
@@ -292,8 +289,8 @@ def cmd_build(args) -> None:
         run([sys.executable, str(CONFIGURE)])
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     _ensure_compdb_fresh()                            # cheap, idempotent (unit list moved?)
-    if not GHIDRA_FUNCTIONS.exists():
-        die(f"no Ghidra exports ({GHIDRA_FUNCTIONS.relative_to(REPO)}) - run `gruntz init` first.")
+    if not RETAIL_FUNCTIONS.exists():
+        die(f"tracked retail inventory missing: {RETAIL_FUNCTIONS.relative_to(REPO)}")
     ninja = tool("ninja")
     # Keep ONE persistent wineserver alive for the whole dev-shell session (the
     # dev shell's shellHook reaps it on interactive exit). The first build boots it
@@ -676,33 +673,27 @@ def cmd_gate_selftest(args) -> None:
 
 
 def cmd_ghidra_refresh(args) -> None:
-    """Part-2 loop: push generated names/structs/enums into the Ghidra DB, then
-    re-export the functions.csv/symbols.csv the delink consumes.
-
-      1. ghidra_metadata_generate -> build/gen/structs.json + enums.json (clang layouts
-         of the src/ TUs)
-      2. PyGhidra driver (ghidra_metadata_apply.py): re-open the already-analyzed
-         build/ghidra-named program (--no-analyze) and run apply.py (names from
-         build/gen/symbol_names.csv, prototypes, struct this-types, enums) then
-         export.py (re-dump functions.csv + symbols.csv from the enriched DB).
-      3. those CSVs feed the next `build`.
-    """
+    """Populate an optional Ghidra viewer from authoritative project data."""
+    _ensure_retail_copy()
+    if not RETAIL_EXE.is_file():
+        die("retail EXE missing: run `gruntz init` inside `nix develop` first")
     cmd_structs(argparse.Namespace(tu=[]))
-    if not GHIDRA_PROJECT_DIR.exists() or not any(GHIDRA_PROJECT_DIR.glob("*.rep")):
-        die(f"no Ghidra project at {GHIDRA_PROJECT_DIR} - run `gruntz init` first.")
-    _ghidra_metadata_apply(analyze=False)
-    log("ghidra-refresh done: applied generated labels/structs/enums + re-exported "
-        "functions.csv/symbols.csv.")
+    cold = not GHIDRA_PROJECT_DIR.exists() or not any(GHIDRA_PROJECT_DIR.glob("*.rep"))
+    GHIDRA_PROJECT_DIR.mkdir(parents=True, exist_ok=True)
+    if cold:
+        log("creating optional Ghidra viewer database (initial analysis takes minutes) ...")
+    _ghidra_metadata_apply(analyze=cold)
+    log("ghidra-refresh done: viewer populated from tracked/source inventory; "
+        "the build does not read this database.")
 
 
 def _ghidra_metadata_apply(analyze: bool) -> None:
-    """Drive the PyGhidra enrichment+export (replaces analyzeHeadless).
+    """Drive optional PyGhidra viewer enrichment.
 
     Runs scripts/gruntz/ghidra/ghidra_metadata_apply.py under THIS interpreter (sys.executable
     is the `nix develop` python that carries the pyghidra package): it boots
     PyGhidra in-process, imports/analyzes GRUNTZ.EXE into build/ghidra-named/gruntz,
-    then runs apply.py + export.py as GhidraScripts. `analyze=True` for the first
-    import; False to re-run apply/export on the already-analyzed DB.
+    then runs apply.py. `analyze=True` is used only for a missing viewer DB.
     """
     # build/gen/locals.json: CodeView locals from a /Z7 debug build of each
     # byte-exact function (apply.py injects them as named Ghidra stack vars).
@@ -715,7 +706,7 @@ def _ghidra_metadata_apply(analyze: bool) -> None:
 
     cmd = [sys.executable, str(GHIDRA_DRIVER), str(RETAIL_EXE),
            str(GHIDRA_PROJECT_DIR), GHIDRA_PROJECT,
-           str(GHIDRA_APPLY), str(GHIDRA_EXPORT)]
+           str(GHIDRA_APPLY)]
     if not analyze:
         cmd.append("--no-analyze")
     run(cmd)
@@ -795,29 +786,6 @@ def _kill_wine_session() -> None:
     subprocess.run(["wineserver", "-k"], stdin=n, stdout=n, stderr=n, check=False)
 
 
-def _build_ghidra_db(reimport: bool = False) -> None:
-    """Create build/ghidra-named (import + auto-analyze GRUNTZ.EXE) if absent, then
-    enrich + export functions.csv/symbols.csv via ghidra-refresh. HEAVY; idempotent.
-
-    apply.py CONSUMES the tracked config/{engine,library}_labels.csv - FID labels are
-    NOT regenerated here (the committed config/retail/library_labels.csv is canonical;
-    regenerate it explicitly with `python -m gruntz.audit.fid_generate`).
-    """
-    if GHIDRA_FUNCTIONS.exists() and not reimport:
-        log(f"Ghidra exports present ({GHIDRA_FUNCTIONS.relative_to(REPO)}); "
-            "skipping (--reimport to rebuild).")
-        return
-    if not RETAIL_EXE.exists():
-        die("no build/exe/GRUNTZ.EXE - set $GRUNTZ_EXE (run inside `nix develop`).")
-    if reimport and GHIDRA_PROJECT_DIR.exists():
-        shutil.rmtree(GHIDRA_PROJECT_DIR)
-    GHIDRA_PROJECT_DIR.mkdir(parents=True, exist_ok=True)
-    cmd_structs(argparse.Namespace(tu=[]))     # build/gen/structs.json+enums.json (apply.py needs them)
-    log("Building Ghidra DB via PyGhidra: import + auto-analyze GRUNTZ.EXE "
-        "(SEVERAL MINUTES on first run), then apply.py + export.py ...")
-    _ghidra_metadata_apply(analyze=True)   # import/analyze (if needed) + apply.py + export.py, one process
-
-
 def cmd_clangd(args) -> None:
     """(Re)generate the clangd compile DB (editor-only; run after adding a unit)."""
     run([sys.executable, str(INIT / "clangd.py")])
@@ -852,37 +820,6 @@ def cmd_format(args) -> None:
         log(f"done - {len(files)} file(s) formatted.")
 
 
-def _ghidra_warm() -> bool:
-    """True if the Ghidra export already has a function at every labeled RVA, i.e.
-    the warmup has run. Keeps cmd_init's warmup IDEMPOTENT so the build-shell hook's
-    startup `gruntz init` stays light on an already-warmed checkout (only a cold DB
-    triggers the heavy build->refresh->build)."""
-    if not (GEN_NAMES.exists() and GHIDRA_FUNCTIONS.exists()):
-        return False
-    import csv
-
-    def rint(s):
-        s = str(s).strip()
-        return int(s, 16) if s.lower().startswith("0x") else int(s)
-
-    want = set()
-    for r in csv.reader(GEN_NAMES.open()):
-        if len(r) >= 5 and r[0].startswith("0x") and r[4] == "func":
-            try:
-                want.add(rint(r[0]))
-            except ValueError:
-                pass
-    if not want:
-        return False
-    have = set()
-    for r in csv.DictReader(GHIDRA_FUNCTIONS.open()):
-        try:
-            have.add(rint(r["entry_rva"]))
-        except Exception:
-            pass
-    return want <= have
-
-
 def cmd_init(args) -> None:
     """One-time FULL local setup for this checkout. Run inside `nix develop`.
 
@@ -892,56 +829,26 @@ def cmd_init(args) -> None:
       - build.ninja + compile_commands.json + objdiff.json (configure.py);
       - a stable retail copy at build/exe/GRUNTZ.EXE (the delink input + Ghidra import);
       - the Wine prefix + MSVC 5.0 toolchain registration (toolchain.py);
-      - the clangd compile DB (clangd.py);
-      - the Ghidra DB: PyGhidra (ghidra_metadata_apply.py) imports + auto-analyzes GRUNTZ.EXE
-        -> build/ghidra-named, then runs apply.py + export.py (as GhidraScripts
-        under PyGhidra) -> functions.csv/symbols.csv. apply.py CONSUMES the tracked
-        config/retail/library_labels.csv; FID labels are NOT regenerated here.
+      - the clangd compile DB (clangd.py).
 
-    Then WARMS the Ghidra DB (unless --no-warmup): build -> ghidra-refresh ->
-    build. The cold DB carves only FID/auto-analysis functions; the warmup runs
-    one build to produce symbol_names.csv, refreshes Ghidra so a function exists
-    at each labeled RVA, and re-exports - so `gruntz build` and the "vs full
-    engine" metric are reproducible (not dependent on accumulated DB state).
-
-    HEAVY on first run (Ghidra analysis + two builds take a while); idempotent
-    afterwards. --force re-inits the Wine prefix; --reimport rebuilds the Ghidra
-    DB; --no-warmup leaves the DB cold.
+    The optional Ghidra viewer is intentionally absent from init. Run
+    `gruntz ghidra-refresh` explicitly when a disposable decompiler DB is useful.
     """
     for d in ("build/gen", "build/objdiff", "build/clangd", "build/pdb",
-              "build/delink/named", "build/exe", "build/ghidra-named",
-              "build/ghidra-enrich/exports"):
+              "build/delink/named", "build/exe"):
         (REPO / d).mkdir(parents=True, exist_ok=True)
     run([sys.executable, str(CONFIGURE)])            # build.ninja + compile_commands + objdiff.json
     _ensure_retail_copy()                            # stable retail copy (cheap, idempotent)
     if not os.environ.get("MSVC_DIR"):
-        log("MSVC_DIR unset - run inside `nix develop` for the toolchain + "
-            "Ghidra steps. Did dirs + configure + retail copy only.")
+        log("MSVC_DIR unset - run inside `nix develop` for the toolchain. "
+            "Did dirs + configure + retail copy only.")
         return
     tc = [sys.executable, str(INIT / "toolchain.py")]
     if args.force:
         tc.append("--force")
     run(tc)                                          # wine prefix + registry (idempotent)
     run([sys.executable, str(INIT / "clangd.py")])   # clangd compile database
-    _build_ghidra_db(reimport=args.reimport)         # Ghidra DB + functions.csv/symbols.csv (cold)
-    if args.no_warmup:
-        log("init complete (cold; --no-warmup): the Ghidra DB has only FID + "
-            "auto-analysis functions. Run `build` then `ghidra-refresh` to warm it.")
-        return
-    if _ghidra_warm():
-        log("init complete (Ghidra DB already warm).")
-        return
-    # Warm the Ghidra DB. A cold init carves only FID/auto-analysis functions -
-    # the labeled RVAs in symbol_names.csv don't exist yet (build/labels hasn't
-    # run). So: build (compile + labels -> symbol_names.csv), ghidra-refresh
-    # (apply.py CREATES a function at each labeled RVA + re-exports the warm
-    # functions.csv), build again (the delink + the "vs full engine" metric now
-    # read the warm exports). This is the reproducible warm state.
-    log("init warmup: build -> ghidra-refresh -> build ...")
-    cmd_build(argparse.Namespace(ninja_args=[], tier="normal"))
-    cmd_ghidra_refresh(argparse.Namespace())
-    cmd_build(argparse.Namespace(ninja_args=[], tier="normal"))
-    log("init complete (warmed).")
+    log("init complete (Ghidra-free). Run `gruntz ghidra-refresh` only when wanted.")
 
 
 def cmd_status(args) -> None:
@@ -1064,7 +971,7 @@ def cmd_clean(args) -> None:
     """Nuke build/ + stray root build artifacts so `gruntz init && gruntz build`
     rebuilds from scratch. Touches nothing under src/, config/, or the AI tooling
     dirs (.claude/.codex/.agents). NOTE: this also removes build/ref, the wine
-    prefix, and the Ghidra DB, so the next `gruntz init` is a HEAVY first run."""
+    prefix, and any optional viewer DB stored under build/."""
     import shutil
     # Reap this prefix's wineserver BEFORE deleting build/wineprefix: a server
     # left running against a deleted prefix errors saving its registry ("could
@@ -1198,7 +1105,7 @@ def _add_sema(sub) -> None:
         "  gruntz sema refs  include/X.h 30       every ref (USR-exact; no grep collisions)\n"
         "  gruntz sema hover src/X.cpp 42         type/decl at point\n"
         "  gruntz sema rename include/X.h 40 m_new --dry-run   tree-wide rename preview\n"
-        "  gruntz sema rva   0x00080850           address dossier (claim/src loc/lib/ghidra/%; chases ILT thunks)\n"
+        "  gruntz sema rva   0x00080850           address dossier (claim/src loc/lib/retail/%; chases ILT thunks)\n"
         "  gruntz sema map                        whole-.text layout: categories + gaps overview\n"
         "  gruntz sema map range 0x80000 0x81000  functions + gaps in an RVA window (owner: TU/MFC/CRT/...)\n"
         "  gruntz sema map file GruntzMgr.cpp     a file's functions + how many foreign fns interleave them\n"
@@ -1249,7 +1156,7 @@ def _add_sema(sub) -> None:
     sr.set_defaults(func=cmd_sema_rename)
 
     srv = ss.add_parser("rva",
-                        help="address dossier (src claim + file:line / lib / ghidra / "
+                        help="address dossier (src claim + file:line / lib / retail / "
                              "match; chases ILT jmp-thunks to the body)")
     srv.add_argument("addr", help="hex RVA, e.g. 0x00080850")
     srv.set_defaults(func=cmd_sema_rva)
@@ -1375,13 +1282,10 @@ def main() -> None:
     sub.add_parser("gate-selftest", help="negative controls: prove the build gates can FAIL"
                    ).set_defaults(func=cmd_gate_selftest)
 
-    sub.add_parser("ghidra-refresh", help="apply generated data to Ghidra + re-export"
+    sub.add_parser("ghidra-refresh", help="populate an optional Ghidra viewer from project data"
                    ).set_defaults(func=cmd_ghidra_refresh)
-    i = sub.add_parser("init", help="one-time FULL local setup (dirs/configure/EXE/wine/clangd/Ghidra DB)")
+    i = sub.add_parser("init", help="one-time local setup (dirs/configure/EXE/wine/clangd)")
     i.add_argument("--force", action="store_true", help="re-init the wine prefix")
-    i.add_argument("--reimport", action="store_true", help="rebuild the Ghidra DB from scratch")
-    i.add_argument("--no-warmup", action="store_true",
-                   help="skip the build->ghidra-refresh->build warmup (leave the Ghidra DB cold)")
     i.set_defaults(func=cmd_init)
     sub.add_parser("clangd", help="(re)generate the clangd compile DB (editor)"
                    ).set_defaults(func=cmd_clangd)

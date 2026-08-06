@@ -95,10 +95,9 @@ DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 # totals the functions we've pulled into units; for honest progress we weigh
 # `exact` against the real
 # engine and surface the carve-outs as their own README rows (counted, not hidden).
-# functions.csv is the delinker's Ghidra input (present after `gruntz build`); the
-# FID list is committed. Absent (fresh worktree, no build) -> None and callers
+# The admitted function table and FID list are committed. Absent -> None and callers
 # fall back to objdiff's started-unit scope.
-FUNCS_CSV = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+FUNCS_CSV = REPO / "config" / "retail" / "functions.tsv"
 FID_CSV = REPO / "config" / "retail" / "library_labels.csv"
 
 README = REPO / "README.md"
@@ -116,7 +115,7 @@ def engine_universe():
     """Reconstruction-target universe + the excluded carve-out categories.
 
     Returns {"real_fn","real_code","categories":[(label,fn,code,note),...]} or None
-    when the Ghidra/FID exports are absent (callers then fall back to objdiff's
+    when the tracked inventories are absent (callers then fall back to objdiff's
     started-unit totals). `real_*` is the match-% denominator; each category is
     generated/library code carved out of it (shown in the README for transparency,
     not counted in the %)."""
@@ -299,21 +298,16 @@ def load_report(path: Path):
 def func_code_sizes() -> dict[tuple[str, str], int]:
     """{(unit, mangled_name): byte_size} for the matched set.
 
-    Joins build/gen/symbol_names.csv (rva,name,unit - the generated label map) to
-    build/ghidra-enrich/exports/functions.csv (entry_rva,byte_size). Used to
+    Joins build/gen/symbol_names.csv to config/retail/functions.tsv. Used to
     code-weight the per-function best-ever churn for the `Fuzzy Max` column so it
     is directly comparable to the (code-weighted) `Fuzzy` column."""
     import csv
     names = REPO / "build" / "gen" / "symbol_names.csv"
-    funcs_csv = REPO / "build" / "ghidra-enrich" / "exports" / "functions.csv"
+    funcs_csv = REPO / "config" / "retail" / "functions.tsv"
     size_by_rva: dict[int, int] = {}
     if funcs_csv.is_file():
-        with funcs_csv.open() as f:
-            for r in csv.DictReader(f):
-                try:
-                    size_by_rva[int(r["entry_rva"], 16)] = int(r["byte_size"])
-                except (ValueError, KeyError):
-                    pass
+        from gruntz.core.retail_functions import read as read_retail_functions
+        size_by_rva = {r["rva"]: r["size"] for r in read_retail_functions(funcs_csv)}
     out: dict[tuple[str, str], int] = {}
     if names.is_file():
         for line in names.read_text().splitlines():

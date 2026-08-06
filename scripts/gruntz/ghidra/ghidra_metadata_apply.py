@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
-"""ghidra_metadata_apply.py - PyGhidra driver for the Gruntz enrichment + export.
+"""PyGhidra driver that populates the optional Gruntz viewer database.
 
-Replaces the old `analyzeHeadless ... -postScript apply.py -postScript export.py`
+Replaces the old `analyzeHeadless ... -postScript apply.py`
 invocation. On the flake's Ghidra 12.0.4, `analyzeHeadless` routes `.py` scripts
 to PyGhidra but never *starts* PyGhidra, so the scripts die with "Ghidra was not
 started with PyGhidra". This driver instead boots PyGhidra in-process (CPython3 +
-JPype), imports/analyzes the program once, and runs apply.py + export.py as
+JPype), imports/analyzes the program once, and runs apply.py as a
 GhidraScripts under the PyGhidraScriptProvider (so they get `currentProgram`,
 `monitor`, `state` and the flat-API globals just like before).
 
 Run it with the dev shell's `python3` (the one carrying the `pyghidra` package):
 
-    python3 ghidra_metadata_apply.py <exe> <proj_location> <proj_name> <apply.py> <export.py> [--no-analyze]
+    python3 ghidra_metadata_apply.py <exe> <proj_location> <proj_name> <apply.py> [--no-analyze]
 
 - <proj_location>/<proj_name>.{gpr,rep} is the project (non-nested layout, to
   match the existing build/ghidra-named/gruntz.{gpr,rep}).
 - First run imports + auto-analyzes the EXE (SEVERAL MINUTES). If the program is
   already in the project it is reused; pass --no-analyze to skip re-analysis when
-  iterating (re-running apply/export on an already-analyzed DB).
+  iterating (re-running the population script on an already-analyzed DB).
 """
 import sys
 from pathlib import Path
@@ -64,21 +64,14 @@ def main() -> int:
             # by default; default auto-analysis (on both Ghidra 11.4.2 and 12.0.4)
             # carves only ~9,176 .text functions and leaves real code in
             # unreferenced gaps undisassembled. AIF disassembles those gaps,
-            # recovering ~+130 genuine .text functions (verified: every one lands
-            # inside .text, none in .data; ~83 are >=16-byte bodies, ~35 are 5-byte
-            # incremental-linker jmp thunks) that apply.py's metadata seeding does NOT
-            # cover. These become new matchable-function candidates. The other
-            # analyzers (RTTI/Switch/Shared-Return/Function-ID/Demangler) are
-            # already enabled by default and recover nothing extra; the vtable-only
-            # methods (RunMessageLoop, CState/CPlay stubs, ...) are unreachable by
-            # ANY analyzer and are seeded explicitly by apply.py from
-            # symbol_names/source stub labels/library_labels instead.
+            # recovering code in gaps before apply.py replaces the analyzer's
+            # function model with the tracked inventory. The other analyzers
+            # still provide useful decompiler metadata for this optional viewer.
             #
             # COST: AIF roughly 4x's the Ghidra analysis phase - measured on
             # GRUNTZ.EXE at 77s (default) -> 281s (+AIF), i.e. +~204s / ~3.4 min.
-            # That cost is paid ONLY here, on the `analyze` path (`gruntz init` /
-            # `gruntz init --reimport`), which is one-time/idempotent. The per-edit
-            # `gruntz build` loop never re-runs Ghidra analysis, so it is unaffected.
+            # That cost is paid only on the first explicit `gruntz ghidra-refresh`.
+            # The build pipeline never opens this database.
             from ghidra.program.model.listing import Program
             opts = program.getOptions(Program.ANALYSIS_PROPERTIES)
             tx = program.startTransaction("enable-aggressive-instruction-finder")
@@ -91,7 +84,7 @@ def main() -> int:
             _analyze_program(flat, program)  # only analyzes if not yet analyzed
 
         # Each script runs as a GhidraScript with currentProgram=program, in order
-        # (apply.py mutates the DB, then export.py dumps the CSVs).
+        # (normally just apply.py, which populates the disposable viewer).
         for script in scripts:
             print(f"[ghidra_metadata_apply] running {Path(script).name} ...", flush=True)
             pyghidra.ghidra_script(script, project, program=program)

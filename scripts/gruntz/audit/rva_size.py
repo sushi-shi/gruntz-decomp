@@ -11,16 +11,12 @@ extent is 0x1d, `CMenuItem2::Disable` 0x14 vs 0x17, two accessors 0xa vs 0xe). E
 quietly lost the function's last basic block. They were found by noticing the target asm was
 a strict PREFIX of ours - an expensive way to learn something one subtraction can tell you.
 
-Ground truth is Ghidra's carve (`build/ghidra-enrich/exports/functions.csv`, entry_rva +
-byte_size). Two directions, and they are not symmetric:
+The comparison baseline is the admitted `config/retail/functions.tsv` table.
+Two directions, and they are not symmetric:
 
-  SHORT  ours < Ghidra's  - the costly one. The target is truncated and the score is a lie.
-  LONG   ours > Ghidra's  - usually benign or a Ghidra under-carve (it splits on shared
-                            tails and on data interleaved in .text), so it is reported but
-                            does not gate.
-
-Ghidra 12 carves fewer function starts than 11.4.2 did (see docs/gotchas.md), so an address
-missing from the CSV is not a finding - it is skipped and counted.
+  SHORT  ours < inventory - the costly one. The target is truncated and the score is a lie.
+  LONG   ours > inventory - the tracked boundary needs review/update; reported but
+                            not gated because inline tables can explain the growth.
 
     python -m gruntz.audit.rva_size            # report both directions
     python -m gruntz.audit.rva_size --gate     # exit 1 if any SHORT label remains
@@ -32,7 +28,7 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-FUNCS = REPO / "build/ghidra-enrich/exports/functions.csv"
+FUNCS = REPO / "config/retail/functions.tsv"
 ROOTS = ("src", "include")
 
 # RVA(0x00xxxxxx, 0xNN) - the canonical spelling (gated by gruntz.audit.label_style).
@@ -40,17 +36,11 @@ ROOTS = ("src", "include")
 RVA_RE = re.compile(r"\bRVA(?:_COMPGEN)?\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)")
 
 
-def ghidra_extents():
+def retail_extents():
     if not FUNCS.is_file():
-        raise SystemExit("[rva-size] %s missing - run `gruntz init`" % FUNCS)
-    out = {}
-    with FUNCS.open() as fh:
-        for row in csv.DictReader(fh):
-            try:
-                out[int(row["entry_rva"], 16)] = int(row["byte_size"])
-            except (ValueError, KeyError):
-                continue
-    return out
+        raise SystemExit("[rva-size] tracked inventory missing: %s" % FUNCS)
+    from gruntz.core.retail_functions import by_rva
+    return {rva: row["size"] for rva, row in by_rva(FUNCS).items()}
 
 
 def labels():
@@ -70,7 +60,7 @@ def main():
     ap.add_argument("--long", action="store_true", help="list every LONG label too")
     a = ap.parse_args()
 
-    extents = ghidra_extents()
+    extents = retail_extents()
     short, long_, unknown, ok = [], [], 0, 0
     for path, line, rva, size in labels():
         real = extents.get(rva)
@@ -92,13 +82,13 @@ def main():
                   % (path, line, rva, size, real, real - size))
         print()
     if long_ and a.long:
-        print("LONG - ours exceeds Ghidra's carve; usually a Ghidra under-carve "
+        print("LONG - source exceeds the admitted retail boundary "
               "(shared tail / interleaved data), verify before changing:")
         for path, line, rva, size, real in sorted(long_, key=lambda r: -(r[3] - r[4])):
             print("  %s:%d  RVA(0x%08x, 0x%x)  ghidra 0x%x" % (path, line, rva, size, real))
         print()
 
-    print("rva-size: %d matched, %d SHORT, %d long, %d not carved by Ghidra"
+    print("rva-size: %d matched, %d SHORT, %d long, %d absent from retail inventory"
           % (ok, len(short), len(long_), unknown))
     if a.gate and short:
         raise SystemExit(1)

@@ -99,7 +99,7 @@ def _alignment(rva, size):
     return a
 
 
-def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
+def string_rows(exe=EXE, base_dir=None):
     """Enrollable `??_C@` string-literal definitions + the withheld ones.
 
     A data manifest de-materializes any data it does not enroll, so a unit's string
@@ -128,8 +128,7 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
     import synth_pdb as _synth  # noqa: E402
 
     base_dir = Path(base_dir or REPO / "build/objdiff/base")
-    ghidra_symbols = Path(ghidra_symbols or REPO / "build/ghidra-enrich/exports/symbols.csv")
-    if not base_dir.is_dir() or not ghidra_symbols.is_file():
+    if not base_dir.is_dir() or not Path(exe).is_file():
         return [], []
 
     owners = defaultdict(dict)          # payload -> {unit: ??_C@ name}
@@ -147,7 +146,7 @@ def string_rows(exe=EXE, base_dir=None, ghidra_symbols=None):
 
     pe = read_pe(exe)
     _synth.read_sections(str(exe))
-    rdata_syms, data_syms = _synth.read_data_symbols(str(ghidra_symbols))
+    rdata_syms, data_syms = _synth.read_data_symbols(str(exe))
     image = Exe(Path(exe))
     rows, withheld, by_name = [], [], defaultdict(list)
     for syms in (rdata_syms, data_syms):

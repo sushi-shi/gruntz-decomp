@@ -132,32 +132,8 @@ def load_symbols():
                 m = re.search(r"DATA\(0x([0-9a-fA-F]+)\).*?\b([A-Za-z_]\w*)\s*(?:\[|;|=)", ln)
                 if m:
                     data[m.group(2)] = int(m.group(1), 16) - IMAGE_BASE
-    # The TARGET side's symbol names are the delinker's, i.e. the fake PDB's, i.e. GHIDRA's
-    # labels - NOT cl's mangled names and NOT symbol_names.csv. Without this table a target
-    # reloc naming a Ghidra-labelled ILT thunk ("ClearFrame2", "DtorStatus") resolves to
-    # None and is SILENTLY DROPPED from the retail multiset, so every such call reports as
-    # "base references <body> - retail never does". Ghidra gives the thunk and the body the
-    # SAME label (0x3fd5 ClearFrame2 = thunk, 0xe81a0 ClearFrame2 = body), so both land in
-    # `dups` and resolve_thunk() collapses them onto the one body. This was the dominant
-    # false-positive class in the port (~1400 of the 1547 WRONG).
-    # (functions.csv: rva,size,name)  (symbols.csv: rva,name,is_primary - the DATA labels,
-    # e.g. `0x21aef4,DAT_0061aef4`, which is how the delinker names an unlabelled global's
-    # ELEMENT: base says `?g_bfP@@3PAIA + 0x44`, retail says `DAT_0061aef4` - one address.)
-    for fname, ncol in (("functions.csv", 2), ("symbols.csv", 1)):
-        gpath = os.path.join(REPO, "build/ghidra-enrich/exports", fname)
-        if not os.path.exists(gpath):
-            continue
-        for r in csv.reader(open(gpath, encoding="latin-1")):
-            if len(r) <= ncol or not r[0].startswith("0x"):
-                continue
-            try:
-                v = int(r[0], 16)
-            except ValueError:
-                continue  # the export carries a few negative/bogus rvas
-            if v < 0:
-                continue
-            for k in (r[ncol], _norm(r[ncol]), _key(r[ncol])):
-                dups.setdefault(k, set()).add(v)  # dups ONLY: never shadow cl's own symbols
+    # Unnamed target-side symbols now encode their address directly (FUN_/DAT_);
+    # _AUTO below resolves them without a secondary analysis-label database.
     return sym, data, dups
 
 

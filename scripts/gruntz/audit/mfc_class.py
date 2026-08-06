@@ -431,19 +431,14 @@ _FUNCS = None
 
 
 def load_function_starts():
-    """[(rva, size)] from the Ghidra export + our own symbol_names (which knows
-    starts Ghidra missed)."""
+    """[(rva, size)] from the admitted retail table plus source annotations."""
     global _FUNCS
     if _FUNCS is not None:
         return _FUNCS
     out = {}
-    p = REPO / "build/ghidra-enrich/exports/functions.csv"
-    if p.is_file():
-        for r in csv.DictReader(open(p)):
-            try:
-                out[int(r["entry_rva"], 16)] = int(r["byte_size"])
-            except (KeyError, ValueError):
-                pass
+    from gruntz.core.retail_functions import read as read_retail_functions
+    for r in read_retail_functions():
+        out[r["rva"]] = r["size"]
     p = REPO / "build/gen/symbol_names.csv"
     if p.is_file():
         for r in csv.DictReader(open(p)):

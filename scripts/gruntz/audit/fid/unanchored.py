@@ -16,6 +16,7 @@ Strictness to avoid false positives:
 Report newly-found (rva,name,lib) with the same HIGH/AMBIG logic.
 """
 import sys,pickle,csv,json
+from pathlib import Path
 from collections import defaultdict
 from gruntz.audit.fid.common import pe_text, trim_pad
 
@@ -25,13 +26,14 @@ MIN_FIXED=16
 def main():
     sigs_pkl,exe,funcs_csv,out_csv=sys.argv[1:5]
     text,trva,_=pe_text(exe)
-    rows=list(csv.DictReader(open(funcs_csv)))
+    from gruntz.core.retail_functions import read as read_retail_functions
+    rows=read_retail_functions(Path(funcs_csv))
     starts={}
     ints=[]
     for r in rows:
-        rva=int(r['entry_rva'],16); off=rva-trva
+        rva=r['rva']; off=rva-trva
         if 0<=off<len(text):
-            starts[off]=int(r['byte_size']); ints.append((off,int(r['byte_size'])))
+            starts[off]=r['size']; ints.append((off,r['size']))
     ints.sort()
     start_set=set(starts)
     sorted_starts=sorted(start_set)
