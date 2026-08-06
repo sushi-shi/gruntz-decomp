@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>

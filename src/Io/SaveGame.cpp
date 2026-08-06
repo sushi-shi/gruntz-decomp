@@ -11,6 +11,7 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>

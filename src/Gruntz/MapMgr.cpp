@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MapMgr.h>
 
 #include <Mfc.h>

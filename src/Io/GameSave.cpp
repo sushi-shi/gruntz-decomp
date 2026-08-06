@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialCounter.h>

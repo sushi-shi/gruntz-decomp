@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/FontConfig.h>
+#include <Gruntz/GruntDirStatics.h>
 
 #include <Mfc.h>
 #include <MfcWin.h>

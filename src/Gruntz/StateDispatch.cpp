@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/StateDispatch.h>
 
 #include <Gruntz/GameObjectFactory.h>

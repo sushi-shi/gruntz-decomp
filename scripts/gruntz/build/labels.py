@@ -1147,6 +1147,16 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     for row in vtable_catalog.library_rows():
         if row.get("unit"):
             rows.append((row["rva"], row["name"], row["unit"], row["size"], "data"))
+    # Reviewed per-TU static-copy pins (header statics: DATA() in a header is
+    # ignored, so their retail rvas live in a tracked sidecar - see
+    # include/Gruntz/GruntDirStatics.h).
+    copies = REPO / "config/static_data_copies.tsv"
+    if copies.exists():
+        for ln in copies.read_text().splitlines():
+            if not ln.strip() or ln.lstrip().startswith("#"):
+                continue
+            rva_s, name, unit, size_s, kind = ln.split("\t")
+            rows.append((int(rva_s, 16), name, unit, int(size_s, 16), kind))
     rc = check_labels_manifest(rows)
     if rc != 0:
         return rc

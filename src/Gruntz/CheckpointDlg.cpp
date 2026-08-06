@@ -2,6 +2,7 @@
 
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>
 

@@ -3,6 +3,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>

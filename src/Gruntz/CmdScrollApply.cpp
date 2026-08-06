@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/ScrollState.h>

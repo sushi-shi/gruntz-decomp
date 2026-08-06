@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/ObjTypeRegistrars.h>
 
 RVA(0x0000a3b0, 0x6e2)

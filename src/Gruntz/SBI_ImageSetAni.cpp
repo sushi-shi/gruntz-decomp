@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/SBI_ImageSetAni.h>
 
 #include <Mfc.h>

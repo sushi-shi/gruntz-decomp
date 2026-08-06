@@ -13,6 +13,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/UserLogic.h>

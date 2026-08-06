@@ -17,6 +17,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>

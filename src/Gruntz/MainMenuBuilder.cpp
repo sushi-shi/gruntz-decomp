@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MainMenuBuilder.h>
 
 #include <Mfc.h>

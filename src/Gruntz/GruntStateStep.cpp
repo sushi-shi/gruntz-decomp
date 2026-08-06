@@ -8,6 +8,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>

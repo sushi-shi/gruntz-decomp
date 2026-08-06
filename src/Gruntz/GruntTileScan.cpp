@@ -7,6 +7,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
