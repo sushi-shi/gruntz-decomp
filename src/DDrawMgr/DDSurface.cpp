@@ -1268,10 +1268,9 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                i32 s0 = src[0];
-                i32 s1 = src[1];
-                i32 s2 = src[2];
-                src += 3;
+                u8 s0 = *src++;
+                u8 s1 = *src++;
+                u8 s2 = *src++;
                 i32 best = 0;
                 i32 d0 = s2 - pal[0].peRed;
                 i32 d1 = s1 - pal[0].peGreen;
@@ -1298,10 +1297,9 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                i32 s0 = src[0];
-                i32 s1 = src[1];
-                i32 s2 = src[2];
-                src += 3;
+                u8 s0 = *src++;
+                u8 s1 = *src++;
+                u8 s2 = *src++;
                 i32 best = 0;
                 i32 d0 = s2 - pal[0].peRed;
                 i32 d1 = s1 - pal[0].peGreen;

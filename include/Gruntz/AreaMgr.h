@@ -17,7 +17,7 @@ public:
 
     i32 InitializeLevel(i32 index);
 
-    i32 IsSameWorld(i32 a);
+    b32 IsSameWorld(i32 levelIndex);
 
     ~CAreaMgr();
 

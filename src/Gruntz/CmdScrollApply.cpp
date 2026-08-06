@@ -16,12 +16,12 @@
 
 #include <stddef.h>
 
-static i32 RandRange(i32 lo, i32 hi) {
+static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
     i32 range = hi - lo + 1;
     if (range == 0) {
-        return (g_gameReg->Rand() & 1) ? lo : hi;
+        return (mgr->Rand() & 1) ? lo : hi;
     }
-    return g_gameReg->Rand() % range + lo;
+    return mgr->Rand() % range + lo;
 }
 
 RVA(0x000ebd30, 0x21)
@@ -31,6 +31,7 @@ void Cmd_ResetScroll() {
     g_scrollAccum = 0;
     g_scrollLimit = 0;
 }
+// @early-stop
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
@@ -38,15 +39,17 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
     i32 scrollY = v->m_snappedY;
 
     if (g_scrollClock > g_frameTime) {
-        if (g_frameDelta < g_scrollTimer) {
-            g_scrollTimer -= g_frameDelta;
-        } else {
+        if (g_frameDelta >= g_scrollTimer) {
             g_scrollTimer = 0;
+        } else {
+            g_scrollTimer -= g_frameDelta;
         }
         if (g_scrollTimer == 0) {
-            g_scrollTimer = RandRange(g_panMinX, g_panMaxX);
-            scrollX += RandRange(-g_jitterX, g_jitterX);
-            scrollY += RandRange(-g_jitterY, g_jitterY);
+            g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
+            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
+            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
+            scrollX += jitterX;
+            scrollY += jitterY;
         }
     }
 

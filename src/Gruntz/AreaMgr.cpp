@@ -648,11 +648,11 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 
 // @early-stop
 RVA(0x0009b430, 0x49)
-i32 CAreaMgr::IsSameWorld(i32 a) {
-    if (a <= 0) {
-        return 0;
+b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
+    if (levelIndex <= 0) {
+        return false;
     }
-    i32 ga = (a - 1) % 36 / 4 + 1;
-    i32 gc = (m_currentLevelIndex - 1) % 36 / 4 + 1;
-    return ga == gc;
+    i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
+    i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;
+    return requestedWorld == currentWorld;
 }
