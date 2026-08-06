@@ -3002,29 +3002,43 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         return 0;
     }
 
-    RECT box;
-    Coord c1;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-    box.bottom = (c1.m_y >> TILE_SHIFT_PX) + 4;
-    Coord c2;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
-    box.right = (c2.m_x >> TILE_SHIFT_PX) + 4;
-    Coord c3;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c3));
-    box.top = (c3.m_y >> TILE_SHIFT_PX) - 3;
-    Coord c4;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c4));
-    box.left = (c4.m_x >> TILE_SHIFT_PX) - 3;
+    i32 bottom;
+    i32 right;
+    i32 top;
+    i32 left;
+    {
+        Coord c1;
+        unit->GetScreenPos(&c1);
+        c1.m_x >>= TILE_SHIFT_PX;
+        c1.m_y >>= TILE_SHIFT_PX;
+        bottom = c1.m_y + 4;
+        Coord c2;
+        unit->GetScreenPos(&c2);
+        c2.m_x >>= TILE_SHIFT_PX;
+        c2.m_y >>= TILE_SHIFT_PX;
+        right = c2.m_x + 4;
+        Coord c3;
+        unit->GetScreenPos(&c3);
+        c3.m_x >>= TILE_SHIFT_PX;
+        c3.m_y >>= TILE_SHIFT_PX;
+        top = c3.m_y - 3;
+        Coord c4;
+        unit->GetScreenPos(&c4);
+        c4.m_x >>= TILE_SHIFT_PX;
+        left = c4.m_x - 3;
+    }
     CMapMgr* board = m_board;
-    RECT bounds;
-    static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
-    RECT clamp;
-    clamp.left = box.left;
-    clamp.top = box.top;
-    clamp.right = box.right + 1;
-    clamp.bottom = box.bottom + 1;
-    if (!IntersectRect(&board->m_bounds, &clamp, &bounds)) {
-        board->m_bounds = clamp;
+    RECT box;
+    {
+        RECT bounds;
+        static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
+        box.left = left;
+        box.top = top;
+        box.right = right + 1;
+        box.bottom = bottom + 1;
+        if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+            board->m_bounds = box;
+        }
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
