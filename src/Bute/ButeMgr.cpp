@@ -1180,20 +1180,26 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             output << *static_cast<double*>(value->pValue);
             break;
 
-        case BUTE_FLOAT:
-            output << s_strFloat << static_cast<double>(*static_cast<float*>(value->pValue));
+        case BUTE_FLOAT: {
+            float scalar = *static_cast<float*>(value->pValue);
+            output << s_strFloat << static_cast<double>(scalar);
             break;
+        }
 
-        case BUTE_STRING:
-            output << static_cast<unsigned char>('"') << static_cast<char*>(value->pValue)
+        case BUTE_STRING: {
+            CString& text = *static_cast<CString*>(value->pValue);
+            output << static_cast<unsigned char>('"') << static_cast<const char*>(text)
                    << static_cast<unsigned char>('"');
             break;
+        }
 
         case BUTE_RECT: {
+            output << static_cast<unsigned char>('(');
             ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
-            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
-                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
-                   << s_strComma << static_cast<long>(ref->d) << s_strClose;
+            output << static_cast<long>(ref->a) << s_strComma << static_cast<long>(ref->b)
+                   << s_strComma << static_cast<long>(ref->c) << s_strComma
+                   << static_cast<long>(ref->d);
+            output << static_cast<unsigned char>(')');
             break;
         }
 
@@ -1206,13 +1212,18 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
 
         case BUTE_VECTOR: {
             ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
-            output << s_strLt << ref->x << s_strComma << ref->y << s_strComma << ref->z << s_strGt;
+            double x = ref->x;
+            double y = ref->y;
+            double z = ref->z;
+            output << s_strLt << x << s_strComma << y << s_strComma << z << s_strGt;
             break;
         }
 
         case BUTE_RANGE: {
             ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
-            output << s_strLBrack << ref->x << s_strComma << ref->y << s_strRBrack;
+            double x = ref->x;
+            double y = ref->y;
+            output << s_strLBrack << x << s_strComma << y << s_strRBrack;
             break;
         }
     }
@@ -2024,7 +2035,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        made->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
         return;
     }
 
@@ -2032,22 +2043,16 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_VECTOR, val);
+            CButeValue box;
+            box.SetVector(BUTE_VECTOR, val);
             hit74->CopyValue(&box);
             return;
         }
-        g74->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        g74->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_VECTOR, val));
-}
-
-RVA(0x00174730, 0x3c)
-CButeValue* CButeValue::SetVector(ButeType type, const ButeRefLarge* src) {
-    this->type = type;
-    this->pValue = new ButeRefLarge(*src);
-    return this;
+    made74->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
 }
 
 RVA(0x00174770, 0x4e)

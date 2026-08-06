@@ -33,14 +33,18 @@ struct ButeIntPoint {
 };
 SIZE(0x8);
 
-struct ButeDoubleVector {
+struct ButeRefLarge {
+    double x, y, z;
+};
+SIZE(0x18);
+
+struct ButeDoubleVector : ButeRefLarge {
     ButeDoubleVector() {
         x = 0;
         y = 0;
         z = 0;
     }
     ~ButeDoubleVector() {}
-    double x, y, z;
 };
 SIZE(0x18);
 
@@ -57,6 +61,8 @@ SIZE(0x10);
 struct CButeValue {
     ButeType type;
     void* pValue;
+
+    CButeValue() {}
 
     CButeValue(ButeType type, CButeValue* src) {
         this->type = type;
@@ -186,15 +192,17 @@ struct CButeValue {
 };
 SIZE(0x8);
 
+RVA(0x00174730, 0x3c)
+inline CButeValue* CButeValue::SetVector(ButeType type, const ButeRefLarge* src) {
+    this->type = type;
+    this->pValue = new ButeRefLarge(*src);
+    return this;
+}
+
 struct ButeRefSmall {
     i32 w[4];
 };
 SIZE(0x10);
-
-struct ButeRefLarge {
-    i32 w[6];
-};
-SIZE(0x18);
 
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     // The retail jump table (0x17213c) proves the ButeType values AND that the
