@@ -564,3 +564,36 @@ Generalization (unswept): the CRT `$XCU` table enumerates EVERY TU with any
 dynamic-initialized static - zero-separated per-obj pointer groups in link
 order, each pointing at that TU's funclet band. Walking the whole table
 drops cut points across the binary, not just where this family traveled.
+
+### Executed (2026-08-07)
+
+The band cuts above are DONE: 26 new compilands on main.
+  battlezmapconfig -> +6 (battlezunitstep, battlezspecialanim, battlezspawncheck,
+    battlezrepath, battlezreserveplace, battlezretarget)
+  gruntarrivalscan -> +15 (one AI-step behavior each: bricklayerstep, wanderstep,
+    reticlescan, chargestep, arrivalupdate, goosuckerstep, defensealt,
+    arrivalneighbor, defensestep, diggerstep, scantarget, phasestep, seektarget,
+    peertracking, defenselean)
+  dialogs -> +1 (battlezdlgcolors), demo -> +1 (dircellmethods),
+  statusbartabbuilders -> +2 (sbi_sidetab, sbi_statztabarrow)
+Names are DESCRIPTIVE placeholders from each TU's reconstructed content, not
+recovered compiland names (retail's own names are unknown; see the naming rule
+in [[fossil-tu-dissolution-method]]).
+
+Procedure that worked, per cut: move the annotated blocks whose RVA falls in
+the cut's span into a new .cpp with the parent's prelude (includes + file-local
+macros the moved code uses), add `#include <Gruntz/GruntDirStatics.h>` so the
+new TU emits its own copy, add the [[unit]] entry right after the parent (link
+order = band order), canonicalize that copy's nine sidecar pins to the new
+unit, then build with GRUNTZ_LABELS_ACK=1 (the denominator guard).
+
+Traps hit: (1) blocks must be re-emitted DATA-first then ascending-RVA - the
+tu-order gate is per-TU and a plain source-order copy trips it; (2) an
+interleaved bare `RVA_COMPGEN` between a label and its body must stay GLUED to
+that block or the label orphans; (3) a global used by a moved fn needs its
+`extern` in the owner header (g_spawnCfg).
+
+Still suffixed in the sidecar (uncertain, by design): the ghidra-region copies
+(3 - no TU exists to split; they need TUs carved for unreconstructed regions)
+and the split-half families whose halves straddle a cross-TU interleaver
+(0x229eb8, 0x22b588, 0x245168, 0x22c1c0, 0x244f50).

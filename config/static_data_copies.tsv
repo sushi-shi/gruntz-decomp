@@ -602,10 +602,10 @@
 0x229ec8	?s_gruntDirNorth_229ec8@@3UGruntDirectionCell@@A	dialogs	0xc	data
 0x229ed8	?s_gruntDirSouth_229ed8@@3UGruntDirectionCell@@A	dialogs	0xc	data
 0x229ee8	?s_gruntDirWest_229ee8@@3UGruntDirectionCell@@A	dialogs	0xc	data
-0x22bd28	?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A	tilescan	0xc	data
-0x22bd38	?s_gruntDirNorth_22bd38@@3UGruntDirectionCell@@A	tilescan	0xc	data
-0x22bd48	?s_gruntDirSouth_22bd48@@3UGruntDirectionCell@@A	tilescan	0xc	data
-0x22bd58	?s_gruntDirWest_22bd58@@3UGruntDirectionCell@@A	tilescan	0xc	data
+0x22bd28	?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A	videoconfig	0xc	data
+0x22bd38	?s_gruntDirNorth_22bd38@@3UGruntDirectionCell@@A	videoconfig	0xc	data
+0x22bd48	?s_gruntDirSouth_22bd48@@3UGruntDirectionCell@@A	videoconfig	0xc	data
+0x22bd58	?s_gruntDirWest_22bd58@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x245168	?s_gruntDirEast_245168@@3UGruntDirectionCell@@A	brickzload	0xc	data
 0x245178	?s_gruntDirNorth_245178@@3UGruntDirectionCell@@A	brickzload	0xc	data
 0x245188	?s_gruntDirSouth_245188@@3UGruntDirectionCell@@A	brickzload	0xc	data
