@@ -160,9 +160,9 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 if (desc == NULL) {
                     continue;
                 }
-                i32 alt = 0;
+                SpriteTeamColorVariant alt = SPRITE_TEAM_COLOR_PRIMARY;
                 if (desc->m_arrived != 0) {
-                    alt = 1;
+                    alt = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
                 if (static_cast<i64>(g_frameTime) - desc->m_combatClock64 >= desc->m_combatTimeout64
@@ -173,7 +173,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                         continue;
                     }
 
-                    switch (static_cast<SpriteTeamColorVariant>(alt)) {
+                    switch (alt) {
                         case SPRITE_TEAM_COLOR_PRIMARY:
                             *dst = node->m_teamColor1;
                             break;

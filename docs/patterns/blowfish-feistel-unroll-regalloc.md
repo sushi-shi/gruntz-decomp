@@ -8,13 +8,10 @@ The engine embeds Bruce Schneier's reference Blowfish (P-array @0x61aeb0 init to
 digits-of-pi constants `0x243f6a88,...`; S-boxes @0x61aef8/b2f8/b6f8/baf8 init to
 `0xd1310ba6,...`). The single-block encipher (0x16f7f0, loads P[0] first) and
 decipher (0x16fc70, loads P[17] first) are 16 fully-unrolled Feistel rounds. The
-round body — `Xr ^= ((S0[Xl>>24]+S1[Xl>>16])^S2[Xl>>8])+S3[Xl] ^ P[i]`, with the
-current half spilled to `[esp+0x14]` and its `>>16` byte re-read from `[esp+0x16]`
-— reproduces in SHAPE (identical instruction multiset), but MSVC5 assigns the two
-`u32*` arg pointers to different callee-saved registers than retail (retail pins
-xl→edi, xr→ebp and hoists `mov eax,P[17]` ABOVE the 4 pushes; recompile lands
-esi/ebp or esi/edi and pushes first), and the phase shift cascades through all 16
-rounds + the two final stores.
+round body is `Xr ^= ((S0[Xl>>24]+S1[Xl>>16])^S2[Xl>>8])+S3[Xl] ^ P[i]`, with the
+current half spilled to `[esp+0x14]` and its `>>16` byte re-read from `[esp+0x16]`.
+Earlier explicit alternating/temp-swap/deferred-read reconstructions reproduced that
+instruction multiset but chose the wrong argument registers and remained near 50-57%.
 
 ```cpp
 #define F(x) (((g_bfS0[(x)>>24] + g_bfS1[((x)>>16)&0xff]) ^ g_bfS2[((x)>>8)&0xff]) + g_bfS3[(x)&0xff])
@@ -32,6 +29,6 @@ mov edi,[esp+0x14]           ; xl -> edi   (recompile picks esi/ebp instead)
 mov ebp,[esp+0x18]           ; xr -> ebp
 ... mov [esp+0x14],Xl ; mov cl,[esp+0x16] ; mov ebx,[ecx*4+0x61b2f8] ...  (x16)
 ```
-WALL (regalloc/scheduling). Alternating, temp-swap, and deferred-`*xr`-read source forms
-all land 50-57%; logic is provably correct (tail computes the same `*xl=h^P0`, `*xr=F(h)^h'^P1`).
-Evidence: Blowfish_decipher 0x16fc70 ~56.6% (@early-stop), src/Crypto/Blowfish.cpp.
+Those spellings are a negative result, not the current state. The shared comma-expression
+round macro now brings `Blowfish_decipher` to 99.875%; the remaining difference belongs to
+the TU-state tradeoff documented in `mirror-function-divergent-schedule.md`.

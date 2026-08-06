@@ -56,9 +56,6 @@ void Blowfish_encipher(u32* xl, u32* xr) {
 }
 
 // @early-stop
-// The --diff hunks here are operand MASKING, not real bytes: the base already has
-// `shr eax,0x18` and every S-box reference is a DIR32 reloc site printed as a bare
-// [reg*4]. Residue is the referent naming, not the code.
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;

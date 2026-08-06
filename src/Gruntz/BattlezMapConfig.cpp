@@ -3699,20 +3699,29 @@ RVA(0x0002dfa0, 0x325)
 i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = 1;
 
-    CGameObject* lvl = unit->m_object;
-    i32 bottom = (lvl->m_screenY >> TILE_SHIFT_PX) + 8;
-    Coord g0;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g0));
-    i32 right = (g0.m_x >> TILE_SHIFT_PX) + 8;
-    Coord g1;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g1));
-    i32 top = (g1.m_y >> TILE_SHIFT_PX) - 8;
-    Coord g2;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&g2));
-    i32 left = (g2.m_x >> TILE_SHIFT_PX) - 8;
+    i32 bottom;
+    i32 right;
+    i32 top;
+    i32 left;
+    {
+        CGameObject* lvl = unit->m_object;
+        bottom = (lvl->m_screenY >> TILE_SHIFT_PX) + 8;
+        Coord g0;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g0));
+        g0.m_x >>= TILE_SHIFT_PX;
+        g0.m_y >>= TILE_SHIFT_PX;
+        right = g0.m_x + 8;
+        Coord g1;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g1));
+        g1.m_x >>= TILE_SHIFT_PX;
+        g1.m_y >>= TILE_SHIFT_PX;
+        top = g1.m_y - 8;
+        Coord g2;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g2));
+        left = (g2.m_x >> TILE_SHIFT_PX) - 8;
+    }
     CMapMgr* board = m_board;
-    RECT bounds;
-    static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
+    CRect bounds(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = left;
     box.top = top;
@@ -3767,26 +3776,25 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     i32 db = board->m_bounds.bottom;
     if (dl < dr) {
         i32 colOff = (dl * 7) << 2;
-        for (i32 w = dr - dl; w != 0; w--) {
+        i32 w = dr - dl;
+        do {
             for (i32 r = dt; r < db; r++) {
                 board->m_rowBytes[r][colOff + 2] &= 0xfd;
             }
             colOff += 0x1c;
-        }
+        } while (--w != 0);
     }
 
-    RECT fa;
-    fa.left = 0;
-    fa.top = 0;
-    fa.right = board->m_width;
-    fa.bottom = board->m_height;
-    RECT fb;
-    fb.left = 0;
-    fb.top = 0;
-    fb.right = board->m_width;
-    fb.bottom = board->m_height;
-    if (!IntersectRect(&board->m_bounds, &fa, &fb)) {
-        board->m_bounds = fa;
+    bounds.left = 0;
+    bounds.top = 0;
+    bounds.right = board->m_width;
+    bounds.bottom = board->m_height;
+    box.left = 0;
+    box.top = 0;
+    box.right = board->m_width;
+    box.bottom = board->m_height;
+    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+        board->m_bounds = box;
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
