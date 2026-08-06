@@ -1468,11 +1468,12 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
         src2base = m_lineBuf;
         x0 = stripWidth;
         destBase = m_straightBase + (col - stripWidth) * bpp;
-    } else if (m_mode == FADER_SWEEP_REVERSE) {
+    } else {
         src2base = m_lineBuf + bpp * stride;
         x0 = 0;
         destBase = m_straightBase + (col + stride) * bpp;
-    } else {
+    }
+    if (m_mode != FADER_SWEEP_FORWARD && m_mode != FADER_SWEEP_REVERSE) {
         return;
     }
 
