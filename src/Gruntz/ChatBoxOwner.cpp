@@ -63,13 +63,14 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
-        CString input = m_fontConfig->GetInputText();
+        char* input =
+            const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
         static_cast<CMulti*>(g_gameReg->m_curState)
-            ->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(input)), 1, 1, 0);
+            ->BroadcastChatLine(input, 1, 1, 0);
     } else {
-        CString input = m_fontConfig->GetInputText();
-        if (_strcmpi(input.Left(17), "Enable Cheatzfile") == 0) {
-            CString args = input.Right(input.GetLength() - 18);
+        if (_strcmpi(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
+            CString args = m_fontConfig->GetInputText();
+            args = args.Right(args.GetLength() - 18);
             i32 split = args.Find(' ');
             if (split != -1) {
                 CString resourceName = args.Left(split);
@@ -85,8 +86,10 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     REZ_TAG_TXT
                 );
                 CButeMgr bute;
-                bool parsed = false;
-                if (source != NULL) {
+                bool parsed;
+                if (source == NULL) {
+                    parsed = false;
+                } else {
                     char* encoded = source->BeginParse();
                     u32 length = source->m_length;
                     istrstream* inputStream = new istrstream(encoded, length);
@@ -95,8 +98,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     ostrstream* outputStream = new ostrstream(decoded, length, 2);
                     CButeTail cryptTail;
                     cryptTail.Decode(inputStream, outputStream);
-                    istrstream* parseStream =
-                        new istrstream(decoded, outputStream->rdbuf()->out_waiting());
+                    istrstream* parseStream = new istrstream(decoded, outputStream->pcount());
                     delete inputStream;
                     delete outputStream;
                     source->EndParse();
@@ -106,7 +108,11 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     bute.m_tree48.Reset();
                     bute.m_tree74.Reset();
                     bute.m_stream = parseStream;
-                    parsed = bute.ParseGroup();
+                    parsed = true;
+                    if (!bute.ParseGroup()) {
+                        bute.m_parseFailed = true;
+                        parsed = false;
+                    }
                     delete parseStream;
                     delete[] decoded;
                 }
@@ -129,12 +135,18 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                         }
                         i32 nonCheat = bute.GetIntDef(groupName, "NonCheat", 0);
                         i32 value = bute.GetIntDef(groupName, "Value", 0x807b);
-                        if (g_gameReg->m_cheatMgr->AddCheat(
-                                static_cast<const char*>(code),
-                                value,
-                                nonCheat == 1 ? 1 : 0
-                            )) {
-                            enabled++;
+                        if (nonCheat == 1) {
+                            if (g_gameReg->m_cheatMgr->AddCheat(
+                                    static_cast<const char*>(code), value, 1
+                                )) {
+                                enabled++;
+                            }
+                        } else {
+                            if (g_gameReg->m_cheatMgr->AddCheat(
+                                    static_cast<const char*>(code), value, 0
+                                )) {
+                                enabled++;
+                            }
                         }
                     }
                     if (enabled > 0) {

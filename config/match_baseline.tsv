@@ -755,7 +755,7 @@ chatboxowner	?Deactivate@CChatBoxOwner@@QAEXXZ	100.0000	100.0000	3	eb73b4fa90d4	
 chatboxowner	?GetInputText@CFontConfig@@QAE?AVCString@@XZ	100.0000	100.0000	1	5dab2982a8d3	0x20ef0
 chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	63.0606	63.0606	6	b530d98bdb55	0x21140
 chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	85.9857	85.9857	4	332a87f9f940	0x20f40
-chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	56.5616	56.5616	5	a0c3aa75128c	0x205c0
+chatboxowner	?ProcessCheatInput@CChatBoxOwner@@QAEXHH@Z	62.3215	62.3215	6	a9575e820a2d	0x205c0
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	14	98260a187bb1	0x85e60
 cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	97.7551	97.7551	18	49a9d67eeb62	0x22be0
 cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	82.6351	82.6351	20	10b3ff2365f9	0x23090
