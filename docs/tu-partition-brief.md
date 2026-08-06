@@ -535,3 +535,32 @@ matcher-3: custom-level dialog populate/select (thiscall, magic-static CString +
 
 ### modeobjinit
 matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).
+
+## Static-init band cuts (the GruntDirStatics oracle, 2026-08-06)
+
+A header-defined internal-linkage object family with ctors (the nine
+GruntDirectionCell statics, include/Gruntz/GruntDirStatics.h) is emitted at
+the INCLUDE POINT of every including TU: nine .data cells + nine `$E`
+funclets, contiguously, at the TU's head (includes-at-top convention; the
+one XCU-buddy-decidable case confirmed head). Each band is therefore a TU
+CUT with an orientation: the band's first byte starts a compiland. One band
+per TU is unconditional (a TU cannot emit two copies), so band COUNT floors
+the TU count and band order fixes link order. Full derivation:
+docs/data-attribution.md (access-map section) + the sidecar
+config/static_data_copies.tsv (rva-suffixed names = holding-unit copies
+awaiting their split).
+
+Cuts inside CURRENT units (band setter rvas; each starts a new TU, span
+runs to the next cut):
+  gruntarrivalscan (>=16 TUs): 0x0ec3c0 0x0ec9e0 0x0ed740 0x0ee550 0x0ef400
+    0x0efe80 0x0f0b00 0x0f19c0 0x0f2440 0x0f2870 0x0f33f0 0x0f4040 0x0f5e40
+    0x0f6f10 0x0f7ae0 0x0f7f90
+  battlezmapconfig (>=5, up to 8 with edge bands): 0x0349c0 0x034e20
+    0x0352a0 0x0355f0 0x035c60 (+edges 0x024b10 0x031360 0x032a30)
+  dialogs (2 copies -> >=2 TUs), demo (2), statusbartabbuilders (3),
+  ghidra-carved regions (3 bands).
+
+Generalization (unswept): the CRT `$XCU` table enumerates EVERY TU with any
+dynamic-initialized static - zero-separated per-obj pointer groups in link
+order, each pointing at that TU's funclet band. Walking the whole table
+drops cut points across the binary, not just where this family traveled.
