@@ -870,7 +870,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         rc.right = m_width;
         rc.bottom = m_height;
     }
-    i32 scale = pct * 32 / 100;
+    pct = pct * 32 / 100;
     u16* src = static_cast<u16*>(Lock(0));
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
@@ -878,7 +878,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     i32 width = rc.right - rc.left;
     i32 height = rc.bottom - rc.top;
     u16* scratch = new u16[width * 2];
-    i32 off = scale << 11;
+    i32 off = pct << 11;
 
     if (g_rDown == PIXEL16_RED_DOWN) {
         if (g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP

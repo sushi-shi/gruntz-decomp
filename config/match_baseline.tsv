@@ -1150,7 +1150,7 @@ ddrawworkerregistry	?Unload@CLoadable@@UAEXXZ	100.0000	100.0000	1	7a980cb2b000	0
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	bbcdcbde2404	0x141350
 ddsurface	??_GCDDSurface@@UAEPAXI@Z	100.0000	100.0000	1	cpp:14b8e59ec272	0x141330
 ddsurface	?Blit1624@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	72.0859	72.0859	1	a927cac33af2	0x13fce0
-ddsurface	?Blit168@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	68.4779	68.4779	1	fc5f61dd67e8	0x13fbb0
+ddsurface	?Blit168@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	66.4956	66.4956	1	fc5f61dd67e8	0x13fbb0
 ddsurface	?Blit2416@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	82.0000	82.0000	1	060017621aa8	0x13ff80
 ddsurface	?Blit248@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	94.3103	94.3103	1	9d4a92f0afa6	0x13fe60
 ddsurface	?Blit816@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	66.2889	66.2889	1	e4c056631635	0x140420
@@ -1199,7 +1199,7 @@ ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	3	482a2140b13f	0x13e690
 ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	66.1599	66.1599	10	536e49268c22	0x13f020
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	63.6318	63.6318	8	1929546d2883	0x13f460
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	69.3682	69.3682	9	f91cae5341f9	0x13f460
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	3	e6919eb7da93	0x141080
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	3	2199bcaca9d3	0x13f990
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	2	1cba59666bcf	0x1413b0
