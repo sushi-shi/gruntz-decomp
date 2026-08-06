@@ -858,7 +858,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     if (eq) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeA) == 0);
     if (eq) {
         goto idle;
     }
@@ -866,7 +866,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeE) == 0);
     if (eq) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
@@ -877,21 +877,17 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                        : 0;
             i32 frame = elem->m_param;
-            i32 row = m_entranceCell.row;
-            i32 column = m_entranceCell.column;
-            i32 index = 3 * row + column;
-
-            const char* nm = m_cells[index].AttackName().GetBuffer(0);
+            const char* nm = EntranceCell()->AttackName().GetBuffer(0);
             m_wwdObject->ApplyLookupSprite(nm, frame);
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeI) == 0);
     if (eq) {
         goto codeI;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) == 0);
-    if (eq) {
+    if (!eq) {
         goto walk;
     }
 
