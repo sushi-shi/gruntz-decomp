@@ -1956,63 +1956,96 @@ fn export_all_animations(
     std::fs::create_dir_all(out)?;
     let tint_palettes = tint_palettes(rez, tint)?;
     let mut total = 0usize;
+    let mut covered = 0usize;
     let mut generated = 0usize;
-    let mut unresolved = String::from("ani\tframe_prefix\treason\n");
-    let mut bindings = String::from("ani\tframe_prefix\n");
+    let mut binding_count = 0usize;
+    let mut unresolved = String::from("ani\tvariant\tframe_prefix\treason\n");
+    let mut bindings = String::from("ani\tvariant\tframe_prefix\tgif\n");
     let mut failures = Tally::default();
 
     for resource in of_kind(rez, "ANI") {
         total += 1;
         let path = resource.path().to_string();
-        let candidates = animation_frame_prefixes(&path);
-        let mut errors = Vec::new();
-        let mut used = None;
-        for prefix in &candidates {
-            match render_animation(rez, &resource, prefix, out, max_steps, tint_palettes) {
-                Ok(()) => {
-                    used = Some(prefix);
-                    break;
+        let groups = animation_bindings(&path);
+        binding_count += groups.len();
+        let mut complete = true;
+        for group in groups {
+            let destination = animation_output_path(out, &path, group.variant.as_deref());
+            let mut errors = Vec::new();
+            let mut used = None;
+            for prefix in &group.candidates {
+                match render_animation(
+                    rez,
+                    &resource,
+                    prefix,
+                    &destination,
+                    max_steps,
+                    tint_palettes,
+                ) {
+                    Ok(()) => {
+                        used = Some(prefix);
+                        break;
+                    }
+                    Err(e) => errors.push(e.to_string().replace(['\t', '\n'], " ")),
                 }
-                Err(e) => errors.push(e.to_string().replace(['\t', '\n'], " ")),
+            }
+            let variant = group.variant.as_deref().unwrap_or("");
+            if let Some(prefix) = used {
+                generated += 1;
+                let relative = destination.strip_prefix(out).unwrap_or(&destination);
+                bindings.push_str(&format!(
+                    "{path}\t{variant}\t{prefix}\t{}\n",
+                    relative.display()
+                ));
+            } else {
+                complete = false;
+                let prefixes = group.candidates.join("|");
+                let reason = errors.join(" | ");
+                unresolved.push_str(&format!("{path}\t{variant}\t{prefixes}\t{reason}\n"));
+                let class = if errors
+                    .iter()
+                    .all(|reason| reason.starts_with("no numerically suffixed"))
+                {
+                    "no evidence-backed IMAGEZ binding in this archive"
+                } else if errors
+                    .iter()
+                    .any(|reason| reason.contains("selects missing frame"))
+                {
+                    "candidate frame set does not satisfy ANI"
+                } else {
+                    "other render failure"
+                };
+                let sample = if variant.is_empty() {
+                    path.clone()
+                } else {
+                    format!("{path} [{variant}]")
+                };
+                failures.add(class, &sample, 10);
             }
         }
-        if let Some(prefix) = used {
-            generated += 1;
-            bindings.push_str(&format!("{path}\t{prefix}\n"));
-        } else {
-            let prefixes = candidates.join("|");
-            let reason = errors.join(" | ");
-            unresolved.push_str(&format!("{path}\t{prefixes}\t{reason}\n"));
-            let class = if errors
-                .iter()
-                .all(|reason| reason.starts_with("no numerically suffixed"))
-            {
-                "no conventional sibling IMAGEZ set"
-            } else if errors
-                .iter()
-                .any(|reason| reason.contains("selects missing frame"))
-            {
-                "candidate frame set does not satisfy ANI"
-            } else {
-                "other render failure"
-            };
-            failures.add(class, &path, 10);
+        if complete {
+            covered += 1;
         }
     }
 
     std::fs::write(out.join("UNRESOLVED.tsv"), unresolved)?;
     std::fs::write(out.join("BINDINGS.tsv"), bindings)?;
-    println!("ANI resources         : {total}");
+    println!("ANI resources          : {total}");
     println!(
-        "GIFs generated       : {generated}  ({:.2}%)",
-        pct(generated, total)
+        "ANI resources covered : {covered}  ({:.2}%)",
+        pct(covered, total)
     );
+    println!("binding variants       : {binding_count}");
+    println!("GIFs generated         : {generated}");
     println!(
-        "unresolved manifest  : {}",
+        "unresolved manifest   : {}",
         out.join("UNRESOLVED.tsv").display()
     );
     if !failures.counts.is_empty() {
-        failures.report("ANI resources requiring an external frame binding", total);
+        failures.report(
+            "ANI binding variants requiring an external frame binding",
+            binding_count,
+        );
     }
     Ok(())
 }
@@ -2021,25 +2054,146 @@ fn render_animation(
     rez: &Rez,
     resource: &Resource,
     prefix: &str,
-    out: &Path,
+    destination: &Path,
     max_steps: usize,
     tint_palettes: Option<TintPalettes<'_>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let animation = ani::split(resource.data(rez.bytes()))?;
     let frames = load_frame_set(rez, prefix, None, tint_palettes)?;
     let states = preview_states(&animation, &frames, max_steps, None)?;
-    let path = resource.path().to_string();
+    if let Some(parent) = destination.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    write_ani_gif(destination, &frames, &states)?;
+    Ok(())
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AnimationBinding {
+    variant: Option<String>,
+    candidates: Vec<String>,
+}
+
+fn animation_bindings(path: &str) -> Vec<AnimationBinding> {
+    if let Some(bindings) = evidence_backed_bindings(path) {
+        return bindings;
+    }
+    vec![AnimationBinding {
+        variant: None,
+        candidates: animation_frame_prefixes(path),
+    }]
+}
+
+fn evidence_backed_bindings(path: &str) -> Option<Vec<AnimationBinding>> {
+    // These are runtime call-site bindings, not name-similarity guesses:
+    // DroppedObject selects the directional OBJECTDROPPER set; TerrainTileLoader
+    // supplies each area's DIRT set; BootyStateActivate supplies eight walking
+    // directions; and TileTriggerSwitchLogic supplies each pyramid colour.
+    let path = path.to_ascii_uppercase();
+    if matches!(
+        path.as_str(),
+        "AREA3\\ANIZ\\OBJECTDROPPER" | "AREA4\\ANIZ\\OBJECTDROPPER"
+    ) {
+        let area = &path[..5];
+        return Some(
+            ["NORTH", "EAST", "SOUTH", "WEST"]
+                .into_iter()
+                .map(|direction| {
+                    variant_binding(
+                        direction,
+                        format!("{area}\\IMAGEZ\\OBJECTDROPPER\\{direction}"),
+                    )
+                })
+                .collect(),
+        );
+    }
+    match path.as_str() {
+        "GAME\\ANIZ\\DIRT" => Some(
+            (1..=8)
+                .map(|area| {
+                    variant_binding(format!("AREA{area}"), format!("AREA{area}\\IMAGEZ\\DIRT"))
+                })
+                .collect(),
+        ),
+        "GAME\\ANIZ\\GRUNTSPRINT" => Some(
+            [
+                "NORTH",
+                "NORTHEAST",
+                "EAST",
+                "SOUTHEAST",
+                "SOUTH",
+                "SOUTHWEST",
+                "WEST",
+                "NORTHWEST",
+            ]
+            .into_iter()
+            .map(|direction| {
+                variant_binding(
+                    direction,
+                    format!("GRUNTZ\\IMAGEZ\\NORMALGRUNT\\{direction}\\WALK"),
+                )
+            })
+            .collect(),
+        ),
+        "GAME\\ANIZ\\PYRAMIDUP" | "GAME\\ANIZ\\PYRAMIDDOWN" => Some(
+            [
+                "BLACK",
+                "CHECKPOINT",
+                "GREEN",
+                "ORANGE",
+                "PURPLE",
+                "RED",
+                "WHITE",
+            ]
+            .into_iter()
+            .map(|colour| variant_binding(colour, format!("GAME\\IMAGEZ\\{colour}PYRAMIDZ")))
+            .collect(),
+        ),
+        "GRUNTZ\\ANIZ\\DEATHZ\\FALL2"
+        | "GRUNTZ\\ANIZ\\DEATHZ\\QUICKFALL"
+        | "GRUNTZ\\ANIZ\\DEATHZ\\QUICKFALL2" => {
+            // GruntAssetLoaders applies these geometries to DEATHZ_FALL.
+            Some(vec![single_binding("GRUNTZ\\IMAGEZ\\DEATHZ\\FALL")])
+        }
+        "GRUNTZ\\ANIZ\\DEATHZ\\SHATTER"
+        | "GRUNTZ\\ANIZ\\DEATHZ\\SPARKLE"
+        | "GRUNTZ\\ANIZ\\DEATHZ\\UNFREEZE" => {
+            // GruntAssetLoaders and GruntEntranceMove retain DEATHZ_FREEZE.
+            Some(vec![single_binding("GRUNTZ\\IMAGEZ\\DEATHZ\\FREEZE")])
+        }
+        _ => None,
+    }
+}
+
+fn single_binding(prefix: impl Into<String>) -> AnimationBinding {
+    AnimationBinding {
+        variant: None,
+        candidates: vec![prefix.into()],
+    }
+}
+
+fn variant_binding(variant: impl Into<String>, prefix: impl Into<String>) -> AnimationBinding {
+    AnimationBinding {
+        variant: Some(variant.into()),
+        candidates: vec![prefix.into()],
+    }
+}
+
+fn animation_output_path(out: &Path, path: &str, variant: Option<&str>) -> PathBuf {
     let mut relative = PathBuf::new();
     for component in path.split(['\\', '/']) {
         relative.push(component);
     }
-    relative.set_extension("gif");
-    let destination = out.join(relative);
-    if let Some(parent) = destination.parent() {
-        std::fs::create_dir_all(parent)?;
+    if let Some(variant) = variant {
+        let name = relative
+            .file_name()
+            .and_then(|value| value.to_str())
+            .unwrap_or("animation");
+        relative.set_file_name(format!("{name}--{variant}.gif"));
+    } else {
+        relative.set_extension("gif");
     }
-    write_ani_gif(&destination, &frames, &states)?;
-    Ok(())
+    out.join(relative)
 }
 
 fn animation_frame_prefixes(path: &str) -> Vec<String> {
@@ -2563,4 +2717,47 @@ fn pct(n: usize, total: usize) -> f64 {
         u32::try_from(total).unwrap_or(u32::MAX),
     );
     100.0 * f64::from(n) / f64::from(total)
+}
+
+#[cfg(test)]
+mod animation_binding_tests {
+    use super::*;
+
+    #[test]
+    fn expands_runtime_bound_animation_variants() {
+        let dirt = animation_bindings("GAME\\ANIZ\\DIRT");
+        assert_eq!(dirt.len(), 8);
+        assert_eq!(dirt[0].variant.as_deref(), Some("AREA1"));
+        assert_eq!(dirt[7].candidates, ["AREA8\\IMAGEZ\\DIRT"]);
+
+        let pyramids = animation_bindings("GAME\\ANIZ\\PYRAMIDUP");
+        assert_eq!(pyramids.len(), 7);
+        assert_eq!(pyramids[5].variant.as_deref(), Some("RED"));
+        assert_eq!(pyramids[5].candidates, ["GAME\\IMAGEZ\\REDPYRAMIDZ"]);
+    }
+
+    #[test]
+    fn uses_source_proven_death_frame_sets() {
+        assert_eq!(
+            animation_bindings("GRUNTZ\\ANIZ\\DEATHZ\\QUICKFALL2"),
+            [single_binding("GRUNTZ\\IMAGEZ\\DEATHZ\\FALL")]
+        );
+        assert_eq!(
+            animation_bindings("GRUNTZ\\ANIZ\\DEATHZ\\SHATTER"),
+            [single_binding("GRUNTZ\\IMAGEZ\\DEATHZ\\FREEZE")]
+        );
+    }
+
+    #[test]
+    fn variants_have_distinct_output_paths() {
+        let root = Path::new("out");
+        assert_eq!(
+            animation_output_path(root, "GAME\\ANIZ\\PYRAMIDUP", Some("RED")),
+            Path::new("out/GAME/ANIZ/PYRAMIDUP--RED.gif")
+        );
+        assert_eq!(
+            animation_output_path(root, "GAME\\ANIZ\\WATER", None),
+            Path::new("out/GAME/ANIZ/WATER.gif")
+        );
+    }
 }

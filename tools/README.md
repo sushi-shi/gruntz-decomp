@@ -104,9 +104,12 @@ grey ramp. `ani <path>` exposes timing, frame-step, loop, movement and cue data.
 Its optional GIF is explicitly a preview: ANI stores no pixels or image-set
 name, so `--frames <REZ-prefix>` supplies the PID/RID set which the game object
 normally binds separately. `ani-all` resolves the archive's conventional
-ANI/IMAGEZ layouts, records every selected image set in `BINDINGS.tsv`, and
-puts generic controllers or missing external bindings in `UNRESOLVED.tsv`
-instead of inventing pixels. Grunt sprites embed the retail green TOOL/TOY
+ANI/IMAGEZ layouts and the frame bindings proven by reconstructed call sites.
+When one controller is applied to several sets, it emits named variants such as
+`PYRAMIDUP--RED.gif` and records the variant, selected image set, and output in
+`BINDINGS.tsv`. Generic controllers or missing external bindings remain in
+`UNRESOLVED.tsv` instead of acquiring compatible-looking but unevidenced pixels.
+Grunt sprites embed the retail green TOOL/TOY
 palette and are recoloured by palette substitution at draw time. GIF output
 does the same exact-byte recognition and defaults to orange; `--tint` selects
 any runtime colour, while `--tint source` preserves the embedded green table.
@@ -142,6 +145,7 @@ FEC, and VRZ assets.
 | our decoder vs **retail's own machine code** (9 821 `Rle` sprites) | **100 % identical pixels** |
 | retail's two decoders agree with each other | 100 % — no shipped sprite crosses a scanline |
 | PAL tables parse at exact size | **36 / 36** retail palettes |
+| ANI resources render with evidence-backed frame bindings | **645 / 660** resources, **677** GIFs; 15 generic/external controllers remain |
 | XMI parses and exports to MIDI | **37 / 37** retail music resources |
 | FNT parses exactly and renders an atlas | **4 / 4** retail bitmap fonts |
 | FEC validates and extracts Smacker payloads | **2 / 2** archives, **6 / 6** movies |
