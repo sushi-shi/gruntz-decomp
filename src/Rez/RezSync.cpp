@@ -31,6 +31,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameText.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -84,9 +85,6 @@ DATA(0x002455e0)
 i32 g_enableTrueColor = 0;
 DATA(0x002455e4)
 i32 g_enableEmulation = 0;
-
-DATA(0x00245210)
-HINSTANCE g_appHInstance;
 
 // @early-stop
 RVA(0x00083450, 0x192d)
@@ -256,7 +254,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_reservedb4 = 0;
     }
 
-    g_appHInstance = m_owner->m_hInstance;
+    g_gruntzWinApp.m_hInstance = m_owner->m_hInstance;
     char dpBuf[0x114];
     strcpy(dpBuf, szCmdLine);
     AfxWinInit(m_owner->m_hInstance, 0, dpBuf, 1);

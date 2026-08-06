@@ -166,10 +166,14 @@ class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* mgr, i32 slotIndex, i32 networked, CWnd* pParent);
 
+    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP_ENTRY _messageEntries[];
+
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
     class CGruntzMgr* m_slots;
     i32 m_slotIndex;
@@ -181,6 +185,9 @@ SIZE_UNKNOWN();
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(class CGruntzMgr* mgr, CWnd* pParent);
+
+    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP_ENTRY _messageEntries[];
 
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual i32 DestroyWindow() OVERRIDE;
@@ -215,6 +222,17 @@ public:
     void OnColorSlot3();
 
     void OnCustomWorld();
+
+    void OnTimer(u32 nIDEvent);
+    void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+    void OnEnChange50a();
+    void OnEnChange50b();
+    void OnEnChange50c();
+    void OnEnChange50d();
+    void OnCmd51f();
+    void OnCmd523();
+    void OnCmd524();
+    void OnCmd525();
 
     void OnChatSend();
 
@@ -303,6 +321,4 @@ extern "C" i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam
 
 extern "C" i32 CALLBACK BattlezMapComboEditProc(HWND, UINT, WPARAM, LPARAM);
 
-extern const i32 g_msgmap_CBattlezDlgColors;
-extern const i32 g_msgmap_CMultiStartDlg;
 #endif // SRC_GRUNTZ_DIALOGS_H

@@ -6,6 +6,9 @@
 #include <Gruntz/String.h>
 #include <Wap32/zBitVec.h>
 
+class CWinApp;
+extern CWinApp g_gruntzWinApp;
+
 extern CString g_brickText1;
 
 extern CString g_str645514;

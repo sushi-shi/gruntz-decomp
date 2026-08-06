@@ -26,7 +26,72 @@ enum {
 };
 
 DATA(0x001ea578)
-const i32 g_msgmap_CMultiStartDlg = 6205544;
+const AFX_MSGMAP CMultiStartDlg::messageMap = {
+    &CDialog::messageMap,
+    &CMultiStartDlg::_messageEntries[0],
+};
+
+DATA(0x001ea580)
+const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
+
+    ON_CBN_SELCHANGE(0x500, CMultiStartDlg::ReconcileChannel0)
+        ON_CBN_SELCHANGE(0x50e, CMultiStartDlg::ConnectStep)
+            ON_CBN_SELCHANGE(0x50f, CMultiStartDlg::ReconcileChannel2)
+                ON_CBN_SELCHANGE(0x510, CMultiStartDlg::ReconcileChannel3)
+
+                    {WM_TIMER,
+                     0,
+                     0,
+                     0,
+                     AfxSig_vw,
+
+                     reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnTimer)}, // API-forced MFC seam.
+    {WM_MEASUREITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnMeasureItem)}, // API-forced MFC seam.
+    {WM_DRAWITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnDrawItem)}, // API-forced MFC seam.
+    ON_BN_CLICKED(0x501, CMultiStartDlg::OnColorSlot0) ON_BN_CLICKED(
+        0x503,
+        CMultiStartDlg::OnColorSlot1
+    ) ON_BN_CLICKED(0x505, CMultiStartDlg::OnColorSlot2)
+        ON_BN_CLICKED(0x507, CMultiStartDlg::OnColorSlot3) ON_BN_CLICKED(
+            0x42b,
+            CMultiStartDlg::OnCustomWorld
+        ) ON_CBN_SELCHANGE(0x4ff, CMultiStartDlg::CommitWorldHost)
+            ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend) ON_EN_CHANGE(
+                0x50b,
+                CMultiStartDlg::OnEnChange50b
+            ) ON_EN_CHANGE(0x50a, CMultiStartDlg::OnEnChange50a)
+                ON_EN_CHANGE(0x50c, CMultiStartDlg::OnEnChange50c) ON_EN_CHANGE(
+                    0x50d,
+                    CMultiStartDlg::OnEnChange50d
+                ) ON_CBN_SELCHANGE(0x51e, CMultiStartDlg::OnSlotSelect0)
+                    ON_CBN_SELCHANGE(0x520, CMultiStartDlg::OnSlotSelect1)
+                        ON_CBN_SELCHANGE(0x521, CMultiStartDlg::OnSlotSelect2)
+                            ON_CBN_SELCHANGE(0x522, CMultiStartDlg::OnSlotSelect3)
+                                ON_CBN_SELCHANGE(0x527, CMultiStartDlg::CommitLatencyOption)
+                                    ON_BN_CLICKED(0x51f, CMultiStartDlg::OnCmd51f)
+                                        ON_BN_CLICKED(0x523, CMultiStartDlg::OnCmd523)
+                                            ON_BN_CLICKED(0x524, CMultiStartDlg::OnCmd524)
+                                                ON_BN_CLICKED(0x525, CMultiStartDlg::OnCmd525)
+                                                    ON_BN_CLICKED(
+                                                        0x4e9,
+                                                        CMultiStartDlg::EchoLatencySettings
+                                                    )
+                                                        ON_CBN_SELCHANGE(
+                                                            0x4ff,
+                                                            CMultiStartDlg::CommitWorldHost
+                                                        ){0, 0, 0, 0, AfxSig_end, 0},
+};
+VTBL(CMultiStartDlg, 0x001ea8ec);
 
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)
@@ -339,10 +404,48 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000c2620, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
-    // API-forced MFC message-map representation seam.
-
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CMultiStartDlg);
+    return &messageMap;
 }
+
+RVA(0x000c2c80, 0x0)
+// @stub
+void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
+
+RVA(0x000c30d0, 0x0)
+// @stub
+void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
+
+RVA(0x000c4e40, 0x0)
+// @stub
+void CMultiStartDlg::OnEnChange50a() {}
+
+RVA(0x000c4e60, 0x0)
+// @stub
+void CMultiStartDlg::OnEnChange50b() {}
+
+RVA(0x000c4e80, 0x0)
+// @stub
+void CMultiStartDlg::OnEnChange50c() {}
+
+RVA(0x000c4ea0, 0x0)
+// @stub
+void CMultiStartDlg::OnEnChange50d() {}
+
+RVA(0x000c51c0, 0x0)
+// @stub
+void CMultiStartDlg::OnCmd51f() {}
+
+RVA(0x000c51e0, 0x0)
+// @stub
+void CMultiStartDlg::OnCmd523() {}
+
+RVA(0x000c5200, 0x0)
+// @stub
+void CMultiStartDlg::OnCmd524() {}
+
+RVA(0x000c5220, 0x0)
+// @stub
+void CMultiStartDlg::OnCmd525() {}
 
 RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetCtrlE(i32 index) {

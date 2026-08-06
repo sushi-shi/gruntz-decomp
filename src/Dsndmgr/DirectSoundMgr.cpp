@@ -43,7 +43,7 @@ typedef enum DSoundDx5Magic {
 DATA(0x00253ab8)
 i32 g_volumeTable[VOLUME_PCT_MAX];
 DATA(0x00253c48)
-i32 g_panTable[8];
+i32 g_panTable[1];
 
 DATA(0x0020b668)
 const char s_rb[] = "rb";

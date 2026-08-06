@@ -2,3 +2,13 @@
 # TU's same-storage band (known scattered singletons / accepted homes).
 # Regenerate: python -m gruntz.audit.data_tu_order --write-baseline
 # rva	name	owner_cpp	container_cpp	storage
+0x00245268	g_dlgVal_645268	GruntzCmdMgr.cpp	GameText.cpp	bss
+0x0024526c	g_dlgVal_64526c	GruntzCmdMgr.cpp	GameText.cpp	bss
+0x002452a4	g_jitterX	CmdScrollApply.cpp	GameText.cpp	bss
+0x002452a8	g_dlgVal_6452a8	GruntzCmdMgr.cpp	GameText.cpp	bss
+0x002452cc	g_jitterY	CmdScrollApply.cpp	GameText.cpp	bss
+0x002452d0	g_dlgVal_6452d0	GruntzCmdMgr.cpp	GameText.cpp	bss
+0x002452d4	g_dlgVal_6452d4	GruntzCmdMgr.cpp	GameText.cpp	bss
+0x002452d8	g_msgScratch	GruntzMgr.cpp	GameText.cpp	bss
+0x00283ee4	g_ddCreateCtx	DirectDrawMgr.cpp	FileImage.cpp	bss
+0x00283ee8	g_DirectDraw	DirectDrawMgr.cpp	FileImage.cpp	bss

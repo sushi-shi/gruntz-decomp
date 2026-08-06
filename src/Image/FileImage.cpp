@@ -26,7 +26,7 @@ static PALETTEENTRY s_palBmp[0x100];
 DATA(0x002846f0)
 static PALETTEENTRY s_palPcx[0x100];
 DATA(0x00284af0)
-u8 g_grayRamp[0x401];
+u8 g_grayRamp[0x400];
 DATA(0x00284ef0)
 static u8 s_palPidData[0x400];
 DATA(0x002852f0)

@@ -403,10 +403,19 @@ def verdicts(sym, extent, src, agg):
     if known and (fnptr or dataptr) and not ty.ptr_ok(t):
         flags.append("fnptr-content" if fnptr else "ptr-content")
     if prim:
-        if widths and max(widths) > prim:
+        # wide READS of a sub-dword prim are the MSVC5 zero-extend idiom
+        # (mov r32, dword + and 0xffff) - only wide WRITES, or a symbol with
+        # NO narrow access at all, indict the declared width. Indexed accesses
+        # at the tail are usually base±k aliases of the NEXT symbol (the
+        # negative-addend spelling assert_relocs knows) - not counted here.
+        wide_w = any(e.width and e.width > prim and "w" in e.rw
+                     and e.mode == "direct" for e in evs)
+        narrow_seen = any(e.width and e.width <= prim for e in evs)
+        if wide_w or (widths and max(widths) > prim and not narrow_seen):
             flags.append("wide-on-prim")           # access wider than the type
         if prim == 4 and not is_char and \
-                any(e.width in (1, 2) and "w" in e.rw for e in evs):
+                any(e.width in (1, 2) and "w" in e.rw and e.mode == "direct"
+                    for e in evs):
             flags.append("narrow-write")           # sub-dword store into an i32
         if any(e.mode == "indexed" and e.target == sym.rva for e in evs):
             flags.append("indexed-scalar")         # used as a table base

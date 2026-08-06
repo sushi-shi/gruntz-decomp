@@ -77,7 +77,33 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 };
 
 DATA(0x001e8d10)
-const i32 g_msgmap_CBattlezDlgColors = 6205544;
+const AFX_MSGMAP CBattlezDlgColors::messageMap = {
+    &CDialog::messageMap,
+    &CBattlezDlgColors::_messageEntries[0],
+};
+
+DATA(0x001e8d18)
+const AFX_MSGMAP_ENTRY CBattlezDlgColors::_messageEntries[] = {
+    {WM_MEASUREITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlgColors::OnMeasureItem)}, // API-forced MFC seam.
+    {WM_DRAWITEM,
+     0,
+     0,
+     0,
+     AfxSig_vOWNER,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlgColors::OnDrawItem)}, // API-forced MFC seam.
+    {WM_COMMAND,
+     CBN_DBLCLK,
+     0x515,
+     0x515,
+     AfxSig_vv,
+     reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnOkCommand)}, // API-forced MFC seam.
+    {0, 0, 0, 0, AfxSig_end, 0},
+};
 
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc;
@@ -476,10 +502,12 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00017ac0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
-    // API-forced MFC message-map representation seam.
-
-    return reinterpret_cast<const AFX_MSGMAP*>(&g_msgmap_CBattlezDlgColors);
+    return &messageMap;
 }
+
+RVA(0x00017b10, 0x0)
+// @stub
+void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {}
 
 RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
