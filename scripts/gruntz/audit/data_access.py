@@ -512,10 +512,83 @@ def print_symbol(ctx, per, extents, rva):
     return 0
 
 
+def print_run(ctx, runs, cells, rva):
+    """One unclaimed run: bytes, cells, every access site resolved to its fn."""
+    from gruntz.core.symbols import owner
+    db = ctx.symbols
+    r = next((r for r in runs if r["start"] <= rva < r["end"]), None)
+    if r is None:
+        print(f"no unclaimed run covers 0x{rva:x}")
+        return 1
+    span = r["end"] - r["start"]
+    print(f"run 0x{r['start']:06x} +0x{span:x}  kind={r['kind']}  "
+          f"sites={len(r['events'])}  after {r['prev_sym']}")
+    o = ctx.pe.off(r["start"])
+    if o is not None:
+        for i in range(0, min(span, 64), 16):
+            row = ctx.pe.data[o + i:o + min(i + 16, span)]
+            hexs = " ".join(f"{b:02x}" for b in row)
+            asc = "".join(chr(b) if 32 <= b < 127 else "." for b in row)
+            print(f"  +0x{i:03x}  {hexs:<47}  {asc}")
+    for c in cells:
+        if r["start"] <= c["site"] < r["end"]:
+            print(f"  cell +0x{c['site'] - r['start']:x}: {c['kind']} -> 0x{c['target']:x}")
+    units = Counter()
+    for ev in sorted(r["events"], key=lambda e: (e.target, e.site)):
+        f = owner(ev.insn_rva, db.fstarts, db.fsize)
+        nm, unit = db.names.get(f, (None, None)) if f else (None, None)
+        units[unit or "<gap>"] += 1
+        print(f"  0x{ev.insn_rva:06x}  {ev.mode:8} {ev.rw:2} w{ev.width:<2} "
+              f"{ev.fpu or ev.ext or '':4} +0x{ev.target - r['start']:<4x} "
+              f"{ev.text:44} {nm or '<gap>'}")
+    print("  units: " + ", ".join(f"{u}={n}" for u, n in units.most_common()))
+    return 0
+
+
+def write_queue(ctx, runs, path):
+    """The campaign worklist: every data run, fingerprint-grouped."""
+    from gruntz.core.symbols import owner
+    db = ctx.symbols
+    fps = defaultdict(list)
+    for r in runs:
+        if r["kind"] != "data":
+            continue
+        fp = (r["end"] - r["start"],
+              tuple(sorted(Counter(e.width for e in r["events"] if e.width).items())))
+        fps[fp].append(r)
+    rows = []
+    for gi, (fp, group) in enumerate(
+            sorted(fps.items(), key=lambda kv: -len(kv[1]))):
+        for r in group:
+            units = Counter()
+            for e in r["events"]:
+                f = owner(e.insn_rva, db.fstarts, db.fsize)
+                units[db.names.get(f, ("", "<gap>"))[1] if f else "<gap>"] += 1
+            modes = Counter(e.mode for e in r["events"])
+            rows.append({
+                "group": gi, "instances": len(group),
+                "start": f"0x{r['start']:x}", "span": f"0x{fp[0]:x}",
+                "sites": len(r["events"]),
+                "modes": " ".join(f"{k}:{v}" for k, v in sorted(modes.items())),
+                "widths": " ".join(f"{w}:{n}" for w, n in fp[1]),
+                "units": " ".join(f"{u}:{n}" for u, n in units.most_common(3)),
+                "after": r["prev_sym"],
+            })
+    with path.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()), delimiter="\t")
+        w.writeheader()
+        w.writerows(rows)
+    print(f"[data-access] queue: {len(rows)} runs in {len(fps)} groups -> {path}")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--rva", help="one symbol: every access site, resolved")
+    ap.add_argument("--run", help="one unclaimed run: bytes + every site resolved")
+    ap.add_argument("--queue", action="store_true",
+                    help="write the fingerprint-grouped run worklist TSV")
     ap.add_argument("--unclaimed", action="store_true",
                     help="list unclaimed access runs (candidate missing globals)")
     ap.add_argument("--flagged", action="store_true",
@@ -530,6 +603,12 @@ def main(argv=None):
 
     if args.rva:
         return print_symbol(ctx, per, extents, int(args.rva, 16))
+    if args.run:
+        return print_run(ctx, unclaimed_runs(ctx.pe, unclaimed, extents), cells,
+                         int(args.run, 16))
+    if args.queue:
+        return write_queue(ctx, unclaimed_runs(ctx.pe, unclaimed, extents),
+                           REPO / "build/gen/data_access_queue.tsv")
 
     rows = write_ledger(per, extents, args.output)
     runs = unclaimed_runs(ctx.pe, unclaimed, extents)
