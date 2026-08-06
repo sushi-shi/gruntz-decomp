@@ -4585,59 +4585,57 @@ i32 CBattlezMapConfig::RouteUnitTo(
 ) {
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
-    if ((lvl->m_screenX >> TILE_SHIFT_PX) == gx && (lvl->m_screenY >> TILE_SHIFT_PX) == gy) {
-        return 0;
-    }
-    if ((m_board)->SearchEdge(
-            lvl->m_screenX >> TILE_SHIFT_PX,
-            lvl->m_screenY >> TILE_SHIFT_PX,
-            gx,
-            gy,
-            &list,
-            clearFlag,
-            maskA,
-            maskC
-        )
-        == 0) {
-        return 0;
-    }
-    if (list.GetCount() == 0) {
-        return 0;
-    }
-    void* head = list.RemoveHead();
-    if (head != NULL) {
-        CoordPoolNode* node = g_coordPool.NodeOf(head);
-        node->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = node;
-    }
-    if (list.GetCount() == 0) {
-        return 0;
-    }
+    if ((lvl->m_screenX >> TILE_SHIFT_PX) != gx || (lvl->m_screenY >> TILE_SHIFT_PX) != gy) {
+        if ((m_board)->SearchEdge(
+                lvl->m_screenX >> TILE_SHIFT_PX,
+                lvl->m_screenY >> TILE_SHIFT_PX,
+                gx,
+                gy,
+                &list,
+                clearFlag,
+                maskA,
+                maskC
+            )
+            != 0) {
+            if (list.GetCount() != 0) {
+                void* head = list.RemoveHead();
+                if (head != NULL) {
+                    CoordPoolNode* node = g_coordPool.NodeOf(head);
+                    node->m_next = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
+                }
+                if (list.GetCount() != 0) {
+                    if (unit->CoordCount() != 0) {
+                        CoordNode* n = unit->CoordHead();
+                        while (n != NULL) {
+                            CoordNode* cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != NULL) {
+                                g_coordPool.Push(cur->m_coord);
+                            }
+                        }
+                        unit->m_coordList.RemoveAll();
+                    }
 
-    if (unit->CoordCount() != 0) {
-        CoordNode* n = unit->CoordHead();
-        while (n != NULL) {
-            CoordNode* cur = n;
-            n = n->m_next;
-            if (cur->m_coord != NULL) {
-                g_coordPool.Push(cur->m_coord);
+                    POSITION pp = list.GetHeadPosition();
+                    while (pp != NULL) {
+                        Coord* cur = static_cast<Coord*>(list.GetNext(pp));
+                        if (cur != NULL) {
+                            unit->m_coordList.AddTail(cur);
+                        }
+                    }
+                    list.RemoveAll();
+                    Coord* tail = (unit->CoordTail())->m_coord;
+                    i32 tailX = tail->m_x;
+                    i32 tailY = tail->m_y;
+                    unit->m_entrancePx.m_x = (tailX << TILE_SHIFT_PX) + TILE_HALF_PX;
+                    unit->m_entrancePx.m_y = (tailY << TILE_SHIFT_PX) + TILE_HALF_PX;
+                    return 1;
+                }
             }
         }
-        unit->m_coordList.RemoveAll();
     }
-
-    POSITION pp = list.GetHeadPosition();
-    while (pp != NULL) {
-        Coord* cur = static_cast<Coord*>(list.GetNext(pp));
-        if (cur != NULL) {
-            unit->m_coordList.AddTail(cur);
-        }
-    }
-    list.RemoveAll();
-    Coord* tail = (unit->CoordTail())->m_coord;
-    unit->m_entrancePx.m_x = (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
-    unit->m_entrancePx.m_y = (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
-    return 1;
+    return 0;
 }
 
 // @early-stop
