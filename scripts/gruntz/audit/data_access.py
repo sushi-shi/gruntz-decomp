@@ -487,11 +487,20 @@ def unclaimed_runs(pe, unclaimed, extents):
     from gruntz.core.manifest import units as _units
     from gruntz.core.symbols import owner as _owner
     from gruntz.core import get_context as _gc
+    from gruntz.core.library_labels import active_rows
+    from gruntz.core.pe import REPO as _REPO
     db = _gc().symbols
     try:
         vendorish = {u["unit"] for u in _units() if u["source"].startswith("vendor/")}
     except Exception:
         vendorish = set()
+    lib_fns = sorted(int((r.get("rva") or "0"), 16)
+                     for r in active_rows(_REPO / "config/library_labels.csv")
+                     if (r.get("rva") or "").startswith("0x"))
+
+    def in_lib(rva):
+        k = bisect.bisect_right(lib_fns, rva) - 1
+        return k >= 0 and rva - lib_fns[k] < 0x2000
     for r in runs:
         k = bisect.bisect_right(starts, r["start"]) - 1
         r["prev_sym"] = extents[k][2].name if k >= 0 else ""
@@ -503,6 +512,8 @@ def unclaimed_runs(pe, unclaimed, extents):
         units_of = {db.names.get(f, ("", None))[1] if f else None for f in aus}
         libs = units_of and all(u in vendorish or u == "ghidra" for u in units_of if u)
         gap_only = units_of == {None}
+        if gap_only and all(in_lib(e.insn_rva) for e in r["events"]):
+            libs, gap_only = True, False   # every accessor is in carved library code
         k2 = bisect.bisect_left(starts, r["start"])
         next_lo = extents[k2][0] if k2 < len(extents) else None
         alias = (all(e.mode in ("lea", "indexed") for e in r["events"])
@@ -511,7 +522,7 @@ def unclaimed_runs(pe, unclaimed, extents):
             r["kind"] = "alias"            # base-k spelling of the NEXT symbol
         elif printable and no_write:
             r["kind"] = "string-pool"      # pooled literals, incl. inline-copied
-        elif libs and not gap_only and units_of != {None}:
+        elif libs and not gap_only:
             r["kind"] = "library"          # CRT/vendor-owned data: policy-excluded
         else:
             r["kind"] = "data"
