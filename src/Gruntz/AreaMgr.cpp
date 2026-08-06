@@ -654,5 +654,5 @@ i32 CAreaMgr::IsSameWorld(i32 a) {
     }
     i32 ga = (a - 1) % 36 / 4 + 1;
     i32 gc = (m_currentLevelIndex - 1) % 36 / 4 + 1;
-    return gc == ga;
+    return ga == gc;
 }

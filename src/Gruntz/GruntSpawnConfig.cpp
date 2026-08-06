@@ -24,20 +24,17 @@ CGruntSpawnConfig::~CGruntSpawnConfig() {
     Clear();
 }
 
-// @early-stop
 RVA(0x0011adc0, 0x44)
 BOOL CGruntSpawnConfig::Init(CGruntzMgr* owner) {
     if (owner == NULL) {
         return 0;
     }
     m_configTree = NULL;
-    m_voices[0] = NULL;
-    m_voices[1] = NULL;
-    m_streams[0] = NULL;
-    m_streams[1] = NULL;
+    memset(m_voices, 0, sizeof(m_voices));
+    memset(m_streams, 0, sizeof(m_streams));
     m_owner = owner;
-    m_voiceVolume = 0x64;
     m_configTree = owner->m_world;
+    m_voiceVolume = 0x64;
     return BuildVoiceList() != 0;
 }
 

@@ -4726,9 +4726,10 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 // @early-stop
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
+    i32 i = 0;
     CGrunt** units = m_triggerMgr->m_grid + m_ownerId * 15;
-    for (i32 i = 0; i < 15; i++) {
-        CGrunt* unit = units[i];
+    for (; i < 15; i++, units++) {
+        CGrunt* unit = *units;
         if (unit == NULL) {
             continue;
         }
@@ -4760,12 +4761,15 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                 }
             } while (node != NULL);
         }
-        if ((unit->m_entrancePx.m_x >> TILE_SHIFT_PX) == qx
-            && (unit->m_entrancePx.m_y >> TILE_SHIFT_PX) == qy) {
+        i32 entranceX = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
+        i32 entranceY = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
+        if (entranceX == qx && entranceY == qy) {
             return 1;
         }
         CGameObject* lvl = unit->m_object;
-        if ((lvl->m_screenX >> TILE_SHIFT_PX) == qx && (lvl->m_screenY >> TILE_SHIFT_PX) == qy) {
+        i32 currentX = lvl->m_screenX >> TILE_SHIFT_PX;
+        i32 currentY = lvl->m_screenY >> TILE_SHIFT_PX;
+        if (currentX == qx && currentY == qy) {
             return 1;
         }
     }
