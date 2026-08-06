@@ -17,3 +17,5 @@ gruntz-rez = { workspace = true }
 gruntz-codec = { workspace = true }
 gruntz-cast = { workspace = true }
 clap = { workspace = true }
+flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
+png = "0.17"

@@ -20,6 +20,7 @@
 //! a `.bmp`, so a disagreement can be read and looked at rather than counted.
 
 mod gif;
+mod map;
 mod midi;
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -187,6 +188,16 @@ enum Cmd {
         #[arg(long)]
         wav: bool,
     },
+    /// Render one WWD level: the gameplay plane becomes one large PNG and
+    /// every parallax/foreground plane is written beside it.
+    Wwd {
+        /// Full WWD resource path, e.g. `AREA1\WORLDZ\LEVEL1`.
+        path: String,
+        /// Destination for the main gameplay-plane PNG.
+        out: PathBuf,
+    },
+    /// Render every WWD level while preserving its REZ path.
+    WwdAll { out: PathBuf },
 }
 
 /// Mirror of `pid::LiteralRule` for the command line.
@@ -532,6 +543,52 @@ fn main() -> ExitCode {
             }
             rc
         }
+        Cmd::Wwd { path, out } => {
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else { continue };
+                let Some(resource) = find_resource(&rez, path) else {
+                    continue;
+                };
+                return match map::render_resource(&rez, &resource, out) {
+                    Ok(report) => {
+                        let manifest = out.with_extension("unresolved.tsv");
+                        if let Err(error) = report.write_manifest(path, &manifest) {
+                            eprintln!("gruntz-oracle: {path}: {error}");
+                            return ExitCode::FAILURE;
+                        }
+                        eprintln!(
+                            "[wwd] {path} from {}: {} plane(s), {} unresolved cell reference(s)",
+                            name.display(),
+                            report.planes,
+                            report.missing_references
+                        );
+                        ExitCode::SUCCESS
+                    }
+                    Err(error) => {
+                        eprintln!("gruntz-oracle: {path}: {error}");
+                        ExitCode::FAILURE
+                    }
+                };
+            }
+            eprintln!("gruntz-oracle: no such resource: {path}");
+            ExitCode::FAILURE
+        }
+        Cmd::WwdAll { out } => {
+            let mut rc = ExitCode::SUCCESS;
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else {
+                    eprintln!("gruntz-oracle: {}: invalid REZ archive", name.display());
+                    rc = ExitCode::FAILURE;
+                    continue;
+                };
+                println!("\n================ {} ================", name.display());
+                if let Err(error) = export_all_wwd(&rez, out) {
+                    eprintln!("gruntz-oracle: wwd-all: {error}");
+                    rc = ExitCode::FAILURE;
+                }
+            }
+            rc
+        }
     }
 }
 
@@ -561,6 +618,47 @@ fn find_resource<'a>(rez: &'a Rez<'a>, path: &str) -> Option<Resource<'a>> {
     rez.resources()
         .flatten()
         .find(|r| r.path().to_string().to_ascii_uppercase() == wanted)
+}
+
+fn export_all_wwd(rez: &Rez, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    std::fs::create_dir_all(out)?;
+    let mut levels = 0usize;
+    let mut planes = 0usize;
+    let mut unresolved = 0usize;
+    let mut failures = Vec::new();
+    let mut manifest = String::from("level\tplane\timage_set\tframe\tcells\treason\n");
+    for resource in of_kind(rez, "WWD") {
+        let path = resource.path().to_string();
+        let mut relative = PathBuf::new();
+        for component in path.split(['\\', '/']) {
+            relative.push(component);
+        }
+        relative.set_extension("png");
+        match map::render_resource(rez, &resource, &out.join(relative)) {
+            Ok(report) => {
+                levels += 1;
+                planes += report.planes;
+                unresolved += report.missing_references;
+                report.append_manifest_rows(&path, &mut manifest);
+            }
+            Err(error) => failures.push(format!("{path}: {error}")),
+        }
+    }
+    std::fs::write(out.join("UNRESOLVED.tsv"), manifest)?;
+    println!("WWD levels rendered    : {levels}");
+    println!("Plane PNGs generated   : {planes}");
+    println!("Unresolved tile cells  : {unresolved}");
+    if !failures.is_empty() {
+        for failure in failures.iter().take(10) {
+            eprintln!("  {failure}");
+        }
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("{} WWD resource(s) failed", failures.len()),
+        )
+        .into());
+    }
+    Ok(())
 }
 
 fn inspect_xmi(

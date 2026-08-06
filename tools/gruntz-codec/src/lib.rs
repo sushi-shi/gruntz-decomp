@@ -41,6 +41,7 @@ pub mod pcx;
 pub mod pid;
 pub mod rid;
 pub mod rle16;
+pub mod wwd;
 pub mod xmi;
 
 /// A byte sink that either counts or writes — the one primitive that lets each

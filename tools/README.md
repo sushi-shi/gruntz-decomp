@@ -19,7 +19,7 @@ retail's own machine code, mapped out of the EXE and executed.
 |---|---|
 | `gruntz-cast` | lossless integer conversions, so nothing else writes `as` |
 | `gruntz-rez`  | Monolith REZ/VRZ v1 and FEC archive readers (`rezls`, `fecls`) |
-| `gruntz-codec`| ANI / FNT / PAL / RID / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
+| `gruntz-codec`| ANI / FNT / PAL / RID / WWD / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
 | `gruntz-oracle` | the differential runner plus loose-asset renderers (`fntdump`) |
 | `recomp/`     | the MSVC/wine harness that calls into retail |
 
@@ -27,12 +27,12 @@ The three libraries are `#![no_std]` with **no `alloc`** and no third-party
 dependency. That is load-bearing, not decoration: the APIs are zero-copy —
 headers borrow the input, decoders fill a caller-supplied `&mut [u8]`, archive
 traversal is an iterator over borrowed slices — so there is nothing for an
-allocator to do. `std`, file IO and `clap` live in the binaries.
+allocator to do. `std`, file IO, compression and PNG output live in the binaries.
 
 ## Running it
 
 The libraries need nothing but the pinned `rustc`. The **binaries** use
-`clap`, so the first build needs the crates.io registry (or a warm
+`clap`, `flate2`, and `png`, so the first build needs the crates.io registry (or a warm
 `~/.cargo` cache); `Cargo.lock` is committed so the version is fixed. If a
 fully offline build is ever required, `cargo vendor` into `tools/vendor/` is
 the intended escape hatch - it was not done pre-emptively because it would add
@@ -80,6 +80,11 @@ REZ=/path/to/GRUNTDEM.REZ
   --midi intro0.mid --wav intro0.wav
 ./target/release/gruntz-oracle --rez "$REZ" xmi-all ../build/music-midi --wav
 
+# render one WWD or all maps; non-main planes are emitted separately
+./target/release/gruntz-oracle --rez "$REZ" wwd \
+  'AREA1\WORLDZ\LEVEL1' ../build/level1.png
+./target/release/gruntz-oracle --rez "$REZ" wwd-all ../build/map-pngs
+
 # MIDI is note/event data; synthesize it before handing it to mpv/FFmpeg
 timidity ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
 timidity -Ow -o ambient0.wav ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
@@ -116,6 +121,13 @@ instrument bank is useful for inspection but is not the original Gruntz
 SoundFont. Together these commands turn a disagreement into something that can
 be read, viewed, or played rather than a percentage.
 
+`wwd` inflates and validates the world file, follows its declared `TILEZ` and
+`IMAGEZ` registry bindings, and renders the plane carrying the retail main-plane
+flag to the requested PNG. Other planes are written to a sibling
+`<name>-planes/` directory because their parallax relationship depends on the
+camera. `wwd-all` preserves REZ paths, renders the complete archive, and writes
+`UNRESOLVED.tsv`; the retail corpus resolves every tile reference.
+
 ## Results
 
 Corpus: `GRUNTDEM.REZ` (10 553 resources, 9 845 PID) and retail `Gruntz.REZ`
@@ -134,6 +146,7 @@ FEC, and VRZ assets.
 | FNT parses exactly and renders an atlas | **4 / 4** retail bitmap fonts |
 | FEC validates and extracts Smacker payloads | **2 / 2** archives, **6 / 6** movies |
 | VRZ walks with exact-size validation | **1 517 / 1 517** retail voice WAVs |
+| WWD maps render with resolved tile references | **54 / 54** levels, **72 / 72** plane PNGs |
 
 ## What the format turned out to be
 
