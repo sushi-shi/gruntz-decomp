@@ -2564,12 +2564,12 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 RVA(0x0002ad40, 0x71)
 void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
-    if (m_ownerId == band) {
+    if (band == m_ownerId) {
         band++;
     }
     band = band % 4;
-    i32 cell = rand() % 15;
     CGrunt** row = &m_triggerMgr->m_grid[band * 15];
+    i32 cell = rand() % 15;
     for (i32 i = 0; i < 15; i++) {
         CGrunt* u = *row;
         if (u != NULL && u->m_entranceDropActive == 0) {
