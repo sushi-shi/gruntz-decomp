@@ -41,7 +41,7 @@ i32 CPlay::ExecCommand(
     }
     i32 res;
 
-    switch (cmdKind) {
+    switch (static_cast<u8>(cmdKind)) {
         case PLAYERCMD_PLACE_GRUNT: {
 
             i32 r = mgr->m_cmdGrid->PlaceObject(
