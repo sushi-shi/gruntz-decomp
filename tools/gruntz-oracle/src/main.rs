@@ -19,12 +19,15 @@
 //! `tokens` prints a token-level diff of one sprite and `dump` writes one out as
 //! a `.bmp`, so a disagreement can be read and looked at rather than counted.
 
-use std::collections::BTreeMap;
+mod gif;
+mod midi;
+
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use gruntz_codec::{bmp, pcx, pid};
+use gruntz_codec::{ani, bmp, pal, pcx, pid, rid, xmi};
 use gruntz_rez::{Resource, Rez};
 
 #[derive(Parser)]
@@ -116,7 +119,64 @@ enum Cmd {
         out: PathBuf,
         #[arg(long, value_enum, default_value_t = Which::Carry)]
         decoder: Which,
+        /// Palette resource to use for RID or palette-less PID data. PAL files
+        /// are raw 256 x RGB bytes; if omitted, dumps use a grey ramp.
+        #[arg(long)]
+        palette: Option<String>,
     },
+    /// Inspect an ANI control resource and optionally render a GIF preview.
+    /// ANI contains no pixels, so GIF output also needs the PID/RID image-set
+    /// prefix that the game object binds separately.
+    Ani {
+        /// Full ANI resource path.
+        path: String,
+        /// Write an animated GIF preview.
+        #[arg(long)]
+        gif: Option<PathBuf>,
+        /// REZ path prefix containing numerically suffixed PID/RID frames.
+        #[arg(long)]
+        frames: Option<String>,
+        /// Palette resource for RID or palette-less PID frames.
+        #[arg(long)]
+        palette: Option<String>,
+        /// Runtime Grunt colour. The game stores green-indexed sprites and
+        /// substitutes a TOOL/TOY palette while drawing them.
+        #[arg(long, value_enum, default_value_t = GruntTint::Orange)]
+        tint: GruntTint,
+        /// Maximum control steps to render before stopping an open-ended ANI.
+        #[arg(long, default_value_t = 256)]
+        steps: usize,
+        /// Initial frame index; defaults to the image set's lowest index.
+        #[arg(long)]
+        start_frame: Option<i32>,
+    },
+    /// Render every ANI whose conventional sibling IMAGEZ frame set exists.
+    /// ANI resources with external or generic frame bindings are listed in an
+    /// UNRESOLVED.tsv manifest instead of being paired by guesswork.
+    AniAll {
+        /// Output root; REZ paths are preserved below it.
+        out: PathBuf,
+        /// Maximum control steps per open-ended ANI.
+        #[arg(long, default_value_t = 256)]
+        steps: usize,
+        /// Runtime Grunt colour (`source` preserves the embedded green table).
+        #[arg(long, value_enum, default_value_t = GruntTint::Orange)]
+        tint: GruntTint,
+    },
+    /// Inspect a Miles XMI music resource and optionally export one sequence
+    /// as a standard MIDI file.
+    Xmi {
+        /// Full XMI resource path.
+        path: String,
+        /// Write a standard MIDI file using the original 120 Hz timing.
+        #[arg(long)]
+        midi: Option<PathBuf>,
+        /// Zero-based sequence index (retail Gruntz resources contain one).
+        #[arg(long, default_value_t = 0)]
+        sequence: usize,
+    },
+    /// Convert every XMI resource to standard MIDI, preserving REZ paths.
+    XmiAll { out: PathBuf },
 }
 
 /// Mirror of `pid::LiteralRule` for the command line.
@@ -155,6 +215,54 @@ enum Which {
     Carry,
     /// `CRezImage::DecodePidData` @0x176440.
     Spill,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+enum GruntTint {
+    /// Preserve the palette embedded in the frame.
+    Source,
+    Orange,
+    Green,
+    Blue,
+    Red,
+    Purple,
+    Yellow,
+    Hotpink,
+    Black,
+    Dkblue,
+    Dkgreen,
+    Turq,
+    Dkred,
+    Pink,
+    Dkyellow,
+    Grey,
+    Cyan,
+    White,
+}
+
+impl GruntTint {
+    fn resource_stem(self) -> Option<&'static str> {
+        match self {
+            Self::Source => None,
+            Self::Orange => Some("ORANGE"),
+            Self::Green => Some("GREEN"),
+            Self::Blue => Some("BLUE"),
+            Self::Red => Some("RED"),
+            Self::Purple => Some("PURPLE"),
+            Self::Yellow => Some("YELLOW"),
+            Self::Hotpink => Some("HOTPINK"),
+            Self::Black => Some("BLACK"),
+            Self::Dkblue => Some("DKBLUE"),
+            Self::Dkgreen => Some("DKGREEN"),
+            Self::Turq => Some("TURQ"),
+            Self::Dkred => Some("DKRED"),
+            Self::Pink => Some("PINK"),
+            Self::Dkyellow => Some("DKYELLOW"),
+            Self::Grey => Some("GREY"),
+            Self::Cyan => Some("CYAN"),
+            Self::White => Some("WHITE"),
+        }
+    }
 }
 
 impl From<Which> for pid::RowOverrun {
@@ -267,7 +375,12 @@ fn main() -> ExitCode {
             eprintln!("gruntz-oracle: no such resource: {path}");
             ExitCode::FAILURE
         }
-        Cmd::Dump { path, out, decoder } => {
+        Cmd::Dump {
+            path,
+            out,
+            decoder,
+            palette,
+        } => {
             for (name, bytes) in &archives {
                 let Ok(rez) = Rez::new(bytes) else { continue };
                 let up = path.to_ascii_uppercase();
@@ -278,7 +391,7 @@ fn main() -> ExitCode {
                 else {
                     continue;
                 };
-                return match dump(&rez, &r, out, (*decoder).into()) {
+                return match dump(&rez, &r, out, (*decoder).into(), palette.as_deref()) {
                     Ok(()) => {
                         eprintln!("[dump] {path} from {} -> {}", name.display(), out.display());
                         ExitCode::SUCCESS
@@ -291,6 +404,109 @@ fn main() -> ExitCode {
             }
             eprintln!("gruntz-oracle: no such resource: {path}");
             ExitCode::FAILURE
+        }
+        Cmd::Ani {
+            path,
+            gif,
+            frames,
+            palette,
+            tint,
+            steps,
+            start_frame,
+        } => {
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else { continue };
+                let Some(r) = find_resource(&rez, path) else {
+                    continue;
+                };
+                return match inspect_ani(
+                    &rez,
+                    &r,
+                    AniPreviewOptions {
+                        gif_path: gif.as_deref(),
+                        frame_prefix: frames.as_deref(),
+                        palette_path: palette.as_deref(),
+                        tint: *tint,
+                        max_steps: *steps,
+                        start_frame: *start_frame,
+                    },
+                ) {
+                    Ok(()) => {
+                        if let Some(out) = gif {
+                            eprintln!("[ani] {path} from {} -> {}", name.display(), out.display());
+                        }
+                        ExitCode::SUCCESS
+                    }
+                    Err(e) => {
+                        eprintln!("gruntz-oracle: {path}: {e}");
+                        ExitCode::FAILURE
+                    }
+                };
+            }
+            eprintln!("gruntz-oracle: no such resource: {path}");
+            ExitCode::FAILURE
+        }
+        Cmd::AniAll { out, steps, tint } => {
+            if *steps == 0 {
+                eprintln!("gruntz-oracle: --steps must be greater than zero");
+                return ExitCode::FAILURE;
+            }
+            let mut rc = ExitCode::SUCCESS;
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else {
+                    eprintln!("gruntz-oracle: {}: invalid REZ archive", name.display());
+                    rc = ExitCode::FAILURE;
+                    continue;
+                };
+                println!("\n================ {} ================", name.display());
+                if let Err(e) = export_all_animations(&rez, out, *steps, *tint) {
+                    eprintln!("gruntz-oracle: ani-all: {e}");
+                    rc = ExitCode::FAILURE;
+                }
+            }
+            rc
+        }
+        Cmd::Xmi {
+            path,
+            midi,
+            sequence,
+        } => {
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else { continue };
+                let Some(resource) = find_resource(&rez, path) else {
+                    continue;
+                };
+                return match inspect_xmi(&rez, &resource, midi.as_deref(), *sequence) {
+                    Ok(()) => {
+                        if let Some(out) = midi {
+                            eprintln!("[xmi] {path} from {} -> {}", name.display(), out.display());
+                        }
+                        ExitCode::SUCCESS
+                    }
+                    Err(error) => {
+                        eprintln!("gruntz-oracle: {path}: {error}");
+                        ExitCode::FAILURE
+                    }
+                };
+            }
+            eprintln!("gruntz-oracle: no such resource: {path}");
+            ExitCode::FAILURE
+        }
+        Cmd::XmiAll { out } => {
+            let mut rc = ExitCode::SUCCESS;
+            for (name, bytes) in &archives {
+                let Ok(rez) = Rez::new(bytes) else {
+                    eprintln!("gruntz-oracle: {}: invalid REZ archive", name.display());
+                    rc = ExitCode::FAILURE;
+                    continue;
+                };
+                println!("\n================ {} ================", name.display());
+                if let Err(error) = export_all_xmi(&rez, out) {
+                    eprintln!("gruntz-oracle: xmi-all: {error}");
+                    rc = ExitCode::FAILURE;
+                }
+            }
+            rc
         }
     }
 }
@@ -314,6 +530,130 @@ fn of_kind<'a>(rez: &'a Rez<'a>, kind: &'static str) -> impl Iterator<Item = Res
     rez.resources()
         .flatten()
         .filter(move |r| r.kind.to_string() == kind)
+}
+
+fn find_resource<'a>(rez: &'a Rez<'a>, path: &str) -> Option<Resource<'a>> {
+    let wanted = path.to_ascii_uppercase();
+    rez.resources()
+        .flatten()
+        .find(|r| r.path().to_string().to_ascii_uppercase() == wanted)
+}
+
+fn inspect_xmi(
+    rez: &Rez,
+    resource: &Resource,
+    midi_path: Option<&Path>,
+    sequence_index: usize,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if resource.kind.to_string() != "XMI" {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("{} is {}, not XMI", resource.path(), resource.kind),
+        )
+        .into());
+    }
+    let music = xmi::split(resource.data(rez.bytes()))?;
+    let sequences = music.sequences().collect::<Result<Vec<_>, _>>()?;
+    println!(
+        "{}: sequences={} bytes={}",
+        resource.path(),
+        sequences.len(),
+        resource.data(rez.bytes()).len()
+    );
+    for (index, sequence) in sequences.iter().copied().enumerate() {
+        let mut channel = 0usize;
+        let mut notes = 0usize;
+        let mut meta = 0usize;
+        let mut sysex = 0usize;
+        let mut end = 0u32;
+        for event in sequence.events() {
+            let event = event?;
+            end = end.max(event.time());
+            match event {
+                xmi::Event::Channel { duration, .. } => {
+                    channel += 1;
+                    notes += usize::from(duration.is_some());
+                }
+                xmi::Event::Meta { .. } => meta += 1,
+                xmi::Event::SysEx { .. } => sysex += 1,
+            }
+        }
+        println!(
+            "  sequence {index}: timbres={} branches={} event_bytes={} channel={} notes={} meta={} sysex={} last_tick={end}",
+            sequence.timbre_count()?,
+            sequence.branches.map_or(0, <[u8]>::len),
+            sequence.events.len(),
+            channel,
+            notes,
+            meta,
+            sysex
+        );
+    }
+    if let Some(out) = midi_path {
+        let sequence = sequences.get(sequence_index).copied().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!(
+                    "sequence {sequence_index} does not exist; resource has {}",
+                    sequences.len()
+                ),
+            )
+        })?;
+        if let Some(parent) = out.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(out, midi::render(sequence)?)?;
+    }
+    Ok(())
+}
+
+fn export_all_xmi(rez: &Rez, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    std::fs::create_dir_all(out)?;
+    let mut resources = 0usize;
+    let mut sequences = 0usize;
+    let mut failures = Vec::new();
+    for resource in of_kind(rez, "XMI") {
+        resources += 1;
+        let path = resource.path().to_string();
+        let result = (|| -> Result<usize, Box<dyn std::error::Error>> {
+            let music = xmi::split(resource.data(rez.bytes()))?;
+            let parsed = music.sequences().collect::<Result<Vec<_>, _>>()?;
+            for (index, sequence) in parsed.iter().copied().enumerate() {
+                let mut relative = PathBuf::new();
+                for component in path.split(['\\', '/']) {
+                    relative.push(component);
+                }
+                if parsed.len() == 1 {
+                    relative.set_extension("mid");
+                } else {
+                    relative.set_file_name(format!("{}-{index:03}.mid", resource.name));
+                }
+                let destination = out.join(relative);
+                if let Some(parent) = destination.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                std::fs::write(destination, midi::render(sequence)?)?;
+            }
+            Ok(parsed.len())
+        })();
+        match result {
+            Ok(count) => sequences += count,
+            Err(error) => failures.push(format!("{path}: {error}")),
+        }
+    }
+    println!("XMI resources         : {resources}");
+    println!("MIDI files generated  : {sequences}");
+    if !failures.is_empty() {
+        for failure in failures.iter().take(10) {
+            eprintln!("  {failure}");
+        }
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("{} XMI resource(s) failed", failures.len()),
+        )
+        .into());
+    }
+    Ok(())
 }
 
 // ---------------------------------------------------------------------------
@@ -454,6 +794,171 @@ fn census(rez: &Rez, keep: usize) {
         );
         if !pt.counts.is_empty() {
             pt.report("PCX failures", pcxs.len());
+        }
+    }
+
+    let anis: Vec<_> = of_kind(rez, "ANI").collect();
+    if !anis.is_empty() {
+        let mut clean = 0usize;
+        let mut exact = 0usize;
+        let mut records = 0usize;
+        let mut step_hist = BTreeMap::new();
+        let mut loop_hist = BTreeMap::new();
+        let mut position_hist = BTreeMap::new();
+        let mut at = Tally::default();
+        for r in &anis {
+            let path = r.path().to_string();
+            let data = r.data(rez.bytes());
+            let a = match ani::split(data) {
+                Ok(a) => a,
+                Err(e) => {
+                    at.add(format!("split failed: {e}"), &path, keep);
+                    continue;
+                }
+            };
+            if a.trailing.is_empty() {
+                clean += 1;
+            } else {
+                at.add(
+                    format!("{} unparsed trailing byte(s)", a.trailing.len()),
+                    &path,
+                    keep,
+                );
+            }
+            for record in a.records() {
+                records += 1;
+                *step_hist.entry(record.step_mode).or_insert(0usize) += 1;
+                *loop_hist.entry(record.loop_mode).or_insert(0usize) += 1;
+                *position_hist.entry(record.position_mode).or_insert(0usize) += 1;
+            }
+            let mut encoded = vec![0u8; a.encoded_len()];
+            if a.encode_into(&mut encoded).is_ok() && encoded == data {
+                exact += 1;
+            } else {
+                at.add("semantic re-encode differs", &path, keep);
+            }
+        }
+        println!("\nANI programs         : {}", anis.len());
+        println!(
+            "parsed exactly       : {clean}  ({:.2}%)",
+            pct(clean, anis.len())
+        );
+        println!(
+            "byte-exact re-encode : {exact}  ({:.2}%)",
+            pct(exact, anis.len())
+        );
+        println!("records              : {records}");
+        println!("step modes           : {step_hist:?}");
+        println!("loop modes           : {loop_hist:?}");
+        println!("position modes       : {position_hist:?}");
+        if !at.counts.is_empty() {
+            at.report("ANI failures", anis.len());
+        }
+    }
+
+    let rids: Vec<_> = of_kind(rez, "RID").collect();
+    if !rids.is_empty() {
+        let mut clean = 0usize;
+        let mut exact = 0usize;
+        let mut rt = Tally::default();
+        for r in &rids {
+            let path = r.path().to_string();
+            let data = r.data(rez.bytes());
+            let image = match rid::split(data) {
+                Ok(image) => image,
+                Err(e) => {
+                    rt.add(format!("split failed: {e}"), &path, keep);
+                    continue;
+                }
+            };
+            if image.trailing.is_empty() {
+                clean += 1;
+            } else {
+                rt.add(
+                    format!("{} unparsed trailing byte(s)", image.trailing.len()),
+                    &path,
+                    keep,
+                );
+            }
+            let mut encoded = vec![0u8; image.encoded_len()];
+            if image.encode_into(&mut encoded).is_ok() && encoded == data {
+                exact += 1;
+            } else {
+                rt.add("semantic re-encode differs", &path, keep);
+            }
+        }
+        println!("\nRID images           : {}", rids.len());
+        println!(
+            "parsed exactly       : {clean}  ({:.2}%)",
+            pct(clean, rids.len())
+        );
+        println!(
+            "byte-exact re-encode : {exact}  ({:.2}%)",
+            pct(exact, rids.len())
+        );
+        if !rt.counts.is_empty() {
+            rt.report("RID failures", rids.len());
+        }
+    }
+
+    let palettes: Vec<_> = of_kind(rez, "PAL").collect();
+    if !palettes.is_empty() {
+        let mut clean = 0usize;
+        let mut pt = Tally::default();
+        for resource in &palettes {
+            match pal::split(resource.data(rez.bytes())) {
+                Ok(_) => clean += 1,
+                Err(error) => pt.add(
+                    format!("split failed: {error}"),
+                    &resource.path().to_string(),
+                    keep,
+                ),
+            }
+        }
+        println!("\nPAL tables           : {}", palettes.len());
+        println!(
+            "parsed exactly       : {clean}  ({:.2}%)",
+            pct(clean, palettes.len())
+        );
+        if !pt.counts.is_empty() {
+            pt.report("PAL failures", palettes.len());
+        }
+    }
+
+    let music: Vec<_> = of_kind(rez, "XMI").collect();
+    if !music.is_empty() {
+        let mut clean = 0usize;
+        let mut sequences = 0usize;
+        let mut xt = Tally::default();
+        for resource in &music {
+            let result = (|| -> Result<usize, Box<dyn std::error::Error>> {
+                let parsed = xmi::split(resource.data(rez.bytes()))?;
+                let tracks = parsed.sequences().collect::<Result<Vec<_>, _>>()?;
+                for track in tracks.iter().copied() {
+                    midi::render(track)?;
+                }
+                Ok(tracks.len())
+            })();
+            match result {
+                Ok(count) => {
+                    clean += 1;
+                    sequences += count;
+                }
+                Err(error) => xt.add(
+                    format!("parse/export failed: {error}"),
+                    &resource.path().to_string(),
+                    keep,
+                ),
+            }
+        }
+        println!("\nXMI music            : {}", music.len());
+        println!(
+            "parse + MIDI export  : {clean}  ({:.2}%)",
+            pct(clean, music.len())
+        );
+        println!("sequences            : {sequences}");
+        if !xt.counts.is_empty() {
+            xt.report("XMI failures", music.len());
         }
     }
 }
@@ -1059,32 +1564,819 @@ fn dump(
     r: &Resource,
     out: &Path,
     overrun: pid::RowOverrun,
+    palette_path: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let data = r.data(rez.bytes());
-    if r.kind.to_string() != "PID" {
-        std::fs::write(out, data)?;
-        return Ok(());
+    let external_palette = load_palette(rez, palette_path)?;
+    match r.kind.to_string().as_str() {
+        "PID" => {
+            let p = pid::split(data)?;
+            let dims = p.header.dims()?;
+            let mut pixels = vec![0u8; dims.pixel_len()];
+            let used = p.decode_into(&mut pixels, overrun)?;
+            write_bmp(out, &pixels, dims, p.palette.or(external_palette))?;
+            eprintln!(
+                "[dump] {}x{} flags={:#06x} offset=({},{}) fill={:#x} stream={}/{} bytes palette={}",
+                dims.width(),
+                dims.height(),
+                p.header.flags,
+                p.header.offset_x,
+                p.header.offset_y,
+                p.header.fill,
+                used,
+                p.stream.len(),
+                p.palette.is_some() || external_palette.is_some()
+            );
+        }
+        "RID" => {
+            let image = rid::split(data)?;
+            write_bmp(out, image.pixels, image.dims, external_palette)?;
+            eprintln!(
+                "[dump] RID {}x{} offset=({},{}) trailing={} bytes palette={}",
+                image.dims.width(),
+                image.dims.height(),
+                image.header.offset_x,
+                image.header.offset_y,
+                image.trailing.len(),
+                external_palette.is_some()
+            );
+        }
+        _ => std::fs::write(out, data)?,
     }
-    let p = pid::split(data)?;
-    let dims = p.header.dims()?;
-    let mut pixels = vec![0u8; dims.pixel_len()];
-    let used = p.decode_into(&mut pixels, overrun)?;
+    Ok(())
+}
+
+fn write_bmp(
+    out: &Path,
+    pixels: &[u8],
+    dims: pid::Dims,
+    palette: Option<&[u8]>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = vec![0u8; bmp::indexed_len(dims.width(), dims.height())];
-    let n = bmp::write_indexed_into(&pixels, dims.width(), dims.height(), p.palette, &mut file)?;
+    let n = bmp::write_indexed_into(pixels, dims.width(), dims.height(), palette, &mut file)?;
     file.truncate(n);
     std::fs::write(out, &file)?;
-    eprintln!(
-        "[dump] {}x{} flags={:#06x} offset=({},{}) fill={:#x} stream={}/{} bytes palette={}",
-        dims.width(),
-        dims.height(),
-        p.header.flags,
-        p.header.offset_x,
-        p.header.offset_y,
-        p.header.fill,
-        used,
-        p.stream.len(),
-        p.palette.is_some()
+    Ok(())
+}
+
+fn load_palette<'a>(
+    rez: &'a Rez<'a>,
+    path: Option<&str>,
+) -> Result<Option<&'a [u8]>, Box<dyn std::error::Error>> {
+    let Some(path) = path else { return Ok(None) };
+    let resource = find_resource(rez, path).ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("no such palette resource: {path}"),
+        )
+    })?;
+    Ok(Some(pal::split(resource.data(rez.bytes()))?.as_bytes()))
+}
+
+#[derive(Debug, Clone, Copy)]
+struct TintPalettes<'a> {
+    green_tool: &'a [u8],
+    green_toy: &'a [u8],
+    selected_tool: &'a [u8],
+    selected_toy: &'a [u8],
+}
+
+fn tint_palettes<'a>(
+    rez: &'a Rez<'a>,
+    tint: GruntTint,
+) -> Result<Option<TintPalettes<'a>>, Box<dyn std::error::Error>> {
+    let Some(stem) = tint.resource_stem() else {
+        return Ok(None);
+    };
+    let get = |name: &str| -> Result<&'a [u8], Box<dyn std::error::Error>> {
+        let path = format!("GRUNTZ\\PALETTEZ\\{name}");
+        load_palette(rez, Some(&path))?
+            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, path).into())
+    };
+    Ok(Some(TintPalettes {
+        green_tool: get("GREENTOOL")?,
+        green_toy: get("GREENTOY")?,
+        selected_tool: get(&format!("{stem}TOOL"))?,
+        selected_toy: get(&format!("{stem}TOY"))?,
+    }))
+}
+
+#[derive(Debug)]
+struct FrameImage {
+    width: usize,
+    height: usize,
+    offset_x: i32,
+    offset_y: i32,
+    pixels: Vec<u8>,
+    palette: [u8; pid::PALETTE_SIZE],
+    transparent: Option<u8>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct ControlState {
+    record: usize,
+    frame: i32,
+    x: i32,
+    y: i32,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct PreviewState {
+    frame: i32,
+    x: i32,
+    y: i32,
+    delay_ms: u32,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AniPreviewOptions<'a> {
+    gif_path: Option<&'a Path>,
+    frame_prefix: Option<&'a str>,
+    palette_path: Option<&'a str>,
+    tint: GruntTint,
+    max_steps: usize,
+    start_frame: Option<i32>,
+}
+
+fn inspect_ani(
+    rez: &Rez,
+    resource: &Resource,
+    options: AniPreviewOptions<'_>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if resource.kind.to_string() != "ANI" {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("{} is {}, not ANI", resource.path(), resource.kind),
+        )
+        .into());
+    }
+    let animation = ani::split(resource.data(rez.bytes()))?;
+    println!(
+        "{}: name={:?} flags={:#x} records={} trailing={}",
+        resource.path(),
+        String::from_utf8_lossy(animation.name),
+        animation.header.flags,
+        animation.header.count,
+        animation.trailing.len()
     );
+    println!(
+        "{:>3} {:>5} {:>5} {:>5} {:>6} {:>7} {:>5} {:>6} {:>6}  cues",
+        "#", "step", "loop", "pos", "param", "time", "draw", "dx", "dy"
+    );
+    for (i, record) in animation.records().enumerate() {
+        let cues = record
+            .cues()
+            .map(String::from_utf8_lossy)
+            .collect::<Vec<_>>()
+            .join(" ");
+        println!(
+            "{i:>3} {:>5} {:>5} {:>5} {:>6} {:>5}ms {:>5} {:>6} {:>6}  {cues}",
+            record.step_mode,
+            record.loop_mode,
+            record.position_mode,
+            record.param,
+            record.duration_ms(),
+            record.draw_value,
+            record.delta_x,
+            record.delta_y
+        );
+    }
+
+    let Some(out) = options.gif_path else {
+        return Ok(());
+    };
+    let prefix = options.frame_prefix.ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "--gif requires --frames because ANI stores no image-set path",
+        )
+    })?;
+    if options.max_steps == 0 {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "--steps must be greater than zero",
+        )
+        .into());
+    }
+    let frames = load_frame_set(
+        rez,
+        prefix,
+        options.palette_path,
+        tint_palettes(rez, options.tint)?,
+    )?;
+    let states = preview_states(&animation, &frames, options.max_steps, options.start_frame)?;
+    write_ani_gif(out, &frames, &states)?;
+    eprintln!(
+        "[ani] rendered {} control step(s) using {} frame(s) from {prefix}",
+        states.len(),
+        frames.len()
+    );
+    Ok(())
+}
+
+fn export_all_animations(
+    rez: &Rez,
+    out: &Path,
+    max_steps: usize,
+    tint: GruntTint,
+) -> Result<(), Box<dyn std::error::Error>> {
+    std::fs::create_dir_all(out)?;
+    let tint_palettes = tint_palettes(rez, tint)?;
+    let mut total = 0usize;
+    let mut generated = 0usize;
+    let mut unresolved = String::from("ani\tframe_prefix\treason\n");
+    let mut bindings = String::from("ani\tframe_prefix\n");
+    let mut failures = Tally::default();
+
+    for resource in of_kind(rez, "ANI") {
+        total += 1;
+        let path = resource.path().to_string();
+        let candidates = animation_frame_prefixes(&path);
+        let mut errors = Vec::new();
+        let mut used = None;
+        for prefix in &candidates {
+            match render_animation(rez, &resource, prefix, out, max_steps, tint_palettes) {
+                Ok(()) => {
+                    used = Some(prefix);
+                    break;
+                }
+                Err(e) => errors.push(e.to_string().replace(['\t', '\n'], " ")),
+            }
+        }
+        if let Some(prefix) = used {
+            generated += 1;
+            bindings.push_str(&format!("{path}\t{prefix}\n"));
+        } else {
+            let prefixes = candidates.join("|");
+            let reason = errors.join(" | ");
+            unresolved.push_str(&format!("{path}\t{prefixes}\t{reason}\n"));
+            let class = if errors
+                .iter()
+                .all(|reason| reason.starts_with("no numerically suffixed"))
+            {
+                "no conventional sibling IMAGEZ set"
+            } else if errors
+                .iter()
+                .any(|reason| reason.contains("selects missing frame"))
+            {
+                "candidate frame set does not satisfy ANI"
+            } else {
+                "other render failure"
+            };
+            failures.add(class, &path, 10);
+        }
+    }
+
+    std::fs::write(out.join("UNRESOLVED.tsv"), unresolved)?;
+    std::fs::write(out.join("BINDINGS.tsv"), bindings)?;
+    println!("ANI resources         : {total}");
+    println!(
+        "GIFs generated       : {generated}  ({:.2}%)",
+        pct(generated, total)
+    );
+    println!(
+        "unresolved manifest  : {}",
+        out.join("UNRESOLVED.tsv").display()
+    );
+    if !failures.counts.is_empty() {
+        failures.report("ANI resources requiring an external frame binding", total);
+    }
+    Ok(())
+}
+
+fn render_animation(
+    rez: &Rez,
+    resource: &Resource,
+    prefix: &str,
+    out: &Path,
+    max_steps: usize,
+    tint_palettes: Option<TintPalettes<'_>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let animation = ani::split(resource.data(rez.bytes()))?;
+    let frames = load_frame_set(rez, prefix, None, tint_palettes)?;
+    let states = preview_states(&animation, &frames, max_steps, None)?;
+    let path = resource.path().to_string();
+    let mut relative = PathBuf::new();
+    for component in path.split(['\\', '/']) {
+        relative.push(component);
+    }
+    relative.set_extension("gif");
+    let destination = out.join(relative);
+    if let Some(parent) = destination.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    write_ani_gif(&destination, &frames, &states)?;
+    Ok(())
+}
+
+fn animation_frame_prefixes(path: &str) -> Vec<String> {
+    let parts = path.split('\\').collect::<Vec<_>>();
+    let mut out = Vec::new();
+    push_candidate(&mut out, path.replace("\\ANIZ\\", "\\IMAGEZ\\"));
+    let Some(root) = parts.first().copied() else {
+        return out;
+    };
+    match root {
+        root if is_area_root(root) && parts.len() == 3 => {
+            let image = match parts[2] {
+                "ROLLINGBALLEXPLOSION" => Some("ROLLINGBALL\\EXPLOSION"),
+                "ROLLINGBALLFALL" => Some("ROLLINGBALL\\FALL"),
+                "ROLLINGBALLSINKDEATH" | "ROLLINGBALLSINKHOLE" | "ROLLINGBALLSINKWATER" => {
+                    Some("ROLLINGBALL\\SINK")
+                }
+                "STATICHAZARDGO" | "STATICHAZARDIDLE" => Some("STATICHAZARD"),
+                "DROPPEDOBJECT" | "DROPPEDOBJECTHIT" => Some("OBJECTDROPPER\\OBJECT"),
+                "DROPPEDOBJECTSHADOW" => Some("OBJECTDROPPER\\SHADOW"),
+                "TOGGLEBRIDGEDOWN" | "TOGGLEBRIDGEUP" => Some("TOGGLEWATERBRIDGE"),
+                "BRIDGEDOWN" | "BRIDGEUP" => Some("WATERBRIDGE"),
+                "CRUMBLEBRIDGE" => Some("CRUMBLEWATERBRIDGE"),
+                "WATER3" => Some("WATER2"),
+                _ => None,
+            };
+            if let Some(image) = image {
+                push_candidate(&mut out, format!("{root}\\IMAGEZ\\{image}"));
+            }
+        }
+        "GAME" if parts.len() == 3 => {
+            let image = match parts[2] {
+                "TIMEBOMBFAST" | "TIMEBOMBSLOW" => Some("TIMEBOMB"),
+                "EXPLOSION1" | "EXPLOSION2" | "EXPLOSION3" => Some("EXPLOSION"),
+                "WATER1" | "WATER2" | "WATER3" => Some("WATER"),
+                "FLASH" => Some("LIGHTING\\FLASH"),
+                "HIDDENITEM" => Some("LIGHTING\\HIDDENITEM"),
+                "TARGETCURSOR" => Some("LIGHTING\\TARGETCURSOR"),
+                "CHECKPOINTFLAGSET" => Some("CHECKPOINTFLAG"),
+                "TELEPORTER" | "TELEPORTEROPEN" | "TELEPORTERCLOSE" => Some("WORMHOLE"),
+                _ => None,
+            };
+            if let Some(image) = image {
+                push_candidate(&mut out, format!("GAME\\IMAGEZ\\{image}"));
+            }
+            let bound = match parts[2] {
+                "GRUNTBOMBSPRINT" => Some("GRUNTZ\\IMAGEZ\\BOMBGRUNT\\WEST\\ITEM"),
+                "GRUNTFLEX" => Some("GRUNTZ\\IMAGEZ\\EXITZ"),
+                "GRUNTTWITCH" => Some("GRUNTZ\\IMAGEZ\\NORMALGRUNT\\DEATH"),
+                _ => None,
+            };
+            if let Some(bound) = bound {
+                push_candidate(&mut out, bound.to_string());
+            }
+        }
+        "GRUNTZ" => gruntz_frame_prefixes(&parts, &mut out),
+        _ => {}
+    }
+    out
+}
+
+fn is_area_root(root: &str) -> bool {
+    matches!(
+        root,
+        "AREA1" | "AREA2" | "AREA3" | "AREA4" | "AREA5" | "AREA6" | "AREA7" | "AREA8"
+    )
+}
+
+fn gruntz_frame_prefixes(parts: &[&str], out: &mut Vec<String>) {
+    let Some(group) = parts.get(2).copied() else {
+        return;
+    };
+    if parts.len() == 3 && group == "DISAPPEAR" {
+        push_candidate(out, "GRUNTZ\\IMAGEZ\\EXITZ".to_string());
+        return;
+    }
+    let Some(action) = parts.last().copied() else {
+        return;
+    };
+    match group {
+        "EXITZ" | "GRUNTPUDDLE" | "PICKUPS" => {
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}"));
+        }
+        "ENTRANCEZ" => {
+            let suffix = if action == "DROP" { "\\DROP" } else { "" };
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\ENTRANCEZ{suffix}"));
+        }
+        "WARLORDZ" if parts.len() >= 5 => {
+            let family = if action == "BOOTY" {
+                Some("JOY")
+            } else {
+                action_family(action)
+            };
+            if let Some(family) = family {
+                push_candidate(
+                    out,
+                    format!("GRUNTZ\\IMAGEZ\\WARLORDZ\\{}\\{family}", parts[3]),
+                );
+            }
+        }
+        "BABYWALKERGRUNT" | "GOKARTGRUNT" => {
+            let suffix = if action == "TOY-BREAK" {
+                "BREAK"
+            } else {
+                "SOUTH"
+            };
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}\\{suffix}"));
+        }
+        "BEACHBALLGRUNT" | "JACKINTHEBOXGRUNT" => {
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}"));
+        }
+        "SCROLLGRUNT" | "JUMPROPEGRUNT" | "YOYOGRUNT" | "SQUEAKTOYGRUNT" => {
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}"));
+        }
+        "BIGWHEELGRUNT" | "POGOSTICKGRUNT" => {
+            let suffix = if action == "TOY-BREAK" {
+                "BREAK"
+            } else {
+                "SOUTH"
+            };
+            push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}\\{suffix}"));
+        }
+        "SPRINGGRUNT" if action == "ITEM" => {
+            push_candidate(out, "GRUNTZ\\IMAGEZ\\SPRINGGRUNT\\LOSEITEM".to_string());
+        }
+        "DEATHZ" => {}
+        _ if group.ends_with("GRUNT") => {
+            if action.starts_with("PROJECTILE") {
+                push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}\\PROJECTILE\\OBJECT"));
+            } else if action != "DEATH" {
+                if let Some(family) = action_family(action) {
+                    push_candidate(out, format!("GRUNTZ\\IMAGEZ\\{group}\\SOUTH\\{family}"));
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn action_family(action: &str) -> Option<&'static str> {
+    if action.starts_with("IDLE") {
+        Some("IDLE")
+    } else if action.starts_with("STRUCK") {
+        Some("STRUCK")
+    } else if action.starts_with("ATTACK") || action.starts_with("BLOCK") {
+        Some("ATTACK")
+    } else if action == "ITEM" || action == "ITEM2" || action == "USE-ITEM" {
+        Some("ITEM")
+    } else if action == "WALK" {
+        Some("WALK")
+    } else if action.starts_with("BATTLECRY") {
+        Some("BATTLECRY")
+    } else if action == "JOY" {
+        Some("JOY")
+    } else if action == "MOVING" {
+        Some("MOVING")
+    } else if action == "PANIC" {
+        Some("PANIC")
+    } else if action == "DEATH" {
+        Some("DEATH")
+    } else {
+        None
+    }
+}
+
+fn push_candidate(out: &mut Vec<String>, candidate: String) {
+    if !out.contains(&candidate) {
+        out.push(candidate);
+    }
+}
+
+fn load_frame_set(
+    rez: &Rez,
+    prefix: &str,
+    palette_path: Option<&str>,
+    tint_palettes: Option<TintPalettes<'_>>,
+) -> Result<BTreeMap<i32, FrameImage>, Box<dyn std::error::Error>> {
+    let wanted = prefix.trim_end_matches(['\\', '/']).to_ascii_uppercase();
+    let external_palette = load_palette(rez, palette_path)?;
+    let mut frames = BTreeMap::new();
+    for resource in rez.resources().flatten() {
+        let path = resource.path().to_string();
+        let upper = path.to_ascii_uppercase();
+        if !upper.starts_with(&wanted)
+            || upper
+                .as_bytes()
+                .get(wanted.len())
+                .is_some_and(|&b| b != b'\\' && b != b'/')
+        {
+            continue;
+        }
+        let relative = upper[wanted.len()..].trim_start_matches(['\\', '/']);
+        if relative.contains(['\\', '/']) {
+            continue;
+        }
+        let kind = resource.kind.to_string();
+        if kind != "PID" && kind != "RID" {
+            continue;
+        }
+        let Some(index) = trailing_number(resource.name) else {
+            continue;
+        };
+        let image = decode_frame(rez, &resource, external_palette, tint_palettes)?;
+        if frames.insert(index, image).is_some() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("duplicate frame index {index} below {prefix}"),
+            )
+            .into());
+        }
+    }
+    if frames.is_empty() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("no numerically suffixed PID/RID frames below {prefix}"),
+        )
+        .into());
+    }
+    Ok(frames)
+}
+
+fn trailing_number(name: &str) -> Option<i32> {
+    let bytes = name.as_bytes();
+    let start = bytes
+        .iter()
+        .rposition(|b| !b.is_ascii_digit())
+        .map_or(0, |i| i + 1);
+    (start < bytes.len())
+        .then(|| name[start..].parse().ok())
+        .flatten()
+}
+
+fn decode_frame(
+    rez: &Rez,
+    resource: &Resource,
+    external_palette: Option<&[u8]>,
+    tint_palettes: Option<TintPalettes<'_>>,
+) -> Result<FrameImage, Box<dyn std::error::Error>> {
+    let data = resource.data(rez.bytes());
+    let (header, dims, pixels, embedded): (_, _, Vec<u8>, Option<&[u8]>) =
+        match resource.kind.to_string().as_str() {
+            "PID" => {
+                let image = pid::split(data)?;
+                let dims = image.header.dims()?;
+                let mut pixels = vec![0u8; dims.pixel_len()];
+                image.decode_into(&mut pixels, pid::RowOverrun::Carry)?;
+                (image.header, dims, pixels, image.palette)
+            }
+            "RID" => {
+                let image = rid::split(data)?;
+                (image.header, image.dims, image.pixels.to_vec(), None)
+            }
+            kind => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("{} has unsupported frame type {kind}", resource.path()),
+                )
+                .into());
+            }
+        };
+    let mut palette = [0u8; pid::PALETTE_SIZE];
+    let source = embedded.or(external_palette).map(|source| {
+        if let Some(tables) = tint_palettes {
+            if source == tables.green_tool {
+                return tables.selected_tool;
+            }
+            if source == tables.green_toy {
+                return tables.selected_toy;
+            }
+        }
+        source
+    });
+    if let Some(source) = source {
+        palette.copy_from_slice(&source[..pid::PALETTE_SIZE]);
+    } else {
+        for (i, rgb) in palette.chunks_exact_mut(3).enumerate() {
+            let grey = u8::try_from(i).unwrap_or(u8::MAX);
+            rgb.fill(grey);
+        }
+    }
+    let transparent = if header.flags & pid::flags::TRANSPARENCY != 0 {
+        // CGruntzMgr::SetColorDepth uses RGB(255, 0, 132) as the retail
+        // source colour key at 24bpp. Embedded palettes do not reserve one
+        // fixed index for it: GAME sprites observed here use indices 12, 133
+        // and 143, while skip/fill GRUNTZ sprites often mirror the index in
+        // `fill`. GIF needs the palette index, so resolve the RGB key first.
+        palette
+            .chunks_exact(3)
+            .position(|rgb| rgb == [0xff, 0x00, 0x84])
+            .and_then(|index| u8::try_from(index).ok())
+            .or_else(|| Some(header.fill_byte()))
+    } else {
+        None
+    };
+    Ok(FrameImage {
+        width: dims.width(),
+        height: dims.height(),
+        offset_x: header.offset_x,
+        offset_y: header.offset_y,
+        pixels,
+        palette,
+        transparent,
+    })
+}
+
+fn preview_states(
+    animation: &ani::Ani<'_>,
+    frames: &BTreeMap<i32, FrameImage>,
+    max_steps: usize,
+    start_frame: Option<i32>,
+) -> Result<Vec<PreviewState>, Box<dyn std::error::Error>> {
+    let records: Vec<_> = animation.records().collect();
+    if records.is_empty() {
+        return Err(
+            std::io::Error::new(std::io::ErrorKind::InvalidData, "ANI has no records").into(),
+        );
+    }
+    let min_frame = *frames.keys().next().unwrap_or(&0);
+    let max_frame = *frames.keys().next_back().unwrap_or(&0);
+    let mut state = ControlState {
+        record: 0,
+        frame: start_frame.unwrap_or(min_frame),
+        x: 0,
+        y: 0,
+    };
+    if !frames.contains_key(&state.frame) {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("initial frame {} is absent from the image set", state.frame),
+        )
+        .into());
+    }
+    let mut seen = BTreeSet::new();
+    let mut out = Vec::new();
+    while out.len() < max_steps && seen.insert(state) {
+        let record = records[state.record];
+        state.frame = match record.step_mode {
+            1 => {
+                let next = state.frame.saturating_add(1);
+                if frames.contains_key(&next) {
+                    next
+                } else {
+                    min_frame
+                }
+            }
+            2 => {
+                if state.frame == min_frame {
+                    max_frame
+                } else {
+                    state.frame.saturating_sub(1)
+                }
+            }
+            3 => i32::from(record.param),
+            4 => min_frame,
+            5 => max_frame,
+            6 => {
+                let next = state.frame.saturating_add(i32::from(record.param));
+                if frames.contains_key(&next) {
+                    next
+                } else {
+                    max_frame
+                }
+            }
+            7 => {
+                let next = state.frame.saturating_sub(i32::from(record.param));
+                if frames.contains_key(&next) {
+                    next
+                } else {
+                    min_frame
+                }
+            }
+            _ => state.frame,
+        };
+        let mut plot_x = 0;
+        let mut plot_y = 0;
+        match record.position_mode {
+            1 => {
+                plot_x = i32::from(record.delta_x);
+                plot_y = i32::from(record.delta_y);
+            }
+            2 => {
+                state.x = state.x.saturating_add(i32::from(record.delta_x));
+                state.y = state.y.saturating_add(i32::from(record.delta_y));
+            }
+            3 => {
+                state.x = i32::from(record.delta_x);
+                state.y = i32::from(record.delta_y);
+            }
+            _ => {}
+        }
+        out.push(PreviewState {
+            frame: state.frame,
+            x: state.x.saturating_add(plot_x),
+            y: state.y.saturating_add(plot_y),
+            delay_ms: record.duration_ms(),
+        });
+
+        let advance = match record.loop_mode {
+            0 => true,
+            1 => state.frame == i32::from(record.param),
+            2 => state.frame == min_frame,
+            3 => state.frame == max_frame,
+            4 => state.frame == min_frame.saturating_add(1),
+            5 => state.frame == max_frame.saturating_sub(1),
+            7 => {
+                state.record = usize::from(records.len() > 1);
+                continue;
+            }
+            8 => {
+                state.record = 0;
+                continue;
+            }
+            9 => break,
+            _ => false,
+        };
+        if advance {
+            state.record += 1;
+            if state.record == records.len() {
+                state.record = 0;
+            }
+        }
+    }
+    if out.is_empty() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "ANI produced no preview states",
+        )
+        .into());
+    }
+    Ok(out)
+}
+
+fn write_ani_gif(
+    out: &Path,
+    frames: &BTreeMap<i32, FrameImage>,
+    states: &[PreviewState],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let representative = frames.values().next().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "image set has no frames")
+    })?;
+    let mut left = i64::MAX;
+    let mut top = i64::MAX;
+    let mut right = i64::MIN;
+    let mut bottom = i64::MIN;
+    for state in states {
+        let Some(frame) = frames.get(&state.frame) else {
+            continue;
+        };
+        let x = i64::from(state.x) + i64::from(frame.offset_x);
+        let y = i64::from(state.y) + i64::from(frame.offset_y);
+        left = left.min(x);
+        top = top.min(y);
+        right = right.max(x + i64::try_from(frame.width)?);
+        bottom = bottom.max(y + i64::try_from(frame.height)?);
+    }
+    if left == i64::MAX {
+        left = i64::from(representative.offset_x);
+        top = i64::from(representative.offset_y);
+        right = left + i64::try_from(representative.width)?;
+        bottom = top + i64::try_from(representative.height)?;
+    }
+    let width = usize::try_from(right - left)?;
+    let height = usize::try_from(bottom - top)?;
+    let pixel_len = width.checked_mul(height).ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "GIF canvas dimensions overflow",
+        )
+    })?;
+    let mut canvases = Vec::with_capacity(states.len());
+    for state in states {
+        let frame = frames.get(&state.frame);
+        let background = frame
+            .and_then(|image| image.transparent)
+            .or(representative.transparent)
+            .unwrap_or(0);
+        let mut canvas = vec![background; pixel_len];
+        if let Some(frame) = frame {
+            let x = usize::try_from(i64::from(state.x) + i64::from(frame.offset_x) - left)?;
+            let y = usize::try_from(i64::from(state.y) + i64::from(frame.offset_y) - top)?;
+            for row in 0..frame.height {
+                let src = &frame.pixels[row * frame.width..(row + 1) * frame.width];
+                let dst_at = (y + row) * width + x;
+                canvas[dst_at..dst_at + frame.width].copy_from_slice(src);
+            }
+        }
+        canvases.push(canvas);
+    }
+    let gif_frames = states
+        .iter()
+        .zip(&canvases)
+        .map(|(state, pixels)| {
+            // `WWDSTEP_SET` stores a null layer when the requested frame is
+            // absent. Retail ANI uses that as a blank terminal frame, so the
+            // GIF represents it with a transparent palette entry.
+            let frame = frames.get(&state.frame).unwrap_or(representative);
+            gif::Frame {
+                pixels,
+                palette: Some(&frame.palette),
+                transparent: if frames.contains_key(&state.frame) {
+                    frame.transparent
+                } else {
+                    Some(frame.transparent.unwrap_or(0))
+                },
+                delay_ms: state.delay_ms,
+            }
+        })
+        .collect::<Vec<_>>();
+    let bytes = gif::encode(width, height, &gif_frames)?;
+    std::fs::write(out, bytes)?;
     Ok(())
 }
 

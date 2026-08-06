@@ -1,4 +1,4 @@
-# `tools/` — clean-room codecs and the sprite-format oracle
+# `tools/` — clean-room codecs and the resource-format oracle
 
 A Rust workspace, independent of the C++ decompilation under `src/`. It exists
 to answer one question the decompilation cannot answer about itself: **is our
@@ -19,7 +19,7 @@ retail's own machine code, mapped out of the EXE and executed.
 |---|---|
 | `gruntz-cast` | lossless integer conversions, so nothing else writes `as` |
 | `gruntz-rez`  | Monolith REZ v1 archive reader (lib + `rezls`) |
-| `gruntz-codec`| PID / PCX / BMP / RLE16 decode + encode |
+| `gruntz-codec`| ANI / PAL / RID / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
 | `gruntz-oracle` | the differential runner over real assets |
 | `recomp/`     | the MSVC/wine harness that calls into retail |
 
@@ -49,14 +49,50 @@ REZ=/path/to/GRUNTDEM.REZ
 ./target/release/gruntz-oracle --rez "$REZ" decoders
 ./target/release/gruntz-oracle --rez "$REZ" rle16
 
+# inspect animation control records and sound cues
+./target/release/gruntz-oracle --rez "$REZ" ani 'AREA2\ANIZ\FORTSPLASH'
+
+# render an optional preview; ANI does not store its image-set binding
+./target/release/gruntz-oracle --rez "$REZ" ani 'AREA2\ANIZ\FORTSPLASH' \
+  --gif fortsplash.gif --frames 'AREA2\IMAGEZ\FORTSPLASH'
+
+# batch every ANI with a resolvable image-set binding, preserving REZ paths
+./target/release/gruntz-oracle --rez "$REZ" ani-all ../build/animation-gifs
+
+# preserve the green source palette, or select any of the 17 runtime colours
+./target/release/gruntz-oracle --rez "$REZ" ani-all ../build/green-gifs \
+  --tint source
+
+# inspect one Miles XMI or convert the full music bank to standard MIDI
+./target/release/gruntz-oracle --rez "$REZ" xmi 'AREA1\MIDIZ\INTRO0' \
+  --midi intro0.mid
+./target/release/gruntz-oracle --rez "$REZ" xmi-all ../build/music-midi
+
 # the third implementation (needs wine + $GRUNTZ_EXE)
 ../recomp/harness/build.sh
 ./target/release/gruntz-oracle --rez "$REZ" recomp
 ```
 
-`tokens <path>` prints retail's token stream beside our re-encoding, and
-`dump <path> out.bmp` writes a sprite out — so a disagreement is something you
-can read and look at rather than a percentage.
+`tokens <path>` prints retail's token stream beside our re-encoding.
+`dump <path> out.bmp` writes PID and RID resources as indexed BMPs; RID has no
+embedded palette, so `--palette <REZ-path>` supplies one and omission produces a
+grey ramp. `ani <path>` exposes timing, frame-step, loop, movement and cue data.
+Its optional GIF is explicitly a preview: ANI stores no pixels or image-set
+name, so `--frames <REZ-prefix>` supplies the PID/RID set which the game object
+normally binds separately. `ani-all` resolves the archive's conventional
+ANI/IMAGEZ layouts, records every selected image set in `BINDINGS.tsv`, and
+puts generic controllers or missing external bindings in `UNRESOLVED.tsv`
+instead of inventing pixels. Grunt sprites embed the retail green TOOL/TOY
+palette and are recoloured by palette substitution at draw time. GIF output
+does the same exact-byte recognition and defaults to orange; `--tint` selects
+any runtime colour, while `--tint source` preserves the embedded green table.
+
+`xmi` exposes the sequence, timbre, event, and timing counts in a Miles XMIDI
+resource. Its optional MIDI output expands XMIDI note durations into note-off
+events and uses MIDI SMPTE timing (30 frames/second, 4 ticks/frame) to preserve
+Miles' 120 Hz clock exactly. `xmi-all` converts every music resource while
+preserving its REZ path. Together these commands turn a disagreement into
+something that can be read, viewed, or played rather than a percentage.
 
 ## Results
 
@@ -70,6 +106,8 @@ Corpus: `GRUNTDEM.REZ` (10 553 resources, 9 845 PID) and retail `Gruntz.REZ`
 | `decode -> encode` byte-exact | **100 %** |
 | our decoder vs **retail's own machine code** (9 821 `Rle` sprites) | **100 % identical pixels** |
 | retail's two decoders agree with each other | 100 % — no shipped sprite crosses a scanline |
+| PAL tables parse at exact size | **36 / 36** retail palettes |
+| XMI parses and exports to MIDI | **37 / 37** retail music resources |
 
 ## What the format turned out to be
 

@@ -1,15 +1,18 @@
-//! Clean-room codecs for the Gruntz image formats — `no_std`, no `alloc`.
+//! Clean-room codecs for Gruntz resource formats — `no_std`, no `alloc`.
 //!
-//! Every grammar in this crate was derived from two sources only:
+//! The image grammars in this crate were derived from two sources only:
 //!
 //! 1. retail `GRUNTZ.EXE` disassembly (`gruntz sema disasm <rva> --target`), and
 //! 2. the archived bytes in `GRUNTDEM.REZ` / `Gruntz.REZ`.
 //!
-//! It deliberately does **not** consult the C++ reconstruction under `src/`.
+//! XMI additionally uses the format owner's declarations in the vendored Miles
+//! SDK header. It deliberately does **not** import another codec implementation
+//! or consult the C++ reconstruction under `src/`.
 //! That is the whole point: where this crate and `src/` disagree, one of them
 //! is wrong, and the disagreeing sprite is the reproducer.
 //!
-//! Each public item cites the retail RVA that proves it.
+//! Image-codec public items cite the retail RVA that proves them; container
+//! formats identify their archive or format-owner evidence in module docs.
 //!
 //! # Shape of the API
 //!
@@ -30,10 +33,14 @@
 
 #![no_std]
 
+pub mod ani;
 pub mod bmp;
+pub mod pal;
 pub mod pcx;
 pub mod pid;
+pub mod rid;
 pub mod rle16;
+pub mod xmi;
 
 /// A byte sink that either counts or writes — the one primitive that lets each
 /// encoder be written **once** and used both to size and to emit.
