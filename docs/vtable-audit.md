@@ -50,7 +50,7 @@ task, not a mop-up conversion).
 
 Since this audit was written the whole family has been driven to **0 in code** — every
 form below is now a gated cleanliness metric sitting at zero (see
-`config/cleanliness/cleanliness-baseline.tsv`; the `class_vtables --assert-unique` gate is FATAL):
+`config/cleanliness/cleanliness-text-baseline.tsv`; the `class_vtables --assert-unique` gate is FATAL):
 
 | Form family | baseline row | state |
 | :--- | :--- | :--- |

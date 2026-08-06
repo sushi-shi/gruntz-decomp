@@ -220,13 +220,11 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 10;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
-                    * g_diffScale))
+                 * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
-                    * g_diffScale))
+                 * (static_cast<double>(static_cast<u32>(m_resourceCreationTime)) * g_diffScale))
             );
             break;
         }
@@ -235,13 +233,11 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
             g_diffTier = 5;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_gruntCreationTime)))
-                    * g_diffScale))
+                 * (static_cast<double>(static_cast<u32>(m_gruntCreationTime)) * g_diffScale))
             );
             m_resourceCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
-                 * (static_cast<double>(static_cast<i64>(static_cast<u32>(m_resourceCreationTime)))
-                    * g_diffScale))
+                 * (static_cast<double>(static_cast<u32>(m_resourceCreationTime)) * g_diffScale))
             );
             break;
         }
@@ -661,8 +657,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     for (i32 i = 0; i < 15; i++) {
         unit = m_triggerMgr->m_grid[m_ownerId * 15 + i];
         if (unit != NULL) {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_holdAnchor64
-                < unit->m_holdWindow64) {
+            if (static_cast<i64>(g_frameTime) - unit->m_holdAnchor64 < unit->m_holdWindow64) {
                 return 1;
             }
         }
@@ -677,7 +672,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         {
             {
                 if (unit != NULL) {
-                    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_arrivalReroll64
+                    if (static_cast<i64>(g_frameTime) - unit->m_arrivalReroll64
                         >= unit->m_arrivalRerollWindow64) {
                         RouteToNearbyPickup(unit);
                         if (unit->m_poweredUp != 0) {
@@ -1297,7 +1292,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit != NULL) {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - unit->m_arrivalReroll64
+            if (static_cast<i64>(g_frameTime) - unit->m_arrivalReroll64
                 >= unit->m_arrivalRerollWindow64) {
                 BattlezTask d8 = unit->m_battleState;
                 if (d8 != BZTASK_ASSIGNED_TARGET && d8 != BZTASK_SEEK_SWITCH) {
@@ -3979,7 +3974,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         unit->m_routeMaskC = 0;
     }
     if (unit->m_blockedVoicePending != 0) {
-        __int64 elapsed = static_cast<__int64>(static_cast<u32>(g_frameTime)) - m_routeClock.m_v;
+        __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
         if (elapsed >= m_routeWindow.m_v) {
             unit->m_blockedVoicePending = 0;
             CGameObject* lvl = unit->m_object;

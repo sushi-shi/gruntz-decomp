@@ -227,8 +227,7 @@ i32 CGrunt::ResolveArrivalReposition() {
         u32 dwell = static_cast<u32>(m_dwell);
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_hasExtent != 0 && dwell > 0xbb8) {
 
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
-                < m_arrivalRerollWindow64) {
+            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
 
                 CWwdGameObjectA* h = m_object;
                 i32 spanX = abs(h->m_extent.right - h->m_extent.left);
@@ -2328,8 +2327,7 @@ i32 CGrunt::StepArrivalDefense() {
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
-                >= m_arrivalRerollWindow64) {
+            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
                 m_arrivalRerollWindowLo = 0;
@@ -2795,10 +2793,7 @@ i32 CGrunt::ScanNearestTarget() {
             {
                 i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
                 i32 hi = 0 - m_arrivalRerollHi
-                         - (static_cast<u32>(static_cast<i32>(g_frameTime))
-                                    < static_cast<u32>(m_arrivalRerollLo)
-                                ? 1
-                                : 0);
+                         - (g_frameTime < static_cast<u32>(m_arrivalRerollLo) ? 1 : 0);
                 i32 winHi = m_arrivalRerollWindowHi;
                 if (hi > winHi
                     || (hi == winHi
@@ -3695,8 +3690,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalReroll64
-                >= m_arrivalRerollWindow64) {
+            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 >= m_arrivalRerollWindow64) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;

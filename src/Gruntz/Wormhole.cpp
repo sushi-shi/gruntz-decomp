@@ -582,7 +582,7 @@ i32 CTeleporter::Update() {
 
     CWwdGameObjectA* o = m_object;
     if (o->m_animWorker->m_speed != 0) {
-        i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_armClock;
+        i64 delta = static_cast<i64>(g_frameTime) - m_armClock;
         if (delta >= m_interval) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);

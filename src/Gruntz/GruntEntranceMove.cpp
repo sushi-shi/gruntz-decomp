@@ -1040,11 +1040,11 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
         m_idleDelay = static_cast<u32>(g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710));
-        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleAnchor = g_frameTime;
         m_freezeDelayDone = 0;
     }
     if (m_freezeDelayDone == 0) {
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay) {
+        if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
             CWwdGameObjectA* h = m_object;

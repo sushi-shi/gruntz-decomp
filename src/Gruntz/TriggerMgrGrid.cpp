@@ -1454,7 +1454,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
 
     CTimer* sub = world->m_frameMarker;
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - sub->m_startStamp.m_v;
+    i64 diff = static_cast<i64>(g_frameTime) - sub->m_startStamp.m_v;
     if (diff < 0) {
         diff = 0;
     }

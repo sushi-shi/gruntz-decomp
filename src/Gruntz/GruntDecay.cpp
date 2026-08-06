@@ -58,7 +58,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
             m_idleTimerLo = static_cast<i32>(g_frameTime);
         }
         m_idleTimerHi = 0;
-        i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer;
+        i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
@@ -79,7 +79,7 @@ i32 CGrunt::LoadGruntDecayConfig() {
 // @early-stop
 RVA(0x00061570, 0x11d)
 i32 CGrunt::LoadGruntDecayConfig2() {
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
+    if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_wwdObject->m_frameSet->SetAllTypes(SHADE_COPY);
         if (m_cellRemovalNotified == 0) {
@@ -88,7 +88,7 @@ i32 CGrunt::LoadGruntDecayConfig2() {
         m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
-    i64 e = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer;
+    i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     i32 r = static_cast<i32>(
         (static_cast<double>(elapsed) * 256.0

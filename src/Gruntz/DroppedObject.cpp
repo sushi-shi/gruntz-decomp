@@ -266,7 +266,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_scrollMode = 0;
     m_lastDropTileX = -1;
     m_lastDropTileY = -1;
-    m_speed = g_objDropDiv / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
+    m_speed = g_objDropDiv / static_cast<double>(static_cast<u32>(time));
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         m_scrollMode = 1;
     }
@@ -470,9 +470,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
     m_timePerTile =
         32.0
-        / static_cast<double>(
-            static_cast<u32>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8))
-        );
+        / static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
 }
 
 RVA(0x000c6bd0, 0x102)

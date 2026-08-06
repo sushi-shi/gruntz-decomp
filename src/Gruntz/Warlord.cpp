@@ -584,7 +584,7 @@ i32 CWarlord::LoadAttributes() {
         }
     }
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp >= m_cooldownWindow) {
+    if (static_cast<i64>(g_frameTime) - m_cooldownStamp >= m_cooldownWindow) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -613,7 +613,7 @@ i32 CWarlord::LoadAttributes2() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cooldownStamp >= m_cooldownWindow) {
+        if (static_cast<i64>(g_frameTime) - m_cooldownStamp >= m_cooldownWindow) {
             g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
             m_cooldownWindow = 0x7530;
             m_cooldownStamp = static_cast<u32>(g_frameTime);
@@ -718,8 +718,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownWindow = 0x7530;
                 m_cooldownStamp = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_timer2Stamp
-                        >= m_timer2Window
+                if (static_cast<i64>(g_frameTime) - m_timer2Stamp >= m_timer2Window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
                     static CString s_alert("ALERT - Your Fort is under attack!");

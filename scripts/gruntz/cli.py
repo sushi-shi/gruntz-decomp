@@ -176,7 +176,8 @@ def _pct(n: int, d: int) -> float:
 
 
 def summarize(report: dict, full: bool = True, table: bool = False,
-              write: bool = False, vtable_health: bool = True) -> None:
+              write: bool = False, vtable_health: bool = True,
+              semantic_cleanliness: bool = False) -> None:
     """The report tail. `write=True` (the BUILD only) rolls the cleanliness
     baselines and enforces the hard ratchet gate; `gruntz status`/
     `report` are pure READS - same scoreboard vs the committed baselines,
@@ -217,7 +218,7 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     try:
         from gruntz.cleanliness.board import (count, report_lines, save_baseline,
                                               merge_baseline_downonly, load_baseline, _RATCHET)
-        rows = count()
+        rows = count(include_semantic=semantic_cleanliness)
         for line in report_lines(rows):
             print(f"  {line}")
         # BUILD ONLY: roll the baseline forward, DOWN-ONLY for the ratcheted
@@ -225,7 +226,8 @@ def summarize(report: dict, full: bool = True, table: bool = False,
         # away); other tracked metrics roll forward. Blessing a LOWER floor stays
         # a deliberate act (`cleanliness --update`). `gruntz status` never writes.
         if write:
-            save_baseline(merge_baseline_downonly(rows))
+            save_baseline(merge_baseline_downonly(rows),
+                          include_semantic=semantic_cleanliness)
         # RATCHET check. The cast / fake-view / fake-vtable metrics may only go
         # DOWN. A rise above the committed floor means a cast/view/virtual was
         # REINTRODUCED: the BUILD dies here (the gate); status just warns.
@@ -435,10 +437,11 @@ def cmd_build(args) -> None:
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
           "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "normal")
 
-    # normal+ only: the cleanliness scoreboard and the ONE
-    # write of the baselines - this is the ~several-second src/include cleanliness scan.
+    # Normal measures only fast source-text cleanliness. The build/IR-derived semantic
+    # baseline is deliberately reserved for the periodic full tier.
     started = time.monotonic()
-    summarize(_report, write=True, vtable_health=False)
+    summarize(_report, write=True, vtable_health=False,
+              semantic_cleanliness=req >= _ORD["full"])
     _timed("scoreboard", started)
 
     # NORMAL tier - structural uniqueness invariants (low per-edit violation, so out of

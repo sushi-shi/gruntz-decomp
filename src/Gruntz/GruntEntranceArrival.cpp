@@ -569,8 +569,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         m_wwdObject->ApplyName(nm);
 
         DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
-        m_idleDelay = static_cast<u32>(static_cast<i32>((tt >> 1)));
-        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleDelay = tt >> 1;
+        m_idleAnchor = g_frameTime;
         return 0;
     }
 
@@ -586,7 +586,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     i32 t0 = AT(m_poseToy, GRUNT_TOY1)->m_total;
     i32 t1 = AT(m_poseToy, GRUNT_TOY2)->m_total;
-    i64 elapsed = m_toyClock - static_cast<i64>(static_cast<u32>(g_frameTime));
+    i64 elapsed = m_toyClock - static_cast<i64>(g_frameTime);
     i32 cap = static_cast<i32>(elapsed);
     if (elapsed < 0) {
         cap = 0;
@@ -679,7 +679,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         return 0;
     }
 
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_toyClock;
+    i64 diff = static_cast<i64>(g_frameTime) - m_toyClock;
     if (diff >= m_toyDuration && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != NULL) {
             m_toyTimeSprite->m_flags |= 0x10000;
@@ -788,10 +788,10 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
-        m_idleTimer = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleTimer = g_frameTime;
         i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
         m_idleDelay = static_cast<u32>(rand() % n + 0x7530);
-        m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+        m_idleAnchor = g_frameTime;
         applied = 1;
     } else if (AT(m_poseIdle, GRUNT_IDLE2) == 0) {
 
@@ -808,7 +808,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
             m_idleDelay = static_cast<u32>(rand() % (d - 0x4e1f) + 0x4e20);
-            m_idleAnchor = static_cast<u32>(static_cast<i32>(g_frameTime));
+            m_idleAnchor = g_frameTime;
         }
     } else {
 
@@ -926,7 +926,7 @@ i32 CGrunt::ResolveEntranceArrival() {
 
     i32 ready = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleTimer >= m_idleWindow) {
+    if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_SINGLE) {
@@ -988,8 +988,7 @@ tail:
         }
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_idleAnchor >= m_idleDelay
-        && ready == 1) {
+    if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay && ready == 1) {
         ResetEntranceAnimation(0, 1, 1);
     }
     return 0;
@@ -1085,7 +1084,7 @@ i32 CGrunt::StepEntranceReinit() {
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    i64 diff = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_arrivalVoiceClock.m_v;
+    i64 diff = static_cast<i64>(g_frameTime) - m_arrivalVoiceClock.m_v;
 
     u32 elapsed;
     if (diff < 0) {
@@ -1188,7 +1187,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         return 0;
     }
 
-    i64 elapsed = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_toyClock;
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_toyClock;
     if (elapsed >= m_toyDuration) {
         if (m_entranceStamped == 0 && m_object->m_screenX == m_lastTilePx.m_x
             && m_object->m_screenY == m_lastTilePx.m_y) {
@@ -1225,7 +1224,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         return 0;
     }
 
-    i64 elapsed2 = static_cast<i64>(static_cast<u64>(g_frameTime)) - m_idleAnchor;
+    i64 elapsed2 = static_cast<i64>(g_frameTime) - m_idleAnchor;
     if (elapsed2 >= m_idleDelay) {
         CWwdGameObjectA* h = m_object;
         CGruntzMgr* g = g_gameReg;

@@ -165,8 +165,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                     alt = 1;
                 }
 
-                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - desc->m_combatClock64
-                        >= desc->m_combatTimeout64
+                if (static_cast<i64>(g_frameTime) - desc->m_combatClock64 >= desc->m_combatTimeout64
                     || desc->m_tileOwnerHi != g_curPlayer) {
                     CSpriteRef* node = m_mgr->m_spriteFactory->GetTool(IDX(desc->m_moveIcon));
                     if (node == NULL) {

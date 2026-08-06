@@ -7,9 +7,9 @@ Printed by ``gruntz build`` in the report block (below the match summary); runna
 as ``python -m gruntz.cleanliness.board`` (shows counts + delta),
 ``--update`` (bless: write the baseline), ``--csv``. See docs/cleanliness-metrics.md.
 
-Counts OCCURRENCES over ``src/`` + ``include/`` C++ sources with comments AND
-string/char literals stripped first, so the extensive ``//`` RVA/analysis
-annotations and string data do NOT inflate the counts - only real code tokens.
+Fast metrics count occurrences over ``src/`` + ``include/`` C++ sources with
+comments and string/char literals stripped first. The optional semantic metrics
+consume build IR and the retail graph and are kept out of normal builds.
 """
 from __future__ import annotations
 
@@ -20,7 +20,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 EXTS = {".cpp", ".cc", ".cxx", ".h", ".hpp", ".inl"}
-BASELINE = REPO / "config" / "cleanliness" / "cleanliness-baseline.tsv"
+TEXT_BASELINE = REPO / "config" / "cleanliness" / "cleanliness-text-baseline.tsv"
+SEMANTIC_BASELINE = REPO / "config" / "cleanliness" / "cleanliness-semantic-baseline.tsv"
 
 _BLOCK = re.compile(r"/\*.*?\*/", re.DOTALL)
 _LINE = re.compile(r"//[^\n]*")
@@ -395,7 +396,8 @@ def _is_scaffolding(path) -> bool:
 # and near-exact codegen residue (a 92%-matched fn shows "MISSING" edges for its inlined zBitVec
 # member ops). Tracking that total as drive-to-0 was wrong. NOT a text scan (reads clang IR + the
 # retail graph), so it needs a build; gracefully absent when no build IR.
-_CALLER_CALLEE_LABELS = ("caller-callee FAKE-VIEW",)
+_SEMANTIC_LABELS = ("caller-callee FAKE-VIEW", "nested static_casts")
+_SEMANTIC_LABEL_SET = set(_SEMANTIC_LABELS)
 
 
 def _caller_callee_counts() -> dict[str, int]:
@@ -434,9 +436,18 @@ def _caller_callee_counts() -> dict[str, int]:
     return res
 
 
+def semantic_count() -> list[tuple[str, int]]:
+    """Build/AST-derived metrics. This is intentionally full-tier work."""
+    from gruntz.audit.nested_static_casts import scan as nested_static_casts
+
+    values = {"nested static_casts": len(nested_static_casts())}
+    values.update(_caller_callee_counts())
+    return [(label, values[label]) for label in _SEMANTIC_LABELS if label in values]
+
+
 # Ratchet set: metrics that only go DOWN. The view/vtable metrics + the caller_callee
 # fake-view edge + cast counts + .cpp external declarations (owner headers only).
-_RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
+_RATCHET = _VIEW_METRICS | _SEMANTIC_LABEL_SET | {
     # Numeric-domain debt: every one of these is a name nobody wrote down yet, and
     # naming it cannot move a byte. Ratcheted at the standing count so the backlog
     # drains and no new magic number arrives.
@@ -473,7 +484,8 @@ _RATCHET = _VIEW_METRICS | set(_CALLER_CALLEE_LABELS) | {
 _NEEDS_RAW = {"unexplained casts"}
 
 
-def count() -> list[tuple[str, int]]:
+def count(*, include_semantic: bool = False) -> list[tuple[str, int]]:
+    """Measure fast text metrics and, when requested, build-derived semantic metrics."""
     totals = {label: 0 for label, _, _ in METRICS}
     for root in ROOTS:
         base = REPO / root
@@ -513,18 +525,16 @@ def count() -> list[tuple[str, int]]:
             except OSError:
                 pass
     rows.append(("view classes (*Views.h)", vh))
-    cc = _caller_callee_counts()  # build-derived; omitted if no IR
-    for lbl in _CALLER_CALLEE_LABELS:
-        if lbl in cc:
-            rows.append((lbl, cc[lbl]))
+    if include_semantic:
+        rows.extend(semantic_count())
     return rows
 
 
-def load_baseline() -> dict[str, int]:
-    if not BASELINE.is_file():
-        return {}
+def _load_baseline_file(path: Path) -> dict[str, int]:
     out: dict[str, int] = {}
-    for line in BASELINE.read_text().splitlines():
+    if not path.is_file():
+        return out
+    for line in path.read_text().splitlines():
         if "\t" in line:
             lbl, n = line.rsplit("\t", 1)
             try:
@@ -534,8 +544,26 @@ def load_baseline() -> dict[str, int]:
     return out
 
 
-def save_baseline(rows: list[tuple[str, int]]) -> None:
-    BASELINE.write_text("".join(f"{lbl}\t{n}\n" for lbl, n in rows))
+def load_baseline() -> dict[str, int]:
+    """Load the text and semantic floors as one scoreboard namespace."""
+    text = _load_baseline_file(TEXT_BASELINE)
+    semantic = _load_baseline_file(SEMANTIC_BASELINE)
+    duplicate = set(text) & set(semantic)
+    if duplicate:
+        raise ValueError("cleanliness metric occurs in both baselines: "
+                         + ", ".join(sorted(duplicate)))
+    return {**text, **semantic}
+
+
+def save_baseline(rows: list[tuple[str, int]], *, include_semantic: bool = True) -> None:
+    """Route floors by mechanism; normal builds leave the semantic file untouched."""
+    text_rows = [(label, n) for label, n in rows if label not in _SEMANTIC_LABEL_SET]
+    semantic_rows = [(label, n) for label, n in rows if label in _SEMANTIC_LABEL_SET]
+    if text_rows or not TEXT_BASELINE.exists():
+        TEXT_BASELINE.write_text("".join(f"{lbl}\t{n}\n" for lbl, n in text_rows))
+    if include_semantic and (semantic_rows or not SEMANTIC_BASELINE.exists()):
+        SEMANTIC_BASELINE.write_text(
+            "".join(f"{lbl}\t{n}\n" for lbl, n in semantic_rows))
 
 
 def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]]:
@@ -551,8 +579,8 @@ def merge_baseline_downonly(rows: list[tuple[str, int]]) -> list[tuple[str, int]
     the floor: `count()` only appends the caller-callee rows when
     ``_caller_callee_counts()`` returns them, and that helper swallows EVERY exception
     (it shells out with a 600s timeout and returns {} on any failure). Since
-    ``gruntz build`` calls ``save_baseline(merge_baseline_downonly(count()))`` on every
-    full build, ONE flaky/timed-out caller_callee run used to rewrite the baseline
+    ``gruntz build --full`` measures both families; one flaky/timed-out
+    caller_callee run used to rewrite the baseline
     without ``caller-callee FAKE-VIEW`` - erasing its 0 floor, after which any
     regression reads as a brand-new metric with no delta and no ratchet. Carry the
     floor forward; a metric we could not measure is reported as unmeasured, never
@@ -601,10 +629,13 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
 
 
 def main() -> int:
-    rows = count()
+    include_semantic = "--semantic" in sys.argv
+    rows = count(include_semantic=include_semantic)
     if "--update" in sys.argv:
-        save_baseline(rows)
-        print(f"cleanliness baseline updated: {sum(n for _, n in rows)} total across {len(rows)} metrics")
+        save_baseline(rows, include_semantic=include_semantic)
+        scope = "text + semantic" if include_semantic else "text"
+        print(f"cleanliness {scope} baseline updated: {sum(n for _, n in rows)} "
+              f"total across {len(rows)} measured metrics")
         return 0
     if "--csv" in sys.argv:
         base = load_baseline()

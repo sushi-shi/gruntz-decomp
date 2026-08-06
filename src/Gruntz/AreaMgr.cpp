@@ -248,7 +248,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         CString key;
         CObject* val;
         srcMap->GetNextAssoc(pos, key, val);
-        if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
+        if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
             if (found != NULL) {
                 found->m_flag = 1;
@@ -277,7 +277,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         if (e->m_flag == 0) {
             char buf[0x80];
             g_resourceInstallActive = 1;
-            sprintf(buf, "IMAGEZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
+            sprintf(buf, "IMAGEZ_%s", static_cast<LPCTSTR>(e->GetTail()));
             void* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;
@@ -329,7 +329,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         CString key;
         void* val;
         srcMap->GetNextAssoc(pos, key, val);
-        if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
+        if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
             if (found != NULL) {
                 found->m_flag = 1;
@@ -357,7 +357,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     while (e != NULL) {
         if (e->m_flag == 0) {
             char buf[0x80];
-            sprintf(buf, "SOUNDZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
+            sprintf(buf, "SOUNDZ_%s", static_cast<LPCTSTR>(e->GetTail()));
             void* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;
@@ -397,7 +397,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         CString key;
         void* val;
         srcMap->GetNextAssoc(pos, key, val);
-        if (strncmp(static_cast<const char*>(static_cast<LPCTSTR>(key)), "OBJECTZ_", 8) == 0) {
+        if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
             if (found != NULL) {
                 found->m_flag = 1;
@@ -425,7 +425,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     while (e != NULL) {
         if (e->m_flag == 0) {
             char buf[0x80];
-            sprintf(buf, "ANIZ_%s", static_cast<const char*>(static_cast<LPCTSTR>(e->GetTail())));
+            sprintf(buf, "ANIZ_%s", static_cast<LPCTSTR>(e->GetTail()));
             void* handle = src->ResolvePath(buf);
             if (handle == NULL) {
                 return 0;

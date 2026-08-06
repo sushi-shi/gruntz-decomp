@@ -34,9 +34,11 @@ import struct
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from gruntz.audit import rename_member, tu_layout
+from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.core import class_meta
@@ -656,12 +658,74 @@ class TestBestEverRatchet(unittest.TestCase):
 class TestCleanlinessRatchet(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
-        self._saved = cleanliness.BASELINE
-        cleanliness.BASELINE = Path(self._tmp.name) / "cleanliness-baseline.tsv"
+        self._saved = (cleanliness.TEXT_BASELINE, cleanliness.SEMANTIC_BASELINE)
+        cleanliness.TEXT_BASELINE = Path(self._tmp.name) / "cleanliness-text-baseline.tsv"
+        cleanliness.SEMANTIC_BASELINE = Path(self._tmp.name) / "cleanliness-semantic-baseline.tsv"
 
     def tearDown(self):
-        cleanliness.BASELINE = self._saved
+        cleanliness.TEXT_BASELINE, cleanliness.SEMANTIC_BASELINE = self._saved
         self._tmp.cleanup()
+
+    def test_baseline_rows_are_partitioned_by_measurement_mechanism(self):
+        cleanliness.save_baseline(
+            [("m_<hex> fields", 7), ("caller-callee FAKE-VIEW", 2)]
+        )
+        self.assertIn("m_<hex> fields\t7", cleanliness.TEXT_BASELINE.read_text())
+        self.assertNotIn("caller-callee", cleanliness.TEXT_BASELINE.read_text())
+        self.assertEqual(
+            cleanliness.SEMANTIC_BASELINE.read_text(),
+            "caller-callee FAKE-VIEW\t2\n",
+        )
+        self.assertEqual(
+            cleanliness.load_baseline(),
+            {"m_<hex> fields": 7, "caller-callee FAKE-VIEW": 2},
+        )
+
+    def test_default_count_does_not_run_semantic_collectors(self):
+        with mock.patch.object(cleanliness, "ROOTS", ()), mock.patch.object(
+            cleanliness, "semantic_count",
+            side_effect=AssertionError("semantic collector ran in the fast text path"),
+        ):
+            rows = dict(cleanliness.count())
+        self.assertNotIn("caller-callee FAKE-VIEW", rows)
+
+        with mock.patch.object(cleanliness, "ROOTS", ()), mock.patch.object(
+            cleanliness, "semantic_count",
+            return_value=[("caller-callee FAKE-VIEW", 3)],
+        ):
+            rows = dict(cleanliness.count(include_semantic=True))
+        self.assertEqual(rows["caller-callee FAKE-VIEW"], 3)
+
+    def test_nested_static_casts_are_ast_pairs_not_adjacent_statements(self):
+        root = Path(self._tmp.name)
+        source = root / "src" / "casts.cpp"
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "int nested(int x) { return static_cast<int>(static_cast<short>(x)); }\n"
+            "int separate(int x) { int y = static_cast<int>(x); "
+            "return static_cast<short>(y); }\n"
+            "template<typename T> int nested_template(T x) { "
+            "return static_cast<int>(static_cast<short>(x)); }\n"
+            "#define GZ_STRICT_ENUMS 0\n"
+            "#if __cplusplus >= 202002L\n"
+            "template<typename T> int strict_template(T x) { "
+            "return static_cast<long>(static_cast<unsigned>(x)); }\n"
+            "#endif\n"
+        )
+        compdb = root / "compile_commands.json"
+        compdb.write_text(json.dumps([{
+            "directory": str(root),
+            "file": str(source),
+            "arguments": ["clang-cl", "/c", str(source)],
+        }]))
+        hits = nested_static_casts.scan(root, compdb)
+        self.assertEqual(len(hits), 3)
+        self.assertEqual(hits[0][0:3], ("src/casts.cpp", 1, 28))
+        self.assertEqual(hits[0][3:], ("int", "short", "int"))
+        self.assertEqual(hits[1][0:3], ("src/casts.cpp", 3, 56))
+        self.assertEqual(hits[1][3:], ("int", "short", "T"))
+        self.assertEqual(hits[2][0:3], ("src/casts.cpp", 6, 56))
+        self.assertEqual(hits[2][3:], ("long", "unsigned int", "T"))
 
     def test_a_failed_submetric_does_not_erase_its_floor(self):
         """THE ORIGINAL BUG: _caller_callee_counts() swallows every exception and

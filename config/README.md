@@ -25,9 +25,12 @@ the owning tool's merge/update rule.
 These files belong to source-quality audits. Baselines are tool-rolled and
 merged per row; remeasure the merged tree rather than taking one side wholesale.
 
-- **`cleanliness-baseline.tsv`** — the drive-to-0 scoreboard floors
-  (`gruntz.cleanliness.board`). Ratcheted rows are DOWN-ONLY; a rise fails
-  the build. Bless a lower floor via `board --update`.
+- **`cleanliness-text-baseline.tsv`** — fast source-text scoreboard floors
+  (`gruntz.cleanliness.board`), measured on normal builds.
+- **`cleanliness-semantic-baseline.tsv`** — build/IR-derived scoreboard floors,
+  measured only by the periodic full build. Ratcheted rows in either file are
+  DOWN-ONLY; bless a lower floor via `board --update` (`--semantic` includes
+  the semantic collectors).
 - **`bare-constants-baseline.tsv`**, **`data-tu-order-baseline.tsv`**,
   **`single-view-baseline.tsv`**, **`strict-enums-baseline.tsv`**, and
   **`tu-order-baseline.tsv`** — focused audit ratchets and frozen backlogs.

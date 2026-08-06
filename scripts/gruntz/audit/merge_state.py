@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """merge_state.py - resolve the generated-state files a lane merge always conflicts on.
 
-Two files conflict on essentially every lane integration, and each has exactly one
+These files conflict on essentially every lane integration, and each has exactly one
 correct resolution that is NOT "take a side":
 
-  config/cleanliness/cleanliness-baseline.tsv
+  config/cleanliness/cleanliness-text-baseline.tsv
+  config/cleanliness/cleanliness-semantic-baseline.tsv
                                 take the LOWER value, per metric row, THEN RE-MEASURE.
                                 These are RATCHETS: the gate FATALs when the measured
                                 count exceeds the baseline. Taking the higher side blesses
@@ -90,7 +91,10 @@ def main() -> int:
         if ours is None or theirs is None:
             left.append(path)
             continue
-        if path == "config/cleanliness/cleanliness-baseline.tsv":
+        if path in {
+            "config/cleanliness/cleanliness-text-baseline.tsv",
+            "config/cleanliness/cleanliness-semantic-baseline.tsv",
+        }:
             text, why = pick_min_rows(ours, theirs), "LOWER per row (ratchet)"
         elif path == "README.md":
             text, why = ours, "ours; regenerate with `gruntz build`"

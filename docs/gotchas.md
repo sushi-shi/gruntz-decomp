@@ -205,9 +205,10 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
 
 ## Cleanliness tooling (see `docs/cleanliness-metrics.md`, `docs/cast-metric-policy.md`)
 
-- **`gruntz.cleanliness.board`** computes `config/cleanliness/cleanliness-baseline.tsv` (23 metrics,
-  comment/string-stripped) and prints them with a delta each `gruntz build` (the report is
-  authoritative; the doc's numbers are a snapshot). `--update` blesses a new baseline.
+- **`gruntz.cleanliness.board`** computes the fast, comment/string-stripped
+  `cleanliness-text-baseline.tsv` on normal builds and the build/IR-derived
+  `cleanliness-semantic-baseline.tsv` only on full builds. It prints measured rows with a
+  delta; `--update` blesses text floors and `--semantic --update` includes semantic floors.
 - Most metrics are at **0** (casts, placeholder classes/vtables/views, `)this`/`)m_`/`(char*)`
   casts, offset-cast macros — all DONE). Remaining actionable: **m_&lt;hex&gt; fields (~8.5k),
   Method/Stub/FUN/Gap (~245 unreconstructed stubs), `void* m_` members (18),

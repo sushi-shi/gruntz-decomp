@@ -1,7 +1,8 @@
 # Cleanliness endgame: drive every metric to 0 + the cast policy
 
 **Governing directive (2026-07-16).** After the reconstruction/fold work, the campaign's job is to
-drive **every** metric in `config/cleanliness/cleanliness-baseline.tsv` to **0**, then move to other tasks
+drive **every** metric in the two `config/cleanliness/cleanliness-*-baseline.tsv`
+files to **0**, then move to other tasks
 (next: DATA-section attribution + the objdiff DATA-match loop — see the roadmap). The tracked
 metrics, all drive-to-0:
 
@@ -42,6 +43,33 @@ Named does not mean invisible. The cleanliness board counts every
 `reinterpret_cast` and ratchets that total down. A reviewed ABI/container cast may
 remain while its owner is understood, but a new one fails the gate: first prove why
 the existing type cannot express the operation.
+
+### Directly nested `static_cast` review
+
+`python -m gruntz.audit.nested_static_casts` reports an AST cast whose operand is
+another `static_cast`; neighboring casts in separate statements do not count. Its
+`source -> intermediate -> final` output is a review queue, not a claim that every
+pair has pointer-reinterpretation semantics. The audit is semantic and therefore
+runs only in `gruntz build --full`.
+
+Remove value-preserving detours. A source already typed `u32` does not need
+`i64 -> double`, `u32 -> i64`, or `i32 -> u32` staging. Fix an incorrectly signed
+field at its declaration when evidence supports that stronger cleanup.
+
+The remaining common pairs change the value domain and must be reviewed against
+retail instructions before removal:
+
+- `i32 -> u32 -> float/double/i64` preserves the low 32 bits and then zero-extends;
+  retail commonly exposes this as a zeroed high dword followed by `fild qword`.
+- `char -> u8 -> u32` prevents sign extension before byte packing and shifts.
+- `float -> i32 -> u8` makes truncation happen before byte narrowing.
+- `i32 -> u8 -> enum` recovers a one-byte serialized enum from a promoted value.
+- strict enum-storage proxies cross `storage -> enum -> integer/storage` so two
+  representations of one domain cannot convert directly into unrelated domains.
+
+None of these authorizes type punning. An unrelated pointer/object chain is a
+modeling defect, and a chain must not be split across throwaway locals or hidden in
+a helper merely to evade the audit.
 
 3. **Offset-cast `(char*)x + N` — HARD BAN, no exception.** Pointer + byte-offset to reach a member is
    *always* a mis-model: the member at `+N` is real, so it becomes named access `&x->m_field` /

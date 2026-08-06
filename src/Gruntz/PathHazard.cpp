@@ -222,7 +222,7 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(g_frameDelta))) * m_speed;
+    double step = static_cast<double>(g_frameDelta) * m_speed;
     m_posX = m_posX + step * m_unitX;
     m_posY = m_posY + static_cast<double>(g_frameDelta) * m_unitY * m_speed;
     i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
@@ -257,8 +257,7 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
         i32 idx = 5;
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline
-            < m_strike.m_window) {
+        if (static_cast<i64>(g_frameTime) - m_strike.m_deadline < m_strike.m_window) {
             if (static_cast<u32>(g_timer200) >= 0x64) {
                 idx = 0;
             }
@@ -280,7 +279,7 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_strike.m_deadline;
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_deadline;
 
         if (elapsed < m_strike.m_window) {
             if (static_cast<u32>(g_timer200) >= 0x64) {
@@ -322,7 +321,7 @@ i32 CPathHazard::SiblingTick() {
         }
     }
 
-    i64 legElapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_leg.m_deadline;
+    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
     if (legElapsed >= m_leg.m_window) {
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;

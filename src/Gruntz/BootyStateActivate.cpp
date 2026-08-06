@@ -633,7 +633,7 @@ i32 CBootyState::Render() {
         snd->TickSubManagers(now);
     }
 
-    i64 elapsed = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_frameStamp64;
+    i64 elapsed = static_cast<i64>(g_frameTime) - m_frameStamp64;
     if (elapsed < m_frameInterval64) {
         return 0;
     }

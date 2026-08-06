@@ -1155,10 +1155,9 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
                 u8 r = src[2];
                 src += 3;
                 *dst++ = static_cast<u16>(
-                    ((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
-                     | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown))))
-                        << g_rUp)
-                     | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown)))))
+                    ((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp)
+                     | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp)
+                     | static_cast<u8>((static_cast<u8>(b) >> g_bDown)))
                 );
             }
         }
@@ -1171,10 +1170,9 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
                 u8 r = src[2];
                 src += 3;
                 *dst++ = static_cast<u16>(
-                    ((static_cast<u32>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)))) << g_gUp)
-                     | (static_cast<u32>((static_cast<u8>((static_cast<u8>(r) >> g_rDown))))
-                        << g_rUp)
-                     | static_cast<u32>((static_cast<u8>((static_cast<u8>(b) >> g_bDown)))))
+                    ((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp)
+                     | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp)
+                     | static_cast<u8>((static_cast<u8>(b) >> g_bDown)))
                 );
             }
         }
@@ -1232,13 +1230,9 @@ i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = static_cast<u16>(
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown))
-                );
-                dst[1] = static_cast<u16>(
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown))
-                );
-                dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
+                dst[0] = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+                dst[2] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 dst += 3;
             }
         }
@@ -1247,13 +1241,9 @@ i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                dst[0] = static_cast<u16>(
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown))
-                );
-                dst[1] = static_cast<u16>(
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown))
-                );
-                dst[2] = static_cast<u16>(static_cast<u8>((static_cast<u8>(px) << g_bDown)));
+                dst[0] = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+                dst[2] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 dst += 3;
             }
         }
@@ -1356,10 +1346,8 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red =
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
-                i32 green =
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                i32 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[0].peGreen;
@@ -1388,10 +1376,8 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                i32 red =
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_rUp))) << g_rDown));
-                i32 green =
-                    static_cast<u8>((static_cast<u8>(static_cast<u16>((px >> g_gUp))) << g_gDown));
+                i32 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                i32 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 i32 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 d1 = green - pal[0].peGreen;

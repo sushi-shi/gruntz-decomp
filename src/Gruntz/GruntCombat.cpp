@@ -300,8 +300,7 @@ void CGrunt::ComputeFacing(double dt) {
     double dx = static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePx.m_y) - static_cast<double>(h->m_screenY);
 
-    m_moveSpeed =
-        (sqrt(dx * dx + dy * dy) / static_cast<double>(static_cast<u32>(m_timePerTile))) * dt;
+    m_moveSpeed = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
     m_movePosX = static_cast<double>(h->m_screenX);
     m_movePosY = static_cast<double>(h->m_screenY);
 }

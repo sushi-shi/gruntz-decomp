@@ -199,7 +199,7 @@ i32 CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step = static_cast<double>(static_cast<i64>(static_cast<u64>(g_frameDelta))) * m_speed;
+    double step = static_cast<double>(g_frameDelta) * m_speed;
     double* m88d = &m_stepMag;
 
     i32 newX;
@@ -403,7 +403,7 @@ i32 CKitchenSlime::LoadSprites() {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
-    m_speed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u64>(time)));
+    m_speed = g_slimeSpeedNum / static_cast<double>(time);
     m_tilePosition.m_x = tileX;
     m_tilePosition.m_y = tileY;
 

@@ -7,13 +7,18 @@ Each metric is matching-neutral to drive toward its target unless noted.
 **Live tracking.** These counts are computed by `gruntz.cleanliness.board`
 (comment- and string-stripped, so prose/`//` annotations don't inflate) and printed
 in the **`gruntz build` report** right under the match summary, each with a **delta
-vs the committed baseline** (`config/cleanliness/cleanliness-baseline.tsv`) — `down = good`. So a
+vs the committed text/semantic baselines** (`config/cleanliness/cleanliness-*-baseline.tsv`) —
+`down = good`. So a
 matcher sees its own cast/placeholder/view change the moment it builds and steers on
-it. Bless a new baseline with `python -m gruntz.cleanliness.board --update` (the
+it. Normal builds measure only the fast text metrics; `gruntz build --full` also
+measures the build/IR-derived semantic metrics. Bless text floors with
+`python -m gruntz.cleanliness.board --update`, or both families with
+`python -m gruntz.cleanliness.board --semantic --update` (the
 orchestrator refreshes it at integration, like `match_baseline.tsv`).
 
 **No counts are written down here.** The tables below name each metric's row key in
-`config/cleanliness/cleanliness-baseline.tsv` — read the live number there or from the build
+`config/cleanliness/cleanliness-text-baseline.tsv` and
+`config/cleanliness/cleanliness-semantic-baseline.tsv` — read the live number there or from the build
 report. A pasted snapshot silently rots (this doc once carried figures that were off
 by 2×–30×), and the `rg` commands are *approximations* of the board's
 comment-/string-stripped count, kept only to show what each metric looks for.
@@ -60,7 +65,8 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 | classes/structs declared in a `.cpp` | `.cpp-local views` | 0 — cross-TU classes belong in headers; no per-TU re-decls |
 | fabricated placeholder classes | `placeholder classes` | 0 (recover the real class; never invent a view) |
 | view classes in `*Views.h` | `view classes (*Views.h)` | 0 (fold into the real class) |
-| fake-view caller/callee edges | `caller-callee FAKE-VIEW` | 0 |
+| fake-view caller/callee edges | `caller-callee FAKE-VIEW` (semantic baseline) | 0 |
+| directly nested casts | `nested static_casts` (semantic baseline) | 0 through correct typing/conversions — inspect the reported source/intermediate/final types; never hide a pair in a helper/local |
 | hand-rolled vtables | `*Vtbl structs`, `->vtbl accesses`, `g_*Vtbl globals`, `m_vtbl/m_vptr members`, `placeholder vtable slots` | 0 — model real virtuals |
 | `.cpp` extern decls / external prototypes | `cpp extern decls`, `cpp external prototypes` | 0 (declare in the owning header) |
 

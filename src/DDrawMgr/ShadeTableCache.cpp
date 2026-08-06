@@ -164,13 +164,13 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float tt = static_cast<float>(j) / static_cast<float>(nA);
             float inv = g_one - tt;
             float fr = static_cast<float>((startPct * static_cast<i32>(p->peRed) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peRed)) * tt;
+                       + static_cast<float>(p->peRed) * tt;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
             float fg = static_cast<float>((startPct * static_cast<i32>(p->peGreen) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peGreen)) * tt;
+                       + static_cast<float>(p->peGreen) * tt;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
             float fb = static_cast<float>((startPct * static_cast<i32>(p->peBlue) / 100)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peBlue)) * tt;
+                       + static_cast<float>(p->peBlue) * tt;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -185,17 +185,14 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
         for (i32 k = 0; k < nB; k++) {
             float uu = static_cast<float>(k) / static_cast<float>(nB);
             float inv = g_one - uu;
-            float fr = static_cast<float>(static_cast<i32>(p->peRed)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peRed)) * static_cast<float>(endPct)
-                             * g_p01 * uu;
+            float fr = static_cast<float>(p->peRed) * inv
+                       + static_cast<float>(p->peRed) * static_cast<float>(endPct) * g_p01 * uu;
             i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>(static_cast<i32>(p->peGreen)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peGreen))
-                             * static_cast<float>(endPct) * g_p01 * uu;
+            float fg = static_cast<float>(p->peGreen) * inv
+                       + static_cast<float>(p->peGreen) * static_cast<float>(endPct) * g_p01 * uu;
             i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>(static_cast<i32>(p->peBlue)) * inv
-                       + static_cast<float>(static_cast<i32>(p->peBlue))
-                             * static_cast<float>(endPct) * g_p01 * uu;
+            float fb = static_cast<float>(p->peBlue) * inv
+                       + static_cast<float>(p->peBlue) * static_cast<float>(endPct) * g_p01 * uu;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
             ramp[nA + k] = NearestPaletteIndex(rn, pal, gn, bn);
         }
@@ -273,14 +270,13 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
             float t0 = 1.0f - t1;
             i32 bn = static_cast<i32>(
-                (t0 * static_cast<float>(static_cast<i32>(p->peBlue)) + t1 * static_cast<float>(cb))
+                (t0 * static_cast<float>(p->peBlue) + t1 * static_cast<float>(cb))
             );
-            i32 gn = static_cast<i32>((
-                t0 * static_cast<float>(static_cast<i32>(p->peGreen)) + t1 * static_cast<float>(cg)
-            ));
-            i32 rn = static_cast<i32>(
-                (t0 * static_cast<float>(static_cast<i32>(p->peRed)) + t1 * static_cast<float>(cr))
+            i32 gn = static_cast<i32>(
+                (t0 * static_cast<float>(p->peGreen) + t1 * static_cast<float>(cg))
             );
+            i32 rn =
+                static_cast<i32>((t0 * static_cast<float>(p->peRed) + t1 * static_cast<float>(cr)));
             data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
         }
     }
@@ -470,11 +466,11 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 
                     float f = static_cast<float>(v) * scale * g_inv255 - g_negone;
 
-                    float fr = static_cast<float>(static_cast<i32>(rc)) * f;
+                    float fr = static_cast<float>(rc) * f;
                     u8 rn = static_cast<u8>(static_cast<i32>((fr < g_255 ? fr : g_255)));
-                    float fg = static_cast<float>(static_cast<i32>(gc)) * f;
+                    float fg = static_cast<float>(gc) * f;
                     u8 gn = static_cast<u8>(static_cast<i32>((fg < g_255 ? fg : g_255)));
-                    float fb = static_cast<float>(static_cast<i32>(bc)) * f;
+                    float fb = static_cast<float>(bc) * f;
                     u8 bn = static_cast<u8>(static_cast<i32>((fb < g_255 ? fb : g_255)));
                     *out++ = static_cast<u16>(
                         ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))

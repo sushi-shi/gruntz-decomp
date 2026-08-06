@@ -376,8 +376,7 @@ i32 CPlay::Render() {
         m_guts->LoadMainStatusBarSprite();
 
         {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_cueTimer64.m_v
-                >= m_cueInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_cueTimer64.m_v >= m_cueInterval64.m_v) {
                 m_cueToggle = (m_cueToggle == 0);
                 m_cueInterval = CUE_INTERVAL_MS;
                 m_cueIntervalHi = 0;
@@ -411,8 +410,7 @@ i32 CPlay::Render() {
         m_mgr->m_cmdSubMgr->ScanTargets(0);
 
         if (m_levelId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_bootyTimer64.m_v
-                >= m_bootyInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_bootyTimer64.m_v >= m_bootyInterval64.m_v) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x33e, -1, 1, -1, -1);
                 m_bootyInterval = BOOTY_INTERVAL_MS;
                 m_bootyIntervalHi = 0;
@@ -425,8 +423,7 @@ i32 CPlay::Render() {
         StepViewportResize();
 
         if (m_ambientInitDone == 0) {
-            if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
-                >= m_ambientInterval64.m_v) {
+            if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v >= m_ambientInterval64.m_v) {
                 i32 id = GetAmbientId();
                 char buf[0x40];
                 wsprintfA(buf, "AMBIENT%d", id);
@@ -659,7 +656,7 @@ i32 CPlay::Render() {
                 );
             }
             if (m_ambientInitDone == 0) {
-                if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_ambientTimer64.m_v
+                if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v
                     >= m_ambientInterval64.m_v) {
                     i32 id = GetAmbientId();
                     char buf[0x40];

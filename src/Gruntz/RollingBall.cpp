@@ -107,7 +107,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_target.m_x = snapY;
     m_explodeLatch = 0;
     m_fallLatch = 0;
-    m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<i64>(static_cast<u32>(time)));
+    m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
     o->m_area.left = 0;
     o->m_area.right = 0;
     o->m_area.top = 0;
@@ -165,7 +165,7 @@ i32 CRollingBall::Update() {
 
     CWwdGameObjectA* logic = m_object;
     if (logic->m_points > 0) {
-        if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_explodeStart >= m_explodeWindow) {
+        if (static_cast<i64>(g_frameTime) - m_explodeStart >= m_explodeWindow) {
             m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
@@ -538,7 +538,7 @@ i32 CRollingBall::Update() {
         }
     }
 
-    double dt = static_cast<double>(static_cast<u32>(g_frameDelta)) * m_moveSpeed;
+    double dt = static_cast<double>(g_frameDelta) * m_moveSpeed;
     i32 nx;
     if (m_stepDirX > 0) {
         double v = dt + m_subX;

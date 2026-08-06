@@ -85,7 +85,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     } else {
         v = m_object->m_damage;
     }
-    m_angularVelocity = g_spotRateNum / static_cast<double>(static_cast<u32>(v));
+    m_angularVelocity = g_spotRateNum / static_cast<double>(v);
     if (m_object->m_direction == 1) {
         m_angularVelocity = m_angularVelocity * g_spotRateMul;
     }

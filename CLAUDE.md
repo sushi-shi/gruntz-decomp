@@ -124,7 +124,7 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
 - **Cleanliness endgame + cast policy** (`docs/cast-metric-policy.md`): drive EVERY
-  `config/cleanliness/cleanliness-baseline.tsv` metric to 0. Mis-model casts (views, `)this`) are ELIMINATED by
+  metric in `config/cleanliness/cleanliness-{text,semantic}-baseline.tsv` to 0. Mis-model casts (views, `)this`) are ELIMINATED by
   real typing; a genuinely-needed cast uses a **C++ named cast** (`static_cast` for math/numeric,
   `reinterpret_cast`/`const_cast`/`dynamic_cast` otherwise) so the C-style-pattern metrics slide to 0;
   **offset-casts `(char*)x + N` are BANNED outright** (named member `&x->m_field`, never even a C++

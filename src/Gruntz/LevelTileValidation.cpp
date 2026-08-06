@@ -108,7 +108,7 @@ i32 CPlay::PlaceStartGruntz() {
                         (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX,
                         (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX
                     );
-                    g_gameReg->EnterModalUI(static_cast<const char*>(static_cast<LPCSTR>(s)));
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 obj->m_flags |= 0x10000;

@@ -939,9 +939,7 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         m_fastPhase = 1;
     } else {
         m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBSLOW", 0);
-        m_duration = static_cast<u32>(
-            static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0))
-        );
+        m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = 0;
     }
@@ -992,10 +990,8 @@ i32 CTimeBomb::LoadAttributes() {
         if (m_fastPhase == 0) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
-            m_duration = static_cast<u32>(
-                static_cast<i32>(g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8))
-            );
-            m_startTime = static_cast<u32>(static_cast<i32>(g_frameTime));
+            m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
+            m_startTime = g_frameTime;
             m_fastPhase = 1;
         } else {
             m_wwdObject->m_flags |= 0x10000;

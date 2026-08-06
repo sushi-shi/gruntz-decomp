@@ -448,18 +448,18 @@ tiers answer different questions:
 | tier | ~wall | what runs | when |
 | --- | --- | --- | --- |
 | **fast** (`--fast`) | **0s of gates** | incremental build, objdiff, concise score only | every matcher iteration |
-| **normal** (default/`--normal`) | ~11s of checks | fast + negative controls, annotation/order/uniqueness checks, scoreboard, and cheap feedback | once per commit or hand-off |
-| **full** (`--full`) | ~10–15 min warm; ~15–20 min if layouts are stale | normal + whole-tree libclang scans, class layouts, vtables, view debt, and declared-only discovery | periodic/daily, or to create a work plan |
+| **normal** (default/`--normal`) | ~6s of checks | fast + negative controls, annotation/order/uniqueness checks, text scoreboard, and cheap feedback | once per commit or hand-off |
+| **full** (`--full`) | ~10–15 min warm; ~15–20 min if layouts are stale | normal + semantic scoreboard, whole-tree libclang scans, class layouts, vtables, view debt, and declared-only discovery | periodic/daily, or to create a work plan |
 
 Fast deliberately runs **zero source gates**. Normal owns the checks that answer
 “is this change structurally safe?” Full answers “what reconstruction debt remains?”
 Full checks therefore continue after a finding so a single run searches the whole tree
 instead of stopping at the first backlog item. Discovery scans write durable worklists
 such as `build/gen/bare_constants.tsv` and `build/gen/enum_case_labels.tsv`.
-Measured end to end on 2026-08-05, an up-to-date fast build took 0.3s with 0.0s
-of gates, while normal took 11.4s. Its individual integrity checks were 0.04–0.72s
-each; the cleanliness/MAX scoreboard dominated at 6.65s. Full-only non-libclang
-checks were 0.4–6.0s each.
+Measured on 2026-08-06, an up-to-date normal build took 5.9s, including 1.73s
+for the source-text cleanliness scoreboard. The slower caller/callee IR metric
+now lives in `cleanliness-semantic-baseline.tsv` and runs only at full tier.
+Full-only non-libclang checks were 0.4–6.0s each.
 The two all-TU libclang scans (`enum_case_labels` and `bare_constants`) were roughly
 5–7 minutes each, and a stale `structs.json` layout regeneration adds about 4.5 minutes.
 

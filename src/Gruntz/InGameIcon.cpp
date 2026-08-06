@@ -559,7 +559,7 @@ i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;
     i32 tileY = obj->m_screenX >> TILE_SHIFT_PX;
     i32 tileX = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
+    i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
@@ -642,7 +642,7 @@ i32 CInGameIcon::PeekCycle() {
     if (obj->m_faceDirection != 0) {
         return 0;
     }
-    if (static_cast<i64>(static_cast<u32>(g_frameTime)) - m_peekTimer.m_v >= m_peekWindow.m_v) {
+    if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
         u32 x;
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -791,7 +791,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
 RVA(0x00098a90, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    i64 delta = static_cast<i64>(static_cast<u32>(g_frameTime)) - m_driftPos.m_v;
+    i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta >= m_driftThresh.m_v) {
         CWwdGameObjectA* r = m_wwdObject;
         r->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
