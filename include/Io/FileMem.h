@@ -12,7 +12,9 @@
 class CFileMemBase {
 public:
     CFileMemBase();
-    virtual ~CFileMemBase();
+    virtual ~CFileMemBase() {
+        Reset();
+    }
     virtual i32 SetName(const char* name, i32 a, i32 b);
     virtual void Close();
 
@@ -37,8 +39,6 @@ class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE {
         Reset();
-        m_file.~CFile();
-        CFileMemBase::Reset();
     }
     virtual void Close() OVERRIDE;
     virtual void Reset() OVERRIDE;

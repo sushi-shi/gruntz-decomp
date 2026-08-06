@@ -426,11 +426,7 @@ CFileMemBase::CFileMemBase() {
     m_name.Empty();
 }
 
-// @early-stop
-RVA(0x001578b0, 0x51)
-CFileMemBase::~CFileMemBase() {
-    Reset();
-}
+RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
 
 RVA(0x00157910, 0x5)
 void CFileMemBase::Close() {
