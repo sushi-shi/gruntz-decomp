@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <Gruntz/FreeNodePool.h>
-#include <Wap32/Rect.h>
+#include <MfcWin.h>
 #include <new>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/CoordNode.h>

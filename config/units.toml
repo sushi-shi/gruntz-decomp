@@ -1485,11 +1485,6 @@ source = "src/Rez/RezBufferObject.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "wap32rect"
-source = "src/Wap32/Rect.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
 flags = "cpp"

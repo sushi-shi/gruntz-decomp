@@ -11,8 +11,10 @@ So we read the compiled output directly: llvm-nm every base .obj, and a "phantom
 is a `?Method@CClass@@` symbol undefined in every obj and defined in none. A
 PURE-PHANTOM CLASS - >=1 phantom method, ZERO defined method bodies anywhere, no RTTI
 vtable, not an MFC/CRT/std library class - is a fake view by construction (a real
-class always has some reconstructed body or RTTI). This count CANNOT be gamed:
-adding a fake view raises it. Driving it to 0 == removing every fake view.
+class always has some reconstructed body or RTTI). Library classes are excluded
+from that binary test because their real methods resolve from static libraries, so
+we separately reject project-local definitions that shadow those classes. These
+counts CANNOT be gamed: adding a fake view or SDK shadow raises them.
 
 Real-but-unreconstructed methods on real classes (CGrunt, CPlay, ...) are NOT counted:
 those classes have defined bodies and/or RTTI, so only their yet-to-do methods are
@@ -121,23 +123,53 @@ def pure_phantom_classes():
     return phantom
 
 
+CLASS_DEF_RE = re.compile(
+    r"\b(?:class|struct)\s+([A-Za-z_]\w*)\s*(?::[^;{}]*)?\{", re.S)
+
+
+def source_library_shadows():
+    """[(path, class)] for project definitions that replace an MFC/CRT class.
+
+    LIBRARY_CLASSES must be allowlisted in the object-symbol metric: a real MFC
+    class normally has undefined methods and no project definition. That same
+    exemption used to make a local `struct CRect : tagRECT` invisible, so close
+    the gap at the source-definition boundary.
+    """
+    out = []
+    for root in (REPO / "include", REPO / "src"):
+        for path in root.rglob("*"):
+            if path.suffix.lower() not in {".h", ".hpp", ".c", ".cpp"}:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            text = re.sub(r"/\*.*?\*/|//[^\n]*", "", text, flags=re.S)
+            for name in CLASS_DEF_RE.findall(text):
+                if name in LIBRARY_CLASSES:
+                    out.append((path.relative_to(REPO).as_posix(), name))
+    return sorted(out)
+
+
 def main():
     args = sys.argv[1:]
     if not OBJS.is_dir() or not any(OBJS.glob("*.obj")):
         print("view-debt: no base objs (run `gruntz build` first)")
         return 0
     phantom = pure_phantom_classes()
+    shadows = source_library_shadows()
     nclass = len(phantom)
     nmeth = sum(len(v) for v in phantom.values())
     print(f"view debt: {nclass} pure-phantom class(es), {nmeth} declared-only method(s) "
           f"defined nowhere (fake views - ungameable metric; drive to 0)")
+    print(f"view debt: {len(shadows)} project-local MFC/CRT class shadow(s)")
     if "--list" in args:
         for c in sorted(phantom, key=lambda c: -len(phantom[c])):
             print(f"  {c}  ({len(phantom[c])})")
             for s in sorted(phantom[c]):
                 print(f"      {s}")
-    if "--fatal" in args and nclass:
-        print("view-debt: FAIL (--fatal) - fake-view classes present", file=sys.stderr)
+        for path, name in shadows:
+            print(f"  {path}: {name}")
+    if "--fatal" in args and (nclass or shadows):
+        print("view-debt: FAIL (--fatal) - fake views or library-class shadows present",
+              file=sys.stderr)
         return 1
     return 0
 

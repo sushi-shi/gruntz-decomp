@@ -86,12 +86,8 @@ public:
         m_scrollReseedTimer = 0;
         m_scrollAccum = 0;
         m_scrollStep = 0;
-        // Two-CRects knot: retail calls the GAME CRect::SetRect (ILT 0x278e), but
-        // this header rides in afxwin TUs where CRect is MFC's - its inline COMDAT
-        // collides with the game def at link. Hand-expanded (the inline's own body)
-        // until CRect unification; costs this ctor's %, buys a /FORCE-free link.
-        ::SetRect(&m_scrollRect, 0, 0, 0x280, 0x1e0);
-        ::SetRect(&m_drawRect, 0, 0, 0x280, 0x1e0);
+        m_scrollRect.SetRect(0, 0, 0x280, 0x1e0);
+        m_drawRect.SetRect(0, 0, 0x280, 0x1e0);
         m_reserved20c = 1;
         m_videoHandle = NULL;
         m_videoPlaying = 0;

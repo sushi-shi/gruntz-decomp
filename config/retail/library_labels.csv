@@ -3093,3 +3093,7 @@ rva,name,lib,confidence,source
 0x18e927,label58,LIBCMT,HIGH,offstart-ghidra-missed
 0x18e946,label60,LIBCMT,HIGH,offstart-ghidra-missed
 0x1f03e0,?openprot@filebuf@@2HB,LIBCIMT,HIGH,link-dup-oracle
+0x029ac0,??0CRect@@QAE@HHHH@Z,NAFXCW,HIGH,mfc-4.2-header-inline
+0x08c380,?SetRect@CRect@@QAEXHHHH@Z,NAFXCW,HIGH,mfc-4.2-header-inline
+0x115b30,??4CRect@@QAEXABUtagRECT@@@Z,NAFXCW,HIGH,mfc-4.2-header-inline
+0x17b500,?Width@CRect@@QBEHXZ,NAFXCW,HIGH,mfc-4.2-header-inline

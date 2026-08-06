@@ -518,11 +518,11 @@ AppHelpers.cpp holding TU. Its orphan-mates re-homed to their real objs: Handle
 NetLobby::Init_2522 in LobbyDialogs.cpp. OnStart's CAttract owner is deferred
 (+0x1b8 layout conflict). No destructible locals -> /base.
 
-### wap32rect
-CRect - the WAP32 engine rectangle class (derives from tagRECT); its geometry
-methods route through the engine's Win32-API fn-pointer table (reloc-masked).
-SetRect @0x8c380 + operator= @0x115b30 re-homed from apimischelpers (were the
-RectHost_08c380/RectHost_115b30 per-fn views). No destructible locals -> /base.
+### CRect
+The rectangle functions at 0x29ac0, 0x8c380, 0x115b30, and 0x17b500 are emitted
+MFC 4.2 `CRect` inline bodies, not a WAP32-owned rectangle class or source TU.
+Consumers use the SDK definition through `<MfcWin.h>`; the retail bodies are
+classified as MFC rather than reconstructed as a project-local shadow.
 
 ### debugprintf
 ONE original TU (dossier 0x1832d0 pocket, oracle-proven): absorbed rangeset.

@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
@@ -11,7 +12,6 @@
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
-#include <Wap32/Rect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 

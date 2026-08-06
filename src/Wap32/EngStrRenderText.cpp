@@ -1,7 +1,5 @@
 #include <rva.h>
 
-#include <Mfc.h>
-
 #include <Font/Font.h>
 #include <Font/FontSel.h>
 #include <Ints.h>
@@ -50,16 +48,15 @@ i32 EngStr_RenderText(
     }
     CString* str = text;
     RECT* rc = dst;
+    CRect rect;
     if (shadow) {
-        RECT sh;
-        CopyRect(&sh, rc);
-        OffsetRect(&sh, 2, 3);
+        CopyRect(&rect, rc);
+        OffsetRect(&rect, 2, 3);
         g_textObj.SetColor(0);
 
-        g_textObj.DrawWrapped(*str, drawSurface, *static_cast<CRect*>(&sh), 1, flag, 0);
+        g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
-    CRect rect;
     rect = *rc;
     g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     return 1;

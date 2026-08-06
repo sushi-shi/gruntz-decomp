@@ -41,7 +41,7 @@
 #pragma intrinsic(sqrt)
 #include <string.h>
 #include <new>
-#include <Wap32/Rect.h>
+#include <MfcWin.h>
 #include <Gruntz/TileTriggerContainer.h>
 
 #include <Gruntz/FreeNodePool.h>

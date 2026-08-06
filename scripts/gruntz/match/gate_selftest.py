@@ -41,6 +41,7 @@ from gruntz.audit import rename_member, tu_layout
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
+from gruntz.cleanliness import view_debt
 from gruntz.core import class_meta
 from gruntz.core import branches
 from gruntz.core import function_universe
@@ -56,6 +57,35 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class ViewDebtLibraryShadowTests(unittest.TestCase):
+    def _run(self, definition):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "include").mkdir()
+            (root / "src").mkdir()
+            objs = root / "build/objdiff/base"
+            objs.mkdir(parents=True)
+            (objs / "probe.obj").touch()
+            (root / "include/Probe.h").write_text(definition)
+            patches = (
+                mock.patch.object(view_debt, "REPO", root),
+                mock.patch.object(view_debt, "OBJS", objs),
+                mock.patch.object(view_debt, "_nm_symbols", return_value=(set(), set())),
+                mock.patch.object(view_debt, "_rtti_classes", return_value=set()),
+                mock.patch.object(sys, "argv", ["view_debt", "--fatal"]),
+            )
+            with patches[0], patches[1], patches[2], patches[3], patches[4], \
+                    contextlib.redirect_stdout(io.StringIO()), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                return view_debt.main()
+
+    def test_library_class_definition_fails_the_full_gate(self):
+        self.assertEqual(self._run("struct CRect : public tagRECT { int x; };\n"), 1)
+
+    def test_library_class_forward_declaration_is_allowed(self):
+        self.assertEqual(self._run("class CRect;\n"), 0)
 
 
 class ResidualQueueTests(unittest.TestCase):

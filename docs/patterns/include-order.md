@@ -98,11 +98,10 @@ it belongs to the *code* below and must stay put. Getting this wrong once ate 38
 line-conservation on every rewrite (`assert_conserved`): the output must be a
 permutation of the input, minus exactly the duplicate includes it meant to drop.
 
-**`CRect`/`CPoint`/`CSize` are the GAME's types, not MFC's.**
-`include/Wap32/Rect.h` defines `struct CRect : public tagRECT`, kept local
-because label-generation clang cannot consume MFC's `CRect` inlines. Treating
-those spellings as MFC evidence pulls `<afxwin.h>` in and hits
-`C2011: 'CRect' : 'class' type redefinition` across 11 TUs.
+**`CRect`/`CPoint`/`CSize` come from MFC.** Include `<MfcWin.h>` when their
+definitions are required. It exposes `<afxwin.h>` to MSVC while suppressing
+MFC's incompatible inline file only for clang-based analysis. Do not introduce
+project-local shadows of these framework classes.
 
 **Self-sufficiency is CLOSED and GATED** (2026-08-02). A standalone-compile
 sweep of every header under `include/` (one probe TU per header, MSVC 5.0 under
@@ -119,7 +118,7 @@ fwd-declarable). Earlier hand-fixes: `Wwd/WwdObjMgr.h`, `Gruntz/SBI_MenuItem.h`,
 **Which prelude a header gets is decided by its INCLUDER side.** `<Mfc.h>` for
 headers whose includers are MFC TUs (the default - a superset of `<Win32.h>`
 that cannot trip C1189); `<Win32.h>` only where every includer is a pure-Win32
-TU (`ProcAddr.h`, `Gruntz/SFSelectDevice.h`, `Wap32/Rect.h`) - dragging afx
+TU (`ProcAddr.h`, `Gruntz/SFSelectDevice.h`) - dragging afx
 into those TUs would change their codegen. A vendored SDK header that pulls
 `<windows.h>` itself (`SFMAN.H`) already supplies the surface.
 
@@ -128,8 +127,8 @@ forward declaration (`class CString;` in the file or one hop down its project
 includes) or an elaborated-type-specifier (`class CString* text`,
 `struct tagRECT* dst`) needs no prelude; supply through the header's OWN
 includes (transitive) is self-sufficiency, not leaning. That is what makes a
-flagged header a REAL defect and the gate safe - the old CRect/C2011 auto-fix
-hazard applied to the blind token match, not to this.
+flagged header a REAL defect and the gate safe. Value uses of afxwin classes
+require `<MfcWin.h>`; forward-declared pointer uses do not.
 
 ## MANUAL files
 

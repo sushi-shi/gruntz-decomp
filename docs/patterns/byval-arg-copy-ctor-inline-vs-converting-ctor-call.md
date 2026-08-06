@@ -1,55 +1,61 @@
-# By-value class arg built two ways: trivial copy-ctor INLINES, converting-ctor CALLs
+# Mixed by-value copy and assignment call can expose a shadowed SDK class
 
-**Tags:** cpp:ctor cpp:local | asm:call asm:mov asm:sub | topic:codegen-idiom topic:regalloc
+**Tags:** cpp:ctor cpp:local mfc:crect | asm:call asm:mov asm:sub | topic:mis-model topic:regalloc
 
 ## Symptom
 
-A function passes the same small class **by value** at two call sites, once from a
-local of a layout-compatible type and once from a pointer deref:
+A function passes a small MFC value class by value at two call sites. One path
+builds a local with Win32 helpers and the compiler copies its four fields directly
+into the outgoing argument. A later path calls a body at another RVA before making
+the same by-value call.
 
-```cpp
-RECT sh; CopyRect(&sh, rc); OffsetRect(&sh, 2, 3);
-g_textObj.RenderText(*str, drawFn, WapRect(sh),  1, flag, 0);   // shadow (local)
-g_textObj.RenderText(*str, drawFn, WapRect(*rc), 1, flag, 0);   // main   (deref)
+It is tempting to invent a layout-compatible project class, describe the called
+body as a converting constructor, and reinterpret the Win32 local as that class to
+force the first copy to inline. That model can improve code shape while preserving
+the wrong ownership and type identity.
+
+## Reverse-audit signature
+
+Check the mangled name before inferring a constructor. In `EngStr_RenderText`
+(0x115930), the called body at 0x115b30 is:
+
+```text
+??4CRect@@QAEXABUtagRECT@@@Z
 ```
 
-where `WapRect(const RECT&)` is an **external** engine ctor (its own RVA, e.g.
-0x115b30, a `CopyRect` wrapper). Retail's /O2 SPLITS the two builds:
+This is MFC 4.2 `void CRect::operator=(RECT const&)`, not a WAP32 constructor.
+The other emitted rectangle bodies have ordinary MFC signatures as well. A
+project-local `CRect : tagRECT`, a cast between `RECT` and that class, and a
+source-owned TU for those bodies are therefore one connected shadow-model defect.
 
-- **shadow pass**: INLINES a 4-mov field copy of `sh` straight into the outgoing arg
-  slot (`sub esp,0x10; mov ecx,esp; mov [ecx],..; mov [ecx+4],..; ..`), no call.
-- **main pass**: CALLs the converting ctor (`sub esp,0x10; mov ecx,esp; push rc;
-  call <ctor>`).
+## Correct model
 
-Modeling the ctor as **external for both** calls it twice AND materializes a
-**persistent** temp slot -> `sub esp,0x20` instead of retail's `0x10`, shifting every
-`[esp+N]` and cascading (~53%). Modeling it **inline for both** fixes the frame but
-INLINES the main pass too (retail calls there) -> the main "Copy" reloc vanishes
-(~58%).
-
-## Cause
-
-MSVC5 inlines a **compiler-generated trivial copy ctor** (member-wise, always
-available) but emits a **call** to a user-declared **external** converting ctor. Retail
-got the split because the shadow arg was effectively a copy of a same-layout local
-while the main arg went through the converting ctor.
-
-## Fix (steerable)
-
-Keep the converting ctor **external** (declaration only) so `WapRect(*rc)` CALLs it,
-and pass the shadow's rect as a **`WapRect` lvalue** so the trivial copy ctor inlines:
+Use MFC's `CRect` through `<MfcWin.h>`. A normal named value can serve both paths:
 
 ```cpp
-g_textObj.RenderText(*str, drawFn, *(WapRect*)&sh, 1, flag, 0);  // trivial copy -> inline
-g_textObj.RenderText(*str, drawFn, WapRect(*rc),   1, flag, 0);  // converting ctor -> call
+CRect rect;
+if (shadow) {
+    CopyRect(&rect, rc);
+    OffsetRect(&rect, 2, 3);
+    renderer.DrawWrapped(text, surface, rect, 1, flags, 0);
+}
+rect = *rc;
+renderer.DrawWrapped(text, surface, rect, 1, flags, 0);
 ```
 
-The `*(WapRect*)&sh` reinterpret is binary-proven authentic — retail emits exactly the
-inline 4-mov byte copy of `sh` (WapRect and RECT are layout-identical). Frame collapses
-`0x20 -> 0x10`, all callees pair. `EngStr_RenderText` (0x115930): 53 -> 60 (residual is
-an unrelated switch jump-table artifact).
+The first by-value argument uses the real class's copy construction; the second
+path invokes its real `RECT` assignment operator. Do not use a layout reinterpret
+to steer the two paths. Class ownership, mangling, and the relocation target
+outrank the current fuzzy score.
+
+## Withdrawn claim
+
+The earlier version called the type `WapRect`, classified 0x115b30 as an external
+engine converting constructor, and endorsed `*(WapRect*)&rect`. Those claims were
+falsified by the decorated symbol and the MFC 4.2 header definition. The score gain
+was produced by a shadow class, not evidence that the cast was authentic.
 
 ## Confidence
 
-c7 — reproduced live (engstrrendertext). The external-vs-copy-ctor distinction is the
-lever; the reinterpret only works because the two types share layout.
+c10 — the MFC decorated names, SDK declaration, call target, and consumer source
+shape agree.

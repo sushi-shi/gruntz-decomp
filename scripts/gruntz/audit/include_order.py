@@ -91,11 +91,8 @@ AFXWIN_TOKENS = re.compile(
     r'\b(CWnd|CDialog|CDC|CClientDC|CPaintDC|CWindowDC|CRgn|CBitmap|CPalette|'
     r'CFont|CBrush|CPen|CGdiObject|CWinApp|CWinThread|CFrameWnd|CView|CDocument|'
     r'CMenu|CButton|CEdit|CListBox|CComboBox|CStatic|CScrollBar|'
+    r'CRect|CPoint|CSize|'
     r'DECLARE_MESSAGE_MAP|BEGIN_MESSAGE_MAP)\b')
-# NOT MFC evidence in this tree: CRect/CPoint/CSize are the GAME's own types
-# (include/Wap32/Rect.h defines `struct CRect : public tagRECT`, kept local
-# because label-generation clang cannot consume MFC's CRect inlines). Treating
-# them as MFC spellings pulls <afxwin.h> in and collides: C2011 redefinition.
 AFX_TOKENS = re.compile(
     r'\b(CString|CObject|CFile|CArchive|CException|CMemFile|CRuntimeClass|'
     r'CPtrArray|CPtrList|CObList|CObArray|CStringList|CStringArray|CByteArray|'
@@ -110,6 +107,7 @@ WIN_TOKENS = re.compile(
 # every prelude that already supplies the MFC/Win32 surface
 MFC_SUPPLIERS = {"Mfc.h", "MfcWin.h", "MfcNoInline.h", "afx.h", "afxwin.h",
                  "afxtempl.h", "afxcmn.h"}
+AFXWIN_SUPPLIERS = {"MfcWin.h", "afxwin.h", "afxcmn.h"}
 WIN_SUPPLIERS = MFC_SUPPLIERS | {"Win32.h", "windows.h"}
 
 # Vendored SDK headers that pull <windows.h> themselves (e.g. SFMAN.H) supply
@@ -320,7 +318,7 @@ def assert_conserved(path: Path, before: list[str], after: list[str], dropped: l
             f"   gained: {list(gained.elements())[:8]}")
 
 
-_SUPPLY_CACHE: dict[str, tuple[bool, bool]] = {}
+_SUPPLY_CACHE: dict[str, tuple[bool, bool, bool]] = {}
 _VENDOR_WIN: set[str] | None = None
 
 
@@ -331,28 +329,30 @@ def _header_text(name: str) -> str:
         return ""
 
 
-def _supply(name: str, stack=()) -> tuple[bool, bool]:
-    """(afx, win): does header `name` reach an MFC / Win32 supplier through its
+def _supply(name: str, stack=()) -> tuple[bool, bool, bool]:
+    """(afx, afxwin, win): does `name` reach each platform surface through its
     OWN includes? Leaning on your own dependencies is ordinary composition; only
     leaning on your INCLUDER is the self-sufficiency defect."""
     global _VENDOR_WIN
     if _VENDOR_WIN is None:
         _VENDOR_WIN = _vendor_win_suppliers()
+    if name in AFXWIN_SUPPLIERS:
+        return True, True, True
     if name in MFC_SUPPLIERS:
-        return True, True
+        return True, False, True
     if name in WIN_SUPPLIERS or name in _VENDOR_WIN:
-        return False, True
+        return False, False, True
     if name not in PROJECT_HEADERS or name in stack:
-        return False, False
+        return False, False, False
     if name in _SUPPLY_CACHE:
         return _SUPPLY_CACHE[name]
-    afx = win = False
+    afx = afxwin = win = False
     for line in _header_text(name).splitlines():
         if m := INC_RE.match(line):
-            a, w = _supply(m.group(1), stack + (name,))
-            afx, win = afx or a, win or w
-    _SUPPLY_CACHE[name] = (afx, win)
-    return afx, win
+            a, aw, w = _supply(m.group(1), stack + (name,))
+            afx, afxwin, win = afx or a, afxwin or aw, win or w
+    _SUPPLY_CACHE[name] = (afx, afxwin, win)
+    return afx, afxwin, win
 
 
 def missing_prelude(path: Path, headers) -> list[str]:
@@ -369,7 +369,8 @@ def missing_prelude(path: Path, headers) -> list[str]:
     txt = path.read_text(encoding="utf-8", errors="replace")
     incs = [m.group(1) for m in (INC_RE.match(l) for l in txt.splitlines()) if m]
     afx_ok = any(_supply(h)[0] or h in MFC_SUPPLIERS for h in incs)
-    win_ok = afx_ok or any(_supply(h)[1] or h in WIN_SUPPLIERS for h in incs)
+    afxwin_ok = any(_supply(h)[1] or h in AFXWIN_SUPPLIERS for h in incs)
+    win_ok = afx_ok or any(_supply(h)[2] or h in WIN_SUPPLIERS for h in incs)
     # COMMENTS ARE STRIPPED FIRST. A header that merely NAMES a type in prose -
     # "written as PALETTEENTRY entries[256]", "the CString's initialiser" - does
     # not need that type declared, and scanning comment text for tokens reported
@@ -384,19 +385,17 @@ def missing_prelude(path: Path, headers) -> list[str]:
         if h in PROJECT_HEADERS:
             declared |= set(FWD_RE.findall(_header_text(h)))
     want = []
-    # <afxwin.h> is NEVER auto-added. Every header that names an afxwin type does
-    # so through a pointer (`CWnd* m_videoWnd`, `class CDialog* dlg`), which a
-    # forward declaration satisfies - and pulling afxwin in would bring MFC's
-    # CRect, which collides with the game's own (see the CRect note above).
-    # A header that genuinely needed the definition would fail to compile.
+    afxwin_hits = set(AFXWIN_TOKENS.findall(body)) - declared
+    if afxwin_hits and not afxwin_ok:
+        want.append("MfcWin.h")
     afx_hits = set(AFX_TOKENS.findall(body)) - declared
-    if afx_hits and not afx_ok:
+    if not want and afx_hits and not afx_ok:
         want.append("Mfc.h")
     # Win32 types come from <Mfc.h>, not <Win32.h>, for MFC-side headers: Mfc.h
     # is a superset (afx.h pulls windows.h) and cannot trip MFC's C1189. A
     # header whose includers are all pure-Win32 TUs keeps <Win32.h> instead
-    # (ProcAddr.h, SFSelectDevice.h, Wap32/Rect.h) - dragging afx into those
-    # TUs would change their codegen.
+    # (ProcAddr.h and SFSelectDevice.h) - dragging afx into those TUs would
+    # change their codegen.
     win_hits = set(WIN_TOKENS.findall(body)) - declared
     if not want and win_hits and not win_ok:
         want.append("Mfc.h")
@@ -473,10 +472,9 @@ def main(argv=None):
         return 0
     # Preludes are GATED since the 2026-08-02 standalone-compile sweep proved
     # every header self-sufficient: a flagged header is a real leaner (evidence
-    # honors fwd decls, elaborated uses and transitive supply, so the old
-    # CRect/C2011 auto-fix hazard no longer applies - the fix is one verified
-    # prelude, chosen by includer side: <Mfc.h> for MFC-side headers, <Win32.h>
-    # for pure-Win32-side ones).
+    # honors fwd decls, elaborated uses and transitive supply. The fix is one
+    # verified prelude: <MfcWin.h> for afxwin value types, <Mfc.h> for base MFC
+    # types, and <Win32.h> for pure-Win32-side headers).
     if args.gate and (ndupe or unordered or preludes):
         print("[include-order] FATAL: include block is not canonical - fix with "
               "`python -m gruntz.audit.include_order --fix-dupes --fix` "

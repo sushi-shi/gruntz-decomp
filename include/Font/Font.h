@@ -3,9 +3,7 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
-
-#include <Wap32/Rect.h>
+#include <MfcWin.h>
 
 struct Glyph {
     Glyph() {}

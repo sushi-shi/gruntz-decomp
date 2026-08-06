@@ -3,6 +3,7 @@
 #include <Gruntz/GruntCombat.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
@@ -53,7 +54,6 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
-#include <Wap32/Rect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/AnimWorkerAct.h>
 
