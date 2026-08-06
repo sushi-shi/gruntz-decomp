@@ -90,10 +90,10 @@ i32 CGrunt::LoadGruntDecayConfig2() {
     }
     i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
-    i32 r = static_cast<i32>(
-        (static_cast<double>(elapsed) * 256.0
-         / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
-    );
+    i32 r = static_cast<i32>((
+        static_cast<double>(elapsed)
+        * DATA_COMPGEN(0x001e9a70, fp_1e9a70, 256.0) / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8))
+        ));
     m_object->m_drawActive = 1;
     m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
     m_object->m_fillFraction = r;

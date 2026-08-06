@@ -763,24 +763,24 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     float h;
 
     hsv.v = v;
-    if (v == 0.0) {
+    if (v == DATA_COMPGEN(0x001efb60, fp_1efb60, 0.0)) {
         hsv.s = 0.0;
         hsv.h = 0.0;
     } else {
         float delta = v - static_cast<float>(mn);
         hsv.s = delta / v;
         if (delta == 0.0) {
-            h = 0.0f;
+            h = DATA_COMPGEN(0x001efb68, fp_1efb68, 0.0f);
         } else if (b0 == v) {
             h = (b1 - b2) / delta;
         } else if (b1 == v) {
-            h = (b2 - b0) / delta - -2.0f;
+            h = (b2 - b0) / delta - DATA_COMPGEN(0x001efb6c, fp_1efb6c, -2.0f);
         } else {
-            h = (b0 - b1) / delta - -4.0f;
+            h = (b0 - b1) / delta - DATA_COMPGEN(0x001efb70, fp_1efb70, -4.0f);
         }
-        h = h * 60.0f;
+        h = h * DATA_COMPGEN(0x001efb74, fp_1efb74, 60.0f);
         if (h < 0.0) {
-            h = h - -360.0f;
+            h = h - DATA_COMPGEN(0x001efb78, fp_1efb78, -360.0f);
         }
         hsv.h = h;
     }

@@ -2138,17 +2138,17 @@ void CGruntzMgr::RecomputeViewScale() {
     float fw = static_cast<float>((view->m_planeCtx.right - view->m_planeCtx.left + 1));
     float fh = static_cast<float>((view->m_planeCtx.bottom - view->m_planeCtx.top + 1));
 
-    view->m_rectA.w = static_cast<i32>((fw * 1.4f));
+    view->m_rectA.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2bc, fp_1ea2bc, 1.4f)));
     view->m_rectA.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectB.w = static_cast<i32>((fw * 5.3f));
+    view->m_rectB.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c0, fp_1ea2c0, 5.3f)));
     view->m_rectB.h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectC.w = static_cast<i32>((fw * 1.12f));
+    view->m_rectC.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c4, fp_1ea2c4, 1.12f)));
     view->m_rectC.h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 

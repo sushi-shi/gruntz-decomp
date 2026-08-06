@@ -73,9 +73,13 @@ const i32 g_bootyLetterCoords[32] = {
     127, 170, 215, 262, 301, 345, 386, 427, 127, 170, 215, 262, 301, 345, 386, 427,
 };
 
+DATA(0x001e93b4)
 static const float kGlitterPhaseBias = -225.0f;
+DATA(0x001e93b8)
 static const double kDegToRad = 0.017453292;
+DATA(0x001e93c0)
 static const double kGlitterShrinkRate = 0.002;
+DATA(0x001e93c8)
 static const double kGlitterStartRadius = 350.0;
 
 DATA(0x001e9178)

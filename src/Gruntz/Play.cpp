@@ -4426,7 +4426,9 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     }
 
     i32 counter = m_revealFrame;
-    i32 col = static_cast<i32>((static_cast<float>(counter) * 3.7857143878936768f));
+    i32 col = static_cast<i32>(
+        (static_cast<float>(counter) * DATA_COMPGEN(0x001eaa18, fp_1eaa18, 3.7857143878936768f))
+    );
     // `final` picks the shape: a mid-reveal frame slides ONE strip to col+0xe0
     // and stops there; the final frame paints every remaining strip and then
     // caps the run. cl cross-jumps the two LayerBlitFrame calls into one.
@@ -4435,7 +4437,11 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     } else {
         if (counter < 0x37) {
             for (i32 i = counter; i < 0x37; i++) {
-                i32 x = 0xe0 - static_cast<i32>((static_cast<float>(i) * -3.7857143878936768f));
+                i32 x = 0xe0
+                        - static_cast<i32>(
+                            (static_cast<float>(i)
+                             * DATA_COMPGEN(0x001eaa1c, fp_1eaa1c, -3.7857143878936768f))
+                        );
                 LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
             }
         }
@@ -5494,7 +5500,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 sy = g->m_snappedY;
     // retail keeps the percent scale as its own temp: the int range multiply
     // lands after the double multiply, not reassociated ahead of it.
-    double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
+    double frac = static_cast<double>(w->m_scrollSpeed) * DATA_COMPGEN(0x001eaa10, fp_1eaa10, 0.01);
     i32 speed = static_cast<i32>(frac * g_scrollSpeedRange + g_scrollMinSpeed);
 
     SIZE

@@ -1080,7 +1080,7 @@ i32 CGrunt::FinishEntranceMove() {
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed =
-        16.0 / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
+        DATA_COMPGEN(0x001e9a78, fp_1e9a78, 16.0) / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;

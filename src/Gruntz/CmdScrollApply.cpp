@@ -101,7 +101,10 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         i32 nx = gm->m_snappedX;
         i32 ny = gm->m_snappedY;
         if (deltaX != 0 || deltaY != 0) {
-            nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
+            nx = static_cast<i32>(
+                (static_cast<float>(nx)
+                 - static_cast<float>(deltaX) * DATA_COMPGEN(0x001eab3c, fp_1eab3c, -0.05f))
+            );
             ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
         }
         if (static_cast<i64>(g_frameTime) - g_scrollAccum >= g_scrollLimit) {

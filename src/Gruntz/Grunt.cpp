@@ -703,7 +703,9 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
 
         if (x < y) {
-            i32 pct = static_cast<i32>((100.0 / (static_cast<double>(y) / x - -1.0) - -0.5));
+            i32 pct = static_cast<i32>(
+                (DATA_COMPGEN(0x001e9748, fp_1e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, fp_1e9740, -1.0)) - -0.5)
+            );
             m_toyBlendPct = 100 - pct;
         } else {
             m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
@@ -3586,7 +3588,7 @@ void CGrunt::XferName(char*) {
                 double span =
                     static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
-                flash = static_cast<i32>(frac * frac * 750.0);
+                flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, fp_1e9a40, 750.0));
             }
             if (flash < 0x1e) {
                 flash = 0x1e;
@@ -4048,8 +4050,9 @@ afterArrival:
     if (m_wingzEnabled != 0) {
         i64 left = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
         m_wingzTime = static_cast<i32>(
-            static_cast<double>((left < 0 ? 0 : static_cast<u32>(left))) * 0.01 - g_wingzBias
-        );
+            static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
+            * DATA_COMPGEN(0x001e9a58, fp_1e9a58, 0.01) - g_wingzBias
+            );
         i64 left2 = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             ConsiderArrival(1);
@@ -4171,8 +4174,10 @@ kindDispatch:
                 double topaque = static_cast<double>(
                     g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0x100)
                 );
-                i32 frac =
-                    static_cast<i32>(topaque * static_cast<double>(remMs) * 0.0003333333333333333);
+                i32 frac = static_cast<i32>(
+                    topaque * static_cast<double>(remMs)
+                    * DATA_COMPGEN(0x001e9a60, fp_1e9a60, 0.0003333333333333333)
+                    );
                 CWwdGameObjectA* obj = m_object;
                 obj->m_drawActive = 1;
                 obj->m_drawFillCmd = SHADE_PAL_ALPHA_16;

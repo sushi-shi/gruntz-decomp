@@ -360,13 +360,14 @@ i32 CPathHazard::BeginLeg() {
     double ux = dx / len;
     double uy = dy / len;
 
-    m_speed = 1.0 / (static_cast<double>(obj->m_animWorker->m_speed) * 0.03125);
+    m_speed =
+        DATA_COMPGEN(0x001ea410, fp_1ea410, 1.0) / (static_cast<double>(obj->m_animWorker->m_speed) * DATA_COMPGEN(0x001ea408, fp_1ea408, 0.03125));
     m_posX = static_cast<double>(obj->m_screenX);
     m_posY = static_cast<double>(obj->m_screenY);
     m_unitX = ux;
     m_unitY = uy;
 
-    if (ux > 0.0) {
+    if (ux > DATA_COMPGEN(0x001ea400, fp_1ea400, 0.0)) {
         m_roundBiasX = 0.5;
     } else if (ux < 0.0) {
         m_roundBiasX = -0.5;
