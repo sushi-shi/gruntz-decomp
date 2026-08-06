@@ -519,6 +519,10 @@ source = "src/Io/SaveGame.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "savegamedialogs"
+source = "src/Io/SaveGameDialogs.cpp"
+flags = "cpp-rtti"
+[[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
 flags = "cpp"
@@ -773,6 +777,15 @@ unit = "play"
 source = "src/Gruntz/Play.cpp"
 flags = "cpp-rtti"
 
+[[unit]]
+unit = "gruntzplayer"
+source = "src/Gruntz/GruntzPlayer.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "playassetload"
+source = "src/Gruntz/PlayAssetLoad.cpp"
+flags = "cpp-rtti"
 [[unit]]
 unit = "demo"
 source = "src/Gruntz/Demo.cpp"
@@ -1453,6 +1466,10 @@ source = "src/Net/NetCmdSlot.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "netsessionmgr"
+source = "src/Net/NetSessionMgr.cpp"
+flags = "cpp-rtti"
+[[unit]]
 unit = "netsessionnode"
 source = "src/Net/NetSessionNode.cpp"
 flags = "cpp"
@@ -1462,6 +1479,10 @@ unit = "netlobbydialogs"
 source = "src/Net/LobbyDialogs.cpp"
 flags = "cpp-rtti"
 
+[[unit]]
+unit = "multihelpdlg"
+source = "src/Net/MultiHelpDlg.cpp"
+flags = "cpp-rtti"
 [[unit]]
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
