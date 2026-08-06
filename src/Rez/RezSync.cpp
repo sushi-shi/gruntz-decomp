@@ -92,7 +92,7 @@ HINSTANCE g_appHInstance;
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
-    CoordPoolNode* pool = static_cast<CoordPoolNode*>(::operator new(0x3a980));
+    CoordPoolNode* pool = new CoordPoolNode[0x4e20];
     g_coordPool.m_block = pool;
     if (!pool) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x404);

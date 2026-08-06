@@ -752,7 +752,7 @@ i32 CDDSurface::ShadeBlt(
     u16* srcPtr = srcBits + (sr.top * srcStride + sr.left);
     i32 dstRowAdv = dstStride - dstW;
     i32 srcRowAdv = srcStride - srcW;
-    u16* temp = static_cast<u16*>(::operator new(dstW * 4));
+    u16* temp = new u16[dstW * 2];
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
     if (g_rDown != PIXEL16_RED_DOWN) {
@@ -834,10 +834,10 @@ i32 CDDSurface::ShadeBlt(
     }
     m_ddSurface->Unlock(0);
     src->m_ddSurface->Unlock(0);
-    ::operator delete(temp);
+    delete[] temp;
     return 1;
 reject:
-    ::operator delete(temp);
+    delete[] temp;
     m_ddSurface->Unlock(0);
     src->m_ddSurface->Unlock(0);
     return 0;

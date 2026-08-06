@@ -50,7 +50,7 @@ inline CShadeTableArray::CShadeTableArray() {
 inline CShadeTableArray::~CShadeTableArray() {
 
     if (m_pData) {
-        ::operator delete(m_pData);
+        delete[] m_pData;
     }
 }
 
@@ -91,7 +91,7 @@ void CShadeTableCache::FreeNodes() {
         }
     }
     if (m_arr.m_pData) {
-        ::operator delete(m_arr.m_pData);
+        delete[] m_arr.m_pData;
         m_arr.m_pData = NULL;
     }
     m_arr.m_nMaxSize = 0;
@@ -115,13 +115,13 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            ::operator delete(m_arr.m_pData);
+            delete[] m_arr.m_pData;
             m_arr.m_pData = NULL;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
-        m_arr.m_pData = static_cast<CShadeTable**>(::operator new(newSize * 4));
+        m_arr.m_pData = new CShadeTable*[newSize];
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -145,10 +145,10 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
         if (newSize >= newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
+        CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        ::operator delete(m_arr.m_pData);
+        delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -574,13 +574,13 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            ::operator delete(m_arr.m_pData);
+            delete[] m_arr.m_pData;
             m_arr.m_pData = NULL;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
-        m_arr.m_pData = static_cast<CShadeTable**>(::operator new(newSize * 4));
+        m_arr.m_pData = new CShadeTable*[newSize];
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -604,10 +604,10 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
         if (newSize >= newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
+        CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        ::operator delete(m_arr.m_pData);
+        delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -630,13 +630,13 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            ::operator delete(m_arr.m_pData);
+            delete[] m_arr.m_pData;
             m_arr.m_pData = NULL;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
-        m_arr.m_pData = static_cast<CShadeTable**>(::operator new(newSize * 4));
+        m_arr.m_pData = new CShadeTable*[newSize];
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -660,10 +660,10 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         if (newSize >= newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = static_cast<CShadeTable**>(::operator new(newMax * 4));
+        CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        ::operator delete(m_arr.m_pData);
+        delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -799,13 +799,13 @@ void CShadeTableArray::Serialize(CArchive& arc) {
         i32 n = arc.ReadCount();
         if (n == 0) {
             if (m_pData != NULL) {
-                ::operator delete(m_pData);
+                delete[] m_pData;
                 m_pData = NULL;
             }
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == NULL) {
-            m_pData = static_cast<CShadeTable**>(::operator new(n * 4));
+            m_pData = new CShadeTable*[n];
             memset(m_pData, 0, n * 4);
             m_nMaxSize = n;
             m_nSize = n;
@@ -828,10 +828,10 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             if (n >= newcap) {
                 newcap = n;
             }
-            CShadeTable** nd = static_cast<CShadeTable**>(::operator new(newcap * 4));
+            CShadeTable** nd = new CShadeTable*[newcap];
             memcpy(nd, m_pData, m_nSize * 4);
             memset(nd + m_nSize, 0, (n - m_nSize) * 4);
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newcap;
@@ -856,12 +856,12 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
     }
     if (nNewSize == 0) {
         if (m_pData != NULL) {
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = NULL;
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == NULL) {
-        m_pData = static_cast<CShadeTable**>(::operator new(nNewSize * sizeof(CShadeTable*)));
+        m_pData = new CShadeTable*[nNewSize];
         memset(m_pData, 0, nNewSize * sizeof(CShadeTable*));
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
@@ -885,11 +885,10 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        CShadeTable** pNewData =
-            static_cast<CShadeTable**>(::operator new(nNewMax * sizeof(CShadeTable*)));
+        CShadeTable** pNewData = new CShadeTable*[nNewMax];
         memcpy(pNewData, m_pData, m_nSize * sizeof(CShadeTable*));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(CShadeTable*));
-        ::operator delete(m_pData);
+        delete[] m_pData;
         m_pData = pNewData;
         m_nSize = nNewSize;
         m_nMaxSize = nNewMax;

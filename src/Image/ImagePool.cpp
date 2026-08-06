@@ -355,7 +355,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcoun
     if (!m_dibSection) {
         return 0;
     }
-    m_rowOffsets = static_cast<i32*>(::operator new(m_height * 4));
+    m_rowOffsets = new i32[m_height];
     for (i32 i = 0; i < m_height; i++) {
         m_rowOffsets[i] = (m_height - i - 1) * (IDX(m_bitCount) / 8) * m_stride;
     }
@@ -456,7 +456,7 @@ void CRezImage::Free() {
         m_dibSection = NULL;
     }
     if (m_rowOffsets) {
-        ::operator delete(m_rowOffsets);
+        delete[] m_rowOffsets;
         m_rowOffsets = NULL;
     }
     m_pixels = NULL;
@@ -557,7 +557,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
 
     u8* src = hdr->m_pixels;
     i32 scanBytes = (width * IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel) + 7) / 8;
-    u8* scan = static_cast<u8*>(::operator new(scanBytes));
+    u8* scan = new u8[scanBytes];
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
@@ -596,7 +596,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
         }
     }
 
-    ::operator delete(scan);
+    delete[] scan;
     return 1;
 }
 
@@ -780,7 +780,7 @@ void CRezImage::FlipVertical() {
     if (m_height <= 1) {
         return;
     }
-    u8* scratch = static_cast<u8*>(::operator new(m_width));
+    u8* scratch = new u8[m_width];
     if (scratch == NULL) {
         return;
     }
@@ -800,7 +800,7 @@ void CRezImage::FlipVertical() {
             m_pixels[botOff + x] = scratch[x];
         }
     }
-    ::operator delete(scratch);
+    delete[] scratch;
 }
 
 // @early-stop

@@ -8,7 +8,7 @@
 RVA(0x00161500, 0x58)
 CImageSet3::~CImageSet3() {
     if (m_pixels) {
-        ::operator delete(m_pixels);
+        delete[] m_pixels;
     }
     m_pixels = NULL;
 }

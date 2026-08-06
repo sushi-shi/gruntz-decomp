@@ -51,7 +51,7 @@ CRezItm::~CRezItm() {
         Close();
     }
     if (m_readBuf != NULL) {
-        ::operator delete(m_readBuf);
+        delete[] m_readBuf;
     }
 }
 
@@ -136,9 +136,9 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 
     m_readonly = readonly;
     if (m_readBuf != NULL) {
-        ::operator delete(m_readBuf);
+        delete[] m_readBuf;
     }
-    m_readBuf = static_cast<char*>(::operator new(strlen(filename) + 1));
+    m_readBuf = new char[strlen(filename) + 1];
     if (m_readBuf != NULL) {
         strcpy(m_readBuf, filename);
     }
@@ -161,7 +161,7 @@ i32 CRezItm::Close() {
 
         m_fp = NULL;
         if (m_readBuf != NULL) {
-            ::operator delete(m_readBuf);
+            delete[] m_readBuf;
         }
         m_readBuf = NULL;
         m_pos = -1;
@@ -265,7 +265,7 @@ CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(pare
     m_dir = dir;
     m_handle = NULL;
 
-    char* buf = static_cast<char*>(::operator new(strlen(nameSrc) + 1));
+    char* buf = new char[strlen(nameSrc) + 1];
     m_name = buf;
     strcpy(buf, nameSrc);
 
@@ -280,7 +280,7 @@ CRezFile::~CRezFile() {
         CloseFile();
     }
     if (m_name) {
-        ::operator delete(m_name);
+        delete[] m_name;
     }
     m_dir->m_closedList.Remove(this);
 }

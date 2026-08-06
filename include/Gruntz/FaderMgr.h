@@ -38,7 +38,7 @@ inline CFaderArray::CFaderArray() {
 
 inline CFaderArray::~CFaderArray() {
     if (m_pData) {
-        ::operator delete(m_pData);
+        delete[] m_pData;
     }
 }
 
@@ -62,12 +62,12 @@ inline void CFaderArray::SetSize(i32 size, i32 growBy) {
 
     if (size == 0) {
         if (m_pData) {
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = NULL;
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == NULL) {
-        m_pData = static_cast<CFader**>(::operator new(size * sizeof(CFader*)));
+        m_pData = new CFader*[size];
         memset(m_pData, 0, size * sizeof(CFader*));
         m_nSize = m_nMaxSize = size;
     } else if (size <= m_nMaxSize) {

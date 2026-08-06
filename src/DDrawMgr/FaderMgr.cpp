@@ -283,13 +283,13 @@ void CFaderArray::Serialize(CArchive& ar) {
         i32 n = ar.ReadCount();
         if (n == 0) {
             if (m_pData != NULL) {
-                ::operator delete(m_pData);
+                delete[] m_pData;
                 m_pData = NULL;
             }
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == NULL) {
-            m_pData = static_cast<CFader**>(::operator new(n * 4));
+            m_pData = new CFader*[n];
             memset(m_pData, 0, n * 4);
             m_nMaxSize = n;
             m_nSize = n;
@@ -312,10 +312,10 @@ void CFaderArray::Serialize(CArchive& ar) {
             if (n >= newMax) {
                 newMax = n;
             }
-            CFader** nd = static_cast<CFader**>(::operator new(newMax * 4));
+            CFader** nd = new CFader*[newMax];
             memcpy(nd, m_pData, m_nSize * 4);
             memset(nd + m_nSize, 0, (n - m_nSize) * 4);
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newMax;

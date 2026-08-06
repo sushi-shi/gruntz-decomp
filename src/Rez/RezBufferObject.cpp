@@ -23,6 +23,7 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
 // @early-stop
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
+    // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
     if (ar.IsStoring()) {
         ar.WriteCount(m_nSize);
     } else {

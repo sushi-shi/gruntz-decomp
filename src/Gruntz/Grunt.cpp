@@ -482,7 +482,7 @@ void CGrunt::OnObjectRemoved() {
             continue;
         }
         void* p = m_payloads.RemoveHead();
-        delete static_cast<char*>(p);
+        delete[] static_cast<i32*>(p);
     }
 }
 
@@ -2527,10 +2527,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                             break;
                         }
                         if (m_payloads.GetCount() != 0) {
-                            ::operator delete(m_payloads.RemoveHead());
+                            delete[] static_cast<i32*>(m_payloads.RemoveHead());
                         }
                     }
-                    i32* payload = static_cast<i32*>(::operator new(0x2c));
+                    i32* payload = new i32[0xb];
                     if (payload != NULL) {
                         memset(payload, 0, 0x2c);
                     }

@@ -982,11 +982,11 @@ i32 InterfaceObject::MatchesUnclassifiedProvider() {
 RVA(0x00179680, 0x3a)
 void CNetPlayerListNode::FreeStrings() {
     if (m_desc.m_lpszName) {
-        operator delete(m_desc.m_lpszName);
+        delete[] m_desc.m_lpszName;
         m_desc.m_lpszName = NULL;
     }
     if (m_desc.m_lpszPassword) {
-        operator delete(m_desc.m_lpszPassword);
+        delete[] m_desc.m_lpszPassword;
         m_desc.m_lpszPassword = NULL;
     }
     m_desc.m_dwSize = 0;

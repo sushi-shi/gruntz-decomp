@@ -321,7 +321,7 @@ CFaderFlat::CFaderFlat() {
 RVA(0x0017f570, 0x61)
 CFaderFlat::~CFaderFlat() {
     if (m_frames) {
-        operator delete(m_frames);
+        delete[] m_frames;
         m_frames = NULL;
     }
 }
@@ -907,7 +907,7 @@ CFaderRadial::~CFaderRadial() {
 RVA(0x0017fc40, 0x11)
 void CFaderRadial::FreeBuffer() {
     if (m_cells) {
-        ::operator delete(m_cells);
+        delete[] m_cells;
     }
 }
 
@@ -1081,6 +1081,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
             i32 idx = mesh->m_nSize;
             i32 newSize = idx + 1;
+            // Reserve raw capacity: unused serialized mesh slots are zero-filled explicitly.
             if (newSize == 0) {
                 if (mesh->m_pData) {
                     ::operator delete(mesh->m_pData);
@@ -1131,6 +1132,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 // @early-stop
 RVA(0x0017f390, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
+    // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
     if (nGrowBy != -1) {
         m_nGrowBy = nGrowBy;
     }
@@ -1193,7 +1195,7 @@ i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     m_percent = s->m_durationPercent;
     m_previousFrame = 0;
     m_desc14 = s->m_splitPercent;
-    m_frames = static_cast<i32*>(::operator new(m_src->m_height << 2));
+    m_frames = new i32[m_src->m_height];
     for (i32 i = 0; i < m_src->m_height; i++) {
         m_frames[i] = 0;
     }
@@ -1239,7 +1241,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     m_fadeDivisor = static_cast<float>(s->m_width) * g_faderHalf;
     m_centerX = s->m_width / 2;
     m_centerY = s->m_height / 2;
-    m_cells = static_cast<CFaderRadialCell*>(::operator new(s->m_height * s->m_width * 16));
+    m_cells = new CFaderRadialCell[s->m_height * s->m_width];
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
@@ -1309,22 +1311,22 @@ RVA_COMPGEN(0x00181700, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)
 RVA(0x00181720, 0xb3)
 CFaderShape::~CFaderShape() {
     if (m_warpTable) {
-        operator delete(m_warpTable);
+        delete[] m_warpTable;
     }
     if (m_rowOfsA) {
-        operator delete(m_rowOfsA);
+        delete[] m_rowOfsA;
     }
     if (m_rowOfsB) {
-        operator delete(m_rowOfsB);
+        delete[] m_rowOfsB;
     }
     if (m_rowOfsC) {
-        operator delete(m_rowOfsC);
+        delete[] m_rowOfsC;
     }
     if (m_lineBuf) {
-        operator delete(m_lineBuf);
+        delete[] m_lineBuf;
     }
     if (m_shadeRamp) {
-        operator delete(m_shadeRamp);
+        delete[] m_shadeRamp;
     }
 }
 
@@ -1394,7 +1396,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
     }
 
-    m_warpTable = static_cast<i32*>(::operator new(m_halfWidth * 8));
+    m_warpTable = new i32[m_halfWidth * 2];
     for (i = 0; i < 2 * m_halfWidth; i++) {
         m_warpTable[i] = static_cast<i32>(
             (acos(
@@ -1425,7 +1427,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
 
         i32 m = m_halfWidth << 1;
-        m_shadeRamp = static_cast<u8*>(::operator new(m));
+        m_shadeRamp = new u8[m];
         for (i = 0; i < m; i++) {
             i32 t = static_cast<i32>(
                 (sin(static_cast<float>(i) / static_cast<float>(m) * 3.14f) * -32.0)
@@ -1434,9 +1436,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         }
     }
 
-    m_rowOfsA = static_cast<i32*>(::operator new(m_rowCount * 4));
-    m_rowOfsB = static_cast<i32*>(::operator new(m_rowCountB * 4));
-    m_rowOfsC = static_cast<i32*>(::operator new(m_rowCountC * 4));
+    m_rowOfsA = new i32[m_rowCount];
+    m_rowOfsB = new i32[m_rowCountB];
+    m_rowOfsC = new i32[m_rowCountC];
     for (i = 0; i < m_rowCount; i++) {
         m_rowOfsA[i] = m_surfA->m_pitch * i;
         m_rowOfsB[i] = m_surfB->m_pitch * i;
@@ -1444,7 +1446,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     mx = (m_rowCount > m_span) ? m_rowCount : m_span;
-    m_lineBuf = static_cast<u8*>(::operator new(m_surfA->m_bytesPerPixel * mx));
+    m_lineBuf = new u8[m_surfA->m_bytesPerPixel * mx];
     return 1;
 fail:
     return 0;

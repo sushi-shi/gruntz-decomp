@@ -484,7 +484,7 @@ void* zPTree::Insert(const char* key, void* value) {
     }
     node->m_value = static_cast<char*>(value);
     node->m_bit = critbit;
-    char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
+    char* keybuf = new char[(m_keyBitLength >> 3) + 1];
     node->m_key = keybuf;
     if (keybuf == NULL) {
         char* msg = g_errOutOfMem;
@@ -631,7 +631,7 @@ void zPTree::ClearRecursive(CButeTreeNode* node) {
     if (n->m_child[1] != NULL && n->m_child[1]->m_bit > n->m_bit) {
         ClearRecursive(n->m_child[1]);
     }
-    ::operator delete(n->m_key);
+    delete[] n->m_key;
     if (m_kind & 2) {
         m_teardown(n->m_value);
         ::operator delete(n->m_value);

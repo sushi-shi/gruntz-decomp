@@ -20,7 +20,7 @@ public:
 
     ~FreeNodePool() {
         if (m_block != NULL) {
-            ::operator delete(m_block);
+            delete[] m_block;
         }
         m_block = NULL;
         m_freeHead = NULL;

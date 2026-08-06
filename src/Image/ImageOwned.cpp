@@ -31,10 +31,10 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
 RVA(0x00148d10, 0x25)
 void CDDrawShadeBlit::Teardown() {
     if (m_rleData) {
-        ::operator delete(m_rleData);
+        delete[] m_rleData;
     }
     if (m_palette) {
-        ::operator delete(m_palette);
+        delete[] m_palette;
     }
 }
 
@@ -97,10 +97,10 @@ i32 CDDrawShadeBlit::BuildRle(
     }
 
     if (m_rleData != NULL) {
-        ::operator delete(m_rleData);
+        delete[] m_rleData;
     }
     m_rleLen = ba.GetSize();
-    m_rleData = static_cast<u8*>(::operator new(ba.GetSize()));
+    m_rleData = new u8[ba.GetSize()];
     i32 n = m_rleLen;
     for (i32 k = 0; k < n; k++) {
         m_rleData[k] = ba.GetData()[k];
@@ -108,9 +108,9 @@ i32 CDDrawShadeBlit::BuildRle(
 
     if (palette != NULL) {
         if (m_palette != NULL) {
-            ::operator delete(m_palette);
+            delete[] m_palette;
         }
-        m_palette = static_cast<PALETTEENTRY*>(::operator new(0x400));
+        m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
         memcpy(m_palette, palette, 0x400);
     }
     return 1;
@@ -183,11 +183,9 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, ColorDepth fmt) {
         m_rleLen = stride;
         if (fmt == BPP_RGB_16) {
             if (m_palette != NULL) {
-                ::operator delete(m_palette);
+                delete[] m_palette;
             }
-            m_palette = static_cast<PALETTEENTRY*>(
-                ::operator new(PALETTE_ENTRY_COUNT * sizeof(PALETTEENTRY))
-            );
+            m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
             RecordBytes<PidHeader> blob;
             blob.m_rec = src;
@@ -206,17 +204,17 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, ColorDepth fmt) {
     m_width = src->width;
     m_height = src->height;
     if (m_rleData != NULL) {
-        ::operator delete(m_rleData);
+        delete[] m_rleData;
     }
-    m_rleData = static_cast<u8*>(::operator new(m_rleLen));
+    m_rleData = new u8[m_rleLen];
 
     memcpy(m_rleData, src + 1, m_rleLen);
 
     if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
         void* remapped = EncodeRle16(m_rleData);
-        ::operator delete(m_rleData);
+        delete[] m_rleData;
         m_rleData = static_cast<u8*>(remapped);
-        ::operator delete(m_palette);
+        delete[] m_palette;
         m_palette = NULL;
     }
     return 1;

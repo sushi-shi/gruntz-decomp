@@ -831,7 +831,7 @@ RVA(0x00151da0, 0x80)
 AnimWorkerObj::~AnimWorkerObj() {
     m_notify = NULL;
     if (m_payload) {
-        ::operator delete(m_payload);
+        delete[] m_payload;
         m_payload = NULL;
         m_payloadSize = 0;
     }
@@ -867,7 +867,7 @@ RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Unload() {
     m_notify = NULL;
     if (m_payload) {
-        ::operator delete(m_payload);
+        delete[] m_payload;
         m_payload = NULL;
         m_payloadSize = 0;
     }

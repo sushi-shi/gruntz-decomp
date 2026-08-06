@@ -221,7 +221,7 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
     ar->Read(&m_targetId, sizeof(m_targetId));
     ar->Read(&m_payloadSize, sizeof(m_payloadSize));
     if (m_payloadSize > 0) {
-        m_payload = static_cast<u8*>(::operator new(m_payloadSize));
+        m_payload = new u8[m_payloadSize];
         ar->Read(m_payload, m_payloadSize);
     }
     return 1;

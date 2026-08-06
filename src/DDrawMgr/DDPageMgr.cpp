@@ -807,7 +807,7 @@ i32 CMoviePlayer::AddToPlaylist(
     }
 
     PLAYLISTINFOSTRUCT* rec = new PLAYLISTINFOSTRUCT;
-    rec->m_src = static_cast<char*>(::operator new(strlen(src) + 1));
+    rec->m_src = new char[strlen(src) + 1];
     strcpy(rec->m_src, src);
     rec->m_openArg = openArg;
     rec->m_blitMode = mode;
@@ -841,7 +841,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
 
     PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
     if (rec->m_src) {
-        ::operator delete(rec->m_src);
+        delete[] rec->m_src;
         rec->m_src = NULL;
     }
     if (rec->m_origin) {

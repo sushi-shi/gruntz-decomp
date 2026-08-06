@@ -17,14 +17,12 @@
 
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
-    m_cacheA =
-        static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+    m_cacheA = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_cacheA[i] = entries[i];
     }
-    m_cacheB =
-        static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+    m_cacheB = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     i32 hr = dd->CreatePalette(flags, entries, &m_palette, 0);
     if (hr == 0) {
         return 1;
@@ -68,15 +66,15 @@ void CDDPalette::Destroy() {
         m_palette = NULL;
     }
     if (m_cacheA != NULL) {
-        ::operator delete(m_cacheA);
+        delete[] m_cacheA;
         m_cacheA = NULL;
     }
     if (m_cacheB != NULL) {
-        ::operator delete(m_cacheB);
+        delete[] m_cacheB;
         m_cacheB = NULL;
     }
     if (m_sourcePalette != NULL) {
-        ::operator delete(m_sourcePalette);
+        delete[] m_sourcePalette;
         m_sourcePalette = NULL;
     }
     m_active = 0;
@@ -209,7 +207,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
 
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
-    PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * sizeof(PALETTEENTRY)));
+    PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
         return 0x80070057;
     }
@@ -221,13 +219,13 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused)
         buf[i].peFlags = 0;
     }
     i32 hr = SetAndNotify(start, count, buf, unused);
-    ::operator delete(buf);
+    delete[] buf;
     return hr;
 }
 
 RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
-    PALETTEENTRY* buf = static_cast<PALETTEENTRY*>(::operator new(count * sizeof(PALETTEENTRY)));
+    PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
         return 0x80070057;
     }
@@ -239,15 +237,14 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
         buf[i].peFlags = 0;
     }
     i32 hr = SetAndNotify(start, count, buf, unused);
-    ::operator delete(buf);
+    delete[] buf;
     return hr;
 }
 
 RVA(0x00147c30, 0x4d)
 void CDDPalette::GetEntries() {
     if (m_cacheB == NULL) {
-        m_cacheB =
-            static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+        m_cacheB = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
         if (m_cacheB == NULL) {
             return;
         }
@@ -295,8 +292,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     if (hr != 0) {
         CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
-    PALETTEENTRY* snapshot =
-        static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+    PALETTEENTRY* snapshot = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         snapshot[i] = m_cacheA[i];
     }
@@ -321,7 +317,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
         prev = t;
     }
     SetRange(start, count, r, g, b, 0);
-    ::operator delete(snapshot);
+    delete[] snapshot;
 }
 
 RVA(0x00147f30, 0xbe)
@@ -343,8 +339,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     m_fixedColor.peGreen = g;
     m_fixedColor.peBlue = b;
     if (!m_sourcePalette) {
-        m_sourcePalette =
-            static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+        m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     }
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_cacheA[i];
@@ -369,8 +364,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     m_targetPalette = target;
     m_lastElapsedMs = -1;
     if (!m_sourcePalette) {
-        m_sourcePalette =
-            static_cast<PALETTEENTRY*>(::operator new(sizeof(PALETTEENTRY) * PALETTE_ENTRY_COUNT));
+        m_sourcePalette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
     }
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_cacheA[i];

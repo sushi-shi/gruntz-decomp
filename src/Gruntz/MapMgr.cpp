@@ -24,7 +24,7 @@ CMapArrayA::CMapArrayA() {
 // @early-stop
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
-    m_storage = static_cast<BrickzNode*>(::operator new(count * sizeof(BrickzNode)));
+    m_storage = new BrickzNode[count];
     if (m_storage == NULL) {
         return 0;
     }
@@ -52,7 +52,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 RVA(0x0009e7e0, 0x29)
 CMapArrayA::~CMapArrayA() {
     if (m_storage) {
-        ::operator delete(m_storage);
+        delete[] m_storage;
     }
     m_storage = NULL;
     m_freeList = NULL;
@@ -69,7 +69,7 @@ CMapArrayB::CMapArrayB() {
 // @early-stop
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
-    m_storage = static_cast<BrickzCellNode*>(::operator new(count * sizeof(BrickzCellNode)));
+    m_storage = new BrickzCellNode[count];
     if (m_storage == NULL) {
         return 0;
     }
@@ -98,7 +98,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 RVA(0x0009e900, 0x28)
 CMapArrayB::~CMapArrayB() {
     if (m_storage) {
-        ::operator delete(m_storage);
+        delete[] m_storage;
     }
     m_storage = NULL;
     m_freeList = NULL;
@@ -131,11 +131,11 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     m_width = width;
     m_height = height;
     m_cellCount = count;
-    m_cellPool = static_cast<BrickzCell*>(::operator new(count * 0x1c));
+    m_cellPool = new BrickzCell[count];
     if (m_cellPool == NULL) {
         return 0;
     }
-    m_rows = static_cast<BrickzCell**>(::operator new(height * 4));
+    m_rows = new BrickzCell*[height];
     if (m_rows == NULL) {
         return 0;
     }
@@ -177,10 +177,10 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
 RVA(0x0009ec30, 0x4b)
 void CMapMgr::Reset() {
     if (m_cellPool) {
-        ::operator delete(m_cellPool);
+        delete[] m_cellPool;
     }
     if (m_rows) {
-        ::operator delete(m_rows);
+        delete[] m_rows;
     }
 
     m_colA.~CMapArrayA();

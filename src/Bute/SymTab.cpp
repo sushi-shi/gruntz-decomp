@@ -86,7 +86,7 @@ void CParseSource::Build(
     if (name == NULL) {
         m_name = const_cast<char*>(name);
     } else {
-        m_name = static_cast<char*>(::operator new(strlen(name) + 1));
+        m_name = new char[strlen(name) + 1];
         if (m_name) {
             strcpy(m_name, name);
         }
@@ -103,17 +103,17 @@ void CParseSource::Build(
 RVA(0x001397a0, 0x57)
 void CParseSource::Teardown() {
     if (m_name) {
-        ::operator delete(m_name);
+        delete[] m_name;
     }
     if (m_owner != NULL) {
         if (m_owner->m_mappedBuf == NULL) {
             if (m_buffer) {
-                ::operator delete(m_buffer);
+                delete[] m_buffer;
             }
         }
     } else {
         if (m_buffer) {
-            ::operator delete(m_buffer);
+            delete[] m_buffer;
         }
     }
     m_name = NULL;
@@ -139,7 +139,7 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     if (m_owner->m_parent == NULL) {
         strcpy(dst, g_sepSlash);
     } else {
-        char* scratch = static_cast<char*>(::operator new(size));
+        char* scratch = new char[size];
         strcpy(dst, g_emptyString);
         CSymTab* node = m_owner;
         while (node != NULL) {
@@ -153,7 +153,7 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
             strcat(dst, scratch);
             node = node->m_parent;
         }
-        ::operator delete(scratch);
+        delete[] scratch;
     }
     return dst;
 }
@@ -174,12 +174,12 @@ char* CParseSource::BeginParse() {
     if (m_length == 0) {
         return 0;
     }
-    m_buffer = static_cast<char*>(::operator new(m_length));
+    m_buffer = new char[m_length];
     if (m_buffer == NULL) {
         return 0;
     }
     if (m_reader->Read(m_base, 0, m_length, m_buffer) != static_cast<i32>(m_length)) {
-        delete m_buffer;
+        delete[] m_buffer;
         m_buffer = NULL;
     }
     return m_buffer;
@@ -188,7 +188,7 @@ char* CParseSource::BeginParse() {
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
     if (m_buffer != NULL) {
-        ::operator delete(m_buffer);
+        delete[] m_buffer;
         m_buffer = NULL;
     }
     return 1;
@@ -330,7 +330,7 @@ CSymTab::CSymTab(
     i32 symN
 )
     : m_subTabs(subN), m_symbols(symN) {
-    m_name = static_cast<char*>(::operator new(strlen(name) + 1));
+    m_name = new char[strlen(name) + 1];
     if (m_name) {
         strcpy(m_name, name);
     }
@@ -366,7 +366,7 @@ CSymTab::~CSymTab() {
         delete sub;
     }
     if (m_name) {
-        ::operator delete(m_name);
+        delete[] m_name;
     }
     if (m_mappedBuf) {
         ::operator delete(m_mappedBuf);
@@ -424,7 +424,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     if (m_size > 0) {
-        m_buf = static_cast<u8*>(::operator new(m_size));
+        m_buf = new u8[m_size];
         if (m_buf != NULL) {
             m_src->m_activeNode->Read(m_off, 0, m_size, m_buf);
         }
@@ -673,12 +673,12 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
     m_totalSourceLength = 0;
     m_baseOffset = -1;
     i32 maxVal = 0;
-    char* buf = static_cast<char*>(::operator new(static_cast<u32>(dataSize)));
+    char* buf = new char[static_cast<u32>(dataSize)];
     if (!buf) {
         return 0;
     }
     if (stream->Read(dataOff, 0, dataSize, buf) != dataSize) {
-        ::operator delete(buf);
+        delete[] buf;
         return 0;
     }
     char* p = buf;
@@ -772,7 +772,7 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             }
         }
     }
-    ::operator delete(buf);
+    delete[] buf;
     return 1;
 }
 
@@ -862,11 +862,11 @@ CSymParser::~CSymParser() {
         m_root = NULL;
     }
     if (m_cachedSourceBuffer) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
         m_cachedSourceBuffer = NULL;
     }
     if (m_delims) {
-        ::operator delete(m_delims);
+        delete[] m_delims;
         m_delims = NULL;
     }
     CSlotNode* node = HeadSlotNode(m_nodes);
@@ -889,7 +889,7 @@ CSymParser::~CSymParser() {
     m_cachedSourceBuffer = NULL;
     if (node) {
         do {
-            ::operator delete(node->m_buffer);
+            delete[] node->m_buffer;
             m_nodes.Unlink(node);
             ::operator delete(node);
             node = HeadSlotNode(m_nodes);
@@ -905,9 +905,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 0;
     }
     if (m_cachedSourceBuffer) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
     }
-    char* src = static_cast<char*>(::operator new(strlen(static_cast<char*>(buf)) + 1));
+    char* src = new char[strlen(static_cast<char*>(buf)) + 1];
     m_cachedSourceBuffer = src;
     strcpy(src, static_cast<char*>(buf));
     i32 tag = Classify(static_cast<char*>(buf));
@@ -918,7 +918,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         }
         CRezItmBase* reader = new CRezDir(this, m_maxOpenFiles);
         if (reader == NULL) {
-            ::operator delete(m_cachedSourceBuffer);
+            delete[] m_cachedSourceBuffer;
             m_cachedSourceBuffer = NULL;
             return 0;
         }
@@ -946,7 +946,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
 
     CRezItmBase* reader = new CRezItm(this);
     if (reader == NULL) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
         m_cachedSourceBuffer = NULL;
         return 0;
     }
@@ -1015,16 +1015,16 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
     }
     m_sorted = 0;
     if (m_cachedSourceBuffer) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
     }
-    char* buf = static_cast<char*>(::operator new(strlen(name) + 1));
+    char* buf = new char[strlen(name) + 1];
     m_cachedSourceBuffer = buf;
     strcpy(buf, name);
 
     if (Classify(name)) {
         CRezItmBase* node = new CRezDir(this, m_maxOpenFiles);
         if (node == NULL) {
-            ::operator delete(m_cachedSourceBuffer);
+            delete[] m_cachedSourceBuffer;
             m_cachedSourceBuffer = NULL;
             return 0;
         }
@@ -1040,7 +1040,7 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 
     CRezItmBase* node = new CRezItm(this);
     if (node == NULL) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
         m_cachedSourceBuffer = NULL;
         return 0;
     }
@@ -1178,7 +1178,7 @@ i32 CSymParser::Clear(i32 final) {
         m_root = NULL;
     }
     if (m_cachedSourceBuffer) {
-        ::operator delete(m_cachedSourceBuffer);
+        delete[] m_cachedSourceBuffer;
         m_cachedSourceBuffer = NULL;
     }
     m_parseArmed = 0;
@@ -1293,9 +1293,9 @@ i32 CSymParser::MakeTimestamp() {
 RVA(0x0013ba80, 0x57)
 void CSymParser::SetDelims(char* s) {
     if (m_delims != NULL) {
-        ::operator delete(m_delims);
+        delete[] m_delims;
     }
-    m_delims = static_cast<char*>(::operator new(strlen(s) + 1));
+    m_delims = new char[strlen(s) + 1];
     strcpy(m_delims, s);
 }
 

@@ -62,7 +62,7 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     if (nn != NULL) {
         nn->m_bit = critbit;
         nn->m_value = value;
-        char* kb = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
+        char* kb = new char[(m_keyBitLength >> 3) + 1];
         nn->m_key = kb;
         if (kb != NULL) {
             strcpy(kb, key);

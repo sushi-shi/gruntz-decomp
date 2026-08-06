@@ -21,10 +21,10 @@ void CShadeTable::Reset() {
 RVA(0x001501a0, 0x44)
 i32 CShadeTable::Set(u32 size, i32 id) {
     if (m_data) {
-        ::operator delete(m_data);
+        delete[] m_data;
     }
     m_size = size;
-    m_data = static_cast<u8*>(::operator new(size));
+    m_data = new u8[size];
     if (!m_data) {
         return 0;
     }
@@ -67,7 +67,7 @@ RVA(0x001503c0, 0x2e)
 void CShadeTable::Free() {
     if (m_alloc != 0) {
         if (m_data) {
-            ::operator delete(m_data);
+            delete[] m_data;
             m_data = NULL;
         }
         m_size = 0;

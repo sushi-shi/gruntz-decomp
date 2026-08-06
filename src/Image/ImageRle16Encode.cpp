@@ -49,7 +49,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
         }
     }
 
-    u8* out = static_cast<u8*>(::operator new(m_rleLen));
+    u8* out = new u8[m_rleLen];
     {
         i32 outidx = 0, srcidx = 0;
         i32 x2 = 0, row2 = 0;
