@@ -255,28 +255,19 @@ i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000394b0, 0x86)
-i32 CCreditsState::OnLButtonDown(i32 x, i32 unused, i32 y) {
-    RECT rc;
-    rc.left = 0;
-    rc.top = 0;
-    rc.right = 0x64;
-    rc.bottom = 0x64;
-    POINT pt;
-    pt.x = x;
-    pt.y = y;
+i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
+    POINT pt = {x, y};
+    RECT rc = {0, 0, 0x64, 0x64};
     if (PtInRect(&rc, pt)) {
         LoadCreditzAssets();
         return 1;
     }
-    i32 cmd;
     if (m_previousStateId == GAMESTATE_MENU) {
-        cmd = 0x8023;
+        PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        cmd = 0x8027;
+        PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
-    PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, cmd, 0);
     return 1;
 }
 
