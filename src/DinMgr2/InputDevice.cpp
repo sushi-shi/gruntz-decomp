@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 
+DATA(0x001ef458)
+const i32 g_val_1ef458 = 0x5944e682;
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 RVA(0x00134cb0, 0x94)

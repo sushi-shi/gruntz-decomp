@@ -145,6 +145,11 @@ SecretMsgRow g_secretMsgRows[24];
 char g_secretMsgA[0x20];
 char g_secretMsgB[0x80];
 
+DATA(0x0022ae30)
+i32 g_val_22ae30;
+DATA(0x0022ae50)
+i32 g_val_22ae50;
+
 // @early-stop
 
 RVA(0x00018c90, 0x72)

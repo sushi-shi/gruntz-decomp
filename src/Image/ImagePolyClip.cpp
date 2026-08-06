@@ -57,6 +57,9 @@ i32 g_rasterVtxCount = 0;
 DATA(0x002becfc)
 i16 g_warpColorkey = 0;
 
+DATA(0x001efb14)
+const float g_val_1efb14 = -0.01745329238474369;
+
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;

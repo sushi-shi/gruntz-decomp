@@ -34,6 +34,16 @@ i32 g_dinputBeepEnabled;
 DATA(0x00253ab0)
 i32 g_dinputThirdEnabled;
 
+DATA(0x001ef538)
+extern "C" const GUID GUID_SysMouse =
+    {0x6f1d2b60, 0xd5a0, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+DATA(0x001ef548)
+extern "C" const GUID GUID_SysKeyboard =
+    {0x6f1d2b61, 0xd5a0, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+DATA(0x001ef558)
+extern "C" const GUID GUID_Joystick =
+    {0x6f1d2b70, 0xd5a0, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+
 // @identity-TODO ?1DirectInputMgr2 - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (45 fns) came from the static library. It belongs to another compiland.

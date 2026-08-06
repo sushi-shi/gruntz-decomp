@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+DATA(0x0022b25c)
+u8 g_val_22b25c[1];
 static char s_cdDriveLetter;
 
 RVA(0x0001fd50, 0xf)
