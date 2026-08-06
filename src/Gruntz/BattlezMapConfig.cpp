@@ -2366,10 +2366,11 @@ returnZero:
 // @early-stop
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
-    if (unit->CoordCount() == 0) {
+    CPtrList* coordList = &unit->m_coordList;
+    if (coordList->GetCount() == 0) {
         return 1;
     }
-    void* pos = unit->CoordHead();
+    void* pos = coordList->GetHeadPosition();
     Coord center;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
     CMapMgr* board = m_board;
@@ -2443,8 +2444,21 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 g_coordPool.m_freeHead = n;
             }
             if (list.GetCount() != 0) {
+                while (node != NULL) {
+                    CoordNode* remaining = node;
+                    node = node->m_next;
+                    CoordPoolNode* slot = g_coordPool.m_freeHead;
+                    Coord* copy = NULL;
+                    if (slot->m_next != NULL) {
+                        copy = &slot->m_coord;
+                        copy->m_x = remaining->m_coord->m_x;
+                        copy->m_y = remaining->m_coord->m_y;
+                        g_coordPool.m_freeHead = slot->m_next;
+                    }
+                    list.AddTail(copy);
+                }
 
-                if (unit->CoordCount() != 0) {
+                if (coordList->GetCount() != 0) {
                     CoordNode* p = unit->CoordHead();
                     while (p != NULL) {
                         CoordNode* c2 = p;
@@ -2453,29 +2467,21 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                             g_coordPool.Push(c2->m_coord);
                         }
                     }
-                    unit->m_coordList.RemoveAll();
+                    coordList->RemoveAll();
                 }
 
                 POSITION qp = list.GetHeadPosition();
                 while (qp != NULL) {
                     Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
-                    if (c3 != NULL) {
-                        unit->m_coordList.AddTail(c3);
+                    if (c3 != NULL && (c3->m_x != cx || c3->m_y != cy)) {
+                        coordList->AddTail(c3);
                     }
                 }
 
-                RECT b1;
-                static_cast<RECT*>(new (&b1) CRect(0, 0, board->m_width, board->m_height));
-                RECT b2;
-                RECT* boardRect =
-                    static_cast<RECT*>(new (&b2) CRect(0, 0, board->m_width, board->m_height));
-                RECT rc;
-                rc.left = boardRect->left;
-                rc.top = boardRect->top;
-                rc.right = boardRect->right;
-                rc.bottom = boardRect->bottom;
-                if (!IntersectRect(&board->m_bounds, &rc, &b1)) {
-                    board->m_bounds = rc;
+                static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
+                box = CRect(0, 0, board->m_width, board->m_height);
+                if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+                    board->m_bounds = box;
                 }
                 board->m_gridW = board->m_bounds.right - board->m_bounds.left;
                 board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
@@ -2490,17 +2496,10 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         list.RemoveAll();
     }
 
-    RECT f1;
-    static_cast<RECT*>(new (&f1) CRect(0, 0, board->m_width, board->m_height));
-    RECT f2;
-    RECT* pf = static_cast<RECT*>(new (&f2) CRect(0, 0, board->m_width, board->m_height));
-    RECT fc;
-    fc.left = pf->left;
-    fc.top = pf->top;
-    fc.right = pf->right;
-    fc.bottom = pf->bottom;
-    if (!IntersectRect(&board->m_bounds, &fc, &f1)) {
-        board->m_bounds = fc;
+    static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
+    box = CRect(0, 0, board->m_width, board->m_height);
+    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
+        board->m_bounds = box;
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
