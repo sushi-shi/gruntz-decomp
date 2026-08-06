@@ -226,20 +226,19 @@ RVA(0x00021e20, 0x95)
 
 i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
     m_inputScrollTotal = 0;
-    // A CHARACTER from WM_CHAR, not a virtual key - so the carriage return is
-    // spelled as one rather than as VK_RETURN.
     if (ch == '\r') {
-        if (m_inputActive != 0) {
+        if (m_inputActive == 0) {
+            m_inputActive = 1;
+            m_scrollOffset = 0;
+            m_inputScrollTotal = 0;
+            m_inputText = static_cast<const char*>(g_emptyString);
+        } else {
             if (m_inputText.GetLength() == 0) {
                 return 0;
             }
             m_inputActive = 0;
             return 1;
         }
-        m_inputActive = 1;
-        m_scrollOffset = 0;
-        m_inputScrollTotal = 0;
-        m_inputText = static_cast<const char*>(g_emptyString);
     }
     if (m_inputActive == 0) {
         return 0;
