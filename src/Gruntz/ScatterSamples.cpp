@@ -21,30 +21,33 @@ i32 IsPrime(i32 n) {
 // @early-stop
 RVA(0x00182940, 0x13c)
 void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
-    if (start >= end) {
+    if (start > end) {
+        return;
+    }
+    if (start == end) {
         return;
     }
 
     i32 span = end - start;
-    i32 prime = span;
+    i32 prime;
     if (span < 100000) {
-        while (!IsPrime(prime)) {
-            prime++;
-            if (prime >= 100000) {
-                prime = count;
-                break;
+        while (span < 100000) {
+            if (IsPrime(span)) {
+                prime = span;
+                goto have_prime;
             }
+            span++;
         }
-    } else {
-        prime = count;
     }
+    prime = count;
 
+have_prime:
     i32* used = static_cast<i32*>(operator new(prime * sizeof(i32)));
     if (used == NULL) {
         return;
     }
 
-    i32 step = 1;
+    i32 step;
     i32 k;
     for (i32 s = 1; s < prime - 1; s++) {
         i32 ok = 1;
