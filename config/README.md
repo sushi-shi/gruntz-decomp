@@ -65,4 +65,6 @@ are nearly complete and therefore change infrequently.
 
 Retired configs (caller-audit ledgers, match-queue.md) are gone — their
 purposes live in `gruntz.cleanliness.caller_callee` and
-`gruntz.match.residual_queue` (→ `build/gen/`, regenerable, untracked).
+`gruntz match-queue` (→ exhaustive `residual_function_queue.tsv` plus the
+weighted-middle-to-worst `matching_campaign_queue.tsv` in `build/gen/`; both
+regenerable and untracked).

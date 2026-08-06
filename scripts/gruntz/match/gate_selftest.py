@@ -48,7 +48,7 @@ from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
-from gruntz.match import status
+from gruntz.match import residual_queue, status
 from gruntz.permute import permute_sweep
 from gruntz.match import verify_unique_names as vun
 
@@ -56,6 +56,33 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class ResidualQueueTests(unittest.TestCase):
+    def test_campaign_starts_at_residual_weighted_middle(self):
+        report_data = {"units": [{"name": "unit", "functions": [
+            {"name": "best", "fuzzy_match_percent": 90.0, "size": 100},
+            {"name": "middle", "fuzzy_match_percent": 50.0, "size": 100},
+            {"name": "worst", "size": 40},
+        ]}]}
+        symbols = {
+            ("unit", "best"): {"rva": "0x1000"},
+            ("unit", "middle"): {"rva": "0x1100"},
+            ("unit", "worst"): {"rva": "0x1200"},
+        }
+
+        rows, library_count = residual_queue.residual_rows(report_data, symbols)
+        campaign = residual_queue.campaign_rows(rows)
+
+        self.assertEqual(library_count, 0)
+        self.assertEqual([row["name"] for row in campaign], ["middle", "worst"])
+        self.assertAlmostEqual(rows[0]["residual_bytes"], 10.0)
+        self.assertAlmostEqual(rows[1]["cumulative_residual_pct"], 60.0)
+        self.assertEqual([row["campaign_rank"] for row in campaign], [1, 2])
+
+    def test_empty_report_has_empty_campaign(self):
+        rows, _ = residual_queue.residual_rows({"units": []}, {})
+        self.assertEqual(residual_queue.campaign_rows(rows), [])
 
 
 class _Tree:

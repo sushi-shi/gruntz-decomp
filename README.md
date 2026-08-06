@@ -46,7 +46,7 @@ _Excluded from the % above — generated/library code, not independent reconstru
 
 ```
 scripts/gruntz/               THE package: ALL importable code (run `python -m gruntz`)
-  cli.py                      the one CLI: build / status / sema / audit / permute / init …
+  cli.py                      the one CLI: build / status / match-queue / sema / audit / permute / init …
   build/ ghidra/ init/        the path-invoked pipeline steps (ninja/CLI call them)
   core/                       the shared engine library: pe / symbols / report / vtable_scan /
                               vtable_hierarchy / exe_map / class_meta / ir / cc_wrap / codeview

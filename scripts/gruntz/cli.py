@@ -36,6 +36,7 @@ Subcommands
                 (root .clang-format). Whitespace-only -> matching-neutral.
                 --check is the CI gate (no writes; fail if unformatted).
   status        Print the last objdiff match summary (no rebuild).
+  match-queue   Generate weighted residual and middle-to-worst campaign queues.
   todo          List obj symbols that lack an @address (matching worklist).
   clean         Nuke build/ + stray root artifacts (build.ninja/*.obj/.ninja_*)
                 for a from-scratch init + build.
@@ -847,6 +848,16 @@ def cmd_status(args) -> None:
     summarize(json.loads(REPORT.read_text()), table=True)
 
 
+def cmd_match_queue(args) -> None:
+    """Generate the exhaustive residual and weighted middle-to-worst queues."""
+    if not REPORT.exists():
+        die(f"no report at {REPORT}; run `gruntz build` first")
+    if not GEN_NAMES.exists():
+        die(f"no {GEN_NAMES}; run `gruntz build` or `labels` first")
+    from gruntz.core import call_main
+    sys.exit(call_main("gruntz.match.residual_queue", []))
+
+
 def cmd_link(args) -> None:
     """Phase 2: link the base objs into a candidate GRUNTZ.EXE + map.
 
@@ -1285,6 +1296,8 @@ def main() -> None:
     fmt.set_defaults(func=cmd_format)
     sub.add_parser("status", help="objdiff summary + full per-unit table (report.json; no rebuild)"
                    ).set_defaults(func=cmd_status)
+    sub.add_parser("match-queue", help="generate residual-weighted matching queues"
+                   ).set_defaults(func=cmd_match_queue)
     sub.add_parser("report", help="alias of status: full per-unit match table (report.json; no rebuild)"
                    ).set_defaults(func=cmd_status)
     lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "
