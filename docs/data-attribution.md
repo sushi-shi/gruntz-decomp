@@ -417,3 +417,20 @@ SAME unmodelled struct type — that is the shape a dynamic trace would have
 given us, recovered statically and exhaustively (the deferred debugger trace is
 a second producer into the same event schema, for pointer-mediated interior
 accesses only code-flow can reveal).
+
+### Access-map campaign state (2026-08-06, lane/r2)
+
+The 260-item mis-typed-globals worklist (8 flagged + 252 unclaimed runs) is
+resolved to: **0 flagged symbols**, and unclaimed runs reclassified to
+31 data / 105 library / 836 string-pool / 1 alias. Landed devices: the
+GruntDirStatics per-TU static-copy family (66 full + 14 split copies,
+`config/static_data_copies.tsv` folded in at merge_labels), 45 FP pool
+constants as `DATA_COMPGEN` at their use sites, the CButeMgr getter-static
+band, message maps for CBattlezDlgColors/CMultiStartDlg (11 handler stubs
+claimed from pfn evidence), the DirectInput GUID triple, and ~40 per-slot
+zero-init globals in owner TUs. The 31 residual runs are ALL accessed only
+by unreconstructed (<gap>) code - their owner TUs are unprovable until the
+accessor fns are matched, so they stay on the queue rather than taking
+fabricated homes (`python -m gruntz.audit.data_access --unclaimed`).
+Library runs (CRT/MFC/zlib data) are policy-excluded like library code;
+string-pool runs are the unpinnable pooled literals.

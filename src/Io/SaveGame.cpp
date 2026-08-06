@@ -2,6 +2,8 @@
 
 #include <Io/SaveGame.h>
 
+#include <MsgParam.h>
+
 #include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
@@ -178,7 +180,9 @@ i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_slotState == NULL) {
                 // API-forced INT_PTR boundary.
 
-                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
+                MsgParam ret;
+                ret.m_slot = g_slotState;
+                EndDialog(hDlg, ret.m_lparam);
                 return 1;
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);
@@ -206,7 +210,9 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
             if (g_slotState == NULL) {
                 // API-forced INT_PTR boundary.
 
-                EndDialog(hDlg, reinterpret_cast<INT_PTR>(g_slotState));
+                MsgParam ret;
+                ret.m_slot = g_slotState;
+                EndDialog(hDlg, ret.m_lparam);
                 return 1;
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveSink, g_slotState);

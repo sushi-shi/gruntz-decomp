@@ -4,6 +4,7 @@
 #include <Win32.h>
 
 struct InterfaceObject;
+struct SaveSlot;
 class CNetPlayerListNode;
 class CNetSessionNode;
 
@@ -17,6 +18,7 @@ union MsgParam {
     CNetSessionNode* m_session;
     HICON m_icon;
     HWND m_hwnd;
+    SaveSlot* m_slot;
     WNDPROC m_wndproc;
 
     int(__stdcall* m_intProc)(HWND, UINT, WPARAM, LPARAM);

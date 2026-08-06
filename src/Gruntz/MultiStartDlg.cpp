@@ -44,7 +44,6 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
                      0,
                      0,
                      AfxSig_vw,
-
                      reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnTimer)}, // API-forced MFC seam.
     {WM_MEASUREITEM,
      0,

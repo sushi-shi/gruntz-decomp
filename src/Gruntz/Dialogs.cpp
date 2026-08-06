@@ -189,13 +189,13 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             entry = static_cast<CParseSource*>(worlds->NextSym3(entry));
         }
         ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
-        g_savedDlgWndProc =
-            reinterpret_cast<WNDPROC>(GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC));
-        SetWindowLongA(
-            comboChild->m_hWnd,
-            GWL_WNDPROC,
-            reinterpret_cast<LONG>(&BattlezMapComboEditProc) // API-forced Win32 callback seam.
-        );
+        MsgParam prev;
+        prev.m_long = GetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC);
+        g_savedDlgWndProc = prev.m_wndproc;
+
+        MsgParam proc;
+        proc.m_intProc = BattlezMapComboEditProc;
+        SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, proc.m_long);
 
         GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
         g_sharedFlag = m_hWnd;
