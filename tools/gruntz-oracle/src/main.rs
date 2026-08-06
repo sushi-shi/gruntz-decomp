@@ -180,8 +180,13 @@ enum Cmd {
         #[arg(long, default_value_t = 0)]
         sequence: usize,
     },
-    /// Convert every XMI resource to standard MIDI, preserving REZ paths.
-    XmiAll { out: PathBuf },
+    /// Convert every XMI resource, preserving REZ paths.
+    XmiAll {
+        out: PathBuf,
+        /// Also synthesize an mpv-playable WAV preview for every sequence.
+        #[arg(long)]
+        wav: bool,
+    },
 }
 
 /// Mirror of `pid::LiteralRule` for the command line.
@@ -511,7 +516,7 @@ fn main() -> ExitCode {
             eprintln!("gruntz-oracle: no such resource: {path}");
             ExitCode::FAILURE
         }
-        Cmd::XmiAll { out } => {
+        Cmd::XmiAll { out, wav } => {
             let mut rc = ExitCode::SUCCESS;
             for (name, bytes) in &archives {
                 let Ok(rez) = Rez::new(bytes) else {
@@ -520,7 +525,7 @@ fn main() -> ExitCode {
                     continue;
                 };
                 println!("\n================ {} ================", name.display());
-                if let Err(error) = export_all_xmi(&rez, out) {
+                if let Err(error) = export_all_xmi(&rez, out, *wav) {
                     eprintln!("gruntz-oracle: xmi-all: {error}");
                     rc = ExitCode::FAILURE;
                 }
@@ -661,15 +666,20 @@ fn synthesize_wav(midi: &[u8], out: &Path) -> Result<(), Box<dyn std::error::Err
     Ok(())
 }
 
-fn export_all_xmi(rez: &Rez, out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+fn export_all_xmi(
+    rez: &Rez,
+    out: &Path,
+    render_wav: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(out)?;
     let mut resources = 0usize;
     let mut sequences = 0usize;
+    let mut wavs = 0usize;
     let mut failures = Vec::new();
     for resource in of_kind(rez, "XMI") {
         resources += 1;
         let path = resource.path().to_string();
-        let result = (|| -> Result<usize, Box<dyn std::error::Error>> {
+        let result = (|| -> Result<(usize, usize), Box<dyn std::error::Error>> {
             let music = xmi::split(resource.data(rez.bytes()))?;
             let parsed = music.sequences().collect::<Result<Vec<_>, _>>()?;
             for (index, sequence) in parsed.iter().copied().enumerate() {
@@ -682,21 +692,32 @@ fn export_all_xmi(rez: &Rez, out: &Path) -> Result<(), Box<dyn std::error::Error
                 } else {
                     relative.set_file_name(format!("{}-{index:03}.mid", resource.name));
                 }
-                let destination = out.join(relative);
+                let destination = out.join(&relative);
                 if let Some(parent) = destination.parent() {
                     std::fs::create_dir_all(parent)?;
                 }
-                std::fs::write(destination, midi::render(sequence)?)?;
+                let rendered = midi::render(sequence)?;
+                std::fs::write(destination, &rendered)?;
+                if render_wav {
+                    relative.set_extension("wav");
+                    synthesize_wav(&rendered, &out.join(relative))?;
+                }
             }
-            Ok(parsed.len())
+            Ok((parsed.len(), usize::from(render_wav) * parsed.len()))
         })();
         match result {
-            Ok(count) => sequences += count,
+            Ok((midi_count, wav_count)) => {
+                sequences += midi_count;
+                wavs += wav_count;
+            }
             Err(error) => failures.push(format!("{path}: {error}")),
         }
     }
     println!("XMI resources         : {resources}");
     println!("MIDI files generated  : {sequences}");
+    if render_wav {
+        println!("WAV previews generated: {wavs}");
+    }
     if !failures.is_empty() {
         for failure in failures.iter().take(10) {
             eprintln!("  {failure}");
