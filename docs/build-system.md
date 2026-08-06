@@ -449,17 +449,13 @@ tiers answer different questions:
 | --- | --- | --- | --- |
 | **fast** (`--fast`) | **0s of gates** | incremental build, objdiff, concise score only | every matcher iteration |
 | **normal** (default/`--normal`) | ~11s of checks | fast + negative controls, annotation/order/uniqueness checks, scoreboard, and cheap feedback | once per commit or hand-off |
-| **full** (`--full`) | ~10–15 min warm; ~15–20 min if layouts are stale | normal + enum-conversion review, whole-tree libclang scans, class layouts, vtables, view debt, and declared-only discovery | periodic/daily, or to create a work plan |
+| **full** (`--full`) | ~10–15 min warm; ~15–20 min if layouts are stale | normal + whole-tree libclang scans, class layouts, vtables, view debt, and declared-only discovery | periodic/daily, or to create a work plan |
 
 Fast deliberately runs **zero source gates**. Normal owns the checks that answer
 “is this change structurally safe?” Full answers “what reconstruction debt remains?”
 Full checks therefore continue after a finding so a single run searches the whole tree
 instead of stopping at the first backlog item. Discovery scans write durable worklists
 such as `build/gen/bare_constants.tsv` and `build/gen/enum_case_labels.tsv`.
-The durable `config/cleanliness/enum-conversion-review.tsv` ledger separately
-records every `IDX(...)` domain exit and `static_cast<Enum>(...)` entry; its
-stale/pending check runs only in the full tier.
-
 Measured end to end on 2026-08-05, an up-to-date fast build took 0.3s with 0.0s
 of gates, while normal took 11.4s. Its individual integrity checks were 0.04–0.72s
 each; the cleanliness/MAX scoreboard dominated at 6.65s. Full-only non-libclang

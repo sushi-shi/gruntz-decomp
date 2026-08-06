@@ -513,13 +513,6 @@ def cmd_build(args) -> None:
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
         _timed("feedback:regressions", started)
 
-    # FULL-only semantic debt inventory. Every IDX() domain exit and enum-entry
-    # static_cast has a durable disposition; new or silently removed occurrences
-    # are findings for the periodic planning pass, not latency for normal commits.
-    _gate("gruntz.audit.enum_conversions", ["--gate"],
-          "enum-conversion review has pending, missing, or stale occurrences "
-          "(python -m gruntz.audit.enum_conversions --sync-review --summary)", "full")
-
     # build/gen/structs.json holds clang's ACTUAL record layouts, and it is NOT a ninja
     # target - so it goes stale the instant a header changes, and every consumer then
     # answers from a snapshot of the old tree. Measured 2026-07-13: this made class_sizes

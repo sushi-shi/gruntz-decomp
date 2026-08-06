@@ -4,7 +4,7 @@ Configuration is grouped by the thing it describes. NEVER resolve a merge
 conflict here with a blanket `--ours`/`--theirs` (that broke main twice) — use
 the owning tool's merge/update rule.
 
-## Root build and matching contracts
+## Root build, matching, and audit contracts
 
 - **`units.toml`** — THE per-TU manifest: unit → source path + compile-flags
   profile (`[flags]`: base=/O2, eh=/O2+/GX, framed=/O2 /Oy-, mfc=/O1+/GX —
@@ -16,6 +16,9 @@ the owning tool's merge/update rule.
 - **`labels_manifest.tsv`** — ACK-record: expected source-label count per unit
   (`build/labels.py` gate). A count change must be ACKed here in the same
   commit that causes it.
+- **`tidy-audit.yaml`** — curated checks for the read-only `gruntz audit tidy`
+  de-hack finder; it is an on-demand tool configuration, not a cleanliness
+  metric or gate.
 
 ## `cleanliness/` tracked metrics
 
@@ -28,9 +31,6 @@ merged per row; remeasure the merged tree rather than taking one side wholesale.
 - **`bare-constants-baseline.tsv`**, **`data-tu-order-baseline.tsv`**,
   **`single-view-baseline.tsv`**, **`strict-enums-baseline.tsv`**, and
   **`tu-order-baseline.tsv`** — focused audit ratchets and frozen backlogs.
-- **`tidy-audit.yaml`** — curated checks for the read-only `gruntz audit tidy`
-  de-hack finder; never auto-fix.
-
 ## `retail/` executable labels (regenerate/extend deliberately; merge per ROW)
 
 These records describe the retail executable for delinking, naming, and function

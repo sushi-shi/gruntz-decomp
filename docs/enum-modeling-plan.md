@@ -286,7 +286,7 @@ are annotated with the measurement showing the shape is byte-evidenced.
   the macros; range tests use domain boundaries; enumerators follow the naming
   convention. Implicit enumerator values are reported for review.
 - **Periodic search** — `readability-magic-numbers` in
-  `config/cleanliness/tidy-audit.yaml`, read via `gruntz audit tidy`, helps find
+  `config/tidy-audit.yaml`, read via `gruntz audit tidy`, helps find
   newly introduced candidate domains without maintaining a permanent file ledger.
 
 ## Verification

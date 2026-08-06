@@ -15,7 +15,7 @@
 #      a file named `.clang-tidy` and would then run these checks live in the
 #      editor on every keystroke. This file lives under config/ with a
 #      non-magic name so the editor never picks it up; the runner passes it
-#      explicitly via `clang-tidy --config-file=config/cleanliness/tidy-audit.yaml`.
+#      explicitly via `clang-tidy --config-file=config/tidy-audit.yaml`.
 #   3. It is a FINDER, not a linter gate: WarningsAsErrors is empty, so it never
 #      fails a build. Consume its output as a backlog (`gruntz lint`).
 #
