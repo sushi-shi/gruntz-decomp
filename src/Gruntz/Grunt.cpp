@@ -4404,30 +4404,30 @@ void CGrunt::AdvanceMotion() {
 
     CString* code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     GruntScratchTeardown();
-    if (strcmp(*code, s_codeD) != 0) {
+    bool different = strcmp(*code, s_codeD);
+    if (different) {
         code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         GruntScratchTeardown();
-        if (strcmp(*code, s_codeN) != 0) {
+        different = strcmp(*code, s_codeN);
+        if (different) {
             code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             GruntScratchTeardown();
-            if (strcmp(*code, s_codeL) == 0) {
-                if (m_entranceStamped != 0) {
-                    return;
-                }
-            } else {
+            different = strcmp(*code, s_codeL);
+            if (different) {
                 code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 GruntScratchTeardown();
-                if (strcmp(*code, s_codeM) != 0) {
+                different = strcmp(*code, s_codeM);
+                if (different) {
                     return;
                 }
                 if (m_bombRunActive != 0) {
                     return;
                 }
+            } else if (m_entranceStamped != 0) {
+                return;
             }
         }
     }
-    LoadWingzGruntSprites(0);
-
     if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
         if (m_arrivalPending != 0) {
             m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
