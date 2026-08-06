@@ -943,14 +943,12 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     m_flags = flags;
     m_pal.palNumEntries = 0x100;
     m_pal.palVersion = LOGICAL_PALETTE_VERSION;
-    PALETTEENTRY* s = src;
     PALETTEENTRY* d = m_pal.palPalEntry;
-    i32 i = 0x100;
-    do {
-        *d = *s++;
+    for (i32 i = 0x100; i != 0; --i) {
+        *d = *src++;
         d->peFlags = 0;
         d++;
-    } while (--i);
+    }
     if (DisplayUsesPalette() && !(flags & 1)) {
         Tune();
         m_systemTuned = true;
