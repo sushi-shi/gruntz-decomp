@@ -2391,7 +2391,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     Coord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
-    i32 iter = 0;
+    u32 iter = 0;
     CoordNode* node = *static_cast<CoordNode**>(pos);
     while (node != NULL && iter < 3) {
         CoordNode* cur = node;
@@ -2403,13 +2403,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         i32 x = coord->m_x;
         i32 y = coord->m_y;
         i32 tile = board->m_rowInts[y][x * 7];
-        i32 proceed = 1;
-        if (tile & 1) {
-            if (x != tx || y != ty) {
-                proceed = 0;
-            }
-        }
-        if (proceed == 0) {
+        if ((tile & 1) != 0 && (x != tx || y != ty)) {
             continue;
         }
         CPtrList list(10);
@@ -2478,7 +2472,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
                 box = CRect(0, 0, board->m_width, board->m_height);
                 if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
                     board->m_bounds = box;
@@ -2488,15 +2481,12 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 Coord* nt = (unit->CoordTail())->m_coord;
                 unit->m_entrancePx.m_x = (nt->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
                 unit->m_entrancePx.m_y = (nt->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
-                list.RemoveAll();
                 return 1;
             }
         }
         iter++;
-        list.RemoveAll();
     }
 
-    static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
     box = CRect(0, 0, board->m_width, board->m_height);
     if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
         board->m_bounds = box;
