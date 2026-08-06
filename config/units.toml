@@ -731,6 +731,36 @@ source = "src/Gruntz/BattlezMapConfig.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
+unit = "battlezunitstep"
+source = "src/Gruntz/BattlezUnitStep.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "battlezspecialanim"
+source = "src/Gruntz/BattlezSpecialAnim.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "battlezspawncheck"
+source = "src/Gruntz/BattlezSpawnCheck.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "battlezrepath"
+source = "src/Gruntz/BattlezRepath.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "battlezreserveplace"
+source = "src/Gruntz/BattlezReservePlace.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "battlezretarget"
+source = "src/Gruntz/BattlezRetarget.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
 flags = "cpp-rtti"

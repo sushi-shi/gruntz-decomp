@@ -208,6 +208,7 @@ SIZE(0x1e8);
 
 extern const float g_diffScale;
 extern i32 g_stepRun;
+extern i32 g_spawnCfg;
 extern i32 g_stepCol;
 extern i32 g_stepRow;
 extern i32 g_diffTier;
