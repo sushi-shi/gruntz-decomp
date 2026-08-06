@@ -1,11 +1,3 @@
-
-
-#define WWDDIRTYRECT_OOL_CTOR
-#define WWDGRIDNODE_OOL_CTOR
-
-#define CRESOLVENODE_OOL_CTOR
-#define ANIMWORKEROBJ_OOL_CTOR
-
 #include <rva.h>
 
 #include <Wwd/WwdObjMgr.h>
@@ -1302,16 +1294,4 @@ i32 CDDrawChildGroup::PruneOrphans() {
         }
     }
     return n;
-}
-
-RVA(0x0015b270, 0x11)
-WwdDirtyRect::WwdDirtyRect() {
-    m_rect.left = COORD_UNSET;
-    m_armed = -1;
-}
-
-RVA(0x0015b2a0, 0xb)
-WwdGridNode::WwdGridNode() {
-    m_bucket = NULL;
-    m_reserved08 = 0;
 }

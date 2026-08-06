@@ -31,12 +31,10 @@ struct WwdDirtyRect {
 };
 SIZE(0x24);
 
-#ifndef WWDDIRTYRECT_OOL_CTOR
 inline WwdDirtyRect::WwdDirtyRect() {
     m_rect.left = COORD_UNSET;
     m_armed = -1;
 }
-#endif
 
 class CResolveNode : public CLoadable {
 public:
@@ -90,7 +88,6 @@ public:
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
-#ifndef CRESOLVENODE_OOL_CTOR
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(field04, field08, owner) {
 
@@ -99,6 +96,5 @@ inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 fiel
     m_level = NULL;
     m_stateFlags = SPRITE_STATE_NONE;
 }
-#endif
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

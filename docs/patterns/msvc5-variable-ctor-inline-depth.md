@@ -30,27 +30,24 @@ source shape, decides where the chain becomes a call. Consequences:
   base obj and their RVA_COMPGEN pins dangle (labels lost, documented at the
   pin sites).
 
-Related: docs/tu-partition-brief.md (realization groups), the retired
-OOL_CTOR lever (banned by the no-guard ruling; it was a workaround for
-exactly this).
+Related: docs/tu-partition-brief.md (realization groups) and
+docs/patterns/inline-base-ctor-emission-wall.md. Per-TU visibility changes are
+banned: retail had uniform visibility, so changing it models the desired output
+rather than the source.
 
 ## Characterization (2026-08-02 probe)
 
-Ruled out: body-size mismatch (the flattened `??0CUserLogic@@QAE@XZ` body force-
-emitted by userlogicctoremit is byte-perfect at 100%), missing EH frame (our
+Ruled out: body-size mismatch (the historical standalone
+`??0CUserLogic@@QAE@XZ` body was byte-perfect at 100%), missing EH frame (our
 `SerialObjectFactory` carries the same fs:0 registration as retail), and header
 visibility (identical on both sides). What remains is the caller's accumulated
 per-site inline budget: cl5 decides call-vs-flatten from the surrounding
 intermediate code, so every OTHER divergence in the caller shifts the decision.
 
 **Consequence: this wall is a convergence phenomenon, not a source-shape defect.**
-The force-emit devices (UserLogicCtorEmit, UnknownFileIOCtor, GameWnd,
-WwdFactoryObject) dissolve not by restructuring them but by finishing their
-CALLERS - SerialObjectFactory (86%), BuildGameMenu (59%),
-CGruntzMgr::ChangeState (70%) - through the normal matching/permute campaign.
-Re-test each device (delete it, census the emission) whenever its caller's
-fuzzy% materially improves; ForceEmitCStateDtor already fell this way once
-??1CPlay/??_GCState landed in gruntzmgr.
+Artificial emission devices were removed in August 2026. Finish the real callers -
+SerialObjectFactory, BuildGameMenu, and CGruntzMgr::ChangeState - through the normal
+matching campaign, then census which inline COMDATs the compiler emits naturally.
 
 ## Sibling divergence: funclet helper vs inline dtor pair (CButeMgr::Save)
 

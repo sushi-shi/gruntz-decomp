@@ -146,7 +146,6 @@ struct AnimWorkerObj : public CLoadable {
 };
 SIZE(0x17c);
 
-#ifndef ANIMWORKEROBJ_OOL_CTOR
 inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CLoadable(id, stateFlags, owner) {
     m_notify = NULL;
@@ -157,6 +156,5 @@ inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFl
     m_targetId = 0;
     m_payloadSize = 0;
 }
-#endif
 
 #endif // GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H

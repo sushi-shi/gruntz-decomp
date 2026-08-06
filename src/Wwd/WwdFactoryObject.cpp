@@ -1,9 +1,3 @@
-
-
-#define WWDREGION_OOL_CTOR
-#define CGAMEOBJECT_OOL_CTOR
-#define ANIADVANCECURSOR_OOL_CTOR
-
 #include <rva.h>
 
 #include <Wwd/WwdFactoryObject.h>
@@ -48,15 +42,6 @@ i32 g_rng2State;
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
-RVA(0x0015b2b0, 0xe)
-WwdRegion::WwdRegion() {
-    m_object = NULL;
-}
-
-RVA_COMPGEN(0x0015b2c0, 0x3d, ??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
-
-RVA_COMPGEN(0x0015b300, 0x40, ??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
-
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
     i32 remaining = m_timeDelay;
@@ -80,21 +65,6 @@ i32 CGameObject::IsLoaded() {
         return 1;
     }
     return 0;
-}
-
-// @early-stop
-RVA(0x0015b390, 0x128)
-CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CResolveNode(owner, id, stateFlags) {
-    m_screenX = COORD_UNSET;
-    m_posCache = NULL;
-    m_animWorker = new AnimWorkerObj(owner, id, 0);
-    m_carrier = NULL;
-    m_hitWorker = NULL;
-    m_attackWorker = NULL;
-    m_collideWorker = NULL;
-    m_objectId = g_wwdObjIdCounter;
-    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
 
 // @early-stop
@@ -133,14 +103,6 @@ i32 CAniAdvanceCursor::IsLoaded() {
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
-RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(field04, field08, owner) {
-    m_boundObject = NULL;
-    m_animation = NULL;
-    m_element = NULL;
-}
-
 RVA(0x0015b760, 0x6)
 LoadableClassId CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;
@@ -858,19 +820,6 @@ void CWwdGameObjectA::ClampLast() {
     }
 }
 
-// Force-emit device, wall-blocked (docs/patterns/msvc5-variable-ctor-inline-depth.md):
-// no natural out-of-line reference to the emitted symbol(s) exists in this TU, so
-// removing this drops their labels. Dissolves when the inline-depth wall breaks.
-static void* volatile g_forceEmitSink;
-#pragma inline_depth(0)
-void ForceEmitCResolveNodeCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
-    g_forceEmitSink = new CResolveNode(owner, id, stateFlags);
-}
-#pragma inline_depth(0)
-void ForceEmitAnimWorkerObjCtor(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags) {
-    g_forceEmitSink = new AnimWorkerObj(owner, id, stateFlags);
-}
-#pragma inline_depth()
 DATA(0x0024c22c)
 char g_coinRolled;
 

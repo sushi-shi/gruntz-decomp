@@ -340,6 +340,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
 // pin dangles - an inliner-heuristic residue for the permute campaign, not a shape bug.
 RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
+RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
 RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
 RVA_COMPGEN(0x00013bb0, 0x4, ?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ)
 RVA_COMPGEN(0x00013bd0, 0x44, ??1CMovingLogic@@UAE@XZ)

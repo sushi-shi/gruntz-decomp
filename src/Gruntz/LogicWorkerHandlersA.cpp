@@ -1,5 +1,3 @@
-#define USERLOGIC_OOL_CTOR
-
 #include <rva.h>
 
 #include <Gruntz/AniCycle.h>

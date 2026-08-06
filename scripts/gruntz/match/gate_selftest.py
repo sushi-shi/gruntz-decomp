@@ -695,6 +695,51 @@ class TestBestEverRatchet(unittest.TestCase):
         self.assertAlmostEqual(row["best"], 78.5970, places=3)
         self.assertEqual(row["tries"], 1)  # a different body has its own try count
 
+    def test_a_unit_move_preserves_the_same_rva_best(self):
+        status.write_baseline({("synthetic", "?F@@QAEHXZ"): {
+            "best": 100.0, "cur": 100.0, "tries": 3, "fp": "aaaa",
+            "addr": 0x138D0,
+        }})
+        self.report.write_text(json.dumps({
+            "measures": {},
+            "units": [{"name": "natural", "measures": {}, "functions": [{
+                "name": "?F@@QAEHXZ", "fuzzy_match_percent": 91.0,
+            }]}],
+        }))
+        saved_fpr, saved_rvas = status.fingerprinter, status.func_rvas
+        status.fingerprinter = lambda: ((lambda u, f: "bbbb"), {}, set())
+        status.func_rvas = lambda: {("natural", "?F@@QAEHXZ"): 0x138D0}
+        try:
+            args = argparse.Namespace(report=str(self.report), accept_regressions=False,
+                                      keep_max=False, verbose=False)
+            with contextlib.redirect_stdout(io.StringIO()):
+                status.cmd_update(args)
+        finally:
+            status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
+        rows = status.load_baseline()
+        self.assertNotIn(("synthetic", "?F@@QAEHXZ"), rows)
+        self.assertAlmostEqual(rows[("natural", "?F@@QAEHXZ")]["best"], 100.0)
+
+    def test_an_absent_body_preserves_its_historical_max(self):
+        status.write_baseline({("synthetic", "?F@@QAEHXZ"): {
+            "best": 100.0, "cur": 100.0, "tries": 3, "fp": "aaaa",
+            "addr": 0x58CD0,
+        }})
+        self.report.write_text(json.dumps({"measures": {}, "units": []}))
+        saved_fpr, saved_rvas = status.fingerprinter, status.func_rvas
+        status.fingerprinter = lambda: ((lambda u, f: "bbbb"), {}, set())
+        status.func_rvas = lambda: {}
+        try:
+            args = argparse.Namespace(report=str(self.report), accept_regressions=False,
+                                      keep_max=False, verbose=False)
+            with contextlib.redirect_stdout(io.StringIO()):
+                status.cmd_update(args)
+        finally:
+            status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
+        row = status.load_baseline()[("synthetic", "?F@@QAEHXZ")]
+        self.assertAlmostEqual(row["best"], 100.0)
+        self.assertEqual(row["addr"], 0x58CD0)
+
     def test_an_unvouchable_rva_ratchets_rather_than_erodes(self):
         """A pre-rva baseline row (or one with no symbol_names entry) cannot be checked
         for identity. Fail LOUD (a false REGRESS a human reads), never silent erosion."""
@@ -851,6 +896,15 @@ class TestCleanlinessRatchet(unittest.TestCase):
         cleanliness.save_baseline([("reinterpret_casts", 7)])
         merged = dict(cleanliness.merge_baseline_downonly([("reinterpret_casts", 8)]))
         self.assertEqual(merged["reinterpret_casts"], 7)
+
+    def test_forced_comdat_emitters_are_a_down_only_metric(self):
+        code = cleanliness._strip(
+            "// ForceEmitComment and COMMENT_OOL_CTOR do not count\n"
+            "#define PLAYER_OOL_DTOR\n"
+            "void ForceEmitPlayerDtor() {}\n"
+        )
+        self.assertEqual(len(cleanliness._FORCED_COMDAT_EMITTER.findall(code)), 2)
+        self.assertIn("forced COMDAT emitters", cleanliness._RATCHET)
 
 
 

@@ -1,7 +1,3 @@
-
-
-#define CGAMEOBJECT_OOL_CTOR
-
 #include <rva.h>
 
 #include <Mfc.h>
@@ -33,6 +29,10 @@
 
 #include <stdio.h>
 #include <string.h>
+
+RVA_COMPGEN(0x0015b2c0, 0x3d, ??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
+RVA_COMPGEN(0x0015b300, 0x40, ??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
+RVA_COMPGEN(0x0015b730, 0x2b, ??0CAniAdvanceCursor@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)

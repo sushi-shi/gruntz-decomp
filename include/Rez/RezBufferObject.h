@@ -33,10 +33,8 @@ struct CRezBufferObject : public CObject {
 };
 SIZE_UNKNOWN();
 
-#ifndef CREZBUFFEROBJECT_OOL_DTOR
 inline CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {
         ::operator delete(m_pData);
     }
 }
-#endif

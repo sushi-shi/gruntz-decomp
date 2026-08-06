@@ -1,5 +1,3 @@
-#define WORLDSOUNDSET_OOL_DTOR
-
 #include <rva.h>
 
 #include <Gruntz/WorldSoundSet.h>
@@ -914,9 +912,4 @@ void CRandomAmbientSound::InitCycleTiming(
     g_randSeed = roll;
     m_phase = 1;
     m_countdownMs = playDurationMin + ((roll >> 0x10) & 0x7fff) % span;
-}
-
-RVA(0x00085ed0, 0x4a)
-CWorldSoundSet::~CWorldSoundSet() {
-    Deactivate();
 }

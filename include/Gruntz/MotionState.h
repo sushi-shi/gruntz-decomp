@@ -56,7 +56,6 @@ SIZE(0x108);
 
 inline CMotionState::~CMotionState() {}
 
-#ifndef MOTIONSTATE_OOL_CTOR
 inline CMotionState::CMotionState() {
     m_position.x = 0.0;
     m_position.y = 0.0;
@@ -86,7 +85,6 @@ inline CMotionState::CMotionState() {
     m_maxVelocity.y = g_movingLogicMax;
     m_maxVelocity.z = g_movingLogicMax;
 }
-#endif
 
 extern const double g_motionNegHalf;
 extern const double g_motionNegTwo;

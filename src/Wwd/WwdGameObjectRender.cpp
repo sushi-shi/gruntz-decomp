@@ -1,7 +1,3 @@
-
-
-#define CGAMEOBJECT_OOL_CTOR
-
 #include <rva.h>
 
 #include <Mfc.h>

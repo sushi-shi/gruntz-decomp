@@ -149,7 +149,6 @@ public:
 };
 SIZE_UNKNOWN();
 
-#ifndef CGAMEOBJECT_OOL_CTOR
 inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     : CResolveNode(owner, id, stateFlags) {
     m_screenX = COORD_UNSET;
@@ -162,7 +161,6 @@ inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     m_objectId = g_wwdObjIdCounter;
     g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
 }
-#endif
 
 class CWwdGameObjectA : public CGameObject {
 public:

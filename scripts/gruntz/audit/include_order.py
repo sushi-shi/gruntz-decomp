@@ -10,7 +10,7 @@ owns what is left - DUPLICATES, SELF-SUFFICIENCY and ORDER - and gates them.
 THE ORDER. Groups are separated by one blank line; within a group includes sort
 case-insensitively, except group 2 which has an explicit rank (below).
 
-  0  file-local configuration #defines   e.g. `#define CGAMEOBJECT_OOL_CTOR`
+  0  file-local configuration #defines   e.g. `#define DIRECTINPUT_VERSION 0x0500`
   1  <rva.h>                             the label-macro header, always first
   2  the TU's OWN header                 X.cpp -> <Dir/X.h>   (.cpp only)
   3  platform preludes                   <Mfc.h> <MfcNoInline.h> <MfcWin.h>

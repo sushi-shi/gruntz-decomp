@@ -211,11 +211,6 @@ source = "src/Gruntz/UserLogic.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "userlogicctoremit"
-source = "src/Gruntz/UserLogicCtorEmit.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "leveltilevalidation"
 source = "src/Gruntz/LevelTileValidation.cpp"
 flags = "cpp-rtti"

@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 313  functions: 4494
+# units: 312  functions: 4491
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -83,7 +83,7 @@ droppedobject	29
 engstrrendertext	1
 exittrigger	5
 eyecandy	5
-fader	63
+fader	64
 fadermgr	12
 feccrypt	10
 fileimage	19
@@ -101,7 +101,7 @@ gameappcomdats	3
 gameassetnamespaces	1
 gameiconflasheffect	1
 gameinfostring	4
-gamelevel	76
+gamelevel	75
 gamelevelmove	14
 gamemode	4
 gameobjectfactory	1
@@ -140,13 +140,13 @@ grunttoytimesprite	5
 grunttubeanim	1
 gruntvoice	22
 gruntwingztimesprite	5
-gruntzapp	11
+gruntzapp	13
 gruntzcmdmgr	46
 gruntzmapmgr	3
 gruntzmgr	175
 gruntzmgrcmd	1
 gruntzsoundz	36
-gruntzwnd	18
+gruntzwnd	20
 guardpoint	5
 hash	10
 heapdiag	8
@@ -175,7 +175,7 @@ keyedlist	3
 kitchenslime	9
 latencylist	5
 leafcueplay	1
-levelplane	24
+levelplane	27
 levelpreview	10
 levelrezpath	1
 leveltilevalidation	3
@@ -213,7 +213,7 @@ netsessionnode	3
 packetpool	1
 palettebmp	2
 pathhazard	16
-play	125
+play	126
 playercommandstep	1
 playplanescan	1
 projactcache	1
@@ -221,7 +221,7 @@ projectile	22
 queuedrainhost	1
 raincloud	5
 registryhelper	11
-rezbufferobject	3
+rezbufferobject	2
 rezcoll	13
 rezfile	36
 rezlist	5
@@ -236,18 +236,18 @@ sbi_image	5
 sbi_imageset	6
 sbi_imagesetani	5
 sbi_menuitem	11
-sbi_rectonly	99
+sbi_rectonly	98
 sbi_rectonlybase	3
 sbi_sidetab_build	1
 sbi_statztabarrow_eh	1
 sbi_statztabgruntbar	6
-sbi_tabzdialog_eh	1
+sbi_tabzdialog_eh	2
 sbi_warlordhead	7
 sbi_wellgoo	7
 scattersamples	2
 secretteleportertrigger	17
 serializesyncmarker	1
-serialobjectfactory	63
+serialobjectfactory	64
 sfselectdevice	1
 shadetablecache	26
 simpleanimation	8
@@ -267,7 +267,7 @@ statedispatch	5
 statemgrbz	7
 statereleaseresources	1
 statichazard	9
-statusbaritem	4
+statusbaritem	3
 statusbarmgr	4
 statusbarspriteacts	9
 statusbartabbuilders	17
@@ -293,7 +293,6 @@ typekeycoll	39
 ufo	7
 uncompr	1
 userlogic	18
-userlogicctoremit	2
 videoconfig	19
 wapuncompress	1
 warlord	19
@@ -302,16 +301,16 @@ waypoint	5
 winapicdrom	4
 winapimodule	1
 winmain	1
-worldsoundset	37
+worldsoundset	36
 wormhole	29
 wormholeacts	2
-wwdfactoryobject	58
+wwdfactoryobject	53
 wwdfile	3
 wwdgameobject	45
 wwdgameobjectrender	17
 wwdgeometryapply	1
 wwdgrid	15
-wwdobjmgr	54
+wwdobjmgr	52
 wwdspatialmgr	15
 zdarrayderived	3
 zutil	2

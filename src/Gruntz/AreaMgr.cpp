@@ -30,12 +30,6 @@ CAreaMgr::CAreaMgr() {
 inline CSpawnList::~CSpawnList() {
     DeleteAllEntries();
 }
-static CSpawnList* volatile g_forceDtorSink;
-#pragma inline_depth(0)
-void ForceEmitSpawnListDtor() {
-    g_forceDtorSink->~CSpawnList();
-}
-#pragma inline_depth()
 
 RVA(0x00099c20, 0x5f)
 CAreaMgr::~CAreaMgr() {

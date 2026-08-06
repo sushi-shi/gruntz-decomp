@@ -6683,6 +6683,8 @@ void CPlay::ReleaseResources() {
     CState::ReleaseResources();
 }
 
+RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
+
 RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->CheckSavedMode();

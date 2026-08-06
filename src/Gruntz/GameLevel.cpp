@@ -50,7 +50,6 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(i
     m_rectC.h = 576;
 }
 
-RVA_COMPGEN(0x0015d170, 0x73, ?ResetParamBlock@CGameLevel@@QAEXXZ)
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
@@ -1922,12 +1921,3 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     PROBE_TILE(this, x1, y, rf);
     return rf != TILEKIND_SOFT;
 }
-
-// Retail's standalone COMDAT of the inline ResetParamBlock has no caller: the
-// five real uses are all folded.  Force the out-of-line copy out.
-static CGameLevel* volatile g_resetParamBlockSink;
-#pragma inline_depth(0)
-void ForceEmitResetParamBlock() {
-    g_resetParamBlockSink->ResetParamBlock();
-}
-#pragma inline_depth()

@@ -232,6 +232,7 @@ i32 CFaderMesh::GetFrameCount() {
 }
 
 RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)
 RVA(0x0017f500, 0x23)
 void __stdcall ZeroRecords(void* dst, int count) {
     memset(dst, 0, count * 0x28);

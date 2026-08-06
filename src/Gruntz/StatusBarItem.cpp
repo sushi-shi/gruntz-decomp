@@ -1,5 +1,3 @@
-#define STATUSBARITEM_OOL_CTOR
-
 #include <rva.h>
 
 #include <Gruntz/StatusBarItem.h>
@@ -9,14 +7,6 @@
 RVA(0x001005b0, 0x8)
 void CStatusBarItem::SetSubtype() {
     m_redrawFrames = 2;
-}
-
-RVA(0x001005d0, 0x17)
-CStatusBarItem::CStatusBarItem() {
-    m_enabled = 0;
-    m_kind = SBI_KIND_BASE;
-    m_host = NULL;
-    m_redrawFrames = 0;
 }
 
 RVA(0x00100600, 0x8)

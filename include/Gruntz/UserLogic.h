@@ -91,7 +91,6 @@ public:
 };
 SIZE(0x34);
 
-#ifndef USERLOGIC_OOL_CTOR
 inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_logicObject = obj;
     m_object = static_cast<CWwdGameObjectA*>(obj);
@@ -109,7 +108,6 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_gatedActKey = 0x3e9;
     m_reserved2c = 2;
 }
-#endif
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {

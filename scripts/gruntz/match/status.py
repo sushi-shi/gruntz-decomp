@@ -24,6 +24,8 @@ Two ideas:
     (identity), NOT by source  it. When a row's rva MOVES, the name now labels a different
                                body, so its peak starts fresh (see rebound()). The old
                                body keeps its peak under whatever name now sits at that rva.
+                               If no current source claim emits it, its historical row is
+                               retained and reported LOST rather than erased by `update`.
 
   FIXED 2026-07-17 (ML1): `update` used to reset best<-current whenever a function's
   source FINGERPRINT changed ("the old peak belonged to different source"), gated behind
@@ -455,12 +457,34 @@ def cmd_update(args) -> int:
     fp, _, stale = fingerprinter()
     rvas = func_rvas()
 
-    raised = touched = added = rebounds = 0
+    # Unit ownership is not identity. A reconstruction can move an annotation from
+    # a guessed/synthetic TU to the real object that naturally emits the same retail
+    # body. Carry its high-water by stable RVA before falling back to a brand-new row.
+    base_by_addr: dict[int, tuple[tuple[str, str], dict]] = {}
+    duplicate_addrs: set[int] = set()
+    for old_key, old in base_funcs.items():
+        addr = old.get("addr")
+        if addr is None:
+            continue
+        if addr in base_by_addr:
+            duplicate_addrs.add(addr)
+        else:
+            base_by_addr[addr] = (old_key, old)
+    for addr in duplicate_addrs:
+        base_by_addr.pop(addr, None)
+
+    raised = touched = added = rebounds = moved = preserved_absent = 0
+    migrated_old_keys: set[tuple[str, str]] = set()
     new_funcs: dict[tuple[str, str], dict] = {}
     for key, pct in cur.items():
         cur_fp = fp(*key)
         prev = base_funcs.get(key)
         cur_addr = rvas.get(key)
+        if prev is None and cur_addr is not None and cur_addr in base_by_addr:
+            old_key, prev = base_by_addr[cur_addr]
+            if old_key != key:
+                migrated_old_keys.add(old_key)
+                moved += 1
         if prev is None:
             new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp}  # 1st try
             added += 1
@@ -493,6 +517,23 @@ def cmd_update(args) -> int:
     for key, f in new_funcs.items():  # stamp the stable RVA (for rename-vs-loss in check)
         f["addr"] = rvas.get(key)
 
+    # A missing current claim is still the same historical retail body.  In
+    # particular, removing an artificial COMDAT caller can correctly leave an
+    # inline body with no natural source-side emitter in this build.  Keep its
+    # high-water row so a later natural emitter resumes from the same MAX rather
+    # than silently forgetting proven matching work.  Do not retain a stale row
+    # when its RVA is currently claimed: that is a rename/move ambiguity handled
+    # above (or deliberately left fresh when the old RVA was non-unique).
+    current_addrs = {addr for addr in rvas.values() if addr is not None}
+    for key, old in base_funcs.items():
+        if key in cur or key in migrated_old_keys:
+            continue
+        addr = old.get("addr")
+        if addr is None or addr in current_addrs:
+            continue
+        new_funcs[key] = dict(old)
+        preserved_absent += 1
+
     if args.accept_regressions:  # bless ONLY regressed functions as their new floor
         for f in new_funcs.values():
             if f["cur"] < f["best"] - EPS:
@@ -504,7 +545,8 @@ def cmd_update(args) -> int:
               f"(not refreshed). Run `gruntz build` / `gruntz.match.fingerprints` first for "
               f"per-function accuracy.", file=sys.stderr)
 
-    lost = sorted(k for k in base_funcs if k not in cur)
+    lost = sorted(k for k in base_funcs
+                  if k not in cur and k not in migrated_old_keys and k not in new_funcs)
     write_baseline(new_funcs)
     try:  # a redirected BASELINE (tests) need not live under REPO
         shown = BASELINE.relative_to(REPO)
@@ -513,7 +555,8 @@ def cmd_update(args) -> int:
     print(f"baseline written: {shown}")
     print(f"  {len(new_funcs)} functions across {len({u for (u, _) in new_funcs})} units")
     print(f"  raised best: {raised}  tried(touched): {touched}  new: {added}  "
-          f"rebound(rva moved, best reset): {rebounds}  dropped: {len(lost)}")
+          f"moved(same rva): {moved}  rebound(rva moved, best reset): {rebounds}  "
+          f"preserved absent: {preserved_absent}  dropped: {len(lost)}")
     if lost and args.verbose:
         for u, fn in lost:
             print(f"    dropped {u}/{fn}")

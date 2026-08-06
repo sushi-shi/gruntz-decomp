@@ -1,6 +1,3 @@
-#define MOTIONSTATE_OOL_CTOR
-#define USERLOGIC_OOL_CTOR
-
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>

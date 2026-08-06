@@ -37,20 +37,14 @@ struct WwdRegion : WwdGridNode {
 };
 SIZE(0x1c);
 
-// Per-TU guards select inline versus out-of-line constructor emission; see
-// docs/patterns/ob1-inline-budget-divergence.md.
-#ifndef WWDGRIDNODE_OOL_CTOR
 inline WwdGridNode::WwdGridNode() {
     m_bucket = NULL;
     m_reserved08 = 0;
 }
-#endif
 
-#ifndef WWDREGION_OOL_CTOR
 inline WwdRegion::WwdRegion() {
     m_object = NULL;
 }
-#endif
 
 class CWwdGridIter : public CObject {
 public:

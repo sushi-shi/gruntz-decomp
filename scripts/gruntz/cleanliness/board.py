@@ -239,6 +239,12 @@ _NUMERIC_CAST = re.compile(
     r"(?<![\w>)])\((?:i8|i16|i32|i64|u8|u16|u32|u64|float|double|char|short|int|long|unsigned)\)")
 _REINTERPRET_CAST = re.compile(r"\breinterpret_cast\s*<")
 
+# Artificial COMDAT emitters make the compiler materialize an otherwise-inline
+# constructor/destructor solely so the matching pipeline can label it. They are
+# reconstruction scaffolding, not original source structure: current emission must
+# come from a real caller, and a retail-only copy remains an unmatched inventory row.
+_FORCED_COMDAT_EMITTER = re.compile(r"\bForceEmit\w*\b|\b\w+_OOL_(?:CTOR|DTOR)\b")
+
 
 # NOT A METRIC, deliberately - do not add `reinterpret_cast<char*>(x) + N` as a
 # ratcheted row. It looks like the banned offset-cast, and it was added here once on
@@ -366,6 +372,7 @@ METRICS = (
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
     # --- metric-evasion / placeholder hacks (2026-07-14 de-hack campaign; MAX-fuzzy gate) ---
     ("offset-cast macros", _count_offset_macro_casts, False),
+    ("forced COMDAT emitters", _FORCED_COMDAT_EMITTER, False),
     ("cpp extern decls", _CPP_EXTERN, True),
     ("cpp external prototypes", _count_cpp_external_prototypes, True),
 )
@@ -457,6 +464,7 @@ _RATCHET = _VIEW_METRICS | _SEMANTIC_LABEL_SET | {
     "C-style casts",
     "reinterpret_casts",
     "unexplained casts",
+    "forced COMDAT emitters",
     "cpp extern decls",
     "cpp external prototypes",
     # A newly reconstructed body must NOT arrive with `i32 a3`-style parameters. The meaning

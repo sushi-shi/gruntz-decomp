@@ -1,5 +1,3 @@
-#define CREZBUFFEROBJECT_OOL_DTOR
-
 #include <rva.h>
 
 #include <Rez/RezBufferObject.h>
@@ -82,12 +80,5 @@ void CRezBufferObject::Serialize(CArchive& ar) {
 }
 RVA(0x0017f300, 0x3)
 RezElem40::RezElem40() {}
-
-RVA(0x0017f330, 0x51)
-CRezBufferObject::~CRezBufferObject() {
-    if (m_pData) {
-        ::operator delete(m_pData);
-    }
-}
 
 // @early-stop

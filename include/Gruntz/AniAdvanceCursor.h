@@ -66,13 +66,11 @@ public:
 };
 SIZE_UNKNOWN();
 
-#ifndef ANIADVANCECURSOR_OOL_CTOR
 inline CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CLoadable(owner, field04, field08) {
     m_boundObject = NULL;
     m_animation = NULL;
     m_element = NULL;
 }
-#endif
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H

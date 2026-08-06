@@ -16,18 +16,19 @@ objdiff already emits a fuzzy% per function in `build/objdiff/report.json`
 **best-ever** fuzzy% per function in `config/match_baseline.tsv` and reports any
 function whose freshly-built fuzzy% sits below its recorded best.
 
-Two ideas, a best-ever high-water mark gated by a source fingerprint:
+Two ideas, a best-ever high-water mark keyed by the retail body:
 
 - **Keep the max, not the last value.** `best_pct` only ever rises on `update`;
   it is never silently lowered. So a drop caused by something *unrelated to the
   current edit* — a shared header, a flag tweak, a target-side delink change —
   stays visible until a human looks at it.
-- **Gate the max by a source fingerprint.** Each function carries `src_hash`. On
-  `update`, if a function's fingerprint changed, it resets `best ← current` (the
-  old peak belonged to *different* source, so it isn't a real regression); if
-  unchanged, `best ← max(best, current)`. Deliberately rewriting a function
-  clears its stale peak; everything you did *not* touch keeps guarding its
-  high-water mark.
+- **Identify the body by RVA, not by source text or TU.** Editing a function can
+  never lower its high-water mark. If an annotation moves to the real TU while
+  retaining the same retail RVA, `update` carries its `best_pct` and `tries` to
+  the new row. If the same name moves to a different RVA, it now denotes a
+  different body and starts a new history. A retail body with no current source
+  claim remains in the ledger and is reported `LOST`; removing an artificial
+  emitter must not erase its historical MAX.
 
 ### Per-function fingerprints (clangd)
 
@@ -54,12 +55,11 @@ a **fallback-tagged** whole-`.cpp` hash (`cpp:<sha>`) for it — coarser but alw
 available (e.g. in a fresh worktree with no clangd compile DB).
 
 The tag matters: a fallback fingerprint is *unknown*, not a real source change, so
-`check`/`update` only treat a fingerprint difference as an edit when **both** sides
-are real (non-fallback). That's what keeps a stale/absent cache from silently
-re-labelling every regression as TOUCHED and passing the gate. When a whole unit's
-cache is stale/absent, `check` still gates each function against `best` and prints a
-loud `DEGRADED` warning (to stderr and the summary) naming the units to refresh —
-the gate degrades *visibly*, never silently.
+`check`/`update` only use a fingerprint difference to classify a row as edited and
+increment `tries` when **both** sides are real (non-fallback). Fingerprints never
+reset `best_pct`. When a whole unit's cache is stale/absent, `check` still compares
+each body against `best` and prints a loud `DEGRADED` warning (to stderr and the
+summary) naming the units to refresh — the check degrades *visibly*, never silently.
 
 ## The baseline file
 
@@ -76,7 +76,7 @@ adler32        _adler32  100.0000  100.0000  1  7d212c481a3f
 Per function it carries three numbers, each answering a different question:
 
 - **`best_pct`** — best-ever (max) fuzzy%. The **regression gate**: a working-tree
-  build below this (with `src_hash` unchanged) is a regression. May sit at 100%
+  build below this is a regression regardless of source edits. May sit at 100%
   even while the function currently scores lower.
 - **`cur_pct`** — fuzzy% at *this commit*. Diff two commits' baselines to see the
   actual moves (a function `10%→40%`, a unit `5→10` functions) while `best_pct`

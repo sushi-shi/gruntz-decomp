@@ -17,7 +17,7 @@ except group 3, which carries an explicit dependency rank.
 
 | # | group | contents |
 |---|-------|----------|
-| 0 | config `#define`s | `#define CGAMEOBJECT_OOL_CTOR`, `#define DIRECTINPUT_VERSION 0x0500` |
+| 0 | config `#define`s | `#define DIRECTINPUT_VERSION 0x0500` |
 | 1 | `<rva.h>` | the label-macro header, always first |
 | 2 | the TU's own header | `X.cpp` -> `<Dir/X.h>` (`.cpp` only) |
 | 3 | platform preludes | `<Mfc.h>` `<MfcNoInline.h>` `<MfcWin.h>` `<Win32.h>` |

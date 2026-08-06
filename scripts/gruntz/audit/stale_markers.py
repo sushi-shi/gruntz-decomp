@@ -40,8 +40,7 @@ MARKER = re.compile(r"^\s*//\s*@early-stop\b")
 # scalar-deleting dtor, a vbase helper) that may merely sit between the marker and its
 # real owner. Matching it made the marker on zBitVec::operator= resolve to the adjacent
 # ??_GzBitVec dtor. A directly marked RVA_COMPGEN is accepted only as a fallback when no
-# plain RVA follows; UserLogicCtorEmit deliberately binds an emitted inline constructor
-# that way.
+# plain RVA follows; a directly marked emitted inline constructor can use that form.
 RVA = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)")
 RVA_COMPGEN = re.compile(r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)")
 

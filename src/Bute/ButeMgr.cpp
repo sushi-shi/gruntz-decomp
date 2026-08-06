@@ -2138,12 +2138,3 @@ CButeValue* CButeValue::SetRange(ButeType type, const ButeRefSmall* src) {
     this->pValue = new ButeRefSmall(*src);
     return this;
 }
-
-// Retail reaches CopyValue's out-of-line COMDAT from CButeMgr::SetPoint's third
-// path; cl folds it at every site here, so force the standalone copy out.
-static CButeValue* volatile g_copyValueSink;
-#pragma inline_depth(0)
-void ForceEmitCButeValueCopyValue() {
-    g_copyValueSink->CopyValue(g_copyValueSink);
-}
-#pragma inline_depth()

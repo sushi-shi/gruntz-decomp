@@ -4,11 +4,6 @@
 
 #include <Wap32/Wap32.h>
 
-// @identity-TODO ?1CGameWnd - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (10 fns) came from the static library. It belongs to another compiland.
-RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
-
 // @identity-TODO OnKeyUp@CGameWnd - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (10 fns) came from the static library. It belongs to another compiland.
@@ -56,7 +51,3 @@ i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
 i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
-// @identity-TODO ?_GCGameWnd - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (10 fns) came from the static library. It belongs to another compiland.
-RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)

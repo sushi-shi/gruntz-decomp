@@ -72,13 +72,6 @@
 DATA(0x00244c54)
 i32 g_curPlayer = 0;
 
-static CStatusBarMgr* volatile g_forceStatusBarMgrDtor;
-#pragma inline_depth(0)
-void ForceEmitStatusBarMgrDtor() {
-    g_forceStatusBarMgrDtor->~CStatusBarMgr();
-}
-#pragma inline_depth()
-
 RVA(0x000c86d0, 0x11)
 CSbiHlRow::CSbiHlRow() {
 
@@ -87,10 +80,6 @@ CSbiHlRow::CSbiHlRow() {
     m_lastHi = 0;
     m_intervalHi = 0;
 }
-
-// @early-stop
-
-RVA_COMPGEN(0x000c8980, 0x64, ??1CStatusBarMgr@@QAE@XZ)
 
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
