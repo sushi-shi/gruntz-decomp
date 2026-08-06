@@ -23,8 +23,9 @@ mod gif;
 mod midi;
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::ExitCode;
+use std::process::{Command, ExitCode, Stdio};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use gruntz_codec::{ani, bmp, pal, pcx, pid, rid, xmi};
@@ -171,6 +172,10 @@ enum Cmd {
         /// Write a standard MIDI file using the original 120 Hz timing.
         #[arg(long)]
         midi: Option<PathBuf>,
+        /// Synthesize an mpv-playable WAV preview using TiMidity's configured
+        /// instrument bank. This is not the original Gruntz SoundFont.
+        #[arg(long)]
+        wav: Option<PathBuf>,
         /// Zero-based sequence index (retail Gruntz resources contain one).
         #[arg(long, default_value_t = 0)]
         sequence: usize,
@@ -469,6 +474,7 @@ fn main() -> ExitCode {
         Cmd::Xmi {
             path,
             midi,
+            wav,
             sequence,
         } => {
             for (name, bytes) in &archives {
@@ -476,10 +482,23 @@ fn main() -> ExitCode {
                 let Some(resource) = find_resource(&rez, path) else {
                     continue;
                 };
-                return match inspect_xmi(&rez, &resource, midi.as_deref(), *sequence) {
+                return match inspect_xmi(
+                    &rez,
+                    &resource,
+                    midi.as_deref(),
+                    wav.as_deref(),
+                    *sequence,
+                ) {
                     Ok(()) => {
                         if let Some(out) = midi {
                             eprintln!("[xmi] {path} from {} -> {}", name.display(), out.display());
+                        }
+                        if let Some(out) = wav {
+                            eprintln!(
+                                "[xmi] {path} preview from {} -> {}",
+                                name.display(),
+                                out.display()
+                            );
                         }
                         ExitCode::SUCCESS
                     }
@@ -543,6 +562,7 @@ fn inspect_xmi(
     rez: &Rez,
     resource: &Resource,
     midi_path: Option<&Path>,
+    wav_path: Option<&Path>,
     sequence_index: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if resource.kind.to_string() != "XMI" {
@@ -589,7 +609,7 @@ fn inspect_xmi(
             sysex
         );
     }
-    if let Some(out) = midi_path {
+    if midi_path.is_some() || wav_path.is_some() {
         let sequence = sequences.get(sequence_index).copied().ok_or_else(|| {
             std::io::Error::new(
                 std::io::ErrorKind::InvalidInput,
@@ -599,10 +619,44 @@ fn inspect_xmi(
                 ),
             )
         })?;
-        if let Some(parent) = out.parent() {
-            std::fs::create_dir_all(parent)?;
+        let rendered = midi::render(sequence)?;
+        if let Some(out) = midi_path {
+            if let Some(parent) = out.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(out, &rendered)?;
         }
-        std::fs::write(out, midi::render(sequence)?)?;
+        if let Some(out) = wav_path {
+            synthesize_wav(&rendered, out)?;
+        }
+    }
+    Ok(())
+}
+
+fn synthesize_wav(midi: &[u8], out: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(parent) = out.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let mut child = Command::new("timidity")
+        .args(["-Ow", "-o"])
+        .arg(out)
+        .arg("-")
+        .stdin(Stdio::piped())
+        .spawn()
+        .map_err(|error| {
+            std::io::Error::new(
+                error.kind(),
+                format!("could not start timidity for WAV preview: {error}"),
+            )
+        })?;
+    child
+        .stdin
+        .take()
+        .ok_or_else(|| std::io::Error::other("timidity stdin was not piped"))?
+        .write_all(midi)?;
+    let status = child.wait()?;
+    if !status.success() {
+        return Err(std::io::Error::other(format!("timidity failed with status {status}")).into());
     }
     Ok(())
 }

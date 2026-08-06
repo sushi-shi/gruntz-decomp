@@ -65,11 +65,13 @@ REZ=/path/to/GRUNTDEM.REZ
 
 # inspect one Miles XMI or convert the full music bank to standard MIDI
 ./target/release/gruntz-oracle --rez "$REZ" xmi 'AREA1\MIDIZ\INTRO0' \
-  --midi intro0.mid
+  --midi intro0.mid --wav intro0.wav
 ./target/release/gruntz-oracle --rez "$REZ" xmi-all ../build/music-midi
 
-# MIDI is note/event data; play it through a synthesizer, not mpv/FFmpeg
+# MIDI is note/event data; synthesize it before handing it to mpv/FFmpeg
 timidity ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
+timidity -Ow -o ambient0.wav ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
+mpv ambient0.wav
 fluidsynth -i /path/to/Gruntz.SF2 \
   ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
 
@@ -96,8 +98,11 @@ any runtime colour, while `--tint source` preserves the embedded green table.
 resource. Its optional MIDI output expands XMIDI note durations into note-off
 events and writes broadly compatible 60 PPQN / 120 BPM timing, preserving
 Miles' 120 ticks/second clock exactly. `xmi-all` converts every music resource
-while preserving its REZ path. Together these commands turn a disagreement
-into something that can be read, viewed, or played rather than a percentage.
+while preserving its REZ path. `xmi --wav` invokes the pinned TiMidity
+synthesizer to make an ordinary PCM preview that mpv can play; its configured
+instrument bank is useful for inspection but is not the original Gruntz
+SoundFont. Together these commands turn a disagreement into something that can
+be read, viewed, or played rather than a percentage.
 
 ## Results
 

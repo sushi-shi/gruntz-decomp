@@ -266,6 +266,7 @@
         file
         xxd
         jq
+        timidity        # synthesize exported XMI/MIDI previews to WAV
         gdb             # dynamic this/ecx tracing of the game under wine (winedbg --gdb)
       ]);
 
