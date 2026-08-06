@@ -484,14 +484,37 @@ def unclaimed_runs(pe, unclaimed, extents):
             cur = {"start": rva, "end": rva + max((e.width or 4) for e in by_rva[rva]),
                    "events": list(by_rva[rva])}
             runs.append(cur)
+    from gruntz.core.manifest import units as _units
+    from gruntz.core.symbols import owner as _owner
+    from gruntz.core import get_context as _gc
+    db = _gc().symbols
+    try:
+        vendorish = {u["unit"] for u in _units() if u["source"].startswith("vendor/")}
+    except Exception:
+        vendorish = set()
     for r in runs:
         k = bisect.bisect_right(starts, r["start"]) - 1
         r["prev_sym"] = extents[k][2].name if k >= 0 else ""
         o = pe.off(r["start"])
         blob = pe.data[o:o + min(24, r["end"] - r["start"])] if o else b""
         printable = blob and all(32 <= b < 127 or b in (0, 9, 10, 13) for b in blob)
-        imm_only = all(e.mode in ("imm", "lea") for e in r["events"])
-        r["kind"] = "string-pool" if (printable and imm_only) else "data"
+        no_write = all("w" not in e.rw for e in r["events"])
+        aus = {(_owner(e.insn_rva, db.fstarts, db.fsize)) for e in r["events"]}
+        units_of = {db.names.get(f, ("", None))[1] if f else None for f in aus}
+        libs = units_of and all(u in vendorish or u == "ghidra" for u in units_of if u)
+        gap_only = units_of == {None}
+        k2 = bisect.bisect_left(starts, r["start"])
+        next_lo = extents[k2][0] if k2 < len(extents) else None
+        alias = (all(e.mode in ("lea", "indexed") for e in r["events"])
+                 and next_lo is not None and next_lo - r["end"] <= 4)
+        if alias:
+            r["kind"] = "alias"            # base-k spelling of the NEXT symbol
+        elif printable and no_write:
+            r["kind"] = "string-pool"      # pooled literals, incl. inline-copied
+        elif libs and not gap_only and units_of != {None}:
+            r["kind"] = "library"          # CRT/vendor-owned data: policy-excluded
+        else:
+            r["kind"] = "data"
     return runs
 
 
@@ -641,7 +664,8 @@ def main(argv=None):
           ", ".join(f"{k}={v}" for k, v in sorted(fc.items())))
     rk = Counter(r["kind"] for r in runs)
     print(f"[data-access] unclaimed runs: {len(runs)} "
-          f"(data={rk['data']}, string-pool={rk['string-pool']}) -> {args.output}")
+          f"(data={rk['data']}, library={rk['library']}, "
+          f"string-pool={rk['string-pool']}, alias={rk['alias']}) -> {args.output}")
 
     if args.unclaimed:
         for r in sorted((r for r in runs if r["kind"] == "data"),
