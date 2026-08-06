@@ -157,7 +157,7 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
-    char* buf = static_cast<char*>(operator new(0x100));
+    char* buf = new char[0x100];
     i32 count = 0;
     if (buf == NULL) {
         return count;
@@ -193,14 +193,14 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
             ++count;
         }
     }
-    operator delete(buf);
+    delete[] buf;
     return count;
 }
 
 RVA(0x00155160, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char* prefix) {
     CSymTab* dir = static_cast<CSymTab*>(tree);
-    char* buf = static_cast<char*>(operator new(0x100));
+    char* buf = new char[0x100];
     i32 count = 0;
     CSymTab* e = static_cast<CSymTab*>(dir->FirstSub());
     while (e != NULL) {
@@ -211,7 +211,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
         }
         i32 r = LoadNamespace(e, buf, prefix);
         if (r < 0) {
-            operator delete(buf);
+            delete[] buf;
             return -1;
         }
         count += r;
@@ -223,7 +223,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
         if (out != NULL) {
 
             if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromSymTab(dir) == -1) {
-                operator delete(buf);
+                delete[] buf;
                 return -1;
             }
             if (static_cast<CDDrawWorker*>(out)->m_items.GetSize() > 0) {
@@ -231,7 +231,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
             }
         }
     }
-    operator delete(buf);
+    delete[] buf;
     return count;
 }
 

@@ -39,11 +39,11 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         }
     }
     if (m_tileGrid != NULL) {
-        ::operator delete(m_tileGrid);
+        delete[] m_tileGrid;
         m_tileGrid = NULL;
     }
     if (m_colOffsets != NULL) {
-        ::operator delete(m_colOffsets);
+        delete[] m_colOffsets;
         m_colOffsets = NULL;
     }
 }

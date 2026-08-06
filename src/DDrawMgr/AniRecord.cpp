@@ -30,7 +30,7 @@ RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
     CAniRecordView* r = this;
     if (r->m_cues != NULL) {
-        ::operator delete(r->m_cues);
+        delete[] r->m_cues;
     }
     r->m_loopMode = WWDLOOP_INVALID;
     r->m_cueCount = 0;
@@ -110,7 +110,7 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
     }
     m_cueCount = tokens.GetSize();
     if (m_cueCount > 0) {
-        m_cues = static_cast<LeafCue**>(operator new(static_cast<u32>((m_cueCount * 4))));
+        m_cues = new LeafCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
 
             CString t = tokens.GetAt(i);

@@ -181,10 +181,10 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_entry.m_index = m_nextIndex;
     m_entry.m_nameLen = static_cast<u16>(base.GetLength());
 
-    char* enc = static_cast<char*>(operator new(base.GetLength() + 1));
+    char* enc = new char[base.GetLength() + 1];
     FecEncode(base, enc);
     memcpy(m_entry.m_name, enc, base.GetLength());
-    operator delete(enc);
+    delete[] enc;
 
     if (base.GetLength() < FEC_ENTRY_NAME_CAPACITY) {
 
@@ -205,12 +205,12 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_stream.Seek(0, CFile::end);
     m_stream.Write(&m_entry, sizeof(m_entry));
 
-    char* pad = static_cast<char*>(operator new(m_entry.m_scramble - FEC_SCRAMBLE_BASE));
+    char* pad = new char[m_entry.m_scramble - FEC_SCRAMBLE_BASE];
     for (i32 i = 0; i < m_entry.m_scramble - FEC_SCRAMBLE_BASE; i++) {
         pad[i] = static_cast<char>((rand() % FEC_RANDOM_BYTE_MODULUS));
     }
     m_stream.Write(pad, m_entry.m_scramble - FEC_SCRAMBLE_BASE);
-    operator delete(pad);
+    delete[] pad;
 
     memset(m_copyBuf, 0, sizeof(m_copyBuf));
     u32 copied = 0;

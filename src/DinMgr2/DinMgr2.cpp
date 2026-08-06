@@ -3,6 +3,7 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <EmptyString.h>
 #include <Gruntz/FixedPtrArray32.h>
+#include <Pix16.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -467,11 +468,12 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
-    void* buf = operator new(STATE_BUFFER_SIZE);
-    if (buf == NULL) {
+    RecordBytes<DeviceState> state;
+    state.m_bytes = new u8[STATE_BUFFER_SIZE];
+    if (state.m_bytes == NULL) {
         return 0;
     }
-    m_stateBuffer = static_cast<DeviceState*>(buf);
+    m_stateBuffer = state.m_rec;
     m_stateBufferSize = STATE_BUFFER_SIZE;
     return 1;
 }
@@ -479,7 +481,9 @@ i32 CInputDevice::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u32 
 RVA(0x00133bf0, 0x33)
 void CInputDevice::ReleaseDevices() {
     if (m_stateBuffer != NULL) {
-        operator delete(m_stateBuffer);
+        RecordBytes<DeviceState> state;
+        state.m_rec = m_stateBuffer;
+        delete[] state.m_bytes;
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -762,11 +766,12 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
     if (SetDataFormat(&c_dfDIMouse) == 0) {
         return 0;
     }
-    void* buf = operator new(0x10);
-    if (buf == NULL) {
+    RecordBytes<DeviceState> state;
+    state.m_bytes = new u8[0x10];
+    if (state.m_bytes == NULL) {
         return 0;
     }
-    m_stateBuffer = static_cast<DeviceState*>(buf);
+    m_stateBuffer = state.m_rec;
     m_stateBufferSize = 0x10;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
@@ -776,7 +781,9 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, HWND owner, u3
 RVA(0x00134360, 0x33)
 void CDeviceConfigB::ReleaseDevices() {
     if (m_stateBuffer) {
-        operator delete(m_stateBuffer);
+        RecordBytes<DeviceState> state;
+        state.m_rec = m_stateBuffer;
+        delete[] state.m_bytes;
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -874,11 +881,12 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
     if (SetDataFormat(&c_dfDIJoystick2) == 0) {
         return 0;
     }
-    void* buf = operator new(0x110);
-    if (buf == NULL) {
+    RecordBytes<DeviceState> state;
+    state.m_bytes = new u8[0x110];
+    if (state.m_bytes == NULL) {
         return 0;
     }
-    m_stateBuffer = static_cast<DeviceState*>(buf);
+    m_stateBuffer = state.m_rec;
     m_stateBufferSize = 0x110;
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
@@ -888,7 +896,9 @@ i32 CDeviceConfigC::CreateDevJoystick(IDirectInputA* di, const void* cfg, HWND o
 RVA(0x001346d0, 0x33)
 void CDeviceConfigC::ReleaseDevices() {
     if (m_stateBuffer) {
-        operator delete(m_stateBuffer);
+        RecordBytes<DeviceState> state;
+        state.m_rec = m_stateBuffer;
+        delete[] state.m_bytes;
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }

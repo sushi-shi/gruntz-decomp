@@ -42,7 +42,7 @@ void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
     prime = count;
 
 have_prime:
-    i32* used = static_cast<i32*>(operator new(prime * sizeof(i32)));
+    i32* used = new i32[prime];
     if (used == NULL) {
         return;
     }
@@ -84,5 +84,5 @@ have_prime:
         }
     }
 
-    operator delete(used);
+    delete[] used;
 }

@@ -510,7 +510,7 @@ void CDDSurface::FlipVertical() {
     if (buf == NULL) {
         return;
     }
-    u8* tmp = static_cast<u8*>(operator new(m_width));
+    u8* tmp = new u8[m_width];
     if (tmp == NULL) {
         m_ddSurface->Unlock(0);
         return;
@@ -559,7 +559,7 @@ void CDDSurface::FlipVertical() {
     }
 
     m_ddSurface->Unlock(0);
-    ::operator delete(tmp);
+    delete[] tmp;
 }
 
 RVA(0x0013ece0, 0xc7)
@@ -877,7 +877,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     i32 stride = rc.left - rc.right + rowPix;
     i32 width = rc.right - rc.left;
     i32 height = rc.bottom - rc.top;
-    u16* scratch = static_cast<u16*>(operator new(width * 4));
+    u16* scratch = new u16[width * 2];
     i32 off = scale << 11;
 
     if (g_rDown == PIXEL16_RED_DOWN) {
@@ -918,18 +918,18 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 srcPix += stride;
             }
         } else {
-            operator delete(scratch);
+            delete[] scratch;
             m_ddSurface->Unlock(0);
             return 0;
         }
     } else {
-        operator delete(scratch);
+        delete[] scratch;
         m_ddSurface->Unlock(0);
         return 0;
     }
 
     m_ddSurface->Unlock(0);
-    operator delete(scratch);
+    delete[] scratch;
     return 1;
 }
 

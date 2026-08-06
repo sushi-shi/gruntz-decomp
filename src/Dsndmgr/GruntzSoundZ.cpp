@@ -297,7 +297,7 @@ i32 CGruntzSoundInnerZ::Load(const char* path, const char* name) {
     if (length < 4) {
         return 0;
     }
-    m_loadBuffer = static_cast<char*>(operator new(length));
+    m_loadBuffer = new char[length];
     if (m_loadBuffer == NULL) {
         return 0;
     }
@@ -328,7 +328,7 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
         sprintf(m_name, "MIDI%i", g_midiSeqCounter);
     }
     if (m_loadBuffer == NULL) {
-        m_loadBuffer = static_cast<char*>(operator new(len));
+        m_loadBuffer = new char[len];
         if (m_loadBuffer == NULL) {
             return 0;
         }
@@ -372,7 +372,7 @@ void CGruntzSoundInnerZ::ReleaseHandle() {
         m_seqHandle = NULL;
     }
     if (m_loadBuffer != NULL) {
-        operator delete(m_loadBuffer);
+        delete[] m_loadBuffer;
         m_loadBuffer = NULL;
     }
 }

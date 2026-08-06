@@ -105,11 +105,11 @@ i32 CUserLogic::SerializeMove(
 
             i32 len;
             arc->Read(&len, sizeof(len));
-            void* buf = ::operator new(len);
+            char* buf = new char[len];
             arc->Read(buf, len);
-            istrstream accum(static_cast<char*>(buf), len);
+            istrstream accum(buf, len);
             accum >> m_link.m_str;
-            ::operator delete(buf);
+            delete[] buf;
             arc->Read(&m_gatedActKey, sizeof(m_gatedActKey));
             arc->Read(&m_reserved2c, sizeof(m_reserved2c));
             arc->Read(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
@@ -228,11 +228,11 @@ i32 CMovingLogic::SerializeMove(
 
             i32 len;
             arc->Read(&len, sizeof(len));
-            void* buf = ::operator new(len);
+            char* buf = new char[len];
             arc->Read(buf, len);
-            istrstream accum(static_cast<char*>(buf), len);
+            istrstream accum(buf, len);
             ReadCurve(accum, *Motion());
-            ::operator delete(buf);
+            delete[] buf;
             arc->Read(&m_previousScreenPosition.m_x, sizeof(m_previousScreenPosition.m_x));
             arc->Read(&m_previousScreenPosition.m_y, sizeof(m_previousScreenPosition.m_y));
             arc->Read(&m_collisionFlags, sizeof(m_collisionFlags));

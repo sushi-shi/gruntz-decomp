@@ -682,7 +682,7 @@ i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
 
     const char* cursor = src->m_data;
     if (src->m_namelen != 0) {
-        m_name = static_cast<char*>(operator new(src->m_namelen + 2));
+        m_name = new char[src->m_namelen + 2];
         u32 n;
         for (n = 0; n < src->m_namelen; n++) {
             m_name[n] = *cursor++;
@@ -719,7 +719,7 @@ fail:
         }
     }
     if (m_name != NULL) {
-        ::operator delete(m_name);
+        delete[] m_name;
         m_name = NULL;
     }
     m_records.SetSize(0, -1);
@@ -748,13 +748,14 @@ i32 CAniElement::LoadFile(void* ctx, void* filename, i32 unused) {
         return 0;
     }
     u32 size = fr.GetLength();
-    void* buf = ::operator new(size);
-    if (fr.Read(buf, size) == 0) {
-        ::operator delete(buf);
+    RecordBytes<CAniSource> source;
+    source.m_bytes = new u8[size];
+    if (fr.Read(source.m_bytes, size) == 0) {
+        delete[] source.m_bytes;
         return 0;
     }
-    i32 r = Build(ctx, static_cast<CAniSource*>(buf), 0);
-    ::operator delete(buf);
+    i32 r = Build(ctx, source.m_rec, 0);
+    delete[] source.m_bytes;
     return r;
 }
 
@@ -767,7 +768,7 @@ void CAniElement::DeleteAll() {
         }
     }
     if (m_name != NULL) {
-        ::operator delete(m_name);
+        delete[] m_name;
         m_name = NULL;
     }
     m_records.SetSize(0, -1);

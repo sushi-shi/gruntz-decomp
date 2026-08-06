@@ -137,11 +137,12 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     if (!file.Open(name, 0x8000, 0)) {
         return 0;
     }
-    void* buf = ::operator new(file.GetLength());
-    file.Read(buf, file.GetLength());
-    i32 r = Build(static_cast<PidHeader*>(buf), file.GetLength(), fmt);
+    RecordBytes<PidHeader> fileData;
+    fileData.m_bytes = new u8[file.GetLength()];
+    file.Read(fileData.m_bytes, file.GetLength());
+    i32 r = Build(fileData.m_rec, file.GetLength(), fmt);
     file.Close();
-    ::operator delete(buf);
+    delete[] fileData.m_bytes;
     return r;
 }
 

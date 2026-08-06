@@ -427,7 +427,7 @@ void CDDrawPtrCollections::Clear(i32 mode) {
         m_device->RestoreDisplayMode();
     }
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
-        ::operator delete(m_poolItems.GetData()[i]);
+        delete static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[i]);
     }
     m_poolItems.SetSize(0, -1);
     EmptyPoolA();
@@ -772,7 +772,7 @@ CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z
 RVA(0x00143240, 0x143)
 void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
-        ::operator delete(m_poolItems.GetData()[i]);
+        delete static_cast<DDSURFACEDESC*>(m_poolItems.GetData()[i]);
     }
     m_poolItems.SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
@@ -804,7 +804,7 @@ void CDDrawPtrCollections::SetupCaps() {
 
 RVA(0x00143390, 0x35)
 i32 __stdcall DdEnumModesCallback(void* mode, i32 unused) {
-    void* rec = operator new(0x6c);
+    DDSURFACEDESC* rec = new DDSURFACEDESC;
     memcpy(rec, mode, 0x6c);
     g_modeArray.SetAtGrow(g_modeArray.GetSize(), rec);
     return 1;

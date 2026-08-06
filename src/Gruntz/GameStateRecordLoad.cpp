@@ -256,14 +256,14 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     }
 
     while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != NULL) {
-        void* rem = (&m_payloads)->RemoveHead();
-        ::operator delete(rem);
+        i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
+        delete[] rem;
     }
 
     ar->Read(&count, sizeof(count));
     for (i32 b = 0; b < count; ++b) {
-        void* mem = operator new(0x2c);
-        void* item = 0;
+        i32* mem = new i32[0xb];
+        i32* item = 0;
         if (mem != NULL) {
             memset(mem, 0, 0xb * 4);
             item = mem;

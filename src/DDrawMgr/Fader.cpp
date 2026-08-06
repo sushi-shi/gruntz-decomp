@@ -1281,7 +1281,7 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
 // @early-stop
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
-    void* scratch = ::operator new(m_dstSurface->m_width);
+    u8* scratch = new u8[m_dstSurface->m_width];
     m_dstSurface->Clear(0);
     m_srcSurface->Lock(0);
     u8* base = static_cast<u8*>(m_dstSurface->Lock(0));
@@ -1304,7 +1304,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
 
     m_srcSurface->m_ddSurface->Unlock(0);
     m_dstSurface->m_ddSurface->Unlock(0);
-    ::operator delete(scratch);
+    delete[] scratch;
 }
 
 RVA_COMPGEN(0x00181700, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)

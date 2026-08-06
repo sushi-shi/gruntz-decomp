@@ -83,6 +83,7 @@
 #include <Io/SaveGame.h>
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
+#include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
@@ -564,7 +565,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     if (m_connSettings) {
 
-        ::operator delete(m_connSettings);
+        RecordBytes<CNetLobbyConnection> settings;
+        settings.m_rec = m_connSettings;
+        delete[] settings.m_bytes;
         m_connSettings = NULL;
     }
 
@@ -577,7 +580,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
         return 0;
     }
 
-    m_connSettings = static_cast<CNetLobbyConnection*>(operator new(dwSize));
+    RecordBytes<CNetLobbyConnection> settings;
+    settings.m_bytes = new u8[dwSize];
+    m_connSettings = settings.m_rec;
     if (!m_connSettings) {
         m_lobby->Release();
         m_lobby = NULL;
@@ -2808,7 +2813,9 @@ void CGruntzMgr::Close() {
         m_lobby = NULL;
     }
     if (m_connSettings) {
-        operator delete(m_connSettings);
+        RecordBytes<CNetLobbyConnection> settings;
+        settings.m_rec = m_connSettings;
+        delete[] settings.m_bytes;
         m_connSettings = NULL;
     }
     this->CGameMgr::Close();

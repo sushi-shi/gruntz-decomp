@@ -136,7 +136,7 @@ i32 CDDrawWorkerHost::Read(
     m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
 
-    m_tileGrid = static_cast<i32*>(operator new(m_gridH * m_gridW * 4));
+    m_tileGrid = new i32[m_gridH * m_gridW];
     // Byte-forced view of packed WWD storage.
 
     const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->tilesOffset);
@@ -145,7 +145,7 @@ i32 CDDrawWorkerHost::Read(
         cell++;
     }
 
-    m_colOffsets = static_cast<i32*>(operator new(m_gridH * 4));
+    m_colOffsets = new i32[m_gridH];
     for (i32 c = 0; c < m_gridH; c++) {
         m_colOffsets[c] = c * m_gridW;
     }
@@ -233,8 +233,8 @@ i32 CDDrawWorkerHost::InitGeometry(
     }
     m_scaleX = static_cast<float>(m_movementXPercent) * 0.01f;
     m_scaleY = static_cast<float>(m_movementYPercent) * 0.01f;
-    m_tileGrid = static_cast<i32*>(operator new(m_gridW * m_gridH * 4));
-    m_colOffsets = static_cast<i32*>(operator new(m_gridH * 4));
+    m_tileGrid = new i32[m_gridW * m_gridH];
+    m_colOffsets = new i32[m_gridH];
     for (i32 i = 0; i < m_gridH; i++) {
         m_colOffsets[i] = i * m_gridW;
     }
@@ -252,11 +252,11 @@ void CDDrawWorkerHost::Unload() {
     CWwdSpatialMgr* g = m_scroll;
     delete g;
     if (m_tileGrid != NULL) {
-        ::operator delete(m_tileGrid);
+        delete[] m_tileGrid;
         m_tileGrid = NULL;
     }
     if (m_colOffsets != NULL) {
-        ::operator delete(m_colOffsets);
+        delete[] m_colOffsets;
         m_colOffsets = NULL;
     }
 }

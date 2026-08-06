@@ -15,6 +15,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
+#include <Pix16.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/MoveMode.h>
@@ -68,7 +69,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
 
     if (*pflags & 0x2) {
         u32 allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
-        Bytef* buf = static_cast<Bytef*>(operator new(allocSize));
+        Bytef* buf = new Bytef[allocSize];
         if (buf == NULL) {
             return 0;
         }
@@ -76,7 +77,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         // Byte-forced view of packed WWD storage.
         block = reinterpret_cast<char*>(WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20));
         if (block == NULL) {
-            operator delete(buf);
+            delete[] buf;
             return 0;
         }
         ehAlloc = buf;
@@ -168,13 +169,13 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     if (ehAlloc != NULL) {
-        operator delete(ehAlloc);
+        delete[] ehAlloc;
     }
     return 1;
 
 fail:
     if (ehAlloc != NULL) {
-        operator delete(ehAlloc);
+        delete[] ehAlloc;
     }
     return 0;
 }
@@ -214,17 +215,18 @@ i32 CGameLevel::LoadFromFile(const char* path) {
         return 0;
     }
 
-    void* buf = operator new(file.GetLength());
-    if (!buf) {
+    RecordBytes<WwdHeader> fileData;
+    fileData.m_bytes = new u8[file.GetLength()];
+    if (!fileData.m_bytes) {
         return 0;
     }
 
-    file.Read(buf, file.GetLength());
-    if (LoadWwd(static_cast<WwdHeader*>(buf)) == 0) {
-        operator delete(buf);
+    file.Read(fileData.m_bytes, file.GetLength());
+    if (LoadWwd(fileData.m_rec) == 0) {
+        delete[] fileData.m_bytes;
         return 0;
     }
-    operator delete(buf);
+    delete[] fileData.m_bytes;
     return 1;
 }
 

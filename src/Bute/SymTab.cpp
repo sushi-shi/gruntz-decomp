@@ -741,15 +741,14 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
                 str2 = NULL;
             }
             p += strlen(p) + 1;
-            void* arr;
+            i32* arr;
             if (f6 != 0) {
-                arr = ::operator new(static_cast<u32>((f6 * 4)));
+                arr = new i32[f6];
+                i32* dst = arr;
                 for (i32 i = f6; i != 0; i--) {
-                    *static_cast<i32*>(arr) = PeekI32(p);
-                    arr = static_cast<char*>(arr) + 4;
+                    *dst++ = PeekI32(p);
                     p += 4;
                 }
-                arr = static_cast<char*>(arr) - f6 * 4;
             } else {
                 arr = NULL;
             }

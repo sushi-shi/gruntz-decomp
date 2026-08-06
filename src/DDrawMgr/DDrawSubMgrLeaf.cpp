@@ -122,7 +122,7 @@ CAniElement* CDDrawSubMgrLeaf::CreateAniEntry2(const char* key, void* entry) {
 RVA(0x00152ad0, 0x17f)
 i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* suffix) {
     i32 count = 0;
-    char* buf = static_cast<char*>(operator new(0x100));
+    char* buf = new char[0x100];
     if (buf == NULL) {
         return 0;
     }
@@ -158,7 +158,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
             grp = tree->NextSym(grp);
         } while (grp != NULL);
     }
-    ::operator delete(buf);
+    delete[] buf;
     return count;
 }
 

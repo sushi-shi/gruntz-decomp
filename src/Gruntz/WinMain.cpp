@@ -44,7 +44,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     {
         DWORD dwSize = GetFileVersionInfoSizeA(szModulePath, 0);
-        void* pInfo = operator new(dwSize);
+        u8* pInfo = new u8[dwSize];
         GetFileVersionInfoA(szModulePath, 0, dwSize, pInfo);
         void* pValue;
         UINT uLen;
@@ -62,7 +62,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             &g_version2,
             &g_version3
         );
-        operator delete(pInfo);
+        delete[] pInfo;
     }
 
     if (StartUpPrompt(0) == 0) {

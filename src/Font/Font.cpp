@@ -33,7 +33,7 @@ i32 Font::AllocateMemory(i32 count) {
         return 0;
     }
 
-    m_surfaces = static_cast<void**>(operator new(m_count * sizeof(void*)));
+    m_surfaces = new void*[m_count];
     m_glyphs = new Glyph[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
@@ -55,14 +55,14 @@ void Font::FreeMemory() {
     if (m_ready) {
         for (i32 i = 0; i < m_count; i++) {
             if (m_surfaces[i]) {
-                operator delete(m_surfaces[i]);
+                delete[] static_cast<u8*>(m_surfaces[i]);
                 m_surfaces[i] = NULL;
             }
         }
-        operator delete(m_surfaces);
+        delete[] m_surfaces;
         m_surfaces = NULL;
         if (m_glyphs) {
-            operator delete(m_glyphs);
+            delete[] m_glyphs;
             m_glyphs = NULL;
         }
         m_count = 0;
@@ -86,7 +86,7 @@ i32 Font::LoadFont(CString szFileName) {
 
     for (i32 i = 0; i < m_count; i++) {
         ar.Read(&m_glyphs[i], sizeof(Glyph));
-        m_surfaces[i] = operator new(m_glyphs[i].width * m_glyphs[i].height);
+        m_surfaces[i] = new u8[m_glyphs[i].width * m_glyphs[i].height];
         ar.Read(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
     }
 

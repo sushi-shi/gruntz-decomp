@@ -113,16 +113,16 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
     if (len == 0) {
         return 0;
     }
-    void* buf = operator new(len);
+    u8* buf = new u8[len];
     if (buf == NULL) {
         return 0;
     }
     if (file.Read(buf, len) != len) {
-        operator delete(buf);
+        delete[] buf;
         return 0;
     }
     i32 result = DecodeRun(info, buf, len, mode);
-    operator delete(buf);
+    delete[] buf;
     return result;
 }
 
@@ -195,18 +195,18 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    void* buf = operator new(len);
+    u8* buf = new u8[len];
     if (!buf) {
         return 0;
     }
 
     if (file.Read(buf, len) != len) {
-        operator delete(buf);
+        delete[] buf;
         return 0;
     }
 
     i32 result = DecodeBmp(pal, buf, len);
-    operator delete(buf);
+    delete[] buf;
     return result;
 }
 
@@ -394,14 +394,14 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     bih.m_ih.biBitCount = 0x18;
     bfh.m_hdr.bfOffBits = 0x3a;
 
-    u8* line = static_cast<u8*>(operator new(3 * width * height + 0x3a));
+    u8* line = new u8[3 * width * height + 0x3a];
     if (line == NULL) {
         return 0;
     }
 
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
-        operator delete(line);
+        delete[] line;
         return 0;
     }
 
@@ -414,7 +414,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     }
     if (ok == 0) {
         this->m_ddSurface->Unlock(0);
-        operator delete(line);
+        delete[] line;
         return 0;
     }
 
@@ -439,7 +439,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     }
 
     this->m_ddSurface->Unlock(0);
-    operator delete(line);
+    delete[] line;
     return 1;
 }
 
@@ -573,7 +573,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
     }
 
     void* run = src->m_pixels;
-    void* buf = 0;
+    u8* buf = 0;
     i32 result;
     if (convert == 0) {
         if (srcFmt == BPP_PALETTED_8) {
@@ -589,32 +589,32 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
             return 0;
         }
         if (srcFmt == BPP_PALETTED_8) {
-            buf = operator new(height * width);
+            buf = new u8[height * width];
             if (buf == NULL) {
                 return 0;
             }
             result = RunDecode1(buf, run, width, height);
         } else {
-            buf = operator new(height * width * 3);
+            buf = new u8[height * width * 3];
             if (buf == NULL) {
                 return 0;
             }
             result = RunDecode3(buf, run, width, height);
         }
         if (result == 0) {
-            operator delete(buf);
+            delete[] buf;
             return 0;
         }
     }
 
     if (convert) {
         if (Blit(buf, srcFmt, palette, RASTER_ROWS_TOP_DOWN) == 0) {
-            operator delete(buf);
+            delete[] buf;
             return 0;
         }
     }
     if (buf != NULL) {
-        operator delete(buf);
+        delete[] buf;
     }
     return 1;
 }
@@ -629,16 +629,17 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
     if (len == 0) {
         return 0;
     }
-    void* buf = operator new(len);
-    if (buf == NULL) {
+    RecordBytes<PcxHeader> fileData;
+    fileData.m_bytes = new u8[len];
+    if (fileData.m_bytes == NULL) {
         return 0;
     }
-    if (file.Read(buf, len) != len) {
-        operator delete(buf);
+    if (file.Read(fileData.m_bytes, len) != len) {
+        delete[] fileData.m_bytes;
         return 0;
     }
-    i32 result = Decode(info, static_cast<PcxHeader*>(buf), len, mode);
-    operator delete(buf);
+    i32 result = Decode(info, fileData.m_rec, len, mode);
+    delete[] fileData.m_bytes;
     return result;
 }
 
@@ -684,7 +685,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
 
                 u8* pixels = hdr->m_pixels;
                 i32 ok;
-                void* decoded = 0;
+                u8* decoded = 0;
                 if (!remap) {
                     if (bitcount == BPP_PALETTED_8) {
                         if (!DecodeRun8(pixels)) {
@@ -697,32 +698,32 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
                     }
                 } else {
                     if (bitcount == BPP_PALETTED_8) {
-                        decoded = operator new(width * height);
+                        decoded = new u8[width * height];
                         if (decoded == NULL) {
                             return 0;
                         }
                         ok = RunDecode1(decoded, pixels, width, height);
                     } else {
-                        decoded = operator new(width * height * 3);
+                        decoded = new u8[width * height * 3];
                         if (decoded == NULL) {
                             return 0;
                         }
                         ok = RunDecode3(decoded, pixels, width, height);
                     }
                     if (!ok) {
-                        operator delete(decoded);
+                        delete[] decoded;
                         return 0;
                     }
                 }
 
                 if (remap) {
                     if (!Blit(decoded, bitcount, palette, RASTER_ROWS_TOP_DOWN)) {
-                        operator delete(decoded);
+                        delete[] decoded;
                         return 0;
                     }
                 }
                 if (decoded) {
-                    operator delete(decoded);
+                    delete[] decoded;
                 }
                 return 1;
             }
@@ -744,18 +745,19 @@ i32 CDDSurface::LoadPcx(CDDrawPtrCollections* pal, char* path) {
         return 0;
     }
 
-    void* buf = operator new(len);
-    if (!buf) {
+    RecordBytes<PcxHeader> fileData;
+    fileData.m_bytes = new u8[len];
+    if (!fileData.m_bytes) {
         return 0;
     }
 
-    if (file.Read(buf, len) != len) {
-        operator delete(buf);
+    if (file.Read(fileData.m_bytes, len) != len) {
+        delete[] fileData.m_bytes;
         return 0;
     }
 
-    i32 result = DecodePcx(pal, static_cast<PcxHeader*>(buf), len);
-    operator delete(buf);
+    i32 result = DecodePcx(pal, fileData.m_rec, len);
+    delete[] fileData.m_bytes;
     return result;
 }
 
@@ -1010,30 +1012,30 @@ i32 CDDSurface::DecodePcxData(
         return 0;
     }
 
-    void* decoded = 0;
+    u8* decoded = 0;
     if (!remap) {
         if (!DecodeRun8(data)) {
             return 0;
         }
     } else {
-        decoded = operator new(h * w);
+        decoded = new u8[h * w];
         if (!decoded) {
             return 0;
         }
         if (!RunDecode1(decoded, data, w, h)) {
-            operator delete(decoded);
+            delete[] decoded;
             return 0;
         }
     }
 
     if (remap) {
         if (!Blit(decoded, BPP_PALETTED_8, palette, RASTER_ROWS_TOP_DOWN)) {
-            operator delete(decoded);
+            delete[] decoded;
             return 0;
         }
     }
     if (decoded) {
-        operator delete(decoded);
+        delete[] decoded;
     }
     if (HAS(flags, PID_TRANSPARENCY)) {
         FillPalette(key);
@@ -1050,18 +1052,19 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
     }
 
     u32 len = file.GetLength();
-    void* buf = operator new(len);
-    if (!buf) {
+    RecordBytes<PidHeader> fileData;
+    fileData.m_bytes = new u8[len];
+    if (!fileData.m_bytes) {
         return 0;
     }
 
-    if (file.Read(buf, len) != len) {
-        operator delete(buf);
+    if (file.Read(fileData.m_bytes, len) != len) {
+        delete[] fileData.m_bytes;
         return 0;
     }
 
-    i32 result = DecodePcxData(pal, static_cast<PidHeader*>(buf), len, caps, key);
-    operator delete(buf);
+    i32 result = DecodePcxData(pal, fileData.m_rec, len, caps, key);
+    delete[] fileData.m_bytes;
     return result;
 }
 
@@ -1112,30 +1115,30 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             }
         }
 
-        void* decoded = 0;
+        u8* decoded = 0;
         if (!remap) {
             if (!DecodeRun8(p)) {
                 return 0;
             }
         } else {
-            decoded = operator new(height * width);
+            decoded = new u8[height * width];
             if (!decoded) {
                 return 0;
             }
             if (!RunDecode1(decoded, p, width, height)) {
-                operator delete(decoded);
+                delete[] decoded;
                 return 0;
             }
         }
 
         if (remap) {
             if (!Blit(decoded, BPP_PALETTED_8, palette, RASTER_ROWS_TOP_DOWN)) {
-                operator delete(decoded);
+                delete[] decoded;
                 return 0;
             }
         }
         if (decoded) {
-            operator delete(decoded);
+            delete[] decoded;
         }
         if (HAS(flags, PID_TRANSPARENCY)) {
             FillPalette(colorKey);
@@ -1154,17 +1157,18 @@ i32 CDDSurface::LoadPid(CDDrawPtrCollections* pal, char* path, u32 colorKey) {
     }
 
     u32 len = file.GetLength();
-    void* buf = operator new(len);
-    if (!buf) {
+    RecordBytes<PidHeader> fileData;
+    fileData.m_bytes = new u8[len];
+    if (!fileData.m_bytes) {
         return 0;
     }
 
-    if (file.Read(buf, len) != len) {
-        operator delete(buf);
+    if (file.Read(fileData.m_bytes, len) != len) {
+        delete[] fileData.m_bytes;
         return 0;
     }
 
-    i32 result = DecodePid(pal, static_cast<PidHeader*>(buf), len, colorKey);
-    operator delete(buf);
+    i32 result = DecodePid(pal, fileData.m_rec, len, colorKey);
+    delete[] fileData.m_bytes;
     return result;
 }

@@ -984,15 +984,15 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
         return 0;
     }
     u32 size = _filelength(fp->_file);
-    void* buf = operator new(size);
+    u8* buf = new u8[size];
     if (fread(buf, size, 1, fp) != 1) {
         fclose(fp);
-        operator delete(buf);
+        delete[] buf;
         return 0;
     }
     fclose(fp);
     DSoundCloneInst* wrapper = Acquire(buf, flags, loadOpts);
-    operator delete(buf);
+    delete[] buf;
     return wrapper;
 }
 
@@ -1093,15 +1093,15 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
         return 0;
     }
     u32 size = _filelength(fp->_file);
-    void* data = operator new(size);
+    u8* data = new u8[size];
     if (fread(data, size, 1, fp) != 1) {
         fclose(fp);
-        operator delete(data);
+        delete[] data;
         return 0;
     }
     fclose(fp);
     i32 r = ReloadRiff(buf, data, loadOpts);
-    operator delete(data);
+    delete[] data;
     return r;
 }
 

@@ -630,7 +630,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
         return 0;
     }
     i32 count = 0;
-    char* buf = static_cast<char*>(operator new(0x100));
+    char* buf = new char[0x100];
     if (buf == NULL) {
         return 0;
     }
@@ -670,7 +670,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
             file = tree->NextSym(file);
         } while (file != NULL);
     }
-    ::operator delete(buf);
+    delete[] buf;
     return count;
 }
 

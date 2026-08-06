@@ -611,13 +611,13 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
     if (len == 0) {
         return 0;
     }
-    void* buf = ::operator new(len);
+    u8* buf = new u8[len];
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodePcxData(buf, dc, ctrl);
-    ::operator delete(buf);
+    delete[] buf;
     return result;
 }
 
@@ -646,13 +646,13 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     if (len == 0) {
         return 0;
     }
-    void* buf = ::operator new(len);
+    u8* buf = new u8[len];
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodeRidData(buf, dc, ctrl);
-    ::operator delete(buf);
+    delete[] buf;
     return result;
 }
 
@@ -743,13 +743,13 @@ i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
     if (len == 0) {
         return 0;
     }
-    void* buf = ::operator new(len);
+    u8* buf = new u8[len];
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodePidData(buf, dc, ctrl);
-    ::operator delete(buf);
+    delete[] buf;
     return result;
 }
 

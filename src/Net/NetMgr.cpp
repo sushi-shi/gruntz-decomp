@@ -496,19 +496,19 @@ CNetMgr::EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char
     if (size == 0) {
         return 0;
     }
-    void* blob = operator new(size);
+    u8* blob = new u8[size];
     if (blob == NULL) {
         return 0;
     }
     iface = m_directPlay;
     hr = iface->GetPlayerData2(blob, &size);
     if (hr != 0) {
-        ::operator delete(blob);
+        delete[] blob;
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x2b1, hr, 0);
         return 0;
     }
     CNetPlayerListNode* r = AddPlayerNode(blob);
-    ::operator delete(blob);
+    delete[] blob;
     return r;
 }
 

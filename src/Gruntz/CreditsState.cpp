@@ -385,7 +385,7 @@ i32 CCreditsState::SetupTitle() {
             return 0;
         }
         i32 len = sect->m_length;
-        char* buf = static_cast<char*>(operator new(len + 1));
+        char* buf = new char[len + 1];
         if (!buf) {
             return 0;
         }
@@ -393,7 +393,7 @@ i32 CCreditsState::SetupTitle() {
         buf[len] = 0;
         m_caption = buf;
         sect->EndParse();
-        operator delete(buf);
+        delete[] buf;
     }
     m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
