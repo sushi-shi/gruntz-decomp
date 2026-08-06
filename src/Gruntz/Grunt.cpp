@@ -600,6 +600,9 @@ static const char s_d48_SOUTHEAST[] = "_SOUTHEAST";
 DATA(0x0020d424)
 static const char s_d48_BREAK[] = "_BREAK";
 
+DATA(0x001e9738)
+double g_val_1e9738;
+
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {

@@ -23,6 +23,11 @@ i32 g_wap32Run7c = 0;
 DATA(0x00253c80)
 i32 g_wap32Run80 = 0;
 
+DATA(0x002c43c0)
+i32 g_val_2c43c0;
+DATA(0x002c4428)
+i32 g_val_2c4428;
+
 // @identity-TODO ?1CGameApp - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (23 fns) came from the static library. It belongs to another compiland.

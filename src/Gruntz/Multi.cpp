@@ -147,6 +147,9 @@ CFile g_obj646778;
 DATA(0x002467d8)
 char g_recvBuffer[0x800];
 
+DATA(0x002c448c)
+i32 g_val_2c448c;
+
 // @early-stop
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {

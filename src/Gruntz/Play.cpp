@@ -7468,6 +7468,11 @@ void CPlay::DrawDebugStatsFull() {
 DATA(0x0024c020)
 char g_customLevelText[0x200];
 
+DATA(0x0024c434)
+i32 g_val_24c434;
+DATA(0x002c3e0c)
+i32 g_val_2c3e0c;
+
 RVA(0x000cfc90, 0x1d1)
 void CPlay::DrawCustomLevelBanner() {
     if (m_mgr->m_strWorldFile.IsEmpty()) {

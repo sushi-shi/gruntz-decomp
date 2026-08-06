@@ -11,6 +11,9 @@
 #include <mmsystem.h>
 #include <stddef.h>
 
+DATA(0x002c44a0)
+i32 g_val_2c44a0;
+
 RVA(0x00094640, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 

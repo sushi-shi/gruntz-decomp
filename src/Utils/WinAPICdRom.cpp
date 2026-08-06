@@ -12,6 +12,9 @@ DATA(0x0022b25c)
 u8 g_val_22b25c[1];
 static char s_cdDriveLetter;
 
+DATA(0x002c3fcc)
+i32 g_val_2c3fcc;
+
 RVA(0x0001fd50, 0xf)
 i32 IsGruntzCDInAnyDrive() {
     char letter = GetGruntzDriveLetter();

@@ -500,7 +500,7 @@ def unclaimed_runs(pe, unclaimed, extents):
 
     def in_lib(rva):
         k = bisect.bisect_right(lib_fns, rva) - 1
-        return k >= 0 and rva - lib_fns[k] < 0x2000
+        return k >= 0 and rva - lib_fns[k] < 0x100
     for r in runs:
         k = bisect.bisect_right(starts, r["start"]) - 1
         r["prev_sym"] = extents[k][2].name if k >= 0 else ""

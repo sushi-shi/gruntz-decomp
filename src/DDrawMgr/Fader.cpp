@@ -1874,6 +1874,9 @@ const float g_sineHalfPi = 1.570795f;
 DATA(0x001f0864)
 const float g_sineOne = 1.0f;
 
+DATA(0x002c3fc8)
+i32 g_val_2c3fc8;
+
 // @early-stop
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {

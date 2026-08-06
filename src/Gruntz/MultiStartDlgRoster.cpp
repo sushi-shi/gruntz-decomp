@@ -43,6 +43,9 @@ i32 g_watchBlinkB;
 DATA(0x0021243c)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
+DATA(0x002c44f0)
+i32 g_val_2c44f0;
+
 RVA(0x00038220, 0x73)
 i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);
