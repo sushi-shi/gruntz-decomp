@@ -3740,7 +3740,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         i32 savedY = unit->m_entrancePx.m_y;
         i32 col = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
         i32 row = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
-        i32 tile0;
+        u32 tile0;
         if (static_cast<u32>(col) < static_cast<u32>(board->m_width)
             && static_cast<u32>(row) < static_cast<u32>(board->m_height)) {
             tile0 = board->m_rowInts[row][col * 7];

@@ -635,32 +635,35 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     CWnd::FromHandle(::GetFocus());
     i32 f1c = 1;
     i32 f18 = 0;
-    i32 idx = 0;
     i32 t = this->GetSlotIndex();
     i32 localColour = g_multiState->m_isHost ? m_host->m_options[t].m_readyFlag : 1;
-    i32 off = 0;
-    do {
+    for (i32 idx = 0; idx < 4; idx++) {
         GruntzPlayer* slot = &g_gameReg->m_options[idx];
         if (slot) {
             if (slot->m_slotKey != g_multiState->m_hostIndex && slot->m_humanControlled
                 && slot->m_liveGate) {
                 f18 = 1;
             }
-            i32 enName;
-            if (g_multiState->m_isHost && slot->m_humanControlled == 0) {
-                enName = 1;
+            CWnd* name = GetCtrlB(idx);
+            if ((g_multiState->m_isHost && slot->m_humanControlled == 0)
+                || slot->m_slotKey == g_multiState->m_hostIndex) {
+                name->EnableWindow(1);
             } else {
-                enName = slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0;
+                name->EnableWindow(0);
             }
-            GetCtrlB(idx)->EnableWindow(enName);
-            GetCtrlE(idx)->EnableWindow(
-                g_multiState->m_isHost && localColour == 0
-                        && slot->m_slotKey != g_multiState->m_hostIndex
-                    ? 1
-                    : 0
-            );
+            CWnd* kind = GetCtrlE(idx);
+            if (g_multiState->m_isHost && localColour == 0
+                && slot->m_slotKey != g_multiState->m_hostIndex) {
+                kind->EnableWindow(1);
+            } else {
+                kind->EnableWindow(0);
+            }
             CWnd* ready = GetCtrlA(idx);
-            ready->EnableWindow(slot->m_slotKey == g_multiState->m_hostIndex ? 1 : 0);
+            if (slot->m_slotKey == g_multiState->m_hostIndex) {
+                ready->EnableWindow(1);
+            } else {
+                ready->EnableWindow(0);
+            }
             if (slot->m_readyFlag) {
                 if (slot->m_liveGate) {
                     ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 1, 0);
@@ -673,16 +676,19 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             } else {
                 ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
             }
-            GetCtrlC(idx)->EnableWindow(
-                g_multiState->m_isHost && slot->m_liveGate && localColour == 0 ? 1 : 0
-            );
+            CWnd* color = GetCtrlC(idx);
+            if (g_multiState->m_isHost && slot->m_liveGate && localColour == 0) {
+                color->EnableWindow(1);
+            } else {
+                color->EnableWindow(0);
+            }
             SetListCurSel(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
                 if (this->GetSlotIndex() == idx) {
-                    goto next;
+                    continue;
                 }
                 if (g_multiState->m_isHost && slot->m_humanControlled == 0) {
-                    goto next;
+                    continue;
                 }
             }
             if (slot->m_liveGate) {
@@ -701,10 +707,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             }
             this->SyncChannelSlot(idx);
         }
-    next:
-        off += 0x238;
-        idx++;
-    } while (off < 0x8e0);
+    }
     if (g_multiState->m_isHost) {
         CWnd* ok = this->GetDlgItem(1);
         if (ok == NULL) {
@@ -712,10 +715,14 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
         }
         ok->EnableWindow(f18 & f1c);
     }
-    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd, 0, 1);
-    ::InvalidateRect(this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd, 0, 1);
+    HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
+    ::InvalidateRect(color0, 0, 1);
+    HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;
+    ::InvalidateRect(color1, 0, 1);
+    HWND color2 = this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd;
+    ::InvalidateRect(color2, 0, 1);
+    HWND color3 = this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd;
+    ::InvalidateRect(color3, 0, 1);
     return 1;
 }
 
