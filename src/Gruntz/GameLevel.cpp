@@ -1921,11 +1921,6 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     return rf != TILEKIND_SOFT;
 }
 
-VTBL(CGameLevel, 0x001f0150);
-VTBL(CImageSet1, 0x001f0198);
-VTBL(CImageSet2, 0x001f01e0);
-VTBL(CImageSet3, 0x001f0228);
-
 // Retail's standalone COMDAT of the inline ResetParamBlock has no caller: the
 // five real uses are all folded.  Force the out-of-line copy out.
 static CGameLevel* volatile g_resetParamBlockSink;

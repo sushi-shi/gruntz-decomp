@@ -43,7 +43,7 @@ def _class_of_fn(query: str) -> int:
         os.unlink(tmp)
     if not hits:
         # Fall back to the BINARY scan: covers non-RTTI vtables and thunk-indirect
-        # slots the reconstructed VTBL/hierarchy graph can't see (`sema vtable --holds`).
+        # slots the reconstructed catalog/hierarchy graph can't see (`sema vtable --holds`).
         if rva is not None:
             try:
                 from gruntz.core import vtable_scan as vs

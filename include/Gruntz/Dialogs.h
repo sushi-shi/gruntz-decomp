@@ -292,7 +292,6 @@ private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
 SIZE_UNKNOWN();
-VTBL(CMultiHelpDlg, 0x001ea474);
 
 extern CString g_gruntNames[4];
 

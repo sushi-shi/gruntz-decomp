@@ -8,7 +8,7 @@ enumerator is a DECL_REF_EXPR, never an INTEGER_LITERAL). That makes
 enumerator-reference count beside it the named half of the same field.
 
 Excluded, and each for a stated reason:
-  - label-macro arguments (RVA/DATA/SIZE/VTBL/...) - those are ADDRESSES and
+  - label-macro arguments (RVA/DATA/SIZE/...) - those are ADDRESSES and
     sizes recovered from the binary, not constants anyone chose.
   - literals in vendor/ and anything outside src/ + include/.
 """
@@ -20,7 +20,7 @@ import clang.cindex as cidx
 
 REPO = Path(__file__).resolve().parents[3]
 CDB = REPO / "build/clangd/compile_commands.json"
-LABEL_RE = re.compile(r"^\s*(RVA|RVA_COMPGEN|DATA|SIZE|SIZE_UNKNOWN|VTBL|VTBL_ABSENT)\s*\(")
+LABEL_RE = re.compile(r"^\s*(RVA|RVA_COMPGEN|DATA|SIZE|SIZE_UNKNOWN|VTBL_ABSENT)\s*\(")
 
 K = cidx.CursorKind
 CMP = {"==", "!=", "<", ">", "<=", ">="}

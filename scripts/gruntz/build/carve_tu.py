@@ -11,7 +11,7 @@ ways it fails are exactly the three this parses properly:
 
   * a bare `RVA_COMPGEN(...)` pin has NO body, so a rule like "after the closing brace
     only blanks and comments may follow" mis-fires on it and refuses the whole file;
-  * file-scope `DATA()`/`VTBL()` definitions sit between functions and must NOT travel
+  * file-scope `DATA()` definitions sit between functions and must NOT travel
     with whichever function happens to follow them;
   * a carved function may reference a file-scope static of its donor - move it too if
     only the carved set uses it, and REFUSE if both sides need it (splitting there would
@@ -33,14 +33,14 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 
 # Leading whitespace is allowed: a TU whose bodies live inside `namespace X {`
 # indents every pin, and a column-anchored regex silently sees zero items there.
-PIN = re.compile(r"^[ \t]*(?P<macro>RVA|RVA_COMPGEN|DATA|VTBL)"
+PIN = re.compile(r"^[ \t]*(?P<macro>RVA|RVA_COMPGEN|DATA)"
                  r"\((?P<rva>0x[0-9a-fA-F]+)", re.M)
 IDENT = re.compile(r"\b([A-Za-z_][A-Za-z0-9_]*)\b")
 
 
 def parse_items(text):
     """(prologue, [item], epilogue) where each item is a dict:
-         kind : 'fn' (RVA + body) | 'pin' (bare RVA_COMPGEN) | 'data' (DATA/VTBL + def)
+         kind : 'fn' (RVA + body) | 'pin' (bare RVA_COMPGEN) | 'data' (DATA + def)
          rva  : int
          text : the exact source slice, so re-emitting is byte-faithful
     A `pin` is recognised by having no `{...}` body before the next pin - that is the
@@ -78,7 +78,7 @@ def parse_items(text):
         body = text[pos:end]
         if macro == "RVA_COMPGEN":
             kind = "pin"
-        elif macro in ("DATA", "VTBL"):
+        elif macro == "DATA":
             kind = "data"
         else:
             kind = "fn"
@@ -111,7 +111,7 @@ def parse_items(text):
 
 
 def file_scope_names(prologue, items):
-    """Identifiers defined at file scope in the donor (its DATA/VTBL defs and statics)."""
+    """Identifiers defined at file scope in the donor (its DATA defs and statics)."""
     names = set()
     for chunk in [prologue] + [it["text"] for it in items if it["kind"] == "data"]:
         for m in re.finditer(r"^\s*(?:static\s+)?[A-Za-z_][\w:<>,\s\*&]*?"
@@ -223,7 +223,7 @@ def main(argv=None):
             print(f"    merged {len(set(extra))} include(s) into {dest}")
         # insert each item at its RVA-sorted slot so the file stays ascending
         for rva, txt in carved:
-            # CODE pins only: a DATA()/VTBL() RVA is in .data (0x0024xxxx) and
+            # CODE pins only: a DATA() RVA is in .data (0x0024xxxx) and
             # outranks every .text RVA, so including them puts the body at the
             # top of the file and breaks the ascending-RVA invariant.
             marks = [(m.start(), int(m.group("rva"), 16)) for m in PIN.finditer(dtext)

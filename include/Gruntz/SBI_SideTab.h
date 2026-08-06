@@ -63,6 +63,5 @@ public:
     i32 m_drawGate;
 };
 SIZE_UNKNOWN();
-VTBL(CSBI_SideTab, 0x001eae3c);
 
 #endif // GRUNTZ_SBI_SIDETAB_H

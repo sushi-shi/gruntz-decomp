@@ -7,7 +7,6 @@
 
 DATA(0x00253c68)
 CGameWnd* g_activeGameWnd;
-VTBL(CGameWnd, 0x001ea344);
 
 // @identity-TODO ?1CGameWnd - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU

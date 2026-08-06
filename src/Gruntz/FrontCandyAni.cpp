@@ -162,10 +162,6 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     }
 }
 
-VTBL(CEyeCandyAni, 0x001e8334);
-VTBL(CFrontCandyAni, 0x001e83e4);
-VTBL(CFrontCandy, 0x001e84ec);
-
 // @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
 // 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad1b0, 0x102)

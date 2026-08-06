@@ -22,11 +22,6 @@
 #include <sys/types.h>
 #include <time.h>
 
-VTBL(CParseSlotHashNode, 0x001ef740);
-VTBL(CSymRecNode, 0x001ef744);
-VTBL(CSymTabNode, 0x001ef748);
-VTBL(CSymParser, 0x001ef750);
-VTBL(CParserObjList, 0x001ef75c);
 DATA(0x0020cff0)
 const char g_sepSlash[] = "\\";
 

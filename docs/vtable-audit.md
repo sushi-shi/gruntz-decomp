@@ -7,7 +7,7 @@ history if you need a specific class's decision. Read alongside `docs/vtable-map
 this answers the campaign's open question **"when are vtables DONE?"**
 
 Method: grep the tree for the three form families, then classify each hit against
-the retail `.rdata` (VA = RVA + 0x400000), `config/retail/vtable_names.csv` (the realized
+the retail `.rdata` (VA = RVA + 0x400000), `config/retail/vtables_game.csv` (the realized
 `??_7` catalog; the old `include/UnknownVTables.h` tracking header is retired), and the
 Ghidra/delinker symbol names. Categories:
 
@@ -80,7 +80,7 @@ the manual store reloc-masks against the real `??_7`.
 
 | `g_*Vtbl` extern | RVA (VA) | realized `??_7` | note |
 | :--------------- | :------- | :-------------- | :--- |
-| `g_zDArrayVtbl` | 0x1e70fc (0x5e70fc) | `??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@` | templated — can't `VTBL()`, stays `vtable_names.csv` |
+| `g_zDArrayVtbl` | 0x1e70fc (0x5e70fc) | `??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@` | templated — can't `VTBL()`, stays `vtables_game.csv` |
 | `g_buteTreeDtorVtbl` | 0x1e94ac | `??_7zPTree@@6B@` | templated tree |
 | `g_cmdBaseVtbl` | 0x1e9674 (0x5e9674) | `??_7CGruntzCommand@@6B@` | own class emits it; stamp lives in out-of-line thunks (also cat 4) |
 | `g_movieScratchVtbl` | 0x1e971c | `??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@` | templated CArray |
@@ -133,7 +133,7 @@ Complete correct reconstructions whose vptr *shape* can't be `cl`-auto-emitted a
 the reference site. Two sub-families:
 
 **Foreign-factory / non-RTTI object vtables** (a sub-object the class placement-
-`new`s + stamps; object class in another TU; not in `vtable_names.csv`):
+`new`s + stamps; object class in another TU; not in `vtables_game.csv`):
 `g_wwdObjVtbl`/`g_wwdSubVtbl`/`g_wwdGameObjectVtbl`/`g_wwd159250FinalVtbl`/
 `g_wwd159440FinalVtbl`/`g_wwd1598d0FinalVtbl`/`g_wwdObjFinalVtbl`/`g_wwdGridVtbl`/
 `g_wwdGridIterVtbl` (0x1f00xx), `g_planeRenderVtbl` (0x1f02a8), `g_poolItemVtbl`

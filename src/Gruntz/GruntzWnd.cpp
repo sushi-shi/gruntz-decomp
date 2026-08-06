@@ -197,5 +197,3 @@ i32 CGruntzWnd::OnPaint() {
 i32 CGruntzWnd::UnusedWindowQuery() {
     return 0;
 }
-
-VTBL(CGruntzWnd, 0x001ea2d4);

@@ -33,12 +33,6 @@ i32 g_dinputBeepEnabled;
 DATA(0x00253ab0)
 i32 g_dinputThirdEnabled;
 
-VTBL(CInputDevice, 0x001ef628);
-VTBL(CDeviceConfigB, 0x001ef640);
-VTBL(CDeviceConfigC, 0x001ef658);
-VTBL(CInputDevRoot, 0x001ef670);
-VTBL(CInputDevBase, 0x001ef680);
-
 // @identity-TODO ?1DirectInputMgr2 - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (45 fns) came from the static library. It belongs to another compiland.

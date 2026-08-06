@@ -8,7 +8,7 @@ These were the WAP hand-rolled-vtable metrics that the vtable campaign drove to 
   * ``g_*Vtbl`` globals          - ``g_...Vtbl``              (a vtable-datum extern/stamp)
   * ``m_vtbl`` / ``m_vptr`` members - a hand-rolled vptr field at +0x00
 
-Every explicit vtable must be a real C++ ``virtual`` (catalogued via ``VTBL(...)``),
+Every explicit vtable must be a real C++ ``virtual`` (recorded in the game catalog),
 so NONE of these idioms may reappear. This guard scans ``src/`` + ``include/`` (comments
 and string/char literals blanked, so annotations/data do not false-positive), prints
 every offending ``file:line: token``, and exits nonzero if any are present. Wired into

@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-VTBL(CDDrawWorker, 0x001efbe8);
 inline void* operator new(u32, void* p) {
     return p;
 }

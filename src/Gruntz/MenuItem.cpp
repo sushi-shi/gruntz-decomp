@@ -18,10 +18,6 @@
 
 #include <stdio.h>
 
-VTBL(CMenuItem, 0x001f08c0);
-
-VTBL(CMenuItem2, 0x001f08f8);
-
 RVA(0x00184610, 0x20)
 CString CMenuItem::GetUpName() {
     return m_upName;

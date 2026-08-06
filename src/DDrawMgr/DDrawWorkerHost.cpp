@@ -47,5 +47,3 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         m_colOffsets = NULL;
     }
 }
-
-VTBL(CDDrawWorkerHost, 0x001f0270);

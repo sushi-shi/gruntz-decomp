@@ -9,7 +9,7 @@ clang-format-wrapped invocation silently vanishes from symbol_names.csv).
 Checked forms:
 
   RVA(0x00xxxxxx, 0xN)             DATA(0x00xxxxxx)
-  VTBL(CClass, 0x00xxxxxx)         VTBL_ABSENT(CClass)
+  VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
   SIZE(0xN)                        SIZE_UNKNOWN()
   DATA_COMPGEN(0x00xxxxxx, name, <value>)   (addr + name on the macro's line;
@@ -51,7 +51,6 @@ VOLATILE_COMPGEN_RE = re.compile(r"\bRVA_COMPGEN\([^)]*,\s*_?\$E[0-9]+\s*\)")
 CANON = {
     "RVA": rf"RVA\({ADDR}, {HEXN}\)",
     "DATA": rf"DATA\({ADDR}\)",
-    "VTBL": rf"VTBL\({NAME}, {ADDR}\)",
     "VTBL_ABSENT": rf"VTBL_ABSENT\({NAME}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
     "SIZE": rf"SIZE\({HEXN}\)",
@@ -65,10 +64,10 @@ CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit
 # (the WhitespaceSensitiveMacros carrier RVA_COMPGEN is wrap-immune - a giant
 # mangled name may legitimately run long).
-WRAPPABLE = {"RVA", "DATA", "VTBL", "VTBL_ABSENT", "SIZE", "SIZE_UNKNOWN"}
+WRAPPABLE = {"RVA", "DATA", "VTBL_ABSENT", "SIZE", "SIZE_UNKNOWN"}
 # longest-first so RVA_COMPGEN/SIZE_UNKNOWN/VTBL_ABSENT win their prefixes
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|DATA_COMPGEN|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA|VTBL)\s*\(")
+    r"\b(RVA_COMPGEN|DATA_COMPGEN|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /

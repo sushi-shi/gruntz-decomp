@@ -308,9 +308,9 @@ def cmd_build(args) -> None:
     # nothing, so there is nothing to summarize/check"), which made `gruntz build` exit 0
     # having run ZERO gates. That reasoning holds for the objdiff summary and for nothing
     # else: the FATAL gates below read SOURCE, not report.json. verify_stubs, class_sizes,
-    # vtable_bans, class_vtables, vtable_virtuality and the VTBL/uniqueness asserts all
+    # vtable_bans, class_vtables, vtable_virtuality and the catalog asserts all
     # scan src/ + include/ + config/ - so the ONLY edits they exist to catch (an @stub tag,
-    # a SIZE(), a VTBL() binding, a header layout) are exactly the edits that need not
+    # a SIZE(), a vtable catalog binding, a header layout) are exactly the edits that need not
     # produce a byte of new codegen. The check was therefore skipped precisely when it was
     # the only thing that could fail, and "the build passed" could mean "nothing was
     # checked". Measured: an @stub metadata fix + a header edit -> ninja no-op -> exit 0,
@@ -489,15 +489,11 @@ def cmd_build(args) -> None:
           "include-order ratchet violated - the include block is duplicated or out of "
           "canonical order (python -m gruntz.audit.include_order --fix-dupes --fix)",
           "normal")
-    # SECONDARY (MI) vtable coverage: every through-base ??_7<C>@@6B<Base>@@@ name a
-    # VTBL2 binds must stay bound. A dropped VTBL2 that shares its rva with a plain VTBL
-    # (a through-base primary alias) keeps the rva covered, so vtable_coverage can't see
-    # the NAME regress - this census (config/retail/secondary-vtables.tsv) locks it. Source-only,
-    # sub-second (no binary scan), so it runs at normal tier alongside the other ratchets.
+    # SECONDARY (MI) vtable coverage: every through-base name in the game catalog
+    # must remain bound in symbol_names.csv. Sub-second, so it runs at normal tier.
     _gate("gruntz.cleanliness.vtable_secondary", [],
-          "secondary-vtable coverage violated - a VTBL2 through-base vtable name was "
-          "dropped/renamed or is unbound; if intended, re-baseline "
-          "(python -m gruntz.cleanliness.vtable_secondary --write-baseline)", "normal")
+          "secondary-vtable coverage violated - a catalogued through-base vtable "
+          "name is unbound (python -m gruntz.cleanliness.vtable_secondary --list)", "normal")
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():
@@ -552,7 +548,7 @@ def cmd_build(args) -> None:
             log("structs.json is current (no source newer) - skipping the layout regen.")
 
     # Class-metadata invariants. Every vtable-bearing class should carry a
-    # VTBL/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
+    # retail/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
     # class added without one is caught here, not later.
     # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
     # without SIZE/SIZE_UNKNOWN fails the build. It ALSO now checks CORRECTNESS:
@@ -574,30 +570,28 @@ def cmd_build(args) -> None:
           "vtable-audit: source vtable hierarchy does not match the binary - drive "
           "INHERIT/RENAME/REDECLARE/OVERRIDE/MISSING to 0 "
           "(python -m gruntz.core.vtable_hierarchy --audit)", "full")
-    # VTBL(name, rva) UNIQUENESS - a HARD bijection assert: every vtable rva is bound by
-    # exactly one VTBL() annotation (a multiply-bound rva is a duplicate or a mis-catalog).
+    # Game-vtable catalog structure: unique rows/names and a valid kind for each entry.
     _gate("gruntz.cleanliness.class_vtables", ["--assert-unique"],
-          "class-vtables: a vtable rva is bound by more than one VTBL() "
+          "class-vtables: the game-vtable catalog is structurally invalid "
           "(python -m gruntz.cleanliness.class_vtables --assert-unique)", "full")
     # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
     _gate("gruntz.cleanliness.class_vtables", [],
-          "class-vtables: a vtable-bearing class is uncatalogued - bind a VTBL() / "
-          "VTBL2(), dissolve the view, or prove VTBL_ABSENT "
+          "class-vtables: a vtable-bearing class is uncatalogued - add it to "
+          "vtables_game.csv, dissolve the view, or prove VTBL_ABSENT "
           "(python -m gruntz.cleanliness.class_vtables)", "full")
-    # Vtable COVERAGE: every vtable our analysis finds must be bound in source or catalogued
-    # as MFC/CRT in config/retail/library_vtables.csv.
+    # Vtable COVERAGE: every analysed vtable must be in the game or library catalog.
     _gate("gruntz.cleanliness.vtable_coverage", [],
-          "vtable-coverage: analysed vtable(s) uncovered - bind in source via VTBL()/DATA() "
-          "or add MFC/CRT to config/retail/library_vtables.csv "
+          "vtable-coverage: analysed vtable(s) uncovered - add them to "
+          "vtables_game.csv or vtables_library.csv "
           "(python -m gruntz.cleanliness.vtable_coverage --list)", "full")
-    # Vtable OWNERSHIP: re-derive every VTBL() binding from the image (the ??_7 slot ->
+    # Vtable OWNERSHIP: re-derive every game-catalog binding from the image (the ??_7 slot ->
     # scalar-deleting dtor -> ??1 chain). Slowest of the vtable gates -> full.
     _gate("gruntz.cleanliness.vtable_owner", ["--audit"],
-          "vtable-owner: a VTBL() binding contradicts the vtable that actually dispatches "
+          "vtable-owner: a catalog binding contradicts the vtable that actually dispatches "
           "to the class's destructor (python -m gruntz.cleanliness.vtable_owner --audit)", "full")
-    # Vtable VIRTUALITY: every VTBL(Name,rva) binds a REAL class whose virtuals model the slots.
+    # Vtable VIRTUALITY: every primary game row binds a real class modelling the slots.
     _gate("gruntz.cleanliness.vtable_virtuality", [],
-          "vtable-virtuality: a VTBL'd vtable is not modelled by real virtuals - the class "
+          "vtable-virtuality: a catalogued vtable is not modelled by real virtuals - the class "
           "must be defined and declare a virtual for each slot "
           "(python -m gruntz.cleanliness.vtable_virtuality --list)", "full")
     # Vtable SLOT BINDING: coverage says the vtable is bound; virtuality says the class

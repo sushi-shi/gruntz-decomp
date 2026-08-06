@@ -8,8 +8,6 @@
 
 class CUserLogic;
 
-VTBL(CLevelTime, 0x001e801c);
-
 // CLevelTime's ctor is defined HERE, not in LevelTime.cpp: retail's copy sits at
 // 0x9b8b0, immediately behind this TU's CreateLevelTime (0x9b770), so this is the
 // TU that emits it - along with the rest of the class's COMDAT set (vtable, RTTI,

@@ -9,11 +9,6 @@
 // ButeNode's block - that is COMDAT POOLING, not a mis-home: the symbol really
 // is in this unit's object, and MSVC pools deleting dtors away from the TU's
 // own run (see docs/exe-map/README.md).
-VTBL(CBSecStream, 0x001f0510);
-
-VTBL2(CBSecStream, zPtrColl, 0x001f0514)
-
-VTBL2(CBSecStream, CContainerErr, 0x001f0510)
 
 RVA(0x00170210, 0x118)
 RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)

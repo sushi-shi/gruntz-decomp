@@ -5,7 +5,7 @@ THE GAP THIS CLOSES
 -------------------
 Two sibling gates already guard the vtable graph, and neither can see a WIRING defect:
 
-  * ``vtable_coverage``   - every analysed vtable has a ``VTBL(Name, rva)`` binding.
+  * ``vtable_coverage``   - every analysed vtable has a catalog binding.
   * ``vtable_virtuality`` - COUNTING only: the class + bases must declare *at least* N
                             virtuals for an N-slot vtable.
 
@@ -21,7 +21,7 @@ wrong-dispatch bugs that every gate called green. A machine should find these.
 
 THE JOIN
 --------
-Per vtable V bound ``VTBL(C, rva_v)``, per slot index i:
+Per primary game vtable V bound to class C, per slot index i:
 
   LEFT   the retail slot's target RVA ``R_i``, from ``vtable_scan`` (stride-4 DIR32 reloc
          runs, exact per-vtable size). CRITICAL: a C++ slot points at a one-instruction
@@ -49,7 +49,7 @@ CLASSIFICATION
   (c) UNBOUND        nothing in src/ claims R_i - unreconstructed. Expected for the
                      stub backlog: reported as INFO, never a failure.
 
-Library vtables (config/retail/library_vtables.csv) are exempt, as in the sibling gates.
+Library vtables (config/retail/vtables_library.csv) are exempt, as in the sibling gates.
 Pure-virtual slots (``__purecall``) are correct-by-construction and pass.
 
 THE RATCHET (RETIRED 2026-07-22 - the gate is now PURE fail-closed)
@@ -72,12 +72,12 @@ from __future__ import annotations
 import csv
 import sys
 
+from gruntz.core import vtable_catalog
 from gruntz.core import vtable_scan as vs
 from gruntz.core.class_meta import rel, vtbl_annotations
 from gruntz.cleanliness.vtable_virtuality import _index_classes
 
 REPO = vs.REPO
-LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
 BASELINE = REPO / "config" / "vtable-slot-binding-baseline.tsv"
 IB = vs.IMAGEBASE
 
@@ -153,15 +153,7 @@ def load_symbols():
 
 
 def load_lib_rvas():
-    rvas = set()
-    if LIB_CSV.exists():
-        with LIB_CSV.open() as f:
-            for r in csv.DictReader(f):
-                try:
-                    rvas.add(int(r["rva"], 16))
-                except (ValueError, TypeError, KeyError):
-                    pass
-    return rvas
+    return {row["rva"] for row in vtable_catalog.library_rows()}
 
 
 def base_closure(name, classes, seen=None):
@@ -302,7 +294,7 @@ def _print_list():
         vt = vs.vtable_at(norm)
         if vt is None:
             continue
-        print(f"\n# VTBL({cls}, 0x{norm:06x})  slots={vt['size']}  {vt['conf'] if 'conf' in vt else vs.confidence(vt)}")
+        print(f"\n# {cls} @ 0x{norm:06x}  slots={vt['size']}  {vt['conf'] if 'conf' in vt else vs.confidence(vt)}")
         for k, _sr, raw, body in vs.iter_slots(vt):
             hit = resolve_slot(symbols, raw, body)
             if hit is None:

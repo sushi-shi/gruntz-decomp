@@ -5,7 +5,6 @@
 
 #include <Ints.h>
 
-VTBL(CObjListBase, 0x001ef760);
 struct CObjListBase {
     virtual void UnusedListHook() = 0;
 

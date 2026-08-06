@@ -158,6 +158,5 @@ inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFl
     m_payloadSize = 0;
 }
 #endif
-VTBL(AnimWorkerObj, 0x001efb80);
 
 #endif // GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H

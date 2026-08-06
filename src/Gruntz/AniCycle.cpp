@@ -11,7 +11,6 @@
 
 #include <stddef.h>
 
-VTBL(CAniCycle, 0x001e86a4);
 template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

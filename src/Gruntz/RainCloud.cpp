@@ -14,8 +14,6 @@
 
 #include <stddef.h>
 
-VTBL(CRainCloud, 0x001e7324);
-
 RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 

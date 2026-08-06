@@ -18,8 +18,6 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-VTBL(CSBI_ImageSetAni, 0x001ead6c);
-
 // @early-stop
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(

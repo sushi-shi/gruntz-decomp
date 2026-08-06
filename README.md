@@ -60,7 +60,7 @@ scripts/archive/              retired one-shot tooling + dynamic-analysis notes 
 recomp/                       execute RETAIL's own code as an oracle (harness/ + docs/)
 src/                          reconstructed C++ (single source of truth), grouped by the retail
                               compiland dirs: DDrawMgr/ DinMgr2/ Dsndmgr/ Net/ Gruntz/ Wwd/ …
-include/                      shared headers (mirror retail `incs\`): rva.h (RVA()/DATA()/VTBL()
+include/                      shared headers (mirror retail `incs\`): rva.h (RVA()/DATA()
                               annotations), Ints.h (i32/u32 aliases), Mfc.h + Win32.h umbrellas,
                               and per-TU headers under module subdirs (each TU exports its own
                               globals — the catch-all Globals.h/.cpp are retired)

@@ -17,8 +17,6 @@
 
 #include <stddef.h>
 
-VTBL(CGruntSelectedSprite, 0x001e7bfc);
-
 template<> DATA(0x00244da8)
 CActReg CActRegPool<CGruntSelectedSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)

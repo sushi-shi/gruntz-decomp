@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-VTBL(CAniElement, 0x001efba8);
-
 DATA(0x0021ab18)
 const char g_fmtPathJoin[] = "%s%s%s";
 

@@ -40,9 +40,6 @@ CActReg CActRegPool<CGruntVoice>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00251500)
 CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CVoiceTrigger, 0x001e885c);
-VTBL(CGruntVoice, 0x001eaf6c);
-
 struct CString;
 
 static inline CActHandler* VActLookup(i32 coord) {

@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-VTBL(CMapMgr, 0x001ea3b4);
 RVA(0x0009e700, 0xd)
 CMapArrayA::CMapArrayA() {
     m_storage = NULL;

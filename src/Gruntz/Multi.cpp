@@ -70,7 +70,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-VTBL(CNetMgr, 0x001ea42c);
 // owner-TU unproven: bss sits in the gametext..gruntzcmdmgr window
 DATA(0x00245550)
 i32 g_cfgWord;

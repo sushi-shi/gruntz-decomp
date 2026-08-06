@@ -44,8 +44,6 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CW
     m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
 }
 
-VTBL(CSingleFrameMessage, 0x001e864c);
-
 // @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
 // 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ab5b0, 0x102)

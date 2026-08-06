@@ -1,6 +1,6 @@
 """gruntz.sema.vtable - `gruntz sema vtable`: binary vtable finder (any vtable,
 RTTI or not; ILT thunks chased): dump a vtable's slots, or find which
-vtable/slot holds a fn - the coverage the src-side VTBL/hierarchy graph lacks
+vtable/slot holds a fn - the coverage the src-side catalog/hierarchy graph lacks
 (non-RTTI tables, thunk-indirect slots).
 
 Engine: gruntz.core.vtable_scan (shared with the build/gates; also runnable

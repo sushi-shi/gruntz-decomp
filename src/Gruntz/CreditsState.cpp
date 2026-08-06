@@ -52,8 +52,6 @@ static inline CGruntzMgr* Owner(CState* s) {
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled;
 
-VTBL(CCreditsState, 0x001e9c64);
-
 DATA(0x001e96f8)
 static const double kScreenH = 480.0;
 DATA(0x001e96f0)

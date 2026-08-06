@@ -79,9 +79,6 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
 DATA(0x001e8d10)
 const i32 g_msgmap_CBattlezDlgColors = 6205544;
 
-VTBL(CBattlezDlg, 0x001e8bac);
-VTBL(CBattlezDlgColors, 0x001e8d94);
-VTBL(CBattlezDlgCustom, 0x001e8ee4);
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc;
 DATA(0x00229c50)

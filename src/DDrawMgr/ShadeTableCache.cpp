@@ -53,7 +53,6 @@ inline CShadeTableArray::~CShadeTableArray() {
         ::operator delete(m_pData);
     }
 }
-VTBL(CShadeTableArray, 0x001efb28);
 
 static inline u16* Pix16(void* p) {
     return static_cast<u16*>(p);

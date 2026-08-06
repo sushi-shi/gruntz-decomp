@@ -45,7 +45,7 @@ Recovery chain (all four steps read GRUNTZ.EXE and nothing else)
                       than an anchor - always reported as BAND, never as DIRECT.
 
 Self-validation: run `--map` and check it against everything independently known.
-It reproduces the RTTI-less MFC vtable catalog in config/retail/library_vtables.csv exactly
+It reproduces the RTTI-less MFC vtable catalog in config/retail/vtables_library.csv exactly
 (CDWordArray@0x1ec29c, CPtrArray@0x1ec2dc, CByteArray@0x1ed28c, CObArray@0x1ed494,
 CObList@0x1ed4b4, CPtrList@0x1eb054, CMapPtrToPtr@0x1ed264, ...), and it names, from
 the binary alone, every band the FID could only call AMBIG.

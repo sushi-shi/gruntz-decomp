@@ -86,8 +86,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-VTBL(CGrunt, 0x001e8754);
-
 DATA(0x001e9a68)
 double s_fpZero = 0.0;
 
@@ -172,7 +170,6 @@ static char s_codeA[] = "A";
 static char s_codeE[] = "E";
 static char s_codeI[] = "I";
 
-VTBL(CMovingLogic, 0x001e87ac);
 DATA(0x002455b0)
 i32 g_traitorMode;
 

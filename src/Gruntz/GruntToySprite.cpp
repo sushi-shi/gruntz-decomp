@@ -21,8 +21,6 @@
 
 #include <stddef.h>
 
-VTBL(CGruntToySprite, 0x001e7b4c);
-
 template<> DATA(0x00244d58)
 CActReg CActRegPool<CGruntToySprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)

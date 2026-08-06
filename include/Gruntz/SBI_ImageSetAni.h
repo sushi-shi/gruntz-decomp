@@ -69,6 +69,5 @@ public:
     void SetDirectionAlt(StatusBarDock position, i32 animate);
 };
 SIZE(0x54);
-VTBL(CSBI_StatzTabArrow, 0x001eac94);
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

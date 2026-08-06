@@ -17,7 +17,6 @@ typedef enum GruntzAppResId {
     IDC_ERROR_TEXT = 0x40d,
 } GruntzAppResId;
 
-VTBL(CGruntzApp, 0x001e9ab4);
 DATA(0x00244ea0)
 char g_errorText[0x100] = {0};
 

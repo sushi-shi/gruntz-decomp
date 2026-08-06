@@ -22,10 +22,6 @@
 
 #include <string.h>
 
-VTBL(CSBI_RectOnly, 0x001eab8c);
-VTBL(CStatusBarItem, 0x001eabcc);
-VTBL(CSBI_Image, 0x001eac0c);
-
 // @early-stop
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(

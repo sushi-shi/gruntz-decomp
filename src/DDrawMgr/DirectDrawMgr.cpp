@@ -21,10 +21,6 @@
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
-VTBL(CFileImageSurface, 0x001efa58);
-VTBL(CPoolItemA88, 0x001efa88);
-VTBL(CPoolItemAB8, 0x001efab8);
-VTBL(CPoolItemAE8, 0x001efae8);
 DATA(0x002bed00)
 CDDrawPtrCollections* g_DirectDrawMgr = 0;
 

@@ -17,7 +17,6 @@ i32 CGuardPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGa
 
 RVA_COMPGEN(0x000103e0, 0x1e, ??_GCGuardPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010410, 0x44, ??1CGuardPoint@@UAE@XZ)
-VTBL(CGuardPoint, 0x001e7154);
 
 // @early-stop
 // The vptr stamp and the body's first member re-read are transposed. Every body

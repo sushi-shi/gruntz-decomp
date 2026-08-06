@@ -72,7 +72,6 @@ GZ_ENUM_BEGIN(TrigErrSite)
     TRIGSITE_LINKS_KEY_MISS = 0x453
 GZ_ENUM_END(TrigErrSite)
 
-VTBL(CTileTriggerLogic, 0x001eaea4);
 class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
@@ -130,21 +129,18 @@ public:
     i32 m_textId;
 };
 SIZE(0xc8);
-VTBL(CGiantRockLogic, 0x001eaee4);
 
 class CCoveredPowerupLogic : public CTileTriggerLogic {
 public:
     CCoveredPowerupLogic();
 };
 SIZE(0x9c);
-VTBL(CCoveredPowerupLogic, 0x001eaef4);
 
 class CTileTimeTriggerLogic : public CTileTriggerLogic {
 public:
     CTileTimeTriggerLogic();
 };
 SIZE(0x9c);
-VTBL(CTileTimeTriggerLogic, 0x001eaf04);
 
 class CTileSecretTriggerLogic : public CTileTriggerLogic {
     virtual i32 Tick() OVERRIDE;
@@ -153,6 +149,5 @@ public:
     CTileSecretTriggerLogic();
 };
 SIZE(0x9c);
-VTBL(CTileSecretTriggerLogic, 0x001eaf14);
 
 #endif // TILETRIGGERLOGIC_H

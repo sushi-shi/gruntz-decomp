@@ -8,8 +8,6 @@
 
 #include <math.h>
 
-VTBL(CWwdGrid, 0x001f0328);
-
 RVA(0x001682a0, 0x46)
 CWwdGridShell::~CWwdGridShell() {}
 

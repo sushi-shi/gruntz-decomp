@@ -16,7 +16,6 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-VTBL(CGruntStartingPoint, 0x001e8284);
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

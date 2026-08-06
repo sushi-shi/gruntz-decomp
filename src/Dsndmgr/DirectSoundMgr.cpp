@@ -40,12 +40,6 @@ typedef enum DSoundDx5Magic {
     DSBUFFERDESC_SIZE = 0x14,
 } DSoundDx5Magic;
 
-VTBL(DirectSoundMgr, 0x001ef6b8);
-VTBL(DSoundCloneInst, 0x001ef6bc);
-VTBL(DSoundBaseSub, 0x001ef6c0);
-VTBL(SoundDevice, 0x001ef6c4);
-VTBL(PureSoundElem, 0x001ef6c8);
-VTBL(DSoundVoice, 0x001ef6d0);
 DATA(0x00253ab8)
 i32 g_volumeTable[VOLUME_PCT_MAX];
 DATA(0x00253c48)

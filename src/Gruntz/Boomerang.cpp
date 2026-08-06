@@ -14,7 +14,6 @@
 
 #include <stddef.h>
 
-VTBL(CBoomerang, 0x001e792c);
 DATA(0x001eaae8)
 const double g_projPhase0 = 3.1415927;
 

@@ -35,8 +35,6 @@
 #include <math.h>
 #include <string.h>
 
-VTBL(CKitchenSlime, 0x001e750c);
-
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 

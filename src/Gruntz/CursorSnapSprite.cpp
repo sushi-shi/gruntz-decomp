@@ -91,5 +91,3 @@ void CCursorSnapSprite::FireActivation(i32 id) {
         (this->*((*e2)))();
     }
 }
-
-VTBL(CCursorSnapSprite, 0x001e8074);

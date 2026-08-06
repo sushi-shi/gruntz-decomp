@@ -49,25 +49,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-VTBL(CLoadable, 0x001efc30);
-VTBL(CDDrawSubMgrLeaf, 0x001efc78);
-VTBL(CDDrawSubMgrLeafScan, 0x001efca0);
-VTBL(CDDrawWorkerMapSmall, 0x001efcc8);
-VTBL(CDDrawWorkerCache, 0x001efd00);
-VTBL(CDDrawWorkerRegistry, 0x001efd28);
-VTBL(CDDrawWorkerList, 0x001efd88);
-VTBL(CDDrawChildGroup, 0x001efdc0);
-VTBL(CDDrawSubMgrPages, 0x001efe08);
-VTBL(CFileMem, 0x001efe30);
-VTBL(CFileMemBase, 0x001efe68);
-VTBL(CDDrawWorkerA, 0x001efea0);
-VTBL(CDDrawWorkerB, 0x001efed0);
-VTBL(LeafCue, 0x001eff08);
 DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
-VTBL(CDDrawSurfacePair, 0x001eff30);
-VTBL(CDDrawSurfaceChildA, 0x001eff70);
-VTBL(CDrawSubWorker, 0x001effa0);
 
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
     return p->m_cues.GetCount();

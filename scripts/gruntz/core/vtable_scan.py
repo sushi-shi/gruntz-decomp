@@ -216,7 +216,7 @@ def iter_slots(v):
 def find_holding(fn_rva):
     """Every (vtable_dict, slot_index, via_thunk) whose slot resolves to `fn_rva`
     (directly or through an ILT thunk). Answers 'which vtable/slot holds this fn?' for
-    ANY vtable in the binary - RTTI or not - which the reconstructed VTBL graph can't."""
+    ANY vtable in the binary - RTTI or not - which the reconstructed catalog graph can't."""
     hits = []
     for v in VTABLES:
         if v['sec'] not in ('.rdata', '.data'):

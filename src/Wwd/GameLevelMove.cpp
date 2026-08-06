@@ -13,8 +13,6 @@
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
 
-VTBL(CWwdGridShell, 0x001f0310);
-
 // @early-stop
 RVA(0x00167130, 0x83)
 i32 CGameLevel::ApplyMove(CGameObject* obj, i32 a, i32 b, i32 c) {

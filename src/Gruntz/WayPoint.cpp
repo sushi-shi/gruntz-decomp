@@ -17,7 +17,6 @@ i32 CWayPoint::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGame
 
 RVA_COMPGEN(0x000102b0, 0x1e, ??_GCWayPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x000102e0, 0x44, ??1CWayPoint@@UAE@XZ)
-VTBL(CWayPoint, 0x001e74b4);
 
 // @early-stop
 // The vptr stamp and the body's first member re-read are transposed. Every body

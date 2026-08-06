@@ -22,19 +22,11 @@
 #include <math.h>
 #include <string.h>
 
-VTBL(CFader, 0x001f07a8);
-VTBL(CFaderMesh, 0x001f07c0);
-VTBL(CRezBufferObject, 0x001f07d8);
 DATA(0x001f07ec)
 float g_fxBias = -50.0f;
 DATA(0x001f07f4)
 float g_fxEps = 1.0f;
 
-VTBL(CFaderFlat, 0x001f07f8);
-VTBL(CFaderRadial, 0x001f0810);
-VTBL(CFaderSine, 0x001f0848);
-VTBL(CFaderLight, 0x001f0870);
-VTBL(CFaderShape, 0x001f0890);
 DATA(0x002c279c)
 u8 g_fxRandSeeded;
 DATA(0x002c27a8)

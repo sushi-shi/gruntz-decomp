@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-VTBL(CGruntzSoundInnerZ, 0x001ef700);
 DATA(0x001ee8ec)
 char g_dot[] = ".";
 

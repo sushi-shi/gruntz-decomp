@@ -41,9 +41,6 @@
 
 #include <string.h>
 
-VTBL(CDroppedObjectShadow, 0x001e787c);
-VTBL(CDroppedObject, 0x001e78d4);
-VTBL(CObjectDropper, 0x001e7a9c);
 DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0;
 DATA(0x001eaa00)

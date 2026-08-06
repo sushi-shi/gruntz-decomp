@@ -15,8 +15,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
 
-VTBL(CSBI_GruntMachine, 0x001eadbc);
-
 // @early-stop
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)

@@ -89,7 +89,6 @@ public:
 };
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
-VTBL(CResolveNode, 0x001efbc0);
 
 #ifndef CRESOLVENODE_OOL_CTOR
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)

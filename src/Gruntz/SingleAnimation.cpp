@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-VTBL(CSingleAnimation, 0x001e745c);
 template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

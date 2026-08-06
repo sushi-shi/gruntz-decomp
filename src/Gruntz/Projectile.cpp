@@ -53,8 +53,6 @@
 #include <math.h>
 #include <string.h>
 
-VTBL(CTimeBomb, 0x001e771c);
-VTBL(CProjectile, 0x001e798c);
 DATA(0x001f04b0)
 const double g_movingLogicMin = -2147483647.0;
 DATA(0x001f04b8)

@@ -12,7 +12,7 @@ per concern (all run in the `gruntz build` gate tail; each also `python -m`):
     vtable_slot_binding.py every slot wired to a real virtual (pure fail-closed;
                            the frozen backlog drained to 0 and was deleted)
     class_sizes.py         every class carries a correct SIZE/SIZE_UNKNOWN
-    class_vtables.py       every virtual-owning class carries its VTBL()
+    class_vtables.py       every virtual-owning class is catalogued
 
 (The shared class-definition scanner these build on is gruntz.core.class_meta.)
 

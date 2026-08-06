@@ -19,8 +19,6 @@
 
 #include <stddef.h>
 
-VTBL(CGruntHealthSprite, 0x001e7ba4);
-
 RVA(0x00011ef0, 0x4b)
 CGruntHealthSprite::CGruntHealthSprite() {}
 

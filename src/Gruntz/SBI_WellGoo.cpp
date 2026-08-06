@@ -22,8 +22,6 @@
 
 #include <string.h>
 
-VTBL(CSBI_WellGoo, 0x001eadfc);
-
 // @early-stop
 RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(

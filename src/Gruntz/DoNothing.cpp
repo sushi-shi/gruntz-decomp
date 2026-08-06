@@ -10,8 +10,6 @@
 
 #include <stddef.h>
 
-VTBL(CDoNothingNormal, 0x001e859c);
-VTBL(CDoNothing, 0x001e85f4);
 RVA(0x0000f6d0, 0x47)
 i32 CDoNothing::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
     if (!CUserLogic::SerializeMove(ar, tag, c, d)) {

@@ -5,8 +5,6 @@
 #include <Bute/PTreeNode.h>
 #include <Gruntz/String.h>
 
-VTBL(CButeNode, 0x001f051c);
-
 // @early-stop
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 // @early-stop
@@ -37,15 +35,9 @@ void __cdecl ButeValueTeardown(void* pValue) {
     }
 }
 
-VTBL2(CButeNode, CContainerErr, 0x001f051c)
-
-VTBL2(CButeNode, zPtrColl, 0x001f0518)
-
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
-VTBL2(zPTree, zErrHandling, 0x001e94ac)
-VTBL2(zPTree, zPtrColl, 0x001e949c)
 RVA(0x00174d70, 0x70)
 CButeNode::~CButeNode() {}
 

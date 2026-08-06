@@ -30,10 +30,6 @@
 
 #include <stddef.h>
 
-VTBL(CFortressFlag, 0x001e725c);
-VTBL(CParticlez, 0x001e7614);
-VTBL(CExplosion, 0x001e766c);
-
 template<> DATA(0x00244638)
 CActReg CActRegPool<CFortressFlag>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00244870)

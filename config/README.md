@@ -51,14 +51,14 @@ are nearly complete and therefore change infrequently.
   source annotation.
 - **`compiler-helper-functions.tsv`** — proven standalone compiler/source-induced
   forwarding helpers, including their exact retail jump targets.
-- **`library_vtables.csv`** — the MFC/CRT vtable catalog; with source VTBL()
-  bindings it must cover every vtable `vtable_scan` finds (coverage gate).
-- **`secondary-vtables.tsv`** — complete through-base vtable-name census used
-  to catch dropped `VTBL2` bindings.
+- **`vtables_game.csv`** — manually maintained game/engine vtables. `kind`
+  separates primary, multiple-inheritance secondary, and template tables; `unit`
+  is set only where a reconstructed object emits the catalogued symbol.
+- **`vtables_library.csv`** — manually maintained MFC/CRT/iostream vtables and
+  vtable-like linked-library tables. Together the two catalogs must cover every
+  vtable `vtable_scan` finds.
 - **`zlib_labels.csv`** — the vendored zlib-1.0.4 TU labels
   (verify_stubs/verify_library_overlap inputs).
-- **`vtable_names.csv`** — vtable RVA → mangled `??_7` name for the
-  delink/synth-PDB side (configure.py input).
 
 Retired configs (caller-audit ledgers, match-queue.md) are gone — their
 purposes live in `gruntz.cleanliness.caller_callee` and

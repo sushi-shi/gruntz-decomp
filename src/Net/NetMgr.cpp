@@ -14,8 +14,6 @@
 #include <dplay.h>
 #include <string.h>
 
-VTBL(CNetPlayerListNode, 0x001f0760);
-VTBL(CNetSessionNode, 0x001f0778);
 DATA(0x002bf840)
 i32 g_spEnumValidated = 0;
 

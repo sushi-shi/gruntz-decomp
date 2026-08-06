@@ -46,13 +46,6 @@ char g_rng2Seeded;
 DATA(0x002c2798)
 i32 g_rng2State;
 
-VTBL(CWwdGameObjectC, 0x001effd0);
-VTBL(CGameObject, 0x001f0020);
-VTBL(CWwdGameObjectF, 0x001f0060);
-VTBL(CWwdGameObjectA, 0x001f00a8);
-VTBL(CWwdGameObject, 0x001f00e8);
-VTBL(CAniAdvanceCursor, 0x001f0128);
-
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
 RVA(0x0015b2b0, 0xe)

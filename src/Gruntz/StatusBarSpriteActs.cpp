@@ -20,8 +20,6 @@
 template<> DATA(0x0024e670)
 CActReg CActRegPool<CStatusBarSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CStatusBarSprite, 0x001e7fc4);
-
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00011ac0, 0x6)

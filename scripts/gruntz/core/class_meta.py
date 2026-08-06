@@ -15,9 +15,8 @@ is never in one worklist under a stricter definition than another):
     at COLUMN 0 (no leading whitespace). File-scope only -> this deliberately
     EXCLUDES nested classes and function-local "view" structs (both indented),
     and forward declarations (``class X;`` - a ``;`` before any ``{``).
-  * A def immediately preceded by a ``template`` line is SKIPPED: a templated
-    class has a mangled ``??_7?$Name@...@@6B@`` vtable that VTBL(Name)'s simple
-    ``??_7Name@@6B@`` cannot express (those stay in config/retail/vtable_names.csv).
+  * A def immediately preceded by a ``template`` line is SKIPPED: template
+    specializations are catalogued by their complete mangled names.
   * Results are keyed by class NAME. The same name defined in several per-TU shim
     headers is ONE logical class: annotating the name once (anywhere) satisfies
     every def, so the worklist is a set of NAMES, each with a representative def
@@ -29,6 +28,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gruntz.core import vtable_catalog
+
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
@@ -37,12 +38,11 @@ RVA_H = INC / "rva.h"
 
 # A file-scope class/struct definition head: keyword at column 0, then the name.
 _CLASS_HEAD_RE = re.compile(r"^(class|struct)\s+([A-Za-z_]\w*)\b")
-# SIZE / SIZE_UNKNOWN / VTBL macro invocations (first arg = the class/type name).
+# SIZE / SIZE_UNKNOWN macro invocations.
 # POSITIONAL size labels (rva.h): SIZE(<bytes>); / SIZE_UNKNOWN(); sit directly
 # under the class definition (or its fwd decl / typedef alias line).
 _SIZE_POS_RE = re.compile(r"^\s*SIZE\(\s*(0x[0-9a-fA-F]+|\d+)\s*\)\s*;")
 _SIZEUNK_POS_RE = re.compile(r"^\s*SIZE_UNKNOWN\(\s*\)\s*;")
-_VTBL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\b")
 
 
 def _blank_comments(text: str) -> str:
@@ -160,7 +160,8 @@ def _entity_above(lines, idx):
         if not st or st.startswith("//") or st.startswith("*") or st.startswith("/*"):
             j -= 1
             continue
-        if _SIZE_POS_RE.match(ln) or _SIZEUNK_POS_RE.match(ln) or st.startswith("VTBL"):
+        if (_SIZE_POS_RE.match(ln) or _SIZEUNK_POS_RE.match(ln) or
+                st.startswith("VTBL_ABSENT")):
             j -= 1
             continue
         m = _TYPEDEF_RE.match(ln)
@@ -232,8 +233,16 @@ def size_annotated_names() -> set:
 
 
 def vtbl_annotated_names() -> set:
-    """Class names carrying a VTBL(...) annotation."""
-    return _annotated(_VTBL_RE)
+    """Simple game class names present in the manually maintained vtable catalog."""
+    names = set()
+    for row in vtable_catalog.game_rows():
+        primary = vtable_catalog.primary_class(row["name"])
+        secondary = vtable_catalog.secondary_classes(row["name"])
+        if primary:
+            names.add(primary)
+        elif secondary:
+            names.add(secondary[0])
+    return names
 
 
 _VTBL_ABSENT_RE = re.compile(r"\bVTBL_ABSENT\s*\(\s*([A-Za-z_]\w*)")
@@ -250,45 +259,23 @@ def vtbl_absent_names() -> set:
 # signal shared by class_vtables and vtable_hierarchy).
 MANUAL_STAMP_RE = re.compile(r"&\s*[A-Za-z_]\w*(?:[Vv]tbl|vftable)\b|\bm_v(?:tbl|ptr)")
 
-_RTTI_VTBL_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
-
-
 def rtti_vtables() -> dict:
     """{class_name: rva} for the simple (global-namespace) ``??_7<Name>@@6B@``
-    vtables in config/retail/vtable_names.csv."""
-    import csv
+    vtables in the game and library catalogs."""
     out = {}
-    path = REPO / "config" / "retail" / "vtable_names.csv"
-    if not path.exists():
-        return out
-    for r in csv.reader(path.open()):
-        if not r or r[0].strip() in ("", "name") or r[0].lstrip().startswith("#"):
-            continue
-        m = _RTTI_VTBL_RE.match(r[0].strip())
-        if m:
-            try:
-                out[m.group(1)] = int(r[1], 16)
-            except (ValueError, IndexError):
-                pass
+    for row in vtable_catalog.game_rows() + vtable_catalog.library_rows():
+        name = vtable_catalog.primary_class(row["name"])
+        if name:
+            out[name] = row["rva"]
     return out
 
 
-# VTBL(name, 0xrva) with BOTH arguments captured, for rva-uniqueness auditing.
-_VTBL_FULL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)")
-
-
 def vtbl_annotations():
-    """Yield (name, rva:int, path, lineno) for each VTBL(name, 0xrva) in the tree
-    (comments blanked). A vtable datum has exactly one true ??_7 name in retail, so
-    an rva bound by two different names is a mis-catalog - see class_vtables."""
-    for path in source_files():
-        text = _blank_comments(path.read_text(errors="ignore"))
-        for m in _VTBL_FULL_RE.finditer(text):
-            try:
-                rva = int(m.group(2), 16)
-            except ValueError:
-                continue
-            yield m.group(1), rva, path, text.count("\n", 0, m.start()) + 1
+    """Yield (class, rva, path, line) for simple primary game-vtable rows."""
+    for row in vtable_catalog.game_rows():
+        name = vtable_catalog.primary_class(row["name"])
+        if name:
+            yield name, row["rva"], row["path"], row["line"]
 
 
 def rel(path: Path) -> str:

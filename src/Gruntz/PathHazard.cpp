@@ -394,5 +394,3 @@ RVA(0x000b5080, 0x5)
 i32 CPathHazard::ForwardSiblingTick() {
     return SiblingTick();
 }
-
-VTBL(CPathHazard, 0x001e7394);

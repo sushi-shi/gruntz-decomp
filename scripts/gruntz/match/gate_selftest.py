@@ -830,7 +830,7 @@ class TestSlotBindingBaseline(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 class TestClassMetaScanner(unittest.TestCase):
     def test_a_comment_never_declares_anything(self):
-        with _Tree({"a.cpp": "// class CGhost { };  SIZE(0x10);  VTBL(CGhost, 0x1)\n"
+        with _Tree({"a.cpp": "// class CGhost { };  SIZE(0x10);\n"
                              "/* class CBlock {}; SIZE(0x20); */\n"
                              "class CReal {};\nSIZE(0x30);\n"}):
             self.assertEqual(set(class_meta.unique_class_defs()), {"CReal"})

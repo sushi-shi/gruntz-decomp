@@ -25,8 +25,6 @@
 RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
-VTBL(CExitTrigger, 0x001e822c);
-
 // @early-stop
 RVA(0x0003ecf0, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {

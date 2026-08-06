@@ -27,7 +27,6 @@ enum {
 
 DATA(0x001ea578)
 const i32 g_msgmap_CMultiStartDlg = 6205544;
-VTBL(CMultiStartDlg, 0x001ea8ec);
 
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)

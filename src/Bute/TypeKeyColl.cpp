@@ -56,13 +56,6 @@ CTypeCollRuntime::~CTypeCollRuntime() {
 DATA(0x002bf650)
 CTypeCollRuntime g_typeColl;
 
-VTBL(zBitVec, 0x001f04c8);
-VTBL(zErrHandling, 0x001f04cc);
-VTBL(_zdvec, 0x001f04d0);
-VTBL(_zvec, 0x001f04d4);
-VTBL(CTypeCollRuntime, 0x001f04e4);
-
-VTBL(zPtrColl, 0x001f04d8);
 // Interior fields of one CActReg; do not define overlapping globals.
 
 DATA(0x0021ad28)

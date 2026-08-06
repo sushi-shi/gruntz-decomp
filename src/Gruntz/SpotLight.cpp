@@ -37,7 +37,6 @@
 
 #include <math.h>
 
-VTBL(CSpotLight, 0x001e75bc);
 DATA(0x001ea3f0)
 const double g_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)

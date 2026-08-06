@@ -25,8 +25,6 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 
-VTBL(CSBI_MenuItem, 0x001eab4c);
-
 // @early-stop
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(

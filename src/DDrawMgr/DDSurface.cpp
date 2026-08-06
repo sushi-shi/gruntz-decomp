@@ -24,7 +24,6 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-VTBL(CDDSurface, 0x001ef7f0);
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253c9e)

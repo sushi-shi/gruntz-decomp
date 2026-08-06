@@ -29,8 +29,6 @@
 template<> DATA(0x00245ad0)
 CActReg CActRegPool<CLightFx>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CLightFx, 0x001e7af4);
-
 RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 

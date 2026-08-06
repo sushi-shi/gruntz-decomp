@@ -14,9 +14,6 @@ const char s_rPlusB[] = "r+b";
 DATA(0x0021a0a8)
 const char s_wPlusB[] = "w+b";
 
-VTBL(CRezDir, 0x001ef7a8);
-VTBL(CRezList, 0x001ef7c8);
-VTBL(CRezFile, 0x001ef7d0);
 DATA(0x0021a0a0)
 const char g_wildcard[] = "*.*";
 
@@ -425,6 +422,3 @@ i32 CRezFile::CloseFile() {
 
 RVA(0x0013cef0, 0x1)
 void CRezFile::Noop() {}
-
-VTBL(CRezItmBase, 0x001ef768);
-VTBL(CRezItm, 0x001ef788);

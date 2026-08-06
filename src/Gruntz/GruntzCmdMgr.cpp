@@ -37,9 +37,6 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-VTBL(CGruntzSingleCommand, 0x001e9634);
-VTBL(CGruntzCommand, 0x001e9674);
-VTBL(CGruntzMultiCommand, 0x001e96b4);
 DATA(0x002451a4)
 i32 g_dlgVal_6451a4;
 DATA(0x00245268)

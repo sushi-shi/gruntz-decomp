@@ -42,8 +42,6 @@ CActReg CActRegPool<CGruntPuddle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x002446b0)
 CActReg CActRegPool<CTeleporter>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CGruntPuddle, 0x001e8124);
-VTBL(CWormhole, 0x001e817c);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
@@ -659,5 +657,3 @@ i32 CTeleporter::Update() {
     }
     return 0;
 }
-
-VTBL(CTeleporter, 0x001e80cc);

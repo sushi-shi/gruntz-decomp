@@ -31,7 +31,6 @@
 
 #include <stddef.h>
 
-VTBL(CStaticHazard, 0x001e7824);
 template<> DATA(0x0024e3d0)
 CActReg CActRegPool<CStaticHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -37,5 +37,3 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 }
-
-VTBL(CBehindCandy, 0x001e8494);

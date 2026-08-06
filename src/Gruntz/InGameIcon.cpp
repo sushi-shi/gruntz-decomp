@@ -46,8 +46,6 @@
 
 #include <string.h>
 
-VTBL(CInGameText, 0x001e7cac);
-VTBL(CInGameIcon, 0x001e7d04);
 template<> DATA(0x002458b0)
 CActReg CActRegPool<CInGameIcon>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00245928)
@@ -608,8 +606,6 @@ i32 CToyPeek::SerializeMove(
     }
     return 1;
 }
-
-VTBL(CToyPeek, 0x001e7204);
 
 RVA(0x000984b0, 0x186)
 i32 CInGameIcon::PeekCycle() {

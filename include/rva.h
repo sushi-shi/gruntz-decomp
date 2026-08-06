@@ -19,8 +19,6 @@
 
 #define SIZE(bytes)
 #define SIZE_UNKNOWN()
-#define VTBL(type, addr) GRUNTZ_META("vtbl:" #addr " class:" #type)
-#define VTBL2(derived, base, addr)
 
 #define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
@@ -36,8 +34,6 @@
 
 #define SIZE(bytes)
 #define SIZE_UNKNOWN()
-#define VTBL(type, addr)
-#define VTBL2(derived, base, addr)
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)
 #define DATA_COMPGEN(addr, name, value) value

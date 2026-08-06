@@ -4,23 +4,21 @@ must be CATALOGUED, so its delinked vtable datum can be named (single source of
 truth for the vtable set).
 
 A class "has a vtable" when ANY of:
-  * it has an RTTI ``??_7<Name>@@6B@`` entry in config/retail/vtable_names.csv, OR
+  * it has a simple ``??_7<Name>@@6B@`` entry in a retail vtable catalog, OR
   * its body declares a real C++ ``virtual``, OR
   * its body carries a manual vtable stamp (``&...Vtbl`` / ``&..._vftable`` /
     an ``m_vtbl`` / ``m_vptr`` field - the WAP-engine hand-rolled-vtable idiom).
 
 It is "catalogued" (NOT a violator) when ANY of:
-  * it carries a ``VTBL(Name, 0x..)`` annotation (the preferred single source), OR
-  * it carries a ``VTBL2(Name, Base, 0x..)`` annotation (the MI-decorated
-    ``??_7<Name>@@6B<Base>@@@`` name a plain ``VTBL()`` cannot spell), OR
+  * it has a row in ``vtables_game.csv`` or ``vtables_library.csv``, OR
   * it uses a manual ``&...Vtbl`` stamp - the vtable datum is already named through
-    the older ``DATA(g_*Vtbl)`` global binding (a VTBL there would just collide on
+    the older ``DATA(g_*Vtbl)`` global binding (a second catalog row would collide on
     that rva; the sweep migrates these, it does not double-bind them), OR
   * its RTTI vtable rva is already a row in build/gen/symbol_names.csv (named via a
     real polymorphic class / the auto ??_7 path).
 
 So the violator worklist is exactly the vtable-bearing classes with NO catalog
-entry of any kind - the ones a ``VTBL(...)`` should be added to. Prints them and
+entry of any kind. Prints them and
 exits nonzero if any. Runnable as ``python -m gruntz.cleanliness.class_vtables``.
 (NB: cross-file manual stamps - a ctor in a .cpp that stamps a vtable declared in
 another TU - are not seen here; this check reads only each class's own body. And
@@ -29,10 +27,11 @@ game-not-library policy.)
 """
 from __future__ import annotations
 
-import csv
 import re
 import sys
 from collections import defaultdict
+
+from gruntz.core import vtable_catalog
 
 from gruntz.core.class_meta import (
     MANUAL_STAMP_RE,
@@ -40,18 +39,10 @@ from gruntz.core.class_meta import (
     iter_class_defs,
     rel,
     rtti_vtables,
-    source_files,
     vtbl_absent_names,
     vtbl_annotated_names,
     vtbl_annotations,
 )
-# A secondary (MI) vtable named via VTBL2(derived, base, addr) - ??_7<derived>@@6B
-# <base>@@@, the MI-decorated name a plain VTBL()'s ??_7<derived>@@6B@ cannot
-# express (e.g. zPTree @0x1e94ac). The `derived` class's vtable datum is named for
-# the delinker, so the class IS catalogued.
-_VTBL2_RE = re.compile(r"\bVTBL2\s*\(\s*([A-Za-z_]\w*)\s*,")
-
-
 def present_rvas():
     """RVAs already carrying a row in build/gen/symbol_names.csv (any kind)."""
     out = set()
@@ -68,47 +59,17 @@ def present_rvas():
     return out
 
 
-def vtbl2_vtable_classes():
-    """{class_name} for every MI-decorated ??_7<Class>@@6B<Base>@@@ datum named
-    through a VTBL2(..) row tree-wide - it names the class's secondary vtable
-    datum for the delinker, so the class is catalogued."""
-    out = set()
-    for path in source_files():
-        text = path.read_text(errors="ignore")
-        for m in _VTBL2_RE.finditer(text):
-            out.add(m.group(1))
-    return out
-
-
 def library_vtable_rvas():
-    """RVAs of MFC/CRT library vtables (config/retail/library_vtables.csv). Statically linked, so
+    """RVAs of statically linked library vtables. Statically linked, so
     present_rvas() (our emitted base objs) misses them; a class whose RTTI vtable is here IS
     catalogued - we model it as a minimal view, never reconstruct the library class."""
-    out = set()
-    path = REPO / "config" / "retail" / "library_vtables.csv"
-    if not path.exists():
-        return out
-    for r in csv.reader(path.open()):
-        if len(r) >= 2:
-            try:
-                out.add(int(r[1], 16))
-            except ValueError:
-                pass
-    return out
+    return {row["rva"] for row in vtable_catalog.library_rows()}
 
 
 def vtbl_rva_collisions():
-    """{rva: [(name, path, lineno), ...]} for every rva bound by MORE THAN ONE VTBL()
-    annotation - the bijection assert. VTBL(name, rva) must be UNIQUE in both directions:
-    a vtable datum has exactly one ??_7 name in retail (rva->name), and one canonical
-    binding site. Two DIFFERENT names on one rva = a mis-catalog (aliasing one vtable under
-    many names - collapse the fake views); the SAME name twice = a redundant duplicate
-    binding (delete one). Either slips past the delink name-injectivity guard, which only
-    enforces name->rva, not rva->one-annotation."""
-    by_rva = defaultdict(list)
-    for name, rva, path, lineno in vtbl_annotations():
-        by_rva[rva].append((name, path, lineno))
-    return {rva: sites for rva, sites in by_rva.items() if len(sites) > 1}
+    """Compatibility API: structural catalog errors keyed for the old gate."""
+    return {i: [(error, vtable_catalog.GAME, 0)]
+            for i, error in enumerate(vtable_catalog.validate(vtable_catalog.game_rows()), 1)}
 
 
 def absent_emitted_in_base(absent_names):
@@ -135,14 +96,11 @@ def absent_emitted_in_base(absent_names):
 
 
 def main() -> int:
-    # rva->name uniqueness: warn on any vtable rva bound by >1 VTBL() (the shared-base
-    # / fallback mis-catalog). Reported always, so the build gate surfaces it.
+    # Report structural catalog errors alongside completeness failures.
     collisions = vtbl_rva_collisions()
     if collisions:
-        dup_lines = sum(len(s) for s in collisions.values())
         print(
-            f"vtable-rva collisions: {len(collisions)} rva(s) bound by >1 VTBL() "
-            f"({dup_lines} annotations); a vtable datum has ONE ??_7 name:",
+            f"vtable-catalog errors: {len(collisions)} invalid row(s):",
             file=sys.stderr,
         )
         for rva, sites in sorted(collisions.items(), key=lambda kv: -len(kv[1])):
@@ -155,7 +113,6 @@ def main() -> int:
     lib_rvas = library_vtable_rvas()
     vtbl_ann = vtbl_annotated_names()
     vtbl_absent = vtbl_absent_names()
-    vtbl2 = vtbl2_vtable_classes()
 
     # Aggregate body signals per class NAME (union over its per-TU definitions).
     virtual = defaultdict(bool)
@@ -168,11 +125,11 @@ def main() -> int:
         if MANUAL_STAMP_RE.search(body):
             manual[name] = True
 
-    # A VTBL_ABSENT claim contradicting a positive binding (VTBL/RTTI) is itself a
+    # A VTBL_ABSENT claim contradicting a positive catalog binding is itself a
     # mis-catalog - surface it, never silently prefer either side.
     for name in sorted(vtbl_absent & (set(vtbl_ann) | set(rtti))):
         print(f"vtbl-absent CONTRADICTION: {name} is VTBL_ABSENT but also "
-              f"positively bound (VTBL/RTTI) - remove one", file=sys.stderr)
+              f"positively bound (catalog/RTTI) - remove one", file=sys.stderr)
 
     # BASE-SIDE enforcement: a VTBL_ABSENT ??_7 that our own objs emit is a
     # surviving ctor/dtor stamp retail never had - a hierarchy mis-model. FATAL.
@@ -196,7 +153,6 @@ def main() -> int:
             name in vtbl_ann
             or name in vtbl_absent
             or manual[name]
-            or name in vtbl2
             or (name in rtti and (rtti[name] in present or rtti[name] in lib_rvas)))
         if not catalogued:
             reason = "rtti" if name in rtti else "virtual"
@@ -208,7 +164,7 @@ def main() -> int:
               "first for an accurate count).", file=sys.stderr)
     if violators:
         print(f"class-vtable completeness: {have_vtable} vtable-bearing class "
-              f"name(s); {len(violators)} NOT catalogued (need VTBL()):", file=sys.stderr)
+              f"name(s); {len(violators)} NOT catalogued:", file=sys.stderr)
         for name, path, lineno, reason in violators:
             print(f"  {rel(path)}:{lineno}: {name}  [{reason}]", file=sys.stderr)
         return 1
@@ -224,25 +180,22 @@ def main() -> int:
 
 
 def assert_unique_vtbls() -> int:
-    """Hard bijection assert (its own build gate): every VTBL(name, rva) is UNIQUE - each
-    rva bound by exactly one annotation. Exits nonzero on ANY multiply-bound rva, whether the
-    duplicate names match (redundant binding - delete one) or differ (mis-catalog aliasing one
-    vtable under several names - collapse the fake views). Independent of the catalog-
-    completeness worklist, so a new duplicate fails the build even while violators remain."""
-    collisions = vtbl_rva_collisions()
-    if not collisions:
-        print("vtbl-uniqueness: OK - every VTBL() rva is bound by exactly one annotation")
+    """Validate unique name/RVA rows and catalog kinds.
+
+    A primary and its through-base name may deliberately share an RVA.
+    """
+    game = vtable_catalog.game_rows()
+    library = vtable_catalog.library_rows()
+    errors = vtable_catalog.validate(game) + vtable_catalog.validate(library)
+    overlap = {row["rva"] for row in game} & {row["rva"] for row in library}
+    errors.extend(f"RVA 0x{rva:06x} appears in both game and library catalogs"
+                  for rva in sorted(overlap))
+    if not errors:
+        print("vtable-catalog: OK - names, RVAs, and kinds are structurally valid")
         return 0
-    dup = sum(len(s) for s in collisions.values())
-    print(f"vtbl-uniqueness: FATAL - {len(collisions)} rva(s) bound by >1 VTBL() "
-          f"({dup} annotations); VTBL(name, rva) must be unique:", file=sys.stderr)
-    for rva, sites in sorted(collisions.items(), key=lambda kv: -len(kv[1])):
-        names = sorted({n for n, _p, _l in sites})
-        kind = ("SAME name, redundant - delete the extra binding" if len(names) == 1
-                else "DIFFERENT names, mis-catalog - collapse the fake views to one class")
-        print(f"  0x{rva:08x} <- {len(sites)} bindings ({kind}):", file=sys.stderr)
-        for n, p, l in sites:
-            print(f"      {n}  {rel(p)}:{l}", file=sys.stderr)
+    print(f"vtable-catalog: FATAL - {len(errors)} structural error(s):", file=sys.stderr)
+    for error in errors:
+        print(f"  {error}", file=sys.stderr)
     return 1
 
 
@@ -250,6 +203,6 @@ if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--assert-unique", action="store_true",
-                    help="only run the VTBL-rva bijection assert (fatal on any duplicate)")
+                    help="only validate the game-vtable catalog")
     args = ap.parse_args()
     raise SystemExit(assert_unique_vtbls() if args.assert_unique else main())

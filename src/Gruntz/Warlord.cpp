@@ -535,8 +535,6 @@ fail:
     return 0;
 }
 
-VTBL(CWarlord, 0x001e7404);
-
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
 

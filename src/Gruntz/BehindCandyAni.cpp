@@ -14,7 +14,6 @@
 
 #include <stddef.h>
 
-VTBL(CBehindCandyAni, 0x001e838c);
 template<> DATA(0x00245f98)
 CActReg CActRegPool<CBehindCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

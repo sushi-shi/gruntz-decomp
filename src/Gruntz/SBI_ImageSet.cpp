@@ -19,8 +19,6 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-VTBL(CSBI_ImageSet, 0x001eac4c);
-
 // @early-stop
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(

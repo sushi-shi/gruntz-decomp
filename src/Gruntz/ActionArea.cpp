@@ -24,9 +24,6 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-VTBL(CActionArea, 0x001e7004);
-VTBL(CUserLogic, 0x001e705c);
-VTBL(CUserBase, 0x001e70b4);
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

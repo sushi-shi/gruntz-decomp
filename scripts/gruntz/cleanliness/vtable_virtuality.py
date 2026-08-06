@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """gruntz.cleanliness.vtable_virtuality - every vtable's SLOTS must be real virtuals.
 
-vtable_coverage checks each analysed vtable is bound by a ``VTBL(Name, rva)``. This
+vtable_coverage checks each analysed vtable is catalogued. This
 goes one step further, per the mandate: the class ``Name`` must be a REAL polymorphic
 class whose ``virtual`` methods actually MODEL the vtable's slots - not a fabricated
 name, and not a de-virtualized shell. For a vtable of N slots the class + its bases
 must declare at least N virtual methods (each inherited slot comes from a base, each
 new/override slot is a ``virtual`` in the class itself).
 
-A ``VTBL(Name, rva)`` is a VIOLATION when:
+A primary game-catalog row is a VIOLATION when:
   * ``Name`` is not defined as a class/struct anywhere in src/ + include/   (a
     fabricated / placeholder name - e.g. ``CEngVt_1ef670`` - that models nothing), OR
   * the class's resolved virtual count (own ``virtual`` decls + those reachable
     through its source/library bases) is LESS than the vtable's slot count (a
     de-virtualized or under-modelled class - some slots have no virtual behind them).
 
-MFC/CRT vtables (config/retail/library_vtables.csv) are exempt - they are library, catalogued
+MFC/CRT vtables (config/retail/vtables_library.csv) are exempt - they are library, catalogued
 not reconstructed. Prints every violation and exits nonzero; wired into ``gruntz build``
 as a FATAL gate. Runnable as ``python -m gruntz.cleanliness.vtable_virtuality`` (``--list``).
 """
@@ -28,14 +28,13 @@ import sys
 import tempfile
 from pathlib import Path
 
-from gruntz.core.class_meta import _blank_comments, source_files
+from gruntz.core import vtable_catalog
+from gruntz.core.class_meta import _blank_comments, source_files, vtbl_annotations
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
 
 _CLASS_HEAD = re.compile(r"\b(?:struct|class)\s+(\w+)\b([^;{]*)\{")
-_VTBL = re.compile(r"\bVTBL\s*\(\s*(\w+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 
 # Library base classes whose vtable slot-count we know, so a derived class that only
 # INHERITS (adds no own virtual) is still credited its base's slots.
@@ -113,26 +112,14 @@ def resolved_virtuals(name, classes, seen=None):
 
 
 def source_vtbls():
-    """[(name, rva, path, lineno)] for every VTBL(Name, 0x..) in src/+include/."""
-    out = []
-    for path in source_files():
-        text = _blank_comments(path.read_text(errors="ignore"))
-        for m in _VTBL.finditer(text):
-            out.append((m.group(1), int(m.group(2), 16),
-                        path, text.count("\n", 0, m.start()) + 1))
-    return out
+    """Compatibility name for primary game-vtable catalog rows."""
+    return list(vtbl_annotations())
 
 
 def main() -> int:
     sizes = _slot_counts_from_scan()
     classes = _index_classes()
-    lib_rvas = set()
-    if LIB_CSV.exists():
-        for r in csv.DictReader(LIB_CSV.open()):
-            try:
-                lib_rvas.add(int(r["rva"], 16))
-            except (ValueError, TypeError):
-                pass
+    lib_rvas = {row["rva"] for row in vtable_catalog.library_rows()}
 
     violations = []
     unverifiable = []
@@ -172,7 +159,7 @@ def main() -> int:
         return 1
     print(f"vtable-virtuality: all {checked} source-bound vtables modelled by real virtuals")
     if unverifiable:
-        print(f"    ({len(unverifiable)} VTBL'd rva(s) UNVERIFIABLE - vtable_scan found no "
+        print(f"    ({len(unverifiable)} catalogued rva(s) UNVERIFIABLE - vtable_scan found no "
               f"vtable there, so the slot count is unknown and nothing was asserted; "
               f"vtable_coverage owns that binding)")
         for name, rva, path, ln in sorted(unverifiable, key=lambda v: v[1]):

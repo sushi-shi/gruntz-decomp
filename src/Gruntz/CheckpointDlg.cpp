@@ -22,7 +22,6 @@ const AFX_MSGMAP_ENTRY CCheckpointDlg::_messageEntries[] = {
     ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts){0, 0, 0, 0, AfxSig_end, 0},
 };
 
-VTBL(CCheckpointDlg, 0x001e9504);
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 

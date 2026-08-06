@@ -23,8 +23,8 @@ Sources of truth (in priority order)
    MSVC ``_RTTIBaseClassDescriptor`` pre-order (with ``numContainedBases``)
    recovers each class's DIRECT bases and their sub-object offsets (``mdisp``).
    This yields the exact class graph for all ~221 RTTI classes.
-2. **Reconstructed src** (fallback, for NON-RTTI vtables). ``VTBL(Class, rva)``
-   macros give class->vtable and ``class X : public Y`` gives the parent, so
+2. **Game vtable catalog + reconstructed src** (fallback for NON-RTTI vtables).
+   The catalog gives class->vtable and ``class X : public Y`` gives the parent, so
    already-converted non-RTTI classes (e.g. CFader) are covered too.
 
 The per-slot function addresses are read straight out of the vtable (each slot
@@ -54,6 +54,7 @@ import sys
 
 from gruntz.core import class_meta
 from gruntz.core import get_context as _get_context
+from gruntz.core import vtable_catalog
 from gruntz.core import vtable_scan as vs
 
 IB = vs.IMAGEBASE
@@ -145,10 +146,9 @@ def parse_chd(col_va):
 
 
 # ---------------------------------------------------------------------------
-# reconstructed-src hierarchy: VTBL(Class, rva) + `class X : public Y`
+# reconstructed-src hierarchy plus the game-vtable catalog
 # ---------------------------------------------------------------------------
 CLASS_RE = re.compile(r"\b(?:class|struct)\s+([A-Za-z_]\w*)\s*:\s*public\s+([A-Za-z_]\w*)")
-VTBL_RE = re.compile(r"\bVTBL\s*\(\s*([A-Za-z_]\w*)\s*,\s*(0x[0-9a-fA-F]+)")
 
 
 def load_src_hierarchy():
@@ -167,16 +167,15 @@ def load_src_hierarchy():
                 continue
             for m in CLASS_RE.finditer(t):
                 parent.setdefault(m.group(1), m.group(2))
-            for m in VTBL_RE.finditer(t):
-                rva = int(m.group(2), 16)
-                if rva >= IB:
-                    rva -= IB
-                vtbl[rva] = m.group(1)
+    for row in vtable_catalog.game_rows():
+        name = vtable_catalog.primary_class(row["name"])
+        if name:
+            vtbl[row["rva"]] = name
     return parent, vtbl
 
 
 # ---------------------------------------------------------------------------
-# unified class registry (RTTI first, src VTBL classes fill the gaps)
+# unified class registry (RTTI first, game-catalog classes fill the gaps)
 # ---------------------------------------------------------------------------
 class ClassInfo:
     __slots__ = ("name", "decorated", "is_rtti", "attrib", "direct_bases", "spine", "vtables")
@@ -229,7 +228,7 @@ def build_registry():
             continue
         size = start_size.get(rva)
         if size is None:
-            continue  # VTBL points at an rva vtable_scan didn't enumerate; skip
+            continue  # Catalog points at an rva vtable_scan didn't enumerate; skip
         ci = reg.get(cname)
         if ci is None:
             ci = reg[cname] = ClassInfo(cname)
@@ -239,7 +238,7 @@ def build_registry():
 
     # 3) classes whose OWN cl-emitted ``??_7<Name>@@6B@`` already landed in
     #    build/gen/symbol_names.csv (a real-polymorphic class whose vtable datum the
-    #    build names) but that carry NO VTBL and no RTTI COL under their own name.
+    #    build names) but that have no catalog row and no RTTI COL under their own name.
     #    That emitted symbol IS the class's primary vtable -> anchor it. This closes
     #    part of the src-only omission gap (see --coverage).
     sym7 = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
@@ -469,7 +468,7 @@ def write_csv(reg, path):
 # coverage + RTTI-name-authority audit
 #
 # The per-class slot tables above only cover a class the registry can ANCHOR
-# (RTTI COL / VTBL / emitted ??_7). A class that declares cl-emitted ``virtual``s
+# (RTTI COL / retail catalog / emitted ??_7). A class that declares cl-emitted ``virtual``s
 # but has none of those is silently ABSENT from that output - the "missed src-only
 # vtables" gap. These two modes turn that silent omission into an explicit report,
 # and make the RTTI type-descriptor name (the original dev name) authoritative.
@@ -591,8 +590,8 @@ class Audit:
 
     def vtable_bearing(self):
         """Sorted src class NAMES carrying a vtable signal: a real virtual, a manual
-        &g_*Vtbl / m_vtbl / m_vptr stamp, a hand-rolled ``* vtbl;`` field, a VTBL()
-        annotation, or an RTTI ??_7 in config/retail/vtable_names.csv."""
+        &g_*Vtbl / m_vtbl / m_vptr stamp, a hand-rolled ``* vtbl;`` field, a
+        game-catalog row, or an RTTI ??_7 in config/retail/vtables_game.csv."""
         return sorted(n for n in self.where
                       if n in self.virtual or n in self.manual or n in self.vtbl_field
                       or n in self.vtbl_ann or n in self.rtti_cfg)
@@ -636,7 +635,7 @@ class Audit:
         if name in self.vtbl_field:
             sig.append("vtbl-field")
         if name in self.vtbl_ann:
-            sig.append("VTBL")
+            sig.append("game-catalog")
         if name in self.rtti_cfg:
             sig.append("rtti-cfg")
         return "+".join(sig) or "?"
@@ -658,13 +657,13 @@ def cmd_coverage(aud):
     total = len(anchored) + len(unanchored)
     print("# vtable-coverage audit - every src/+include/ class carrying a vtable")
     print("# signal (declares a real virtual / a manual &g_*Vtbl|m_vtbl|m_vptr stamp /")
-    print("# named in config/retail/vtable_names.csv), and whether the analyzer can ANCHOR")
-    print("# its vtable rva (RTTI COL / VTBL / emitted ??_7 / resolvable manual stamp /")
+    print("# named in config/retail/vtables_game.csv), and whether the analyzer can ANCHOR")
+    print("# its vtable rva (RTTI COL / retail catalog / emitted ??_7 / resolvable manual stamp /")
     print("# unique structural slot match).")
     print(f"# total vtable-bearing classes : {total}")
     print(f"# anchored                     : {len(anchored)}  "
           + "(" + ", ".join(f"{k}={v}" for k, v in sorted(by_src.items())) + ")")
-    print(f"# UNANCHORED (silently omitted): {len(unanchored)}  <- add a VTBL() (or the")
+    print(f"# UNANCHORED (silently omitted): {len(unanchored)}  <- add a game-catalog row (or the")
     print("#   class is an abstract intermediate base with no standalone vtable of its own)")
     print(f"# newly anchored by try-harder : {len(newly)}  (sym-vtbl / manual-stamp / structural)")
     print()
@@ -678,7 +677,7 @@ def cmd_coverage(aud):
                     tail += "  [NAME-MISMATCH]"
             print(f"  {name:<36} {src:<12} vtbl@0x{rva:06x}{tail}")
         print()
-    print("## UNANCHORED - the src-only omission worklist (add VTBL / locate the vtable)")
+    print("## UNANCHORED - the src-only omission worklist (catalog / locate the vtable)")
     for name, reason in unanchored:
         path, ln = aud.where[name]
         print(f"  {name:<40} [{reason}]  {path}:{ln}")
@@ -698,7 +697,7 @@ def cmd_name_audit(aud):
     print("# RTTI-name authority audit - the RTTI type-descriptor (COL) name is the")
     print("# original developers' class name and is AUTHORITATIVE. Each line is a src")
     print("# class whose name disagrees with the RTTI name at the vtable it owns")
-    print("# (via VTBL / its emitted ??_7 / a unique structural slot match).")
+    print("# (via the retail catalog / its emitted ??_7 / a unique structural slot match).")
     print(f"# src-vs-RTTI name mismatches : {len(mism)}")
     print()
     for name, col, rva, src in sorted(mism):
@@ -803,19 +802,11 @@ def cmd_audit(aud):
     clang -Wsuggest-override for the precise per-method missing-override list)."""
     known = known_base_vtables(aud)
     inter = reconstruct_intermediates(aud)
-    # MFC/CRT library classes (config/retail/library_vtables.csv) are statically linked, NOT
+    # MFC/CRT library classes (config/retail/vtables_library.csv) are statically linked, NOT
     # reconstructed - we model them as minimal views to reach their methods, so their
     # "missing" slots / unmarked overrides vs the FULL library vtable are not our bug.
     # The audit judges only GAME/engine classes, so exclude the library catalog.
-    lib_rvas = set()
-    _libcsv = REPO / "config/retail/library_vtables.csv"
-    if _libcsv.exists():
-        for _r in csv.reader(_libcsv.open()):
-            if len(_r) >= 2:
-                try:
-                    lib_rvas.add(int(_r[1], 16))
-                except ValueError:
-                    pass
+    lib_rvas = {row["rva"] for row in vtable_catalog.library_rows()}
     F = {k: [] for k in ("INHERIT", "RENAME", "REDECLARE", "OVERRIDE", "MISSING")}
     for name in aud.vtable_bearing():
         rva, src, col = aud.resolve(name)
@@ -847,7 +838,7 @@ def cmd_audit(aud):
         #      byte-match the base dtor (diff_primary then reads "inherited"), re-tag that
         #      slot "override" so a legit declared ~ is not mis-counted (would false-REDECLARE).
         #  (b) BASE MISS: if the spine found no base at all (all slots new/unknown - a
-        #      registry direct-base miss: base on the header decl, VTBL/SIZE in a .cpp),
+        #      registry direct-base miss: base on the header decl, catalog/SIZE elsewhere),
         #      fall back to a raw compare against the SOURCE-declared base's slots.
         disp = {r[0]: r[4] for r in rows}
         dtor_i = next((r[0] for r in rows

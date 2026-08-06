@@ -35,8 +35,6 @@
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CRollingBall, 0x001e86fc);
-
 // Half a tile per RollingBallTimePerTile ms - retail's divisor at 0x5ea3e8.
 static const double kRollingBallSpeedNum = 16.0;
 

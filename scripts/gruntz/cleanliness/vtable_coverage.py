@@ -7,12 +7,8 @@ data words that reference into ``.text`` (i.e. runs of function pointers), cut a
 COL / code-referenced starts. RTTI only *names* them; it does not *detect* them - so
 this covers the NON-RTTI WAP/engine vtables too, not just the 224 RTTI classes.
 
-A vtable (rva) is COVERED when EITHER:
-  * its rva is named in build/gen/symbol_names.csv - the reconstruction binds it
-    (a real polymorphic ``??_7`` / a ``VTBL(...)`` / a ``DATA()`` datum), OR
-  * its rva is listed in config/retail/library_vtables.csv - an MFC/CRT/iostream library
-    vtable we deliberately DON'T reconstruct (statically linked), catalogued there
-    instead of in source.
+A vtable is covered when its RVA is present in either the manually maintained
+game catalog or the statically linked library catalog.
 
 Anything left is a GAME/engine vtable with no source binding: a real gap. This tool
 prints the gaps and exits nonzero. Wired into ``gruntz build`` as a FATAL gate, so
@@ -27,10 +23,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+from gruntz.core import vtable_catalog
+
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parent)
-LIB_CSV = REPO / "config" / "retail" / "library_vtables.csv"
-SYMS = REPO / "build" / "gen" / "symbol_names.csv"
 
 # vtable_scan confidences that ARE real vtables (it excludes 'unref' = EH/switch tables).
 REAL_CONF = {"rtti", "code-ref", "code-ref-weak"}
@@ -70,31 +66,10 @@ def real_vtables():
 
 
 def covered_rvas():
-    """RVAs the reconstruction binds in source (symbol_names) + the library catalog.
-
-    Reads source VTBL(...) annotations DIRECTLY (not just the generated symbol_names)
-    so an added binding counts even before the once-per-build symbol_names merge
-    re-runs - the gate is never fooled by a stale symbol_names.csv."""
-    named = set()
-    if SYMS.exists():
-        for ln in SYMS.read_text().splitlines():
-            rva = _rva(ln.split(",", 1)[0])
-            if rva is not None:
-                named.add(rva)
-    # source VTBL() rvas, tree-wide (robust to symbol_names staleness)
-    try:
-        from gruntz.core.class_meta import vtbl_annotations
-        for _name, rva, _path, _ln in vtbl_annotations():
-            named.add(rva)
-    except Exception:
-        pass
-    lib = set()
-    if LIB_CSV.exists():
-        for r in csv.DictReader(LIB_CSV.open()):
-            rva = _rva(r.get("rva"))
-            if rva is not None:
-                lib.add(rva)
-    return named, lib
+    """Game and library catalog RVAs."""
+    game = {row["rva"] for row in vtable_catalog.game_rows()}
+    library = {row["rva"] for row in vtable_catalog.library_rows()}
+    return game, library
 
 
 def main() -> int:
@@ -107,14 +82,14 @@ def main() -> int:
         gaps.append((rva, size, conf, cls, boff))
     if "--list" in sys.argv:
         for rva, size, conf, cls, boff in sorted(vts):
-            where = "symbol_names" if rva in named else ("library.csv" if rva in lib else "UNCOVERED")
+            where = "game.csv" if rva in named else ("library.csv" if rva in lib else "UNCOVERED")
             sec = f" +{boff}" if boff else ""
             print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {where:<12} {cls}{sec}")
     if gaps:
         n_sec = sum(1 for g in gaps if g[4])
         print(f"vtable-coverage: {len(gaps)} of {len(vts)} analysed vtable(s) UNCOVERED "
-              f"({n_sec} secondary/MI; bind in source via VTBL()/VTBL2()/DATA(), or add "
-              f"MFC/CRT to config/retail/library_vtables.csv):", file=sys.stderr)
+              f"({n_sec} secondary/MI; add each row to vtables_game.csv or "
+              f"vtables_library.csv):", file=sys.stderr)
         for rva, size, conf, cls, boff in sorted(gaps):
             sec = f" +{boff} (SECONDARY)" if boff else ""
             print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {cls or '(non-rtti)'}{sec}", file=sys.stderr)
@@ -122,7 +97,7 @@ def main() -> int:
     n_lib = sum(1 for v in vts if v[0] in lib)
     n_sec = sum(1 for v in vts if v[4])
     print(f"vtable-coverage: all {len(vts)} analysed vtables covered "
-          f"({len(vts) - n_lib} in source, {n_lib} in library catalog; "
+          f"({len(vts) - n_lib} in game catalog, {n_lib} in library catalog; "
           f"{n_sec} are secondary/MI vtables - none missed)")
     return 0
 

@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-VTBL(CUFO, 0x001e72b4);
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 RVA(0x000b4330, 0x8)
 i32 CUFO::Tick() {

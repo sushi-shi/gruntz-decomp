@@ -10,8 +10,6 @@
 
 #include <string.h>
 
-VTBL(CFaderArray, 0x001f0790);
-
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = false;

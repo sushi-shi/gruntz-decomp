@@ -57,10 +57,10 @@ is **retired and deleted**. It was scaffolding from when vtables had no recovera
 class name; the `Unknown ids` metric is now 0, so there is nothing left for it to
 track.
 
-The live catalog is `config/retail/vtable_names.csv` (the realized `??_7` names) plus the
-`VTBL(Class, 0x…)` macros in `src/`, cross-checked by
-`python -m gruntz.cleanliness.class_vtables --assert-unique` (a **FATAL** gate — every
-vtable-bearing class is catalogued, with proven-absent `??_7` carrying `VTBL_ABSENT`).
+The live catalogs are `config/retail/vtables_game.csv` and
+`config/retail/vtables_library.csv`. They are manually maintained and cross-checked by
+the class-vtable and coverage gates. Proven-absent `??_7` tables still carry
+`VTBL_ABSENT` in source because absence is class-model state, not an executable label.
 Regenerate the address map with `python -m gruntz.core.vtable_scan`;
 `docs/rtti-vtable-catalog.tsv` is the RTTI-side census.
 
@@ -88,7 +88,7 @@ PR #56 landed the infra + the one *flat* conversion (`CTileTriggerSwitchLogic`).
 Recipe (proven): declare the class's real virtuals (declared-only is fine — the
 bodies live in engine TUs), delete the `extern …g_xVtbl` + `DATA()` + the
 `*(void**)this = &g_xVtbl` stamp; the `??_7` name **auto-derives** for RTTI
-classes (config/retail/vtable_names.csv), or add one `VTBL(..)`/`VTBL2(..)` row for
+classes; add one primary or secondary row to `config/retail/vtables_game.csv` for
 non-RTTI. Then `gruntz build` and confirm byte-exact + no regressions.
 
 Everything left is a base-hierarchy *family* — convert per family (model the

@@ -109,8 +109,6 @@ RECT g_labelRects[7] = {
     {0, 370, 172, 430},
     {38, 413, 172, 473}
 };
-VTBL(CMultiBootyState, 0x001e9bdc);
-VTBL(CBootyState, 0x001e9cec);
 
 DATA(0x001e93b0)
 float g_secretRatioScale = 100.0f;

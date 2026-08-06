@@ -16,8 +16,6 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 
-VTBL(CSBI_StatzTabGruntBar, 0x001eace4);
-
 RVA(0x000ea470, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
     m_statusGlyphLatched = NULL;

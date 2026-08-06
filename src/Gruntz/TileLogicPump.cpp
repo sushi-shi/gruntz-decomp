@@ -59,16 +59,6 @@ CActReg CActRegPool<CBrickz>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024e7e8)
 CActReg CActRegPool<CCheckpointTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-VTBL(CWarpStonePad, 0x001e71ac);
-VTBL(CBrickz, 0x001e7c54);
-VTBL(CGiantRock, 0x001e7d5c);
-VTBL(CTileTriggerTransition, 0x001e7db4);
-VTBL(CCoveredPowerup, 0x001e7e0c);
-VTBL(CTileSecretTrigger, 0x001e7e64);
-VTBL(CCheckpointTrigger, 0x001e7ebc);
-VTBL(CTileTrigger, 0x001e7f14);
-VTBL(CTileTriggerSwitch, 0x001e7f6c);
-
 template<> DATA(0x0024e720)
 CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

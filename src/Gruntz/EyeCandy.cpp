@@ -42,5 +42,3 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         }
     }
 }
-
-VTBL(CEyeCandy, 0x001e843c);

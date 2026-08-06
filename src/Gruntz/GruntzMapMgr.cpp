@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-VTBL(CGruntzMapMgr, 0x001e9bb4);
-
 // @early-stop
 RVA(0x00082430, 0x161)
 i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj) {

@@ -268,10 +268,6 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         zlib_dep = (["config/retail/zlib_labels.csv"]
                     if (REPO / "config/retail/zlib_labels.csv").exists() else [])
-        # the deterministic ??_7 vtable-name map labels.py auto-applies (gruntz
-        # build re-runs gen_labels when it changes).
-        zlib_dep += (["config/retail/vtable_names.csv"]
-                     if (REPO / "config/retail/vtable_names.csv").exists() else [])
         frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"
@@ -294,15 +290,9 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                        f"--merge-globals $globfrags --globals-out {GLOBALS_JSON}",
                description="merge_labels -> symbol_names.csv + functions/globals.json",
                restat=True)
-        # The merge step also scans src/ + include/ tree-wide for VTBL() vtable-
-        # catalog macros (labels.py:vtbl_labels), which live in HEADERS, not the
-        # per-TU .cpp frags. So a VTBL edit must re-trigger the merge: list every
-        # VTBL-bearing file as an implicit dep (re-globbed each configure run, i.e.
-        # each `nix develop` entry).
-        vtbl_dep = sorted(
-            str(p.relative_to(REPO))
-            for p in list((REPO / "include").rglob("*.h")) + list((REPO / "src").rglob("*.cpp"))
-            if "VTBL(" in p.read_text(errors="ignore"))
+        # Vtable catalogs are consumed only by the cheap merge. Catalog edits
+        # must not rerun clang IR over every translation unit.
+        vtbl_dep = ["config/retail/vtables_game.csv", "config/retail/vtables_library.csv"]
         w.build([GEN_NAMES, FUNCTIONS_JSON, GLOBALS_JSON], "merge_labels",
                 inputs=frags + func_frags + glob_frags,
                 implicit=[GEN_LABELS] + vtbl_dep,

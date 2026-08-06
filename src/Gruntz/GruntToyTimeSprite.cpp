@@ -29,5 +29,3 @@ RVA(0x0007fca0, 0xd)
 i32 CGruntToyTimeSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_toyTime;
 }
-
-VTBL(CGruntToyTimeSprite, 0x001e79ec);

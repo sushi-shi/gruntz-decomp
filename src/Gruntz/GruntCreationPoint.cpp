@@ -23,8 +23,6 @@
 
 #include <stddef.h>
 
-VTBL(CGruntCreationPoint, 0x001e81d4);
-
 RVA_COMPGEN(0x00010700, 0x1e, ??_GCGruntCreationPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 

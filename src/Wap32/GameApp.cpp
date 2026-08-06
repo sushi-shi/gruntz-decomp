@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 
-VTBL(CGameMgr, 0x001e9b8c);
 DATA(0x00253c6c)
 i32 g_gameAppInstanceCount = 0;
 DATA(0x00253c70)
@@ -23,7 +22,6 @@ DATA(0x00253c7c)
 i32 g_wap32Run7c = 0;
 DATA(0x00253c80)
 i32 g_wap32Run80 = 0;
-VTBL(CGameApp, 0x001e9b0c);
 
 // @identity-TODO ?1CGameApp - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU

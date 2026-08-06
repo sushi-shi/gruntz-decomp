@@ -17,10 +17,6 @@
 
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-VTBL(StreamVoice, 0x001ef6d8);
-VTBL(StreamVoiceFeeder, 0x001ef6e0);
-VTBL(SoundStream, 0x001ef6ec);
-VTBL(StreamFeeder, 0x001ef6f0);
 DATA(0x00253c4c)
 i32 g_ssLogEnabled;
 DATA(0x00253c50)

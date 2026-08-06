@@ -129,10 +129,6 @@ char g_msgScratch[256];
 DATA(0x002455e8)
 i32 g_monologoShown;
 
-VTBL(CGruntzMgr, 0x001e9b64);
-VTBL(CSplashState, 0x001e9d74);
-VTBL(CMenuState, 0x001e9e84);
-
 DATA(0x0021ab20)
 i32 g_sndEnabled = 1;
 DATA(0x0021ab24)
@@ -308,11 +304,6 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
         return 1;
     }
 }
-
-VTBL(CHelpState, 0x001e9dfc);
-VTBL(CMulti, 0x001e9fe4);
-
-VTBL(CPlay, 0x001ea0bc);
 
 RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
 
@@ -3300,5 +3291,3 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     }
     return 0;
 }
-
-VTBL(CDemo, 0x001e9f0c);

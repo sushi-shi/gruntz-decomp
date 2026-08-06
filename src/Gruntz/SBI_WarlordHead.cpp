@@ -17,8 +17,6 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-VTBL(CSBI_WarlordHead, 0x001ead24);
-
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,

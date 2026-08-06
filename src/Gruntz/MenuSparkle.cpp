@@ -30,8 +30,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
 }
 
-VTBL(CMenuSparkle, 0x001e82dc);
-
 static inline i32 RegisterActionName() {
     i32 id = ActFindId("A");
     if (id == 0) {

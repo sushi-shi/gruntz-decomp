@@ -59,7 +59,6 @@ i32 CreateToobSpikez(CGameObject* obj) {
     return 1;
 }
 
-VTBL(CToobSpikez, 0x001e7774);
 template<> DATA(0x0024e978)
 CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

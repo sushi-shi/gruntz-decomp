@@ -379,15 +379,15 @@ def real_classes():
     A class counts as REAL only if at least one of ITS OWN METHODS is bound to a retail
     rva in symbol_names.csv.
 
-    A VTBL() binding deliberately does NOT count, and this used to be a hole that
-    UNDERCOUNTED the metric. VTBL() only says the class's VTABLE has a retail address -
+    A retail-vtable catalog binding deliberately does NOT count, and this used to be a
+    hole that UNDERCOUNTED the metric. The binding only says the class's VTABLE has a retail address -
     it says nothing about whether any given declared-only METHOD NAME corresponds to a
     real retail function. A hand-rolled stand-in for a library class is exactly that
-    case: <Gruntz/Wnd.h>'s CWnd carries VTBL(CWnd, 0x1eb5c4) (the real MFC vtable IS at
+    case: CWnd's library catalog row points at 0x1eb5c4 (the real MFC vtable IS at
     that address) while every one of its ~26 methods is a fabricated WndVslN placeholder
     that no obj and no .LIB defines and that NOTHING can ever define, because the real
     body in NAFXCW.LIB is exported under a different mangled name. Those are phantoms in
-    the strictest sense, and the VTBL() was laundering them into the "backlog" bucket."""
+    the strictest sense, and the catalog row was laundering them into the "backlog" bucket."""
     real = set()
     p = REPO / "build/gen/symbol_names.csv"
     if p.is_file():
