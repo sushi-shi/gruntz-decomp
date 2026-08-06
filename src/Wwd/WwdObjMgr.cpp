@@ -5,7 +5,6 @@
 
 #define CRESOLVENODE_OOL_CTOR
 #define ANIMWORKEROBJ_OOL_CTOR
-#define CGAMEOBJECT_OOL_CTOR
 
 #include <rva.h>
 
