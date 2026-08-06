@@ -459,9 +459,8 @@ void* zPTree::Insert(const char* key, void* value) {
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
         return 0;
     }
-    i32 newbit = m_keyBitLength - 7;
     m_lookupPending = 0;
-    m_keyBitLength = newbit;
+    m_keyBitLength -= 7;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -473,80 +472,84 @@ void* zPTree::Insert(const char* key, void* value) {
     if (m_candidateLeaf != NULL) {
         critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     } else {
-        critbit = newbit - 1;
+        critbit = m_keyBitLength - 1;
     }
 
     CButeTreeNode* node = static_cast<CButeTreeNode*>(::operator new(0x14));
-    if (node != NULL) {
-        node->m_value = static_cast<char*>(value);
-        node->m_bit = critbit;
-        char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
-        node->m_key = keybuf;
-        if (keybuf != NULL) {
-            strcpy(keybuf, key);
+    if (node == NULL) {
+        char* msg = g_errOutOfMem;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, msg, 0xc);
+        return 0;
+    }
+    node->m_value = static_cast<char*>(value);
+    node->m_bit = critbit;
+    char* keybuf = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
+    node->m_key = keybuf;
+    if (keybuf == NULL) {
+        char* msg = g_errOutOfMem;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, msg, 0xc);
+        return 0;
+    }
+    strcpy(keybuf, key);
 
-            i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
-            if (dir) {
-                node->m_child[1] = node;
-            } else {
-                node->m_child[0] = node;
+    i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
+    CButeTreeNode** child = node->m_child;
+    if (dir) {
+        ++child;
+    }
+    *child = node;
+
+    CButeTreeNode* cursor = m_descentCursor;
+    i32 d2 = dir;
+    if (cursor != NULL) {
+        if (critbit >= cursor->m_bit) {
+            CButeTreeNode** s1 = cursor->m_child;
+            if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
+                ++s1;
             }
-
-            CButeTreeNode* cursor = m_descentCursor;
-            i32 d2 = dir;
-            if (cursor == NULL) {
-                m_root = node;
-            } else if (critbit < cursor->m_bit) {
-
-                CButeTreeNode* p = m_root;
-                m_descentCursor = NULL;
-                m_candidateLeaf = p;
-                if (p->m_bit <= critbit) {
-                    CButeTreeNode* c;
-                    do {
-                        p = m_candidateLeaf;
-                        m_descentCursor = p;
-                        d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
-                        CButeTreeNode** s = p->m_child;
-                        if (d2) {
-                            ++s;
-                        }
-                        c = *s;
-                        m_candidateLeaf = c;
-                    } while (c->m_bit <= critbit);
-                }
-                CButeTreeNode* cur2 = m_descentCursor;
-                if (cur2 == NULL) {
-                    m_root = node;
-                } else {
-                    CButeTreeNode** s2 = cur2->m_child;
+            *s1 = node;
+        } else {
+            CButeTreeNode* p = m_root;
+            m_descentCursor = NULL;
+            m_candidateLeaf = p;
+            if (p->m_bit <= critbit) {
+                CButeTreeNode* c;
+                do {
+                    p = m_candidateLeaf;
+                    m_descentCursor = p;
+                    d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
+                    CButeTreeNode** s = p->m_child;
                     if (d2) {
-                        ++s2;
+                        ++s;
                     }
-                    *s2 = node;
-                }
+                    c = *s;
+                    m_candidateLeaf = c;
+                } while (c->m_bit <= critbit);
+            }
+            CButeTreeNode* cur2 = m_descentCursor;
+            if (cur2 == NULL) {
+                m_root = node;
             } else {
-                CButeTreeNode** s1 = cursor->m_child;
-                if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
-                    ++s1;
+                CButeTreeNode** s2 = cur2->m_child;
+                if (d2) {
+                    ++s2;
                 }
-                *s1 = node;
+                *s2 = node;
             }
-
-            CButeTreeNode** other = &node->m_child[1];
-            if (dir) {
-                other = &node->m_child[0];
-            }
-            *other = m_candidateLeaf;
-            m_nodeCount++;
-            return value;
         }
+    } else {
+        m_root = node;
     }
 
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0xc);
-    return 0;
+    CButeTreeNode** other = &node->m_child[1];
+    if (dir) {
+        other = &node->m_child[0];
+    }
+    *other = m_candidateLeaf;
+    m_nodeCount++;
+    return value;
 }
 
 RVA(0x0016dda0, 0x3c)
