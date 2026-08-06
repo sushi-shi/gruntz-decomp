@@ -27,13 +27,13 @@ static const char s_playerDefenderRadius[] = "PlayerDefenderRadius";
 // @early-stop
 RVA(0x000d1b60, 0xd30)
 i32 CPlay::ExecCommand(
-    i32 targetIndex,
-    i32 gruntIndex,
-    PlayerCommandKind cmdKind,
-    i32 posX,
-    i32 posY,
-    i32 extraByte,
-    i32 targetType
+    u8 targetIndex,
+    char gruntIndex,
+    GZ_ENUM_STORAGE(PlayerCommandKind, char) cmdKind,
+    i16 posX,
+    i16 posY,
+    char extraByte,
+    u8 targetType
 ) {
     CGruntzMgr* mgr = m_mgr;
     if (mgr->m_frameGate != 0) {
@@ -191,12 +191,12 @@ i32 CPlay::ExecCommand(
             i32 py = static_cast<u16>(posY);
 
             i32 hitRow;
-            CGrunt* node =
-                m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &extraByte, TM_GRID_ROW_ALL);
+            i32 hitCol;
+            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
                     hitRow,
-                    extraByte,
+                    hitCol,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
@@ -314,12 +314,12 @@ i32 CPlay::ExecCommand(
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
             i32 hitRow;
-            CGrunt* node =
-                m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &extraByte, TM_GRID_ROW_ALL);
+            i32 hitCol;
+            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
                     hitRow,
-                    extraByte,
+                    hitCol,
                     node->m_object->m_screenX,
                     node->m_object->m_screenY
                 );
