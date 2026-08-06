@@ -279,7 +279,7 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     }
     node = NULL;
     Drain();
-    Reset();
+    ResetCells();
     if (m_stepCb != NULL) {
         m_stepCb();
     }
@@ -308,7 +308,7 @@ reached:
     m_colA.m_freeList->m_openPrev = node;
     m_colA.m_freeList = node;
     Drain();
-    Reset();
+    ResetCells();
     return 1;
 }
 
@@ -562,18 +562,18 @@ void CMapMgr::ResetCells() {
     for (u32 i = 0; i < m_height * m_width; i++) {
         BrickzCellNode* node = cell->m_head;
         while (node != NULL) {
-            BrickzCellNode** link = &node->m_cellNext;
-            BrickzCellNode* next = *link;
-            BrickzNode* child = node->m_searchNode;
+            BrickzCellNode* cur = node;
+            BrickzCellNode** link = &cur->m_cellNext;
+            node = *link;
+            BrickzNode* child = cur->m_searchNode;
             child->m_openNext = m_colA.m_freeList;
             child->m_openPrev = NULL;
             m_colA.m_freeList->m_openPrev = child;
             m_colA.m_freeList = child;
-            node->m_cellPrev = NULL;
+            cur->m_cellPrev = NULL;
             *link = m_colB.m_freeList;
-            m_colB.m_freeList->m_cellPrev = node;
-            m_colB.m_freeList = node;
-            node = next;
+            m_colB.m_freeList->m_cellPrev = cur;
+            m_colB.m_freeList = cur;
         }
         cell->m_head = NULL;
         cell++;

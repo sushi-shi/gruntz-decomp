@@ -27,7 +27,13 @@
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253c9e)
-u8 g_clut[0x30000];
+// 0x30002, not 0x30000: every user indexes the three 64K banks with a +2 bias
+// (g_clut+0x2 / +0x10002 / +0x20002), so the top bank runs to g_clut+0x30001.
+// Retail has room for it - its g_clut starts at 0x253c9e and the next datum
+// (g_lut16) is at 0x283ca0, exactly 0x30002 bytes later. Declared 0x30000 here,
+// the 2-byte tail landed on whatever followed in OUR layout, which was g_rDown:
+// it read 0xF000 instead of 3, so every red channel was mis-shifted.
+u8 g_clut[0x30002];
 
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0};

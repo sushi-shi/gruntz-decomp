@@ -1176,7 +1176,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == NULL) {
                 return 0;
             }
-            void* desc = (static_cast<CParseSource*>(set))->BeginParse();
+            void* desc = ins->BeginParse();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1191,7 +1191,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            (static_cast<CParseSource*>(set))->EndParse();
+            ins->EndParse();
             level = num;
         } else if (host->m_isMultiLevel != 0) {
 
@@ -1207,7 +1207,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == NULL) {
                 return 0;
             }
-            void* desc = (static_cast<CParseSource*>(set))->BeginParse();
+            void* desc = ins->BeginParse();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1222,7 +1222,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            (static_cast<CParseSource*>(set))->EndParse();
+            ins->EndParse();
             level = num;
         } else {
 
@@ -1545,8 +1545,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     self->m_frameMarker = NULL;
                 }
             }
-        } else {
-
+        }
+        {
+            // The load chain is NOT the multiplayer alternative to the timer
+            // sprite - it runs for every level. As an `else` it never executed
+            // in single player (savedThis is only set when modeFlag is), so the
+            // level got no warlord sprites, no tile scan, no ValidateLevelTiles
+            // (hence an empty switch registry and error 1100) and no gruntz.
             if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
                 && ValidateLevelTiles() && AddLevelGruntz()) {
                 self->m_world->m_childGroup->TickKillCues(0);
