@@ -401,6 +401,15 @@ source = "src/Gruntz/StatusBarTabBuilders.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
+unit = "sbi_sidetab"
+source = "src/Gruntz/SBI_SideTab.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "sbi_statztabarrow"
+source = "src/Gruntz/SBI_StatzTabArrow.cpp"
+flags = "cpp-rtti"
+[[unit]]
 unit = "cheatmgr"
 source = "src/Gruntz/CheatMgr.cpp"
 flags = "cpp-rtti"
@@ -450,6 +459,10 @@ unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
 flags = "cpp-rtti"
 
+[[unit]]
+unit = "battlezdlgcolors"
+source = "src/Gruntz/BattlezDlgColors.cpp"
+flags = "cpp-rtti"
 [[unit]]
 unit = "checkpointdlg"
 source = "src/Gruntz/CheckpointDlg.cpp"
@@ -765,6 +778,10 @@ unit = "demo"
 source = "src/Gruntz/Demo.cpp"
 flags = "cpp-rtti"
 
+[[unit]]
+unit = "dircellmethods"
+source = "src/Gruntz/DirCellMethods.cpp"
+flags = "cpp-rtti"
 [[unit]]
 unit = "rockbreakeffectupdate"
 source = "src/Gruntz/RockBreakEffectUpdate.cpp"
