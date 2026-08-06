@@ -412,33 +412,31 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     if (e == NULL) {
         return 0;
     }
-    if (e->m_initGate != 0) {
+    if (e->m_initGate == 0) {
+        memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
+        e->m_powerupType = static_cast<PickupType>(powerupType);
+        e->m_textId = textId;
+        e->m_typeTag = TRIGID_GIANT_ROCK_22;
+        e->m_tileX = tileX;
+        e->m_tileY = tileY;
+        e->m_cellKey = cellKey;
+        e->m_owner = this;
+        e->m_initGate = 1;
+        e->m_dutyOn = 0;
+        e->m_startClock = g_frameTime;
+        e->m_dutyOnSpan = 0;
+        e->m_tileToken = 0;
+        e->m_leadInSpan = 0;
+        e->m_dutyOffSpan = 0;
+        e->m_dutyOffSpan = dutyOffSpan;
+        e->m_startClock = g_frameTime;
+        m_list1.AddTail(e);
+        return e;
+    }
 
-        CTileTriggerLogic* dead = e;
-        delete dead;
-        return 0;
-    }
-    for (i32 i = 0; i < 9; i++) {
-        e->m_matrix[i] = block9[i];
-    }
-    e->m_powerupType = static_cast<PickupType>(powerupType);
-    e->m_textId = textId;
-    e->m_tileY = tileY;
-    e->m_typeTag = TRIGID_GIANT_ROCK_22;
-    e->m_tileX = tileX;
-    e->m_cellKey = cellKey;
-    e->m_owner = this;
-    e->m_initGate = 1;
-    e->m_dutyOn = 0;
-    e->m_startClock = g_frameTime;
-    e->m_dutyOnSpan = 0;
-    e->m_tileToken = 0;
-    e->m_leadInSpan = 0;
-    e->m_dutyOffSpan = 0;
-    e->m_dutyOffSpan = dutyOffSpan;
-    e->m_startClock = g_frameTime;
-    m_list1.AddTail(e);
-    return e;
+    CTileTriggerLogic* dead = e;
+    delete dead;
+    return 0;
 }
 
 RVA(0x00116e60, 0x59)
