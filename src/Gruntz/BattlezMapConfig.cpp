@@ -2012,24 +2012,24 @@ RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;
     if (unit->CoordCount() == 0) {
-        return 0;
+        goto returnZero;
     }
 
-    Coord* c0 = unit->CoordHead()->m_coord;
-    i32 ux = c0->m_x;
-    i32 uy = c0->m_y;
-    Coord pt;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-    i32 gx = pt.m_x >> TILE_SHIFT_PX;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-    i32 gy = pt.m_y >> TILE_SHIFT_PX;
-    if (abs(ux - gx) >= 2) {
-        goto recycleBail;
-    }
-    if (abs(uy - gy) >= 2) {
-        goto recycleBail;
-    }
     {
+        Coord* c0 = unit->CoordHead()->m_coord;
+        i32 ux = c0->m_x;
+        i32 uy = c0->m_y;
+        Coord pt;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
+        i32 gx = pt.m_x >> TILE_SHIFT_PX;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
+        i32 gy = pt.m_y >> TILE_SHIFT_PX;
+        if (abs(ux - gx) >= 2) {
+            goto recycleBail;
+        }
+        if (abs(uy - gy) >= 2) {
+            goto recycleBail;
+        }
         CMapMgr* board = m_board;
 
         i32 tile0;
@@ -2041,7 +2041,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
         if (static_cast<u8>(tile0) == 1) {
             if (unit->CoordCount() == 0) {
-                return 0;
+                goto returnZero;
             }
             CoordNode* n = unit->CoordHead();
             while (n != NULL) {
@@ -2055,8 +2055,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
 
-        i32 cx = c0->m_x;
-        i32 cy = c0->m_y;
+        Coord* pathHead = unit->CoordHead()->m_coord;
+        i32 cx = pathHead->m_x;
+        i32 cy = pathHead->m_y;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         BrickzCell scratchA;
         const BrickzCell* srcA;
@@ -2068,7 +2069,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             srcA = &scratchA;
         }
         if (unit->CoordCount() == 0) {
-            return 0;
+            goto returnZero;
         }
         scratchA = *srcA;
         PickupType prim = unit->m_entranceReason;
@@ -2213,7 +2214,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 p = unit->m_toolId;
             }
             if (p != PICKUP_WINGZ) {
-                return 0;
+                goto returnZero;
             }
         }
         if (sA & 0x8) {
@@ -2249,25 +2250,29 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
             i32 sB = scratchB.m_flags;
             if ((sB & 0x200) || (sB & 0x8)) {
-                return 0;
+                goto returnZero;
             }
             if (hi && unit->m_defenderState != AISTATE_RETURN) {
-                i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
-                EnterDefenderMode(unit, pick);
+                if (rand() % 5 == 0) {
+                    EnterDefenderMode(unit, 0x16);
+                } else {
+                    EnterDefenderMode(unit, 0x12);
+                }
             }
             if (lo2) {
                 if (unit->m_defenderState == AISTATE_RETURN) {
-                    return 0;
+                    goto returnZero;
                 }
                 EnterDefenderMode(unit, 0x16);
+                return 0;
             }
-            return 0;
+            goto returnZero;
         }
 
         if ((sA & 0x20) && prim != PICKUP_GAUNTLETZ && prim != PICKUP_TIMEBOMB
             && prim != PICKUP_BOMB) {
             if (unit->m_defenderState == AISTATE_RETURN) {
-                return 0;
+                goto returnZero;
             }
             EnterDefenderMode(unit, 5);
             return 0;
@@ -2279,10 +2284,10 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
-                    return 0;
+                    goto returnZero;
                 }
                 if (unit->m_defenderState == AISTATE_RETURN) {
-                    return 0;
+                    goto returnZero;
                 }
                 EnterDefenderMode(unit, 0xd);
                 return 0;
@@ -2293,13 +2298,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (p > PICKUP_EQUIPPABLE_LAST) {
                 p = unit->m_toolId;
             }
-            if (p == PICKUP_WINGZ) {
-                return 0;
+            if (p != PICKUP_WINGZ) {
+                goto returnZero;
             }
         }
         if (sA & 0x20000000) {
-            RepathAroundBlockedTiles(unit);
-            return 0;
+            return RepathAroundBlockedTiles(unit);
         }
         PickupType pk = unit->m_entranceReason;
         if (pk > PICKUP_EQUIPPABLE_LAST) {
@@ -2344,10 +2348,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         return 1;
     }
 recycleBail:
-    if (unit->CoordCount() == 0) {
-        return 0;
-    }
-    {
+    if (unit->CoordCount() != 0) {
         CoordNode* n = unit->CoordHead();
         while (n != NULL) {
             CoordNode* cur = n;
@@ -2358,6 +2359,7 @@ recycleBail:
         }
         coordList->RemoveAll();
     }
+returnZero:
     return 0;
 }
 
