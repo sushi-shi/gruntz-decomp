@@ -597,3 +597,35 @@ Still suffixed in the sidecar (uncertain, by design): the ghidra-region copies
 (3 - no TU exists to split; they need TUs carved for unreconstructed regions)
 and the split-half families whose halves straddle a cross-TU interleaver
 (0x229eb8, 0x22b588, 0x245168, 0x22c1c0, 0x244f50).
+
+### The generalized oracle: the CRT `$XCU` table (2026-08-07)
+
+The direction-cell family is one tracer; the CRT initializer table is the
+GENERAL one. Every TU with any dynamic-initialized static contributes its own
+group of funclet pointers to `.CRT$XCU`, groups concatenated in link order, so
+walking the table enumerates those TUs and points at each one's funclet band
+(= its head). In GRUNTZ.EXE the table is 0x205e54..0x20a3dc = **115 groups**.
+
+Six claimed units carried >1 group (= >1 compiland); all six cuts were
+corroborated independently by a CLASS boundary at the same address, and all
+six are now SPLIT (commit aac379521):
+    play -> +gruntzplayer +playassetload   savegame -> +savegamedialogs
+    netcmdslot -> +netsessionmgr           netlobbydialogs -> +multihelpdlg
+The remaining 13 groups attribute to the `retail` pseudo-unit - unreconstructed
+regions where no TU exists to split; they mark future TU births, not defects.
+
+Measured effect on the linker-order metric (config/cleanliness/tu-order-baseline.tsv):
+    intra-order violations   70 -> 44      TUs carrying them   11 -> 9
+    interleaving TU-pairs    95 -> 89
+`Dialogs` (6) and `Play` (20) fell to zero: a merged file cannot be ordered
+ascending when retail interleaved other objects between its parts, so those
+violations were never real defects - they were the merge showing through.
+Still-open intra offenders (GruntzMgr 22, GameLevel 10, Fader 5, ...) carry no
+initializer group, so this oracle cannot cut them; they need xref/class
+analysis or another tracer.
+
+New traps beyond the band-cut list: a namespace-scoped TU (LobbyDialogs.cpp)
+has INDENTED labels a column-0 splitter silently misses - check the annotated-
+block count against `symbol_names.csv` before trusting a split; and copying a
+parent's prelude drags its file-local enums/constants along, which the
+cleanliness ratchet catches (delete what the new TU does not use).
