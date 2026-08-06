@@ -162,7 +162,6 @@ CFxModeT6::CFxModeT6() {
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
-// @early-stop
 RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
 RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}

@@ -1,3 +1,5 @@
+#define CREZBUFFEROBJECT_OOL_DTOR
+
 #include <rva.h>
 
 #include <Rez/RezBufferObject.h>

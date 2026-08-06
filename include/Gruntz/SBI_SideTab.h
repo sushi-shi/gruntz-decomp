@@ -37,10 +37,7 @@ public:
         CDDrawSurfaceMgr* host,
         SbiCommandId cmd,
         StatusBarTab tab,
-        i32 left,
-        i32 top,
-        i32 right,
-        i32 bottom,
+        RECT rc,
         const char* unused,
 
         i32 rowIndex,

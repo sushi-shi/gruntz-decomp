@@ -54,6 +54,15 @@ public:
 };
 SIZE_UNKNOWN();
 
+#ifndef STATUSBARITEM_OOL_CTOR
+inline CStatusBarItem::CStatusBarItem() {
+    m_enabled = 0;
+    m_kind = SBI_KIND_BASE;
+    m_host = NULL;
+    m_redrawFrames = 0;
+}
+#endif
+
 inline CStatusBarItem::~CStatusBarItem() {
     Reset();
 }

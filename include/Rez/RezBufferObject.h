@@ -32,3 +32,11 @@ struct CRezBufferObject : public CObject {
     void SetSize(i32 nNewSize, i32 nGrowBy);
 };
 SIZE_UNKNOWN();
+
+#ifndef CREZBUFFEROBJECT_OOL_DTOR
+inline CRezBufferObject::~CRezBufferObject() {
+    if (m_pData) {
+        ::operator delete(m_pData);
+    }
+}
+#endif

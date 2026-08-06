@@ -5047,45 +5047,35 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
         o->m_y = lvl->m_screenY >> TILE_SHIFT_PX;
         return o;
     }
-    CPtrArray* coords = &m_ctx->m_options[kind].m_battlezConfig.m_attackWaypoints;
     CGameObject* lvl = unit->m_object;
     i32 rx = lvl->m_screenX >> TILE_SHIFT_PX;
     i32 ry = lvl->m_screenY >> TILE_SHIFT_PX;
+    CPtrArray* coords = &m_ctx->m_options[kind].m_battlezConfig.m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
         i32 r = rand() % count;
-        i32 k = 0;
-        if (count > 0) {
+        for (i32 k = 0; k < count; k++) {
             Coord** arr = CoordArrayData(*coords);
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_ownerId;
-            for (;;) {
-                Coord* cand = arr[r];
-                i32 cx = cand->m_x;
-                i32 cy = cand->m_y;
-                i32 ok = 1;
-                CGrunt** row = &grid->m_grid[cell * 15];
-                for (i32 j = 15; j != 0; j--) {
-                    CGrunt* u = *row;
-                    if (u != NULL && u->CoordCount() != 0) {
-                        Coord* node = u->CoordTail()->m_coord;
-                        if (node->m_x == cx && node->m_y == cy) {
-                            ok = 0;
-                        }
+            Coord cand = *arr[r];
+            i32 ok = 1;
+            CGrunt** row = &grid->m_grid[cell * 15];
+            for (i32 j = 15; j != 0; j--) {
+                CGrunt* u = *row;
+                if (u != NULL && u->CoordCount() != 0) {
+                    Coord* node = u->CoordTail()->m_coord;
+                    if (node->m_x == cand.m_x && node->m_y == cand.m_y) {
+                        ok = 0;
                     }
-                    row++;
                 }
-                if (ok != 0) {
-                    o->m_x = cx;
-                    o->m_y = cy;
-                    return o;
-                }
-                r = (r + 1) % count;
-                k++;
-                if (k >= count) {
-                    break;
-                }
+                row++;
             }
+            if (ok != 0) {
+                *o = cand;
+                return o;
+            }
+            r = (r + 1) % count;
         }
         r = rand() % count;
         Coord* cand = CoordArrayData(*coords)[r];

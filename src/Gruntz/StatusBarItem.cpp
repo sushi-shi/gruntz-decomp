@@ -1,3 +1,5 @@
+#define STATUSBARITEM_OOL_CTOR
+
 #include <rva.h>
 
 #include <Gruntz/StatusBarItem.h>

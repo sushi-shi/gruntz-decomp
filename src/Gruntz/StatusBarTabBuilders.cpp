@@ -317,10 +317,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CDDrawSurfaceMgr* host,
     SbiCommandId cmd,
     StatusBarTab tab,
-    i32 left,
-    i32 top,
-    i32 right,
-    i32 bottom,
+    RECT rc,
     const char* unused,
     i32 rowIndex,
     i32 colIndex,
@@ -334,11 +331,11 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_host = host;
     m_tab = tab;
     m_owner = parent;
-    m_rect14.left = left;
+    m_rect14.left = rc.left;
     m_redrawFrames = 0;
-    m_rect14.top = top;
-    m_rect14.right = right;
-    m_rect14.bottom = bottom;
+    m_rect14.top = rc.top;
+    m_rect14.right = rc.right;
+    m_rect14.bottom = rc.bottom;
     m_cmd = cmd;
 
     if (enabled != STATUS_SAMPLE_NONE) {
@@ -368,7 +365,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = 1;
-        m_drawPosition.m_x = parent->m_rect10.left - (right - left) / 2;
+        m_drawPosition.m_x = parent->m_rect10.left - (rc.right - rc.left) / 2;
     } else {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
@@ -387,7 +384,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         }
         m_topFrame = v;
         m_bottomFrameDy = -1;
-        m_drawPosition.m_x = (right - left) / 2 + parent->m_rect10.right;
+        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_rect10.right;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
     if (m_topFrame == NULL) {

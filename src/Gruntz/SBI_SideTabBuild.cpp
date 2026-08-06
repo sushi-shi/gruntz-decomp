@@ -10,20 +10,20 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
 
-// @early-stop
 RVA(0x00105070, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
     i32 i = 0;
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
-        i32 geomBase;
-        i32 geomVal;
+        RECT rc;
         if (m_position == STATUSBAR_DOCK_RIGHT) {
-            geomBase = m_rect10.left - 0x1c;
-            geomVal = m_rect10.left;
+            rc.left = m_rect10.left - 0x1c;
+            rc.right = m_rect10.left;
         } else {
-            geomBase = m_rect10.right;
-            geomVal = m_rect10.right + 0x1c;
+            rc.left = m_rect10.right;
+            rc.right = m_rect10.right + 0x1c;
         }
+        rc.top = strid - 0x11;
+        rc.bottom = strid;
         CSBI_SideTab* newobj = new CSBI_SideTab;
 
         i32 ok = newobj->BuildStatzTabStatusBar(
@@ -31,11 +31,8 @@ i32 CStatusBarMgr::BuildSideTabs() {
             g_gameReg->m_world,
             static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
             TAB_CONTROLS,
-            geomBase,
-            strid - 0x11,
-            geomVal,
-            strid,
-            "GAME_STATUSBAR_TABZ_STATZTAB_TAB",
+            rc,
+            "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             g_curPlayer,
             i,
             m_statFlags[i],
