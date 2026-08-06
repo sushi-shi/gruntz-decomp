@@ -4,12 +4,12 @@
 
 #include <string.h>
 
-#pragma intrinsic(strlen, strcmp, memcpy)
+#pragma intrinsic(strlen, strcmp, strcpy)
 
 // @early-stop
 RVA(0x001933b0, 0x28f)
 CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
-    i32 path[28];
+    i32 path[32];
     m_lookupPending = 0;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
@@ -65,7 +65,7 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
         char* kb = static_cast<char*>(::operator new((m_keyBitLength >> 3) + 1));
         nn->m_key = kb;
         if (kb != NULL) {
-            memcpy(kb, key, strlen(key) + 1);
+            strcpy(kb, key);
 
             i32 selfdir = (1 << (critbit & 7))
                           & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
