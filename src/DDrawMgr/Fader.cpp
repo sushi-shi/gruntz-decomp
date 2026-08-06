@@ -1481,9 +1481,6 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
 
     u8* srcA = m_dstBase + (col - x0) * bpp;
     u8* srcB = m_gatherBase + (col - x0) * bpp;
-    if (m_rowCount <= 0) {
-        return;
-    }
 
     for (i32 j = 0; j < m_rowCount; j++) {
         u8* rowSrcA = srcA + m_rowOfsA[j];
@@ -1501,34 +1498,36 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
             }
         } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
-                u8* s = rowSrcB + m_warpTable[k] * 2;
-                u8* d = m_lineBuf + (x0 + k) * 2;
-                d[0] = s[0];
-                d[1] = s[1];
+                m_lineBuf[(x0 + k) * 2] = rowSrcB[m_warpTable[k] * 2];
+                m_lineBuf[(x0 + k) * 2 + 1] = rowSrcB[m_warpTable[k] * 2 + 1];
             }
         } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
             for (i32 k = 0; k < stride; k++) {
-                u8* s = rowSrcB + m_warpTable[k] * 3;
-                u8* d = m_lineBuf + (x0 + k) * 3;
-                d[0] = s[0];
-                d[1] = s[1];
-                d[2] = s[2];
+                m_lineBuf[(x0 + k) * 3] = rowSrcB[m_warpTable[k] * 3];
+                m_lineBuf[(x0 + k) * 3 + 1] = rowSrcB[m_warpTable[k] * 3 + 1];
+                m_lineBuf[(x0 + k) * 3 + 2] = rowSrcB[m_warpTable[k] * 3 + 2];
             }
         }
 
         if (m_stripCopy) {
+            i32 n = bpp * stripWidth;
             u8* s = destBase + m_rowOfsB[j];
             u8* d = src2base;
-            for (i32 n = bpp * stripWidth; n > 0; n--) {
+            while (n-- > 0) {
                 *d++ = *s++;
             }
         } else {
-            memset(src2base, 0, bpp * stripWidth);
+            i32 n = bpp * stripWidth;
+            u8* d = src2base;
+            while (n-- > 0) {
+                *d++ = 0;
+            }
         }
 
         u8* s = m_lineBuf;
         u8* d = rowSrcA;
-        for (i32 n = bpp * rowBytes; n > 0; n--) {
+        i32 n = bpp * rowBytes;
+        while (n-- > 0) {
             *d++ = *s++;
         }
     }
