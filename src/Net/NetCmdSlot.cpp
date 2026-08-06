@@ -140,49 +140,48 @@ void RecycleCmd(void* cmd) {
     CPtrListPool<GruntRec>::s_freeList.AddTail(cmd);
 }
 
-// @early-stop
 RVA(0x000bf5a0, 0x110)
 i32 CNetSession::Poll(i32 delta) {
-    CNetCmdSlot* s = m_slots;
-    i32 n = 4;
-    do {
-        if (s->m_state == NETSLOT_ACTIVE) {
-            s->m_latency += delta;
+    for (i32 i = 0; i < 4; i++) {
+        if (m_slots[i].m_state == NETSLOT_ACTIVE) {
+            m_slots[i].m_latency += delta;
         }
-        s++;
-    } while (--n);
+    }
 
+    i32 st = 0;
     i32 avail;
-    if (m_localDesc == NULL) {
+    CNetSessionNode* localDesc = m_localDesc;
+    CNetMgr* netMgr = m_netMgr;
+    if (localDesc == NULL) {
         avail = 0;
     } else {
         i32 got;
 
-        IDirectPlay4Z* ep = m_netMgr->m_directPlay;
-        i32 r = ep->GetMessageCount(m_localDesc->m_id, &got);
+        IDirectPlay4Z* ep = netMgr->m_directPlay;
+        i32 r = ep->GetMessageCount(localDesc->m_id, &got);
         avail = (r == 0) ? got : 0;
     }
 
     i32 a = 0;
+    i32 len = 0x800;
     i32 received = 0;
-    while (avail > 0 && m_session->m_pollAbort == 0) {
-        i32 len = 0x800;
-        i32 chan = m_localDesc->m_id;
+    while (st == 0 && avail > 0 && m_session->m_pollAbort == 0) {
+        len = 0x800;
         IDirectPlay4Z* ep = m_netMgr->m_directPlay;
-        i32 st = ep->Receive(&a, &chan, 1, g_lobbyRecvBuf, &len);
+        i32 chan = m_localDesc->m_id;
+        st = ep->Receive(&a, &chan, 1, g_lobbyRecvBuf, &len);
         if (st != 0) {
             CNetMgr::ReportError(const_cast<char*>("c:\\proj\\incs\\netmgr.h"), 0x141, st, 0);
-            if (st != 0) {
-                break;
-            }
         }
-        received++;
-        avail--;
-        if (a != m_localDesc->m_id) {
+        if (st == 0) {
+            avail--;
+            received++;
+            if (a != m_localDesc->m_id) {
 
-            CNetWireMsg wire;
-            wire.m_bytes = g_lobbyRecvBuf;
-            Dispatch(a, wire.m_ctrl, len);
+                CNetWireMsg wire;
+                wire.m_bytes = g_lobbyRecvBuf;
+                Dispatch(a, wire.m_ctrl, len);
+            }
         }
     }
     return received;
