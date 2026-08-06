@@ -2104,7 +2104,7 @@ gruntsteps	?RectContains@CGrunt@@QAEHHH@Z	71.9113	71.9113	5	0590053ebe7e	0x51850
 gruntsteps	?RectContainsGated@CGrunt@@QAEHHH@Z	74.7323	74.7323	5	5f1fe37cf892	0x51a20
 gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	11	a9490b629161	0x53f90
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	91822eacedeb	0x53b80
-gruntsteps	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	64.4000	64.4000	3	cd55d3affb66	0x52ed0
+gruntsteps	?SetArrivalTarget@CGrunt@@QAEXHHHH@Z	65.1333	65.1333	4	f469dda153e6	0x52ed0
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	6	bf3f90a0203c	0x517b0
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	53.2453	53.2453	16	c92a5dddce9f	0x51c00
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	42.2069	42.2069	2	800608cd1263	0x52fb0

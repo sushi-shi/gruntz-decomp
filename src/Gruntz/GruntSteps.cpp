@@ -868,8 +868,8 @@ RVA(0x00052ed0, 0x42)
 void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
     m_arrivalCell.m_x = a;
     m_arrivalCell.m_y = b;
-    m_arrivalActive = 1;
     m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_arrivalActive = 1;
     m_defenderPx.m_y = (d & ~TILE_MASK_PX) + TILE_HALF_PX;
 }
 
