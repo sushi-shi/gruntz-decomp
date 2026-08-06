@@ -2,8 +2,10 @@ use core::fmt;
 
 use gruntz_codec::xmi::{Event, Sequence, XmiError};
 
-/// MIDI SMPTE division: 30 frames/second, 4 ticks/frame = Miles' 120 Hz clock.
-const DIVISION: u16 = 0xe204;
+/// 60 pulses/quarter at 120 BPM = Miles' 120 ticks/second clock. This metrical
+/// form is more widely supported than MIDI's otherwise equivalent SMPTE form.
+const DIVISION: u16 = 60;
+const FIXED_TEMPO: [u8; 6] = [0xff, 0x51, 3, 0x07, 0xa1, 0x20];
 
 #[derive(Debug)]
 pub enum MidiError {
@@ -76,7 +78,10 @@ pub fn render(sequence: Sequence<'_>) -> Result<Vec<u8>, MidiError> {
                 }
             }
             Event::Meta { time, kind, data } => {
-                if kind == 0x2f {
+                // XMIDI delays are absolute 120 Hz intervals. Its tempo event
+                // describes musical beat accounting, whereas retaining it in
+                // metrical MIDI would incorrectly change real event timing.
+                if kind == 0x2f || kind == 0x51 {
                     continue;
                 }
                 let mut bytes = vec![0xff, kind];
@@ -111,6 +116,8 @@ pub fn render(sequence: Sequence<'_>) -> Result<Vec<u8>, MidiError> {
     timed.sort_by_key(|event| (event.time, event.phase, event.order));
 
     let mut track = Vec::new();
+    track.push(0);
+    track.extend_from_slice(&FIXED_TEMPO);
     let mut previous = 0u32;
     for event in timed {
         push_vlq(&mut track, event.time - previous);
@@ -181,11 +188,12 @@ mod tests {
             events: &events,
         })
         .unwrap();
-        assert_eq!(&midi[..14], b"MThd\0\0\0\x06\0\0\0\x01\xe2\x04");
+        assert_eq!(&midi[..14], b"MThd\0\0\0\x06\0\0\0\x01\0\x3c");
         assert_eq!(&midi[14..18], b"MTrk");
         assert_eq!(
             &midi[22..],
             &[
+                0, 0xff, 0x51, 3, 0x07, 0xa1, 0x20, // 120 BPM at PPQN 60
                 0, 0x90, 60, 100, // first note
                 5, 0x90, 62, 100, // second note
                 5, 0x80, 60, 0, // both expire at t=10

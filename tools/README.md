@@ -68,6 +68,11 @@ REZ=/path/to/GRUNTDEM.REZ
   --midi intro0.mid
 ./target/release/gruntz-oracle --rez "$REZ" xmi-all ../build/music-midi
 
+# MIDI is note/event data; play it through a synthesizer, not mpv/FFmpeg
+timidity ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
+fluidsynth -i /path/to/Gruntz.SF2 \
+  ../build/music-midi/AREA1/MIDIZ/AMBIENT0.mid
+
 # the third implementation (needs wine + $GRUNTZ_EXE)
 ../recomp/harness/build.sh
 ./target/release/gruntz-oracle --rez "$REZ" recomp
@@ -89,10 +94,10 @@ any runtime colour, while `--tint source` preserves the embedded green table.
 
 `xmi` exposes the sequence, timbre, event, and timing counts in a Miles XMIDI
 resource. Its optional MIDI output expands XMIDI note durations into note-off
-events and uses MIDI SMPTE timing (30 frames/second, 4 ticks/frame) to preserve
-Miles' 120 Hz clock exactly. `xmi-all` converts every music resource while
-preserving its REZ path. Together these commands turn a disagreement into
-something that can be read, viewed, or played rather than a percentage.
+events and writes broadly compatible 60 PPQN / 120 BPM timing, preserving
+Miles' 120 ticks/second clock exactly. `xmi-all` converts every music resource
+while preserving its REZ path. Together these commands turn a disagreement
+into something that can be read, viewed, or played rather than a percentage.
 
 ## Results
 
