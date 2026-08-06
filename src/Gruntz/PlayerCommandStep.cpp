@@ -25,7 +25,7 @@ static const char s_grunt[] = "Grunt";
 static const char s_playerDefenderRadius[] = "PlayerDefenderRadius";
 
 // @early-stop
-RVA(0x000d1b60, 0xd30)
+RVA(0x000d1b60, 0xc30)
 i32 CPlay::ExecCommand(
     u8 targetIndex,
     char gruntIndex,
