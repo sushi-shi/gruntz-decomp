@@ -86,7 +86,6 @@
 #define GZ_ENUM_FORWARD_SPLIT(name, storage) enum class name : storage
 
 #define GZ_ENUM_STORAGE(name, storage) GzEnumStorage<name, storage>
-#define GZ_ENUM_STORAGE_STEPPED(name, storage) GzSteppedEnumStorage<name, storage>
 #define GZ_ENUM_PARAM(name, storage) name
 #define GZ_ENUM_RETURN(name, storage) name
 #define GZ_ENUM_BITFIELD(name, storage) name
@@ -101,20 +100,12 @@ public:
     constexpr GzEnumStorage(Enum value) : m_value(static_cast<Storage>(value)) {}
     constexpr GzEnumStorage(Storage value) : m_value(value) {}
 
-    // The cross-width bridge: a u8 field of domain N assigns into an i32 field
-    // of domain N with no cast at the call site. This is what makes "one domain,
-    // two byte representations" a single type rather than two integers.
-    template<typename OtherStorage>
-    constexpr GzEnumStorage(GzEnumStorage<Enum, OtherStorage> value)
-        : m_value(static_cast<Storage>(static_cast<Enum>(value))) {}
-
     constexpr operator Enum() const {
         return static_cast<Enum>(m_value);
     }
 
-    template<typename Integer>
-    requires(__is_integral(Integer)) explicit constexpr operator Integer() const {
-        return static_cast<Integer>(static_cast<Enum>(m_value));
+    explicit constexpr operator i32() const {
+        return static_cast<i32>(m_value);
     }
 
     GzEnumStorage& operator=(Enum value) {
@@ -124,12 +115,6 @@ public:
 
     GzEnumStorage& operator=(Storage value) {
         m_value = value;
-        return *this;
-    }
-
-    template<typename OtherStorage>
-    GzEnumStorage& operator=(GzEnumStorage<Enum, OtherStorage> value) {
-        m_value = static_cast<Storage>(static_cast<Enum>(value));
         return *this;
     }
 
@@ -184,69 +169,9 @@ constexpr bool operator>=(GzEnumStorage<Enum, Storage> lhs, Enum rhs) {
     return static_cast<Enum>(lhs) >= rhs;
 }
 
-// Same proxy, plus the increment/decrement a cursor field needs.
-template<typename Enum, typename Storage> class GzSteppedEnumStorage {
-public:
-    GzSteppedEnumStorage() = default;
-    constexpr GzSteppedEnumStorage(Enum value) : m_value(static_cast<Storage>(value)) {}
-
-    constexpr operator Enum() const {
-        return static_cast<Enum>(m_value);
-    }
-
-    template<typename Integer>
-    requires(__is_integral(Integer)) explicit constexpr operator Integer() const {
-        return static_cast<Integer>(static_cast<Enum>(m_value));
-    }
-
-    GzSteppedEnumStorage& operator=(Enum value) {
-        m_value = static_cast<Storage>(value);
-        return *this;
-    }
-
-    GzSteppedEnumStorage& operator=(Storage value) {
-        m_value = value;
-        return *this;
-    }
-
-    GzSteppedEnumStorage& operator++() {
-        ++m_value;
-        return *this;
-    }
-
-    // The dummy parameter is NAMED: a bare `(i32)` reads as a numeric C-style
-    // cast to the cleanliness board's regex.
-    GzSteppedEnumStorage operator++(i32 postfix) {
-        (void)postfix;
-        GzSteppedEnumStorage previous = *this;
-        ++m_value;
-        return previous;
-    }
-
-    GzSteppedEnumStorage& operator--() {
-        --m_value;
-        return *this;
-    }
-
-    GzSteppedEnumStorage operator--(i32 postfix) {
-        (void)postfix;
-        GzSteppedEnumStorage previous = *this;
-        --m_value;
-        return previous;
-    }
-
-private:
-    Storage m_value;
-};
-
 template<typename Enum, typename Storage>
 constexpr i32 GzEnumIndex(GzEnumStorage<Enum, Storage> value) {
-    return static_cast<i32>(static_cast<Enum>(value));
-}
-
-template<typename Enum, typename Storage>
-constexpr i32 GzEnumIndex(GzSteppedEnumStorage<Enum, Storage> value) {
-    return static_cast<i32>(static_cast<Enum>(value));
+    return static_cast<i32>(value);
 }
 
 template<typename Value> constexpr i32 GzEnumIndex(Value value) {
@@ -342,7 +267,6 @@ template<typename Value> constexpr i32 GzEnumIndex(Value value) {
 #define GZ_ENUM_FORWARD_SPLIT(name, storage) enum name
 
 #define GZ_ENUM_STORAGE(name, storage) storage
-#define GZ_ENUM_STORAGE_STEPPED(name, storage) storage
 #define GZ_ENUM_PARAM(name, storage) storage
 #define GZ_ENUM_RETURN(name, storage) storage
 #define GZ_ENUM_BITFIELD(name, storage) storage

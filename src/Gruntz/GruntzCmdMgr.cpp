@@ -310,7 +310,7 @@ i32 CGruntzSingleCommand::Parse(void* data, i32) {
     buf += 2;
     m_gruntIndex = *buf++;
 
-    if (static_cast<u8>(m_commandKind) >= 8) {
+    if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
         m_extraByte = *buf++;
     }
     return buf - static_cast<char*>(data);
@@ -346,7 +346,7 @@ i32 CGruntzSingleCommand::Pack(char* buf, i32) {
     w += 2;
     *w = m_gruntIndex;
     w++;
-    if (static_cast<u8>(m_commandKind) >= 8) {
+    if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
         *w = m_extraByte;
         w++;
     }

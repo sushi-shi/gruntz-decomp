@@ -442,13 +442,7 @@ i32 CPlay::ExecCommand(
             if (g2 == NULL || g2->m_entranceCommitted == 0) {
                 r = 0;
             } else {
-                r = g2->LoadPickupSprites(
-                    static_cast<PickupType>(static_cast<u8>(extraByte)),
-                    0,
-                    0,
-                    0,
-                    live
-                );
+                r = g2->LoadPickupSprites(static_cast<PickupType>(extraByte & 0xff), 0, 0, 0, live);
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {

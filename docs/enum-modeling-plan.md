@@ -107,10 +107,11 @@ i32 SetParams(GZ_ENUM_PARAM(GruntzCommandKind, char) cmdKind, …);
 
 In retail that is exactly `u8` and `char` — zero bytes move. In the strict build
 `GzEnumStorage<N,S>` presents the domain type, converts implicitly *to* the enum,
-converts to an integer only **explicitly**, and carries a cross-width converting
-constructor, so a `u8` field of domain N assigns into an `i32` field of domain N
-with no cast. That is what makes the byte field and the dword parameter the same
-domain instead of two unrelated integers.
+and converts explicitly to the canonical `i32` used by `IDX`. The proxy keeps the
+field's representation attached to its domain instead of exposing it as an
+unrelated integer. There is no cross-storage proxy conversion: no current domain
+uses proxy fields of two different widths, so such a bridge would be unused
+generic machinery rather than evidence-backed modeling.
 
 **Flag and sequence operators are strict-only on purpose.** Retail combined and
 cleared bits with plain arithmetic, and an inline operator in a hot header

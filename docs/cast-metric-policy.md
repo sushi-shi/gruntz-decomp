@@ -64,8 +64,9 @@ retail instructions before removal:
 - `char -> u8 -> u32` prevents sign extension before byte packing and shifts.
 - `float -> i32 -> u8` makes truncation happen before byte narrowing.
 - `i32 -> u8 -> enum` recovers a one-byte serialized enum from a promoted value.
-- strict enum-storage proxies cross `storage -> enum -> integer/storage` so two
-  representations of one domain cannot convert directly into unrelated domains.
+- strict enum-storage proxies expose only their owning enum and the canonical
+  explicit `i32` conversion used by `IDX`; unused cross-storage and arbitrary
+  integer bridges do not belong in the proxy.
 
 None of these authorizes type punning. An unrelated pointer/object chain is a
 modeling defect, and a chain must not be split across throwaway locals or hidden in
