@@ -1356,6 +1356,10 @@ source = "src/DDrawMgr/Fader.cpp"
 flags = "cpp"
 
 [[unit]]
+unit = "fadereffects"
+source = "src/DDrawMgr/FaderEffects.cpp"
+flags = "cpp-rtti"
+[[unit]]
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
 flags = "cpp"
