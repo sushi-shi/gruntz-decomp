@@ -320,27 +320,27 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     i32 player3
 ) {
     CTileActionEvent* m = new CTileActionEvent;
-    if (m == NULL) {
-        return 0;
-    }
-    if (m->m_live != 0) {
+    if (m != NULL) {
+        if (m->m_live == 0) {
+            m->m_tileX = tileX;
+            m->m_tileY = tileY;
+            m->m_cellKey = cellKey;
+            m->m_playerFlags[0] = player0;
+            m->m_playerFlags[1] = player1;
+            m->m_playerFlags[3] = player3;
+            m->m_actionCode = actionCode;
+            m->m_owner = this;
+            m->m_live = 1;
+            m->m_playerFlags[2] = player2;
+            m->SetActionCode(actionCode);
+            m_list3.AddTail(m);
+            return m;
+        }
         m->m_live = 0;
         ::operator delete(m);
         return 0;
     }
-    m->m_tileX = tileX;
-    m->m_tileY = tileY;
-    m->m_cellKey = cellKey;
-    m->m_playerFlags[0] = player0;
-    m->m_playerFlags[1] = player1;
-    m->m_playerFlags[3] = player3;
-    m->m_actionCode = actionCode;
-    m->m_owner = this;
-    m->m_live = 1;
-    m->m_playerFlags[2] = player2;
-    m->SetActionCode(actionCode);
-    m_list3.AddTail(m);
-    return m;
+    return 0;
 }
 
 // @early-stop
