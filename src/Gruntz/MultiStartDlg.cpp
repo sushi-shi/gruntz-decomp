@@ -90,7 +90,6 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
                                                             CMultiStartDlg::CommitWorldHost
                                                         ){0, 0, 0, 0, AfxSig_end, 0},
 };
-VTBL(CMultiStartDlg, 0x001ea8ec);
 
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)
