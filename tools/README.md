@@ -2,7 +2,7 @@
 
 A Rust workspace, independent of the C++ decompilation under `src/`. It exists
 to answer one question the decompilation cannot answer about itself: **is our
-model of the sprite format right?**
+model of the resource formats right?**
 
 `src/` and a Rust rewrite of `src/` would fail together. So the codecs here were
 derived from two sources only — retail `GRUNTZ.EXE` disassembly and the archived
@@ -18,9 +18,9 @@ retail's own machine code, mapped out of the EXE and executed.
 | crate | what it is |
 |---|---|
 | `gruntz-cast` | lossless integer conversions, so nothing else writes `as` |
-| `gruntz-rez`  | Monolith REZ v1 archive reader (lib + `rezls`) |
-| `gruntz-codec`| ANI / PAL / RID / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
-| `gruntz-oracle` | the differential runner over real assets |
+| `gruntz-rez`  | Monolith REZ/VRZ v1 and FEC archive readers (`rezls`, `fecls`) |
+| `gruntz-codec`| ANI / FNT / PAL / RID / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
+| `gruntz-oracle` | the differential runner plus loose-asset renderers (`fntdump`) |
 | `recomp/`     | the MSVC/wine harness that calls into retail |
 
 The three libraries are `#![no_std]` with **no `alloc`** and no third-party
@@ -31,7 +31,7 @@ allocator to do. `std`, file IO and `clap` live in the binaries.
 
 ## Running it
 
-The libraries need nothing but the pinned `rustc`. The two **binaries** use
+The libraries need nothing but the pinned `rustc`. The **binaries** use
 `clap`, so the first build needs the crates.io registry (or a warm
 `~/.cargo` cache); `Cargo.lock` is committed so the version is fixed. If a
 fully offline build is ever required, `cargo vendor` into `tools/vendor/` is
@@ -48,6 +48,18 @@ REZ=/path/to/GRUNTDEM.REZ
 ./target/release/gruntz-oracle --rez "$REZ" roundtrip --literals any
 ./target/release/gruntz-oracle --rez "$REZ" decoders
 ./target/release/gruntz-oracle --rez "$REZ" rle16
+
+# VRZ is the same REZ v1 container; retail contains 1,517 voice WAVs
+./target/release/rezls /path/to/GRUNTZ.VRZ census
+
+# inspect all four loose bitmap fonts and render 16x16 glyph atlases
+./target/release/fntdump /path/to/GAME/{LARGE,MEDIUM,SMALL,TINY}.FNT \
+  --out ../build/font-atlases
+
+# list or extract the three embedded Smacker movies from either FEC archive
+./target/release/fecls /path/to/MOVIEZ/GRUNTZ.FEC
+./target/release/fecls /path/to/MOVIEZ/GRUNTZ.FEC extract-all \
+  ../build/movies-high
 
 # inspect animation control records and sound cues
 ./target/release/gruntz-oracle --rez "$REZ" ani 'AREA2\ANIZ\FORTSPLASH'
@@ -107,7 +119,8 @@ be read, viewed, or played rather than a percentage.
 ## Results
 
 Corpus: `GRUNTDEM.REZ` (10 553 resources, 9 845 PID) and retail `Gruntz.REZ`
-(21 303 resources, 19 953 PID) — **29 798 sprites**.
+(21 303 resources, 19 953 PID) — **29 798 sprites** — plus retail's loose FNT,
+FEC, and VRZ assets.
 
 | check | result |
 |---|---|
@@ -118,6 +131,9 @@ Corpus: `GRUNTDEM.REZ` (10 553 resources, 9 845 PID) and retail `Gruntz.REZ`
 | retail's two decoders agree with each other | 100 % — no shipped sprite crosses a scanline |
 | PAL tables parse at exact size | **36 / 36** retail palettes |
 | XMI parses and exports to MIDI | **37 / 37** retail music resources |
+| FNT parses exactly and renders an atlas | **4 / 4** retail bitmap fonts |
+| FEC validates and extracts Smacker payloads | **2 / 2** archives, **6 / 6** movies |
+| VRZ walks with exact-size validation | **1 517 / 1 517** retail voice WAVs |
 
 ## What the format turned out to be
 

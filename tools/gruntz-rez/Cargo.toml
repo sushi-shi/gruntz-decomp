@@ -15,6 +15,10 @@ path = "src/lib.rs"
 name = "rezls"
 path = "src/bin/rezls.rs"
 
+[[bin]]
+name = "fecls"
+path = "src/bin/fecls.rs"
+
 [dependencies]
 gruntz-cast = { workspace = true }
 clap = { workspace = true }

@@ -1,4 +1,4 @@
-//! Monolith **REZ version 1** archive reader — `no_std`, no `alloc`,
+//! Monolith **REZ version 1** archive reader (`.REZ` and `.VRZ`) — `no_std`, no `alloc`,
 //! zero-copy.
 //!
 //! Clean-room: the layout below was derived by hexdump-walking
@@ -42,8 +42,9 @@
 //! Note the asymmetry: **directories carry a name and no comment**, resources
 //! carry both. That is not a guess — it is forced by the exact-size check. With
 //! a comment field on directories, `AREA2`'s 0xb7-byte body over-runs; without
-//! one it lands on the byte. Both shipped archives (10 553 and 21 303
-//! resources) parse to the byte under this rule.
+//! one it lands on the byte. The shipped demo/retail REZ corpora (10 553 and
+//! 21 303 resources) and retail VRZ voice bank (1 517 resources) parse to the
+//! byte under this rule.
 //!
 //! # Zero-copy
 //!
@@ -53,6 +54,8 @@
 //! recurses.
 
 #![no_std]
+
+pub mod fec;
 
 use core::fmt;
 

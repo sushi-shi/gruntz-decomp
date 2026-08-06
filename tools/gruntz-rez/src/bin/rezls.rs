@@ -1,4 +1,4 @@
-//! `rezls` — walk a Monolith REZ v1 archive.
+//! `rezls` — walk a Monolith REZ/VRZ v1 archive.
 //!
 //! The library is `no_std` and borrows the archive; this binary owns the
 //! `std::fs::read` and the printing.
@@ -13,14 +13,14 @@ use gruntz_rez::Rez;
 #[derive(Parser)]
 #[command(
     name = "rezls",
-    about = "List / extract from a Monolith REZ v1 archive",
-    long_about = "Walks a Gruntz .REZ. The directory layout is validated \
+    about = "List / extract from a Monolith REZ/VRZ v1 archive",
+    long_about = "Walks a Gruntz .REZ or .VRZ. The directory layout is validated \
                   structurally: every directory body must end exactly on its \
                   declared size, so a malformed archive (or a wrong idea of the \
                   entry layout) is reported rather than silently tolerated."
 )]
 struct Cli {
-    /// The .REZ archive.
+    /// A .REZ game-resource or .VRZ voice-resource archive.
     archive: PathBuf,
     #[command(subcommand)]
     cmd: Option<Cmd>,

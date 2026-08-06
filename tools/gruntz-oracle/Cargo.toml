@@ -8,6 +8,10 @@ publish.workspace = true
 name = "gruntz-oracle"
 path = "src/main.rs"
 
+[[bin]]
+name = "fntdump"
+path = "src/bin/fntdump.rs"
+
 [dependencies]
 gruntz-rez = { workspace = true }
 gruntz-codec = { workspace = true }
