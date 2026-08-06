@@ -703,7 +703,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
                 m_tilesDown = 1;
                 m_originX = 0;
                 m_originY = 0;
-                m_destRect = static_cast<RECT*>(::operator new(0x10));
+                m_destRect = new RECT;
                 m_destRect->top = 0;
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
@@ -719,7 +719,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
             if (!rect) {
                 return 0;
             }
-            RECT* r = static_cast<RECT*>(::operator new(0x10));
+            RECT* r = new RECT;
             m_destRect = r;
             r->left = rect->left;
             r->top = rect->top;
@@ -806,21 +806,20 @@ i32 CMoviePlayer::AddToPlaylist(
         return 0;
     }
 
-    PLAYLISTINFOSTRUCT* rec =
-        static_cast<PLAYLISTINFOSTRUCT*>(::operator new(sizeof(PLAYLISTINFOSTRUCT)));
+    PLAYLISTINFOSTRUCT* rec = new PLAYLISTINFOSTRUCT;
     rec->m_src = static_cast<char*>(::operator new(strlen(src) + 1));
     strcpy(rec->m_src, src);
     rec->m_openArg = openArg;
     rec->m_blitMode = mode;
     rec->m_useDS = useDS;
     if (origin != NULL) {
-        rec->m_origin = static_cast<POINT*>(::operator new(sizeof(POINT)));
+        rec->m_origin = new POINT;
         *rec->m_origin = *origin;
     } else {
         rec->m_origin = NULL;
     }
     if (rect != NULL) {
-        rec->m_rect = static_cast<RECT*>(::operator new(sizeof(RECT)));
+        rec->m_rect = new RECT;
         *rec->m_rect = *rect;
     } else {
         rec->m_rect = NULL;
@@ -846,16 +845,16 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
         rec->m_src = NULL;
     }
     if (rec->m_origin) {
-        ::operator delete(rec->m_origin);
+        delete rec->m_origin;
         rec->m_origin = NULL;
     }
     if (rec->m_rect) {
-        ::operator delete(rec->m_rect);
+        delete rec->m_rect;
         rec->m_rect = NULL;
     }
 
     m_playlist.RemoveAt(idx - 1);
-    ::operator delete(rec);
+    delete rec;
     return 1;
 }
 

@@ -584,11 +584,8 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     i32 sizeB[2] = {hdr->m_rectB.w, hdr->m_rectB.h};
     i32 sizeC[2] = {hdr->m_rectC.w, hdr->m_rectC.h};
 
-    CWwdSpatialMgr* nw = static_cast<CWwdSpatialMgr*>(::operator new(0xb8));
+    CWwdSpatialMgr* nw = new CWwdSpatialMgr;
     if (nw) {
-
-        nw->m_iter.m_grid = NULL;
-        nw->m_iter.m_cur = NULL;
         nw->m_mgr = NULL;
         nw->m_grid0 = NULL;
         nw->m_grid1 = NULL;

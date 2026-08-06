@@ -58,7 +58,7 @@ CButeNode* CProjActMap::Insert(const char* key, CButeNode* value) {
     } else {
         critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
     }
-    CTrieNode* nn = static_cast<CTrieNode*>(::operator new(0x14));
+    CTrieNode* nn = new CTrieNode;
     if (nn != NULL) {
         nn->m_bit = critbit;
         nn->m_value = value;

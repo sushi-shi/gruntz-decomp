@@ -208,19 +208,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CChatBoxOwner* ctl = static_cast<CChatBoxOwner*>(::operator new(0x1c));
-        if (ctl) {
-
-            ctl->m_world = NULL;
-            ctl->m_fontConfig = NULL;
-            ctl->m_attached = false;
-            ctl->m_inputActive = 0;
-            ctl->m_originX = 0;
-            ctl->m_originY = 0;
-            ctl->m_mode = CHATBOX_WITH_RIGHT_STATUSBAR;
-        } else {
-            ctl = NULL;
-        }
+        CChatBoxOwner* ctl = new CChatBoxOwner;
         m_hitTest = ctl;
         if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
             CChatBoxOwner* dead = m_hitTest;
@@ -246,17 +234,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTileTriggerContainer* r78 = static_cast<CTileTriggerContainer*>(::operator new(0x78));
-        if (r78) {
-
-            new (&r78->m_base) CPtrList(0xa);
-            new (&r78->m_list1) CPtrList(0xa);
-            new (&r78->m_list2) CPtrList(0xa);
-            new (&r78->m_list3) CPtrList(0xa);
-            r78->m_built = 0;
-        } else {
-            r78 = NULL;
-        }
+        CTileTriggerContainer* r78 = new CTileTriggerContainer;
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
 
@@ -265,7 +243,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTimer* r50 = static_cast<CTimer*>(::operator new(0x50));
+        CTimer* r50 = new CTimer;
         if (r50) {
             r50->Init();
         } else {
@@ -1093,7 +1071,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     if (self->m_lightFx == NULL) {
-        CLightFxRender* ctx = static_cast<CLightFxRender*>(::operator new(0x43c));
+        CLightFxRender* ctx = new CLightFxRender;
         if (ctx != NULL) {
             ctx->m_mgr = NULL;
             ctx->m_cmdGrid = NULL;

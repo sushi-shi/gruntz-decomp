@@ -475,7 +475,7 @@ void* zPTree::Insert(const char* key, void* value) {
         critbit = m_keyBitLength - 1;
     }
 
-    CButeTreeNode* node = static_cast<CButeTreeNode*>(::operator new(0x14));
+    CButeTreeNode* node = new CButeTreeNode;
     if (node == NULL) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();

@@ -1445,7 +1445,7 @@ CParseSource* CSymParser::PopParseSlot() {
         rec = e->m_parseSource;
     }
     if (rec == NULL) {
-        CSlotNode* node = static_cast<CSlotNode*>(::operator new(0xc));
+        CSlotNode* node = new CSlotNode;
         if (node == NULL) {
             return 0;
         }

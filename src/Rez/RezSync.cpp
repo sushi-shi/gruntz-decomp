@@ -5,7 +5,6 @@
 #include <Mfc.h>
 #include <MfcWin.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Crypto/BitStreamBlowfish.h>
@@ -124,10 +123,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     while (ShowCursor(0) >= 0) {
     }
 
-    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(::operator new(0x21c));
-    if (reg) {
-        reg->m_open = 0;
-    }
+    Utils::RegistryHelper* reg = new Utils::RegistryHelper;
     m_settings = reg;
     if (!m_settings->Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
@@ -411,7 +407,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    m_logicPump = static_cast<CLightFxMgr*>(::operator new(0x3c));
+    m_logicPump = new CLightFxMgr;
     if (m_logicPump) {
         m_logicPump->m_reg = NULL;
         m_logicPump->m_world = NULL;
@@ -438,7 +434,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_scoreHud = new CBattlezData;
     m_scoreHud->InitWithRecords(m_saveSink->m_pad24);
 
-    g_spawnConfig = static_cast<StateMgrBZ*>(::operator new(sizeof(StateMgrBZ)));
+    g_spawnConfig = new StateMgrBZ;
     if (g_spawnConfig) {
         g_spawnConfig->m_device = NULL;
         g_spawnConfig->m_keyboard = NULL;
@@ -473,7 +469,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x415);
         return 0;
     }
-    m_spriteFactory = static_cast<CSpriteRefTable*>(::operator new(0x94));
+    m_spriteFactory = new CSpriteRefTable;
     if (m_spriteFactory) {
         m_spriteFactory->m_factory = NULL;
         m_spriteFactory->m_spriteMgrHolder = NULL;
@@ -513,20 +509,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         if (stream) {
             g_buteMgr.m_encrypted = 1;
             char* esz = stream->BeginParse();
-            // This entry kind stores bytes and length in the opposite word/address arms.
-            AddrWord<char> lenSlot;
-            AddrWord<char> dataSlot;
-            lenSlot.m_addr = esz;
-            dataSlot.m_word = stream->m_length;
-            i32 eszLen = lenSlot.m_word;
-            char* src = dataSlot.m_addr;
-            // Preserve the swapped raw-width representation.
-            istrstream* rdr = new istrstream(src, eszLen);
+            i32 eszLen = stream->m_length;
+            istrstream* rdr = new istrstream(esz, eszLen);
             Blowfish_InitKey("1212C");
-            ostrstream* snk = new ostrstream(src, eszLen, 2);
+            char* decoded = new char[eszLen];
+            ostrstream* snk = new ostrstream(decoded, eszLen, 2);
             g_buteMgr.m_crypt.Decode(rdr, snk);
 
-            g_buteMgr.m_stream = static_cast<istream*>(::operator new(0x60));
+            g_buteMgr.m_stream = new istrstream(decoded, snk->rdbuf()->out_waiting());
             stream->EndParse();
             g_buteMgr.Init();
             g_buteMgr.m_tree.ClearRecursive(0);

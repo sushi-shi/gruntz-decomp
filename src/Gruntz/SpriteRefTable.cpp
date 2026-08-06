@@ -292,7 +292,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
         return 0;
     }
     CSpriteRef* node;
-    CSpriteRef* tmp = static_cast<CSpriteRef*>(::operator new(0x10));
+    CSpriteRef* tmp = new CSpriteRef;
     if (tmp) {
         tmp->m_cache = NULL;
         tmp->m_alphaKey = NULL;
