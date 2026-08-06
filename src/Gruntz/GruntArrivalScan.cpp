@@ -1303,43 +1303,35 @@ i32 CGrunt::UpdateArrival() {
     if (g != NULL) {
         i32 x = g->m_object->m_screenX;
         if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
-            && g->RectContains(x, g->m_object->m_screenY) != 0) {
+            && RectContains(x, g->m_object->m_screenY) != 0) {
             atTarget = 1;
         }
     }
 
     if (this->m_poweredUp != 0) {
-        if (this->m_neighborValid != 0) {
-            this->m_neighborValid = 0;
-            return 1;
-        }
         if (this->m_combatActive != 0) {
+            this->m_combatActive = 0;
             return 1;
         }
-        if (this->m_stamina < STAMINA_FULL) {
+        if (this->m_neighborValid != 0) {
+            return 1;
+        }
+        if (this->m_stamina >= STAMINA_FULL) {
+            if (FindGridNeighbor(1) != NULL) {
+                return 1;
+            }
+            if (atTarget && g == NULL) {
+                return 1;
+            }
+        } else {
             if (atTarget) {
                 return 1;
             }
-            if (this->m_poweredUp == 0) {
-                return 1;
-            }
-            this->m_entranceActive = 0;
-            this->m_combatActive = 0;
-            this->m_neighborValid = 0;
-            this->m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
-            return 1;
-        }
-        if (FindGridNeighbor(1) != NULL) {
-            return 1;
-        }
-        if (atTarget && g == NULL) {
-            return 1;
         }
         if (this->m_poweredUp == 0) {
             return 1;
         }
-        if (this->m_neighborValid != 0) {
+        if (this->m_combatActive != 0) {
             return 1;
         }
         this->m_entranceActive = 0;
@@ -1356,7 +1348,7 @@ i32 CGrunt::UpdateArrival() {
                 if (this->m_stamina > 99) {
                     i32 x = g->m_object->m_screenX;
                     if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
-                        && g->RectContains(x, g->m_object->m_screenY) != 0) {
+                        && RectContains(x, g->m_object->m_screenY) != 0) {
                         CommitNeighbor(
                             g->m_tileOwnerHi,
                             g->m_tileOwnerLo,
@@ -1367,9 +1359,9 @@ i32 CGrunt::UpdateArrival() {
                     }
                 }
                 if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
-                    if (g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
+                    if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) != 0) {
                         Coord c[2];
-                        GetScreenPos(c);
+                        g->GetScreenPos(c);
                         if (TileSwitch(
                                 c[0].m_y >> TILE_SHIFT_PX,
                                 c[0].m_x >> TILE_SHIFT_PX,
@@ -1457,12 +1449,10 @@ i32 CGrunt::UpdateArrival() {
         case AISTATE_CHASE: {
             CGrunt* slot =
                 m_tileMgr->m_grid[this->m_arrivalCell.m_x * TM_GRID_COLS + this->m_arrivalCell.m_y];
-            i32 cur = m_tileMgr->FindNearestEnemy(this) ? 1 : 0;
             CGrunt* found = m_tileMgr->FindNearestEnemy(this);
-            static_cast<void>(cur);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->m_entranceCommitted == 0
-                    || slot->GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
+                    || GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0) {
                     this->m_defenderState = AISTATE_SEEK;
                 } else {
                     StepArrivalDrop(
@@ -1474,8 +1464,7 @@ i32 CGrunt::UpdateArrival() {
                         0x20
                     );
                     if (this->m_poweredUp == 0 && this->m_stamina > 99
-                        && slot->RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY)
-                               != 0
+                        && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
                         && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
                         CommitNeighbor(
@@ -1494,9 +1483,55 @@ i32 CGrunt::UpdateArrival() {
             }
             break;
         }
-        case AISTATE_ATTACK:
-            this->m_defenderState = AISTATE_CHASE;
+        case AISTATE_ATTACK: {
+            if (m_poweredUp != 0) {
+                CGrunt* slot =
+                    m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                if (slot == NULL) {
+                    m_defenderState = AISTATE_SEEK;
+                    break;
+                }
+                if (GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
+                    || slot->m_entranceCommitted == 0) {
+                    m_defenderState = AISTATE_CHASE;
+                    if (CGameLevel::PointInBounds(
+                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                            m_object->m_screenX,
+                            m_object->m_screenY
+                        )
+                        != 0) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    }
+                    break;
+                }
+                if (m_combatActive != 0 || m_neighborValid != 0 || m_stamina < STAMINA_FULL) {
+                    break;
+                }
+                if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0
+                    || slot->m_object->m_screenX != slot->m_lastTilePx.m_x
+                    || slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
+                    m_defenderState = AISTATE_CHASE;
+                    if (CGameLevel::PointInBounds(
+                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                            m_object->m_screenX,
+                            m_object->m_screenY
+                        )
+                        != 0) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    }
+                    break;
+                }
+                CommitNeighbor(
+                    slot->m_tileOwnerHi,
+                    slot->m_tileOwnerLo,
+                    slot->m_lastTilePx.m_x,
+                    slot->m_lastTilePx.m_y
+                );
+                break;
+            }
+            m_defenderState = AISTATE_CHASE;
             break;
+        }
     }
 
     if (this->CoordCount() != 0) {

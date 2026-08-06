@@ -1931,7 +1931,7 @@ grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	3	9ee95398bbfb	0x4b320
 grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9994	79.9976	4	0b3530641d93	0x5d210
 gruntarrivalscan	?ArrivalReticleScan@CGrunt@@QAEHXZ	0.0000	0.0000	8	bf009a727af3	0xee800
 gruntarrivalscan	?ChargeStep@CGrunt@@QAEHXZ	57.1032	57.1032	1	e6a0d8459310	0xef6b0
-gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	37.0059	37.0059	21	d41206ea0c90	0xf60f0
+gruntarrivalscan	?PhaseStep@CGrunt@@QAEHXZ	36.2963	36.2963	21	d41206ea0c90	0xf60f0
 gruntarrivalscan	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	74.9747	74.9747	5	22c388b63009	0xf26f0
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	15	91565859a519	0xec670
 gruntarrivalscan	?ScanNearestTarget@CGrunt@@QAEHXZ	51.2996	51.2996	1	6351b830884f	0xf42f0
@@ -1940,10 +1940,10 @@ gruntarrivalscan	?StepArrivalDefense@CGrunt@@QAEHXZ	42.6369	42.6369	17	bf56c0909
 gruntarrivalscan	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	70.3646	70.3646	13	d219032e2016	0xf1c70
 gruntarrivalscan	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	53.9887	53.9887	18	2ea6af048a0a	0xf8240
 gruntarrivalscan	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	51.7167	51.7167	2	04167090eabf	0xecc90
-gruntarrivalscan	?StepDiggerBehavior@CGrunt@@QAEHXZ	45.5824	45.5824	2	2ef5aa12afcf	0xf36a0
-gruntarrivalscan	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	43.5241	43.5241	2	c2ad035d77fd	0xf0e20
+gruntarrivalscan	?StepDiggerBehavior@CGrunt@@QAEHXZ	45.5657	45.5657	2	2ef5aa12afcf	0xf36a0
+gruntarrivalscan	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	43.5103	43.5103	2	c2ad035d77fd	0xf0e20
 gruntarrivalscan	?StepPeerTracking@CGrunt@@QAEHXZ	95.0593	95.0593	1	2071a7f910e4	0xf7d90
-gruntarrivalscan	?UpdateArrival@CGrunt@@QAEHXZ	56.6356	56.6356	20	3d69655fd641	0xf0130
+gruntarrivalscan	?UpdateArrival@CGrunt@@QAEHXZ	57.4877	57.4877	21	ec0fa0847bf6	0xf0130
 gruntarrivalscan	?WanderStep@CGrunt@@QAEHXZ	50.9714	50.9714	17	a836813e7659	0xed9f0
 gruntarrivalscan	_CellTargetable	89.4688	89.4688	1	b6c3e847bfb8	0xf0db0
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	87.8162	87.8162	1	c7a04d142de2	0x60150
