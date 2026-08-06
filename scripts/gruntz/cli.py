@@ -881,6 +881,8 @@ def cmd_link(args) -> None:
         cmd = [sys.executable, str(LINK)]
         if args.order:
             cmd += ["--order", args.order]
+        if args.res:
+            cmd += ["--res", args.res]
         if args.opt_ref:
             cmd += ["--opt-ref"]
         run(cmd)
@@ -1300,9 +1302,9 @@ def main() -> None:
                    ).set_defaults(func=cmd_match_queue)
     sub.add_parser("report", help="alias of status: full per-unit match table (report.json; no rebuild)"
                    ).set_defaults(func=cmd_status)
-    lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map "
-                        "(non-runnable; for layout/link-order study)")
+    lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map")
     lk.add_argument("--order", help="file listing obj stems in link order to test")
+    lk.add_argument("--res", help="optional .RES for a runnable candidate image")
     lk.add_argument("--opt-ref", action="store_true",
                     help="let the linker strip/fold unreferenced COMDATs (default keeps all)")
     lk.add_argument("--analyze", action="store_true",

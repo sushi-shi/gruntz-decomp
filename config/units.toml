@@ -1446,10 +1446,6 @@ unit = "projactcache"
 source = "src/Gruntz/ProjActCache.cpp"
 flags = "cpp-rtti"
 [[unit]]
-unit = "movieplayer"
-source = "src/Io/MoviePlayer.cpp"
-flags = "cpp"
-[[unit]]
 unit = "wapuncompress"
 source = "src/Wap32/WapUncompress.cpp"
 flags = "cpp"

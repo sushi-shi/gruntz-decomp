@@ -987,8 +987,9 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_longestLeafNameLen = hdr.m_longestLeafNameLen;
     m_largestCommentSize = hdr.m_largestCommentSize;
     m_sorted = hdr.m_sorted;
+    // The fourth field is the serialized format version.
     if (hdr.m_magic0 != SYMTAB_MAGIC_CR || hdr.m_magic3f != SYMTAB_MAGIC_LF
-        || hdr.m_magic7e != SYMTAB_MAGIC_EOF || b != 1) {
+        || hdr.m_magic7e != SYMTAB_MAGIC_EOF || hdr.m_version != 1) {
         return 0;
     }
     CSymTab* node = new CSymTab(

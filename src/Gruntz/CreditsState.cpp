@@ -139,6 +139,11 @@ void CCreditsState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
+// Deleting m_videoHandle ODR-uses the inline destructor, so retail emits both
+// destructor COMDATs in this translation unit.
+RVA_COMPGEN(0x00038fc0, 0xa5, ??1CMoviePlayer@@QAE@XZ)
+RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)
+
 RVA(0x00039120, 0x2c)
 i32 CCreditsState::EnterState(GameStateId) {
     if (ShowCursor(0) >= 0) {

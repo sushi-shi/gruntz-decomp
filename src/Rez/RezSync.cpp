@@ -15,6 +15,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <EmptyString.h>
@@ -24,6 +25,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
+#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
 #include <Gruntz/FreeNodePool.h>
@@ -344,7 +346,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     if (g_disableAudio == 0 && g_disableMusic == 0) {
-        m_sound->SetXMidiVolume(vMusic);
+        m_sound->SetXMidiVolume(vMusVol);
     } else {
         m_sound->m_enabled = 0;
     }
@@ -363,7 +365,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     {
         i32 f = m_inputState->m_active;
-        if (vMusVol != 0) {
+        if (vMusic != 0) {
             if (f == 0) {
                 m_inputState->m_active = 1;
                 m_inputState->Resume();
@@ -378,6 +380,37 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     SetVoiceVolume(vVoiVol);
     m_scrollSpeed = vScroll;
 
+    g_inputMgr = new DirectInputMgr2;
+    if (!g_inputMgr->Create(m_gameWnd->m_hwnd, m_owner->m_hInstance, 0xb)) {
+        delete g_inputMgr;
+        g_inputMgr = NULL;
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
+        return 0;
+    }
+
+    i32 devCount = g_inputMgr->m_devices.GetSize();
+    g_actorList = static_cast<CFixedPtrArray32*>(g_inputMgr->AddControllerArr(
+        devCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[0]) : NULL,
+        devCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[1]) : NULL,
+        devCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[2]) : NULL,
+        devCount > 3 ? static_cast<CInputDevBase*>(g_inputMgr->m_devices[3]) : NULL,
+        NULL,
+        NULL,
+        0
+    ));
+    if (!g_actorList) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x40f);
+        return 0;
+    }
+
+    m_shadeCache = new CShadeTableCache;
+    if (!m_shadeCache->Init()) {
+        delete m_shadeCache;
+        m_shadeCache = NULL;
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x410);
+        return 0;
+    }
+
     m_logicPump = static_cast<CLightFxMgr*>(::operator new(0x3c));
     if (m_logicPump) {
         m_logicPump->m_reg = NULL;
@@ -388,7 +421,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_logicPump->m_tables[k] = NULL;
         }
     }
-    if (!m_logicPump->Init(0, this)) {
+    if (!m_logicPump->Init(this, 0)) {
         if (m_logicPump) {
             m_logicPump->Reset();
             ::operator delete(m_logicPump);

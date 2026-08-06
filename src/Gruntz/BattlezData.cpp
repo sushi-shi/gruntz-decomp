@@ -46,8 +46,8 @@ void CBattlezData::Init() {
     m_powerupzAvailable = 0;
     m_secretsAvailable = 0;
     m_coinsAvailable = 0;
-    ClearFlags();
     ClearWins();
+    ClearFlags();
     m_counts[0] = 0;
     m_counts[1] = 0;
     m_counts[2] = 0;

@@ -261,6 +261,9 @@ only what changed (the label map regenerates from `src/`).
 is **opt-in** (not in the default `all` target) so a normal `gruntz build` is
 unaffected.
 
+Pass `gruntz link --res path/to/GRUNTZ.RES` when producing a runnable candidate
+that needs dialogs, strings, and icons. Matching links omit resources.
+
 - `configure.py:emit_link_phase` emits the `link` rule; it runs
   `scripts/gruntz/build/link.py`, which feeds the obj list + flags through a
   **response file** (`@…objs.rsp`) — VC5 `link` has a short argv limit under wine.

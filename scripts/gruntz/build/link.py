@@ -320,6 +320,8 @@ def main() -> None:
     ap.add_argument("--objs-dir", default="build/objdiff/base")
     ap.add_argument("--obj", action="append", help="explicit obj (repeatable).")
     ap.add_argument("--order", help="file listing obj stems/paths in link order.")
+    ap.add_argument("--res", help="optional .RES for runnable candidate resources; "
+                                  "the matching build does not use it.")
     ap.add_argument("--lib", action="append", default=[],
                     help="extra import/static lib to pass to link (repeatable).")
     ap.add_argument("--engine-lib", action="store_true",
@@ -400,6 +402,8 @@ def main() -> None:
     libs += [synth.get(n, n) for n in LINK_LIBS]
     rsp_lines += [winepath_w(lib) if os.path.exists(lib) else lib for lib in libs]
     rsp_lines += [f'"{winepath_w(o)}"' for o in objs]
+    if args.res:
+        rsp_lines.append(f'"{winepath_w(os.path.abspath(args.res))}"')
 
     rsp = out.parent / (out.stem + ".objs.rsp")
     rsp.write_text("\n".join(rsp_lines) + "\n")
