@@ -1586,8 +1586,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 tileCx = cx >> TILE_SHIFT_PX;
     i32 tileCy = cy >> TILE_SHIFT_PX;
-    i32 hiX = tileCx + r;
-    for (i32 tx = tileCx - r; tx <= hiX; tx++) {
+    for (i32 tx = tileCx - r; tx <= tileCx + r; tx++) {
         i32 pxX = (tx << TILE_SHIFT_PX) + TILE_HALF_PX;
         for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
             i32 pxY = (ty << TILE_SHIFT_PX) + TILE_HALF_PX;
