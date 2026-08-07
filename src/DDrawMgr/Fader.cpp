@@ -257,17 +257,17 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     for (i32 row = 0; row < m_rows; row++) {
         i32 cellW2 = halfW * halfW;
         i32 cellD = halfW * halfW + halfH * halfH;
-        float cellR = static_cast<float>(sqrt(static_cast<double>(cellD))) + radius - g_fxBias;
+        float cellR = sqrt(static_cast<double>(cellD)) + radius - g_fxBias;
         if (m_cols <= 0) {
             continue;
         }
         for (i32 col = 0; col < m_cols; col++) {
             i32 d2 = halfH * halfH + cellW2;
-            float v = static_cast<float>(sqrt(static_cast<double>(d2)));
+            double v = sqrt(static_cast<double>(d2));
             float normX, normY;
             if (v > g_fxEps) {
-                normY = static_cast<float>((row - halfH)) / v;
-                normX = static_cast<float>((col - halfW)) / v;
+                normY = static_cast<float>((row - halfH) / v);
+                normX = static_cast<float>((col - halfW) / v);
             } else {
                 normY = 0.0f;
                 normX = 1.0f;
@@ -292,17 +292,11 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
             RezElem40 elem;
             if (m_recOrderFlag) {
-                elem.m_startRect.left = pt64.right;
-                elem.m_startRect.top = pt64.bottom;
-                elem.m_startRect.right = pt64.left;
-                elem.m_startRect.bottom = pt64.top;
+                elem.m_startRect = pt64;
                 elem.m_endRect = pt48;
             } else {
                 elem.m_startRect = pt48;
-                elem.m_endRect.left = pt64.right;
-                elem.m_endRect.top = pt64.bottom;
-                elem.m_endRect.right = pt64.left;
-                elem.m_endRect.bottom = pt64.top;
+                elem.m_endRect = pt64;
             }
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;

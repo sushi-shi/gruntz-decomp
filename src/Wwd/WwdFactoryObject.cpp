@@ -174,6 +174,12 @@ LoadableClassId CWwdGameObject::GetClassId() {
 }
 
 RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
+// @early-stop
+// MSVC inline-decision wall: retail expands CGameObject::Unload() in the
+// ~CGameObject sub-object slot (0x15be49) and CALLS ??1CLoadable (0xd5d70);
+// cl does the opposite here. Spelling the dtor body out makes cl outline
+// ~CGameObject entirely (58.8%), and routing it through a non-virtual helper
+// is byte-identical to the plain Unload() call.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
