@@ -771,6 +771,7 @@ CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
+// @early-stop
 RVA(0x0010faf0, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 0x1000000;

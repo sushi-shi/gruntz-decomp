@@ -85,9 +85,10 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_WORMHOLE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_WORMHOLE", 0);
-    if (m_object->m_sortKey != SORTKEY_TELEPORT) {
-        m_object->m_sortKey = SORTKEY_TELEPORT;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_TELEPORT) {
+        o->m_sortKey = SORTKEY_TELEPORT;
+        o->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
@@ -198,9 +199,10 @@ i32 CWormhole::SpawnPartners() {
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
-    if (m_object->m_sortKey != SORTKEY_GRUNT_PUDDLE) {
-        m_object->m_sortKey = SORTKEY_GRUNT_PUDDLE;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_PUDDLE) {
+        o->m_sortKey = SORTKEY_GRUNT_PUDDLE;
+        o->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
     m_value = m_wwdObject->m_animCursor.m_animation;

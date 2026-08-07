@@ -57,9 +57,10 @@ RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (m_object->m_sortKey != SORTKEY_OVERLAY) {
-        m_object->m_sortKey = SORTKEY_OVERLAY;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_OVERLAY) {
+        o->m_sortKey = SORTKEY_OVERLAY;
+        o->m_flags |= 0x20000;
     }
     CImage* aux = m_object->m_layer;
     if (aux != NULL) {
@@ -156,9 +157,10 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
-    if (m_object->m_sortKey != SORTKEY_OVERLAY) {
-        m_object->m_sortKey = SORTKEY_OVERLAY;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_OVERLAY) {
+        o->m_sortKey = SORTKEY_OVERLAY;
+        o->m_flags |= 0x20000;
     }
 }
 

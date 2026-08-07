@@ -33,9 +33,10 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWap
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_health = HEALTH_FULL;
-    if (m_object->m_sortKey != SORTKEY_GRUNT_HUD) {
-        m_object->m_sortKey = SORTKEY_GRUNT_HUD;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
+        o->m_sortKey = SORTKEY_GRUNT_HUD;
+        o->m_flags |= 0x20000;
     }
     m_yOffset = -0x19;
 }

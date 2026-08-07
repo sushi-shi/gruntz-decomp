@@ -4586,8 +4586,9 @@ void CGrunt::AdvanceMotion() {
     m_object->m_screenX = x;
     m_object->m_screenY = y;
     i32 sortKey = y + 0x186a0;
-    if (m_object->m_sortKey != sortKey) {
-        m_object->m_sortKey = sortKey;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != sortKey) {
+        o->m_sortKey = sortKey;
+        o->m_flags |= 0x20000;
     }
 }

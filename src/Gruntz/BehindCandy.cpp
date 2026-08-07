@@ -21,9 +21,10 @@ RVA_COMPGEN(0x0000fc30, 0x44, ??1CBehindCandy@@UAE@XZ)
 
 RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
-    if (m_object->m_sortKey != 0) {
-        m_object->m_sortKey = 0;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0) {
+        o->m_sortKey = 0;
+        o->m_flags |= 0x20000;
     }
     if (m_object->m_layer != NULL) {
         if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")

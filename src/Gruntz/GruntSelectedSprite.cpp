@@ -29,9 +29,10 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), 
     m_wwdObject->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_object->m_sortKey != SORTKEY_GRUNT_SELECTED) {
-        m_object->m_sortKey = SORTKEY_GRUNT_SELECTED;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_SELECTED) {
+        o->m_sortKey = SORTKEY_GRUNT_SELECTED;
+        o->m_flags |= 0x20000;
     }
 }
 

@@ -987,9 +987,10 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         i32 px = m_object->m_screenY + 0x186a0;
-        if (m_object->m_sortKey != px) {
-            m_object->m_sortKey = px;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != px) {
+            o->m_sortKey = px;
+            o->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != NULL) {

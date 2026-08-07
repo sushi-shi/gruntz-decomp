@@ -29,9 +29,10 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CW
     m_wwdObject->ApplyName("GAME_LIGHTING_POWERUP");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_object->m_sortKey != SORTKEY_GRUNT_POWERUP) {
-        m_object->m_sortKey = SORTKEY_GRUNT_POWERUP;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_POWERUP) {
+        o->m_sortKey = SORTKEY_GRUNT_POWERUP;
+        o->m_flags |= 0x20000;
     }
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }

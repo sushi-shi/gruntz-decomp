@@ -937,9 +937,10 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 0);
     {
         i32 z = m_object->m_screenY + 0x186a0;
-        if (m_object->m_sortKey != z) {
-            m_object->m_sortKey = z;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != z) {
+            o->m_sortKey = z;
+            o->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != NULL) {
@@ -1007,9 +1008,10 @@ finalize:
     m_objAux->m_actKey = ActFindId(s_codeQ);
     {
         i32 z = m_object->m_screenY + 0x186a0;
-        if (m_object->m_sortKey != z) {
-            m_object->m_sortKey = z;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != z) {
+            o->m_sortKey = z;
+            o->m_flags |= 0x20000;
         }
     }
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -1456,9 +1458,10 @@ idleReseed:
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
         i32 sortKey = m_object->m_screenY + 0x186a0;
-        if (m_object->m_sortKey != sortKey) {
-            m_object->m_sortKey = sortKey;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != sortKey) {
+            o->m_sortKey = sortKey;
+            o->m_flags |= 0x20000;
         }
     }
     if (m_toyTimeSprite != NULL) {

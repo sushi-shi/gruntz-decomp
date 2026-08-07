@@ -163,9 +163,10 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_durationMs = 0;
     m_durationHi = 0;
     m_wwdObject->ApplyName("GAME_EXCLAMATION");
-    if (m_object->m_sortKey != SORTKEY_GRUNT_VOICE) {
-        m_object->m_sortKey = SORTKEY_GRUNT_VOICE;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_VOICE) {
+        o->m_sortKey = SORTKEY_GRUNT_VOICE;
+        o->m_flags |= 0x20000;
     }
     m_sample = NULL;
     m_startStampLo = 0;

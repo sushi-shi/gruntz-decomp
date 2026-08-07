@@ -20,6 +20,7 @@ CActReg CActRegPool<CMenuSparkle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00010180, 0x1e, ??_GCMenuSparkle@@UAEPAXI@Z)
 RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
 
+// @early-stop
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("MENU_SPARKLE");

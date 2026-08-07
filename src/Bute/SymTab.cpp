@@ -295,6 +295,7 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
     m_scope = owner;
 }
 
+// @early-stop
 RVA(0x00139cf0, 0xd7)
 CSymRec::~CSymRec() {
     if (m_scope->m_owner->m_useKeyIndex != 0) {

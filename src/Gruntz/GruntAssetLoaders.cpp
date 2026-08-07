@@ -149,9 +149,12 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_objAux->m_actKey = ActFindId(s_dAnimKeyC);
 
     m_wwdObject->m_flags |= 1;
-    if (m_object->m_sortKey != SORTKEY_GRUNT_DEATH) {
-        m_object->m_sortKey = SORTKEY_GRUNT_DEATH;
-        m_object->m_flags |= 0x20000;
+    {
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != SORTKEY_GRUNT_DEATH) {
+            o->m_sortKey = SORTKEY_GRUNT_DEATH;
+            o->m_flags |= 0x20000;
+        }
     }
 
     if (killerSlot != -1) {
@@ -230,9 +233,12 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
-            if (m_object->m_sortKey != -1) {
-                m_object->m_sortKey = -1;
-                m_object->m_flags |= 0x20000;
+            {
+                CWwdGameObjectA* o = m_object;
+                if (o->m_sortKey != -1) {
+                    o->m_sortKey = -1;
+                    o->m_flags |= 0x20000;
+                }
             }
             DEATH_CUE(0x357);
             goto finalize;
@@ -248,9 +254,12 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
                 );
                 tag = 0x357;
-                if (m_object->m_sortKey != -1) {
-                    m_object->m_sortKey = -1;
-                    m_object->m_flags |= 0x20000;
+                {
+                    CWwdGameObjectA* o = m_object;
+                    if (o->m_sortKey != -1) {
+                        o->m_sortKey = -1;
+                        o->m_flags |= 0x20000;
+                    }
                 }
                 m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -278,9 +287,12 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL2)
                 );
                 tag = 0x357;
-                if (m_object->m_sortKey != -1) {
-                    m_object->m_sortKey = -1;
-                    m_object->m_flags |= 0x20000;
+                {
+                    CWwdGameObjectA* o = m_object;
+                    if (o->m_sortKey != -1) {
+                        o->m_sortKey = -1;
+                        o->m_flags |= 0x20000;
+                    }
                 }
                 m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;

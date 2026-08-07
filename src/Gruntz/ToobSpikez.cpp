@@ -71,9 +71,10 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_object->m_speedX = m_object->m_screenX >> TILE_SHIFT_PX;
     m_object->m_speedY = m_object->m_screenY >> TILE_SHIFT_PX;
-    if (m_object->m_sortKey != SORTKEY_TOOB_SPIKE) {
-        m_object->m_sortKey = SORTKEY_TOOB_SPIKE;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_TOOB_SPIKE) {
+        o->m_sortKey = SORTKEY_TOOB_SPIKE;
+        o->m_flags |= 0x20000;
     }
 }
 

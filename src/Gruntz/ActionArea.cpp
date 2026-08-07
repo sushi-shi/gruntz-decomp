@@ -56,9 +56,10 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_ACTIONAREA_RED");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_object->m_sortKey != SORTKEY_ACTION_AREA) {
-        m_object->m_sortKey = SORTKEY_ACTION_AREA;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_ACTION_AREA) {
+        o->m_sortKey = SORTKEY_ACTION_AREA;
+        o->m_flags |= 0x20000;
     }
     m_phase = 1;
     m_duration = 0;

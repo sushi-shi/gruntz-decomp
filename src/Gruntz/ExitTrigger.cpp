@@ -33,9 +33,10 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (m_object->m_sortKey != SORTKEY_EXIT_TRIGGER) {
-        m_object->m_sortKey = SORTKEY_EXIT_TRIGGER;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_EXIT_TRIGGER) {
+        o->m_sortKey = SORTKEY_EXIT_TRIGGER;
+        o->m_flags |= 0x20000;
     }
     m_object->m_area.left = 1;
     m_object->m_area.right = 1;

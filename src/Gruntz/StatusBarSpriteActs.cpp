@@ -91,9 +91,10 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(ob
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    if (m_object->m_sortKey != SORTKEY_OVERLAY) {
-        m_object->m_sortKey = SORTKEY_OVERLAY;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_OVERLAY) {
+        o->m_sortKey = SORTKEY_OVERLAY;
+        o->m_flags |= 0x20000;
     }
 }
 

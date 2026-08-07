@@ -296,9 +296,10 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
-    if (m_object->m_sortKey != SORTKEY_ACTOR_BEHIND) {
-        m_object->m_sortKey = SORTKEY_ACTOR_BEHIND;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_ACTOR_BEHIND) {
+        o->m_sortKey = SORTKEY_ACTOR_BEHIND;
+        o->m_flags |= 0x20000;
     }
     m_object->m_dirty.m_armed = 0;
 }

@@ -540,9 +540,10 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClock.m_v = 0;
     m_countdown.m_v = 0;
     m_object->m_screenY -= 0x18;
-    if (m_object->m_sortKey != SORTKEY_GRUNT_HUD) {
-        m_object->m_sortKey = SORTKEY_GRUNT_HUD;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_HUD) {
+        o->m_sortKey = SORTKEY_GRUNT_HUD;
+        o->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
     m_countdown.m_v = 0x1388;

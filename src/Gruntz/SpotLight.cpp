@@ -72,9 +72,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_screenY = cx;
     m_position.x = static_cast<double>(nx);
     m_position.y = m_center.y;
-    if (m_object->m_sortKey != SORTKEY_ACTOR) {
-        m_object->m_sortKey = SORTKEY_ACTOR;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_ACTOR) {
+        o->m_sortKey = SORTKEY_ACTOR;
+        o->m_flags |= 0x20000;
     }
     m_offset.x = m_center.x - m_position.x;
     m_offset.y = m_center.y - m_position.y;

@@ -222,7 +222,6 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFxModeDesc* pInit) {
 
 RVA_COMPGEN(0x0017e160, 0x8, ??1CFxModeT1@@QAE@XZ)
 
-// @early-stop
 RVA(0x0017e170, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;

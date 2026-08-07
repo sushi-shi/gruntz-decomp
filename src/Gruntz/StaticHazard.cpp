@@ -89,9 +89,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (m_object->m_sortKey != 0) {
-        m_object->m_sortKey = 0;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0) {
+        o->m_sortKey = 0;
+        o->m_flags |= 0x20000;
     }
     m_tileCol = m_object->m_screenX >> TILE_SHIFT_PX;
     m_tileRow = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -236,9 +237,10 @@ i32 CStaticHazard::LoadAttributes() {
                                         : 0;
                 m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
             }
-            if (m_object->m_sortKey != 0) {
-                m_object->m_sortKey = 0;
-                m_object->m_flags |= 0x20000;
+            CWwdGameObjectA* o = m_object;
+            if (o->m_sortKey != 0) {
+                o->m_sortKey = 0;
+                o->m_flags |= 0x20000;
             }
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -258,9 +260,10 @@ i32 CStaticHazard::LoadAttributes() {
                                     : 0;
             m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
         }
-        if (m_object->m_sortKey != 0) {
-            m_object->m_sortKey = 0;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != 0) {
+            o->m_sortKey = 0;
+            o->m_flags |= 0x20000;
         }
         m_fired = 0;
         return 0;
@@ -282,9 +285,10 @@ i32 CStaticHazard::LoadAttributes() {
                                     : 0;
             m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
         }
-        if (m_object->m_sortKey != 0) {
-            m_object->m_sortKey = 0;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != 0) {
+            o->m_sortKey = 0;
+            o->m_flags |= 0x20000;
         }
         m_fired = 1;
         return 0;
@@ -298,9 +302,10 @@ dispatch:
             g_gameReg->m_cmdGrid
                 ->CellDispatch(a, b, static_cast<GruntDeathType>(m_object->m_smarts), -1);
         }
-        if (m_object->m_sortKey != m_object->m_health) {
-            m_object->m_sortKey = m_object->m_health;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != o->m_health) {
+            o->m_sortKey = o->m_health;
+            o->m_flags |= 0x20000;
         }
         CMapMgr* grid = g_gameReg->m_tileGrid;
         if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
@@ -313,9 +318,10 @@ dispatch:
             && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
             grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
         }
-        if (m_object->m_sortKey != 0) {
-            m_object->m_sortKey = 0;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != 0) {
+            o->m_sortKey = 0;
+            o->m_flags |= 0x20000;
         }
     }
     {

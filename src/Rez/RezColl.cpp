@@ -92,6 +92,7 @@ void CHashBase::Insert(CHashElement* node) {
     m_buckets[idx].m_chain.InsertHead(biased);
 }
 
+// @early-stop
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
     DSoundLink* node = entry ? &entry->m_link : 0;
