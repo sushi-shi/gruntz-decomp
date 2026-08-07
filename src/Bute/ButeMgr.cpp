@@ -1918,7 +1918,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 // neither all-inline nor all-out-of-line reaches retail's middle position
 // (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
 RVA(0x00173dd0, 0x3d8)
-void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
+void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
@@ -1957,7 +1957,7 @@ void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
-RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAU0@@Z)
+RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
 RVA(0x001741f0, 0x4e)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {

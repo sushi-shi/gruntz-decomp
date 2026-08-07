@@ -64,9 +64,9 @@ struct CButeValue {
 
     CButeValue() {}
 
-    CButeValue(ButeType type, CButeValue* src) {
-        this->type = type;
-        this->pValue = new CButeValue(*src);
+    CButeValue(ButeType t, ButeIntPoint* src) {
+        type = t;
+        pValue = new ButeIntPoint(*src);
     }
 
     // Parse-arm ctors: ParseAttributeFile's retail arms are `new CButeValue(type, v)`

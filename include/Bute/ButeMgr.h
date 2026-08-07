@@ -93,7 +93,7 @@ public:
 
     bool ParseGroup();
 
-    void SetValue(const char* tag, const char* key, struct CButeValue* val);
+    void SetPoint(const char* tag, const char* key, struct ButeIntPoint* val);
 
     // The Set<T> family; retail lays each one out directly after its Get<T>.
     void SetInt(const char* tag, const char* key, i32 val);
