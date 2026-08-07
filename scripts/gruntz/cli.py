@@ -283,6 +283,25 @@ def summarize(report: dict, full: bool = True, table: bool = False,
 
 
 # --- subcommands -----------------------------------------------------------
+def _ensure_wineprefix_configured() -> None:
+    """Refuse to compile against a prefix whose Wine registry was never written.
+
+    `gruntz init` computes PATH/INCLUDE/LIB with winepath BEFORE writing any of
+    them, so a failure in that window (a flaky cold wineserver has done it) leaves
+    a prefix with NO INCLUDE. The dev shell deliberately does NOT abort on init
+    failure - you get a shell to fix from - so nothing otherwise stops you building
+    against it, and the first symptom is `IID_IDirectPlay4A: undeclared identifier`
+    in NetMgr.cpp: VC5's DirectX 3-era DPLAY.H shadowing the DX6 one, three layers
+    from the cause. init stamps the prefix once it has VERIFIED the registry, so
+    this costs a stat and turns that into one clear sentence."""
+    prefix = REPO / "build" / "wineprefix"
+    if prefix.is_dir() and not (prefix / ".gruntz-configured").is_file():
+        die("the Wine prefix exists but its registry was never verified - "
+            "`gruntz init` did not finish (a cold wineserver can fail the first "
+            "winepath). Re-run `gruntz init`; without it cl uses VC5's DirectX "
+            "3-era headers and NetMgr.cpp fails on IID_IDirectPlay4A.")
+
+
 def cmd_build(args) -> None:
     build_start = time.monotonic()   # wall-clock start (see _record_build_time)
     # build.ninja regenerates itself via its `configure` generator edge whenever
@@ -290,6 +309,7 @@ def cmd_build(args) -> None:
     # build - only bootstrap it when it doesn't exist yet (fresh tree / pre-init).
     if not (REPO / "build.ninja").exists():
         run([sys.executable, str(CONFIGURE)])
+    _ensure_wineprefix_configured()                   # free (a stat); see the fn
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     _ensure_compdb_fresh()                            # cheap, idempotent (unit list moved?)
     if not RETAIL_FUNCTIONS.exists():

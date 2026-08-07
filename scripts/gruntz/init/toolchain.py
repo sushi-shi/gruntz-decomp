@@ -76,6 +76,37 @@ def wine_reg(*args, capture=False):
     return subprocess.run(["wine", "reg", *args], **kw)
 
 
+def verify_registry(prefix, dx):
+    """Post-condition: INCLUDE is set AND lists dx/Include first; stamp on success.
+
+    configure_registry() computes vc_bin/include/lib with winepath BEFORE it writes
+    any of them, so ANY failure in that window (a flaky cold wineserver has done it)
+    leaves a prefix with NO INCLUDE at all. cl then falls back to its own default,
+    msvc/include/DPLAY.H shadows the DX6 header, and the first symptom a user sees is
+    `IID_IDirectPlay4A: undeclared identifier` in NetMgr.cpp - three layers away from
+    the real cause. The shell hook does not abort on init failure (by design: you get
+    a shell to fix things from), so nothing else stops that walk.
+
+    The stamp lets `gruntz build` refuse to compile against an unconfigured prefix at
+    zero cost - no wine call - and say what to actually do."""
+    stamp = prefix / ".gruntz-configured"
+    stamp.unlink(missing_ok=True)
+    reg = (r"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control"
+           r"\Session Manager\Environment")
+    got = wine_reg("query", reg, "/v", "INCLUDE", capture=True)
+    val = "".join(l for l in got.stdout.splitlines() if "REG_" in l)
+    dx_inc = str(dx / "Include").rsplit("/", 1)[-1]
+    if "INCLUDE" not in val:
+        die("INCLUDE is not set in the Wine registry - the prefix is NOT configured. "
+            "Re-run `gruntz init` (a cold wineserver can fail the first winepath).")
+    if "dx" not in val.lower() or val.lower().find("dx") > val.lower().find("msvc"):
+        die(f"INCLUDE does not put {dx_inc} before msvc/include - VC5's DirectX 3-era "
+            f"headers would shadow DX6 (IID_IDirectPlay4A would not resolve). "
+            f"Re-run `gruntz init --force`.")
+    stamp.write_text("dx-before-msvc\n")
+    log("  verified: INCLUDE lists dx/Include before msvc/include")
+
+
 def init_prefix(prefix, force=False):
     if not force and (prefix / "drive_c").is_dir():
         log("Wine prefix already initialised.")
@@ -170,6 +201,7 @@ def main():
 
     init_prefix(prefix, force=args.force)
     configure_registry(msvc, dx)
+    verify_registry(prefix, dx)
     if args.smoke:
         smoke_test(msvc, gruntz_dir)
     log("done.")
