@@ -356,8 +356,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 }
 
 // @early-stop
-// CFG fully homologous; residue is arg-materialization (push vs sub+mov block)
-// and callee-saved caching of rc fields - permute territory
+// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
+// retail's inliner DECLINES CRect::Width here -> 4 out-of-line calls to the TU
+// COMDAT (retail 0x17b500, unlabeled) + &rc escapes -> rc fields memory-resident.
+// Ours inlines Width (base 121B/4 relocs short). Policy: no scaffolding.
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
@@ -390,7 +392,9 @@ void FontRenderer::DrawWrapped(
             }
         }
 
-        if (MeasureText(text).width + x <= rc.right && !nl) {
+        TextExtent e;
+        e = MeasureText(text);
+        if (e.width + x <= rc.right && !nl) {
             line += text;
             text = "";
             if (rc.top + lineAdvance <= rc.bottom) {
@@ -422,7 +426,9 @@ void FontRenderer::DrawWrapped(
             } else {
                 head = text.Left(i + 1);
             }
-            i32 headW = MeasureText(head).width;
+            TextExtent he;
+            he = MeasureText(head);
+            i32 headW = he.width;
             text = text.Right(len - i - 1);
             if (headW + x < rc.right) {
                 line += head;
@@ -447,7 +453,9 @@ void FontRenderer::DrawWrapped(
                     if (rc.top >= rc.bottom) {
                         break;
                     }
-                    i32 chW = MeasureText(CString(head.GetAt(0), 1)).width;
+                    TextExtent ce;
+                    ce = MeasureText(CString(head.GetAt(0), 1));
+                    i32 chW = ce.width;
                     if (chW + x > rc.right) {
                         if (hcenter) {
                             i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
@@ -479,7 +487,7 @@ void FontRenderer::DrawWrapped(
             }
         }
     }
-    if (rc.top + lineAdvance <= rc.bottom && line.GetLength() > 0) {
+    if (rc.bottom >= rc.top + lineAdvance && line.GetLength() > 0) {
         if (hcenter) {
             i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
             DrawLine(line, surf, cx, rc.top, z);
