@@ -45,6 +45,37 @@ First run over the 90-100 band: **26 mismatches**, i.e. 26 functions with a
 provable local-count bug that no other tool reports. Two were opened, both were
 real. Prefer this over re-reading a `--diff` that "looks like regalloc".
 
+## What the full sweep found (2026-08-08, 21 open entries worked)
+
+**Every mismatch opened was a real modelling fact - none was noise.** Four closed
+outright and the rest each named a concrete mechanism. The population splits into
+five causes, and only the first three are source-steerable today:
+
+1. **A member POD read field-by-field instead of through its by-value accessor**
+   ([byvalue-size-accessor-temp.md](byvalue-size-accessor-temp.md)) - the largest
+   family. `CPlay::ResetViewport` 95.55 -> **100 EXACT**,
+   `CMulti::WaitForOtherPlayers` 94.42 -> **100 EXACT**,
+   `CPlay::DrawCursorSaveUnder` 90.00 -> 99.99, `CState::InputVirtual` 96.18 -> 99.54.
+2. **An `i64` clamped in place** ([i64-clamp-homes-the-whole-quad.md](i64-clamp-homes-the-whole-quad.md))
+   - `CTriggerMgr::HitTestApply` 91.33 -> 98.80, frame 8 -> retail's ZERO.
+3. **A value hoisted into a local that retail re-reads at each use** -
+   `CTeleporter::Update` 94.19 -> 98.91 (the `TeleporterKind kind` hoist was the whole
+   0xc-vs-0x8 delta, and it also forced a `mov ebp,1` compare register).
+4. **The dead-PARAMETER-home coalesce** - retail homes a local in a dead parameter's
+   slot and cl does not (or vice versa). Seen on `CFecFile::AddFile`,
+   `CMulti::LeaveState` + `CPlay::LeaveState`, `CWarpStoneFly::Init`,
+   `FontRenderer::LayoutWrapped`, `CPlay::DrawCursorSaveUnder`'s DDSCAPS. **NOT a
+   compiler flag**: /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave
+   the frame unchanged (measured on `CWarpStoneFly::Init`). Scope tricks, decl order,
+   CRect/CPoint spellings and writing through the parameter were all neutral or worse.
+5. **A promoted zero/one register** ([redundant-local-becomes-the-zero-register.md](redundant-local-becomes-the-zero-register.md))
+   - `CBootyState::ShowSecretBonusMessage` (extra `push ebx`, `cmp eax,ebp` for every
+   null test), `CGiantRockLogic::BuildRockBreakInGameText`.
+
+A mismatch of 8+ bytes was twice a *reconstruction* gap rather than a local-count
+bug (`CGruntzMgr::HandleCommand` is 16 B AND 264 instructions short) - check the
+instruction delta before assuming the frame is the whole story.
+
 **Scope tricks are NOT the lever.** Block-scoping the locals so two sets overlay
 either does nothing or overshoots (`ParseWave` reached `sub esp,0x8` against
 retail's `0xc` that way, and `CSBI_GruntMachine::SerializeFields` lost 4 points).
