@@ -84,10 +84,12 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         ClipVtx* v0 = &verts[i % count];
         ClipVtx* v1 = &verts[(i + 1) % count];
         ClipVtx* v2 = &verts[(i + 2) % count];
-        float dx1 = v1->x - v0->x;
-        float dy1 = v1->y - v0->y;
-        float dx2 = v2->x - v0->x;
-        float dy2 = v2->y - v0->y;
+        float x0 = v0->x;
+        float y0 = v0->y;
+        float dx1 = v1->x - x0;
+        float dy1 = v1->y - y0;
+        float dx2 = v2->x - x0;
+        float dy2 = v2->y - y0;
         float cross = dx1 * dy2 - dx2 * dy1;
         if (cross != 0.0f) {
             if (cross > 0.0f) {
@@ -97,7 +99,7 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
             }
         }
         if (sign != POLYGON_WINDING_UNSET) {
-            if (dir != POLYGON_WINDING_UNSET && dir != sign) {
+            if (dir != sign && dir != POLYGON_WINDING_UNSET) {
                 return 0;
             }
             dir = sign;
@@ -174,7 +176,6 @@ void ImageRotateBlit(
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
 
-// @early-stop
 RVA(0x001461b0, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
@@ -198,15 +199,9 @@ i32 ImagePolyClipRect(
             if (!(prev->x < left)) {
                 *out++ = *prev;
             }
-            i32 emit;
-            if (prev->x < left) {
-                emit = !(cur->x < left);
-            } else {
-                emit = (cur->x < left);
-            }
-            if (emit) {
+            if ((prev->x < left && !(cur->x < left)) || (!(prev->x < left) && cur->x < left)) {
                 out->x = left;
-                out->y = prev->y + (left - prev->x) * (cur->y - prev->y) / (cur->x - prev->x);
+                out->y = prev->y + (left - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
                 out++;
             }
             prev = cur;
@@ -226,15 +221,9 @@ i32 ImagePolyClipRect(
             if (prev->x < right) {
                 *out++ = *prev;
             }
-            i32 emit;
-            if (prev->x < right) {
-                emit = !(cur->x < right);
-            } else {
-                emit = (cur->x < right);
-            }
-            if (emit) {
+            if ((prev->x < right && !(cur->x < right)) || (!(prev->x < right) && cur->x < right)) {
                 out->x = right;
-                out->y = prev->y + (right - prev->x) * (cur->y - prev->y) / (cur->x - prev->x);
+                out->y = prev->y + (right - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
                 out++;
             }
             prev = cur;
@@ -254,15 +243,9 @@ i32 ImagePolyClipRect(
             if (!(prev->y < top)) {
                 *out++ = *prev;
             }
-            i32 emit;
-            if (prev->y < top) {
-                emit = !(cur->y < top);
-            } else {
-                emit = (cur->y < top);
-            }
-            if (emit) {
+            if ((prev->y < top && !(cur->y < top)) || (!(prev->y < top) && cur->y < top)) {
                 out->y = top;
-                out->x = prev->x + (top - prev->y) * (cur->x - prev->x) / (cur->y - prev->y);
+                out->x = prev->x + (top - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
                 out++;
             }
             prev = cur;
@@ -282,15 +265,10 @@ i32 ImagePolyClipRect(
             if (prev->y < bottom) {
                 *out++ = *prev;
             }
-            i32 emit;
-            if (prev->y < bottom) {
-                emit = !(cur->y < bottom);
-            } else {
-                emit = (cur->y < bottom);
-            }
-            if (emit) {
+            if ((prev->y < bottom && !(cur->y < bottom))
+                || (!(prev->y < bottom) && cur->y < bottom)) {
                 out->y = bottom;
-                out->x = prev->x + (bottom - prev->y) * (cur->x - prev->x) / (cur->y - prev->y);
+                out->x = prev->x + (bottom - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
                 out++;
             }
             prev = cur;
