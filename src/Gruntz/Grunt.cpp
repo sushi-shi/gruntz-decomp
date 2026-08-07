@@ -16,6 +16,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -4313,14 +4314,15 @@ void CGrunt::AdvanceMotion() {
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             i32 mask = m_arrivalFlags & fl;
             if (!(fl & 0x20000000) && !(mask & 0x20000000)
-                && (mask == 0 || (m_arrivalNotified & fl) != 0)) {
-                m_entrancePx.m_x = (co->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
-                m_entrancePx.m_y = (co->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
+                && (mask == 0 || (m_passableMask & fl) != 0)) {
+                Coord* tc = (CoordTail())->m_coord;
+                m_entrancePx.m_x = (tc->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+                m_entrancePx.m_y = (tc->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
-            } else if (m_coordRetryCount <= 5) {
+            } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
-                    Coord* h2 = (CoordHead())->m_coord;
+                    Coord* h2 = (CoordTail())->m_coord;
                     m_entrancePx.m_x = (h2->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
                     m_entrancePx.m_y = (h2->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
                     if (CoordCount() != 0) {
@@ -4372,14 +4374,7 @@ void CGrunt::AdvanceMotion() {
             if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
                 i32 result = -1;
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
-                    if (m_coordToggle == 0) {
-                        result = m_tileMgr->ApplyTriggerA(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
-                            m_arrivalTargetPx.m_x,
-                            m_arrivalTargetPx.m_y
-                        );
-                    } else {
+                    if (m_coordToggle != 0) {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                         if (other == NULL) {
@@ -4415,6 +4410,13 @@ void CGrunt::AdvanceMotion() {
                                 m_tileMgr
                                     ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
                         }
+                    } else {
+                        result = m_tileMgr->ApplyTriggerA(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            m_arrivalTargetPx.m_x,
+                            m_arrivalTargetPx.m_y
+                        );
                     }
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
                     if (m_coordToggle == 0) {
@@ -4476,20 +4478,26 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        const char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-        if (strcmp(name, s_codeN) == 0) {
+        CString* rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        ConstructGrownSlots();
+        bool hit = (strcmp(*rec, s_codeN) == 0);
+        if (hit) {
             return;
         }
-        name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-        if (strcmp(name, s_codeL) == 0) {
+        rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        ConstructGrownSlots();
+        hit = (strcmp(*rec, s_codeL) == 0);
+        if (hit) {
             if (StepCompassMove() != 0) {
                 return;
             }
             m_idleAnchor = 0;
             return;
         }
-        name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-        if (strcmp(name, s_codeM) == 0) {
+        rec = ActNameLookupCallReport(m_objAux->m_actKey);
+        ConstructGrownSlots();
+        hit = (strcmp(*rec, s_codeM) == 0);
+        if (hit) {
             if (ClaimSwitchTile() != 0) {
                 return;
             }
