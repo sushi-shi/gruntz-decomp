@@ -49,6 +49,27 @@ from pathlib import Path
 from gruntz.core.branches import obj_paths
 
 REPO = Path(__file__).resolve().parents[3]
+
+
+def _warn_wrong_tree():
+    """Shout when this package was imported from a DIFFERENT worktree than the
+    one being worked on.
+
+    REPO comes from THIS file's location, so a PYTHONPATH inherited from another
+    worktree's `nix develop` makes `python -m gruntz.audit.*` silently read that
+    tree's objects while `gruntz sema ...` (which resolves the repo from its own
+    wrapper) reads yours - a lane analysed another worktree for a whole batch
+    before noticing. Fix: `export PYTHONPATH=$PWD/scripts`."""
+    import os
+    d = os.environ.get("GRUNTZ_DIR")
+    if d and Path(d).resolve() != REPO:
+        print(f"WARNING: reading {REPO} but GRUNTZ_DIR={d} - this package was "
+              f"imported from another worktree. Run "
+              f"`export PYTHONPATH=$GRUNTZ_DIR/scripts` and retry.",
+              file=sys.stderr)
+
+
+_warn_wrong_tree()
 QUEUE = REPO / "build" / "gen" / "residual_function_queue.tsv"
 
 PAD = ("nop", "int3")
