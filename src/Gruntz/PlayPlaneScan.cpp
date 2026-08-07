@@ -24,9 +24,7 @@
 // @early-stop
 RVA(0x000d53d0, 0x466)
 i32 CPlay::ScanBuildTiles() {
-    CDDrawSurfaceMgr* v = m_world;
-
-    CObList* pl = &v->m_childGroup->m_list;
+    CObList* pl = &m_world->m_childGroup->m_list;
     if (pl == NULL) {
         return 0;
     }
@@ -80,7 +78,7 @@ i32 CPlay::ScanBuildTiles() {
             }
             p->m_flags |= 0x10000;
         } else if (vf == CreateCoveredPowerup) {
-            CGameLevel* ds = v->m_level;
+            CGameLevel* ds = m_world->m_level;
             i32 x = p->m_screenX;
             i32 y = p->m_screenY;
             if (x < 0) {
