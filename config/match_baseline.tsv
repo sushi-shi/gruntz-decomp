@@ -32,7 +32,7 @@ attract	16	10
 attractstate	13	11
 battlezdata	31	28
 battlezdlgcolors	8	8
-battlezmapconfig	39	13
+battlezmapconfig	39	14
 battlezrepath	2	1
 battlezreserveplace	1	1
 battlezretarget	1	0
@@ -280,7 +280,7 @@ sbi_image	5	4
 sbi_imageset	6	4
 sbi_imagesetani	5	3
 sbi_menuitem	11	9
-sbi_rectonly	98	66
+sbi_rectonly	98	68
 sbi_rectonlybase	3	2
 sbi_sidetab	7	5
 sbi_sidetab_build	1	1
@@ -571,7 +571,7 @@ battlezmapconfig	?PathCrossesMarkedTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100
 battlezmapconfig	?PathToNearbyUnit@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	1	7130831ad2be	0x2ed90
 battlezmapconfig	?PathToNearestCandidate@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	80.1772	80.1772	4	ed1d4c7c0c04	0x2edb0
 battlezmapconfig	?PathToNearestGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z	86.8353	86.8353	5	88cc113779e7	0x30b20
-battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAXH@Z	80.9375	80.9375	4	ffc1b2ae280f	0x2ad40
+battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAXH@Z	100.0000	100.0000	5	1a354f970794	0x2ad40
 battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAXPAXPAVCGrunt@@H@Z	97.9048	97.9048	5	7bd78912b690	0x30f20
 battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	71.1013	71.1013	9	e1ec34346f5d	0x2a570
 battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	82.5807	82.5807	16	d4df3017f63d	0x2c690
@@ -3628,8 +3628,8 @@ sbi_rectonly	?SetGauge@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	9deb63be4849	0
 sbi_rectonly	?SetGaugeTarget@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	e1c89012b942	0x1057b0
 sbi_rectonly	?SetHlCell@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	3	665ef2994b9c	0x106b40
 sbi_rectonly	?SetHlCellByTier@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	2	1b3c4426e4ab	0x106af0
-sbi_rectonly	?SetHudRectA@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	71.8333	71.8333	1	7b6d7d08c179	0x1066f0
-sbi_rectonly	?SetHudRectB@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	71.8333	71.8333	1	e067d009fd68	0x106740
+sbi_rectonly	?SetHudRectA@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	2	6da8b6438bf7	0x1066f0
+sbi_rectonly	?SetHudRectB@CStatusBarMgr@@QAEXHW4SbiMachineState@@H@Z	100.0000	100.0000	2	1fdf704b49de	0x106740
 sbi_rectonly	?SetMode@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	e41646ec2606	0x10bb90
 sbi_rectonly	?SetSpritePos@CStatusBarMgr@@QAEHHH@Z	96.6875	96.6875	5	093753cbee0c	0xfe860
 sbi_rectonly	?SetState@CStatusBarMgr@@QAEHW4StatusBarDock@@@Z	100.0000	100.0000	1	042261c6486c	0xfe3e0
