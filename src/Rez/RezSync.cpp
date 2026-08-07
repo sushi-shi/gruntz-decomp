@@ -346,7 +346,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     if (m_inputState) {
-        m_inputState->Teardown();
+        m_inputState->Deactivate();
 
         (&m_inputState->m_list)->CPtrList::~CPtrList();
         ::operator delete(m_inputState);
@@ -376,7 +376,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_inputMgr = new DirectInputMgr2;
     if (!g_inputMgr->Create(m_gameWnd->m_hwnd, m_owner->m_hInstance, 0xb)) {
-        delete g_inputMgr;
+        // Retail expands the delete: ~DirectInputMgr2's body plus both member dtors,
+        // in reverse declaration order.
+        DirectInputMgr2* dead = g_inputMgr;
+        dead->Shutdown();
+        (&dead->m_deviceList)->CPtrList::~CPtrList();
+        (&dead->m_devices)->CPtrArray::~CPtrArray();
+        ::operator delete(dead);
         g_inputMgr = NULL;
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
         return 0;
