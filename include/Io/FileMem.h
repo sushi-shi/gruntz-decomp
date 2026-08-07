@@ -39,6 +39,9 @@ SIZE(0x10);
 
 class CFileMem : public CFileMemBase {
 public:
+    CFileMem() {
+        Reset();
+    }
     virtual ~CFileMem() OVERRIDE {
         Close();
     }

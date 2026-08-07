@@ -284,7 +284,6 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     m_callback = cb;
 
     CFileMem S;
-    S.Reset();
 
     if (S.SetName(path, 0, 0) == 0) {
         return 0;
@@ -318,7 +317,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRESAVE, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_PRESAVE, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, SERIAL_SAVE, LOGIC_NONE, 0) == 0) {
@@ -327,7 +326,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_childGroup->ForEachSerialize(&S, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_SAVE, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_callback && cb(this, &S, SERIAL_POSTSAVE, LOGIC_NONE, 0) == 0) {
@@ -336,7 +335,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTSAVE, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_POSTSAVE, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
 
@@ -344,6 +343,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     return 1;
 }
 
+// @early-stop
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {
@@ -352,7 +352,6 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     m_callback = cb;
 
     CFileMem S;
-    S.Reset();
 
     if (S.SetName(static_cast<const char*>(name), 1, 0) == 0) {
         return 0;
@@ -380,7 +379,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRELOAD, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_PRELOAD, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_callback == NULL || m_callback(this, &S, SERIAL_LOAD, typeId, headerArg) == 0) {
@@ -389,7 +388,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_callback == NULL || m_callback(this, &S, SERIAL_POSTLOAD, typeId, headerArg) == 0) {
@@ -398,7 +397,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTLOAD, typeId) == 0) {
         return 0;
     }
-    if (m_level->EditDispatch(&S, SERIAL_POSTLOAD, LOGIC_NONE, 0) == 0) {
+    if (m_level->EditDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
 
