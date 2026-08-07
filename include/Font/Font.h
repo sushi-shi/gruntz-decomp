@@ -39,6 +39,11 @@ extern Font g_smallFont;
 extern Font g_tinyFont;
 
 struct TextExtent {
+    TextExtent() {}
+    TextExtent(i32 w, i32 h) {
+        width = w;
+        height = h;
+    }
     i32 width;
     i32 height;
 };

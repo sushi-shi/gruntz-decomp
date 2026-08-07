@@ -237,9 +237,22 @@ are assigned is game/engine code, so you never identify or handle library yourse
      permanently (FadeRange 99.1→99.9 was a signedness bug mislabeled as a scheduling wall;
      AutoTuneCmdDelay's "wall" was a `/9`-vs-`/30` divisor). Re-audit the disasm before
      believing "regalloc wall".
+   - **NEVER hand-A/B simple reorders (statement swaps, decl order, store order) — the
+     permuter has tried those a million times.** One hand edit = ONE attempt per
+     build; a permuter run = HUNDREDS of attempts per invocation. Your hand is for
+     SEMANTIC shape only; the machine owns orderings.
+   - **Recurring shapes are inlined ENTITIES — model the entity, not the expansion.**
+     A zero-store pair at a return is a ctor call (`return TextExtent(0, 0);` — cf. the
+     devs' explicit `Glyph() {}` pattern); a repeated cast-chain (the g_rDown/g_rUp
+     pixel pack/unpack) is an inlined helper or MSVC5 force-inline macro shared across
+     TUs. Ask "what did the dev WRITE here?" before transcribing another expansion.
    - **Fast permuter pass** (operand-order / reassoc / decl-split residue on a genuinely
      correct body): `gruntz permute fn <src> <unit> <mangled-sym>` /
      `permute_sweep <unit>`.
+   - **Iterate from the k BEST, not the single best.** A variants/permute run returns a
+     ranked top-N; take the top-k survivors and run the NEXT round from each of them
+     (beam search), banking the per-round best. A single-line greedy climb stalls on
+     plateaus that a 3-5 wide beam walks straight through.
    - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
      exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
      ONLY walls whose codegen depends on cross-function composition (inlining budget,
