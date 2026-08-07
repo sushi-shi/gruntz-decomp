@@ -30,8 +30,6 @@
 static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
 static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 
-char* g_areaNames[8];
-
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

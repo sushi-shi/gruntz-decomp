@@ -23,8 +23,6 @@
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)
 
-char g_lobbyRecvBuf[0x800];
-
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     if (mgr == NULL) {

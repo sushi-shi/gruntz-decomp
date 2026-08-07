@@ -143,7 +143,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    LeafCue* fm;
+    LeafCue* fm = NULL;
     MapLookup(
         (static_cast<CDDrawSubMgrLeafScan*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU",
