@@ -643,7 +643,7 @@ bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	1	4b0c3bc
 bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	15	ec46121b8892	0x1f6f0
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	b381d5aeb9ef	0x18e40
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	640347c1c8a1	0x1e660
-bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	80.6885	80.6885	4	ee95326ff662	0x1d440
+bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	81.3167	81.3167	5	79bd0cfe16e7	0x1d440
 bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	76.2386	76.2386	3	b8fbcdafaf14	0x19b90
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420
 bootystateactivate	?OnKeyDown@CMultiBootyState@@UAEHHH@Z	100.0000	100.0000	1	c834612aa5cc	0x1f920
@@ -2012,7 +2012,7 @@ gruntentrancearrival	?RearmAttackAnim2@CGrunt@@QAEHXZ	95.7843	95.7843	10	ebaa5a6
 gruntentrancearrival	?RearmAttackAnim@CGrunt@@QAEHHH@Z	88.7423	88.7423	15	70457a0336b8	0x61940
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	90.8515	90.8515	3	6ba6a28b5afc	0x62b70
-gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	55.2779	55.2779	23	840a16621214	0x62e10
+gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	61.6677	61.6677	24	df31faeb272d	0x62e10
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	95.7000	95.7000	7	4e78a9b060d8	0x616e0
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	4	b70449c2595a	0x633e0
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	79.9686	79.9686	21	c59646e3e5ba	0x65630
@@ -3305,7 +3305,7 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	37.1456	37.1456	8	6480a8e9dab4	0xd0db0
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	1	b3c8fcfaa28d	0xcb800
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	92.7500	92.7500	2	8ae6bac449f3	0xc8b80
-play	?LoadByMode@CPlay@@UAEHHH@Z	82.0241	82.0241	20	0cb0f63d5e88	0xca200
+play	?LoadByMode@CPlay@@UAEHHH@Z	82.8284	82.8284	21	fad3a91b017f	0xca200
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	9	01c678e648ee	0xd0120
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	78.2565	78.2565	1	1bbd80bb8420	0xc7ec0
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0
@@ -3394,7 +3394,7 @@ projectile	?FireActivation@CProjectile@@UAEXH@Z	100.0000	100.0000	2	7300269851f8
 projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	2	3479a2c0846c	0xe1830
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	100.0000	100.0000	19	f3a6be2a4169	0xe2190
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	11	540ccdb30744	0xe1e60
-projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	69.8768	69.8768	2	c349f1bf1fe7	0xdf050
+projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	81.9548	81.9548	3	7e02f3548a59	0xdf050
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	8	8c3a416c1b5a	0xe1990
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	11	37a1fe7a94a9	0xdfb00
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	95.3731	95.3731	22	4fa935a6826a	0xe0b10
