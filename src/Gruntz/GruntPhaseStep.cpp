@@ -37,135 +37,80 @@
 #include <Gruntz/ScanGridMacros.h>
 #include <limits.h>
 
-// @early-stop
+// CMapMgr::CellFlagsAt: the bounds-checked cell-flag read cl inlines at every
+// tile test (out-of-bounds reads back as flag bit 0, which every BRICKZ mask
+// treats as blocked). Declared in MapMgr.h; defined here because the body needs
+// BrickzCell complete.
+inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
+    if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
+        return m_rows[y][x].m_flags;
+    }
+    return 1;
+}
 
 // @early-stop
-// retail reads BOTH components of each GetScreenPos result and shifts
-// them in place; the frame is also 16 bytes smaller than ours.
+// Instruction stream and block skeleton both match 1:1; the frame is 0x64 where
+// retail's is 0x44 because retail's cl overlaid the mirror Coords, the clip
+// scratch RECTs and the common-block spills onto one another and ours gives each
+// its own granule, so every [esp+N] operand is displaced.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
-    Coord pa;
-    Coord pb;
-
     m_neighborScanEnabled = 0;
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0) {
+    bool isFlag = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    if (isFlag) {
         return 1;
     }
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
 
+    // Mirror the grunt across m_arrivalCell: the destination tile is
+    // 2*here - arrival on each axis, and each axis re-reads the live screen
+    // position (retail shifts BOTH components of the first read in place and
+    // seeds the other axis of the second Coord before overwriting it).
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
-        GetScreenPos(&pa);
-        i32 ax = pa.m_x >> TILE_SHIFT_PX;
+        Coord pa;
+        Coord pb;
+        GetScreenTile(&pa);
+        pb.m_y = pa.m_y;
         GetScreenPos(&pb);
-        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + ax;
-        GetScreenPos(&pa);
-        i32 ay = pa.m_y >> TILE_SHIFT_PX;
+        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
+        GetScreenTile(&pa);
+        pb.m_x = pa.m_x;
         GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + ay;
+        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
-        GetScreenPos(&pa);
-        i32 ax = pa.m_x >> TILE_SHIFT_PX;
+        Coord pa;
+        Coord pb;
+        GetScreenTile(&pa);
+        pb.m_y = pa.m_y;
         GetScreenPos(&pb);
-        GetScreenPos(&pa);
-        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + ax;
-        i32 ay = pa.m_x >> TILE_SHIFT_PX;
+        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
+        GetScreenTile(&pa);
+        pb.m_x = pa.m_x;
         GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + ay;
+        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
         TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
         m_defenderState = AISTATE_SEEK;
         return 1;
     }
 
-    if (m_defenderState == AISTATE_SEEK) {
-        goto state0;
-    }
-    if (m_defenderState == AISTATE_ATTACK) {
-        goto state2;
-    }
-    if (m_defenderState != AISTATE_COOLDOWN) {
-        goto common;
-    }
-    if (m_dwell <= DWELL_COOLDOWN_MS) {
-        return 1;
-    }
-    m_defenderState = AISTATE_SEEK;
-    return 1;
-
-state2: {
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0) {
-        goto common;
-    }
-    i32 x = m_arrivalCell.m_x;
-    i32 y = m_arrivalCell.m_y;
-    CMapMgr* grid = g_gameReg->m_tileGrid;
-    {
-        RECT box;
-        box.left = x - 4;
-        box.top = y - 4;
-        box.right = x + 5;
-        box.bottom = y + 5;
-        RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
-            grid->m_bounds = box;
-        }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
-    }
-    CDWordArray acc;
-    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y - 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), (x << 16) | ((y - 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 1) << 16) | ((y - 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y - 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y + 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y + 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), (x << 16) | ((y + 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 1) << 16) | ((y + 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y + 2) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 1) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | (y & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y + 1) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y - 1) & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | (y & 0xffff));
-    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y + 1) & 0xffff));
-    while (acc.GetSize() != 0) {
-        i32 sel = rand() % acc.GetSize();
-        i32 pt = acc.GetAt(sel);
-        i32 px = static_cast<u32>(pt) >> 0x10;
-        i32 py = pt & 0xffff;
-        CMapMgr* pl = g_gameReg->m_tileGrid;
-        i32 flag;
-        if (static_cast<u32>(px) < static_cast<u32>(pl->m_width)
-            && static_cast<u32>(py) < static_cast<u32>(pl->m_height) && px < pl->m_width
-            && py < pl->m_height) {
-            flag = pl->m_rows[py][px].m_flags;
-        } else {
-            flag = 1;
-        }
-        if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
-            if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
-                m_defenderState = AISTATE_COOLDOWN;
-                m_dwell = 0;
-                goto build_tail;
+    switch (m_defenderState) {
+        case AISTATE_SEEK:
+            goto state0;
+        case AISTATE_ATTACK:
+            goto state2;
+        case AISTATE_COOLDOWN:
+            if (m_dwell <= static_cast<u32>(DWELL_COOLDOWN_MS)) {
+                return 1;
             }
-        }
-        acc.RemoveAt(sel, 1);
+            m_defenderState = AISTATE_SEEK;
+            return 1;
     }
-build_tail: {
-    CMapMgr* pl2 = g_gameReg->m_tileGrid;
-    GRID_BOUNDS(pl2);
     goto common;
-}
-}
 
 state0: {
     CGrunt* nb = m_tileMgr->FindNearestEnemy(this);
@@ -185,12 +130,13 @@ state0: {
             nb->m_lastTilePx.m_x,
             nb->m_lastTilePx.m_y
         );
-        m_arrivalCell.m_x = nb->m_object->m_screenX >> TILE_SHIFT_PX;
-        m_arrivalCell.m_y = nb->m_object->m_screenY >> TILE_SHIFT_PX;
+        CWwdGameObjectA* hit = nb->m_object;
+        m_arrivalCell.m_x = hit->m_screenX >> TILE_SHIFT_PX;
+        m_arrivalCell.m_y = hit->m_screenY >> TILE_SHIFT_PX;
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
-    if (m_dwell <= DWELL_REPATH_MS) {
+    if (m_dwell <= static_cast<u32>(DWELL_REPATH_MS)) {
         goto common;
     }
     if (GruntInRadius(nb->m_tileOwnerHi, nb->m_tileOwnerLo) == 0) {
@@ -234,6 +180,65 @@ s0_reset:
     goto common;
 }
 
+state2: {
+    bool isFlagObj = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    if (isFlagObj) {
+        goto common;
+    }
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    RECT box;
+    box.left = m_arrivalCell.m_x - 4;
+    box.top = m_arrivalCell.m_y - 4;
+    box.right = m_arrivalCell.m_x + 5;
+    box.bottom = m_arrivalCell.m_y + 5;
+    GRID_CLIP_INL(grid, &box);
+
+    // The 16 cells on the 5x5 ring around m_arrivalCell, packed x:y into
+    // one DWORD; the loop picks one at random until a phase target takes.
+    CDWordArray acc;
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.SetAtGrow(acc.GetSize(), (m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y - 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.SetAtGrow(acc.GetSize(), (m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y + 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | m_arrivalCell.m_y);
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 1));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | m_arrivalCell.m_y);
+    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 1));
+    while (acc.GetSize() != 0) {
+        i32 sel = rand() % acc.GetSize();
+        i32 pt = acc.GetAt(sel);
+        i32 px = static_cast<u32>(pt) >> 0x10;
+        i32 py = pt & 0xffff;
+        CMapMgr* pl = g_gameReg->m_tileGrid;
+        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->m_width
+            && static_cast<u32>(py) < g_gameReg->m_tileGrid->m_height) {
+            i32 flag = pl->CellFlagsAt(px, py);
+            if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
+                if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+                    m_defenderState = AISTATE_COOLDOWN;
+                    m_dwell = 0;
+                    CMapMgr* hit = g_gameReg->m_tileGrid;
+                    GRID_CLIP_INL(hit, NULL);
+                    return 1;
+                }
+            }
+        }
+        acc.RemoveAt(sel, 1);
+    }
+    CMapMgr* spent = g_gameReg->m_tileGrid;
+    GRID_CLIP_INL(spent, NULL);
+    m_defenderState = AISTATE_SEEK;
+    goto common;
+}
+
 common: {
     GruntAiState st = m_defenderState;
     if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
@@ -243,21 +248,17 @@ common: {
         Coord* nc = head->m_next->m_coord;
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
-        CMapMgr* pl = g_gameReg->m_tileGrid;
-        i32 flag;
-        if (static_cast<u32>(fx) < static_cast<u32>(pl->m_width)
-            && static_cast<u32>(fy) < static_cast<u32>(pl->m_height)) {
-            flag = pl->m_rows[fy][fx].m_flags;
-        } else {
-            flag = 1;
-        }
-        if ((flag & 0x20) != 0) {
+        if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
             if (CoordCount() != 0) {
                 RECYCLE_COORDS(CoordHead());
                 m_coordList.RemoveAll();
             }
-            g_gameReg->m_cmdGrid
-                ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
+            g_gameReg->m_cmdGrid->ApplyTriggerA(
+                m_tileOwnerHi,
+                m_tileOwnerLo,
+                (bx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (by << TILE_SHIFT_PX) + TILE_HALF_PX
+            );
             m_arrivalCell.m_x = bx;
             m_arrivalCell.m_y = by;
             m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
@@ -268,21 +269,11 @@ common: {
         return 1;
     }
     Coord* head = CoordHead()->m_coord;
-    CMapMgr* pl2 = g_gameReg->m_tileGrid;
-    i32 gx = head->m_x;
-    i32 gy = head->m_y;
-    i32 flag2;
-    if (static_cast<u32>(gx) < static_cast<u32>(pl2->m_width)
-        && static_cast<u32>(gy) < static_cast<u32>(pl2->m_height)) {
-        flag2 = pl2->m_rows[gy][gx].m_flags;
-    } else {
-        flag2 = 1;
-    }
-    if ((flag2 & 0x20) == 0) {
+    if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }
-    m_arrivalCell.m_x = gx;
-    m_arrivalCell.m_y = gy;
+    m_arrivalCell.m_x = head->m_x;
+    m_arrivalCell.m_y = head->m_y;
     if (CoordCount() != 0) {
         RECYCLE_COORDS(CoordHead());
         m_coordList.RemoveAll();

@@ -74,7 +74,9 @@
 
 // Same expansion as GRID_CLIP, but at the sites where cl builds the (0,0,w,h) rect
 // with field stores instead of the out-of-line CRect ctor; only the NULL arm's
-// temporary keeps its ctor call.
+// temporary keeps its ctor call. The bounds rect is reached through one pointer:
+// retail reads back m_bounds.right/left/bottom/top through the same register it
+// handed IntersectRect, never re-deriving them from the grid.
 #define GRID_CLIP_INL(grid, srcRect)                                                               \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \
@@ -91,11 +93,12 @@
         } else {                                                                                   \
             ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                   \
         }                                                                                          \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
+        RECT* clipBounds = &(grid)->m_bounds;                                                      \
+        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
+            *clipBounds = ra;                                                                      \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
+        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
 #define GRID_RECT_INLINE(grid)                                                                     \
