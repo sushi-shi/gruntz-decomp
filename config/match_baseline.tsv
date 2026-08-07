@@ -20,7 +20,7 @@
 # Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
 actionarea	14	10
-actionoptionsmenubar	12	5
+actionoptionsmenubar	12	6
 adler32	1	1
 advancedoptions	5	5
 anicycle	7	6
@@ -331,7 +331,7 @@ timestring	1	1
 titleappstart	2	2
 toobspikez	9	7
 trees	21	21
-triggermgr	49	24
+triggermgr	49	25
 triggermgrgrid	18	8
 triggermgrhittest	6	4
 trirecordserialize	1	1
@@ -381,7 +381,7 @@ actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	
 actionoptionsmenubar	?Clear@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	e4120f31ae64	0x92e0
 actionoptionsmenubar	?Deactivate@CActionOptionsMenuBar@@QAEXXZ	100.0000	100.0000	1	c9319d779db1	0x97f0
 actionoptionsmenubar	?Deserialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	91.7760	91.7760	9	b3cc2277db2d	0x9bb0
-actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	88.8889	88.8889	11	731d54468a57	0x9650
+actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	100.0000	100.0000	12	49b23a69d2f8	0x9650
 actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAE?AW4ActionOptionHit@@HH@Z	90.3878	90.3878	1	9db4260ff204	0x9760
 actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEHW4ActionOptionButtonState@@0HHHH@Z	95.1321	95.1321	1	a4156038a2f9	0x9220
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8723	84.8723	21	53b229396cb0	0x90e0
@@ -626,7 +626,7 @@ boomerang	??1CBoomerang@@UAE@XZ	100.0000	100.0000	1	cpp:a35f2a7c5ac0	0x12a00
 boomerang	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:096e761cd109	0x129d0
 boomerang	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	73.2439	73.2439	1	a2871a7caacf	0xe0690
 boomerang	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	1940f596d55d	0xe15d0
-bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	88.4811	88.4811	3	90da3f047ecd	0x18830
+bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	89.3864	89.3864	4	7666372112d0	0x18830
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d410
@@ -2693,7 +2693,7 @@ kitchenslime	?FireActivation@CKitchenSlime@@UAEXH@Z	100.0000	100.0000	2	ad04679f
 kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	73.8960	73.8960	27	0b0fd51302f4	0xb3160
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	100.0000	100.0000	9	d24586f64f3a	0xb2aa0
 kitchenslime	?SerializeMove@CKitchenSlime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	c76319dcf5ed	0xb2ff0
-kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.5841	94.5841	24	5e0f343d3c8f	0xb2ca0
+kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	95.1542	95.1542	25	dd1af700ec02	0xb2ca0
 latencylist	?PopulateGenericOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	829d3ed82ede	0x37f00
 latencylist	?PopulateIpxOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	2	0961c5ba4c68	0x37b40
 latencylist	?PopulateModemOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	2	85d3b00c1359	0x37d20
@@ -3086,7 +3086,7 @@ multistartdlg	?GetCtrlE@CMultiStartDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	2	f26c
 multistartdlg	?GetMessageMap@CMultiStartDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	4	121d43b80df9	0xc2620
 multistartdlg	?SetComboSelE@CMultiStartDlg@@QAEXHH@Z	100.0000	100.0000	2	73eeb8c6233e	0xc28c0
 multistartdlg	?SetupWorldCombo@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	9	2f69237bba80	0xc1840
-multistartdlg	?UpdateColorItems@CMultiStartDlg@@QAEHXZ	89.9331	89.9331	7	10679b36766d	0xc1aa0
+multistartdlg	?UpdateColorItems@CMultiStartDlg@@QAEHXZ	98.2205	98.2205	8	9225e734ee00	0xc1aa0
 multistartdlg	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	6	07d5de9e5e1a	0xc1fd0
 multistartdlg	_MultiMapComboEditProc@16	99.4118	99.4118	1	8cbc3f99f2ae	0xc1a10
 multistartdlgroster	??1CKeyedList@@QAE@XZ	100.0000	100.0000	1	7b927a0d8463	0xc5280
@@ -3396,7 +3396,7 @@ projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	11	540ccdb30744	0xe
 projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	66.3080	66.3080	1	587db7447a8c	0xdf050
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	8	8c3a416c1b5a	0xe1990
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	11	37a1fe7a94a9	0xdfb00
-projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9851	93.9851	20	ff2e38a323f6	0xe0b10
+projectile	?ScanTargets@CProjectile@@QAEXH@Z	95.1791	95.1791	21	145073dded2b	0xe0b10
 projectile	?SerializeMove@CProjectile@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	94.3417	94.3417	1	c6fd6ea91e10	0xe0d40
 projectile	?SerializeMove@CTimeBomb@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	87.6630	87.6630	1	e237bd854f36	0xe2080
 queuedrainhost	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	4	cacd15498538	0x31250
@@ -3536,7 +3536,7 @@ sbi_imageset	?SerializeFields@CSBI_ImageSet@@UAEHPAVCFileMemBase@@W4SerialMode@@
 sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	74.6308	74.6308	2	03ca9c348c69	0xe72f0
 sbi_imagesetani	?Init@CSBI_ImageSetAni@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	88.4891	88.4891	1	6c5b0215f1f8	0xe7980
 sbi_imagesetani	?Refresh@CSBI_ImageSetAni@@UAEHH@Z	100.0000	100.0000	1	e19451579b19	0xe7ae0
-sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	91.4889	91.4889	6	d3d554d5b49b	0xe7b00
+sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	99.4444	99.4444	7	702268255552	0xe7b00
 sbi_imagesetani	?SerializeFields@CSBI_ImageSetAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	864fa15c49ac	0xe7cd0
 sbi_imagesetani	?SetRange@CSBI_ImageSetAni@@UAEXHHHHH@Z	100.0000	100.0000	6	65edd3221a05	0xe7c30
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	4	52d039266205	0xe84f0
@@ -3668,7 +3668,7 @@ sbi_statztabgruntbar	??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z	100.0000	100.0000	1	cp
 sbi_statztabgruntbar	?Refresh@CSBI_StatzTabGruntBar@@UAEHH@Z	100.0000	100.0000	2	efb04eaf49eb	0xea4b0
 sbi_statztabgruntbar	?Render@CSBI_StatzTabGruntBar@@UAEHXZ	100.0000	100.0000	5	64277a09a2ff	0xea4e0
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@UAEXXZ	100.0000	100.0000	2	284b303a57de	0xea470
-sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	89.3517	89.3517	16	1ba8fb278edd	0xea6c0
+sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.0000	91.0000	17	096f4a4039de	0xea6c0
 sbi_tabzdialog_eh	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	1	0b52fe52f1b7	0x1005d0
 sbi_tabzdialog_eh	?BuildTabzDialog@CStatusBarMgr@@QAEHXZ	79.6836	79.6836	7	c9eee25536d1	0x10a340
 sbi_warlordhead	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	3	2aa1860e9670	0x104a00
@@ -4224,7 +4224,7 @@ triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	87.1471	87.1471	22	47e96a7c99fe	0x
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30
 triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	42.8828	42.8828	30	33797e64e6f3	0x78a50
-triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	89.6154	89.6154	8	78cea57c442a	0x7a240
+triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	9	32bcbd4b4335	0x7a240
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	85.7759	85.7759	11	36c5ae6876f4	0x7cc60
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	11	d67d7997d8cf	0x784d0
 triggermgr	?ReinitGroup@CTriggerMgr@@QAEHHH@Z	83.0631	83.0631	21	3fdad44dfa4f	0x79b80
