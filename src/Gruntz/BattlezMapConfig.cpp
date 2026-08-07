@@ -1127,8 +1127,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         CMapMgr* bd = m_board;
                         RECT r1;
                         static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
-                        RECT rc;
-                        rc = r1;
+                        RECT rc = CRect(0, 0, bd->m_width, bd->m_height);
                         if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
                             bd->m_bounds = rc;
                         }
@@ -1593,9 +1592,11 @@ i32 CBattlezMapConfig::StepRowUnits() {
     dispatch: {
         CMapMgr* bd2 = m_board;
         RECT a;
-        static_cast<RECT*>(new (&a) CRect(0, 0, bd2->m_width, bd2->m_height));
-        RECT b2;
-        b2 = a;
+        a.left = 0;
+        a.top = 0;
+        a.right = bd2->m_width;
+        a.bottom = bd2->m_height;
+        RECT b2 = CRect(0, 0, bd2->m_width, bd2->m_height);
         if (!IntersectRect(&bd2->m_bounds, &b2, &a)) {
             bd2->m_bounds = b2;
         }
@@ -1814,8 +1815,7 @@ perimSweep: {
         CMapMgr* fb = m_board;
         RECT f1;
         static_cast<RECT*>(new (&f1) CRect(0, 0, fb->m_width, fb->m_height));
-        RECT fc;
-        fc = f1;
+        RECT fc = CRect(0, 0, fb->m_width, fb->m_height);
         if (IntersectRect(&fb->m_bounds, &fc, &f1) != 0) {
             return 0;
         }
@@ -1838,8 +1838,7 @@ rowHitA: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT hc;
-    hc = h1;
+    RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1860,8 +1859,7 @@ rowHitB: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT hc;
-    hc = h1;
+    RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1931,8 +1929,7 @@ colHitA: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT hc;
-    hc = h1;
+    RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1953,8 +1950,7 @@ colHitB: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT hc;
-    hc = h1;
+    RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }

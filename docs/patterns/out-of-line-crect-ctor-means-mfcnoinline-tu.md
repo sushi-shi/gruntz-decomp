@@ -66,3 +66,23 @@ Inside such a TU, an INLINE four-store rect construction is therefore **not** a
 `SCAN_RECT_BOUNDS`-style clip block constructs TWO live `CRect`s and copies one into a
 third plain `RECT` (`RECT full = CRect(0,0,w,h);` — temporary + copy-init), which is
 what produces two ctor calls plus a field-by-field copy.
+
+## The corollary, measured (2026-08-07)
+
+`CBattlezMapConfig::StepRowUnits` @0x267c0 confirmed it end-to-end. `insn_seq --multiset`
+read `??0CRect@@QAE@HHHH@Z base=9 tgt=15` - retail builds SIX more CRects than we did. Every
+clip block spells the second rect as a **temporary + copy-init**, not a struct assignment:
+
+```cpp
+static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
+RECT hc = CRect(0, 0, hb->m_width, hb->m_height);   // NOT `RECT hc; hc = h1;`
+if (!IntersectRect(&hb->m_bounds, &hc, &h1)) { hb->m_bounds = hc; }
+```
+
+The tell in the disasm is that the copy reads through the ctor's RETURN value
+(`call <CRect>; mov ecx,[eax]; mov [hc],ecx; mov edx,[eax+4]; ...`) - a struct assignment
+would read the named source slot instead. One block additionally builds its first rect with
+four inline stores (a plain `RECT`, four `mov`s, no call), which is what makes the retail
+frame `sub esp,0x12c` against our `0x11c`: **the frame-size delta counts the rects you are
+missing**, 0x10 per RECT. Fixing both took StepRowUnits 84.00 -> 85.40 with `sub esp` and the
+whole 270-entry reloc sequence exactly matching.
