@@ -4740,54 +4740,52 @@ RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
     CGrunt** units = m_triggerMgr->m_grid + m_ownerId * 15;
-    for (; i < 15; i++, units++) {
+    for (;;) {
         CGrunt* unit = *units;
-        if (unit == NULL) {
-            continue;
-        }
-        if (unit == selfUnit) {
-            continue;
-        }
-        if (unit->m_battleState == BZTASK_SEEK_SWITCH) {
-            continue;
-        }
+        if (unit != NULL && unit != selfUnit && unit->m_battleState != BZTASK_SEEK_SWITCH) {
 
-        if (unit->CoordCount() != 0) {
-            CoordNode* node = unit->CoordHead();
-            if (node != NULL) {
-                CMapMgr* board = m_board;
-                for (;;) {
-                    CoordNode* cur = node;
-                    node = node->m_next;
-                    Coord* c = cur->m_coord;
-                    i32 x = c->m_x;
-                    i32 y = c->m_y;
-                    i32 tile;
-                    if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
-                        && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
-                        tile = board->m_rowInts[y][x * 7];
-                    } else {
-                        tile = 1;
-                    }
-                    if ((tile & 4) && x == qx && y == qy) {
-                        return 1;
-                    }
-                    if (node == NULL) {
-                        break;
+            if (unit->CoordCount() != 0) {
+                CoordNode* node = unit->CoordHead();
+                if (node != NULL) {
+                    CMapMgr* board = m_board;
+                    for (;;) {
+                        CoordNode* cur = node;
+                        node = node->m_next;
+                        Coord* c = cur->m_coord;
+                        i32 x = c->m_x;
+                        i32 y = c->m_y;
+                        i32 tile;
+                        if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
+                            && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
+                            tile = board->m_rowInts[y][x * 7];
+                        } else {
+                            tile = 1;
+                        }
+                        if ((tile & 4) && x == qx && y == qy) {
+                            return 1;
+                        }
+                        if (node == NULL) {
+                            break;
+                        }
                     }
                 }
             }
+            i32 entranceX = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
+            i32 entranceY = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
+            if (entranceX == qx && entranceY == qy) {
+                return 1;
+            }
+            CGameObject* lvl = unit->m_object;
+            i32 currentX = lvl->m_screenX >> TILE_SHIFT_PX;
+            i32 currentY = lvl->m_screenY >> TILE_SHIFT_PX;
+            if (currentX == qx && currentY == qy) {
+                return 1;
+            }
         }
-        i32 entranceX = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
-        i32 entranceY = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
-        if (entranceX == qx && entranceY == qy) {
-            return 1;
-        }
-        CGameObject* lvl = unit->m_object;
-        i32 currentX = lvl->m_screenX >> TILE_SHIFT_PX;
-        i32 currentY = lvl->m_screenY >> TILE_SHIFT_PX;
-        if (currentX == qx && currentY == qy) {
-            return 1;
+        i++;
+        units++;
+        if (i >= 15) {
+            break;
         }
     }
     return 0;
