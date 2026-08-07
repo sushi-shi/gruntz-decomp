@@ -42,10 +42,12 @@ ret
 
 STEERABLE. `CSBI_ImageSetAni::Render` @0xe7b00 **91.49 -> 99.44** on the swap alone
 (13 instructions); adding an explicit `return 1;` after the store changed nothing by
-itself - only the order did. Screen with `--blocks --diff --lite`: base `Ni [ret]`
-against retail `Mi [jmp Bk]` with `M < N` is the merged direction; `M > N` (retail
-merged, we duplicated) is the other one, and there the fix is usually the `||` /
-`goto fail;` family instead.
+itself - only the order did. Screen with `--blocks --diff --lite`. THIS knob is for
+the direction where WE merged and retail did not: base `1i [fall Bk]` (or a short
+block flowing into a shared tail) against retail `Ni [ret]` with a full inline
+epilogue. The OPPOSITE reading - base `Ni [ret]` against retail `Mi [jmp Bk]`, M < N,
+i.e. retail merged and we duplicated - is a different problem, and there the fix is
+usually the `||` / `goto fail;` family instead.
 
 A sibling knob for the SAME symptom on a guarded store: an explicit `return` right
 after the store forces cl to give that arm its own epilogue instead of falling into
