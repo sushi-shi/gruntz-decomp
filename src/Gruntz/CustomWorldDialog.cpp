@@ -13,6 +13,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PortalPath.h>
+#include <Gruntz/WaitCursorScope.h>
 #include <Ints.h>
 #include <MsgParam.h>
 #include <Net/NetLobby.h>
@@ -111,7 +112,6 @@ INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     return 0;
 }
 
-// @early-stop
 RVA(0x0003af90, 0x194)
 i32 FillCustomLevelList(HWND hWnd) {
     HWND lb = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
@@ -122,29 +122,29 @@ i32 FillCustomLevelList(HWND hWnd) {
     if (_chdir("Custom")) {
         return 0;
     }
-    char pattern[260];
+    char pattern[256];
     strcpy(pattern, g_customGlob);
     _finddata_t fd;
     i32 h = _findfirst(pattern, &fd);
     i32 found = (h != -1);
-    afxCurrentWinApp->BeginWaitCursor();
-    if (found) {
-        do {
-            char disp[260];
-            sprintf(disp, "%s", fd.name);
-            if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
-                i32 len = strlen(disp);
-                if (len > 4) {
-                    disp[len - 4] = 0;
-                }
-                MsgParam name;
-                name.m_str = disp;
-                SendMessageA(lb, LB_ADDSTRING, 0, name.m_lparam);
+    CWaitCursorScope wait;
+    while (found) {
+        char disp[256];
+        sprintf(disp, "%s", fd.name);
+        if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
+            i32 len = strlen(disp);
+            if (len > 4) {
+                disp[len - 4] = 0;
             }
-        } while (_findnext(h, &fd) != -1);
+            MsgParam name;
+            name.m_str = disp;
+            SendMessageA(lb, LB_ADDSTRING, 0, name.m_lparam);
+        }
+        if (_findnext(h, &fd) == -1) {
+            found = 0;
+        }
     }
     _chdir(g_dotDot);
-    afxCurrentWinApp->EndWaitCursor();
     return 1;
 }
 

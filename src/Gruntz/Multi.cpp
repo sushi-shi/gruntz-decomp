@@ -2871,9 +2871,7 @@ u32 CMulti::FrameSyncWait() {
     if (delta <= 0x1e) {
         ActiveWait(0x1f - delta);
         m_lastFrameSyncTime = (now - m_accumTime) + 0x1f;
-        return ret;
-    }
-    if (delta > 0x28 && m_syncGate) {
+    } else if (delta > 0x28 && m_syncGate) {
         ret = g_syncToggle ^ 1;
         g_syncToggle = ret;
     }

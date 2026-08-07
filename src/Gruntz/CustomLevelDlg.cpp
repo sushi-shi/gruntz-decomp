@@ -4,6 +4,7 @@
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/WaitCursorScope.h>
 #include <Ints.h>
 #include <MsgParam.h>
 
@@ -29,32 +30,28 @@ RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));
     if (pDX->m_bSaveAndValidate == 0) {
-        afxCurrentWinApp->BeginWaitCursor();
-        {
-            char buf[0x400];
-            _getcwd(buf, 0x400);
-            CString glob(buf);
-            glob += "\\custom\\*.wwd";
-            _finddata_t fd;
-            i32 h = _findfirst(glob, &fd);
-            static CString s_custom("custom\\");
-            if (h != -1) {
-                do {
-                    if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
-                        MsgParam name;
-                        ::SendMessageA(
-                            item->m_hWnd,
-                            LB_ADDSTRING,
-                            0,
-                            (name.m_str = static_cast<const char*>((s_custom + fd.name)),
-                             name.m_lparam)
-                        );
-                    }
-                } while (_findnext(h, &fd) != -1);
-            }
-            ::SendMessageA(item->m_hWnd, LB_SETCURSEL, 0, 0);
+        CWaitCursorScope wait;
+        char buf[0x400];
+        _getcwd(buf, 0x400);
+        CString glob(buf);
+        glob += "\\custom\\*.wwd";
+        _finddata_t fd;
+        i32 h = _findfirst(glob, &fd);
+        static CString s_custom("custom\\");
+        if (h != -1) {
+            do {
+                if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
+                    MsgParam name;
+                    ::SendMessageA(
+                        item->m_hWnd,
+                        LB_ADDSTRING,
+                        0,
+                        (name.m_str = static_cast<const char*>((s_custom + fd.name)), name.m_lparam)
+                    );
+                }
+            } while (_findnext(h, &fd) != -1);
         }
-        afxCurrentWinApp->EndWaitCursor();
+        ::SendMessageA(item->m_hWnd, LB_SETCURSEL, 0, 0);
         return;
     }
     i32 sel = static_cast<i32>(::SendMessageA(item->m_hWnd, LB_GETCURSEL, 0, 0));
@@ -78,8 +75,4 @@ void CBattlezDlgCustom::PickIfSelected() {
     }
 }
 
-RVA(0x00018430, 0xd)
-void EndWaitCursorOnThread() {
-
-    afxCurrentWinApp->EndWaitCursor();
-}
+RVA_COMPGEN(0x00018430, 0xd, ??1CWaitCursorScope@@QAE@XZ)

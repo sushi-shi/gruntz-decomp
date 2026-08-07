@@ -618,7 +618,6 @@ void CMultiStartDlg::Drive() {
     }
 }
 
-// @early-stop
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableControls() {
     CWnd* w = GetDlgItem(IDCANCEL);

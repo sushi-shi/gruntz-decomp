@@ -111,7 +111,6 @@ i32 CFileImageSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 fla
     return 1;
 }
 
-// @early-stop
 RVA(0x00148a50, 0x6b)
 i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 caps) {
     DDSURFACEDESC desc;
@@ -218,7 +217,6 @@ i32 CPoolItemAB8::InstallColorFormat() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00148c40, 0x75)
 i32 CPoolItemAE8::Blit47(
     CDDrawPtrCollections* info,
