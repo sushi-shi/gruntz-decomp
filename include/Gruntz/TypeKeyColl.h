@@ -15,8 +15,6 @@ extern CButeTree g_buteTree;
 
 extern "C" i32 g_helperRefCount;
 
-i32 FirstDiffBit(const char* a, const char* b);
-
 void TmErrorHandler(char* prefix, i32 errNum);
 
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

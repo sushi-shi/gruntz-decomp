@@ -1584,10 +1584,6 @@ source = "src/Net/LatencyList.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "projactcache"
-source = "src/Gruntz/ProjActCache.cpp"
-flags = "cpp-rtti"
-[[unit]]
 unit = "wapuncompress"
 source = "src/Wap32/WapUncompress.cpp"
 flags = "cpp"

@@ -1436,7 +1436,7 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_INT, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_INT, val));
         return;
     }
 
@@ -1452,7 +1452,7 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_INT, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_INT, val));
 }
 
 RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
@@ -1520,7 +1520,7 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_DWORD, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
         return;
     }
 
@@ -1536,7 +1536,7 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_DWORD, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
 }
 
 RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
@@ -1604,7 +1604,7 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_FLOAT, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
         return;
     }
 
@@ -1620,7 +1620,7 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_FLOAT, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
 }
 
 RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
@@ -1688,7 +1688,7 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
         return;
     }
 
@@ -1704,7 +1704,7 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
 RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
@@ -1772,7 +1772,7 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_STRING, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
         return;
     }
 
@@ -1788,7 +1788,7 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_STRING, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
 }
 
 RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
@@ -1852,7 +1852,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_RECT, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
         return;
     }
 
@@ -1868,7 +1868,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_RECT, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
 }
 
 RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
@@ -1932,7 +1932,7 @@ void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_POINT, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
         return;
     }
 
@@ -1948,7 +1948,7 @@ void CButeMgr::SetValue(const char* tag, const char* key, CButeValue* val) {
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_POINT, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAU0@@Z)
 
@@ -2011,7 +2011,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
 
@@ -2027,7 +2027,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_VECTOR, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
@@ -2090,7 +2090,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, new CButeValue(BUTE_RANGE, val));
+        made->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
         return;
     }
 
@@ -2106,7 +2106,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, new CButeValue(BUTE_RANGE, val));
+    made74->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)

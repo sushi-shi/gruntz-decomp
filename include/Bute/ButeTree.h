@@ -41,6 +41,8 @@ struct CButeTreeNode {
     CButeTreeNode* m_child[2];
     i32 m_bit;
     char* m_key;
+    // Generic payload: the tag tables store CButeNode*, group nodes store
+    // CButeValue*, g_buteTree stores an id packed into the pointer.
     char* m_value;
 };
 SIZE(0x14);

@@ -1,5 +1,4 @@
 #include <Enums.h>
-#include <Gruntz/ProjActCache.h>
 #include <Gruntz/UserLogic.h>
 #include <Mfc.h>
 #include <Bute/ButeTree.h>

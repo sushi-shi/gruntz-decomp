@@ -12,6 +12,10 @@ struct CVariantSlot;
 struct CButeTreeNode;
 extern CVariantSlot g_symTabErrorSlot;
 
+// Index of the first differing bit between two NUL-terminated keys; the PATRICIA
+// critbit primitive shared by zPTree::Insert and zPTree::FindOrInsert.
+extern "C" i32 FirstDiffBit(const char* a, const char* b);
+
 class zPtrColl {
 public:
     zPtrColl(i32 n, void(__cdecl* teardown)(void*));
@@ -42,7 +46,16 @@ public:
     }
 
     void* Find(const char* key);
+
+    // Insert(): only legal directly after a Find() on THIS node - it consumes the
+    // cached descent (m_descentCursor/m_candidateLeaf/m_lookupPending) and errors
+    // with "No prior lookup" otherwise.
     void* Insert(const char* key, void* value);
+
+    // FindOrInsert(): self-contained - runs its own descent, returns the value
+    // already stored under `key` if present, otherwise links a fresh node. This is
+    // what the callers use on a node they just created (no prior Find to consume).
+    void* FindOrInsert(const char* key, void* value);
 
     void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
 
