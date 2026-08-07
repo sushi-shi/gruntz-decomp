@@ -196,12 +196,11 @@ static const char s_gruntSec[] = "Grunt";
 static inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             new (slot) CString();
         }
         slot++;
-        cnt--;
     }
 }
 
@@ -1088,31 +1087,27 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 yMasked = (inner->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 xMasked = (inner->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 hit;
+                i32 sy = inner->m_screenY;
+                i32 sx = inner->m_screenX;
+                i32 yMasked = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 xMasked = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 applied;
                 if (phase == ARRIVAL_TAG_TRIGGER_B) {
-                    hit = RectContains(xMasked, yMasked);
+                    if (RectContainsGated(xMasked, yMasked) != 0) {
+                        FinishActiveAction();
+                    }
+                    applied = m_tileMgr->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, sx, sy);
                 } else {
-                    hit = RectContainsGated(xMasked, yMasked);
+                    if (RectContains(xMasked, yMasked) != 0) {
+                        FinishActiveAction();
+                    }
+                    applied = m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, sx, sy);
                 }
-                if (hit != 0) {
-                    BuildEntranceAnimation(GRUNT_ENTRANCE_RESURRECT_DIRECT);
-                }
-                if (phase == ARRIVAL_TAG_TRIGGER_B) {
-                    m_tileMgr->ApplyTriggerB(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        inner->m_screenX,
-                        inner->m_screenY
-                    );
-                } else {
-                    m_tileMgr->ApplyTriggerA(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        inner->m_screenX,
-                        inner->m_screenY
-                    );
+                // The outer test is redundant with the inner one; retail emits both.
+                if (applied == 0 || applied == 1) {
+                    if (applied == 1) {
+                        SetEntrancePos(1, 1);
+                    }
                 }
             }
         }
@@ -1121,58 +1116,50 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
     PlayMoveSound(a, b);
 
-    char* nm0 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    bool eqH = (strcmp(nm0, s_codeH) == 0);
-    if (eqH) {
-        return 1;
-    }
-    {
-        i32 coord = m_objAux->ActKey();
+    // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
+    // out of line at the first and expanded it at the other two.
+    char* nm0 = *g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
+    ConstructGrownSlots();
+    bool neH = (strcmp(nm0, s_codeH) != 0);
+    if (neH) {
+        i32 keyF = m_objAux->m_actKey;
         g_typeColl.m_grown = 0;
-        CString* rec;
-        if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (g_typeColl.GrowTo(coord, 0) != NULL) {
-                rec = g_typeColl.Elem(coord);
+        CString* recF;
+        if (keyF < g_typeColl.m_lo || keyF > g_typeColl.m_hi) {
+            if (g_typeColl.GrowTo(keyF, 0) != NULL) {
+                recF = g_typeColl.Elem(keyF);
             } else {
                 g_typeColl.Report(g_errOutOfMem, 0xc);
-                rec = g_typeColl.Scratch();
+                recF = g_typeColl.Scratch();
             }
         } else {
-            rec = g_typeColl.Elem(coord);
+            recF = g_typeColl.Elem(keyF);
         }
         ConstructGrownSlots();
-        static_cast<void>(rec);
-    }
-    char* nm1 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    bool eqF = (strcmp(nm1, s_codeF) == 0);
-    if (eqF) {
-        return 1;
-    }
-    {
-        i32 coord = m_objAux->ActKey();
-        g_typeColl.m_grown = 0;
-        CString* rec;
-        if (coord < g_typeColl.m_lo || coord > g_typeColl.m_hi) {
-            if (g_typeColl.GrowTo(coord, 0) != NULL) {
-                rec = g_typeColl.Elem(coord);
+        bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), s_codeF) != 0);
+        if (neF) {
+            i32 keyO = m_objAux->m_actKey;
+            g_typeColl.m_grown = 0;
+            CString* recO;
+            if (keyO < g_typeColl.m_lo || keyO > g_typeColl.m_hi) {
+                if (g_typeColl.GrowTo(keyO, 0) != NULL) {
+                    recO = g_typeColl.Elem(keyO);
+                } else {
+                    char* msg = g_errOutOfMem;
+                    g_retAddrBreadcrumb = GetRetAddr();
+                    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
+                    recO = g_typeColl.Scratch();
+                }
             } else {
-                char* msg = g_errOutOfMem;
-                g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-                rec = g_typeColl.Scratch();
+                recO = g_typeColl.Elem(keyO);
             }
-        } else {
-            rec = g_typeColl.Elem(coord);
+            ConstructGrownSlots();
+            bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), s_codeO) != 0);
+            if (neO) {
+                ResetGeometry();
+            }
         }
-        ConstructGrownSlots();
-        static_cast<void>(rec);
     }
-    char* nm2 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    bool eqO = (strcmp(nm2, s_codeO) == 0);
-    if (eqO) {
-        return 1;
-    }
-    ResetGeometry();
     return 1;
 }
 

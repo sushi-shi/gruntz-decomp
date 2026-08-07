@@ -14,12 +14,22 @@ public:
     virtual ~CTypeCollRuntime() OVERRIDE;
 
     char** GetNameRecord(i32 key) {
+        return NameOf(SlotOf(key));
+    }
+
+    // The raw _zvec resolve: `_zdvec::IndexToPtr` minus its trailing
+    // grown-slot construction, which the caller then runs itself.
+    char** GetNameRecordRaw(i32 key) {
+        return NameOf(ScratchResolve(key));
+    }
+
+    static char** NameOf(CString* slot) {
 
         union {
             CString* m_slot;
             char** m_buffer;
         } view;
-        view.m_slot = SlotOf(key);
+        view.m_slot = slot;
         return view.m_buffer;
     }
 
