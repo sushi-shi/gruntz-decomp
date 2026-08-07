@@ -86,3 +86,34 @@ four inline stores (a plain `RECT`, four `mov`s, no call), which is what makes t
 frame `sub esp,0x12c` against our `0x11c`: **the frame-size delta counts the rects you are
 missing**, 0x10 per RECT. Fixing both took StepRowUnits 84.00 -> 85.40 with `sub esp` and the
 whole 270-entry reloc sequence exactly matching.
+
+## The mix is PER SITE - use the multiset to pick which one (2026-08-07)
+
+The two rects of a clip block are **not** built the same way at every expansion, and
+a macro that stamps one spelling everywhere can only be right at one of them.  Retail
+inlines one ctor into four stores and calls the other, and which one flips as the /Ob1
+budget runs down through the function.  `insn_seq --multiset` gives the exact target:
+
+    ??0CRect@@QAE@HHHH@Z    base=3   tgt=2      # ONE site must lose its call
+    ??0CRect@@QAE@HHHH@Z    base=3   tgt=4      # ONE site must gain one
+
+Then convert exactly one site (`CRect b(0,0,w,h);` <-> `RECT b; b.left = 0; ...`) and
+re-run until it reads `identical reloc counts`.  Measured, each verified back to an
+exact reloc multiset:
+
+| function | before | after | change |
+|---|---|---|---|
+| `CBattlezMapConfig::ScanRegion` @0x32ce0 | 67.28 | **83.28** | macro dissolved: clip = 4 stores at the two loop sites, `full` = ctor + copy-init; tail site keeps BOTH calls |
+| `CBattlezMapConfig::ResolveTileClaim` @0x2dfa0 | 67.97 | 70.84 | Clip(NULL) site's `b` -> 4 stores |
+| `CBattlezMapConfig::RouteToNearbyPickup` @0x2c140 | 90.03 | 90.90 | first Clip(NULL) site's `b` -> 4 stores |
+
+Two companions, both worth checking in the same pass:
+
+- **Brace-scope each expansion.** Rects in disjoint scopes share one stack slot, so an
+  expansion left at function scope while its siblings sit inside a loop does NOT share
+  and the frame grows 0x10 per rect (ScanRegion `sub esp,0x88` against retail's `0x68`).
+- **Read `m_bounds` through the pointer you passed to `IntersectRect`.** Retail computes
+  `m_gridW`/`m_gridH` as `[edi+8]-[edi]` off that pointer, not off the object base;
+  `CMapMgr::Clip` itself already spells it `RECT* out = &m_bounds;`.  Applying it to the
+  23 hand-expanded copies moved nine functions (PathScan 85.16 -> 87.04,
+  RepathAroundBlockedTiles 68.47 -> 71.10, HandleUnitContact 84.87 -> 85.96).
