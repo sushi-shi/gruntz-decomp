@@ -51,6 +51,22 @@ away, so it costs nothing.
 prologue/epilogue exact, and every `cmp X,ebp` / `mov [X],ebp` collapsed to the
 `test` / immediate form in one build. No other edit.
 
+A **cached global** is the same bug: `CPlay::OnKeyDown` (0x000cbcc0) opened with
+`StateMgrBZ* dev = g_spawnConfig;` and used `dev->` at eight sites. Retail reads
+`_g_spawnConfig` twelve times where we read it eleven - one read short is the
+tell, and per-symbol reloc counts
+(`gruntz.audit.insn_seq` + a `Counter` over `relseq`) find it faster than the
+diff. Spelling the eight sites `g_spawnConfig->` took it **87.19 -> 90.31**.
+Do NOT generalise the delete to every local: `host`/`level` (`this->m_mgr` /
+`this->m_guts`, 26 and 14 uses) are REAL source locals and removing either costs
+2-5 points. The rule is "the local adds no value over its initializer *and* is
+not what pays for the reloads", so measure one at a time.
+
+Adjacent, same function: dropping a redundant `= 0` on two out-parameters
+(`i32 outA = 0; i32 outB = 0;` handed to `ScreenToCell(&outB, &outA, ..)`) is
+worth another +0.27 - an out-parameter's pre-initialisation is a store retail
+never makes.
+
 ## How to spot it
 
 Run `gruntz sema disasm <rva> --diff` and count the diff rows of the form

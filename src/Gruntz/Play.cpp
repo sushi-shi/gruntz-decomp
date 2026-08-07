@@ -1936,32 +1936,29 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 // @early-stop
 RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
-    CPlay* self = this;
-
-    if (self->m_hudSuppressed != 0) {
+    if (this->m_hudSuppressed != 0) {
         return 1;
     }
-    if (self->m_renderDisabled != 0) {
+    if (this->m_renderDisabled != 0) {
         return 1;
     }
-    if (self->m_inGame != 0) {
+    if (this->m_inGame != 0) {
         return 1;
     }
-    if (self->m_paused != 0) {
+    if (this->m_paused != 0) {
         return 1;
     }
-    if (self->m_mgr->m_frameGate != 0) {
+    if (this->m_mgr->m_frameGate != 0) {
         return 1;
     }
 
-    CGruntzMgr* host = self->m_mgr;
-    CStatusBarMgr* level = self->m_guts;
-    i32 key = vk;
+    CGruntzMgr* host = this->m_mgr;
+    CStatusBarMgr* level = this->m_guts;
 
     if (level->m_toggleActive != 0 || level->m_toggleHandle != 0) {
         if (level->m_toggleHandle != 0) {
 
-            if (key == 'Y' || key == VK_RETURN) {
+            if (vk == 'Y' || vk == VK_RETURN) {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
@@ -1974,7 +1971,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 host->AccrueScoreTime();
                 return 1;
             }
-            if (key == 'N' || key == VK_ESCAPE) {
+            if (vk == 'N' || vk == VK_ESCAPE) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 this->ReleaseLevelOverlay(0);
                 return 1;
@@ -1982,7 +1979,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
         } else {
 
-            if (key == 'Q') {
+            if (vk == 'Q') {
                 if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
@@ -1993,11 +1990,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 return 1;
             }
 
-            if (key == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            if (vk == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                 host->AccrueScoreTime();
             }
-            if (key == 'R') {
+            if (vk == 'R') {
                 if (host->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase != FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -2006,7 +2003,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
                 return 1;
             }
-            if (key == 'N') {
+            if (vk == 'N') {
                 if (host->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
@@ -2014,9 +2011,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
                 return 1;
             }
-            if (key == 'O') {
+            if (vk == 'O') {
                 if (host->m_gameMode != GAMEMODE_SINGLE
-                    && self->m_guts->m_observerTabAvailable != 0) {
+                    && this->m_guts->m_observerTabAvailable != 0) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
                 }
@@ -2025,19 +2022,19 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
     }
 
-    if (key == VK_RETURN) {
-        CChatBoxOwner* rec = self->m_hitTest;
+    if (vk == VK_RETURN) {
+        CChatBoxOwner* rec = this->m_hitTest;
         if (rec->m_inputActive != 0) {
             rec->ProcessCheatInput(0xd, lparam);
         } else {
             rec->m_fontConfig->EndInput();
             rec->m_inputActive = 1;
-            self->m_hitTest->ProcessCheatInput(0xd, lparam);
+            this->m_hitTest->ProcessCheatInput(0xd, lparam);
         }
         return 1;
     }
 
-    if (key == VK_ESCAPE) {
+    if (vk == VK_ESCAPE) {
         CTriggerMgr* h68 = host->m_cmdGrid;
         CWwdGameObjectA* n = h68->m_goal;
         if (n != NULL) {
@@ -2045,11 +2042,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             h68->m_goal = NULL;
         }
         h68->m_armed = 0;
-        CChatBoxOwner* rec = self->m_hitTest;
+        CChatBoxOwner* rec = this->m_hitTest;
         if (rec->m_inputActive != 0) {
             this->FlushPendingOps();
-            self->m_hitTest->m_fontConfig->EndInput();
-            self->m_hitTest->m_inputActive = 0;
+            this->m_hitTest->m_fontConfig->EndInput();
+            this->m_hitTest->m_inputActive = 0;
             return 1;
         }
         if (this->FlushPendingOps() != 0) {
@@ -2064,20 +2061,18 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (self->m_hitTest->m_inputActive != 0) {
+    if (this->m_hitTest->m_inputActive != 0) {
         return 1;
     }
     if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
         return 1;
     }
 
-    StateMgrBZ* dev = g_spawnConfig;
-
-    if (key == VK_TAB) {
-        i32 idx = self->m_focusPlayerIndex;
+    if (vk == VK_TAB) {
+        i32 idx = this->m_focusPlayerIndex;
         i32 pick;
         GruntzPlayer* area;
-        if (dev->m_edgeKeys & 1) {
+        if (g_spawnConfig->m_edgeKeys & 1) {
             pick = idx - 1;
             if (pick < 0) {
                 pick = 3;
@@ -2111,12 +2106,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             }
         }
         if (area->m_joined != 0 && area->m_doneFlag == 0 && area->m_clearedRound == 0) {
-            self->m_focusPlayerIndex = pick;
+            this->m_focusPlayerIndex = pick;
             this->ResetGoals(area->m_focusX, area->m_focusY);
         }
     }
 
-    if (key == 'H') {
+    if (vk == 'H') {
         GruntzPlayer* a = &g_gameReg->m_options[g_curPlayer];
         if (a == NULL) {
             return 1;
@@ -2125,49 +2120,49 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 'Q') {
-        if ((dev->m_edgeKeys & 0x20) == 0) {
+    if (vk == 'Q') {
+        if ((g_spawnConfig->m_edgeKeys & 0x20) == 0) {
             return 1;
         }
-        CGruntzMgr* h = self->m_mgr;
+        CGruntzMgr* h = this->m_mgr;
         if (h->m_frameGate != 0) {
             h->m_frameGate ^= 1;
-            self->m_mgr->FinishLevel(h->m_frameGate, 1);
+            this->m_mgr->FinishLevel(h->m_frameGate, 1);
         }
-        CLEAR_TAB_HINT(self->m_mgr->m_world->m_soundRegistry);
+        CLEAR_TAB_HINT(this->m_mgr->m_world->m_soundRegistry);
         this->EnterOverlayDrag(1);
         return 1;
     }
 
-    if (key == 'Z') {
+    if (vk == 'Z') {
         g_gameReg->m_cmdGrid->EnqueueGroupCells();
         return 1;
     }
 
-    if (key == 'C') {
-        g_gameReg->m_cmdGrid->CenterOnGroup(dev->m_edgeKeys & 0x20);
+    if (vk == 'C') {
+        g_gameReg->m_cmdGrid->CenterOnGroup(g_spawnConfig->m_edgeKeys & 0x20);
         return 1;
     }
 
-    if (key == 'T') {
+    if (vk == 'T') {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionA();
         return 1;
     }
 
-    if (key == 'Y') {
+    if (vk == 'Y') {
         this->FlushPendingOps();
         g_gameReg->m_cmdGrid->ToggleRegionB();
         return 1;
     }
 
-    if (key == VK_SPACE) {
-        if (dev->m_edgeKeys & 0x20) {
-            CDDrawWorkerHost* obj = self->m_world->m_level->m_mainPlane;
+    if (vk == VK_SPACE) {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
+            CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
             i32 v0 = obj->m_snappedX;
             i32 v1 = obj->m_snappedY;
             Coord* slot;
-            if (self->CameraBookmarkCount() < 4) {
+            if (this->CameraBookmarkCount() < 4) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 CoordPoolNode* nx = head->m_next;
                 if (nx != NULL) {
@@ -2178,86 +2173,86 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 }
             } else {
 
-                slot = static_cast<Coord*>(self->m_cameraBookmarks.GetAt(0));
-                self->m_cameraBookmarks.RemoveAt(0, 1);
-                i32 c = self->m_cameraBookmarkIndex - 1;
-                self->m_cameraBookmarkIndex = c;
+                slot = static_cast<Coord*>(this->m_cameraBookmarks.GetAt(0));
+                this->m_cameraBookmarks.RemoveAt(0, 1);
+                i32 c = this->m_cameraBookmarkIndex - 1;
+                this->m_cameraBookmarkIndex = c;
                 if (c < 0) {
-                    self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
+                    this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
             slot->m_x = v0;
             slot->m_y = v1;
-            if (self->m_cameraBookmarkIndex != self->CameraBookmarkCount() - 1) {
-                self->m_cameraBookmarks.InsertAt(self->m_cameraBookmarkIndex + 1, slot, 1);
-                self->m_cameraBookmarkIndex = self->m_cameraBookmarkIndex + 1;
+            if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
+                this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
+                this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
                 return 1;
             }
-            self->m_cameraBookmarks.SetAtGrow(self->CameraBookmarkCount(), slot);
-            self->m_cameraBookmarkIndex = self->m_cameraBookmarkIndex + 1;
+            this->m_cameraBookmarks.SetAtGrow(this->CameraBookmarkCount(), slot);
+            this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
             return 1;
         }
-        if (self->CameraBookmarkCount() == 0) {
+        if (this->CameraBookmarkCount() == 0) {
             return 1;
         }
-        if (dev->m_edgeKeys & 1) {
-            i32 c = self->m_cameraBookmarkIndex - 1;
-            self->m_cameraBookmarkIndex = c;
+        if (g_spawnConfig->m_edgeKeys & 1) {
+            i32 c = this->m_cameraBookmarkIndex - 1;
+            this->m_cameraBookmarkIndex = c;
             if (c < 0) {
-                self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
+                this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
             }
         } else {
-            i32 c = self->m_cameraBookmarkIndex + 1;
-            self->m_cameraBookmarkIndex = c;
-            if (c >= self->CameraBookmarkCount()) {
-                self->m_cameraBookmarkIndex = 0;
+            i32 c = this->m_cameraBookmarkIndex + 1;
+            this->m_cameraBookmarkIndex = c;
+            if (c >= this->CameraBookmarkCount()) {
+                this->m_cameraBookmarkIndex = 0;
             }
         }
-        i32* e = static_cast<i32*>(self->m_cameraBookmarks.GetAt(self->m_cameraBookmarkIndex));
+        i32* e = static_cast<i32*>(this->m_cameraBookmarks.GetAt(this->m_cameraBookmarkIndex));
         this->ResetGoals(e[0], e[1]);
         return 1;
     }
 
-    if (key == VK_BACK) {
-        if (self->CameraBookmarkCount() <= 0) {
+    if (vk == VK_BACK) {
+        if (this->CameraBookmarkCount() <= 0) {
             return 1;
         }
-        i32 cur = self->m_cameraBookmarkIndex;
+        i32 cur = this->m_cameraBookmarkIndex;
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node = g_coordPool.NodeOf(self->m_cameraBookmarks.GetAt(cur));
-        self->m_cameraBookmarks.RemoveAt(cur, 1);
+        CoordPoolNode* node = g_coordPool.NodeOf(this->m_cameraBookmarks.GetAt(cur));
+        this->m_cameraBookmarks.RemoveAt(cur, 1);
         node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
         g_coordPool.m_freeHead = node;
-        i32 c = self->m_cameraBookmarkIndex - 1;
-        self->m_cameraBookmarkIndex = c;
+        i32 c = this->m_cameraBookmarkIndex - 1;
+        this->m_cameraBookmarkIndex = c;
         if (c != -1) {
             return 1;
         }
-        if (self->CameraBookmarkCount() == 0) {
+        if (this->CameraBookmarkCount() == 0) {
             return 1;
         }
-        self->m_cameraBookmarkIndex = self->CameraBookmarkCount() - 1;
+        this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
         return 1;
     }
 
-    if (key == 'M' && (dev->m_edgeKeys & 0x20)) {
+    if (vk == 'M' && (g_spawnConfig->m_edgeKeys & 0x20)) {
         g_gameReg->SetSoundLevelState(g_gameReg->m_musicEnabled == 0);
         return 1;
     }
 
-    if (key == 'V' && (dev->m_edgeKeys & 0x20)) {
+    if (vk == 'V' && (g_spawnConfig->m_edgeKeys & 0x20)) {
         g_gameReg->m_isVoiceEnabled = (g_gameReg->m_isVoiceEnabled == 0);
         return 1;
     }
 
-    if (key == 'A') {
+    if (vk == 'A') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = self->m_guts;
+        CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2273,8 +2268,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 'S') {
-        if (dev->m_edgeKeys & 0x20) {
+    if (vk == 'S') {
+        if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->SetRunState(g_gameReg->m_soundEnabled == 0);
             return 1;
         }
@@ -2282,7 +2277,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = self->m_guts;
+        CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2298,12 +2293,12 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 'D') {
+    if (vk == 'D') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = self->m_guts;
+        CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2319,7 +2314,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == 'F') {
+    if (vk == 'F') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
@@ -2327,16 +2322,16 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        self->m_guts->AdvanceTab(g_spawnConfig->m_edgeKeys & 1);
+        this->m_guts->AdvanceTab(g_spawnConfig->m_edgeKeys & 1);
         return 1;
     }
 
-    if (key == 'G') {
+    if (vk == 'G') {
         if (level->m_hitTestDisabled != 0) {
             return 1;
         }
         CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-        CStatusBarMgr* lv = self->m_guts;
+        CStatusBarMgr* lv = this->m_guts;
         if (lv->m_hlBusy != 0) {
             return 1;
         }
@@ -2352,38 +2347,38 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (lparam & 0x1000000) {
-        if (key == VK_LEFT) {
-            self->m_scrollEdgeLock |= 1;
+        if (vk == VK_LEFT) {
+            this->m_scrollEdgeLock |= 1;
             return 1;
         }
-        if (key == VK_RIGHT) {
-            self->m_scrollEdgeLock |= 4;
+        if (vk == VK_RIGHT) {
+            this->m_scrollEdgeLock |= 4;
             return 1;
         }
-        if (key == VK_UP) {
-            self->m_scrollEdgeLock |= 2;
+        if (vk == VK_UP) {
+            this->m_scrollEdgeLock |= 2;
             return 1;
         }
-        if (key == VK_DOWN) {
-            self->m_scrollEdgeLock |= 8;
+        if (vk == VK_DOWN) {
+            this->m_scrollEdgeLock |= 8;
             return 1;
         }
-        if (key == VK_INSERT || key == VK_DELETE || key == VK_HOME || key == VK_END
-            || key == VK_PRIOR || key == VK_NEXT) {
+        if (vk == VK_INSERT || vk == VK_DELETE || vk == VK_HOME || vk == VK_END || vk == VK_PRIOR
+            || vk == VK_NEXT) {
             return 1;
         }
     }
 
-    if (key == VK_NUMPAD1 || key == VK_NUMPAD2 || key == VK_NUMPAD3 || key == VK_NUMPAD4
-        || key == VK_NUMPAD5 || key == VK_NUMPAD6 || key == VK_NUMPAD7 || key == VK_NUMPAD8
-        || key == VK_NUMPAD9 || key == VK_NUMLOCK || key == VK_DIVIDE || key == VK_MULTIPLY
-        || key == VK_HOME || key == VK_END || key == VK_PRIOR || key == VK_NEXT || key == VK_CLEAR
-        || key == VK_UP || key == VK_DOWN || key == VK_LEFT || key == VK_RIGHT || key == VK_INSERT
-        || key == VK_DELETE || key == VK_DECIMAL) {
+    if (vk == VK_NUMPAD1 || vk == VK_NUMPAD2 || vk == VK_NUMPAD3 || vk == VK_NUMPAD4
+        || vk == VK_NUMPAD5 || vk == VK_NUMPAD6 || vk == VK_NUMPAD7 || vk == VK_NUMPAD8
+        || vk == VK_NUMPAD9 || vk == VK_NUMLOCK || vk == VK_DIVIDE || vk == VK_MULTIPLY
+        || vk == VK_HOME || vk == VK_END || vk == VK_PRIOR || vk == VK_NEXT || vk == VK_CLEAR
+        || vk == VK_UP || vk == VK_DOWN || vk == VK_LEFT || vk == VK_RIGHT || vk == VK_INSERT
+        || vk == VK_DELETE || vk == VK_DECIMAL) {
         goto recorder_place;
     }
 
-    if (key == 'I') {
+    if (vk == 'I') {
         if (g_gruntCreation == 0) {
             return 1;
         }
@@ -2394,43 +2389,43 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (g_gameReg->m_cmdGrid->m_rowCount[g_curPlayer] >= a->m_comboSel) {
             return 1;
         }
-        CGruntzMgr* h = self->m_mgr;
-        i32 my = self->m_cursorY;
+        CGruntzMgr* h = this->m_mgr;
+        i32 my = this->m_cursorY;
         LevelCoordRect* r = &h->m_world->m_level->m_planeCtx;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
         i32 y1 = r->bottom;
-        i32 mx = self->m_cursorX;
+        i32 mx = this->m_cursorX;
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
         h->m_cmdSubMgr->BlitTileMarker(
             1,
             g_curPlayer,
-            static_cast<i16>(self->m_cursorX),
-            static_cast<i16>(self->m_cursorY),
+            static_cast<i16>(this->m_cursorX),
+            static_cast<i16>(this->m_cursorY),
             0
         );
         return 1;
     }
 
-    if (key == 'P') {
+    if (vk == 'P') {
         if (g_gooPuddlez == 0) {
             return 1;
         }
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             return 1;
         }
-        CGruntzMgr* h = self->m_mgr;
-        i32 mx = self->m_cursorX;
+        CGruntzMgr* h = this->m_mgr;
+        i32 mx = this->m_cursorX;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_planeCtx;
         i32 x0 = r->left;
         i32 y0 = r->top;
         i32 x1 = r->right;
         i32 y1 = r->bottom;
-        i32 my = self->m_cursorY;
+        i32 my = this->m_cursorY;
         if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
             i32 by = g->m_viewRect.top - q->m_planeCtx.top + my;
@@ -2439,29 +2434,29 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
     }
 
-    if (key == VK_F9) {
+    if (vk == VK_F9) {
         if (g_explosionz == 0) {
             return 1;
         }
-        CGruntzMgr* h = self->m_mgr;
-        i32 my = self->m_cursorY;
+        CGruntzMgr* h = this->m_mgr;
+        i32 my = this->m_cursorY;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
         i32 by = ((g->m_viewRect.top - q->m_planeCtx.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 bx = ((self->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~TILE_MASK_PX)
+        i32 bx = ((this->m_cursorX - q->m_planeCtx.left + g->m_viewRect.left) & ~TILE_MASK_PX)
                  + TILE_HALF_PX;
         g_gameReg->m_cmdGrid->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
 
-    if (key == 'K') {
+    if (vk == 'K') {
         if (g_gruntDestruction == 0) {
             return 1;
         }
-        i32 outA = 0;
-        i32 outB = 0;
+        i32 outA;
+        i32 outB;
         CGrunt* r =
-            host->m_cmdGrid->ScreenToCell(self->m_cursorX, self->m_cursorY, &outB, &outA, 5);
+            host->m_cmdGrid->ScreenToCell(this->m_cursorX, this->m_cursorY, &outB, &outA, 5);
         if (r == NULL) {
             return 1;
         }
@@ -2469,7 +2464,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (key == '1') {
+    if (vk == '1') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(1);
         } else {
@@ -2477,7 +2472,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '2') {
+    if (vk == '2') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(2);
         } else {
@@ -2485,7 +2480,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '3') {
+    if (vk == '3') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(3);
         } else {
@@ -2493,7 +2488,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '4') {
+    if (vk == '4') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(4);
         } else {
@@ -2501,7 +2496,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '5') {
+    if (vk == '5') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(5);
         } else {
@@ -2509,7 +2504,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '6') {
+    if (vk == '6') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(6);
         } else {
@@ -2517,7 +2512,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '7') {
+    if (vk == '7') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(7);
         } else {
@@ -2525,7 +2520,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '8') {
+    if (vk == '8') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(8);
         } else {
@@ -2533,7 +2528,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         return 1;
     }
-    if (key == '9') {
+    if (vk == '9') {
         if (g_spawnConfig->m_edgeKeys & 0x20) {
             g_gameReg->m_cmdGrid->RebuildSelectionList(9);
         } else {
@@ -2546,31 +2541,31 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 recorder_place:
 
 {
-    if (self->m_playerCommandPending != 0) {
+    if (this->m_playerCommandPending != 0) {
         return 1;
     }
-    if (self->m_dragInhibit1 != 0) {
-        self->m_dragInhibit1 = 0;
-        self->m_guts->CommitSlot(0);
+    if (this->m_dragInhibit1 != 0) {
+        this->m_dragInhibit1 = 0;
+        this->m_guts->CommitSlot(0);
         this->SetCursorFrame(0);
-        if (key != VK_INSERT) {
+        if (vk != VK_INSERT) {
             goto tail_default;
         }
         return 1;
     }
-    if (self->m_dragInhibit2 == 0) {
+    if (this->m_dragInhibit2 == 0) {
         goto tail_default2;
     }
-    i32 st = self->m_cursorFrame;
-    StatusBarHighlightRow ph = self->m_guts->m_pendingHlRow;
+    i32 st = this->m_cursorFrame;
+    StatusBarHighlightRow ph = this->m_guts->m_pendingHlRow;
     i32 lvl;
     if (st >= 0x22) {
         lvl = 2;
     } else {
         lvl = (st >= 0x17);
     }
-    self->m_dragInhibit2 = 0;
-    if (key == VK_DELETE || key == VK_DECIMAL) {
+    this->m_dragInhibit2 = 0;
+    if (vk == VK_DELETE || vk == VK_DECIMAL) {
         level->ReportTab(st);
         this->SetCursorFrame(0);
         return 1;
@@ -2579,95 +2574,95 @@ recorder_place:
     this->SetCursorFrame(0);
     if (lvl == 0) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
-            if (key != VK_NUMLOCK) {
+            if (vk != VK_NUMLOCK) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == STATUS_HL_ROW_UPPER) {
-            if (key == VK_NUMPAD7) {
+            if (vk == VK_NUMPAD7) {
                 return 1;
             }
-            if (key != VK_HOME) {
+            if (vk != VK_HOME) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == STATUS_HL_ROW_MIDDLE) {
-            if (key == VK_NUMPAD4) {
+            if (vk == VK_NUMPAD4) {
                 return 1;
             }
-            if (key != VK_LEFT) {
+            if (vk != VK_LEFT) {
                 goto tail_default;
             }
             return 1;
         }
-        if (key == VK_NUMPAD1) {
+        if (vk == VK_NUMPAD1) {
             return 1;
         }
-        if (key != VK_END) {
+        if (vk != VK_END) {
             goto tail_default;
         }
         return 1;
     }
     if (lvl == 1) {
         if (ph == STATUS_HL_ROW_CATEGORY) {
-            if (key != VK_DIVIDE) {
+            if (vk != VK_DIVIDE) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == STATUS_HL_ROW_UPPER) {
-            if (key == VK_NUMPAD8) {
+            if (vk == VK_NUMPAD8) {
                 return 1;
             }
-            if (key != VK_UP) {
+            if (vk != VK_UP) {
                 goto tail_default;
             }
             return 1;
         }
         if (ph == STATUS_HL_ROW_MIDDLE) {
-            if (key != VK_CLEAR) {
+            if (vk != VK_CLEAR) {
                 goto tail_default;
             }
             return 1;
         }
-        if (key == VK_NUMPAD2) {
+        if (vk == VK_NUMPAD2) {
             return 1;
         }
-        if (key != VK_DOWN) {
+        if (vk != VK_DOWN) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == STATUS_HL_ROW_CATEGORY) {
-        if (key != VK_MULTIPLY) {
+        if (vk != VK_MULTIPLY) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == STATUS_HL_ROW_UPPER) {
-        if (key == VK_NUMPAD9) {
+        if (vk == VK_NUMPAD9) {
             return 1;
         }
-        if (key != VK_PRIOR) {
+        if (vk != VK_PRIOR) {
             goto tail_default;
         }
         return 1;
     }
     if (ph == STATUS_HL_ROW_MIDDLE) {
-        if (key == VK_NUMPAD6) {
+        if (vk == VK_NUMPAD6) {
             return 1;
         }
-        if (key != VK_RIGHT) {
+        if (vk != VK_RIGHT) {
             goto tail_default;
         }
         return 1;
     }
-    if (key == VK_NUMPAD3) {
+    if (vk == VK_NUMPAD3) {
         return 1;
     }
-    if (key != VK_NEXT) {
+    if (vk != VK_NEXT) {
         goto tail_default;
     }
     return 1;
@@ -2681,16 +2676,16 @@ tail_default:
 }
 tail_default2:
 
-    if (self->m_guts->m_hitTestDisabled != 0) {
+    if (this->m_guts->m_hitTestDisabled != 0) {
         return 1;
     }
     {
 
         // Retail's arms run in NUMPAD LAYOUT order (1..9, NumLock, /, *, Ins) and
-        // each numpad key shares its arm with the nav key on the same pad cell -
+        // each numpad vk shares its arm with the nav vk on the same pad cell -
         // 21 case labels, 13 emitted bodies.
-        CStatusBarMgr* lv = self->m_guts;
-        switch (key) {
+        CStatusBarMgr* lv = this->m_guts;
+        switch (vk) {
             case VK_END:
             case VK_NUMPAD1:
                 lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
