@@ -12,7 +12,7 @@ class CAniElement;
 
 class CDDrawSubMgrLeaf : public CLoadable {
 public:
-    CDDrawSubMgrLeaf(CDDrawSurfaceMgr* owner) : CLoadable(owner) {}
+    CDDrawSubMgrLeaf(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {}
 
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;

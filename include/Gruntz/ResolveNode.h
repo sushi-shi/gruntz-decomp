@@ -89,7 +89,7 @@ SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(field04, field08, owner) {
+    : CLoadable(owner, field04, field08) {
 
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;

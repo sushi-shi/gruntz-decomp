@@ -16,7 +16,7 @@ struct CParseSource;
 
 class CDDrawSubMgrLeafScan : public CLoadable {
 public:
-    CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner) {
+    CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
         m_soundStream = NULL;
         m_replayDelay = 0;
     }

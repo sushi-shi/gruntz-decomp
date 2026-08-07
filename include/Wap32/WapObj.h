@@ -11,7 +11,9 @@ class CDDrawSurfaceMgr;
 
 class CWapObj : public CObject {
 public:
-    virtual i32 IsLoaded();
+    // Pure: no retail vtable binds a CWapObj::IsLoaded body. Every one of the 22
+    // classes reaching this slot supplies its own (vtable_hierarchy --csv slot 5).
+    virtual i32 IsLoaded() = 0;
 
     virtual i32 IsReady();
 

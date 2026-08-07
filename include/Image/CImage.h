@@ -45,6 +45,8 @@ public:
 
     virtual ~CImage() OVERRIDE;
 
+    virtual i32 IsLoaded() OVERRIDE;
+
     virtual void FreeAll();
     virtual LoadableClassId GetClassId();
 

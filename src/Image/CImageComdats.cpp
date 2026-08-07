@@ -57,13 +57,9 @@ i32 CWapObj::IsReady() {
     return 1;
 }
 
-// @identity-TODO IsLoaded@CWapObj - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (20 fns) came from the static library. It belongs to another compiland.
 RVA(0x000d5dc0, 0xb)
-i32 CWapObj::IsLoaded() {
-
-    return (static_cast<CImage*>(this))->m_width > 0;
+i32 CImage::IsLoaded() {
+    return m_width > 0;
 }
 
 // @identity-TODO GetClassId@CImage - thunk oracle: retail gave this an incremental

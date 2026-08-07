@@ -54,36 +54,14 @@ public:
         m_ownerCtx = NULL;
     }
 
+    // The ONLY constructor overload retail carries: five target objs name
+    // ??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z and no other ??0CLoadable.
     // Header-inline: retail's tiny derived ctors (CAniAdvanceCursor 0x15b730)
     // carry the three stores expanded with no `call`, while the four big
     // callers `sema xref` lists keep a real call to the pinned COMDAT.
     CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
         m_id = field04;
         m_flags = field08;
-        m_ownerCtx = owner;
-    }
-
-    CLoadable(class CDDrawSurfaceMgr* owner) {
-        m_id = 0;
-        m_flags = 0;
-        m_ownerCtx = owner;
-    }
-
-    CLoadable(i32 id, class CDDrawSurfaceMgr* owner) {
-        m_id = id;
-        m_flags = 0;
-        m_ownerCtx = owner;
-    }
-
-    CLoadable(class CDDrawSurfaceMgr* owner, i32 id) {
-        m_id = id;
-        m_flags = 0;
-        m_ownerCtx = owner;
-    }
-
-    CLoadable(i32 id, i32 flags, class CDDrawSurfaceMgr* owner) {
-        m_id = id;
-        m_flags = flags;
         m_ownerCtx = owner;
     }
 

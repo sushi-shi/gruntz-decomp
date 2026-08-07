@@ -35,7 +35,7 @@ struct AnimWorkerObj : public CLoadable {
 
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
 
-    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id) {
+    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0) {
         m_notify = NULL;
         m_payload = NULL;
         m_logic = NULL;
@@ -147,7 +147,7 @@ struct AnimWorkerObj : public CLoadable {
 SIZE(0x17c);
 
 inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CLoadable(id, stateFlags, owner) {
+    : CLoadable(owner, id, stateFlags) {
     m_notify = NULL;
     m_payload = NULL;
     m_logic = NULL;

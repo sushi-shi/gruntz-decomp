@@ -37,7 +37,7 @@ struct LeafCue : public CLoadable {
     i32 m_replayDelay;
 };
 SIZE(0x1c);
-inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(count, handle) {
+inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle) : CLoadable(handle, count, 0) {
     m_sound = NULL;
     m_replayDelay = 0;
     m_lastPlayTime = 0;

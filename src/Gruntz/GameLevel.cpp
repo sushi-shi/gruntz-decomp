@@ -27,7 +27,7 @@
 
 // @early-stop
 RVA(0x0015ccd0, 0x118)
-CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(id, flags, owner) {
+CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags) : CLoadable(owner, id, flags) {
 
     m_maxStepX = 0x40;
     m_maxStepY = 0x40;
