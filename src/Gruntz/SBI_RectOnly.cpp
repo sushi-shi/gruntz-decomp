@@ -1058,7 +1058,6 @@ RVA_COMPGEN(0x001007a0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
 RVA_COMPGEN(0x001007d0, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
 RVA_COMPGEN(0x00100870, 0x6a, ??1CSBI_Image@@UAE@XZ)
 RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
-// @early-stop
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
@@ -1114,7 +1113,6 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_tabsBuilt = 0;
 }
 
-// @early-stop
 RVA(0x00100b00, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
