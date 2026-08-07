@@ -98,6 +98,8 @@ public:
     virtual i32 BlitIntoDesc(void* a);
 
     void* Lock(void* rect);
+    u8 GetPixel(i32 x, i32 y);
+    void PutPixel(i32 x, i32 y, u8 color);
     i32 SetPalette(CDDPalette* pal, i32 unused);
     i32 Restore(void* info, i32 mode);
     i32 Flip(CDDSurface* target);
@@ -257,6 +259,24 @@ public:
 SIZE(0xc0);
 SIZE(0xc0);
 SIZE_UNKNOWN();
+
+inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
+    u8* bits = static_cast<u8*>(Lock(0));
+    if (bits != NULL) {
+        u8 color = bits[m_bytesPerPixel * x + m_pitch * y];
+        m_ddSurface->Unlock(0);
+        return color;
+    }
+    return 0;
+}
+
+inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
+    u8* bits = static_cast<u8*>(Lock(0));
+    if (bits != NULL) {
+        bits[m_bytesPerPixel * x + m_pitch * y] = color;
+        m_ddSurface->Unlock(0);
+    }
+}
 
 inline CDDSurface::CDDSurface() {
     m_ddSurface = NULL;

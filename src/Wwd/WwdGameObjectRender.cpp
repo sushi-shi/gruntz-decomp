@@ -26,14 +26,15 @@ inline void* operator new(u32, void* p) {
 RVA(0x001660f0, 0xd1)
 void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     i32 m64 = m_clip.left;
+    i32 x = m_screenX;
+    i32 y = m_screenY;
     if (m64 == COORD_UNSET) {
-        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= a->m_width || m_screenY >= a->m_height) {
+        if (x < 0 || y < 0 || x >= a->m_width || y >= a->m_height) {
             m_dirty.m_armed = -1;
             return;
         }
     } else {
-        if (m_screenX < m64 || m_screenY < m_clip.top || m_screenX > m_clip.right
-            || m_screenY > m_clip.bottom) {
+        if (x < m64 || y < m_clip.top || x > m_clip.right || y > m_clip.bottom) {
             m_dirty.m_armed = -1;
             return;
         }
@@ -44,8 +45,8 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
         u8 color = m_dotColor;
         u8* base = static_cast<u8*>(surf->Lock(0));
         if (base != NULL) {
-            i32 row = surf->m_pitch * m_screenY;
-            i32 col = surf->m_bytesPerPixel * m_screenX;
+            i32 row = surf->m_pitch * y;
+            i32 col = surf->m_bytesPerPixel * x;
             base[row + col] = color;
             surf->m_ddSurface->Unlock(0);
         }
@@ -57,29 +58,13 @@ void CWwdGameObjectC::Render(CDDrawSurfacePair* a) {
     m_dirty.m_armed = 0;
 }
 
-// @early-stop
 RVA(0x001661d0, 0xc2)
 void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 
     m_shadow = m_dirty;
     if (m_shadow.m_armed != -1) {
-        i32 x = m_shadow.m_lastX;
-        i32 y = m_shadow.m_lastY;
-        char pixel;
-        CDDSurface* sb = b->m_surface;
-        char* base = static_cast<char*>(sb->Lock(0));
-        if (base != NULL) {
-            pixel = base[sb->m_bytesPerPixel * x + sb->m_pitch * y];
-            sb->m_ddSurface->Unlock(0);
-        } else {
-            pixel = 0;
-        }
-        CDDSurface* sa = a->m_surface;
-        char* base2 = static_cast<char*>(sa->Lock(0));
-        if (base2 != NULL) {
-            base2[sa->m_bytesPerPixel * x + sa->m_pitch * y] = pixel;
-            sa->m_ddSurface->Unlock(0);
-        }
+        u8 pixel = b->m_surface->GetPixel(m_shadow.m_lastX, m_shadow.m_lastY);
+        a->m_surface->PutPixel(m_shadow.m_lastX, m_shadow.m_lastY, pixel);
         m_dirty.m_armed = -1;
     }
 }
