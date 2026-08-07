@@ -2064,6 +2064,10 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 }
 
 // @early-stop
+// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
+// retail CALLS ??1CFecFile (0x390a0) and the CArray<PLAYLISTINFOSTRUCT*> ctor/dtor
+// COMDATs here; cl expands all three (Teardown + vptr stamp + operator delete,
+// Close + ~CDWordArray + ~CFile). One authentic inline definition stays.
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {
