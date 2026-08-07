@@ -54,26 +54,28 @@ i32 CGrunt::WanderStep() {
     }
 
     if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
-            m_neighborValid = 0;
-        } else if (m_combatActive == 0) {
-            bool reset;
-            if (m_stamina >= STAMINA_FULL) {
-                if (FindGridNeighbor(1) != NULL) {
-                    m_defenderState = AISTATE_RETREAT;
-                    return 1;
+        if (m_neighborValid == 0) {
+            if (m_combatActive == 0) {
+                bool reset;
+                if (m_stamina >= STAMINA_FULL) {
+                    if (FindGridNeighbor(1) != NULL) {
+                        m_defenderState = AISTATE_RETREAT;
+                        return 1;
+                    }
+                    reset = (flag == 0 || g == NULL);
+                } else {
+                    reset = (flag == 0);
                 }
-                reset = !(flag != 0 && g == NULL);
-            } else {
-                reset = (flag == 0);
+                if (reset) {
+                    m_entranceActive = 0;
+                    m_combatActive = 0;
+                    m_neighborValid = 0;
+                    m_poweredUp = 0;
+                    ResetEntranceAnimation(1, 0, 0);
+                }
             }
-            if (reset) {
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
-            }
+        } else {
+            m_neighborValid = 0;
         }
         m_defenderState = AISTATE_RETREAT;
     }
@@ -336,11 +338,9 @@ timeout:
         } else {
             CWwdGameObjectA* base = m_object;
             u32 lx = static_cast<u32>(base->m_extent.left);
-            i32 dxr = base->m_extent.right - static_cast<i32>(lx);
-            i32 ax = (dxr ^ (dxr >> 31)) - (dxr >> 31);
+            i32 ax = abs(base->m_extent.right - static_cast<i32>(lx));
             u32 ly = static_cast<u32>(base->m_extent.top);
-            i32 dyr = base->m_extent.bottom - static_cast<i32>(ly);
-            i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
+            i32 ay = abs(base->m_extent.bottom - static_cast<i32>(ly));
             if (ax != 0) {
                 lx += rand() % ax;
             }
