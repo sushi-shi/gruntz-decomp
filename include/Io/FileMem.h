@@ -11,6 +11,11 @@
 
 class CFileMemBase {
 public:
+    // Kept OUT OF LINE deliberately: retail HAS a standalone body at 0x157850
+    // AND expands it at other sites - the /Ob1 inline-budget divergence
+    // (docs/patterns/ob1-inline-budget-divergence.md), not a mis-model. Moving it
+    // inline is fuzzy-neutral (87.75 either way, measured) and un-claims four
+    // retail functions, so the OOL definition stays.
     CFileMemBase();
     virtual ~CFileMemBase() {
         Close();
