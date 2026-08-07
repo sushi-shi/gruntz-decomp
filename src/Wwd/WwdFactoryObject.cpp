@@ -82,9 +82,8 @@ RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(void* p) {
     if (m_flags & 0x8) {
-        i32 d = m_health - (static_cast<CGameObject*>(p))->m_damage;
-        m_health = d;
-        if (d <= 0) {
+        m_health -= static_cast<CGameObject*>(p)->m_damage;
+        if (m_health <= 0) {
             m_animWorker->SetWorkerAct(ACT_HEALTH_DEPLETED);
         }
     } else {

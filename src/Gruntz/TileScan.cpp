@@ -19,7 +19,7 @@ static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
 // @early-stop
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::Scan(CGrunt* arg) {
-    if (arg->m_dwell <= m_inactiveTargetRerouteDelay) {
+    if (static_cast<u32>(arg->m_dwell) <= static_cast<u32>(m_inactiveTargetRerouteDelay)) {
         return 1;
     }
     i32 v = arg->m_targetTeam;
