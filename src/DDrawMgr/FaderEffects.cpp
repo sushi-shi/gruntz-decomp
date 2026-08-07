@@ -1352,17 +1352,30 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* dstLine = m_rowOfsA[row] + base + m_dstBase;
                 u8* gsrc = m_rowOfsC[row] + base + m_gatherBase;
                 u8* ssrc = m_rowOfsB[row] + base + m_straightBase;
-                if (m_useLut == 0) {
+                if (m_useLut != 0) {
+                    u8* lut = m_table->m_data;
+                    i32 i = 0;
+                    if (colBase > 0) {
+                        do {
+                            m_lineBuf[i] = ssrc[i];
+                            i++;
+                        } while (i < colBase);
+                    }
+                    for (i32 t = colBase; t < stride; t++) {
+                        m_lineBuf[t] =
+                            lut[static_cast<u32>(m_shadeRamp[t])
+                                + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
+                    }
+                } else {
                     if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                         i32 i = 0;
-                        i32 t = colBase;
                         if (colBase > 0) {
                             do {
                                 m_lineBuf[i] = ssrc[i];
                                 i++;
                             } while (i < colBase);
                         }
-                        for (; t < stride; t++) {
+                        for (i32 t = colBase; t < stride; t++) {
                             m_lineBuf[t] = gsrc[m_warpTable[t]];
                         }
                     } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
@@ -1406,21 +1419,6 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                             }
                         }
                     }
-                } else {
-                    u8* lut = m_table->m_data;
-                    i32 i = 0;
-                    i32 t = colBase;
-                    if (colBase > 0) {
-                        do {
-                            m_lineBuf[i] = ssrc[i];
-                            i++;
-                        } while (i < colBase);
-                    }
-                    for (; t < stride; t++) {
-                        m_lineBuf[t] =
-                            lut[static_cast<u32>(m_shadeRamp[t])
-                                + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
-                    }
                 }
                 u8* sp = m_lineBuf;
                 i32 cnt = bpp * stride;
@@ -1463,10 +1461,25 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             u8* dstLine = m_rowOfsA[row] + base + m_dstBase;
             u8* gsrc = m_rowOfsC[row] + base + m_gatherBase;
             u8* ssrc = m_rowOfsB[row] + base + m_straightBase;
-            if (m_useLut == 0) {
+            if (m_useLut != 0) {
+                u8* lut = m_table->m_data;
+                i32 i = 0;
+                i32 e;
+                if (colBase > 0) {
+                    do {
+                        e = i + 1;
+                        m_lineBuf[i] =
+                            lut[static_cast<u32>(m_shadeRamp[i])
+                                + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
+                        i = e;
+                    } while (e < colBase);
+                }
+                for (i32 t = colBase; t < stride; t++) {
+                    m_lineBuf[t] = ssrc[t];
+                }
+            } else {
                 if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                     i32 i = 0;
-                    i32 t = colBase;
                     i32 e;
                     if (colBase > 0) {
                         do {
@@ -1475,12 +1488,11 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                             i = e;
                         } while (e < colBase);
                     }
-                    for (; t < stride; t++) {
+                    for (i32 t = colBase; t < stride; t++) {
                         m_lineBuf[t] = ssrc[t];
                     }
                 } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
                     i32 i = 0;
-                    i32 t = colBase;
                     if (colBase > 0) {
                         do {
                             i32 o = i * 4;
@@ -1489,7 +1501,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                             m_lineBuf[i * 2 - 1] = gsrc[m_warpTable[i - 1] * 2 + 1];
                         } while (i < colBase);
                     }
-                    for (; t < stride; t++) {
+                    for (i32 t = colBase; t < stride; t++) {
                         i32 o = t * 2;
                         m_lineBuf[o] = ssrc[o];
                         m_lineBuf[o + 1] = ssrc[o + 1];
@@ -1519,23 +1531,6 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                             sp += 3;
                         } while (c != 0);
                     }
-                }
-            } else {
-                u8* lut = m_table->m_data;
-                i32 i = 0;
-                i32 t = colBase;
-                i32 e;
-                if (colBase > 0) {
-                    do {
-                        e = i + 1;
-                        m_lineBuf[i] =
-                            lut[static_cast<u32>(m_shadeRamp[i])
-                                + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
-                        i = e;
-                    } while (e < colBase);
-                }
-                for (; t < stride; t++) {
-                    m_lineBuf[t] = ssrc[t];
                 }
             }
             u8* sp = m_lineBuf;
