@@ -18,7 +18,7 @@ public:
     CWarpStoneFly();
 
     i32 Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment);
-    i32 Tick(i32 dt);
+    i32 Tick(u32 dt);
     i32 Draw();
 
     i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);

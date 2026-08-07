@@ -23,18 +23,22 @@ CWarpStoneFly::CWarpStoneFly() {
 
 // @early-stop
 RVA(0x0010a0f0, 0x184)
-i32 CWarpStoneFly::Tick(i32 dt) {
-    if (static_cast<i32>(m_currentX) == m_targetX && static_cast<i32>(m_currentY) == m_targetY) {
+i32 CWarpStoneFly::Tick(u32 dt) {
+    i32 cellY = static_cast<i32>(m_currentY);
+    i32 cellX = static_cast<i32>(m_currentX);
+    if (cellX == m_targetX && cellY == m_targetY) {
+        i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_cmdGrid->m_byteArr;
-        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(m_arrivalMode));
+        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
         m_owner->m_hlBusy = 0;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(0);
             m_owner->TryActivate();
         }
-        if (m_owner->m_retabNotify != NULL) {
-            ::operator delete(m_owner->m_retabNotify);
-            m_owner->m_retabNotify = NULL;
+        CStatusBarMgr* owner = m_owner;
+        if (owner->m_retabNotify != NULL) {
+            ::operator delete(owner->m_retabNotify);
+            owner->m_retabNotify = NULL;
         }
         return 1;
     }
