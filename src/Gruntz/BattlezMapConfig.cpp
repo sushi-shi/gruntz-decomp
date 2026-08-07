@@ -3762,65 +3762,64 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         i32 rm = row - 1;
         i32 rp = row + 1;
         CMapMgr* b;
-        BrickzCell* nt;
         i32 nw;
 
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
-            nt = &b->m_rows[row][cm];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[row][cm].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[row][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cm, row, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
-            nt = &b->m_rows[row][cp];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[row][cp].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[row][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, row, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
-            nt = &b->m_rows[rm][col];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[rm][col].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[rm][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, col, rm, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
-            nt = &b->m_rows[rp][col];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[rp][col].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[rp][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, col, rp, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
-            nt = &b->m_rows[rm][cp];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[rm][cp].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[rm][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, rm, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nt = &b->m_rows[rp][cp];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[rp][cp].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[rp][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, rp, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
-            nt = &b->m_rows[rp][cm];
-            nw = nt->m_flags;
-            if (!(nw & 0x20000) && ((nw & 0xc000) || nt->m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            nw = b->m_rows[rp][cm].m_flags;
+            if (!(nw & 0x20000)
+                && ((nw & 0xc000) || b->m_rows[rp][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cm, rp, requireUnoccupied);
             }
         }
@@ -3830,9 +3829,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             || static_cast<u32>(rm) >= static_cast<u32>(b->m_height)) {
             break;
         }
-        nt = &b->m_rows[rm][cm];
-        nw = nt->m_flags;
-        if ((nw & 0x20000) || (!(nw & 0xc000) && nt->m_typeCode != TILEKIND_AI_PATH_BLOCKER)) {
+        nw = b->m_rows[rm][cm].m_flags;
+        if ((nw & 0x20000)
+            || (!(nw & 0xc000) && b->m_rows[rm][cm].m_typeCode != TILEKIND_AI_PATH_BLOCKER)) {
             break;
         }
         row = rm;
