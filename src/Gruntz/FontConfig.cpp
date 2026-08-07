@@ -423,21 +423,13 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             delete dead;
         }
     }
-    i32 n = (count >= m_list.GetCount()) ? m_list.GetCount() : count;
+    i32 n = (count < m_list.GetCount()) ? count : m_list.GetCount();
     if (n <= 0) {
         return 0;
     }
-    RECT cur;
-    RECT work;
     RECT calc;
-    cur.left = rect->left;
-    cur.top = rect->top;
-    cur.right = rect->right;
-    cur.bottom = rect->bottom;
-    work.left = rect->left;
-    work.top = rect->top;
-    work.right = rect->right;
-    work.bottom = rect->bottom;
+    RECT cur = *rect;
+    RECT work = *rect;
     for (i32 i = 0; i < n; i++) {
         HGDIOBJ savedFont = 0;
         if (m_arialFont) {

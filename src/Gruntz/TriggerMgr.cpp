@@ -1258,9 +1258,9 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_cellFlag, 0xf0);
     ar->Write(m_gruntzExitedByPlayer, 0x10);
     ar->Write(m_gruntzLostByPlayer, 0x10);
-    i32 cnt = m_byteArr.GetSize();
+    u32 cnt = static_cast<u32>(m_byteArr.GetSize());
     ar->Write(&cnt, sizeof(cnt));
-    for (i32 i = 0; i < cnt; i++) {
+    for (u32 i = 0; i < cnt; i++) {
         u8 b = m_byteArr.GetData()[i];
         ar->Write(&b, sizeof(b));
     }
