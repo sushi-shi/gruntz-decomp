@@ -619,7 +619,7 @@ i32 CDDSurface::DecodePcx(CDDrawPtrCollections* pal, PcxHeader* hdr, u32 size) {
     if (hdr != NULL) {
         i32 width = hdr->m_xMax - hdr->m_xMin + 1;
         i32 height = hdr->m_yMax - hdr->m_yMin + 1;
-        GZ_ENUM_STORAGE(PcxPlaneCount, u8) planes = hdr->m_planes;
+        GZ_ENUM_STORAGE(PcxPlaneCount, i8) planes = hdr->m_planes;
 
         ColorDepth bitcount = BPP_UNSET;
         if (planes == PCX_PLANES_PALETTED) {
