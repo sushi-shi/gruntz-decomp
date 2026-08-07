@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import re
 import sys
+from pathlib import Path
 from collections import defaultdict
 
 from gruntz.core import vtable_catalog
@@ -95,6 +96,25 @@ def absent_emitted_in_base(absent_names):
     return hits
 
 
+def _ob1_acks():
+    """{(class, unit)} byte-proven /Ob1 readouts - see the TSV's own header.
+
+    Deliberately narrow: an ack names ONE class in ONE unit, so the same class
+    emitted anywhere else still fails, and it is REPORTED (not hidden) so the
+    row stays visible in every full-tier run."""
+    f = REPO / "config/cleanliness/vtbl-absent-ob1-ack.tsv"
+    out = set()
+    if not f.is_file():
+        return out
+    for ln in f.read_text().splitlines():
+        if not ln.strip() or ln.lstrip().startswith("#"):
+            continue
+        parts = ln.split("\t")
+        if len(parts) >= 3 and parts[2].strip():
+            out.add((parts[0].strip(), parts[1].strip()))
+    return out
+
+
 def main() -> int:
     # Report structural catalog errors alongside completeness failures.
     collisions = vtbl_rva_collisions()
@@ -134,6 +154,17 @@ def main() -> int:
     # BASE-SIDE enforcement: a VTBL_ABSENT ??_7 that our own objs emit is a
     # surviving ctor/dtor stamp retail never had - a hierarchy mis-model. FATAL.
     emitted = absent_emitted_in_base(vtbl_absent)
+    acked = _ob1_acks()
+    kept = []
+    for name, obj in emitted:
+        unit = Path(obj).stem
+        if (name, unit) in acked:
+            print(f"vtbl-absent ACKNOWLEDGED: ??_7{name} in {unit} - "
+                  f"/Ob1 inline-budget readout, not a mis-model "
+                  f"(config/cleanliness/vtbl-absent-ob1-ack.tsv)")
+            continue
+        kept.append((name, obj))
+    emitted = kept
     if emitted:
         print(f"vtbl-absent VIOLATION: {len(emitted)} base-obj emission(s) of "
               f"proven-absent vtables (a ctor/dtor stamp survives that retail "

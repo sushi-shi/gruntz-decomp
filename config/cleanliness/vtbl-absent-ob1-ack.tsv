@@ -1,0 +1,15 @@
+# Byte-PROVEN /Ob1 inline-budget readouts, not hierarchy mis-models.
+#
+# The vtbl-absent gate is FATAL by default: a VTBL_ABSENT ??_7 that our own base
+# objs emit normally means a ctor/dtor stamp survived that retail never had, i.e.
+# a wrong base. A row here says that reading was TESTED AND DISPROVED for this
+# exact (class, unit) pair, and the emission is MSVC 5.0 cutting its constructor
+# inline chain at a different depth than retail did - the wall documented in
+# docs/patterns/ob1-inline-budget-divergence.md, whose fix (a per-TU
+# inline_depth pragma) that doc explicitly forbids.
+#
+# A row is admissible ONLY with disproofs recorded in the reason. Any (class,
+# unit) NOT listed here still fails the gate.
+#
+# class	unit	reason
+CWapObj	wwdobjmgr	hierarchy byte-proven correct (RTTI descriptor real; CImage slot 6 and CLoadable slot 6 share ILT thunk 0x1c08 and MSVC5 has no /OPT:ICF, so one body = one common base decl; EH tables agree at 5 states). Retail makes OPPOSITE call/expand choices for ??0CGameObject 0x680 bytes apart in this same .cpp (CreateDotObject calls it, CreateContainerObject inlines it), which no source spelling can express. Five rebuilds all still emit the vtable: compiler-generated default ctor; moving member stores into CWapObj(CDDrawSurfaceMgr*,i32,i32); deleting the TU's unused placement operator new; deleting CWwdGameObjectC::_p18d; inline_depth(2). Only inline_depth(3) moves the cut, and that per-TU device is forbidden.
