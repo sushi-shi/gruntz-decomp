@@ -2035,21 +2035,31 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
 
+        BrickzCell scratchA;
+        const BrickzCell* srcA;
+        CoordPos headPos;
+        headPos.m_pos = coordList->GetHeadPosition();
+        Coord* firstCoord = headPos.m_node->m_coord;
+        if (static_cast<u32>(firstCoord->m_x) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(firstCoord->m_y) < static_cast<u32>(board->m_height)) {
+            srcA = &(static_cast<BrickzCell*>(board->m_rows[firstCoord->m_y]))[firstCoord->m_x];
+        } else {
+            memset(&scratchA, 1, sizeof(scratchA));
+            srcA = &scratchA;
+        }
+        if (coordList->GetCount() == 0) {
+            goto returnZero;
+        }
         Coord* pathHead = unit->CoordHead()->m_coord;
         i32 cx = pathHead->m_x;
         i32 cy = pathHead->m_y;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-        BrickzCell scratchA;
-        const BrickzCell* srcA;
         if (static_cast<u32>(cx) < static_cast<u32>(board->m_width)
             && static_cast<u32>(cy) < static_cast<u32>(board->m_height)) {
             srcA = &(static_cast<BrickzCell*>(board->m_rows[cy]))[cx];
         } else {
             memset(&scratchA, 1, sizeof(scratchA));
             srcA = &scratchA;
-        }
-        if (unit->CoordCount() == 0) {
-            goto returnZero;
         }
         scratchA = *srcA;
         PickupType prim = unit->m_entranceReason;
@@ -2059,9 +2069,13 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         Coord pt2;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
-        i32 sgy = pt2.m_y >> TILE_SHIFT_PX;
+        pt2.m_x >>= TILE_SHIFT_PX;
+        pt2.m_y >>= TILE_SHIFT_PX;
+        i32 sgy = pt2.m_y;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-        i32 sgx = pt.m_x >> TILE_SHIFT_PX;
+        pt.m_x >>= TILE_SHIFT_PX;
+        pt.m_y >>= TILE_SHIFT_PX;
+        i32 sgx = pt.m_x;
         BrickzCell scratchB;
         const BrickzCell* srcB;
         if (static_cast<u32>(sgx) < static_cast<u32>(board->m_width)
@@ -2075,9 +2089,13 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 
         if ((scratchB.m_flags & 0x4) && unit->m_battleState != BZTASK_SEEK_SWITCH) {
             (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
-            i32 rx = pt.m_x >> TILE_SHIFT_PX;
+            pt.m_x >>= TILE_SHIFT_PX;
+            pt.m_y >>= TILE_SHIFT_PX;
+            i32 rx = pt.m_x;
             (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt2));
-            i32 ry = pt2.m_y >> TILE_SHIFT_PX;
+            pt2.m_x >>= TILE_SHIFT_PX;
+            pt2.m_y >>= TILE_SHIFT_PX;
+            i32 ry = pt2.m_y;
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->m_defenderState = AISTATE_SEEK;
@@ -2127,7 +2145,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     tA2 = 1;
                 }
                 if (!(tA2 & 0x2)) {
-                    m_triggerMgr->ApplyTriggerB(
+                    m_triggerMgr->ApplyTriggerA(
                         unit->m_tileOwnerHi,
                         unit->m_tileOwnerLo,
                         ax * 0x20 + 0x10,
@@ -2144,7 +2162,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 sA = scratchA.m_flags;
         if (sA & 0x8000) {
             if (prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
-                m_triggerMgr->ApplyTriggerB(
+                m_triggerMgr->ApplyTriggerA(
                     unit->m_tileOwnerHi,
                     unit->m_tileOwnerLo,
                     cx * 0x20 + 0x10,
@@ -2301,7 +2319,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 i32 oy = cand->m_tileY;
                 if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
                     != 0) {
-                    m_triggerMgr->ApplyTriggerB(
+                    m_triggerMgr->ApplyTriggerA(
                         unit->m_tileOwnerHi,
                         unit->m_tileOwnerLo,
                         ox * 0x20 + 0x10,
