@@ -231,21 +231,21 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
             );
             float fade = r / m_fadeDivisor - g_faderBiasFade;
             float vx = static_cast<float>(dx) * fade;
-            float vy = static_cast<float>(dy) * fade;
+            float vy = static_cast<float>(-dy) * fade;
             u8 pix;
             u8* base = static_cast<u8*>(m_srcSurface->Lock(0));
             if (base != NULL) {
                 pix = *static_cast<u8*>(
                     (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
                 );
-                m_srcSurface->UnlockThunk();
+                m_srcSurface->m_ddSurface->Unlock(0);
             } else {
                 pix = 0;
             }
             CFaderRadialCell* cell = &m_cells[y * m_srcSurface->m_width + x];
             cell->m_vx = vx;
             cell->m_vy = vy;
-            cell->m_fadeLevel = fade;
+            cell->m_radius = r;
             cell->m_pixel = pix;
         }
     }
@@ -272,7 +272,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
 
     for (i32 i = 0; i < m_srcSurface->m_width * m_srcSurface->m_height; i++) {
         CFaderRadialCell* c = &m_cells[i];
-        float d = c->m_fadeLevel - static_cast<float>(static_cast<u32>(frame));
+        float d = c->m_radius - static_cast<float>(static_cast<u32>(frame));
         if (d > g_faderOne) {
             float sf = d / m_fadeDivisor - g_faderBiasFade;
             i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
@@ -1104,8 +1104,16 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    m_surfA = pInit->m_targetSurface ? pInit->m_targetSurface : m_timerA;
-    m_surfB = pInit->m_sourceSurface ? pInit->m_sourceSurface : m_timerB;
+    if (pInit->m_targetSurface == NULL) {
+        m_surfA = m_timerA;
+    } else {
+        m_surfA = pInit->m_targetSurface;
+    }
+    if (pInit->m_sourceSurface == NULL) {
+        m_surfB = m_timerB;
+    } else {
+        m_surfB = pInit->m_sourceSurface;
+    }
     if (m_surfA == NULL) {
         goto fail;
     }

@@ -74,6 +74,40 @@ levers close what was mis-filed as an "NRVO wall":
 
 `KeyOfValue_152d30`/`FindKeyOfValue_158570`/`FindKeyOfValue_165360` 68.77/70.77/79.06% → 100%.
 
+**Accumulate-with-predicate variant** (`SumField_1580b0`, `SumSizesEqual_155460`: walk the map, and
+for each entry that passes a key predicate add something to a running total). Two extra levers, both
+measured 66.2/65.6% → **100%**:
+
+1. **Retail re-zeroes the out-param INSIDE the loop**, on top of the declaration initializer:
+   `mov [esp+val],<zeroreg>` appears once before the `CString` ctor AND once per iteration, right
+   before each `GetNextAssoc`. `val`'s address escapes, so cl cannot fold the two; write both.
+
+   ```cpp
+   while (pos != NULL) {
+       val = 0;                              // yes, again - retail has it
+       m_map.GetNextAssoc(pos, key, val);
+       ...
+   }
+   ```
+
+2. **Declaration order is `pos, total, val, key`** here — NOT the `key, val, pos, n` of the
+   RemoveKey variant above. That order puts all three scalar inits (`pos = GetStartPosition()`,
+   `total = 0`, `val = 0`) *before* the `CString` ctor call, in retail's schedule, while leaving the
+   slot map unchanged (`val` lowest, then `pos`, then `key`). Getting `total` before `val` is what
+   moves `xor ebp,ebp` ahead of the `val` store; getting `pos` first is what moves the whole group
+   ahead of the ctor call.
+
+**Which register becomes the function-wide zero is a readable consequence, not a coin flip.**
+`SumField` pins the zero in **ebx** and compares `cmp byte ptr [esi],bl`; `SumSizesEqual` pins it in
+**edi** and compares `cmp byte ptr [esi],0x0` — because `dil` does not exist in 32-bit x86, so a
+byte compare against an edi-held zero has to become an immediate. The two differ because
+`SumSizesEqual` has an extra `int raw` parameter that retail enregisters in ebx for the loop; that
+only happens when the accumulating call appears **twice** (once per predicate arm). Spelling the
+predicate as `if (a || b || strncmp(...))` with ONE call site leaves `raw` on the stack and the zero
+in ebx; splitting it into `if (a || b) { add; } else if (strncmp(...) == 0) { add; }` — which is
+also what the duplicated `add ebp,eax` blocks in retail say — consumes ebx and pushes the zero to
+edi. Use the arm count in the target as the oracle.
+
 STEERABLE — supersedes the old "optimizer loop-peel wall / zero-register-pinning / NRVO wall"
 @early-stop on these. Evidence: `CDDrawSubMgrLeaf::HasKeyPrefix_152c50`, `CDDrawSubMgrLeafScan::HasKeyEqual_1583c0`,
 `CDDrawWorkerRegistry::HasKeyEqual_155550` — all 61.36% → 100%. Same peel family as

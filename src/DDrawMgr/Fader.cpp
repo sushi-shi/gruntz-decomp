@@ -221,10 +221,17 @@ RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
     CFxModeT6* cfg = static_cast<CFxModeT6*>(descOpaque);
-    CRezBufferObject* mesh = &m_meshBuf;
 
-    m_dstSurface = cfg->m_targetSurface ? cfg->m_targetSurface : m_timerA;
-    m_bltSrc = cfg->m_sourceSurface ? cfg->m_sourceSurface : m_timerB;
+    if (cfg->m_targetSurface == NULL) {
+        m_dstSurface = m_timerA;
+    } else {
+        m_dstSurface = cfg->m_targetSurface;
+    }
+    if (cfg->m_sourceSurface == NULL) {
+        m_bltSrc = m_timerB;
+    } else {
+        m_bltSrc = cfg->m_sourceSurface;
+    }
     if (cfg->m_flipTarget == NULL) {
         return 0;
     }
@@ -235,10 +242,11 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
 
+    CRezBufferObject* mesh = &m_meshBuf;
     mesh->SetSize(0, -1);
 
-    i32 halfW = m_dstSurface->m_height / 2;
     i32 halfH = m_dstSurface->m_width / 2;
+    i32 halfW = m_dstSurface->m_height / 2;
     i32 dx = m_bltSrc->m_width / m_cols;
     i32 dy = m_bltSrc->m_height / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((dx * dx + dy * dy))));
