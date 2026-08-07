@@ -53,3 +53,21 @@ related:
 [instruction-count-mismatch-finds-the-real-bug.md](instruction-count-mismatch-finds-the-real-bug.md),
 [mnemonic-histogram-diff-finds-the-wrong-idiom.md](mnemonic-histogram-diff-finds-the-wrong-idiom.md),
 [reloc-sequence-diff-finds-wrong-referents.md](reloc-sequence-diff-finds-wrong-referents.md)
+
+## USE THE SHARED TOOL — do not rebuild the technique
+
+`python -m gruntz.audit.insn_seq <rva>` is the maintained implementation. A lane that
+re-derived the same idea by hand shipped three false-positive bugs and acted on one,
+regressing `CGameLevel::ResolveFloorCollision` 94.65 -> 34.58 before catching it:
+
+1. same-unit direct calls discarded as "intra-function jumps" by an address-window
+   heuristic (this is what faked the missing `AxisProbe`) — gate on the function's real
+   size, never a window;
+2. an llvm-objdump byte-column regex that required a trailing space, so 10-byte
+   instructions (`mov dword ptr [0x0],0x1`) were dropped — that faked a
+   `g_logicTypesRegistered` 1-vs-2 delta on `CObjectDropper`;
+3. only the FIRST relocation per instruction collected.
+
+The shared tool has none of these (verified against both functions above: `AxisProbe`
+reports 2-vs-2, `CObjectDropper` reports no `g_logicTypesRegistered` delta). If you think
+you need your own copy, fix these three first — or better, extend `insn_seq.py`.

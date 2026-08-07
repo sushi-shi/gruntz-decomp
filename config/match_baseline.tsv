@@ -126,7 +126,7 @@ gameappcomdats	3	3
 gameassetnamespaces	1	0
 gameiconflasheffect	1	1
 gameinfostring	4	3
-gamelevel	76	58
+gamelevel	76	59
 gamelevelmove	14	9
 gamemode	4	0
 gameobjectfactory	1	1
@@ -229,7 +229,7 @@ logicrecord	5	3
 logicrecorddispatch	4	4
 logicworkerhandlersa	15	0
 logicworkerhandlersb	6	0
-mainmenubuilder	2	1
+mainmenubuilder	2	2
 maplogic	1	1
 mapmgr	25	16
 menuitem	33	32
@@ -1672,7 +1672,7 @@ feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	5	e2e41f20f7af	0x17b510
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	8	06702c305199	0x17b840
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	4	2c46d365562e	0x17b5a0
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	85.2000	85.2000	12	6018c45e58cd	0x17b5f0
-fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	86.2477	86.2477	3	17e0ef35851b	0x144b30
+fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.1168	87.1168	4	72de65d60c4c	0x144b30
 fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAXI@Z	99.7456	99.7456	4	0b3e88b1a0ef	0x143fc0
 fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@I@Z	99.8775	99.8775	4	aaa590f37be5	0x144ee0
 fileimage	?DecodePcxData@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPidHeader@@HHI@Z	90.0047	90.0047	3	6cc6775ef21f	0x1457a0
@@ -1880,7 +1880,7 @@ gamelevel	?SyncToMainIndex@CGameLevel@@QAEXPAVCDDrawSurfacePair@@@Z	100.0000	100
 gamelevel	?Unload@CGameLevel@@UAEXXZ	100.0000	100.0000	4	aecc158d7874	0x15d1f0
 gamelevel	?ValidateAllPlanes@CGameLevel@@QAEHPAD@Z	100.0000	100.0000	6	78dfa6f1daff	0x160ef0
 gamelevel	?VisitVisible@CGameLevel@@QAEXPAVCDDrawSurfacePair@@PAVCDDrawChildGroup@@@Z	100.0000	100.0000	3	2b9e09b51574	0x15dc90
-gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAUCGameObject@@H@Z	89.3947	89.3947	5	47f809d356c5	0x160a40
+gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	6	55025c498a60	0x160a40
 gamelevel	?WwdFile_CompressMainBlock@@YGHPAEK0K@Z	100.0000	100.0000	3	6004417d5720	0x160870
 gamelevel	_WwdFile_InflateMainBlock@12	88.7400	88.7400	5	8d90a417be12	0x160790
 gamelevelmove	??_GCWwdGridShell@@UAEPAXI@Z	100.0000	100.0000	1	cpp:474b2cdcb563	0x168280
@@ -2812,7 +2812,7 @@ logicworkerhandlersb	_CreateRainCloud	97.8571	97.8571	1	41fde5522aec	0xaf5a0
 logicworkerhandlersb	_CreateRollingBall	97.8571	97.8571	1	c98424850a58	0xaf0a0
 logicworkerhandlersb	_CreateSpotLight	97.8571	97.8571	1	a5980b6473f2	0xaf1e0
 logicworkerhandlersb	_CreateUFO	97.8571	97.8571	1	75f9442c9b1f	0xaf6e0
-mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	96.0098	96.0098	4	3e342a7e7f73	0xa11d0
+mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	100.0000	100.0000	5	7608fed20c72	0xa11d0
 mainmenubuilder	?SetMenuTextRect@@YAXXZ	100.0000	100.0000	1	f58ff91e1747	0xa1190
 maplogic	?MapSerializeCurve@@YAHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	76be8eb147f4	0xec230
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	7	8ce65d529a2a	0x9e700
@@ -3317,7 +3317,7 @@ play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	8	05f7283351bb	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	15	0254a5e3ef9e	0xd9050
 play	?OnChar@CPlay@@UAEHHH@Z	100.0000	100.0000	2	7d01b9ff8290	0xcbaf0
 play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	5	29b62be18a03	0xcb400
-play	?OnKeyDown@CPlay@@UAEHHH@Z	85.9730	85.9730	1	d5aca81f5b6e	0xcbcc0
+play	?OnKeyDown@CPlay@@UAEHHH@Z	87.1918	87.1918	2	b0ef9dc0c46c	0xcbcc0
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	82.8955	82.8955	3	e4f24c9872dc	0xce660
 play	?OnLButtonDown@CPlay@@UAEHHHH@Z	34.9323	34.9323	2	e647758c0f3f	0xcdb10
