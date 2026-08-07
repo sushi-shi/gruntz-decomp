@@ -716,9 +716,10 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 #undef LOAD_POSE
 
 // @early-stop
-// residue is the FP shape of the second difference (retail loads both operands
-// and fxch/fsubp where cl folds one into fsubr) plus the ebx/edi swap that
-// follows from it.
+// residue is 2 insns: retail loads BOTH operands of the second difference
+// (fld/fld/fxch/fsubp) where cl folds one into a single fsubr. Follows from the
+// ebx/edi coalescing choice - retail puts the first ftol result in `other`'s
+// register, we pick ebx.
 RVA(0x0004a780, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
@@ -758,7 +759,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirNorth;
     }
-    if (dx >= 0) {
+    if (dx >= 0 && dy < 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
@@ -770,7 +771,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirWest;
     }
-    if (dy > 0) {
+    if (dx <= 0 && dy > 0) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
