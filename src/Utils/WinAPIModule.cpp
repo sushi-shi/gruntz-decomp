@@ -38,8 +38,9 @@ namespace Utils {
                 return 0;
             }
 
-            walkProc.m_raw = GetProcAddress(k32, "Module32Next");
-            PFNMODULEWALK pModuleNext = walkProc.m_fn;
+            ProcAddr<PFNMODULEWALK> nextProc;
+            nextProc.m_raw = GetProcAddress(k32, "Module32Next");
+            PFNMODULEWALK pModuleNext = nextProc.m_fn;
             if (!pModuleNext) {
                 return 0;
             }
