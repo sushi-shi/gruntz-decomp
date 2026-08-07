@@ -192,6 +192,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_SINK, DEATH_FRAME());
             DEATH_CUE(0x35a);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            LoadGruntMovingDeathConfig();
             goto tail;
 
         case DEATH_HOLE:
@@ -273,6 +274,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            LoadGruntMovingDeathConfig();
             goto tail;
         }
 
@@ -309,6 +311,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             DEATH_CUE(tag);
             m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
+            LoadGruntMovingDeathConfig();
             goto tail;
         }
 
@@ -392,8 +395,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             }
 
             if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                m_wwdObject->ApplyLookupGeometry(s_NORMALGRUNT_DEATH, 0);
-                m_wwdObject->ApplyName(s_NORMALGRUNT_DEATH);
+                m_value = m_wwdObject->m_animCursor.m_animation;
+                m_wwdObject->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
+                m_wwdObject->ApplyName("GAME_GRUNTTWITCH");
             }
             goto tail;
     }
