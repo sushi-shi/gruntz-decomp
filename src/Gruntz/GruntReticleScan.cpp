@@ -241,25 +241,51 @@ i32 CGrunt::ArrivalReticleScan() {
                 if (foundOutside != 0) {
                     if (previous == NULL) {
                         SetEntrancePos(1, 1);
-                        DRAIN_COORDS();
+                        if (CoordCount() != 0) {
+                            POSITION dpos = m_coordList.GetHeadPosition();
+                            while (dpos != 0) {
+                                Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
+                                if (cur != 0) {
+                                    CoordPoolNode* node = g_coordPool.NodeOf(cur);
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
+                                }
+                            }
+                            m_coordList.RemoveAll();
+                        }
                     } else {
                         i32 pathDx = abs(previous->m_x - occTX);
                         i32 pathDy = abs(previous->m_y - occTY);
                         i32 pathDist = pathDx > pathDy ? pathDx : pathDy;
                         if (pathDist <= m_reachRect.right) {
-                            g_coordPool.Push(trimCoord);
+                            CoordPoolNode* trimNode = g_coordPool.NodeOf(trimCoord);
+                            trimNode->m_next = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = trimNode;
                             m_coordList.RemoveAt(trimPos);
                             while (pos != NULL) {
                                 POSITION nextPos = pos;
                                 Coord* coord = static_cast<Coord*>(m_coordList.GetNext(pos));
                                 if (coord != NULL) {
-                                    g_coordPool.Push(coord);
+                                    CoordPoolNode* node = g_coordPool.NodeOf(coord);
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
                                 }
                                 m_coordList.RemoveAt(nextPos);
                             }
                         } else {
                             SetEntrancePos(1, 1);
-                            DRAIN_COORDS();
+                            if (CoordCount() != 0) {
+                                POSITION dpos = m_coordList.GetHeadPosition();
+                                while (dpos != 0) {
+                                    Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
+                                    if (cur != 0) {
+                                        CoordPoolNode* node = g_coordPool.NodeOf(cur);
+                                        node->m_next = g_coordPool.m_freeHead;
+                                        g_coordPool.m_freeHead = node;
+                                    }
+                                }
+                                m_coordList.RemoveAll();
+                            }
                         }
                     }
                 }
