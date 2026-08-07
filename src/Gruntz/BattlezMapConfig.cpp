@@ -4414,12 +4414,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "G") == 0);
     if (eq) {
@@ -4429,12 +4428,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "L") == 0);
     if (eq) {
@@ -4444,12 +4442,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "P") == 0);
     if (eq) {
@@ -4459,12 +4456,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "J") == 0);
     if (eq) {
@@ -4474,12 +4470,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
@@ -4489,12 +4484,11 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
             slot->~CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "R") == 0);
     if (eq) {
@@ -4504,7 +4498,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     i32 bandPct = m_brickzPct;
     i32 band;
     if (bandPct == 0) {
-        band = rand() & 1;
+        band = static_cast<i8>(rand()) & 1;
     } else {
         band = rand() % bandPct;
     }
@@ -4521,7 +4515,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         i32 rollPct = m_wingzPct;
         i32 roll;
         if (rollPct == 0) {
-            roll = rand() & 1;
+            roll = static_cast<i8>(rand()) & 1;
         } else {
             roll = rand() % rollPct;
         }
@@ -4660,12 +4654,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 1;
     } else if (band <= m_toyzPct) {
 
+        i32 rollPct = m_yoyozPct;
         i32 roll;
-        if (m_yoyozPct == 0) {
-            roll = rand() & 1;
+        if (rollPct == 0) {
+            roll = static_cast<i8>(rand()) & 1;
         } else {
-            roll = rand() % m_yoyozPct + 1;
+            roll = rand() % rollPct;
         }
+        roll++;
         PickupType mode;
         if (roll <= m_babyWalkerzPct) {
             mode = PICKUP_BABYWALKER;
@@ -4690,12 +4686,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 1;
     } else {
 
+        i32 rollPct = m_blackBrickPct;
         i32 roll;
-        if (m_blackBrickPct == 0) {
-            roll = rand() & 1;
+        if (rollPct == 0) {
+            roll = static_cast<i8>(rand()) & 1;
         } else {
-            roll = rand() % m_blackBrickPct + 1;
+            roll = rand() % rollPct;
         }
+        roll++;
         PickupType mode;
         if (roll <= m_redBrickPct) {
             mode = PICKUP_REDBRICK;
@@ -5218,8 +5216,10 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
     Coord* o = static_cast<Coord*>(out);
     if (kind < 0 || kind >= 4) {
         CGameObject* lvl = unit->m_object;
-        o->m_x = lvl->m_screenX >> TILE_SHIFT_PX;
-        o->m_y = lvl->m_screenY >> TILE_SHIFT_PX;
+        i32 sx = lvl->m_screenX >> TILE_SHIFT_PX;
+        i32 sy = lvl->m_screenY >> TILE_SHIFT_PX;
+        o->m_x = sx;
+        o->m_y = sy;
         return o;
     }
     CGameObject* lvl = unit->m_object;
@@ -5235,16 +5235,14 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
             i32 cell = m_ownerId;
             Coord cand = *arr[r];
             i32 ok = 1;
-            CGrunt** row = &grid->m_grid[cell * 15];
-            for (i32 j = 15; j != 0; j--) {
-                CGrunt* u = *row;
+            for (i32 j = 0; j < 15; j++) {
+                CGrunt* u = grid->m_grid[cell * 15 + j];
                 if (u != NULL && u->CoordCount() != 0) {
-                    Coord* node = u->CoordTail()->m_coord;
-                    if (node->m_x == cand.m_x && node->m_y == cand.m_y) {
+                    Coord node = *(u->CoordTail()->m_coord);
+                    if (node.m_x == cand.m_x && node.m_y == cand.m_y) {
                         ok = 0;
                     }
                 }
-                row++;
             }
             if (ok != 0) {
                 *o = cand;
