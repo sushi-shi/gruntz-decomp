@@ -583,6 +583,9 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
     return 1;
 }
 
+// @early-stop
+// list is spilled to a stack home in retail; cl coalesces it into edi here (one fewer
+// frame dword). Every instruction matches modulo that regalloc choice.
 RVA(0x0011c210, 0x29d)
 CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
     if (n <= 0) {
@@ -592,29 +595,31 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
         return 0;
     }
 
-    CString dir, scratch, sub, name;
-    scratch.Format("SG%i", n);
-    scratch = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), "DIR", &dir);
+    CSpawnList* list = NULL;
+    CString dflt, section, key, name;
+    section.Format("SG%i", n);
+    CString dirName = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(section), "DIR", &dflt);
 
-    sub.Format("S%i", 1);
-    sub = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(scratch), static_cast<LPCTSTR>(sub), &dir);
+    key.Format("S%i", 1);
+    CString sndName =
+        *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(section), static_cast<LPCTSTR>(key), &dflt);
 
-    CSpawnList* list = 0;
-    if (!scratch.IsEmpty()) {
+    i32 stop = 0;
+    if (!sndName.IsEmpty()) {
         list = new CSpawnList();
     }
 
-    if (!sub.IsEmpty()) {
+    if (!sndName.IsEmpty()) {
         i32 i = 1;
-        do {
+        while (stop == 0) {
             i++;
-            if (sub.IsEmpty()) {
-                name.Format("VOICES_%s", static_cast<LPCTSTR>(scratch));
+            if (dirName.IsEmpty()) {
+                name.Format("VOICES_%s", static_cast<LPCTSTR>(sndName));
             } else {
                 name.Format(
                     "VOICES_%s_%s",
-                    static_cast<LPCTSTR>(scratch),
-                    static_cast<LPCTSTR>(sub)
+                    static_cast<LPCTSTR>(dirName),
+                    static_cast<LPCTSTR>(sndName)
                 );
             }
             CParseSource* res =
@@ -622,16 +627,19 @@ CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
             if (res != NULL) {
 
                 list->AddVoiceSound(name, 0);
-                sub.Format("S%i", i);
-                sub = *g_buteMgr.GetStringDef(
-                    static_cast<LPCTSTR>(scratch),
-                    static_cast<LPCTSTR>(sub),
-                    &dir
+                key.Format("S%i", i);
+                sndName = *g_buteMgr.GetStringDef(
+                    static_cast<LPCTSTR>(section),
+                    static_cast<LPCTSTR>(key),
+                    &dflt
                 );
             } else {
-                sub.Empty();
+                stop = 1;
             }
-        } while (!sub.IsEmpty());
+            if (sndName.IsEmpty()) {
+                break;
+            }
+        }
     }
     return list;
 }
