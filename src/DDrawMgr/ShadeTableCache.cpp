@@ -169,44 +169,45 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
 
     u8* data = t->m_data;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        PALETTEENTRY* p = &pal[i];
         u8* ramp = &data[i * total];
 
         for (i32 j = 0; j < nA; j++) {
             float tt = static_cast<float>(j) / static_cast<float>(nA);
             float inv = g_one - tt;
-            float fr = static_cast<float>((startPct * static_cast<i32>(p->peRed) / 100)) * inv
-                       + static_cast<float>(p->peRed) * tt;
+            float fr = static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
+                       + static_cast<float>(pal[i].peRed) * tt;
             u8 rn = static_cast<u8>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>((startPct * static_cast<i32>(p->peGreen) / 100)) * inv
-                       + static_cast<float>(p->peGreen) * tt;
+            float fg = static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)) * inv
+                       + static_cast<float>(pal[i].peGreen) * tt;
             u8 gn = static_cast<u8>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>((startPct * static_cast<i32>(p->peBlue) / 100)) * inv
-                       + static_cast<float>(p->peBlue) * tt;
+            float fb = static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)) * inv
+                       + static_cast<float>(pal[i].peBlue) * tt;
             u8 bn = static_cast<u8>((fb < g_255 ? fb : g_255));
             ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
 
-        i32 br = static_cast<i32>(p->peRed) + 0x10;
-        p->peRed = static_cast<u8>((br < 0xff ? br : 0xff));
-        i32 bg = static_cast<i32>(p->peGreen) + 0x10;
-        p->peGreen = static_cast<u8>((bg < 0xff ? bg : 0xff));
-        i32 bb = static_cast<i32>(p->peBlue) + 0x10;
-        p->peBlue = static_cast<u8>((bb < 0xff ? bb : 0xff));
+        i32 br = static_cast<i32>(pal[i].peRed) + 0x10;
+        pal[i].peRed = static_cast<u8>((br < 0xff ? br : 0xff));
+        i32 bg = static_cast<i32>(pal[i].peGreen) + 0x10;
+        pal[i].peGreen = static_cast<u8>((bg < 0xff ? bg : 0xff));
+        i32 bb = static_cast<i32>(pal[i].peBlue) + 0x10;
+        pal[i].peBlue = static_cast<u8>((bb < 0xff ? bb : 0xff));
 
-        for (i32 k = 0; k < nB; k++) {
-            float uu = static_cast<float>(k) / static_cast<float>(nB);
+        for (i32 k = nA; k < total; k++) {
+            float uu = static_cast<float>((k - nA)) / static_cast<float>(nB);
             float inv = g_one - uu;
-            float fr = static_cast<float>(p->peRed) * inv
-                       + static_cast<float>(p->peRed) * static_cast<float>(endPct) * g_p01 * uu;
+            float fr = static_cast<float>(pal[i].peRed) * inv
+                       + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct) * g_p01 * uu;
             u8 rn = static_cast<u8>((fr < g_255 ? fr : g_255));
-            float fg = static_cast<float>(p->peGreen) * inv
-                       + static_cast<float>(p->peGreen) * static_cast<float>(endPct) * g_p01 * uu;
+            float fg =
+                static_cast<float>(pal[i].peGreen) * inv
+                + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct) * g_p01 * uu;
             u8 gn = static_cast<u8>((fg < g_255 ? fg : g_255));
-            float fb = static_cast<float>(p->peBlue) * inv
-                       + static_cast<float>(p->peBlue) * static_cast<float>(endPct) * g_p01 * uu;
+            float fb =
+                static_cast<float>(pal[i].peBlue) * inv
+                + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct) * g_p01 * uu;
             u8 bn = static_cast<u8>((fb < g_255 ? fb : g_255));
-            ramp[nA + k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
+            ramp[k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }
     return t;
