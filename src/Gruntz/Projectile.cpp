@@ -88,6 +88,11 @@ void CMovingLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
+// Retail CALLS CUserLogic::CUserLogic (0x58cd0, one of its only three callers) where our
+// cl expands the header-inline body: +32 instructions, +0x10 of frame and four extra EH
+// states, all in B0. Body outside that is block-for-block aligned. Making the base ctor
+// out-of-line to flip it is the forbidden trade -
+// docs/patterns/base-ctor-pinned-out-of-line-costs-every-derived-ctor.md.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_gameObject = owner;
@@ -143,9 +148,8 @@ i32 CProjectile::LoadProjectileSprites(
     m_targetId = t0;
     m_ownerId = t1;
 
-    CWwdGameObjectA* owner = m_object;
-    double dx = static_cast<double>(m_targetX) - owner->m_screenX;
-    double dy = static_cast<double>(m_targetY) - owner->m_screenY;
+    double dx = static_cast<double>(m_targetX) - m_object->m_screenX;
+    double dy = static_cast<double>(m_targetY) - m_object->m_screenY;
     i32 count = 1;
 
     switch (kind) {
@@ -184,8 +188,8 @@ i32 CProjectile::LoadProjectileSprites(
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = 0;
-            i32 ddx = abs((m_targetX >> TILE_SHIFT_PX) - (owner->m_screenX >> TILE_SHIFT_PX));
-            i32 ddy = abs((m_targetY >> TILE_SHIFT_PX) - (owner->m_screenY >> TILE_SHIFT_PX));
+            i32 ddx = abs((m_targetX >> TILE_SHIFT_PX) - (m_object->m_screenX >> TILE_SHIFT_PX));
+            i32 ddy = abs((m_targetY >> TILE_SHIFT_PX) - (m_object->m_screenY >> TILE_SHIFT_PX));
             count = ddx;
             if (ddx <= ddy) {
                 count = ddy;
@@ -196,31 +200,30 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    CMapStringToPtr& map = m_wwdObject->OwnerMgr()->m_animRegistry->m_animations;
     void* out;
     out = NULL;
-    map.Lookup(key + "1", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "1", out);
     m_frames[0] = static_cast<CAniElement*>(out);
     if (m_frames[0] == NULL) {
         return 0;
     }
     out = NULL;
-    map.Lookup(key + "2", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "2", out);
     m_frames[1] = static_cast<CAniElement*>(out);
     out = NULL;
-    map.Lookup(key + "3", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "3", out);
     m_frames[2] = static_cast<CAniElement*>(out);
     out = NULL;
-    map.Lookup(key + "4", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "4", out);
     m_frames[3] = static_cast<CAniElement*>(out);
     out = NULL;
-    map.Lookup(key + "5", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "5", out);
     m_frames[4] = static_cast<CAniElement*>(out);
     out = NULL;
-    map.Lookup(key + "IMPACT", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "IMPACT", out);
     m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
     out = NULL;
-    map.Lookup(key + "FALL", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "FALL", out);
     m_frames[PF_FALL] = static_cast<CAniElement*>(out);
 
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -253,15 +256,15 @@ i32 CProjectile::LoadProjectileSprites(
         m_roundY = 0.0;
     }
     m_flightDist = fabs(len);
-    m_curX = owner->m_screenX;
-    m_curY = owner->m_screenY;
+    m_curX = m_object->m_screenX;
+    m_curY = m_object->m_screenY;
     m_arrived = 0;
 
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow = (factory->CreateSprite(
         0,
-        owner->m_screenX,
-        owner->m_screenY,
+        m_object->m_screenX,
+        m_object->m_screenY,
         SORTKEY_ACTOR_BEHIND,
         "LightFx",
         0x2040003
