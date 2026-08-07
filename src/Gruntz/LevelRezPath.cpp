@@ -14,17 +14,17 @@
 #include <string.h>
 
 // @early-stop
-// Two residues, both cl-side: it cross-jumps the BATTLEZ and MULTI arms (they share
-// the `Insert(name, REZ_TAG_WWD)` tail, so two of retail's 17 conditional branches
-// collapse into one `jmp`), and it materialises the EH state 1 as an immediate where
-// retail claims a 4th callee-saved register for it (`mov bl,1`), which is the uniform
-// +4 on every [esp+N].
+// One residue: cl materialises the EH state 1 as an immediate where retail claims a
+// 4th callee-saved register for it (`push ebx` / `mov bl,1` / `mov [esp+N],bl` x3),
+// which is the uniform +4 on every [esp+N].  See const-materialize-into-reg-vs-immediate.
+// Each arm owns its OWN `WwdHeader buf` - that is what stops cl cross-jumping the
+// BATTLEZ and MULTI arms into one shared tail (docs/patterns/identical-arms-need-
+// distinct-locals.md).
 RVA(0x00093d40, 0x473)
 
 i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
-    char scratch[16];
-    WwdHeader buf;
     if (lo != 0) {
+        WwdHeader buf;
         CFile file;
         CString path;
         if (isEmpty == 0 && hi == 0) {
@@ -46,6 +46,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
 
     if (isEmpty == 0) {
         if (hi != 0) {
+            WwdHeader buf;
             CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
             if (node == NULL) {
                 return 0;
@@ -62,6 +63,7 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             sub->EndParse();
             return buf.checksum;
         } else {
+            WwdHeader buf;
             CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
             if (node == NULL) {
                 return 0;
@@ -79,6 +81,10 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             return buf.checksum;
         }
     } else {
+        // `scratch` shares the CFile slot ([esp+0x18]) and the union region is 0x20
+        // wide (buf lands at [esp+0x38]) - so it is a 32-byte buffer local to this arm.
+        WwdHeader buf;
+        char scratch[32];
         sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
         if (node == NULL) {
