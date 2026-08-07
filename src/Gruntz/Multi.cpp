@@ -2575,7 +2575,6 @@ void CMulti::RecordDropPlayer2(CNetSessionNode* a, i32 id) {
     m_allPlayersReady = 1;
 }
 
-// @early-stop
 RVA(0x000bb700, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_readyPlayerIds;
@@ -2600,15 +2599,12 @@ i32 CMulti::WaitForOtherPlayers() {
             CString waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
 
-            SIZE
-            mode;
-            mode.cx = g->m_modeSize.cx;
-            mode.cy = g->m_modeSize.cy;
             RECT rc;
+            tagSIZE mode = g->GetModeSize();
+            rc.right = g->GetModeSize().cx;
+            rc.bottom = mode.cy;
             rc.left = 0;
             rc.top = 0;
-            rc.right = mode.cx;
-            rc.bottom = mode.cy;
             EngStr_DrawText(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
             i32 resend = 0x1388;
