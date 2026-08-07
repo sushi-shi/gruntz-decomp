@@ -42,26 +42,3 @@ void CMotionState::SetZ(double z) {
     m_maxStep.y = z;
     m_maxStep.z = z;
 }
-
-// Out of line: retail's CGrunt / CProjectile ctors CALL this (through the ILT
-// thunk at 0x3828), they do not expand it - at 405 bytes it is far past cl's
-// inline budget, so leaving it inline in UserLogic.h let OUR cl expand a much
-// smaller body into every derived ctor.
-RVA(0x00058cd0, 0x195)
-CUserLogic::CUserLogic(CGameObject* obj) {
-    m_logicObject = obj;
-    m_object = static_cast<CWwdGameObjectA*>(obj);
-    m_objAux = obj->m_animWorker;
-    {
-        zBitVec tmp(g_emptyString, 0);
-        m_link.m_str = tmp;
-    }
-    RegisterLogicTypesOnce();
-    m_object->AddLogicHit("LogicHit");
-    m_object->AddLogicAttack("LogicAttack");
-    m_object->AddLogicBump("LogicBump");
-    m_deferredCallback = 0;
-    m_gatedCallback = 0;
-    m_gatedActKey = 0x3e9;
-    m_reserved2c = 2;
-}

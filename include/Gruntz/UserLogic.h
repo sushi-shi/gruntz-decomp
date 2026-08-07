@@ -98,6 +98,28 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
+// Inline in the shared header: retail expands this whole body into ~65 derived
+// logic constructors (they show the two vptr stamps, the m_link zBitVec assign and
+// the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
+// CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
+inline CUserLogic::CUserLogic(CGameObject* obj) {
+    m_logicObject = obj;
+    m_object = static_cast<CWwdGameObjectA*>(obj);
+    m_objAux = obj->m_animWorker;
+    {
+        zBitVec tmp(g_emptyString, 0);
+        m_link.m_str = tmp;
+    }
+    RegisterLogicTypesOnce();
+    m_object->AddLogicHit("LogicHit");
+    m_object->AddLogicAttack("LogicAttack");
+    m_object->AddLogicBump("LogicBump");
+    m_deferredCallback = 0;
+    m_gatedCallback = 0;
+    m_gatedActKey = 0x3e9;
+    m_reserved2c = 2;
+}
+
 class CWapX {
 public:
     CWapX() {}
