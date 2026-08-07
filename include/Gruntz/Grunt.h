@@ -276,7 +276,7 @@ public:
     void PlayMoveSoundAtTile(i32 tx, i32 ty);
     void SnapToLastTile(i32 a);
     i32 ClaimSwitchTile();
-    void SetArrivalTarget(i32 a, i32 b, i32 c, i32 d);
+    i32 SetArrivalTarget(i32 a, i32 b, i32 c, i32 d);
     void ConsiderArrival(i32 a);
     void SelectMoveIcon(i32 a);
     i32 TryPowerupAtTile();

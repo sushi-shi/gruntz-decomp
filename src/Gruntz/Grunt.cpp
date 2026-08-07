@@ -201,16 +201,17 @@ static const char s_pose_TOY2[] = "_TOY2";
 DATA(0x0020d77c)
 static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
+static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
+    CAniElement* out = 0;
+    MapLookup(map, key, out);
+    return out;
+}
+
 #define LOAD_POSE(dst, sfx)                                                                        \
-    do {                                                                                           \
-        CAniElement* _out = 0;                                                                     \
-        MapLookup(                                                                                 \
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
-            "GRUNTZ_" + m_animSetName + (sfx),                                                     \
-            _out                                                                                   \
-        );                                                                                         \
-        (dst) = _out;                                                                              \
-    } while (0)
+    ((dst) = FindAnimElement(                                                                      \
+         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                    \
+         "GRUNTZ_" + m_animSetName + (sfx)                                                         \
+     ))
 
 void GruntRecycleCoords(CGrunt* g) {
     POSITION pos = g->m_coordList.GetHeadPosition();
@@ -675,7 +676,6 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     h->m_drawFillArg = sel;
 }
 
-// @early-stop
 RVA(0x00049c60, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
@@ -706,12 +706,13 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         i32 y = AT(m_poseToy, GRUNT_TOY2)->m_records.GetSize();
 
         if (x < y) {
-            i32 pct = static_cast<i32>(
-                (DATA_COMPGEN(0x001e9748, fp_1e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, fp_1e9740, -1.0)) - -0.5)
-            );
+            double blend =
+                DATA_COMPGEN(0x001e9748, fp_1e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, fp_1e9740, -1.0)) - g_slopeNegHalf;
+            i32 pct = static_cast<i32>(blend);
             m_toyBlendPct = 100 - pct;
         } else {
-            m_toyBlendPct = static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - -0.5));
+            m_toyBlendPct =
+                static_cast<i32>((100.0 / (static_cast<double>(x) / y - -1.0) - g_slopeNegHalf));
         }
     }
 
@@ -1005,14 +1006,9 @@ void CGrunt::ClearAllSprites() {
 // @early-stop
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
-    return StepArrivalDrop(
-        col * 0x20 + 0x10,
-        row * 0x20 + 0x10,
-        arrivalPhase,
-        maskA,
-        clearFlag,
-        maskCIn
-    );
+    i32 px = col * 0x20 + 0x10;
+    i32 py = row * 0x20 + 0x10;
+    return StepArrivalDrop(px, py, arrivalPhase, maskA, clearFlag, maskCIn);
 }
 
 // @early-stop

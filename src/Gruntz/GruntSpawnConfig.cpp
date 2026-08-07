@@ -59,10 +59,16 @@ void CGruntSpawnConfig::Clear() {
     }
     m_owner = NULL;
     m_configTree = NULL;
-    m_voices[0] = NULL;
-    m_voices[1] = NULL;
-    m_streams[0] = NULL;
-    m_streams[1] = NULL;
+    CGruntVoice** v = m_voices;
+    for (i32 a = 0; a < 2; a++) {
+        *v = NULL;
+        v++;
+    }
+    StreamVoice** s = m_streams;
+    for (i32 b = 0; b < 2; b++) {
+        *s = NULL;
+        s++;
+    }
 }
 
 RVA(0x0011af00, 0x62)
@@ -88,7 +94,8 @@ RVA(0x0011af90, 0xb)
 void CGruntSpawnConfig::ClearSprites() {
     CGruntVoice** p = m_voices;
     for (i32 i = 0; i < 2; i++) {
-        p[i] = NULL;
+        *p = NULL;
+        p++;
     }
 }
 

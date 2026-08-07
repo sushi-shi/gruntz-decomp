@@ -866,21 +866,24 @@ i32 CGrunt::ClaimSwitchTile() {
 
 // @early-stop
 RVA(0x00052ed0, 0x42)
-void CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
+i32 CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
     m_arrivalCell.m_x = a;
     m_arrivalCell.m_y = b;
-    m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_arrivalActive = 1;
+    m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_defenderPx.m_y = (d & ~TILE_MASK_PX) + TILE_HALF_PX;
+    return 1;
 }
 
 // @early-stop
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
     CWwdGameObjectA* h = m_object;
+    i32 tx = m_lastTilePx.m_x;
+    i32 ty = m_lastTilePx.m_y;
     i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
+    if (px != tx || py != ty) {
         if (IsDropReady(a)) {
             return;
         }

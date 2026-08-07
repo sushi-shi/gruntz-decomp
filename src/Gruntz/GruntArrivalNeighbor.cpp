@@ -190,6 +190,9 @@ i32 CGrunt::ResolveArrivalNeighbor() {
             return 1;
     }
 
+    if (m_poweredUp == 0) {
+        m_defenderState = AISTATE_SEEK;
+    }
     if (m_poweredUp != 0) {
         if (m_neighborValid != 0) {
             return 1;
@@ -204,7 +207,6 @@ i32 CGrunt::ResolveArrivalNeighbor() {
         return 1;
     }
 
-    m_defenderState = AISTATE_SEEK;
     CGrunt* occ = m_tileMgr->FindNearestEnemy(this);
     if (occ == NULL) {
         return 1;
@@ -224,6 +226,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (m_object->m_screenY != occ->m_lastTilePx.m_y) {
         return 1;
     }
+    Coord tile = occ->m_lastTilePx;
     CommitNeighbor(
         occ->m_tileOwnerHi,
         occ->m_tileOwnerLo,
