@@ -38,6 +38,8 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 
     BmpFileImage* img = static_cast<BmpFileImage*>(srcv);
     ColorDepth srcFmt = static_cast<ColorDepth>(img->info.bmiHeader.biBitCount);
+    i32 width = img->info.bmiHeader.biWidth;
+    i32 height = img->info.bmiHeader.biHeight;
     if (srcFmt != BPP_PALETTED_8 && srcFmt != BPP_RGB_24) {
         return 0;
     }
@@ -52,39 +54,27 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     }
 
     void* pal = 0;
-    if (convert) {
-        if (srcFmt == BPP_PALETTED_8) {
-            RGBQUAD* p = img->info.bmiColors;
-            i32 i = 0;
-            do {
-
-                g_paletteRampBuf[i].peRed = p->rgbRed;
-                g_paletteRampBuf[i].peGreen = p->rgbGreen;
-                g_paletteRampBuf[i].peBlue = p->rgbBlue;
-                g_paletteRampBuf[i].peFlags = 0;
-                p++;
-                i++;
-            } while (i < 0x100);
-            pal = g_paletteRampBuf;
-        } else if (curFmt == BPP_PALETTED_8) {
-            if (info->m_hasPalette != 0) {
-                pal = info->m_palette;
-            } else {
-                pal = NULL;
-            }
+    if (convert && srcFmt == BPP_PALETTED_8) {
+        RGBQUAD* p = img->info.bmiColors;
+        i32 i = 0;
+        do {
+            g_paletteRampBuf[i].peRed = p->rgbRed;
+            g_paletteRampBuf[i].peGreen = p->rgbGreen;
+            g_paletteRampBuf[i].peBlue = p->rgbBlue;
+            g_paletteRampBuf[i].peFlags = 0;
+            p++;
+            i++;
+        } while (i < 0x100);
+        pal = g_paletteRampBuf;
+    } else if (convert && curFmt == BPP_PALETTED_8) {
+        if (info->m_hasPalette != 0) {
+            pal = info->m_palette;
         } else {
             pal = NULL;
         }
     }
 
-    if (CDDSurface::BlitSurf(
-            info,
-            img->info.bmiHeader.biWidth,
-            img->info.bmiHeader.biHeight,
-            BPP_UNSET,
-            b
-        )
-        == 0) {
+    if (CDDSurface::BlitSurf(info, width, height, BPP_UNSET, b) == 0) {
         return 0;
     }
 
@@ -148,6 +138,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
             if (remap && bitcount == BPP_PALETTED_8) {
                 u8* src =
                     static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+                u8* srcEnd = src + 0x400;
                 i32 i = 0;
                 do {
                     s_palBmp[i].peRed = src[2];
@@ -156,7 +147,7 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
                     s_palBmp[i].peFlags = 0;
                     src += 4;
                     i++;
-                } while (i < 0x100);
+                } while (src < srcEnd);
                 palette = s_palBmp;
             } else if (remap && palBpp == BPP_PALETTED_8) {
                 if (pal->m_hasPalette != 0) {
@@ -169,14 +160,13 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
             void* pixels =
                 static_cast<char*>(buf) + (static_cast<BITMAPFILEHEADER*>(buf))->bfOffBits;
             if (remap) {
-                if (!Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP)) {
+                if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == 0) {
                     return 0;
                 }
-                return 1;
+            } else if (BlitDirect(pixels, RASTER_ROWS_BOTTOM_UP) == 0) {
+                return 0;
             }
-            if (BlitDirect(pixels, RASTER_ROWS_BOTTOM_UP)) {
-                return 1;
-            }
+            return 1;
         }
     }
     return 0;
