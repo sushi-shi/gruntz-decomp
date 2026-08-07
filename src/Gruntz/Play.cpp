@@ -4020,6 +4020,9 @@ i32 CPlay::StepGridWalk(i32 dt) {
 }
 
 // @early-stop
+// sole residue: retail homes the 4-byte DDSCAPS in the dead `pair` parameter's slot
+// ([esp+0x38]) where cl overlays it onto `half`'s local ([esp+0x10]); hoisting the
+// declaration to function scope does not move it.
 RVA(0x000d0b30, 0x200)
 i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;
@@ -4029,12 +4032,12 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     RECT* dst;
     RECT* src;
     if (m_inputHalfSel == 0) {
-        half = m_scratchSurface0;
         dst = &m_cursorSaveDst0;
+        half = m_scratchSurface0;
         src = &m_cursorSaveSrc0;
     } else {
-        half = m_scratchSurface1;
         dst = &m_cursorSaveDst1;
+        half = m_scratchSurface1;
         src = &m_cursorSaveSrc1;
     }
 
@@ -4042,17 +4045,18 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     dst->right = m_gridCurFrame->m_width + dst->left;
     dst->top = y - m_gridCurFrame->m_anchorY;
     dst->bottom = m_gridCurFrame->m_height + dst->top;
+    tagSIZE mode = m_mgr->GetModeSize();
     if (dst->left < 0) {
         dst->left = 0;
     }
-    if (dst->right > m_mgr->m_modeSize.cx) {
-        dst->right = m_mgr->m_modeSize.cx;
+    if (dst->right > mode.cx) {
+        dst->right = mode.cx;
     }
     if (dst->top < 0) {
         dst->top = 0;
     }
-    if (dst->bottom > m_mgr->m_modeSize.cy) {
-        dst->bottom = m_mgr->m_modeSize.cy;
+    if (dst->bottom > mode.cy) {
+        dst->bottom = mode.cy;
     }
     src->right = dst->right - dst->left;
     src->bottom = dst->bottom - dst->top;
@@ -4085,13 +4089,13 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
     m_gridCurFrame->RenderFrame(pair, x, y, 0);
 
     DDSCAPS caps;
-    i32 flipping;
+    i32 inSysMem;
     if (target->m_ddSurface->GetCaps(&caps) == 0) {
-        flipping = caps.dwCaps & DDSCAPS_FLIP;
+        inSysMem = caps.dwCaps & DDSCAPS_SYSTEMMEMORY;
     } else {
-        flipping = 0;
+        inSysMem = 0;
     }
-    if (flipping == 0) {
+    if (inSysMem == 0) {
         m_inputHalfSel = m_inputHalfSel == 0;
     }
     return 1;
