@@ -15,17 +15,35 @@ worklist in one pass:
   choice or a schedule transposition. That is the documented regalloc/scheduling
   wall; `@early-stop` it and move on.
 
-```sh
-# per function, both sides, trailing alignment nops trimmed
-llvm-objdump -d build/objdiff/base/<unit>.obj
-llvm-objdump -d build/objdiff/target/<unit>.c.obj
-```
+**Do not hand-roll the count — `python -m gruntz.audit.insn_count` is the whole
+sweep** (`--summary`, `--unit X`, `--min/--max`, `--tsv`, `--eh`). It reads
+`build/gen/residual_function_queue.tsv` and does the two subtractions that a hand
+`llvm-objdump | wc -l` gets wrong:
+
+* the COMDAT alignment `nop`s cl emits and the delinker does not — untrimmed they
+  put spikes of 56/73/114 functions at exactly delta +4/+8/+12;
+* the switch JUMP TABLE, which decodes linearly and DIFFERENTLY on the two sides
+  (base entries are all-zero reloc slots, target entries hold real addresses).
+  Found exactly, from the run of DIR32 relocations at a 4-byte stride — the
+  "cut after the last `ret`" rule fails on `CTileActionEvent::Process`, whose
+  table bytes happen to decode a `retl $0x0`.
+
+Between them those accounted for 39 of the 304 mismatches a naive count reports,
+including the two largest: `CSpriteRef::Build` (-33, really 275 vs 275) and
+`CTileActionEvent::Process` (-40, really 261 vs 261). Both regalloc walls.
 
 Use `llvm-objdump`, not `sema disasm --diff`: the latter truncates at the first
 `$L` jump-table label, and the delinker packs a jump table INTO the owning
 function's symbol on the target side while the base keeps it in separate `$L`
 symbols — so a switch-heavy function shows a huge bogus count delta unless you
 account for the split labels.
+
+**Two things move the count that are NOT a missing construct.** A SPILL costs
+`sub esp,N` + `add esp,N` + the store/reload pair, so a function that ran out of
+registers on one side only reads as ±4 with no statement missing
+(`CStatusBarMgr::UpdateFallingItemStatusBar` -4 is exactly this). And the /GX
+EH frame is ~10 instructions of pure prologue/epilogue; `--eh` reports that side
+mismatch separately so it does not masquerade as a body difference.
 
 Measured on the `??0C*@@QAE@PAUCGameObject@@@Z` constructor family (61 partial):
 26 had a count mismatch and every one investigated was a genuine source bug —
