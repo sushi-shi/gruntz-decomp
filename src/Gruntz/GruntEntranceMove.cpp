@@ -308,13 +308,13 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
                 CGrunt* focus;
                 CTriggerMgr* tm = g->m_cmdGrid;
-                if (tm->m_recList.GetCount() == 1) {
+                if (tm->m_recList.GetCount() != 1) {
+                    focus = NULL;
+                } else {
                     i32* vec = static_cast<i32*>(tm->m_recList.GetHead());
                     i32 a = vec[0];
                     i32 b = vec[1];
                     focus = tm->m_grid[a * TM_GRID_COLS + b];
-                } else {
-                    focus = NULL;
                 }
                 if (this == focus && m_tileOwnerHi == g_curPlayer) {
                     onScreen = 1;
@@ -1268,15 +1268,16 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 // (docs/patterns/forward-goto-hoists-target-block.md).
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
+    bool ne;
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+    if (!ne) {
+        return 0;
+    }
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    if (!ne) {
+        return 0;
+    }
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
-    if (eq) {
-        return 0;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
-    if (eq) {
-        return 0;
-    }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         if (m_entranceReason == PICKUP_WAND) {

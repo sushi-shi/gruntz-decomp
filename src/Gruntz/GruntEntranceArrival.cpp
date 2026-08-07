@@ -454,15 +454,12 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             CGrunt* occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ != NULL) {
                 CGameObject* inner = occ->m_object;
-                i32 yMasked = (inner->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 xMasked = (inner->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 innerY = inner->m_screenY;
+                i32 innerX = inner->m_screenX;
+                i32 xMasked = (innerX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 yMasked = (innerY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 if (RectContainsGated(xMasked, yMasked) != 0) {
-                    m_tileMgr->ApplyTriggerB(
-                        m_tileOwnerHi,
-                        m_tileOwnerLo,
-                        inner->m_screenX,
-                        inner->m_screenY
-                    );
+                    m_tileMgr->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, innerX, innerY);
                 }
             }
         }
@@ -483,9 +480,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             while (pos != NULL) {
                 void* buf = m_coordList.GetNext(pos);
                 if (buf != NULL) {
-                    CoordPoolNode* sp = g_coordPool.NodeOf(buf);
-                    sp->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = sp;
+                    g_coordPool.Push(buf);
                 }
             }
             m_coordList.RemoveAll();

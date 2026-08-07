@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-static void GruntScratchTeardown() {
+static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
