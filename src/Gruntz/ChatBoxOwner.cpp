@@ -89,6 +89,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     REZ_TAG_TXT
                 );
                 CButeMgr bute;
+                bute.Term();
                 bool parsed;
                 if (source == NULL) {
                     parsed = false;
@@ -121,31 +122,36 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                 }
 
                 if (parsed) {
-                    CString empty(g_emptyString);
+                    CString group;
                     CString code;
                     i32 enabled = 0;
                     i32 count = bute.GetIntDef("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
-                        CString group;
                         group.Format("Cheat%i", i);
                         const char* groupName = static_cast<const char*>(group);
-                        if (!bute.Exists(groupName, "Text")) {
+                        // key == NULL is Exists()'s "the tag itself is present" form
+                        // (0x171a60 returns true before the key lookup).
+                        if (!bute.Exists(groupName, NULL)) {
                             continue;
                         }
-                        code = *bute.GetStringDef(groupName, "Text", &empty);
+                        code = *bute.GetStringDef(groupName, "Text", &code);
                         if (code.GetLength() == 0) {
                             continue;
                         }
-                        i32 nonCheat = bute.GetIntDef(groupName, "NonCheat", 0);
-                        i32 value = bute.GetIntDef(groupName, "Value", 0x807b);
-                        if (nonCheat == 1) {
-                            if (g_gameReg->m_cheatMgr
-                                    ->AddCheat(static_cast<const char*>(code), value, 1)) {
+                        if (bute.GetIntDef(groupName, "NonCheat", 0) == 1) {
+                            if (g_gameReg->m_cheatMgr->AddCheat(
+                                    static_cast<const char*>(code),
+                                    bute.GetIntDef(groupName, "Value", 0x807b),
+                                    1
+                                )) {
                                 enabled++;
                             }
                         } else {
-                            if (g_gameReg->m_cheatMgr
-                                    ->AddCheat(static_cast<const char*>(code), value, 0)) {
+                            if (g_gameReg->m_cheatMgr->AddCheat(
+                                    static_cast<const char*>(code),
+                                    bute.GetIntDef(groupName, "Value", 0x807b),
+                                    0
+                                )) {
                                 enabled++;
                             }
                         }
@@ -258,3 +264,17 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     }
     return 0;
 }
+
+// The zPTree/CBSecStream/CButeMgr teardown COMDATs of this TU's `CButeMgr bute;`
+// stack local: retail expands ~CButeMgr on ProcessCheatInput's normal path and
+// leaves these out-of-line copies for its unwind funclets - the only callers of
+// 0x213c0 / 0x21570 are the EH thunks in this TU's 0x5d93xx-0x5d95xx band.
+RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
+
+RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
+
+RVA_COMPGEN(0x000213c0, 0x14c, ??1CButeMgr@@QAE@XZ)
+
+RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
+
+RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
