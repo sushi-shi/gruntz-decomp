@@ -41,6 +41,8 @@
 #pragma intrinsic(sqrt)
 #include <string.h>
 #include <new>
+#include <Mfc.h>
+#include <MfcNoInline.h>
 #include <MfcWin.h>
 #include <Gruntz/TileTriggerContainer.h>
 

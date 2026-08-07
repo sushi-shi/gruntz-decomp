@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcNoInline.h>
 #include <MfcWin.h>
 
 #include <Gruntz/BattlezMapConfig.h>

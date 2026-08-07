@@ -3,6 +3,7 @@
 #include <Gruntz/GruntCombat.h>
 
 #include <Mfc.h>
+#include <MfcNoInline.h>
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>

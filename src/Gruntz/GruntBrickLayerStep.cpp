@@ -2,6 +2,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/GameRand.h>
 #include <Mfc.h>
+#include <MfcNoInline.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntzMapMgr.h>

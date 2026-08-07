@@ -2,6 +2,8 @@
 
 #include <Gruntz/Grunt.h>
 
+#include <Mfc.h>
+#include <MfcNoInline.h>
 #include <MfcWin.h>
 
 #include <AddrWord.h>
