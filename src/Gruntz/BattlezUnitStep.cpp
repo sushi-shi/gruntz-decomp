@@ -306,11 +306,12 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             rc.top = boardRect->top;
             rc.right = boardRect->right;
             rc.bottom = boardRect->bottom;
-            if (!IntersectRect(&board->m_bounds, &rc, &r1)) {
-                board->m_bounds = rc;
+            RECT* rcDst = &board->m_bounds;
+            if (!IntersectRect(rcDst, &rc, &r1)) {
+                *rcDst = rc;
             }
-            board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-            board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+            board->m_gridW = rcDst->right - rcDst->left;
+            board->m_gridH = rcDst->bottom - rcDst->top;
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeMaskA;
                 unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
@@ -606,11 +607,12 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     rc.top = bp->top;
     rc.right = bp->right;
     rc.bottom = bp->bottom;
-    if (!IntersectRect(&board->m_bounds, &rc, &box2)) {
-        board->m_bounds = rc;
+    RECT* rcDst = &board->m_bounds;
+    if (!IntersectRect(rcDst, &rc, &box2)) {
+        *rcDst = rc;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+    board->m_gridW = rcDst->right - rcDst->left;
+    board->m_gridH = rcDst->bottom - rcDst->top;
     PickupType prim = unit->m_entranceReason;
     i32 flags = unit->m_routeMaskC;
     PickupType t = prim;

@@ -1128,11 +1128,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         RECT r1;
                         static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT rc = CRect(0, 0, bd->m_width, bd->m_height);
-                        if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
-                            bd->m_bounds = rc;
+                        RECT* rcDst = &bd->m_bounds;
+                        if (!IntersectRect(rcDst, &rc, &r1)) {
+                            *rcDst = rc;
                         }
-                        bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
-                        bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                        bd->m_gridW = rcDst->right - rcDst->left;
+                        bd->m_gridH = rcDst->bottom - rcDst->top;
                     }
                         {
                             i32 special = 1;
@@ -1597,11 +1598,12 @@ i32 CBattlezMapConfig::StepRowUnits() {
         a.right = bd2->m_width;
         a.bottom = bd2->m_height;
         RECT b2 = CRect(0, 0, bd2->m_width, bd2->m_height);
-        if (!IntersectRect(&bd2->m_bounds, &b2, &a)) {
-            bd2->m_bounds = b2;
+        RECT* b2Dst = &bd2->m_bounds;
+        if (!IntersectRect(b2Dst, &b2, &a)) {
+            *b2Dst = b2;
         }
-        bd2->m_gridW = bd2->m_bounds.right - bd2->m_bounds.left;
-        bd2->m_gridH = bd2->m_bounds.bottom - bd2->m_bounds.top;
+        bd2->m_gridW = b2Dst->right - b2Dst->left;
+        bd2->m_gridH = b2Dst->bottom - b2Dst->top;
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
@@ -1839,11 +1841,12 @@ rowHitA: {
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
-    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
-        hb->m_bounds = hc;
+    RECT* hcDst = &hb->m_bounds;
+    if (!IntersectRect(hcDst, &hc, &h1)) {
+        *hcDst = hc;
     }
-    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
-    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    hb->m_gridW = hcDst->right - hcDst->left;
+    hb->m_gridH = hcDst->bottom - hcDst->top;
     return 1;
 }
 
@@ -1860,11 +1863,12 @@ rowHitB: {
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
-    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
-        hb->m_bounds = hc;
+    RECT* hcDst = &hb->m_bounds;
+    if (!IntersectRect(hcDst, &hc, &h1)) {
+        *hcDst = hc;
     }
-    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
-    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    hb->m_gridW = hcDst->right - hcDst->left;
+    hb->m_gridH = hcDst->bottom - hcDst->top;
     return 1;
 }
 
@@ -1930,11 +1934,12 @@ colHitA: {
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
-    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
-        hb->m_bounds = hc;
+    RECT* hcDst = &hb->m_bounds;
+    if (!IntersectRect(hcDst, &hc, &h1)) {
+        *hcDst = hc;
     }
-    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
-    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    hb->m_gridW = hcDst->right - hcDst->left;
+    hb->m_gridH = hcDst->bottom - hcDst->top;
     return 1;
 }
 
@@ -1951,11 +1956,12 @@ colHitB: {
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc = CRect(0, 0, hb->m_width, hb->m_height);
-    if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
-        hb->m_bounds = hc;
+    RECT* hcDst = &hb->m_bounds;
+    if (!IntersectRect(hcDst, &hc, &h1)) {
+        *hcDst = hc;
     }
-    hb->m_gridW = hb->m_bounds.right - hb->m_bounds.left;
-    hb->m_gridH = hb->m_bounds.bottom - hb->m_bounds.top;
+    hb->m_gridW = hcDst->right - hcDst->left;
+    hb->m_gridH = hcDst->bottom - hcDst->top;
     return 1;
 }
 }
@@ -2393,11 +2399,12 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     } else {
         a = bounds;
     }
-    if (!IntersectRect(&board->m_bounds, &a, &bounds)) {
-        board->m_bounds = a;
+    RECT* aDst = &board->m_bounds;
+    if (!IntersectRect(aDst, &a, &bounds)) {
+        *aDst = a;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+    board->m_gridW = aDst->right - aDst->left;
+    board->m_gridH = aDst->bottom - aDst->top;
     Coord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
@@ -2485,11 +2492,12 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 RECT hitFull;
                 static_cast<RECT*>(new (&hitFull) CRect(0, 0, board->m_width, board->m_height));
                 RECT hitBox = CRect(0, 0, board->m_width, board->m_height);
-                if (!IntersectRect(&board->m_bounds, &hitBox, &hitFull)) {
-                    board->m_bounds = hitBox;
+                RECT* hitBoxDst = &board->m_bounds;
+                if (!IntersectRect(hitBoxDst, &hitBox, &hitFull)) {
+                    *hitBoxDst = hitBox;
                 }
-                board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-                board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+                board->m_gridW = hitBoxDst->right - hitBoxDst->left;
+                board->m_gridH = hitBoxDst->bottom - hitBoxDst->top;
                 Coord* nt = (unit->CoordTail())->m_coord;
                 unit->m_entrancePx.m_x = (nt->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
                 unit->m_entrancePx.m_y = (nt->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -2502,11 +2510,12 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     RECT tailFull;
     static_cast<RECT*>(new (&tailFull) CRect(0, 0, board->m_width, board->m_height));
     RECT tailBox = CRect(0, 0, board->m_width, board->m_height);
-    if (!IntersectRect(&board->m_bounds, &tailBox, &tailFull)) {
-        board->m_bounds = tailBox;
+    RECT* tailBoxDst = &board->m_bounds;
+    if (!IntersectRect(tailBoxDst, &tailBox, &tailFull)) {
+        *tailBoxDst = tailBox;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+    board->m_gridW = tailBoxDst->right - tailBoxDst->left;
+    board->m_gridH = tailBoxDst->bottom - tailBoxDst->top;
     return 0;
 }
 
@@ -2694,11 +2703,12 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     } else {
         a = bounds;
     }
-    if (!IntersectRect(&board->m_bounds, &a, &bounds)) {
-        board->m_bounds = a;
+    RECT* aDst = &board->m_bounds;
+    if (!IntersectRect(aDst, &a, &bounds)) {
+        *aDst = a;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+    board->m_gridW = aDst->right - aDst->left;
+    board->m_gridH = aDst->bottom - aDst->top;
     RouteUnitTo(tgt, xcoord, ycoord, 0x20000d87, 0, 0);
     board->Clip(static_cast<const RECT*>(0));
     return 1;
@@ -3061,11 +3071,12 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }
-        if (!IntersectRect(&board->m_bounds, &a, &b)) {
-            board->m_bounds = a;
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &b)) {
+            *aDst = a;
         }
-        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
     }
 
     CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
@@ -3134,11 +3145,12 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         CRect b(0, 0, bd->m_width, bd->m_height);
                         RECT a;
                         a = CRect(0, 0, bd->m_width, bd->m_height);
-                        if (!IntersectRect(&bd->m_bounds, &a, &b)) {
-                            bd->m_bounds = a;
+                        RECT* aDst = &bd->m_bounds;
+                        if (!IntersectRect(aDst, &a, &b)) {
+                            *aDst = a;
                         }
-                        bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
-                        bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                        bd->m_gridW = aDst->right - aDst->left;
+                        bd->m_gridH = aDst->bottom - aDst->top;
                         return 1;
                     }
                 } else {
@@ -3152,11 +3164,12 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                             CRect b(0, 0, bd->m_width, bd->m_height);
                             RECT a;
                             a = CRect(0, 0, bd->m_width, bd->m_height);
-                            if (!IntersectRect(&bd->m_bounds, &a, &b)) {
-                                bd->m_bounds = a;
+                            RECT* aDst = &bd->m_bounds;
+                            if (!IntersectRect(aDst, &a, &b)) {
+                                *aDst = a;
                             }
-                            bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
-                            bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                            bd->m_gridW = aDst->right - aDst->left;
+                            bd->m_gridH = aDst->bottom - aDst->top;
                             return 1;
                         }
                     }
@@ -3299,11 +3312,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     } else {
                         clipBox = CRect(0, 0, board->m_width, board->m_height);
                     }
-                    if (!IntersectRect(&board->m_bounds, &clipBox, &clipFull)) {
-                        board->m_bounds = clipBox;
+                    RECT* clipBoxDst = &board->m_bounds;
+                    if (!IntersectRect(clipBoxDst, &clipBox, &clipFull)) {
+                        *clipBoxDst = clipBox;
                     }
-                    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-                    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+                    board->m_gridW = clipBoxDst->right - clipBoxDst->left;
+                    board->m_gridH = clipBoxDst->bottom - clipBoxDst->top;
                 }
             }
 
@@ -3361,11 +3375,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     pathFull.bottom = bd->m_height;
                                     RECT pathBox;
                                     pathBox = CRect(0, 0, bd->m_width, bd->m_height);
-                                    if (!IntersectRect(&bd->m_bounds, &pathBox, &pathFull)) {
-                                        bd->m_bounds = pathBox;
+                                    RECT* pathBoxDst = &bd->m_bounds;
+                                    if (!IntersectRect(pathBoxDst, &pathBox, &pathFull)) {
+                                        *pathBoxDst = pathBox;
                                     }
-                                    bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
-                                    bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                                    bd->m_gridW = pathBoxDst->right - pathBoxDst->left;
+                                    bd->m_gridH = pathBoxDst->bottom - pathBoxDst->top;
                                     return 1;
                                 }
                             }
@@ -3381,11 +3396,12 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             CRect b(0, 0, bd->m_width, bd->m_height);
             RECT a;
             a = CRect(0, 0, bd->m_width, bd->m_height);
-            if (!IntersectRect(&bd->m_bounds, &a, &b)) {
-                bd->m_bounds = a;
+            RECT* aDst = &bd->m_bounds;
+            if (!IntersectRect(aDst, &a, &b)) {
+                *aDst = a;
             }
-            bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
-            bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+            bd->m_gridW = aDst->right - aDst->left;
+            bd->m_gridH = aDst->bottom - aDst->top;
         }
     }
 
@@ -3866,11 +3882,12 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }
-        if (!IntersectRect(&board->m_bounds, &a, &b)) {
-            board->m_bounds = a;
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &b)) {
+            *aDst = a;
         }
-        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
     }
     ClaimTilesAround(unit, col, row, requireUnoccupied);
     if (g_stepRun == 0) {
@@ -3931,11 +3948,12 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         CRect b(0, 0, board->m_width, board->m_height);
         RECT a;
         a = b;
-        if (!IntersectRect(&board->m_bounds, &a, &b)) {
-            board->m_bounds = a;
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &b)) {
+            *aDst = a;
         }
-        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
     }
     return 1;
 }
@@ -4062,11 +4080,12 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }
-        if (!IntersectRect(&board->m_bounds, &a, &b)) {
-            board->m_bounds = a;
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &b)) {
+            *aDst = a;
         }
-        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
     }
 
     i32 flags = 0;
@@ -4098,11 +4117,12 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         CRect b(0, 0, board->m_width, board->m_height);
         RECT a;
         a = CRect(0, 0, board->m_width, board->m_height);
-        if (!IntersectRect(&board->m_bounds, &a, &b)) {
-            board->m_bounds = a;
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &b)) {
+            *aDst = a;
         }
-        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
         unit->m_dwell = 0;
         return 0;
     }
@@ -4133,11 +4153,12 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     static_cast<RECT*>(new (&gb) CRect(0, 0, board->m_width, board->m_height));
     RECT grc;
     grc = gb;
-    if (!IntersectRect(&board->m_bounds, &grc, &gb)) {
-        board->m_bounds = grc;
+    RECT* grcDst = &board->m_bounds;
+    if (!IntersectRect(grcDst, &grc, &gb)) {
+        *grcDst = grc;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+    board->m_gridW = grcDst->right - grcDst->left;
+    board->m_gridH = grcDst->bottom - grcDst->top;
     unit->m_dwell = 0;
     return 1;
 }

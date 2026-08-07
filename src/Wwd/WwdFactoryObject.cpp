@@ -308,9 +308,7 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 }
 
 // @early-stop
-// cl cross-jumps the return tails (3 epilogues where retail emits 7) and promotes 0
-// into ebp where retail promotes 1; the ~m_flags & 1 store is 16-bit here and 8-bit
-// in retail.
+// cl cross-jumps the WWDLOOP_AT_PARAM fallback into loop_restart's; retail emits both.
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {

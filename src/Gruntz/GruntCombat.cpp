@@ -766,11 +766,12 @@ i32 CGrunt::PathScan() {
         } else {
             box = CRect(0, 0, grid->m_width, grid->m_height);
         }
-        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
-            grid->m_bounds = box;
+        RECT* boxDst = &grid->m_bounds;
+        if (!IntersectRect(boxDst, &box, &gb)) {
+            *boxDst = box;
         }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
+        grid->m_gridW = boxDst->right - boxDst->left;
+        grid->m_gridH = boxDst->bottom - boxDst->top;
     }
 
     CoordNode* tail = CoordTail();
@@ -875,11 +876,12 @@ i32 CGrunt::PathScan() {
         } else {
             ra = CRect(0, 0, grid->m_width, grid->m_height);
         }
-        if (!IntersectRect(&grid->m_bounds, &ra, &rb)) {
-            grid->m_bounds = ra;
+        RECT* raDst = &grid->m_bounds;
+        if (!IntersectRect(raDst, &ra, &rb)) {
+            *raDst = ra;
         }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
+        grid->m_gridW = raDst->right - raDst->left;
+        grid->m_gridH = raDst->bottom - raDst->top;
 
         for (i32 dy = -1; dy < 2; dy++) {
             for (i32 dx = -1; dx < 2; dx++) {
