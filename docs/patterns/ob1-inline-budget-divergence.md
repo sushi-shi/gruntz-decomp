@@ -48,6 +48,41 @@ line, potentially emitting a vtable absent from retail. That is evidence of a wi
 declaration or caller-shape mismatch, not permission to choose the pruned constructor
 with a macro.
 
+## Retail itself makes opposite choices at two sites in ONE TU (2026-08-07)
+
+`gruntz sema xref 0x0015b390` settles the visibility question: retail's
+`CreateContainerObject` (`0x1598d0`, WwdObjMgr.cpp) **calls** `CGameObject::CGameObject`
+while `CreateDotObject` (`0x159250`, same .cpp, 0x680 bytes earlier) **expands** it -
+two stores of `??_7CResolveNode`/`??_7CGameObject` inline plus the nested
+`new AnimWorkerObj`. One TU, one constructor, both shapes. So the constructor is
+inline-in-header (a `.cpp`-out-of-line definition could produce only the call form),
+and the call/expand choice is pure accumulated budget.
+
+The cut point is the *innermost* level reached, and it is not steerable from source:
+
+| site | retail cuts after | ours cuts after |
+|---|---|---|
+| `CreateDotObject` / `CreateDeferredObject` | CGameObject (level 2); calls `??0CResolveNode`, `WwdRegion`, `WwdDirtyRect`, `CString`, `??0AnimWorkerObj` | CLoadable (level 4); calls `??0CWapObj` |
+| `CreateSpriteObject` | CGameObject; calls `FUN_0055b2b0` (`WwdGridNode`) | inlines the whole chain |
+| `??0CGameObject` standalone `0x15b390` | nothing - expands CResolveNode, CLoadable, CWapObj, AnimWorkerObj | same |
+
+Because our cut lands one level deeper, cl materializes `??0CWapObj@@QAE@XZ` and with
+it `??_7CWapObj@@6B@`, which retail never emits - the `class_vtables` vtbl-absent
+violation. The chain, the field-store sets and even the EH state table (5 states = the
+5 destructible sub-objects) are byte-for-byte the same on both sides; only the cut
+differs. Disproved as causes, each by a rebuild of `wwdobjmgr.obj`:
+
+- making `CWapObj`'s default ctor compiler-generated (removing both user ctors);
+- moving the three member stores into a `CWapObj(CDDrawSurfaceMgr*,i32,i32)` so the
+  declined body has a different size (cl then emits *that* ctor instead);
+- deleting the TU's unused placement `operator new`;
+- deleting the fabricated `char _p18d[]` tail padding of `CWwdGameObjectC`;
+- `#pragma inline_depth(2)` (no effect at all; `(1)` works, so the pragma is live).
+
+`inline_depth(3)` would put the cut on `??0CLoadable` - the symbol retail's obj
+actually references - but that is exactly the banned per-TU device. Treat the
+vtbl-absent row on `wwdobjmgr` as this wall's readout, not as a hierarchy bug.
+
 ## Related
 
 - `docs/patterns/base-trio-in-ctor-body-misplaces-vptr.md`
