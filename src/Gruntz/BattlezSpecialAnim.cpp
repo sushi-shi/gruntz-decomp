@@ -121,12 +121,11 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "P") == 0);
     if (eq) {
@@ -136,12 +135,11 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "J") == 0);
     if (eq) {
@@ -151,12 +149,11 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
-        cnt--;
     }
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
@@ -177,14 +174,14 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
 
     slot = g_typeColl.Slots();
     cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
-        cnt--;
     }
-    return strcmp(*sel, "R") != 0;
+    eq = (strcmp(*sel, "R") == 0);
+    return !eq;
 }
 
 RVA(0x00034960, 0x24)

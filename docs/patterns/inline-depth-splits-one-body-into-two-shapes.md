@@ -49,3 +49,31 @@ divergence sits under `_CreateDoNothingNormal` (`0xa9e00`, 39.6%), where retail 
 `??0CUserLogic@@QAE@PAUCGameObject@@@Z` at `0x58cd0` - one of its only three callers, the other
 two being `CGrunt`'s and `CProjectile`'s ctors, both of which exhaust the budget on their own
 bodies first.
+
+**A GLOBAL-REFERENCE CENSUS settles "was the ctor inline in retail?" in one command.**
+`gruntz sema xref` only sees `call`/`jmp` rel32, so it lists the sites that kept the call and is
+silent about the sites that inlined. Scan `.text` for the 32-bit immediate of a global the ctor
+body touches instead: every function that references it either IS the ctor or inlined it.
+For `??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z` (`0x15b390`) the tell is
+`g_wwdObjIdCounter` at `0x0061ab14`, and the census (2026-08-08) is decisive:
+
+| function | references `g_wwdObjIdCounter` | shape |
+|---|---|---|
+| `CDDrawChildGroup::CreateDotObject` 0x159250 | yes | ctor INLINED |
+| `CDDrawChildGroup::CreateDeferredObject` 0x159440 | yes | ctor INLINED |
+| `CDDrawChildGroup::CreateSpriteObject` 0x159600 | yes | ctor INLINED |
+| `CDDrawChildGroup::CreateContainerObject` 0x1598d0 | **no** | `call 0x15b390` |
+| `CWwdGameObject::CreateObject` 0x166640 | no | `call 0x15b390` |
+| `CDDrawWorkerHost::ReadPlaneObjects` 0x162af0 | no | `call 0x15b390` |
+
+A ctor defined out-of-line in another `.cpp` can **never** be inlined, so retail's definition was
+header-inline and the three call sites are budget declines. Pinning `0x15b390` with a real
+out-of-line definition therefore cannot be honest: it would convert the three inlining factories
+into calls, which is exactly the trade
+[base-ctor-pinned-out-of-line-costs-every-derived-ctor.md](base-ctor-pinned-out-of-line-costs-every-derived-ctor.md)
+measured at -65 ctors. Confirmed no base obj emits the COMDAT today
+(`llvm-nm build/objdiff/base/*.obj | grep '??0CGameObject@@QAE@'` is empty), so the RVA stays
+unclaimed until a caller converges.
+
+Same census recipe for any other suspected inline ctor: pick a global/string only that ctor
+touches, `struct.pack("<I", va)` it, and `find` it across the `.text` blob.
