@@ -26,7 +26,7 @@ public:
 
     i32 AdvanceAnim();
 
-    i32 Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB);
+    void Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB);
 
     i32 RebindNode();
 

@@ -110,30 +110,29 @@ void CLightFx::RegisterActs() {
 
 // @early-stop
 RVA(0x0009d520, 0xfd)
-i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
-    void* node = 0;
+void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     CObject* nodeOb = 0;
 
     m_animWorker->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
-    node = nodeOb;
-    void* found = node;
+    void* found = nodeOb;
     g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, SHADE_DST_BY_SRC_16);
+    CWwdGameObjectA* o = m_wwdObject;
     if (found != NULL) {
 
         CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
 
-        m_wwdObject->m_frameSet = en;
+        o->m_frameSet = en;
         CImage* val;
         if (key < en->m_minIndex || key > en->m_maxIndex) {
             val = NULL;
         } else {
             val = static_cast<CImage*>(en->m_items.GetAt(key));
         }
-        m_wwdObject->m_layer = val;
-        m_wwdObject->m_frameIndex = key;
+        o->m_layer = val;
+        o->m_frameIndex = key;
     }
-    node = NULL;
+    void* node = NULL;
     m_wwdObject->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
@@ -146,7 +145,6 @@ i32 CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 an
         m_wwdObject->m_animCursor.Setup(static_cast<CAniElement*>(node));
         RebindNode();
     }
-    return 0;
 }
 
 RVA(0x0009d660, 0xc8)
