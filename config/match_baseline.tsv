@@ -183,7 +183,7 @@ gruntwingztimesprite	4	3
 gruntzapp	13	13
 gruntzcmdmgr	46	41
 gruntzmapmgr	3	2
-gruntzmgr	152	136
+gruntzmgr	152	137
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	35
@@ -1988,7 +1988,7 @@ gruntcombat	?StopStruckSlotSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	548879ed1823
 gruntcombat	?StopStruckVoiceSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	6183b34eeacb	0x57ce0
 gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	93.3115	93.3115	8	2992726534f1	0x57aa0
 gruntcombat	_CreateGrunt	97.8571	97.8571	2	ec3cbe81038f	0x5baf0
-gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	78.9784	78.9784	10	edc7a6c3e407	0x3e520
+gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	80.6043	80.6043	11	3309c930629c	0x3e520
 gruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	2	cf542bb4ed28	0x10730
 gruntcreationpoint	??_GCGruntCreationPoint@@UAEPAXI@Z	100.0000	100.0000	1	cpp:17015ea8ad57	0x10700
 gruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	6	49a6dc21ddeb	0x3ecc0
@@ -2014,30 +2014,30 @@ gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	90.8
 gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	55.2779	55.2779	23	840a16621214	0x62e10
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	95.7000	95.7000	7	4e78a9b060d8	0x616e0
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	4	b70449c2595a	0x633e0
-gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEXHH@Z	78.5373	78.5373	20	c4caf307d6e5	0x65630
+gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	79.9686	79.9686	21	c59646e3e5ba	0x65630
 gruntentrancearrival	?StepArrivalCommitA@CGrunt@@QAEHXZ	100.0000	100.0000	15	17bbb18bc427	0x65300
 gruntentrancearrival	?StepArrivalCommitB@CGrunt@@QAEHXZ	100.0000	100.0000	14	eeaa13022c66	0x654b0
 gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	81.9427	81.9427	19	af8f8b2b4b3e	0x63b60
 gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	98.7612	98.7612	12	1ee4d308c896	0x61cb0
-gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	74.1425	74.1425	1	6686b5131ef0	0x646b0
+gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	78.5906	78.5906	1	6686b5131ef0	0x646b0
 gruntentrancearrival	?StepEntranceReinit@CGrunt@@QAEHXZ	79.5556	79.5556	17	ccfde08e9086	0x637a0
 gruntentrancearrival	?StepEntranceRelatchA@CGrunt@@QAEHXZ	98.7989	98.7989	23	284b17754684	0x62840
-gruntentrancearrival	?StepEntranceRelatchB@CGrunt@@QAEHXZ	69.7740	69.7740	19	98fe1acaf246	0x65c20
+gruntentrancearrival	?StepEntranceRelatchB@CGrunt@@QAEHXZ	98.2192	98.2192	20	2cacfb5b6835	0x65c20
 gruntentrancearrival	?StepWarpExit@CGrunt@@QAEHXZ	86.4156	86.4156	8	043031598849	0x64540
-gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	80.0721	80.0721	19	8b8adad63dff	0x62110
+gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	80.0721	79.5158	20	a491468c8b86	0x62110
 gruntentrancearrival	?UpdateGruntStatus@CGrunt@@QAEHXZ	94.6277	94.6277	18	03c547fcd4c6	0x617c0
-gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEXW4GruntEntranceMode@@@Z	78.2304	78.2304	1	02c69a4ffcd0	0x67bd0
-gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	75.5752	75.5752	2	58b74268f811	0x6a6d0
+gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEXW4GruntEntranceMode@@@Z	80.3502	80.3502	2	c4bd2878a8a8	0x67bd0
+gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	75.6220	75.6220	3	39b36fa3eaef	0x6a6d0
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	10	8b0bcb6a82cb	0x69fd0
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	80.4082	80.4082	4	efec11aa94ed	0x67b00
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	86.6710	86.6710	4	7b9944baa823	0x67f80
 gruntentrancemove	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3881	87.3806	16	41f479ed91ef	0x69d60
 gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	12	534cfb8987ce	0x6a060
-gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	76.6337	76.6337	21	6038024fe742	0x68880
+gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	84.4868	84.4868	21	6038024fe742	0x68880
 gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	96.8854	96.8854	4	78ddfbe892b8	0x68370
-gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	81.1568	81.1568	18	201fdba3f263	0x67850
+gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	89.8270	89.8270	19	e72d4ab23536	0x67850
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	98.6952	98.6952	14	21c5f79170d4	0x68520
-gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	3.1612	3.1612	17	2ac74958091b	0x692f0
+gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	79.8475	79.8475	17	2ac74958091b	0x692f0
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260
 gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	94.3456	94.3456	16	83af97f7c2f7	0x690a0
 gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	43.5241	43.5103	2	c2ad035d77fd	0xf0e20
@@ -2083,7 +2083,7 @@ gruntselectedsprite	?FireActivation@CGruntSelectedSprite@@UAEXH@Z	100.0000	100.0
 gruntselectedsprite	?RegisterActs@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	11	9e2a7c0a57e6	0x7e7c0
 gruntselectedsprite	?SerializeMove@CGruntSelectedSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ef73bde9c775	0x7ea70
 gruntselectedsprite	?SetCell@CGruntSelectedSprite@@QAEHHH@Z	100.0000	100.0000	2	4c1a81ebb987	0x7e9c0
-gruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	84.8485	84.8485	11	dad822b9bfe8	0x7e9f0
+gruntselectedsprite	?Update@CGruntSelectedSprite@@QAEHXZ	84.8485	84.8485	12	b7d12564215a	0x7e9f0
 gruntspawnconfig	??0CSpawnEntry@@QAE@VCString@@H@Z	100.0000	100.0000	1	5c2d4f941d34	0x11c630
 gruntspawnconfig	??1CGruntSpawnConfig@@QAE@XZ	100.0000	100.0000	2	20f5efeeb41b	0x85df0
 gruntspawnconfig	?AddVoiceSound@CSpawnList@@QAEXVCString@@H@Z	100.0000	100.0000	4	34419ae532c3	0x11c560
@@ -2147,7 +2147,7 @@ grunttoytimesprite	??0CGruntToyTimeSprite@@QAE@PAUCGameObject@@@Z	94.7619	94.761
 grunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	100.0000	100.0000	2	87752f9edfc8	0x12130
 grunttoytimesprite	??_GCGruntToyTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:dfd9b4079ee3	0x12100
 grunttoytimesprite	?GetDisplayedValue@CGruntToyTimeSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	1	4c56ab901d4f	0x7fca0
-grunttubeanim	?SetupTubeAnim@CGrunt@@QAEHH@Z	79.9935	79.9935	9	1a92956cd88a	0x50a50
+grunttubeanim	?SetupTubeAnim@CGrunt@@QAEHH@Z	97.3961	97.3961	10	a3ba7c40df37	0x50a50
 gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	94.8036	94.8036	14	93b5182443bb	0x1198a0
 gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	98.0250	98.0250	8	50b34ad60a41	0x119b50
 gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	8	50b34ad60a41	0x13470
@@ -2196,7 +2196,7 @@ gruntzcmdmgr	??_GCGruntzMultiCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b35c9b4e
 gruntzcmdmgr	??_GCGruntzSingleCommand@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b35c9b4e5c01	0x242c0
 gruntzcmdmgr	?Allocate@CGruntzMultiCommand@@SAPAV1@XZ	100.0000	100.0000	3	f77f5aa7e330	0x24360
 gruntzcmdmgr	?Allocate@CGruntzSingleCommand@@SAPAV1@XZ	100.0000	100.0000	3	b8f1fb7e11fa	0x24220
-gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	65.8684	65.8684	11	95651b4b77cb	0x23d90
+gruntzcmdmgr	?BlitTileMarker@CGruntzCmdMgr@@QAEXHHHHH@Z	66.4210	66.4210	12	c6d62399c75e	0x23d90
 gruntzcmdmgr	?Clear@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	3	2dfc1d1a746b	0x23c00
 gruntzcmdmgr	?ClearAndReset@CGruntzCmdMgr@@QAEXXZ	100.0000	100.0000	3	d68e178c9bff	0x239f0
 gruntzcmdmgr	?DebugGruntTypeDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	bd366ddbe2ed	0x92ab0
@@ -2216,8 +2216,8 @@ gruntzcmdmgr	?Load@CGruntzMultiCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.000
 gruntzcmdmgr	?Load@CGruntzSingleCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	86107c3d950b	0x245f0
 gruntzcmdmgr	?Pack@CGruntzMultiCommand@@UAEHPADH@Z	100.0000	100.0000	4	a11dce4e9def	0x240d0
 gruntzcmdmgr	?Pack@CGruntzSingleCommand@@UAEHPADH@Z	100.0000	100.0000	4	53dfd7df47ca	0x24050
-gruntzcmdmgr	?Parse@CGruntzMultiCommand@@UAEHPAXH@Z	83.2000	83.2000	5	152c852eb2b3	0x24000
-gruntzcmdmgr	?Parse@CGruntzSingleCommand@@UAEHPAXH@Z	86.4516	86.4516	5	c29872a1dab5	0x23f90
+gruntzcmdmgr	?Parse@CGruntzMultiCommand@@UAEHPAXH@Z	83.2000	83.2000	6	51df49d4203f	0x24000
+gruntzcmdmgr	?Parse@CGruntzSingleCommand@@UAEHPAXH@Z	86.4516	86.4516	6	e6c794271966	0x23f90
 gruntzcmdmgr	?RemoveMatchingTarget@CGruntzCmdMgr@@QAEXHH@Z	100.0000	100.0000	1	68811d8750de	0x23b40
 gruntzcmdmgr	?Save@CGruntzMultiCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	51a94da7911b	0x24710
 gruntzcmdmgr	?Save@CGruntzSingleCommand@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	b8df6100feca	0x24520
@@ -2358,7 +2358,7 @@ gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	7	27d
 gruntzmgr	?ScanObjectsInRadius@CGruntzMgr@@QAEHHHHHP6AHPAUCGameObject@@H@ZH@Z	100.0000	100.0000	5	bc06ad584a68	0x92180
 gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	84.5844	84.5844	3	0cada312f88b	0x92250
 gruntzmgr	?SetAssetRoot@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	4	9d4e8269f71c	0x92060
-gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	82.8298	82.8298	1	c7410d7d8bb5	0x91170
+gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	2	8bab5f986b4a	0x91170
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	6	b8594f768fc8	0x8f7b0
 gruntzmgr	?SetGruntColor@CGruntzMgr@@QAEHPAVCDDrawWorker@@PBDH@Z	100.0000	100.0000	5	591f9957b93c	0x910d0
 gruntzmgr	?SetRunState@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	9	07dc8dd11071	0x92340
