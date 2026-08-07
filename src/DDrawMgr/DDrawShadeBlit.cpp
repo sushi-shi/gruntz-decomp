@@ -309,14 +309,15 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 u8* dst0 = base + x * m_dstBpp;
                 if (m_srcBpp == 1) {
                     u8* d = dst0;
-                    for (i32 k = bytes; k-- > 0;) {
+                    while (bytes-- > 0) {
                         *d-- = *s++;
                     }
                 } else {
                     u16* d = Pix16(dst0);
                     u16* sw = Pix16(s);
-                    for (i32 k = bytes; k-- > 0; k--) {
+                    while (bytes-- > 0) {
                         *d-- = *sw++;
+                        bytes--;
                     }
                 }
                 x -= m_rleData[pos];
@@ -350,14 +351,15 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 u8* dbase = base + (x - clip->left) * m_dstBpp;
                 if (m_srcBpp == 1) {
                     u8* d = dbase;
-                    for (i32 k = bytes; k-- > 0;) {
+                    while (bytes-- > 0) {
                         *d-- = *sd++;
                     }
                 } else {
                     u16* d = Pix16(dbase);
                     u16* sw = Pix16(sd);
-                    for (i32 k = bytes; k-- > 0; k--) {
+                    while (bytes-- > 0) {
                         *d-- = *sw++;
+                        bytes--;
                     }
                 }
                 x -= m_rleData[pos];
@@ -394,14 +396,15 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     u8* s = &m_rleData[pos] - bytes;
                     if (m_srcBpp == 1) {
                         u8* d = base + clip->right * m_dstBpp;
-                        for (i32 k = bytes; k-- > 0;) {
+                        while (bytes-- > 0) {
                             *d-- = *s++;
                         }
                     } else {
                         u16* d = Pix16(base + clip->right * m_dstBpp);
                         u16* sw = Pix16(s);
-                        for (i32 k = bytes; k-- > 0; k--) {
+                        while (bytes-- > 0) {
                             *d-- = *sw++;
+                            bytes--;
                         }
                     }
                 }
@@ -420,14 +423,15 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     u8* dst0 = base + x * m_dstBpp;
                     if (m_srcBpp == 1) {
                         u8* d = dst0;
-                        for (i32 k = bytes; k-- > 0;) {
+                        while (bytes-- > 0) {
                             *d-- = *s++;
                         }
                     } else {
                         u16* d = Pix16(dst0);
                         u16* sw = Pix16(s);
-                        for (i32 k = bytes; k-- > 0; k--) {
+                        while (bytes-- > 0) {
                             *d-- = *sw++;
+                            bytes--;
                         }
                     }
                     x -= m_rleData[pos];
