@@ -1089,7 +1089,6 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     return PlacePuddle(sprite, color);
 }
 
-// @early-stop
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
     CGruntPuddle* tgt = static_cast<CGruntPuddle*>(sprite->m_animWorker->m_logic);

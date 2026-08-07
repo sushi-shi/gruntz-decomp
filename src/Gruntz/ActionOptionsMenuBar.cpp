@@ -206,7 +206,6 @@ i32 CActionOptionsMenuBar::Render() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00009650, 0xcf)
 i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
