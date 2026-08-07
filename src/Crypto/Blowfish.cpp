@@ -27,6 +27,13 @@ RVA(0x0016f6c0, 0x12)
 void __stdcall Blowfish_InitKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
+// @early-stop
+// Register-rotation wall: the 16 macro rounds are instruction-for-instruction
+// identical to retail, only the eax/ecx/ebx/esi assignment rotates (retail zeroes
+// eax and loads the >>16 byte into al; cl zeroes ecx and loads it into cl). cl emits
+// BYTE-IDENTICAL output for all 10 spellings tried - both addend orders, the xor
+// operand order, and a statement-form macro with an explicit temp - so the operand
+// order is canonicalised before regalloc and there is no source lever.
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;

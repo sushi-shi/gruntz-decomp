@@ -26,6 +26,10 @@
     } while (0)
 
 // @early-stop
+// The three ActKey() comparisons are `bool eq = (strcmp(..) == 0); if (!eq)` - retail's
+// sete proves the polarity. Residue: cl allocates one 4-byte stack local (push ecx)
+// where retail has none - it reuses the never-read 4th parameter's home slot for the
+// CAniElement* scratch - so every [esp+N] in the 5 KB body is off by 4.
 RVA(0x00065e80, 0x13a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
@@ -43,12 +47,12 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        bool neA = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") != 0);
-        if (neA) {
-            bool neD = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) != 0);
-            if (neD) {
-                bool neE = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") != 0);
-                if (neE) {
+        bool eqA = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") == 0);
+        if (!eqA) {
+            bool eqD = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) == 0);
+            if (!eqD) {
+                bool eqE = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") == 0);
+                if (!eqE) {
                     return 0;
                 }
             }

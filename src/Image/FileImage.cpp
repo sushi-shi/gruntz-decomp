@@ -323,6 +323,13 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 }
 
 // @early-stop
+// @early-stop
+// The header local is a BITMAPINFO, not a bare BITMAPINFOHEADER: retail zeroes 44
+// bytes (mov ecx,0xb / rep stos) and Write()s 0x2c, and the sibling SaveTga uses the
+// same `BITMAPINFO bi; memset(&bi, 0, sizeof(bi))` shape. That now matches. Residue:
+// cl spills `this` to a stack slot retail keeps in ebp, so the frame is 4 bytes wide
+// (sub esp,0x58 vs 0x54) and every [esp+N] is off by 4; retail also materialises its
+// zero in esi where cl uses immediates.
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -338,31 +345,21 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
         return 0;
     }
 
-    BmpFileHeaderStamp bfh;
-
-    BmpInfoHeaderStamp bih;
-    bih.m_biSize = 0;
-    bih.m_biWidth = 0;
-    bih.m_biHeight = 0;
-    bih.m_planesAndBitCount = 0;
-    bih.m_ih.biSizeImage = 0;
-    bih.m_ih.biXPelsPerMeter = 0;
-    bih.m_ih.biYPelsPerMeter = 0;
-    bih.m_ih.biClrUsed = 0;
-    bih.m_ih.biClrImportant = 0;
-
-    strcpy(bfh.m_bytes, "BM");
-    bfh.m_hdr.bfReserved1 = 0;
-    bfh.m_hdr.bfReserved2 = 0;
-
+    BITMAPINFO bi;
+    memset(&bi, 0, sizeof(bi));
     i32 height = this->m_height;
+    BmpFileHeaderStamp bfh;
+    memset(&bfh, 0, sizeof(bfh));
     i32 width = this->m_width;
-    bih.m_ih.biHeight = height;
-    bih.m_ih.biWidth = width;
+    strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
+    bi.bmiHeader.biHeight = height;
+    bi.bmiHeader.biSize = 0x28;
+    bi.bmiHeader.biWidth = width;
     bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
-    bih.m_ih.biSize = 0x28;
-    bih.m_ih.biPlanes = 1;
-    bih.m_ih.biBitCount = 0x18;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
+    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biSizeImage = 0;
     bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = new u8[3 * width * height + 0x3a];
@@ -391,7 +388,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
 
     file.Seek(0, 2);
     file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
-    file.Write(&bih.m_ih, 0x2c);
+    file.Write(&bi, sizeof(bi));
 
     for (i32 row = height - 1; row >= 0; row--) {
         u8* src = locked + row * this->m_pitch;
