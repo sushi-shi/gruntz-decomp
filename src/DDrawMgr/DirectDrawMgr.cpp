@@ -70,60 +70,60 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
     sprintf(szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
-    switch (hr) {
-        case static_cast<i32>(DDERR_UNSUPPORTED):
+    switch (static_cast<u32>(hr)) {
+        case DDERR_UNSUPPORTED:
             strcpy(szCode, "DDERR_UNSUPPORTED");
             strcpy(szMsg, "Action not supported");
             break;
-        case static_cast<i32>(DDERR_GENERIC):
+        case DDERR_GENERIC:
             strcpy(szCode, "DDERR_GENERIC");
             strcpy(szMsg, "Generic failure");
             break;
-        case static_cast<i32>(DDERR_OUTOFMEMORY):
+        case DDERR_OUTOFMEMORY:
             strcpy(szCode, "DDERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_INVALIDPARAMS):
+        case DDERR_INVALIDPARAMS:
             strcpy(szCode, "DDERR_INVALIDPARAMS");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_INVALIDCAPS):
+        case DDERR_INVALIDCAPS:
             strcpy(szCode, "DDERR_INVALIDCAPS");
             strcpy(szMsg, "One or more of the caps bits passed to the callback are incorrect");
             break;
-        case static_cast<i32>(DDERR_INVALIDMODE):
+        case DDERR_INVALIDMODE:
             strcpy(szCode, "DDERR_INVALIDMODE");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_INVALIDOBJECT):
+        case DDERR_INVALIDOBJECT:
             strcpy(szCode, "DDERR_INVALIDOBJECT");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_INVALIDPIXELFORMAT):
+        case DDERR_INVALIDPIXELFORMAT:
             strcpy(szCode, "DDERR_INVALIDPIXELFORMAT");
             strcpy(szMsg, "Pixel format was invalid as specified.");
             break;
-        case static_cast<i32>(DDERR_INVALIDRECT):
+        case DDERR_INVALIDRECT:
             strcpy(szCode, "DDERR_INVALIDRECT");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_LOCKEDSURFACES):
+        case DDERR_LOCKEDSURFACES:
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x887600aa):
+        case 0x887600aa:
             strcpy(szCode, "DDERR_NO3D");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOALPHAHW):
+        case DDERR_NOALPHAHW:
             strcpy(szCode, "DDERR_NOALPHAHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOCOLORCONVHW):
+        case DDERR_NOCOLORCONVHW:
             strcpy(szCode, "DDERR_NOCOLORCONVHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOCOOPERATIVELEVELSET):
+        case DDERR_NOCOOPERATIVELEVELSET:
             strcpy(szCode, "DDERR_NOCOOPERATIVELEVELSET");
             strcpy(
                 szMsg,
@@ -131,15 +131,15 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
                 "called"
             );
             break;
-        case static_cast<i32>(DDERR_NOEXCLUSIVEMODE):
+        case DDERR_NOEXCLUSIVEMODE:
             strcpy(szCode, "DDERR_NOEXCLUSIVEMODE");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOGDI):
+        case DDERR_NOGDI:
             strcpy(szCode, "DDERR_NOGDI");
             strcpy(szMsg, "There is no GDI present");
             break;
-        case static_cast<i32>(DDERR_NOMIRRORHW):
+        case DDERR_NOMIRRORHW:
             strcpy(szCode, "DDERR_NOMIRRORHW");
             strcpy(
                 szMsg,
@@ -147,85 +147,85 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
                 "available."
             );
             break;
-        case static_cast<i32>(DDERR_NOTFOUND):
+        case DDERR_NOTFOUND:
             strcpy(szCode, "DDERR_NOTFOUND");
             strcpy(szMsg, "Request item was not found");
             break;
-        case static_cast<i32>(DDERR_NOOVERLAYHW):
+        case DDERR_NOOVERLAYHW:
             strcpy(szCode, "DDERR_NOOVERLAYHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NORASTEROPHW):
+        case DDERR_NORASTEROPHW:
             strcpy(szCode, "DDERR_NORASTEROPHW");
             strcpy(szMsg, "No message");
             break;
         // retail prints "DDERR_NOROTATEHW" here; the value is the SDK's DDERR_NOROTATIONHW.
-        case static_cast<i32>(DDERR_NOROTATIONHW):
+        case DDERR_NOROTATIONHW:
             strcpy(szCode, "DDERR_NOROTATEHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOSTRETCHHW):
+        case DDERR_NOSTRETCHHW:
             strcpy(szCode, "DDERR_NOSTRETCHHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x88760140):
+        case 0x88760140:
             strcpy(szCode, "DDERR_NOT8BITCOLOR");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOTEXTUREHW):
+        case DDERR_NOTEXTUREHW:
             strcpy(szCode, "DDERR_NOTEXTUREHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOVSYNCHW):
+        case DDERR_NOVSYNCHW:
             strcpy(szCode, "DDERR_NOVSYNCHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOZBUFFERHW):
+        case DDERR_NOZBUFFERHW:
             strcpy(szCode, "DDERR_NOZBUFFERHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_OUTOFCAPS):
+        case DDERR_OUTOFCAPS:
             strcpy(szCode, "DDERR_OUTOFCAPS");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_OUTOFVIDEOMEMORY):
+        case DDERR_OUTOFVIDEOMEMORY:
             strcpy(szCode, "DDERR_OUTOFVIDEOMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_PALETTEBUSY):
+        case DDERR_PALETTEBUSY:
             strcpy(szCode, "DDERR_PALETTEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_SURFACEBUSY):
+        case DDERR_SURFACEBUSY:
             strcpy(szCode, "DDERR_SURFACEBUSY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_SURFACEISOBSCURED):
+        case DDERR_SURFACEISOBSCURED:
             strcpy(szCode, "DDERR_SURFACEISOBSCURED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_SURFACELOST):
+        case DDERR_SURFACELOST:
             strcpy(szCode, "DDERR_SURFACELOST");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_SURFACENOTATTACHED):
+        case DDERR_SURFACENOTATTACHED:
             strcpy(szCode, "DDERR_SURFACENOTATTACHED");
             strcpy(szMsg, "The requested surface is not attached");
             break;
-        case static_cast<i32>(DDERR_TOOBIGSIZE):
+        case DDERR_TOOBIGSIZE:
             strcpy(szCode, "DDERR_TOOBIGSIZE");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_TOOBIGWIDTH):
+        case DDERR_TOOBIGWIDTH:
             strcpy(szCode, "DDERR_TOOBIGWIDTH");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_VERTICALBLANKINPROGRESS):
+        case DDERR_VERTICALBLANKINPROGRESS:
             strcpy(szCode, "DDERR_VERTICALBLANKINPROGRESS");
             strcpy(szMsg, "No message");
             break;
         // retail prints "DDERR_WASTILLDRAWING" here; the value is the SDK's DDERR_WASSTILLDRAWING.
-        case static_cast<i32>(DDERR_WASSTILLDRAWING):
+        case DDERR_WASSTILLDRAWING:
             strcpy(szCode, "DDERR_WASTILLDRAWING");
             strcpy(
                 szMsg,
@@ -233,40 +233,40 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
                 "incomplete"
             );
             break;
-        case static_cast<i32>(DDERR_NODIRECTDRAWHW):
+        case DDERR_NODIRECTDRAWHW:
             strcpy(szCode, "DDERR_NODIRECTDRAWHW");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_DIRECTDRAWALREADYCREATED):
+        case DDERR_DIRECTDRAWALREADYCREATED:
             strcpy(szCode, "DDERR_DIRECTDRAWALREADYCREATED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_XALIGN):
+        case DDERR_XALIGN:
             strcpy(szCode, "DDERR_XALIGN");
             strcpy(szMsg, "Rectangle provided was not horizontally aligned on a DWORD boundary");
             break;
-        case static_cast<i32>(DDERR_HWNDSUBCLASSED):
+        case DDERR_HWNDSUBCLASSED:
             strcpy(szCode, "DDERR_HWNDSUBCLASSED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_HWNDALREADYSET):
+        case DDERR_HWNDALREADYSET:
             strcpy(szCode, "DDERR_HWNDALREADYSET");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(DDERR_NOPALETTEHW):
+        case DDERR_NOPALETTEHW:
             strcpy(szCode, "DDERR_NOPALETTEHW");
             strcpy(szMsg, "No hardware support for 16 or 256 color palettes");
             break;
-        case static_cast<i32>(DDERR_PRIMARYSURFACEALREADYEXISTS):
+        case DDERR_PRIMARYSURFACEALREADYEXISTS:
             strcpy(szCode, "DDERR_PRIMARYSURFACEALREADYEXISTS");
             strcpy(szMsg, "This process already has created a primary surface");
             break;
-        case static_cast<i32>(DDERR_EXCLUSIVEMODEALREADYSET):
+        case DDERR_EXCLUSIVEMODEALREADYSET:
             strcpy(szCode, "DDERR_EXCLUSIVEMODEALREADYSET");
             strcpy(szMsg, "No message");
             break;
         // retail prints "DDERR_LOCKEDSURFACES" here; the value is the SDK's DDERR_NOTLOCKED.
-        case static_cast<i32>(DDERR_NOTLOCKED):
+        case DDERR_NOTLOCKED:
             strcpy(szCode, "DDERR_LOCKEDSURFACES");
             strcpy(szMsg, "No message");
             break;
