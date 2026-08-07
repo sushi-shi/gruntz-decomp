@@ -16,7 +16,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Loadable.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
@@ -33,12 +32,6 @@
 #include <Wwd/WwdObjMgr.h>
 
 #include <string.h>
-
-DATA(0x002c278c)
-char g_rng2Seeded;
-
-DATA(0x002c2798)
-i32 g_rng2State;
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
@@ -814,18 +807,6 @@ void CWwdGameObjectA::ClampLast() {
         m_layer = layer;
     }
 }
-
-DATA(0x0024c22c)
-char g_coinRolled;
-
-DATA(0x0024c26c)
-i32 g_coinValue;
-
-DATA(0x002c127d)
-u8 g_randSeeded;
-
-DATA(0x002c1288)
-i32 g_randSeed;
 
 // @identity-TODO RandRange@CGruntzMgr - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU

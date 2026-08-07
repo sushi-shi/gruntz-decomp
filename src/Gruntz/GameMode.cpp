@@ -47,7 +47,6 @@ i32 g_levelMsgIconPos[16] = {
 // @early-stop
 #include <Gruntz/GlyphStringDraw.h>
 #include <Mfc.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/GruntDirection.h>
 #include <Wap32/ScreenGeometry.h>
 #include <Gruntz/SpriteStateFlags.h>

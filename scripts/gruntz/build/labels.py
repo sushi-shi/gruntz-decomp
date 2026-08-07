@@ -867,12 +867,17 @@ CLANG_Q_ARRAY_RE = re.compile(r"@@([0-9])Q")
 # C++, a file-scope `const T x;`) `_x$S<n>` with a per-object CodeView ordinal;
 # clang's mangler reports the plain `_x`.
 POOL_ID_RE_TMPL = r"^%s\$S[0-9]+$"
+# A FUNCTION-LOCAL static mangles `?<var>@?<scope>??<enclosing-fn>@<storage><type>`.
+# clang always numbers the scope `?1`; VC5 counts the blocks it has already left,
+# so the same variable can be `?4` (GetAmbientId, one `if` above it) - see
+# docs/patterns/function-local-static-dynamic-init-guard.md.
+LOCAL_STATIC_SCOPE_RE = re.compile(r"^(\?[^@]+@)\?[0-9]+(\?\?.+)$")
 
 
 def msvc5_data_symbol(candidate, obj_syms):
     """Resolve the known clang-vs-VC5 static-data NAME differences.
 
-    Two mechanical spellings, both AUTHORITY-CHECKED: a rewrite is returned only
+    Three mechanical spellings, all AUTHORITY-CHECKED: a rewrite is returned only
     when that exact symbol is present in the compiled object, so nothing is ever
     accepted speculatively.
 
@@ -884,6 +889,17 @@ def msvc5_data_symbol(candidate, obj_syms):
          `_s_fmtNotFound$S19047`. Matched by PREFIX (the ordinal renumbers on any
          symbol churn in the TU) and accepted only when exactly one symbol
          matches.
+      3. FUNCTION-LOCAL statics (`static T x = <dynamic>;` inside a function),
+         where VC5 differs from clang TWICE: it prefixes a `_` on top of the C++
+         mangling, and it numbers the scope ordinal by how many blocks it has
+         already left where clang always writes `?1`. clang
+         `?s_ambientCoin@?1??GetAmbientId@CPlay@@QAEHXZ@4HA` -> cl
+         `_?s_ambientCoin@?4??GetAmbientId@CPlay@@QAEHXZ@4HA$S41910`. Both the
+         ordinal and the `$S` suffix are wildcarded and the rewrite is accepted
+         only when EXACTLY ONE object symbol matches. This is what lets a
+         `DATA(rva)` sit on the local static itself instead of on a fabricated
+         file-scope stand-in
+         (docs/patterns/function-local-static-dynamic-init-guard.md).
 
     Without these a `DATA(rva)` on a perfectly ordinary `static const char x[]` /
     `const double x` silently binds NOTHING: the label pass reports a MISS and the
@@ -896,6 +912,14 @@ def msvc5_data_symbol(candidate, obj_syms):
             return cand
         pool = re.compile(POOL_ID_RE_TMPL % re.escape(cand))
         hits = [s for s in obj_syms if pool.match(s)]
+        if len(hits) == 1:
+            return hits[0]
+    m = LOCAL_STATIC_SCOPE_RE.match(candidate)
+    if m:
+        local = re.compile(
+            r"^_?%s\?[0-9]+%s(\$S[0-9]+)?$" % (re.escape(m.group(1)), re.escape(m.group(2)))
+        )
+        hits = [s for s in obj_syms if local.match(s)]
         if len(hits) == 1:
             return hits[0]
     return None

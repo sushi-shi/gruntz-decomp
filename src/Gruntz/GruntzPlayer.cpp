@@ -67,7 +67,6 @@
 #include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>

@@ -13,7 +13,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/QuestLevel.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>

@@ -52,7 +52,6 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Projectile.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/RockNeighborMask.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>

@@ -15,7 +15,6 @@
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/SpawnList.h>
 #include <Rez/RezTypeTag.h>
 

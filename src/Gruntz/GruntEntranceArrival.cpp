@@ -32,7 +32,6 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Projectile.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteStateFlags.h>

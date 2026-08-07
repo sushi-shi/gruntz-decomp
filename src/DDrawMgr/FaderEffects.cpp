@@ -49,11 +49,6 @@ const float g_sineOne = 1.0f;
 DATA(0x001f0888)
 const double g_faderPowK = 2.0;
 
-DATA(0x002c279c)
-u8 g_fxRandSeeded;
-DATA(0x002c27a8)
-i32 g_fxRandSeed;
-
 DATA(0x002c3fc8)
 i32 g_val_2c3fc8;
 

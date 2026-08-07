@@ -3,7 +3,6 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/Random.h>
 #include <Ints.h>
 
 // Monolith's own source, printed verbatim by the game's CREDITZ easter egg:

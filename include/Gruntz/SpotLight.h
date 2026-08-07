@@ -41,6 +41,4 @@ public:
 };
 SIZE(0xa8);
 
-extern u8 g_randSeeded;
-extern i32 g_randSeed;
 #endif // GRUNTZ_CSPOTLIGHT_H

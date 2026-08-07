@@ -468,9 +468,6 @@ extern "C" i32 g_playActive;
 extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
 extern "C" i32 g_soundChannelInUse[TINT_COUNT];
-extern "C" u8 g_scrollLoadFlags;
-extern "C" i32 g_scrollMinSpeed;
-extern "C" i32 g_scrollSpeedRange;
 
 extern "C" u32 g_killCueClock;
 

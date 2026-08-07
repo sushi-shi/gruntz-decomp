@@ -68,7 +68,6 @@
 #include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
@@ -209,17 +208,6 @@ char* g_difficultyNames[] = {"Easy", "Normal", "Hard"};
 // TINT_COUNT, not a coincidence.
 DATA(0x0024c3f0)
 i32 g_soundChannelInUse[TINT_COUNT];
-
-// @early-stop
-
-DATA(0x0024c01c)
-u8 g_scrollLoadFlags;
-
-DATA(0x0024c270)
-i32 g_scrollSpeedRange;
-
-DATA(0x0024c274)
-i32 g_scrollMinSpeed;
 
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;
@@ -4265,16 +4253,13 @@ i32 CPlay::StepInputA() {
 // @early-stop
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
-    if (!(g_scrollLoadFlags & 1)) {
-        g_scrollLoadFlags |= 1;
-        g_scrollMinSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
-    }
-    if (!(g_scrollLoadFlags & 2)) {
-        g_scrollLoadFlags |= 2;
-
-        i32 maxSpeed = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed");
-        g_scrollSpeedRange = maxSpeed - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
-    }
+    // Two function-local statics sharing one dynamic-init guard byte, bit 1 and
+    // bit 2 (retail 0x24c01c); the data are at 0x24c274 and 0x24c270.
+    DATA(0x0024c274)
+    static i32 s_minScrollSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+    DATA(0x0024c270)
+    static i32 s_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
+                                    - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
 
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
@@ -4286,7 +4271,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     // retail keeps the percent scale as its own temp: the int range multiply
     // lands after the double multiply, not reassociated ahead of it.
     double frac = static_cast<double>(w->m_scrollSpeed) * DATA_COMPGEN(0x001eaa10, fp_1eaa10, 0.01);
-    i32 speed = static_cast<i32>(frac * g_scrollSpeedRange + g_scrollMinSpeed);
+    i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
     SIZE
     extent;
@@ -6266,11 +6251,10 @@ i32 CPlay::GetAmbientId() {
     if (gr->m_gameMode == GAMEMODE_SINGLE && gr->m_isCustomLevel == 0) {
         return (m_levelIndex + 1) % 2;
     }
-    if (!(g_coinRolled & 1)) {
-        g_coinRolled |= 1;
-        g_coinValue = (GetRandomNumber()) % 2;
-    }
-    return g_coinValue;
+    // One function-local static: guard bit 1 at retail 0x24c22c, datum 0x24c26c.
+    DATA(0x0024c26c)
+    static i32 s_ambientCoin = GetRandomNumber() % 2;
+    return s_ambientCoin;
 }
 
 RVA(0x000da2d0, 0xa5)

@@ -9,7 +9,6 @@
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Random.h>
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
