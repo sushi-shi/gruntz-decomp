@@ -38,9 +38,10 @@
 
 // @early-stop
 // Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc): two spill slots we do
-// not model. Retail also keeps the two identical ResetEntranceAnimation tails of the
-// m_poweredUp block apart where cl cross-jumps them into one, and merges the ATTACK
-// arm's CommitNeighbor tail into the SEEK arm's where cl keeps both.
+// not model, which is the whole `add esp,0xc`-vs-`pop ecx` epilogue delta. Retail also
+// keeps two exits we do not - cl cross-jumps the m_poweredUp block's two
+// ResetEntranceAnimation tails into one and folds one guarded GruntInRadius/RectContains
+// pair - so retail has 61 branches / 11 rets against our 47 / 9.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderPx = m_lastTilePx;
@@ -116,7 +117,7 @@ i32 CGrunt::ChargeStep() {
                         return 1;
                     }
                 }
-                if (m_dwell > 500) {
+                if (static_cast<u32>(m_dwell) > 500) {
                     if (GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
                         return 1;
                     }
@@ -149,7 +150,7 @@ i32 CGrunt::ChargeStep() {
                     return 1;
                 }
             }
-            if (m_resetApplied == 0 && m_hasExtent != 0 && m_dwell > 3000) {
+            if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdGameObjectA* mp = m_object;
                 i32 baseX = mp->m_extent.left;
                 i32 spanX = abs(mp->m_extent.right - baseX);
@@ -170,7 +171,7 @@ i32 CGrunt::ChargeStep() {
                     if (spanX <= spanY) {
                         spanX = spanY;
                     }
-                    if (spanX < m_coordList.GetCount()) {
+                    if (m_coordList.GetCount() > spanX) {
                         SetEntrancePos(1, 1);
                     }
                 }
