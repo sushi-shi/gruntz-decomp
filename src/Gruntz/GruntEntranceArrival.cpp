@@ -1704,10 +1704,11 @@ i32 CGrunt::StepArrivalCommitB() {
 
 // @early-stop
 RVA(0x00065630, 0x34b)
-void CGrunt::RunMoveConfig(i32 a, i32 b) {
+i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 poseIdx = 0;
 
-    i32 eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    bool eq;
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
@@ -1795,6 +1796,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 base = cell.row + col;
     char* name = m_cells[base].ItemName().GetBuffer(0);
     m_wwdObject->ApplyName(name);
+    return 0;
 }
 
 // @early-stop

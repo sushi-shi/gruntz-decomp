@@ -247,7 +247,7 @@ public:
 
     i32 StepArrivalCommit();
 
-    void RunMoveConfig(i32 a, i32 b);
+    i32 RunMoveConfig(i32 a, i32 b);
 
     i32 BuildGruntExitAnimation();
 
