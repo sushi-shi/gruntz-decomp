@@ -24,6 +24,15 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
+static __inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
+    RECT rc;
+    rc.left = l;
+    rc.top = t;
+    rc.right = r;
+    rc.bottom = b;
+    return rc;
+}
+
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253c9e)
@@ -714,14 +723,13 @@ i32 CDDSurface::ShadeBlt(
         return 0;
     }
     i32 srcW = sr.right - sr.left;
-    i32 dstW;
-    dstW = dr.right - dr.left;
-    if (srcW != dstW) {
+    i32 dstW = dr.right - dr.left;
+    if (dstW != srcW) {
         return 0;
     }
     i32 srcH = sr.bottom - sr.top;
     i32 dstH = dr.bottom - dr.top;
-    if (srcH != dstH) {
+    if (dstH != srcH) {
         return 0;
     }
     if (dr.left < 0) {
@@ -867,10 +875,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         }
         CopyRect(&rc, clip);
     } else {
-        rc.left = 0;
-        rc.top = 0;
-        rc.right = m_width;
-        rc.bottom = m_height;
+        rc = MakeRect(0, 0, m_width, m_height);
     }
     pct = pct * 32 / 100;
     u16* src = static_cast<u16*>(Lock(0));
@@ -1268,9 +1273,9 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 u8 s1 = *src++;
                 u8 s2 = *src++;
                 i32 best = 0;
-                i32 d0 = s2 - pal[0].peRed;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
+                i32 d0 = s2 - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
@@ -1297,9 +1302,9 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 u8 s1 = *src++;
                 u8 s2 = *src++;
                 i32 best = 0;
-                i32 d0 = s2 - pal[0].peRed;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
+                i32 d0 = s2 - pal[0].peRed;
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
