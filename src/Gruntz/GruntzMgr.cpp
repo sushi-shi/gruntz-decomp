@@ -1522,7 +1522,6 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     return count;
 }
 
-// @early-stop
 RVA(0x00091170, 0xad)
 i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
     if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
@@ -1531,21 +1530,22 @@ i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
     if (m_world == NULL) {
         return 0;
     }
-    if (depth == BPP_PALETTED_8) {
-        g_surfaceColorKey = 0;
-        return 1;
-    }
-    if (depth == BPP_RGB_16) {
+    switch (depth) {
+        case BPP_RGB_24:
+            g_surfaceColorKey = 0xff0084;
+            return 1;
 
-        i32 packed = static_cast<u16>(((0xff >> g_rDown) << g_rUp));
-        packed |= static_cast<u16>(((0 >> g_gDown) << g_gUp));
-        packed |= static_cast<u16>((0x84 >> g_bDown));
-        g_surfaceColorKey = packed;
-        return 1;
-    }
-    if (depth == BPP_RGB_24) {
-        g_surfaceColorKey = 0xff0084;
-        return 1;
+        case BPP_RGB_16: {
+            i32 packed = static_cast<u16>(((0xff >> g_rDown) << g_rUp));
+            packed |= static_cast<u16>(((0 >> g_gDown) << g_gUp));
+            packed |= static_cast<u16>((0x84 >> g_bDown));
+            g_surfaceColorKey = packed;
+            return 1;
+        }
+
+        case BPP_PALETTED_8:
+            g_surfaceColorKey = 0;
+            return 1;
     }
     return 1;
 }

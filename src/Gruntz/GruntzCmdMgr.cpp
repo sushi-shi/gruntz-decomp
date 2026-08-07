@@ -225,11 +225,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType) {
     CGameLevel* p = m_manager->m_world->m_level;
-    CDDrawWorkerHost* r = p->m_mainPlane;
-    i32 sx =
-        ((r->m_viewRect.left - p->m_planeCtx.left + (x & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 sy =
-        ((r->m_viewRect.top - p->m_planeCtx.top + (y & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+    const RECT* vr = &p->m_mainPlane->m_viewRect;
+    i32 sx = ((vr->left - p->m_planeCtx.left + (x & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 sy = ((vr->top - p->m_planeCtx.top + (y & 0xffff)) & ~TILE_MASK_PX) + TILE_HALF_PX;
     EnqueueSingle(
         enqueueFlag,
         static_cast<char>(targetIndex),
@@ -300,11 +298,12 @@ i32 CGruntzCommand::SetMaskFromList(
 // @early-stop
 RVA(0x00023f90, 0x48)
 i32 CGruntzSingleCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data) + 1;
-    m_targetIndex = *buf++;
-    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
-    m_targetType = *buf++;
-    m_posX = PeekI16(buf);
+    char* buf = static_cast<char*>(data);
+    char* start = buf;
+    m_targetIndex = *++buf;
+    m_commandKind = static_cast<PlayerCommandKind>(*++buf);
+    m_targetType = *++buf;
+    m_posX = PeekI16(++buf);
     buf += 2;
     m_posY = PeekI16(buf);
     buf += 2;
@@ -313,23 +312,24 @@ i32 CGruntzSingleCommand::Parse(void* data, i32) {
     if (static_cast<u8>(IDX(m_commandKind)) >= 8) {
         m_extraByte = *buf++;
     }
-    return buf - static_cast<char*>(data);
+    return buf - start;
 }
 
 // @early-stop
 RVA(0x00024000, 0x3e)
 i32 CGruntzMultiCommand::Parse(void* data, i32) {
-    char* buf = static_cast<char*>(data) + 1;
-    m_targetIndex = *buf++;
-    m_commandKind = static_cast<PlayerCommandKind>(*buf++);
-    m_targetType = *buf++;
-    m_posX = PeekI16(buf);
+    char* buf = static_cast<char*>(data);
+    char* start = buf;
+    m_targetIndex = *++buf;
+    m_commandKind = static_cast<PlayerCommandKind>(*++buf);
+    m_targetType = *++buf;
+    m_posX = PeekI16(++buf);
     buf += 2;
     m_posY = PeekI16(buf);
     buf += 2;
     m_gruntMask = static_cast<u16>(PeekI16(buf));
     buf += 2;
-    return buf - static_cast<char*>(data);
+    return buf - start;
 }
 
 RVA(0x00024050, 0x57)

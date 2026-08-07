@@ -167,7 +167,7 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
 
 void CGrunt::ApplyMoveKind(i32 v) {}
 
-static void GruntScratchTeardown() {
+static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt--) {
@@ -190,8 +190,9 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = 0;
-    const char* nm0 = *g_typeColl.ScratchResolve(m_prevAnimSetNode);
+    CString* nmSlot = g_typeColl.ScratchResolve(m_prevAnimSetNode);
     GruntScratchTeardown();
+    const char* nm0 = *nmSlot;
     bool eq;
     eq = (strcmp(nm0, s_codeD) == 0);
     if (eq) {
@@ -227,17 +228,28 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        return LoadVehicleGruntSprites(mode);
+        goto clearMove;
+    }
+    if (mode < PICKUP_BRICKZ_FIRST) {
+        goto toyCheck;
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
-        m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
-        return 1;
+        goto brick;
     }
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
-        return 0;
+    return 0;
+
+brick:
+    m_brickPickupType = mode;
+    m_entrancePickup = PICKUP_INVALID;
+    return 1;
+
+toyCheck:
+    if (mode < PICKUP_TOYZ_FIRST) {
+        goto clearMove;
     }
+    return LoadVehicleGruntSprites(mode);
+
+clearMove:
     return LoadTypeTableClearMove(mode);
 }
 

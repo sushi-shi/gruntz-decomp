@@ -75,7 +75,7 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
-    CGrunt* e = reg->m_cmdGrid->m_grid[m_cell.m_x * 15 + m_cell.m_y];
+    CGrunt* e = reg->m_cmdGrid->m_grid[m_cell.m_y + m_cell.m_x * 15];
     if (e != NULL && e->m_arrived != 0) {
         m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;

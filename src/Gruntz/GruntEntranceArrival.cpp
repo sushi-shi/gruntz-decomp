@@ -108,7 +108,7 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     return ((b->m_rowInts[ty]))[tx * 7];
 }
 
-static void GruntScratchTeardown() {
+static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
