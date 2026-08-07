@@ -117,6 +117,8 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
 }
 
 // @early-stop
+// retail re-reads clip->top at the loop bottom; cl hoists it and pays a spill
+// slot, so the frame is 0xc against retail's 0x8 and every offset shifts.
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
@@ -257,6 +259,8 @@ void CDDrawShadeBlit::BlitCopyForward(
 }
 
 // @early-stop
+// same hoisted clip->top as BlitCopyForward, plus retail keeps the pitch in ebp
+// across the Lock call where cl spills it: frame 0xc against retail's 0x8.
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
@@ -447,6 +451,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
 // @early-stop
 // the shade/copy row loops are transcribed; the residue is /O2 register
 // allocation and induction-variable choice inside the inlined row bodies.
+// blend-term set now matches retail (ten m_lutBank0 references each side).
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
@@ -1437,6 +1442,9 @@ void CDDrawShadeBlit::BlitShadedMirrored(
 }
 
 // @early-stop
+// retail strength-reduces the DST_BY_SRC_16 arm to ONE cursor with the scratch
+// pointer biased off it; cl keeps two and spills the trip count instead.
+// 128 AST variants (commutative/hoist/merge/inline) moved none of it.
 RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     switch (m_drawType) {
@@ -1568,6 +1576,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 }
 
 // @early-stop
+// as ConvertRow: retail runs the 16bpp arms off a single biased cursor.
 RVA(0x0014cfc0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
@@ -1691,8 +1700,9 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 }
 
 // @early-stop
-// retail spills nothing here - it fits the whole arm in the four
-// parameter home slots, so our two extra spill slots shift every frame offset.
+// retail has NO frame at all here - one register induction variable plus three
+// biases parked in the dead parameter home slots. cl keeps three cursors live
+// and needs two spill slots on top, so every stack offset shifts.
 RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
@@ -1771,6 +1781,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
 }
 
 // @early-stop
+// mirror of ConvertRowDoubleFwd: retail's frame is 0, ours is 0x8.
+// the SHADE_DST_BY_LEVEL asymmetry (m_light for dst[0], *src for dst[rowDelta],
+// src never advanced) is retail's, confirmed at 0x14d9f5 - do not "fix" it.
 RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
