@@ -23,7 +23,6 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
