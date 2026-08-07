@@ -4520,10 +4520,10 @@ void CGrunt::AdvanceMotion() {
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
     i32 x = static_cast<i32>(cell->m_motion.m_step.x + m_movePosX);
     i32 y = static_cast<i32>(cell->m_motion.m_step.y + m_movePosY);
-    if ((dirX > 0.0 && x > m_lastTilePx.m_x) || (dirX < 0.0 && x < m_lastTilePx.m_x)) {
+    if ((dirX > s_fpZero && x > m_lastTilePx.m_x) || (dirX < s_fpZero && x < m_lastTilePx.m_x)) {
         x = m_lastTilePx.m_x;
     }
-    if ((dirY > 0.0 && y > m_lastTilePx.m_y) || (dirY < 0.0 && y < m_lastTilePx.m_y)) {
+    if ((dirY > s_fpZero && y > m_lastTilePx.m_y) || (dirY < s_fpZero && y < m_lastTilePx.m_y)) {
         y = m_lastTilePx.m_y;
     }
     m_object->m_screenX = x;
