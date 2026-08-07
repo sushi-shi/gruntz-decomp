@@ -273,7 +273,7 @@ rezsync	3	2
 rockbreakeffectupdate	1	0
 rollingball	7	5
 savefrontbuffershot	2	1
-savegame	24	23
+savegame	24	24
 savegamedialogs	10	8
 savescreenshot	1	0
 sbi_image	5	4
@@ -615,7 +615,7 @@ bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	3	c5a8596ef6dd	0x1936e0
 bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	3	1ea7b32d0bbf	0x193680
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640
 bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	2	f5f97c03b581	0x193140
-bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	91.4789	91.4789	3	d8439c49f62e	0x193080
+bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	91.4789	91.4789	4	f1a1c772f750	0x193080
 bitstreamblowfish	?Decode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	0577f9920ce3	0x16f760
 blowfish	?Blowfish_InitKey@@YGXPBD@Z	100.0000	100.0000	1	793dd2b9703f	0x16f6c0
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	99.8750	99.8750	3	29535c5f5c96	0x16fc70
@@ -1580,7 +1580,7 @@ droppedobject	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	20	03bf4e7f832b	0
 droppedobject	_CreateDroppedObject	97.8571	97.8571	4	f4da81d4749e	0xc5770
 droppedobject	_CreateDroppedObjectShadow	97.8571	97.8571	4	cf13b6d03caa	0xc58b0
 droppedobject	_CreateObjectDropper	97.8571	97.8571	4	310939b2e85c	0xc5630
-engstrrendertext	_EngStr_RenderText	85.6131	85.6131	11	4b65826cae2d	0x115930
+engstrrendertext	_EngStr_RenderText	89.6726	89.6726	11	4b65826cae2d	0x115930
 exittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	93.5989	93.5989	23	c0a2006df0b1	0x3ecf0
 exittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	2	59a23638ecfd	0x108c0
 exittrigger	??_GCExitTrigger@@UAEPAXI@Z	100.0000	100.0000	1	cpp:940b3167665d	0x10890
@@ -3507,7 +3507,7 @@ savegame	?Register@CSaveGame@@QAEHPAUSaveSlot@@@Z	100.0000	100.0000	10	eb472c794
 savegame	?Reset@CSaveGame@@QAEXXZ	100.0000	100.0000	2	0f8a5f5742b4	0xe4d20
 savegame	?Save@CSaveGame@@QAEHPADH@Z	100.0000	100.0000	2	7952b191d70f	0xe4ea0
 savegame	?SaveGameFile@CSaveGame@@QAEHPBD@Z	100.0000	100.0000	5	3bc7c32b88ed	0xe4b60
-savegame	?SetCurLevel@CSaveGame@@QAEXW4QuestLevel@@@Z	94.0000	94.0000	1	99de0bdd090b	0xe5660
+savegame	?SetCurLevel@CSaveGame@@QAEXW4QuestLevel@@@Z	100.0000	100.0000	2	46e1f0913f46	0xe5660
 savegame	?SetMagic@CSaveGame@@QAEXXZ	100.0000	100.0000	2	0e1b77dd2c8f	0xe56b0
 savegame	?SetMaxLevel@CSaveGame@@QAEXW4QuestLevel@@@Z	100.0000	100.0000	2	0a902ffbcaf4	0xe5620
 savegame	?StoreSlot@CSaveGame@@QAEHHPBUSaveSlot@@@Z	100.0000	100.0000	1	2df87719059c	0xe5520
@@ -4386,7 +4386,7 @@ waypoint	?GetTypeTag@CWayPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:4
 waypoint	?SerializeMove@CWayPoint@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	29a7a480632c	0x10240
 winapicdrom	?CheckCdRomRegistry@@YADXZ	100.0000	100.0000	8	94cb2664c8f5	0x1fde0
 winapicdrom	?FileExistsCopy@@YAHPAD@Z	100.0000	100.0000	3	d930fdc86484	0x1fd70
-winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	8	623cd0ac160d	0x1ffe0
+winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	9	96594f2d3312	0x1ffe0
 winapicdrom	?IsGruntzCDInAnyDrive@@YAHXZ	100.0000	100.0000	1	cd3aa3f5108b	0x1fd50
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	92.7083	92.7083	29	8e13943e6c63	0x118f60
 winmain	_WinMain@16	100.0000	100.0000	19	9e6bcb234d49	0x11c860
