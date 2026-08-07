@@ -740,6 +740,9 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // @early-stop
+// residue: a whole-function ebp<->ebx colour swap (cl seeds `j` in ebp, retail in ebx)
+// plus one spare frame dword - cl reserves the full 8-byte POINT `pt` where retail
+// reserves 4. Loop-counter hoists and `< 3` vs `<= 2` are all neutral.
 RVA(0x001122a0, 0x241)
 void CGiantRockLogic::BuildRockBreakInGameText() {
 
@@ -747,8 +750,8 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 inRect = 0;
     POINT pt;
-    pt.y = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     pt.x = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    pt.y = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
         inRect = 1;
     }
