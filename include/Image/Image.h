@@ -24,7 +24,7 @@ SIZE(0x10);
 
 struct ScanlinePalette {
     char m_pad0[8];
-    u32 m_colors[256];
+    PALETTEENTRY m_colors[256];
 };
 SIZE_UNKNOWN();
 

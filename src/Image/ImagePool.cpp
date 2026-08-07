@@ -416,13 +416,12 @@ i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
     return LoadDefault(name, dc, ctrl);
 }
 
-// @early-stop
 RVA(0x00175b80, 0x105)
 i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
     if (pal == NULL) {
         return 0;
     }
-    u32* palette = (static_cast<ScanlinePalette*>(pal))->m_colors;
+    PALETTEENTRY* palette = (static_cast<ScanlinePalette*>(pal))->m_colors;
     if (palette == NULL) {
         return 0;
     }
@@ -433,16 +432,21 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, void* pal) {
         u8* sp = src->m_pixels + y * src->m_stride;
 
         Pix16Ptr row;
-        row.m_bytes = (m_pixels + y * m_stride * 2);
-        u16* dp = row.m_words;
+        row.m_bytes = m_pixels;
+        u16* dp = row.m_words + y * m_stride;
         for (i32 x = 0; x < m_width; x++) {
-            u32 c = palette[*sp];
-            u32 r = c & 0xff;
-            u32 g = (c >> 8) & 0xff;
-            u32 b = (c >> 16) & 0xff;
-            *dp =
-                static_cast<u16>((((((r & 0xf8) << TILE_SHIFT_PX) | (g & 0xf8)) << 2) | (b >> 3)));
-            dp++;
+            PALETTEENTRY c = palette[*sp];
+            u16 r = c.peRed;
+            u16 g = c.peGreen;
+            u8 b = c.peBlue;
+            r &= ~7;
+            g &= ~7;
+            r <<= TILE_SHIFT_PX;
+            r |= g;
+            b >>= 3;
+            r <<= 2;
+            r |= b;
+            *dp++ = r;
             sp++;
         }
     }
@@ -624,11 +628,12 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
 RVA(0x001762c0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
 
-    PidHeader* hdr = static_cast<PidHeader*>(buf);
-    i32 width = hdr->width;
-    i32 height = hdr->height;
+    i32* p = &static_cast<PidHeader*>(buf)->width;
+    i32 width = *p++;
+    i32 height = *p;
+    p += 5;
 
-    i32 ok = DecodeBlit(hdr->pixels, dc, width, height, BPP_PALETTED_8, ctrl);
+    i32 ok = DecodeBlit(p, dc, width, height, BPP_PALETTED_8, ctrl);
     if (!(ctrl & 1)) {
         m_transparent = false;
     }
@@ -854,13 +859,14 @@ void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
     m_paletteScalar = scalar;
 }
 
-// @early-stop
 RVA(0x00176b00, 0x2c)
 i32 CRezImage::Save(const char* filename, void* paletteObj) {
     switch (m_bitCount) {
         case BPP_PALETTED_8:
             return SaveBmp(filename, paletteObj);
         case BPP_RGB_16:
+            return 0;
+        case BPP_RGB_24:
             return 0;
     }
     return 0;
@@ -943,11 +949,9 @@ i32 CImagePaletteNode::Build(PALETTEENTRY* src, i32 flags) {
     m_flags = flags;
     m_pal.palNumEntries = 0x100;
     m_pal.palVersion = LOGICAL_PALETTE_VERSION;
-    PALETTEENTRY* d = m_pal.palPalEntry;
-    for (i32 i = 0x100; i != 0; --i) {
-        *d = *src++;
-        d->peFlags = 0;
-        d++;
+    for (i32 i = 0; i < 0x100; i++) {
+        m_pal.palPalEntry[i] = src[i];
+        m_pal.palPalEntry[i].peFlags = 0;
     }
     if (DisplayUsesPalette() && !(flags & 1)) {
         Tune();
