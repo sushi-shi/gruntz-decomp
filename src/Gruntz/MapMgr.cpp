@@ -538,7 +538,6 @@ BrickzNode* CMapMgr::FindCellNode(i32 col, i32 row) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0009f590, 0x2f)
 void CMapMgr::Drain() {
     BrickzNode* p = m_openList;

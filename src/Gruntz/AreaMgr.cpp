@@ -165,7 +165,6 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
     CString key = name + "";
