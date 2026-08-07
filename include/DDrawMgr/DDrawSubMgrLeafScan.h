@@ -40,9 +40,9 @@ public:
     // lookup inline and PlayIfElapsed as a call.
     void PlayCue(const char* key) {
         if (m_emitGate == 0) {
-            void* found = 0;
+            void* found = NULL;
             m_cues.Lookup(key, found);
-            if (found != 0) {
+            if (found != NULL) {
                 static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             }
         }
