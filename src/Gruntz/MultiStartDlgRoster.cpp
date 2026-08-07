@@ -887,8 +887,7 @@ i32 CMultiStartDlg::SelectColor(i32 colorIndex, ColorTint playerColor) {
 // @early-stop
 RVA(0x000c4c00, 0x190)
 void CMultiStartDlg::OnOK() {
-    CMulti* mgr = g_multiState;
-    if (mgr->m_isHost == 0) {
+    if (g_multiState->m_isHost == 0) {
         return;
     }
     if (&CMulti::GetCommandDelay == NULL) {
@@ -897,10 +896,15 @@ void CMultiStartDlg::OnOK() {
     if (&CMulti::GetResendDelay == NULL) {
         return;
     }
-    mgr->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
-    CString levelName =
-        g_multiState->m_customLevel != 0 ? mgr->GetConfigNameB() : mgr->GetConfigNameA();
-    i32 token = (g_gameReg)->BuildLevelRezPath(0, g_multiState->m_customLevel, 0, 0, levelName);
+    g_multiState->SendStatFlag(NETMSG_VERIFY_CUSTOM_LEVEL, 1);
+    i32 custom = g_multiState->m_customLevel;
+    i32 token = g_gameReg->BuildLevelRezPath(
+        0,
+        0,
+        custom,
+        0,
+        custom != 0 ? g_multiState->GetConfigNameB() : g_multiState->GetConfigNameA()
+    );
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(token) == 0) {
         g_multiState->m_customLevelVerificationPending = 0;

@@ -191,25 +191,19 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     StreamVoice* voice = 0;
 
     if (m_initialized == 0) {
-        goto done;
+        return 0;
     }
     if (bytes == 0) {
-        goto done;
+        return 0;
     }
     if (fmt == NULL) {
-        goto done;
+        return 0;
     }
     if (fmt->wFormatTag != 1) {
-        goto done;
+        return 0;
     }
 
-    wf.wFormatTag = fmt->wFormatTag;
-    wf.nChannels = fmt->nChannels;
-    wf.nSamplesPerSec = fmt->nSamplesPerSec;
-    wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
-    wf.nBlockAlign = fmt->nBlockAlign;
-    wf.wBitsPerSample = fmt->wBitsPerSample;
-    wf.cbSize = fmt->cbSize;
+    wf = *fmt;
 
     out = NULL;
 
@@ -226,10 +220,10 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
-        goto done;
+        return 0;
     }
     if (out == NULL) {
-        goto done;
+        return 0;
     }
 
     voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
@@ -238,7 +232,6 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     voice->m_sampleRate = fmt->nAvgBytesPerSec;
     voice->m_sampleCount = bytes;
     voice->ComputeDuration();
-done:
     return voice;
 }
 

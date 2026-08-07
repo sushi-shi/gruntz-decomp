@@ -74,6 +74,7 @@ void CDDrawChildGroup::DestroyChildren() {
     m_map48.RemoveAll();
 }
 
+// @early-stop
 RVA(0x00159250, 0x185)
 CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int id,
@@ -124,6 +125,7 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     );
 }
 
+// @early-stop
 RVA(0x00159440, 0x170)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
@@ -226,6 +228,7 @@ i32 CDDrawChildGroup::AttachSprite(
     return 1;
 }
 
+// @early-stop
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
