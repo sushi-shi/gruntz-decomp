@@ -11,6 +11,13 @@ const double g_motionZero = 0.0;
 DATA(0x001f0508)
 const double g_motionNegTwo = -2.0;
 
+// The velocity update is an inlined `v = ArrivalVel<axis>(target)`: retail's
+// `a == 0` arm reloads and re-stores the velocity in place
+// (`fld [ecx+0x38]; fstp [ecx+0x38]`), which only a value-RETURNING else-arm makes,
+// and the caller passes an ABSOLUTE target - the first site builds `m_position + c`
+// and the callee immediately subtracts `m_position` back off (`fadd [ecx+0x50]` ...
+// `fsub [ecx+0x50]`).  Spelling that needs ArrivalVelX/Y/Z to be inline-visible
+// above Step, which their RVA pins (0x16f3c0 / 0x16f430) currently forbid.
 #define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
     do {                                                                                           \
         double step0 = dt * a;                                                                     \
@@ -19,34 +26,34 @@ const double g_motionNegTwo = -2.0;
         if (t > vmax || t < -vmax) {                                                               \
             double c = (t > vmax) ? vmax : -vmax;                                                  \
             scr = c;                                                                               \
-            if (a != 0.0) {                                                                        \
+            if (a != g_motionZero) {                                                               \
                 double disc = v * v - c * a * g_motionNegTwo;                                      \
-                if (disc < 0.0)                                                                    \
-                    disc = 0.0;                                                                    \
+                if (disc < g_motionZero)                                                           \
+                    disc = g_motionZero;                                                           \
                 double r = sqrt(disc);                                                             \
-                v = (v > 0.0) ? r : -r;                                                            \
+                v = (v > g_motionZero) ? r : -r;                                                   \
             }                                                                                      \
         }                                                                                          \
         double oldS = s;                                                                           \
         double newS = scr + s;                                                                     \
         s = newS;                                                                                  \
         if (newS > hiBand) {                                                                       \
-            if (a != 0.0) {                                                                        \
+            if (a != g_motionZero) {                                                               \
                 double disc = v * v - (hiBand - newS) * a * g_motionNegTwo;                        \
-                if (disc < 0.0)                                                                    \
-                    disc = 0.0;                                                                    \
+                if (disc < g_motionZero)                                                           \
+                    disc = g_motionZero;                                                           \
                 double r = sqrt(disc);                                                             \
-                v = (v > 0.0) ? r : -r;                                                            \
+                v = (v > g_motionZero) ? r : -r;                                                   \
             }                                                                                      \
             scr = hiBand - oldS;                                                                   \
             s = hiBand;                                                                            \
         } else if (newS < loBand) {                                                                \
-            if (a != 0.0) {                                                                        \
+            if (a != g_motionZero) {                                                               \
                 double disc = v * v - (loBand - newS) * a * g_motionNegTwo;                        \
-                if (disc < 0.0)                                                                    \
-                    disc = 0.0;                                                                    \
+                if (disc < g_motionZero)                                                           \
+                    disc = g_motionZero;                                                           \
                 double r = sqrt(disc);                                                             \
-                v = (v > 0.0) ? r : -r;                                                            \
+                v = (v > g_motionZero) ? r : -r;                                                   \
             }                                                                                      \
             scr = loBand - oldS;                                                                   \
             s = loBand;                                                                            \
