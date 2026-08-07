@@ -668,12 +668,12 @@ void CProjectile::ScanTargets(i32 impact) {
             }
 
             Coord* slot = 0;
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
+            CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_coord;
                 slot->m_x = keyX;
                 slot->m_y = keyY;
-                g_coordPool.m_freeHead = p->m_next;
+                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_hitList.AddTail(slot);
             g->StepCombatReaction(

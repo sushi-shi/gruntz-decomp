@@ -210,12 +210,12 @@ i32 CMultiStartDlg::UpdateColorItems() {
     }
     ::SendMessageA(it4ff->m_hWnd, CB_SETCURSEL, static_cast<WPARAM>(-1), 0);
     m_customWorldFlag = g_multiState->m_customLevel;
-    if (g_multiState->m_customLevel != 0) {
+    if (m_customWorldFlag != 0) {
         itChild->SetWindowTextA(g_multiState->GetConfigNameB());
     } else {
         CString cur;
         itChild->GetWindowTextA(cur);
-        if (strcmp(cur, g_multiState->GetConfigNameA()) != 0) {
+        if (strcmp(cur, g_multiState->GetConfigNameA())) {
             itChild->SetWindowTextA(g_multiState->GetConfigNameA());
         }
     }
