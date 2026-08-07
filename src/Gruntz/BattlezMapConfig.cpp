@@ -349,6 +349,10 @@ void CBattlezMapConfig::FreeArrays() {
 }
 
 // @early-stop
+// Instruction count, branch sequence and branch targets all agree; the residue is
+// call-setup scheduling - retail loads `ecx = &g_typeColl` BETWEEN the two argument
+// loads at each of the seven GetNameRecord sites, and interleaves the three trailing
+// `timer += g_frameDelta` reads differently.
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == 0) {
@@ -390,19 +394,16 @@ i32 CBattlezMapConfig::StepBoard() {
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition == 0) {
             forced = 1;
         }
-        if (!forced) {
-            if (rand() % 10 != 0) {
-                i32 r2 = rand() % 15;
-                CGrunt* u2 = m_triggerMgr->m_grid[m_ownerId * 15 + r2];
-                if (u2 != NULL) {
-                    ChooseIdleBehavior(u2);
-                }
+        // ONE if/else: retail enters the retask loop for `forced` OR for the 1-in-10
+        // idle roll (two `j.. 0x25f31` into the same block), which is why `forced` is
+        // still unknown inside it and the `unit = forcedUnit` override survives.
+        if (!forced && rand() % 10 != 0) {
+            i32 r2 = rand() % 15;
+            CGrunt* u2 = m_triggerMgr->m_grid[m_ownerId * 15 + r2];
+            if (u2 != NULL) {
+                ChooseIdleBehavior(u2);
             }
-        }
-        if (!forced) {
-            m_repickLastFire = m_repickTimer;
         } else {
-
             for (i32 b = 0; b < 15; b++) {
                 CGrunt* unit = m_triggerMgr->m_grid[m_ownerId * 15 + b];
                 if (forced) {
@@ -430,7 +431,7 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (unit->m_poweredUp != 0) {
                     continue;
                 }
-                i32 eq;
+                bool eq;
                 eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
                 if (eq) {
                     continue;
@@ -472,42 +473,60 @@ i32 CBattlezMapConfig::StepBoard() {
                 } else {
                     unit->m_defenderState = AISTATE_SEEK;
                 }
-                (static_cast<CGrunt*>(unit))
-                    ->LoadPickupSprites(unit->m_defenderPickupType, 0, 0, 1, 1);
+                unit->LoadPickupSprites(unit->m_defenderPickupType, 1, 0, 0, 1);
 
-                if (mode == PICKUP_TOOB) {
-                    if (unit->CoordCount() != 0) {
-                        CoordNode* n = unit->CoordHead();
-                        while (n != NULL) {
-                            CoordNode* cur = n;
-                            n = n->m_next;
-                            if (cur->m_coord != NULL) {
-                                CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                node->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = node;
+                switch (mode) {
+                    case PICKUP_WINGZ: {
+                        if (unit->CoordCount() != 0) {
+                            CoordNode* n = unit->CoordHead();
+                            while (n != NULL) {
+                                CoordNode* cur = n;
+                                n = n->m_next;
+                                if (cur->m_coord != NULL) {
+                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
+                                }
                             }
+                            unit->m_coordList.RemoveAll();
                         }
-                        unit->m_coordList.RemoveAll();
+                        break;
                     }
-                } else if (mode == PICKUP_WINGZ) {
-                    if (unit->CoordCount() != 0) {
-                        CoordNode* n = unit->CoordHead();
-                        while (n != NULL) {
-                            CoordNode* cur = n;
-                            n = n->m_next;
-                            if (cur->m_coord != NULL) {
-                                CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
-                                node->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = node;
+                    case PICKUP_TOOB: {
+                        if (unit->CoordCount() != 0) {
+                            CoordNode* n = unit->CoordHead();
+                            while (n != NULL) {
+                                CoordNode* cur = n;
+                                n = n->m_next;
+                                if (cur->m_coord != NULL) {
+                                    CoordPoolNode* node = g_coordPool.NodeOf(cur->m_coord);
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
+                                }
                             }
+                            unit->m_coordList.RemoveAll();
                         }
-                        unit->m_coordList.RemoveAll();
+                        break;
                     }
                 }
-                break;
+
+                // One decrement of THIS unit's queue position per still-returning
+                // row-mate, floored at 0 (retail `dec eax; jns; xor eax,eax`), then
+                // an immediate return - the row step and the clocks are skipped.
+                for (i32 c = 0; c < 15; c++) {
+                    CGrunt* mate = m_triggerMgr->m_grid[m_ownerId * 15 + c];
+                    if (mate != NULL && mate->m_defenderState == AISTATE_RETURN) {
+                        i32 q = unit->m_defenderQueuePosition - 1;
+                        if (q < 0) {
+                            q = 0;
+                        }
+                        unit->m_defenderQueuePosition = q;
+                    }
+                }
+                return 1;
             }
-            m_repickLastFire = m_repickTimer;
         }
+        m_repickLastFire = m_repickTimer;
     }
     StepRowUnits();
     m_spawnTimer += g_frameDelta;

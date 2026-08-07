@@ -100,7 +100,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
 
-    i32 eq;
+    bool eq;
     eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
     if (eq) {
         return 0;

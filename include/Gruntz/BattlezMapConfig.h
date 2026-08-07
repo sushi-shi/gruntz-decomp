@@ -96,12 +96,14 @@ public:
     i32 m_reserved03c;
     i32 m_reserved040;
     i32 m_reserved044;
-    i32 m_gruntCreationTime;
-    i32 m_spawnTimer;
-    i32 m_spawnLastFire;
-    i32 m_resourceCreationTime;
-    i32 m_repickLastFire;
-    i32 m_repickTimer;
+    // Unsigned: the two `now - last > interval` guards in StepBoard (0x25dc4,
+    // 0x25e56) are `jbe`, and both intervals come straight from GetDwordDef.
+    u32 m_gruntCreationTime;
+    u32 m_spawnTimer;
+    u32 m_spawnLastFire;
+    u32 m_resourceCreationTime;
+    u32 m_repickLastFire;
+    u32 m_repickTimer;
     i32 m_gauntletzChance;
     i32 m_shovelzChance;
     i32 m_spyzChance;
