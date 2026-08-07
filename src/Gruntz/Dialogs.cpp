@@ -103,7 +103,8 @@ RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
 // @early-stop
-// Stack-slot assignment and DDX block placement diverge from retail's.
+// Instruction counts agree exactly; the residue is one `lea` where retail folds the
+// slot stride with a destructive `add`, and the block sizes it shifts around it.
 RVA(0x00014d00, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;
@@ -123,11 +124,11 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             g_gameReg->m_options[i].m_colorIndex = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
-        CWnd* comboChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+        CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
         if (comboChild == NULL) {
             return;
         }
-        ::SendMessageA(comboChild->m_hWnd, EM_SETREADONLY, 1, 0);
+        comboChild->SendMessageA(EM_SETREADONLY, 1, 0);
         comboChild->SetWindowTextA(g_emptyString);
 
         CWnd* combo = GetDlgItem(0x4ff);
@@ -141,12 +142,15 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             CString upper(entry->m_name);
             upper.MakeUpper();
             CString display;
-            for (i = 0; i < upper.GetLength(); i++) {
-                char c = upper[i];
-                if (c == '.') {
-                    break;
+            // The extension is cut by carrying the last character into the loop
+            // guard, so the '.' is seen twice: once to skip the append and once,
+            // on the next turn, to leave.
+            char c = 0;
+            for (i = 0; i < upper.GetLength() && c != '.'; i++) {
+                c = upper[i];
+                if (c != '.') {
+                    display += c;
                 }
-                display += c;
             }
             ::SendMessageA(
                 combo->m_hWnd,
@@ -170,32 +174,22 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, proc.m_long);
 
         GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
-        g_sharedFlag = m_hWnd;
+        g_sharedFlag = GetSafeHwnd();
 
         for (i = 0; i < 4; i++) {
-            CWnd* ctrl = GetCtrlA(i);
-            if (i == 0) {
-                ::SendMessageA(ctrl->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
-            } else {
-                ::SendMessageA(ctrl->m_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
-                ::SendMessageA(
-                    ctrl->m_hWnd,
-                    CB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>("Computer (easy)")
-                );
-                ::SendMessageA(
-                    ctrl->m_hWnd,
-                    CB_ADDSTRING,
-                    0,
-                    reinterpret_cast<LPARAM>("Computer (normal)")
-                );
-                ::SendMessageA(
-                    ctrl->m_hWnd,
+            if (i != 0) {
+                GetCtrlA(i)->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
+                GetCtrlA(i)
+                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (easy)"));
+                GetCtrlA(i)
+                    ->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Computer (normal)"));
+                GetCtrlA(i)->SendMessageA(
                     CB_ADDSTRING,
                     0,
                     reinterpret_cast<LPARAM>("Computer (difficult)")
                 );
+            } else {
+                GetCtrlA(i)->SendMessageA(CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Human"));
             }
         }
         SetCurSelA(0, 0);
@@ -203,40 +197,43 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetCurSelA(2, 2);
         SetCurSelA(3, 2);
 
-        if (g_battlezResetOptions == 0) {
+        if (g_battlezResetOptions != 0) {
+            m_slots->m_options[1].m_configId = 1;
+            m_slots->m_options[2].m_configId = 1;
+            m_slots->m_options[3].m_configId = 1;
+        } else {
             for (i = 1; i < 4; i++) {
-                i32 difficulty = g_battlezLastDifficulties[i];
-                if (difficulty == -1) {
-                    SetCurSelA(i, 0);
+                if (g_battlezLastDifficulties[i] != -1) {
+                    SetCurSelA(i, g_battlezLastDifficulties[i] + 1);
+                    m_slots->m_options[i].m_configId = g_battlezLastDifficulties[i];
                 } else {
-                    SetCurSelA(i, difficulty + 1);
-                    m_slots->m_options[i].m_configId = difficulty;
+                    SetCurSelA(i, 0);
                 }
             }
-        } else {
-            m_slots->m_options[1].m_humanControlled = 1;
-            m_slots->m_options[2].m_humanControlled = 1;
-            m_slots->m_options[3].m_humanControlled = 1;
         }
 
         SetCtrlBText(0, "Player");
-        SetCtrlBText(1, g_emptyString);
+        SetCtrlBText(1, "Zed");
         SetCtrlBText(2, "Serra");
         SetCtrlBText(3, "Jebediah");
-        for (i = 0; i < 4; i++) {
-            SetCurSelC(i, defaultMax);
-        }
+        SetCurSelC(0, defaultMax);
+        SetCurSelC(1, defaultMax);
+        SetCurSelC(2, defaultMax);
+        SetCurSelC(3, defaultMax);
         for (i = 0; i < 4; i++) {
             if (g_battlezResetOptions == 0) {
                 SetCurSelC(i, g_battlezLastMaxGruntz[i]);
                 m_slots->m_options[i].m_comboSel = g_battlezLastMaxGruntz[i];
             }
-            m_slots->m_options[i].m_liveGate = 1;
+            GruntzPlayer* slot = &m_slots->m_options[i];
+            if (slot != NULL) {
+                slot->m_liveGate = 1;
+            }
         }
         for (i = 0; i < 4; i++) {
             CWnd* edit = GetCtrlB(i);
             if (edit != NULL) {
-                ::SendMessageA(edit->m_hWnd, EM_LIMITTEXT, 9, 0);
+                edit->SendMessageA(EM_LIMITTEXT, 9, 0);
             }
         }
 
@@ -247,32 +244,62 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         for (i = 0; i < 4; i++) {
             CWnd* ctrlA = GetCtrlA(i);
             CWnd* ctrlB = GetCtrlB(i);
-            CWnd* ctrlC = GetCtrlC(i);
             CWnd* ctrlD = GetCtrlD(i);
+            CWnd* ctrlC = GetCtrlC(i);
             ctrlB->EnableWindow(1);
-            ::SendMessageA(ctrlB->m_hWnd, EM_SETREADONLY, 0, 0);
-            ctrlC->EnableWindow(1);
-            ctrlA->EnableWindow(1);
+            ctrlB->SendMessageA(EM_SETREADONLY, 0, 0);
             ctrlD->EnableWindow(1);
+            ctrlA->EnableWindow(1);
+            ctrlC->EnableWindow(1);
             if (GetPlayerTypeSelection(i) == 0) {
                 ctrlB->EnableWindow(0);
                 if (i != 0) {
-                    ctrlC->EnableWindow(0);
                     ctrlD->EnableWindow(0);
+                }
+                if (i != 0) {
+                    ctrlC->EnableWindow(0);
                 }
             }
         }
-        GetDlgItem(IDOK)->EnableWindow(
-            GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)
-        );
+        if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
+            GetDlgItem(IDOK)->EnableWindow(1);
+        } else {
+            GetDlgItem(IDOK)->EnableWindow(0);
+        }
 
         CustomMapSelection customMap = static_cast<CustomMapSelection>(
             reg->GetValueDword("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED))
         );
-        if (customMap == CUSTOM_MAP_UNINITIALIZED) {
+        if (customMap != CUSTOM_MAP_UNINITIALIZED) {
+            char mapName[0x100];
+            DWORD size = sizeof(mapName);
+            reg->GetValueString("LastMap", mapName, &size, g_emptyString);
+            m_customNameFlag = IDX(customMap);
+            if (customMap != CUSTOM_MAP_STANDARD) {
+                sprintf(key, "custom\\%s", mapName);
+                FILE* file = fopen(key, "rb");
+                if (file != NULL) {
+                    // Retail re-walks the combo down to its edit child here rather than
+                    // reusing the one it took at the top of the branch.
+                    CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
+                    if (child == NULL) {
+                        return;
+                    }
+                    child->SetWindowTextA(mapName);
+                    fclose(file);
+                }
+            } else {
+                CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
+                if (child == NULL) {
+                    return;
+                }
+                child->SetWindowTextA(mapName);
+            }
+        } else {
+            CWnd* child = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
             CString mapName;
             if (mapName.LoadStringA(0x81ab)) {
-                comboChild->SetWindowTextA(mapName);
+                child->SetWindowTextA(mapName);
                 SetCurSelC(0, 15);
                 SetCurSelC(1, 1);
                 SetCurSelC(2, 1);
@@ -285,30 +312,14 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                     SetCurSelA(i, 1);
                     GetCtrlB(i)->EnableWindow(1);
                     GetCtrlA(i)->EnableWindow(1);
-                    GetCtrlC(i)->EnableWindow(1);
                     GetCtrlD(i)->EnableWindow(1);
+                    GetCtrlC(i)->EnableWindow(1);
                 }
             }
             m_customNameFlag = 0;
-        } else {
-            char mapName[0x100];
-            DWORD size = sizeof(mapName);
-            reg->GetValueString("LastMap", mapName, &size, g_emptyString);
-            m_customNameFlag = IDX(customMap);
-            if (customMap == CUSTOM_MAP_STANDARD) {
-                comboChild->SetWindowTextA(mapName);
-            } else {
-                sprintf(key, "custom\\%s", mapName);
-                FILE* file = fopen(key, "rb");
-                if (file != NULL) {
-                    comboChild->SetWindowTextA(mapName);
-                    fclose(file);
-                }
-            }
         }
     } else {
-        CWnd* combo = GetDlgItem(0x4ff);
-        CWnd* comboChild = CWnd::FromHandle(::GetWindow(combo->m_hWnd, GW_CHILD));
+        CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
         if (comboChild == NULL) {
             return;
         }
@@ -325,24 +336,30 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         for (i = 0; i < 4; i++) {
-            i32 selection = GetPlayerTypeSelection(i);
-            if (selection == 0) {
-                m_slots->m_options[i].m_liveGate = 0;
-                m_slots->m_options[i].m_configId = 1;
-            } else {
+            // Spelled out rather than through GetPlayerTypeSelection: retail
+            // expands the combo query here and calls the accessor elsewhere.
+            i32 selection = static_cast<i32>(GetCtrlA(i)->SendMessageA(CB_GETCURSEL, 0, 0));
+            if (selection != 0) {
                 m_slots->m_options[i].m_liveGate = 1;
                 m_slots->m_options[i].m_configId = selection - 1;
+            } else {
+                m_slots->m_options[i].m_liveGate = 0;
+                m_slots->m_options[i].m_configId = 1;
             }
         }
-        g_battlezResetOptions = 0;
+        if (g_battlezResetOptions != 0) {
+            g_battlezResetOptions = 0;
+        }
         g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
             reg->SetValueDword(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
-            i32 difficulty =
-                m_slots->m_options[i].m_liveGate == 0 ? -1 : m_slots->m_options[i].m_configId;
-            reg->SetValueDword(key, difficulty);
+            if (m_slots->m_options[i].m_liveGate != 0) {
+                reg->SetValueDword(key, m_slots->m_options[i].m_configId);
+            } else {
+                reg->SetValueDword(key, -1);
+            }
             sprintf(key, "LastColour%d", i);
             reg->SetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
         }
