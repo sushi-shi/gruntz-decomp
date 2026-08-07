@@ -79,18 +79,18 @@ cursorsnapsprite	6	4
 customleveldlg	4	3
 customworlddialog	10	7
 databuffer	8	8
-ddpagemgr	21	15
+ddpagemgr	21	18
 ddpalette	23	23
 ddrawptrcollections	10	8
 ddrawshadeblit	12	4
-ddrawsubmgr	118	109
+ddrawsubmgr	118	111
 ddrawsubmgrleaf	12	11
 ddrawsubmgrrefresh	1	1
 ddrawsurfacemgr	21	17
 ddrawsurfacepair	43	32
 ddrawsurfacepairblt	1	1
 ddrawworkerhost	5	4
-ddrawworkerregistry	26	25
+ddrawworkerregistry	26	26
 ddsurface	57	47
 debugprintf	14	12
 debugtiming	2	2
@@ -895,7 +895,7 @@ ddpagemgr	?AddToPlaylist@CMoviePlayer@@QAEHPBDHW4MovieLayout@@HPAUtagPOINT@@PAUt
 ddpagemgr	?Advance@CMoviePlayer@@QAEHPAUIDirectDrawSurface@@H@Z	100.0000	100.0000	1	fff7a61c9121	0x17c8e0
 ddpagemgr	?BlitRegion@CMoviePlayer@@QAEHHHHH@Z	100.0000	100.0000	2	2922a4bbcf23	0x17cdf0
 ddpagemgr	?CheckGrid@CMoviePlayer@@QAEHXZ	100.0000	100.0000	1	1304665e023a	0x17cbe0
-ddpagemgr	?CheckMode16@CMoviePlayer@@QAEHXZ	83.9000	83.9000	4	97598d7c5e96	0x17d2b0
+ddpagemgr	?CheckMode16@CMoviePlayer@@QAEHXZ	100.0000	100.0000	5	1c76a9fc6f26	0x17d2b0
 ddpagemgr	?CloseSmacker@CMoviePlayer@@QAEHXZ	100.0000	100.0000	5	6384ec033e93	0x17c9b0
 ddpagemgr	?Configure@CMoviePlayer@@QAEHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	99.9246	99.9246	1	518c099d9694	0x17cfc0
 ddpagemgr	?CreateVideoWindow@CMoviePlayer@@QAEHPAUDDModeInfo@@I@Z	98.0097	98.0097	3	1e67e84ee0a6	0x17c2a0
@@ -905,8 +905,8 @@ ddpagemgr	?HandleError@CMoviePlayer@@QAEXXZ	100.0000	100.0000	5	cef7338c95eb	0x1
 ddpagemgr	?Init@CMoviePlayer@@QAEHPAUHWND__@@PAUDDModeInfo@@I@Z	98.2438	98.2438	8	708563b6d13f	0x17c040
 ddpagemgr	?InitMode@CMoviePlayer@@QAEHPAUHWND__@@PAUIDirectDraw2@@PAUIDirectDrawSurface@@U_DDSURFACEDESC@@PAUIDirectSound@@@Z	100.0000	100.0000	3	220e12ee9946	0x17c3f0
 ddpagemgr	?Open@CMoviePlayer@@QAEHPBDHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	1	baacf5822e07	0x17c6f0
-ddpagemgr	?OpenHi@CMoviePlayer@@QAEHHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	82.3239	82.3239	1	53c9341d433b	0x17c630
-ddpagemgr	?OpenLo@CMoviePlayer@@QAEHPBDW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	82.3239	82.3239	1	afa38c29dddb	0x17c570
+ddpagemgr	?OpenHi@CMoviePlayer@@QAEHHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	2	9a8ed87f3e59	0x17c630
+ddpagemgr	?OpenLo@CMoviePlayer@@QAEHPBDW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	2	5e6507adb447	0x17c570
 ddpagemgr	?PlayList@CMoviePlayer@@QAE?AW4MoviePlaybackResult@@H@Z	100.0000	100.0000	1	3319e124f19a	0x17d720
 ddpagemgr	?Pump@CMoviePlayer@@QAE?AW4MoviePlaybackResult@@HH@Z	100.0000	100.0000	1	bccd292b83bc	0x17c790
 ddpagemgr	?RemoveAt@CMoviePlayer@@QAEHH@Z	100.0000	100.0000	6	788ea8224ab2	0x17d600
@@ -966,8 +966,8 @@ ddrawsubmgr	??1CDDrawSubMgrLeafScan@@UAE@XZ	100.0000	100.0000	4	eb956bafc317	0x1
 ddrawsubmgr	??1CDDrawSubMgrPages@@UAE@XZ	100.0000	100.0000	3	5a77cd07d527	0x1574d0
 ddrawsubmgr	??1CDDrawSurfaceChildA@@UAE@XZ	100.0000	100.0000	2	12925e239815	0x1591b0
 ddrawsubmgr	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	3	8db024ec3d6d	0x1590f0
-ddrawsubmgr	??1CDDrawWorkerA@@UAE@XZ	72.0667	72.0667	9	72a4074ec836	0x1570d0
-ddrawsubmgr	??1CDDrawWorkerB@@UAE@XZ	72.0667	72.0667	9	765ad6b916b0	0x157240
+ddrawsubmgr	??1CDDrawWorkerA@@UAE@XZ	72.4667	72.4667	10	d435f7b5557d	0x1570d0
+ddrawsubmgr	??1CDDrawWorkerB@@UAE@XZ	72.4667	72.4667	10	a4a25c381e2c	0x157240
 ddrawsubmgr	??1CDDrawWorkerCache@@UAE@XZ	100.0000	100.0000	4	b6fe1404a5d1	0x157720
 ddrawsubmgr	??1CDDrawWorkerList@@UAE@XZ	100.0000	100.0000	3	80909b43352a	0x156f50
 ddrawsubmgr	??1CDDrawWorkerMapSmall@@UAE@XZ	100.0000	100.0000	3	eb32ec244fe2	0x156d20
@@ -1048,10 +1048,10 @@ ddrawsubmgr	?PlaceBound@CDDrawWorkerB@@UAEHHHPBDH@Z	100.0000	100.0000	2	d77bc5e4
 ddrawsubmgr	?PlaceFrame@CDDrawWorkerB@@UAEHHHPAVCDDrawWorker@@H@Z	100.0000	100.0000	4	6027aea5c599	0x1572b0
 ddrawsubmgr	?PlaceFrameValue@CDDrawWorkerA@@UAEHHHH@Z	100.0000	100.0000	1	7e23b74b3471	0x157110
 ddrawsubmgr	?PlaceFrameValue@CDDrawWorkerB@@UAEHHHH@Z	100.0000	100.0000	1	baa46ce5dbc5	0x1572f0
-ddrawsubmgr	?PresentBackPage@CDDrawSubMgrPages@@QAEHXZ	83.9821	83.9821	3	f6e0ae51827f	0x158dc0
+ddrawsubmgr	?PresentBackPage@CDDrawSubMgrPages@@QAEHXZ	100.0000	100.0000	4	b15ebf9a8709	0x158dc0
 ddrawsubmgr	?ProbeFirst@CDDrawSubMgrLeafScan@@QAEHH@Z	100.0000	100.0000	6	2f0c241918bd	0x1584a0
 ddrawsubmgr	?ProbeWorkerKey@CDDrawWorkerRegistry@@UAEHPAVCSymParser@@PBD@Z	100.0000	100.0000	3	919379fa4944	0x156e80
-ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	67.5185	67.5185	3	ed4bee730854	0x156ec0
+ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	95.7407	95.7407	4	1bd45dfdcf22	0x156ec0
 ddrawsubmgr	?RemoveByValue@CDDrawSubMgrLeafScan@@QAEXPAULeafCue@@@Z	99.8545	99.8545	4	f66a8e25a91f	0x157b00
 ddrawsubmgr	?RemoveKeysEqual@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	6	dbfa266dea6e	0x157c70
 ddrawsubmgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	2	ae40f47d3f4e	0x157a50
@@ -1062,7 +1062,7 @@ ddrawsubmgr	?ScanTree@CDDrawSubMgrLeafScan@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.
 ddrawsubmgr	?SetGeom@CDrawSubWorker@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	1	df100278e981	0x159020
 ddrawsubmgr	?SetGeometry@CDrawSubWorker@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	1	9e9e3d285874	0x158fd0
 ddrawsubmgr	?SetPosition@CDDrawWorkerBase@@UAEHHH@Z	100.0000	100.0000	2	e5b290e7470c	0x157080
-ddrawsubmgr	?SumField@CDDrawSubMgrLeafScan@@QAEHPBD@Z	66.2093	66.2093	7	2295227fa74f	0x1580b0
+ddrawsubmgr	?SumField@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	8	05d545b684c5	0x1580b0
 ddrawsubmgr	?TransEnter@CDDrawSubMgrPages@@QAEHXZ	88.2051	88.2051	2	ca8637203560	0x158e40
 ddrawsubmgr	?TransExit@CDDrawSubMgrPages@@QAEHXZ	100.0000	100.0000	1	5c3a0c55453e	0x158ee0
 ddrawsubmgr	?TransTitle@CDDrawSubMgrPages@@QAEHXZ	100.0000	100.0000	1	f5d60caaf4ed	0x158e90
@@ -1125,7 +1125,7 @@ ddrawsurfacepair	?DrawLabel@CDDrawSurfacePair@@QAEXPAUtagRECT@@PAD@Z	100.0000	10
 ddrawsurfacepair	?FindKeyOfValue@CDDrawWorkerCache@@QAE?AVCString@@PAVCObject@@@Z	100.0000	100.0000	7	35a4924a02d9	0x165360
 ddrawsurfacepair	?Helper@CDDrawWorkerB@@QAEHPBDH@Z	95.0000	95.0000	3	2895f671446b	0x166040
 ddrawsurfacepair	?Init@CResolveNode@@QAEHPAVCDDrawSurfaceMgr@@HHHHH@Z	100.0000	100.0000	3	270ee6188413	0x1647e0
-ddrawsurfacepair	?InitFromSurface@CDDrawSurfacePair@@UAEHPAVCDDSurface@@@Z	77.5000	77.5000	7	3daba9d3e2ce	0x163db0
+ddrawsurfacepair	?InitFromSurface@CDDrawSurfacePair@@UAEHPAVCDDSurface@@@Z	77.5000	77.5000	8	ba88b98a18ce	0x163db0
 ddrawsurfacepair	?LoadFile@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	6	8844bf0276f9	0x165620
 ddrawsurfacepair	?LoadImageA@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z	98.9091	98.9091	6	a0b0af90d907	0x163e50
 ddrawsurfacepair	?LoadPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAXPAUCParseSource@@PBDH@Z	100.0000	100.0000	2	9e4625cb19ed	0x1658c0
@@ -1135,7 +1135,7 @@ ddrawsurfacepair	?Probe@CDrawSubWorker@@QAEHXZ	100.0000	100.0000	5	2a18dc4b1854	
 ddrawsurfacepair	?PruneWorkers@CDDrawWorkerList@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	4	b08958a13f1a	0x163bf0
 ddrawsurfacepair	?Read@CFileMem@@UAEHPAXH@Z	100.0000	100.0000	5	aff0b5ad4602	0x165f00
 ddrawsurfacepair	?Ready@CFileMem@@UAEHXZ	100.0000	100.0000	3	763e2debc316	0x165ef0
-ddrawsurfacepair	?RemoveByKey@CDDrawWorkerMapSmall@@QAEHPBD@Z	77.6585	77.6585	7	d99128488c30	0x165d30
+ddrawsurfacepair	?RemoveByKey@CDDrawWorkerMapSmall@@QAEHPBD@Z	77.6585	77.6585	8	1fb2426a3fe2	0x165d30
 ddrawsurfacepair	?RemoveByValue@CDDrawWorkerMapSmall@@QAEHPAVCObject@@@Z	100.0000	100.0000	6	1a4935fd254b	0x165c40
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	5	f14731ac2504	0x165fa0
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	4	3fba942a3e8d	0x1660b0
@@ -1181,7 +1181,7 @@ ddrawworkerregistry	?MapTeardown@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	
 ddrawworkerregistry	?RemoveKeysEqual@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	7	b18b29c8483b	0x155360
 ddrawworkerregistry	?RemoveWorker@CDDrawWorkerRegistry@@UAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	3	f8728a82bc3e	0x155280
 ddrawworkerregistry	?SetKey@CDDrawWorker@@UAEHPBD@Z	100.0000	100.0000	3	ff89e7f56a86	0x155810
-ddrawworkerregistry	?SumSizesEqual@CDDrawWorkerRegistry@@QAEHPBDH@Z	65.6000	65.6000	7	a7480d8c985b	0x155460
+ddrawworkerregistry	?SumSizesEqual@CDDrawWorkerRegistry@@QAEHPBDH@Z	100.0000	100.0000	8	d1f531c7ea64	0x155460
 ddrawworkerregistry	?Unload@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	1	13b78d30b9a5	0x154ac0
 ddrawworkerregistry	?Unload@CLoadable@@UAEXXZ	100.0000	100.0000	1	7a980cb2b000	0x155740
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	bbcdcbde2404	0x141350
@@ -1603,7 +1603,7 @@ fader	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	1	510ef74d34da	0x17f330
 fader	??_GCFader@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e480
 fader	??_GCFaderMesh@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e970
 fader	??_GCRezBufferObject@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17f310
-fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	66.7139	66.7139	10	a5798070d9b3	0x17ea00
+fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	67.8608	67.8608	11	b16963893569	0x17ea00
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120
@@ -1630,8 +1630,8 @@ fadereffects	??_GCFaderShape@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x1
 fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17fdd0
 fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	89.7442	89.7442	6	0ab1386bb2b1	0x17f5e0
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	92.2465	92.2465	7	cf4df6cf84e0	0x1804a0
-fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	75.8655	75.8655	7	b6fb44c77449	0x17fa40
-fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	79.3189	79.3189	8	87db2ec558dd	0x1817e0
+fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	86.3860	86.3860	8	d268bad2f168	0x17fa40
+fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	82.9134	82.9134	9	7f9bf125dca6	0x1817e0
 fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	87.0686	87.0686	5	8bb75d4ca3af	0x17fe00
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	471a472ee35d	0x181660
 fadereffects	?EndFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	da061837edfb	0x1816a0
@@ -1644,8 +1644,8 @@ fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	49.3295	49.3295	1	c81a8daae0a9	0x180fb0
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	3	f39c044ffd10	0x17f660
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	61.7329	61.7329	4	c2071e0ab62d	0x180640
-fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	6	0cd7c389bf3b	0x17fc60
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	78.9601	78.9601	4	fdf1bf49d974	0x181b00
+fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	7	b6487e9e89ac	0x17fc60
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	79.1288	79.1288	4	fdf1bf49d974	0x181b00
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	74.7188	74.7188	4	1651b5f65276	0x17ff30
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	5	0aa0f545213f	0x182610
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	40.3857	40.3857	6	046fa682e203	0x181e50
@@ -1658,7 +1658,7 @@ fadermgr	??_GCFaderArray@@UAEPAXI@Z	100.0000	100.0000	1	cpp:47688caa3bbf	0x17e43
 fadermgr	?Add@CFaderMgr@@QAEPAVCFader@@W4FaderKind@@PAVCFxModeDesc@@@Z	100.0000	100.0000	1	a485606756fb	0x17d9c0
 fadermgr	?DeleteAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	3	05aeecb69457	0x17e1d0
 fadermgr	?FreeAll@CFaderMgr@@QAEXXZ	100.0000	100.0000	3	ab5b3f4c2f1c	0x17d9a0
-fadermgr	?Remove@CFaderMgr@@QAEXPAVCFader@@@Z	67.1111	67.1111	2	256b93653d07	0x17e170
+fadermgr	?Remove@CFaderMgr@@QAEXPAVCFader@@@Z	96.3333	96.3333	3	1037b7d72c21	0x17e170
 fadermgr	?Serialize@CFaderArray@@UAEXAAVCArchive@@@Z	81.1986	81.1986	4	c05d2727831b	0x17e2a0
 fadermgr	?SetConfig@CFaderMgr@@QAEHPAVCDDSurface@@0PAVCDDrawPtrCollections@@@Z	100.0000	100.0000	2	c8052f36d1b9	0x17d980
 fadermgr	?Trace@CFaderMgr@@QAEXVCString@@@Z	100.0000	100.0000	1	151c913fa558	0x17e230
