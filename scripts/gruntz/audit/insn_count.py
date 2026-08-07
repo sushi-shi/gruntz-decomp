@@ -14,24 +14,23 @@ Measured on the `??0C*@@QAE@PAUCGameObject@@@Z` ctor family (61 partial): 26 mis
 and every one opened was a genuine source bug. See
 docs/patterns/instruction-count-mismatch-finds-the-real-bug.md.
 
-**Why llvm-objdump and not `sema disasm --diff`.** The latter truncates at the first
-`$L` jump-table label, and the delinker packs a jump table INTO the owning function's
-symbol on the target side while the base keeps it in separate `$L` symbols - so every
-switch shows a huge bogus delta. `gruntz.core.branches.parse_objdump` already folds `$L`
-runs back into their owner on both sides, which is why this module reuses it.
+**Why llvm-objdump and not `sema disasm --diff`.** The latter truncates at the first `$L`
+jump-table label, and the delinker packs a jump table INTO the owning function's symbol on
+the target side while the base keeps it in separate `$L` symbols - so every switch shows a
+huge bogus delta.
 
-**Trailing alignment padding must be trimmed or the whole table is noise.** cl pads each
-`.text$` COMDAT out to a 16-byte boundary with single-byte `nop`s and llvm-objdump counts
-them inside the symbol; the delinker's target objs have none. Untrimmed, that put spikes
-of 56/73/114 functions at exactly delta +4/+8/+12 - pure padding, no bug. The embedded
-jump TABLE is the same trap one level down: llvm-objdump decodes it linearly, and the
-two sides decode it DIFFERENTLY (base entries are all-zero reloc slots, target entries
-hold real addresses), which is the whole -33 on CSpriteRef::Build. `trim()` removes both.
+**The count is only evidence once the non-code bytes are gone**, and getting that wrong
+manufactures bugs that are not there. Two artifacts, both handled in `trim()`:
 
-**A TRUNC row is not a verdict.** llvm-objdump disassembles linearly, so jump-table bytes
-sitting in `.text` decode as garbage; `first_bad()` finds where that starts and the row
-is flagged TRUNC. Its delta is unreliable - read the function by hand instead of trusting
-the number.
+  * COMDAT alignment `nop`s, which cl emits and the delinker does not. Untrimmed, they
+    put spikes of 56/73/114 functions at exactly delta +4/+8/+12.
+  * the switch JUMP TABLE, decoded linearly and DIFFERENTLY on the two sides (base entries
+    are all-zero reloc slots, target entries hold real addresses). `streams()` finds it
+    exactly, from the relocations rather than by a rule about `ret`s.
+
+Between them those two accounted for 39 of the 304 "mismatches" a naive count reports,
+including the two largest: CSpriteRef::Build (-33 -> 275 vs 275) and
+CTileActionEvent::Process (-40 -> 261 vs 261). Both are regalloc walls.
 
     python -m gruntz.audit.insn_count                 # the 85-99.6% band, |delta| first
     python -m gruntz.audit.insn_count --summary       # counts only
@@ -42,42 +41,98 @@ the number.
 import argparse
 import csv
 import re
+import subprocess
 import sys
 from pathlib import Path
 
-from gruntz.core.branches import UNCOND, decode, first_bad, obj_paths
+from gruntz.core.branches import obj_paths
 
 REPO = Path(__file__).resolve().parents[3]
 QUEUE = REPO / "build" / "gen" / "residual_function_queue.tsv"
 
-
 PAD = ("nop", "int3")
-# `jmpl *0x3a0(,%eax,4)` / `jmpl *(,%eax,4)` - the switch dispatch. The scale-4 index is
-# what distinguishes it from an ordinary indirect call through a pointer.
-INDIRECT4 = re.compile(r"\*.*,%\w+,4\)")
+SYM_HDR = re.compile(r"^([0-9a-f]{8}) <(.+)>:$")
+INSN = re.compile(r"^\s*([0-9a-f]+):\s+(\S+)\s*(.*)$")
+RELOC = re.compile(r"^\s+([0-9a-f]{8}):\s+IMAGE_REL_I386_(\w+)\s")
+BAD = ("(bad)", "<unknown>")
 
 
-def trim(insns):
-    """Drop the trailing COMDAT alignment padding and any embedded jump TABLE.
+def streams(obj):
+    """{symbol: (instructions, table_offset|None)} for one object.
 
-    The nops are pure COMDAT alignment (see the module docstring). The jump table is the
-    subtler half: it lives in `.text` right after the last `ret`, llvm-objdump decodes
-    those bytes linearly as instructions, and the two sides decode DIFFERENTLY - the base
-    obj's entries are still all-zero reloc slots (`addb %al,(%eax)` x2 per entry) while
-    the target's hold real addresses. CSpriteRef::Build showed -33 from that alone.
+    `llvm-objdump -d -r` in a single pass: instruction lines carry a section offset and a
+    relocation is printed inline underneath the instruction (or the datum) it applies to.
 
-    So when the stream dispatches through a scale-4 indirect jump, everything past the
-    last `ret` is data. The test is deliberately narrow: without a switch, a block placed
-    after the epilogue is real code and must be counted."""
+    MSVC emits `$L<n>` symbols for switch arms and other local blocks; llvm-objdump gives
+    each one a function-style header although it is still part of the enclosing COMDAT, so
+    they are folded back into the current owner (same rule as `gruntz.core.branches`).
+
+    `table_offset` is where the switch JUMP TABLE starts, and it has to be exact. The
+    table lives in `.text` at the end of the COMDAT, llvm-objdump decodes those bytes
+    linearly as instructions, and the two sides decode DIFFERENTLY - the base obj's
+    entries are still all-zero reloc slots (two `addb %al,(%eax)` each) while the target's
+    hold real addresses. That artifact alone was the whole -33 on CSpriteRef::Build, which
+    is in fact 275 vs 275: a pure regalloc wall.
+
+    Heuristics do not survive here. "Cut after the last `ret`" fails on
+    CTileActionEvent::Process, whose table bytes happen to decode a `retl $0x0`. What IS
+    exact on both sides is the RELOCATION shape: a jump table is a run of DIR32 relocs at
+    a 4-byte stride, and three in a row cannot occur in code (every instruction that
+    carries a DIR32 is at least 5 bytes long)."""
+    out = subprocess.run(["llvm-objdump", "-d", "-r", "--no-show-raw-insn", str(obj)],
+                         capture_output=True, text=True).stdout
+    syms, cur, relocs = {}, None, None
+    for ln in out.split("\n"):
+        m = SYM_HDR.match(ln.strip())
+        if m:
+            name = m.group(2)
+            if name.startswith("$L") and cur is not None:
+                continue
+            cur, relocs = [], []
+            syms[name] = (cur, relocs)
+            continue
+        if cur is None:
+            continue
+        m = RELOC.match(ln)
+        if m:
+            if m.group(2).startswith("DIR32"):
+                relocs.append(int(m.group(1), 16))
+            continue
+        m = INSN.match(ln)
+        if m:
+            cur.append((int(m.group(1), 16), m.group(2), m.group(3).strip()))
+    return {k: (v[0], table_start(v[1])) for k, v in syms.items()}
+
+
+def table_start(relocs):
+    """Offset of the first jump-table entry: a run of >=3 DIR32 relocs at stride 4."""
+    for i in range(len(relocs) - 2):
+        if all(relocs[i + k + 1] - relocs[i + k] == 4 for k in range(2)):
+            return relocs[i]
+    return None
+
+
+def trim(insns, table):
+    """Drop the jump table and the trailing COMDAT alignment padding.
+
+    cl pads each `.text$` COMDAT out to a 16-byte boundary with single-byte `nop`s that
+    llvm-objdump counts inside the symbol while the delinker's target objs have none.
+    Untrimmed, that alone put spikes of 56/73/114 functions at exactly delta +4/+8/+12."""
     n = len(insns)
-    if any(mn in UNCOND and INDIRECT4.search(op) for _, mn, op in insns):
-        for i in range(n - 1, -1, -1):
-            if insns[i][1].startswith("ret"):
-                n = i + 1
-                break
+    if table is not None:
+        while n and insns[n - 1][0] >= table:
+            n -= 1
     while n and insns[n - 1][1].startswith(PAD):
         n -= 1
     return insns[:n]
+
+
+def truncated(insns, table):
+    """Did llvm-objdump stop decoding real instructions inside the CODE region?
+
+    A `(bad)` byte inside the trimmed body means the count is not to be trusted - read the
+    function by hand instead."""
+    return any(mn.startswith(BAD) for _, mn, _ in trim(insns, table))
 
 
 def rows(queue, lo, hi, unit=None):
@@ -102,7 +157,7 @@ def counts(units):
         if not b.is_file() or not t.is_file():
             cache[u] = None
             continue
-        cache[u] = (decode(b), decode(t))
+        cache[u] = (streams(b), streams(t))
     return cache
 
 
@@ -116,13 +171,13 @@ def measure(rs):
             r.update(status="NO-OBJ")
             out.append(r)
             continue
-        bi, ti = c[0].get(r["name"]), c[1].get(r["name"])
-        if bi is None or ti is None:
+        b, t = c[0].get(r["name"]), c[1].get(r["name"])
+        if b is None or t is None:
             r.update(status="NO-SYM")
             out.append(r)
             continue
-        trunc = first_bad(bi) is not None or first_bad(ti) is not None
-        bi, ti = trim(bi), trim(ti)
+        trunc = truncated(*b) or truncated(*t)
+        bi, ti = trim(*b), trim(*t)
         r.update(status="TRUNC" if trunc else ("MISMATCH" if len(bi) != len(ti) else "EQUAL"),
                  base_insn=len(bi), tgt_insn=len(ti), delta=len(bi) - len(ti))
         out.append(r)
