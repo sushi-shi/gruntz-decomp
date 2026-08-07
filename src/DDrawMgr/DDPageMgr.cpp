@@ -146,9 +146,8 @@ int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
         return 0;
     }
     m_videoWnd->SetFocus();
-    HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
 
-    return Init(h, mode, coopFlags);
+    return Init(m_videoWnd->GetSafeHwnd(), mode, coopFlags);
 }
 
 RVA(0x0017c3f0, 0x120)

@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <AddrWord.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
@@ -342,16 +343,14 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcoun
     m_bih.biClrImportant = 0;
 
     u16* pal = m_pal;
-    void* pixels;
     if (m_bitCount == BPP_PALETTED_8) {
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, &pixels, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, PtrOut(&m_pixels), 0, 0);
     } else {
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, &pixels, 0, 0);
+        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, PtrOut(&m_pixels), 0, 0);
     }
-    m_pixels = static_cast<u8*>(pixels);
     if (!m_dibSection) {
         return 0;
     }

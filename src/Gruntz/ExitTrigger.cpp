@@ -92,14 +92,13 @@ i32 CExitTrigger::SerializeMove(
     CDDrawSurfaceMgr* holder = g_gameReg->m_world;
     switch (mode) {
         case SERIAL_LOAD: {
+            CGameObject* found;
+            i32 key;
             arc->Read(&m_resolved, sizeof(m_resolved));
-            i32 key = 0;
             arc->Read(&key, sizeof(key));
             if (key != 0) {
-                CGameObject* found = 0;
-
-                CGameObject* obj = 0;
-
+                found = NULL;
+                CGameObject* obj = NULL;
                 if (MapLookupById(holder->m_childGroup->m_map48, key, found)) {
                     obj = found;
                 }

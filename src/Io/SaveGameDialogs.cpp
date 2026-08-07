@@ -472,7 +472,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     i32 slot = -1;
-    i32 nameId;
+    i32 nameId = 0;
     switch (c) {
         case CTRL_SAVESLOT_LOAD0:
             slot = 0;
@@ -517,7 +517,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     if (slot != -1) {
-        char name[0x20];
+        char name[0x21];
         GetDlgItemTextA(hDlg, nameId, name, 0x20);
         if (_strcmpi(name, "(Empty)") == 0) {
             sprintf(name, "Saved Game #%i", slot + 1);
