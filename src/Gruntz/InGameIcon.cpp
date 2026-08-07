@@ -884,8 +884,12 @@ i32 CInGameIcon::SerializeMove(
         case SERIAL_SAVE: {
             memset(chainName, 0, sizeof(chainName));
             if (m_value != NULL) {
-                CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
-                strcpy(chainName, static_cast<const char*>(nm));
+                strcpy(
+                    chainName,
+                    static_cast<const char*>(
+                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                    )
+                );
             }
             ar->Write(chainName, SERIAL_NAME_LEN);
             ar->Write(m_blob, 0x10);
@@ -925,8 +929,12 @@ i32 CInGameIcon::SerializeMove(
         case SERIAL_SAVE: {
             memset(tailName, 0, sizeof(tailName));
             if (m_cue != NULL) {
-                CString nm = m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue);
-                strcpy(tailName, static_cast<const char*>(nm));
+                strcpy(
+                    tailName,
+                    static_cast<const char*>(
+                        m_animWorker->m_ownerCtx->m_soundRegistry->FindKeyOfValue(m_cue)
+                    )
+                );
             }
             ar->Write(tailName, SERIAL_NAME_LEN);
             g_serialCounter++;

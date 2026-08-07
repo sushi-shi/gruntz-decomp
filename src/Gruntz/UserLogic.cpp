@@ -145,8 +145,12 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
 
             memset(name, 0, sizeof(name));
             if (m_value != NULL) {
-                CString nm = m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value);
-                strcpy(name, static_cast<const char*>(nm));
+                strcpy(
+                    name,
+                    static_cast<const char*>(
+                        m_animWorker->m_ownerCtx->m_animRegistry->KeyOfValue(m_value)
+                    )
+                );
             }
             arc->Write(name, SERIAL_NAME_LEN);
             arc->Write(m_blob, 0x10);
