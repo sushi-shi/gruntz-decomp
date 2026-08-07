@@ -91,24 +91,6 @@ public:
 };
 SIZE(0x34);
 
-inline CUserLogic::CUserLogic(CGameObject* obj) {
-    m_logicObject = obj;
-    m_object = static_cast<CWwdGameObjectA*>(obj);
-    m_objAux = obj->m_animWorker;
-    {
-        zBitVec tmp(g_emptyString, 0);
-        m_link.m_str = tmp;
-    }
-    RegisterLogicTypesOnce();
-    m_object->AddLogicHit("LogicHit");
-    m_object->AddLogicAttack("LogicAttack");
-    m_object->AddLogicBump("LogicBump");
-    m_deferredCallback = 0;
-    m_gatedCallback = 0;
-    m_gatedActKey = 0x3e9;
-    m_reserved2c = 2;
-}
-
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {
         BuildLogicTypeTable(m_logicObject);
