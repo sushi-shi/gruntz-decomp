@@ -1834,15 +1834,9 @@ i32 CDDSurface::RotateScaleBlit(
     return 1;
 }
 
-// @early-stop
 RVA(0x00141280, 0x4a)
 void CDDSurface::DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip) {
-    ClipRect16 rec;
-    rec.a = clip.left;
-    rec.b = clip.top;
-    rec.c = clip.right;
-    rec.d = clip.bottom;
-    ProjectWallQuad(this, x0, y0, x1, y1, halfWidth, color, rec.a, rec.b, rec.c, rec.d);
+    ProjectWallQuad(this, x0, y0, x1, y1, halfWidth, color, clip);
 }
 
 RVA(0x001412d0, 0x24)

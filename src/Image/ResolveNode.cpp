@@ -8,9 +8,6 @@
 
 RVA(0x001549d0, 0x29)
 CResolveNode::CResolveNode() {
-    m_ownerCtx = NULL;
-    m_dirty.m_rect.left = COORD_UNSET;
-    m_dirty.m_armed = -1;
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;

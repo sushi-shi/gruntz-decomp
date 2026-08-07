@@ -564,9 +564,8 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     return t;
 }
 
-// @early-stop
 RVA(0x0014f6c0, 0x1e1)
-CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
+CShadeTable* CShadeTableCache::AddFromArray(CString name) {
     CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
     i32 newSize = oldSize + 1;
@@ -611,9 +610,7 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
         m_arr.m_nMaxSize = newMax;
     }
     m_arr.m_pData[oldSize] = t;
-    CString cstr(name);
-
-    if (!t->LoadFromFile(cstr, 0)) {
+    if (!t->LoadFromFile(name, 0)) {
         FindRemove(t);
         return 0;
     }
@@ -759,7 +756,7 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     u8 b2 = GetBValue(color);
 
     float v = static_cast<float>(HSV_MAX(HSV_MAX(b0, b1), b2));
-    int mn = HSV_MIN(HSV_MIN(b0, b1), b2);
+    float mn = static_cast<float>(HSV_MIN(HSV_MIN(b0, b1), b2));
     float h;
 
     hsv.v = v;
@@ -767,7 +764,7 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
         hsv.s = 0.0;
         hsv.h = 0.0;
     } else {
-        float delta = v - static_cast<float>(mn);
+        float delta = v - mn;
         hsv.s = delta / v;
         if (delta == 0.0) {
             h = DATA_COMPGEN(0x001efb68, fp_1efb68, 0.0f);

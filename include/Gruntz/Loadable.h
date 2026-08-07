@@ -50,7 +50,9 @@ public:
 
     virtual LoadableClassId GetClassId();
 
-    CLoadable() {}
+    CLoadable() {
+        m_ownerCtx = NULL;
+    }
 
     CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
 

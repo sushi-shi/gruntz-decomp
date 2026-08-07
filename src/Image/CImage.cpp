@@ -637,7 +637,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     RECT s;
     s.left = right - d.right;
-    s.top = bottom - d.bottom;
+    s.top = d.top - y;
     s.right = s.left + w;
     s.bottom = s.top + h;
     d.right += 1;
@@ -719,7 +719,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
     RECT s;
-    s.left = right - d.right;
+    s.left = d.left - x;
     s.top = bottom - d.bottom;
     s.right = s.left + w;
     s.bottom = s.top + h;
@@ -802,12 +802,13 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
     ShadeRect s;
-    s.left = right - d.right;
-    s.top = bottom - d.bottom;
+    s.left = d.left - x;
+    s.top = d.top - y;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
+        m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_dirty.m_lastX = d.left;
@@ -964,8 +965,8 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
     ShadeRect s;
-    s.left = right - d.right;
-    s.top = bottom - d.bottom;
+    s.left = d.left - x;
+    s.top = d.top - y;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_drawActive) {
@@ -1045,7 +1046,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
     ShadeRect s;
-    s.left = right - d.right;
+    s.left = d.left - x;
     s.top = bottom - d.bottom;
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;

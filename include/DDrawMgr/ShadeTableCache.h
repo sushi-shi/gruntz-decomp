@@ -29,7 +29,7 @@ struct CShadeTable {
     void Reset();
     void Free();
 
-    i32 LoadFromFile(const char* path, i32 id);
+    i32 LoadFromFile(CString path, i32 id);
     i32 LoadFromMem(void* buf, u32 len, i32 id);
     i32 ReadFrom(CFile* file, i32 id);
     i32 SaveToFile(CString path);
@@ -64,7 +64,7 @@ public:
     CShadeTable* GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol);
     CShadeTable* LumaSortTable(PALETTEENTRY* pal);
     CShadeTable* HueSortTable(PALETTEENTRY* pal);
-    CShadeTable* AddFromArray(const char* name);
+    CShadeTable* AddFromArray(CString name);
     CShadeTable* AddFromFile(const char* name, i32 size);
     CShadeTable* GreyTable();
     CShadeTable* AddTable(float scale);

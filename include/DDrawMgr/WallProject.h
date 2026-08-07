@@ -1,6 +1,8 @@
 #ifndef GRUNTZ_DDRAWMGR_WALLPROJECT_H
 #define GRUNTZ_DDRAWMGR_WALLPROJECT_H
 
+#include <Mfc.h>
+
 #include <Ints.h>
 
 extern const float g_c10;
@@ -17,10 +19,7 @@ i32 ProjectWallQuad(
     i32 x1,
     i32 y1,
     i32 halfWidth,
-    i32 color,
-    i32 clipLeft,
-    i32 clipTop,
-    i32 clipRight,
-    i32 clipBottom
+    i16 color,
+    RECT clip
 );
 #endif // GRUNTZ_DDRAWMGR_WALLPROJECT_H

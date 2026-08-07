@@ -794,11 +794,8 @@ i32 ProjectWallQuad(
     i32 x1,
     i32 y1,
     i32 halfWidth,
-    i32 color,
-    i32 clipLeft,
-    i32 clipTop,
-    i32 clipRight,
-    i32 clipBottom
+    i16 color,
+    RECT clip
 ) {
     i32 dx = x1 - x0;
     i32 dy = y1 - y0;
@@ -829,8 +826,8 @@ i32 ProjectWallQuad(
         v[0] = static_cast<float>((static_cast<double>(y0) + static_cast<double>(v[0])));
     }
 
-    if (ImagePolyClipRect(g_rasterVtxB, 4, clipLeft, clipTop, clipRight, clipBottom) != 0) {
-        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, static_cast<i16>(color));
+    if (ImagePolyClipRect(g_rasterVtxB, 4, clip.left, clip.top, clip.right, clip.bottom) != 0) {
+        FillPolygon(g_rasterVtxB, g_rasterVtxCount, surface, color);
     }
     return 1;
 }
