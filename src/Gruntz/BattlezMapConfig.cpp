@@ -3698,17 +3698,31 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         left = (g2.m_x >> TILE_SHIFT_PX) - 8;
     }
     CMapMgr* board = m_board;
-    CRect bounds(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = left;
     box.top = top;
-    box.right = right + 1;
-    box.bottom = bottom + 1;
-    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
-        board->m_bounds = box;
+    box.right = right;
+    box.bottom = bottom;
+    // CMapMgr::Clip(&box) expanded: cl declines to inline the 170-byte body, but
+    // it does NOT fold `&box != NULL`, so the else arm survives here.
+    {
+        const RECT* src = &box;
+        CRect b(0, 0, board->m_width, board->m_height);
+        RECT a;
+        if (src != NULL) {
+            a.left = src->left;
+            a.top = src->top;
+            a.right = src->right + 1;
+            a.bottom = src->bottom + 1;
+        } else {
+            a = CRect(0, 0, board->m_width, board->m_height);
+        }
+        if (!IntersectRect(&board->m_bounds, &a, &b)) {
+            board->m_bounds = a;
+        }
+        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     ClaimTilesAround(unit, col, row, requireUnoccupied);
     if (g_stepRun == 0) {
         i32 savedX = unit->m_entrancePx.m_x;
@@ -3762,19 +3776,18 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         } while (--w != 0);
     }
 
-    bounds.left = 0;
-    bounds.top = 0;
-    bounds.right = board->m_width;
-    bounds.bottom = board->m_height;
-    box.left = 0;
-    box.top = 0;
-    box.right = board->m_width;
-    box.bottom = board->m_height;
-    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
-        board->m_bounds = box;
+    // CMapMgr::Clip(NULL) expanded: with a constant-NULL src cl folds the test
+    // away and only the else arm - a struct copy of the board rect - survives.
+    {
+        CRect b(0, 0, board->m_width, board->m_height);
+        RECT a;
+        a = b;
+        if (!IntersectRect(&board->m_bounds, &a, &b)) {
+            board->m_bounds = a;
+        }
+        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     return 1;
 }
 
