@@ -232,15 +232,18 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     i32 ylo = y0 - 0xa;
     i32 yhi = y0 + 0xe;
     i32 x0 = m_screenX;
+    i32 xlo = x0 - 0x18;
 
-    if (mx < x0 && mx >= x0 - 0x18 && my < yhi && my >= ylo) {
+    if (mx < x0 && mx >= xlo && my < yhi && my >= ylo) {
         if (*btn == ACTIONOPTION_NORMAL) {
             *btn = ACTIONOPTION_SELECTED;
         }
         return 1;
     }
 
-    if (mx < x0 + 0x1c && mx >= x0 + 0x4 && my < yhi && my >= ylo) {
+    i32 xlo2 = x0 + 0x4;
+    i32 xhi2 = x0 + 0x1c;
+    if (mx < xhi2 && mx >= xlo2 && my < yhi && my >= ylo) {
         if (m_buttonState[1] == ACTIONOPTION_NORMAL) {
             m_buttonState[1] = ACTIONOPTION_SELECTED;
         }

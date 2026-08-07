@@ -39,7 +39,16 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
         i32 h = _findfirst(glob, &fd);
         static CString s_custom("custom\\");
         if (h != -1) {
-            do {
+            if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
+                MsgParam name;
+                ::SendMessageA(
+                    item->m_hWnd,
+                    LB_ADDSTRING,
+                    0,
+                    (name.m_str = static_cast<const char*>((s_custom + fd.name)), name.m_lparam)
+                );
+            }
+            while (_findnext(h, &fd) != -1) {
                 if (g_gameReg->IsBattlezMapFile(s_custom + fd.name)) {
                     MsgParam name;
                     ::SendMessageA(
@@ -49,7 +58,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
                         (name.m_str = static_cast<const char*>((s_custom + fd.name)), name.m_lparam)
                     );
                 }
-            } while (_findnext(h, &fd) != -1);
+            }
         }
         ::SendMessageA(item->m_hWnd, LB_SETCURSEL, 0, 0);
         return;

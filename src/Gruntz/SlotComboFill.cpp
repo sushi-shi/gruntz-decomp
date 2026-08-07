@@ -9,30 +9,33 @@
 // @early-stop
 RVA(0x00037ff0, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
-    if (m_list.GetCount() > 0) {
-        HWND combo = GetDlgItem(hDlg, ctrlId);
-        if (combo != NULL) {
-            SendMessageA(combo, CB_RESETCONTENT, 0, 0);
-            POSITION pos = m_list.GetHeadPosition();
-            while (pos != NULL) {
-                CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
-                i32 data = ((rec->m_drainReload & 0xffff) << 16) | (rec->m_commandDelay & 0xffff);
-                i32 idx;
-                {
-                    MsgParam name;
-                    idx = SendMessageA(
-                        combo,
-                        CB_ADDSTRING,
-                        0,
-                        (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
-                    );
-                }
-                if (idx != -1) {
-                    SendMessageA(combo, CB_SETITEMDATA, idx, data);
-                }
+    if (m_list.GetCount() <= 0) {
+        return 0;
+    }
+    HWND combo = GetDlgItem(hDlg, ctrlId);
+    if (combo != NULL) {
+        SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+        POSITION pos = m_list.GetHeadPosition();
+        while (pos != NULL) {
+            CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+            i32 hi = rec->m_drainReload & 0xffff;
+            i32 lo = rec->m_commandDelay & 0xffff;
+            i32 data = (hi << 16) | lo;
+            i32 idx;
+            {
+                MsgParam name;
+                idx = SendMessageA(
+                    combo,
+                    CB_ADDSTRING,
+                    0,
+                    (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
+                );
             }
-            return m_list.GetCount();
+            if (idx != -1) {
+                SendMessageA(combo, CB_SETITEMDATA, idx, data);
+            }
         }
+        return m_list.GetCount();
     }
     return 0;
 }
