@@ -642,16 +642,15 @@ void CFaderLight::RenderFrame(i32 frame) {
                 if (n2 > 0) {
                     memset(m_srcBits + m_surface->m_pitch * row + right * bpp, 0, n2);
                 }
-                i32 R = m_spanCount;
                 u8* bits = m_srcBits;
-                if (R > 0) {
+                if (m_spanCount > 0) {
                     i32 cy = m_centerY;
                     i32 dy = row - cy;
                     i32 dy2 = dy * dy;
-                    i32 cx = m_centerX;
-                    i32 xcur = cx - static_cast<i32>(sqrt(static_cast<double>((rr - dy2)))) + 1;
+                    i32 xcur =
+                        m_centerX - static_cast<i32>(sqrt(static_cast<double>((rr - dy2)))) + 1;
                     i32 dist = static_cast<i32>(
-                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
+                        sqrt(static_cast<double>(((xcur - m_centerX) * (xcur - m_centerX) + dy2)))
                     );
                     i32 srcpitch = m_surface->m_pitch;
                     i32 srcCol = row * srcpitch;
@@ -659,8 +658,8 @@ void CFaderLight::RenderFrame(i32 frame) {
                     i32 dstpitch = m_dstSurface->m_pitch;
                     i32 dstCol = row * dstpitch;
                     u8* rowLdst = ovlBits + xcur + dstCol;
-                    u8* rowRsrc = (bits - xcur) + srcCol + 2 * cx;
-                    u8* rowRdst = (ovlBits - xcur) + dstCol + 2 * cx;
+                    u8* rowRsrc = (bits - xcur) + srcCol + 2 * m_centerX;
+                    u8* rowRdst = (ovlBits - xcur) + dstCol + 2 * m_centerX;
                     i32 mid = m_surfHeight / 2;
                     i32 mirSrc;
                     i32 mirDst;
@@ -670,44 +669,43 @@ void CFaderLight::RenderFrame(i32 frame) {
 
                             mirSrc = mirRow * srcpitch;
                             mirDst = mirRow * dstpitch;
-                            if (dist >= r - R) {
-                                do {
-                                    if (xcur > cx) {
-                                        break;
-                                    }
-                                    i32 cl = dist - r + R;
-                                    if (xcur >= 0) {
-                                        i32 p = *rowLdst;
-                                        *rowLsrc = *(lut + p * R + cl);
-                                        i32 q = *(rowLdst + mirDst);
-                                        *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                                    }
-                                    rowLsrc++;
-                                    rowLdst++;
-                                    if (2 * m_centerX - xcur < m_surfWidth) {
-                                        i32 p = *rowRdst;
-                                        *rowRsrc = *(lut + p * m_spanCount + cl);
-                                        i32 q = *(rowRdst + mirDst);
-                                        *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                                    }
-                                    rowRsrc--;
-                                    rowRdst--;
-                                    xcur++;
-                                    dist = static_cast<i32>(
-                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
-                                    );
-                                } while (dist >= r - m_spanCount);
-                            }
-                        } else if (dist >= r - R) {
-
-                            do {
-                                if (xcur > cx) {
+                            while (dist >= r - m_spanCount) {
+                                if (xcur > m_centerX) {
                                     break;
                                 }
-                                i32 cl = dist - r + R;
+                                i32 cl = dist - r + m_spanCount;
                                 if (xcur >= 0) {
                                     i32 p = *rowLdst;
-                                    *rowLsrc = *(lut + p * R + cl);
+                                    *rowLsrc = *(lut + p * m_spanCount + cl);
+                                    i32 q = *(rowLdst + mirDst);
+                                    *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                }
+                                rowLsrc++;
+                                rowLdst++;
+                                if (2 * m_centerX - xcur < m_surfWidth) {
+                                    i32 p = *rowRdst;
+                                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                                    i32 q = *(rowRdst + mirDst);
+                                    *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                                }
+                                rowRsrc--;
+                                rowRdst--;
+                                xcur++;
+                                dist = static_cast<i32>(sqrt(
+                                    static_cast<double>(
+                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
+                                    )
+                                ));
+                            }
+                        } else {
+                            while (dist >= r - m_spanCount) {
+                                if (xcur > m_centerX) {
+                                    break;
+                                }
+                                i32 cl = dist - r + m_spanCount;
+                                if (xcur >= 0) {
+                                    i32 p = *rowLdst;
+                                    *rowLsrc = *(lut + p * m_spanCount + cl);
                                 }
                                 rowLsrc++;
                                 rowLdst++;
@@ -718,70 +716,72 @@ void CFaderLight::RenderFrame(i32 frame) {
                                 rowRsrc--;
                                 rowRdst--;
                                 xcur++;
-                                dist = static_cast<i32>(
-                                    sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
-                                );
-                            } while (dist >= r - m_spanCount);
+                                dist = static_cast<i32>(sqrt(
+                                    static_cast<double>(
+                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
+                                    )
+                                ));
+                            }
                         }
                     } else if (cy < mid && row >= cy) {
                         i32 mirRow = 2 * dy;
-                        if (row - mirRow < 0) {
-
-                            if (dist >= r - R) {
-                                do {
-                                    if (xcur > cx) {
-                                        break;
-                                    }
-                                    i32 cl = dist - r + R;
-                                    if (xcur >= 0) {
-                                        i32 p = *rowLdst;
-                                        *rowLsrc = *(lut + p * R + cl);
-                                    }
-                                    rowLsrc++;
-                                    rowLdst++;
-                                    if (2 * m_centerX - xcur < m_surfWidth) {
-                                        i32 p = *rowRdst;
-                                        *rowRsrc = *(lut + p * m_spanCount + cl);
-                                    }
-                                    rowRsrc--;
-                                    rowRdst--;
-                                    xcur++;
-                                    dist = static_cast<i32>(
-                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
-                                    );
-                                } while (dist >= r - m_spanCount);
-                            }
-                        } else {
+                        if (row - mirRow >= 0) {
 
                             mirSrc = mirRow * srcpitch;
                             mirDst = mirRow * dstpitch;
-                            if (dist >= r - R) {
-                                do {
-                                    if (xcur > cx) {
-                                        break;
-                                    }
-                                    i32 cl = dist - r + R;
-                                    if (xcur >= 0) {
-                                        i32 p = *rowLdst;
-                                        *rowLsrc = *(lut + p * R + cl);
-                                        i32 q = *(rowLdst - mirDst);
-                                        *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-                                    }
-                                    rowLsrc++;
-                                    rowLdst++;
-                                    if (2 * m_centerX - xcur < m_surfWidth) {
-                                        i32 p = *rowRdst;
-                                        *rowRsrc = *(lut + p * m_spanCount + cl);
-                                        i32 q = *(rowRdst - mirDst);
-                                        *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-                                    }
-                                    rowRsrc--;
-                                    rowRdst--;
-                                    xcur++;
-                                    dist = static_cast<i32>(
-                                        sqrt(static_cast<double>(((xcur - cx) * (xcur - cx) + dy2)))
-                                    );
-                                } while (dist >= r - m_spanCount);
+                            while (dist >= r - m_spanCount) {
+                                if (xcur > m_centerX) {
+                                    break;
+                                }
+                                i32 cl = dist - r + m_spanCount;
+                                if (xcur >= 0) {
+                                    i32 p = *rowLdst;
+                                    *rowLsrc = *(lut + p * m_spanCount + cl);
+                                    i32 q = *(rowLdst - mirDst);
+                                    *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                }
+                                rowLsrc++;
+                                rowLdst++;
+                                if (2 * m_centerX - xcur < m_surfWidth) {
+                                    i32 p = *rowRdst;
+                                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                                    i32 q = *(rowRdst - mirDst);
+                                    *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                                }
+                                rowRsrc--;
+                                rowRdst--;
+                                xcur++;
+                                dist = static_cast<i32>(sqrt(
+                                    static_cast<double>(
+                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
+                                    )
+                                ));
+                            }
+                        } else {
+
+                            while (dist >= r - m_spanCount) {
+                                if (xcur > m_centerX) {
+                                    break;
+                                }
+                                i32 cl = dist - r + m_spanCount;
+                                if (xcur >= 0) {
+                                    i32 p = *rowLdst;
+                                    *rowLsrc = *(lut + p * m_spanCount + cl);
+                                }
+                                rowLsrc++;
+                                rowLdst++;
+                                if (2 * m_centerX - xcur < m_surfWidth) {
+                                    i32 p = *rowRdst;
+                                    *rowRsrc = *(lut + p * m_spanCount + cl);
+                                }
+                                rowRsrc--;
+                                rowRdst--;
+                                xcur++;
+                                dist = static_cast<i32>(sqrt(
+                                    static_cast<double>(
+                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
+                                    )
+                                ));
                             }
                         }
                     }
