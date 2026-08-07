@@ -32,7 +32,6 @@ static u8 s_palPidData[0x400];
 DATA(0x002852f0)
 static PALETTEENTRY s_palPcxData[0x100];
 
-// @early-stop
 RVA(0x00143cf0, 0x16b)
 i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 
@@ -56,15 +55,12 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
     void* pal = 0;
     if (convert && srcFmt == BPP_PALETTED_8) {
         RGBQUAD* p = img->info.bmiColors;
-        i32 i = 0;
-        do {
-            g_paletteRampBuf[i].peRed = p->rgbRed;
-            g_paletteRampBuf[i].peGreen = p->rgbGreen;
-            g_paletteRampBuf[i].peBlue = p->rgbBlue;
+        for (i32 i = 0; i < 0x100; i++) {
+            g_paletteRampBuf[i].peRed = p[i].rgbRed;
+            g_paletteRampBuf[i].peGreen = p[i].rgbGreen;
+            g_paletteRampBuf[i].peBlue = p[i].rgbBlue;
             g_paletteRampBuf[i].peFlags = 0;
-            p++;
-            i++;
-        } while (i < 0x100);
+        }
         pal = g_paletteRampBuf;
     } else if (convert && curFmt == BPP_PALETTED_8) {
         if (info->m_hasPalette != 0) {
@@ -116,8 +112,6 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
     return result;
 }
 
-// @early-stop
-// Regalloc: retail memory-homes `remap` and re-reads it; cl keeps it in a register.
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
 
@@ -136,18 +130,13 @@ i32 CDDSurface::DecodeBmp(CDDrawPtrCollections* pal, void* buf, u32 size) {
         if (!remap || palBpp != BPP_PALETTED_8 || pal->m_hasPalette != 0) {
             void* palette = 0;
             if (remap && bitcount == BPP_PALETTED_8) {
-                u8* src =
-                    static_cast<u8*>(buf) + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
-                u8* srcEnd = src + 0x400;
-                i32 i = 0;
-                do {
-                    s_palBmp[i].peRed = src[2];
-                    s_palBmp[i].peGreen = src[1];
-                    s_palBmp[i].peBlue = src[0];
+                RGBQUAD* src = bmp->info.bmiColors;
+                for (i32 i = 0; i < 0x100; i++) {
+                    s_palBmp[i].peRed = src[i].rgbRed;
+                    s_palBmp[i].peGreen = src[i].rgbGreen;
+                    s_palBmp[i].peBlue = src[i].rgbBlue;
                     s_palBmp[i].peFlags = 0;
-                    src += 4;
-                    i++;
-                } while (src < srcEnd);
+                }
                 palette = s_palBmp;
             } else if (remap && palBpp == BPP_PALETTED_8) {
                 if (pal->m_hasPalette != 0) {
@@ -252,7 +241,6 @@ i32 CDDSurface::SaveDispatch(char* path, void* pal, i32 flag) {
     }
 }
 
-// @early-stop
 RVA(0x001443b0, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
     if (this->IsValid() == 0) {
@@ -291,23 +279,16 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
         return 0;
     }
 
-    {
-        i32 i = 0;
-        i32 n = 0x100;
-        do {
-            info.bmiColors[i].rgbRed = spal->peRed;
-            info.bmiColors[i].rgbGreen = spal->peGreen;
-            info.bmiColors[i].rgbBlue = spal->peBlue;
-            spal++;
-            i++;
-            --n;
-        } while (n != 0);
+    for (i32 i = 0; i < 0x100; i++) {
+        info.bmiColors[i].rgbRed = spal[i].peRed;
+        info.bmiColors[i].rgbGreen = spal[i].peGreen;
+        info.bmiColors[i].rgbBlue = spal[i].peBlue;
     }
 
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
-    fh.m_hdr.bfSize = info.bmiHeader.biSize * m_width + 0x436;
+    fh.m_hdr.bfSize = height * m_width + 0x436;
     fh.m_hdr.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(0));

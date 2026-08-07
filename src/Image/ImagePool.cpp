@@ -875,7 +875,6 @@ i32 CRezImage::Save(const char* filename, void* paletteObj) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
     void* obj = paletteObj;
@@ -902,19 +901,19 @@ i32 CRezImage::SaveBmp(const char* filename, void* paletteObj) {
         return 0;
     }
 
-    RGBQUAD* ct = info.bmiColors;
-    for (i32 i = 0x100; i != 0; i--) {
-        ct->rgbRed = pal->peRed;
-        ct->rgbGreen = pal->peGreen;
-        ct->rgbBlue = pal->peBlue;
-        ct++;
-        pal++;
+    for (i32 i = 0; i < 0x100; i++) {
+        info.bmiColors[i].rgbRed = pal[i].peRed;
+        info.bmiColors[i].rgbGreen = pal[i].peGreen;
+        info.bmiColors[i].rgbBlue = pal[i].peBlue;
     }
 
     memset(&fileHdr, 0, sizeof(fileHdr));
     strcpy(fileHdr.m_bytes, g_bmpHeaderTemplate);
     fileHdr.m_hdr.bfSize = m_width * m_height + 0x436;
     fileHdr.m_hdr.bfOffBits = 0x436;
+    if (m_pixels == NULL) {
+        return 0;
+    }
 
     CFile file;
     if (file.Open(filename, 0x1001, 0) == 0) {
