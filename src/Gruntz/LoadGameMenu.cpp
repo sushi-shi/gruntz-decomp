@@ -75,6 +75,11 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
 }
 
 // @early-stop
+// residue is 1 insn: retail's THIRD switch has no live `idx = -1` on its default
+// edge (it uses eax for the range temp and its `ja` goes straight to the return-0
+// tail), where cl keeps idx in eax, uses ecx for the range temp and routes the
+// default through the shared `cmp eax,-1`. `default: return 0;` instead makes cl
+// fold the `cmp` away entirely (-2); a fresh variable changes nothing.
 RVA(0x0009e390, 0x2bc)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     i32 idx = -1;
@@ -203,11 +208,12 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             EnableWindow(hwnd, FALSE);
             i32 r = dlg->VerifySlot(slot);
             EnableWindow(hwnd, TRUE);
-            if (r) {
-                g_gameReg->m_saveInfoRec = slot;
-                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
-                EndDialog(hwnd, 1);
+            if (r == 0) {
+                return 1;
             }
+            g_gameReg->m_saveInfoRec = slot;
+            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_SAVED_GAME), 0);
+            EndDialog(hwnd, 1);
             return 1;
         }
     }

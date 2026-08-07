@@ -49,6 +49,10 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 f
 }
 
 // @early-stop
+// residue is 4 insns at the scroll-origin conversion: retail loads both ints into
+// registers and SPILLS them to frame slots before `fild`, where cl filds straight
+// from `pd->scroll{X,Y}`. Reading them earlier reproduces the spill but at the wrong
+// place (count matches, 95.43); a POINT aggregate is scalar-replaced away.
 RVA(0x00161640, 0x3a2)
 i32 CDDrawWorkerHost::Read(
     const WwdPlaneHeader* pd,
