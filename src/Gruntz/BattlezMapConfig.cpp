@@ -3187,8 +3187,18 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                 g_coordPool.Push(cur->m_coord);                                                    \
             }                                                                                      \
         }                                                                                          \
-        (g)->m_coordList.RemoveAll();                                                              \
+        coordList->RemoveAll();                                                                    \
     }
+
+// The engine's "which pickup is this grunt arriving with" select, spelled out at
+// every use site in retail (cl re-evaluates it per site; it never CSEs).
+static __inline PickupType ArrivalPickup(CGrunt* g) {
+    PickupType p = g->m_entranceReason;
+    if (p > PICKUP_EQUIPPABLE_LAST) {
+        p = g->m_toolId;
+    }
+    return p;
+}
 
 static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
@@ -3201,14 +3211,17 @@ static __inline i32 arrCell(CMapMgr* grid, i32 col, i32 row) {
 // @early-stop
 RVA(0x0002c690, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
+    CPtrList* coordList = &g->m_coordList;
     if (RepathAroundBlockedTiles(g)) {
         return 1;
     }
-    if (g->CoordCount() == 0) {
+    if (coordList->GetCount() == 0) {
         return 0;
     }
 
-    Coord* fc = g->CoordHead()->m_coord;
+    CoordPos head;
+    head.m_pos = coordList->GetHeadPosition();
+    Coord* fc = head.m_node->m_coord;
     i32 fcx = fc->m_x;
     i32 fcy = fc->m_y;
 
@@ -3232,58 +3245,144 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     dest = *dsrc;
     static_cast<void>(gx);
 
-    BrickzCell own;
-    BrickzCell* osrc;
-    if (static_cast<u32>(fcx) < static_cast<u32>(m_board->m_width)
-        && static_cast<u32>(fcy) < static_cast<u32>(m_board->m_height)) {
-        osrc = &m_board->m_rows[fcy][fcx];
-    } else {
-        memset(&own, 1, 0x1c);
-        osrc = &own;
+    i32 ownFlags;
+    {
+        BrickzCell own;
+        BrickzCell* osrc;
+        if (static_cast<u32>(fcx) < static_cast<u32>(m_board->m_width)
+            && static_cast<u32>(fcy) < static_cast<u32>(m_board->m_height)) {
+            osrc = &m_board->m_rows[fcy][fcx];
+        } else {
+            memset(&own, 1, 0x1c);
+            osrc = &own;
+        }
+        own = *osrc;
+        ownFlags = own.m_flags;
     }
-    own = *osrc;
 
-    i32 maskFlags = own.m_flags & 0xdfffffff;
-    PickupType type =
-        (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+    i32 maskFlags = ownFlags & 0xdfffffff;
+    PickupType type = g->m_entranceReason;
+    if (type > PICKUP_EQUIPPABLE_LAST) {
+        type = g->m_toolId;
+    }
 
     if ((dest.m_flags & 0x400) && g->m_defenderState == AISTATE_RETURN
-        && type != PICKUP_GRAVITYBOOTZ) {
-        if (own.m_flags & 0x4000) {
+        && ArrivalPickup(g) != PICKUP_GRAVITYBOOTZ) {
+        if (ownFlags & 0x4000) {
+            {
+                RECT box;
+                g->GetScreenTile(&a);
+                box.bottom = a.m_y + 2;
+                g->GetScreenTile(&b);
+                box.right = b.m_x + 2;
+                box.top = (g->m_object->m_screenY >> TILE_SHIFT_PX) - 1;
+                {
+                    Coord c;
+                    g->GetScreenPos(&c);
+                    box.left = (c.m_x >> TILE_SHIFT_PX) - 1;
+                }
 
-            Coord da;
-            g->GetScreenTile(&da);
-            for (i32 drow = m_board->m_bounds.top; drow < m_board->m_bounds.bottom; drow++) {
-                for (i32 dcol = m_board->m_bounds.left; dcol < m_board->m_bounds.right; dcol++) {
-                    CPtrList cs(0xa);
-                    if (!(m_board->m_rows[drow][dcol].m_flags & 0x20000000)) {
-                        void* h = cs.RemoveHead();
-                        if (h != NULL) {
-                            CoordPoolNode* node = g_coordPool.NodeOf(h);
-                            node->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = node;
+                // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
+                {
+                    const RECT* src = &box;
+                    CMapMgr* board = m_board;
+                    CRect clipFull(0, 0, board->m_width, board->m_height);
+                    RECT clipBox;
+                    if (src != NULL) {
+                        clipBox = *src;
+                        clipBox.right = clipBox.right + 1;
+                        clipBox.bottom = clipBox.bottom + 1;
+                    } else {
+                        clipBox = CRect(0, 0, board->m_width, board->m_height);
+                    }
+                    if (!IntersectRect(&board->m_bounds, &clipBox, &clipFull)) {
+                        board->m_bounds = clipBox;
+                    }
+                    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+                    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+                }
+            }
+
+            RECT scan = m_board->m_bounds;
+
+            g->GetScreenTile(&a);
+            i32 stepDy = a.m_y - fcy;
+            i32 stepDx;
+            {
+                Coord c;
+                g->GetScreenPos(&c);
+                stepDx = (c.m_x >> TILE_SHIFT_PX) - fcx;
+            }
+            if (g->TileSwitch(stepDx, stepDy, 0, 0x20000983, 1, 0) == 0) {
+                for (i32 scanRow = scan.top; scanRow < scan.bottom; scanRow++) {
+                    BrickzCell* rowCell = &m_board->m_rows[scanRow][scan.left];
+                    for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
+                        CPtrList path(0xa);
+                        if (!(rowCell->m_flags & 0x20000000)) {
+                            CGameObject* lvl = g->m_object;
+                            if (m_board->SearchEdge(
+                                    lvl->m_screenX >> TILE_SHIFT_PX,
+                                    lvl->m_screenY >> TILE_SHIFT_PX,
+                                    scanCol,
+                                    scanRow,
+                                    &path,
+                                    0,
+                                    0x20004d03,
+                                    0
+                                ) != 0
+                                && path.GetCount() != 0) {
+                                void* head = path.RemoveHead();
+                                if (head != NULL) {
+                                    CoordPoolNode* node = g_coordPool.NodeOf(head);
+                                    node->m_next = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
+                                }
+                                if (path.GetCount() != 0) {
+                                    ARR_RECYCLE(g);
+                                    POSITION qp = path.GetHeadPosition();
+                                    while (qp != NULL) {
+                                        Coord* step = static_cast<Coord*>(path.GetNext(qp));
+                                        g->m_coordList.AddTail(step);
+                                    }
+                                    Coord* nt = (g->CoordTail())->m_coord;
+                                    g->m_entrancePx.m_x = (nt->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+                                    g->m_entrancePx.m_y = (nt->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
+                                    // CMapMgr::Clip(NULL): the constant src folds to the
+                                    // else arm alone.
+                                    CMapMgr* bd = m_board;
+                                    RECT pathFull;
+                                    pathFull.left = 0;
+                                    pathFull.top = 0;
+                                    pathFull.right = bd->m_width;
+                                    pathFull.bottom = bd->m_height;
+                                    RECT pathBox;
+                                    pathBox = CRect(0, 0, bd->m_width, bd->m_height);
+                                    if (!IntersectRect(&bd->m_bounds, &pathBox, &pathFull)) {
+                                        bd->m_bounds = pathBox;
+                                    }
+                                    bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
+                                    bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
+                                    return 1;
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        CRect full(0, 0, m_board->m_width, m_board->m_height);
-        CRect corners(0, 0, m_board->m_width, m_board->m_height);
-        RECT tmp;
-        tmp.left = corners.left;
-        tmp.top = corners.top;
-        tmp.right = corners.right;
-        tmp.bottom = corners.bottom;
-        if (!IntersectRect(
-                &m_board->m_bounds,
-                static_cast<RECT*>(&tmp),
-                static_cast<RECT*>(&corners)
-            )) {
-            m_board->m_bounds = tmp;
+        // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
+        {
+            CMapMgr* bd = m_board;
+            CRect b(0, 0, bd->m_width, bd->m_height);
+            RECT a;
+            a = CRect(0, 0, bd->m_width, bd->m_height);
+            if (!IntersectRect(&bd->m_bounds, &a, &b)) {
+                bd->m_bounds = a;
+            }
+            bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
+            bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
         }
-        m_board->m_gridW = m_board->m_bounds.right - m_board->m_bounds.left;
-        m_board->m_gridH = m_board->m_bounds.bottom - m_board->m_bounds.top;
     }
 
     if ((dest.m_flags & 4) && g->m_battleState != BZTASK_SEEK_SWITCH) {
@@ -3320,6 +3419,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
             );
+            ARR_RECYCLE(g);
+            return 0;
         }
         ARR_RECYCLE(g);
         return 0;
@@ -3337,10 +3438,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
 
     if (maskFlags & 0x20) {
-        PickupType t =
+        PickupType bombA =
             (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
-        if (t == PICKUP_BOMB || t == PICKUP_TIMEBOMB) {
-            if (t == PICKUP_BOMB) {
+        PickupType bombB =
+            (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+        if (bombA == PICKUP_BOMB || bombB == PICKUP_TIMEBOMB) {
+            PickupType bombC =
+                (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+            if (bombC == PICKUP_BOMB) {
                 m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
@@ -3349,28 +3454,25 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 );
                 return 1;
             }
-
-            for (i32 row = fcy - 1; row < fcy + 2; row++) {
-                for (i32 col = fcx - 1; col < fcx + 2; col++) {
-                    if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
-                        && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
-                        i32 cf = arrCell(m_board, col, row);
-                        if (cf & BRICKZ_BLOCKED_MASK) {
+            PickupType bombD =
+                (g->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? g->m_toolId : g->m_entranceReason;
+            if (bombD == PICKUP_TIMEBOMB) {
+                for (i32 row = fcy - 1; row < fcy + 2; row++) {
+                    for (i32 col = fcx - 1; col < fcx + 2; col++) {
+                        if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
+                            && static_cast<u32>(row) < static_cast<u32>(m_board->m_height)) {
+                            i32 cf = arrCell(m_board, col, row);
+                            if (cf & BRICKZ_BLOCKED_MASK) {
+                                return 1;
+                            }
+                            i32 hitX = (col << TILE_SHIFT_PX) + TILE_HALF_PX;
+                            i32 hitY = (row << TILE_SHIFT_PX) + TILE_HALF_PX;
+                            if (g->RectContains(hitX, hitY) != 0) {
+                                m_triggerMgr
+                                    ->ApplyTriggerA(g->m_tileOwnerHi, g->m_tileOwnerLo, hitX, hitY);
+                            }
                             return 1;
                         }
-                        if (g->RectContains(
-                                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
-                                (row << TILE_SHIFT_PX) + TILE_HALF_PX
-                            )
-                            != 0) {
-                            m_triggerMgr->ApplyTriggerA(
-                                g->m_tileOwnerHi,
-                                g->m_tileOwnerLo,
-                                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
-                                (row << TILE_SHIFT_PX) + TILE_HALF_PX
-                            );
-                        }
-                        return 1;
                     }
                 }
             }
