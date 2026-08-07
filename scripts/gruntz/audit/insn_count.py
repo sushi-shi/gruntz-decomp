@@ -36,6 +36,7 @@ CTileActionEvent::Process (-40 -> 261 vs 261). Both are regalloc walls.
     python -m gruntz.audit.insn_count --summary       # counts only
     python -m gruntz.audit.insn_count --unit play     # one unit
     python -m gruntz.audit.insn_count --min 0 --max 100   # a different band
+    python -m gruntz.audit.insn_count --eh            # only the EH-frame mismatches
     python -m gruntz.audit.insn_count --tsv out.tsv   # the whole table, machine-readable
 """
 import argparse
@@ -135,6 +136,26 @@ def truncated(insns, table):
     return any(mn.startswith(BAD) for _, mn, _ in trim(insns, table))
 
 
+def has_eh(insns):
+    """Does this function carry the /GX exception frame?
+
+    `mov fs:0, esp` in the prologue is the whole tell, and it is a HARD source fact, not a
+    codegen choice: cl5 emits it exactly when the function owns a local whose destructor
+    must run during an unwind. So a side-mismatch is one of two concrete bugs -
+
+      EXTRA (ours has it, retail does not)   - we invented a destructible local, or the
+        retail TU was compiled without /GX (check the whole unit: retail movinglogic has
+        ZERO EH functions, so that one is a flags profile, not a body).
+      MISSING (retail has it, ours does not) - retail owns a destructible local we never
+        reconstructed. Usually a CString, and often a release-dead `TRACE` argument
+        (release-trace-leaves-flag-guarded-dtor.md) - a dtor with no constructor.
+
+    Both are invisible to the instruction count on a big function, because the frame is
+    ~10 instructions against a body of hundreds."""
+    return any(mn.startswith("mov") and "%fs:" in op and "%esp" in op
+               for _, mn, op in insns)
+
+
 def rows(queue, lo, hi, unit=None):
     """The worklist rows in the [lo, hi] fuzzy band, as dicts."""
     out = []
@@ -178,8 +199,10 @@ def measure(rs):
             continue
         trunc = truncated(*b) or truncated(*t)
         bi, ti = trim(*b), trim(*t)
+        be, te = has_eh(bi), has_eh(ti)
         r.update(status="TRUNC" if trunc else ("MISMATCH" if len(bi) != len(ti) else "EQUAL"),
-                 base_insn=len(bi), tgt_insn=len(ti), delta=len(bi) - len(ti))
+                 base_insn=len(bi), tgt_insn=len(ti), delta=len(bi) - len(ti),
+                 eh="EXTRA" if be and not te else "MISSING" if te and not be else "")
         out.append(r)
     return out
 
@@ -191,6 +214,8 @@ def main(argv=None):
     ap.add_argument("--max", type=float, default=99.6, help="high fuzzy bound (default 99.6)")
     ap.add_argument("--unit", help="restrict to one unit")
     ap.add_argument("--summary", action="store_true", help="bucket counts only")
+    ap.add_argument("--eh", action="store_true",
+                    help="list only the EH-frame mismatches (see has_eh)")
     ap.add_argument("--tsv", help="write the full table here")
     ap.add_argument("--queue", default=str(QUEUE), help="residual_function_queue.tsv")
     a = ap.parse_args(argv)
@@ -211,13 +236,21 @@ def main(argv=None):
     if a.tsv:
         with open(a.tsv, "w", newline="") as fh:
             w = csv.writer(fh, delimiter="\t")
-            w.writerow("status rva unit fuzzy size base_insn tgt_insn delta name".split())
+            w.writerow("status rva unit fuzzy size base_insn tgt_insn delta eh name".split())
             for r in sorted(rs, key=lambda r: -abs(r.get("delta") or 0)):
                 w.writerow([r["status"], r["rva"], r["unit"], r["fuzzy"], r["size"],
                             r.get("base_insn", ""), r.get("tgt_insn", ""),
-                            r.get("delta", ""), r["name"]])
+                            r.get("delta", ""), r.get("eh", ""), r["name"]])
         print("wrote %s" % a.tsv)
 
+    eh = [r for r in rs if r.get("eh")]
+    if eh:
+        print("  EH-frame  %4d  (--eh to list)" % len(eh))
+    if a.eh:
+        for r in sorted(eh, key=lambda r: (r["eh"], float(r["fuzzy"]))):
+            print("%-8s %6.2f%%  %-9s %-22s %s"
+                  % (r["eh"], float(r["fuzzy"]), r["rva"], r["unit"], r["name"]))
+        return 0
     if a.summary:
         return 0
     hits = sorted(buckets.get("MISMATCH", []), key=lambda r: -abs(r["delta"]))
