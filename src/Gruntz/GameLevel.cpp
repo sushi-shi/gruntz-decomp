@@ -1031,11 +1031,15 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
 }
 
 // @early-stop
+// @early-stop
+// instruction-exact; residue is which callee-saved register takes `this` (retail
+// edi, cl ebp) and where `push edi` lands. Writing back through `&destX` instead
+// of the `coord` copy costs 7 insns (75.37, measured) - cl must reload the
+// parameter after every call.
 RVA(0x0015e5b0, 0x162)
 i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
     i32 cursor;
-    i32 coord = destX;
 
     if (t->m_screenY < destY) {
         cursor = ResolveFloorCollision(t, destX, destY, moveFlags);
@@ -1061,6 +1065,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         }
     }
 
+    i32 coord = destX;
     if (coord > t->m_screenX) {
         result = StepAxisLo(t, coord, cursor, &coord, moveFlags);
     } else if (coord < t->m_screenX) {
