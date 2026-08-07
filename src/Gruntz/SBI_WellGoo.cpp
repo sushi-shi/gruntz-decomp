@@ -255,7 +255,7 @@ i32 CSBI_WellGoo::SerializeFields(
         }
         case SERIAL_POSTLOAD: {
 
-            m_gooSrc = mgr->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
+            m_gooSrc = g_gameReg->m_world->m_ptrColl->MakeAndAddB(0x14, 5, BPP_RGB_16, 0, -1);
             if (m_gooSrc == NULL) {
                 return 0;
             }
