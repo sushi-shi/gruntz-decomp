@@ -989,11 +989,9 @@ void CDDrawShadeBlit::BlitShadedForward(
 }
 
 // @early-stop
-// Not regalloc: `insn_seq --multiset` counts one ConvertRowDouble and one
-// ConvertRowFlip call MORE in retail than here (3/4 vs 2/3), so one whole
-// double-scanline/flip site is missing from the body below - the three
-// switch(m_drawType) expansions are all real (removing one costs 300
-// instructions and eight g_scratch references).
+// Call counts and branch counts now agree with retail (3 ConvertRowDouble,
+// 4 ConvertRowFlip, 91 branches); the residue is ~37 instructions of address
+// arithmetic retail recomputes per site and we hoist.
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
@@ -1098,8 +1096,8 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
                                 u16* sc = (Scratch16() + count - 1);
                                 u16* ss2 = Pix16(s);
-                                i32 rd = pitch / 2 * 2;
                                 if (m_blendVariant) {
+                                    i32 rd = pitch / 2 * 2;
                                     while (count-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
@@ -1112,6 +1110,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                         d -= 2;
                                     }
                                 } else {
+                                    i32 rd = pitch / 2 * 2;
                                     while (count-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
@@ -1279,101 +1278,112 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             } else {
                 i32 cnt = b;
                 u8* ss = &m_rleData[pos + 1];
-                i32 vis;
                 if (x - cnt > clip->left) {
-                    vis = cnt;
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            ConvertRowDouble(base + (x - clip->left) * m_dstBpp, ss, cnt, pitch);
+                        }
+                    } else {
+                        ConvertRowFlip(base + (x - clip->left) * m_dstBpp, ss, cnt);
+                    }
+                    x -= cnt;
+                    pos += cnt * m_srcBpp + 1;
                 } else {
-                    i32 v = x - clip->left;
-                    vis = v < 0 ? 0 : v;
-                }
-                u8* dd = base + (x - clip->left) * m_dstBpp;
-                if (m_doubleScanlines) {
-                    if ((dst->top + row) % 2) {
-                        u8* d = dd;
-                        u8* s = ss;
-                        switch (m_drawType) {
-                            case SHADE_DST_BY_SRC: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - vis + 1, vis);
-                                u8* sc = &g_scratch[vis - 1];
-                                while (vis-- > 0) {
-                                    d[0] = pbase[(*sc << 8) + *s];
-                                    d[pitch] = pbase[(*sc << 8) + *s];
-                                    d--;
-                                    sc--;
-                                    s++;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_LEVEL: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - vis + 1, vis);
-                                u8* sc = &g_scratch[vis - 1];
-                                while (vis-- > 0) {
-                                    d[0] = pbase[(*sc << 8) + m_light];
-                                    d[pitch] = pbase[(*sc << 8) + *s];
-                                    d--;
-                                    sc--;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_SRC_16: {
-                                u16* pal1 = m_palDescr->Lut16();
-                                u16* pal2 = g_blendDescr->Lut16();
-                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                u16* sc = (Scratch16() + vis - 1);
-                                i32 rd = pitch / 2 * 2;
-                                while (vis-- > 0) {
-                                    u32 idx = pal2[*sc--];
-                                    u32 hi = *s++;
-                                    hi >>= 4;
-                                    idx += hi << 12;
-                                    u16 v = pal1[idx];
-                                    Store16(d, v);
-                                    Store16(d + rd, v);
-                                    d -= 2;
-                                }
-                                break;
-                            }
-                            case SHADE_ALPHA_16: {
-                                memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                u16* sc = (Scratch16() + vis - 1);
-                                u16* ss2 = Pix16(s);
-                                i32 rd = pitch / 2 * 2;
-                                if (m_blendVariant) {
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            i32 v = x - clip->left;
+                            i32 vis = v < 0 ? 0 : v;
+                            u8* d = base + v * m_dstBpp;
+                            u8* s = ss;
+                            switch (m_drawType) {
+                                case SHADE_DST_BY_SRC: {
+                                    u8* pbase = m_palDescr->m_data;
+                                    memcpy(g_scratch, d - vis + 1, vis);
+                                    u8* sc = &g_scratch[vis - 1];
                                     while (vis-- > 0) {
-                                        u32 a = *ss2++;
-                                        u32 dv = *sc--;
-                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
+                                        d[0] = pbase[(*sc << 8) + *s];
+                                        d[pitch] = pbase[(*sc << 8) + *s];
+                                        d--;
+                                        sc--;
+                                        s++;
+                                    }
+                                    break;
+                                }
+                                case SHADE_DST_BY_LEVEL: {
+                                    u8* pbase = m_palDescr->m_data;
+                                    memcpy(g_scratch, d - vis + 1, vis);
+                                    u8* sc = &g_scratch[vis - 1];
+                                    while (vis-- > 0) {
+                                        d[0] = pbase[(*sc << 8) + m_light];
+                                        d[pitch] = pbase[(*sc << 8) + *s];
+                                        d--;
+                                        sc--;
+                                    }
+                                    break;
+                                }
+                                case SHADE_DST_BY_SRC_16: {
+                                    u16* pal1 = m_palDescr->Lut16();
+                                    u16* pal2 = g_blendDescr->Lut16();
+                                    memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                    u16* sc = (Scratch16() + vis - 1);
+                                    i32 rd = pitch / 2 * 2;
+                                    while (vis-- > 0) {
+                                        u32 idx = pal2[*sc--];
+                                        u32 hi = *s++;
+                                        hi >>= 4;
+                                        idx += hi << 12;
+                                        u16 v = pal1[idx];
+                                        Store16(d, v);
+                                        Store16(d + rd, v);
+                                        d -= 2;
+                                    }
+                                    break;
+                                }
+                                case SHADE_ALPHA_16: {
+                                    memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
+                                    u16* sc = (Scratch16() + vis - 1);
+                                    u16* ss2 = Pix16(s);
+                                    if (m_blendVariant) {
+                                        i32 rd = pitch / 2 * 2;
+                                        while (vis-- > 0) {
+                                            u32 a = *ss2++;
+                                            u32 dv = *sc--;
+                                            i32 v =
+                                                m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
-                                    }
-                                } else {
-                                    while (vis-- > 0) {
-                                        u32 a = *ss2++;
-                                        u32 dv = *sc--;
-                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
+                                            Store16(d, v);
+                                            Store16(d + rd, v);
+                                            d -= 2;
+                                        }
+                                    } else {
+                                        i32 rd = pitch / 2 * 2;
+                                        while (vis-- > 0) {
+                                            u32 a = *ss2++;
+                                            u32 dv = *sc--;
+                                            i32 v =
+                                                m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
+                                            Store16(d, v);
+                                            Store16(d + rd, v);
+                                            d -= 2;
+                                        }
                                     }
+                                    break;
                                 }
-                                break;
                             }
                         }
+                    } else {
+                        i32 v = x - clip->left;
+                        i32 vis = v < 0 ? 0 : v;
+                        ConvertRowFlip(base + v * m_dstBpp, ss, vis);
                     }
-                } else {
-                    ConvertRowFlip(dd, ss, vis);
+                    x -= cnt;
+                    pos += cnt * m_srcBpp + 1;
                 }
-                x -= cnt;
-                pos += cnt * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
@@ -1381,10 +1391,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 x = m_width;
             }
         }
-    } else {
+    } else if (clip->right != m_width - 1) {
         x = m_width;
 
-        while (row <= clip->bottom) {
+        while (row < clip->bottom) {
             if (pos >= m_rleLen) {
                 break;
             }
