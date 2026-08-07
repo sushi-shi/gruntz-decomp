@@ -40,8 +40,6 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     PickupType reason,
     TileArrivalFxCue cue
 ) {
-    CString diag;
-
     CDDrawSurfaceMgr* level = m_world;
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = level->m_level;
@@ -165,6 +163,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             } else if (cellType == TILEKIND_GIANT_ROCK) {
                 CGiantRockLogic* rock = triggers->ScanNeighborhood(tileX, tileY);
                 if (rock == NULL) {
+                    CString diag;
                     diag.Format("No giant rock logic found at: x=%d, y=%d", px, py);
                     g_gameReg->EnterModalUI(static_cast<const char*>(diag));
                     g_gameReg->ReportError(
