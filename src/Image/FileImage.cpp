@@ -516,14 +516,14 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, PcxHeader* src, i32 len, i32 
             RecordBytes<PcxHeader> sb;
             sb.m_rec = src;
             u8* p = sb.m_bytes + len - 0x300;
-            i32 i = 0;
+            u8* d = g_grayRamp;
             do {
-                g_grayRamp[i] = *p++;
-                g_grayRamp[i + 1] = *p++;
-                g_grayRamp[i + 2] = *p++;
-                g_grayRamp[i + 3] = 0;
-                i += 4;
-            } while (i < 0x400);
+                d[0] = *p++;
+                d[1] = *p++;
+                d[2] = *p++;
+                d[3] = 0;
+                d += 4;
+            } while (d < &g_grayRamp[0x400]);
             palette = g_grayRamp;
         } else if (curFmt == BPP_PALETTED_8) {
             if (info->m_hasPalette != 0) {
