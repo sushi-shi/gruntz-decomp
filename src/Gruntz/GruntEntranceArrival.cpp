@@ -97,10 +97,6 @@ static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
 DATA(0x0020e1c8)
 static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
 
-static i32 s_entrancePreset0[3];
-static i32 s_entrancePreset1[3];
-static i32 s_entrancePreset2[3];
-
 static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
         || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
@@ -772,10 +768,6 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 // @early-stop
 // Three `rand() % var` sites: retail's toolchain peels a divisor-zero guard that
 // our cl never emits for any honest spelling - docs/patterns/rand-modulo-peel.md.
-// @early-stop
-// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc); the residual
-// cmp cl,bl / test cl,cl pairs are the zero-register readout of the same thing. See
-// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
@@ -812,46 +804,55 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         }
     } else {
 
-        i32 count = (AT(m_poseIdle, GRUNT_IDLE3) == 0) ? 1 : 2;
+        i32 count;
+        if (AT(m_poseIdle, GRUNT_IDLE3) == 0) {
+            count = 1;
+        } else {
+            count = 2;
+        }
         i32 idx = rand() % count + 1;
         if (cue != 0) {
-            CGruntzMgr* g = g_gameReg;
-            g->Rand();
+            g_gameReg->Rand();
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CGameLevel::PointInBounds(
-                        &g->m_world->m_level->m_mainPlane->m_viewRect,
+                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
                         m_object->m_screenX,
                         m_object->m_screenY
                     )) {
 
                     AddrWord<CGrunt> src;
                     src.m_addr = this;
-                    g->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != PICKUP_NONE) {
-                if (idx == GRUNT_IDLE_VARIANT_PRIMARY) {
-                    if (CGameLevel::PointInBounds(
-                            &g->m_world->m_level->m_mainPlane->m_viewRect,
-                            m_object->m_screenX,
-                            m_object->m_screenY
-                        )) {
+                switch (idx) {
+                    case GRUNT_IDLE_VARIANT_PRIMARY:
+                        if (CGameLevel::PointInBounds(
+                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                m_object->m_screenX,
+                                m_object->m_screenY
+                            )) {
 
-                        AddrWord<CGrunt> src;
-                        src.m_addr = this;
-                        g->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
-                    }
-                } else if (idx == GRUNT_IDLE_VARIANT_SECONDARY) {
-                    if (CGameLevel::PointInBounds(
-                            &g->m_world->m_level->m_mainPlane->m_viewRect,
-                            m_object->m_screenX,
-                            m_object->m_screenY
-                        )) {
+                            AddrWord<CGrunt> src;
+                            src.m_addr = this;
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
+                        }
+                        break;
+                    case GRUNT_IDLE_VARIANT_SECONDARY:
+                        if (CGameLevel::PointInBounds(
+                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                m_object->m_screenX,
+                                m_object->m_screenY
+                            )) {
 
-                        AddrWord<CGrunt> src;
-                        src.m_addr = this;
-                        g->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
-                    }
+                            AddrWord<CGrunt> src;
+                            src.m_addr = this;
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -869,33 +870,30 @@ latch:
         return;
     }
 
-    i32 row = m_entranceCell.row;
-    i32 column = m_entranceCell.column;
-    GruntDirection direction = m_entranceCell.direction;
+    GruntDirectionCell cell = m_entranceCell;
     if (m_wwdObject->m_animCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
-        switch (direction) {
+        switch (m_entranceCell.direction) {
             case DIR_NORTHEAST:
             case DIR_EAST:
-                row = s_entrancePreset0[0];
-                column = s_entrancePreset0[1];
+                cell = g_gruntDirEast;
                 break;
             case DIR_SOUTHEAST:
             case DIR_SOUTH:
-                row = s_entrancePreset1[0];
-                column = s_entrancePreset1[1];
+                cell = g_gruntDirSouth;
                 break;
             case DIR_SOUTHWEST:
             case DIR_WEST:
             case DIR_NORTHWEST:
-                row = s_entrancePreset2[0];
-                column = s_entrancePreset2[1];
+                cell = g_gruntDirWest;
                 break;
             default:
                 break;
         }
     }
 
-    CString key = static_cast<const char*>(m_cells[3 * row + column].IdleName());
+    i32 col = cell.column + cell.row * 2;
+    i32 base = cell.row + col;
+    CString key = static_cast<const char*>(m_cells[base].IdleName());
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniRecordView* elem =

@@ -1111,13 +1111,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     self->m_mgr->m_cueSink->ClearSprites();
     self->m_mgr->RestoreVideoMode(0);
 
-    gameReg = g_gameReg;
-    if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
+    if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
-        if (gameReg->m_frameGate != 0) {
-            i32 v = gameReg->m_frameGate ^ 1;
-            gameReg->m_frameGate = v;
-            gameReg->FinishLevel(v, 1);
+        if (g_gameReg->m_frameGate != 0) {
+            i32 v = g_gameReg->m_frameGate ^ 1;
+            g_gameReg->m_frameGate = v;
+            g_gameReg->FinishLevel(v, 1);
         }
     }
 
@@ -1160,16 +1159,15 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_levelType = static_cast<LevelArea>(r / 4 + 1);
     }
 
-    gameReg = g_gameReg;
     g_frameTime = 0;
-    if (gameReg->m_gameMode == GAMEMODE_REPLAY) {
+    if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
-    gameReg->m_scoreHud->Init();
-    gameReg->m_cmdSubMgr->m_pendingCommands.RemoveAll();
-    gameReg->m_cmdSubMgr->DrainBase();
+    g_gameReg->m_scoreHud->Init();
+    g_gameReg->m_cmdSubMgr->m_pendingCommands.RemoveAll();
+    g_gameReg->m_cmdSubMgr->DrainBase();
     g_frameTicks = 0;
     self->m_returnToMenuOnComplete = 0;
     self->m_mgr->m_isCustomLevel = 0;
@@ -1456,7 +1454,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize();
     }
     if (self->m_world->m_level->m_mainPlane != NULL) {
-        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))->GetSize();
+        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
+            ->ActivateVisibleObjects();
     }
     BuildHelpReveal(0);
     if (savedThis != NULL) {
@@ -1580,7 +1579,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
                 if (self->m_world->m_level->m_mainPlane != NULL) {
                     (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-                        ->GetSize();
+                        ->ActivateVisibleObjects();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != NULL) {
