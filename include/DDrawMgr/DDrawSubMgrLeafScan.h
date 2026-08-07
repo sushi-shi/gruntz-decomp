@@ -5,11 +5,12 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/LeafCue.h>
 #include <Gruntz/Loadable.h>
+#include <Gruntz/SoundState.h>
 #include <Ints.h>
 
 struct SoundStream;
-struct LeafCue;
 class CSymTab;
 struct CParseSource;
 
@@ -32,6 +33,20 @@ public:
     virtual void Unload() OVERRIDE;
 
     i32 RefreshAsset(const char* key);
+
+    // The INLINE twin of RefreshAsset. Both exist in retail: the out-of-line
+    // body at 0x114120 expands LeafCue::PlayIfElapsed into itself, while call
+    // sites like CTriggerMgr::LoadTileArrivalFx expand THIS shape - the map
+    // lookup inline and PlayIfElapsed as a call.
+    void PlayCue(const char* key) {
+        if (m_emitGate == 0) {
+            void* found = 0;
+            m_cues.Lookup(key, found);
+            if (found != 0) {
+                static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+            }
+        }
+    }
 
     LeafCue* CreateEntry(const char* key, void* src);
     LeafCue* CreateEntry2(const char* key, void* src);

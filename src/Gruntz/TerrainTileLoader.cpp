@@ -136,11 +136,11 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
                     if (cellType == TILEKIND_GAUNTLET_ROCK_A || cellType == TILEKIND_GAUNTLET_ROCK_B
                         || cellType == TILEKIND_GIANT_ROCK) {
-                        level->m_soundRegistry->RefreshAsset("LEVEL_GAUNTLETROCK1");
+                        level->m_soundRegistry->PlayCue("LEVEL_GAUNTLETROCK1");
                     } else if (cellType == TILEKIND_GAUNTLET_BRICK_A
                                || cellType == TILEKIND_GAUNTLET_BRICK_B
                                || cellType == TILEKIND_GAUNTLET_BRICK_C) {
-                        level->m_soundRegistry->RefreshAsset("GAME_GAUNTLETBRICK1");
+                        level->m_soundRegistry->PlayCue("GAME_GAUNTLETBRICK1");
                     }
                 }
                 return 1;
@@ -199,7 +199,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         particle->ApplyName("LEVEL_ROCKBREAK");
                         particle->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
                     }
-                    level->m_soundRegistry->RefreshAsset("LEVEL_ROCKBREAK");
+                    level->m_soundRegistry->PlayCue("LEVEL_ROCKBREAK");
                 }
             }
             return 1;
@@ -569,7 +569,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     if (splash != NULL) {
                         splash->ApplyName("GAME_WATER");
                         splash->ApplyLookupGeometry("GAME_WATER", 0);
-                        level->m_soundRegistry->RefreshAsset("GAME_WATERSPLASH");
+                        level->m_soundRegistry->PlayCue("GAME_WATERSPLASH");
                     }
                 }
             }
