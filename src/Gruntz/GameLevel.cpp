@@ -857,6 +857,11 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
 }
 
 // @early-stop
+// residue is 3 insns. (1) retail keeps BOTH `mid = destX` else-arms (0x15e20c
+// with a jmp, 0x15e27f falling through) where cl merges them; naming `col` in
+// one or both arms only merges more (-10 / 96.32, measured). (2) retail computes
+// the moveFlags&2 limit as `lea ecx,[ecx+ebp+1]; inc ecx`, i.e. the +2 is NOT
+// folded; `+1+1`, `limit++` as its own statement and `+1` twice all re-fold.
 RVA(0x0015e130, 0x1bb)
 i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;

@@ -799,7 +799,6 @@ CFecFile::CFecFile() {
     m_nextIndex = 0;
     srand(time(0));
 }
-// @early-stop
 RVA(0x0008ff30, 0x20c)
 CString CGruntzMgr::BuildMoviePath(MovieId movie) {
     CString name;
@@ -860,6 +859,7 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
 
     if (!FileExists(const_cast<char*>(static_cast<const char*>(path)))) {
         path.Empty();
+        return path;
     }
 
     return path;
