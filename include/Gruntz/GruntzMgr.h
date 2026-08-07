@@ -256,6 +256,12 @@ public:
 
     i32 ChangeState(i32 arg);
 
+    // Retail reproduces the whole tagSIZE at every `.cx`/`.cy` use - an 8-byte frame
+    // temp whose unread half is a dead store - so the size arrives by value.
+    tagSIZE GetModeSize() {
+        return m_modeSize;
+    }
+
     CState* m_curState;
     CDDrawSurfaceMgr* m_world;
 

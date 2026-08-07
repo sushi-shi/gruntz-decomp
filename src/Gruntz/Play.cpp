@@ -675,10 +675,13 @@ i32 CPlay::Render() {
             if (m_guts->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = g_gameReg->m_modeSize.cy;
-                i32 cy = g_gameReg->m_modeSize.cx;
-                rc.top = cx;
-                SetRect(&rc, cy - 140, 5, cy - 20, 125);
+                SetRect(
+                    &rc,
+                    g_gameReg->GetModeSize().cx - 140,
+                    5,
+                    g_gameReg->GetModeSize().cx - 20,
+                    125
+                );
             }
             m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
             m_lightFx->ComputeRect(m_world->m_drawTarget->m_backPair, &rc);

@@ -280,7 +280,6 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != 0) {
@@ -442,7 +441,6 @@ i32 CCreditsState::StepVideo() {
     return ret;
 }
 
-// @early-stop
 RVA(0x00039d00, 0x8c)
 i32 CCreditsState::FlashColor() {
     i32 color = 0xffffff;
