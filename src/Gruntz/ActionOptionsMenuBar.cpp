@@ -244,9 +244,11 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     i32 xlo2 = x0 + 0x4;
     i32 xhi2 = x0 + 0x1c;
     if (mx < xhi2 && mx >= xlo2 && my < yhi && my >= ylo) {
-        if (m_buttonState[1] == ACTIONOPTION_NORMAL) {
-            m_buttonState[1] = ACTIONOPTION_SELECTED;
+        if (m_buttonState[1] != ACTIONOPTION_NORMAL) {
+            return 1;
         }
+        m_buttonState[1] = ACTIONOPTION_SELECTED;
+        return 1;
     }
     return 1;
 }

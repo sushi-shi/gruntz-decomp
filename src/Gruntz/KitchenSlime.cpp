@@ -211,7 +211,7 @@ i32 CKitchenSlime::Tick() {
         *m88d = fabs(m_posX - static_cast<double>(tx));
 
         if (newX > tx) {
-            newX = newX;
+            newX = tx;
         }
     } else if (m_dirX < 0.0) {
         double t = (m_posX = m_posX - step);
@@ -219,7 +219,7 @@ i32 CKitchenSlime::Tick() {
         i32 tx = m_tilePosition.m_x;
         *m88d = fabs(m_posX - static_cast<double>(tx));
         if (newX < tx) {
-            newX = newX;
+            newX = tx;
         }
     } else {
         newX = static_cast<i32>(floor(m_posX));
