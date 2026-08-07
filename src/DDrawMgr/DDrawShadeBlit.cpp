@@ -1621,8 +1621,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 while (count-- > 0) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u16 r = m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)];
-                    r |= m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    u16 r = m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)];
                     r |= m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *sw-- = r;
                 }
@@ -1630,8 +1630,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 while (count-- > 0) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u16 r = m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)];
-                    r |= m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    u16 r = m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)];
                     r |= m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *sw-- = r;
                 }
@@ -1647,8 +1647,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 while (count-- > 0) {
                     u32 a = pal[*src++];
                     u32 d = *sc--;
-                    u16 r = m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)];
-                    r |= m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    u16 r = m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)];
+                    r |= m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)];
                     r |= m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *sw-- = r;
                 }
@@ -1656,8 +1656,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                 while (count-- > 0) {
                     u32 a = pal[*src++];
                     u32 d = *sc--;
-                    u16 r = m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)];
-                    r |= m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    u16 r = m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)];
+                    r |= m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)];
                     r |= m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     *sw-- = r;
                 }
