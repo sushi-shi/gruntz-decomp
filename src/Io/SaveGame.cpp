@@ -336,7 +336,7 @@ void CSaveGame::SetCurLevel(QuestLevel v) {
     if (v >= QUESTLEVEL_CAMPAIGN_END) {
         return;
     }
-    if (v <= CurrentLevel()) {
+    if (v <= m_curLevel) {
         return;
     }
     m_curLevel = v;

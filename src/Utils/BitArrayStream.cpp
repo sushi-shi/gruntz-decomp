@@ -16,7 +16,7 @@ ostream& operator<<(ostream& accum, const zBitVec& bits) {
                 if (!first) {
                     accum << ' ';
                 }
-                accum << static_cast<i32>(i);
+                accum << i;
                 first = 0;
             }
         }

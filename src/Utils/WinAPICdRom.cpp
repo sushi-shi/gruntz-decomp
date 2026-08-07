@@ -9,8 +9,7 @@
 #include <stdio.h>
 
 DATA(0x0022b25c)
-u8 g_val_22b25c[1];
-static char s_cdDriveLetter;
+char g_cdDriveLetter;
 
 DATA(0x002c3fcc)
 i32 g_val_2c3fcc;
@@ -79,7 +78,7 @@ char CheckCdRomRegistry() {
 // @early-stop
 RVA(0x0001ffe0, 0x192)
 char GetGruntzDriveLetter() {
-    if (s_cdDriveLetter == 0) {
+    if (g_cdDriveLetter == 0) {
         DWORD valueSize;
         char value[32];
         char drivePath[32];
@@ -116,8 +115,8 @@ char GetGruntzDriveLetter() {
         return 0;
 
     found:
-        s_cdDriveLetter = letter;
+        g_cdDriveLetter = letter;
         return letter;
     }
-    return s_cdDriveLetter;
+    return g_cdDriveLetter;
 }
