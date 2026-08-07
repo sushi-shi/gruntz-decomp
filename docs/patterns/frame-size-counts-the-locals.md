@@ -1,0 +1,57 @@
+# `sub esp,N` is a LOCAL COUNT the masked diff hides - sweep the band for it
+
+tags: cpp:local cpp:array | asm:sub asm:mov | topic:codegen-idiom topic:audit
+symptoms: a function in the high 90s whose `--blocks --diff` and `--branches --diff`
+  are both clean and whose instruction count matches, yet it is not 100. The
+  prologue's `sub esp,N` differs by a multiple of 4 and EVERY `[esp+K]`
+  displacement after it is shifted by the same amount - which `--diff` shows as a
+  long run of one-operand mismatches that reads like regalloc noise.
+confidence: 9/10
+
+`sub esp,N` is the size of the local frame, so a difference is a hard statement
+about **how many bytes of locals the function declares** - independent of every
+other signal. It is the one invariant `--diff` (address-masked) and `--blocks`
+(shape-only) are both blind to, and `insn_count` cannot see either, because
+allocating a local costs ZERO instructions.
+
+Two things move it, and only two:
+
+1. **An array's size.** `CFecFile`-style buffers are the usual case:
+   `DrawSaveGameMenu` @0xe3f40 had `sub esp,0x20` against retail's `0x24`, and the
+   4 bytes could only be the name buffer - `char name[0x20]` -> `char name[0x24]`
+   took it to **100.00 EXACT**. Note the size argument passed to the API
+   (`GetDlgItemTextA(..., 0x20)`) is the *limit*, NOT the buffer size; do not read
+   the buffer's extent off the call.
+2. **The number of distinct ADDRESS-TAKEN scalars.** A scalar that only ever lives
+   in a register costs no slot (measured: adding `i32 shown = slot + 1;` did not
+   move the frame at all), so the count is exactly the locals whose address is
+   taken - `&x` passed to a read/lookup/out-param. `SoundStream::ParseWave`
+   @0x137b70 declared five (`riffTag/riffSize/waveTag` + a loop-local
+   `chunkId/chunkSize` pair) against retail's three: the dev **reused the header
+   pair as the chunk pair**. 99.82 -> 99.97 and the frame matched.
+
+## The sweep
+
+Frame size is cheap to check in bulk and needs no per-function reading:
+
+```python
+from gruntz.core import branches as B
+bo, to = B.obj_paths(unit)
+db, dt = B.decode(bo), B.decode(to)          # {symbol: [(off, mnemonic, operands)]}
+# first `sub $N, %esp` in the first ~16 instructions of each side
+```
+
+First run over the 90-100 band: **26 mismatches**, i.e. 26 functions with a
+provable local-count bug that no other tool reports. Two were opened, both were
+real. Prefer this over re-reading a `--diff` that "looks like regalloc".
+
+**Scope tricks are NOT the lever.** Block-scoping the locals so two sets overlay
+either does nothing or overshoots (`ParseWave` reached `sub esp,0x8` against
+retail's `0xc` that way, and `CSBI_GruntMachine::SerializeFields` lost 4 points).
+Find the variable the dev actually REUSED, or the array whose size is wrong.
+
+Slot *assignment* within the frame is a separate, weaker signal: it follows
+first-USE order, not declaration order (swapping declarations in `ParseWave`
+changed nothing).
+
+related: masked-diff-hides-branch-target.md, compensating-error-signatures.md

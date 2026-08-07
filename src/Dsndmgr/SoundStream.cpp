@@ -339,10 +339,10 @@ i32 SoundStream::TickSubManagers(i32 time) {
 }
 
 // @early-stop
-// Frame is 4 bytes bigger than retail's: retail parks one header word in the DEAD
-// incoming-argument home (src is copied to esi at entry) and we allocate a fourth
-// local slot instead. Dropping the `end` local reaches sub esp,0xc but recolours
-// the bound computation; scoping the chunk locals to the function is worse.
+// residue is which frame slot each header word lands in: retail puts the
+// loop-reused pair at the HIGH end (riff tag at +0x18) and the single-use WAVE
+// tag at +0x10, cl the reverse. Slot assignment follows first-USE order, not
+// declaration order (swapping the declarations changes nothing - measured).
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CParseSource* src,
@@ -354,26 +354,24 @@ i32 SoundStream::ParseWave(
     i32 gotData = 0;
     src->SetPos(0);
 
-    u32 riffTag;
-    u32 riffSize;
+    u32 chunkId;
+    u32 chunkSize;
     u32 waveTag;
-    src->Read(&riffTag, 4, -1);
-    src->Read(&riffSize, 4, -1);
+    src->Read(&chunkId, 4, -1);
+    src->Read(&chunkSize, 4, -1);
     src->Read(&waveTag, 4, -1);
-    if (riffTag != mmioFOURCC('R', 'I', 'F', 'F')) {
+    if (chunkId != mmioFOURCC('R', 'I', 'F', 'F')) {
         return 0;
     }
     if (waveTag != mmioFOURCC('W', 'A', 'V', 'E')) {
         return 0;
     }
 
-    u32 end = src->m_cursor + riffSize - 4;
+    u32 end = src->m_cursor + chunkSize - 4;
     if (end > src->m_length) {
         end = src->m_length;
     }
     while (src->m_cursor < end) {
-        u32 chunkId;
-        u32 chunkSize;
         src->Read(&chunkId, 4, -1);
         src->Read(&chunkSize, 4, -1);
         if (chunkId == mmioFOURCC('f', 'm', 't', ' ')) {
