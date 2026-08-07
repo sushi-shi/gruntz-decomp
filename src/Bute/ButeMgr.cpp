@@ -1455,12 +1455,7 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     made74->Insert(key, new CButeValue(BUTE_INT, val));
 }
 
-RVA(0x00172000, 0x31)
-CButeValue* CButeValue::SetDword(ButeType type, u32 val) {
-    this->type = type;
-    this->pValue = new u32(val);
-    return this;
-}
+RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
 
 RVA_COMPGEN(0x00172040, 0x120, ?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z)
 
@@ -1502,6 +1497,7 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     return 0;
 }
 
+// @early-stop
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1543,12 +1539,7 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     made74->Insert(key, new CButeValue(BUTE_DWORD, val));
 }
 
-RVA(0x00172680, 0x31)
-CButeValue* CButeValue::SetFloat(ButeType type, float val) {
-    this->type = type;
-    this->pValue = new float(val);
-    return this;
-}
+RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 
 RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
@@ -1590,6 +1581,7 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     return s_floatErr;
 }
 
+// @early-stop
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1631,12 +1623,7 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     made74->Insert(key, new CButeValue(BUTE_FLOAT, val));
 }
 
-RVA(0x00172b90, 0x31)
-CButeValue* CButeValue::SetInt(ButeType type, i32 val) {
-    this->type = type;
-    this->pValue = new i32(val);
-    return this;
-}
+RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 
 RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
@@ -1678,6 +1665,7 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     return s_doubleErr;
 }
 
+// @early-stop
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1719,12 +1707,7 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     made74->Insert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
-RVA(0x00173140, 0x38)
-CButeValue* CButeValue::SetDouble(ButeType type, double val) {
-    this->type = type;
-    this->pValue = new double(val);
-    return this;
-}
+RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
 
 RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
@@ -1766,6 +1749,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
     return empty.m_bytes;
 }
 
+// @early-stop
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1807,12 +1791,7 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     made74->Insert(key, new CButeValue(BUTE_STRING, val));
 }
 
-RVA(0x001736a0, 0x5f)
-CButeValue* CButeValue::SetString(ButeType type, const CString& src) {
-    this->type = type;
-    this->pValue = new CString(src);
-    return this;
-}
+RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
 
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
@@ -1850,6 +1829,7 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     return &s_default;
 }
 
+// @early-stop
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1891,12 +1871,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     made74->Insert(key, new CButeValue(BUTE_RECT, val));
 }
 
-RVA(0x00173c60, 0x49)
-CButeValue* CButeValue::SetRect(ButeType type, const ButeRefSmall* src) {
-    this->type = type;
-    this->pValue = new ButeRefSmall(*src);
-    return this;
-}
+RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
 RVA(0x00173cb0, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
@@ -2036,7 +2011,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
             return;
         }
         CButeNode* made = static_cast<CButeNode*>(m_tree48.Insert(tag, new CButeNode(2)));
-        made->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
+        made->Insert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
 
@@ -2044,17 +2019,17 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box;
-            box.SetVector(BUTE_VECTOR, val);
+            CButeValue box(BUTE_VECTOR, val);
             hit74->CopyValue(&box);
             return;
         }
-        g74->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
+        g74->Insert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
-    made74->Insert(key, (new CButeValue)->SetVector(BUTE_VECTOR, val));
+    made74->Insert(key, new CButeValue(BUTE_VECTOR, val));
 }
+RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
 RVA(0x00174770, 0x4e)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
@@ -2092,6 +2067,7 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     return &s_default;
 }
 
+// @early-stop
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2133,9 +2109,4 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     made74->Insert(key, new CButeValue(BUTE_RANGE, val));
 }
 
-RVA(0x00174cb0, 0x49)
-CButeValue* CButeValue::SetRange(ButeType type, const ButeRefSmall* src) {
-    this->type = type;
-    this->pValue = new ButeRefSmall(*src);
-    return this;
-}
+RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)

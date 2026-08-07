@@ -74,43 +74,19 @@ struct CButeValue {
     // inner allocation (unwind map @0x604d90: ten alloc states, one per arm).
     CButeValue(ButeType t, i32 v) {
         type = t;
-        i32* p = new i32;
-        if (p) {
-            *p = v;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
+        pValue = new i32(v);
     }
     CButeValue(ButeType t, unsigned long v) {
         type = t;
-        unsigned long* p = new unsigned long;
-        if (p) {
-            *p = v;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
+        pValue = new unsigned long(v);
     }
     CButeValue(ButeType t, float v) {
         type = t;
-        float* p = new float;
-        if (p) {
-            *p = v;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
+        pValue = new float(v);
     }
     CButeValue(ButeType t, double v) {
         type = t;
-        double* p = new double;
-        if (p) {
-            *p = v;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
+        pValue = new double(v);
     }
     CButeValue(ButeType t, const CString& s) {
         type = t;
@@ -178,31 +154,9 @@ struct CButeValue {
 
     inline ~CButeValue();
 
-    CButeValue* SetInt(ButeType type, i32 val);
-    CButeValue* SetDword(ButeType type, u32 val);
-    CButeValue* SetFloat(ButeType type, float val);
-    CButeValue* SetDouble(ButeType type, double val);
-
-    CButeValue* SetString(ButeType type, const CString& src);
-    CButeValue* SetRect(ButeType type, const struct ButeRefSmall* src);
-    CButeValue* SetVector(ButeType type, const struct ButeRefLarge* src);
-    CButeValue* SetRange(ButeType type, const struct ButeRefSmall* src);
-
     inline CButeValue* CopyValue(CButeValue* other);
 };
 SIZE(0x8);
-
-RVA(0x00174730, 0x3c)
-inline CButeValue* CButeValue::SetVector(ButeType type, const ButeRefLarge* src) {
-    this->type = type;
-    this->pValue = new ButeRefLarge(*src);
-    return this;
-}
-
-struct ButeRefSmall {
-    i32 w[4];
-};
-SIZE(0x10);
 
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     // The retail jump table (0x17213c) proves the ButeType values AND that the
