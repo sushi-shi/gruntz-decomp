@@ -758,13 +758,10 @@ i32 CDDSurface::ShadeBlt(
     i32 dstRowAdv = dstStride - dstW;
     i32 srcRowAdv = srcStride - srcW;
     u16* temp = new u16[dstW * 2];
-    i32 bank = ((shade & 0xff) >> 3) << 0xb;
+    i32 bank = (shade & 0xff) / 8 * 0x800;
 
-    if (g_rDown != PIXEL16_RED_DOWN) {
-        goto reject;
-    }
-    if (g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
-        && g_gUp == PIXEL16_GREEN_UP) {
+    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
+        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
         i32 rows = dstH;
         if (rows > 0) {
