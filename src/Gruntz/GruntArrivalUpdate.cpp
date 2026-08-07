@@ -110,12 +110,8 @@ i32 CGrunt::UpdateArrival() {
                     i32 x = g->m_object->m_screenX;
                     if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
                         && RectContains(x, g->m_object->m_screenY) != 0) {
-                        CommitNeighbor(
-                            g->m_tileOwnerHi,
-                            g->m_tileOwnerLo,
-                            g->m_lastTilePx.m_x,
-                            g->m_lastTilePx.m_y
-                        );
+                        Coord cp = g->m_lastTilePx;
+                        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
                         break;
                     }
                 }
@@ -152,32 +148,13 @@ i32 CGrunt::UpdateArrival() {
             }
             if (this->m_resetApplied == 0 && this->m_hasExtent != 0
                 && static_cast<u32>(this->m_dwell) > 3000) {
-                i32 cmp =
-                    -static_cast<i32>(
-                        (static_cast<u32>(g_frameTime) < static_cast<u32>(this->m_arrivalRerollLo))
-                    )
-                    - this->m_arrivalRerollHi;
-                if (this->m_arrivalRerollWindowHi < cmp
-                    || (this->m_arrivalRerollWindowHi <= cmp
-                        && static_cast<u32>(this->m_arrivalRerollWindowLo)
-                               <= g_frameTime - static_cast<u32>(this->m_arrivalRerollLo))) {
-                    ResetEntranceAnimation(1, 1, 0);
-                    this->m_arrivalRerollLo = 0;
-                    this->m_arrivalRerollWindowLo = 0;
-                    this->m_arrivalRerollHi = 0;
-                    this->m_arrivalRerollWindowHi = 0;
-                    this->m_arrivalRerollWindowLo = rand() % 30000 + 30000;
-                    this->m_arrivalRerollWindowHi = 0;
-                    this->m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-                    this->m_arrivalRerollHi = 0;
-                } else {
+                if (static_cast<i64>(g_frameTime) - this->m_arrivalReroll64
+                    < this->m_arrivalRerollWindow64) {
                     CGameObject* base = this->m_object;
                     u32 lo = base->m_extent.left;
-                    i32 dx = base->m_extent.right - static_cast<i32>(lo);
-                    i32 ax = (dx ^ (dx >> 31)) - (dx >> 31);
+                    i32 ax = abs(base->m_extent.right - static_cast<i32>(lo));
                     u32 lo2 = base->m_extent.top;
-                    i32 dy = base->m_extent.bottom - static_cast<i32>(lo2);
-                    i32 ay = (dy ^ (dy >> 31)) - (dy >> 31);
+                    i32 ay = abs(base->m_extent.bottom - static_cast<i32>(lo2));
                     if (ax != 0) {
                         lo = lo + rand() % ax;
                     }
@@ -199,10 +176,20 @@ i32 CGrunt::UpdateArrival() {
                         if (ax <= ay) {
                             ax = ay;
                         }
-                        if (ax < this->CoordCount()) {
+                        if (this->CoordCount() > ax) {
                             SetEntrancePos(1, 1);
                         }
                     }
+                } else {
+                    ResetEntranceAnimation(1, 1, 0);
+                    this->m_arrivalRerollLo = 0;
+                    this->m_arrivalRerollWindowLo = 0;
+                    this->m_arrivalRerollHi = 0;
+                    this->m_arrivalRerollWindowHi = 0;
+                    this->m_arrivalRerollWindowLo = rand() % 30000 + 30000;
+                    this->m_arrivalRerollWindowHi = 0;
+                    this->m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+                    this->m_arrivalRerollHi = 0;
                 }
                 this->m_dwell = 0;
             }
@@ -228,12 +215,8 @@ i32 CGrunt::UpdateArrival() {
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
                         && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
-                        CommitNeighbor(
-                            slot->m_tileOwnerHi,
-                            slot->m_tileOwnerLo,
-                            slot->m_lastTilePx.m_x,
-                            slot->m_lastTilePx.m_y
-                        );
+                        Coord cp = slot->m_lastTilePx;
+                        CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
@@ -254,20 +237,7 @@ i32 CGrunt::UpdateArrival() {
                 }
                 if (GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
                     || slot->m_entranceCommitted == 0) {
-                    m_defenderState = AISTATE_CHASE;
-                    {
-                        // CGameLevel::PointInBounds open-coded: retail calls it out of
-                        // line only from the AISTATE_SEEK arm, and spells the test out
-                        // here (four compares against the main plane's view rect).
-                        const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                        i32 px = m_object->m_screenX;
-                        i32 py = m_object->m_screenY;
-                        if (px < view.right && px >= view.left && py < view.bottom
-                            && py >= view.top) {
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
-                        }
-                    }
-                    break;
+                    goto repath;
                 }
                 if (m_combatActive != 0 || m_neighborValid != 0 || m_stamina < STAMINA_FULL) {
                     break;
@@ -275,27 +245,26 @@ i32 CGrunt::UpdateArrival() {
                 if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0
                     || slot->m_object->m_screenX != slot->m_lastTilePx.m_x
                     || slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
-                    m_defenderState = AISTATE_CHASE;
-                    {
-                        // CGameLevel::PointInBounds open-coded: retail calls it out of
-                        // line only from the AISTATE_SEEK arm, and spells the test out
-                        // here (four compares against the main plane's view rect).
-                        const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                        i32 px = m_object->m_screenX;
-                        i32 py = m_object->m_screenY;
-                        if (px < view.right && px >= view.left && py < view.bottom
-                            && py >= view.top) {
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
-                        }
-                    }
-                    break;
+                    goto repath;
                 }
-                CommitNeighbor(
-                    slot->m_tileOwnerHi,
-                    slot->m_tileOwnerLo,
-                    slot->m_lastTilePx.m_x,
-                    slot->m_lastTilePx.m_y
-                );
+                {
+                    Coord cp = slot->m_lastTilePx;
+                    CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+                }
+                break;
+            repath:
+                m_defenderState = AISTATE_CHASE;
+                {
+                    // CGameLevel::PointInBounds open-coded: retail calls it out of
+                    // line only from the AISTATE_SEEK arm, and spells the test out
+                    // here (four compares against the main plane's view rect).
+                    const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    i32 px = m_object->m_screenX;
+                    i32 py = m_object->m_screenY;
+                    if (px < view.right && px >= view.left && py < view.bottom && py >= view.top) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    }
+                }
                 break;
             }
             m_defenderState = AISTATE_CHASE;
