@@ -1120,7 +1120,11 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_surfB == NULL) {
         goto fail;
     }
-    m_surfC = pInit->m_warpSourceSurface ? pInit->m_warpSourceSurface : m_surfB;
+    if (pInit->m_warpSourceSurface == NULL) {
+        m_surfC = m_surfB;
+    } else {
+        m_surfC = pInit->m_warpSourceSurface;
+    }
 
     if (!m_cache.Init()) {
         goto fail;
