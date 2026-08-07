@@ -52,7 +52,7 @@ struct PcxHeader {
     i16 m_xMax;
     i16 m_yMax;
     char m_pad0c[0x41 - 0x0c];
-    GZ_ENUM_STORAGE(PcxPlaneCount, u8) m_planes;
+    GZ_ENUM_STORAGE(PcxPlaneCount, i8) m_planes;
     char m_pad42[0x80 - 0x42];
 
     u8 m_pixels[1];

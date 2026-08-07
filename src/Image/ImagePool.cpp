@@ -560,7 +560,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     }
 
     u8* src = hdr->m_pixels;
-    i32 scanBytes = (width * IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel) + 7) / 8;
+    i32 scanBytes = width * IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel) / 8;
     u8* scan = new u8[scanBytes];
 
     for (i32 y = 0; y < height; y++) {
@@ -664,13 +664,16 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
 // @early-stop
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
-    PidHeader* hdr = static_cast<PidHeader*>(buf);
+    Pix16Ptr src;
+    src.m_bytes = static_cast<u8*>(buf);
+    src.m_dwords++;
 
-    u8* src = hdr->pixels;
-    i32 width = hdr->width;
-    i32 height = hdr->height;
-    PidFlags flags = hdr->flags;
-    i32 fill = hdr->fill;
+    PidFlags flags = static_cast<PidFlags>(*src.m_dwords++);
+    i32 width = *src.m_dwords++;
+    i32 height = *src.m_dwords++;
+    src.m_dwords += 2;
+    i32 fill = *src.m_dwords++;
+    src.m_dwords++;
 
     if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
@@ -692,17 +695,17 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         i32 y = 0;
         i32 i = 0;
         while (y < m_height) {
-            u8 c = src[i];
+            i32 c = src.m_bytes[i];
             if (c & 0x80) {
-                i32 count = (c & 0xff) - 0x80;
+                i32 count = c - 0x80;
                 memset(dstRow + x, static_cast<u8>(fill), count);
-                x += (src[i] & 0xff) - 0x80;
+                x += (src.m_bytes[i] & 0xff) - 0x80;
                 i++;
             } else {
-                i32 count = c & 0xff;
-                memcpy(dstRow + x, &src[i + 1], count);
-                x += src[i];
-                i += src[i] + 1;
+                i32 count = c;
+                memcpy(dstRow + x, &src.m_bytes[i + 1], count);
+                x += src.m_bytes[i];
+                i += src.m_bytes[i] + 1;
             }
             if (x >= m_width) {
                 y++;
@@ -718,10 +721,10 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
             u8* dst = m_pixels + m_rowOffsets[y];
             i32 n = width;
             while (n > 0) {
-                u8 c = *src++;
+                u8 c = *src.m_bytes++;
                 if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
                     i32 count = c & BYTE_RUN_LENGTH_MASK;
-                    u8 v = *src++;
+                    u8 v = *src.m_bytes++;
                     if (count > 0) {
                         memset(dst, v, count);
                         dst += count;
