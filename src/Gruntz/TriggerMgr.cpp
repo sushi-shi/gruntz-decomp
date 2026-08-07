@@ -430,14 +430,17 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-// The case order above is read off retail's own jump table (slot -> arm
-// address), which is also the source order because cl emits arms in source
-// order. Two residues remain. (1) cl merges GAUNTLETZ's six collision
-// compares into SPY's identical chain; retail emits both, and it places the
-// post-switch LoadCursorSprites(pfk, 0) tail immediately after the GOOBER arm
-// instead of after the last one. (2) A whole-function regalloc divergence:
-// retail keeps `view` in the scratch ecx and cx in edi, while cl parks view in
-// ebx and spills cx, which costs a frame word (0x1c vs 0x18).
+// The case order above is read off retail's own jump table (byte index at
+// 0x792cc, slots at 0x79298), which is also the source order because cl emits
+// arms in source order. The remaining deficit is one INLINED WrapCoord: the
+// second path block (retail 0x79080) calls WrapCoord for `source` but expands
+// it in full for `destination` (0x790c6-0x79144 is CDDrawWorkerHost::WrapCoord
+// verbatim - flags&4/&8, m_wrapW/m_wrapH, m_viewRect, then
+// `+= m_bounds50.left - m_viewRect.left`). cl cannot inline across a TU, so
+// retail's WrapCoord is an INLINE member declared in the Wwd header and the
+// 0xa000 body is its COMDAT copy; one expansion here fits the per-function
+// inline budget and the other does not. Moving it into the header is a
+// cross-TU change this lane did not take.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -593,17 +596,29 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 break;
 
             case PICKUP_BOMB:
-                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                if (pfk != 0) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                } else {
+                    world->LoadCursorSprites(0, 0);
+                }
                 return 1;
 
             case PICKUP_WARPSTONE:
                 if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                    world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                    if (pfk != 0) {
+                        world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                    } else {
+                        world->LoadCursorSprites(0, 0);
+                    }
                     return 1;
                 }
                 break;
             case PICKUP_SPRING:
-                world->LoadCursorSprites(pfk ? IDX(gruntKind) + kPendingFxIdBase : 0, pfk != 0);
+                if (pfk != 0) {
+                    world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                } else {
+                    world->LoadCursorSprites(0, 0);
+                }
                 return 1;
 
             case PICKUP_SPY: {
