@@ -39,10 +39,11 @@
 // @early-stop
 // Retail carries an 8-byte frame (`sub esp,0x8`) whose two dwords are written at
 // every CommitNeighbor site ([esp+0x10] = m_lastTilePx.m_x, [esp+0x14] = .m_y) and
-// never read; cl DCEs the equivalent locals here, so every epilogue is short one
-// `add esp,0x8`.  cl also proves and deletes the low-stamina arm's `m_poweredUp == 0`
-// / `m_neighborValid != 0` re-tests (retail keeps them on the CSE'd registers) and
-// merges the two stand-down blocks back into one.
+// never read anywhere in the function - and never address-taken either, so no
+// spelling found so far survives cl's DCE.  A whole-struct `Coord tile =
+// o->m_lastTilePx;` whose fields ARE then used as the call arguments gets the
+// closest (cl keeps the local but not the frame); making the copy genuinely dead
+// deletes it outright.  Every epilogue is therefore short one `add esp,0x8`.
 RVA(0x000f1c70, 0x60d)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
@@ -54,8 +55,10 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         inRange = 1;
     }
 
-    if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
+        i32 neighborValid = m_neighborValid;
+        if (neighborValid != 0) {
             m_neighborValid = 0;
             return 1;
         }
@@ -113,12 +116,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 if (m_stamina >= STAMINA_FULL && o->m_object->m_screenX == o->m_lastTilePx.m_x
                     && o->m_object->m_screenY == o->m_lastTilePx.m_y
                     && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
-                    CommitNeighbor(
-                        o->m_tileOwnerHi,
-                        o->m_tileOwnerLo,
-                        o->m_lastTilePx.m_x,
-                        o->m_lastTilePx.m_y
-                    );
+                    Coord tile = o->m_lastTilePx;
+                    CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, tile.m_x, tile.m_y);
                     return 1;
                 }
             }
@@ -221,12 +220,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (o->m_object->m_screenY != o->m_lastTilePx.m_y) {
                 goto tail;
             }
-            CommitNeighbor(
-                o->m_tileOwnerHi,
-                o->m_tileOwnerLo,
-                o->m_lastTilePx.m_x,
-                o->m_lastTilePx.m_y
-            );
+            Coord tile = o->m_lastTilePx;
+            CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, tile.m_x, tile.m_y);
             m_defenderState = AISTATE_ATTACK;
             return 1;
         }
@@ -257,12 +252,8 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 && o->m_object->m_screenX == o->m_lastTilePx.m_x
                 && o->m_object->m_screenY == o->m_lastTilePx.m_y
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
-                CommitNeighbor(
-                    o->m_tileOwnerHi,
-                    o->m_tileOwnerLo,
-                    o->m_lastTilePx.m_x,
-                    o->m_lastTilePx.m_y
-                );
+                Coord tile = o->m_lastTilePx;
+                CommitNeighbor(o->m_tileOwnerHi, o->m_tileOwnerLo, tile.m_x, tile.m_y);
                 m_defenderState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_tileOwnerHi, o->m_tileOwnerLo) == 0) {
