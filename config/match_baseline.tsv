@@ -26,7 +26,7 @@ advancedoptions	5	5
 anicycle	7	6
 aniplayer	4	0
 anirecord	16	15
-areamgr	56	50
+areamgr	56	53
 arrayserialize	4	4
 attract	16	10
 attractstate	13	11
@@ -473,10 +473,10 @@ areamgr	?InitializeTrainingStage2@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	60ecaca95
 areamgr	?InitializeTrainingStage3@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	5c1af147a97e	0x9b3f0
 areamgr	?InitializeTrainingStage4@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	2d9596782226	0x9b410
 areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	58.6471	58.6471	2	127ff1f2fe85	0x9b430
-areamgr	?LoadObjectAnimResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	85.7816	85.7816	7	3181f03d1e7d	0x9ac20
-areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	90.9389	90.9389	6	0446eee8397a	0x9a510
+areamgr	?LoadObjectAnimResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	8	771b00524656	0x9ac20
+areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	7	3d102abe807d	0x9a510
 areamgr	?LoadObjectResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	2	afadbc689abe	0x9a4c0
-areamgr	?LoadObjectSoundResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	85.7816	85.7816	7	d31d509c20e0	0x9a910
+areamgr	?LoadObjectSoundResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	8	46df19699563	0x9a910
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	4	a11931734994	0x9a0b0
 arrayserialize	??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ	100.0000	100.0000	1	cpp:d628819a671d	0x94340
 arrayserialize	??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ	100.0000	100.0000	1	cpp:d628819a671d	0x39f20
@@ -2073,7 +2073,7 @@ gruntpowerupsprite	?SerializeMove@CGruntPowerupSprite@@UAEHPAVCFileMemBase@@W4Se
 gruntpowerupsprite	?SetCell@CGruntPowerupSprite@@QAEHHHH@Z	100.0000	100.0000	9	af852f928014	0x80380
 gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	13	ff509a4c223d	0x80410
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	5	d871f928c1b0	0x7d810
-gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	0.0000	0.0000	8	bf009a727af3	0xee800
+gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	0.0000	0.0000	9	c90b88ca3080	0xee800
 gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	51.3003	51.3003	1	6351b830884f	0xf42f0
 gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	11.2451	11.2451	15	8a2ff47be630	0xf71c0
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	93.8333	93.8333	7	8a1966573ce9	0x7e3e0
@@ -4605,7 +4605,7 @@ wwdobjmgr	?CreateNamedDeferredObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectF@@HH
 wwdobjmgr	?CreateNamedDotObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectC@@HHHHPBDHH@Z	93.5484	93.5484	1	bb1e7549aa6e	0x1593e0
 wwdobjmgr	?CreateSprite@CDDrawChildGroup@@QAEPAVCWwdGameObjectA@@HHHHPBDH@Z	94.1176	94.1176	6	9216f8bf63ae	0x1597b0
 wwdobjmgr	?CreateSpriteObject@CDDrawChildGroup@@QAEPAVCWwdGameObjectA@@HHHHPAUAnimWorkerObj@@H@Z	71.8960	71.8960	2	de4774812257	0x159600
-wwdobjmgr	?Deserialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	74.5532	74.5532	1	607a8d6c5d9e	0x15b0e0
+wwdobjmgr	?Deserialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	96.1702	96.1702	2	dfa70f22150b	0x15b0e0
 wwdobjmgr	?DestroyChildren@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	10	9d5c0f66c850	0x1591f0
 wwdobjmgr	?DrawObjectCounts@CDDrawChildGroup@@QAEXXZ	89.2920	89.2920	13	38e371a429ed	0x15a650
 wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	93.7333	93.7333	3	ba9aed093beb	0x15a210
