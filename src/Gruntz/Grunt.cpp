@@ -1029,7 +1029,7 @@ i32 CGrunt::StepArrivalDrop(
 
     m_pendingTrigger = 0;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
-    if (eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
+    if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
 
@@ -1056,10 +1056,9 @@ i32 CGrunt::StepArrivalDrop(
     maskC = maskCIn | m_passableMask;
     if (g_gameReg->m_tileGrid
             ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
-        != 0) {
-        goto dropHead;
+        == 0) {
+        goto nudgeTarget;
     }
-    goto nudgeTarget;
 dropHead:
     if (CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
