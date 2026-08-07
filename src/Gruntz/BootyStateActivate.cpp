@@ -1083,10 +1083,9 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->ApplyName("GRUNTZ_EXITZ");
             m_gruntSprites[i]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
-            CWwdGameObjectA* o = m_gruntSprites[i];
-            o->m_drawActive = 1;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
+            m_gruntSprites[i]->m_drawActive = 1;
+            m_gruntSprites[i]->m_drawFillCmd = SHADE_PAL_16;
+            m_gruntSprites[i]->m_drawFillArg = tint;
         } else {
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] =
