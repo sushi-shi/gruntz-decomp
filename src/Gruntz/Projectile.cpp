@@ -47,6 +47,7 @@
 #include <Wwd/MoveMode.h>
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 DATA(0x001f04b0)
@@ -143,8 +144,8 @@ i32 CProjectile::LoadProjectileSprites(
     m_ownerId = t1;
 
     CWwdGameObjectA* owner = m_object;
-    double dx = static_cast<double>((m_targetX - owner->m_screenX));
-    double dy = static_cast<double>((m_targetY - owner->m_screenY));
+    double dx = static_cast<double>(m_targetX) - owner->m_screenX;
+    double dy = static_cast<double>(m_targetY) - owner->m_screenY;
     i32 count = 1;
 
     switch (kind) {
@@ -183,14 +184,8 @@ i32 CProjectile::LoadProjectileSprites(
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = 0;
-            i32 ddx = (m_targetX >> TILE_SHIFT_PX) - (owner->m_screenX >> TILE_SHIFT_PX);
-            if (ddx < 0) {
-                ddx = -ddx;
-            }
-            i32 ddy = (m_targetY >> TILE_SHIFT_PX) - (owner->m_screenY >> TILE_SHIFT_PX);
-            if (ddy < 0) {
-                ddy = -ddy;
-            }
+            i32 ddx = abs((m_targetX >> TILE_SHIFT_PX) - (owner->m_screenX >> TILE_SHIFT_PX));
+            i32 ddy = abs((m_targetY >> TILE_SHIFT_PX) - (owner->m_screenY >> TILE_SHIFT_PX));
             count = ddx;
             if (ddx <= ddy) {
                 count = ddy;
@@ -257,7 +252,7 @@ i32 CProjectile::LoadProjectileSprites(
     } else {
         m_roundY = 0.0;
     }
-    m_flightDist = len < 0.0 ? -len : len;
+    m_flightDist = fabs(len);
     m_curX = owner->m_screenX;
     m_curY = owner->m_screenY;
     m_arrived = 0;
