@@ -37,15 +37,13 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
-// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc) - two locals we do not
-// model - so every [esp+N] differs. See
-// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
+// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc): two spill slots we do
+// not model. Retail also keeps the two identical ResetEntranceAnimation tails of the
+// m_poweredUp block apart where cl cross-jumps them into one, and merges the ATTACK
+// arm's CommitNeighbor tail into the SEEK arm's where cl keeps both.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
-    m_defenderPx.m_x = m_lastTilePx.m_x;
-    m_defenderPx.m_y = m_lastTilePx.m_y;
+    m_defenderPx = m_lastTilePx;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 hitGate = 0;
     if (g != NULL) {

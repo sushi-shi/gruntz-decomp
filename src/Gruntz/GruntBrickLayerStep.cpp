@@ -106,30 +106,29 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     if (g == NULL) {
         m_blockedVoicePending = 0;
-        goto L_ed006;
-    }
-    if (m_neighborValid != 0) {
-        return 1;
-    }
-    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
-        if (atTarget) {
-            CommitNeighbor(
-                g->m_tileOwnerHi,
-                g->m_tileOwnerLo,
-                g->m_lastTilePx.m_x,
-                g->m_lastTilePx.m_y
-            );
-            DRAIN_COORDS();
+    } else {
+        if (m_neighborValid != 0) {
             return 1;
         }
-    } else {
-        if (atTarget) {
-            DRAIN_COORDS();
-            return 1;
+        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
+            if (atTarget) {
+                CommitNeighbor(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    g->m_lastTilePx.m_x,
+                    g->m_lastTilePx.m_y
+                );
+                DRAIN_COORDS();
+                return 1;
+            }
+        } else {
+            if (atTarget) {
+                DRAIN_COORDS();
+                return 1;
+            }
         }
     }
 
-L_ed006:
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
         || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
         m_blockedVoicePending = 0;
@@ -176,7 +175,72 @@ L_ed006:
     m_dwell = 0;
 
 L_ed153:
-    if (CoordCount() != 0) {
+    if (CoordCount() == 0) {
+        if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
+            return 1;
+        }
+
+        i32 r = m_defenderRadius;
+        RECT box;
+        box.left = cx - r;
+        box.right = cx + r;
+        box.top = cy - r;
+        box.bottom = cy + r;
+        RECT gb;
+        gb.left = 0;
+        gb.top = 0;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
+        RECT isect;
+        if (!IntersectRect(&isect, &box, &gb)) {
+            isect = box;
+        }
+
+        i32 best = INT_MAX;
+        i32 bestCol = -1;
+        i32 bestRow = -1;
+        GRID_CLIP_INL(grid, &isect);
+        for (i32 row = isect.top; row < isect.bottom; row++) {
+            BrickzCell* cell = &grid->m_rows[row][isect.left];
+            for (i32 col = isect.left; col < isect.right; col++) {
+                if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
+                    || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
+                    i32 dr = row - cy;
+                    IABS(dr);
+                    i32 dc = col - cx;
+                    IABS(dc);
+                    i32 dist = dr + dc;
+                    if (dist < best) {
+                        best = dist;
+                        bestCol = col;
+                        bestRow = row;
+                    }
+                }
+                cell++;
+            }
+        }
+        if (best != INT_MAX) {
+            i32 dc = bestCol - cx;
+            IABS(dc);
+            i32 dr = bestRow - cy;
+            IABS(dr);
+            if (dc <= 1 && dr <= 1) {
+                m_tileMgr->ApplyTriggerA(
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
+                SetEntrancePos(1, 1);
+            } else {
+                TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
+            }
+        }
+        GRID_RECT_INLINE(grid);
+        m_dwell = 0;
+        return 1;
+    }
+    {
         Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
         i32 col = coord->m_x;
         i32 row = coord->m_y;
@@ -192,85 +256,6 @@ L_ed153:
             SetEntrancePos(1, 1);
             m_dwell = 0;
         }
-        return 1;
     }
-    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
-        return 1;
-    }
-
-    i32 r = m_defenderRadius;
-    RECT box;
-    box.left = cx - r;
-    box.right = cx + r;
-    box.top = cy - r;
-    box.bottom = cy + r;
-    RECT gb;
-    gb.left = 0;
-    gb.top = 0;
-    gb.right = grid->m_width;
-    gb.bottom = grid->m_height;
-    RECT isect;
-    if (!IntersectRect(&isect, &box, &gb)) {
-        isect = box;
-    }
-
-    i32 best = INT_MAX;
-    i32 bestCol = -1;
-    i32 bestRow = -1;
-    {
-        RECT lb;
-        lb.left = isect.left;
-        lb.top = isect.top;
-        lb.right = isect.right + 1;
-        lb.bottom = isect.bottom + 1;
-        RECT gb2;
-        gb2.left = 0;
-        gb2.top = 0;
-        gb2.right = grid->m_width;
-        gb2.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_bounds, &lb, &gb2)) {
-            grid->m_bounds = lb;
-        }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
-    }
-    for (i32 row = isect.top; row < isect.bottom; row++) {
-        BrickzCell* cell = &grid->m_rows[row][isect.left];
-        for (i32 col = isect.left; col < isect.right; col++) {
-            if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
-                || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
-                i32 dr = row - cy;
-                IABS(dr);
-                i32 dc = col - cx;
-                IABS(dc);
-                i32 dist = dr + dc;
-                if (dist < best) {
-                    best = dist;
-                    bestCol = col;
-                    bestRow = row;
-                }
-            }
-            cell++;
-        }
-    }
-    if (best != INT_MAX) {
-        i32 dc = bestCol - cx;
-        IABS(dc);
-        i32 dr = bestRow - cy;
-        IABS(dr);
-        if (dc <= 1 && dr <= 1) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
-                (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
-            );
-            SetEntrancePos(1, 1);
-        } else {
-            TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
-        }
-    }
-    GRID_RECT_INLINE(grid);
-    m_dwell = 0;
     return 1;
 }

@@ -244,23 +244,7 @@ L_scanb:
     if (!IntersectRect(&isect, &box, &gb)) {
         isect = box;
     }
-    {
-        RECT lb;
-        lb.left = isect.left;
-        lb.top = isect.top;
-        lb.right = isect.right + 1;
-        lb.bottom = isect.bottom + 1;
-        RECT gb2;
-        gb2.left = 0;
-        gb2.top = 0;
-        gb2.right = grid->m_width;
-        gb2.bottom = grid->m_height;
-        if (!IntersectRect(&grid->m_bounds, &lb, &gb2)) {
-            grid->m_bounds = lb;
-        }
-        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
-        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
-    }
+    GRID_CLIP_INL(grid, &isect);
 
     i32 best = INT_MAX;
     i32 bestX = 0;

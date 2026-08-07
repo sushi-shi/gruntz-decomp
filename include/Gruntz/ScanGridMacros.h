@@ -50,6 +50,56 @@
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
 
+// CMapMgr::Clip(src) expanded in place -- the shape cl emits when it inlines the
+// 0x2b340 body with a non-constant src: the (0,0,w,h) rect is built by the
+// out-of-line CRect ctor, the src rect is copied and its right/bottom bumped,
+// and the NULL arm re-runs the ctor into a temporary.
+#define GRID_CLIP(grid, srcRect)                                                                   \
+    {                                                                                              \
+        const RECT* clipSrc = (srcRect);                                                           \
+        RECT rb;                                                                                   \
+        static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
+        RECT ra;                                                                                   \
+        if (clipSrc != NULL) {                                                                     \
+            ra = *clipSrc;                                                                         \
+            ra.right = ra.right + 1;                                                               \
+            ra.bottom = ra.bottom + 1;                                                             \
+        } else {                                                                                   \
+            ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                   \
+        }                                                                                          \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
+        }                                                                                          \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+    }
+
+// Same expansion as GRID_CLIP, but at the sites where cl builds the (0,0,w,h) rect
+// with field stores instead of the out-of-line CRect ctor; only the NULL arm's
+// temporary keeps its ctor call.
+#define GRID_CLIP_INL(grid, srcRect)                                                               \
+    {                                                                                              \
+        const RECT* clipSrc = (srcRect);                                                           \
+        RECT rb;                                                                                   \
+        rb.left = 0;                                                                               \
+        rb.top = 0;                                                                                \
+        rb.right = (grid)->m_width;                                                                \
+        rb.bottom = (grid)->m_height;                                                              \
+        RECT ra;                                                                                   \
+        if (clipSrc != NULL) {                                                                     \
+            ra = *clipSrc;                                                                         \
+            ra.right = ra.right + 1;                                                               \
+            ra.bottom = ra.bottom + 1;                                                             \
+        } else {                                                                                   \
+            ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                   \
+        }                                                                                          \
+        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
+            (grid)->m_bounds = ra;                                                                 \
+        }                                                                                          \
+        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
+        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+    }
+
 #define GRID_RECT_INLINE(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \

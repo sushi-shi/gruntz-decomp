@@ -993,6 +993,10 @@ void CGrunt::ClearAllSprites() {
 }
 
 // @early-stop
+// @early-stop
+// regalloc wall: retail shuttles the four pass-through args through esi
+// (push esi/pop esi) so col+row stay live from the first load; cl keeps only
+// two scratch regs and materialises px/py last. 49 permuter variants exhausted.
 RVA(0x0004b320, 0x34)
 i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearFlag, i32 maskCIn) {
     i32 px = col * 0x20 + 0x10;
