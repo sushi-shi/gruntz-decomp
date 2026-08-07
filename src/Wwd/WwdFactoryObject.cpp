@@ -766,8 +766,8 @@ RVA(0x0015cbe0, 0x46)
 // <Gruntz/GameRand.h>); that is why the guard/seed pair here is distinct from
 // the Gruntz module's at 0x2c127d/0x2c1288.
 i32 CAniRecordView::Rng2Next() {
-    static i32 holdrand = static_cast<i32>(timeGetTime());
-    return ((holdrand = holdrand * 214013 + 2531011) >> 0x10) & 0x7fff;
+    static long holdrand = timeGetTime();
+    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
 RVA(0x0015cc30, 0x1e)

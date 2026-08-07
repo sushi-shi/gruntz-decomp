@@ -305,8 +305,8 @@ CFaderSine::~CFaderSine() {}
 // DDrawMgr's own copy of Monolith's GetRandomNumber (see <Gruntz/GameRand.h>),
 // which is why its guard/seed pair is distinct from the other modules'.
 static __inline i32 GetRandomNumber() {
-    static i32 holdrand = static_cast<i32>(timeGetTime());
-    return ((holdrand = holdrand * 214013 + 2531011) >> 0x10) & 0x7fff;
+    static long holdrand = timeGetTime();
+    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
 static __inline i32 FxRand(i32 range) {
