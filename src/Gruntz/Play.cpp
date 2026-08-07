@@ -648,13 +648,20 @@ i32 CPlay::Render() {
             }
         }
 
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->PruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
+        m_mgr->m_inputState->Retune(
+            m_world->m_level->m_mainPlane->m_snappedX,
+            m_world->m_level->m_mainPlane->m_snappedY
         );
+        {
+            SoundStream* stream = m_world->m_soundStream;
+            if (stream != NULL) {
+                u32 t = timeGetTime();
+                stream->PurgeVoiceList(t);
+                stream->TickSubManagers(t);
+            }
+        }
         if (m_region1Gate != 0) {
-            StepViewportResize();
+            NotifyVisibleEntities();
         } else {
             m_world->m_level->VisitVisible(
                 m_world->m_drawTarget->m_backPair,
@@ -666,7 +673,7 @@ i32 CPlay::Render() {
             );
         }
         m_beginMarker->FilterList2(g_frameDelta);
-        m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+        m_guts->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
 
         if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
@@ -687,10 +694,7 @@ i32 CPlay::Render() {
             m_lightFx->ComputeRect(m_world->m_drawTarget->m_backPair, &rc);
         }
 
-        m_mgr->m_inputState->Retune(
-            m_world->m_level->m_mainPlane->m_snappedX,
-            m_world->m_level->m_mainPlane->m_snappedY
-        );
+        m_mgr->m_chatLog->Scroll(static_cast<i32>(g_frameDelta));
         if (m_world->m_drawTarget->m_backPair == NULL) {
             return 1;
         }
@@ -760,9 +764,16 @@ i32 CPlay::Render() {
             }
         }
 
-        m_beginMarker->FilterList2(g_frameDelta);
+        StepGridWalk(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(0);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
+        {
+            CGameLevel* lvl = m_world->m_level;
+            if (lvl->m_mainPlane != NULL) {
+                lvl->m_mainPlane->DeactivateDistantObjects();
+            }
+        }
 
         if (m_region0Gate != 0) {
             u32 e = g_frameTime - static_cast<u32>(m_region0TimerLo);
@@ -812,7 +823,7 @@ i32 CPlay::Render() {
                 m_world->m_drawTarget->m_backPair,
                 m_world->m_drawTarget->m_overlayPair
             );
-            m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+            m_guts->LoadMainStatusBarSprite();
             if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
                 PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);
             }
@@ -832,7 +843,7 @@ i32 CPlay::Render() {
                     m_world->m_drawTarget->m_backPair,
                     m_world->m_drawTarget->m_overlayPair
                 );
-                m_guts->LoadDestructButtonSprite(static_cast<i32>(g_frameDelta));
+                m_guts->LoadMainStatusBarSprite();
                 m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(0x32, 0);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0);
                 m_frameMarker->Draw(
@@ -862,7 +873,7 @@ i32 CPlay::Render() {
                 }
             }
         }
-        m_beginMarker->FilterList2(g_frameDelta);
+        StepGridWalk(static_cast<i32>(g_frameDelta));
         DrawCursorSaveUnder(0);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
