@@ -11,50 +11,54 @@ const double g_motionZero = 0.0;
 DATA(0x001f0508)
 const double g_motionNegTwo = -2.0;
 
-// The velocity update is an inlined `v = ArrivalVel<axis>(target)`: retail's
-// `a == 0` arm reloads and re-stores the velocity in place
-// (`fld [ecx+0x38]; fstp [ecx+0x38]`), which only a value-RETURNING else-arm makes,
-// and the caller passes an ABSOLUTE target - the first site builds `m_position + c`
-// and the callee immediately subtracts `m_position` back off (`fadd [ecx+0x50]` ...
-// `fsub [ecx+0x50]`).  Spelling that needs ArrivalVelX/Y/Z to be inline-visible
-// above Step, which their RVA pins (0x16f3c0 / 0x16f430) currently forbid.
+// The velocity update is the ArrivalVel<axis> shape written INLINE: an if/else
+// that YIELDS a value, so retail's `a == 0` arm reloads and re-stores the
+// velocity in place (`fld [ecx+0x38]; fstp [ecx+0x38]`).  It is fed an ABSOLUTE
+// target and subtracts the position back off - the first site builds
+// `s + c` and the macro immediately computes `(target) - s` again
+// (`fadd [ecx+0x50]` ... `fsub [ecx+0x50]`); FP is not associative so cl keeps
+// both.  ArrivalVelX/Y/Z sit BELOW Step at 0x16f3c0/0x16f430, so retail's cl
+// could not have inlined them either - this is the same body, spelled out.
+#define ARRIVAL_V(v, a, s, target)                                                                 \
+    do {                                                                                           \
+        double nv;                                                                                 \
+        if (a == g_motionZero) {                                                                   \
+            nv = v;                                                                                \
+        } else {                                                                                   \
+            double disc = v * v - ((target) - (s)) * a * g_motionNegTwo;                           \
+            if (g_motionZero > disc) {                                                             \
+                disc = g_motionZero;                                                               \
+            }                                                                                      \
+            double r = sqrt(disc);                                                                 \
+            nv = (v > g_motionZero) ? r : -r;                                                      \
+        }                                                                                          \
+        v = nv;                                                                                    \
+    } while (0)
+
 #define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
     do {                                                                                           \
         double step0 = dt * a;                                                                     \
         double t = (v - step0 * g_motionNegHalf) * dt;                                             \
+        double c;                                                                                  \
         scr = t;                                                                                   \
-        if (t > vmax || t < -vmax) {                                                               \
-            double c = (t > vmax) ? vmax : -vmax;                                                  \
+        if (t > vmax) {                                                                            \
+            c = vmax;                                                                              \
             scr = c;                                                                               \
-            if (a != g_motionZero) {                                                               \
-                double disc = v * v - c * a * g_motionNegTwo;                                      \
-                if (disc < g_motionZero)                                                           \
-                    disc = g_motionZero;                                                           \
-                double r = sqrt(disc);                                                             \
-                v = (v > g_motionZero) ? r : -r;                                                   \
-            }                                                                                      \
+            ARRIVAL_V(v, a, s, c + s);                                                             \
+        } else if (t < -vmax) {                                                                    \
+            c = -vmax;                                                                             \
+            scr = c;                                                                               \
+            ARRIVAL_V(v, a, s, c + s);                                                             \
         }                                                                                          \
         double oldS = s;                                                                           \
         double newS = scr + s;                                                                     \
         s = newS;                                                                                  \
         if (newS > hiBand) {                                                                       \
-            if (a != g_motionZero) {                                                               \
-                double disc = v * v - (hiBand - newS) * a * g_motionNegTwo;                        \
-                if (disc < g_motionZero)                                                           \
-                    disc = g_motionZero;                                                           \
-                double r = sqrt(disc);                                                             \
-                v = (v > g_motionZero) ? r : -r;                                                   \
-            }                                                                                      \
+            ARRIVAL_V(v, a, s, hiBand);                                                            \
             scr = hiBand - oldS;                                                                   \
             s = hiBand;                                                                            \
         } else if (newS < loBand) {                                                                \
-            if (a != g_motionZero) {                                                               \
-                double disc = v * v - (loBand - newS) * a * g_motionNegTwo;                        \
-                if (disc < g_motionZero)                                                           \
-                    disc = g_motionZero;                                                           \
-                double r = sqrt(disc);                                                             \
-                v = (v > g_motionZero) ? r : -r;                                                   \
-            }                                                                                      \
+            ARRIVAL_V(v, a, s, loBand);                                                            \
             scr = loBand - oldS;                                                                   \
             s = loBand;                                                                            \
         } else {                                                                                   \
@@ -71,7 +75,7 @@ void CMotionState::Step(double dt) {
     m_previousPosition.y = m_position.y;
     m_previousPosition.z = m_position.z;
     m_deltaTime = dt;
-    m_time += dt;
+    m_time = dt + m_time;
     if (m_stepDisabled != 0) {
         return;
     }
