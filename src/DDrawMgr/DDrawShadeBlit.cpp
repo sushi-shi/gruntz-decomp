@@ -293,8 +293,8 @@ void CDDrawShadeBlit::BlitCopyMirrored(
         base += dst->top * pitch + dst->left * m_dstBpp;
     }
 
-    x = m_width;
     if (clip->left == 0 && clip->right == m_width - 1) {
+        x = m_width;
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
@@ -329,6 +329,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
         }
     } else if (clip->left != 0) {
+        x = m_width;
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
@@ -369,6 +370,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
         }
     } else if (clip->right != m_width - 1) {
+        x = m_width;
 
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
@@ -1014,8 +1016,8 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         base += dst->top * pitch + dst->left * m_dstBpp;
     }
 
-    x = m_width;
     if (clip->left == 0 && clip->right == m_width - 1) {
+        x = m_width;
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
@@ -1251,6 +1253,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
         }
     } else if (clip->left != 0) {
+        x = m_width;
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
@@ -1366,6 +1369,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
         }
     } else {
+        x = m_width;
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
