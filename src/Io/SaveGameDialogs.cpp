@@ -332,11 +332,6 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
     EnableWindow(GetDlgItem(hWnd, id5), flag);
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
-// @early-stop
-// Retail's `ja` for the slot switch's default arm is jump-threaded straight to the
-// shared `return 0`, so its `slot = -1` / `nameId = 0` pre-switch initialisers are
-// dead and gone; cl keeps both here (`or esi,-1` / `xor eax,eax`) because it never
-// threads that edge. Everything else is byte-identical.
 RVA(0x000e3f40, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
@@ -477,7 +472,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     }
 
     i32 slot = -1;
-    i32 nameId = 0;
+    i32 nameId;
     switch (c) {
         case CTRL_SAVESLOT_LOAD0:
             slot = 0;
@@ -519,10 +514,12 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             slot = 9;
             nameId = CTRL_SAVEDLG_SLOT9;
             break;
+        default:
+            return 0;
     }
 
     if (slot != -1) {
-        char name[0x21];
+        char name[0x24];
         GetDlgItemTextA(hDlg, nameId, name, 0x20);
         if (_strcmpi(name, "(Empty)") == 0) {
             sprintf(name, "Saved Game #%i", slot + 1);
