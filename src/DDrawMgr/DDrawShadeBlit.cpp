@@ -989,7 +989,11 @@ void CDDrawShadeBlit::BlitShadedForward(
 }
 
 // @early-stop
-// mirror of BlitShadedForward; same regalloc residue.
+// Not regalloc: `insn_seq --multiset` counts one ConvertRowDouble and one
+// ConvertRowFlip call MORE in retail than here (3/4 vs 2/3), so one whole
+// double-scanline/flip site is missing from the body below - the three
+// switch(m_drawType) expansions are all real (removing one costs 300
+// instructions and eight g_scratch references).
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
