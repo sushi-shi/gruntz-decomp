@@ -884,7 +884,6 @@ i32 CMultiStartDlg::SelectColor(i32 colorIndex, ColorTint playerColor) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c4c00, 0x190)
 void CMultiStartDlg::OnOK() {
     if (g_multiState->m_isHost == 0) {
