@@ -519,7 +519,9 @@ TextExtent FontRenderer::MeasureText(CString text) {
 }
 
 // @early-stop
-// 95.8: same frame-slot family as LayoutWrapped below + scheduling residue
+// 95.8: same frame-slot family as LayoutWrapped below (base 22B short, reloc
+// set exact mod __except_list); 256-variant depth-2 + 48 state-trials
+// EXHAUSTED flat.
 RVA(0x0017ad10, 0x402)
 TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom) {
     TextExtent ext;
