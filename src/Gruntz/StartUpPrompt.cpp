@@ -18,6 +18,10 @@ DATA(0x002455ec)
 i32 g_cdPromptResult = 0;
 
 // @early-stop
+// residue is 4 insns: retail emits the CWaitCursor destructor in FULL at BOTH
+// loop exits; cl merges ours (the first exit stores the EH state and falls into
+// the second's copy). Spelling both exits `return 1` splits them but costs the
+// HWND/ebx live range - docs/patterns/return-inside-dtor-scope-splits-the-exit-tails.md
 RVA(0x0001f9b0, 0x2d2)
 int StartUpPrompt(HWND hWnd) {
     if (IsGruntzCDInAnyDrive()) {
