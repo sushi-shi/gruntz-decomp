@@ -267,28 +267,32 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     i32 pitch = surf->m_pitch;
     u8* base = static_cast<u8*>(surf->Lock(0));
 
-    i32 row = 0, pos = 0, x = 0;
+    i32 pos = 0;
+    i32 row = 0;
+    i32 x = 0;
+
     if (clip->top != 0) {
-        do {
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+        while (row < clip->top) {
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->top);
+        }
     }
+    i32 rowInc;
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
-        pitch = -pitch;
+        rowInc = -pitch;
     } else {
         base += dst->top * pitch + dst->left * m_dstBpp;
+        rowInc = pitch;
     }
 
     x = m_width;
@@ -322,7 +326,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             }
         }
@@ -364,7 +368,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             }
         }
@@ -407,7 +411,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += pitch;
+                base += rowInc;
                 x = m_width;
             } else {
                 u8 b = m_rleData[pos];
@@ -455,20 +459,19 @@ void CDDrawShadeBlit::BlitShadedForward(
     i32 pos = 0, row = 0, x = 0;
 
     if (clip->top != 0) {
-        do {
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+        while (row < clip->top) {
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->top);
+        }
     }
 
     i32 rowInc;
@@ -1004,20 +1007,19 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     i32 pos = 0, row = 0, x = 0;
 
     if (clip->top != 0) {
-        do {
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += b - 0x80;
+        while (row < clip->top) {
+            if (m_rleData[pos] & 0x80) {
+                x += m_rleData[pos] - 0x80;
                 pos++;
             } else {
-                x += b;
-                pos += static_cast<i32>(b) * m_srcBpp + 1;
+                x += m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x >= m_width) {
                 row++;
                 x = 0;
             }
-        } while (row < clip->top);
+        }
     }
 
     i32 rowInc;
