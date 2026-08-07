@@ -621,48 +621,48 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
     sprintf(szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
-    switch (static_cast<u32>(hr)) {
-        case 0x80004001:
+    switch (hr) {
+        case static_cast<i32>(0x80004001):
             strcpy(szCode, "DSERR_UNSUPPORTED");
             strcpy(szMsg, "No message");
             break;
-        case 0x80004005:
+        case static_cast<i32>(0x80004005):
             strcpy(szCode, "DSERR_GENERIC");
             strcpy(szMsg, "No message");
             break;
-        case 0x80040110:
+        case static_cast<i32>(0x80040110):
             strcpy(szCode, "DSERR_NOAGGREGATION");
             strcpy(szMsg, "No message");
             break;
-        case 0x8007000e:
+        case static_cast<i32>(0x8007000e):
             strcpy(szCode, "DSERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case 0x80070057:
+        case static_cast<i32>(0x80070057):
             strcpy(szCode, "DSERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case 0x8878000a:
+        case static_cast<i32>(0x8878000a):
             strcpy(szCode, "DSERR_ALLOCATED");
             strcpy(szMsg, "No message");
             break;
-        case 0x8878001e:
+        case static_cast<i32>(0x8878001e):
             strcpy(szCode, "DSERR_CONTROLUNAVAIL");
             strcpy(szMsg, "No message");
             break;
-        case 0x88780032:
+        case static_cast<i32>(0x88780032):
             strcpy(szCode, "DSERR_INVALIDCALL");
             strcpy(szMsg, "No message");
             break;
-        case 0x88780046:
+        case static_cast<i32>(0x88780046):
             strcpy(szCode, "DSERR_PRIOLEVELNEEDED");
             strcpy(szMsg, "No message");
             break;
-        case 0x88780064:
+        case static_cast<i32>(0x88780064):
             strcpy(szCode, "DSERR_BADFORMAT");
             strcpy(szMsg, "No message");
             break;
-        case 0x88780078:
+        case static_cast<i32>(0x88780078):
             strcpy(szCode, "DSERR_NODRIVER");
             strcpy(szMsg, "No message");
             break;
@@ -670,7 +670,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DSERR_BUFFERLOST");
             strcpy(szMsg, "No message");
             break;
-        case 0x887800a0:
+        case static_cast<i32>(0x887800a0):
             strcpy(szCode, "DSERR_OTHERAPPHASPRIO");
             strcpy(szMsg, "No message");
             break;

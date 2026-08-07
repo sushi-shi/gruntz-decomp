@@ -352,59 +352,59 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     sprintf(szCode, "Unknown Error Code");
     strcpy(szLine, g_emptyString);
 
-    switch (static_cast<u32>(hr)) {
-        case DIERR_UNSUPPORTED:
+    switch (hr) {
+        case static_cast<i32>(DIERR_UNSUPPORTED):
             strcpy(szCode, "DIERR_UNSUPPORTED");
             strcpy(szMsg, "The function called is not supported at this time.");
             break;
-        case DIERR_NOINTERFACE:
+        case static_cast<i32>(DIERR_NOINTERFACE):
             strcpy(szCode, "DIERR_NOINTERFACE");
             strcpy(szMsg, "The specified interface is not supported by the object.");
             break;
-        case DIERR_GENERIC:
+        case static_cast<i32>(DIERR_GENERIC):
             strcpy(szCode, "DIERR_GENERIC");
             strcpy(szMsg, "An undetermined error occured inside the DInput subsystem.");
             break;
-        case DIERR_DEVICENOTREG:
+        case static_cast<i32>(DIERR_DEVICENOTREG):
             strcpy(szCode, "DIERR_DEVICENOTREG");
             strcpy(
                 szMsg,
                 "The device or device instance or effect is not registered with DirectInput."
             );
             break;
-        case DIERR_INSUFFICIENTPRIVS:
+        case static_cast<i32>(DIERR_INSUFFICIENTPRIVS):
             strcpy(szCode, "DIERR_INSUFFICIENTPRIVS");
             strcpy(szMsg, "No message");
             break;
-        case DIERR_NOTFOUND:
+        case static_cast<i32>(DIERR_NOTFOUND):
             strcpy(szCode, "DIERR_NOTFOUND");
             strcpy(szMsg, "The requested object does not exist.");
             break;
-        case DIERR_READONLY:
+        case static_cast<i32>(DIERR_READONLY):
             strcpy(szCode, "DIERR_READONLY");
             strcpy(szMsg, "The specified property cannot be changed.");
             break;
-        case DIERR_NOTACQUIRED:
+        case static_cast<i32>(DIERR_NOTACQUIRED):
             strcpy(szCode, "DIERR_NOTACQUIRED");
             strcpy(szMsg, "The operation cannot be performed unless the device is acquired.");
             break;
-        case DIERR_OUTOFMEMORY:
+        case static_cast<i32>(DIERR_OUTOFMEMORY):
             strcpy(szCode, "DIERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case DIERR_NOTINITIALIZED:
+        case static_cast<i32>(DIERR_NOTINITIALIZED):
             strcpy(szCode, "DIERR_NOTINITIALIZED");
             strcpy(szMsg, "This object has not been initialized.");
             break;
-        case DIERR_INPUTLOST:
+        case static_cast<i32>(DIERR_INPUTLOST):
             strcpy(szCode, "DIERR_INPUTLOST");
             strcpy(szMsg, "Access to the device has been lost.  It must be re-acquired.");
             break;
-        case DIERR_INVALIDPARAM:
+        case static_cast<i32>(DIERR_INVALIDPARAM):
             strcpy(szCode, "DIERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case DIERR_BADDRIVERVER:
+        case static_cast<i32>(DIERR_BADDRIVERVER):
             strcpy(szCode, "DIERR_BADDRIVERVER");
             strcpy(
                 szMsg,
@@ -412,15 +412,15 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
                 "mismatched or incomplete driver components."
             );
             break;
-        case DIERR_ACQUIRED:
+        case static_cast<i32>(DIERR_ACQUIRED):
             strcpy(szCode, "DIERR_ACQUIRED");
             strcpy(szMsg, "The operation cannot be performed while the device is acquired.");
             break;
-        case DIERR_OLDDIRECTINPUTVERSION:
+        case static_cast<i32>(DIERR_OLDDIRECTINPUTVERSION):
             strcpy(szCode, "DIERR_OLDDIRECTINPUTVERSION");
             strcpy(szMsg, "The application requires a newer version of DirectInput.");
             break;
-        case DIERR_ALREADYINITIALIZED:
+        case static_cast<i32>(DIERR_ALREADYINITIALIZED):
             strcpy(szCode, "DIERR_ALREADYINITIALIZED");
             strcpy(szMsg, "This object is already initialized.");
             break;
