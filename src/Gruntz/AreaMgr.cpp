@@ -240,7 +240,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        CObject* val;
+        CObject* val = NULL;
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
@@ -321,7 +321,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        void* val;
+        void* val = NULL;
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);
@@ -389,7 +389,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     POSITION pos = srcMap->GetStartPosition();
     while (pos != NULL) {
         CString key;
-        void* val;
+        void* val = NULL;
         srcMap->GetNextAssoc(pos, key, val);
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* found = m_spawnEntryList.FindByName(key);

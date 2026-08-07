@@ -24,7 +24,4 @@ public:
 };
 SIZE(0x528);
 
-extern "C" const i32 g_directionClockwiseTable[27];
-extern "C" const i32 g_directionCounterclockwiseTable[27];
-
 #endif // GRUNTZ_GRUNTZ_CDEMO_H

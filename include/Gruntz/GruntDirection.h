@@ -50,11 +50,11 @@ class CGameObject;
 GZ_ENUM_FORWARD(SerialMode);
 GZ_ENUM_FORWARD(LogicTypeId);
 
+// An aggregate: the rotation tables in DirCellMethods.cpp are statically
+// initialised arrays of it, and RotateClockwise assigns a whole element onto
+// the cell (retail's three-load-then-three-store block is the implicit
+// memberwise operator=, not field-by-field stores).
 struct CTriRecord {
-    CTriRecord() {}
-    CTriRecord(i32 row_, i32 column_, GruntDirection direction_)
-        : row(row_), column(column_), direction(direction_) {}
-
     i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
 
     i32 row;
@@ -65,8 +65,11 @@ SIZE(0xc);
 
 struct GruntDirectionCell : public CTriRecord {
     GruntDirectionCell() {}
-    GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_)
-        : CTriRecord(row_, column_, direction_) {}
+    GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_) {
+        row = row_;
+        column = column_;
+        direction = direction_;
+    }
 
     void RotateClockwise(i32 steps);
     void RotateCounterclockwise(i32 steps);

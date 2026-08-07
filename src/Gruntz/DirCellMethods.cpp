@@ -39,13 +39,31 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Indexed by row * 3 + column over the 3x3 neighbour grid; each element is the
+// cell one step around the ring from that one.
 DATA(0x0020d008)
-const i32 g_directionClockwiseTable[27] = {
-    0, 1, 1, 0, 2, 2, 1, 2, 3, 0, 0, 8, 1, 1, 0, 2, 2, 4, 1, 0, 7, 2, 0, 6, 2, 1, 5,
+const CTriRecord g_directionClockwiseTable[9] = {
+    {0, 1, DIR_NORTH},
+    {0, 2, DIR_NORTHEAST},
+    {1, 2, DIR_EAST},
+    {0, 0, DIR_NORTHWEST},
+    {1, 1, DIR_CENTER},
+    {2, 2, DIR_SOUTHEAST},
+    {1, 0, DIR_WEST},
+    {2, 0, DIR_SOUTHWEST},
+    {2, 1, DIR_SOUTH},
 };
 DATA(0x0020d078)
-const i32 g_directionCounterclockwiseTable[27] = {
-    1, 0, 7, 0, 0, 8, 0, 1, 1, 2, 0, 6, 1, 1, 0, 0, 2, 2, 2, 1, 5, 2, 2, 4, 1, 2, 3,
+const CTriRecord g_directionCounterclockwiseTable[9] = {
+    {1, 0, DIR_WEST},
+    {0, 0, DIR_NORTHWEST},
+    {0, 1, DIR_NORTH},
+    {2, 0, DIR_SOUTHWEST},
+    {1, 1, DIR_CENTER},
+    {0, 2, DIR_NORTHEAST},
+    {2, 1, DIR_SOUTH},
+    {2, 2, DIR_SOUTHEAST},
+    {1, 2, DIR_EAST},
 };
 
 DATA(0x0022c450)
@@ -63,28 +81,26 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction == b->direction;
 }
 
-// @early-stop
 RVA(0x0003c850, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {
         do {
-            const i32* e = &g_directionClockwiseTable[(row * 3 + column) * 3];
-            row = e[0];
-            column = e[1];
-            direction = static_cast<GruntDirection>(e[2]);
+            CTriRecord next = g_directionClockwiseTable[row * 3 + column];
+            row = next.row;
+            column = next.column;
+            direction = next.direction;
         } while (--steps);
     }
 }
 
-// @early-stop
 RVA(0x0003c8a0, 0x38)
 void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     if (steps > 0) {
         do {
-            const i32* e = &g_directionCounterclockwiseTable[(row * 3 + column) * 3];
-            row = e[0];
-            column = e[1];
-            direction = static_cast<GruntDirection>(e[2]);
+            CTriRecord next = g_directionCounterclockwiseTable[row * 3 + column];
+            row = next.row;
+            column = next.column;
+            direction = next.direction;
         } while (--steps);
     }
 }
