@@ -51,7 +51,7 @@ static inline i32 RegisterActionName() {
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
             if (nodes != NULL) {
-                nodes->CString::~CString();
+                nodes->CString::CString();
             }
             nodes++;
         }
@@ -153,7 +153,7 @@ void CFortressFlag::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -327,7 +327,7 @@ void CParticlez::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

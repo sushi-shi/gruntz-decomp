@@ -342,7 +342,7 @@ void CWarpStonePad::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -388,7 +388,7 @@ void CTileTriggerSwitch::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -442,7 +442,7 @@ void CTileTrigger::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -489,7 +489,7 @@ void CBrickz::RegisterActs() {
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -585,7 +585,7 @@ void CCheckpointTrigger::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -604,7 +604,7 @@ void CCheckpointTrigger::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -791,7 +791,7 @@ void CTileTriggerTransition::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

@@ -160,7 +160,7 @@ void CKitchenSlime::RegisterType() {
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
             if (nodes != NULL) {
-                nodes->~CString();
+                nodes->CString::CString();
             }
             nodes++;
         }

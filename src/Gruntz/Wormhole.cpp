@@ -236,7 +236,7 @@ void RegisterLogic() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -256,7 +256,7 @@ void RegisterLogic() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -498,7 +498,7 @@ void CTeleporter_RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -518,7 +518,7 @@ void CTeleporter_RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

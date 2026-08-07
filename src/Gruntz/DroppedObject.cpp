@@ -302,7 +302,7 @@ void CObjectDropper::RegisterActs() {
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -496,7 +496,7 @@ void CDroppedObject::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -516,7 +516,7 @@ void CDroppedObject::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }
@@ -677,7 +677,7 @@ void CDroppedObjectShadow::RegisterActs() {
         CString* list = ActNameSlots();
         while (cnt-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

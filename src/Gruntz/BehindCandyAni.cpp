@@ -92,7 +92,7 @@ void CBehindCandyAni::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

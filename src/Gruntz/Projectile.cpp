@@ -322,7 +322,7 @@ void CProjectile::RegisterType() {
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
             if (nodes != NULL) {
-                nodes->~CString();
+                nodes->CString::CString();
             }
             nodes++;
         }
@@ -912,7 +912,7 @@ void CTimeBomb::RegisterActs() {
         CString* list = ActNameSlots();
         while (n-- != 0) {
             if (list != NULL) {
-                list->CString::~CString();
+                list->CString::CString();
             }
             list++;
         }

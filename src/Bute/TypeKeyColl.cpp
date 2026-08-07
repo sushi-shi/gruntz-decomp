@@ -873,7 +873,7 @@ static inline void FreeNodes() {
     i32 cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (nodes != NULL) {
-            nodes->~CString();
+            nodes->CString::CString();
         }
         ++nodes;
     }

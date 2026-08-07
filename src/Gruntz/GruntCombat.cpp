@@ -331,7 +331,7 @@ static inline CString* ActNameSlots() {
             CString* list = ActNameSlots();                                                        \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
-                    list->CString::~CString();                                                     \
+                    list->CString::CString();                                                      \
                 }                                                                                  \
                 list++;                                                                            \
             }                                                                                      \

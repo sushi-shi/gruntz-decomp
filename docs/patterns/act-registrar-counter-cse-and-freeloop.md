@@ -76,11 +76,28 @@ i32 n = g_typeColl.m_grown;
 CString* list = ActNameSlots();
 while (n-- != 0) {
     if (list != 0) {
-        list->CString::~CString();
+        list->CString::CString();
     }
     list++;
 }
 ```
+
+**The loop CONSTRUCTS. It is not a "free loop" - that name is a misreading.** It is the tail of
+`_zdvec::IndexToPtr` (see
+[zdvec-indextoptr-is-zvec-plus-ctor-loop.md](zdvec-indextoptr-is-zvec-plus-ctor-loop.md)), which
+default-constructs the slots `GrowTo` just `memset`-zeroed. Every retail body in this family calls
+`??0CString@@QAE@XZ` @0x1b9b93 and **none** calls `??1CString@@QAE@XZ` @0x1b9cde - verified by
+scanning each registrar's `call rel32` targets (2026-08-08, 54 sites / 35 functions).
+
+**And objdiff cannot see the difference, so 42 of them were EXACT while wrong.** The base obj
+carried `U ??1CString@@QAE@XZ` against the delinked target's `U ??0CString@@QAE@XZ` and
+`?RegisterActs@CLightFx@@SAXXZ` still scored 100.00%. Correcting all 54 sites moved overall fuzzy
+by 0.00% and the exact count by +1 - byte-neutral, as the CRT carve-out makes it. It is still a
+live crash in a candidate link: MFC's `~CString` computes `(CStringData*)m_pchData - 1` and frees
+it, and on a freshly zeroed slot that is `free(0xfffffff0)`. A textbook
+[hundred-percent-can-still-be-wrong] case: the score is blind here, so the *retail call target* is
+the only oracle. `p->CString::CString()` and `new (p) CString()` are byte-identical (measured);
+prefer whichever the file already includes headers for.
 
 (Same idiom as [`test-old-value-decrement-loop-while-postdec.md`](test-old-value-decrement-loop-while-postdec.md);
 this file records where the family lives and that it is the *registrar* archetype.)

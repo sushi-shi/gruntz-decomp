@@ -41,7 +41,7 @@ static inline i32 RegisterActionName() {
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
             if (nodes != NULL) {
-                nodes->CString::~CString();
+                nodes->CString::CString();
             }
             nodes++;
         }
