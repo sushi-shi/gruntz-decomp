@@ -166,13 +166,13 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float inv = g_one - tt;
             float fr = static_cast<float>((startPct * static_cast<i32>(p->peRed) / 100)) * inv
                        + static_cast<float>(p->peRed) * tt;
-            i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
+            u8 rn = static_cast<u8>((fr < g_255 ? fr : g_255));
             float fg = static_cast<float>((startPct * static_cast<i32>(p->peGreen) / 100)) * inv
                        + static_cast<float>(p->peGreen) * tt;
-            i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
+            u8 gn = static_cast<u8>((fg < g_255 ? fg : g_255));
             float fb = static_cast<float>((startPct * static_cast<i32>(p->peBlue) / 100)) * inv
                        + static_cast<float>(p->peBlue) * tt;
-            i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
+            u8 bn = static_cast<u8>((fb < g_255 ? fb : g_255));
             ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
 
@@ -188,13 +188,13 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float inv = g_one - uu;
             float fr = static_cast<float>(p->peRed) * inv
                        + static_cast<float>(p->peRed) * static_cast<float>(endPct) * g_p01 * uu;
-            i32 rn = static_cast<i32>((fr < g_255 ? fr : g_255));
+            u8 rn = static_cast<u8>((fr < g_255 ? fr : g_255));
             float fg = static_cast<float>(p->peGreen) * inv
                        + static_cast<float>(p->peGreen) * static_cast<float>(endPct) * g_p01 * uu;
-            i32 gn = static_cast<i32>((fg < g_255 ? fg : g_255));
+            u8 gn = static_cast<u8>((fg < g_255 ? fg : g_255));
             float fb = static_cast<float>(p->peBlue) * inv
                        + static_cast<float>(p->peBlue) * static_cast<float>(endPct) * g_p01 * uu;
-            i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
+            u8 bn = static_cast<u8>((fb < g_255 ? fb : g_255));
             ramp[nA + k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }
