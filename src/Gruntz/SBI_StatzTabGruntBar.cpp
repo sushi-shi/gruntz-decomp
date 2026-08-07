@@ -121,13 +121,15 @@ i32 CSBI_StatzTabGruntBar::Render() {
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
+    i32 row = m_unitRow;
+    i32 col = m_unitCol;
     CTriggerMgr* table = g_gameReg->m_cmdGrid;
-    CGrunt* unit = table->m_grid[m_unitCol + TM_GRID_COLS * m_unitRow];
+    CGrunt* unit = table->m_grid[col + TM_GRID_COLS * row];
 
     i32 statusVal;
     i32 abilityVal;
-    i32 overrideVal;
     i32 selectVal;
+    i32 overrideVal;
     i32 timerVal;
 
     if (unit == NULL) {
@@ -161,7 +163,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
             if (level > PICKUP_EQUIPPABLE_LAST) {
                 abilityVal = IDX(unit->m_toolId);
             }
-            if (cap == PICKUP_BRICK) {
+            if (abilityVal == IDX(PICKUP_BRICK)) {
                 abilityVal = IDX(unit->m_brickPickupType) + 0x11;
             }
         }
@@ -171,7 +173,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         }
 
         if (m_selectKey != NULL) {
-            selectVal = table->SelectionListFind(m_unitCol, m_unitRow);
+            selectVal = table->SelectionListFind(row, col);
         }
 
         timerVal = m_timerValue;
