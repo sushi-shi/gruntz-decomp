@@ -1264,14 +1264,14 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_cellFlag, 0xf0);
     ar->Write(m_gruntzExitedByPlayer, 0x10);
     ar->Write(m_gruntzLostByPlayer, 0x10);
-    u32 cnt = static_cast<u32>(m_byteArr.GetSize());
-    ar->Write(&cnt, sizeof(cnt));
-    for (u32 i = 0; i < cnt; i++) {
+    u32 n = static_cast<u32>(m_byteArr.GetSize());
+    ar->Write(&n, sizeof(n));
+    for (u32 i = 0; i < n; i++) {
         u8 b = m_byteArr.GetData()[i];
         ar->Write(&b, sizeof(b));
     }
-    i32 flag24c = m_recList.GetCount();
-    ar->Write(&flag24c, sizeof(flag24c));
+    n = static_cast<u32>(m_recList.GetCount());
+    ar->Write(&n, sizeof(n));
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         ar->Write(m_recList.GetNext(pos), 8);
@@ -1279,8 +1279,8 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     CPtrList* list = m_selLists;
     i32 k = 10;
     do {
-        i32 cnt2 = list->GetCount();
-        ar->Write(&cnt2, sizeof(cnt2));
+        n = static_cast<u32>(list->GetCount());
+        ar->Write(&n, sizeof(n));
         POSITION selPos = list->GetHeadPosition();
         while (selPos != NULL) {
             ar->Write(list->GetNext(selPos), 8);
@@ -1289,30 +1289,30 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
         k--;
     } while (k != 0);
     CWwdGameObjectA* goal = m_goal;
-    i32 goalId = 0;
+    i32 objId = 0;
     if (goal != NULL) {
-        goalId = goal->m_objectId;
+        objId = goal->m_objectId;
     }
-    ar->Write(&goalId, sizeof(goalId));
+    ar->Write(&objId, sizeof(objId));
     CWarlord* ov = m_pendingFx;
-    i32 ovId = 0;
+    objId = 0;
     if (ov != NULL && ov->m_object != NULL) {
-        ovId = ov->m_object->m_objectId;
+        objId = ov->m_object->m_objectId;
     }
-    ar->Write(&ovId, sizeof(ovId));
+    ar->Write(&objId, sizeof(objId));
     ar->Write(m_reserved274, 0x10);
-    i32 cntC = m_baseList.GetCount();
-    ar->Write(&cntC, sizeof(cntC));
+    n = static_cast<u32>(m_baseList.GetCount());
+    ar->Write(&n, sizeof(n));
     pos = m_baseList.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (obj == NULL) {
             return 0;
         }
-        i32 oid = obj->m_object->m_objectId;
+        objId = obj->m_object->m_objectId;
         void* found = 0;
-        MapLookupById(lvl->m_childGroup->m_map48, oid, found);
-        ar->Write(&oid, sizeof(oid));
+        MapLookupById(lvl->m_childGroup->m_map48, objId, found);
+        ar->Write(&objId, sizeof(objId));
     }
     i32 hasOv = (m_overlay != NULL) ? 1 : 0;
     ar->Write(&hasOv, sizeof(hasOv));
