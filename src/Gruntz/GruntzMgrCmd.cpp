@@ -70,9 +70,9 @@
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15]    \
-                : 0;                                                                               \
+            m_cmdGrid->m_recList.GetCount() != 1                                                   \
+                ? 0                                                                                \
+                : m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -90,9 +90,9 @@
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
         CGrunt* _cell =                                                                            \
-            m_cmdGrid->m_recList.GetCount() == 1                                                   \
-                ? m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15]    \
-                : 0;                                                                               \
+            m_cmdGrid->m_recList.GetCount() != 1                                                   \
+                ? 0                                                                                \
+                : m_cmdGrid->m_grid[m_cmdGrid->HeadRec()->m_y + m_cmdGrid->HeadRec()->m_x * 15];   \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_curPlayer)                                                   \
@@ -800,63 +800,49 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_MULTI_JOIN:
             m_gameMode = GAMEMODE_MULTIPLAYER;
             g_hostServicesMode = 0;
-            if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_MULTI, 1, 0, 0)
+                && !TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x424);
             }
-            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                return 1;
-            }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x424);
             return 1;
         case CMD_MULTI_HOST:
             m_gameMode = GAMEMODE_MULTIPLAYER;
             g_hostServicesMode = 1;
-            if (TransitionState(GAMESTATE_MULTI, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_MULTI, 1, 0, 0)
+                && !TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x425);
             }
-            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                return 1;
-            }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x425);
             return 1;
         case CMD_MAIN_MENU:
-            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x426);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x426);
             return 1;
         case CMD_SHOW_CREDITS:
-            if (TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, 1, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, 1, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x427);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x427);
             return 1;
         case CMD_SHOW_BOOTY:
-            if (TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, 1, lParam)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, 1, lParam)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x428);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x428);
             return 1;
         case CMD_NEXT_STATE:
-            if (SwitchToNextState()) {
-                return 1;
+            if (!SwitchToNextState()) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x429);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x429);
             return 1;
         case CMD_SHOW_HELP:
-            if (TransitionState(GAMESTATE_CREDITS, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_CREDITS, 1, 0, 0)
+                && !TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42a);
             }
-            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
-                return 1;
-            }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x42a);
             return 1;
         case CMD_ATTRACT:
-            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42b);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x42b);
             return 1;
         case CMD_RETURN_TO_ATTRACT:
             if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
@@ -866,20 +852,17 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_SHOW_STATE0:
-            if (TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42d);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x42d);
             return 1;
         case CMD_SHOW_STATE07:
-            if (TransitionState(GAMESTATE_DEMO, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_DEMO, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42e);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x42e);
             return 1;
         case CMD_PAUSE_TOGGLE: {
-            GameStateId st = m_curState->Update();
-            if (st == GAMESTATE_PLAY || st == GAMESTATE_MULTI) {
+            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
                 CPlay* ps = static_cast<CPlay*>(m_curState);
                 if (ps->m_inGame) {
                     return 1;
@@ -902,8 +885,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         }
         case CMD_FINISH_LEVEL: {
-            GameStateId st = m_curState->Update();
-            if (st == GAMESTATE_PLAY || st == GAMESTATE_MULTI) {
+            if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
                 i32 f = m_frameGate ^ 1;
                 m_frameGate = f;
                 FinishLevel(f, 0);
@@ -914,10 +896,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!CheckPlayState()) {
                 return 1;
             }
-            if (static_cast<CPlay*>(m_curState)->DrawWorldPresent()) {
-                return 1;
+            if (!static_cast<CPlay*>(m_curState)->DrawWorldPresent()) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x42f);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x42f);
             return 1;
         case CMD_LOBBY_RESET:
             m_lobbyProbed = 0;
@@ -930,11 +911,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_curState->CompleteLevel()) {
                 return 1;
             }
-            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
-                PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
                 return 1;
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
+            PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_CAPTURE_WORLD:
             if (g_cdPromptResult) {
@@ -943,10 +924,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             CaptureWorldFile();
             return 1;
         case CMD_NEXT_LEVEL:
-            if (GoToNextLevel()) {
-                return 1;
+            if (!GoToNextLevel()) {
+                ReportError(IDX(IDS_CHANGE_LEVEL), 0x431);
             }
-            ReportError(IDX(IDS_CHANGE_LEVEL), 0x431);
             return 1;
         case CMD_PREV_LEVEL:
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
@@ -956,25 +936,27 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             // fall through
         case CMD_RETURN_TO_MENU:
             m_curState->m_notifyLatch = 1;
-            if (TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x432);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x432);
             return 1;
         case CMD_QUIT:
             DelayedQuit();
             return 1;
         case CMD_SHOW_BOOTY_STATE: {
-            GameStateId st = m_curState->Update();
-            if (st == GAMESTATE_HELP || st == GAMESTATE_BOOTY_OVER_CURRENT
-                || st == GAMESTATE_RESERVED_0F || st == GAMESTATE_SPLASH || st == GAMESTATE_CREDITS
-                || st == GAMESTATE_BOOTY || st == GAMESTATE_MULTIBOOTY || st == GAMESTATE_MULTI) {
+            if (m_curState->Update() == GAMESTATE_HELP
+                || m_curState->Update() == GAMESTATE_BOOTY_OVER_CURRENT
+                || m_curState->Update() == GAMESTATE_RESERVED_0F
+                || m_curState->Update() == GAMESTATE_SPLASH
+                || m_curState->Update() == GAMESTATE_CREDITS
+                || m_curState->Update() == GAMESTATE_BOOTY
+                || m_curState->Update() == GAMESTATE_MULTIBOOTY
+                || m_curState->Update() == GAMESTATE_MULTI) {
                 return 1;
             }
-            if (TransitionState(GAMESTATE_HELP, 1, 1, 0)) {
-                return 1;
+            if (!TransitionState(GAMESTATE_HELP, 1, 1, 0)) {
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x433);
             }
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x433);
             return 1;
         }
         case CMD_CONFIG_SETTINGS: {
@@ -999,8 +981,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             m_musicEnabled = v;
             i32 pl = CheckPlayState();
             if (!pl) {
-                GameStateId st = m_curState->Update();
-                if (st != GAMESTATE_CREDITS_OVER_CURRENT && st != GAMESTATE_MENU) {
+                if (m_curState->Update() != GAMESTATE_CREDITS_OVER_CURRENT
+                    && m_curState->Update() != GAMESTATE_MENU) {
                     return 1;
                 }
             }

@@ -116,6 +116,7 @@ i32 CSBI_StatzTabGruntBar::SerializeFields(
             GS_IDXREF(m_statusGlyph);
             GS_IDXREF(m_statusGlyphLatched);
             s->Read(&m_statusValue, sizeof(m_statusValue));
+            GS_IDXREF(m_abilityGlyph);
             GS_IDXREF(m_abilityGlyphLatched);
             s->Read(&m_abilityValue, sizeof(m_abilityValue));
             GS_IDXREF(m_overrideGlyph);
