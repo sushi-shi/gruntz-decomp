@@ -27,8 +27,10 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         o->m_flags |= 0x20000;
     }
     if (m_object->m_layer != NULL) {
-        if (m_object->m_layer->m_width >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_height >= g_buteMgr.GetInt("World", "BigActHeight")) {
+        i32 bigW = m_object->m_layer->m_width;
+        i32 bigH;
+        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
+            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
             if (m_object->m_animWorker != NULL) {
                 m_object->m_animWorker->m_flags &= ~6;
                 m_object->m_animWorker->m_flags |= 1;
