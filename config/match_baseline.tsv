@@ -559,7 +559,7 @@ battlezmapconfig	?Clear@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	2	7fb22e52e6
 battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	83.8500	83.8500	2	2712e1f9b2ce	0x2b340
 battlezmapconfig	?Deserialize@CBattlezMapConfig@@QAEHPAX@Z	99.5079	99.5079	8	5852237b93d0	0x2b950
 battlezmapconfig	?EnterDefenderMode@CBattlezMapConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	3	6cd232e42259	0x2c0a0
-battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	77.4911	77.4911	3	e7f52db8f685	0x2ab80
+battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	77.4911	77.4821	3	e7f52db8f685	0x2ab80
 battlezmapconfig	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	6	2ccf4ef32a9b	0x25ca0
 battlezmapconfig	?GetScreenPos@CUserLogic@@QAEXPAUCoord@@@Z	100.0000	100.0000	2	d56f18e1eda3	0x29a50
 battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	84.8719	84.8719	3	7b129dbb113c	0x2ae00
@@ -587,7 +587,7 @@ battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	95.3292	95.3292	7	43b0ba2e
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	81.7946	81.7946	5	fc9103c479ff	0x26470
 battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	84.3411	84.3411	6	0cb51ee16ca1	0x267c0
 battlezmapconfig	?TrySeedSpawnAt@CBattlezMapConfig@@QAEHHH@Z	94.5918	94.5918	5	6dcff90f5825	0x30990
-battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	69.5323	69.5323	5	fff8312f12ba	0x29b40
+battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.6586	72.6586	6	9c6a7f969852	0x29b40
 battlezrepath	?ProbeUnoccupiedAt@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	2	9400f85d4e30	0x35210
 battlezrepath	?RepathToFreeCell@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	77.7977	77.7977	2	07eca22b1ca3	0x350d0
 battlezreserveplace	?ForcePlaceFromReserve@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	2	eb3fc00f4091	0x35550
@@ -1603,7 +1603,7 @@ fader	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	1	510ef74d34da	0x17f330
 fader	??_GCFader@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e480
 fader	??_GCFaderMesh@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e970
 fader	??_GCRezBufferObject@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17f310
-fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	67.8608	67.8608	11	b16963893569	0x17ea00
+fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	68.2987	68.2987	12	c570083274a7	0x17ea00
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120
@@ -2132,7 +2132,7 @@ gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	6	49bf4fc7f565
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	6	bf3f90a0203c	0x517b0
 gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	52.4666	52.4666	17	930f90366768	0x51c00
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	92.9888	92.9888	4	1ca7e8886b17	0x52fb0
-grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	69.5630	69.5630	5	23b48fb4b014	0x32ce0
+grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	67.2829	67.2829	6	9223a54d3025	0x32ce0
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	97.8000	97.8000	7	3b800abf637f	0x7f350
 grunttoysprite	??1CGruntToySprite@@UAE@XZ	100.0000	100.0000	2	b4eee91c8f6d	0x122b0
 grunttoysprite	??_GCGruntToySprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7a936a1bc0ef	0x12280
@@ -3393,7 +3393,7 @@ projectile	?FireActivation@CProjectile@@UAEXH@Z	100.0000	100.0000	2	7300269851f8
 projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	2	3479a2c0846c	0xe1830
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	100.0000	100.0000	19	f3a6be2a4169	0xe2190
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	11	540ccdb30744	0xe1e60
-projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	66.3080	66.3080	1	587db7447a8c	0xdf050
+projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	69.8768	69.8768	2	c349f1bf1fe7	0xdf050
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	8	8c3a416c1b5a	0xe1990
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	11	37a1fe7a94a9	0xdfb00
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	95.3731	95.3731	22	4fa935a6826a	0xe0b10
@@ -3600,7 +3600,7 @@ sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAXHHW4WarpStoneFragment@@@Z	91.3286	91.32
 sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	42f4020f7719	0x106900
 sbi_rectonly	?InsertPtr@CStatusBarMgr@@QAEHHH@Z	83.2075	83.2075	7	13b70d6861ec	0x108410
 sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	93.6625	93.6625	8	749881a93f0f	0xfdc00
-sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	80.3320	80.3320	13	31814ba20a3d	0x106bb0
+sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	83.5092	83.5092	14	fa34bbd429e7	0x106bb0
 sbi_rectonly	?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z	99.8165	99.8165	11	e34004733cb3	0xffb20
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	71.7976	71.7976	8	0261e6f629c3	0x1055b0
 sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.8246	11	dc6326cea168	0xfe6b0
@@ -3775,7 +3775,7 @@ shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEEN
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	5	07578596cabf	0x14ded0
 shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	85.0686	85.0686	4	a7b1257d6a2c	0x14e9f0
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	86.8561	86.8561	11	361c094728dc	0x14eef0
-shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	63.7431	63.7431	4	9750b67c659a	0x14e540
+shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	63.4679	63.4679	5	bafb081d8431	0x14e540
 shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	67.5106	67.5106	4	48f02d8cb77a	0x14e830
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	82e0fd84636f	0x14ede0
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	ab2228634a41	0x14dec0
