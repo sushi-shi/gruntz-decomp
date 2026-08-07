@@ -312,9 +312,6 @@ RVA(0x0010d510, 0xf1)
 i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 // @early-stop
-// The vptr stamp and the body's first member re-read are transposed. Every body
-// spelling is byte-identical (named local for the receiver, explicit read-modify-
-// write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;

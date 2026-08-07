@@ -32,9 +32,6 @@ RVA_COMPGEN(0x00010510, 0x1e, ??_GCSingleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010540, 0x44, ??1CSingleAnimation@@UAE@XZ)
 
 // @early-stop
-// The vptr stamp and the body's first member re-read are transposed. Every body
-// spelling is byte-identical (named local for the receiver, explicit read-modify-
-// write, this->, a local for the flag word), as is the TU-state probe.
 RVA(0x000ae7f0, 0x13d)
 CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;

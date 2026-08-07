@@ -6195,6 +6195,9 @@ i32 CPlay::DrawLevelInfoText() {
 }
 
 // @early-stop
+// Register allocation: cl keeps g_gameReg in ebp for the whole function where
+// retail keeps the &m_placedObjectCells[blockIdx] cursor there and re-reads the
+// global at each of its three uses. 200 permuter variants all land on this shape.
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
@@ -6206,10 +6209,12 @@ i32 CPlay::ClearPlacedObjects() {
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             i32 occupantId = 0;
-            if (static_cast<u32>(obj->m_x) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(obj->m_y) < static_cast<u32>(grid->m_height)) {
-                i32 stride = obj->m_x * 7;
-                i32* row = grid->m_rowInts[obj->m_y];
+            i32 cellX = obj->m_x;
+            i32 cellY = obj->m_y;
+            if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
+                i32 stride = cellX * 7;
+                i32* row = grid->m_rowInts[cellY];
                 occupantId = row[stride + 2];
             }
             i32 stillPlaced = 0;
@@ -6226,15 +6231,17 @@ i32 CPlay::ClearPlacedObjects() {
                 if (result == NULL) {
 
                     CMapMgr* g = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(obj->m_x) < static_cast<u32>(g->m_width)
-                        && static_cast<u32>(obj->m_y) < static_cast<u32>(g->m_height)) {
-                        i32 stride = obj->m_x * 7;
-                        i32* row = g->m_rowInts[obj->m_y];
+                    i32 freeX = obj->m_x;
+                    i32 freeY = obj->m_y;
+                    if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
+                        && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
+                        i32 stride = freeX * 7;
+                        i32* row = g->m_rowInts[freeY];
                         row[stride + 2] = 0;
-                        i32* row2 = g->m_rowInts[obj->m_y];
+                        i32* row2 = g->m_rowInts[freeY];
                         row2[stride] &= 0xfffbffff;
                     }
-                    rec->RemoveAt(i, 1);
+                    m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                     CoordPoolNode* node = g_coordPool.NodeOf(obj);
                     node->m_next = g_coordPool.m_freeHead;

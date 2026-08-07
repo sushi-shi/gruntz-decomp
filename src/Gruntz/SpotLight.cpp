@@ -50,8 +50,6 @@ RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 // @early-stop
-
-// @early-stop
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;

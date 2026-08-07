@@ -535,6 +535,9 @@ void RegisterIconState() {
     *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
+// @early-stop
+// Scheduling: cl issues the m_object load and the final vptr stamp ahead of the
+// m_startClock/m_countdown zero stores; retail issues them after.
 RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_startClock.m_v = 0;
