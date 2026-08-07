@@ -597,7 +597,9 @@ i32 CGrunt::StartBombGruntRun() {
     m_moveTile.m_y = dy;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_codeM);
-    m_timePerTile = g_buteMgr.GetIntDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
+    m_timePerTile = static_cast<i32>(g_buteMgr.GetDwordDef(
+        DATA_COMPGEN(0x0020dbd0, bombGruntButeSection, "BOMBGRUNT"), s_RunningTimePerTile, 0x64
+    ));
     m_bombRunActive = 1;
     {
         CWwdGameObjectA* h = m_object;
