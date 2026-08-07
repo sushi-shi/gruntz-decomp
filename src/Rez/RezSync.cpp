@@ -52,7 +52,6 @@
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
-#include <strstrea.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/ScreenGeometry.h>
@@ -60,6 +59,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <strstrea.h>
 
 DATA(0x002455b4)
 i32 g_disableAudio = 0;

@@ -24,10 +24,10 @@
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
 #include <Rez/RezTypeTag.h>
-#include <strstrea.h>
 
 #include <ddraw.h>
 #include <string.h>
+#include <strstrea.h>
 
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {

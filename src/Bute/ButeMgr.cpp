@@ -9,13 +9,13 @@
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/BlowfishApi.h>
 #include <EmptyString.h>
-#include <strstrea.h>
 #include <Wap32/CoordUnset.h>
 
 #include <float.h>
 #include <fstream.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strstrea.h>
 
 DATA(0x0021cf40)
 i16 g_charClass[256] = {

@@ -9,9 +9,9 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
-#include <strstrea.h>
 
 #include <stddef.h>
+#include <strstrea.h>
 
 DATA(0x001f04f8)
 const double g_motionNegHalf = -0.5;
