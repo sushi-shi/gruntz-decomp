@@ -24,6 +24,8 @@ struct CFaderArray : public CObject {
 
     CFaderArray();
     i32 Add(CFader* fader);
+    i32 GetSize() const;
+    void RemoveAt(i32 index, i32 count = 1);
     void SetAtGrow(i32 index, CFader* fader);
     void SetSize(i32 size, i32 growBy = -1);
 };
@@ -46,6 +48,19 @@ inline i32 CFaderArray::Add(CFader* fader) {
     i32 index = m_nSize;
     SetAtGrow(index, fader);
     return index;
+}
+
+inline i32 CFaderArray::GetSize() const {
+    return m_nSize;
+}
+
+inline void CFaderArray::RemoveAt(i32 index, i32 count) {
+    i32 moveCount = m_nSize - (index + count);
+    CFader** dst = m_pData + index;
+    if (moveCount) {
+        memcpy(dst, m_pData + (index + count), moveCount * sizeof(CFader*));
+    }
+    m_nSize -= count;
 }
 
 inline void CFaderArray::SetAtGrow(i32 index, CFader* fader) {

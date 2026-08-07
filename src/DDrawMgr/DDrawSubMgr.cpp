@@ -128,9 +128,11 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
-    if (m_10map.Lookup(key, val)) {
+    CDDrawWorker* w;
+    m_10map.Lookup(key, val);
+    if ((w = static_cast<CDDrawWorker*>(val)) != NULL) {
         m_10map.RemoveKey(key);
-        delete (static_cast<CDDrawWorker*>(val));
+        delete w;
     }
 }
 
@@ -185,16 +187,14 @@ i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
 RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
+    m_pixelValue = 0;
     volatile LONG* pHi = &m_dirty.m_rect.left;
     volatile i32* pLo = &m_dirty.m_armed;
-    m_pixelValue = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_screenX = COORD_UNSET;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
     m_id = -1;
     m_flags = 0;
     m_ownerCtx = NULL;
@@ -243,16 +243,14 @@ LoadableClassId CDDrawWorkerBase::GetClassId() {
 RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
+    m_frameValue = 0;
     volatile LONG* pHi = &m_dirty.m_rect.left;
     volatile i32* pLo = &m_dirty.m_armed;
-    m_frameValue = 0;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     *pHi = static_cast<LONG>(0x80000000);
     *pLo = -1;
     m_screenX = COORD_UNSET;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
     m_id = -1;
     m_flags = 0;
     m_ownerCtx = NULL;
@@ -674,17 +672,17 @@ i32 CDDrawSubMgrLeafScan::ScanTree(CSymTab* tree, const char* prefix, const char
     return count;
 }
 
-// @early-stop
 RVA(0x001580b0, 0xf6)
 i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     if (m_emitGate != 0) {
         return 0;
     }
-    CString key;
-    void* val = 0;
     POSITION pos = m_cues.GetStartPosition();
     i32 sum = 0;
+    void* val = 0;
+    CString key;
     while (pos != NULL) {
+        val = 0;
         m_cues.GetNextAssoc(pos, key, val);
         if (val != NULL) {
             if (str == NULL || *str == 0) {
@@ -1090,40 +1088,46 @@ void CDDrawSubMgrPages::ClearAllPages(u32 color) {
     }
 }
 
-// @early-stop
 RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
     CDDrawSurfaceChildA* front = m_frontPair;
-    i32 ok = 0;
-    if (front && front->m_surface) {
+    CDDrawSurfacePair* back = m_backPair;
+    i32 ok;
+    if (front == NULL) {
+        ok = 0;
+    } else {
         CDDSurface* s10 = front->m_surface;
-        CDDSurface* s14 = m_backPair->m_surface;
-        if (s14) {
-            i32 hr = s14->Blt(s10);
-            ok = (hr == 0);
+        if (s10 == NULL) {
+            ok = 0;
+        } else {
+            CDDSurface* s14 = back->m_surface;
+            if (s14 == NULL) {
+                ok = 0;
+            } else {
+                i32 hr = s14->Blt(s10);
+                ok = (hr == 0);
+            }
         }
     }
-    if (!ok) {
-        return ok;
+    if (ok && (OwnerMgr()->m_flags & 2)) {
+        m_frontPair->m_surface->Flip(0);
+        CDDrawSurfacePair* a = m_backPair;
+        CDDrawSurfaceChildA* b = m_frontPair;
+        if (b == NULL) {
+            return 0;
+        }
+        CDDSurface* bs = b->m_surface;
+        if (bs == NULL) {
+            return 0;
+        }
+        CDDSurface* as = a->m_surface;
+        if (as == NULL) {
+            return 0;
+        }
+        i32 hr2 = as->Blt(bs);
+        ok = (hr2 == 0);
     }
-    if (!(OwnerMgr()->m_flags & 2)) {
-        return ok;
-    }
-    m_frontPair->m_surface->Flip(0);
-    CDDrawSurfacePair* a = m_backPair;
-    CDDrawSurfaceChildA* b = m_frontPair;
-    if (!b) {
-        return 0;
-    }
-    CDDSurface* bs = b->m_surface;
-    if (!bs) {
-        return 0;
-    }
-    if (!a->m_surface) {
-        return 0;
-    }
-    i32 hr2 = bs->Blt(a->m_surface);
-    return hr2 == 0;
+    return ok;
 }
 
 // @early-stop

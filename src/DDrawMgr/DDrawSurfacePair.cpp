@@ -146,20 +146,20 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     i32 w = src->m_width;
     ColorDepth bpp = src->m_bitDepth;
     i32 h = src->m_height;
-    if (w <= 0 || h <= 0) {
-        return 0;
+    if (w > 0 && h > 0) {
+        m_width = w;
+        m_srcRect[2] = w;
+        m_height = h;
+        m_bpp = bpp;
+        m_srcRect[0] = 0;
+        m_srcRect[1] = 0;
+        m_srcRect[3] = h;
+        m_id = 0x63;
+        m_surface = src;
+        m_ownsSurface = 0;
+        return 1;
     }
-    m_width = w;
-    m_srcRect[2] = w;
-    m_height = h;
-    m_bpp = bpp;
-    m_srcRect[0] = 0;
-    m_srcRect[1] = 0;
-    m_srcRect[3] = h;
-    m_id = 0x63;
-    m_surface = src;
-    m_ownsSurface = 0;
-    return 1;
+    return 0;
 }
 
 RVA(0x00163e20, 0x2d)
@@ -917,10 +917,10 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = 0;
+    CAniRecordBase2* w;
     m_map1.Lookup(key, val);
 
-    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
-    if (val == NULL) {
+    if ((w = static_cast<CAniRecordBase2*>(val)) == NULL) {
         return 0;
     }
     if (m_cachedWorker == w) {

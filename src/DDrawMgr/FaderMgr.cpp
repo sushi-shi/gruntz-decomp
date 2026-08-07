@@ -226,23 +226,17 @@ RVA_COMPGEN(0x0017e160, 0x8, ??1CFxModeT1@@QAE@XZ)
 RVA(0x0017e170, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
-    i32 last = m_arr.m_nSize - 1;
+    i32 count = m_arr.GetSize();
+    i32 last = count - 1;
     if (last >= 0) {
-        CFader** w = m_arr.m_pData;
-        while (*w != pFader) {
-            i++;
-            w++;
-            if (i > last) {
+        while (i <= last) {
+            if (m_arr.m_pData[i] == pFader) {
+                m_arr.RemoveAt(i);
+                delete pFader;
                 return;
             }
+            i++;
         }
-        i32 cnt = m_arr.m_nSize - i - 1;
-        CFader** dst = &m_arr.m_pData[i];
-        if (cnt) {
-            memcpy(dst, dst + 1, cnt * sizeof(CFader*));
-        }
-        m_arr.m_nSize--;
-        delete pFader;
     }
 }
 

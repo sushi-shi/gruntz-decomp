@@ -217,7 +217,6 @@ void CMoviePlayer::Teardown() {
     ShowCursor(1);
 }
 
-// @early-stop
 RVA(0x0017c570, 0xc0)
 i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* origin, RECT* rect) {
     if (!m_initialized) {
@@ -241,18 +240,17 @@ i32 CMoviePlayer::OpenLo(const char* src, MovieLayout mode, i32 useDS, POINT* or
     }
     m_streamOpen = 1;
     i32 r = Configure(mode, useDS, origin, rect);
-    if (r) {
-        return r;
+    if (!r) {
+        if (m_srcSurf) {
+            m_srcSurf->Release();
+            m_srcSurf = NULL;
+        }
+        if (m_srcSurfRaw) {
+            m_srcSurfRaw->Release();
+            m_srcSurfRaw = NULL;
+        }
+        CloseSmacker();
     }
-    if (m_srcSurf) {
-        m_srcSurf->Release();
-        m_srcSurf = NULL;
-    }
-    if (m_srcSurfRaw) {
-        m_srcSurfRaw->Release();
-        m_srcSurfRaw = NULL;
-    }
-    CloseSmacker();
     return r;
 }
 
@@ -282,18 +280,17 @@ i32 CMoviePlayer::OpenHi(i32 srcHandle, MovieLayout mode, i32 useDS, POINT* orig
     }
     m_streamOpen = 1;
     i32 r = Configure(mode, useDS, origin, rect);
-    if (r) {
-        return r;
+    if (!r) {
+        if (m_srcSurf) {
+            m_srcSurf->Release();
+            m_srcSurf = NULL;
+        }
+        if (m_srcSurfRaw) {
+            m_srcSurfRaw->Release();
+            m_srcSurfRaw = NULL;
+        }
+        CloseSmacker();
     }
-    if (m_srcSurf) {
-        m_srcSurf->Release();
-        m_srcSurf = NULL;
-    }
-    if (m_srcSurfRaw) {
-        m_srcSurfRaw->Release();
-        m_srcSurfRaw = NULL;
-    }
-    CloseSmacker();
     return r;
 }
 
@@ -746,21 +743,20 @@ i32 CMoviePlayer::Configure(MovieLayout mode, i32 flags, POINT* origin, RECT* re
     return 1;
 }
 
-// @early-stop
 RVA(0x0017d2b0, 0xe4)
 i32 CMoviePlayer::CheckMode16() {
-    DDSURFACEDESC desc;
-    memset(&desc, 0, sizeof(desc));
-    desc.dwSize = 0x6c;
-    if (m_directDraw2->GetDisplayMode(&desc) != 0) {
-        return 0;
-    }
-
     i32 r = 0;
     i32 g = 0;
     i32 b = 0;
     i32 i;
     u32 m;
+    DDSURFACEDESC desc;
+
+    memset(&desc, 0, sizeof(desc));
+    desc.dwSize = 0x6c;
+    if (m_directDraw2->GetDisplayMode(&desc) != 0) {
+        return 0;
+    }
 
     m = desc.ddpfPixelFormat.dwRBitMask;
     for (i = 0; i < 32; i++) {

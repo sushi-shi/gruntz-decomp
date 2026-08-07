@@ -281,17 +281,19 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     return n;
 }
 
-// @early-stop
 RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
-    CString key;
-    CObject* val = 0;
     POSITION pos = m_10map.GetStartPosition();
     i32 total = 0;
+    CObject* val = 0;
+    CString key;
     while (pos != NULL) {
+        val = 0;
         m_10map.GetNextAssoc(pos, key, val);
         if (val != NULL) {
-            if (str == NULL || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
+            if (str == NULL || *str == 0) {
+                total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(raw);
+            } else if (strncmp(key, str, strlen(str)) == 0) {
                 total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(raw);
             }
         }
