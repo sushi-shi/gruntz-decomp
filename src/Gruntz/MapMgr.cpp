@@ -544,12 +544,12 @@ void CMapMgr::Drain() {
     BrickzNode* p = m_openList;
     if (p != NULL) {
         do {
-            BrickzNode* next = p->m_openNext;
-            p->m_openNext = m_colA.m_freeList;
-            p->m_openPrev = NULL;
-            m_colA.m_freeList->m_openPrev = p;
-            m_colA.m_freeList = p;
-            p = next;
+            BrickzNode* cur = p;
+            p = cur->m_openNext;
+            cur->m_openNext = m_colA.m_freeList;
+            cur->m_openPrev = NULL;
+            m_colA.m_freeList->m_openPrev = cur;
+            m_colA.m_freeList = cur;
         } while (p != NULL);
     }
     m_openList = NULL;

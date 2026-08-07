@@ -328,13 +328,13 @@ i32 CGruntPuddle::Remove() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CWwdGameObjectA* o = m_wwdObject;
     if (o->m_animCursor.m_finished != 0 && o->m_animCursor.m_frameTicksLeft == 0) {
-        if (m_placed != 0) {
-            o->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        } else {
+        if (m_placed == 0) {
             m_value = o->m_animCursor.m_animation;
             o->ApplyLookupGeometry(g_puddleSpriteKey, 0);
             m_placed = 1;
             m_pending = 0;
+        } else {
+            o->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
     }
     return 0;
