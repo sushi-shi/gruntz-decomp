@@ -158,6 +158,9 @@ i32 CFecFile::CreateArchive(const char* name) {
 }
 
 // @early-stop
+// residue is 2 insns in the name-fill loop: retail masks the modulo result
+// (`and edx,ecx` reusing the 0xff divisor) and copies it into dh, both provably
+// dead. No spelling of the byte expression reproduces them.
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     if (m_writeOpen == 0 || m_openGate == 0) {
@@ -191,11 +194,11 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         char* p = m_entry.m_name + base.GetLength();
         i32 c = FEC_ENTRY_NAME_CAPACITY - base.GetLength();
         do {
-            *p++ = static_cast<char>((rand() % FEC_RANDOM_BYTE_MODULUS));
+            *p++ = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
         } while (--c);
     }
 
-    m_entry.m_scramble = static_cast<u16>((rand() % FEC_SCRAMBLE_RANGE + FEC_SCRAMBLE_BASE));
+    m_entry.m_scramble = static_cast<u16>((Random() % FEC_SCRAMBLE_RANGE + FEC_SCRAMBLE_BASE));
     m_entry.m_payloadLen = file.Seek(0, CFile::end);
     if (file.Seek(0, CFile::begin) != 0) {
         m_nextIndex--;
@@ -207,7 +210,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     char* pad = new char[m_entry.m_scramble - FEC_SCRAMBLE_BASE];
     for (i32 i = 0; i < m_entry.m_scramble - FEC_SCRAMBLE_BASE; i++) {
-        pad[i] = static_cast<char>((rand() % FEC_RANDOM_BYTE_MODULUS));
+        pad[i] = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
     }
     m_stream.Write(pad, m_entry.m_scramble - FEC_SCRAMBLE_BASE);
     delete[] pad;
@@ -227,9 +230,11 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         if (*pCancel != 0) {
             return 0;
         }
-        u32 chunk = FEC_COPY_BUFFER_SIZE;
+        u32 chunk;
         if (copied + FEC_COPY_BUFFER_SIZE > static_cast<u32>(m_entry.m_payloadLen)) {
             chunk = m_entry.m_payloadLen - copied;
+        } else {
+            chunk = FEC_COPY_BUFFER_SIZE;
         }
         file.Read(m_copyBuf, chunk);
         m_stream.Write(m_copyBuf, chunk);
@@ -314,6 +319,11 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
 
     _chdir(cwd);
     return 1;
+}
+
+RVA(0x0017bf60, 0x5)
+i32 CFecFile::Random() {
+    return rand();
 }
 
 RVA(0x0017bf70, 0x65)

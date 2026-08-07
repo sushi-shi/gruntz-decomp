@@ -53,6 +53,8 @@ public:
     i32 AddFile(const char* name, i32* pCancel, void* pProgress);
     i32 ExtractArchive(const char* dir, i32* pCancel, void* pProgress);
 
+    i32 Random();
+
     void FecEncode(const char* src, char* dst);
     void FecDecode(const char* src, char* dst, u16 len);
 
