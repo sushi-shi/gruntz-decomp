@@ -284,8 +284,9 @@ void CFaderArray::Serialize(CArchive& ar) {
             m_nMaxSize = n;
             m_nSize = n;
         } else if (n <= m_nMaxSize) {
-            if (n > m_nSize) {
-                memset(m_pData + m_nSize, 0, (n - m_nSize) * 4);
+            CFader** pTail = &m_pData[m_nSize];
+            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
+                *pTail++ = NULL;
             }
             m_nSize = n;
         } else {
@@ -304,7 +305,10 @@ void CFaderArray::Serialize(CArchive& ar) {
             }
             CFader** nd = new CFader*[newMax];
             memcpy(nd, m_pData, m_nSize * 4);
-            memset(nd + m_nSize, 0, (n - m_nSize) * 4);
+            CFader** pTail = &nd[m_nSize];
+            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
+                *pTail++ = NULL;
+            }
             delete[] m_pData;
             m_pData = nd;
             m_nSize = n;

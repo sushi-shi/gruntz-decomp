@@ -819,8 +819,9 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             m_nMaxSize = n;
             m_nSize = n;
         } else if (n <= m_nMaxSize) {
-            if (n > m_nSize) {
-                memset(m_pData + m_nSize, 0, (n - m_nSize) * 4);
+            CShadeTable** pTail = &m_pData[m_nSize];
+            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
+                *pTail++ = NULL;
             }
             m_nSize = n;
         } else {
@@ -839,7 +840,10 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             }
             CShadeTable** nd = new CShadeTable*[newcap];
             memcpy(nd, m_pData, m_nSize * 4);
-            memset(nd + m_nSize, 0, (n - m_nSize) * 4);
+            CShadeTable** pTail = &nd[m_nSize];
+            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
+                *pTail++ = NULL;
+            }
             delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
