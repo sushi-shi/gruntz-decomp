@@ -1039,14 +1039,16 @@ i32 CDDSurface::DecodePcxEx(CDDrawPtrCollections* pal, char* path, i32 caps, u32
     return result;
 }
 
-// @early-stop
-// Same PidHeader walking-cursor prologue as DecodePcxData.
 RVA(0x00145b10, 0x1b5)
 i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u32 colorKey) {
-    PidFlags flags = hdr->flags;
-    i32 width = hdr->width;
-    i32 height = hdr->height;
-    u8* p = hdr->pixels;
+    RecordBytes<PidHeader> p;
+    p.m_rec = hdr;
+    p.m_dwords++;
+
+    PidFlags flags = static_cast<PidFlags>(*p.m_dwords++);
+    i32 width = *p.m_dwords++;
+    i32 height = *p.m_dwords++;
+    p.m_dwords += 4;
 
     if (!(width & 3) && m_width == width && m_height == height) {
         void* palette = 0;
@@ -1088,7 +1090,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
 
         u8* decoded = 0;
         if (!remap) {
-            if (!DecodeRun8(p)) {
+            if (!DecodeRun8(p.m_bytes)) {
                 return 0;
             }
         } else {
@@ -1096,7 +1098,7 @@ i32 CDDSurface::DecodePid(CDDrawPtrCollections* pal, PidHeader* hdr, u32 size, u
             if (!decoded) {
                 return 0;
             }
-            if (!RunDecode1(decoded, p, width, height)) {
+            if (!RunDecode1(decoded, p.m_bytes, width, height)) {
                 delete[] decoded;
                 return 0;
             }
