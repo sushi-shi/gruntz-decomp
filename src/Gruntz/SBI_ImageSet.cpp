@@ -34,39 +34,41 @@ i32 CSBI_ImageSet::SetupImage(
 ) {
     static_cast<void>(extra);
 
-    if (host != NULL && owner != NULL) {
-        m_owner = owner;
-        m_tab = obj;
-        m_host = host;
-        m_redrawFrames = 0;
-        m_enabled = 1;
-
-        m_rect14 = rect;
-        m_cmd = cmd;
-        if (key != NULL) {
-            CObject* found = 0;
-            host->m_imageRegistry->m_10map.Lookup(key, found);
-            CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-            m_frameSet = rec;
-            if (rec != NULL) {
-                i32 f = frame;
-                if (f == -1) {
-                    f = rec->m_minIndex;
-                }
-                m_frameIndex = f;
-
-                CImage* cel;
-                if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-                    cel = static_cast<CImage*>(rec->m_items.GetAt(f));
-                } else {
-                    cel = NULL;
-                }
-                m_frame = cel;
-                return 1;
-            }
-        }
+    if (owner == NULL || host == NULL) {
+        return 0;
     }
-    return 0;
+    m_owner = owner;
+    m_tab = obj;
+    m_host = host;
+    m_redrawFrames = 0;
+    m_enabled = 1;
+
+    m_rect14 = rect;
+    m_cmd = cmd;
+    if (key == NULL) {
+        return 0;
+    }
+    CObject* found = 0;
+    host->m_imageRegistry->m_10map.Lookup(key, found);
+    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
+    m_frameSet = rec;
+    if (rec == NULL) {
+        return 0;
+    }
+    i32 f = frame;
+    if (f == -1) {
+        f = rec->m_minIndex;
+    }
+    m_frameIndex = f;
+
+    CImage* cel;
+    if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
+        cel = static_cast<CImage*>(rec->m_items.GetAt(f));
+    } else {
+        cel = NULL;
+    }
+    m_frame = cel;
+    return 1;
 }
 
 RVA(0x000e7400, 0x9)

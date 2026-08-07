@@ -44,5 +44,29 @@ tests as separate `else if` arms with the body duplicated. `CPlay::LoadWarlordSp
 @0xd65d0: splitting `d == PICKUP_TOYBOX || d == PICKUP_MEGAPHONE` into two arms (two sites)
 took it 95.26 → 99.41.
 
+## The table also settles WHICH BODY belongs to which case (a live-bug finder)
+
+Reading it only for the ORDER leaves half its value on the table. The entry at slot
+`k` names the body for `key == k + min`, so a reconstruction that attached the right
+set of bodies to the wrong labels reads out immediately.
+
+`CStatusBarMgr::ClearTabGroup` @0x100b00 (table 0x100c3c, `dec eax` so slot `k` is
+`m_activeTab == k+1`) had all five arms permuted: our source cleared `m_tabSprite5..10`
+on STATZ and `m_statObj` on GRUNTZ where retail clears `m_statObj` on STATZ,
+`m_slotNotify`+gauges on GRUNTZ, `m_groupNotify`/`m_hlNotify` on RESOURCE,
+`m_warlordHead` on MULTIPLAYER and `m_tabSprite5..10`+`m_modeNotify` on GAME — each
+tab its own widgets. That is a behaviour bug the score barely moved on (75.85 →
+75.94), so ONLY the table catches it.
+
+Order alone, on the same TU: `CStatusBarMgr::UpdateStatusBarTabHighlight` @0xfe910,
+seven arms, table 0x4ff4a0 sorting to tab 0,5,1,4,2,3,6 against our ascending
+0..6 — **55.34 → 85.03 from the reorder alone**.
+
+Trap that hides this whole family: `sema disasm --base` and `--diff` stop at the
+indirect `jmp`, because llvm-objdump's `--disassemble-symbols` restarts at the `$L`
+label the table lives under. A one-sided `@@ -1,15 +1,497 @@` hunk is that
+truncation, not a 480-instruction divergence — dump the whole section and cut it at
+the next non-`$L` symbol before believing any read of the arms.
+
 related: rva-extent-must-include-switch-tables.md, switch-density-byte-index-table-vs-tree.md,
 masked-diff-hides-branch-target.md

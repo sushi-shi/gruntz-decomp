@@ -402,3 +402,16 @@ spellings tie at 90.31. Two functions in one TU, one guard shape, opposite requi
 So before reaching for the positive form, check that retail's exit actually lands **below** a
 `pop` (the proof quoted at the top of this doc). If retail's early exit pops *everything*, the
 rule does not apply and the positive form will cost you points.
+
+## Data point: a per-case guard ladder inside one `switch` (2026-08-07)
+
+`CStatusBarMgr::UpdateStatusBarTabHighlight` @0xfe910 is the `b_ret > t_ret` test at
+scale: 40 epilogues against retail's 25. Each of its seven arms opened with
+`if (m_hitTestDisabled != 0) return 1; if (...m_groupFlag == 0) return 1;`, and cl
+gave every one of the fifteen guards its own inline `mov eax,1; pop x4; ret 0xc`.
+Retail branches all fifteen to ONE shared block, which is what `break;` + a single
+trailing `return 1;` after the switch emits — the arms' own success tails stay inline
+exactly as retail has them. 40 -> 28 epilogues, 48.20 -> 52.62 before any other change.
+The count predicted it exactly: 31 return statements - 15 converted + the new trailing
+one - the 3 cl already merged = 14... and the residue was the arm ORDER, not the gates
+(see switch-arm-emission-follows-source-order.md).
