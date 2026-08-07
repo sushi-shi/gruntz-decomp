@@ -432,8 +432,8 @@ static inline i16* Span16(u8* row) {
 // pow2-shift loop is not peeled; cl peels the first `w & 1` test to `test al,cl`.
 RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
-    i32 maxY = -1;
     i32 minY = 0x1001;
+    i32 maxY = -1;
     if (WarpIsPow2(src->m_width) == 0) {
         return 0;
     }
@@ -442,7 +442,10 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     i32 shift = 0;
     {
         i32 m = 1;
-        while ((src->m_width & m) == 0) {
+        for (;;) {
+            if ((src->m_width & m) != 0) {
+                break;
+            }
             m <<= 1;
             shift++;
             if (static_cast<u32>(shift) >= 0x20) {
@@ -462,13 +465,13 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 ClipVtx* top;
                 ClipVtx* bot;
                 ClipVtx* table;
-                if (prev->y >= cur->y) {
-                    top = prev;
-                    bot = cur;
-                    table = g_rasterEdgeL;
-                } else {
+                if (cur->y < prev->y) {
                     top = cur;
                     bot = prev;
+                    table = g_rasterEdgeL;
+                } else {
+                    top = prev;
+                    bot = cur;
                     table = g_rasterEdgeR;
                 }
 
