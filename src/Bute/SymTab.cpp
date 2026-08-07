@@ -1095,13 +1095,18 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         }
         if ((fd.attrib & _A_SUBDIR) == _A_SUBDIR) {
 
+            char subName[0x108];
+            strcpy(subName, fd.name);
+            if (m_caseSensitive == 0) {
+                _strupr(subName);
+            }
             char childpath[0x600];
             strcpy(childpath, pattern);
-            strcpy(childpath + strlen(childpath), fd.name);
-            _strlwr(childpath);
-            void* child = node->FindSub(fd.name);
+            strcpy(childpath + strlen(childpath), subName);
+            strcpy(childpath + strlen(childpath), g_sepSlash);
+            void* child = node->FindSub(subName);
             if (child == NULL) {
-                child = node->CreateSub(fd.name);
+                child = node->CreateSub(subName);
                 if (child == NULL) {
                     continue;
                 }
@@ -1125,7 +1130,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         while (i < nleft && fname[i] >= '0' && fname[i] <= '9') {
             i++;
         }
-        i32 key = (i >= nleft) ? atoi(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
+        i32 key = (i >= nleft) ? atol(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
         RezTypeTag extKey = REZ_TAG_NONE;
         char extName[0x10];
         char unpackedTag[0x10];
