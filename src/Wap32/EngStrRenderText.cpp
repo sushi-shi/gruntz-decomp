@@ -1,5 +1,7 @@
 #include <rva.h>
 
+#include <MfcNoInline.h>
+
 #include <Font/Font.h>
 #include <Font/FontSel.h>
 #include <Ints.h>
