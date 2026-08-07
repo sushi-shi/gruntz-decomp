@@ -1099,11 +1099,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         CMapMgr* bd = m_board;
                         RECT r1;
                         static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
-                        RECT r2;
-                        RECT* boardRect =
-                            static_cast<RECT*>(new (&r2) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT rc;
-                        rc = *boardRect;
+                        rc = r1;
                         if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
                             bd->m_bounds = rc;
                         }
@@ -1572,10 +1569,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
         a.top = 0;
         a.right = bd2->m_width;
         a.bottom = bd2->m_height;
-        RECT t2;
-        RECT* q2 = static_cast<RECT*>(new (&t2) CRect(0, 0, bd2->m_width, bd2->m_height));
         RECT b2;
-        b2 = *q2;
+        b2 = a;
         if (!IntersectRect(&bd2->m_bounds, &b2, &a)) {
             bd2->m_bounds = b2;
         }
@@ -1794,10 +1789,8 @@ perimSweep: {
         CMapMgr* fb = m_board;
         RECT f1;
         static_cast<RECT*>(new (&f1) CRect(0, 0, fb->m_width, fb->m_height));
-        RECT f2;
-        RECT* fq = static_cast<RECT*>(new (&f2) CRect(0, 0, fb->m_width, fb->m_height));
         RECT fc;
-        fc = *fq;
+        fc = f1;
         if (IntersectRect(&fb->m_bounds, &fc, &f1) != 0) {
             return 0;
         }
@@ -1820,10 +1813,8 @@ rowHitA: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT h2;
-    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc;
-    hc = *hq;
+    hc = h1;
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1844,10 +1835,8 @@ rowHitB: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT h2;
-    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc;
-    hc = *hq;
+    hc = h1;
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1917,10 +1906,8 @@ colHitA: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT h2;
-    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc;
-    hc = *hq;
+    hc = h1;
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -1941,10 +1928,8 @@ colHitB: {
     CMapMgr* hb = m_board;
     RECT h1;
     static_cast<RECT*>(new (&h1) CRect(0, 0, hb->m_width, hb->m_height));
-    RECT h2;
-    RECT* hq = static_cast<RECT*>(new (&h2) CRect(0, 0, hb->m_width, hb->m_height));
     RECT hc;
-    hc = *hq;
+    hc = h1;
     if (!IntersectRect(&hb->m_bounds, &hc, &h1)) {
         hb->m_bounds = hc;
     }
@@ -3096,11 +3081,8 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         mb.top = 0;
                         mb.right = bd->m_width;
                         mb.bottom = bd->m_height;
-                        RECT tmp;
-                        RECT* p =
-                            static_cast<RECT*>(new (&tmp) CRect(0, 0, bd->m_width, bd->m_height));
                         RECT bx;
-                        bx = *p;
+                        bx = mb;
                         if (!IntersectRect(&bd->m_bounds, &bx, &mb)) {
                             bd->m_bounds = bx;
                         }
@@ -3118,12 +3100,8 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                             CMapMgr* bd = m_board;
                             RECT r1;
                             static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
-                            RECT r2;
-                            RECT* p2r =
-                                static_cast<RECT*>(new (&r2)
-                                                       CRect(0, 0, bd->m_width, bd->m_height));
                             RECT rc;
-                            rc = *p2r;
+                            rc = r1;
                             if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
                                 bd->m_bounds = rc;
                             }
@@ -3913,10 +3891,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         rc.right = box.right + 1;
         rc.bottom = box.bottom + 1;
     } else {
-        RECT r0;
-        RECT* boardRect =
-            static_cast<RECT*>(new (&r0) CRect(0, 0, board->m_width, board->m_height));
-        rc = *boardRect;
+        rc = bounds;
     }
     if (!IntersectRect(&board->m_bounds, &rc, &bounds)) {
         board->m_bounds = rc;
@@ -3954,12 +3929,10 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         RECT fb;
         fb.left = 0;
         fb.top = 0;
-        RECT fr;
-        RECT* fp = static_cast<RECT*>(new (&fr) CRect(0, 0, board->m_width, board->m_height));
         fb.right = board->m_width;
         fb.bottom = board->m_height;
         RECT frc;
-        frc = *fp;
+        frc = fb;
         if (!IntersectRect(&board->m_bounds, &frc, &fb)) {
             board->m_bounds = frc;
         }
@@ -3993,10 +3966,8 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
     RECT gb;
     static_cast<RECT*>(new (&gb) CRect(0, 0, board->m_width, board->m_height));
-    RECT gr2;
-    RECT* gp = static_cast<RECT*>(new (&gr2) CRect(0, 0, board->m_width, board->m_height));
     RECT grc;
-    grc = *gp;
+    grc = gb;
     if (!IntersectRect(&board->m_bounds, &grc, &gb)) {
         board->m_bounds = grc;
     }
