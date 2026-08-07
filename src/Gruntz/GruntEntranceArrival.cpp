@@ -1842,6 +1842,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
     return 0;
 }
 
+// @early-stop
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
