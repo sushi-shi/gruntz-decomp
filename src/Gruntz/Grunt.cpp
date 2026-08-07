@@ -1409,8 +1409,8 @@ i32 CGrunt::StepGruntMovement() {
         }
     }
 
-    tgtPxX = (coordX << TILE_SHIFT_PX) + TILE_HALF_PX;
     tgtPxY = (coordY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    tgtPxX = (coordX << TILE_SHIFT_PX) + TILE_HALF_PX;
     bd = g_gameReg->m_tileGrid;
     tgtTileX = tgtPxX >> TILE_SHIFT_PX;
     tgtTileY = tgtPxY >> TILE_SHIFT_PX;
@@ -1629,8 +1629,8 @@ label_4c6e4:
         if (hudX < rr->right && hudX >= rr->left && hudY < rr->bottom && hudY >= rr->top) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
-        tgtPxX = beyondPxX;
         tgtPxY = beyondPxY;
+        tgtPxX = beyondPxX;
     }
 
 label_4c92b: {
