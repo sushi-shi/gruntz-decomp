@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/ArrivalFlagsPreset.h>
@@ -193,17 +194,6 @@ DATA(0x0020dd4c)
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
-static inline void ConstructGrownSlots() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-}
-
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
@@ -304,10 +294,6 @@ void CGrunt::ComputeFacing(double dt) {
     m_moveSpeed = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
     m_movePosX = static_cast<double>(h->m_screenX);
     m_movePosY = static_cast<double>(h->m_screenY);
-}
-
-static inline CString* ActNameSlots() {
-    return g_typeColl.Slots();
 }
 
 #define BIND_ACT_644AF0(id, handler)                                                               \
@@ -1121,7 +1107,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
     // out of line at the first and expanded it at the other two.
     char* nm0 = *g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
-    ConstructGrownSlots();
+    ActNameConstructGrownSlots();
     bool neH = (strcmp(nm0, s_codeH) != 0);
     if (neH) {
         i32 keyF = m_objAux->m_actKey;
@@ -1137,7 +1123,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         } else {
             recF = g_typeColl.Elem(keyF);
         }
-        ConstructGrownSlots();
+        ActNameConstructGrownSlots();
         bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), s_codeF) != 0);
         if (neF) {
             i32 keyO = m_objAux->m_actKey;
@@ -1155,7 +1141,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             } else {
                 recO = g_typeColl.Elem(keyO);
             }
-            ConstructGrownSlots();
+            ActNameConstructGrownSlots();
             bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), s_codeO) != 0);
             if (neO) {
                 ResetGeometry();
@@ -1789,7 +1775,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     {
 
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        ConstructGrownSlots();
+        ActNameConstructGrownSlots();
         bool eq = (strcmp(*rec, s_codeF) == 0);
         if (eq) {
             goto fail;

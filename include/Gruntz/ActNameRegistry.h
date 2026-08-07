@@ -49,4 +49,18 @@ static inline CString* ActNameLookupCallReport(i32 id) {
     return slot;
 }
 
+// zDArray::GrowTo hands back m_grown raw slots, so whoever grew the name table
+// default-constructs them.  Retail runs it as a POST-decrement loop; the shape is
+// load-bearing (docs/patterns/act-registrar-counter-cse-and-freeloop.md).
+static inline void ActNameConstructGrownSlots() {
+    CString* slot = ActNameSlots();
+    i32 cnt = g_typeColl.m_grown;
+    while (cnt-- != 0) {
+        if (slot != NULL) {
+            slot->CString::CString();
+        }
+        slot++;
+    }
+}
+
 #endif // GRUNTZ_ACTNAMEREGISTRY_H

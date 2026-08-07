@@ -7,6 +7,7 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Brickz.h>
@@ -125,20 +126,6 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_object->m_area.bottom = 0;
 }
 
-static inline CString* TypeLookup(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
 RVA(0x000b2940, 0x102)
 void CKitchenSlime::FireActivation(i32 coord) {
     CActHandler* e = KSlimeLookup(coord);
@@ -155,7 +142,7 @@ void CKitchenSlime::RegisterType() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = TypeLookup(g_typeCounter);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {

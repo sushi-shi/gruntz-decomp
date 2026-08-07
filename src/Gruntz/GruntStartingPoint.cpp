@@ -6,6 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -48,20 +49,6 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj), CW
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
-static inline CString* TypeLookup(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
 static inline CActHandler* R4Lookup(i32 coord) {
     return (CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord));
 }
@@ -81,7 +68,7 @@ void ActReg4RegisterType() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = TypeLookup(g_typeCounter);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {

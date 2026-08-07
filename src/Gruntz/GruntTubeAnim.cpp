@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -16,17 +17,6 @@
 
 #include <new>
 #include <string.h>
-
-static __inline void ConstructGrownSlots() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt--) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-}
 
 // @early-stop
 RVA(0x00050a50, 0x1c5)
@@ -54,7 +44,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     }
 
     CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());
-    ConstructGrownSlots();
+    ActNameConstructGrownSlots();
 
     bool eq;
     eq = (strcmp(*node, "D") == 0);

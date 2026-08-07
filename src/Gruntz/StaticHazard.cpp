@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <Enums.h>
 #include <Gruntz/ActName.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -39,39 +40,8 @@ RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString;
 
-static inline CString* ActNameSlots() {
-    return g_typeColl.Slots();
-}
-
-static inline CString* ActNameLookup(i32 id) {
-    g_typeColl.m_grown = 0;
-    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(id);
-    }
-
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
-        return g_typeColl.Elem(id);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
 static inline CActHandler* HaznLookup(i32 coord) {
     return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
-}
-
-static inline CString* ActNameLookupCallReport(i32 id) {
-    g_typeColl.m_grown = 0;
-    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(id);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
-        return g_typeColl.Elem(id);
-    }
-    g_typeColl.Report(g_errOutOfMem, 0xc);
-    return g_typeColl.Scratch();
 }
 
 // @early-stop

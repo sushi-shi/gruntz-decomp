@@ -11,6 +11,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ActName.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -289,20 +290,6 @@ static inline CActHandler* ProjActLookup(i32 coord) {
     return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
 }
 
-static inline CString* ProjTypeLookup(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     CActHandler* e = ProjActLookup(coord);
@@ -317,7 +304,7 @@ void CProjectile::RegisterType() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = ProjTypeLookup(g_typeCounter);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {
@@ -872,24 +859,6 @@ i32 CProjectile::SerializeMove(
 
 static inline CActHandler* TBombLookup(i32 coord) {
     return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
-}
-
-static inline CString* ActNameSlots() {
-    return g_typeColl.Slots();
-}
-
-static inline CString* ActNameLookup(i32 id) {
-    g_typeColl.m_grown = 0;
-    if (id >= g_typeColl.m_lo && id <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(id);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(id, 0) != NULL) {
-        return g_typeColl.Elem(id);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
 }
 
 RVA(0x000e1830, 0x102)

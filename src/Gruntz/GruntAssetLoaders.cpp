@@ -4,6 +4,7 @@
 #include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/EnemyAiType.h>
@@ -23,18 +24,6 @@
 
 #include <new>
 #include <string.h>
-
-static __inline void ConstructGrownSlots() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-        cnt--;
-    }
-}
 
 DATA(0x0020cc90)
 static const char s_dAnimKeyC[] = "C";

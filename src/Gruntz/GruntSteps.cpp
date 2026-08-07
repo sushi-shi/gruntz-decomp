@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
@@ -180,17 +181,6 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
         return 1;
     }
     return b->m_rowInts[ty][tx * 7];
-}
-
-static __inline void ConstructGrownSlots() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt--) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
 }
 
 RVA(0x00050ca0, 0x2b)
@@ -1017,7 +1007,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 }
                 {
                     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-                    ConstructGrownSlots();
+                    ActNameConstructGrownSlots();
                     eq = (strcmp(*rec, s_codeN) == 0);
                 }
                 if (eq) {
@@ -1043,7 +1033,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 }
                 {
                     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-                    ConstructGrownSlots();
+                    ActNameConstructGrownSlots();
                     eq = (strcmp(*rec, s_codeM) == 0);
                 }
                 if (eq) {

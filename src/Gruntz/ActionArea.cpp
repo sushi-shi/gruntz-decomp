@@ -6,6 +6,7 @@
 
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActionAreaOwner.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/HaznColl.h>
@@ -29,20 +30,6 @@ CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* R3Lookup(i32 coord) {
     return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
-}
-
-static inline CString* TypeLookup(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    (static_cast<CVariantSlot*>(g_typeColl.m_errSink))->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
 }
 
 RVA(0x00007c60, 0xf1)
@@ -84,7 +71,7 @@ void CProjActObj::RegisterType() {
     if (id == 0) {
         ActInsertId("A", g_typeCounter);
         id = g_typeCounter;
-        CString* slot = TypeLookup(g_typeCounter);
+        CString* slot = ActNameLookup(g_typeCounter);
         i32 cnt = g_typeColl.m_grown;
         CString* nodes = g_typeColl.Slots();
         while (cnt-- != 0) {

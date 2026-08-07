@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -103,17 +104,6 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
         return 1;
     }
     return ((b->m_rowInts[ty]))[tx * 7];
-}
-
-static __inline void ConstructGrownSlots() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt--) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
 }
 
 // @early-stop
@@ -1541,7 +1531,7 @@ tail:
 
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        ConstructGrownSlots();
+        ActNameConstructGrownSlots();
         eq = (strcmp(*rec, s_codeF) == 0);
         if (eq) {
             if (m_entranceCommitted != 0) {
@@ -1552,7 +1542,7 @@ tail:
     m_entranceActive = 1;
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        ConstructGrownSlots();
+        ActNameConstructGrownSlots();
         ne = (strcmp(*rec, s_codeO) != 0);
         if (ne) {
             m_prevAnimSetNode = m_objAux->m_actKey;
