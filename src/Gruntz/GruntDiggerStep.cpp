@@ -189,9 +189,9 @@ L_tailc:
                 for (i32 col = isect.left; col < isect.right; col++) {
                     if ((cell->m_flags & 0x10000) != 0) {
                         i32 dr = row - cy;
-                        IABS(dr);
+                        dr = abs(dr);
                         i32 dc = col - cx;
-                        IABS(dc);
+                        dc = abs(dc);
                         i32 dist = dr + dc;
                         if (dist < best) {
                             best = dist;
@@ -204,9 +204,9 @@ L_tailc:
             }
             if (best != INT_MAX) {
                 i32 dc = bestCol - cx;
-                IABS(dc);
+                dc = abs(dc);
                 i32 dr = bestRow - cy;
-                IABS(dr);
+                dr = abs(dr);
                 if (dc <= 1 && dr <= 1) {
                     m_tileMgr->ApplyTriggerA(
                         m_tileOwnerHi,

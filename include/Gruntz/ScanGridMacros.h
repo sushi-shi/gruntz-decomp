@@ -9,8 +9,6 @@
 // The grunt scan/step compilands share these force-inline devices; MSVC 5.0
 // macros are the faithful model of the always-inlined expansion.
 
-#define IABS(v) ((v) = ((v) ^ ((v) >> 31)) - ((v) >> 31))
-
 #define GRID_BOUNDS(grid)                                                                          \
     {                                                                                              \
         CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \

@@ -207,9 +207,9 @@ L_ed153:
                 if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
                     || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
                     i32 dr = row - cy;
-                    IABS(dr);
+                    dr = abs(dr);
                     i32 dc = col - cx;
-                    IABS(dc);
+                    dc = abs(dc);
                     i32 dist = dr + dc;
                     if (dist < best) {
                         best = dist;
@@ -222,9 +222,9 @@ L_ed153:
         }
         if (best != INT_MAX) {
             i32 dc = bestCol - cx;
-            IABS(dc);
+            dc = abs(dc);
             i32 dr = bestRow - cy;
-            IABS(dr);
+            dr = abs(dr);
             if (dc <= 1 && dr <= 1) {
                 m_tileMgr->ApplyTriggerA(
                     m_tileOwnerHi,

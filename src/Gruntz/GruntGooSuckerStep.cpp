@@ -271,7 +271,7 @@ L_scanb:
                 return 1;
             }
             i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-            IABS(dx);
+            dx = abs(dx);
             i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
             i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
             if (dist < best) {
@@ -288,9 +288,9 @@ L_scanb:
     }
     if (best != INT_MAX) {
         i32 dx = bestX - cx;
-        IABS(dx);
+        dx = abs(dx);
         i32 dy = bestY - cy;
-        IABS(dy);
+        dy = abs(dy);
         if (dx <= 1 && dy <= 1) {
             m_tileMgr->ApplyTriggerA(
                 m_tileOwnerHi,
