@@ -2482,9 +2482,11 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                box = CRect(0, 0, board->m_width, board->m_height);
-                if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
-                    board->m_bounds = box;
+                RECT hitFull;
+                static_cast<RECT*>(new (&hitFull) CRect(0, 0, board->m_width, board->m_height));
+                RECT hitBox = CRect(0, 0, board->m_width, board->m_height);
+                if (!IntersectRect(&board->m_bounds, &hitBox, &hitFull)) {
+                    board->m_bounds = hitBox;
                 }
                 board->m_gridW = board->m_bounds.right - board->m_bounds.left;
                 board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
@@ -2497,9 +2499,11 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         iter++;
     }
 
-    box = CRect(0, 0, board->m_width, board->m_height);
-    if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
-        board->m_bounds = box;
+    RECT tailFull;
+    static_cast<RECT*>(new (&tailFull) CRect(0, 0, board->m_width, board->m_height));
+    RECT tailBox = CRect(0, 0, board->m_width, board->m_height);
+    if (!IntersectRect(&board->m_bounds, &tailBox, &tailFull)) {
+        board->m_bounds = tailBox;
     }
     board->m_gridW = board->m_bounds.right - board->m_bounds.left;
     board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
