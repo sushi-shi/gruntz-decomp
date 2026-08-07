@@ -13,10 +13,12 @@ class CFileMemBase {
 public:
     CFileMemBase();
     virtual ~CFileMemBase() {
-        Reset();
+        Close();
     }
     virtual i32 SetName(const char* name, i32 a, i32 b);
-    virtual void Close();
+    virtual void Close() {
+        Reset();
+    }
 
     virtual void Reset();
     virtual CString GetName();
@@ -38,9 +40,11 @@ SIZE(0x10);
 class CFileMem : public CFileMemBase {
 public:
     virtual ~CFileMem() OVERRIDE {
+        Close();
+    }
+    virtual void Close() OVERRIDE {
         Reset();
     }
-    virtual void Close() OVERRIDE;
     virtual void Reset() OVERRIDE;
     virtual i32 GetLength() OVERRIDE;
     virtual i32 GetOffset() OVERRIDE;

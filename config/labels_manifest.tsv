@@ -67,10 +67,10 @@ ddpagemgr	21
 ddpalette	23
 ddrawptrcollections	10
 ddrawshadeblit	12
-ddrawsubmgr	123
+ddrawsubmgr	122
 ddrawsubmgrleaf	12
 ddrawsubmgrrefresh	1
-ddrawsurfacemgr	21
+ddrawsurfacemgr	22
 ddrawsurfacepair	43
 ddrawsurfacepairblt	1
 ddrawworkerhost	5

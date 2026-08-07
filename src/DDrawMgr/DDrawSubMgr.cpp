@@ -425,11 +425,7 @@ CFileMemBase::CFileMemBase() {
 }
 
 RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
-
-RVA(0x00157910, 0x5)
-void CFileMemBase::Close() {
-    Reset();
-}
+RVA_COMPGEN(0x00157910, 0x5, ?Close@CFileMemBase@@UAEXXZ)
 
 RVA(0x00157920, 0x20)
 CString CFileMemBase::GetName() {
@@ -471,11 +467,6 @@ void CFileMem::Reset() {
     m_4 = 0;
     m_mode = 0;
     m_name.Empty();
-}
-
-RVA(0x00157a70, 0x5)
-void CFileMem::Close() {
-    Reset();
 }
 
 RVA(0x00157a80, 0x51)
