@@ -19,6 +19,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
@@ -1099,39 +1100,18 @@ i32 CGrunt::StepArrivalReroll() {
     i32 range = 0x7531 - elapsed;
     u32 x;
     if (range == 0) {
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            x = timeGetTime();
-        } else {
-            x = g_randSeed;
-        }
-        g_randSeed = x * 214013 + 2531011;
-        if (g_randSeed & 0x10000) {
+        if ((GetRandomNumber() & 1)) {
             v = elapsed;
         } else {
             v = 0x7530;
         }
     } else {
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            x = timeGetTime();
-        } else {
-            x = g_randSeed;
-        }
-        g_randSeed = x * 214013 + 2531011;
         v = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + elapsed;
     }
     if (v <= 0x7148) {
         return 0;
     }
     u32 x2;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        x2 = timeGetTime();
-    } else {
-        x2 = g_randSeed;
-    }
-    g_randSeed = x2 * 214013 + 2531011;
     i32 pick = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x65;
     CWwdGameObjectA* h = m_object;
     i32 y = h->m_screenY;

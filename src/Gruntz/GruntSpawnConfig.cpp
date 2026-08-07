@@ -224,7 +224,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (percent == -1) {
         percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
     }
-    if (percent < 100 && GameRand() % 0x65 > percent) {
+    if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
@@ -319,7 +319,7 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (percent == -1) {
         percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
     }
-    if (percent < 100 && GameRand() % 0x65 > percent) {
+    if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
@@ -499,14 +499,8 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
         i32 span = hi + 1;
         if (span == 0) {
             i32 seed;
-            if (!(g_randSeeded & 1)) {
-                g_randSeeded |= 1;
-                seed = timeGetTime();
-            } else {
-                seed = g_randSeed;
-            }
-            g_randSeed = seed * 214013 + 2531011;
-            pick = (g_randSeed & 0x10000) ? 0 : hi;
+            const i32 rnd = GetRandomNumber();
+            pick = ((rnd & 1)) ? 0 : hi;
         } else {
             pick = reg->Rand() % span;
         }
@@ -517,25 +511,9 @@ CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
                 i32 respan = rehi + 1;
 
                 if (respan == 0) {
-                    i32 seed;
-                    if (g_randSeeded & 1) {
-                        seed = g_randSeed;
-                    } else {
-                        g_randSeeded |= 1;
-                        seed = timeGetTime();
-                    }
-                    g_randSeed = seed * 214013 + 2531011;
-                    pick = (g_randSeed & 0x10000) ? 0 : rehi;
+                    pick = (GetRandomNumber() & 1) ? 0 : rehi;
                 } else {
-                    i32 seed;
-                    if (g_randSeeded & 1) {
-                        seed = g_randSeed;
-                    } else {
-                        g_randSeeded |= 1;
-                        seed = timeGetTime();
-                    }
-                    g_randSeed = seed * 214013 + 2531011;
-                    pick = ((g_randSeed >> 0x10) & 0x7fff) % respan;
+                    pick = GetRandomNumber() % respan;
                 }
                 tries--;
             }

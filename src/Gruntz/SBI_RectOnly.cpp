@@ -1009,22 +1009,8 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 static __inline i32 WapRand(i32 range) {
     u32 x;
     if (range == 0) {
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            x = timeGetTime();
-        } else {
-            x = g_randSeed;
-        }
-        g_randSeed = x * 214013 + 2531011;
         return (static_cast<u32>(g_randSeed) >> 16) & 1;
     }
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        x = timeGetTime();
-    } else {
-        x = g_randSeed;
-    }
-    g_randSeed = x * 214013 + 2531011;
     return ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + 1;
 }
 

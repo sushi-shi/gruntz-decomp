@@ -592,9 +592,9 @@ void CBattlezDlg::FlashCtrlD() {
         CBrush scratch;
         i32 color;
         if (it->IsWindowEnabled()) {
-            GameRand();
-            GameRand();
-            i32 v = (GameRand() % 0xff) & 0xff;
+            GetRandomNumber();
+            GetRandomNumber();
+            i32 v = (GetRandomNumber() % 0xff) & 0xff;
             color = (v << 8 | v) << 8 | v;
         } else {
             color = 0x808080;

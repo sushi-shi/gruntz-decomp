@@ -19,16 +19,19 @@
 // exactly ONE shared guard byte at 0x2c127d immediately followed by one seed at
 // 0x2c1288. That adjacency IS the compiler's dynamic-init guard layout, so the
 // shipped source held the pair at file scope - which is what this spells.
-static __inline i32 GameRand() {
-    i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = static_cast<i32>(timeGetTime());
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    return (g_randSeed >> 0x10) & 0x7fff;
+// Monolith's own source, printed verbatim by the game's CREDITZ easter egg:
+//     int GetRandomNumber()
+//     {
+//         static long holdrand = timeGetTime();
+//         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+//     }
+// Kept in that exact form. NOT `static __inline`: a non-static inline's local
+// static gets external linkage, so every TU shares ONE copy - which is why
+// retail has exactly one dynamic-init guard byte at 0x2c127d immediately
+// followed by one seed at 0x2c1288, rather than a pair per TU.
+__inline i32 GetRandomNumber() {
+    static i32 holdrand = static_cast<i32>(timeGetTime());
+    return ((holdrand = holdrand * 214013 + 2531011) >> 0x10) & 0x7fff;
 }
 
 #endif // GRUNTZ_GAMERAND_H

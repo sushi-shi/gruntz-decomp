@@ -201,13 +201,6 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     u32 x;
-                    if (!(g_randSeeded & 1)) {
-                        g_randSeeded |= 1;
-                        x = timeGetTime();
-                    } else {
-                        x = g_randSeed;
-                    }
-                    g_randSeed = x * 214013 + 2531011;
                     g_gameReg->m_cueSink->SpawnVoiceDriver(
                         0,
                         0x3bf,

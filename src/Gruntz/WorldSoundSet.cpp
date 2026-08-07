@@ -6,6 +6,7 @@
 
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Random.h>
@@ -861,14 +862,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 force) {
 RVA(0x0000cd00, 0x46)
 i32 CGruntzMgr::Rand() {
     i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = timeGetTime();
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    return (g_randSeed >> 0x10) & 0x7fff;
+    return GetRandomNumber();
 }
 
 // @early-stop

@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootyStateActivate.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -125,28 +126,13 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
 RVA(0x00019f50, 0xb2)
 i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
     i32 span = hi - lo + 1;
-    i32 seed;
     if (span == 0) {
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_randSeed;
-        }
-        g_randSeed = seed * 214013 + 2531011;
-        if (g_randSeed & 0x10000) {
+        if ((GetRandomNumber() & 1)) {
             return lo;
         }
         return hi;
     }
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = timeGetTime();
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
+    return lo + (GetRandomNumber()) % span;
 }
 
 // @interleaver Rng2Next - 70 B lone body at 0x15cbe0, between Deserialize

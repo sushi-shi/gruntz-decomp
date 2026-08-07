@@ -42,6 +42,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
@@ -6266,16 +6267,8 @@ i32 CPlay::GetAmbientId() {
         return (m_levelIndex + 1) % 2;
     }
     if (!(g_coinRolled & 1)) {
-        i32 seed;
         g_coinRolled |= 1;
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_randSeed;
-        }
-        g_randSeed = seed * 214013 + 2531011;
-        g_coinValue = ((g_randSeed >> 0x10) & 0x7fff) % 2;
+        g_coinValue = (GetRandomNumber()) % 2;
     }
     return g_coinValue;
 }

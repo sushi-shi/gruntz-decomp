@@ -651,13 +651,6 @@ i32 CInGameIcon::PeekCycle() {
     }
     if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
         u32 x;
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            x = timeGetTime();
-        } else {
-            x = g_randSeed;
-        }
-        g_randSeed = x * 214013 + 2531011;
         CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(
             ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
             0

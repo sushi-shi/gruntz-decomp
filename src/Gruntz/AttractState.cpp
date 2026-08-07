@@ -12,6 +12,7 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FixedPtrArray32.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
@@ -97,15 +98,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     CDDrawSubMgrPages* page = menuRoot()->m_drawTarget;
     page->BlitPage(page->m_backPair);
 
-    i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = timeGetTime();
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    i32 r = (g_randSeed >> 0x10) & 0x7fff;
+    i32 r = GetRandomNumber();
     const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
 
     char buf[0x40];

@@ -16,6 +16,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -666,15 +667,7 @@ i32 CCheckpointTrigger::Act() {
     i32 span = hi + 1;
     i32 pick;
     if (span == 0) {
-        i32 seed;
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_randSeed;
-        }
-        g_randSeed = seed * 214013 + 2531011;
-        if (g_randSeed & 0x10000) {
+        if ((GetRandomNumber() & 1)) {
             pick = 0;
         } else {
             pick = hi;
