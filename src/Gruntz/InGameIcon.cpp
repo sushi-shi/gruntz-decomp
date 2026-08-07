@@ -1002,9 +1002,10 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
     m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (m_object->m_sortKey != SORTKEY_INGAME_INFO) {
-        m_object->m_sortKey = SORTKEY_INGAME_INFO;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_INGAME_INFO) {
+        o->m_sortKey = SORTKEY_INGAME_INFO;
+        o->m_flags |= 0x20000;
     }
     m_cachedAreaId = -1;
     m_cachedSubId = -1;

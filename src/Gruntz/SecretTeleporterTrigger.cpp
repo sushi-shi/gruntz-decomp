@@ -77,9 +77,10 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
     } else {
         m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
         m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-        if (m_object->m_sortKey != 0) {
-            m_object->m_sortKey = 0;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != 0) {
+            o->m_sortKey = 0;
+            o->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -129,9 +130,10 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj), CW
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE && g_gameReg->m_isCustomLevel == 0) {
         m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
         m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-        if (m_object->m_sortKey != 0) {
-            m_object->m_sortKey = 0;
-            m_object->m_flags |= 0x20000;
+        CWwdGameObjectA* o = m_object;
+        if (o->m_sortKey != 0) {
+            o->m_sortKey = 0;
+            o->m_flags |= 0x20000;
         }
         m_wwdObject->m_flags |= 2;
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;

@@ -62,9 +62,10 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_posX = static_cast<double>(snapX);
     m_object->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
-    if (m_object->m_sortKey != SORTKEY_KITCHEN_SLIME) {
-        m_object->m_sortKey = SORTKEY_KITCHEN_SLIME;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_KITCHEN_SLIME) {
+        o->m_sortKey = SORTKEY_KITCHEN_SLIME;
+        o->m_flags |= 0x20000;
     }
     m_tilePosition.m_y = snapY;
     m_tilePosition.m_x = snapX;
