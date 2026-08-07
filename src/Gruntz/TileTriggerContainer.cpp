@@ -798,38 +798,6 @@ i32 __stdcall SerializeApplyB(
     return 1;
 }
 
-static void* RegSwitchTail(
-    CTileTriggerContainer* self,
-    CTileTriggerSwitchLogic* obj,
-    CFileMemBase* reader,
-    LogicTypeId typeId,
-    i32 pObj,
-    TrigLogicId id
-) {
-    if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-        return 0;
-    }
-    obj->m_owner = self;
-    obj->m_typeId = id;
-    return obj;
-}
-
-static void* RegLogicTail(
-    CTileTriggerContainer* self,
-    CTileTriggerLogic* obj,
-    CFileMemBase* reader,
-    LogicTypeId typeId,
-    i32 pObj,
-    TrigLogicId id
-) {
-    if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
-        return 0;
-    }
-    obj->m_owner = self;
-    obj->m_typeTag = id;
-    return obj;
-}
-
 // @early-stop
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::LoadElement(
@@ -848,31 +816,77 @@ void* CTileTriggerContainer::LoadElement(
     TrigLogicId id;
     reader->Read(&id, sizeof(id));
     switch (id) {
-        case TRIGID_SWITCH_1:
-        case TRIGID_SWITCH_2:
-        case TRIGID_SWITCH_5: {
+        case TRIGID_SWITCH_1: {
             CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
+        }
+        case TRIGID_SWITCH_2: {
+            CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_MULTI_SWITCH_3: {
             CTileTriggerSwitchLogic* obj = new CTileMultiTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_EXCLUSIVE_SWITCH_4: {
             CTileTriggerSwitchLogic* obj = new CTileExclusiveTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
+        }
+        case TRIGID_SWITCH_5: {
+            CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_SECRET_SWITCH_6: {
             CTileTriggerSwitchLogic* obj = new CTileSecretTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_TIME_SWITCH_7: {
             CTileTriggerSwitchLogic* obj = new CTileTimeTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_CHECKPOINT_SWITCH_8: {
             CTileTriggerSwitchLogic* obj = new CCheckpointTriggerSwitchLogic;
-            return RegSwitchTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeId = id;
+            return obj;
         }
         case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
@@ -924,19 +938,39 @@ void* CTileTriggerContainer::LoadElement(
         }
         case TRIGID_TIME_TRIGGER_23: {
             CTileTriggerLogic* obj = new CTileTimeTriggerLogic;
-            return RegLogicTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeTag = id;
+            return obj;
         }
         case TRIGID_TILE_TRIGGER_24: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
-            return RegLogicTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeTag = id;
+            return obj;
         }
         case TRIGID_SECRET_TRIGGER_25: {
             CTileTriggerLogic* obj = new CTileSecretTriggerLogic;
-            return RegLogicTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeTag = id;
+            return obj;
         }
         case TRIGID_COVERED_POWERUP_26: {
             CTileTriggerLogic* obj = new CCoveredPowerupLogic;
-            return RegLogicTail(this, obj, reader, typeId, pObj, id);
+            if (obj->ValidateByType(reader, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            obj->m_owner = this;
+            obj->m_typeTag = id;
+            return obj;
         }
         default:
             return 0;
