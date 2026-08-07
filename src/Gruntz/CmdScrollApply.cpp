@@ -54,8 +54,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         }
     }
 
-    i32 cx = g_gameReg->m_modeSize.cx / 2;
-    i32 cy = g_gameReg->m_modeSize.cy / 2;
+    tagSIZE screenSize = g_gameReg->m_modeSize;
+    i32 cx = screenSize.cx / 2;
+    i32 cy = screenSize.cy / 2;
     if (bar->m_position != STATUSBAR_HIDDEN) {
         cx -= 0xa0;
     }
@@ -78,21 +79,18 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
         scrollY = v2->m_wrapH - cy;
     }
 
-    i32 deltaY = scrollY - g_lastScrollY;
     i32 deltaX = scrollX - g_lastScrollX;
+    i32 deltaY = scrollY - g_lastScrollY;
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
     CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
-    {
-        float sx = static_cast<float>(scrollX);
-        float sy = static_cast<float>(scrollY);
-        if (!(v3->m_flags & 1)) {
-            sx = sx * v3->m_scaleX;
-            sy = sy * v3->m_scaleY;
-        }
-        v3->m_scaledX = sx;
-        v3->m_scaledY = sy;
+    if (!(v3->m_flags & 1)) {
+        v3->m_scaledX = static_cast<float>(scrollX * v3->m_scaleX);
+        v3->m_scaledY = static_cast<float>(scrollY * v3->m_scaleY);
+    } else {
+        v3->m_scaledX = static_cast<float>(scrollX);
+        v3->m_scaledY = static_cast<float>(scrollY);
     }
     v3->RecomputePlaneCoords();
 
@@ -111,14 +109,13 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             CDDrawWorkerHost* g2 = g_backView;
-            float fx = static_cast<float>(nx);
-            float fy = static_cast<float>(ny);
             if (!(g2->m_flags & 1)) {
-                fx = fx * g2->m_scaleX;
-                fy = fy * g2->m_scaleY;
+                g2->m_scaledX = static_cast<float>(nx * g2->m_scaleX);
+                g2->m_scaledY = static_cast<float>(ny * g2->m_scaleY);
+            } else {
+                g2->m_scaledX = static_cast<float>(nx);
+                g2->m_scaledY = static_cast<float>(ny);
             }
-            g2->m_scaledX = fx;
-            g2->m_scaledY = fy;
             g2->RecomputePlaneCoords();
             g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollAccum = g_frameTime;

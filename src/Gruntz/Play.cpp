@@ -4487,10 +4487,13 @@ i32 CPlay::SetCursorFrame(i32 item) {
 // @early-stop
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
-    CObList& chain = m_world->m_childGroup->m_list;
-    POSITION pos = chain.GetHeadPosition();
+    CObList* chain = &m_world->m_childGroup->m_list;
+    if (chain == NULL) {
+        return 0;
+    }
+    POSITION pos = chain->GetHeadPosition();
     while (pos != NULL) {
-        CGameObject* g = static_cast<CGameObject*>(chain.GetNext(pos));
+        CGameObject* g = static_cast<CGameObject*>(chain->GetNext(pos));
         if (g == NULL) {
             continue;
         }
@@ -4506,8 +4509,8 @@ i32 CPlay::AddLevelGruntz() {
 
         i32 r = m_mgr->m_cmdGrid->PlaceObject(
             g->m_smarts,
-            y,
             x,
+            y,
             0x186a0,
             GRUNT_ENTRANCE_NONE,
             g->m_score,
@@ -4523,7 +4526,7 @@ i32 CPlay::AddLevelGruntz() {
         );
         if (r == -1) {
             CString msg;
-            msg.Format("Could not add Grunt: Player=%d", g->m_smarts, y, x);
+            msg.Format("Could not add Grunt: Player=%d", g->m_smarts, x, y);
 
             (g_gameReg)->EnterModalUI(msg);
             return 0;

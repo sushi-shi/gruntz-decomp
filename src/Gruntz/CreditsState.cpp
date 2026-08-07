@@ -283,12 +283,11 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 // @early-stop
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
-    CDDrawSurfaceMgr* root = m_world;
     if (m_videoPlaying != 0) {
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->PresentBackPage();
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
-        (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->ClearAllPages(0);
-        root->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->PresentBackPage();
+        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
+        (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->ClearAllPages(0);
+        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         return 1;
     }
     char stateName[0x20];
@@ -307,9 +306,9 @@ i32 CCreditsState::InitAttractTitle() {
     if (faded == 0) {
         return 0;
     }
-    CDDSurface* tgt = root->m_drawTarget->m_backPair->m_surface;
+    CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
-    (static_cast<CDDrawSubMgrPages*>(root->m_drawTarget))->TransTitle();
+    (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, 1);
     return 1;
 }
