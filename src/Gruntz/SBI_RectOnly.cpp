@@ -1095,30 +1095,12 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_tabSprite14 = NULL;
     m_barSprite = NULL;
     i32 i;
-    for (i = 0; i < 15; i++) {
-        m_hitRects[i] = NULL;
-    }
-    for (i = 0; i < 15; i++) {
-        m_statObj[i] = NULL;
-    }
-    CSBI_ImageSet** q = m_slotNotify;
-    q[0] = NULL;
-    q[1] = NULL;
-    q[2] = NULL;
-    q[3] = NULL;
-    q[4] = NULL;
-    CSBI_ImageSet** g = m_groupNotify;
-    g[0] = NULL;
-    g[1] = NULL;
-    g[2] = NULL;
-    for (i = 0; i < 12; i++) {
-        m_hlNotify[i] = NULL;
-    }
-    CSBI_WarlordHead** tp = m_warlordHead;
-    tp[0] = NULL;
-    tp[1] = NULL;
-    tp[2] = NULL;
-    tp[3] = NULL;
+    memset(m_hitRects, 0, sizeof(m_hitRects));
+    memset(m_statObj, 0, sizeof(m_statObj));
+    memset(m_slotNotify, 0, sizeof(m_slotNotify));
+    memset(m_groupNotify, 0, sizeof(m_groupNotify));
+    memset(m_hlNotify, 0, sizeof(m_hlNotify));
+    memset(m_warlordHead, 0, sizeof(m_warlordHead));
     m_extraNotify0 = NULL;
     m_extraNotify1 = NULL;
     m_modeNotify = NULL;
