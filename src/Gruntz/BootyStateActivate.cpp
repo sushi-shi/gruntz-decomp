@@ -1351,9 +1351,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
         m_warlordBooty->m_screenX = 0x64;
         m_warlordBooty->m_screenY = 0x64;
-        if (m_warlordBooty->m_sortKey != SORTKEY_BOOTY_WARLORD) {
-            m_warlordBooty->m_sortKey = SORTKEY_BOOTY_WARLORD;
-            m_warlordBooty->m_flags |= 0x20000;
+        CWwdGameObjectA* sorted = m_warlordBooty;
+        if (sorted->m_sortKey != SORTKEY_BOOTY_WARLORD) {
+            sorted->m_sortKey = SORTKEY_BOOTY_WARLORD;
+            sorted->m_flags |= 0x20000;
         }
         m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
