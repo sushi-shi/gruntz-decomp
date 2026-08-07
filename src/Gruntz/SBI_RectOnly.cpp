@@ -2647,11 +2647,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_cues.Lookup("GAME_CHIPFALLOUT", found);
-                        if (found && g_sndEnabled != 0) {
+                        LeafCue* p = static_cast<LeafCue*>(found);
+                        if (p) {
+                            i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            LeafCue* p = static_cast<LeafCue*>(found);
-                            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                >= static_cast<u32>(p->m_replayDelay)) {
+                            if (gate != 0
+                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                       >= static_cast<u32>(p->m_replayDelay)) {
                                 p->m_lastPlayTime = g_killCueClock;
                                 p->m_sound->ConfigureItem(item, 0, 0, 0);
                             }
@@ -2678,11 +2680,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_cues.Lookup("GAME_CHIPLAND", found);
-                        if (found && g_sndEnabled != 0) {
+                        LeafCue* p = static_cast<LeafCue*>(found);
+                        if (p) {
+                            i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            LeafCue* p = static_cast<LeafCue*>(found);
-                            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                >= static_cast<u32>(p->m_replayDelay)) {
+                            if (gate != 0
+                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                       >= static_cast<u32>(p->m_replayDelay)) {
                                 p->m_lastPlayTime = g_killCueClock;
                                 p->m_sound->ConfigureItem(item, 0, 0, 0);
                             }
@@ -2714,6 +2718,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_itemRect.left = m_itemBaseX;
                 m_itemRect.right = m_itemBaseX + 0x17;
                 rectFlag = 1;
+                ResetGroupA();
                 SetHudRectA(
                     0x1e,
                     MACHINE_LEVER,
@@ -2742,8 +2747,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row = 3;
-            while (m_hlGrid[col * 4 + row].m_state == IDX(HLROW_IDLE_CYCLE)) {
+            CSbiHlRow* cell = &m_hlGrid[col * 4 + row];
+            while (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
                 row--;
+                cell--;
                 if (row < 0) {
                     break;
                 }
@@ -2754,11 +2761,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     if (host->m_emitGate == 0) {
                         void* found = 0;
                         host->m_cues.Lookup("GAME_CHIPLAND", found);
-                        if (found && g_sndEnabled != 0) {
+                        LeafCue* p = static_cast<LeafCue*>(found);
+                        if (p) {
+                            i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            LeafCue* p = static_cast<LeafCue*>(found);
-                            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                >= static_cast<u32>(p->m_replayDelay)) {
+                            if (gate != 0
+                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                       >= static_cast<u32>(p->m_replayDelay)) {
                                 p->m_lastPlayTime = g_killCueClock;
                                 p->m_sound->ConfigureItem(item, 0, 0, 0);
                             }
@@ -2766,6 +2775,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     }
                 }
                 SetHlCell(col, m_extraNotifyArg0, row);
+                StartChipMachineCycle();
             }
             refreshFlag = 1;
             break;
