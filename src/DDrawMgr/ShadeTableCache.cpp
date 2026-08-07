@@ -238,9 +238,9 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
             float factor = static_cast<float>(pow(static_cast<double>(x), dGamma));
             float scale = static_cast<float>(j) / fSteps * (factor * fPct * g_p01) - g_negone;
-            i32 rn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + r) * scale, g_255));
-            i32 gn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + g) * scale, g_255));
-            i32 bn = static_cast<i32>(HSV_CLAMP_MAX(static_cast<float>(base + b) * scale, g_255));
+            u8 rn = static_cast<u8>(HSV_CLAMP_MAX(static_cast<float>(base + r) * scale, g_255));
+            u8 gn = static_cast<u8>(HSV_CLAMP_MAX(static_cast<float>(base + g) * scale, g_255));
+            u8 bn = static_cast<u8>(HSV_CLAMP_MAX(static_cast<float>(base + b) * scale, g_255));
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
