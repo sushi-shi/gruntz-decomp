@@ -47,6 +47,10 @@ GZ_ENUM_CONST_END(BattlezPlayerCount)
 
 class CBattlezData {
 public:
+    // Inline: `new CBattlezData` in CGruntzMgr::Run expands to the allocation's
+    // null guard around a bare `call ?Init@CBattlezData@@QAEXXZ` (0x83450 @ 0xeb1).
+    CBattlezData();
+
     i32 InitWithRecords(void* records);
     ~CBattlezData();
     void Init();
@@ -108,6 +112,10 @@ public:
     i32 m_miscPickupz[16];
 };
 SIZE_UNKNOWN();
+
+inline CBattlezData::CBattlezData() {
+    Init();
+}
 
 extern float g_zeroF;
 #endif // GRUNTZ_BATTLEZDATA_H

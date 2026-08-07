@@ -7,6 +7,7 @@
 
 #include <Gruntz/CombatCueKind.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/FinishLevelReason.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GruntDeathType.h>
@@ -259,6 +260,7 @@ public:
         m_rollingballWanted = 0;
         m_teleportWanted = 0;
         m_groupFlag = 0;
+        g_curPlayer = 0;
     }
     ~CTriggerMgr();
 

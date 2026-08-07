@@ -18,6 +18,11 @@ class CGruntzMgr;
 
 class CGruntzCmdMgr {
 public:
+    // Inline: `new CGruntzCmdMgr` in CGruntzMgr::Run expands both CPtrList
+    // constructions, the null manager and the pending-list drain in place
+    // (0x83450 @ 0xf9c).
+    CGruntzCmdMgr();
+
     void RemoveMatchingTarget(i32 indexByte, i32 typeByte);
 
     i32 SetMgr(CGruntzMgr* mgr);
@@ -68,6 +73,11 @@ public:
     CGruntzMgr* m_manager;
 };
 SIZE_UNKNOWN();
+
+inline CGruntzCmdMgr::CGruntzCmdMgr() {
+    m_manager = NULL;
+    m_pendingCommands.RemoveAll();
+}
 
 i32 __stdcall IsActive2(void* enable);
 

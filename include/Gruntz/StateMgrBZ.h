@@ -6,6 +6,8 @@
 #include <Enums.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 GZ_ENUM_FORWARD(InputDeviceSel);
 
 class DirectInputMgr2;
@@ -27,6 +29,10 @@ SIZE_UNKNOWN();
 
 class StateMgrBZ {
 public:
+    // Inline: `new StateMgrBZ` in CGruntzMgr::Run expands these six zero stores
+    // through the raw allocation, then phis the null arm (0x83450 @ 0xf0d).
+    StateMgrBZ();
+
     i32 Init(DirectInputMgr2* src, InputDeviceSel mode);
 
     i32 Build(DirectInputMgr2* src, InputDeviceSel mode);
@@ -52,6 +58,15 @@ public:
     i32 m_suppress;
 };
 SIZE(0x28);
+
+inline StateMgrBZ::StateMgrBZ() {
+    m_device = NULL;
+    m_keyboard = NULL;
+    m_joystick = NULL;
+    m_mouse = NULL;
+    m_deviceList = NULL;
+    m_mode = static_cast<InputDeviceSel>(0);
+}
 
 extern "C" StateMgrBZ* g_spawnConfig;
 

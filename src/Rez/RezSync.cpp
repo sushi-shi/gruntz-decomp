@@ -34,6 +34,7 @@
 #include <Gruntz/GameText.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
+#include <Gruntz/GruntzCmdMgrDtorInline.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -46,9 +47,11 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrDtorInline.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>
+#include <Io/SaveGameDtorInline.h>
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
@@ -87,6 +90,11 @@ DATA(0x002455e4)
 i32 g_enableEmulation = 0;
 
 // @early-stop
+// Two residues remain. The frame is 8 B larger than retail's (`add esp,0x43c` vs
+// `0x434`) - the cmd-line scratch buffers land at different offsets, so every
+// [esp+N] operand in the parse block shifts. And cl cross-jumps the `xor eax,eax`
+// that precedes the shared epilogue, so each early `return 0` reaches it with a
+// bare `jmp` where retail materialises the zero at every site.
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
@@ -432,30 +440,31 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_saveSink = new CSaveGame;
     if (!m_saveSink->SaveGameFile(g_emptyString)) {
+        if (m_saveSink) {
+            delete m_saveSink;
+            m_saveSink = NULL;
+        }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
     }
     m_scoreHud = new CBattlezData;
-    m_scoreHud->InitWithRecords(m_saveSink->m_pad24);
+    if (!m_scoreHud->InitWithRecords(m_saveSink->m_pad24)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x464);
+        return 0;
+    }
 
     g_spawnConfig = new StateMgrBZ;
-    if (g_spawnConfig) {
-        g_spawnConfig->m_device = NULL;
-        g_spawnConfig->m_keyboard = NULL;
-        g_spawnConfig->m_joystick = NULL;
-        g_spawnConfig->m_mouse = NULL;
-        g_spawnConfig->m_deviceList = NULL;
-        g_spawnConfig->m_mode = INPUTDEV_NONE;
-    }
     if (!g_spawnConfig->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
-        if (g_spawnConfig) {
-            g_spawnConfig->m_device = NULL;
-            g_spawnConfig->m_keyboard = NULL;
-            g_spawnConfig->m_joystick = NULL;
-            g_spawnConfig->m_mouse = NULL;
-            g_spawnConfig->m_deviceList = NULL;
-            g_spawnConfig->m_mode = INPUTDEV_NONE;
-            ::operator delete(g_spawnConfig);
+        // The zeroing runs off a cached pointer and skips m_mouse - retail's own
+        // hand-written teardown, not the constructor's six stores replayed.
+        StateMgrBZ* dead = g_spawnConfig;
+        if (dead) {
+            dead->m_device = NULL;
+            dead->m_keyboard = NULL;
+            dead->m_joystick = NULL;
+            dead->m_deviceList = NULL;
+            dead->m_mode = INPUTDEV_NONE;
+            ::operator delete(dead);
             g_spawnConfig = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x413);
@@ -465,6 +474,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_cmdSubMgr = new CGruntzCmdMgr;
 
     if (!m_cmdSubMgr->SetMgr(this)) {
+        if (m_cmdSubMgr) {
+            delete m_cmdSubMgr;
+            m_cmdSubMgr = NULL;
+        }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x414);
         return 0;
     }
@@ -506,10 +519,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     {
-        CSymParser* mgr = m_symParser;
-        CParseSource* stream = mgr->ResolveQualified("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
+        CParseSource* stream =
+            g_gameReg->m_symParser->ResolveQualified("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
-        i32 ok = 0;
+        bool ok = false;
         if (stream) {
             g_buteMgr.m_encrypted = 1;
             char* esz = stream->BeginParse();
@@ -521,6 +534,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_crypt.Decode(rdr, snk);
 
             g_buteMgr.m_stream = new istrstream(decoded, snk->rdbuf()->out_waiting());
+            delete rdr;
+            delete snk;
             stream->EndParse();
             g_buteMgr.Init();
             g_buteMgr.m_tree.ClearRecursive(0);
@@ -535,12 +550,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.m_tree74.m_root = NULL;
             g_buteMgr.m_tree74.m_lookupPending = 0;
             g_buteMgr.m_tree74.m_nodeCount = 0;
-            ok = 1;
+            ok = true;
             if (!g_buteMgr.ParseGroup()) {
                 g_buteMgr.m_parseFailed = 1;
-                ok = 0;
+                ok = false;
             }
-            ::operator delete(rdr);
+            delete g_buteMgr.m_stream;
+            delete[] decoded;
         }
         if (!ok) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x418);
@@ -550,9 +566,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_cheatMgr->RegisterCheats();
     m_chatLog = new CFontConfig;
-    m_chatLog->LoadFontConfig(0x1388, 0xbb8);
+    if (!m_chatLog->LoadFontConfig(0x1388, 0xbb8)) {
+        ReportError(IDX(IDS_INITIALIZE_GAME), 0x41a);
+        return 0;
+    }
     m_cmdGrid = new CTriggerMgr;
     if (!m_cmdGrid->SetLevel(m_world)) {
+        if (m_cmdGrid) {
+            delete m_cmdGrid;
+            m_cmdGrid = NULL;
+        }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
         return 0;
     }
@@ -602,8 +625,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
 
         CSymTab* attract = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_ATTRACT"));
-        CString title;
         g_attractStateCount = 0;
+        CString title;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         while (attract->ResolveQualified(static_cast<const char*>(title), IMGTAG_XCP)) {
             g_attractStateCount++;
