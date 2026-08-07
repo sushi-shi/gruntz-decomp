@@ -1,5 +1,3 @@
-#define CMOVINGLOGIC_INLINE_DTOR
-
 #include <rva.h>
 
 #include <Gruntz/Projectile.h>

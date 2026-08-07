@@ -1,5 +1,3 @@
-#define CIMAGE_INLINE_DTOR
-
 #include <rva.h>
 
 #include <Mfc.h>

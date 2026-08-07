@@ -84,14 +84,12 @@ public:
 };
 SIZE_UNKNOWN();
 
-#ifdef CIMAGE_INLINE_DTOR
 inline CImage::~CImage() {
     FreeAll();
     m_id = -1;
     m_flags = 0;
     m_ownerCtx = NULL;
 }
-#endif
 
 struct _DDBLTFX;
 extern _DDBLTFX g_bltFx;
