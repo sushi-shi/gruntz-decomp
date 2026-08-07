@@ -234,6 +234,11 @@ i32 CBootyState::LeaveState(GameStateId) {
 }
 
 // @early-stop
+// frame 0x54 vs retail's 0x48 and one extra callee-saved push: cl pins `this` in ebx
+// and promotes 0 into ebp as the function-wide zero register (`push ebp` for every
+// zero argument, `cmp eax,ebp` for every null test); retail pins `this` in ebp, spills
+// a copy to [esp+0x20], and pushes the immediates. See
+// docs/patterns/redundant-local-becomes-the-zero-register.md - find the spurious local.
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {

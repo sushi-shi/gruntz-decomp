@@ -37,6 +37,9 @@
 #include <limits.h>
 
 // @early-stop
+// size is exact (0x298); frame 0x8 vs retail's 0xc - retail has a third local dword we
+// do not, and its outX/outY slots are the reverse of ours (retail outY at the lower
+// address). Six decl/assign orderings of the span/out pairs all regress.
 
 RVA(0x000ec670, 0x298)
 i32 CGrunt::ResolveArrivalReposition() {

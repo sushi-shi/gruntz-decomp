@@ -3541,6 +3541,10 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, WarpStoneFragment fragment) {
 }
 
 // @early-stop
+// frame 0x18 vs retail's 0x14: retail homes one of the two delta scalars in the dead
+// `fragment` parameter's slot; cl finds only the `owner` param home (both put the
+// Lookup out-param there) and gives both deltas real slots. No cl 5.0 flag moves it -
+// /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave `sub esp,0x18`.
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = static_cast<CStatusBarMgr*>(owner);

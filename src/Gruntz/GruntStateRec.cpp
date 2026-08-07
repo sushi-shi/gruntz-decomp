@@ -14,6 +14,10 @@
 #include <string.h>
 
 // @early-stop
+// frame 0x8c vs retail's 0x88: three address-taken dwords (the `reg` spill, `out`,
+// and the idx/value temp) where retail has two. Merging `idx` into `v` (they live in
+// disjoint switch arms) is byte-neutral and does NOT shrink the frame, so the pair
+// retail shares is `out` with one of the others, not idx/v.
 RVA(0x000ea990, 0xa72)
 i32 CSBI_StatzTabGruntBar::SerializeFields(
     CFileMemBase* s,

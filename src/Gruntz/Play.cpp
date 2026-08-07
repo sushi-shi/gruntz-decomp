@@ -479,6 +479,8 @@ i32 CPlay::EnterState(GameStateId mode) {
 }
 
 // @early-stop
+// frame 0x14 vs retail's 0x10 - identical body and identical residue to
+// CMulti::LeaveState 0xb63f0; see the note there.
 RVA(0x000c8b80, 0x11b)
 i32 CPlay::LeaveState(GameStateId arg) {
     m_mgr->m_cueSink->PauseAllVoices();

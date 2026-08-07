@@ -405,6 +405,11 @@ i32 CMulti::EnterState(GameStateId arg) {
 }
 
 // @early-stop
+// frame 0x14 vs retail's 0x10: retail homes the CString `s` in the dead `arg`
+// parameter's slot ([esp+0x24]) and gives the RECT the whole frame; cl allocates a
+// fresh slot for `s` and never touches the param home. 15 spellings tested (CRect,
+// block scopes, decl order, GetModeSize, an LPRECT alias) - all neutral or worse.
+// Same body and same residue as CPlay::LeaveState 0xc8b80.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId arg) {
     m_mgr->m_cueSink->PauseAllVoices();

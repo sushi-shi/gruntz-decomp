@@ -138,6 +138,11 @@
     }
 
 // @early-stop
+// frame 0x84 vs retail's 0x94 AND 264 instructions short - this needs reconstruction,
+// not a frame tweak. The 16 bytes are four Lookup out-param dwords: retail gives the
+// three consecutive PLAYCUE_MAP/Lookup sites at +0x232a/+0x238b/+0x23fb three DISTINCT
+// slots (0x1c/0x10/0x14) where the macro's block-scoped `_c` collapses onto one, plus
+// a fourth slot at 0x30 in a tail block we have not reconstructed at all.
 
 RVA(0x000862f0, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {

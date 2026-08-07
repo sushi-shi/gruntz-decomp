@@ -561,8 +561,10 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 }
 
 // @early-stop
-// list is spilled to a stack home in retail; cl coalesces it into edi here (one fewer
-// frame dword). Every instruction matches modulo that regalloc choice.
+// frame 0x20 vs retail's 0x24: retail spills `list` to a stack home where cl keeps it
+// in edi, and it re-TESTS `stop` at the loop head (cl proves it 0 on entry and rotates
+// the loop away). Making `stop` unprovable at the head (`if (list == NULL) stop = 1;`,
+// an if/else that sets it in the empty arm, `stop = (list == NULL)`) all regress.
 RVA(0x0011c210, 0x29d)
 CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
     if (n <= 0) {
