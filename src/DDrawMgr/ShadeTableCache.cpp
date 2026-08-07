@@ -173,7 +173,7 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float fb = static_cast<float>((startPct * static_cast<i32>(p->peBlue) / 100)) * inv
                        + static_cast<float>(p->peBlue) * tt;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
-            ramp[j] = NearestPaletteIndex(rn, pal, gn, bn);
+            ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
 
         i32 br = static_cast<i32>(p->peRed) + 0x10;
@@ -195,7 +195,7 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
             float fb = static_cast<float>(p->peBlue) * inv
                        + static_cast<float>(p->peBlue) * static_cast<float>(endPct) * g_p01 * uu;
             i32 bn = static_cast<i32>((fb < g_255 ? fb : g_255));
-            ramp[nA + k] = NearestPaletteIndex(rn, pal, gn, bn);
+            ramp[nA + k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }
     return t;
@@ -275,7 +275,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
             );
             i32 rn =
                 static_cast<i32>((t0 * static_cast<float>(p->peRed) + t1 * static_cast<float>(cr)));
-            data[i * steps + j] = NearestPaletteIndex(rn, pal, gn, bn);
+            data[i * steps + j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }
     return t;
@@ -302,10 +302,10 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
         PALETTEENTRY* pr = &pal[i];
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
             PALETTEENTRY* pc = &pal[j];
-            i32 r = (pc->peRed * wCol / 100 + pr->peRed * wRow / 100) / div;
-            i32 g = (pc->peGreen * wCol / 100 + pr->peGreen * wRow / 100) / div;
-            i32 b = (pc->peBlue * wCol / 100 + pr->peBlue * wRow / 100) / div;
-            data[i * 0x100 + j] = NearestPaletteIndex(r, pal, g, b);
+            u8 r = static_cast<u8>((pc->peRed * wCol / 100 + pr->peRed * wRow / 100) / div);
+            u8 g = static_cast<u8>((pc->peGreen * wCol / 100 + pr->peGreen * wRow / 100) / div);
+            u8 b = static_cast<u8>((pc->peBlue * wCol / 100 + pr->peBlue * wRow / 100) / div);
+            data[i * 0x100 + j] = static_cast<u8>(FindNearestColor(pal, r, g, b));
         }
     }
     return t;
@@ -727,9 +727,9 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 // @early-stop
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
-    r &= 0xff;
     g &= 0xff;
     b &= 0xff;
+    r &= 0xff;
     i32 dg = g - pal->peGreen;
     i32 db = b - pal->peBlue;
     i32 dr = r - pal->peRed;
@@ -739,7 +739,7 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
         i32 dr2 = r - pal[i].peRed;
         i32 dg2 = g - pal[i].peGreen;
         i32 db2 = b - pal[i].peBlue;
-        i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
+        i32 d = dg2 * dg2 + dr2 * dr2 + db2 * db2;
         if (d < bestDist) {
             bestDist = d;
             best = i;
