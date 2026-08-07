@@ -14,6 +14,11 @@
 #include <string.h>
 
 // @early-stop
+// Two residues, both cl-side: it cross-jumps the BATTLEZ and MULTI arms (they share
+// the `Insert(name, REZ_TAG_WWD)` tail, so two of retail's 17 conditional branches
+// collapse into one `jmp`), and it materialises the EH state 1 as an immediate where
+// retail claims a 4th callee-saved register for it (`mov bl,1`), which is the uniform
+// +4 on every [esp+N].
 RVA(0x00093d40, 0x473)
 
 i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString name) {
@@ -28,17 +33,52 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
             path = name;
         }
         if (file.Open(path, 0, 0)) {
-            if (file.GetLength() >= 0x5f4) {
+            if (file.GetLength() < 0x5f4) {
+                file.Close();
+            } else {
                 file.Read(&buf, sizeof(buf));
                 file.Close();
                 return buf.checksum;
             }
-            file.Close();
         }
         return 0;
     }
 
-    if (isEmpty != 0) {
+    if (isEmpty == 0) {
+        if (hi != 0) {
+            CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
+            if (node == NULL) {
+                return 0;
+            }
+            CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
+            if (sub == NULL) {
+                return 0;
+            }
+            void* parsed = sub->BeginParse();
+            if (parsed == NULL) {
+                return 0;
+            }
+            memcpy(&buf, parsed, 0x5f4);
+            sub->EndParse();
+            return buf.checksum;
+        } else {
+            CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
+            if (node == NULL) {
+                return 0;
+            }
+            CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
+            if (sub == NULL) {
+                return 0;
+            }
+            void* parsed = sub->BeginParse();
+            if (parsed == NULL) {
+                return 0;
+            }
+            memcpy(&buf, parsed, 0x5f4);
+            sub->EndParse();
+            return buf.checksum;
+        }
+    } else {
         sprintf(scratch, "AREA%i_WORLDZ", ((id - 1) % 0x24) / 4 + 1);
         CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath(scratch));
         if (node == NULL) {
@@ -61,36 +101,4 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         sub->EndParse();
         return buf.checksum;
     }
-    if (hi == 0) {
-        CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_MULTI"));
-        if (node == NULL) {
-            return 0;
-        }
-        CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
-        if (sub == NULL) {
-            return 0;
-        }
-        void* parsed = sub->BeginParse();
-        if (parsed == NULL) {
-            return 0;
-        }
-        memcpy(&buf, parsed, 0x5f4);
-        sub->EndParse();
-        return buf.checksum;
-    }
-    CSymTab* node = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME_BATTLEZ"));
-    if (node == NULL) {
-        return 0;
-    }
-    CParseSource* sub = node->Insert(name, REZ_TAG_WWD);
-    if (sub == NULL) {
-        return 0;
-    }
-    void* parsed = sub->BeginParse();
-    if (parsed == NULL) {
-        return 0;
-    }
-    memcpy(&buf, parsed, 0x5f4);
-    sub->EndParse();
-    return buf.checksum;
 }
