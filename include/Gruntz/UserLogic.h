@@ -7,17 +7,18 @@
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserBaseLink.h>
 #include <Gruntz/WwdGridIter.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 struct CGameObject;
 struct LeafCue;
 class CDDrawSurfacePair;
 class CUserLogic;
-struct Coord;
 
 class CDDrawWorker;
 
@@ -68,6 +69,11 @@ public:
 
     void GetScreenPos(Coord* out);
 
+    // Header-inline: retail never emits it out of line - every caller carries
+    // the `call GetScreenPos` followed by both halves loaded, `sar 5`-ed and
+    // stored back in place.
+    void GetScreenTile(Coord* out);
+
     i32 IsAtSavedScreenPos();
 
     void RegisterLogicTypesOnce();
@@ -90,6 +96,12 @@ public:
     i32 m_prevAnimSetNode;
 };
 SIZE(0x34);
+
+inline void CUserLogic::GetScreenTile(Coord* out) {
+    GetScreenPos(out);
+    out->m_x >>= TILE_SHIFT_PX;
+    out->m_y >>= TILE_SHIFT_PX;
+}
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {

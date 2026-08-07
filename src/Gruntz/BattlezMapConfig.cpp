@@ -2985,37 +2985,47 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         unit->GetScreenPos(&c1);
         c1.m_x >>= TILE_SHIFT_PX;
         c1.m_y >>= TILE_SHIFT_PX;
-        bottom = c1.m_y + 4;
+        bottom = c1.m_y;
         Coord c2;
         unit->GetScreenPos(&c2);
         c2.m_x >>= TILE_SHIFT_PX;
         c2.m_y >>= TILE_SHIFT_PX;
-        right = c2.m_x + 4;
+        right = c2.m_x;
         Coord c3;
         unit->GetScreenPos(&c3);
         c3.m_x >>= TILE_SHIFT_PX;
         c3.m_y >>= TILE_SHIFT_PX;
-        top = c3.m_y - 3;
+        top = c3.m_y;
         Coord c4;
         unit->GetScreenPos(&c4);
-        c4.m_x >>= TILE_SHIFT_PX;
-        left = c4.m_x - 3;
+        left = c4.m_x >> TILE_SHIFT_PX;
     }
-    CMapMgr* board = m_board;
     RECT box;
+    box.left = left - 3;
+    box.top = top - 3;
+    box.right = right + 4;
+    box.bottom = bottom + 4;
+    // CMapMgr::Clip(&box) expanded; cl5 does not fold `&box != NULL`, so both
+    // arms survive and the `+1` belongs to Clip's true arm, not to box.
     {
-        RECT bounds;
-        static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
-        box.left = left;
-        box.top = top;
-        box.right = right + 1;
-        box.bottom = bottom + 1;
-        if (!IntersectRect(&board->m_bounds, &box, &bounds)) {
-            board->m_bounds = box;
+        const RECT* src = &box;
+        CMapMgr* board = m_board;
+        CRect b(0, 0, board->m_width, board->m_height);
+        RECT a;
+        if (src != NULL) {
+            a.left = src->left;
+            a.top = src->top;
+            a.right = src->right + 1;
+            a.bottom = src->bottom + 1;
+        } else {
+            a = CRect(0, 0, board->m_width, board->m_height);
         }
+        if (!IntersectRect(&board->m_bounds, &a, &b)) {
+            board->m_bounds = a;
+        }
+        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
 
     CDDrawChildGroup* coll = m_ctx->m_world->m_childGroup;
     coll->m_scanCursor = coll->m_list.GetHeadPosition();
@@ -3077,16 +3087,14 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             if (PtInRect(&box, wpt)) {
                 if (special != 0 && unit->m_gruntKind == GRUNT_NORMAL) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
+                        // CMapMgr::Clip(NULL): the constant src folds, leaving
+                        // only the else arm's second CRect construction.
                         CMapMgr* bd = m_board;
-                        RECT mb;
-                        mb.left = 0;
-                        mb.top = 0;
-                        mb.right = bd->m_width;
-                        mb.bottom = bd->m_height;
-                        RECT bx;
-                        bx = mb;
-                        if (!IntersectRect(&bd->m_bounds, &bx, &mb)) {
-                            bd->m_bounds = bx;
+                        CRect b(0, 0, bd->m_width, bd->m_height);
+                        RECT a;
+                        a = CRect(0, 0, bd->m_width, bd->m_height);
+                        if (!IntersectRect(&bd->m_bounds, &a, &b)) {
+                            bd->m_bounds = a;
                         }
                         bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
                         bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
@@ -3100,12 +3108,11 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                     if (entranceMode == PICKUP_NONE) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
-                            RECT r1;
-                            static_cast<RECT*>(new (&r1) CRect(0, 0, bd->m_width, bd->m_height));
-                            RECT rc;
-                            rc = r1;
-                            if (!IntersectRect(&bd->m_bounds, &rc, &r1)) {
-                                bd->m_bounds = rc;
+                            CRect b(0, 0, bd->m_width, bd->m_height);
+                            RECT a;
+                            a = CRect(0, 0, bd->m_width, bd->m_height);
+                            if (!IntersectRect(&bd->m_bounds, &a, &b)) {
+                                bd->m_bounds = a;
                             }
                             bd->m_gridW = bd->m_bounds.right - bd->m_bounds.left;
                             bd->m_gridH = bd->m_bounds.bottom - bd->m_bounds.top;
@@ -3129,7 +3136,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
             }
         }
     }
-    board->Clip(static_cast<const RECT*>(0));
+    m_board->Clip(static_cast<const RECT*>(0));
     return 0;
 }
 
@@ -3795,25 +3802,29 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
+    i32 bottom;
+    i32 right;
+    i32 top;
+    i32 left;
+    {
+        Coord cA;
+        unit->GetScreenTile(&cA);
+        bottom = cA.m_y;
+        Coord cB;
+        unit->GetScreenTile(&cB);
+        right = cB.m_x;
+        Coord cC;
+        unit->GetScreenTile(&cC);
+        top = cC.m_y;
+        Coord cD;
+        unit->GetScreenTile(&cD);
+        left = cD.m_x;
+    }
     RECT box;
-    Coord cA;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cA));
-    cA.m_x >>= 5;
-    cA.m_y >>= 5;
-    box.bottom = cA.m_y + 7;
-    Coord cB;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cB));
-    cB.m_x >>= 5;
-    cB.m_y >>= 5;
-    box.right = cB.m_x + 7;
-    Coord cC;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cC));
-    cC.m_x >>= 5;
-    cC.m_y >>= 5;
-    box.top = cC.m_y - 7;
-    Coord cD;
-    (static_cast<CUserLogic*>(unit))->GetScreenPos((&cD));
-    box.left = (cD.m_x >> TILE_SHIFT_PX) - 7;
+    box.left = left - 7;
+    box.top = top - 7;
+    box.right = right + 7;
+    box.bottom = bottom + 7;
 
     CGrunt* best = 0;
     i32 bestDist = INT_MAX;
@@ -3863,23 +3874,23 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                 continue;
             }
             Coord c;
-            (static_cast<CUserLogic*>(u))->GetScreenPos((&c));
+            u->GetScreenTile(&c);
             POINT wpt;
-            wpt.x = c.m_x >> TILE_SHIFT_PX;
-            wpt.y = c.m_y >> TILE_SHIFT_PX;
+            wpt.x = c.m_x;
+            wpt.y = c.m_y;
             if (!PtInRect(&box, wpt)) {
                 continue;
             }
             Coord unitPos1;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&unitPos1));
+            unit->GetScreenTile(&unitPos1);
             Coord b1;
-            (static_cast<CUserLogic*>(u))->GetScreenPos((&b1));
-            i32 dx = abs((unitPos1.m_x >> TILE_SHIFT_PX) - (b1.m_x >> TILE_SHIFT_PX));
+            u->GetScreenTile(&b1);
+            i32 dx = abs(unitPos1.m_x - b1.m_x);
             Coord unitPos2;
-            (static_cast<CUserLogic*>(unit))->GetScreenPos((&unitPos2));
+            unit->GetScreenTile(&unitPos2);
             Coord b2;
-            (static_cast<CUserLogic*>(u))->GetScreenPos((&b2));
-            i32 dy = abs((unitPos2.m_y >> TILE_SHIFT_PX) - (b2.m_y >> TILE_SHIFT_PX));
+            u->GetScreenTile(&b2);
+            i32 dy = abs(unitPos2.m_y - b2.m_y);
             i32 dist = dx * dx + dy * dy;
             if (dist >= bestDist) {
                 continue;
@@ -3895,24 +3906,26 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) <= 0x64) {
         return 1;
     }
+    // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
     CMapMgr* board = m_board;
-    RECT bounds;
-    static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
-    RECT* boxp = &box;
-    RECT rc;
-    if (boxp != NULL) {
-        rc.left = box.left;
-        rc.top = box.top;
-        rc.right = box.right + 1;
-        rc.bottom = box.bottom + 1;
-    } else {
-        rc = bounds;
+    {
+        const RECT* src = &box;
+        CRect b(0, 0, board->m_width, board->m_height);
+        RECT a;
+        if (src != NULL) {
+            a.left = src->left;
+            a.top = src->top;
+            a.right = src->right + 1;
+            a.bottom = src->bottom + 1;
+        } else {
+            a = CRect(0, 0, board->m_width, board->m_height);
+        }
+        if (!IntersectRect(&board->m_bounds, &a, &b)) {
+            board->m_bounds = a;
+        }
+        board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+        board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
     }
-    if (!IntersectRect(&board->m_bounds, &rc, &bounds)) {
-        board->m_bounds = rc;
-    }
-    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
-    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
 
     i32 flags = 0;
     PickupType prim = unit->m_entranceReason;
@@ -3937,19 +3950,14 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         flags = 0x1000;
     }
     Coord bc;
-    (static_cast<CUserLogic*>(best))->GetScreenPos((&bc));
-    if (RouteUnitTo(unit, bc.m_x >> TILE_SHIFT_PX, bc.m_y >> TILE_SHIFT_PX, 0x1000d8f, flags, 1)
-        == 0) {
-
-        RECT fb;
-        fb.left = 0;
-        fb.top = 0;
-        fb.right = board->m_width;
-        fb.bottom = board->m_height;
-        RECT frc;
-        frc = fb;
-        if (!IntersectRect(&board->m_bounds, &frc, &fb)) {
-            board->m_bounds = frc;
+    best->GetScreenTile(&bc);
+    if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) == 0) {
+        // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
+        CRect b(0, 0, board->m_width, board->m_height);
+        RECT a;
+        a = CRect(0, 0, board->m_width, board->m_height);
+        if (!IntersectRect(&board->m_bounds, &a, &b)) {
+            board->m_bounds = a;
         }
         board->m_gridW = board->m_bounds.right - board->m_bounds.left;
         board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
@@ -4322,12 +4330,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         return 0;
     }
 
+    i32 bandPct = m_brickzPct;
     i32 band;
-    if (m_brickzPct == 0) {
+    if (bandPct == 0) {
         band = rand() & 1;
     } else {
-        band = rand() % m_brickzPct + 1;
+        band = rand() % bandPct;
     }
+    band++;
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->m_entranceReason;
@@ -4337,12 +4347,14 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         if (cur != PICKUP_NONE) {
             return 1;
         }
+        i32 rollPct = m_wingzPct;
         i32 roll;
-        if (m_wingzPct == 0) {
+        if (rollPct == 0) {
             roll = rand() & 1;
         } else {
-            roll = rand() % m_wingzPct + 1;
+            roll = rand() % rollPct;
         }
+        roll++;
         // Every arm yields the PickupType id of the key its bucket accumulates;
         // 0x14 is not a droppable tool, so the chain skips straight to Wingz.
         PickupType mode;
@@ -4903,6 +4915,10 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
     BrickzCell* tile = &(static_cast<BrickzCell*>((m_board)->m_rows[row]))[col];
 
+    i32 bestX = col;
+    i32 bestY = row;
+    i32 bestDist = INT_MAX;
+
     CTileTriggerLogic* cell;
 
     if (tile->m_typeCode == TILEKIND_PYRAMID_LATCH_A) {
@@ -4910,43 +4926,42 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     } else {
         cell = m_cellQuery->FindInLists12((col << 8) + row, TRIGID_ANY);
     }
-    i32 bestX = col;
-    i32 bestY = col;
-    i32 bestDist = INT_MAX;
     if (cell != NULL) {
 
-        i32 s;
-        for (s = 0; s < 24; s++) {
-            i32 node = cell->m_linkKeys[s];
-            if (node != 0) {
-                CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
-                if (rec != NULL) {
-                    i32 cx = rec->m_tileX;
-                    i32 cy = rec->m_tileY;
-                    if (IsCoordOccupied(unit, cx, cy) != 0) {
-                        return 1;
-                    }
+        i32* p;
+        for (p = cell->m_linkKeys; p - cell->m_linkKeys < 24; p++) {
+            i32 node = *p;
+            if (node == 0) {
+                break;
+            }
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
+            if (rec != NULL) {
+                i32 cx = rec->m_tileX;
+                i32 cy = rec->m_tileY;
+                if (IsCoordOccupied(unit, cx, cy) != 0) {
+                    return 1;
                 }
             }
         }
 
-        for (s = 0; s < 24; s++) {
-            i32 node = cell->m_linkKeys[s];
-            if (node != 0) {
-                CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
-                if (rec != NULL) {
-                    i32 cx = rec->m_tileX;
-                    i32 cy = rec->m_tileY;
-                    i32 dx = cx - goalX;
-                    i32 dy = cy - goalY;
-                    dx = abs(dx);
-                    dy = abs(dy);
-                    i32 dist = dx * dx + dy * dy;
-                    if (dist < bestDist) {
-                        bestX = cx;
-                        bestY = cy;
-                        bestDist = dist;
-                    }
+        for (p = cell->m_linkKeys; p - cell->m_linkKeys < 24; p++) {
+            i32 node = *p;
+            if (node == 0) {
+                break;
+            }
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild(node, TRIGID_ANY);
+            if (rec != NULL) {
+                i32 cx = rec->m_tileX;
+                i32 cy = rec->m_tileY;
+                i32 dx = cx - goalX;
+                i32 dy = cy - goalY;
+                dx = abs(dx);
+                dy = abs(dy);
+                i32 dist = dx * dx + dy * dy;
+                if (dist < bestDist) {
+                    bestX = cx;
+                    bestY = cy;
+                    bestDist = dist;
                 }
             }
         }
@@ -4985,47 +5000,45 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             0x98f,
             flags
         )
-        == 0) {
+        != 0) {
+        if (list.GetCount() != 0) {
+            void* head = list.RemoveHead();
+            if (head != NULL) {
+                CoordPoolNode* node = g_coordPool.NodeOf(head);
+                node->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = node;
+            }
+            if (list.GetCount() != 0) {
 
-        PathToNearestCandidate(unit, 1, bestX, bestY);
-        return 0;
-    }
-    if (list.GetCount() == 0) {
-        return 0;
-    }
-    void* head = list.RemoveHead();
-    if (head != NULL) {
-        CoordPoolNode* node = g_coordPool.NodeOf(head);
-        node->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = node;
-    }
-    if (list.GetCount() == 0) {
-        return 0;
-    }
+                if (unit->CoordCount() != 0) {
+                    CoordNode* n = unit->CoordHead();
+                    while (n != NULL) {
+                        CoordNode* cur = n;
+                        n = n->m_next;
+                        if (cur->m_coord != NULL) {
+                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                            fn->m_next = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = fn;
+                        }
+                    }
+                    unit->m_coordList.RemoveAll();
+                }
 
-    if (unit->CoordCount() != 0) {
-        CoordNode* n = unit->CoordHead();
-        while (n != NULL) {
-            CoordNode* cur = n;
-            n = n->m_next;
-            if (cur->m_coord != NULL) {
-                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                fn->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = fn;
+                POSITION pp = list.GetHeadPosition();
+                while (pp != NULL) {
+                    unit->m_coordList.AddTail(list.GetNext(pp));
+                }
+                Coord* tail = (unit->CoordTail())->m_coord;
+                unit->m_entrancePx.m_x = (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+                unit->m_entrancePx.m_y = (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
+                unit->m_defenderState = AISTATE_RETREAT;
+                return 1;
             }
         }
-        unit->m_coordList.RemoveAll();
+    } else {
+        PathToNearestCandidate(unit, 1, bestX, bestY);
     }
-
-    POSITION pp = list.GetHeadPosition();
-    while (pp != NULL) {
-        unit->m_coordList.AddTail(list.GetNext(pp));
-    }
-    Coord* tail = (unit->CoordTail())->m_coord;
-    unit->m_entrancePx.m_x = (tail->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
-    unit->m_entrancePx.m_y = (tail->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
-    unit->m_defenderState = AISTATE_RETREAT;
-    return 1;
+    return 0;
 }
 
 // @early-stop
