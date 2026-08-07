@@ -1588,7 +1588,6 @@ TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     return result;
 }
 
-// @early-stop
 RVA(0x00160a40, 0x201)
 i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
     if (t->m_extent.left == COORD_UNSET) {
@@ -1600,17 +1599,18 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
 
     i32 px = t->m_screenX;
     i32 row = t->m_extent.bottom + t->m_screenY;
-    i32 startRow = row;
 
     TileCollisionKind result;
     PROBE_TILE(this, px, row, result);
 
+    i32 startRow = row;
+    i32 wrapH = m_mainPlane->m_wrapH;
     while (result != TILEKIND_SOFT) {
         if (result == TILEKIND_SOFT2 || result == TILEKIND_HARD) {
             break;
         }
         ++row;
-        if (row >= (m_mainPlane)->m_wrapH) {
+        if (row >= wrapH) {
             return 0;
         }
         PROBE_TILE(this, px, row, result);
