@@ -218,6 +218,48 @@ public:
 
     i32 WireTileSwitchLogic(CGrunt* g, i32 x, i32 y);
 
+    // Zero every POD member: the class has no retail ctor symbol, so cl
+    // inlines this at `new CTriggerMgr` exactly as retail does. Without it
+    // m_grid/m_overlay are recycled heap and map load faults.
+    CTriggerMgr() {
+        // Every POD member: the class had NO constructor, so `new CTriggerMgr` left
+        // all of this as recycled heap. m_grid's garbage cells crashed
+        // ClearGridRange and m_overlay's garbage crashed Deactivate. The embedded
+        // CPtrList/CByteArray members construct themselves.
+        memset(m_grid, 0, sizeof(m_grid));
+        memset(m_rowCount, 0, sizeof(m_rowCount));
+        memset(m_cellFlag, 0, sizeof(m_cellFlag));
+        memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
+        memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
+        m_world = NULL;
+        m_armed = 0;
+        memset(&m_recordPosition, 0, sizeof(m_recordPosition));
+        m_goal = NULL;
+        m_overlay = NULL;
+        memset(m_reserved274, 0, sizeof(m_reserved274));
+        m_groupInitialized = 0;
+        m_phase = static_cast<FinishLevelState>(0);
+        m_timerBase = 0;
+        m_timerWindow = 0;
+        m_pendingFx = NULL;
+        m_countdownActive = 0;
+        m_pendingFxKind = 0;
+        m_gooTimerBaseLo = 0;
+        m_gooTimerBaseHi = 0;
+        m_gooIntervalLo = 0;
+        m_gooIntervalHi = 0;
+        m_resourceTimerBaseLo = 0;
+        m_resourceTimerBaseHi = 0;
+        m_resourceIntervalLo = 0;
+        m_resourceIntervalHi = 0;
+        m_selSentinel = 0;
+        m_finishReasonFrame = static_cast<FinishLevelReason>(0);
+        m_rollingballLoop = NULL;
+        m_teleportLoop = NULL;
+        m_rollingballWanted = 0;
+        m_teleportWanted = 0;
+        m_groupFlag = 0;
+    }
     ~CTriggerMgr();
 
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
