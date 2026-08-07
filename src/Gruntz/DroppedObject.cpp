@@ -216,6 +216,8 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
 }
 
 // @early-stop
+// only residue: cl schedules the CObjectDropper vptr store one pair of i64 zero-stores
+// earlier than retail, which renames two registers downstream.
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_lastDropTime = 0;
@@ -226,37 +228,37 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
 
-    CWwdGameObjectA* o = m_object;
-    i32 snapX = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 snapY = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    o->m_screenX = snapX;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenX = snapX;
+    m_object->m_screenY = snapY;
     m_posX = static_cast<double>(snapX);
-    o->m_screenY = snapY;
     m_posY = static_cast<double>(snapY);
+    CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_ACTOR_FRONT) {
         o->m_sortKey = SORTKEY_ACTOR_FRONT;
         o->m_flags |= 0x20000;
     }
 
-    CWwdGameObjectA* obj38 = m_wwdObject;
-    if (obj38->m_frameSet != NULL) {
+    CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
+    if (frameSet != NULL) {
         CString name;
-        name = obj38->m_frameSet->m_name;
+        name = frameSet->m_name;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
-            o->m_direction = IDX(CARDINAL_NORTH);
+            m_object->m_direction = IDX(CARDINAL_NORTH);
             m_travelDx = 0;
             m_travelDy = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
-            o->m_direction = IDX(CARDINAL_EAST);
+            m_object->m_direction = IDX(CARDINAL_EAST);
             m_travelDx = 1;
             m_travelDy = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
-            o->m_direction = IDX(CARDINAL_SOUTH);
+            m_object->m_direction = IDX(CARDINAL_SOUTH);
             m_travelDx = 0;
             m_travelDy = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
-            o->m_direction = IDX(CARDINAL_WEST);
+            m_object->m_direction = IDX(CARDINAL_WEST);
             m_travelDx = -1;
             m_travelDy = 0;
         }
@@ -271,15 +273,15 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
         m_scrollMode = 1;
     }
     CShadeTable* sel = g_gameReg->m_logicPump->m_tables[5];
-    o->m_drawActive = 1;
-    o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
-    o->m_drawFillArg = sel;
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    m_object->m_drawFillArg = sel;
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    o->m_area.left = 1;
-    o->m_area.right = 1;
-    o->m_area.top = 1;
-    o->m_area.bottom = 1;
+    m_object->m_area.left = 1;
+    m_object->m_area.right = 1;
+    m_object->m_area.top = 1;
+    m_object->m_area.bottom = 1;
 }
 
 RVA(0x000c5f80, 0x102)
