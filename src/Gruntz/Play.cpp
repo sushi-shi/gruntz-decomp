@@ -3145,11 +3145,13 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
         return m_guts->ClickHilite(msg, x, y);
     }
 
-    i32 outArea;
-    i32 outVal;
-    if (m_mgr->m_cmdGrid->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
-        m_guts->ToggleStat(outVal);
-        return 1;
+    {
+        i32 outArea;
+        i32 outVal;
+        if (m_mgr->m_cmdGrid->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
+            m_guts->ToggleStat(outVal);
+            return 1;
+        }
     }
 
     if (m_dragInhibit1 != 0) {
