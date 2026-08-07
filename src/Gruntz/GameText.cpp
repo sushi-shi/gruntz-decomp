@@ -29,6 +29,9 @@ static CString g_worldName[8] = {
 DATA(0x002451a8)
 CWinApp g_gruntzWinApp("Gruntz");
 
+DATA(0x00245270)
+GruntDeathType g_areaPitDeath;
+
 DATA(0x002453d8)
 CButeMgr g_buteMgr;
 

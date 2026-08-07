@@ -22,9 +22,6 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
-DATA(0x001e9068)
-i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
-
 DATA(0x001e9078)
 Coord g_multiBootyGeom[8][4] = {
     {{190, 437}, {306, 437}, {422, 437}, {538, 437}},
@@ -36,9 +33,6 @@ Coord g_multiBootyGeom[8][4] = {
     {{218, 180}, {334, 180}, {450, 180}, {566, 180}},
     {{218, 138}, {334, 138}, {450, 138}, {566, 138}},
 };
-
-DATA(0x001e93a8)
-char g_secretChars[] = "WARP";
 
 // @early-stop
 RVA(0x0001b450, 0x1ac)

@@ -103,6 +103,12 @@ RECT g_col6Rects[4] =
 DATA(0x001e92f8)
 RECT g_colorRects[4] =
     {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
+DATA(0x001e9068)
+i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
+
+DATA(0x001e93a8)
+char g_secretChars[] = "WARP";
+
 DATA(0x001e9338)
 RECT g_labelRects[7] = {
     {45, 155, 175, 215},

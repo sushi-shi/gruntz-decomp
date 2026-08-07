@@ -222,9 +222,6 @@ i32 g_scrollMinSpeed;
 DATA(0x002455f0)
 i32 g_levelBias100 = 0;
 
-DATA(0x00245270)
-GruntDeathType g_areaPitDeath;
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 DATA(0x0024c020)
