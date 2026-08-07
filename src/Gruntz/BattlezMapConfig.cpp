@@ -3142,7 +3142,11 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         // CMapMgr::Clip(NULL): the constant src folds, leaving
                         // only the else arm's second CRect construction.
                         CMapMgr* bd = m_board;
-                        CRect b(0, 0, bd->m_width, bd->m_height);
+                        RECT b;
+                        b.left = 0;
+                        b.top = 0;
+                        b.right = bd->m_width;
+                        b.bottom = bd->m_height;
                         RECT a;
                         a = CRect(0, 0, bd->m_width, bd->m_height);
                         RECT* aDst = &bd->m_bounds;
@@ -3945,7 +3949,11 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     // CMapMgr::Clip(NULL) expanded: with a constant-NULL src cl folds the test
     // away and only the else arm - a struct copy of the board rect - survives.
     {
-        CRect b(0, 0, board->m_width, board->m_height);
+        RECT b;
+        b.left = 0;
+        b.top = 0;
+        b.right = board->m_width;
+        b.bottom = board->m_height;
         RECT a;
         a = b;
         RECT* aDst = &board->m_bounds;

@@ -17,17 +17,6 @@
 
 #include <stdlib.h>
 
-#define SCAN_RECT_BOUNDS(grid)                                                                     \
-    {                                                                                              \
-        CRect clip(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT full = clip;                                                                          \
-        if (!IntersectRect(&(grid)->m_bounds, &full, &clip)) {                                     \
-            (grid)->m_bounds = full;                                                               \
-        }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
-    }
-
 static inline i32 ScanCellX(CGrunt* g) {
     Coord t;
     g->GetScreenPos(&t);
@@ -99,14 +88,36 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                             i32 flags = cell->m_flags;
                             if (flags & 0x8000) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    SCAN_RECT_BOUNDS(grid);
+                                    RECT hitClip;
+                                    hitClip.left = 0;
+                                    hitClip.top = 0;
+                                    hitClip.right = grid->m_width;
+                                    hitClip.bottom = grid->m_height;
+                                    RECT hitFull = CRect(0, 0, grid->m_width, grid->m_height);
+                                    RECT* hitDst = &grid->m_bounds;
+                                    if (!IntersectRect(hitDst, &hitFull, &hitClip)) {
+                                        *hitDst = hitFull;
+                                    }
+                                    grid->m_gridW = hitDst->right - hitDst->left;
+                                    grid->m_gridH = hitDst->bottom - hitDst->top;
                                     return 1;
                                 }
                                 hits++;
                             } else if ((flags & 0x4000)
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
-                                    SCAN_RECT_BOUNDS(grid);
+                                    RECT brickClip;
+                                    brickClip.left = 0;
+                                    brickClip.top = 0;
+                                    brickClip.right = grid->m_width;
+                                    brickClip.bottom = grid->m_height;
+                                    RECT brickFull = CRect(0, 0, grid->m_width, grid->m_height);
+                                    RECT* brickDst = &grid->m_bounds;
+                                    if (!IntersectRect(brickDst, &brickFull, &brickClip)) {
+                                        *brickDst = brickFull;
+                                    }
+                                    grid->m_gridW = brickDst->right - brickDst->left;
+                                    grid->m_gridH = brickDst->bottom - brickDst->top;
                                     return 1;
                                 }
                                 hits++;
@@ -116,7 +127,16 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                     }
                 }
             }
-            SCAN_RECT_BOUNDS(grid);
+            {
+                CRect tailClip(0, 0, grid->m_width, grid->m_height);
+                RECT tailFull = CRect(0, 0, grid->m_width, grid->m_height);
+                RECT* tailDst = &grid->m_bounds;
+                if (!IntersectRect(tailDst, &tailFull, &tailClip)) {
+                    *tailDst = tailFull;
+                }
+                grid->m_gridW = tailDst->right - tailDst->left;
+                grid->m_gridH = tailDst->bottom - tailDst->top;
+            }
             if (m_attackWaypoints.GetSize() != 0) {
 
                 Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
