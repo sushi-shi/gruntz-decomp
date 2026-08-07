@@ -1359,21 +1359,21 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             TILE_ARRIVAL_FX_END
         );
     }
-    if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) == 0) {
-        return 0;
-    }
-    cell->LoadVehicleGruntSprites(PICKUP_NONE);
+    if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) != 0) {
+        cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
-    if (hit->m_tileOwnerHi != col) {
-        CGameObject* obj = cell->m_object;
-        CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
-        if (obj->m_screenX >= plane->m_viewRect.left && obj->m_screenX < plane->m_viewRect.right
-            && obj->m_screenY >= plane->m_viewRect.top
-            && obj->m_screenY < plane->m_viewRect.bottom) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x38e, -1, 0, -1, -1);
+        if (hit->m_tileOwnerHi != col) {
+            CGameObject* obj = cell->m_object;
+            CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
+            if (obj->m_screenX >= plane->m_viewRect.left && obj->m_screenX < plane->m_viewRect.right
+                && obj->m_screenY >= plane->m_viewRect.top
+                && obj->m_screenY < plane->m_viewRect.bottom) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x38e, -1, 0, -1, -1);
+            }
         }
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 RVA(0x0006e7e0, 0x5)

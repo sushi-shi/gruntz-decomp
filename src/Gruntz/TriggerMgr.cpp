@@ -103,10 +103,12 @@ CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
 RVA(0x00078060, 0x18d)
 void CTriggerMgr::HudRect(RECT r, i32 flag) {
     CGameLevel* view = m_world->m_level;
-    r.left += view->m_mainPlane->m_viewRect.left - view->m_planeCtx.left;
-    r.top += view->m_mainPlane->m_viewRect.top - view->m_planeCtx.top;
-    r.right += view->m_mainPlane->m_viewRect.left - view->m_planeCtx.left;
-    r.bottom += view->m_mainPlane->m_viewRect.top - view->m_planeCtx.top;
+    const RECT* vp = &view->m_mainPlane->m_viewRect;
+    r.left += vp->left - view->m_planeCtx.left;
+    r.top += vp->top - view->m_planeCtx.top;
+    vp = &view->m_mainPlane->m_viewRect;
+    r.right += vp->left - view->m_planeCtx.left;
+    r.bottom += vp->top - view->m_planeCtx.top;
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++) {
             CGrunt* g = m_grid[j];
@@ -2044,9 +2046,17 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                 return;
             }
             goto Lab_56b;
+        case FINISH_REASON_WARPSTONE_RESET:
+            m_phase = FINISH_STATE_DEFEAT;
+            goto Lab_522;
         case FINISH_REASON_BATTLEZ_VICTORY:
             m_phase = FINISH_STATE_VICTORY;
             break;
+        case FINISH_REASON_TIME_EXPIRED:
+            m_phase = FINISH_STATE_DEFEAT;
+            m_timerWindow = 3000;
+            m_timerBase = g_frameTime;
+            goto Lab_56b;
         case FINISH_REASON_NO_GRUNTZ_REMAIN:
             if (m_phase == FINISH_STATE_ACTIVE) {
                 m_phase = FINISH_STATE_DEFEAT;
@@ -2054,21 +2064,13 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
                     m_pendingFx->ResolveDeathAnimation();
                 }
             }
-            goto Lab_522;
-        case FINISH_REASON_TIME_EXPIRED:
-            m_phase = FINISH_STATE_DEFEAT;
+        Lab_522:
             m_timerWindow = 3000;
             m_timerBase = g_frameTime;
             goto Lab_56b;
         case FINISH_REASON_BATTLEZ_DEFEAT:
             m_phase = FINISH_STATE_DEFEAT;
             break;
-        case FINISH_REASON_WARPSTONE_RESET:
-            m_phase = FINISH_STATE_DEFEAT;
-        Lab_522:
-            m_timerWindow = 3000;
-            m_timerBase = g_frameTime;
-            goto Lab_56b;
         default:
             return;
     }
