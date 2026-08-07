@@ -43,7 +43,42 @@ def base_text(rva: str) -> str:
         die(f"{obj.relative_to(REPO)} missing - run `gruntz build` first")
     out = _capture(["llvm-objdump", "-dr", "--x86-asm-syntax=intel",
                     f"--disassemble-symbols={claim['name']}", str(obj)])
+    out = _with_switch_arms(out, claim, obj)
     return f"{claim['name']}  [{claim['unit']}]\n" + out
+
+
+def _with_switch_arms(out: str, claim: dict, obj) -> str:
+    """Re-attach the `$L` sub-symbols cl emits for switch arms.
+
+    MSVC splits a switch's arms into `$L<n>` local symbols, so
+    `--disassemble-symbols=<fn>` stops at the indirect `jmp` and every
+    downstream view (--diff, --blocks, --branches) silently sees a
+    truncated function: `SetTabState` reported 9 base blocks against 67 in
+    the target. The delinker keeps the arms inside the target symbol, so the
+    two sides are not comparable until the arms are re-attached here.
+
+    Ask for the whole section once and take the rows from the function's
+    first row through the last row that still belongs to it: the arms follow
+    contiguously, and the next NON-`$L` symbol header ends the body.
+    """
+    if "jmp" not in out or "ptr [" not in out:
+        return out
+    full = _capture(["llvm-objdump", "-dr", "--x86-asm-syntax=intel", str(obj)])
+    rows, keeping, seen = [], False, False
+    for ln in full.splitlines():
+        head = ln.rstrip()
+        if head.endswith(">:"):
+            name = head.split("<", 1)[-1][:-2]
+            if name == claim["name"]:
+                keeping, seen = True, True
+            elif keeping and not name.startswith("$L"):
+                break
+            if keeping:
+                rows.append(ln)
+            continue
+        if keeping:
+            rows.append(ln)
+    return "\n".join(rows) + "\n" if seen and len(rows) > out.count("\n") else out
 
 
 _DISASM_ROW = None  # compiled lazily
