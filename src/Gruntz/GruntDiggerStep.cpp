@@ -154,7 +154,7 @@ i32 CGrunt::StepDiggerBehavior() {
             CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
-            if (x < board->right && board->left <= x && y < board->bottom && board->top <= y) {
+            if (x < board->right && x >= board->left && y < board->bottom && y >= board->top) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
             m_blockedVoicePending = 0;
