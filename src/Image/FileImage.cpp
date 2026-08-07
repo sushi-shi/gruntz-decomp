@@ -323,13 +323,11 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 }
 
 // @early-stop
-// @early-stop
-// The header local is a BITMAPINFO, not a bare BITMAPINFOHEADER: retail zeroes 44
-// bytes (mov ecx,0xb / rep stos) and Write()s 0x2c, and the sibling SaveTga uses the
-// same `BITMAPINFO bi; memset(&bi, 0, sizeof(bi))` shape. That now matches. Residue:
-// cl spills `this` to a stack slot retail keeps in ebp, so the frame is 4 bytes wide
-// (sub esp,0x58 vs 0x54) and every [esp+N] is off by 4; retail also materialises its
-// zero in esi where cl uses immediates.
+// Residue is cl's frame choice: retail parks the row counter in the never-read `flag`
+// parameter's home slot ([esp+0x7c], decremented in place and tested with js/jns) and
+// keeps `this` in ebp, where cl allocates a real local and spills `this` - so the frame
+// is 4 bytes wider (sub esp,0x58 vs 0x54) and every [esp+N] is off by 4. Retail also
+// materialises its zero in esi where cl uses immediates.
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -374,19 +372,21 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     }
 
     CFile file;
-    i32 ok;
     if (flag != 0) {
-        ok = file.Open(static_cast<char*>(pal), 0x2001, 0);
+        if (file.Open(static_cast<char*>(pal), 0x2001, 0) == 0) {
+            this->m_ddSurface->Unlock(0);
+            delete[] line;
+            return 0;
+        }
+        // modeNoTruncate: only the append open repositions to the end.
+        file.Seek(0, 2);
     } else {
-        ok = file.Open(static_cast<char*>(pal), 0x1001, 0);
+        if (file.Open(static_cast<char*>(pal), 0x1001, 0) == 0) {
+            this->m_ddSurface->Unlock(0);
+            delete[] line;
+            return 0;
+        }
     }
-    if (ok == 0) {
-        this->m_ddSurface->Unlock(0);
-        delete[] line;
-        return 0;
-    }
-
-    file.Seek(0, 2);
     file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
