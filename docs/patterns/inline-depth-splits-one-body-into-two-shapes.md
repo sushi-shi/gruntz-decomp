@@ -34,3 +34,18 @@ callers that kept the OUT-OF-LINE call. Everything in the family that is absent 
 inlined the helper, and needs the inline header included in its TU. For
 `?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z` that is 60 of the 66
 `??0C*@@QAE@PAUCGameObject@@@Z` ctors out of line, 6 inlined.
+
+**"One level" is a BUDGET, not a depth cap - do not reach for `#pragma inline_depth(1)`.**
+Measured 2026-08-07 on `wwdobjmgr`: our cl expands the depth-2 base ctor where retail calls it
+(`CDDrawChildGroup::CreateContainerObject` inlines `CWwdGameObject`'s ctor AND `CGameObject`'s,
+retail inlines the first and emits `call ??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z`). Forcing
+`#pragma inline_depth(1)` on that TU does move it - **42.52 -> 58.49** - but it simultaneously
+craters two functions retail DOES expand two levels deep: `CDDrawChildGroup::SumWeighted`
+99.93 -> 58.07 and `CDDrawChildGroup::DestroyChildren` 100.00 -> 65.15, plus
+`CreateSpriteObject` 66.73 -> 57.50. So retail's inliner is not capped at one level; it is the
+same greedy per-function budget as the `CLightFx::CLightFx` residue above, and a depth pragma is
+the wrong knob (and a per-TU device besides - see the no-guard-devices ruling). The same
+divergence sits under `_CreateDoNothingNormal` (`0xa9e00`, 39.6%), where retail calls
+`??0CUserLogic@@QAE@PAUCGameObject@@@Z` at `0x58cd0` - one of its only three callers, the other
+two being `CGrunt`'s and `CProjectile`'s ctors, both of which exhaust the budget on their own
+bodies first.
