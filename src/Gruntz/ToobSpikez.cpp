@@ -62,6 +62,9 @@ i32 CreateToobSpikez(CGameObject* obj) {
 template<> DATA(0x0024e978)
 CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
+// @early-stop
+// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
+// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x001145c0, 0x18e)
 CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_value = m_wwdObject->m_animCursor.m_animation;

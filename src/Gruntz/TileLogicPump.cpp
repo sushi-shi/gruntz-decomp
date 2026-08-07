@@ -409,6 +409,9 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
     return 0;
 }
 
+// @early-stop
+// The three m_object reloads now match retail; the residual is a callee-saved
+// register rotation (edi/ebp/ecx) around the flag read-modify-writes.
 RVA(0x0010e220, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;

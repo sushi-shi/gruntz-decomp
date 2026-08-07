@@ -197,6 +197,11 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     return this;
 }
 
+// @early-stop
+// Jump table, arm boundaries (0x0f/0x28/0x36/0x44) and every table entry match
+// retail exactly; the three `delete` arms are a cyclic scratch-register rotation
+// (retail edx/eax/ecx, ours eax/ecx/edx).  Body pinned by RVA_COMPGEN(0x00172160)
+// in src/Bute/ButeMgr.cpp.
 inline CButeValue::~CButeValue() {
     switch (type) {
         case BUTE_STRING:

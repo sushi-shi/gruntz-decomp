@@ -291,6 +291,9 @@ i32 CreateExplosion(CGameObject* owner) {
     return 1;
 }
 
+// @early-stop
+// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
+// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x00046ad0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;

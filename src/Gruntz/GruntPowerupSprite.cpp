@@ -24,6 +24,9 @@ CActReg CActRegPool<CGruntPowerupSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
+// @early-stop
+// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
+// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_LIGHTING_POWERUP");

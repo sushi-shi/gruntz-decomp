@@ -22,6 +22,9 @@ CActReg CActRegPool<CGruntSelectedSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
+// @early-stop
+// The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
+// a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x0007e3e0, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_GRUNTSELECTEDSPRITE");
