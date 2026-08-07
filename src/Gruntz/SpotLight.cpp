@@ -11,6 +11,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -183,15 +184,7 @@ i32 CSpotLight::Tick() {
             m_object->m_screenY = tgt->m_object->m_screenY;
             if (m_object->m_score == 1) {
                 g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_MELT, -1);
-                i32 seed;
-                if ((g_randSeeded & 1) == 0) {
-                    g_randSeeded |= 1;
-                    seed = static_cast<i32>(timeGetTime());
-                } else {
-                    seed = g_randSeed;
-                }
-                g_randSeed = seed * 0x343fd + 0x269ec3;
-                i32 laser = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 2 + 1;
+                i32 laser = GetRandomNumber() % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;

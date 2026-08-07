@@ -8,6 +8,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BzState.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
@@ -200,15 +201,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-                    u32 x;
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(
-                        0,
-                        0x3bf,
-                        ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
-                        1,
-                        -1,
-                        -1
-                    );
+                    g_gameReg->m_cueSink
+                        ->SpawnVoiceDriver(0, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
                     m_walkStarted = 1;
                 } else {
                     m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");

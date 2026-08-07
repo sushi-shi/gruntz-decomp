@@ -16,6 +16,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -1007,11 +1008,10 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 }
 
 static __inline i32 WapRand(i32 range) {
-    u32 x;
     if (range == 0) {
-        return (static_cast<u32>(g_randSeed) >> 16) & 1;
+        return GetRandomNumber() & 1;
     }
-    return ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + 1;
+    return GetRandomNumber() % range + 1;
 }
 
 RVA(0x00100510, 0x6)

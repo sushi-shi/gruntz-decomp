@@ -1098,7 +1098,6 @@ i32 CGrunt::StepArrivalReroll() {
     }
     i32 v;
     i32 range = 0x7531 - elapsed;
-    u32 x;
     if (range == 0) {
         if ((GetRandomNumber() & 1)) {
             v = elapsed;
@@ -1106,13 +1105,12 @@ i32 CGrunt::StepArrivalReroll() {
             v = 0x7530;
         }
     } else {
-        v = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % range + elapsed;
+        v = GetRandomNumber() % range + elapsed;
     }
     if (v <= 0x7148) {
         return 0;
     }
-    u32 x2;
-    i32 pick = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x65;
+    i32 pick = GetRandomNumber() % 0x65;
     CWwdGameObjectA* h = m_object;
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;

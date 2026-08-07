@@ -16,6 +16,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -650,11 +651,7 @@ i32 CInGameIcon::PeekCycle() {
         return 0;
     }
     if (static_cast<i64>(g_frameTime) - m_peekTimer.m_v >= m_peekWindow.m_v) {
-        u32 x;
-        CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(
-            ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 0x11,
-            0
-        );
+        CShadeTable* rec = g_gameReg->m_spriteFactory->GetSel(GetRandomNumber() % 0x11, 0);
         CWwdGameObjectA* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = SHADE_PAL_16;
