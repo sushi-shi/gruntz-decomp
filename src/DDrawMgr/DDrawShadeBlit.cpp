@@ -30,10 +30,10 @@ CShadeTable* g_shadeDescr220 = 0;
 static inline u16* Pix16(void* p) {
     return static_cast<u16*>(p);
 }
-static inline void Store16(u8* p, u16 v) {
+static inline void Store16(u8* p, i32 v) {
     Pix16Ptr c;
     c.m_bytes = p;
-    *c.m_words = v;
+    *c.m_words = static_cast<u16>(v);
 }
 static inline u16 Load16(const u8* p) {
     Pix16CPtr c;
@@ -286,13 +286,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
         }
     }
-    i32 rowInc;
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
-        rowInc = -pitch;
+        pitch = -pitch;
     } else {
         base += dst->top * pitch + dst->left * m_dstBpp;
-        rowInc = pitch;
     }
 
     x = m_width;
@@ -302,31 +300,31 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             if (pos >= m_rleLen) {
                 break;
             }
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += 0x80 - static_cast<i32>(b);
+            if (m_rleData[pos] & 0x80) {
+                x += 0x80 - static_cast<i32>(m_rleData[pos]);
                 pos++;
             } else {
-                i32 cnt = b;
+                i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                 u8* s = &m_rleData[pos + 1];
+                u8* dst0 = base + x * m_dstBpp;
                 if (m_srcBpp == 1) {
-                    u8* d = base + x * m_dstBpp;
-                    for (i32 k = cnt; k-- > 0;) {
+                    u8* d = dst0;
+                    for (i32 k = bytes; k-- > 0;) {
                         *d-- = *s++;
                     }
                 } else {
-                    u16* d = Pix16(base + x * m_dstBpp);
+                    u16* d = Pix16(dst0);
                     u16* sw = Pix16(s);
-                    for (i32 k = cnt; k-- > 0;) {
+                    for (i32 k = bytes; k-- > 0; k--) {
                         *d-- = *sw++;
                     }
                 }
-                x -= cnt;
-                pos += cnt * m_srcBpp + 1;
+                x -= m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             }
         }
@@ -336,16 +334,14 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             if (pos >= m_rleLen) {
                 break;
             }
-            u8 b = m_rleData[pos];
-            if (b & 0x80) {
-                x += 0x80 - static_cast<i32>(b);
+            if (m_rleData[pos] & 0x80) {
+                x += 0x80 - static_cast<i32>(m_rleData[pos]);
                 pos++;
             } else {
-                i32 cnt = b;
                 u8* sd = &m_rleData[pos + 1];
                 i32 bytes;
-                if (x - cnt > clip->left) {
-                    bytes = cnt * m_srcBpp;
+                if (x - m_rleData[pos] > clip->left) {
+                    bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                 } else {
                     i32 vis = (x - clip->left) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
@@ -359,20 +355,20 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 } else {
                     u16* d = Pix16(dbase);
                     u16* sw = Pix16(sd);
-                    for (i32 k = bytes / 2; k-- > 0;) {
+                    for (i32 k = bytes; k-- > 0; k--) {
                         *d-- = *sw++;
                     }
                 }
-                x -= cnt;
-                pos += cnt * m_srcBpp + 1;
+                x -= m_rleData[pos];
+                pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             }
         }
-    } else {
+    } else if (clip->right != m_width - 1) {
 
         while (row < clip->bottom) {
             if (pos >= m_rleLen) {
@@ -381,14 +377,13 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             if (x > clip->right) {
                 i32 trans = 0;
                 do {
-                    u8 b = m_rleData[pos];
-                    if (b & 0x80) {
-                        x += 0x80 - static_cast<i32>(b);
+                    if (m_rleData[pos] & 0x80) {
+                        x += 0x80 - static_cast<i32>(m_rleData[pos]);
                         pos++;
                         trans = 1;
                     } else {
-                        x -= b;
-                        pos += static_cast<i32>(b) * m_srcBpp + 1;
+                        x -= m_rleData[pos];
+                        pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                         trans = 0;
                     }
                 } while (x > clip->right);
@@ -403,7 +398,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     } else {
                         u16* d = Pix16(base + clip->right * m_dstBpp);
                         u16* sw = Pix16(s);
-                        for (i32 k = bytes / 2; k-- > 0;) {
+                        for (i32 k = bytes; k-- > 0; k--) {
                             *d-- = *sw++;
                         }
                     }
@@ -411,30 +406,30 @@ void CDDrawShadeBlit::BlitCopyMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             } else {
-                u8 b = m_rleData[pos];
-                if (b & 0x80) {
-                    x += 0x80 - static_cast<i32>(b);
+                if (m_rleData[pos] & 0x80) {
+                    x += 0x80 - static_cast<i32>(m_rleData[pos]);
                     pos++;
                 } else {
-                    i32 cnt = b;
+                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                     u8* s = &m_rleData[pos + 1];
+                    u8* dst0 = base + x * m_dstBpp;
                     if (m_srcBpp == 1) {
-                        u8* d = base + x * m_dstBpp;
-                        for (i32 k = cnt; k-- > 0;) {
+                        u8* d = dst0;
+                        for (i32 k = bytes; k-- > 0;) {
                             *d-- = *s++;
                         }
                     } else {
-                        u16* d = Pix16(base + x * m_dstBpp);
+                        u16* d = Pix16(dst0);
                         u16* sw = Pix16(s);
-                        for (i32 k = cnt; k-- > 0;) {
+                        for (i32 k = bytes; k-- > 0; k--) {
                             *d-- = *sw++;
                         }
                     }
-                    x -= cnt;
-                    pos += cnt * m_srcBpp + 1;
+                    x -= m_rleData[pos];
+                    pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
             }
         }
@@ -557,12 +552,10 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     while (count-- > 0) {
                                         u32 dv = *sc++;
                                         u32 a = *ss2++;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d += 2;
@@ -571,12 +564,10 @@ void CDDrawShadeBlit::BlitShadedForward(
                                     while (count-- > 0) {
                                         u32 dv = *sc++;
                                         u32 a = *ss2++;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d += 2;
@@ -810,12 +801,11 @@ void CDDrawShadeBlit::BlitShadedForward(
                                         while (vis-- > 0) {
                                             u32 dv = *sc++;
                                             u32 a = *ss2++;
-                                            u16 v = static_cast<u16>(
+                                            i32 v =
                                                 m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                            );
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                             Store16(d, v);
                                             Store16(d + rd, v);
                                             d += 2;
@@ -824,12 +814,11 @@ void CDDrawShadeBlit::BlitShadedForward(
                                         while (vis-- > 0) {
                                             u32 dv = *sc++;
                                             u32 a = *ss2++;
-                                            u16 v = static_cast<u16>(
+                                            i32 v =
                                                 m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                            );
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                             Store16(d, v);
                                             Store16(d + rd, v);
                                             d += 2;
@@ -914,12 +903,11 @@ void CDDrawShadeBlit::BlitShadedForward(
                                         while (count-- > 0) {
                                             u32 dv = *sc++;
                                             u32 a = *ss2++;
-                                            u16 v = static_cast<u16>(
+                                            i32 v =
                                                 m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                            );
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                             Store16(d, v);
                                             Store16(d + rd, v);
                                             d += 2;
@@ -928,12 +916,11 @@ void CDDrawShadeBlit::BlitShadedForward(
                                         while (count-- > 0) {
                                             u32 dv = *sc++;
                                             u32 a = *ss2++;
-                                            u16 v = static_cast<u16>(
+                                            i32 v =
                                                 m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                            );
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                             Store16(d, v);
                                             Store16(d + rd, v);
                                             d += 2;
@@ -1022,13 +1009,11 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         }
     }
 
-    i32 rowInc;
     if (vflip) {
         base += dst->bottom * pitch + dst->left * m_dstBpp;
-        rowInc = -pitch;
+        pitch = -pitch;
     } else {
         base += dst->top * pitch + dst->left * m_dstBpp;
-        rowInc = pitch;
     }
 
     x = m_width;
@@ -1105,12 +1090,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                     while (count-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1119,12 +1102,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                     while (count-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1267,7 +1248,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             }
         }
@@ -1349,12 +1330,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                     while (vis-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1363,12 +1342,10 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                     while (vis-- > 0) {
                                         u32 a = *ss2++;
                                         u32 dv = *sc--;
-                                        u16 v = static_cast<u16>(
-                                            m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
-                                            | m_lutBank1
-                                                [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
-                                            | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)]
-                                        );
+                                        i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
+                                                | m_lutBank1
+                                                    [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
+                                                | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                         Store16(d, v);
                                         Store16(d + rd, v);
                                         d -= 2;
@@ -1386,7 +1363,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             }
         }
@@ -1425,7 +1402,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             }
             if (x <= 0) {
                 row++;
-                base += rowInc;
+                base += pitch;
                 x = m_width;
             } else {
                 u8 b = m_rleData[pos];
@@ -1763,11 +1740,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                 while (count-- > 0) {
                     u32 d = *sc++;
                     u32 a = *ss++;
-                    u16 v = static_cast<u16>(
-                        m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)]
-                        | m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)]
-                        | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)]
-                    );
+                    i32 v = m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)]
+                            | m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)]
+                            | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     Store16(dst, v);
                     Store16(dst + rowDelta / 2 * 2, v);
                     dst += 2;
@@ -1776,11 +1751,9 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
                 while (count-- > 0) {
                     u32 d = *sc++;
                     u32 a = *ss++;
-                    u16 v = static_cast<u16>(
-                        m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)]
-                        | m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)]
-                        | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)]
-                    );
+                    i32 v = m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)]
+                            | m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)]
+                            | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     Store16(dst, v);
                     Store16(dst + rowDelta / 2 * 2, v);
                     dst += 2;
@@ -1845,11 +1818,9 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                 while (count-- > 0) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u16 v = static_cast<u16>(
-                        m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)]
-                        | m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)]
-                        | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)]
-                    );
+                    i32 v = m_lutBank0[(a >> 0xa) + ((d >> 5) & ~0x1f)]
+                            | m_lutBank1[((a >> 5) & 0x1f) + (((d >> 5) & 0x1f) << 5)]
+                            | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     Store16(dst, v);
                     Store16(dst + rowDelta / 2 * 2, v);
                     dst -= 2;
@@ -1858,11 +1829,9 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
                 while (count-- > 0) {
                     u32 a = *ss++;
                     u32 d = *sc--;
-                    u16 v = static_cast<u16>(
-                        m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)]
-                        | m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)]
-                        | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)]
-                    );
+                    i32 v = m_lutBank0[(a >> 0xb) + ((d >> 6) & ~0x1f)]
+                            | m_lutBank1[((a >> 6) & 0x1f) + (((d >> 6) & 0x1f) << 5)]
+                            | m_lutBank2[(a & 0x1f) + ((d & 0x1f) << 5)];
                     Store16(dst, v);
                     Store16(dst + rowDelta / 2 * 2, v);
                     dst -= 2;
