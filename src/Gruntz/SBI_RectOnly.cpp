@@ -1101,14 +1101,16 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     for (i = 0; i < 15; i++) {
         m_statObj[i] = NULL;
     }
-    m_slotNotify[0] = NULL;
-    m_slotNotify[1] = NULL;
-    m_slotNotify[2] = NULL;
-    m_slotNotify[3] = NULL;
-    m_slotNotify[4] = NULL;
-    m_groupNotify[0] = NULL;
-    m_groupNotify[1] = NULL;
-    m_groupNotify[2] = NULL;
+    CSBI_ImageSet** q = m_slotNotify;
+    q[0] = NULL;
+    q[1] = NULL;
+    q[2] = NULL;
+    q[3] = NULL;
+    q[4] = NULL;
+    CSBI_ImageSet** g = m_groupNotify;
+    g[0] = NULL;
+    g[1] = NULL;
+    g[2] = NULL;
     for (i = 0; i < 12; i++) {
         m_hlNotify[i] = NULL;
     }
@@ -1146,7 +1148,7 @@ void CStatusBarMgr::ClearTabGroup() {
     }
     m_tabLists[IDX(m_activeTab)].RemoveAll();
     switch (m_activeTab) {
-        case TAB_STATZ:
+        case TAB_GAME:
             m_tabSprite5 = NULL;
             m_tabSprite6 = NULL;
             m_tabSprite7 = NULL;
@@ -1155,11 +1157,11 @@ void CStatusBarMgr::ClearTabGroup() {
             m_tabSprite10 = NULL;
             m_modeNotify = NULL;
             break;
-        case TAB_GRUNTZ:
+        case TAB_STATZ:
 
             memset(m_statObj, 0, sizeof(m_statObj));
             break;
-        case TAB_RESOURCE: {
+        case TAB_MULTIPLAYER: {
             CSBI_WarlordHead** p = m_warlordHead;
             p[0] = NULL;
             p[1] = NULL;
@@ -1167,7 +1169,7 @@ void CStatusBarMgr::ClearTabGroup() {
             p[3] = NULL;
             break;
         }
-        case TAB_MULTIPLAYER: {
+        case TAB_GRUNTZ: {
 
             CSBI_ImageSet** q = m_slotNotify;
             q[0] = NULL;
@@ -1179,7 +1181,7 @@ void CStatusBarMgr::ClearTabGroup() {
             m_gaugeSink = NULL;
             break;
         }
-        case TAB_GAME: {
+        case TAB_RESOURCE: {
 
             CSBI_ImageSet** g = m_groupNotify;
             g[0] = NULL;
@@ -2770,12 +2772,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         }
     }
 
-    if (m_extraNotify0) {
+    CSBI_ImageSet* w = m_extraNotify0;
+    if (w) {
         if (rectFlag) {
-            m_extraNotify0->m_rect14.left = m_itemRect.left + m_rect10.left;
-            m_extraNotify0->m_rect14.top = m_itemRect.top + m_rect10.top;
-            m_extraNotify0->m_rect14.right = m_itemRect.right + m_rect10.left;
-            m_extraNotify0->m_rect14.bottom = m_itemRect.bottom + m_rect10.top;
+            w->m_rect14.left = m_itemRect.left + m_rect10.left;
+            w->m_rect14.top = m_itemRect.top + m_rect10.top;
+            w->m_rect14.right = m_itemRect.right + m_rect10.left;
+            w->m_rect14.bottom = m_itemRect.bottom + m_rect10.top;
         }
         if (refreshFlag) {
             NotifyAllSlots();
