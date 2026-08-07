@@ -70,3 +70,31 @@ re-reads the global at each of its three uses; 200 permuter variants do not move
 
 related:
 [frame-size-mismatch-dominates-the-40-65-band.md](frame-size-mismatch-dominates-the-40-65-band.md)
+
+## Corollary: a named cursor can hoist a member read ACROSS AN INTERVENING CALL
+
+The sharpest form of this is when a call sits between the member read and the loop.
+`CGrunt** row = &m_triggerMgr->m_grid[band * 15];` followed by `i32 cell = rand() % 15;`
+lets LICM lift the `m_triggerMgr` load and the whole `lea` chain ABOVE the `rand()` call,
+because the address is loop-invariant and the local is named. Retail reads the member
+AFTER the call - cl5 must assume a call clobbers memory - and builds the base in the
+loop's own preheader. Indexing inside the loop restores it:
+
+```cpp
+i32 cell = rand() % 15;
+for (i32 i = 0; i < 15; i++) {
+    CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];   // not `*row++`
+```
+
+Strength reduction rebuilds the identical cursor, so the loop body is unchanged; only the
+preheader moves. Measured: `CBattlezMapConfig::PickRandomIdleUnit` 0x2ad40 80.94 ->
+**100.00 EXACT** (size 113, retail's exactly) after a 21-cell Cartesian in which every
+cursor-form ordering topped out at 80.94. Same lever, same TU:
+`CBattlezMapConfig::PickSpawnCoord` 0x30f20 59.37 -> 97.90, where the intervening
+"call" is the enclosing outer loop.
+
+Scope check before applying it: three sibling scans in the same file
+(`0x25d90`, `0x26470`, the brick scan in `0x2f620`) are byte-identical in both forms.
+With nothing between the member read and the loop there is nothing for the hoist to cross,
+so the two spellings converge - the lever only pays where a call or an outer loop
+separates them.

@@ -2574,7 +2574,6 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
     return best;
 }
 
-// @early-stop
 RVA(0x0002ad40, 0x71)
 void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
@@ -2582,17 +2581,13 @@ void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
         band++;
     }
     band = band % 4;
-    CGrunt** row = &m_triggerMgr->m_grid[band * 15];
     i32 cell = rand() % 15;
-    i32 i = 0;
-    while (i < 15) {
-        CGrunt* u = *row;
+    for (i32 i = 0; i < 15; i++) {
+        CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
         if (u != NULL && u->m_entranceDropActive == 0) {
             return u;
         }
         cell = (cell + 1) % 15;
-        i++;
-        row++;
     }
     return 0;
 }

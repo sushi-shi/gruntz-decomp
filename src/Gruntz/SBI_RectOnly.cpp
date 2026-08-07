@@ -2418,22 +2418,22 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     m_rezTick = 0;
 }
 
-// @early-stop
 RVA(0x001066f0, 0x3b)
 void CStatusBarMgr::SetHudRectA(i32 y0, SbiMachineState x0, i32 z) {
-    m_machineA.m_counter = y0;
-    m_machineA.m_state = IDX(x0);
-    m_machineA.m_interval = static_cast<u32>(z);
-    m_machineA.m_last = g_frameTime;
+    volatile CSbiHlRow& r = m_machineA;
+    r.m_counter = y0;
+    r.m_state = IDX(x0);
+    r.m_interval = static_cast<u32>(z);
+    r.m_last = g_frameTime;
 }
 
-// @early-stop
 RVA(0x00106740, 0x3b)
 void CStatusBarMgr::SetHudRectB(i32 y0, SbiMachineState x0, i32 z) {
-    m_machineB.m_counter = y0;
-    m_machineB.m_state = IDX(x0);
-    m_machineB.m_interval = static_cast<u32>(z);
-    m_machineB.m_last = g_frameTime;
+    volatile CSbiHlRow& r = m_machineB;
+    r.m_counter = y0;
+    r.m_state = IDX(x0);
+    r.m_interval = static_cast<u32>(z);
+    r.m_last = g_frameTime;
 }
 
 RVA(0x00106790, 0x62)
