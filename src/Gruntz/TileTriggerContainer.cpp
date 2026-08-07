@@ -321,26 +321,26 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
     i32 player3
 ) {
     CTileActionEvent* m = new CTileActionEvent;
-    if (m != NULL) {
-        if (m->m_live == 0) {
-            m->m_tileX = tileX;
-            m->m_tileY = tileY;
-            m->m_cellKey = cellKey;
-            m->m_playerFlags[0] = player0;
-            m->m_playerFlags[1] = player1;
-            m->m_playerFlags[3] = player3;
-            m->m_actionCode = actionCode;
-            m->m_owner = this;
-            m->m_live = 1;
-            m->m_playerFlags[2] = player2;
-            m->SetActionCode(actionCode);
-            m_list3.AddTail(m);
-            return m;
-        }
-        m->m_live = 0;
-        ::operator delete(m);
+    if (m == NULL) {
         return 0;
     }
+    if (m->m_live == 0) {
+        m->m_tileX = tileX;
+        m->m_tileY = tileY;
+        m->m_cellKey = cellKey;
+        m->m_playerFlags[0] = player0;
+        m->m_playerFlags[1] = player1;
+        m->m_playerFlags[3] = player3;
+        m->m_actionCode = actionCode;
+        m->m_owner = this;
+        m->m_live = 1;
+        m->m_playerFlags[2] = player2;
+        m->SetActionCode(actionCode);
+        m_list3.AddTail(m);
+        return m;
+    }
+    m->m_live = 0;
+    ::operator delete(m);
     return 0;
 }
 
@@ -359,9 +359,6 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
     }
     i32 a = 0, b = 0, c = 0, d = 0;
     switch (static_cast<PlayerSlot>(playerSlot)) {
-        case PLAYER_SLOT_0:
-            d = 1;
-            break;
         case PLAYER_SLOT_1:
             c = 1;
             break;
@@ -372,30 +369,30 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
             a = 1;
             break;
         case PLAYER_SLOT_ALL:
-            a = 1;
-            b = 1;
-            c = 1;
+            a = b = c = 1;
+            // falls through to PLAYER_SLOT_0's d = 1
+        case PLAYER_SLOT_0:
             d = 1;
             break;
     }
-    if (m->m_live != 0) {
-        m->m_live = 0;
-        ::operator delete(m);
-        return 0;
+    if (m->m_live == 0) {
+        m->m_tileX = tileX;
+        m->m_tileY = tileY;
+        m->m_cellKey = cellKey;
+        m->m_playerFlags[2] = b;
+        m->m_actionCode = actionCode;
+        m->m_owner = this;
+        m->m_live = 1;
+        m->m_playerFlags[0] = d;
+        m->m_playerFlags[1] = c;
+        m->m_playerFlags[3] = a;
+        m->SetActionCode(actionCode);
+        m_list3.AddTail(m);
+        return m;
     }
-    m->m_tileX = tileX;
-    m->m_tileY = tileY;
-    m->m_cellKey = cellKey;
-    m->m_playerFlags[2] = b;
-    m->m_actionCode = actionCode;
-    m->m_owner = this;
-    m->m_live = 1;
-    m->m_playerFlags[0] = d;
-    m->m_playerFlags[1] = c;
-    m->m_playerFlags[3] = a;
-    m->SetActionCode(actionCode);
-    m_list3.AddTail(m);
-    return m;
+    m->m_live = 0;
+    ::operator delete(m);
+    return 0;
 }
 
 // @early-stop
@@ -429,8 +426,8 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
         e->m_tileToken = 0;
         e->m_leadInSpan = 0;
         e->m_dutyOffSpan = 0;
-        e->m_dutyOffSpan = dutyOffSpan;
         e->m_startClock = g_frameTime;
+        e->m_dutyOffSpan = dutyOffSpan;
         m_list1.AddTail(e);
         return e;
     }
@@ -970,15 +967,13 @@ i32 CTileTriggerContainer::LoadFlag74(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00117ec0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 x, i32 y) {
     for (i32 px = x - 1; px < x + 2; px++) {
-        i32 base = px << 8;
         for (i32 py = y - 1; py < y + 2; py++) {
 
             CGiantRockLogic* r =
-                static_cast<CGiantRockLogic*>(FindInLists12(py + base, TRIGID_GIANT_ROCK_22));
+                static_cast<CGiantRockLogic*>(FindInLists12(py + (px << 8), TRIGID_GIANT_ROCK_22));
             if (r != NULL) {
                 return r;
             }
@@ -994,10 +989,8 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(key);
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            elem->m_playerFlags[0] = 1;
-            elem->m_playerFlags[1] = 1;
-            elem->m_playerFlags[2] = 1;
-            elem->m_playerFlags[3] = 1;
+            elem->m_playerFlags[0] = elem->m_playerFlags[1] = elem->m_playerFlags[2] =
+                elem->m_playerFlags[3] = 1;
         } else {
             elem->m_playerFlags[playerSlot] = 1;
         }
