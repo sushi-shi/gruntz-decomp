@@ -1946,8 +1946,7 @@ RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGrunt* src = m_grid[col * TM_GRID_COLS + a1c];
     i32 free = 0;
-    CGrunt** rowBase = &m_grid[row * TM_GRID_COLS];
-    if (*rowBase != NULL) {
+    if (m_grid[row * TM_GRID_COLS] != NULL) {
         CGrunt** p = &m_grid[row * TM_GRID_COLS];
         while (free < 15) {
             p++;

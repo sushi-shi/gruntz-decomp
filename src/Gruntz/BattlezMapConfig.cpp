@@ -2689,10 +2689,7 @@ void CMapMgr::Clip(const RECT* src) {
         a.right = src->right + 1;
         a.bottom = src->bottom + 1;
     } else {
-        a.left = 0;
-        a.top = 0;
-        a.right = m_width;
-        a.bottom = m_height;
+        a = b;
     }
     if (!IntersectRect(&m_bounds, &a, &b)) {
         m_bounds = a;
