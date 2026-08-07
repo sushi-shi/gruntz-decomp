@@ -110,7 +110,7 @@ eyecandy	4	3
 fader	25	20
 fadereffects	37	23
 fadermgr	12	11
-feccrypt	10	7
+feccrypt	11	8
 fileimage	19	10
 filestream	3	3
 font	21	17
@@ -183,7 +183,7 @@ gruntwingztimesprite	4	3
 gruntzapp	13	13
 gruntzcmdmgr	46	41
 gruntzmapmgr	3	2
-gruntzmgr	152	137
+gruntzmgr	152	138
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	35
@@ -274,7 +274,7 @@ rockbreakeffectupdate	1	0
 rollingball	7	5
 savefrontbuffershot	2	1
 savegame	24	23
-savegamedialogs	10	7
+savegamedialogs	10	8
 savescreenshot	1	0
 sbi_image	5	4
 sbi_imageset	6	4
@@ -1663,7 +1663,7 @@ fadermgr	?Remove@CFaderMgr@@QAEXPAVCFader@@@Z	100.0000	100.0000	4	84a52fdb2671	0
 fadermgr	?Serialize@CFaderArray@@UAEXAAVCArchive@@@Z	83.8288	83.8288	5	526366da6020	0x17e2a0
 fadermgr	?SetConfig@CFaderMgr@@QAEHPAVCDDSurface@@0PAVCDDrawPtrCollections@@@Z	100.0000	100.0000	2	c8052f36d1b9	0x17d980
 fadermgr	?Trace@CFaderMgr@@QAEXVCString@@@Z	100.0000	100.0000	1	151c913fa558	0x17e230
-feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	96.9281	96.9281	8	866e0293a3dd	0x17b950
+feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	98.8741	98.8741	9	25f6563f7b82	0x17b950
 feccrypt	?Close@CFecFile@@QAEXXZ	100.0000	100.0000	3	5d33dad7333b	0x17b570
 feccrypt	?CreateArchive@CFecFile@@QAEHPBD@Z	100.0000	100.0000	5	30cc9248202e	0x17b8a0
 feccrypt	?ExtractArchive@CFecFile@@QAEHPBDPAHPAX@Z	89.0899	89.0899	8	0ecc41709c9f	0x17bcd0
@@ -1672,6 +1672,7 @@ feccrypt	?FecEncode@CFecFile@@QAEXPBDPAD@Z	100.0000	100.0000	1	af77b1cbae53	0x17
 feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	5	e2e41f20f7af	0x17b510
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	8	06702c305199	0x17b840
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	4	2c46d365562e	0x17b5a0
+feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	85.2000	85.2000	12	6018c45e58cd	0x17b5f0
 fileimage	?Decode@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAUPcxHeader@@HH@Z	87.0047	87.0047	4	72de65d60c4c	0x144b30
 fileimage	?DecodeBmp@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PAXI@Z	99.7456	99.7456	4	0b3e88b1a0ef	0x143fc0
@@ -1835,7 +1836,7 @@ gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.4141	82.4141	16	112660f66
 gamelevel	?LoadWwdWithCoords@CGameLevel@@UAEHPAUWwdHeader@@PAUtagRECT@@@Z	100.0000	100.0000	2	78a3860c7b7b	0x15cf70
 gamelevel	?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind@@HH@Z	100.0000	100.0000	1	55800cb01fba	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	7	985fbc7515cc	0x160ee0
-gamelevel	?MoveClimbing@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.3306	96.3306	2	bf5d2a820d50	0x15e5b0
+gamelevel	?MoveClimbing@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.1157	96.1157	3	df7fdab5b0e9	0x15e5b0
 gamelevel	?MoveFalling@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	81.7834	81.7834	2	77e1d8d8b0af	0x15e2f0
 gamelevel	?MoveGrounded@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	97.6101	97.6101	2	7a1a91aa4912	0x15e130
 gamelevel	?MovePlane@CGameLevel@@AAEHHH@Z	100.0000	100.0000	5	bb5cf27bc1b0	0x15dbe0
@@ -1933,7 +1934,7 @@ grunt	??1CGrunt@@UAE@XZ	100.0000	100.0000	4	9b85b982c89a	0xf2f0
 grunt	??1CGruntCellRec@@QAE@XZ	100.0000	100.0000	1	e59cc6f4dade	0xf430
 grunt	??_GCGrunt@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8a9711ebbd20	0xf2c0
 grunt	?AdvanceMotion@CGrunt@@UAEXXZ	79.8196	79.8196	6	d8090287235d	0x5f310
-grunt	?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	96.2312	96.2312	1	f99932dd36c3	0x4a780
+grunt	?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	98.1910	98.1910	2	a5bf5c385f06	0x4a780
 grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	6	76b923343844	0x4b240
 grunt	?CommitArrival@CGrunt@@QAEHXZ	99.3269	99.3269	12	8e2e1dfa2727	0x4b130
 grunt	?CreateHealthSprite@CGrunt@@QAEHXZ	99.6552	99.6552	18	f0bf55a8bfad	0x4d130
@@ -2259,7 +2260,7 @@ gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	100.0000	100.0000	11	b0217d48e1d9	0
 gruntzmgr	?AdvanceOptionsCycle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	9	1dceb750efe5	0x933e0
 gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	6	a03628c7297c	0x8f9c0
 gruntzmgr	?BroadcastCmd@CGruntzMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	6ccd953a2173	0x93460
-gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@W4MovieId@@@Z	96.7361	96.7361	1	a11bf58231dc	0x8ff30
+gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@W4MovieId@@@Z	100.0000	100.0000	2	934dbf80dc55	0x8ff30
 gruntzmgr	?CaptureWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	10	2637271005f6	0x8f340
 gruntzmgr	?ChangeState@CGruntzMgr@@QAEHH@Z	74.8764	74.8764	6	6aeca44b1bbd	0x8fab0
 gruntzmgr	?CheatEclipseToggle@CGruntzMgr@@QAEXXZ	100.0000	100.0000	14	9d300fe667ba	0x91390
@@ -2782,7 +2783,7 @@ lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	56.8319	56.8319	12	adf9eb6ae3f8	0
 loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	25e7083fe958	0x9e0b0
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	24852ad1d2e8	0x9dff0
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	31aae3635583	0x9e2d0
-loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	95.8520	95.8520	9	ba98494346f7	0x9e390
+loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	99.0807	99.0807	10	e9830ed3117e	0x9e390
 logicrecord	?CacheTargetId@AnimWorkerObj@@QAEHPAX@Z	100.0000	100.0000	4	180c350cde77	0x164920
 logicrecord	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	88.7791	88.7791	1	7f3138ddb0e2	0x164830
 logicrecord	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	c9ff892dbdc5	0x164d80
@@ -3515,7 +3516,7 @@ savegame	?Verify@CSaveGame@@QAEHXZ	100.0000	100.0000	8	897a38cdd821	0xe50f0
 savegame	?VerifySlot@CSaveGame@@QAEHPAUSaveSlot@@@Z	100.0000	100.0000	9	aa2aaab0d1e6	0xe52c0
 savegamedialogs	?BuildLevelTitleString@@YAXPAUHWND__@@PAVCSaveGame@@PAUSaveSlot@@@Z	95.7850	95.7850	3	8843c91f69f6	0xe44e0
 savegamedialogs	?DeleteSaveDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	bb68eacebef9	0xe3a40
-savegamedialogs	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	98.9910	98.9910	14	6d17d53b8428	0xe3f40
+savegamedialogs	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	100.0000	100.0000	15	821f1fe5f5c9	0xe3f40
 savegamedialogs	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	7	a1bfb58c79ce	0xe3c60
 savegamedialogs	?InfoLineDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	8	aad24c18573d	0xe3b20
 savegamedialogs	?LabelSaveSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	4a45bbfc0bce	0xe3e80
@@ -3840,7 +3841,7 @@ soundstream	?GetErrorString@DirectSoundMgr@@SAXPADHH@Z	100.0000	100.0000	6	7cc63
 soundstream	?OnDrain@StreamFeeder@@UAEXXZ	100.0000	100.0000	1	0885175e98bd	0x137e20
 soundstream	?OnDrain@StreamVoiceFeeder@@UAEXXZ	100.0000	100.0000	1	ec2b4981b83a	0x1374b0
 soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUCParseSource@@HHHHH@Z	90.2747	90.2747	5	14bff86da48b	0x137900
-soundstream	?ParseWave@SoundStream@@QAEHPAUCParseSource@@PAUWaveFormatX@@PAI2@Z	99.8240	99.8240	4	46a9a65df63f	0x137b70
+soundstream	?ParseWave@SoundStream@@QAEHPAUCParseSource@@PAUWaveFormatX@@PAI2@Z	99.9680	99.9680	5	2bfd1c8c4334	0x137b70
 soundstream	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	2	47e7045ff2f2	0x137f00
 soundstream	?PlaySoundDefaulted@SoundStream@@QAEHPAXH@Z	100.0000	100.0000	3	5cabfc5e02ea	0x137720
 soundstream	?PlayStream@SoundStream@@QAEPAUStreamVoice@@PAUCParseSource@@HHH@Z	100.0000	100.0000	3	23ee3dfd6b30	0x137a30
