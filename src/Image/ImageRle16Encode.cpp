@@ -13,15 +13,12 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
         const PALETTEENTRY* pal = m_palette;
         u16* t = table;
         for (i32 i = 0x100; i != 0; i--) {
-            u8 g = static_cast<u8>((static_cast<u8>(pal->peGreen) >> g_gDown));
-            u8 r = static_cast<u8>((static_cast<u8>(pal->peRed) >> g_rDown));
-            pal++;
-
-            u8 b = static_cast<u8>((static_cast<u8>(pal[-1].peBlue) >> g_bDown));
             *t++ = static_cast<u16>(
-                ((static_cast<u32>(g) << g_gUp) | (static_cast<u32>(r) << g_rUp)
-                 | static_cast<u32>(b))
+                ((static_cast<u16>(static_cast<u8>(pal->peGreen) >> g_gDown) << g_gUp)
+                 | (static_cast<u16>(static_cast<u8>(pal->peRed) >> g_rDown) << g_rUp)
+                 | static_cast<u16>(static_cast<u8>(pal->peBlue) >> g_bDown))
             );
+            pal++;
         }
     }
 
@@ -66,12 +63,14 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                     outidx++;
                     if (n > 0) {
                         const u8* run = src + srcidx + 1;
-                        for (i32 k = 0; k < n; k++) {
+                        i32 k = 0;
+                        do {
                             u16 px = table[run[k]];
                             out[outidx] = static_cast<u8>(px);
                             out[outidx + 1] = static_cast<u8>((px >> 8));
                             outidx += 2;
-                        }
+                            k++;
+                        } while (k < n);
                     }
                     x2 += static_cast<i32>(m_rleData[srcidx]);
                     srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;
