@@ -665,6 +665,13 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 }
 
 // @early-stop
+// Retail makes SIX more ??0CRect@@QAE@HHHH@Z calls than we do.  Four of them are
+// the rowHitA / rowHitB / colHitA / colHitB blocks below, which are
+// statement-identical (same reroll stores, same clip, same `return 1`) and get
+// cross-jumped into one; giving each block's locals distinct NAMES does not
+// split them - they are already block-scoped, so the IL statement lists are
+// identical either way.  ~90% of this function's reloc diff is pooled
+// single-character-string naming noise and is NOT a defect.
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -1586,10 +1593,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
     dispatch: {
         CMapMgr* bd2 = m_board;
         RECT a;
-        a.left = 0;
-        a.top = 0;
-        a.right = bd2->m_width;
-        a.bottom = bd2->m_height;
+        static_cast<RECT*>(new (&a) CRect(0, 0, bd2->m_width, bd2->m_height));
         RECT b2;
         b2 = a;
         if (!IntersectRect(&bd2->m_bounds, &b2, &a)) {
