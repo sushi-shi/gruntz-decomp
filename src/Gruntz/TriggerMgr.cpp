@@ -1103,9 +1103,13 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
         return 0;
     }
     POSITION pos = m_baseList.GetHeadPosition();
-    i32 manyFlag = (m_baseList.GetCount() > 0x3b) ? 1 : 0;
-    i32 unlinked = 0;
-    while (pos != NULL && unlinked == 0) {
+    i32 stop = 0;
+    i32 manyFlag = stop;
+    i32 replaced = stop;
+    if (m_baseList.GetCount() > 0x3b) {
+        manyFlag = 1;
+    }
+    while (pos != NULL && stop == 0) {
         POSITION cur = pos;
         CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (o->m_tileX == tgt->m_tileX && o->m_tileY == tgt->m_tileY) {
@@ -1115,17 +1119,20 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, i32 color) {
             }
             o->m_wwdObject->m_flags |= 0x10000;
             m_baseList.RemoveAt(cur);
-            unlinked = 1;
+            stop = 1;
+            replaced = 1;
         }
     }
-    if (manyFlag != 0 && unlinked == 0) {
+    if (manyFlag != 0 && replaced == 0) {
         pos = m_baseList.GetHeadPosition();
-        while (pos != NULL) {
+        stop = 0;
+        while (pos != NULL && stop == 0) {
             POSITION cur = pos;
             CGruntPuddle* o = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
             if (o->m_pending == 0) {
                 o->m_wwdObject->m_flags |= 0x10000;
                 m_baseList.RemoveAt(cur);
+                stop = 1;
             }
         }
     }
