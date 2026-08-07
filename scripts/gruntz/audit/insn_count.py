@@ -23,8 +23,10 @@ runs back into their owner on both sides, which is why this module reuses it.
 **Trailing alignment padding must be trimmed or the whole table is noise.** cl pads each
 `.text$` COMDAT out to a 16-byte boundary with single-byte `nop`s and llvm-objdump counts
 them inside the symbol; the delinker's target objs have none. Untrimmed, that put spikes
-of 56/73/114 functions at exactly delta +4/+8/+12 - pure padding, no bug. `trim()` drops
-the tail run of `nop`/`int3` on both sides.
+of 56/73/114 functions at exactly delta +4/+8/+12 - pure padding, no bug. The embedded
+jump TABLE is the same trap one level down: llvm-objdump decodes it linearly, and the
+two sides decode it DIFFERENTLY (base entries are all-zero reloc slots, target entries
+hold real addresses), which is the whole -33 on CSpriteRef::Build. `trim()` removes both.
 
 **A TRUNC row is not a verdict.** llvm-objdump disassembles linearly, so jump-table bytes
 sitting in `.text` decode as garbage; `first_bad()` finds where that starts and the row
@@ -39,21 +41,40 @@ the number.
 """
 import argparse
 import csv
+import re
 import sys
 from pathlib import Path
 
-from gruntz.core.branches import decode, first_bad, obj_paths
+from gruntz.core.branches import UNCOND, decode, first_bad, obj_paths
 
 REPO = Path(__file__).resolve().parents[3]
 QUEUE = REPO / "build" / "gen" / "residual_function_queue.tsv"
 
 
 PAD = ("nop", "int3")
+# `jmpl *0x3a0(,%eax,4)` / `jmpl *(,%eax,4)` - the switch dispatch. The scale-4 index is
+# what distinguishes it from an ordinary indirect call through a pointer.
+INDIRECT4 = re.compile(r"\*.*,%\w+,4\)")
 
 
 def trim(insns):
-    """Drop the trailing COMDAT alignment padding - see the module docstring."""
+    """Drop the trailing COMDAT alignment padding and any embedded jump TABLE.
+
+    The nops are pure COMDAT alignment (see the module docstring). The jump table is the
+    subtler half: it lives in `.text` right after the last `ret`, llvm-objdump decodes
+    those bytes linearly as instructions, and the two sides decode DIFFERENTLY - the base
+    obj's entries are still all-zero reloc slots (`addb %al,(%eax)` x2 per entry) while
+    the target's hold real addresses. CSpriteRef::Build showed -33 from that alone.
+
+    So when the stream dispatches through a scale-4 indirect jump, everything past the
+    last `ret` is data. The test is deliberately narrow: without a switch, a block placed
+    after the epilogue is real code and must be counted."""
     n = len(insns)
+    if any(mn in UNCOND and INDIRECT4.search(op) for _, mn, op in insns):
+        for i in range(n - 1, -1, -1):
+            if insns[i][1].startswith("ret"):
+                n = i + 1
+                break
     while n and insns[n - 1][1].startswith(PAD):
         n -= 1
     return insns[:n]
