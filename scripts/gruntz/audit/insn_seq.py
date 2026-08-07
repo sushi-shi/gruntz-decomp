@@ -123,6 +123,31 @@ def norm(sym):
     return s
 
 
+def reloc_multiset(base, tgt):
+    """Order-FREE per-symbol reloc counts, differing rows only.
+
+    `--seq` difflibs two ORDERED lists, so it must produce an alignment and a
+    WRONG CALLEE always surfaces as a "move" - which reads like block placement
+    and sends you chasing goto/if-else shape. Counting each symbol instead makes
+    it decisive: `tgt=0 base=3` means retail NEVER calls that function. This
+    closed CPlay::Render (read for two lanes as a placement job) in one line, and
+    named UpdateArrival's tail calling SetEntrancePos where retail calls
+    ApplyTriggerA."""
+    def keep(r):
+        # `__except_list` is the /GX frame's own reloc (the delinker does not
+        # reproduce it) and `$L<n>` is a local switch-arm label, not a callee -
+        # both are guaranteed one-sided and would read as false leads.
+        n = norm(r)
+        return not (n.startswith("$L") or n == "__except_list")
+
+    b = Counter(norm(r) for _, _, _, r in base if r and keep(r))
+    t = Counter(norm(r) for _, _, _, r in tgt if r and keep(r))
+    rows = [(sym, b[sym], t[sym]) for sym in sorted(set(b) | set(t))
+            if b[sym] != t[sym]]
+    # A symbol absent from ONE side entirely is the strongest signal - first.
+    return sorted(rows, key=lambda r: (r[1] != 0 and r[2] != 0, -abs(r[1] - r[2])))
+
+
 def histogram(base, tgt):
     b = Counter(mn for _, mn, _, _ in base)
     t = Counter(mn for _, mn, _, _ in tgt)
@@ -178,6 +203,8 @@ def main(argv=None):
     ap.add_argument("--unit", help="unit name (needed only for a symbol not in the queue)")
     ap.add_argument("--seq", action="store_true", help="reloc sequence only")
     ap.add_argument("--hist", action="store_true", help="mnemonic histogram only")
+    ap.add_argument("--multiset", action="store_true",
+                    help="order-free reloc COUNTS (a wrong callee shows as tgt=0)")
     ap.add_argument("--queue", default=str(QUEUE))
     a = ap.parse_args(argv)
 
@@ -192,6 +219,27 @@ def main(argv=None):
     print("%s  [%s]" % (name, unit))
     print("insns: base %d, target %d  (delta %+d)" % (len(base), len(tgt),
                                                       len(base) - len(tgt)))
+    if a.multiset:
+        rows = reloc_multiset(base, tgt)
+        print("== reloc multiset (order-free), differing rows ==")
+        if not rows:
+            print("  (identical reloc counts - the callee SET agrees)")
+        for sym, bc, tc in rows:
+            if sym.startswith("FUN_") and bc == 0:
+                # The delinker leaves the /GX handler (and other library-side
+                # targets) unnamed; a 100%-EXACT function still shows one such
+                # row, so it is not evidence on its own. Annotated, not filtered
+                # - a genuinely unnamed callee would look the same and matters.
+                flag = "   <- delinker-unnamed (usually the EH handler)"
+            elif tc == 0:
+                flag = "   <- retail never calls this"
+            elif bc == 0:
+                flag = "   <- we never call this"
+            else:
+                flag = ""
+            print("  %-58s base=%-3d tgt=%-3d%s" % (sym[:58], bc, tc, flag))
+        return 0
+
     if not a.seq:
         rows = histogram(base, tgt)
         print("== mnemonic histogram (base -> target), differing rows ==")
