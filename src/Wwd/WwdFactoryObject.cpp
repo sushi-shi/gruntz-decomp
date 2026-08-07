@@ -762,16 +762,12 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
 }
 
 RVA(0x0015cbe0, 0x46)
+// This module carries its own copy of Monolith's GetRandomNumber (see
+// <Gruntz/GameRand.h>); that is why the guard/seed pair here is distinct from
+// the Gruntz module's at 0x2c127d/0x2c1288.
 i32 CAniRecordView::Rng2Next() {
-    i32 seed;
-    if (!(g_rng2Seeded & 1)) {
-        g_rng2Seeded |= 1;
-        seed = timeGetTime();
-    } else {
-        seed = g_rng2State;
-    }
-    g_rng2State = seed * 214013 + 2531011;
-    return (g_rng2State >> 0x10) & 0x7fff;
+    static i32 holdrand = static_cast<i32>(timeGetTime());
+    return ((holdrand = holdrand * 214013 + 2531011) >> 0x10) & 0x7fff;
 }
 
 RVA(0x0015cc30, 0x1e)

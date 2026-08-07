@@ -302,16 +302,15 @@ RVA_COMPGEN(0x0017fdd0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
 RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
+// DDrawMgr's own copy of Monolith's GetRandomNumber (see <Gruntz/GameRand.h>),
+// which is why its guard/seed pair is distinct from the other modules'.
+static __inline i32 GetRandomNumber() {
+    static i32 holdrand = static_cast<i32>(timeGetTime());
+    return ((holdrand = holdrand * 214013 + 2531011) >> 0x10) & 0x7fff;
+}
+
 static __inline i32 FxRand(i32 range) {
-    u32 x;
-    if (!(g_fxRandSeeded & 1)) {
-        g_fxRandSeeded |= 1;
-        x = timeGetTime();
-    } else {
-        x = g_fxRandSeed;
-    }
-    g_fxRandSeed = x * 214013 + 2531011;
-    return ((static_cast<i32>(g_fxRandSeed) >> 16) & 0x7fff) % range;
+    return GetRandomNumber() % range;
 }
 
 // @early-stop

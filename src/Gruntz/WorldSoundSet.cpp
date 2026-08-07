@@ -878,17 +878,8 @@ void CRandomAmbientSound::InitCycleTiming(
     m_playDurationMax = playDurationMax;
     m_silenceDurationMin = silenceDurationMin;
     m_silenceDurationMax = silenceDurationMax;
-    i32 seed;
     if (span == 0) {
-        if (!(g_randSeeded & 1)) {
-            g_randSeeded |= 1;
-            seed = timeGetTime();
-        } else {
-            seed = g_randSeed;
-        }
-        i32 roll = seed * 214013 + 2531011;
-        g_randSeed = roll;
-        if (roll & 0x10000) {
+        if (GetRandomNumber() & 1) {
             i32 countdown = playDurationMin;
             m_phase = 1;
             m_countdownMs = countdown;
@@ -899,14 +890,6 @@ void CRandomAmbientSound::InitCycleTiming(
         }
         return;
     }
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = timeGetTime();
-    } else {
-        seed = g_randSeed;
-    }
-    i32 roll = seed * 214013 + 2531011;
-    g_randSeed = roll;
     m_phase = 1;
-    m_countdownMs = playDurationMin + ((roll >> 0x10) & 0x7fff) % span;
+    m_countdownMs = playDurationMin + GetRandomNumber() % span;
 }
