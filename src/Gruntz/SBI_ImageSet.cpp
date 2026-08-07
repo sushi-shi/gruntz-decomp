@@ -34,41 +34,39 @@ i32 CSBI_ImageSet::SetupImage(
 ) {
     static_cast<void>(extra);
 
-    if (host == NULL || owner == NULL) {
-        return 0;
-    }
-    m_owner = owner;
-    m_tab = obj;
-    m_host = host;
-    m_redrawFrames = 0;
-    m_enabled = 1;
+    if (host != NULL && owner != NULL) {
+        m_owner = owner;
+        m_tab = obj;
+        m_host = host;
+        m_redrawFrames = 0;
+        m_enabled = 1;
 
-    m_rect14 = rect;
-    m_cmd = cmd;
-    if (key == NULL) {
-        return 0;
-    }
-    CObject* found = 0;
-    host->m_imageRegistry->m_10map.Lookup(key, found);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-    m_frameSet = rec;
-    if (rec == NULL) {
-        return 0;
-    }
-    i32 f = frame;
-    if (f == -1) {
-        f = rec->m_minIndex;
-    }
-    m_frameIndex = f;
+        m_rect14 = rect;
+        m_cmd = cmd;
+        if (key != NULL) {
+            CObject* found = 0;
+            host->m_imageRegistry->m_10map.Lookup(key, found);
+            CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
+            m_frameSet = rec;
+            if (rec != NULL) {
+                i32 f = frame;
+                if (f == -1) {
+                    f = rec->m_minIndex;
+                }
+                m_frameIndex = f;
 
-    CImage* cel;
-    if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        cel = static_cast<CImage*>(rec->m_items.GetAt(f));
-    } else {
-        cel = NULL;
+                CImage* cel;
+                if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
+                    cel = static_cast<CImage*>(rec->m_items.GetAt(f));
+                } else {
+                    cel = NULL;
+                }
+                m_frame = cel;
+                return 1;
+            }
+        }
     }
-    m_frame = cel;
-    return 1;
+    return 0;
 }
 
 RVA(0x000e7400, 0x9)
@@ -87,20 +85,18 @@ i32 CSBI_ImageSet::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
         CDDrawWorker* tbl = m_frameSet;
+        i32 idx = m_frameIndex;
         CImage* cel;
-        if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
-            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
+        if (idx >= tbl->m_minIndex && idx <= tbl->m_maxIndex) {
+            cel = static_cast<CImage*>(tbl->m_items.GetAt(idx));
         } else {
             cel = NULL;
         }
         m_frame = cel;
         if (cel != NULL) {
-            cel->RenderFrame(
-                g_gameReg->m_world->m_drawTarget->m_backPair,
-                cel->m_anchorX + m_rect14.left,
-                cel->m_anchorY + m_rect14.top,
-                0
-            );
+            i32 y = cel->m_anchorY + m_rect14.top;
+            i32 x = cel->m_anchorX + m_rect14.left;
+            cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }
     return 1;

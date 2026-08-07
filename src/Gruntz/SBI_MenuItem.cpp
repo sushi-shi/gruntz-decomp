@@ -42,21 +42,21 @@ i32 CSBI_MenuItem::SetupImage(
     if (key == NULL) {
         return 0;
     }
-    if (host == NULL || owner == NULL) {
-        return 0;
-    }
-    m_owner = owner;
-    m_host = host;
-    m_tab = tab;
-    m_kind = SBI_KIND_MENU_ITEM;
-    m_frame = NULL;
+    if (host != NULL && owner != NULL) {
+        m_owner = owner;
+        m_host = host;
+        m_tab = tab;
+        m_kind = SBI_KIND_MENU_ITEM;
+        m_frame = NULL;
 
-    m_rect14 = rc;
-    m_redrawFrames = 0;
-    m_cmd = cmd;
-    m_state = MENUITEM_NORMAL;
-    m_enabled = 1;
-    return ResolveFrame(key, frame) != 0;
+        m_rect14 = rc;
+        m_redrawFrames = 0;
+        m_cmd = cmd;
+        m_state = MENUITEM_NORMAL;
+        m_enabled = 1;
+        return ResolveFrame(key, frame) != 0;
+    }
+    return 0;
 }
 
 RVA(0x000e81a0, 0x8)
@@ -102,12 +102,9 @@ i32 CSBI_MenuItem::Render() {
         m_redrawFrames--;
         CImage* f = m_frame;
         if (f) {
-            f->RenderFrame(
-                g_gameReg->m_world->m_drawTarget->m_backPair,
-                m_rect14.left + f->m_anchorX,
-                m_rect14.top + f->m_anchorY,
-                0
-            );
+            i32 y = m_rect14.top + f->m_anchorY;
+            i32 x = m_rect14.left + f->m_anchorX;
+            f->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }
     return 1;

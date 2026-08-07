@@ -35,36 +35,29 @@ i32 CSBI_Image::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    if (host == NULL) {
-        return 0;
+    if (host != NULL && owner != NULL) {
+        m_owner = owner;
+        m_tab = tab;
+        m_host = host;
+        m_redrawFrames = 0;
+        m_enabled = 0;
+        m_rect14 = rc;
+        m_cmd = cmd;
+        if (key != NULL) {
+            CObject* found = 0;
+            host->m_imageRegistry->m_10map.Lookup(key, found);
+            CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
+            CImage* val;
+            if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
+                val = NULL;
+            } else {
+                val = static_cast<CImage*>(rec->m_items.GetAt(1));
+            }
+            m_frame = val;
+            return val != NULL;
+        }
     }
-    if (owner == NULL) {
-        return 0;
-    }
-    m_owner = owner;
-    m_tab = tab;
-    m_host = host;
-    m_redrawFrames = 0;
-    m_enabled = 0;
-    m_rect14.left = rc.left;
-    m_rect14.top = rc.top;
-    m_rect14.right = rc.right;
-    m_rect14.bottom = rc.bottom;
-    m_cmd = cmd;
-    if (key == NULL) {
-        m_frame = NULL;
-        return 0 != 0;
-    }
-    CObject* found = 0;
-    host->m_imageRegistry->m_10map.Lookup(key, found);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-    if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
-        m_frame = NULL;
-        return 0 != 0;
-    }
-    CImage* val = static_cast<CImage*>(rec->m_items.GetAt(1));
-    m_frame = val;
-    return val != NULL;
+    return 0;
 }
 
 RVA(0x000e6d90, 0x8)
@@ -83,12 +76,9 @@ i32 CSBI_Image::Render() {
         m_redrawFrames--;
         CImage* cel = m_frame;
         if (cel != NULL) {
-            cel->RenderFrame(
-                g_gameReg->m_world->m_drawTarget->m_backPair,
-                m_rect14.left + cel->m_anchorX,
-                m_rect14.top + cel->m_anchorY,
-                0
-            );
+            i32 y = m_rect14.top + cel->m_anchorY;
+            i32 x = m_rect14.left + cel->m_anchorX;
+            cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
         }
     }
     return 1;
