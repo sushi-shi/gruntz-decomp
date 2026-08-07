@@ -24,6 +24,9 @@ platform = "win32"
 c        = ["/nologo", "/c", "/O2", "/MT"]
 cpp      = ["/nologo", "/c", "/O2", "/MT", "/GX"]
 cpp-rtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
+# Retail's movinglogic unit has ZERO EH frames while every sibling has them:
+# it was compiled with RTTI but without /GX (proven by insn_count --eh).
+cpp-rtti-noeh = ["/nologo", "/c", "/O2", "/MT", "/GR"]
 
 [[unit]]
 unit = "adler32"
@@ -447,7 +450,7 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "movinglogic"
 source = "src/Gruntz/MovingLogic.cpp"
-flags = "cpp-rtti"
+flags = "cpp-rtti-noeh"
 
 [[unit]]
 unit = "zvec"
