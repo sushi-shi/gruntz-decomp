@@ -66,9 +66,11 @@ static __inline Coord ScreenTile(CUserLogic* u) {
 }
 
 // @early-stop
-// Reloc sequence now matches retail's 81/81 in order; the residue is that cl
-// register-allocates the four ScreenTile destinations where retail homes every
-// field, so the frame is 0x6c against retail's 0x58 and every [esp+N] shifts.
+// Reloc sequence matches retail's 81/81 in order. The residue is allocation: cl
+// keeps each ScreenTile temp in a register and drops the write-back into the
+// Coord it shifted, where retail homes both the temp and the destination (its
+// extra `sar`/`mov` pairs), and cl holds the zero in a register so the null tests
+// are `cmp reg,zero` in retail and `test reg,reg` here.
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     GruntAiState state = g->m_defenderState;
@@ -148,7 +150,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 {
                     // retail re-runs the act-key lookup for every letter; each
                     // comparison is materialised as a 0/1 before it is branched on.
-                    i32 eq;
+                    bool eq;
                     if (g == NULL) {
                         goto seek;
                     }
