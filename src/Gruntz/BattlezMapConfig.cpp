@@ -3939,7 +3939,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         i32 w = dr - dl;
         do {
             for (i32 r = dt; r < db; r++) {
-                board->m_rowBytes[r][colOff + 2] &= 0xfd;
+                m_board->m_rowBytes[r][colOff + 2] &= 0xfd;
             }
             colOff += 0x1c;
         } while (--w != 0);
