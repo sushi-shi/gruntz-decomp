@@ -640,6 +640,12 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 }
 
 // @early-stop
+// Scheduler wall: retail evaluates the PARAMETER's world first (so `this`/ecx stays
+// live through the first idiv and `push esi` sinks into the compute block); cl here
+// always hoists the m_currentLevelIndex load ahead of it, which costs the sunk push
+// and swaps both divisor scratch registers. 15 source spellings (both local orders,
+// both compare operand orders, single-expression, split-statement, inline helper)
+// all produce the identical 76-byte body.
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
