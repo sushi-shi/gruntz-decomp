@@ -73,10 +73,21 @@ i32 CGrunt::UpdateArrival() {
             if (atTarget && g == NULL) {
                 return 1;
             }
-        } else {
-            if (atTarget) {
+            if (this->m_poweredUp == 0) {
                 return 1;
             }
+            if (this->m_combatActive != 0) {
+                return 1;
+            }
+            this->m_entranceActive = 0;
+            this->m_combatActive = 0;
+            this->m_neighborValid = 0;
+            this->m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
+        }
+        if (atTarget) {
+            return 1;
         }
         if (this->m_poweredUp == 0) {
             return 1;
@@ -244,13 +255,17 @@ i32 CGrunt::UpdateArrival() {
                 if (GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
                     || slot->m_entranceCommitted == 0) {
                     m_defenderState = AISTATE_CHASE;
-                    if (CGameLevel::PointInBounds(
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                            m_object->m_screenX,
-                            m_object->m_screenY
-                        )
-                        != 0) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    {
+                        // CGameLevel::PointInBounds open-coded: retail calls it out of
+                        // line only from the AISTATE_SEEK arm, and spells the test out
+                        // here (four compares against the main plane's view rect).
+                        const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        i32 px = m_object->m_screenX;
+                        i32 py = m_object->m_screenY;
+                        if (px < view.right && px >= view.left && py < view.bottom
+                            && py >= view.top) {
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        }
                     }
                     break;
                 }
@@ -261,13 +276,17 @@ i32 CGrunt::UpdateArrival() {
                     || slot->m_object->m_screenX != slot->m_lastTilePx.m_x
                     || slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
                     m_defenderState = AISTATE_CHASE;
-                    if (CGameLevel::PointInBounds(
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                            m_object->m_screenX,
-                            m_object->m_screenY
-                        )
-                        != 0) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    {
+                        // CGameLevel::PointInBounds open-coded: retail calls it out of
+                        // line only from the AISTATE_SEEK arm, and spells the test out
+                        // here (four compares against the main plane's view rect).
+                        const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                        i32 px = m_object->m_screenX;
+                        i32 py = m_object->m_screenY;
+                        if (px < view.right && px >= view.left && py < view.bottom
+                            && py >= view.top) {
+                            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        }
                     }
                     break;
                 }
@@ -305,7 +324,12 @@ i32 CGrunt::UpdateArrival() {
                 }
                 m_coordList.RemoveAll();
             }
-            SetEntrancePos(cell->m_x * 0x20 + 0x10, cell->m_y * 0x20 + 0x10);
+            g_gameReg->m_cmdGrid->ApplyTriggerA(
+                m_tileOwnerHi,
+                m_tileOwnerLo,
+                cell->m_x * 0x20 + 0x10,
+                cell->m_y * 0x20 + 0x10
+            );
         }
     }
     return 1;
