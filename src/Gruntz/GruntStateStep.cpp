@@ -57,14 +57,6 @@
 // retail inlines this at every "where is this unit, in tiles" site: the screen
 // position lands in a fresh temp, is shifted in place, and is returned BY VALUE
 // (hence the second store pair into the caller's Coord).
-static __inline Coord ScreenTile(CUserLogic* u) {
-    Coord c;
-    u->GetScreenPos(&c);
-    c.m_x = c.m_x >> TILE_SHIFT_PX;
-    c.m_y = c.m_y >> TILE_SHIFT_PX;
-    return c;
-}
-
 // @early-stop
 // Reloc sequence matches retail's 81/81 in order. The residue is allocation: cl
 // keeps each ScreenTile temp in a register and drops the write-back into the
@@ -81,21 +73,31 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
 
         Coord tp;
         g->GetScreenPos(&tp);
-        CGrunt* nb = FindIdleGruntInBox(
-            tp.m_x >> TILE_SHIFT_PX,
-            tp.m_y >> TILE_SHIFT_PX,
-            m_defenderSearchRadiusX,
-            m_defenderSearchRadiusY
-        );
+        tp.m_x = tp.m_x >> TILE_SHIFT_PX;
+        tp.m_y = tp.m_y >> TILE_SHIFT_PX;
+        CGrunt* nb =
+            FindIdleGruntInBox(tp.m_x, tp.m_y, m_defenderSearchRadiusX, m_defenderSearchRadiusY);
         if (nb != NULL) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
 
-            Coord np = ScreenTile(nb);
-            Coord gp = ScreenTile(g);
-            Coord np2 = ScreenTile(nb);
-            Coord gp2 = ScreenTile(g);
+            Coord np;
+            nb->GetScreenPos(&np);
+            np.m_x = np.m_x >> TILE_SHIFT_PX;
+            np.m_y = np.m_y >> TILE_SHIFT_PX;
+            Coord gp;
+            g->GetScreenPos(&gp);
+            gp.m_x = gp.m_x >> TILE_SHIFT_PX;
+            gp.m_y = gp.m_y >> TILE_SHIFT_PX;
+            Coord np2;
+            nb->GetScreenPos(&np2);
+            np2.m_x = np2.m_x >> TILE_SHIFT_PX;
+            np2.m_y = np2.m_y >> TILE_SHIFT_PX;
+            Coord gp2;
+            g->GetScreenPos(&gp2);
+            gp2.m_x = gp2.m_x >> TILE_SHIFT_PX;
+            gp2.m_y = gp2.m_y >> TILE_SHIFT_PX;
             i32 dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
             if (dist <= 0xa) {
 
@@ -114,14 +116,9 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             Coord p;
             nb->GetScreenPos(&p);
-            if (g->TileSwitch(
-                    p.m_x >> TILE_SHIFT_PX,
-                    p.m_y >> TILE_SHIFT_PX,
-                    0,
-                    0x20000dc7,
-                    0,
-                    0
-                )) {
+            p.m_x = p.m_x >> TILE_SHIFT_PX;
+            p.m_y = p.m_y >> TILE_SHIFT_PX;
+            if (g->TileSwitch(p.m_x, p.m_y, 0, 0x20000dc7, 0, 0)) {
                 g->m_defenderState = AISTATE_ATTACK;
                 g->m_arrivalCell.m_x = nb->m_tileOwnerHi;
                 g->m_arrivalCell.m_y = nb->m_tileOwnerLo;
@@ -234,10 +231,22 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             if (g->CoordCount() != 0) {
                 STEP_DRAIN(g);
             }
-            Coord c0 = ScreenTile(cur);
-            Coord c1 = ScreenTile(g);
-            Coord c2 = ScreenTile(cur);
-            Coord c3 = ScreenTile(g);
+            Coord c0;
+            cur->GetScreenPos(&c0);
+            c0.m_x = c0.m_x >> TILE_SHIFT_PX;
+            c0.m_y = c0.m_y >> TILE_SHIFT_PX;
+            Coord c1;
+            g->GetScreenPos(&c1);
+            c1.m_x = c1.m_x >> TILE_SHIFT_PX;
+            c1.m_y = c1.m_y >> TILE_SHIFT_PX;
+            Coord c2;
+            cur->GetScreenPos(&c2);
+            c2.m_x = c2.m_x >> TILE_SHIFT_PX;
+            c2.m_y = c2.m_y >> TILE_SHIFT_PX;
+            Coord c3;
+            g->GetScreenPos(&c3);
+            c3.m_x = c3.m_x >> TILE_SHIFT_PX;
+            c3.m_y = c3.m_y >> TILE_SHIFT_PX;
             i32 dist2;
             dist2 = abs(c0.m_x - c1.m_x) + abs(c2.m_y - c3.m_y);
             if (dist2 <= 0xa) {
