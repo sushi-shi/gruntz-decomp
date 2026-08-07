@@ -154,21 +154,16 @@ i32 CEyeCandyAni::AdvanceAnim() {
 }
 
 // @early-stop
-// Residue is one shared idiom (see
-// docs/patterns/known-zero-reload-before-call.md): retail RE-READS
-// m_wwdObject->m_animCursor.m_animation through the call's `this` even though the
-// guard just proved it 0, while cl here copy-propagates the guard's zero register
-// into the store. No source spelling reaches retail's form - 7 spellings tested
-// (plain, wwdObject local, cursor-pointer local, mixed receivers, both statement
-// orders); every assign-BEFORE-call form also costs an extra zero-constant use,
-// which makes cl claim a 4th callee-saved register and shifts every frame offset.
+// cl5 propagates the branch equality into the guarded re-read of the member it
+// just tested, so the load retail keeps is missing.
+// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
         m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_OVERLAY) {

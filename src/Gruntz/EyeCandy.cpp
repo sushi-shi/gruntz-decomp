@@ -19,6 +19,10 @@ i32 CEyeCandy::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CG
 RVA_COMPGEN(0x0000fd30, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
 
+// @early-stop
+// cl5 propagates the branch equality into the guarded re-read of the member it
+// just tested, so the load retail keeps is missing.
+// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
