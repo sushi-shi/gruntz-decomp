@@ -56,27 +56,35 @@ i32 CGrunt::WanderStep() {
     if (m_poweredUp != 0) {
         if (m_neighborValid == 0) {
             if (m_combatActive == 0) {
-                bool reset;
                 if (m_stamina >= STAMINA_FULL) {
                     if (FindGridNeighbor(1) != NULL) {
                         m_defenderState = AISTATE_RETREAT;
                         return 1;
                     }
-                    reset = (flag == 0 || g == NULL);
+                    if (flag != 0 && g == NULL) {
+                        goto retreat;
+                    }
+                    if (m_poweredUp == 0 || m_neighborValid != 0) {
+                        goto retreat;
+                    }
                 } else {
-                    reset = (flag == 0);
+                    if (flag != 0) {
+                        goto retreat;
+                    }
+                    if (m_poweredUp == 0 || m_neighborValid != 0) {
+                        goto retreat;
+                    }
                 }
-                if (reset) {
-                    m_entranceActive = 0;
-                    m_combatActive = 0;
-                    m_neighborValid = 0;
-                    m_poweredUp = 0;
-                    ResetEntranceAnimation(1, 0, 0);
-                }
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
             }
         } else {
             m_neighborValid = 0;
         }
+    retreat:
         m_defenderState = AISTATE_RETREAT;
     }
 
@@ -87,12 +95,8 @@ i32 CGrunt::WanderStep() {
                     && g->m_object->m_screenX == g->m_lastTilePx.m_x
                     && g->m_object->m_screenY == g->m_lastTilePx.m_y
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
-                    CommitNeighbor(
-                        g->m_tileOwnerHi,
-                        g->m_tileOwnerLo,
-                        g->m_lastTilePx.m_x,
-                        g->m_lastTilePx.m_y
-                    );
+                    Coord cp = g->m_lastTilePx;
+                    CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
                     m_neighborScanEnabled = 0;
                     if (CoordCount() != 0) {
                         void* node = m_coordList.GetHeadPosition();
@@ -185,12 +189,8 @@ i32 CGrunt::WanderStep() {
             if (slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
                 return 1;
             }
-            CommitNeighbor(
-                slot->m_tileOwnerHi,
-                slot->m_tileOwnerLo,
-                slot->m_lastTilePx.m_x,
-                slot->m_lastTilePx.m_y
-            );
+            Coord cp = slot->m_lastTilePx;
+            CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
 
@@ -235,12 +235,8 @@ i32 CGrunt::WanderStep() {
             if (slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
                 goto ph1;
             }
-            CommitNeighbor(
-                slot->m_tileOwnerHi,
-                slot->m_tileOwnerLo,
-                slot->m_lastTilePx.m_x,
-                slot->m_lastTilePx.m_y
-            );
+            Coord cp = slot->m_lastTilePx;
+            CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
             m_neighborScanEnabled = 0;
             if (CoordCount() != 0) {
                 POSITION pos = m_coordList.GetHeadPosition();
@@ -319,23 +315,7 @@ i32 CGrunt::WanderStep() {
 timeout:
     if (m_resetApplied == 0 && m_hasExtent != 0
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
-        i32 hi =
-            -static_cast<i32>((static_cast<u32>(g_frameTime) < static_cast<u32>(m_arrivalRerollLo)))
-            - m_arrivalRerollHi;
-        i32 lo = static_cast<i32>((g_frameTime - static_cast<u32>(m_arrivalRerollLo)));
-        if (m_arrivalRerollWindowHi < hi
-            || (m_arrivalRerollWindowHi == hi
-                && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
-            ResetEntranceAnimation(1, 1, 0);
-            m_arrivalRerollLo = 0;
-            m_arrivalRerollWindowLo = 0;
-            m_arrivalRerollHi = 0;
-            m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollWindowLo = rand() % 30000 + 30000;
-            m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-            m_arrivalRerollHi = 0;
-        } else {
+        if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
             CWwdGameObjectA* base = m_object;
             u32 lx = static_cast<u32>(base->m_extent.left);
             i32 ax = abs(base->m_extent.right - static_cast<i32>(lx));
@@ -354,12 +334,22 @@ timeout:
                 if (ax <= ay) {
                     ax = ay;
                 }
-                if (ax < CoordCount()) {
+                if (CoordCount() > ax) {
                     SetEntrancePos(1, 1);
                     m_dwell = 0;
                     return 1;
                 }
             }
+        } else {
+            ResetEntranceAnimation(1, 1, 0);
+            m_arrivalRerollLo = 0;
+            m_arrivalRerollWindowLo = 0;
+            m_arrivalRerollHi = 0;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollWindowLo = rand() % 30000 + 30000;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+            m_arrivalRerollHi = 0;
         }
         m_dwell = 0;
     }
