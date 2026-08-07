@@ -4312,9 +4312,8 @@ void CGrunt::AdvanceMotion() {
             CoordNode* head = CoordHead();
             Coord* co = head->m_coord;
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
-            i32 mask = m_arrivalFlags & fl;
-            if (!(fl & 0x20000000) && !(mask & 0x20000000)
-                && (mask == 0 || (m_passableMask & fl) != 0)) {
+            if (!(fl & 0x20000000) && !((m_arrivalFlags & fl) & 0x20000000)
+                && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
                 Coord* tc = (CoordTail())->m_coord;
                 m_entrancePx.m_x = (tc->m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
                 m_entrancePx.m_y = (tc->m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -4374,7 +4373,7 @@ void CGrunt::AdvanceMotion() {
             if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
                 i32 result = -1;
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
-                    if (m_coordToggle != 0) {
+                    if (m_arrivalActive != 0) {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                         if (other == NULL) {
@@ -4419,7 +4418,7 @@ void CGrunt::AdvanceMotion() {
                         );
                     }
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (m_coordToggle == 0) {
+                    if (m_arrivalActive == 0) {
                         result = m_tileMgr->ApplyTriggerB(
                             m_tileOwnerHi,
                             m_tileOwnerLo,
@@ -4491,7 +4490,7 @@ void CGrunt::AdvanceMotion() {
             if (StepCompassMove() != 0) {
                 return;
             }
-            m_idleAnchor = 0;
+            m_toyDuration = 0;
             return;
         }
         rec = ActNameLookupCallReport(m_objAux->m_actKey);
@@ -4529,8 +4528,8 @@ void CGrunt::AdvanceMotion() {
     }
     m_object->m_screenX = x;
     m_object->m_screenY = y;
-    i32 sortKey = y + 0x186a0;
     CWwdGameObjectA* o = m_object;
+    i32 sortKey = o->m_screenY + 0x186a0;
     if (o->m_sortKey != sortKey) {
         o->m_sortKey = sortKey;
         o->m_flags |= 0x20000;
