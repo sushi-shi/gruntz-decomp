@@ -366,7 +366,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             m = 6;
         }
         if (m == 0) {
-            idx = static_cast<SpellzEffect>(rand() & 1);
+            i32 coin = static_cast<char>(rand());
+            idx = static_cast<SpellzEffect>(coin & 1);
         } else {
             idx = static_cast<SpellzEffect>(rand() % m + 1);
         }
@@ -483,6 +484,18 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: {
+            CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
+                0,
+                m_lastTilePx.m_x,
+                m_lastTilePx.m_y,
+                SORTKEY_OVERLAY,
+                "LightFx",
+                0x40003
+            );
+            spr->m_animWorker->m_notify(spr);
+            (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, 1);
+
             CWwdGameObjectA* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
