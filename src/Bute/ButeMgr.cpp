@@ -1556,6 +1556,13 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 }
 
 // @early-stop
+// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md). The
+// call census splits cleanly: retail CALLS ??0CButeValue@@QAE@W4ButeType@@M@Z at the
+// four `new CButeValue(...)` sites and inlines it at the three stack `box` ones (4
+// calls / 9 operator new); cl inlines five and calls two (2 calls / 11 operator new).
+// Same on the dtor: retail calls ??1CButeValue (0x172160) once and inlines two whose
+// type-switch arms share ONE body (2 jump tables, 1 operator delete); cl inlines all
+// three (3 jump tables, 3 operator delete). Nothing in the source selects this.
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
