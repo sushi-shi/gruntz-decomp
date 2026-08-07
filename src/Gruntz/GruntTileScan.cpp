@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcNoInline.h>
 #include <MfcWin.h>
 
 #include <Gruntz/BattlezMapConfig.h>
@@ -14,25 +15,34 @@
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 
-#include <new>
 #include <stdlib.h>
 
 #define SCAN_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
-        RECT ra;                                                                                   \
-        RECT rb;                                                                                   \
-        static_cast<RECT*>(new (&ra) CRect(0, 0, (grid)->m_width, (grid)->m_height));              \
-        RECT* pb = static_cast<RECT*>(new (&rb) CRect(0, 0, (grid)->m_width, (grid)->m_height));   \
-        ra.left = pb->left;                                                                        \
-        ra.top = pb->top;                                                                          \
-        ra.right = pb->right;                                                                      \
-        ra.bottom = pb->bottom;                                                                    \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
+        CRect clip(0, 0, (grid)->m_width, (grid)->m_height);                                       \
+        RECT full = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                \
+        if (!IntersectRect(&(grid)->m_bounds, &full, &clip)) {                                     \
+            (grid)->m_bounds = full;                                                               \
         }                                                                                          \
         (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
         (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
     }
+
+static inline i32 ScanCellX(CGrunt* g) {
+    Coord t;
+    g->GetScreenPos(&t);
+    t.m_x >>= TILE_SHIFT_PX;
+    t.m_y >>= TILE_SHIFT_PX;
+    return t.m_x;
+}
+
+static inline i32 ScanCellY(CGrunt* g) {
+    Coord t;
+    g->GetScreenPos(&t);
+    t.m_x >>= TILE_SHIFT_PX;
+    t.m_y >>= TILE_SHIFT_PX;
+    return t.m_y;
+}
 
 // @early-stop
 
@@ -66,20 +76,13 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         }
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
-            Coord tp;
-            g->GetScreenPos(static_cast<Coord*>(&tp));
-            i32 cx = tp.m_x >> TILE_SHIFT_PX;
-            i32 cy = tp.m_y >> TILE_SHIFT_PX;
-            RECT box;
-            box.left = cx - 5;
-            box.top = cy - 5;
-            box.right = cx + 5;
-            box.bottom = cy + 5;
-            RECT gb;
-            gb.left = 0;
-            gb.top = 0;
-            gb.right = grid->m_width;
-            gb.bottom = grid->m_height;
+            CRect box(
+                ScanCellX(g) - 5,
+                ScanCellY(g) - 5,
+                ScanCellX(g) + 5,
+                (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5
+            );
+            CRect gb(0, 0, m_board->m_width, m_board->m_height);
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 i32 hits = 0;

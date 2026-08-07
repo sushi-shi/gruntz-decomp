@@ -138,9 +138,8 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
             priority = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
         }
     }
-    CGruntVoice** voices = m_voices;
     for (i32 i = 0; i < 2; i++) {
-        if (priority <= voices[i]->m_playFlags) {
+        if (priority <= m_voices[i]->m_playFlags) {
             return 0;
         }
     }
@@ -196,7 +195,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     if (stream->SetSource(src) != 0) {
         stream->Configure(vol, 0, 0, 0);
     }
-    CGruntVoice* voice = voices[chosen];
+    CGruntVoice* voice = m_voices[chosen];
     return voice->Setup(gate->m_objectId, stream, priority, 0) != 0;
 }
 
