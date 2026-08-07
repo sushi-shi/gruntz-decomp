@@ -243,9 +243,9 @@ i32 CGrunt::ArrivalReticleScan() {
                         SetEntrancePos(1, 1);
                         if (CoordCount() != 0) {
                             POSITION dpos = m_coordList.GetHeadPosition();
-                            while (dpos != 0) {
+                            while (dpos != NULL) {
                                 Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
-                                if (cur != 0) {
+                                if (cur != NULL) {
                                     CoordPoolNode* node = g_coordPool.NodeOf(cur);
                                     node->m_next = g_coordPool.m_freeHead;
                                     g_coordPool.m_freeHead = node;
@@ -276,9 +276,9 @@ i32 CGrunt::ArrivalReticleScan() {
                             SetEntrancePos(1, 1);
                             if (CoordCount() != 0) {
                                 POSITION dpos = m_coordList.GetHeadPosition();
-                                while (dpos != 0) {
+                                while (dpos != NULL) {
                                     Coord* cur = static_cast<Coord*>(m_coordList.GetNext(dpos));
-                                    if (cur != 0) {
+                                    if (cur != NULL) {
                                         CoordPoolNode* node = g_coordPool.NodeOf(cur);
                                         node->m_next = g_coordPool.m_freeHead;
                                         g_coordPool.m_freeHead = node;

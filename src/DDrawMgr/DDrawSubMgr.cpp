@@ -673,7 +673,7 @@ i32 CDDrawSubMgrLeafScan::SumField(const char* str) {
     void* val = 0;
     CString key;
     while (pos != NULL) {
-        val = 0;
+        val = NULL;
         m_cues.GetNextAssoc(pos, key, val);
         if (val != NULL) {
             if (str == NULL || *str == 0) {

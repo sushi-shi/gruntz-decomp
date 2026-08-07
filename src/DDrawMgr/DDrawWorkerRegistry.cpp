@@ -288,7 +288,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     CObject* val = 0;
     CString key;
     while (pos != NULL) {
-        val = 0;
+        val = NULL;
         m_10map.GetNextAssoc(pos, key, val);
         if (val != NULL) {
             if (str == NULL || *str == 0) {
