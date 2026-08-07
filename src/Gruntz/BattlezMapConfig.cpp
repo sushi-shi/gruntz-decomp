@@ -2559,12 +2559,14 @@ void* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     band = band % 4;
     CGrunt** row = &m_triggerMgr->m_grid[band * 15];
     i32 cell = rand() % 15;
-    for (i32 i = 0; i < 15; i++) {
+    i32 i = 0;
+    while (i < 15) {
         CGrunt* u = *row;
         if (u != NULL && u->m_entranceDropActive == 0) {
             return u;
         }
         cell = (cell + 1) % 15;
+        i++;
         row++;
     }
     return 0;
@@ -4627,34 +4629,38 @@ i32 CBattlezMapConfig::RouteUnitTo(
 
 // @early-stop
 RVA(0x000302c0, 0x1ec)
-i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC) {
+i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 maskC) {
     CPtrList list(10);
     Coord cur;
+    CoordNode* n;
+    CoordNode* p;
+    void* head;
+    CoordPoolNode* node;
+    POSITION qp;
+
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur));
+    i32 gx = goal.m_x;
+    i32 gy = goal.m_y;
     if ((cur.m_x >> TILE_SHIFT_PX) == gx) {
-        Coord cur2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&cur2));
-        if ((cur2.m_y >> TILE_SHIFT_PX) == gy) {
-            return 0;
+        (static_cast<CUserLogic*>(unit))->GetScreenPos((&goal));
+        if ((goal.m_y >> TILE_SHIFT_PX) == gy) {
+            goto fail;
         }
     }
 
-    CoordNode* match = 0;
-    CoordNode* n = unit->CoordHead();
+    n = unit->CoordHead();
     while (n != NULL) {
         CoordNode* cur3 = n;
         n = n->m_next;
         Coord* coord = cur3->m_coord;
         if (coord != NULL && coord->m_x == gx && coord->m_y == gy) {
-            match = n;
             break;
         }
     }
-    CGameObject* lvl = unit->m_object;
 
     if ((m_board)->SearchEdge(
-            lvl->m_screenX >> TILE_SHIFT_PX,
-            lvl->m_screenY >> TILE_SHIFT_PX,
+            unit->m_object->m_screenX >> TILE_SHIFT_PX,
+            unit->m_object->m_screenY >> TILE_SHIFT_PX,
             gx,
             gy,
             &list,
@@ -4663,50 +4669,50 @@ i32 CBattlezMapConfig::RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, 
             maskC
         )
         == 0) {
-        return 0;
+        goto fail;
     }
     if (list.GetCount() == 0) {
-        return 0;
+        goto fail;
     }
-    void* head = list.RemoveHead();
+    head = list.RemoveHead();
     if (head != NULL) {
-        CoordPoolNode* node = g_coordPool.NodeOf(head);
+        node = g_coordPool.NodeOf(head);
         node->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
-    if (list.GetCount() == 0) {
-        return 0;
-    }
+    if (list.GetCount() != 0) {
+        if (n != NULL && unit->CoordHead() != NULL) {
+            node = g_coordPool.NodeOf(&unit->m_coordList);
+            node->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
+        }
 
-    if (match != NULL && unit->CoordHead() != NULL) {
-        CoordPoolNode* node = g_coordPool.NodeOf(&unit->m_coordList);
-        node->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = node;
-    }
+        if (unit->CoordCount() != 0) {
+            p = unit->CoordHead();
+            while (p != NULL) {
+                CoordNode* cur4 = p;
+                p = p->m_next;
+                if (cur4->m_coord != NULL) {
+                    node = g_coordPool.NodeOf(cur4->m_coord);
+                    node->m_next = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
+                }
+            }
+            unit->m_coordList.RemoveAll();
+        }
 
-    if (unit->CoordCount() != 0) {
-        CoordNode* p = unit->CoordHead();
-        while (p != NULL) {
-            CoordNode* cur4 = p;
-            p = p->m_next;
-            if (cur4->m_coord != NULL) {
-                CoordPoolNode* node = g_coordPool.NodeOf(cur4->m_coord);
-                node->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = node;
+        qp = list.GetHeadPosition();
+        while (qp != NULL) {
+            Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
+            if (cur5 != NULL) {
+                unit->m_coordList.AddTail(cur5);
             }
         }
-        unit->m_coordList.RemoveAll();
+        list.RemoveAll();
+        return 1;
     }
-
-    POSITION qp = list.GetHeadPosition();
-    while (qp != NULL) {
-        Coord* cur5 = static_cast<Coord*>(list.GetNext(qp));
-        if (cur5 != NULL) {
-            unit->m_coordList.AddTail(cur5);
-        }
-    }
-    list.RemoveAll();
-    return 1;
+fail:
+    return 0;
 }
 
 RVA(0x00030530, 0x56)

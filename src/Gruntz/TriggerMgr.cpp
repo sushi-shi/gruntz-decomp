@@ -366,21 +366,19 @@ void CTriggerMgr::ClearRecords() {
     m_recList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x000788d0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src = m_grid[m_recordPosition.m_x * TM_GRID_COLS + m_recordPosition.m_y]->m_object;
     i32 y = src->m_screenY;
     i32 x = src->m_screenX;
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
-    float fy = static_cast<float>(y);
-    float fx = static_cast<float>(x);
-    if (!(t->m_flags & 1)) {
-        fx *= t->m_scaleX;
-        fy *= t->m_scaleY;
+    if (t->m_flags & 1) {
+        t->m_scaledX = static_cast<float>(x);
+        t->m_scaledY = static_cast<float>(y);
+    } else {
+        t->m_scaledX = static_cast<float>(x) * t->m_scaleX;
+        t->m_scaledY = static_cast<float>(y) * t->m_scaleY;
     }
-    t->m_scaledX = fx;
-    t->m_scaledY = fy;
     t->RecomputePlaneCoords();
     return 1;
 }
@@ -981,7 +979,7 @@ void CTriggerMgr::ResetSpawnState() {
 // @early-stop
 RVA(0x00079ea0, 0xc2)
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
-    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         return 0;
     }
     CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
@@ -1007,7 +1005,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     i32 idx = anchorIndex - 1;
-    CPlay::Anchor* rec = (static_cast<u32>(idx) < 4) ? &world->m_anchors[idx] : 0;
+    CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
     if (rec != NULL) {
         g_gameReg->m_cmdGrid
             ->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
@@ -2632,9 +2630,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         v = cell->m_toolId;
     }
     if (v == PICKUP_WAND) {
-        Coord pt;
-        pt.m_x = cell->m_lastTilePx.m_x;
-        pt.m_y = cell->m_lastTilePx.m_y;
+        Coord pt = cell->m_lastTilePx;
         g_gameReg->m_cmdGrid->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
         OverlayTick();
         return 1;

@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Clock64.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h>
@@ -43,7 +44,7 @@ public:
 
     i32 RouteUnitTo(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC, i32 clearFlag);
 
-    i32 RouteUnitToGoal(CGrunt* unit, i32 gx, i32 gy, i32 maskA, i32 maskC);
+    i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 maskA, i32 maskC);
     i32 StepRowSpawn(i32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
