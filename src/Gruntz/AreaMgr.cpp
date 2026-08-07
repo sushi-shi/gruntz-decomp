@@ -222,7 +222,6 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0009a510, 0x275)
 i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == NULL) {
@@ -251,9 +250,9 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         }
     }
 
-    POSITION dp = toAdd.GetHeadPosition();
-    while (dp != NULL) {
-        CDDrawWorker* obj = static_cast<CDDrawWorker*>(toAdd.GetNext(dp));
+    pos = toAdd.GetHeadPosition();
+    while (pos != NULL) {
+        CDDrawWorker* obj = static_cast<CDDrawWorker*>(toAdd.GetNext(pos));
         entry->m_imageRegistry->RemoveWorker(obj);
     }
     toAdd.RemoveAll();
@@ -276,7 +275,8 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
                 return 0;
             }
             entry->m_imageRegistry
-                ->InstallTree(handle, const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "");
+                ->InstallTree(handle, const_cast<char*>(static_cast<LPCTSTR>(e->GetName())), "_");
+            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
             g_resourceInstallActive = 0;
             e->m_flag = 1;
         }
@@ -303,7 +303,6 @@ CString CSpawnEntry::GetTail() {
     return tmp;
 }
 
-// @early-stop
 RVA(0x0009a910, 0x261)
 i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == NULL) {
@@ -332,9 +331,9 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         }
     }
 
-    POSITION dp = toAdd.GetHeadPosition();
-    while (dp != NULL) {
-        void* obj = toAdd.GetNext(dp);
+    pos = toAdd.GetHeadPosition();
+    while (pos != NULL) {
+        void* obj = toAdd.GetNext(pos);
         entry->m_soundRegistry->RemoveByValue(static_cast<LeafCue*>(obj));
     }
     toAdd.RemoveAll();
@@ -358,8 +357,9 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             entry->m_soundRegistry->ScanTree(
                 static_cast<CSymTab*>(handle),
                 const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
-                ""
+                "_"
             );
+            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
             e->m_flag = 1;
         }
         if (b->m_cursor == NULL) {
@@ -371,7 +371,6 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0009ac20, 0x261)
 i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == NULL) {
@@ -400,9 +399,9 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
         }
     }
 
-    POSITION dp = toAdd.GetHeadPosition();
-    while (dp != NULL) {
-        void* obj = toAdd.GetNext(dp);
+    pos = toAdd.GetHeadPosition();
+    while (pos != NULL) {
+        void* obj = toAdd.GetNext(pos);
         entry->m_animRegistry->RemoveValue(static_cast<CAniElement*>(obj));
     }
     toAdd.RemoveAll();
@@ -426,8 +425,9 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
             entry->m_animRegistry->ScanTree(
                 static_cast<CSymTab*>(handle),
                 const_cast<char*>(static_cast<LPCTSTR>(e->GetName())),
-                ""
+                "_"
             );
+            TRACE("%s\n", static_cast<LPCTSTR>(e->GetName()));
             e->m_flag = 1;
         }
         if (b->m_cursor == NULL) {
