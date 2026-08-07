@@ -562,14 +562,14 @@ RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
-// @early-stop
 RVA(0x0016de30, 0xe7)
-_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch) : zErrHandling(&g_dynamicArrayErrorSlot) {
-    m_spare = static_cast<char*>(scratch);
-    m_lo = lo;
-    m_hi = hi;
-    m_base = NULL;
-    m_stride = stride;
+_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
+    : zErrHandling(&g_dynamicArrayErrorSlot),
+      m_lo(lo),
+      m_hi(hi),
+      m_base(NULL),
+      m_spare(static_cast<char*>(scratch)),
+      m_stride(stride) {
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("Inconsistent bounds"), 0x16);

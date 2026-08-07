@@ -227,16 +227,13 @@ RVA(0x0017e170, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
     i32 count = m_arr.GetSize();
-    i32 last = count - 1;
-    if (last >= 0) {
-        while (i <= last) {
-            if (m_arr.m_pData[i] == pFader) {
-                m_arr.RemoveAt(i);
-                delete pFader;
-                return;
-            }
-            i++;
+    while (i <= count - 1) {
+        if (m_arr.m_pData[i] == pFader) {
+            m_arr.RemoveAt(i);
+            delete pFader;
+            return;
         }
+        i++;
     }
 }
 
