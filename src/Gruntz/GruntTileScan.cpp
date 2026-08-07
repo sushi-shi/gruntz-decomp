@@ -20,7 +20,7 @@
 #define SCAN_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
         CRect clip(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT full = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                \
+        RECT full = clip;                                                                          \
         if (!IntersectRect(&(grid)->m_bounds, &full, &clip)) {                                     \
             (grid)->m_bounds = full;                                                               \
         }                                                                                          \
@@ -76,13 +76,16 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         }
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
-            CRect box(
-                ScanCellX(g) - 5,
-                ScanCellY(g) - 5,
-                ScanCellX(g) + 5,
-                (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5
-            );
-            CRect gb(0, 0, m_board->m_width, m_board->m_height);
+            RECT box;
+            box.left = ScanCellX(g) - 5;
+            box.top = ScanCellY(g) - 5;
+            box.right = ScanCellX(g) + 5;
+            box.bottom = (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5;
+            RECT gb;
+            gb.left = 0;
+            gb.top = 0;
+            gb.right = m_board->m_width;
+            gb.bottom = m_board->m_height;
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
                 i32 hits = 0;
