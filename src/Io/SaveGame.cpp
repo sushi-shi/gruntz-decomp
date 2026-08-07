@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+DATA(0x002454e8)
 char* g_areaNames[8];
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;
