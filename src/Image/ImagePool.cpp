@@ -4,7 +4,7 @@
 
 #include <Mfc.h>
 
-#include <AddrWord.h>
+#include <ComOutRef.h>
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>

@@ -74,6 +74,11 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 // @identity-TODO SerializeMove (327 B) sits outside this TU's block at 0x3f040, between
 // ?0CExitTrigger (exittrigger) and FireActivation (wormholeacts). No size-family and too
 // large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
+// @early-stop
+// Retail merges the failed-lookup path into eax (`test/je join/mov eax,[found]`), so
+// the NULL default costs nothing; cl gives `obj` a callee-saved register and pays one
+// `xor esi,esi`. The value-returning and if/else spellings both get if-converted to
+// `neg/sbb/and` instead, which is worse.
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(
     CFileMemBase* ar,
