@@ -76,15 +76,27 @@ i32 CGrunt::ScanNearestTarget() {
     }
 
     i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
-    Coord pt;
-    GetScreenPos(&pt);
-    i32 by = pt.m_y >> TILE_SHIFT_PX;
-    GetScreenPos(&pt);
-    i32 bx = pt.m_x >> TILE_SHIFT_PX;
-    GetScreenPos(&pt);
-    i32 t3y = pt.m_y >> TILE_SHIFT_PX;
-    GetScreenPos(&pt);
-    i32 t4x = pt.m_x >> TILE_SHIFT_PX;
+    // Four separate Coord slots, each shifted to tile space IN PLACE - retail
+    // stores both shifted fields back through the escaped pointer.
+    Coord pt1;
+    GetScreenPos(&pt1);
+    pt1.m_x >>= TILE_SHIFT_PX;
+    pt1.m_y >>= TILE_SHIFT_PX;
+    i32 by = pt1.m_y;
+    Coord pt2;
+    GetScreenPos(&pt2);
+    pt2.m_x >>= TILE_SHIFT_PX;
+    pt2.m_y >>= TILE_SHIFT_PX;
+    i32 bx = pt2.m_x;
+    Coord pt3;
+    GetScreenPos(&pt3);
+    pt3.m_x >>= TILE_SHIFT_PX;
+    pt3.m_y >>= TILE_SHIFT_PX;
+    i32 t3y = pt3.m_y;
+    Coord pt4;
+    GetScreenPos(&pt4);
+    pt4.m_x >>= TILE_SHIFT_PX;
+    i32 t4x = pt4.m_x;
     RECT box;
     box.left = t4x - halfBox;
     box.top = t3y - halfBox;
@@ -112,7 +124,8 @@ i32 CGrunt::ScanNearestTarget() {
 
     i32 powered = m_poweredUp;
     if (powered != 0) {
-        if (m_neighborValid != 0) {
+        i32 neighborValid = m_neighborValid;
+        if (neighborValid != 0) {
             m_neighborValid = 0;
             return 1;
         }
@@ -252,24 +265,7 @@ i32 CGrunt::ScanNearestTarget() {
             }
 
             {
-                i32 lo = static_cast<i32>(g_frameTime) - m_arrivalRerollLo;
-                i32 hi = 0 - m_arrivalRerollHi
-                         - (g_frameTime < static_cast<u32>(m_arrivalRerollLo) ? 1 : 0);
-                i32 winHi = m_arrivalRerollWindowHi;
-                if (hi > winHi
-                    || (hi == winHi
-                        && static_cast<u32>(lo) >= static_cast<u32>(m_arrivalRerollWindowLo))) {
-
-                    ResetEntranceAnimation(1, 1, 0);
-                    m_arrivalRerollLo = 0;
-                    m_arrivalRerollWindowLo = 0;
-                    m_arrivalRerollHi = 0;
-                    m_arrivalRerollWindowHi = 0;
-                    m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
-                    m_arrivalRerollWindowHi = 0;
-                    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-                    m_arrivalRerollHi = 0;
-                } else {
+                if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
 
                     CWwdGameObjectA* hud = m_object;
                     i32 baseCol = hud->m_extent.left;
@@ -289,14 +285,25 @@ i32 CGrunt::ScanNearestTarget() {
                         && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
                         this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
                     }
-                    if (CoordCount() != 0) {
+                    i32 steps = CoordCount();
+                    if (steps != 0) {
                         if (spanX > spanY) {
                             spanX = spanY;
                         }
-                        if (CoordCount() > spanX) {
+                        if (steps > spanX) {
                             SetEntrancePos(1, 1);
                         }
                     }
+                } else {
+                    ResetEntranceAnimation(1, 1, 0);
+                    m_arrivalRerollLo = 0;
+                    m_arrivalRerollWindowLo = 0;
+                    m_arrivalRerollHi = 0;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
+                    m_arrivalRerollWindowHi = 0;
+                    m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+                    m_arrivalRerollHi = 0;
                 }
             }
             m_dwell = 0;
