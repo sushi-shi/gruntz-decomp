@@ -27,24 +27,23 @@ i32 CImageSet3::GetStride() {
     return m_height * m_width + 0x10;
 }
 
-// @early-stop
 RVA(0x00166d70, 0x8d)
 i32 CImageSet3::Parse(void* record) {
     i32* p = static_cast<WwdTileImageRecord*>(record)->m_fields;
-    i32 w = *p++;
-    m_width = w;
-    i32 h = *p++;
-    m_height = h;
+    m_width = *p++;
+    m_height = *p++;
+    i32 h = m_height;
     m_heightLog2 = 0;
-    m_byteSize = w * h;
+    i32 size = m_width * m_height;
+    m_byteSize = size;
     for (; h > 1; h >>= 1) {
         m_heightLog2++;
     }
-    if ((1 << m_heightLog2) != w) {
+    if ((1 << m_heightLog2) != m_width) {
         return 0;
     }
 
-    u8* dst = new u8[m_byteSize];
+    u8* dst = new u8[size];
     m_pixels = dst;
     if (dst == NULL) {
         return 0;
@@ -69,14 +68,13 @@ i32 CImageSet3::ScanUp(i32 x, i32 y, i32* outY, i32* outVal) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00166f20, 0x52)
 i32 CImageSet3::ScanUpForValue(i32 x, i32 y, i32 val, i32* outY) {
-    u8* p = m_pixels + ((y << m_heightLog2) + x);
+    i32 off = (y << m_heightLog2) + x;
     while (y > 0) {
-        p -= m_width;
+        off -= m_width;
         --y;
-        if (*p == val) {
+        if (m_pixels[off] == val) {
             *outY = y;
             return 1;
         }
@@ -84,13 +82,11 @@ i32 CImageSet3::ScanUpForValue(i32 x, i32 y, i32 val, i32* outY) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00166f80, 0x68)
 i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
-    i32 lim = m_width - 1;
-    while (x < lim) {
+    while (x < m_width - 1) {
         ++x;
         ++off;
         if ((m_pixels)[off] != target) {
@@ -102,15 +98,13 @@ i32 CImageSet3::ScanRight(i32 x, i32 y, i32* outX, i32* outVal) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00166ff0, 0x52)
 i32 CImageSet3::ScanRightForValue(i32 x, i32 y, i32 val, i32* outX) {
-    i32 lim = m_width - 1;
-    u8* p = m_pixels + ((y << m_heightLog2) + x);
-    while (x < lim) {
+    i32 off = (y << m_heightLog2) + x;
+    while (x < m_width - 1) {
         ++x;
-        ++p;
-        if (*p == val) {
+        ++off;
+        if (m_pixels[off] == val) {
             *outX = x;
             return 1;
         }
@@ -118,13 +112,11 @@ i32 CImageSet3::ScanRightForValue(i32 x, i32 y, i32 val, i32* outX) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00167050, 0x74)
 i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
-    i32 lim = m_height - 1;
-    while (y < lim) {
+    while (y < m_height - 1) {
         off += m_width;
         ++y;
         if ((m_pixels)[off] != target) {
@@ -136,12 +128,10 @@ i32 CImageSet3::ScanDown(i32 x, i32 y, i32* outY, i32* outVal) {
     return 0;
 }
 
-// @early-stop
 RVA(0x001670d0, 0x5d)
 i32 CImageSet3::ScanDownForValue(i32 x, i32 y, i32 val, i32* outY) {
     i32 off = (y << m_heightLog2) + x;
-    i32 lim = m_height - 1;
-    while (y < lim) {
+    while (y < m_height - 1) {
         off += m_width;
         ++y;
         if ((m_pixels)[off] == val) {
