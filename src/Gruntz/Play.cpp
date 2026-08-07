@@ -1971,7 +1971,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     return 1;
                 }
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
+                host->AccrueScoreTime();
                 return 1;
             }
             if (key == 'N' || key == VK_ESCAPE) {
@@ -1995,7 +1995,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
             if (key == 'S' && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
+                host->AccrueScoreTime();
             }
             if (key == 'R') {
                 if (host->m_gameMode == GAMEMODE_SINGLE
@@ -2010,7 +2010,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 if (host->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
                     CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
-                    (static_cast<CGruntzMgr*>((host)))->AccrueScoreTime();
+                    host->AccrueScoreTime();
                 }
                 return 1;
             }
@@ -2134,14 +2134,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             h->m_frameGate ^= 1;
             self->m_mgr->FinishLevel(h->m_frameGate, 1);
         }
-        CDDrawSubMgrLeafScan* s = self->m_mgr->m_world->m_soundRegistry;
-        if (s->m_emitGate == 0) {
-            void* found = 0;
-            s->m_cues.Lookup("GAME_TABHIGHLIGHT1", found);
-            if (found != NULL) {
-                static_cast<LeafCue*>(found)->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
-            }
-        }
+        CLEAR_TAB_HINT(self->m_mgr->m_world->m_soundRegistry);
+        this->EnterOverlayDrag(1);
         return 1;
     }
 
@@ -2692,74 +2686,59 @@ tail_default2:
     }
     {
 
+        // Retail's arms run in NUMPAD LAYOUT order (1..9, NumLock, /, *, Ins) and
+        // each numpad key shares its arm with the nav key on the same pad cell -
+        // 21 case labels, 13 emitted bodies.
         CStatusBarMgr* lv = self->m_guts;
         switch (key) {
-            case VK_CLEAR:
-                lv->HlClickGroup1(STATUS_HL_ROW_MIDDLE);
-                return 1;
-            case VK_PRIOR:
-                lv->HlClickGroup2(STATUS_HL_ROW_UPPER);
-                return 1;
-            case VK_NEXT:
-                lv->HlClickGroup2(STATUS_HL_ROW_LOWER);
-                return 1;
             case VK_END:
-                lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
-                return 1;
-            case VK_HOME:
-                lv->HlClickGroup0(STATUS_HL_ROW_UPPER);
-                return 1;
-            case VK_LEFT:
-                lv->HlClickGroup0(STATUS_HL_ROW_MIDDLE);
-                return 1;
-            case VK_UP:
-                lv->HlClickGroup1(STATUS_HL_ROW_UPPER);
-                return 1;
-            case VK_RIGHT:
-                lv->HlClickGroup2(STATUS_HL_ROW_MIDDLE);
-                return 1;
-            case VK_DOWN:
-                lv->HlClickGroup1(STATUS_HL_ROW_LOWER);
-                return 1;
-            case VK_INSERT:
-                lv->ActivateSlot(-1);
-                return 1;
             case VK_NUMPAD1:
                 lv->HlClickGroup0(STATUS_HL_ROW_LOWER);
                 return 1;
+            case VK_DOWN:
             case VK_NUMPAD2:
                 lv->HlClickGroup1(STATUS_HL_ROW_LOWER);
                 return 1;
+            case VK_NEXT:
             case VK_NUMPAD3:
                 lv->HlClickGroup2(STATUS_HL_ROW_LOWER);
                 return 1;
+            case VK_LEFT:
             case VK_NUMPAD4:
                 lv->HlClickGroup0(STATUS_HL_ROW_MIDDLE);
                 return 1;
+            case VK_CLEAR:
             case VK_NUMPAD5:
                 lv->HlClickGroup1(STATUS_HL_ROW_MIDDLE);
                 return 1;
+            case VK_RIGHT:
             case VK_NUMPAD6:
                 lv->HlClickGroup2(STATUS_HL_ROW_MIDDLE);
                 return 1;
+            case VK_HOME:
             case VK_NUMPAD7:
                 lv->HlClickGroup0(STATUS_HL_ROW_UPPER);
                 return 1;
+            case VK_UP:
             case VK_NUMPAD8:
                 lv->HlClickGroup1(STATUS_HL_ROW_UPPER);
                 return 1;
+            case VK_PRIOR:
             case VK_NUMPAD9:
                 lv->HlClickGroup2(STATUS_HL_ROW_UPPER);
-                return 1;
-            case VK_MULTIPLY:
-                lv->HlClickGroup2(STATUS_HL_ROW_CATEGORY);
-                return 1;
-            case VK_DIVIDE:
-                lv->HlClickGroup1(STATUS_HL_ROW_CATEGORY);
                 return 1;
             case VK_NUMLOCK:
                 lv->HlClickGroup0(STATUS_HL_ROW_CATEGORY);
                 return 1;
+            case VK_DIVIDE:
+                lv->HlClickGroup1(STATUS_HL_ROW_CATEGORY);
+                return 1;
+            case VK_MULTIPLY:
+                lv->HlClickGroup2(STATUS_HL_ROW_CATEGORY);
+                return 1;
+            case VK_INSERT:
+                lv->ActivateSlot(-1);
+                break;
         }
     }
     return 1;
