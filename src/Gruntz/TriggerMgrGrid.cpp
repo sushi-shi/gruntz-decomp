@@ -1432,6 +1432,10 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
 }
 
 // @early-stop
+// residue: cl colours the inline-strcmp result into ecx (retail eax) and closes the
+// bool with `cmp al,bl` against the zero register where retail writes `test cl,cl`;
+// and it interleaves the two i64 zero stores (0x40,0x30,0x44,0x34) where retail keeps
+// each pair contiguous. Every store ordering scores the same or lower.
 RVA(0x0006ea00, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
@@ -1453,12 +1457,9 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
 
+    i64 diff = static_cast<i64>(g_frameTime) - world->m_frameMarker->m_startStamp.m_v;
+    g_gameReg->m_scoreHud->m_elapsedTimeMs += (diff < 0) ? 0 : static_cast<i32>(diff);
     CTimer* sub = world->m_frameMarker;
-    i64 diff = static_cast<i64>(g_frameTime) - sub->m_startStamp.m_v;
-    if (diff < 0) {
-        diff = 0;
-    }
-    g_gameReg->m_scoreHud->m_elapsedTimeMs += static_cast<i32>(diff);
     sub->m_unusedStamp.m_v = 0;
     sub->m_accum.m_v = 0;
     sub->m_running = 0;
