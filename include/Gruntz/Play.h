@@ -372,14 +372,24 @@ public:
             i32 m_region2TimerLo, m_region2TimerHi;
         };
     };
-    i32 m_region2Interval, m_region2IntervalHi;
+    union {
+        Clock64 m_region2Interval64;
+        struct {
+            i32 m_region2Interval, m_region2IntervalHi;
+        };
+    };
     union {
         Clock64 m_region3Timer64;
         struct {
             i32 m_region3TimerLo, m_region3TimerHi;
         };
     };
-    i32 m_region3Interval, m_region3IntervalHi;
+    union {
+        Clock64 m_region3Interval64;
+        struct {
+            i32 m_region3Interval, m_region3IntervalHi;
+        };
+    };
     i32 m_region0Gate;
     i32 m_region1Gate;
     i32 m_region2Gate;
@@ -395,7 +405,12 @@ public:
             i32 m_snapBaseLo, m_snapBaseHi;
         };
     };
-    i32 m_snapDur, m_snapDurHi;
+    union {
+        Clock64 m_snapDur64;
+        struct {
+            i32 m_snapDur, m_snapDurHi;
+        };
+    };
     i32 m_snapshotActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;

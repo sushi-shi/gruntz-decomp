@@ -122,7 +122,8 @@ GZ_ENUM_CONST_BEGIN(PlayIntervalMs)
     BOOTY_INTERVAL_MS = 0x2710,
     REGION_INTERVAL_MS = 0x7530,
     FIXED_SUBSTEP_MS = 0x12,
-    AMBIENT_INTRO_INTERVAL_MS = 0x1f40
+    AMBIENT_INTRO_INTERVAL_MS = 0x1f40,
+    MS_PER_SECOND = 0x3e8
 GZ_ENUM_CONST_END(PlayIntervalMs)
 
 GZ_ENUM_BEGIN(ToolCursorId)
@@ -623,7 +624,7 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != 0) {
-            m_world->m_drawTarget->m_frontPair->m_surface->Fill(0);
+            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
             m_guts->Deactivate();
         }
 
@@ -692,25 +693,36 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_chatLog->Scroll(static_cast<i32>(g_frameDelta));
-        if (m_world->m_drawTarget->m_backPair == NULL) {
-            return 1;
+        CDDrawSurfacePair* view =
+            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
+        if (view == NULL) {
+            return 0;
         }
 
         if (m_snapshotActive != 0) {
-            u32 now = g_frameTime;
-            u32 dur = static_cast<u32>((m_snapDur + m_snapBaseLo)) - now;
-            if (static_cast<i32>(dur) >= 0) {
+            i64 deadline = m_snapDur64.m_v + m_snapBase64.m_v;
+            i64 left = deadline - static_cast<i64>(g_frameTime);
+            u32 leftMs = static_cast<u32>(left);
+            if (left < 0) {
+                leftMs = 0;
+            }
+            i32 secsLeft = static_cast<i32>(leftMs / MS_PER_SECOND) + 1;
+            if (static_cast<i64>(g_frameTime) - m_snapBase64.m_v >= m_snapDur64.m_v) {
 
                 if (m_guts->m_modeArmed != 0) {
                     g_gameReg->m_cmdGrid->ClearRowAndRefresh(5);
                 } else {
-                    g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_curPlayer);
+                    i32 row = g_curPlayer;
+                    g_gameReg->m_cmdGrid->ClearRowAndRefresh(row);
                 }
 
-                m_frameMarker->Draw(
-                    static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
-                    0
-                );
+                CTimer* marker = m_frameMarker;
+                marker->m_unusedStamp.m_lo = 0;
+                marker->m_unusedStamp.m_hi = 0;
+                marker->m_accum.m_lo = 0;
+                marker->m_accum.m_hi = 0;
+                marker->m_running = 0;
+                marker->m_currentMs = 0;
                 m_guts->SetMode(0);
                 m_snapshotActive = 0;
 
@@ -731,7 +743,7 @@ i32 CPlay::Render() {
             } else {
 
                 CString tmp;
-                tmp.Format("%d", 0);
+                tmp.Format("%d", secsLeft);
                 RECT lvl = g_gameReg->m_world->m_level->m_planeCtx;
                 RECT box;
                 CopyRect(&box, &lvl);
@@ -739,8 +751,6 @@ i32 CPlay::Render() {
             }
         }
 
-        CDDrawSurfacePair* view =
-            static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         m_frameMarker->Draw(view, 0);
         m_hitTest->LoadChatBoxSprite(view);
         DrawDebugStats();
@@ -748,8 +758,7 @@ i32 CPlay::Render() {
 
         if (m_winLoseBanner != 0 && m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
 
-            u32 elapsed = g_frameTime - static_cast<u32>(m_cueTimerLo);
-            if (elapsed >= static_cast<u32>(m_cueInterval)) {
+            if (static_cast<i64>(g_frameTime) - m_cueTimer64.m_v >= m_cueInterval64.m_v) {
                 m_cueToggle = (m_cueToggle == 0);
                 m_cueInterval = CUE_INTERVAL_MS;
                 m_cueIntervalHi = 0;
@@ -762,7 +771,10 @@ i32 CPlay::Render() {
         }
 
         StepGridWalk(static_cast<i32>(g_frameDelta));
-        DrawCursorSaveUnder(0);
+        DrawCursorSaveUnder(view);
+        if (m_worldReady != 0) {
+            view->DrawBox(&m_hudRect, 0xff);
+        }
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
         UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
         {
@@ -773,27 +785,23 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != 0) {
-            u32 e = g_frameTime - static_cast<u32>(m_region0TimerLo);
-            if (e >= static_cast<u32>(m_region0Interval)) {
-                SetTinyViewportCurse(static_cast<i32>(g_frameTime));
+            if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
+                SetTinyViewportCurse(0);
             }
         }
         if (m_region1Gate != 0) {
-            u32 e = g_frameTime - static_cast<u32>(m_region1TimerLo);
-            if (e >= static_cast<u32>(m_region1Interval)) {
-                SetDarknessCurse(static_cast<i32>(g_frameTime));
+            if (static_cast<i64>(g_frameTime) - m_region1Timer64.m_v >= m_region1Interval64.m_v) {
+                SetDarknessCurse(0);
             }
         }
         if (m_region2Gate != 0) {
-            u32 e = g_frameTime - static_cast<u32>(m_region2TimerLo);
-            if (e >= static_cast<u32>(m_region2Interval)) {
-                SetMonitorCurse(static_cast<i32>(g_frameTime));
+            if (static_cast<i64>(g_frameTime) - m_region2Timer64.m_v >= m_region2Interval64.m_v) {
+                SetMonitorCurse(0);
             }
         }
         if (m_region3Gate != 0) {
-            u32 e = g_frameTime - static_cast<u32>(m_region3TimerLo);
-            if (e >= static_cast<u32>(m_region3Interval)) {
-                SetRandomMoveIconsCurse(static_cast<i32>(g_frameTime));
+            if (static_cast<i64>(g_frameTime) - m_region3Timer64.m_v >= m_region3Interval64.m_v) {
+                SetRandomMoveIconsCurse(0);
             }
         }
         return 1;
@@ -801,7 +809,7 @@ i32 CPlay::Render() {
 
     StepInputA();
     if (m_world->m_drawTarget->m_backPair == NULL) {
-        return 1;
+        return 0;
     }
     {
         SoundStream* stream = m_world->m_soundStream;
