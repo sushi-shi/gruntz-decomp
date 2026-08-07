@@ -162,7 +162,8 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
-    CTileTrigger();
+    RVA(0x00011160, 0x4b)
+    CTileTrigger() {}
     CTileTrigger(CGameObject* obj);
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

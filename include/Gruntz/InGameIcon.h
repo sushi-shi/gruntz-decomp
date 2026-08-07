@@ -43,7 +43,12 @@ public:
     }
 
 public:
-    CInGameIcon() {}
+    CInGameIcon() {
+        m_driftPos.m_v = 0;
+        m_driftThresh.m_v = 0;
+        m_peekTimer.m_v = 0;
+        m_peekWindow.m_v = 0;
+    }
     CInGameIcon(CGameObject* obj);
 
     void SetupSprite(const char* cat);

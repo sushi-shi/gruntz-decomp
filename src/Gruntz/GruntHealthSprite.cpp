@@ -19,9 +19,6 @@
 
 #include <stddef.h>
 
-RVA(0x00011ef0, 0x4b)
-CGruntHealthSprite::CGruntHealthSprite() {}
-
 template<> DATA(0x00244d80)
 CActReg CActRegPool<CGruntHealthSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00011f80, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)

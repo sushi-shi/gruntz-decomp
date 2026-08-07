@@ -12,7 +12,10 @@
 class CActionArea : public CUserLogic, public CWapX {
 public:
 public:
-    CActionArea() {}
+    CActionArea() {
+        m_timestamp = 0;
+        m_duration = 0;
+    }
     CActionArea(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

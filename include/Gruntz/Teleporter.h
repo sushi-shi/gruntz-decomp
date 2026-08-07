@@ -27,7 +27,10 @@ GZ_ENUM_END(TeleporterKind)
 class CTeleporter : public CUserLogic, public CWapX {
 public:
 public:
-    CTeleporter() {}
+    CTeleporter() {
+        m_armClock = 0;
+        m_interval = 0;
+    }
     CTeleporter(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

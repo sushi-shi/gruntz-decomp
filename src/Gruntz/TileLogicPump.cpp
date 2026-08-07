@@ -142,9 +142,6 @@ i32 CTileTriggerSwitch::SerializeMove(
 RVA_COMPGEN(0x000110c0, 0x1e, ??_GCTileTriggerSwitch@@UAEPAXI@Z)
 RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 
-RVA(0x00011160, 0x4b)
-CTileTrigger::CTileTrigger() {}
-
 // @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
 // 67 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000111d0, 0x6)

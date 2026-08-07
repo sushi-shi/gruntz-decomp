@@ -700,7 +700,41 @@ public:
     };
     i32 m_reserved8d0;
 
-    CGrunt() {}
+    // Every 64-bit clock/window member is seeded to 0; cl emits each store at the
+    // member's DECLARATION position, interleaved with the member ctor calls, which is
+    // what retail's inlined copy in SerialObjectFactory shows (60 stores).
+    CGrunt()
+        : m_struckClock64(0),
+          m_struckTimer64(0),
+          m_holdAnchor64(0),
+          m_holdWindow64(0),
+          m_arrivalReroll64(0),
+          m_arrivalRerollWindow64(0),
+          m_toyClock(0),
+          m_toyDuration(0),
+          m_idleAnchor(0),
+          m_idleDelay(0),
+          m_idleTimer(0),
+          m_idleWindow(0),
+          m_entranceClock64(0),
+          m_entranceSafeTime64(0),
+          m_flashClock64(0),
+          m_flashWindow64(0),
+          m_attackClock64(0),
+          m_attackDowntime64(0),
+          m_combatClock64(0),
+          m_combatTimeout64(0),
+          m_hudRetireClock64(0),
+          m_hudRetireWindow64(0),
+          m_wingzClock64(0),
+          m_wingzDuration64(0),
+          m_convertClock64(0),
+          m_convertTime64(0),
+          m_shimmerClock64(0),
+          m_shimmerWindow64(0) {
+        m_arrivalVoiceClock.m_v = 0;
+        m_arrivalVoiceWindow.m_v = 0;
+    }
     CGrunt(void* owner);
 
     void LoadCellAnimNames(i32 a, i32 b);

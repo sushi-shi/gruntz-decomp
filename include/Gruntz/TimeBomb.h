@@ -17,7 +17,10 @@ public:
     }
 
 public:
-    CTimeBomb() {}
+    CTimeBomb() {
+        m_startTime = 0;
+        m_duration = 0;
+    }
     CTimeBomb(CGameObject* obj);
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

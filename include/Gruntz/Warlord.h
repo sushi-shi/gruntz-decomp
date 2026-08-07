@@ -25,7 +25,12 @@ public:
     }
 
 public:
-    CWarlord() {}
+    CWarlord() {
+        m_cooldownStamp = 0;
+        m_cooldownWindow = 0;
+        m_timer2Stamp = 0;
+        m_timer2Window = 0;
+    }
     CWarlord(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

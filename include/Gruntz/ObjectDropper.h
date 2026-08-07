@@ -18,7 +18,10 @@ public:
         return LOGIC_OBJECTDROPPER;
     }
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    CObjectDropper() {}
+    CObjectDropper() {
+        m_lastDropTime = 0;
+        m_dropInterval = 0;
+    }
     CObjectDropper(CGameObject* obj);
 
     i32 Update();

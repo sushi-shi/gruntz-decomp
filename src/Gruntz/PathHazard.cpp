@@ -30,9 +30,6 @@
 
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA(0x00013170, 0x7b)
-CPathHazard::CPathHazard() {}
-
 RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 

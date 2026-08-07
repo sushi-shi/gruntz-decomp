@@ -20,7 +20,10 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
 public:
-    CToyPeek() {}
+    CToyPeek() {
+        m_startClock.m_v = 0;
+        m_countdown.m_v = 0;
+    }
     CToyPeek(CGameObject* obj);
 
     char m_pad54[0x58 - 0x54];

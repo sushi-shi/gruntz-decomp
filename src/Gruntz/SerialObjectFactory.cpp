@@ -102,11 +102,13 @@ i32 ParseSerial(CGruntzMgr* mgr, char* s) {
 RVA(0x0000d2a0, 0x1984)
 i32 __cdecl
 SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
-    if (ctx == NULL || ar == NULL) {
+    if (ctx == NULL) {
+        return 0;
+    }
+    if (ar == NULL) {
         return 0;
     }
 
-    CGruntzMgr* mgr = static_cast<CGruntzMgr*>(ctx);
     CFileMemBase* archive = static_cast<CFileMemBase*>(ar);
     CUserLogic** result = static_cast<CUserLogic**>(payload);
 
@@ -330,7 +332,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
 
     AddrWord<char> payloadWord;
     payloadWord.m_addr = static_cast<char*>(payload);
-    return mgr->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
+    return g_gameReg->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
 // CMovingLogic/CProjectile realization group. Retail inlines CProjectile::CProjectile()

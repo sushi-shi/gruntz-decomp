@@ -32,7 +32,8 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
 public:
-    CPathHazard();
+    RVA(0x00013170, 0x7b)
+    CPathHazard() {}
     CPathHazard(CGameObject* obj);
 
     RVA(0x00013210, 0x6)
