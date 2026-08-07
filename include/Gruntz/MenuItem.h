@@ -96,6 +96,25 @@ inline CMenuItem::~CMenuItem() {
     Cleanup();
 }
 
+// Reset lives HERE, not in MenuItem.cpp: retail inlines it into three of
+// CMenuPage's four new-sites (AddItem 0x183460, AddSubItem 0x1835a0,
+// AddItem2 0x1836f0) and, its inline budget spent, emits a real
+// `call ?Reset@CMenuItem@@UAEXXZ` in the fourth (AddSubItem2 0x183850).
+// The out-of-line COMDAT is pinned in MenuItem.cpp, which emits the vtable.
+inline void CMenuItem::Reset() {
+    m_host = NULL;
+    m_template = NULL;
+    m_sprite = NULL;
+    m_owner = NULL;
+    m_listPos = NULL;
+    m_hitLeft = UNINIT_FILL;
+    m_fixedX = UNINIT_FILL;
+    m_leftName.Empty();
+    m_rightName.Empty();
+    m_upName.Empty();
+    m_downName.Empty();
+}
+
 inline CMenuItem::CMenuItem() {
     Reset();
 }

@@ -38,20 +38,7 @@ i32 CMenuItem::OnInit() {
 
 RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
 RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
-RVA(0x00184730, 0x41)
-void CMenuItem::Reset() {
-    m_host = NULL;
-    m_template = NULL;
-    m_sprite = NULL;
-    m_owner = NULL;
-    m_listPos = NULL;
-    m_hitLeft = UNINIT_FILL;
-    m_fixedX = UNINIT_FILL;
-    m_leftName.Empty();
-    m_rightName.Empty();
-    m_upName.Empty();
-    m_downName.Empty();
-}
+RVA_COMPGEN(0x00184730, 0x41, ?Reset@CMenuItem@@UAEXXZ)
 RVA(0x00184780, 0x17)
 void CMenuItem2::Disable(MenuItemState mode) {
     i32 frameLimit = m_frameDelay;
