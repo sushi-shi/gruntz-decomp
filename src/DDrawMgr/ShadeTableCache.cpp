@@ -790,7 +790,9 @@ RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
 // @early-stop
 RVA(0x0014fe90, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
-    if (!arc.IsStoring()) {
+    if (arc.IsStoring()) {
+        arc.WriteCount(m_nSize);
+    } else {
         i32 n = arc.ReadCount();
         if (n == 0) {
             if (m_pData != NULL) {
@@ -831,8 +833,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             m_nSize = n;
             m_nMaxSize = newcap;
         }
-    } else {
-        arc.WriteCount(m_nSize);
     }
 
     if (arc.IsStoring()) {
