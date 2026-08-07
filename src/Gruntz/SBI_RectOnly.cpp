@@ -1161,32 +1161,19 @@ void CStatusBarMgr::ClearTabGroup() {
 
             memset(m_statObj, 0, sizeof(m_statObj));
             break;
-        case TAB_MULTIPLAYER: {
-            CSBI_WarlordHead** p = m_warlordHead;
-            p[0] = NULL;
-            p[1] = NULL;
-            p[2] = NULL;
-            p[3] = NULL;
+        case TAB_MULTIPLAYER:
+            memset(m_warlordHead, 0, sizeof(m_warlordHead));
             break;
-        }
         case TAB_GRUNTZ: {
 
-            CSBI_ImageSet** q = m_slotNotify;
-            q[0] = NULL;
-            q[1] = NULL;
-            q[2] = NULL;
-            q[3] = NULL;
-            q[4] = NULL;
+            memset(m_slotNotify, 0, sizeof(m_slotNotify));
             m_gaugeNotify = NULL;
             m_gaugeSink = NULL;
             break;
         }
         case TAB_RESOURCE: {
 
-            CSBI_ImageSet** g = m_groupNotify;
-            g[0] = NULL;
-            g[1] = NULL;
-            g[2] = NULL;
+            memset(m_groupNotify, 0, sizeof(m_groupNotify));
             m_machineDisplay = NULL;
 
             memset(m_hlNotify, 0, sizeof(m_hlNotify));
@@ -2012,10 +1999,9 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     }
     sp->m_state = SLOT_FILLING;
 
-    CSbiSlot* s = &m_slots[idx];
-    s->m_interval = INT_MAX;
-    s->m_startTimeLo = g_frameTime;
-    s->m_startTimeHi = 0;
+    m_slots[idx].m_interval = INT_MAX;
+    m_slots[idx].m_startTimeLo = g_frameTime;
+    m_slots[idx].m_startTimeHi = 0;
     if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
