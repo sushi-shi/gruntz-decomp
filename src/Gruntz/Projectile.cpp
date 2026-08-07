@@ -611,13 +611,17 @@ step:
 }
 
 // @early-stop
+// Only residue: the do-while's exit shares the void-return epilogue with the three
+// early returns in its body; retail emits its own copy. See
+// docs/patterns/retail-duplicates-small-return-epilogues.md
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 tileY = 0;
-    i32 projXlo = m_object->m_screenX - 0x10;
-    i32 projXhi = projXlo + 0x20;
-    i32 projYlo = m_object->m_screenY - 0x10;
-    i32 projYhi = projYlo + 0x20;
+    RECT box;
+    box.left = m_object->m_screenX - 0x10;
+    box.right = box.left + 0x20;
+    box.top = m_object->m_screenY - 0x10;
+    box.bottom = box.top + 0x20;
     i32 rowBase = 0;
     i32 colOff;
     i32 col;
@@ -636,16 +640,16 @@ void CProjectile::ScanTargets(i32 impact) {
             i32 gy = g->m_object->m_screenY - 7;
             i32 gxhi = gx + 0xe;
             i32 gyhi = gy + 0xe;
-            if (projXlo > gxhi) {
+            if (box.left > gxhi) {
                 continue;
             }
-            if (projXhi < gx) {
+            if (box.right < gx) {
                 continue;
             }
-            if (projYlo > gyhi) {
+            if (box.top > gyhi) {
                 continue;
             }
-            if (projYhi < gy) {
+            if (box.bottom < gy) {
                 continue;
             }
             if (m_srcRow == tileY && m_srcCol == col) {
@@ -687,8 +691,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 PICKUP_NONE
             );
         }
-        rowBase += 15;
         tileY++;
+        rowBase += 15;
     } while (rowBase < 0x3c);
 }
 
