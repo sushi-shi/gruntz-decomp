@@ -1970,6 +1970,16 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
+// A cl /Ob-budget see-saw, family-wide across the Set<T> block.  Retail CALLS
+// ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z at all four of this
+// function's construction sites and calls CopyValue too; we inline the ctor.
+// Forcing the ctor out of line (declared in ButeValue.h, defined here at its
+// RVA_COMPGEN slot 0x174730 - it has no other caller) DOES turn all four into
+// calls and makes the ctor body byte-exact, but cl then spends the freed budget
+// inlining CButeValue::CopyValue instead - switch table, CString::operator= and
+// four operator delete calls land inside SetVector and it goes 56.2 -> 21.2.
+// Closing this needs CopyValue and ~1CButeValue moved out of line at the same
+// time, which is the whole Set<T> family's codegen, not this one function's.
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
