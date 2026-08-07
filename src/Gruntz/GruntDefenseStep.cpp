@@ -39,6 +39,8 @@
 // @early-stop
 
 // @early-stop
+// Frame is 4 bytes short of retail (sub esp,0xc vs 0x10) - one local we do not model.
+// See docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
     m_defenderPx.m_x = m_lastTilePx.m_x;

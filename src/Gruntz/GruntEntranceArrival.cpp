@@ -771,6 +771,10 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 // @early-stop
 // Three `rand() % var` sites: retail's toolchain peels a divisor-zero guard that
 // our cl never emits for any honest spelling - docs/patterns/rand-modulo-peel.md.
+// @early-stop
+// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc); the residual
+// cmp cl,bl / test cl,cl pairs are the zero-register readout of the same thing. See
+// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;

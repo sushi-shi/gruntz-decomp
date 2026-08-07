@@ -39,6 +39,9 @@
 // @early-stop
 
 // @early-stop
+// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc) - two locals we do not
+// model - so every [esp+N] differs. See
+// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderPx.m_x = m_lastTilePx.m_x;

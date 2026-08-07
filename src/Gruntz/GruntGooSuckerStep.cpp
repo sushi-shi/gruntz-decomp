@@ -62,6 +62,9 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 }
 
 // @early-stop
+// Frame is 8 bytes wider than retail (sub esp,0x88); retail also emits an OUT-OF-LINE
+// CRect(0,0,w,h) ctor call for the GRID_RECT_BOUNDS locals that cl inlines here. See
+// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
