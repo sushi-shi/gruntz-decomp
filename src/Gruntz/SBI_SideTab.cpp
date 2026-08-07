@@ -52,11 +52,8 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_host = host;
     m_tab = tab;
     m_owner = parent;
-    m_rect14.left = rc.left;
+    m_rect14 = rc;
     m_redrawFrames = 0;
-    m_rect14.top = rc.top;
-    m_rect14.right = rc.right;
-    m_rect14.bottom = rc.bottom;
     m_cmd = cmd;
 
     if (enabled != STATUS_SAMPLE_NONE) {

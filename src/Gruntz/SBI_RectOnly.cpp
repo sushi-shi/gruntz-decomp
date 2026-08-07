@@ -405,113 +405,40 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     switch (w->m_tab) {
         case TAB_CONTROLS:
             if (m_hitTestDisabled != 0) {
-                return 1;
+                break;
             }
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-                return 1;
+                break;
             }
-            if (cmd > SBICMD_DOCK_FIRST) {
-                if (cmd == SBICMD_DOCK_RIGHT) {
-                    HiCueFind();
-                    DockStatusBarRight();
-                    return 1;
+            if (cmd < SBICMD_DOCK_FIRST) {
+                if (cmd <= SBICMD_NONE || cmd > SBICMD_TAB_LAST) {
+                    return 0;
                 }
-                if (cmd == SBICMD_HIDE) {
-                    HiCueFind();
-                    HideRect();
-                    return 1;
-                }
-                return 0;
+                HiCueFind();
+                SetTabState(cmd, MENUITEM_SELECTED);
+                return 1;
             }
             if (cmd == SBICMD_DOCK_LEFT) {
                 HiCueFind();
                 RefreshA();
                 return 1;
             }
-            if (cmd <= SBICMD_NONE || cmd > SBICMD_TAB_LAST) {
-                return 0;
+            switch (cmd) {
+                case SBICMD_DOCK_RIGHT:
+                    HiCueFind();
+                    DockStatusBarRight();
+                    return 1;
+                case SBICMD_HIDE:
+                    HiCueFind();
+                    HideRect();
+                    return 1;
+                default:
+                    return 0;
             }
-            HiCueFind();
-            SetTabState(cmd, MENUITEM_SELECTED);
-            return 1;
-
-        case TAB_STATZ:
-            if (m_hitTestDisabled != 0) {
-                return 1;
-            }
-            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-                return 1;
-            }
-            if (cmd < SBICMD_STAT_TOGGLE_FIRST || cmd > SBICMD_CURSOR_TARGET_LAST) {
-                return 0;
-            }
-            if (cmd <= SBICMD_STAT_TOGGLE_LAST) {
-                HiCueLookup();
-                ToggleStat(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
-            } else {
-                HiCueLookup();
-                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
-            }
-            return 1;
-
-        case TAB_GRUNTZ:
-            if (m_hitTestDisabled != 0) {
-                return 1;
-            }
-            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-                return 1;
-            }
-            if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
-                return 0;
-            }
-            ActivateSlot(IDX(cmd) - IDX(SBICMD_GRUNT_SLOT_FIRST));
-            return 1;
-
-        case TAB_RESOURCE:
-            if (m_hitTestDisabled != 0) {
-                return 1;
-            }
-            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-                return 1;
-            }
-            if (cmd < SBICMD_HL_GROUP0_FIRST || cmd > SBICMD_HL_GROUP2_LAST) {
-                return 1;
-            }
-            if (cmd <= SBICMD_HL_GROUP0_LAST) {
-                HlClickGroup0(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP0_FIRST))
-                );
-            } else if (cmd <= SBICMD_HL_GROUP1_LAST) {
-                HlClickGroup1(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP1_FIRST))
-                );
-            } else {
-                HlClickGroup2(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP2_FIRST))
-                );
-            }
-            return 1;
-
-        case TAB_MULTIPLAYER:
-            if (m_hitTestDisabled != 0) {
-                return 1;
-            }
-            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
-                return 1;
-            }
-            if (cmd < SBICMD_MULTIPLAYER_HEAD_FIRST || cmd > SBICMD_MULTIPLAYER_HEAD_LAST) {
-                return 0;
-            }
-            HiCueLookup();
-            m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
-            ResetWidgets(0);
-            TryActivate();
-            Deactivate();
-            return 1;
 
         case TAB_GAME:
             if (m_toggleActive != 0) {
-                return 1;
+                break;
             }
             switch (cmd) {
                 case SBICMD_PAUSE:
@@ -548,13 +475,13 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case SBICMD_DESTRUCT:
                     if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-                        return 1;
+                        break;
                     }
                     if (m_modeArmed != 0) {
-                        return 1;
+                        break;
                     }
                     if (m_hitTestDisabled != 0) {
-                        return 1;
+                        break;
                     }
                     HiCueLookup();
                     {
@@ -583,6 +510,81 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 default:
                     return 0;
             }
+            break;
+
+        case TAB_STATZ:
+            if (m_hitTestDisabled != 0) {
+                break;
+            }
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+                break;
+            }
+            if (cmd < SBICMD_STAT_TOGGLE_FIRST || cmd > SBICMD_CURSOR_TARGET_LAST) {
+                return 0;
+            }
+            if (cmd <= SBICMD_STAT_TOGGLE_LAST) {
+                HiCueLookup();
+                ToggleStat(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
+            } else {
+                HiCueLookup();
+                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
+            }
+            return 1;
+
+        case TAB_MULTIPLAYER:
+            if (m_hitTestDisabled != 0) {
+                break;
+            }
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+                break;
+            }
+            if (cmd < SBICMD_MULTIPLAYER_HEAD_FIRST || cmd > SBICMD_MULTIPLAYER_HEAD_LAST) {
+                return 0;
+            }
+            HiCueLookup();
+            m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
+            ResetWidgets(0);
+            TryActivate();
+            Deactivate();
+            return 1;
+
+        case TAB_GRUNTZ:
+            if (m_hitTestDisabled != 0) {
+                break;
+            }
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+                break;
+            }
+            if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
+                return 0;
+            }
+            ActivateSlot(IDX(cmd) - IDX(SBICMD_GRUNT_SLOT_FIRST));
+            return 1;
+
+        case TAB_RESOURCE:
+            if (m_hitTestDisabled != 0) {
+                break;
+            }
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+                break;
+            }
+            if (cmd < SBICMD_HL_GROUP0_FIRST || cmd > SBICMD_HL_GROUP2_LAST) {
+                break;
+            }
+            if (cmd <= SBICMD_HL_GROUP0_LAST) {
+                HlClickGroup0(
+                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP0_FIRST))
+                );
+            } else if (cmd <= SBICMD_HL_GROUP1_LAST) {
+                HlClickGroup1(
+                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP1_FIRST))
+                );
+            } else {
+                HlClickGroup2(
+                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP2_FIRST))
+                );
+            }
+            return 1;
 
         case TAB_DIALOG:
             switch (cmd) {
@@ -631,6 +633,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
         default:
             return 0;
     }
+    return 1;
 }
 
 // @early-stop
