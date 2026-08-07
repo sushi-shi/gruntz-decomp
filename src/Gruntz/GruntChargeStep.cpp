@@ -37,11 +37,10 @@
 #include <limits.h>
 
 // @early-stop
-// Frame is 8 bytes short of retail (push ecx = 4 vs sub esp,0xc): two spill slots we do
-// not model, which is the whole `add esp,0xc`-vs-`pop ecx` epilogue delta. Retail also
-// keeps two exits we do not - cl cross-jumps the m_poweredUp block's two
-// ResetEntranceAnimation tails into one and folds one guarded GruntInRadius/RectContains
-// pair - so retail has 61 branches / 11 rets against our 47 / 9.
+// cl proves m_poweredUp == 0 on the edge into the switch (the whole powered-up block
+// returns) and deletes the AISTATE_ATTACK body; retail keeps the load in a register and
+// re-compares it, emitting the arm as dead code. cl also cross-jumps the powered-up
+// block's two statement-identical ResetEntranceAnimation tails, which retail emits twice.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderPx = m_lastTilePx;
@@ -55,7 +54,8 @@ i32 CGrunt::ChargeStep() {
         }
     }
 
-    if (m_poweredUp != 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
             return 1;
@@ -108,12 +108,8 @@ i32 CGrunt::ChargeStep() {
                     CGameObject* gp = g->m_object;
                     if (gp->m_screenX == g->m_lastTilePx.m_x && gp->m_screenY == g->m_lastTilePx.m_y
                         && RectContains(gp->m_screenX, gp->m_screenY)) {
-                        CommitNeighbor(
-                            g->m_tileOwnerHi,
-                            g->m_tileOwnerLo,
-                            g->m_lastTilePx.m_x,
-                            g->m_lastTilePx.m_y
-                        );
+                        Coord cp = g->m_lastTilePx;
+                        CommitNeighbor(g->m_tileOwnerHi, g->m_tileOwnerLo, cp.m_x, cp.m_y);
                         return 1;
                     }
                 }
@@ -202,12 +198,8 @@ i32 CGrunt::ChargeStep() {
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && t->m_object->m_screenX == t->m_lastTilePx.m_x
                 && t->m_object->m_screenY == t->m_lastTilePx.m_y) {
-                CommitNeighbor(
-                    t->m_tileOwnerHi,
-                    t->m_tileOwnerLo,
-                    t->m_lastTilePx.m_x,
-                    t->m_lastTilePx.m_y
-                );
+                Coord cp = t->m_lastTilePx;
+                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, cp.m_x, cp.m_y);
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
@@ -215,7 +207,7 @@ i32 CGrunt::ChargeStep() {
         }
         case AISTATE_ATTACK: {
 
-            if (m_poweredUp != 0) {
+            if (powered != 0) {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
                 if (t == NULL || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
@@ -233,12 +225,8 @@ i32 CGrunt::ChargeStep() {
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                CommitNeighbor(
-                    t->m_tileOwnerHi,
-                    t->m_tileOwnerLo,
-                    t->m_lastTilePx.m_x,
-                    t->m_lastTilePx.m_y
-                );
+                Coord cp = t->m_lastTilePx;
+                CommitNeighbor(t->m_tileOwnerHi, t->m_tileOwnerLo, cp.m_x, cp.m_y);
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;
