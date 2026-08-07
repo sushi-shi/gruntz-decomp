@@ -91,9 +91,11 @@ i32 CGrunt::ScanNearestTarget() {
     box.right = bx + halfBox + 1;
     box.bottom = by + halfBox + 1;
     if (best != NULL) {
+        Coord bp;
+        best->GetScreenPos(&bp);
         POINT pt;
-        pt.x = best->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        pt.y = best->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        pt.x = bp.m_x >> TILE_SHIFT_PX;
+        pt.y = bp.m_y >> TILE_SHIFT_PX;
         if (!PtInRect(&box, pt)) {
             best = NULL;
         }
@@ -108,7 +110,8 @@ i32 CGrunt::ScanNearestTarget() {
         }
     }
 
-    if (m_poweredUp != 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
         if (m_neighborValid != 0) {
             m_neighborValid = 0;
             return 1;
@@ -126,13 +129,21 @@ i32 CGrunt::ScanNearestTarget() {
             if (m_poweredUp == 0) {
                 return 1;
             }
-        } else {
-            if (atTarget) {
+            if (m_neighborValid != 0) {
                 return 1;
             }
-            if (m_poweredUp == 0) {
-                return 1;
-            }
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
+        }
+        if (atTarget) {
+            return 1;
+        }
+        if (m_poweredUp == 0) {
+            return 1;
         }
         if (m_neighborValid != 0) {
             return 1;
@@ -220,13 +231,14 @@ i32 CGrunt::ScanNearestTarget() {
             m_arrivalCell.m_y = best->m_tileOwnerLo;
             m_defenderState = AISTATE_CHASE;
             {
+                CGruntzMgr* reg = g_gameReg;
                 if (CGameLevel::PointInBounds(
-                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                        &reg->m_world->m_level->m_mainPlane->m_viewRect,
                         m_object->m_screenX,
                         m_object->m_screenY
                     )
                     != 0) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }
         L_scanDone:
@@ -263,9 +275,9 @@ i32 CGrunt::ScanNearestTarget() {
                     i32 baseCol = hud->m_extent.left;
                     i32 spanX = hud->m_extent.right - baseCol;
                     i32 baseRow = hud->m_extent.top;
-                    spanX = (spanX ^ (spanX >> 31)) - (spanX >> 31);
+                    spanX = abs(spanX);
                     i32 spanY = hud->m_extent.bottom - baseRow;
-                    spanY = (spanY ^ (spanY >> 31)) - (spanY >> 31);
+                    spanY = abs(spanY);
                     if (spanX != 0) {
                         baseCol += rand() % spanX;
                     }
@@ -383,7 +395,6 @@ i32 CGrunt::ScanNearestTarget() {
                     sg->m_lastTilePx.m_x,
                     sg->m_lastTilePx.m_y
                 );
-                m_defenderState = AISTATE_ATTACK;
                 return 1;
             L_setLock:
                 m_defenderState = AISTATE_CHASE;
