@@ -12,11 +12,6 @@
 #include <Wwd/AnimWorkerAct.h>
 
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
-RVA(0x00163a40, 0x41)
-CWwdSpatialMgr::~CWwdSpatialMgr() {
-    FreeGrids();
-}
-
 RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
     if (m_grid0) {

@@ -538,6 +538,17 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
+// The by-value u8 parameters are load-bearing.  Reading the channels off a
+// PALETTEENTRY& inside the helper makes cl evaluate green before red; passing
+// them in restores retail's red/green/blue order.  Leaving the shift COUNTS as
+// plain i32 (no (u8) cast) is what keeps the truncation single, at the return.
+static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
+    return static_cast<u16>(
+        (static_cast<u8>(r >> g_rDown) << g_rUp) | (static_cast<u8>(g >> g_gDown) << g_gUp)
+        | static_cast<u8>(b >> g_bDown)
+    );
+}
+
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune() {
     if (m_scroll == NULL) {
@@ -555,9 +566,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 
     CWwdSpatialMgr*& worker = m_scroll;
     if (worker) {
-        worker->FreeGrids();
-        worker->m_iter.~CWwdGridIter();
-        ::operator delete(worker);
+        delete worker;
         worker = NULL;
     }
 
@@ -585,21 +594,9 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     i32 sizeC[2] = {hdr->m_rectC.w, hdr->m_rectC.h};
 
     CWwdSpatialMgr* nw = new CWwdSpatialMgr;
-    if (nw) {
-        nw->m_mgr = NULL;
-        nw->m_grid0 = NULL;
-        nw->m_grid1 = NULL;
-        nw->m_grid2 = NULL;
-        nw->m_curGrid = NULL;
-    }
     worker = nw;
     if (nw->Init(src, &rc, cellA, cellB, cellC, sizeA, sizeB, sizeC) == 0) {
-        CWwdSpatialMgr* w = m_scroll;
-        if (w) {
-            w->FreeGrids();
-
-            ::operator delete(w);
-        }
+        delete m_scroll;
         worker = NULL;
         return 0;
     }
@@ -982,7 +979,6 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     return result;
 }
 
-// @early-stop
 RVA(0x00163670, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
     ColorDepth format = OwnerMgr()->m_drawTarget->m_frontPair->m_bpp;
@@ -1010,12 +1006,8 @@ void CDDrawWorkerHost::ResolveColorKey() {
         return;
     }
 
-    m_bltFx.dwFillColor = static_cast<u16>(
-        ((static_cast<u8>((static_cast<u8>(pal[idx].peRed) >> static_cast<u8>(g_rDown))) << g_rUp)
-         | (static_cast<u8>((static_cast<u8>(pal[idx].peGreen) >> static_cast<u8>(g_gDown)))
-            << g_gUp)
-         | static_cast<u8>((static_cast<u8>(pal[idx].peBlue) >> static_cast<u8>(g_bDown))))
-    );
+    u16 packed = PackPalEntry16(pal[idx].peRed, pal[idx].peGreen, pal[idx].peBlue);
+    m_bltFx.dwFillColor = packed;
 }
 
 RVA(0x00163710, 0x60)
@@ -1108,3 +1100,6 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     strcpy(m_name, buf);
     return 1;
 }
+
+RVA_COMPGEN(0x00163a10, 0x7, ??1CWwdGridIter@@UAE@XZ)
+RVA_COMPGEN(0x00163a40, 0x41, ??1CWwdSpatialMgr@@QAE@XZ)

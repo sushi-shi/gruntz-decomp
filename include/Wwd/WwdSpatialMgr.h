@@ -28,6 +28,7 @@ struct CWwdSpatialMgr {
     CWwdGridIter m_iter;
     CWwdGrid* m_curGrid;
 
+    CWwdSpatialMgr();
     ~CWwdSpatialMgr();
 
     i32 Init(
@@ -56,5 +57,21 @@ struct CWwdSpatialMgr {
 };
 SIZE(0xb8);
 SIZE_UNKNOWN();
+
+// Both are inline in retail: RebuildPlanes (0x1628f0) inlines the ctor's five
+// NULL stores after `operator new`, and inlines the dtor (FreeGrids + the
+// m_iter sub-object dtor, which is what raises its /GX trylevel). The one
+// out-of-line COMDAT copy of the dtor is emitted by LevelPlane.cpp for Unload.
+inline CWwdSpatialMgr::CWwdSpatialMgr() {
+    m_mgr = NULL;
+    m_grid0 = NULL;
+    m_grid1 = NULL;
+    m_grid2 = NULL;
+    m_curGrid = NULL;
+}
+
+inline CWwdSpatialMgr::~CWwdSpatialMgr() {
+    FreeGrids();
+}
 
 #endif // GRUNTZ_WWD_WWDSPATIALMGR_H
