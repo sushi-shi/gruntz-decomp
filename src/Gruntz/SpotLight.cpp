@@ -168,21 +168,23 @@ void RegisterSpotLightActions() {
 // @early-stop
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
-    CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_SINGLE) {
-        CWwdGameObjectA* o = m_object;
-        CGrunt* tgt =
-            reg->m_cmdGrid
-                ->FindGruntAt(o->m_screenX, o->m_screenY, &o->m_area, &m_cellRow, &m_cellCol, 0);
+    if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        CGrunt* tgt = g_gameReg->m_cmdGrid->FindGruntAt(
+            m_object->m_screenX,
+            m_object->m_screenY,
+            &m_object->m_area,
+            &m_cellRow,
+            &m_cellCol,
+            0
+        );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != 0 && m_cellRow != 0)) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("B");
-            CWwdGameObjectA* t = tgt->m_object;
-            o->m_screenX = t->m_screenX;
-            o->m_screenY = t->m_screenY;
-            if (o->m_score == 1) {
-                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_MELT, -1);
+            m_object->m_screenX = tgt->m_object->m_screenX;
+            m_object->m_screenY = tgt->m_object->m_screenY;
+            if (m_object->m_score == 1) {
+                g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_MELT, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
@@ -191,10 +193,10 @@ i32 CSpotLight::Tick() {
                     seed = g_randSeed;
                 }
                 g_randSeed = seed * 0x343fd + 0x269ec3;
-                i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
+                i32 laser = ((static_cast<i32>(g_randSeed) >> 16) & 0x7fff) % 2 + 1;
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
-                CDDrawSubMgrLeafScan* obj = reg->m_world->m_soundRegistry;
+                CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;
                 if (obj->m_emitGate == 0) {
 
                     LeafCue* cue = 0;
@@ -209,7 +211,7 @@ i32 CSpotLight::Tick() {
                 }
             } else {
                 tgt->SnapToLastTile(1);
-                reg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_KAROKE, -1);
+                g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_KAROKE, -1);
             }
             return 0;
         }
@@ -217,17 +219,19 @@ i32 CSpotLight::Tick() {
 
     double s = sin(m_angle);
     double c = cos(m_angle);
-    double dt = static_cast<double>(static_cast<i32>(g_frameDelta));
+    double ox = m_offset.x;
+    double oy = -m_offset.y;
+    double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
     CWwdGameObjectA* mv = m_focus;
-    double rx = m_offset.x * c - m_offset.y * s;
-    double ry = m_offset.x * s + m_offset.y * c;
+    m_position.x = ox * c + oy * s;
+    m_position.y = ox * s - oy * c;
     if (mv != NULL) {
         m_center.x = static_cast<double>(mv->m_screenX);
         m_center.y = static_cast<double>(mv->m_screenY);
     }
-    m_position.x = m_center.x + rx;
-    m_position.y = m_center.y + ry;
-    m_angle = m_angle + dt * m_angularVelocity;
+    m_position.x = m_center.x + m_position.x;
+    m_position.y = m_center.y + m_position.y;
+    m_angle = dAngle + m_angle;
     m_object->m_screenX = static_cast<i32>(m_position.x);
     m_object->m_screenY = static_cast<i32>(m_position.y);
     return 0;
@@ -239,10 +243,12 @@ int CSpotLight::Update() {
     if (m_object->m_score == 1) {
         double c = cos(m_angle);
         double s = sin(m_angle);
+        double ox = m_offset.x;
+        double oy = -m_offset.y;
 
         double newAngle = static_cast<double>(g_frameDelta) * m_angularVelocity + m_angle;
-        m_position.x = -(m_offset.y * s + m_offset.x * c);
-        m_position.y = m_offset.x * s - m_offset.y * c;
+        m_position.x = oy * s - ox * c;
+        m_position.y = ox * s + oy * c;
         if (m_focus) {
             m_center.x = static_cast<double>(m_focus->m_screenX);
             m_center.y = static_cast<double>(m_focus->m_screenY);
