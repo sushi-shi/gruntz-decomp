@@ -37,8 +37,12 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
+// Retail carries an 8-byte frame (`sub esp,0x8`) whose two dwords are written at
+// every CommitNeighbor site ([esp+0x10] = m_lastTilePx.m_x, [esp+0x14] = .m_y) and
+// never read; cl DCEs the equivalent locals here, so every epilogue is short one
+// `add esp,0x8`.  cl also proves and deletes the low-stamina arm's `m_poweredUp == 0`
+// / `m_neighborValid != 0` re-tests (retail keeps them on the CSE'd registers) and
+// merges the two stand-down blocks back into one.
 RVA(0x000f1c70, 0x60d)
 i32 CGrunt::StepArrivalDefenseAlt() {
     m_arrivalFlags |= 0x40000;
@@ -58,6 +62,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
         if (m_combatActive != 0) {
             goto tail;
         }
+        // Retail spells the stand-down twice, once per stamina arm (two
+        // ResetEntranceAnimation calls and two `mov eax,1` epilogues at
+        // 0xf1d36 and 0xf1d7e).
         if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
                 goto tail;
@@ -71,6 +78,12 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
         } else {
             if (inRange != 0) {
                 goto tail;
@@ -81,13 +94,13 @@ i32 CGrunt::StepArrivalDefenseAlt() {
             if (m_neighborValid != 0) {
                 goto tail;
             }
+            m_entranceActive = 0;
+            m_combatActive = 0;
+            m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
+            return 1;
         }
-        m_entranceActive = 0;
-        m_combatActive = 0;
-        m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
-        return 1;
     }
 
     switch (m_defenderState) {
@@ -120,54 +133,52 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
                 i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
                 i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
-                if (tx < gx) {
-                    if (ty < gy) {
-                        StepArrivalDrop(
-                            m_lastTilePx.m_x + 0x40,
-                            m_lastTilePx.m_y,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        return 1;
-                    }
-                    if (ty > gy) {
-                        StepArrivalDrop(
-                            m_lastTilePx.m_x,
-                            m_lastTilePx.m_y - 0x40,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        return 1;
-                    }
-                    goto resetState;
+                // Four FLAT `if (a && b)` statements, not two nested tests: retail
+                // re-compares tx against gx before each pair (0xf1ebe / 0xf1ef6 /
+                // 0xf1f2e / 0xf1f6a) and chains the redundant compares itself.
+                if (tx < gx && ty < gy) {
+                    StepArrivalDrop(
+                        m_lastTilePx.m_x + 0x40,
+                        m_lastTilePx.m_y,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    );
+                    return 1;
                 }
-                if (tx > gx) {
-                    if (ty < gy) {
-                        StepArrivalDrop(
-                            m_lastTilePx.m_x,
-                            m_lastTilePx.m_y + 0x40,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        return 1;
-                    }
-                    if (ty > gy) {
-                        StepArrivalDrop(
-                            m_lastTilePx.m_x - 0x40,
-                            m_lastTilePx.m_y,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        return 1;
-                    }
+                if (tx < gx && ty > gy) {
+                    StepArrivalDrop(
+                        m_lastTilePx.m_x,
+                        m_lastTilePx.m_y - 0x40,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    );
+                    return 1;
+                }
+                if (tx > gx && ty < gy) {
+                    StepArrivalDrop(
+                        m_lastTilePx.m_x,
+                        m_lastTilePx.m_y + 0x40,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    );
+                    return 1;
+                }
+                if (tx > gx && ty > gy) {
+                    StepArrivalDrop(
+                        m_lastTilePx.m_x - 0x40,
+                        m_lastTilePx.m_y,
+                        0,
+                        m_arrivalFlags,
+                        1,
+                        0
+                    );
+                    return 1;
                 }
                 goto resetState;
             }
