@@ -223,7 +223,7 @@ static inline void GruntScratchTeardown() {
 
 // @early-stop
 RVA(0x00056f80, 0xb0)
-void CGrunt::EntranceTileOffset(i32* out) {
+i32* CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
     switch (m_entranceCell.direction) {
@@ -258,6 +258,7 @@ void CGrunt::EntranceTileOffset(i32* out) {
     }
     out[0] = x;
     out[1] = y;
+    return out;
 }
 
 #define SCAN_BOUNDS(grid)                                                                          \

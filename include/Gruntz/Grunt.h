@@ -736,7 +736,7 @@ public:
     void ArrivalHook4();
     void ArrivalHook5();
     i32 CanShowStamina();
-    void EntranceTileOffset(i32* out);
+    i32* EntranceTileOffset(i32* out);
     void ComputeFacing(double dt);
     i32 ResetGeometry();
     i32 StepAttackAction();
