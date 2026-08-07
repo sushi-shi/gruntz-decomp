@@ -138,7 +138,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_arrivalCell.m_x = -1;
             g->m_arrivalCell.m_y = -1;
             g->m_defenderState = AISTATE_SEEK;
-            GruntRecycleCoords(g);
+            STEP_DRAIN(g);
             goto tail;
         }
         CGameObject* s = cur->m_object;

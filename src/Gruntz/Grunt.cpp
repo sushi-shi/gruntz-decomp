@@ -215,19 +215,6 @@ static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-void GruntRecycleCoords(CGrunt* g) {
-    POSITION pos = g->m_coordList.GetHeadPosition();
-    while (pos != NULL) {
-        void* coord = g->m_coordList.GetNext(pos);
-        if (coord != NULL) {
-            CoordPoolNode* node = g_coordPool.NodeOf(coord);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
-        }
-    }
-    g->m_coordList.RemoveAll();
-}
-
 static __inline void GruntScratchTeardown() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
@@ -1435,8 +1422,9 @@ i32 CGrunt::StepGruntMovement() {
     }
 
     {
+        EnemyAiType st = m_arrivalState;
         i32 blockMove = 1;
-        if (m_arrivalState == AI_OBJECTGUARD) {
+        if (st == AI_OBJECTGUARD) {
             if (((m_defenderPx.m_x ^ tgtPxX) & 0xffffffe0) == 0
                 && ((m_defenderPx.m_y ^ tgtPxY) & 0xffffffe0) == 0) {
                 blockMove = 0;

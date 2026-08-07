@@ -870,7 +870,6 @@ SIZE(0x4);
 
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
-void GruntRecycleCoords(CGrunt* g);
 void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
 
 extern char s_codeD[];
