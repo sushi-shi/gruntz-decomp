@@ -144,7 +144,29 @@ def decode(obj, symbol=None):
     if symbol:
         cmd.append("--disassemble-symbols=" + symbol)
     out = subprocess.run(cmd, capture_output=True, text=True).stdout
-    return parse_objdump(out)
+    parsed = parse_objdump(out)
+    if symbol and _ends_at_indirect_jump(parsed.get(symbol)):
+        # `--disassemble-symbols` emits ONLY that symbol, so the `$L<n>` switch-arm
+        # symbols parse_objdump exists to re-merge are not in the output at all and
+        # the stream stops at the indirect jump: ?Advance@CAniAdvanceCursor@@ reported
+        # 6 branches / 3 rets against a real 59 / 3, which silently mis-ranks the
+        # worklist. Pay for one whole-object decode in exactly that case.
+        cmd = ["llvm-objdump", "-d", "--no-show-raw-insn", str(obj)]
+        parsed = parse_objdump(subprocess.run(cmd, capture_output=True,
+                                              text=True).stdout)
+    return parsed
+
+
+def _ends_at_indirect_jump(insns):
+    """True when the stream's last real instruction is an indirect `jmp` - the
+    signature of a symbol-scoped decode that stopped at a switch's jump table."""
+    if not insns:
+        return False
+    for off, mn, ops in reversed(insns):
+        if mn == "(bad)" or mn.startswith("<"):
+            continue
+        return mn.startswith("jmp") and "*" in ops
+    return False
 
 
 def first_bad(insns):
