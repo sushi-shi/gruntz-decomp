@@ -100,6 +100,12 @@ void CShadeTableCache::FreeNodes() {
 }
 
 // @early-stop
+// Retail pops each channel value at the clamp (`fcomp g_255`) and RECOMPUTES the whole
+// int-divide + two fmul + faddp chain inside the `< 255` arm; cl CSEs the second copy
+// away and keeps the value on the x87 stack (`fcom` / `fstp st(0)` / `fld g_255`).
+// Measured byte-identical to the current spelling: the HSV_MIN(expr, g_255) macro at all
+// six sites, and the explicit `if (EXPR < g_255) v = EXPR; else v = g_255;` statement
+// form. That recompute is the whole +16 fmul / +15 fxch / +10 fild deficit.
 RVA(0x0014df40, 0x5f4)
 CShadeTable*
 CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
@@ -127,9 +133,11 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
     } else if (newSize <= m_arr.m_nMaxSize) {
-        CShadeTable** pTail = &m_arr.m_pData[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
+        if (newSize > m_arr.m_nSize) {
+            CShadeTable** pTail = &m_arr.m_pData[m_arr.m_nSize];
+            for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
+                *pTail++ = NULL;
+            }
         }
         m_arr.m_nSize = newSize;
     } else {
