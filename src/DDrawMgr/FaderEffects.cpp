@@ -1012,32 +1012,20 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
 
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
-    i32 cx = m_centerX;
-    i32 cy = m_centerY;
-    i32 w = m_surface->m_width;
-    i32 h = m_surface->m_height;
+    // The furthest corner from (m_centerX, m_centerY) sets the frame count.
+    // windef.h's `max` macro, left-folded TL / BR / TR / BL: the ternary
+    // duplicates its operands, which is why retail carries eight `fld` reloads
+    // of dTopLeft and three separate __ftol/epilogue tails, not an if-chain.
+    double pLeft = pow(static_cast<double>(m_centerX), g_faderPowK);
+    double pTop = pow(static_cast<double>(m_centerY), g_faderPowK);
+    double dTopLeft = sqrt(pLeft + pTop);
+    double pBottom = pow(static_cast<double>(m_surface->m_height - m_centerY), g_faderPowK);
+    double pRight = pow(static_cast<double>(m_surface->m_width - m_centerX), g_faderPowK);
+    double dBottomRight = sqrt(pRight + pBottom);
+    double dTopRight = sqrt(pRight + pTop);
+    double dBottomLeft = sqrt(pLeft + pBottom);
 
-    double pA = pow(static_cast<double>(cx), g_faderPowK);
-    double pB = pow(static_cast<double>(cy), g_faderPowK);
-    double pH = pow(static_cast<double>((h - cy)), g_faderPowK);
-    double pW = pow(static_cast<double>((w - cx)), g_faderPowK);
-
-    double d0 = sqrt(pA + pB);
-    double d1 = sqrt(pW + pB);
-    double d2 = sqrt(pA + pH);
-    double d3 = sqrt(pW + pH);
-
-    double m = d0;
-    if (d1 > m) {
-        m = d1;
-    }
-    if (d2 > m) {
-        m = d2;
-    }
-    if (d3 > m) {
-        m = d3;
-    }
-    i32 r = static_cast<i32>(m);
+    i32 r = static_cast<i32>(max(max(max(dTopLeft, dBottomRight), dTopRight), dBottomLeft));
     m_frameCount = r;
     return r;
 }
