@@ -30,25 +30,30 @@ RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 RVA(0x0003e520, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
-    if (m_object->m_sortKey != SORTKEY_GRUNT_CREATION) {
-        m_object->m_sortKey = SORTKEY_GRUNT_CREATION;
-        m_object->m_flags |= 0x20000;
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != SORTKEY_GRUNT_CREATION) {
+        o->m_sortKey = SORTKEY_GRUNT_CREATION;
+        i32 f = o->m_flags;
+        f |= 0x20000;
+        o->m_flags = f;
     }
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
     i32 key = m_object->m_smarts;
     i32 idx;
-    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        idx = key;
-    } else if (g_gameReg->m_options[key].m_liveGate != 0) {
-        idx = IDX(g_gameReg->m_options[key].m_colorIndex);
-    } else {
-        m_wwdObject->m_flags |= 0x10000;
+    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+        if (g_gameReg->m_options[key].m_liveGate != 0) {
+            idx = IDX(g_gameReg->m_options[key].m_colorIndex);
+        } else {
+            m_wwdObject->m_flags |= 0x10000;
 
-        AddrWord<CGameObject> sel;
-        sel.m_addr = obj;
-        idx = sel.m_word;
+            AddrWord<CGameObject> sel;
+            sel.m_addr = obj;
+            idx = sel.m_word;
+        }
+    } else {
+        idx = key;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
