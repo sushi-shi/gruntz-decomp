@@ -108,12 +108,11 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
 static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
-    while (cnt != 0) {
+    while (cnt--) {
         if (slot != NULL) {
             new (slot) CString();
         }
         slot++;
-        cnt--;
     }
 }
 
@@ -1410,13 +1409,18 @@ i32 CGrunt::StepCombatReaction(
         }
     }
 
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0) {
+    bool ne;
+    bool eq;
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+    if (!ne) {
         goto tail;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0) {
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    if (!ne) {
         goto tail;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    if (eq) {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
         }
@@ -1430,27 +1434,34 @@ i32 CGrunt::StepCombatReaction(
         );
         goto tail;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
+    if (eq) {
         goto reject;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+    if (eq) {
         goto reject;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
+    if (eq) {
         goto reject;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    if (eq) {
         SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         goto tail;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0);
+    if (eq) {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
         return 0;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
+    if (eq) {
         m_entranceActive = 0;
-        if (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0) {
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0);
+        if (eq) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 m_entranceActive = 0;
                 m_combatActive = 0;
@@ -1487,7 +1498,8 @@ i32 CGrunt::StepCombatReaction(
         }
         goto tail;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
+    if (eq) {
         CWwdGameObjectA* h = m_object;
         i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 hy = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1502,6 +1514,7 @@ i32 CGrunt::StepCombatReaction(
         if (flag != 0) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeD);
+            SetupTubeAnim(m_coordToggle);
         }
     }
     goto tail;
@@ -1552,7 +1565,8 @@ tail:
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ConstructGrownSlots();
-        if (strcmp(*rec, s_codeF) == 0) {
+        eq = (strcmp(*rec, s_codeF) == 0);
+        if (eq) {
             if (m_entranceCommitted != 0) {
                 return 0;
             }
@@ -1562,7 +1576,8 @@ tail:
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ConstructGrownSlots();
-        if (strcmp(*rec, s_codeO) != 0) {
+        ne = (strcmp(*rec, s_codeO) != 0);
+        if (ne) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeH);
             void* cellObj = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
