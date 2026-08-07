@@ -54,7 +54,14 @@ public:
         m_ownerCtx = NULL;
     }
 
-    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    // Header-inline: retail's tiny derived ctors (CAniAdvanceCursor 0x15b730)
+    // carry the three stores expanded with no `call`, while the four big
+    // callers `sema xref` lists keep a real call to the pinned COMDAT.
+    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
+        m_id = field04;
+        m_flags = field08;
+        m_ownerCtx = owner;
+    }
 
     CLoadable(class CDDrawSurfaceMgr* owner) {
         m_id = 0;

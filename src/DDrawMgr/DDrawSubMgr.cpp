@@ -59,12 +59,7 @@ static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
 // @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (118 fns) came from the static library. It belongs to another compiland.
-RVA(0x00156cb0, 0x20)
-CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
-    m_id = field04;
-    m_flags = field08;
-    m_ownerCtx = owner;
-}
+RVA_COMPGEN(0x00156cb0, 0x20, ??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
 
 RVA(0x00156cd0, 0x16)
 i32 CDDrawWorkerMapSmall::IsLoaded() {

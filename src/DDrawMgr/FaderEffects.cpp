@@ -1340,27 +1340,27 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 colBase;
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
-        colBase = stride
-                  - static_cast<i32>(
-                      (static_cast<double>(stride) / (arc - m_halfWidth) * (m_span - col - stride))
-                  );
+        i32 arcSpan = arc - m_halfWidth;
+        i32 tail = m_span - col - stride;
+        colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
     } else {
         colBase = col;
     }
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0)) {
-        colBase = static_cast<i32>((static_cast<double>(stride) / (arc - m_halfWidth) * col));
+        i32 arcSpan = arc - m_halfWidth;
+        colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
     }
 
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
-        i32 col = 0;
+        i32 row = 0;
         if (m_rowCount > 0) {
             i32 base = bpp * col;
             do {
-                u8* dstLine = m_rowOfsA[col] + base + m_dstBase;
-                u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
-                u8* ssrc = m_rowOfsB[col] + base + m_straightBase;
+                u8* dstLine = m_rowOfsA[row] + base + m_dstBase;
+                u8* gsrc = m_rowOfsC[row] + base + m_gatherBase;
+                u8* ssrc = m_rowOfsB[row] + base + m_straightBase;
                 if (m_useLut == 0) {
                     if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                         i32 i = 0;
@@ -1450,7 +1450,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 } else {
                     i32 c2 = bpp * stripWidth;
                     dstLine -= c2;
-                    u8* s2 = (col - stripWidth) * bpp + m_rowOfsB[col] + m_straightBase;
+                    u8* s2 = (col - stripWidth) * bpp + m_rowOfsB[row] + m_straightBase;
                     if (c2 > 0) {
                         do {
                             *dstLine = *s2;
@@ -1460,18 +1460,18 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                         } while (c2 != 0);
                     }
                 }
-                col++;
-            } while (col < m_rowCount);
+                row++;
+            } while (row < m_rowCount);
         }
     } else if (((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
                 || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0))
                && m_rowCount > 0) {
-        i32 col = 0;
+        i32 row = 0;
         i32 base = bpp * col;
         do {
-            u8* dstLine = m_rowOfsA[col] + base + m_dstBase;
-            u8* gsrc = m_rowOfsC[col] + base + m_gatherBase;
-            u8* ssrc = m_rowOfsB[col] + base + m_straightBase;
+            u8* dstLine = m_rowOfsA[row] + base + m_dstBase;
+            u8* gsrc = m_rowOfsC[row] + base + m_gatherBase;
+            u8* ssrc = m_rowOfsB[row] + base + m_straightBase;
             if (m_useLut == 0) {
                 if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                     i32 i = 0;
@@ -1565,7 +1565,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 }
             } else {
                 i32 c2 = bpp * stripWidth;
-                u8* s2 = (col + stride) * bpp + m_rowOfsB[col] + m_straightBase;
+                u8* s2 = (col + stride) * bpp + m_rowOfsB[row] + m_straightBase;
                 dstLine += cnt;
                 if (c2 > 0) {
                     do {
@@ -1576,8 +1576,8 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     } while (c2 != 0);
                 }
             }
-            col++;
-        } while (col < m_rowCount);
+            row++;
+        } while (row < m_rowCount);
     }
 }
 
