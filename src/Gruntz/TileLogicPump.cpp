@@ -417,12 +417,11 @@ CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-    CWwdGameObjectA* o = m_object;
-    i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = o->m_screenY >> TILE_SHIFT_PX;
-    o->m_speedX = tileX;
-    o->m_speedY = tileY;
-    o->m_id = (tileX << 8) + tileY;
+    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
+    m_object->m_speedX = tileX;
+    m_object->m_speedY = tileY;
+    m_object->m_id = (tileX << 8) + tileY;
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -465,12 +464,11 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-    CWwdGameObjectA* o = m_object;
-    i32 tileX = o->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = o->m_screenY >> TILE_SHIFT_PX;
-    o->m_speedX = tileX;
-    o->m_speedY = tileY;
-    o->m_id = (tileX << 8) + tileY;
+    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
+    m_object->m_speedX = tileX;
+    m_object->m_speedY = tileY;
+    m_object->m_id = (tileX << 8) + tileY;
 }
 
 RVA(0x0010ea80, 0x102)

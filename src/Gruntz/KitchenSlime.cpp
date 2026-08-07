@@ -59,8 +59,8 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_object->m_screenX = snapX;
-    m_posX = static_cast<double>(snapX);
     m_object->m_screenY = snapY;
+    m_posX = static_cast<double>(snapX);
     m_posY = static_cast<double>(snapY);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_KITCHEN_SLIME) {
