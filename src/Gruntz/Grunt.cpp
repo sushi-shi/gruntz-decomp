@@ -89,12 +89,12 @@
 DATA(0x001e9a68)
 double s_fpZero = 0.0;
 
-static __inline void GruntPosScratchTeardown() {
+static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt--) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
     }
@@ -214,17 +214,6 @@ static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
          m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                    \
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
-
-static __inline void GruntScratchTeardown() {
-    CString* slot = (g_typeColl.Slots());
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt--) {
-        if (slot != NULL) {
-            slot->~CString();
-        }
-        slot++;
-    }
-}
 
 // @early-stop
 RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
@@ -1567,7 +1556,7 @@ label_4c6e4:
         m_entranceActive = 1;
     } else {
         CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         bool ne;
         ne = (strcmp(*r, "L") != 0);
         if (ne) {
@@ -2179,17 +2168,6 @@ i32 CGrunt::Place(
             break;
     }
     return 1;
-}
-
-static inline void ConstructGrownSlots() {
-    CString* slot = g_typeColl.Slots();
-    i32 n = g_typeColl.m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            new (slot) CString();
-        }
-        slot++;
-    }
 }
 
 // @early-stop
@@ -4290,7 +4268,7 @@ void CGrunt::FinalizeStep(char* name) {
     }
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-    GruntPosScratchTeardown();
+    ConstructGrownSlots();
     bool eqPos = (strcmp(*rec, k_60df94) == 0);
     if (eqPos) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
@@ -4361,19 +4339,19 @@ void CGrunt::AdvanceMotion() {
     }
 
     CString* code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-    GruntScratchTeardown();
+    ConstructGrownSlots();
     bool different = strcmp(*code, s_codeD);
     if (different) {
         code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         different = strcmp(*code, s_codeN);
         if (different) {
             code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-            GruntScratchTeardown();
+            ConstructGrownSlots();
             different = strcmp(*code, s_codeL);
             if (different) {
                 code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-                GruntScratchTeardown();
+                ConstructGrownSlots();
                 different = strcmp(*code, s_codeM);
                 if (different) {
                     return;

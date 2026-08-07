@@ -193,12 +193,12 @@ DATA(0x0020dd4c)
 static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
-static inline void GruntScratchTeardown() {
+static inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
         cnt--;
@@ -1140,7 +1140,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         } else {
             rec = g_typeColl.Elem(coord);
         }
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         static_cast<void>(rec);
     }
     char* nm1 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -1164,7 +1164,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         } else {
             rec = g_typeColl.Elem(coord);
         }
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         static_cast<void>(rec);
     }
     char* nm2 = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -1800,7 +1800,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     {
 
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         bool eq = (strcmp(*rec, s_codeF) == 0);
         if (eq) {
             goto fail;

@@ -50,6 +50,7 @@
 #include <Wap32/Wap32.h>
 
 #include <math.h>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -108,12 +109,12 @@ static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
     return ((b->m_rowInts[ty]))[tx * 7];
 }
 
-static __inline void GruntScratchTeardown() {
+static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
         cnt--;
@@ -1552,7 +1553,7 @@ tail:
 
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         if (strcmp(*rec, s_codeF) == 0) {
             if (m_entranceCommitted != 0) {
                 return 0;
@@ -1562,7 +1563,7 @@ tail:
     m_entranceActive = 1;
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         if (strcmp(*rec, s_codeO) != 0) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeH);

@@ -14,14 +14,15 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
 
+#include <new>
 #include <string.h>
 
-static __inline void GruntScratchTeardown() {
+static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt--) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
     }
@@ -53,7 +54,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     }
 
     CString* node = g_typeColl.ScratchResolve(m_objAux->ActKey());
-    GruntScratchTeardown();
+    ConstructGrownSlots();
 
     bool eq;
     eq = (strcmp(*node, "D") == 0);

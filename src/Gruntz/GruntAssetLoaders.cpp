@@ -21,14 +21,15 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/TileGeometry.h>
 
+#include <new>
 #include <string.h>
 
-static __inline void GruntScratchTeardown() {
+static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
         cnt--;

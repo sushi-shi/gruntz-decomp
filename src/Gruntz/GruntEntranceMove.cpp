@@ -39,6 +39,7 @@
 #include <Wap32/TileGeometry.h>
 
 #include <math.h>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -167,12 +168,12 @@ static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
 
 void CGrunt::ApplyMoveKind(i32 v) {}
 
-static __inline void GruntScratchTeardown() {
+static __inline void ConstructGrownSlots() {
     CString* slot = (g_typeColl.Slots());
     i32 cnt = g_typeColl.m_grown;
     while (cnt--) {
         if (slot != NULL) {
-            slot->~CString();
+            new (slot) CString();
         }
         slot++;
     }
@@ -191,7 +192,7 @@ i32 CGrunt::RunEntranceMove() {
 
     m_entranceActive = 0;
     CString* nmSlot = g_typeColl.ScratchResolve(m_prevAnimSetNode);
-    GruntScratchTeardown();
+    ConstructGrownSlots();
     const char* nm0 = *nmSlot;
     bool eq;
     eq = (strcmp(nm0, s_codeD) == 0);
@@ -716,7 +717,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     }
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-    GruntScratchTeardown();
+    ConstructGrownSlots();
     if (strcmp(*rec, s_codeD) == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
@@ -732,7 +733,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     }
 
     CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_actKey);
-    GruntScratchTeardown();
+    ConstructGrownSlots();
     if (strcmp(*rec2, "A") == 0) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
@@ -921,7 +922,7 @@ i32 CGrunt::StepArrivalCommit() {
     }
     {
         const char* prev = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
-        GruntScratchTeardown();
+        ConstructGrownSlots();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
             m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);

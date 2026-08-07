@@ -10,10 +10,12 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -22,6 +24,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/StaminaPct.h>
@@ -36,6 +39,7 @@
 #include <Wap32/TileGeometry.h>
 
 #include <math.h>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -176,6 +180,17 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
         return 1;
     }
     return b->m_rowInts[ty][tx * 7];
+}
+
+static __inline void ConstructGrownSlots() {
+    CString* slot = (g_typeColl.Slots());
+    i32 cnt = g_typeColl.m_grown;
+    while (cnt--) {
+        if (slot != NULL) {
+            new (slot) CString();
+        }
+        slot++;
+    }
 }
 
 RVA(0x00050ca0, 0x2b)
@@ -907,12 +922,12 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
-    if (eq) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
+    if (!eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
-    if (eq) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    if (!eq) {
         goto applyTail;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -933,54 +948,111 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             goto applyTail;
         }
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
-        goto applyTail;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
-    if (eq) {
-
-        SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
-        goto applyTail;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0);
-    if (eq) {
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
-    if (eq) {
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
+    if (!eq) {
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+        if (!eq) {
+            eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
+            if (!eq) {
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+                if (eq) {
 
-        m_entranceActive = 0;
-        if (m_poweredUp == 0 && m_neighborValid == 0) {
-            m_entranceCommitted = 0;
-            ResetEntranceAnimation(1, 0, 0);
+                    SnapToLastTile(1);
+                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    goto applyTail;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0);
+                if (eq) {
+                    return 1;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
+                if (eq) {
+
+                    m_entranceActive = 0;
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0);
+                    if (eq) {
+                        if (m_poweredUp != 0 && m_neighborValid == 0) {
+                            m_entranceActive = 0;
+                            m_combatActive = 0;
+                            m_neighborValid = 0;
+                            m_poweredUp = 0;
+                            ResetEntranceAnimation(1, 0, 0);
+                        }
+                        m_tileMoveCommitted = 0;
+                        m_prevAnimSetNode = m_objAux->m_actKey;
+                        m_objAux->m_actKey = ActFindId(s_codeD);
+                        m_value = m_wwdObject->m_animCursor.m_animation;
+                        m_wwdObject->m_animCursor.Setup(m_poseWalk);
+
+                        GruntDirectionCell cell = m_entranceCell;
+                        i32 col = cell.column + cell.row * 2;
+                        i32 base = cell.row + col;
+                        char* nm = m_cells[base].WalkName().GetBuffer(0);
+                        m_wwdObject->ApplyName(nm);
+                    } else {
+                        ResetEntranceAnimation(1, 0, 0);
+                    }
+
+                    PickupType mode = m_entrancePickup;
+                    if (mode >= PICKUP_POWERUPZ_FIRST) {
+                        LoadGruntTypeTable(mode, 1, 0, 1);
+                        m_entrancePickup = PICKUP_INVALID;
+                        m_helpCueId = 0;
+                        goto applyTail;
+                    }
+                    if (mode >= PICKUP_BRICKZ_FIRST) {
+                        m_brickPickupType = mode;
+                        m_entrancePickup = PICKUP_INVALID;
+                        goto applyTail;
+                    }
+                    if (mode >= PICKUP_TOYZ_FIRST) {
+                        LoadVehicleGruntSprites(mode);
+                        goto applyTail;
+                    }
+                    LoadGruntTypeTable(mode, 1, 0, 1);
+                    m_entrancePickup = PICKUP_INVALID;
+                    goto applyTail;
+                }
+                {
+                    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                    ConstructGrownSlots();
+                    eq = (strcmp(*rec, s_codeN) == 0);
+                }
+                if (eq) {
+
+                    CWwdGameObjectA* h = m_object;
+                    i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 redo = 1;
+                    if (px != m_lastTilePx.m_x || py != m_lastTilePx.m_y) {
+                        if (IsDropReady(1)) {
+                            m_coordToggle = (m_coordToggle == 0);
+                            redo = 0;
+                        }
+                    }
+                    SnapToLastTile(1);
+                    if (redo == 0) {
+                        goto applyTail;
+                    }
+                    m_prevAnimSetNode = m_objAux->m_actKey;
+                    m_objAux->m_actKey = ActFindId(s_codeD);
+                    SetupTubeAnim(m_coordToggle);
+                    goto applyTail;
+                }
+                {
+                    CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
+                    ConstructGrownSlots();
+                    eq = (strcmp(*rec, s_codeM) == 0);
+                }
+                if (eq) {
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
+                    return 1;
+                }
+                goto applyTail;
+            }
         }
-        m_tileMoveCommitted = 0;
-        m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId(s_codeD);
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseWalk);
-
-        GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
-        char* nm = m_cells[base].WalkName().GetBuffer(0);
-        m_wwdObject->ApplyName(nm);
-        goto modeDispatch;
-    } else {
-        SnapToLastTile(1);
-        goto modeDispatch;
     }
 
 idleReseed:
@@ -990,10 +1062,10 @@ idleReseed:
     }
     LoadGruntTypeTable(m_toolId, 1, 0, 1);
     {
-        i32 px = m_object->m_screenY + 0x186a0;
+        i32 z = m_object->m_screenY + 0x186a0;
         CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != px) {
-            o->m_sortKey = px;
+        if (o->m_sortKey != z) {
+            o->m_sortKey = z;
             o->m_flags |= 0x20000;
         }
     }
@@ -1009,34 +1081,57 @@ applyTail:
     if (m_wingzEnabled != 0) {
         LoadWingzGruntSprites(0);
     }
-    if (m_poweredUp == 0 && m_neighborValid == 0) {
-        m_entranceCommitted = 0;
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
+        m_entranceActive = 0;
+        m_combatActive = 0;
+        m_neighborValid = 0;
+        m_poweredUp = 0;
         ResetEntranceAnimation(1, 0, 0);
     }
-
+    m_tileMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);
+    {
+        i32 spawnPx = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+        i32 spawnPy = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+        m_object->m_screenX = spawnPx;
+        m_object->m_screenY = spawnPy;
+        {
+            CGruntzMapMgr* board = g_gameReg->m_tileGrid;
+            i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+            i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+            board->m_rowInts[gy][gx * 7] &= ~0x20000000;
+            board->m_rowInts[gy][gx * 7 + 1] = -1;
+            m_lastTilePx.m_x = -1;
+            m_lastTilePx.m_y = -1;
+        }
+        SetEntrancePos(1, 1);
+        if (CoordCount() != 0) {
+            RECYCLE_COORDS(CoordHead());
+            m_coordList.RemoveAll();
+        }
+        if (m_arrivalState == AI_BATTLEZ_PATH) {
+            m_defenderState = AISTATE_SEEK;
+            m_routeMaskC = 0;
+        }
+        if (spawnWormhole != 0) {
+            CWwdGameObjectA* spawned =
+                g_gameReg->m_world->m_childGroup
+                    ->CreateSprite(0, spawnPx, spawnPy, 0, "Wormhole", 0x40003);
+            if (spawned != NULL) {
+                const char* colorKey;
+                i32 colorDef;
+                if (useSecretColor != 0) {
+                    colorKey = "SecretColor";
+                    colorDef = 1;
+                } else {
+                    colorKey = "EntranceColor";
+                    colorDef = 3;
+                }
+                spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", colorKey, colorDef);
+            }
+        }
+    }
+    BuildEntranceAnimation(GRUNT_ENTRANCE_WORMHOLE);
     return 1;
-
-modeDispatch: {
-    PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_FIRST) {
-        LoadGruntTypeTable(mode, 1, 0, 1);
-        m_entrancePickup = PICKUP_INVALID;
-        m_helpCueId = 0;
-        return 1;
-    }
-    if (mode >= PICKUP_BRICKZ_FIRST) {
-        m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
-        return 1;
-    }
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
-        return 1;
-    }
-    LoadGruntTypeTable(mode, 1, 0, 1);
-    m_entrancePickup = PICKUP_INVALID;
-    return 1;
-}
 }
 
 RVA(0x00053b80, 0x340)
