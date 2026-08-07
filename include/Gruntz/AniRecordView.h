@@ -21,6 +21,12 @@ struct CAniRecordView : public CObject {
     i32 GetSize();
     void ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str);
 
+    // A __thiscall whose body never touches `this` (it steps the two globals at
+    // 0x6c2798/0x6c278c).  The receiver is proved by the call sites in
+    // CAniAdvanceCursor::Advance: `mov ecx,edi` (edi = m_element) immediately
+    // before each `call 0x15cbe0`, dead for a __cdecl callee.
+    i32 Rng2Next();
+
     inline CAniRecordView() {
         m_cueCount = 0;
         m_cues = NULL;

@@ -97,21 +97,35 @@ def obj_paths(unit):
     return BASE_DIR / (unit + ".obj"), TGT_DIR / (unit + ".c.obj")
 
 
+# cl's two spellings for a block label inside a function's COMDAT.  `$L<n>` is the
+# compiler-generated one (switch arms, if/else joins).  `$<name>$<n>` is a SOURCE
+# label - the target of a `goto` - and it is NOT covered by a `$L` prefix test.
+# Reading only `$L` truncated every function containing a named label at that label
+# (CAniAdvanceCursor::Advance stopped 0x126 bytes early at `$loop_restart$32243`,
+# hiding a whole else-arm and reading as "cl deleted the call").
+LOCAL_LABEL = re.compile(r"^\$(?:L\d+|\w+\$\d+)$")
+
+
+def is_local_label(name):
+    """True for a cl block label that belongs to the ENCLOSING function's COMDAT."""
+    return bool(LOCAL_LABEL.match(name))
+
+
 def parse_objdump(out):
     """Parse llvm-objdump output into complete per-function instruction streams.
 
-    MSVC emits `$L<n>` symbols for switch arms and other local basic blocks. llvm-objdump
-    prints each one with the same header syntax as a function, but it is still part of
-    the current function's COMDAT. Starting a new stream there made every switch body
-    disappear after its indirect jump and falsely classified complete functions as
-    missing bodies.
+    MSVC emits `$L<n>` (and `$<goto-label>$<n>`) symbols for switch arms and other local
+    basic blocks. llvm-objdump prints each one with the same header syntax as a function,
+    but it is still part of the current function's COMDAT. Starting a new stream there
+    made every switch body disappear after its indirect jump and falsely classified
+    complete functions as missing bodies.
     """
     syms, cur, base = {}, None, None
     for ln in out.split("\n"):
         m = SYM_HDR.match(ln.strip())
         if m:
             name = m.group(1)
-            if name.startswith("$L") and cur is not None:
+            if is_local_label(name) and cur is not None:
                 continue
             cur, base = syms.setdefault(name, []), None
             continue

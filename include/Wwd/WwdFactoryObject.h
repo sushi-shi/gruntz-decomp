@@ -15,6 +15,4 @@ struct CDDrawRect {
 SIZE_UNKNOWN();
 i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b);
 
-i32 Rng2Next();
-
 #endif // GRUNTZ_WWD_WWDFACTORYOBJECT_H

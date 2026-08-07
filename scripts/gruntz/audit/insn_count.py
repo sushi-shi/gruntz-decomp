@@ -46,7 +46,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from gruntz.core.branches import obj_paths
+from gruntz.core.branches import is_local_label, obj_paths
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -85,9 +85,10 @@ def streams(obj):
     `llvm-objdump -d -r` in a single pass: instruction lines carry a section offset and a
     relocation is printed inline underneath the instruction (or the datum) it applies to.
 
-    MSVC emits `$L<n>` symbols for switch arms and other local blocks; llvm-objdump gives
-    each one a function-style header although it is still part of the enclosing COMDAT, so
-    they are folded back into the current owner (same rule as `gruntz.core.branches`).
+    MSVC emits `$L<n>` (and `$<goto-label>$<n>`) symbols for switch arms and other local
+    blocks; llvm-objdump gives each one a function-style header although it is still part
+    of the enclosing COMDAT, so they are folded back into the current owner (same rule as
+    `gruntz.core.branches`).
 
     `table_offset` is where the switch JUMP TABLE starts, and it has to be exact. The
     table lives in `.text` at the end of the COMDAT, llvm-objdump decodes those bytes
@@ -108,7 +109,7 @@ def streams(obj):
         m = SYM_HDR.match(ln.strip())
         if m:
             name = m.group(2)
-            if name.startswith("$L") and cur is not None:
+            if is_local_label(name) and cur is not None:
                 continue
             cur, relocs = [], []
             syms[name] = (cur, relocs)

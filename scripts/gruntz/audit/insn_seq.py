@@ -35,7 +35,7 @@ from collections import Counter
 from pathlib import Path
 
 from gruntz.audit.insn_count import PAD, table_start, trim
-from gruntz.core.branches import obj_paths
+from gruntz.core.branches import is_local_label, obj_paths
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -73,8 +73,9 @@ TABLE_NOISE = {"addb", "aas", "hlt", "sldtw", "lretl", "lcalll", "ljmpl", "outsl
 def stream(obj):
     """{symbol: (insns, table_offset)} where each insn is (off, mnemonic, ops, reloc|None).
 
-    Same `$L`-folding rule as insn_count.streams: MSVC's local switch/block labels get a
-    function-style header from llvm-objdump but belong to the enclosing COMDAT.
+    Same local-label folding rule as insn_count.streams: MSVC's `$L<n>` / `$<goto>$<n>`
+    block labels get a function-style header from llvm-objdump but belong to the
+    enclosing COMDAT.
 
     llvm-objdump prints a relocation on the line AFTER the instruction it applies to, so
     the reloc is attached backwards onto the last instruction seen."""
@@ -85,7 +86,7 @@ def stream(obj):
         m = SYM_HDR.match(ln.strip())
         if m:
             name = m.group(2)
-            if name.startswith("$L") and cur is not None:
+            if is_local_label(name) and cur is not None:
                 continue
             cur, dirs = [], []
             syms[name] = (cur, dirs)
@@ -135,10 +136,10 @@ def reloc_multiset(base, tgt):
     ApplyTriggerA."""
     def keep(r):
         # `__except_list` is the /GX frame's own reloc (the delinker does not
-        # reproduce it) and `$L<n>` is a local switch-arm label, not a callee -
-        # both are guaranteed one-sided and would read as false leads.
+        # reproduce it) and `$L<n>` / `$<goto>$<n>` is a local block label, not a
+        # callee - both are guaranteed one-sided and would read as false leads.
         n = norm(r)
-        return not (n.startswith("$L") or n == "__except_list")
+        return not (is_local_label(n) or n == "__except_list")
 
     b = Counter(norm(r) for _, _, _, r in base if r and keep(r))
     t = Counter(norm(r) for _, _, _, r in tgt if r and keep(r))

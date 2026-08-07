@@ -9,6 +9,7 @@ llvm-objdump over the unit's base obj; --rich recompiles the unit `/Z7`
 import subprocess
 import sys
 
+from gruntz.core.branches import is_local_label
 from gruntz.sema._common import (GEN_NAMES, REPO, call_main, csv_find, die,
                                  flags_for, units)
 
@@ -48,7 +49,7 @@ def base_text(rva: str) -> str:
 
 
 def _with_switch_arms(out: str, claim: dict, obj) -> str:
-    """Re-attach the `$L` sub-symbols cl emits for switch arms.
+    """Re-attach the `$L` / `$<goto-label>$<n>` sub-symbols cl emits for blocks.
 
     MSVC splits a switch's arms into `$L<n>` local symbols, so
     `--disassemble-symbols=<fn>` stops at the indirect `jmp` and every
@@ -59,7 +60,11 @@ def _with_switch_arms(out: str, claim: dict, obj) -> str:
 
     Ask for the whole section once and take the rows from the function's
     first row through the last row that still belongs to it: the arms follow
-    contiguously, and the next NON-`$L` symbol header ends the body.
+    contiguously, and the next NON-local-label symbol header ends the body.
+
+    A SOURCE label (`goto` target) is spelled `$<name>$<n>`, NOT `$L<n>`: reading only
+    the `$L` prefix stopped CAniAdvanceCursor::Advance at `$loop_restart$32243`, 0x126
+    bytes early, hiding a whole else-arm (`gruntz.core.branches.is_local_label`).
     """
     if "jmp" not in out or "ptr [" not in out:
         return out
@@ -71,7 +76,7 @@ def _with_switch_arms(out: str, claim: dict, obj) -> str:
             name = head.split("<", 1)[-1][:-2]
             if name == claim["name"]:
                 keeping, seen = True, True
-            elif keeping and not name.startswith("$L"):
+            elif keeping and not is_local_label(name):
                 break
             if keeping:
                 rows.append(ln)
