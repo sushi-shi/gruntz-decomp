@@ -39,8 +39,9 @@
 // @early-stop
 
 // @early-stop
-// Frame is 4 bytes short of retail (sub esp,0xc vs 0x10) - one local we do not model.
-// See docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
+// Reloc sequence is 35 vs retail's 34: the AISTATE_ATTACK arm's CommitNeighbor is
+// cross-jumped into the AISTATE_SEEK arm's identical tail in retail and kept
+// separate here. Everything else matches in order.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -57,52 +58,43 @@ i32 CGrunt::StepArrivalDefense() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                goto c2_occcheck;
-            }
-            if (occ->m_entranceCommitted == 0) {
-                goto c2_occcheck;
-            }
-            if (m_neighborValid != 0) {
-                return 1;
-            }
-            if (m_combatActive != 0) {
-                return 1;
-            }
-            if (m_stamina < STAMINA_FULL) {
-                return 1;
-            }
-            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
-                goto c2_miss;
-            }
-            if (occ->m_object->m_screenX != occ->m_lastTilePx.m_x) {
-                goto c2_miss;
-            }
-            if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
-                goto c2_miss;
-            }
-            if (m_vehiclePickupType == PICKUP_SCROLL) {
-                g_gameReg->m_cmdGrid->ApplyTriggerB(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
-                    occ->m_object->m_screenX,
-                    occ->m_object->m_screenY
-                );
-                return 1;
-            }
-            CommitNeighbor(
-                occ->m_tileOwnerHi,
-                occ->m_tileOwnerLo,
-                occ->m_lastTilePx.m_x,
-                occ->m_lastTilePx.m_y
-            );
-            return 1;
-        c2_occcheck:
-            if (occ == NULL) {
+            // the CHASE-and-shout arm is the FALL-THROUGH: forward gotos would
+            // hoist it above the scroll arm, which retail emits first.
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0
+                && occ->m_entranceCommitted != 0) {
+                if (m_neighborValid != 0) {
+                    return 1;
+                }
+                if (m_combatActive != 0) {
+                    return 1;
+                }
+                if (m_stamina < STAMINA_FULL) {
+                    return 1;
+                }
+                if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                    && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
+                    && occ->m_object->m_screenY == occ->m_lastTilePx.m_y) {
+                    if (m_vehiclePickupType == PICKUP_SCROLL) {
+                        g_gameReg->m_cmdGrid->ApplyTriggerB(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            occ->m_object->m_screenX,
+                            occ->m_object->m_screenY
+                        );
+                        return 1;
+                    }
+                    CommitNeighbor(
+                        occ->m_tileOwnerHi,
+                        occ->m_tileOwnerLo,
+                        occ->m_lastTilePx.m_x,
+                        occ->m_lastTilePx.m_y
+                    );
+                    return 1;
+                }
+            } else if (occ == NULL) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-        c2_miss:
             m_defenderState = AISTATE_CHASE;
             {
                 CWwdGameObjectA* h = m_object;
@@ -211,43 +203,40 @@ i32 CGrunt::StepArrivalDefense() {
                 );
                 return 1;
             }
-            if (occ == NULL) {
-                goto L_f308a;
-            }
-            if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
-                goto L_f308a;
-            }
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                goto L_f318a;
-            }
-            {
-                Coord sp;
-                occ->GetScreenPos(&sp);
-                if (TileSwitch(
-                        sp.m_x >> TILE_SHIFT_PX,
-                        sp.m_y >> TILE_SHIFT_PX,
-                        0,
-                        m_arrivalFlags,
-                        1,
-                        0
-                    )
-                    == 0) {
+            if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
+                if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
                     goto L_f318a;
                 }
-                SetEntrancePos(1, 1);
-                m_arrivalCell.m_x = occ->m_tileOwnerHi;
-                m_arrivalCell.m_y = occ->m_tileOwnerLo;
-                m_defenderState = AISTATE_CHASE;
-                CWwdGameObjectA* h = m_object;
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
-                    goto L_f318a;
+                {
+                    Coord sp;
+                    occ->GetScreenPos(&sp);
+                    if (TileSwitch(
+                            sp.m_x >> TILE_SHIFT_PX,
+                            sp.m_y >> TILE_SHIFT_PX,
+                            0,
+                            m_arrivalFlags,
+                            1,
+                            0
+                        )
+                        == 0) {
+                        goto L_f318a;
+                    }
+                    SetEntrancePos(1, 1);
+                    m_arrivalCell.m_x = occ->m_tileOwnerHi;
+                    m_arrivalCell.m_y = occ->m_tileOwnerLo;
+                    m_defenderState = AISTATE_CHASE;
+                    CWwdGameObjectA* h = m_object;
+                    CGruntzMgr* reg = g_gameReg;
+                    const RECT* rect = &reg->m_world->m_level->m_mainPlane->m_viewRect;
+                    if (CGameLevel::PointInBounds(rect, h->m_screenX, h->m_screenY) == 0) {
+                        goto L_f318a;
+                    }
+                    reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+            L_f318a:
+                m_dwell = 0;
+                return 1;
             }
-        L_f318a:
-            m_dwell = 0;
-            return 1;
         L_f308a:
             if (m_resetApplied != 0) {
                 return 1;
@@ -258,20 +247,9 @@ i32 CGrunt::StepArrivalDefense() {
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {
                 return 1;
             }
-            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 >= m_arrivalRerollWindow64) {
-                ResetEntranceAnimation(1, 1, 0);
-                m_arrivalRerollLo = 0;
-                m_arrivalRerollWindowLo = 0;
-                m_arrivalRerollHi = 0;
-                m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
-                m_arrivalRerollWindowHi = 0;
-                m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-                m_arrivalRerollHi = 0;
-                m_dwell = 0;
-                return 1;
-            }
-            {
+            // retail lays the reroll arm LAST: the window-still-open arm is the
+            // fall-through of the negated test.
+            if (static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64) {
                 CWwdGameObjectA* h = m_object;
                 i32 baseX = h->m_extent.left;
                 i32 spanX = abs(h->m_extent.right - baseX);
@@ -296,7 +274,18 @@ i32 CGrunt::StepArrivalDefense() {
                         SetEntrancePos(1, 1);
                     }
                 }
+                m_dwell = 0;
+                return 1;
             }
+            ResetEntranceAnimation(1, 1, 0);
+            m_arrivalRerollLo = 0;
+            m_arrivalRerollWindowLo = 0;
+            m_arrivalRerollHi = 0;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollWindowLo = rand() % 0x7530 + 0x7530;
+            m_arrivalRerollWindowHi = 0;
+            m_arrivalRerollLo = static_cast<i32>(g_frameTime);
+            m_arrivalRerollHi = 0;
             m_dwell = 0;
             return 1;
 

@@ -766,8 +766,7 @@ i32 CGrunt::StepCompassMove() {
 commit:
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
     PlaySound(0x3e8, voice);
-    m_commitPx.m_x = m_lastTilePx.m_x;
-    m_commitPx.m_y = m_lastTilePx.m_y;
+    m_commitPx = m_lastTilePx;
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 ox = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -792,6 +791,10 @@ commit:
 }
 
 // @early-stop
+// The direction switch now reproduces retail's six-arm layout (see
+// docs/patterns/jump-table-entry-mid-arm-is-a-fallthrough.md); the residue is that
+// cl homes x/y into the frame before the switch where retail keeps them in ebx/edi
+// and only reloads them on the default arm.
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePx.m_x;
@@ -846,8 +849,7 @@ i32 CGrunt::ClaimSwitchTile() {
 
     m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
-    m_commitPx.m_x = m_lastTilePx.m_x;
-    m_commitPx.m_y = m_lastTilePx.m_y;
+    m_commitPx = m_lastTilePx;
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
@@ -865,11 +867,12 @@ i32 CGrunt::ClaimSwitchTile() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00052ed0, 0x42)
 i32 CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
-    m_arrivalCell.m_x = a;
-    m_arrivalCell.m_y = b;
+    Coord cell;
+    cell.m_x = a;
+    cell.m_y = b;
+    m_arrivalCell = cell;
     m_arrivalActive = 1;
     m_defenderPx.m_x = (c & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_defenderPx.m_y = (d & ~TILE_MASK_PX) + TILE_HALF_PX;

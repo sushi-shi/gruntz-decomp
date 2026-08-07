@@ -38,8 +38,9 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
+// Instruction count is -1 against retail; the residue is block placement - retail
+// lays the CommitNeighbor+drain arm right after the powerup block where cl parks
+// it at the end of the function.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {

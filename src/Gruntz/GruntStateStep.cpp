@@ -66,6 +66,9 @@ static __inline Coord ScreenTile(CUserLogic* u) {
 }
 
 // @early-stop
+// Reloc sequence now matches retail's 81/81 in order; the residue is that cl
+// register-allocates the four ScreenTile destinations where retail homes every
+// field, so the frame is 0x6c against retail's 0x58 and every [esp+N] shifts.
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     GruntAiState state = g->m_defenderState;

@@ -40,9 +40,9 @@
 // @early-stop
 
 // @early-stop
-// Frame is 12 bytes WIDER than retail (sub esp,0x98 vs 0x8c) and cl spills `this` to
-// [esp+0x44] where retail keeps it in ebp for the whole body. See
-// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
+// Reloc sequence is identical to retail's (29/29, in order) and the instruction
+// count is +4; the residue is that cl spills `this` to [esp+0x44] where retail
+// keeps it in ebp, so the frame is wider and every [esp+N] shifts.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
