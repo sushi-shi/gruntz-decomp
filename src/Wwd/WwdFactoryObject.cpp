@@ -302,6 +302,9 @@ void CAniAdvanceCursor::Recompute(i32 resetGate) {
 }
 
 // @early-stop
+// cl cross-jumps the return tails (3 epilogues where retail emits 7) and promotes 0
+// into ebp where retail promotes 1; the ~m_flags & 1 store is 16-bit here and 8-bit
+// in retail.
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {
@@ -463,7 +466,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
 
         CWwdGameObjectA* c = m_boundObject;
         i32 fire = 1;
-        if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
+        if ((c->m_flags & 0x2000000) || (m_element->m_flags & 0x8)) {
             if (c->m_dirty.m_armed == -1) {
                 fire = 0;
             }

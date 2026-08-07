@@ -112,6 +112,9 @@ RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
 // @early-stop
+// Frame is 4 B larger than retail's and one callee-saved register short, so every
+// inlined strcmp takes the 3-register form and cl cross-jumps the SetupSprite tails
+// (docs/patterns/inline-strcmp-form-reads-out-a-spilled-register.md).
 RVA(0x00095b10, 0x1720)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
