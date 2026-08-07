@@ -109,7 +109,7 @@ public:
     i32 m_spyzChance;
     i32 m_brickzChance;
     i32 m_gooberzChance;
-    i32 m_gruntRatio;
+    u32 m_gruntRatio;
 
     // One 16-byte block read three ways. SerializeState walks it as the pair
     // m_routeTimers[0..1] (retail materialises this+0x78 once and reaches the
