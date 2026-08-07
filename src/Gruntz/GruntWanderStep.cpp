@@ -1,6 +1,5 @@
 #include <Enums.h>
 #include <Gruntz/PickupType.h>
-#include <Gruntz/GameRand.h>
 #include <Mfc.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/Brickz.h>
@@ -127,13 +126,14 @@ i32 CGrunt::WanderStep() {
                             m_arrivalCell.m_x = g->m_tileOwnerHi;
                             m_arrivalCell.m_y = g->m_tileOwnerLo;
                             m_defenderState = AISTATE_CHASE;
+                            CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
-                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    &reg->m_world->m_level->m_mainPlane->m_viewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )
                                 != 0) {
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                                reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -275,8 +275,8 @@ i32 CGrunt::WanderStep() {
             }
             CWwdGameObjectA* base = m_object;
             i32 clip = 1;
-            i32 py = GameRand() % 4 + (base->m_screenY >> TILE_SHIFT_PX) - 2;
-            i32 px = GameRand() % 4 + (base->m_screenX >> TILE_SHIFT_PX) - 2;
+            i32 py = rand() % 4 + (base->m_screenY >> TILE_SHIFT_PX) - 2;
+            i32 px = rand() % 4 + (base->m_screenX >> TILE_SHIFT_PX) - 2;
             if (static_cast<u32>(m_arrivalCell.m_x) < 4
                 && static_cast<u32>(m_arrivalCell.m_y) < 0xf) {
                 CGrunt* entry = g_gameReg->m_cmdGrid
@@ -329,7 +329,7 @@ timeout:
             m_arrivalRerollWindowLo = 0;
             m_arrivalRerollHi = 0;
             m_arrivalRerollWindowHi = 0;
-            m_arrivalRerollWindowLo = GameRand() % 30000 + 30000;
+            m_arrivalRerollWindowLo = rand() % 30000 + 30000;
             m_arrivalRerollWindowHi = 0;
             m_arrivalRerollLo = static_cast<i32>(g_frameTime);
             m_arrivalRerollHi = 0;
@@ -342,10 +342,10 @@ timeout:
             i32 dyr = base->m_extent.bottom - static_cast<i32>(ly);
             i32 ay = (dyr ^ (dyr >> 31)) - (dyr >> 31);
             if (ax != 0) {
-                lx += GameRand() % ax;
+                lx += rand() % ax;
             }
             if (ay != 0) {
-                ly += GameRand() % ay;
+                ly += rand() % ay;
             }
             if (lx < g_gameReg->m_tileGrid->m_width && ly < g_gameReg->m_tileGrid->m_height) {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);

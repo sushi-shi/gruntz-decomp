@@ -536,30 +536,10 @@ i32 CGrunt::StepCompassMove() {
     if (s_TileFlags(board, tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
+        // retail's arrow arms tail-merge into the matching arm of the
+        // ARROW_CURRENT direction switch, so that switch is emitted first.
         switch (static_cast<TileCollisionKind>(cmd)) {
-            case TILEKIND_ARROW_UP_A:
-            case TILEKIND_ARROW_UP_B:
-                moveY = y - 0x20;
-                voice = g_gruntMoveDirNorth;
-                break;
-            case TILEKIND_ARROW_RIGHT_A:
-            case TILEKIND_ARROW_RIGHT_B:
-                moveX = x + 0x20;
-                voice = g_gruntMoveDirEast;
-                break;
-            case TILEKIND_ARROW_DOWN_A:
-            case TILEKIND_ARROW_DOWN_B:
-                moveY = y + 0x20;
-                voice = g_gruntMoveDirSouth;
-                break;
-            case TILEKIND_ARROW_LEFT_A:
-            case TILEKIND_ARROW_LEFT_B:
-                moveX = x - 0x20;
-                voice = g_gruntMoveDirWest;
-                break;
             case TILEKIND_ARROW_CURRENT:
-                // cardinals first, then diagonals: that arm order is what lets
-                // cl fold each cardinal arm into the matching ARROW_* arm below
                 switch (m_entranceCell.direction) {
                     case DIR_NORTH:
                         moveY = y - 0x20;
@@ -598,6 +578,26 @@ i32 CGrunt::StepCompassMove() {
                         voice = g_gruntMoveDirNorthWest;
                         break;
                 }
+                break;
+            case TILEKIND_ARROW_UP_A:
+            case TILEKIND_ARROW_UP_B:
+                moveY = y - 0x20;
+                voice = g_gruntMoveDirNorth;
+                break;
+            case TILEKIND_ARROW_RIGHT_A:
+            case TILEKIND_ARROW_RIGHT_B:
+                moveX = x + 0x20;
+                voice = g_gruntMoveDirEast;
+                break;
+            case TILEKIND_ARROW_DOWN_A:
+            case TILEKIND_ARROW_DOWN_B:
+                moveY = y + 0x20;
+                voice = g_gruntMoveDirSouth;
+                break;
+            case TILEKIND_ARROW_LEFT_A:
+            case TILEKIND_ARROW_LEFT_B:
+                moveX = x - 0x20;
+                voice = g_gruntMoveDirWest;
                 break;
         }
         i32 mtx = moveX >> TILE_SHIFT_PX;
@@ -796,10 +796,10 @@ RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
+    // retail's arm layout (jump table at 0x452e24) proves the SW/S and NW/N pairs
+    // fall through: NW's body is `x -= 0x20` followed by N's `y -= 0x20`, and the
+    // table sends DIR_NORTH straight at that second instruction.
     switch (m_entranceCell.direction) {
-        case DIR_NORTH:
-            y -= 0x20;
-            break;
         case DIR_NORTHEAST:
             x += 0x20;
             y -= 0x20;
@@ -811,11 +811,10 @@ i32 CGrunt::ClaimSwitchTile() {
             x += 0x20;
             y += 0x20;
             break;
-        case DIR_SOUTH:
-            y += 0x20;
-            break;
         case DIR_SOUTHWEST:
             x -= 0x20;
+            // fall through
+        case DIR_SOUTH:
             y += 0x20;
             break;
         case DIR_WEST:
@@ -823,6 +822,8 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
         case DIR_NORTHWEST:
             x -= 0x20;
+            // fall through
+        case DIR_NORTH:
             y -= 0x20;
             break;
         default:
