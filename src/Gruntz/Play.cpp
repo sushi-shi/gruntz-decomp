@@ -5678,13 +5678,13 @@ i32 CPlay::SetRandomMoveIconsCurse(i32 active) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
-    i32 right = w->m_modeSize.cx;
+    tagSIZE mode = w->GetModeSize();
+    i32 right = mode.cx;
     StatusBarDock state = m_guts->m_position;
-    i32 bottom = w->m_modeSize.cy;
+    i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
         SetRect(&r, 0xa0, 0, right - 1, bottom - 1);
