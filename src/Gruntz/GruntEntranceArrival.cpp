@@ -1845,7 +1845,6 @@ i32 CGrunt::LoadWandGruntItemConfig() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1872,6 +1871,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_codeD);
+    SetupTubeAnim(m_coordToggle);
     CGruntzMgr* g = g_gameReg;
     CMapMgr* grid = g->m_tileGrid;
     i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -1902,22 +1902,22 @@ i32 CGrunt::StepEntranceRelatchB() {
         return 0;
     }
     CGameObject* found = 0;
-    CGameObject* result = 0;
-    if (MapLookup(g->m_world->m_childGroup->m_map48, cellObj, found)) {
-        result = found;
+    if (MapLookup(g->m_world->m_childGroup->m_map48, cellObj, found) == 0) {
+        found = NULL;
     }
-    if (result != NULL) {
-
-        CInGameIcon* icon = static_cast<CInGameIcon*>(result->m_animWorker->m_logic);
-        icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
+    if (found == NULL) {
+        grid = g_gameReg->m_tileGrid;
+        if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
+            ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
+            i32 flags = ((grid->m_rowInts[ty]))[tx * 7];
+            flags &= ~0x40000;
+            ((grid->m_rowInts[ty]))[tx * 7] = flags;
+        }
         return 0;
     }
-    grid = g_gameReg->m_tileGrid;
-    if (static_cast<u32>(tx) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(ty) < static_cast<u32>(grid->m_height)) {
-        ((grid->m_rowInts[ty]))[tx * 7 + 2] = 0;
-        ((grid->m_rowInts[ty]))[tx * 7] &= ~0x40000;
-    }
+    CInGameIcon* icon = static_cast<CInGameIcon*>(found->m_animWorker->m_logic);
+    icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
     return 0;
 }
 
