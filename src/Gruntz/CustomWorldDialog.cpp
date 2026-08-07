@@ -355,12 +355,12 @@ CString WwdFile::GetMapBaseName(CString path) {
         if (blen2 >= 1) {
             i32 i = blen2 - 1;
             if (i >= 0) {
-                while (g_mapNameBuf[i] != '\\') {
-                    i--;
-                    if (i < 0) {
+                do {
+                    if (g_mapNameBuf[i] == '\\') {
                         break;
                     }
-                }
+                    i--;
+                } while (i >= 0);
             }
             result = &g_mapNameBuf[i + 1];
         }

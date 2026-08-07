@@ -621,10 +621,14 @@ void CMultiStartDlg::Drive() {
 // @early-stop
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableControls() {
-    GetDlgItem(IDCANCEL)->EnableWindow(1);
-    GetDlgItem(IDX(IDC_NETCHAT_SEND))->EnableWindow(1);
-    GetDlgItem(0x42d)->EnableWindow(1);
-    GetDlgItem(0x511)->EnableWindow(1);
+    CWnd* w = GetDlgItem(IDCANCEL);
+    w->EnableWindow(1);
+    w = GetDlgItem(IDX(IDC_NETCHAT_SEND));
+    w->EnableWindow(1);
+    w = GetDlgItem(0x42d);
+    w->EnableWindow(1);
+    w = GetDlgItem(0x511);
+    w->EnableWindow(1);
     CString s1;
     if (g_multiState->m_customLevel == 0) {
         CString s2;

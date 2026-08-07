@@ -6,6 +6,12 @@
 #include <Mfc.h>
 
 struct CKeyedNode {
+    CKeyedNode() {
+        m_key.Empty();
+        m_commandDelay = 0;
+        m_drainReload = 0;
+    }
+
     CString m_key;
     i32 m_commandDelay;
     i32 m_drainReload;

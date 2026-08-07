@@ -24,6 +24,7 @@
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)
 
+DATA(0x00249858)
 char g_lobbyRecvBuf[0x800];
 DATA(0x0024a058)
 NetCmdSendMsg g_netCmdSendMsg;
@@ -38,9 +39,6 @@ char g_idScratch[0x10];
 
 DATA(0x0024b6b0)
 char g_idListBuf[0x40];
-
-DATA(0x00249858)
-i32 g_val_249858;
 
 // @early-stop
 RVA(0x000c0b10, 0x72)

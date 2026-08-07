@@ -895,11 +895,13 @@ void CRandomAmbientSound::InitCycleTiming(
         i32 roll = seed * 214013 + 2531011;
         g_randSeed = roll;
         if (roll & 0x10000) {
+            i32 countdown = playDurationMin;
             m_phase = 1;
-            m_countdownMs = playDurationMin;
+            m_countdownMs = countdown;
         } else {
+            i32 countdown = playDurationMax;
             m_phase = 1;
-            m_countdownMs = playDurationMax;
+            m_countdownMs = countdown;
         }
         return;
     }

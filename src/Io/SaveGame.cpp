@@ -322,10 +322,11 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
 
 RVA(0x000e5620, 0x27)
 void CSaveGame::SetMaxLevel(QuestLevel v) {
-    u32 maxLevel = static_cast<u32>(IDX(m_maxLevel));
     if ((v < QUESTLEVEL_CAMPAIGN_END
-         && (static_cast<u32>(IDX(v)) > maxLevel || maxLevel > IDX(QUESTLEVEL_LAST)))
-        || (maxLevel > IDX(QUESTLEVEL_LAST) && static_cast<u32>(IDX(v)) > maxLevel)) {
+         && (static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_maxLevel))
+             || static_cast<u32>(IDX(m_maxLevel)) > IDX(QUESTLEVEL_LAST)))
+        || (static_cast<u32>(IDX(m_maxLevel)) > IDX(QUESTLEVEL_LAST)
+            && static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_maxLevel)))) {
         m_maxLevel = v;
     }
 }

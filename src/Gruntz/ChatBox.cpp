@@ -296,13 +296,16 @@ i32 CChatBox::PlayFocusSound() {
         void* t_ob = 0;
         roster->m_cues.Lookup(static_cast<const char*>(m_row0Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
-        if (t != NULL && g_sndEnabled != 0) {
+        if (t != NULL) {
+            i32 enabled = g_sndEnabled;
             i32 delta = g_sndCueTag;
-            i32 clock = g_killCueClock;
-            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
-            if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
-                t->m_lastPlayTime = clock;
-                return t->m_sound->ConfigureItem(delta, 0, 0, 0);
+            if (enabled != 0) {
+                i32 clock = g_killCueClock;
+                u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
+                if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
+                    t->m_lastPlayTime = clock;
+                    return t->m_sound->ConfigureItem(delta, 0, 0, 0);
+                }
             }
         }
     }
@@ -320,13 +323,16 @@ i32 CChatBox::PlayActivationSound() {
         void* t_ob = 0;
         roster->m_cues.Lookup(static_cast<const char*>(m_row1Key), t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
-        if (t != NULL && g_sndEnabled != 0) {
+        if (t != NULL) {
+            i32 enabled = g_sndEnabled;
             i32 delta = g_sndCueTag;
-            i32 clock = g_killCueClock;
-            u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
-            if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
-                t->m_lastPlayTime = clock;
-                return t->m_sound->ConfigureItem(delta, 0, 0, 0);
+            if (enabled != 0) {
+                i32 clock = g_killCueClock;
+                u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
+                if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
+                    t->m_lastPlayTime = clock;
+                    return t->m_sound->ConfigureItem(delta, 0, 0, 0);
+                }
             }
         }
     }

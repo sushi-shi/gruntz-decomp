@@ -27,8 +27,6 @@ CKeyedNode::~CKeyedNode() {
 RVA(0x00037a70, 0x9a)
 CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 drainReload) {
     CKeyedNode* node = new CKeyedNode;
-    node->m_commandDelay = 0;
-    node->m_drainReload = 0;
     node->m_key = key;
     node->m_commandDelay = commandDelay;
     node->m_drainReload = drainReload;

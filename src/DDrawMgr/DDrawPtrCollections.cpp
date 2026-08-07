@@ -116,8 +116,8 @@ RVA(0x00148a50, 0x6b)
 i32 CPoolItemA88::Blit7(CDDrawPtrCollections* info, i32 width, i32 height, i32 caps) {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.dwWidth = width;
     desc.ddsCaps.dwCaps = caps | DDSCAPS_OVERLAY;
+    desc.dwWidth = width;
     desc.dwHeight = height;
     desc.ddckCKSrcBlt.dwColorSpaceLowValue = 1;
     desc.ddckCKSrcBlt.dwColorSpaceHighValue = 1;
@@ -232,10 +232,10 @@ i32 CPoolItemAE8::Blit47(
     static_cast<void>(unused6);
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
-    desc.dwWidth = width;
     desc.ddsCaps.dwCaps = capsExtra | caps | DDSCAPS_ZBUFFER;
-    desc.dwZBufferBitDepth = zBufferBitDepth;
+    desc.dwWidth = width;
     desc.dwHeight = height;
+    desc.dwZBufferBitDepth = zBufferBitDepth;
     desc.dwSize = sizeof(desc);
     desc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_ZBUFFERBITDEPTH;
     return CDDSurface::CreateFromDesc(info, &desc) != 0;

@@ -502,6 +502,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
 // @early-stop
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
+    i32 r = 0;
     m_connected = 0;
     m_allPlayersReady = 0;
     if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
@@ -509,7 +510,7 @@ i32 CMulti::Connect(i32 mode) {
         return 0;
     }
     m_pumpGuard = 1;
-    i32 r = PumpA();
+    r = PumpA();
     m_pumpGuard = 0;
     if (r == 0) {
         return 0;
