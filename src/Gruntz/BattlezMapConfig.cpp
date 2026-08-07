@@ -4416,7 +4416,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4430,7 +4430,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4444,7 +4444,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4458,7 +4458,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4472,7 +4472,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4486,7 +4486,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     cnt = g_typeColl.m_grown;
     while (cnt-- != 0) {
         if (slot != NULL) {
-            slot->~CString();
+            slot->CString::CString();
         }
         slot++;
     }
@@ -4651,8 +4651,9 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 unit->m_coordList.RemoveAll();
             }
         }
-        return 1;
-    } else if (band <= m_toyzPct) {
+    }
+
+    if (band <= m_toyzPct) {
 
         i32 rollPct = m_yoyozPct;
         i32 roll;
