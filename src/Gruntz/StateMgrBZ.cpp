@@ -129,22 +129,25 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, InputDeviceSel mode) {
 // @early-stop
 RVA(0x000385e0, 0x9f)
 i32 StateMgrBZ::Flush() {
-    if (m_device) {
-        m_edgeKeys = m_device->m_edgeKeys;
-        m_currentKeys = m_device->m_currentKeys;
-    } else if (m_deviceList) {
+    CInputDevice* dev = m_device;
+    if (dev) {
+        m_edgeKeys = dev->m_edgeKeys;
+        m_currentKeys = dev->m_currentKeys;
+    } else if (m_deviceList != NULL) {
         m_edgeKeys = m_keyboard->m_edgeKeys;
         m_currentKeys = m_keyboard->m_currentKeys;
-        if (m_joystick) {
-            m_edgeKeys |= m_joystick->m_edgeKeys;
-            m_currentKeys |= m_joystick->m_currentKeys;
+        CInputDevice* joy = m_joystick;
+        if (joy) {
+            m_edgeKeys |= joy->m_edgeKeys;
+            m_currentKeys |= joy->m_currentKeys;
         }
-        if (m_mouse) {
-            m_edgeKeys |= m_mouse->m_edgeKeys;
-            m_currentKeys |= m_mouse->m_currentKeys;
+        CInputDevice* mouse = m_mouse;
+        if (mouse) {
+            m_edgeKeys |= mouse->m_edgeKeys;
+            m_currentKeys |= mouse->m_currentKeys;
         }
     }
-    if (m_suppress) {
+    if (m_suppress != 0) {
         m_edgeKeys = 0;
         m_currentKeys = 0;
     }

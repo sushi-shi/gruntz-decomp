@@ -202,15 +202,16 @@ BOOL CCheatMgr::CheckCode(CString code) {
     CheatEntry* found = m_map.Lookup(static_cast<const char*>(code), value)
                             ? static_cast<CheatEntry*>(value)
                             : 0;
-    if (found != NULL) {
-        if (found->commandId > 0) {
-            PostMessageA(m_owner, WM_COMMAND, found->commandId, 0);
-            if ((found->flag & 1) == 0) {
-                m_cheatsUsed = 1;
-            }
-            m_flag = 0;
-            m_pendingCodeLength = 0;
+    if (found == NULL) {
+        return FALSE;
+    }
+    if (found->commandId > 0) {
+        PostMessageA(m_owner, WM_COMMAND, found->commandId, 0);
+        if ((found->flag & 1) == 0) {
+            m_cheatsUsed = 1;
         }
+        m_flag = 0;
+        m_pendingCodeLength = 0;
     }
     return TRUE;
 }

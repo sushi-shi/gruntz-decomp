@@ -204,9 +204,9 @@ i32 CBootyState::LeaveState(GameStateId) {
     void* obj = 0;
     m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
-    if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
-        (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
-        while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
+    if (found && found->m_sound->IsPlaying()) {
+        found->m_sound->CloneAndPlay(0, 0x1f4, 1);
+        while (found->m_sound->IsPlaying()) {
             if (m_world->m_soundRegistry->m_soundStream != NULL) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }
@@ -333,22 +333,20 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
-        if (m_letterIdx >= 0) {
-            const i32* tbl = g_bootyLetterCoords + 1;
-            CWwdGameObjectA** ap = m_trailSprites;
-            for (i32 i = 0; i <= m_letterIdx; i++) {
-                CWwdGameObjectA* e = *ap;
-                e->m_screenX = tbl[-1];
-                e = *ap;
-                e->m_screenY = tbl[0];
-                e = *ap;
-                if (e->m_sortKey != 1) {
-                    e->m_sortKey = 1;
-                    e->m_flags |= 0x20000;
-                }
-                ap++;
-                tbl += 2;
+        const i32* tbl = g_bootyLetterCoords + 1;
+        CWwdGameObjectA** ap = m_trailSprites;
+        for (i32 i = 0; i <= m_letterIdx; i++) {
+            CWwdGameObjectA* e = *ap;
+            e->m_screenX = tbl[-1];
+            e = *ap;
+            e->m_screenY = tbl[0];
+            e = *ap;
+            if (e->m_sortKey != 1) {
+                e->m_sortKey = 1;
+                e->m_flags |= 0x20000;
             }
+            ap++;
+            tbl += 2;
         }
         m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx * 2];
         m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx * 2 + 1];
@@ -365,15 +363,13 @@ i32 CBootyState::StepGlitterAnim() {
         static_cast<i32>((cos(ang) * r + static_cast<float>(g_bootyLetterCoords[idx * 2 + 1])));
     m_angleStep = step + 5;
     m_radius = static_cast<i32>(
-        (kGlitterStartRadius
-         - static_cast<float>((step + 5)) * kGlitterShrinkRate * kGlitterStartRadius)
+        (kGlitterStartRadius - (step + 5) * kGlitterShrinkRate * kGlitterStartRadius)
     );
 
     i32 i = 0;
-    CWwdGameObjectA** arr1ec = m_trailSprites;
     if (idx > 0) {
         const i32* tbl = g_bootyLetterCoords + 1;
-        CWwdGameObjectA** ap = arr1ec;
+        CWwdGameObjectA** ap = m_trailSprites;
         do {
             CWwdGameObjectA* e = *ap;
             i++;
@@ -387,20 +383,20 @@ i32 CBootyState::StepGlitterAnim() {
 
     m_cursorLetter->m_screenX = m_scratchX;
     m_cursorLetter->m_screenY = m_scratchY;
-    arr1ec[i]->m_screenX = m_scratchX;
-    arr1ec[i]->m_screenY = m_scratchY;
+    m_trailSprites[i]->m_screenX = m_scratchX;
+    m_trailSprites[i]->m_screenY = m_scratchY;
 
     MoveLettersByDir();
 
-    if (m_radius != 0) {
-        return 0;
+    if (m_radius == 0) {
+        CWwdGameObjectA* e = m_trailSprites[i];
+        if (e->m_sortKey != 1) {
+            e->m_sortKey = 1;
+            e->m_flags |= 0x20000;
+        }
+        return 1;
     }
-    CWwdGameObjectA* e = arr1ec[i];
-    if (e->m_sortKey != 1) {
-        e->m_sortKey = 1;
-        e->m_flags |= 0x20000;
-    }
-    return 1;
+    return 0;
 }
 
 // @early-stop
@@ -464,17 +460,18 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
-        CWwdGameObjectA** p = m_sprintSprites;
+        CWwdGameObjectA** q = m_sprintSprites;
         i32 n = 8;
         do {
-            CGameObject* e = *p;
-            p++;
+            CGameObject* e = *q;
+            q++;
             e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } while (--n);
         return;
     }
+    i32 i = 0;
     CWwdGameObjectA** p = m_sprintSprites;
-    for (i32 i = 0; i < 8; i++, p++) {
+    for (; i < 8; i++, p++) {
         CGameObject* e = *p;
         i32 x = e->m_screenX;
         i32 y = e->m_screenY;
@@ -1433,9 +1430,9 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
     void* obj = 0;
     m_world->m_soundRegistry->m_cues.Lookup("BOOTY_LOOP", obj);
     LeafCue* found = static_cast<LeafCue*>(obj);
-    if (found && (static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
-        (static_cast<DirectSoundMgr*>(found->m_sound))->CloneAndPlay(0, 0x1f4, 1);
-        while ((static_cast<DirectSoundMgr*>(found->m_sound))->IsPlaying()) {
+    if (found && found->m_sound->IsPlaying()) {
+        found->m_sound->CloneAndPlay(0, 0x1f4, 1);
+        while (found->m_sound->IsPlaying()) {
             if (m_world->m_soundRegistry->m_soundStream != NULL) {
                 m_world->m_soundRegistry->m_soundStream->PurgeVoiceList(-1);
             }

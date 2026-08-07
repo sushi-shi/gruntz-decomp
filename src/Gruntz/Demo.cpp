@@ -117,8 +117,8 @@ i32 CreateDemoMover(CGameObject* owner) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
 
             CGameLevel* gh = st->m_ownerCtx->m_level;
-            i32 curX = gh->m_mainPlane->m_viewRect.left;
-            i32 curY = gh->m_mainPlane->m_viewRect.top;
+            i32 curX = gh->m_mainPlane->m_snappedX;
+            i32 curY = gh->m_mainPlane->m_snappedY;
             if (curX < st->m_scrollTargetX) {
                 curX++;
             } else if (curX > st->m_scrollTargetX) {
@@ -131,27 +131,29 @@ i32 CreateDemoMover(CGameObject* owner) {
             }
 
             CDDrawWorkerHost* mg = gh->m_mainPlane;
-            float fx = static_cast<float>(curX);
-            float fy = static_cast<float>(curY);
             if (!(mg->m_flags & 1)) {
-                fx *= mg->m_scaleX;
-                fy *= mg->m_scaleY;
+                mg->m_scaledX = static_cast<float>(curX * mg->m_scaleX);
+                mg->m_scaledY = static_cast<float>(curY * mg->m_scaleY);
+            } else {
+                mg->m_scaledX = static_cast<float>(curX);
+                mg->m_scaledY = static_cast<float>(curY);
             }
-            mg->m_scaledX = fx;
-            mg->m_scaledY = fy;
             mg->RecomputePlaneCoords();
 
+            i32 snapX = gh->m_mainPlane->m_snappedX;
+            i32 snapY = gh->m_mainPlane->m_snappedY;
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
-                CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
-                float px = static_cast<float>(curX);
-                float py = static_cast<float>(curY);
-                if (!(p->m_flags & 1)) {
-                    px *= p->m_scaleX;
-                    py *= p->m_scaleY;
+                if (i != gh->m_mainIndex) {
+                    CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
+                    if (!(p->m_flags & 1)) {
+                        p->m_scaledX = static_cast<float>(snapX * p->m_scaleX);
+                        p->m_scaledY = static_cast<float>(snapY * p->m_scaleY);
+                    } else {
+                        p->m_scaledX = static_cast<float>(snapX);
+                        p->m_scaledY = static_cast<float>(snapY);
+                    }
+                    p->RecomputePlaneCoords();
                 }
-                p->m_scaledX = px;
-                p->m_scaledY = py;
-                p->RecomputePlaneCoords();
             }
 
             if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {

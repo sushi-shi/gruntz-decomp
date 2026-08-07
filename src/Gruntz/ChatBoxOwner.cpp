@@ -232,18 +232,23 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     host->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }
+// Retail reproduces the whole 8-byte tagSIZE at every `.cy` use (an 8-byte frame slot
+// whose `.cx` half is a dead store), so the size arrives as an rvalue, not as one local.
+static __inline tagSIZE ModeSize() {
+    return g_gameReg->m_modeSize;
+}
+
 RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
         if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-            if ((x < 0x40 && y >= g_gameReg->m_modeSize.cy - 0x40)
-                || (x > 0x40 && y >= g_gameReg->m_modeSize.cy - 0x20)) {
+            if ((x < 0x40 && y >= ModeSize().cy - 0x40)
+                || (x > 0x40 && y >= ModeSize().cy - 0x20)) {
                 return 1;
             }
         } else {
-            if ((x < 0x40 && y >= g_gameReg->m_modeSize.cy - 0x40)
-                || (x > m_originX + 0x40 && x < m_originX + 0x1e0
-                    && y >= g_gameReg->m_modeSize.cy - 0x20)) {
+            if ((x < 0x40 && y >= ModeSize().cy - 0x40)
+                || (x > m_originX + 0x40 && x < m_originX + 0x1e0 && y >= ModeSize().cy - 0x20)) {
                 return 1;
             }
         }

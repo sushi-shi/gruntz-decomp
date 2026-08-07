@@ -453,7 +453,7 @@ i32 CCreditsState::FlashColor() {
             i32 g = rand() % 256;
             i32 b = rand() % 256;
             m_flashTimer = 0x12c;
-            color = (b << 16) | ((r & 0xff) << 8) | (g & 0xff);
+            color = RGB(r, g, b);
             m_flashColor = color;
         } else {
             return m_flashColor;
