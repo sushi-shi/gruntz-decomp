@@ -2235,32 +2235,33 @@ RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;
     CSbiHlRow* pB = &m_machineA;
-    CSbiHlRow* g = m_groupSlots;
-    SbiMachineState rightState = static_cast<SbiMachineState>(pA->m_state);
-    if (rightState == MACHINE_RIGHT_RUNNING) {
-        if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
-            if (++pA->m_counter > 0x34) {
-                SetHudRectB(
-                    0x2b,
-                    MACHINE_RIGHT_RUNNING,
-                    g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
-                );
-            } else {
-                pA->m_interval =
-                    g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d);
-                pA->m_last = static_cast<u32>(g_frameTime);
+    switch (static_cast<SbiMachineState>(pA->m_state)) {
+        case MACHINE_RIGHT_RUNNING:
+            if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
+                if (++pA->m_counter > 0x34) {
+                    SetHudRectB(
+                        0x2b,
+                        MACHINE_RIGHT_RUNNING,
+                        g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
+                    );
+                } else {
+                    pA->m_interval =
+                        g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d);
+                    pA->m_last = static_cast<u32>(g_frameTime);
+                }
             }
-        }
-    } else if (rightState == MACHINE_RIGHT_SPEWING) {
-        if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
-            if (++pA->m_counter > 0x44) {
-                SetHudRectB(0x2b, MACHINE_STOPPED, INT_MAX);
-            } else {
-                pA->m_interval =
-                    g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                pA->m_last = static_cast<u32>(g_frameTime);
+            break;
+        case MACHINE_RIGHT_SPEWING:
+            if (static_cast<i64>(g_frameTime) - pA->m_last >= pA->m_interval) {
+                if (++pA->m_counter > 0x44) {
+                    SetHudRectB(0x2b, MACHINE_STOPPED, INT_MAX);
+                } else {
+                    pA->m_interval =
+                        g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
+                    pA->m_last = static_cast<u32>(g_frameTime);
+                }
             }
-        }
+            break;
     }
 
     switch (static_cast<SbiMachineState>(pB->m_state)) {
@@ -2342,6 +2343,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_LEVER:
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
+                    CSbiHlRow* g = m_groupSlots;
                     i32 col;
                     PickupType which = static_cast<PickupType>(m_extraNotifyArg0);
                     if (which >= PICKUP_BRICKZ_FIRST) {
@@ -2603,7 +2605,6 @@ RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
-    PickupType activeItem = static_cast<PickupType>(m_extraNotifyArg0);
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
@@ -2686,6 +2687,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machinePhase = BELT_TRAVELLING;
                 m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
                 m_beltLast = static_cast<u32>(g_frameTime);
+                PickupType activeItem = static_cast<PickupType>(m_extraNotifyArg0);
                 if (activeItem >= PICKUP_BRICKZ_FIRST) {
                     m_itemBaseX = 0x6d;
                 } else if (activeItem >= PICKUP_TOYZ_FIRST) {
@@ -2728,10 +2730,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_beltLast = static_cast<u32>(g_frameTime);
             }
             i32 col;
-            if (activeItem >= PICKUP_BRICKZ_FIRST) {
+            PickupType item2 = static_cast<PickupType>(m_extraNotifyArg0);
+            if (item2 >= PICKUP_BRICKZ_FIRST) {
                 col = 2;
             } else {
-                col = (activeItem >= PICKUP_TOYZ_FIRST) ? 1 : 0;
+                col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
             i32 row = 3;
             while (m_hlGrid[col * 4 + row].m_state == IDX(HLROW_IDLE_CYCLE)) {

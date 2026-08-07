@@ -25,7 +25,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         return 1;
     }
 
-    const LevelCoordRect& lr = m_world->m_level->m_planeCtx;
+    CDDrawSurfaceMgr* w = m_world;
+    const LevelCoordRect& lr = w->m_level->m_planeCtx;
     RECT src;
     src.left = lr.left;
     src.top = lr.top;
@@ -41,7 +42,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_Image* areYouSure = new CSBI_Image;
         if (!areYouSure->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_FRAME,
                 TAB_DIALOG,
                 SbGeom(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
@@ -57,7 +58,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* yes = new CSBI_MenuItem;
         if (!yes->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_YES,
                 TAB_DIALOG,
                 SbGeom(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
@@ -74,7 +75,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* no = new CSBI_MenuItem;
         if (!no->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_NO,
                 TAB_DIALOG,
                 SbGeom(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
@@ -93,7 +94,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_Image* dialog = new CSBI_Image;
     if (!dialog->SetupImage(
             this,
-            m_world,
+            w,
             SBICMD_DIALOG_FRAME,
             TAB_DIALOG,
             SbGeom(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
@@ -113,7 +114,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_MISSION_STATUS,
                 TAB_DIALOG,
                 SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -129,7 +130,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_REASON,
                 TAB_DIALOG,
                 SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -146,7 +147,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             CSBI_MenuItem* next = new CSBI_MenuItem;
             if (!next->SetupImage(
                     this,
-                    m_world,
+                    w,
                     SBICMD_DIALOG_PRIMARY,
                     TAB_DIALOG,
                     SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -163,7 +164,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             CSBI_MenuItem* quit = new CSBI_MenuItem;
             if (!quit->SetupImage(
                     this,
-                    m_world,
+                    w,
                     SBICMD_DIALOG_SECONDARY,
                     TAB_DIALOG,
                     SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -180,7 +181,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             CSBI_MenuItem* statz = new CSBI_MenuItem;
             if (!statz->SetupImage(
                     this,
-                    m_world,
+                    w,
                     SBICMD_DIALOG_SECONDARY,
                     TAB_DIALOG,
                     SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
@@ -200,7 +201,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_ImageSet* status = new CSBI_ImageSet;
     if (!status->SetupImage(
             this,
-            m_world,
+            w,
             SBICMD_DIALOG_MISSION_STATUS,
             TAB_DIALOG,
             SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
@@ -216,7 +217,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
     if (!rsn->SetupImage(
             this,
-            m_world,
+            w,
             SBICMD_DIALOG_REASON,
             TAB_DIALOG,
             SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
@@ -233,7 +234,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
         if (!replay->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_PRIMARY,
                 TAB_DIALOG,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -250,7 +251,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* quit = new CSBI_MenuItem;
         if (!quit->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -278,7 +279,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* observe = new CSBI_MenuItem;
         if (!observe->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_PRIMARY,
                 TAB_DIALOG,
                 SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
@@ -296,7 +297,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
                 SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
@@ -314,7 +315,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
-                m_world,
+                w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
                 SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
