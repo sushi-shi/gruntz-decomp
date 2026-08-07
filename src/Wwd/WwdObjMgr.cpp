@@ -1266,15 +1266,21 @@ i32 CDDrawChildGroup::Deserialize(CFileMemBase* ar, u32 count, LogicTypeId flag)
         if (key == NULL) {
             return 0;
         }
-        CWwdGameObject* obj = 0;
-        if (!MapLookup(m_map48, key, obj)) {
-            obj = NULL;
+        CWwdGameObject* found = NULL;
+        CWwdGameObject* obj = NULL;
+        if (MapLookup(m_map48, key, found)) {
+            obj = found;
         }
         if (obj == NULL) {
             return 0;
         }
         if (obj->m_animWorker == NULL) {
             return 0;
+        }
+        // Release-dead TRACE (`1 ? (void)0 : ::AfxTrace`). Only "one CString
+        // temporary lived here" is byte-proven; the arm itself is gone.
+        if ((flag & 1) != 0) {
+            TRACE("%s\n", static_cast<LPCTSTR>(CString(obj->m_name)));
         }
         if (obj->Play(ar, SERIAL_LOAD, flag, obj) == 0) {
             return 0;
