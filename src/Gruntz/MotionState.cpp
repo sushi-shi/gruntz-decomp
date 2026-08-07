@@ -2,6 +2,7 @@
 
 #include <Gruntz/MotionState.h>
 
+#include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/Projectile.h>
 

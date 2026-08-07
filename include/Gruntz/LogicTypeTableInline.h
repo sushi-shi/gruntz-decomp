@@ -13,16 +13,31 @@ extern "C" {
     i32 LogicBumpFactory(CGameObject* obj);
 }
 
+// Byte-for-byte the same body as the out-of-line copy in UserLogic.cpp
+// (0x8a40) - one function, one shape.  The `Find()` spelling this used to carry
+// is a DIFFERENT shape: retail expands the CMapStringToOb::Lookup into a local
+// at every one of the three tests.
 inline void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
-
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicHit")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
+    {
+        CObject* found = 0;
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicHit", found);
+        if (!found) {
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
+        }
     }
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicAttack")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
+    {
+        CObject* found = 0;
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicAttack", found);
+        if (!found) {
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
+        }
     }
-    if (!obj->OwnerMgr()->m_workerCache->Find("LogicBump")) {
-        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
+    {
+        CObject* found = 0;
+        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicBump", found);
+        if (!found) {
+            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
+        }
     }
 }
 
