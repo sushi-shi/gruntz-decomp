@@ -552,13 +552,16 @@ i32 CTeleporter::Begin() {
 }
 
 // @early-stop
+// sole residue: cl colours `col` (m_grid[row*15+col]) into ecx and accumulates
+// `col + row*15`, retail takes ebx and accumulates `row*15 + col`; every source
+// spelling of the index (inline, swapped decls, pre-multiplied row) compiles to
+// the identical canonicalised tree.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
-    TeleporterKind kind = static_cast<TeleporterKind>(m_object->m_smarts);
     CWwdGameObjectA* a = m_wwdObject;
     if (a->m_animCursor.m_finished != 0 && a->m_animCursor.m_frameTicksLeft == 0) {
-        if (kind == TELEPORTER_SINGLE_USE) {
+        if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
             a->m_flags |= 0x10000;
         } else {
             a->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -601,7 +604,7 @@ i32 CTeleporter::Update() {
         return 0;
     }
 
-    if (kind == TELEPORTER_SECRET) {
+    if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
         g_gameReg->m_scoreHud->m_secretsFound++;
         m_value = m_wwdObject->m_animCursor.m_animation;
