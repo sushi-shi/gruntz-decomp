@@ -5,6 +5,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelTime.h>
+#include <Gruntz/LogicTypeTableInline.h>
 #include <Wwd/AnimWorkerAct.h>
 
 class CUserLogic;
