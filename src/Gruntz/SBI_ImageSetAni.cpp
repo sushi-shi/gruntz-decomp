@@ -122,8 +122,9 @@ i32 CSBI_ImageSetAni::Render() {
                     m_frameIndex = m_frameStart;
                     return 1;
                 }
-                m_frameIndex = m_frameEnd;
                 m_redrawFrames--;
+                m_frameIndex = m_frameEnd;
+                return 1;
             }
         } else if (m_step < 0) {
             if (m_frameIndex < m_frameEnd) {
@@ -131,8 +132,9 @@ i32 CSBI_ImageSetAni::Render() {
                     m_frameIndex = m_frameStart;
                     return 1;
                 }
-                m_frameIndex = m_frameEnd;
                 m_redrawFrames--;
+                m_frameIndex = m_frameEnd;
+                return 1;
             }
         } else {
             m_redrawFrames--;
