@@ -6,6 +6,13 @@ our reconstruction** (`src/`). The editor (GLE / `GruntzEd.exe`) and `GRUNTZ.EXE
 share the WAP32 on-disk formats, so the editor's field docs are ground-truth for the
 structs the game's loader parses.
 
+For the *binary* side of the same structs — offsets, widths, which fields retail
+actually reads, and the evidence tier for each — see
+[`docs/formats/wwd-v1.md`](../formats/wwd-v1.md). This page says what the values
+mean; that one says where they are and whether anything looks at them. Where a
+community source and the binary disagree, the binary wins: the tile-attribute
+band 0..4 is one such case, worked through there.
+
 | Doc | Covers |
 |---|---|
 | [toolz.md](toolz.md) | Toolz IDs 0–22 — weapons/utilities a Grunt equips; `Hit` (damage), projectiles, binary `TOOLZ_*` strings, movement-speed table |
@@ -22,8 +29,19 @@ The disputed `CGameObject` +0x114 block (six `i32`s) is the object record's
 
 > **Score, Points, Smarts, Powerup, Damage, Health**
 
-which is exactly the labeling our `src/Wwd/WwdFile.cpp` record scatter already carries.
-The **on-disk byte order** (fixed by the linear `*p++` read in `WwdFile.cpp:742`) is:
+which is exactly the labeling our record scatter already carries.
+
+**These are the two ends of one scatter, not two claims about one struct.** The
+six values live at **0x34..0x48 of the on-disk object record** and land at
+**`CGameObject` +0x114..+0x128** in memory;
+`CDDrawWorkerHost::ReadPlaneObjects` @0x162af0 (`src/DDrawMgr/LevelPlane.cpp`)
+is the map between them, and the six `mov [ebx+0x114+4n]` stores are visible in
+its target disassembly. The file side is documented in
+[`docs/formats/wwd-v1.md`](../formats/wwd-v1.md); this page is the runtime side.
+So when a WWD spec puts `score…health` at 0x34 and this project says "+0x114",
+both are right about different structures.
+
+The **on-disk order**, fixed by the linear `*p++` read in that scatter, is:
 
 | Offset | Canonical field (GLE) | Our member | Per-logic reinterpretation (the reason it looked "disputed") |
 |---|---|---|---|
