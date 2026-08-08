@@ -164,7 +164,7 @@ i32 CGrunt::UpdateGruntStatus() {
     i32 y = m_object->m_screenY;
     i32 x = m_object->m_screenX;
     const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
-    if (CGameLevel::PointInBounds(&vr, x, y)) {
+    if (CGameLevel::PointInRect(&vr, x, y)) {
         g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
     }
     m_lowStaminaCued = 1;
@@ -220,7 +220,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
         const RECT* rect = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(rect, xx, yy)) {
+        if (CGameLevel::PointInRect(rect, xx, yy)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 1, -1, -1, -1);
         }
     }
@@ -674,7 +674,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         i32 y = h->m_screenY;
         i32 x = h->m_screenX;
         const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(&r, x, y)) {
+        if (CGameLevel::PointInRect(&r, x, y)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
         }
         return 0;
@@ -1099,11 +1099,11 @@ i32 CGrunt::StepArrivalReroll() {
     CGruntzMgr* g = g_gameReg;
     const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
     if (pick > 0x19) {
-        if (CGameLevel::PointInBounds(&r, xp, y)) {
+        if (CGameLevel::PointInRect(&r, xp, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
-        if (CGameLevel::PointInBounds(&r, xp, y)) {
+        if (CGameLevel::PointInRect(&r, xp, y)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 9, -1, -1, -1);
         }
     }
@@ -1171,7 +1171,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             i32 y = h->m_screenY;
             i32 x = h->m_screenX;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
-            if (CGameLevel::PointInBounds(&rect, x, y)) {
+            if (CGameLevel::PointInRect(&rect, x, y)) {
                 g->m_cueSink->LoadGruntSpawnConfig(this, 0xc, -1, -1, -1);
                 StopStruckSlotSound();
                 return 0;
@@ -1188,7 +1188,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         i32 y = h->m_screenY;
         i32 x = h->m_screenX;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(&rect, x, y)) {
+        if (CGameLevel::PointInRect(&rect, x, y)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xd, -1, -1, -1);
         }
     }
@@ -1197,7 +1197,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     CGruntzMgr* g2 = g_gameReg;
     i32 hy = h2->m_screenY;
     i32 hx = h2->m_screenX;
-    if (CGameLevel::PointInBounds(&g2->m_viewBounds, hx, hy)) {
+    if (CGameLevel::PointInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
             EnsureStruckSlot(s_GRUNTZ_GOKARTGRUNT);
             return 0;
@@ -1212,10 +1212,9 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     return 0;
 }
 
-// @early-stop
-// Retail keeps all three CGameLevel::PointInBounds uses below as out-of-line calls;
-// our cl 5 never declines to inline that body, so it expands them - the
-// inline-visibility wall in docs/patterns/inline-visibility-splits-call-and-expansion.md.
+// Retail keeps all three bounds tests below as out-of-line calls (0x641b0 has three
+// `call` sites and no expansion), so they take CGameLevel::PointInBounds rather than
+// the inline PointInRect sibling.
 RVA(0x000641b0, 0x2c1)
 i32 CGrunt::BuildGruntExitAnimation() {
     if (m_deathAnimStarted != 0) {
@@ -1589,7 +1588,7 @@ tail:
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(rect, vx, vy)) {
+        if (CGameLevel::PointInRect(rect, vx, vy)) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 7, -1, -1, -1);
         }
     }
@@ -1749,7 +1748,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(&rect, x, y)) {
+        if (CGameLevel::PointInRect(&rect, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, cueId, -1, 0, -1, -1);
         }
 

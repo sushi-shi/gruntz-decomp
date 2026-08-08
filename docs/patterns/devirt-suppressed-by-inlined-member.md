@@ -45,7 +45,7 @@ COMDAT (it is in the vtable) — pin it with `RVA_COMPGEN`.
 virtual is emitted by the TU that defines it; an inline one is emitted by whatever
 TU emits the class vtable (i.e. the TU with a ctor/dtor). `?Close@CFileMem@@UAEXXZ`
 moved ddrawsubmgr -> ddrawsurfacemgr, so the `RVA_COMPGEN` pin moves with it and
-`config/labels_manifest.tsv` needs the one-line transfer (`GRUNTZ_LABELS_ACK=1`,
+`config/labels_manifest.tsv` needs the one-line transfer (`GRUNTZ_LABELS_ACK=<unit>`,
 committed). If retail's placement for that COMDAT sits inside the OLD unit's span,
 that is a TU-completeness finding (retail's compiland also instantiated the class),
 not a refutation of the inline model.

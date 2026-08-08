@@ -170,7 +170,7 @@ i32 CRollingBall::Update() {
         CWwdGameObjectA* lg = m_object;
         i32 sx = lg->m_screenX;
         i32 sy = lg->m_screenY;
-        if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, sx, sy)) {
+        if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, sx, sy)) {
             g_gameReg->m_cmdGrid->m_rollingballWanted = 1;
         }
         CWwdGameObjectA* lg2 = m_object;
@@ -256,7 +256,7 @@ i32 CRollingBall::Update() {
                             CWwdGameObjectA* o = m_object;
                             i32 px = o->m_screenX;
                             i32 py = o->m_screenY;
-                            if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, px, py)) {
+                            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
                                 CWwdGameObjectA* fx =
                                     g_gameReg->m_world->m_childGroup->CreateSprite(
                                         0,
@@ -372,7 +372,7 @@ i32 CRollingBall::Update() {
                     CWwdGameObjectA* o = m_object;
                     i32 px = o->m_screenX;
                     i32 py = o->m_screenY;
-                    if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, px, py)) {
+                    if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
                         CWwdGameObjectA* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                             0,
                             px,

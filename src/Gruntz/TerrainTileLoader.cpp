@@ -621,7 +621,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             i32 waterX = unit->m_object->m_screenX;
             i32 waterY = unit->m_object->m_screenY;
             // Retail spells the viewport test out here rather than calling PtInRect.
-            if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, waterX, waterY)) {
+            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
                 CWwdGameObjectA* splash = m_world->m_childGroup->CreateSprite(
                     0,
                     waterX,

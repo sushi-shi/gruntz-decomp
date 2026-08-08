@@ -780,7 +780,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
+            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -791,7 +791,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
+            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -801,7 +801,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
+            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -1832,7 +1832,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
         for (i32 i = 0; i < 15; i++) {
             CSBI_SideTab* p = m_hitRects[i];
             if (p && p->m_enabled) {
-                i32 hit = p->m_enabled && CGameLevel::PointInBounds(&p->m_rect14, x, y);
+                i32 hit = p->m_enabled && CGameLevel::PointInRect(&p->m_rect14, x, y);
                 if (hit) {
                     return i;
                 }

@@ -35,9 +35,20 @@
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
+// Ascending RVA order in this TU's run: 0x15b2b0 -> 0x15b2c0 -> 0x15b300.
+RVA(0x0015b2b0, 0xe)
+WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
+    m_bucket = NULL;
+    m_reserved08 = 0;
+    m_object = NULL;
+}
+
+// Retail's 0x15b2c0 is 61 bytes of straight-line stores ending `ret 0xc`: it seeds
+// m_dirty INLINE ([+0x20]=COORD_UNSET, [+0x38]=-1) and calls nothing, so this body
+// must take the INLINE_SEED sibling rather than the pinned WwdDirtyRect ctor.
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08) {
+    : CLoadable(owner, field04, field08), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;

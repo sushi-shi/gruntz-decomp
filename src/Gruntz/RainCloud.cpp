@@ -28,7 +28,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
 
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
-    if (CGameLevel::PointInBounds(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
+    if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out_ob = 0;

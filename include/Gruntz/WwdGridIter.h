@@ -22,6 +22,14 @@ SIZE_UNKNOWN();
 
 struct WwdGridNode : DSoundLink {
     WwdGridNode();
+
+    // Retail's 0x15b2b0 seeds this base's two fields INLINE, so WwdRegion cannot
+    // reach the base through the called ctor above. Same no-seed tag idiom as
+    // WwdDirtyRect::WwdDirtyRect(ENoSeed).
+    enum ENoSeed {
+        NO_SEED
+    };
+    WwdGridNode(ENoSeed) {}
     i32 m_reserved08;
     BucketHead* m_bucket;
     i32 m_x;
@@ -37,14 +45,10 @@ struct WwdRegion : WwdGridNode {
 };
 SIZE(0x1c);
 
-inline WwdGridNode::WwdGridNode() {
-    m_bucket = NULL;
-    m_reserved08 = 0;
-}
-
-inline WwdRegion::WwdRegion() {
-    m_object = NULL;
-}
+// Both ctors are out-of-line in retail: CDDrawChildGroup's factories CALL them
+// (0x15b2a0 from 0x1592b5/0x1594a5, 0x15b2b0 from 0x159663) while the derived
+// object's own ctor is inlined into the factory. The bodies live in
+// src/Wwd/WwdObjMgr.cpp and src/Wwd/WwdFactoryObject.cpp.
 
 class CWwdGridIter : public CObject {
 public:

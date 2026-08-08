@@ -444,7 +444,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
 
-            if (CGameLevel::PointInBounds(&r1, x, y)) {
+            if (CGameLevel::PointInRect(&r1, x, y)) {
                 return 1;
             }
             return 0;
@@ -452,7 +452,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (CGameLevel::PointInBounds(&r1, x, y)) {
+    if (CGameLevel::PointInRect(&r1, x, y)) {
 
         if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;
@@ -487,14 +487,14 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
-            if (CGameLevel::PointInBounds(&r1, x, y)) {
+            if (CGameLevel::PointInRect(&r1, x, y)) {
                 return 1;
             }
             return 0;
         }
         return 0;
     }
-    if (CGameLevel::PointInBounds(&r1, x, y)) {
+    if (CGameLevel::PointInRect(&r1, x, y)) {
 
         if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;

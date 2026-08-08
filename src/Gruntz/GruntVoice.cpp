@@ -251,7 +251,7 @@ i32 CVoiceTrigger::Tick() {
         CGameObject* hs = hit->m_object;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
-        if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, hx, hy)) {
+        if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, hx, hy)) {
             if (g_gameReg->m_cueSink
                     ->SpawnVoiceDriver(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
                 m_wwdObject->m_flags |= 0x10000;

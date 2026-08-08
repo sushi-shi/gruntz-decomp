@@ -184,7 +184,7 @@ i32 CGrunt::SeekTarget() {
                     i32 by = this->m_object->m_screenY;
                     i32 bx = this->m_object->m_screenX;
                     CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                    if (CGameLevel::PointInBounds(board, bx, by)) {
+                    if (CGameLevel::PointInRect(board, bx, by)) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }

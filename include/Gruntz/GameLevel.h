@@ -100,10 +100,12 @@ public:
 
     CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
-    // The scroll/zoom parameter block's defaults. Retail inlines this at all
-    // five uses and still emits the standalone __thiscall COMDAT at 0x15d170,
-    // which has no caller at all - see the forcer at the end of GameLevel.cpp.
-    void ResetParamBlock() {
+    // The scroll/zoom parameter block's defaults. TWO entities, both in retail:
+    // this inline (expanded at the six sites in GameLevel.cpp) and the dead
+    // out-of-line ResetParamBlock below (0x15d170, zero callers in the image).
+    // cl 5 cannot produce both shapes from one definition - see
+    // docs/patterns/two-shapes-need-two-entities.md.
+    void SetParamBlockDefaults() {
         m_pairA[0] = 500;
         m_pairA[1] = 250;
         m_pairB[0] = 1000;
@@ -118,19 +120,24 @@ public:
         m_rectC.h = 576;
     }
 
-    // Half-open bounds test. Retail expands this inline at 89 sites and calls the
-    // out-of-line copy (0x6b330, now unclaimed) at 30 more. The expansions are
-    // inline-FUNCTION expansions, not open-coded field tests: at 0x42c94 retail
-    // materialises the rect pointer with `add eax,0x40` before comparing against
-    // [eax+8]/[eax]/[eax+c]/[eax+4], which only an argument temporary produces - a
-    // macro or a direct `rc->m_viewRect.right` folds +0x40 into each displacement.
-    // See docs/patterns/inline-visibility-splits-call-and-expansion.md.
-    static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
+    // Out-of-line, and retail's copy is never called: nothing in .text or .data
+    // references 0x15d170. Kept because /INCREMENTAL (the ILT thunk band) implies
+    // /OPT:NOREF, so retail's linker shipped it.
+    void ResetParamBlock();
+
+    // Half-open bounds test. Retail expands this inline and, separately, calls the
+    // out-of-line PointInBounds below (0x6b330, 30 call sites through ILT thunk
+    // 0x1127). LoadGruntDeathAnimations holds 12 calls AND one expansion in one
+    // body, which one inline definition cannot produce: cl 5 never declines this
+    // body (60 sites probed) and emits no COMDAT when it inlines everywhere.
+    static i32 PointInRect(const LevelCoordRect* r, i32 x, i32 y) {
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             return 1;
         }
         return 0;
     }
+
+    static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
 
     TileCollisionKind LookupTile(i32 x, i32 y);
 

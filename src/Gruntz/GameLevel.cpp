@@ -202,7 +202,7 @@ i32 CGameLevel::SetCoordExtents(i32 w, i32 h) {
     m_planeCtx.top = 0;
     m_planeCtx.right = w - 1;
     m_planeCtx.bottom = h - 1;
-    ResetParamBlock();
+    SetParamBlockDefaults();
     return 1;
 }
 
@@ -299,7 +299,7 @@ void CGameLevel::ReleaseChildren() {
 RVA(0x0015cdf0, 0xb8)
 i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    ResetParamBlock();
+    SetParamBlockDefaults();
     if (LoadFromFile(path) == 0) {
         Unload();
         return 0;
@@ -310,7 +310,7 @@ i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
 RVA(0x0015ceb0, 0xb8)
 i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    ResetParamBlock();
+    SetParamBlockDefaults();
     if (LoadFromSource(src) == 0) {
         Unload();
         return 0;
@@ -321,7 +321,7 @@ i32 CGameLevel::LoadSourceWithCoords(CParseSource* src, LevelCoordRect* coords) 
 RVA(0x0015cf70, 0xb8)
 i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    ResetParamBlock();
+    SetParamBlockDefaults();
     if (LoadWwd(hdr) == 0) {
         Unload();
         return 0;
@@ -332,8 +332,15 @@ i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
 RVA(0x0015d0d0, 0x99)
 i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
     m_planeCtx = *coords;
-    ResetParamBlock();
+    SetParamBlockDefaults();
     return 1;
+}
+
+// Dead in retail: no .text or .data reference reaches 0x15d170. The six sites that
+// set the parameter block expand SetParamBlockDefaults instead.
+RVA(0x0015d170, 0x73)
+void CGameLevel::ResetParamBlock() {
+    SetParamBlockDefaults();
 }
 
 RVA(0x0015d820, 0xa3)
@@ -450,6 +457,14 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     }
     CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
     return set->GetCollisionAt(subX, subY);
+}
+
+// The out-of-line half of the bounds test: 30 retail call sites reach it through ILT
+// thunk 0x1127, while the inline PointInRect sibling expands at the rest. Sits here,
+// beside LookupTile, because both are low-band outliers in this TU's RVA run.
+RVA(0x0006b330, 0x2a)
+i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
+    return PointInRect(r, x, y);
 }
 
 // @identity-TODO LookupTile@CGameLevel - thunk oracle: retail gave this an incremental

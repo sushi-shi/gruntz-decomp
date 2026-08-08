@@ -284,7 +284,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         {
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
-            if (CGameLevel::PointInBounds(&g->m_viewBounds, x, y)) {
+            if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
                 onScreen = 1;
             } else {
 
@@ -587,7 +587,7 @@ i32 CGrunt::StartBombGruntRun() {
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(rect, vx, vy)) {
+        if (CGameLevel::PointInRect(rect, vx, vy)) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
     }
@@ -648,7 +648,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         i32 y = m_object->m_screenY;
         i32 x = m_object->m_screenX;
         CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(r, x, y)) {
+        if (CGameLevel::PointInRect(r, x, y)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
     } else {
@@ -1048,7 +1048,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-            if (CGameLevel::PointInBounds(rect, vx, vy)) {
+            if (CGameLevel::PointInRect(rect, vx, vy)) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x35c, -1, 0, -1, -1);
             }
             m_freezeUnfrozen = 1;

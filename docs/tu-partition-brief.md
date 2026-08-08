@@ -585,7 +585,8 @@ the cut's span into a new .cpp with the parent's prelude (includes + file-local
 macros the moved code uses), add `#include <Gruntz/GruntDirStatics.h>` so the
 new TU emits its own copy, add the [[unit]] entry right after the parent (link
 order = band order), canonicalize that copy's nine sidecar pins to the new
-unit, then build with GRUNTZ_LABELS_ACK=1 (the denominator guard).
+unit, then build with GRUNTZ_LABELS_ACK=<unit>[,<unit>] naming BOTH the losing
+and any other shrinking unit (the denominator guard; a blanket `=1` is rejected).
 
 Traps hit: (1) blocks must be re-emitted DATA-first then ascending-RVA - the
 tu-order gate is per-TU and a plain source-order copy trips it; (2) an

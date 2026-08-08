@@ -14,6 +14,8 @@
 class CDDrawSurfaceMgr;
 
 struct WwdDirtyRect {
+    // Out-of-line in retail: CDDrawChildGroup's factories CALL 0x15b270 (from
+    // 0x1592c8/0x1594b8/0x159673). The body lives in src/Wwd/WwdObjMgr.cpp.
     WwdDirtyRect();
 
     ~WwdDirtyRect() {}
@@ -22,6 +24,16 @@ struct WwdDirtyRect {
         NO_SEED
     };
     WwdDirtyRect(ENoSeed) {}
+
+    // The same seed, INLINE: CResolveNode's ctors expand it (0x1549d0 stores
+    // [+0x20]=COORD_UNSET and [+0x38]=-1 straight into the parent).
+    enum EInlineSeed {
+        INLINE_SEED
+    };
+    WwdDirtyRect(EInlineSeed) {
+        m_rect.left = COORD_UNSET;
+        m_armed = -1;
+    }
     i32 m_lastX;
     i32 m_lastY;
     RECT m_rect;
@@ -30,11 +42,6 @@ struct WwdDirtyRect {
     i32 m_armed;
 };
 SIZE(0x24);
-
-inline WwdDirtyRect::WwdDirtyRect() {
-    m_rect.left = COORD_UNSET;
-    m_armed = -1;
-}
 
 class CResolveNode : public CLoadable {
 public:

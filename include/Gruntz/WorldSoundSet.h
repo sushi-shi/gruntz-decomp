@@ -89,9 +89,8 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_volume = kSoundVolumeMax;
 }
 
-inline CWorldSoundSet::~CWorldSoundSet() {
-    Deactivate();
-}
+// Out-of-line in retail: CGruntzMgr::Close CALLS 0x85ed0 (through ILT thunk
+// 0x31f7). The body lives in src/Gruntz/WorldSoundSet.cpp.
 
 extern i32 g_posSoundReq;
 

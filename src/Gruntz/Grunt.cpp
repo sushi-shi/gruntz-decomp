@@ -1625,7 +1625,7 @@ label_4c6e4:
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
         CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-        if (CGameLevel::PointInBounds(rr, hudX, hudY)) {
+        if (CGameLevel::PointInRect(rr, hudX, hudY)) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
         tgtPxY = beyondPxY;
@@ -3628,7 +3628,7 @@ void CGrunt::XferName(char*) {
                 i32 sy = obj->m_screenY;
                 i32 sx = obj->m_screenX;
                 const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_viewRect;
-                if (CGameLevel::PointInBounds(vr, sx, sy)) {
+                if (CGameLevel::PointInRect(vr, sx, sy)) {
                     reg3->m_cueSink->SpawnVoiceDriver(this, 0x348, -1, 0, -1, -1);
                 }
             }
@@ -4062,7 +4062,7 @@ void CGrunt::FinalizeStep(char* name) {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
-            if (!CGameLevel::PointInBounds(&g->m_viewBounds, x, y)) {
+            if (!CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
                 StopStruckVoiceSound();
             }
         }

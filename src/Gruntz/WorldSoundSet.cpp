@@ -889,3 +889,8 @@ void CRandomAmbientSound::InitCycleTiming(
     m_phase = 1;
     m_countdownMs = playDurationMin + GetRandomNumber() % span;
 }
+
+RVA(0x00085ed0, 0x4a)
+CWorldSoundSet::~CWorldSoundSet() {
+    Deactivate();
+}

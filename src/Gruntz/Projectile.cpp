@@ -315,7 +315,7 @@ void CProjectile::AdvanceMotion() {
     if (m_kind == PICKUP_WINGZ) {
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
-        if (CGameLevel::PointInBounds(&reg->m_viewBounds, owner->m_screenX, owner->m_screenY)) {
+        if (CGameLevel::PointInRect(&reg->m_viewBounds, owner->m_screenX, owner->m_screenY)) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != NULL) {
             m_sound->StopAndRewind();
@@ -455,7 +455,7 @@ void CProjectile::AdvanceMotion() {
         }
         if (flags & 0x900) {
 
-            if (CGameLevel::PointInBounds(&reg->m_viewBounds, m_targetX, m_targetY)) {
+            if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetX, m_targetY)) {
                 CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_targetX,
@@ -486,7 +486,7 @@ void CProjectile::AdvanceMotion() {
                         break;
                     default:
 
-                        if (CGameLevel::PointInBounds(&reg->m_viewBounds, m_targetX, m_targetY)) {
+                        if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetX, m_targetY)) {
                             CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,

@@ -32,7 +32,7 @@ destructors, their `??_G` scalar-deleting dtors and the `??_E` vtable thunks
 with it. Verify by building — `build/gen/labels/<unit>.csv` will list every one
 of them under the new unit if the attribution is right, and the labels-manifest
 gate will report the matching per-unit LOST/GAINED (acknowledge with
-`GRUNTZ_LABELS_ACK=1` and commit `config/labels_manifest.tsv`).
+`GRUNTZ_LABELS_ACK=<unit>` and commit `config/labels_manifest.tsv`).
 
 ## Evidence
 

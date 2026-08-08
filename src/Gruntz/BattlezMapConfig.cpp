@@ -4130,7 +4130,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             CGameObject* lvl = unit->m_object;
 
             RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-            if (CGameLevel::PointInBounds(hit, lvl->m_screenX, lvl->m_screenY)) {
+            if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
             }
             m_routeClock.m_v = 0;

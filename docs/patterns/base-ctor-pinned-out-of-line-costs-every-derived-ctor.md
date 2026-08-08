@@ -62,6 +62,13 @@ contradiction of it.
 
 ## Rule
 
+> **AMENDED (2026-08-08).** The either/or below is not forced. A tagged INLINE sibling
+> (`CUserLogic(CGameObject*, ENoSeed)`) lets the sixty-five derived ctors keep the expansion
+> while the three real retail callers take a pinned out-of-line body, so both the family AND
+> the row are matched - see [two-shapes-need-two-entities.md](two-shapes-need-two-entities.md).
+> The tag must sit on the INLINE sibling: on the pinned ctor it would change `ret 4` to `ret 8`.
+> Until that rewrite lands (65 initialiser lists), the rule below is still the right default.
+
 Model the base ctor **inline in its header**, and leave the standalone RVA unmatched until a
 real caller grows big enough to emit it (`llvm-nm build/objdiff/base/*.obj | grep <mangled>`
 tells you if any TU already does). Never introduce an emitter-only TU or an out-of-line
@@ -69,7 +76,7 @@ definition to farm the one row - see
 [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md) for the standing
 doctrine and [no-ifdef-guard-devices] for why a per-TU `#ifdef` switch is not the answer
 either. The `labels_manifest.tsv` denominator drop is the *acknowledged* cost
-(`GRUNTZ_LABELS_ACK=1`), and it is one row against sixty-five.
+(`GRUNTZ_LABELS_ACK=<unit>`), and it is one row against sixty-five.
 
 ## Refinement (2026-08-08): pin the SMALL leaf ctors, keep the expanded one inline
 
@@ -94,6 +101,33 @@ all three `Create*Object` rows ~45 points each - exactly the tax this pattern wa
 
 So run the `sema xref` caller test on **each** ctor in the chain separately: the one whose
 callers are the *family* stays inline; the ones the family's expansion *calls* get pinned.
+
+### The leaf set is SIX, not three - and the sixth pin needs a tagged inline sibling
+
+`0x15b270`-`0x15b340` is one contiguous run of leaf ctors and the `Create*Object` expansion
+calls **all** of them. Three more sit beside the three above: `WwdDirtyRect::WwdDirtyRect`
+(0x15b270), `WwdGridNode::WwdGridNode` (0x15b2a0) and `WwdRegion::WwdRegion` (0x15b2b0).
+Pinning those three as well, on top of the config in the table, banks three more EXACT rows
+and finishes the factories: `CreateSpriteObject` 94.56 -> **100.00 EXACT**, `CreateDotObject`
+94.40 -> 96.89, `CreateDeferredObject` 93.39 -> 96.17 (whole tree 3407 -> 3416, 89.21% ->
+89.27%).
+
+They do not compose for free. `WwdDirtyRect` is a MEMBER of `CResolveNode`, and retail's
+pinned `CResolveNode::CResolveNode` (0x15b2c0) is 61 bytes of straight-line stores ending
+`ret 0xc` that seed it **inline** (`[+0x20]=COORD_UNSET`, `[+0x38]=-1`) and call nothing. So
+once `WwdDirtyRect::WwdDirtyRect` is pinned, both `CResolveNode` ctors must construct
+`m_dirty` through a tagged INLINE sibling:
+
+```cpp
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 a, i32 b)
+    : CLoadable(owner, a, b), m_dirty(WwdDirtyRect::INLINE_SEED) { ... }
+```
+
+Measured A/B with every pin held constant and only the tag removed: `??0CResolveNode@@QAE@XZ`
+and `??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z` both fall out of EXACT (3416 -> 3414),
+and the untagged base obj grows retail's absent `push -1; push 0; mov eax,fs:[0]` EH frame
+from the call it now has to make. The tag is not decoration: it is what lets the two pins
+coexist. See [two-shapes-need-two-entities.md](two-shapes-need-two-entities.md).
 
 related: [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md),
 [frame-size-mismatch-dominates-the-40-65-band.md](frame-size-mismatch-dominates-the-40-65-band.md)

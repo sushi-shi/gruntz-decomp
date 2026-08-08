@@ -1,8 +1,10 @@
 # labels_manifest.tsv - per-unit labelled-FUNCTION counts, the committed
 # floor for the build-integrity denominator gate (labels.py). A unit whose
-# count DROPS fails the build; see check_labels_manifest(). Regenerate a
-# deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 343  functions: 4505
+# count DROPS fails the build; see check_labels_manifest(). The floor is
+# read from HEAD (git), not from this file, so regenerating it cannot lower
+# it. Acknowledge a deliberate drop by NAMING the units:
+#   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
+# units: 343  functions: 4511
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -111,7 +113,7 @@ gameappcomdats	3
 gameassetnamespaces	1
 gameiconflasheffect	1
 gameinfostring	4
-gamelevel	74
+gamelevel	76
 gamelevelmove	14
 gamemode	4
 gameobjectfactory	1
@@ -332,16 +334,16 @@ waypoint	5
 winapicdrom	4
 winapimodule	1
 winmain	1
-worldsoundset	36
+worldsoundset	37
 wormhole	29
 wormholeacts	2
-wwdfactoryobject	56
+wwdfactoryobject	57
 wwdfile	3
 wwdgameobject	45
 wwdgameobjectrender	17
 wwdgeometryapply	1
 wwdgrid	15
-wwdobjmgr	52
+wwdobjmgr	54
 wwdspatialmgr	14
 zdarrayderived	3
 zutil	2

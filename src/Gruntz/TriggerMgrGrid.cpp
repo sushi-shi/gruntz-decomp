@@ -591,10 +591,10 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 if (g != NULL) {
                     i32 cueX = g->m_object->m_screenX;
                     i32 cueY = g->m_object->m_screenY;
-                    if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, cueX, cueY)) {
+                    if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, cueX, cueY)) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x3f2, -1, 0, -1, -1);
                     }
-                } else if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, x, y)) {
+                } else if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x3f2, -1, 1, -1, -1);
                 }
             }
@@ -843,7 +843,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                     RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     i32 gx = g->m_object->m_screenX;
                     i32 gy = g->m_object->m_screenY;
-                    if (CGameLevel::PointInBounds(view, gx, gy)) {
+                    if (CGameLevel::PointInRect(view, gx, gy)) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x335, -1, 0, -1, -1);
                     }
                 }

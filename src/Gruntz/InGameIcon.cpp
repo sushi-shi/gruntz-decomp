@@ -638,7 +638,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         }
         if (m_cue != NULL) {
             CWwdGameObjectA* o = m_object;
-            if (CGameLevel::PointInBounds(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+            if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
                 m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
@@ -673,7 +673,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     }
     if (m_cue != NULL) {
         CWwdGameObjectA* o = m_object;
-        if (CGameLevel::PointInBounds(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+        if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
             m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
@@ -990,7 +990,7 @@ i32 CInGameText::Update() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
-        if (CGameLevel::PointInBounds(&reg->m_viewBounds, x, y)) {
+        if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
             CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 void* res_ob = 0;
@@ -1049,7 +1049,7 @@ RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     void* found = 0;
     if (category != NULL) {
-        found = 0;
+        found = NULL;
         g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
     }
     m_cue = static_cast<LeafCue*>(found);

@@ -442,7 +442,7 @@ i32 CGrunt::LoadPickupSprites(
     if (id != 0) {
         CWwdGameObjectA* hud = m_object;
         CGruntzMgr* g = g_gameReg;
-        if ((CGameLevel::PointInBounds(&g->m_viewBounds, hud->m_screenX, hud->m_screenY))
+        if ((CGameLevel::PointInRect(&g->m_viewBounds, hud->m_screenX, hud->m_screenY))
             || forced != 0) {
             g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
         }

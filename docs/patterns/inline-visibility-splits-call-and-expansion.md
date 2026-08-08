@@ -1,5 +1,7 @@
 # One tiny helper, two shapes: cl 5 NEVER declines it, so retail's `call` sites saw only a declaration
 
+> **SUPERSEDED (2026-08-08) by [two-shapes-need-two-entities.md](two-shapes-need-two-entities.md).** The `add reg,K` tell and the "cl 5 never declines" measurement below both hold. The CONCLUSION does not: there is no single-BODY spelling that yields both shapes, but there is a two-ENTITY one (an inline sibling plus a one-line out-of-line wrapper carrying the RVA pin), and it needs neither a per-TU include split nor an `#ifdef`. `0x6b330` is claimed and at 100.00; the five `@early-stop` callers are recovered.
+
 tags: cpp:inline cpp:call | asm:add asm:cmp | topic:codegen-idiom topic:wall
 symptoms: a leaf helper has both out-of-line `call` sites and open-coded expansions in the retail
 image - sometimes in the SAME function; making it a header inline reproduces every expansion

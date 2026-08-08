@@ -379,7 +379,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
-                if (CGameLevel::PointInBounds(r, x, y)) {
+                if (CGameLevel::PointInRect(r, x, y)) {
                     g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
                 }
             }
@@ -396,7 +396,7 @@ pathA:
     m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
     {
         CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInBounds(
+        if (CGameLevel::PointInRect(
                 &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY

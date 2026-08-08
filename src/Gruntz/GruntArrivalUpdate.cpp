@@ -255,13 +255,13 @@ i32 CGrunt::UpdateArrival() {
             repath:
                 m_defenderState = AISTATE_CHASE;
                 {
-                    // CGameLevel::PointInBounds open-coded: retail calls it out of
-                    // line only from the AISTATE_SEEK arm, and spells the test out
-                    // here (four compares against the main plane's view rect).
+                    // Retail expands the bounds test here (0xf03f8) and CALLS it
+                    // from the AISTATE_SEEK arm above (0xf06a0), so this arm takes
+                    // the inline PointInRect sibling.
                     const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     i32 px = m_object->m_screenX;
                     i32 py = m_object->m_screenY;
-                    if (CGameLevel::PointInBounds(&view, px, py)) {
+                    if (CGameLevel::PointInRect(&view, px, py)) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }
