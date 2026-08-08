@@ -122,35 +122,35 @@ i32 CGrunt::StepGooSuckerBehavior() {
             m_neighborValid = 0;
             m_poweredUp = 0;
             ResetEntranceAnimation(1, 0, 0);
-            return 1;
+        } else {
+            m_neighborValid = 0;
         }
-        m_neighborValid = 0;
         return 1;
     }
 
-    if (g == NULL) {
-        m_blockedVoicePending = 0;
-        goto L_ed006b;
-    }
-    if (m_neighborValid != 0) {
-        return 1;
-    }
-    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
-        if (atTarget) {
-            CommitNeighbor(
-                g->m_tileOwnerHi,
-                g->m_tileOwnerLo,
-                g->m_lastTilePx.m_x,
-                g->m_lastTilePx.m_y
-            );
-            DRAIN_COORDS();
+    if (g != NULL) {
+        if (m_neighborValid != 0) {
             return 1;
+        }
+        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
+            if (atTarget) {
+                CommitNeighbor(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    g->m_lastTilePx.m_x,
+                    g->m_lastTilePx.m_y
+                );
+                DRAIN_COORDS();
+                return 1;
+            }
+        } else {
+            if (atTarget) {
+                DRAIN_COORDS();
+                return 1;
+            }
         }
     } else {
-        if (atTarget) {
-            DRAIN_COORDS();
-            return 1;
-        }
+        m_blockedVoicePending = 0;
     }
 
 L_ed006b:

@@ -2066,7 +2066,7 @@ gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	98.6952	98.6952	16	b19a6251d
 gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	80.0489	80.0489	21	82fc8340ce96	0x692f0	80.0489
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260	100.0000
 gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	94.3456	94.3456	16	83af97f7c2f7	0x690a0	94.3456
-gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	47.8483	47.8483	5	becb5c1716fe	0xf0e20	47.8483
+gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	70.7752	70.7752	6	9851f6669904	0xf0e20	70.7752
 gruntgoosuckerstep	_CellTargetable	89.4688	89.4688	1	b6c3e847bfb8	0xf0db0	89.4688
 grunthealthsprite	??0CGruntHealthSprite@@QAE@PAUCGameObject@@@Z	97.6344	97.6344	8	ce238b34a3a2	0x7eb00	97.6344
 grunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	2	852ebd956365	0x11fb0	100.0000
