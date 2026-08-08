@@ -793,10 +793,10 @@ i32 CProjectile::SerializeMove(
     }
 
     if (CMovingLogic::SerializeMove(s, mode, typeId, pObj) == 0) {
-        return 0;
+        goto fail;
     }
     if (s == NULL) {
-        return 0;
+        goto fail;
     }
 
     switch (mode) {
@@ -828,6 +828,8 @@ i32 CProjectile::SerializeMove(
         }
     }
     return 1;
+fail:
+    return 0;
 }
 
 static inline CActHandler* TBombLookup(i32 coord) {
