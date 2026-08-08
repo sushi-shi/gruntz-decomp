@@ -780,6 +780,9 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
+// frame 0x10 vs retail 0x18: retail spills m_height and derives (m_height - i) as
+// a decrementing IV; every source spelling that hoists m_height into a local scores
+// worse, so cl reaches those two slots from the member read, not from a source local.
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
@@ -793,16 +796,18 @@ void CRezImage::FlipVertical() {
     i32 pairs = m_height / 2;
     i32 x;
     for (i32 i = 0; i < pairs; i++) {
+        u8* top = m_pixels + i * wid;
         for (x = 0; x < wid; x++) {
-            scratch[x] = m_pixels[i * wid + x];
+            scratch[x] = top[x];
         }
 
         i32 botOff = (m_height - i - 1) * wid;
         for (x = 0; x < wid; x++) {
             m_pixels[i * wid + x] = m_pixels[botOff + x];
         }
+        u8* bot = m_pixels + botOff;
         for (x = 0; x < wid; x++) {
-            m_pixels[botOff + x] = scratch[x];
+            bot[x] = scratch[x];
         }
     }
     delete[] scratch;
