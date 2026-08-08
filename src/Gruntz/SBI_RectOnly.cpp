@@ -73,15 +73,6 @@
 DATA(0x00244c54)
 i32 g_curPlayer = 0;
 
-RVA(0x000c86d0, 0x11)
-CSbiHlRow::CSbiHlRow() {
-
-    m_lastLo = 0;
-    m_intervalLo = 0;
-    m_lastHi = 0;
-    m_intervalHi = 0;
-}
-
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;

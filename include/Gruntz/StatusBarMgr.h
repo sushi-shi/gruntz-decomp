@@ -62,7 +62,19 @@ struct CSbiSlot {
 SIZE(0x18);
 
 struct CSbiHlRow {
-    CSbiHlRow();
+    // Inline: retail's out-of-line copy has NO rel32 caller at all - it exists only
+    // because cl 5.0 hands its ADDRESS to `??_H` (`vector constructor iterator`) for
+    // CStatusBarMgr's m_groupSlots[3] and m_hlGrid[12].  That address-take is what
+    // emits the COMDAT, while every scalar/small-array site expands the body in
+    // place.  See docs/patterns/inline-ctor-comdat-via-vector-ctor-iterator.md.
+    RVA(0x000c86d0, 0x11)
+    CSbiHlRow() {
+        m_lastLo = 0;
+        m_intervalLo = 0;
+        m_lastHi = 0;
+        m_intervalHi = 0;
+    }
+
     i32 m_state;
 
     union {

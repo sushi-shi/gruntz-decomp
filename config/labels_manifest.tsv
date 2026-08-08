@@ -242,7 +242,7 @@ netsessionnode	3
 packetpool	1
 palettebmp	2
 pathhazard	15
-play	92
+play	93
 playassetload	18
 playercommandstep	1
 playplanescan	1
@@ -266,7 +266,7 @@ sbi_image	5
 sbi_imageset	6
 sbi_imagesetani	5
 sbi_menuitem	11
-sbi_rectonly	98
+sbi_rectonly	97
 sbi_rectonlybase	3
 sbi_sidetab	8
 sbi_sidetab_build	1
