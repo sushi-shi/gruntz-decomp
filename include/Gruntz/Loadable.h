@@ -55,12 +55,21 @@ public:
         m_ownerCtx = NULL;
     }
 
-    // The ONLY constructor overload retail carries: five target objs name
-    // ??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z and no other ??0CLoadable.
-    // Header-inline: retail's tiny derived ctors (CAniAdvanceCursor 0x15b730)
-    // carry the three stores expanded with no `call`, while the four big
-    // callers `sema xref` lists keep a real call to the pinned COMDAT.
-    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
+    // Two entities for the two shapes retail shows (docs/patterns/
+    // two-shapes-need-two-entities.md).  `sema xref 0x156cb0` lists exactly four
+    // retail `call` sites - CDDrawSurfaceMgr::Init, CDDrawSubMgrPages::
+    // CreateChildren, CDDrawChildGroup::CreateContainerObject and
+    // CDDrawWorkerHost::ReadPlaneObjects - while every other derived ctor
+    // expands the three stores.  The pinned body (0x156cb0, DDrawSubMgr.cpp)
+    // serves the callers; the tagged sibling serves the expansions.  The tag
+    // must stay on the SIBLING: on the pinned body it would turn `ret 0xc`
+    // into `ret 0x10`.
+    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+
+    enum ENoSeed {
+        NO_SEED
+    };
+    CLoadable(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, ENoSeed) {
         m_id = field04;
         m_flags = field08;
         m_ownerCtx = owner;

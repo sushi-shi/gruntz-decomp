@@ -19,7 +19,7 @@ class CSymTab;
 
 class CDDrawWorkerRegistry : public CLoadable {
 public:
-    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {}
+    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {}
 
     virtual ~CDDrawWorkerRegistry() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;

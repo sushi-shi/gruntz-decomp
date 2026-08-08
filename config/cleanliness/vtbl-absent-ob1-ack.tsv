@@ -12,4 +12,3 @@
 # unit) NOT listed here still fails the gate.
 #
 # class	unit	reason
-CWapObj	wwdobjmgr	hierarchy byte-proven correct (RTTI descriptor real; CImage slot 6 and CLoadable slot 6 share ILT thunk 0x1c08 and MSVC5 has no /OPT:ICF, so one body = one common base decl; EH tables agree at 5 states). Retail makes OPPOSITE call/expand choices for ??0CGameObject 0x680 bytes apart in this same .cpp (CreateDotObject calls it, CreateContainerObject inlines it), which no source spelling can express. Five rebuilds all still emit the vtable: compiler-generated default ctor; moving member stores into CWapObj(CDDrawSurfaceMgr*,i32,i32); deleting the TU's unused placement operator new; deleting CWwdGameObjectC::_p18d; inline_depth(2). Only inline_depth(3) moves the cut, and that per-TU device is forbidden.

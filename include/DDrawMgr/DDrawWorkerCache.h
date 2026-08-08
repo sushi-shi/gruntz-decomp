@@ -14,7 +14,7 @@ class CDDrawWorker;
 
 class CDDrawWorkerCache : public CLoadable {
 public:
-    CDDrawWorkerCache(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {}
+    CDDrawWorkerCache(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {}
     virtual ~CDDrawWorkerCache() OVERRIDE;
 
     RVA(0x001576d0, 0x16)

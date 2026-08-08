@@ -17,7 +17,8 @@ struct CAniRecordBase2 : public CLoadable {
 
     CAniRecordBase2() {}
 
-    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner) : CLoadable(owner, field04, 0) {
+    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner)
+        : CLoadable(owner, field04, 0, CLoadable::NO_SEED) {
         m_buf = NULL;
     }
 

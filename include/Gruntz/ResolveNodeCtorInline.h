@@ -11,7 +11,7 @@
 // carry the CGameObject body itself expanded - so the two shapes are a property of
 // the TU, not of the call.
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08), m_dirty(WwdDirtyRect::INLINE_SEED) {
+    : CLoadable(owner, field04, field08, CLoadable::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;

@@ -48,6 +48,43 @@ line, potentially emitting a vtable absent from retail. That is evidence of a wi
 declaration or caller-shape mismatch, not permission to choose the pruned constructor
 with a macro.
 
+## RESOLVED for `??_7CWapObj` (2026-08-08): it was a missing entity, not a budget wall
+
+The `??_7CWapObj` vtbl-absent row was read as this wall for two units in a row
+(`wwdobjmgr`, then `levelplane`, after the wwdobjmgr emission moved). It was neither.
+`CDDrawWorkerHost::ReadPlaneObjects` (0x162af0) inlined `CLoadable::CLoadable` and then
+declined `CWapObj::CWapObj`, materialising `??0CWapObj@@QAE@XZ` and its vtable, where
+retail **calls** `??0CLoadable` (0x156cb0) and never reaches `CWapObj` at all.
+
+`gruntz sema xref 0x00156cb0` lists exactly four retail `call` sites. Reading the
+call/expand choice off each construction's vtable stamp turns that into a per-CLASS
+split, and the split IS expressible - it is the tagged-sibling recipe of
+[two-shapes-need-two-entities.md](two-shapes-need-two-entities.md). Inside
+`CDDrawSurfaceMgr::Init` alone retail calls `??0CLoadable` for four children and
+expands it for four others, and the eight are eight distinct classes:
+
+| child (by its `??_7` stamp) | retail |
+|---|---|
+| `CDDrawSubMgrPages` 0x1efe08, `CDDrawChildGroup` 0x1efdc0, `CDDrawWorkerList` 0x1efd88, `CDDrawWorkerMapSmall` 0x1efcc8 | **call** |
+| `CDDrawWorkerRegistry` 0x1efd28, `CDDrawWorkerCache` 0x1efd00, `CDDrawSubMgrLeafScan` 0x1efca0, `CDDrawSubMgrLeaf` 0x1efc78 | expand |
+
+Pinning `CLoadable(CDDrawSurfaceMgr*,i32,i32)` out of line in DDrawSubMgr.cpp and
+tagging the expansion sites `CLoadable(owner, a, b, CLoadable::NO_SEED)` measured
++6 exact / 91.155 -> 91.178 whole-tree, no denominator change, and **no base obj emits
+`??0CWapObj@@QAE@XZ` any more** - `class_vtables` is clean. `CDDrawSurfaceMgr::Init`
+91.34 -> 100.00 EXACT, `CreateContainerObject` 85.39 -> 100.00 EXACT, `ReadPlaneObjects`
+83.05 -> 86.15, `CAniPlayer::RenderCel` 75.64 -> 98.12, `CSBI_ImageSet::Render`
+87.05 -> 98.58, `CSpriteRef::Build` 85.46 -> 96.70, three more rows to 100.00.
+
+So the five disproofs recorded on the old ack row were all aimed at the wrong object:
+they perturbed `CWapObj`, which is downstream of the real defect. **Before recording a
+budget wall, run the xref on the callee one level UP the chain and check whether retail
+splits it by class.** A residual per-site conflict survives - `CWwdGameObject::CreateObject`
+(0x166640) expands the same `CWwdGameObjectA::m_animCursor` chain that
+`CreateContainerObject`/`ReadPlaneObjects` call, and `CDDrawSurfaceChildA` expands where
+its `CDrawSubWorker` sibling's other user `CDDrawSurfacePair` calls - those two are the
+genuine budget residue, and they cost 10.50 and ~5 points respectively.
+
 ## Retail itself makes opposite choices at two sites in ONE TU (2026-08-07)
 
 `gruntz sema xref 0x0015b390` settles the visibility question: retail's

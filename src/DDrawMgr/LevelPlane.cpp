@@ -37,7 +37,7 @@ RVA_COMPGEN(0x0015b730, 0x2b, ??0CAniAdvanceCursor@@QAE@PAVCDDrawSurfaceMgr@@HH@
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
-    : CLoadable(mapData, field04, flags) {
+    : CLoadable(mapData, field04, flags, CLoadable::NO_SEED) {
 
     m_tileGrid = NULL;
     m_colOffsets = NULL;

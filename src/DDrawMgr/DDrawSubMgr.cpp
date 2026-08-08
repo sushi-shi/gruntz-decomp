@@ -50,13 +50,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001eff2c)
-float g_sndPanScale = 0.009999999776482582f;
-
 // @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (118 fns) came from the static library. It belongs to another compiland.
-RVA_COMPGEN(0x00156cb0, 0x20, ??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z)
+
+DATA(0x001eff2c)
+float g_sndPanScale = 0.009999999776482582f;
+
+// The pinned half of the CLoadable two-entity split; the tagged inline sibling
+// lives in Gruntz/Loadable.h.
+RVA(0x00156cb0, 0x20)
+CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
+    m_id = field04;
+    m_flags = field08;
+    m_ownerCtx = owner;
+}
 
 RVA(0x00156cd0, 0x16)
 i32 CDDrawWorkerMapSmall::IsLoaded() {
@@ -1212,7 +1220,7 @@ i32 CDDrawSubMgrPages::TransExit() {
 
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
-    : CLoadable(owner, id, flags) {
+    : CLoadable(owner, id, flags, CLoadable::NO_SEED) {
     m_width = 0;
 }
 RVA(0x00158f60, 0x1d)

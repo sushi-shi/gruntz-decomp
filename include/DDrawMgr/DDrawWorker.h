@@ -18,7 +18,7 @@ class CDDrawSurfaceMgr;
 
 class CDDrawWorker : public CLoadable {
 public:
-    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0) {
+    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0, CLoadable::NO_SEED) {
         m_minIndex = 99999;
         m_maxIndex = 0;
     }
