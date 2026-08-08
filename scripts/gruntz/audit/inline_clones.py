@@ -300,6 +300,8 @@ BOILER = (
     ("rep movs", "inline memcpy"),
     ("repne scas", "inline strlen"),
     ("rep stos", "inline memset"),
+    (", -0x1", "inline strcmp/strcmpi return normalisation (sbb r,r; sbb r,-1)"),
+    ("neg r0", "`!= 0` boolean normalisation of a call result"),
 )
 
 
@@ -309,6 +311,12 @@ def score(key: str):
     for probe, why in BOILER:
         if any(probe in ln for ln in lines):
             return 0.0, why
+    # /Oi word-at-a-time strcmp: two 2-byte cursor bumps side by side, then the
+    # sbb/sbb-(-1) sign trick.  Its middle windows carry neither marker, so probe
+    # the stride pair instead of the return.
+    adds = [i for i, ln in enumerate(lines) if ln.endswith(", 0x2") and ln[:3] == "add"]
+    if any(b - a == 1 for a, b in zip(adds, adds[1:])):
+        return 0.0, "inline strcmp"
     mnems = [ln.split(None, 1)[0] for ln in lines]
     compute = sum(1 for m in mnems if m in COMPUTE)
     filler = sum(1 for m in mnems if m in FILLER)
