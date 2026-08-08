@@ -28,12 +28,21 @@ public:
     enum EInlineCursor {
         INLINE_CURSOR
     };
-
     CAniAdvanceCursor() {}
 
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineCursor)
         : CLoadable(owner, field04, field08) {
+        m_boundObject = NULL;
+        m_animation = NULL;
+        m_element = NULL;
+    }
+    // The third shape: body inline AND CLoadable's three stores inline, so the tag
+    // is CLoadable's own.  CWwdGameObject::CreateObject (0x166640) writes
+    // id/flags/owner straight to [esi+0x1a4/0x1a8/0x1ac] with no `call 0x156cb0`,
+    // where the two other users of the same CWwdGameObjectA ctor keep the call.
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, CLoadable::ENoSeed)
+        : CLoadable(owner, field04, field08, CLoadable::NO_SEED) {
         m_boundObject = NULL;
         m_animation = NULL;
         m_element = NULL;

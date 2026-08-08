@@ -200,14 +200,21 @@ inline CGameObject::CGameObject(
 
 class CWwdGameObjectA : public CGameObject {
 public:
-    // Calls the pinned base ctor: CWwdGameObject's chain, LevelPlane's
-    // ReadPlaneObjects and CWwdGameObject::CreateObject all take this one.  These
-    // sites carry CAniAdvanceCursor's ctor EXPANDED (`call ??0CLoadable`, then the
-    // 0x5f0128 vptr and the three NULLs) - 0x15b730 has exactly one retail caller,
-    // CreateSpriteObject, which is the INLINE_BASE overload below.
+    // Calls the pinned base ctor: CWwdGameObject's chain and LevelPlane's
+    // ReadPlaneObjects take this one.  These sites carry CAniAdvanceCursor's ctor
+    // EXPANDED (`call ??0CLoadable`, then the 0x5f0128 vptr and the three NULLs) -
+    // 0x15b730 has exactly one retail caller, CreateSpriteObject, which is the
+    // INLINE_BASE overload below.
     CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
         : CGameObject(owner, id, stateFlags),
           m_animCursor(owner, id, stateFlags, CAniAdvanceCursor::INLINE_CURSOR) {
+        ResetSpriteFields();
+    }
+    // Same, except the cursor's own CLoadable base is expanded too - the one site
+    // that shows it is CWwdGameObject::CreateObject.
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, CLoadable::ENoSeed)
+        : CGameObject(owner, id, stateFlags),
+          m_animCursor(owner, id, stateFlags, CLoadable::NO_SEED) {
         ResetSpriteFields();
     }
     // Expands the base ctor: CDDrawChildGroup::CreateSpriteObject takes this one.
