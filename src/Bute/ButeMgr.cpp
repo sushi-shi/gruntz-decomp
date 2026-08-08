@@ -932,11 +932,11 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
 }
 
 // @early-stop
-// Frame, locals and every arm are retail-shaped (the claim covers the trailing
-// jump table at 0x171128).  The residue is one regalloc ranking: retail pins
-// this->ebp, &m_token->esi, &m_str104->edi, where cl ranks m_str104 above this
-// and lands this->esi, &m_token->edi, &m_str104->ebp - the same instructions
-// with three callee-saved registers permuted.
+// Every arm now falls through on the !m_writeMode side, as retail does, and the
+// register pinning matches (ebp=this, esi=&m_token, edi=&m_str104).  Residue: our
+// frame is 4 bytes larger (sub esp,0x58 vs 0x54) and cl's cross-jumper tail-merges
+// the inlined `new <scalar>` of the INT/DWORD/FLOAT arms - which share one union
+// slot - into a single block, where retail keeps one copy per arm.
 RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
 
@@ -976,10 +976,12 @@ bool ButeMgr::ParseAttributeFile() {
         case BUTETOK_INT:
         case BUTETOK_INT_SIGNED: {
             vi = atoi(m_token);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_INT, vi));
+                }
+            } else {
                 (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_INT, vi));
             }
             break;
         }
@@ -988,11 +990,13 @@ bool ButeMgr::ParseAttributeFile() {
                 return false;
             }
             vd = strtoul(m_token, 0, 10);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, vd));
+                }
+            } else {
                 (*m_pText) << s_strDword;
                 (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, vd));
             }
             break;
         }
@@ -1001,61 +1005,78 @@ bool ButeMgr::ParseAttributeFile() {
                 return false;
             }
             vf = static_cast<float>(atof(m_token));
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
+                }
+            } else {
                 ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
             }
             break;
         }
         case BUTETOK_FLOAT_SUFFIX: {
             vf = static_cast<float>(atof(m_token));
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
+                }
+            } else {
                 (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
                 (*m_pText) << s_strFloatSuffix;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
             }
             break;
         }
         case BUTETOK_DOUBLE: {
             dv = atof(m_token);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, dv));
+                }
+            } else {
                 (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, dv));
             }
             break;
         }
         case BUTETOK_RECT: {
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d)));
+                }
+            } else {
                 ButeIntRect* r = GetRect(m_tagName, m_str104);
                 ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->c);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->d);
                 (*m_pText) << s_strClose;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d)));
             }
             break;
         }
         case BUTETOK_POINT: {
             sscanf(m_token, s_fmtPoint2, &px, &py);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, &ButeIntPoint(px, py)));
+                }
+            } else {
                 ButeIntPoint* r = GetPoint(m_tagName, m_str104);
                 ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 (*m_pText) << s_strClose;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, &ButeIntPoint(px, py)));
             }
             break;
         }
         case BUTETOK_VECTOR: {
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(
+                        m_str104,
+                        new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z))
+                    );
+                }
+            } else {
                 ButeDoubleVector* r = GetVector(m_tagName, m_str104);
                 double dx = r->x;
                 double dy = r->y;
@@ -1064,33 +1085,35 @@ bool ButeMgr::ParseAttributeFile() {
                 ((*m_pText) << s_strComma) << static_cast<double>(dy);
                 ((*m_pText) << s_strComma) << static_cast<double>(dz);
                 (*m_pText) << s_strGt;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z)));
             }
             break;
         }
         case BUTETOK_RANGE: {
             sscanf(m_token, s_fmtRect2, &x, &y);
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y)));
+                }
+            } else {
                 ButeDoubleRange* r = GetRange(m_tagName, m_str104);
                 double dx = r->x;
                 double dy = r->y;
                 ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
                 ((*m_pText) << s_strComma) << static_cast<double>(dy);
                 (*m_pText) << s_strRBrack;
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y)));
             }
             break;
         }
         case BUTETOK_STRING: {
-            if (m_writeMode) {
+            if (!m_writeMode) {
+                if (!bDup) {
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, m_token));
+                }
+            } else {
                 CString tmp(GetString(m_tagName, m_str104));
                 (*m_pText) << static_cast<unsigned char>('"');
                 (*m_pText) << tmp.GetBuffer(0);
                 (*m_pText) << static_cast<unsigned char>('"');
-            } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, m_token));
             }
             break;
         }
