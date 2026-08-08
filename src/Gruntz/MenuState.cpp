@@ -119,8 +119,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     rc.right = 0x27f;
     rc.bottom = 0x1df;
     m_menuTree = new CChatBox;
-
-    if (!tree->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
+    if (!m_menuTree->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 

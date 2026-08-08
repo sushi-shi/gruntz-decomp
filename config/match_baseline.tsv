@@ -326,7 +326,7 @@ statusbartabbuilders	7	5
 statusbarupdaters	2	0
 streamrecordloaders	2	1
 surfacepalette	1	1
-symtab	69	56
+symtab	69	57
 terraintileloader	1	0
 tilelogicpump	71	66
 tilescan	1	0
@@ -2930,7 +2930,7 @@ menustate	?EnterState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	b22d
 menustate	?Init@CChatBox@@QAEXXZ	100.0000	100.0000	3	1d5711aaeec1	0xa0280	100.0000
 menustate	?InputVirtual@CMenuState@@UAEHXZ	100.0000	100.0000	1	300009edcfc5	0xa09a0	100.0000
 menustate	?LeaveState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	d7adf3631010	0xa06d0	100.0000
-menustate	?LoadGameAssetNamespaces@CMenuState@@UAEHPAVCGruntzMgr@@HH@Z	95.1412	95.1412	5	ee731291c1cd	0x9fe50	95.1412
+menustate	?LoadGameAssetNamespaces@CMenuState@@UAEHPAVCGruntzMgr@@HH@Z	95.1412	95.1412	6	f2f84e2b6f08	0x9fe50	95.1412
 menustate	?OnKeyDown@CMenuState@@UAEHHH@Z	100.0000	100.0000	3	86ff7693307c	0xa0b90	100.0000
 menustate	?OnLButtonDblClk@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	df3838bc3ab1	0xa0ce0	100.0000
 menustate	?OnLButtonDown@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	ec243a853494	0xa0ca0	100.0000
@@ -3969,7 +3969,7 @@ symtab	?AddNamedValue@CSymTab@@QAEPAUCParseSource@@PAX0H@Z	88.0520	88.0520	3	337
 symtab	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	3	d962e7203338	0x13c210	100.0000
 symtab	?AddNodeEntry@CSymTab@@QAEPAUCParseSource@@IPBDPAVCSymRec@@PAVCRezItmBase@@@Z	100.0000	100.0000	4	df1c13eabc38	0x13a4b0	100.0000
 symtab	?AddNodeSubEntry@CSymTab@@QAEHPAX0@Z	100.0000	100.0000	6	d9df3910d70e	0x13a530	100.0000
-symtab	?ApplyRange@CSymTab@@QAEHPAVCRezItmBase@@HHH@Z	82.7356	82.7356	4	c3949ffd052b	0x13a640	82.7356
+symtab	?ApplyRange@CSymTab@@QAEHPAVCRezItmBase@@HHH@Z	100.0000	100.0000	5	0c16de859e30	0x13a640	100.0000
 symtab	?ApplyRecursive@CSymTab@@QAEHPAVCRezItmBase@@HHH@Z	91.2192	91.2192	2	7928698521e7	0x13a580	91.2192
 symtab	?AtEnd@CParseSource@@QAEHXZ	100.0000	100.0000	1	e8e1fe7728ff	0x139bc0	100.0000
 symtab	?BeginParse@CParseSource@@QAEPADXZ	100.0000	100.0000	3	ad306faaf628	0x139960	100.0000
@@ -4002,7 +4002,7 @@ symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	f20b8c6532c9	0x13a310	
 symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	cfa7b4fa1078	0x13a2d0	100.0000
 symtab	?PackTag@CSymParser@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	1	59a82eb4ec6f	0x13b910	100.0000
 symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	98.4567	98.4567	10	7d7d12c30d36	0x13ad00	98.4567
-symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	79.7566	79.7566	12	caca320cf69e	0x13b300	79.7566
+symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	99.6710	99.6710	13	f90457e545f2	0x13b300	99.6710
 symtab	?PopParseSlot@CSymParser@@QAEPAUCParseSource@@XZ	98.2174	98.2174	5	d99f58780a63	0x13c0c0	98.2174
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050	100.0000
 symtab	?Read@CParseSource@@QAEHPAXIH@Z	94.6739	94.6739	5	5cb64ff888ff	0x139af0	94.6739
@@ -4165,9 +4165,9 @@ tiletriggercontainer	?MoveList1ToList2@CTileTriggerContainer@@QAEHPAX@Z	100.0000
 tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	13	035a3e6c90f9	0x116fa0	100.0000
 tiletriggercontainer	?RemoveByKeys@CTileTriggerContainer@@QAEHHW4TrigLogicId@@@Z	100.0000	100.0000	1	e80e6c61a58b	0x116320	100.0000
 tiletriggercontainer	?ScanNeighborhood@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HH@Z	100.0000	100.0000	6	b95eea0907dd	0x117ec0	100.0000
-tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	37.2491	37.2491	1	6692414280c5	0x117280	37.2491
-tiletriggercontainer	?SerializeApplyA@@YGHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerSwitchLogic@@@Z	100.0000	100.0000	1	8a4d5b00e6d8	0x117630	100.0000
-tiletriggercontainer	?SerializeApplyB@@YGHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerLogic@@@Z	100.0000	100.0000	1	0199977ca00d	0x117710	100.0000
+tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	96.0256	96.0256	2	a5dc99b0f4a5	0x117280	96.0256
+tiletriggercontainer	?SerializeApplyA@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerSwitchLogic@@@Z	100.0000	100.0000	2	d2c6854ed031	0x117630	100.0000
+tiletriggercontainer	?SerializeApplyB@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerLogic@@@Z	100.0000	100.0000	2	7cd6adf23e33	0x117710	100.0000
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	76.6912	76.6912	9	2fbeacb0e8bf	0x117f60	76.6912
 tiletriggercontainer	?TransferFlag74@CTileTriggerContainer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	a40a859b54e7	0x117e20	100.0000
 timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	2	90e7f9539a5a	0x1192d0	100.0000

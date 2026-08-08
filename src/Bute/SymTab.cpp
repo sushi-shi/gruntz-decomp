@@ -53,9 +53,7 @@ static inline CSlotNode* HeadSlotNode(DSoundList& list) {
 // Retail's CSymParser::ParseRecords frame (0x1674 via __chkstk) lays out six
 // path buffers of exactly 0x308 bytes; the three _splitpath component buffers
 // are _MAX_PATH.
-enum {
-    REZ_SCAN_PATH_MAX = 0x308
-};
+static const i32 REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
 static inline i32 PeekI32(const char* p) {
