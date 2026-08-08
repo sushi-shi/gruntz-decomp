@@ -2,7 +2,12 @@
 
 Every ADDRESS/SYMBOL binding is a macro from `include/rva.h` (`RVA`, `DATA`,
 `VTBL_ABSENT`, `SIZE`, `SIZE_UNKNOWN`,
-`RVA_COMPGEN`) — no label ever lives in a comment. Comments carry exactly one
+`RVA_COMPGEN`, `DATA_COMPGEN`) — no label ever lives in a comment. Two bindings
+have no source site to sit on at all and are TRACKED TABLES instead, never a
+comment and never a new macro: `config/retail/zlib_labels.csv` (vendored C TUs
+keep pristine source) and `config/retail/compiler-generated-data.tsv` (a COFF
+COMMON emitted from a header-inline's local static has no owning TU — see
+`docs/build-system.md` § "Compiler-generated DATA pins"). Comments carry exactly one
 other kind of machine-visible content: **state markers**, a `// @name` leading a
 comment line. The vocabulary is CLOSED and gated (`gruntz.audit.label_style`,
 FATAL in the build tail): a comment line leading with any other `@name` fails the

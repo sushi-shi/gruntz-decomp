@@ -150,9 +150,14 @@ comments. Keep their enforced spelling:
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   Keep observed RVA/name/size evidence in
   `config/retail/compiler-generated-functions.tsv` instead.
-- A `$S*` `DATA_SYMBOL` is narrower: use it only for a real named source
-  static whose exact emitted COFF symbol proves the semantic prefix and whose
-  sole ambiguity is the unstable numeric suffix.
+- `DATA_SYMBOL` is RETIRED and gone from `rva.h`; there is no declaration-only
+  data pin. Every datum is a real C++ definition carrying `DATA(rva)`.
+- The DATA analog of `RVA_COMPGEN` is therefore a manifest, not a macro:
+  `config/retail/compiler-generated-data.tsv` names a datum cl emits as a COFF
+  COMMON from a header-inline's local static (and the `??_B` guard byte beside
+  it, which has no source spelling). It has no owning TU to host a source pin,
+  so it states only the retail address; `gruntz.audit.compgen_data` re-proves
+  the rest against the base objs and ratchets coverage.
 
 The machine-visible comment vocabulary is closed; see
 `docs/comment-markers.md`. The common states are:

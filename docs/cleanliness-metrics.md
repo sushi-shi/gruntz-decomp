@@ -78,6 +78,7 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 | Vtable catalog | `python -m gruntz.cleanliness.class_vtables --assert-unique` | **FATAL** — catalog rows are structurally valid (proven-absent `??_7` carry `VTBL_ABSENT`) |
 | src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
 | stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | **FATAL** |
+| compiler-generated DATA pins | `python -m gruntz.audit.compgen_data` | **FATAL** — spelling + authority + binding + COVERAGE (every COFF COMMON in any base obj is pinned in `config/retail/compiler-generated-data.tsv`) |
 
 ## Match (the binary-matching goal)
 

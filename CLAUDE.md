@@ -72,9 +72,16 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Label macros have ONE canonical spelling** (gated FATAL, `gruntz.audit.label_style`):
   addresses zero-padded to 8 hex digits (`0x00xxxxxx`), size args unpadded lowercase hex
   (`0x0` = unknown), one line per invocation. No label ever lives in a comment
-  (`RVA_COMPGEN` is the compiler-generated pin). There is **no data analog**:
+  (`RVA_COMPGEN` is the compiler-generated pin). There is no data *macro* analog:
   `DATA_SYMBOL` is RETIRED and removed from `rva.h` — every datum is a real C++
-  definition carrying `DATA(rva)`, so reintroducing it is a compile error.
+  definition carrying `DATA(rva)`, so reintroducing it is a compile error. The
+  DATA analog of `RVA_COMPGEN` is a **manifest**,
+  `config/retail/compiler-generated-data.tsv` (gated FATAL,
+  `gruntz.audit.compgen_data`): a datum cl emits as a COFF **COMMON** from a
+  header-inline's local static — plus its `??_B` guard byte, which has no source
+  spelling at all — has no owning TU to host a source pin, so only its retail
+  ADDRESS is stated and every other column is re-proven against the base objs.
+  Details: `docs/build-system.md` § "Compiler-generated DATA pins".
 - **Formatting is automated; don't hand-format.** Rust-like clang-format (root
   `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
   matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.

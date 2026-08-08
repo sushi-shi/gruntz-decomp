@@ -367,6 +367,37 @@ First proven claims: the `".WWD"` disambiguation (0x20cfbc vs the `"*.WWD"` tail
 wormhole at 0x20a7ac), and grunthealthsprite's `0.2`/`0.5` FP pool entries
 (0x1e9a98/0x1e9aa0) - the first FP data to pair at all.
 
+### 3b-iv. `config/retail/compiler-generated-data.tsv` — COMMON pins (wired)
+
+The class §3b-iii cannot express: a datum with **no source site to attach to at all**.
+`DATA_COMPGEN` needs a value expression; a `??_B` dynamic-init guard byte has none (cl
+assigns it a counter). And `DATA()` needs an AST VarDecl in the MAIN file; a function-local
+static inside a **header** inline is not there.
+
+cl emits both as a COFF **COMMON** — a tentative definition — into every TU that
+instantiates the inline, and the linker merges them into one bss slot. That is also why
+the pin is a manifest rather than a source macro: there is **no owning TU** for a source
+position to encode (contrast `RVA_COMPGEN`, whose position IS its TU-ownership proof and
+is ratcheted by `compgen_order`).
+
+Columns `rva`/`size`/`symbol`/`emitter`; only the retail ADDRESS is stated. Per TU,
+`labels.compgen_data_tu` emits a `symbol_names.csv` row only when that unit's base obj has
+the symbol as a COMMON of exactly the pinned size, so every emitting unit re-proves the
+pin (`write_symbol_names` then dedups the copies to one representative row per rva, and
+`candidates()` enrolls it in the data manifest as ordinary `bss`).
+`gruntz.audit.compgen_data` (normal tier, FATAL) adds spelling, the `symbol_names` binding,
+and a **coverage ratchet**: every COMMON in any base obj must be pinned.
+
+Coverage is the point. Nothing else in the pipeline can see this class: objdiff masks
+relocations so an unnamed COMMON costs 0%, and it links cleanly (`gruntz link` resolves
+each as `<common>`), so `link_defects` is silent too. `assert_relocs` was the only reporter
+and it mis-read COMMON as an unresolved external — see its `defined_syms`, now fixed.
+
+First (and currently only) claims: the three `GetRandomNumber` guard/seed pairs —
+0x2c127d/0x2c1288 (the free function in `<Gruntz/GameRand.h>`), 0x2c278c/0x2c2798
+(`CAniRecordView`), 0x2c279c/0x2c27a8 (`CFaderSine`). 26 `assert_relocs` FAKE → 0,
+byte-neutral (3322/4290 exact, 89.08% fuzzy unchanged).
+
 ### 3c. `.bss` is capped by an objdiff INFERENCE artifact — do not budget against it
 
 **`.bss` is 212211 of 279630 `total_data` (~76%), and `ddsurface` alone is 197144 of it

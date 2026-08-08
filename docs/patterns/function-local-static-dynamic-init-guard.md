@@ -78,12 +78,35 @@ objs rather than assuming it. A guard whose `$E` body does NOT reproduce is a re
 that check is what found the `/GX` inlining mismatch in
 [[gx-blocks-ctor-inlining-into-e-helper]].
 
-**Pinning.** `DATA(rva)` goes on the local static itself — cl5 spells it `_?s_x@?<n>??<Fn>@@...@4HA$S<m>`
-where clang reports `?s_x@?1??<Fn>@@...@4HA` (extra leading `_`, a scope ordinal cl counts by blocks
-already left, and the `$S` CodeView suffix); `labels.msvc5_data_symbol` wildcards all three,
-authority-checked. The guard byte itself is `?$S55@?1??<Fn>@@...@4EA` — a compiler-assigned counter,
-unspellable in source — so it stays unnamed. That costs nothing measurable: `CPlay::GetAmbientId`
-0xda200 is 100.00 EXACT with its guard unnamed. Never fabricate a file-scope stand-in to name it.
+**Pinning — and it depends on the ENCLOSING function's linkage.**
+
+*Static (internal-linkage) enclosing function.* `DATA(rva)` goes on the local static itself — cl5
+spells it `_?s_x@?<n>??<Fn>@@...@4HA$S<m>` where clang reports `?s_x@?1??<Fn>@@...@4HA` (extra
+leading `_`, a scope ordinal cl counts by blocks already left, and the `$S` CodeView suffix);
+`labels.msvc5_data_symbol` wildcards all three, authority-checked. The guard is a file-static too
+(`?$S55@?1??<Fn>@@...@4EA`, a compiler-assigned counter unspellable in source) and stays unnamed.
+That costs nothing measurable: `CPlay::GetAmbientId` 0xda200 is 100.00 EXACT with its guard unnamed.
+Never fabricate a file-scope stand-in to name it.
+
+*Header inline (external linkage).* Both objects become **COFF COMMONs** with clean, stable
+manglings and no `_`/`$S` decoration — `?holdrand@?1??GetRandomNumber@@YAHXZ@4JA` and
+`??_B?1??GetRandomNumber@@YAHXZ@51` — emitted into EVERY TU that instantiates the inline and merged
+by the linker into one bss slot. `DATA()` cannot reach either (it binds an AST VarDecl in the MAIN
+file, and these live in a header), and `DATA_COMPGEN` cannot either (it wraps a value expression at
+a use site; the guard byte has no source expression). Pin both in
+**`config/retail/compiler-generated-data.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
+COMMON has no owning TU for a source pin to sit in. GRUNTZ's three `GetRandomNumber` copies:
+
+| emitter | guard | seed |
+| :-- | --: | --: |
+| `<Gruntz/GameRand.h>` free function | 0x2c127d | 0x2c1288 |
+| `CAniRecordView::GetRandomNumber` | 0x2c278c | 0x2c2798 |
+| `CFaderSine::GetRandomNumber` | 0x2c279c | 0x2c27a8 |
+
+Naming them is byte-neutral (objdiff masks relocations) and they were never a link defect — the real
+MSVC 5.0 link resolves all six as `<common>`. What the pins buy is *verifiability*: until they
+existed, `assert_relocs` could not resolve those reloc targets at all, so 26 references sat
+unchecked and were reported as fabricated.
 
 Steerable, and byte-exact: cl reproduces retail's guard expansion instruction-for-instruction
 including the register choice. Evidence: `LoadScrollSpeedOptions` 0xd12b0 98.75 (unchanged across the

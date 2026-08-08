@@ -535,6 +535,9 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
      ordinal names such as `_$E<n>` are forbidden here and belong in
      `config/retail/compiler-generated-functions.tsv`.
 
+   Its DATA analog is a **manifest**, `config/retail/compiler-generated-data.tsv`
+   (`rva`/`size`/`symbol`/`emitter`) — see "Compiler-generated DATA pins" below.
+
    `labels.py` reads `RVA` from **LLVM IR** (`@llvm.global.annotations`
    pairs the mangled symbol DIRECTLY with the annotation — no positional join;
    the old `SYMBOL()` name-override escape hatch is RETIRED — a clang-vs-VC5
@@ -545,6 +548,46 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    map is the static `config/retail/zlib_labels.csv`, emitted directly. See
    `docs/zlib-matching.md`.)
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
+
+### Compiler-generated DATA pins
+
+`config/retail/compiler-generated-data.tsv` is the DATA analog of `RVA_COMPGEN`.
+It names a datum cl.exe emits from a definition that is already in the tree but
+that neither source-side data device can reach:
+
+| device | binds to | why it cannot reach this |
+| :-- | :-- | :-- |
+| `DATA(rva)` | an AST VarDecl in the MAIN file | a function-local static inside a **header** inline lives outside the main file, and `labels.collect_vars` is main-file-only |
+| `DATA_COMPGEN(rva, name, value)` | a value expression at a **use site** | a `??_B` dynamic-init guard byte has **no source spelling at all** — cl assigns it a counter (`??_B?1??Fn@@YAHXZ@51`) |
+
+Schema (gated): four tab-separated columns `rva` (zero-padded to 8 lowercase hex
+digits) · `size` (unpadded lowercase hex) · `symbol` (verbatim, as `RVA_COMPGEN`
+takes it) · `emitter` (the header + function whose definition makes cl emit it),
+rows ascending by rva.
+
+**Why a manifest and not a macro.** `RVA_COMPGEN` is a *source* pin because a
+compiler-generated FUNCTION belongs to one COMDAT in one TU's contribution, and
+its source position encodes that ownership (`compgen_order` ratchets it). These
+data have **no owning TU**: cl emits each as a COFF **COMMON** — a tentative
+definition — into every TU that instantiates the header inline, and the linker
+merges the copies into one bss slot. Any source position would fabricate an owner.
+
+**Why this is not the retired `DATA_SYMBOL`.** `DATA_SYMBOL` was a source
+*declaration* that let a datum exist as a name-only pin **instead of** a real C++
+definition. Here the definition is real (the `emitter` column names it) and the
+only fact stated is the retail ADDRESS, which the compiler cannot know. Everything
+else is re-derived at every build: `labels.compgen_data_tu` emits a row only for a
+TU whose base obj actually has that symbol as a COMMON of exactly that size, and
+`python -m gruntz.audit.compgen_data` (normal tier, FATAL) additionally checks the
+spelling, that the pin reached `symbol_names.csv`, and — the ratchet —
+**coverage**: every COMMON in any base obj must be pinned. An invented row binds
+nothing and fails the gate.
+
+Coverage matters because this class is invisible to every other signal: objdiff
+masks relocations, so an unnamed COMMON costs 0%, and it **links perfectly well**
+(`gruntz link` resolves all of them as `<common>`), so `link_defects` sees nothing
+either. The only thing that reported them was `assert_relocs`, and it mis-read
+COMMON as an unresolved external (fixed; see its `defined_syms`).
 
 ## Generated vs. tracked
 
