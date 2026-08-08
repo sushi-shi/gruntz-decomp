@@ -45,10 +45,13 @@ i32 InitializeLevelArea(i32 arg) {
 }
 
 // @early-stop
+// Residue is the jump-table index register: retail forms it in ecx, which leaves eax
+// free to be pre-zeroed above the range check so the default arm reaches the shared
+// epilogue with no `xor` of its own; cl indexes through eax and pays the xor.
 RVA(0x00099d40, 0x2c0)
 i32 CAreaMgr::InitializeLevel(i32 index) {
     QuestLevel level = static_cast<QuestLevel>(index);
-    if (level < QUESTLEVEL_FIRST || level > QUESTLEVEL_TRAINING_LAST) {
+    if (level <= QUESTLEVEL_NONE || level > QUESTLEVEL_TRAINING_LAST) {
         return 0;
     }
     Reset();
