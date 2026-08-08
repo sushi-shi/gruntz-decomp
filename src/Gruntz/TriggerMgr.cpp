@@ -704,9 +704,11 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
 // @early-stop
 // One block differs (B25, the TARGET_SELECTION_TOY arm): retail cross-jumps its
-// `Activate(...,3,1); return 1;` tail into the block the other two arms share
-// (`jmp` over ~0x117 bytes); cl duplicates those 11 instructions instead. The other
-// 45 blocks are byte-identical, so the source shape of all three arms is right.
+// `Activate(...,3,1)` tail into the block the other two arms share; cl duplicates
+// it. NOT a merge-policy difference - cl hoisted the m_animWorker reload above the
+// pushes in that ONE arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]`), so its tail
+// is not identical to the others and the suffix matcher correctly declines. The
+// other 45 blocks are byte-identical.
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::ResetGroup(
     i32 x,
@@ -1246,11 +1248,11 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) 
 }
 
 // @early-stop
-// OVER-MERGE: cl folds all four `return 0` exits into one shared epilogue; retail
-// gives each guard its own inline `xor eax,eax` + pops + `ret 4` (2 entry guards +
-// the m_overlay->Serialize check). Those duplicated epilogues are exactly the
-// 14-instruction shortfall; everything else matches. See
-// docs/patterns/goto-fail-shares-one-exit-block.md - no lever yet for this direction.
+// Block topology and branch sequence agree exactly (31/31 blocks, 20 branches,
+// 4 rets). Residue is two scheduling hunks around the MapLookupById out-param
+// store. Transcribing retail's store order (`found = 0` ahead of the m_objectId
+// load) was measured WORSE (99.19 -> 98.73), so the sink is a scheduler choice,
+// not statement order.
 RVA(0x0007a760, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -1321,25 +1323,24 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(m_reserved274, 0x10);
     n = static_cast<u32>(m_baseList.GetCount());
     ar->Write(&n, sizeof(n));
+    i32 hasOv;
     pos = m_baseList.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* obj = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
         if (obj == NULL) {
-            return 0;
+            goto fail;
         }
         objId = obj->m_object->m_objectId;
         void* found = 0;
         MapLookupById(lvl->m_childGroup->m_map48, objId, found);
         ar->Write(&objId, sizeof(objId));
     }
-    i32 hasOv = (m_overlay != NULL) ? 1 : 0;
+    hasOv = (m_overlay != NULL) ? 1 : 0;
     ar->Write(&hasOv, sizeof(hasOv));
     if (m_overlay != NULL) {
         if (m_overlay->Serialize(ar) == 0) {
-            return 0;
+            goto fail;
         }
-    } else {
-        return 0;
     }
     ar->Write(&m_armed, sizeof(m_armed));
     ar->Write(&m_groupInitialized, sizeof(m_groupInitialized));
@@ -1353,6 +1354,8 @@ i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     ar->Write(&m_pendingFxKind, sizeof(m_pendingFxKind));
     ar->Write(&m_selSentinel, sizeof(m_selSentinel));
     return 1;
+fail:
+    return 0;
 }
 
 // @early-stop

@@ -12,6 +12,7 @@ size, not jump distance, not statement order.
 | separate `if (c) return 0;` | **no merging.** One inline copy per site, each the fall-through of its own inverted `jcc`. |
 | `goto fail;` … `fail: return 0;` | **partial.** The goto sites share ONE block; every OTHER `return 0` in the function keeps its own copy. |
 | `\|\|`, `&&`, a positive-gate nest, or `if (a) goto L; if (b) goto ok; L:` | **total.** EVERY same-valued `return` in the whole function collapses into ONE block, sunk past the last instruction. |
+| `if (X) { ... return K; } else { return K; }` | **total** - a fourth spelling of the row above, byte-for-byte identical to `\|\|`, and the one that does NOT grep as one. See [if-else-both-arms-return-is-the-or-regime.md](if-else-both-arms-return-is-the-or-regime.md). |
 
 Retail's guarded `Init`/`Build`/`Setup` functions are the *partial* regime, so
 transcribing them as separate `if`s leaves us with 2-4 surplus `ret` blocks, and

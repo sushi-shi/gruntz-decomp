@@ -966,6 +966,11 @@ tail:
 }
 
 // @early-stop
+// The two flag arms and their join (B34/B40/B41) now carry retail's shape: the
+// tail is duplicated into both arms rather than sunk, because each arm's LAST
+// statement differs (see docs/patterns/trailing-statement-blocks-arm-tail-sink.md).
+// Residue is +-1 instruction in B29/B31/B34/B35/B40 - CSE around the coord head
+// read, not control flow.
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
@@ -1010,39 +1015,29 @@ i32 CGrunt::StepEntranceReinit() {
 
     Coord* co = static_cast<Coord*>(m_coordList.GetHead());
     CMapMgr* b = g_gameReg->m_tileGrid;
-    i32 flag;
-    if (static_cast<u32>(co->m_x) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(co->m_y) >= static_cast<u32>(b->m_height)) {
-        flag = 1;
-    } else {
-        flag = ((b->m_rowInts[co->m_y]))[co->m_x * 7];
-    }
+    i32 flag = b->CellFlagsAt(co->m_x, co->m_y);
+    GruntDirectionCell cell;
     if (!(flag & 0x20000000)) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeD);
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
+        cell = m_entranceCell;
     } else {
 
         i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
         i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 flag2;
-        if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-            flag2 = 1;
-        } else {
-            flag2 = ((b->m_rowInts[ty]))[tx * 7];
-        }
+        i32 flag2 = b->CellFlagsAt(tx, ty);
         if (!(flag2 & 0x80)) {
             return 0;
         }
-        m_entranceActive = 1;
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeD);
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
+        cell = m_entranceCell;
+        m_entranceActive = 1;
     }
-    GruntDirectionCell cell = m_entranceCell;
     i32 col = cell.column + cell.row * 2;
     i32 base = cell.row + col;
 

@@ -49,5 +49,26 @@ tails apart and merges the rest into arm 3; we chain-merge one level deeper),
 `err == 0` else - we fold them and both branches target one address, 91.37),
 `CTriggerMgr::ResetGroup` 0x79520 (retail merges all three cursor-spawn arms into
 one tail, we leave the third out, 90.74), `CTriggerMgr::ScanGroup` 0x7a760 (three
-`return 0` epilogues vs our one; every other byte matches, 89.48). Recognize it
-and stop - the code is already correct.
+`return 0` epilogues vs our one; every other byte matches, 89.48).
+
+## NOT always a wall - re-check for the hidden `||` first (2026-08-08)
+
+`ScanGroup` was on that list and was **not** a wall: a single
+`if (X) { ... return 0; } else { return 0; }` at the far end of the body is
+byte-identical to `||`, i.e. the TOTAL merge regime, and it was collapsing five
+guards written as plain separate `if`s. Flattening it plus `goto fail;` on the
+deep sites took it **89.48 -> 99.19** with 31/31 blocks agreeing - and exposed a
+real semantic bug on the way (see
+[if-else-both-arms-return-is-the-or-regime.md](if-else-both-arms-return-is-the-or-regime.md)).
+So before accepting this signature, grep the body for that shape; it does not
+grep as `||`.
+
+`ResetGroup` 0x79520 IS still a wall, but for a different reason than the entry
+above says: its unmerged arm's tail is genuinely **not identical** to the other
+two. cl hoisted the `m_animWorker` reload above the argument pushes in that one
+arm (`mov eax,[esi+0x7c]` / `mov ecx,[eax+0x18]` before `push 0x1; push 0x3`),
+where retail leaves the reload in the shared block. cl's suffix matcher then
+correctly declines. The failed cross-jump is a CONSEQUENCE of a scheduling
+choice, not a merge-policy difference - 45 of its 46 blocks are byte-identical.
+
+Recognize the rest and stop - the code is already correct.
