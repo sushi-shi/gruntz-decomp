@@ -31,9 +31,9 @@ tagged (see `cause()`).  Only the last is what the frame naively suggests:
     by-value `CRect`/`CPoint`/MFC collection, a stack helper whose dtor releases
     something.
 
-Measured 2026-08-08 over the 3 presence + 35 state rows: 22 INLINE_CUT, 9
-EXIT_MERGE, 5 MISSING_OBJECT, 3 EXTRA_OBJECT.  Reading the frame as "a destructible
-object" without the split would have sent a lane after 31 phantoms.
+Measured 2026-08-08 over the 3 presence + 44 state rows: 23 INLINE_CUT, 9
+EXIT_MERGE, 9 MISSING_OBJECT, 6 EXTRA_OBJECT.  Reading the frame as "a destructible
+object" without the split would have sent a lane after 32 phantoms.
 
 ## What is detected
 
@@ -189,6 +189,7 @@ def framed(insns):
 
 ESP_MEM = re.compile(r"^(-?0x[0-9a-f]+)\(%esp\)$")
 REG = re.compile(r"^%[a-z]{2,3}$")
+IMM = re.compile(r"^\$-?0x[0-9a-f]+$")
 
 
 SAVED = ("%ebx", "%ebp", "%esi", "%edi")
@@ -260,52 +261,82 @@ def teardown_slots(insns):
     return out
 
 
+# how many dwords of pushed arguments a state store may sit behind.  The frame's
+# state field is the TOP of the registration record: above it are only the return
+# address and the incoming arguments, never a local - so accepting `slot + 4*k` can
+# collide with a parameter write, not with a local, and only for k >= 3.
+ARG_DEPTH = 8
+
+
 def eh_states(insns):
     """(slot, [(offset, state|None), ...]) - the unwind-state stores of an EH function.
 
     **This is a heuristic lead, not the exact signal the frame's PRESENCE is.**  The
     frameless state lives at `record+8`, so the displacement naming it moves with
     ESP, and neither anchor is sufficient alone: the prologue formula misses a
-    shrink-wrapped save, while an early-exit teardown fires before that save and so
-    names a shallower displacement that ALIASES an ordinary local (`MeasureLabel`'s
-    `[esp+0x28]` is `rc.bottom`).  Exact ESP tracking is not available either - a
-    `__thiscall`/`__stdcall` callee pops its own arguments, so the walk would need
-    every callee's `ret N`, which is not in this object.
+    shrink-wrapped save, while a teardown fires part-way through the epilogue's pops.
+    Exact ESP tracking is not available - a `__thiscall`/`__stdcall` callee pops its
+    own arguments, so the walk would need every callee's `ret N`, which is not in
+    this object.
 
-    So: take the union of both anchors as the candidate set and pick the one that
-    is actually written most.  Frequency over a two-element principled candidate
-    set is safe in a way a frequency scan over every frame slot is not - that
-    version picked a loop counter over the real slot in `BuildStatusBarTabs`.
+    So: take the union of both anchors, pick the one actually written most (frequency
+    over a two-element principled candidate set is safe where a scan over every frame
+    slot is not - that version picked a loop counter over the real slot in
+    `BuildStatusBarTabs`), and then ALSO accept the same field one argument-push
+    region deeper.  cl schedules a state store freely with respect to a call's
+    pushes, and it does so ASYMMETRICALLY: `CGruntCreationPoint`'s state 2 is
+    `movb $0x2,[esp+0x28]` at frame base in retail and `movb %bl,[esp+0x30]` behind
+    a push for us, identical code that read as a missing object.  Only an immediate
+    counts at the deeper displacements, since those addresses are incoming
+    parameters at frame base rather than locals.
+
+    Stores are counted SOURCE-INDEPENDENTLY at the slot itself - any width, any
+    source.  Reading only dword immediates under-counts twice over: `SaveTga` sets
+    state 0 with `mov %esi,<slot>` where retail writes `movl $0x0,<slot>`, and
+    `MeasureLabel` writes states 1 and 2 as `movb`.  `None` is a register store, so
+    the VALUE set is a lower bound while the COUNT is exact.
+
     Validated by hand on `BuildStatusBarTabs` (4), `SaveTga` (4/4),
-    `CFontConfig::MeasureLabel` (3/3) and `CAniCycle::CAniCycle` (5/5).
-
-    Stores are counted SOURCE-INDEPENDENTLY - any width, any source.  Reading only
-    dword immediates under-counts twice over: `SaveTga` sets state 0 with
-    `mov %esi,<slot>` where retail writes `movl $0x0,<slot>`, and `MeasureLabel`
-    writes states 1 and 2 as `movb`.  `None` is a store whose value is in a
-    register, so the VALUE set is a lower bound while the COUNT is exact."""
+    `MeasureLabel` (3/3), `CAniCycle` (5/5), `BuildLevelTitleString` (3/3) and
+    `CGruntCreationPoint` (5/5)."""
     if framed(insns):
-        cands = ["-0x4(%ebp)"]
+        cands = {"-0x4(%ebp)": {"-0x4(%ebp)"}}
     else:
-        cands = ["0x%x(%%esp)" % d
-                 for d in ({prologue_slot(insns)} | teardown_slots(insns))]
-    hits = {}
+        # each candidate is scored INDEPENDENTLY over its own depth window.  A
+        # shared displacement can belong to two candidates (`0x18` is `0xc + 12`
+        # and `0x10 + 8`), and assigning it to just one of them by dict order
+        # picked the wrong slot in `CBattlezDlg::ReadPlayerName`.
+        cands = {"0x%x(%%esp)" % d:
+                 {"0x%x(%%esp)" % (d + 4 * k) for k in range(1, ARG_DEPTH + 1)}
+                 for d in ({prologue_slot(insns)} | teardown_slots(insns))}
+    hits = {c: [] for c in cands}
     for off, mn, op in insns:
         op = uncomment(op)
         if not mn.startswith("mov") or "," not in op:
             continue
         src, dst = op.rsplit(",", 1)[0].strip(), op.rsplit(",", 1)[-1].strip()
-        if dst not in cands:
-            continue
-        if src.startswith("$"):
-            v = int(src[1:], 16)
-            hits.setdefault(dst, []).append((off, -1 if v in (0xFFFFFFFF, 0xFF) else v))
-        elif REG.match(src):
-            hits.setdefault(dst, []).append((off, None))
-    if not hits:
-        return (cands[0] if cands else "-"), []
+        # a SIB destination (`movb $0x5a,(%ecx,%edx,1)`) puts a comma inside the
+        # operand, so the naive split leaves junk in `src`
+        imm = int(src[1:], 16) if IMM.match(src) else None
+        val = None if imm is None else (-1 if imm in (0xFFFFFFFF, 0xFF) else imm)
+        for c, deep in cands.items():
+            if dst == c:
+                if imm is not None:
+                    hits[c].append((off, val))
+                elif REG.match(src):
+                    hits[c].append((off, None))
+            elif dst in deep and (imm is not None or mn == "movb"):
+                # an immediate, or a BYTE-wide register store.  A pushed argument
+                # is always a dword, so `movb %bl,<deeper>` cannot be one - and
+                # that is exactly how our side writes CGruntCreationPoint's
+                # state 2.
+                if imm is not None and not (-1 <= imm <= 0x40 or imm in (0xFFFFFFFF, 0xFF)):
+                    continue
+                hits[c].append((off, val))
+    if not any(hits.values()):
+        return (sorted(cands)[-1] if cands else "-"), []
     slot = max(hits, key=lambda d: (len(hits[d]), d))
-    return slot, hits[slot]
+    return slot, sorted(hits[slot])
 
 
 SYM_HDR = re.compile(r"^([0-9a-f]{8}) <(.+)>:$")
