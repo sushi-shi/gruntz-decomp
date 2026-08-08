@@ -31,19 +31,52 @@ write landed in a different cell entirely). It is NOT the MSVC-5.0 enum-width
 story: cl 5.0 promotes every enumerator to `int` under `~`, measured, so
 `&= ~FLAG` cannot truncate. See docs/patterns/enum-complement-is-sixteen-bit.md.
 
-**Two false positives to know about.** Neither can manufacture a TRUNCATED row, but
-both show up in the full worklist, so read the disassembly before believing a row -
-the tool ranks, it does not adjudicate.
+**The false-positive families.** None can manufacture a TRUNCATED row, but all show
+up in the full worklist, so read the disassembly before believing a row - the tool
+ranks, it does not adjudicate. Two are FILTERED here; the rest you must recognise.
+
+FILTERED (never reach the worklist):
+
+  * An x87 compare ends `fnstsw %ax` + `test $N,%ah`, where N selects WHICH of
+    C3/C2/C0 is being asked for - 0x01 less, 0x40 equal, 0x41 less-or-equal,
+    0x05/0x44/0x45 the unordered-inclusive forms. The SAME source comparison prints
+    a different N depending only on which operand cl left in `st(0)`, so it is a
+    condition code, never a source constant. See
+    docs/patterns/fnstsw-test-ah-is-a-condition-code-not-a-constant.md.
+  * `and $-0x8, %esp` in a prologue is cl's double-alignment frame, not a mask.
+    (It is still a real signal - it means the function has an 8-byte-aligned local
+    retail did not - but it belongs to a frame audit, not this one.)
+
+NOT filtered - adjudicate by hand:
 
   * A constant used twice can be hoisted into a REGISTER, and `and %ebp, %esi`
     carries no immediate at all, so the side that hoisted looks like it is missing
-    the constant. CBootyState::BuildWarpStoneGlitterAnimation reads "base-only
+    the constant. This is BY FAR the largest family (44 of the 81 rows on
+    2026-08-08). CBootyState::BuildWarpStoneGlitterAnimation reads "base-only
     0xfffffffe x2" for exactly that: retail keeps -2 in ebp and spends it on both
-    the `(i != idx) ? 1 : 3` ternary and the flag clear.
+    the `(i != idx) ? 1 : 3` ternary and the flag clear. Its degenerate case is
+    `or $-1, mem` (cl's 3-byte "store -1"): whichever side kept -1 in a register
+    prints one `0xffffffff` per site and the other prints none - a whole cluster of
+    CBattlezMapConfig rows is nothing but that.
   * A high bit can be tested through a DISPLACED byte operand - `testb $0x1,
     0x1(%eax)` is `testl $0x100` shifted one byte up - and the displacement lives in
     the address, not the immediate. CMapMgr::ComputeCellFlags reads "base-only
     0x1 0x10 / target-only 0x100 0x1000" and its source constants are already right.
+  * PARTIAL-REGISTER ZERO-EXTENSION: `xor %ecx,%ecx; movw (%p),%cx` and
+    `movw (%p),%cx; and $0xffff,%ecx` are the same u16 widening, and only the second
+    carries an immediate. Four CDDrawShadeBlit blit rows are this and nothing else.
+  * TAIL-MERGE (cross-jump): two textually identical arms let cl jump one into the
+    other, deleting a whole copy of its constants. CWwdSpatialMgr::Relocate reads
+    "target-only 0x80000" because retail's three `flags & 0x20` delete arms are
+    scheduled differently enough to stay apart while ours merged arm 2 into arm 3
+    (base `testb $0x20,%dl; jne <arm3>`); the source has all four guards.
+
+**The row shape that IS worth chasing** is a two-constant select:
+`setcc / dec / and D / add A` encodes `(!cc) ? A+D : A`, so the *same* selection
+prints as `and $0x6 / add $0x13e` or as `andb $-0x6 / add $0x144` purely by which
+way round the author wrote it. That is a real, closable polarity bug -
+docs/patterns/setcc-dec-and-add-decodes-the-ternary.md, which closed
+CGruntzMapMgr::LoadAttributes and CTriggerMgr::WireTileSwitchLogic.
 
 `--metric` prints the truncated count for the cleanliness board, where it is
 ratcheted at 0.
@@ -80,6 +113,10 @@ M32 = 0xFFFFFFFF
 # The two truncations cl can produce by masking a 32-bit word with a narrower
 # constant: (low, high, the bits a correct 32-bit mask would also carry).
 TRUNCATIONS = ((0x80, 0xFF, 0xFFFFFF00), (0x8000, 0xFFFF, 0xFFFF0000))
+
+# How far after `fnstsw %ax` a `test $N, %ah` still counts as that compare's
+# condition code. cl 5.0 emits them adjacent; 3 leaves room for a scheduled move.
+FPU_STATUS_WINDOW = 3
 
 
 def _table_start(relocs: list[int]) -> int | None:
@@ -135,12 +172,24 @@ def _symbols(obj: Path) -> dict[str, list[tuple[int, str, str]]]:
 
 
 def mask_constants(insns) -> collections.Counter:
-    """The multiset of 32-bit-normalised mask immediates in one function."""
+    """The multiset of 32-bit-normalised mask immediates in one function.
+
+    Two operand shapes are dropped before counting because they are not masks at
+    all: the x87 status-word test after `fnstsw` (the immediate is a condition
+    code) and the `and $-8, %esp` double-alignment prologue.
+    """
     out: collections.Counter = collections.Counter()
-    for _off, mnemonic, operands in insns:
+    fpu_status = -99  # index of the most recent fnstsw
+    for i, (_off, mnemonic, operands) in enumerate(insns):
+        if mnemonic.startswith("fnstsw"):
+            fpu_status = i
         m = MASK.match(mnemonic)
         if not m:
             continue
+        if operands.endswith("%esp"):
+            continue  # `and $-0x8, %esp` - frame alignment, not a mask
+        if i - fpu_status <= FPU_STATUS_WINDOW and re.search(r"%a[hlx]$", operands):
+            continue  # `test $0x41, %ah` after fnstsw - an x87 condition code
         op, width = m.group(1), WIDTH[m.group(2)]
         for token in IMM.findall(operands):
             value = int(token, 0) & ((1 << width) - 1)

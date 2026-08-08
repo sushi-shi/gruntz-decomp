@@ -680,7 +680,7 @@ brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	3	d8a7ada
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	76.3980	76.3980	6	0b8ab0d0527a	0x77790	76.3980
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	73.8252	73.8252	6	e1ad38fab7bb	0x77df0	73.8252
 brickzcellflags	?SetCell@CDDrawWorkerHost@@QAEXHHH@Z	100.0000	100.0000	1	ded21c853ceb	0x77dc0	100.0000
-brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	75.2073	75.2073	11	3c93df93f137	0x810f0	75.2073
+brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	75.4212	75.4212	11	3c93df93f137	0x810f0	75.4212
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	87.4545	87.4545	6	2d7a00e88716	0xbf1d0	87.4545
 buteglobals	??_GCButeTree@@UAEPAXI@Z	100.0000	100.0000	1	cpp:36aab16fc36a	0x16e9c0	100.0000
 buteglobals	??_GCTypeCollRuntime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08a70ee732e7	0x16ea20	100.0000
@@ -4255,7 +4255,7 @@ triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	79.1325	79.1325	26	03f2d7f85ef7	0x
 triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	99.7297	99.7297	24	60539caa5da3	0x7d5c0	99.7297
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	89.3333	89.3333	29	2839e5f469f6	0x7b1b0	89.3333
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	98.7466	98.7466	9	1a948e914359	0x6d300	98.7466
-triggermgrgrid	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	81.7714	81.7714	10	2704b24a2c1a	0x6dae0	81.7714
+triggermgrgrid	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	81.7714	81.7187	10	2704b24a2c1a	0x6dae0	81.7714
 triggermgrgrid	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	76.8812	76.8812	14	34544609acef	0x6e120	76.8812
 triggermgrgrid	?CellDispatch@CTriggerMgr@@QAEHHHW4GruntDeathType@@H@Z	100.0000	100.0000	1	595adc14ee69	0x6bcb0	100.0000
 triggermgrgrid	?CellHitTest@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	80.7093	80.7093	4	285158934c10	0x6bea0	80.7093
@@ -4271,7 +4271,7 @@ triggermgrgrid	?PlaceObject@CTriggerMgr@@QAEHHHHHW4GruntEntranceMode@@HHHHHHHH@Z
 triggermgrgrid	?ResetCell@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	15	7858115ccb97	0x6bfd0	100.0000
 triggermgrgrid	?ScreenToCell@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	100.0000	100.0000	2	a43c47b2a65b	0x6be30	100.0000
 triggermgrgrid	?SetLevel@CTriggerMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	100.0000	100.0000	3	0e344938792f	0x6b640	100.0000
-triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	90.0000	90.0000	11	58d146d3d88f	0x6c130	92.3520
+triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	90.2860	90.2860	12	49cc646d6643	0x6c130	92.3520
 triggermgrhittest	?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@HHPAUtagRECT@@PAH10@Z	79.4248	79.4248	11	0e6ee4505953	0x75c60	79.4248
 triggermgrhittest	?GetOriginXY@CTriggerMgr@@QAEPAUCoord@@PAU2@@Z	100.0000	100.0000	2	30805a33f775	0x759e0	100.0000
 triggermgrhittest	?HitTestCell@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	86.2376	86.2376	3	1a7009745334	0x75af0	86.2376

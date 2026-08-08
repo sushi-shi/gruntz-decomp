@@ -34,7 +34,10 @@ static __inline BrickTileId PickA(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     if (roll <= t3) {
         return BRICKTILE_BLUE_1;
     }
-    return (roll > t4) ? BRICKTILE_BLACK_1 : BRICKTILE_GOLD_1;
+    if (roll <= t4) {
+        return BRICKTILE_GOLD_1;
+    }
+    return BRICKTILE_BLACK_1;
 }
 static __inline BrickTileId PickB(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
     i32 roll = (total == 0) ? (rand() & 1) : (rand() % total + 1);
