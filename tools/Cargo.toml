@@ -13,12 +13,15 @@ gruntz-rez = { path = "gruntz-rez" }
 gruntz-codec = { path = "gruntz-codec" }
 clap = { version = "4", features = ["derive"] }
 
-# The three LIBRARIES are `#![no_std]` with no `alloc` and no third-party
-# dependency. That is not decoration: the APIs are zero-copy (headers borrow the
-# input, decoders fill a caller-supplied `&mut [u8]`, walks are iterators over
-# borrowed slices), so there is nothing for an allocator to do. A codec oracle
-# that pulled in someone else's decoder would also stop being clean-room.
-# std, file IO and clap live in the binaries.
+# The three LIBRARIES are `#![no_std]` and their READERS use no `alloc` and no
+# third-party dependency. That is not decoration: the APIs are zero-copy (headers
+# borrow the input, decoders fill a caller-supplied `&mut [u8]`, walks are
+# iterators over borrowed slices), so there is nothing for an allocator to do. A
+# codec oracle that pulled in someone else's decoder would also stop being
+# clean-room. std, file IO and clap live in the binaries.
+#
+# `gruntz-rez`'s WRITER is the one exception - a REZ directory body's length is
+# unknown until its children are placed - and it is feature-gated on `alloc`.
 
 [profile.release]
 debug = true

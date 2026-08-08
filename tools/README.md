@@ -18,16 +18,25 @@ retail's own machine code, mapped out of the EXE and executed.
 | crate | what it is |
 |---|---|
 | `gruntz-cast` | lossless integer conversions, so nothing else writes `as` |
-| `gruntz-rez`  | Monolith REZ/VRZ v1 and FEC archive readers (`rezls`, `fecls`) |
+| `gruntz-rez`  | Monolith REZ/VRZ v1 reader **and writer**, plus the FEC reader (`rezls`, `rezpack`, `fecls`) |
 | `gruntz-codec`| ANI / FNT / PAL / RID / WWD / XMI / PID / PCX / BMP / RLE16 parsing and codecs |
 | `gruntz-oracle` | the differential runner plus loose-asset renderers (`fntdump`) |
 | `recomp/`     | the MSVC/wine harness that calls into retail |
 
-The three libraries are `#![no_std]` with **no `alloc`** and no third-party
-dependency. That is load-bearing, not decoration: the APIs are zero-copy —
-headers borrow the input, decoders fill a caller-supplied `&mut [u8]`, archive
-traversal is an iterator over borrowed slices — so there is nothing for an
-allocator to do. `std`, file IO, compression and PNG output live in the binaries.
+The three libraries are `#![no_std]` and their READERS have **no `alloc`** and
+no third-party dependency. That is load-bearing, not decoration: the APIs are
+zero-copy — headers borrow the input, decoders fill a caller-supplied
+`&mut [u8]`, archive traversal is an iterator over borrowed slices — so there is
+nothing for an allocator to do. `std`, file IO, compression and PNG output live
+in the binaries.
+
+The one exception is `gruntz-rez`'s **writer**, which cannot be: a REZ directory
+body's length is unknown until its children are placed. It sits behind the
+`alloc` feature (on by default so `cargo build` produces `rezpack`), still
+`no_std`, and it borrows payloads rather than copying them.
+`cargo build -p gruntz-rez --lib --no-default-features` builds the
+allocation-free reader alone; the reader never touches `alloc` in either
+configuration.
 
 ## Running it
 
@@ -51,6 +60,14 @@ REZ=/path/to/GRUNTDEM.REZ
 
 # VRZ is the same REZ v1 container; retail contains 1,517 voice WAVs
 ./target/release/rezls /path/to/GRUNTZ.VRZ census
+
+# write REZ v1. `roundtrip` is the writer's real test: decode -> re-encode ->
+# re-parse -> compare every resource's path, type, id, time, comment, keys and
+# payload bytes, plus every directory and its time
+./target/release/rezpack roundtrip "$REZ"
+./target/release/rezpack check     "$REZ"     # validate + the is_sorted predicate
+./target/release/rezpack unpack    "$REZ" ../build/rez-tree
+./target/release/rezpack pack      ../build/rez-tree ../build/rebuilt.rez
 
 # inspect all four loose bitmap fonts and render 16x16 glyph atlases
 ./target/release/fntdump /path/to/GAME/{LARGE,MEDIUM,SMALL,TINY}.FNT \
@@ -150,9 +167,40 @@ FEC, and VRZ assets.
 | FNT parses exactly and renders an atlas | **4 / 4** retail bitmap fonts |
 | FEC validates and extracts Smacker payloads | **2 / 2** archives, **6 / 6** movies |
 | VRZ walks with exact-size validation | **1 517 / 1 517** retail voice WAVs |
+| REZ `decode -> encode -> decode` | **33 373 / 33 373** resources and **3 278 / 3 278** directories identical across all three archives |
+| the `is_sorted` contiguity predicate | holds for every directory of all three archives |
 | WWD maps render with resolved tile references | **54 / 54** levels, **72 / 72** plane PNGs |
 
-## What the format turned out to be
+## What the container turned out to be
+
+Full write-up: [`docs/formats/rez-v1.md`](../docs/formats/rez-v1.md). The short
+version:
+
+* **The header is exactly 168 bytes at fixed offsets.** `CRezMgr::Open`
+  @0x13ad00 reads 0xa8 bytes at offset 0 and indexes them; a freshly created
+  archive gets `next_write_pos = 0xa8` @0x13af21. Retail validates three banner
+  bytes and no more.
+* **A resource entry ends with `u32 keys[num_keys]`** after the comment
+  (@0x13a856). Empty in every shipped archive, so what a key means is
+  undetermined.
+* **`is_sorted` is not an ordering claim and drives no search.** It asserts that
+  each directory's payloads tile ONE contiguous span — the precondition
+  `CRezDir::Load` @0x13a0f0 needs to preload a directory into one block and
+  serve resources from `blob + (pos - dir_min_pos)`. All three archives satisfy
+  it for every directory; only 290 / 0 / 171 have entries in
+  ascending-position or lexicographic order. The on-disk stride-19 sibling
+  order is retail's own 19-bucket name hash (`CRezMgr` ctor @0x13aa10), and
+  lookup goes through that hash, so order is free. In `GRUNTZ.EXE` the flag is
+  inert: `CRezDir::Load` has no caller and no vtable slot.
+* **`next_write_pos` is exactly `max(pos + size)`** — the end of the payload
+  region, not a pointer into a hole. What follows it is directory bodies plus
+  orphaned earlier copies of them, which is the whole reason a re-encode is
+  smaller than retail.
+* **`root_dir_time` is undetermined.** Not a `time_t` like `time` is; the three
+  archives carry 0x0012fd1c, 0x0040c9d8, 0x0040c9d8 — a stack address and an
+  image-base address, unchanged across builds three days apart.
+
+## What the codecs turned out to be
 
 See the module docs for the per-field disassembly citations; the short version:
 

@@ -123,6 +123,10 @@ FLIRT + leaked names) → exports. Not part of the build loop.
 - **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
   `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
   Score/Points/Powerup/Damage/Smarts/Health.
+- **On-disk formats** (what the shipped files ARE): `docs/formats/` — derived from the
+  archived bytes + retail's own reader disassembly, never from `src/`. `tools/gruntz-rez`
+  reads AND writes the REZ v1 container; `src/Rez/` is the file-driver layer, not the
+  container, so it is not an authority on it.
 - **Cleanliness endgame + cast policy** (`docs/cast-metric-policy.md`): drive EVERY
   metric in `config/cleanliness/cleanliness-{text,semantic}-baseline.tsv` to 0. Mis-model casts (views, `)this`) are ELIMINATED by
   real typing; a genuinely-needed cast uses a **C++ named cast** (`static_cast` for math/numeric,

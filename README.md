@@ -72,6 +72,8 @@ config/                       units.toml (per-TU build manifest), reconstruction
 docs/                         build system, matching notes, gotchas, and the confirmed
                               non-reconstructed-function inventory
   domain/                     game semantics: Toyz/Toolz/Powerupz/enemy-AI/logic classes
+  formats/                    the on-disk asset formats (REZ v1 container …), from the
+                              archived bytes + retail's own reader disassembly
   reference/gooroosgruntz/    mirrored community WWD/level-editor docs (semantics source)
 editor/nvim/                  the :Gruntz nvim integration (auto-loaded inside the dev shell)
 nix/patches/                  vostok-delinker patches (ILT-thunk / folded-COMDAT data-manifest)
