@@ -304,14 +304,14 @@ i32 CNetSession::SendGruntRecord(i32 seq, GruntRec* rec, u8 flag, i32 slot, i32 
     g_netGruntRecMsg.m_count = rec->m_count;
     memcpy(g_netGruntRecMsg.m_payload, rec->m_payload, rec->m_payloadLen);
 
-    return m_netMgr->SetData(
-               m_localDesc->m_id,
-               dpTo,
-               0,
-               &g_netGruntRecMsg,
-               rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
-           )
-           == 0;
+    i32 r = m_netMgr->SetData(
+        m_localDesc->m_id,
+        dpTo,
+        0,
+        &g_netGruntRecMsg,
+        rec->m_payloadLen + offsetof(NetGruntRecMsg, m_payload)
+    );
+    return r == 0;
 }
 
 RVA(0x000bfd40, 0x116)
