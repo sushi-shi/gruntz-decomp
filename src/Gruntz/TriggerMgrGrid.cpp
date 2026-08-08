@@ -327,7 +327,6 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, GruntDeathType kind, i32 arg) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::ClearGridRange(i32 startRow) {
     i32 row, last;
@@ -339,31 +338,19 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
         row = startRow;
     }
     ResetAll();
-    if (row <= last) {
-        i32 n = last - row + 1;
-        CGrunt** cell = &m_grid[row * TM_GRID_COLS];
-
-        i32 r = row;
-        i32 g2 = row * TM_GRID_COLS;
-        do {
-            i32 col = 0;
-            do {
-                CGrunt* c = *cell;
-                if (c != NULL) {
-                    c->m_wwdObject->m_flags |= 0x10000;
-                    *cell = NULL;
-                    m_cellFlag[g2 + col] = 0;
-                }
-                col++;
-                cell++;
-            } while (col < 15);
-            m_rowCount[r] = 0;
-            m_gruntzExitedByPlayer[r] = 0;
-            m_gruntzLostByPlayer[r] = 0;
-            r++;
-            g2 += 15;
-            n--;
-        } while (n != 0);
+    for (i32 r = row; r <= last; r++) {
+        CGrunt** cell = &m_grid[r * TM_GRID_COLS];
+        for (i32 col = 0; col < TM_GRID_COLS; col++) {
+            CGrunt* c = cell[col];
+            if (c != NULL) {
+                c->m_wwdObject->m_flags |= 0x10000;
+                cell[col] = NULL;
+                m_cellFlag[r * TM_GRID_COLS + col] = 0;
+            }
+        }
+        m_rowCount[r] = 0;
+        m_gruntzExitedByPlayer[r] = 0;
+        m_gruntzLostByPlayer[r] = 0;
     }
     ClearSelections();
     return 1;

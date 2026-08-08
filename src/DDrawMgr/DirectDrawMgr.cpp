@@ -537,7 +537,6 @@ CDDSurface* CDDrawPtrCollections::LoadFileSurface(char* path, i32 caps, i32 colo
     return item;
 }
 
-// @early-stop
 RVA(0x00142630, 0xfe)
 i32 CDDrawPtrCollections::CreateRange(
     CDDSurface** out,
@@ -550,7 +549,6 @@ i32 CDDrawPtrCollections::CreateRange(
 ) {
     i32 n = 0;
     i32 end = start + count;
-    CDDSurface** p = out;
     for (i32 i = start; i < end; i++) {
         char buf[32];
         sprintf(buf, "%s%i", baseName, i);
@@ -564,7 +562,7 @@ i32 CDDrawPtrCollections::CreateRange(
         if (item == NULL) {
             break;
         }
-        *p++ = item;
+        out[n] = item;
         n++;
     }
     return n;
