@@ -708,11 +708,11 @@ i32 CProjectile::SerializeMove(
             }
 
             g_serialCounter++;
-            i32 key;
-            s->Read(&key, sizeof(key));
+            i32 count;
+            s->Read(&count, sizeof(count));
             out = NULL;
             CGameObject* r;
-            if (MapLookupById(reg->m_childGroup->m_map48, key, out) == 0) {
+            if (MapLookupById(reg->m_childGroup->m_map48, count, out) == 0) {
                 r = NULL;
             } else if (out == NULL) {
                 r = NULL;
@@ -723,13 +723,12 @@ i32 CProjectile::SerializeMove(
                         : 0;
             }
             m_shadow = static_cast<CWwdGameObjectA*>(r);
-            if (m_shadow == NULL && key != 0) {
+            if (m_shadow == NULL && count != 0) {
                 return 0;
             }
 
-            i32 cnt;
-            s->Read(&cnt, sizeof(cnt));
-            for (i32 ci = 0; ci < cnt; ci++) {
+            s->Read(&count, sizeof(count));
+            for (i32 ci = 0; ci < count; ci++) {
                 CoordPoolNode* node = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 void* payload = 0;
                 if (node->m_next != NULL) {
@@ -776,14 +775,14 @@ i32 CProjectile::SerializeMove(
             }
 
             g_serialCounter++;
-            i32 n = 0;
+            i32 count = 0;
             if (m_shadow != NULL) {
-                n = m_shadow->m_objectId;
+                count = m_shadow->m_objectId;
             }
-            s->Write(&n, sizeof(n));
+            s->Write(&count, sizeof(count));
 
-            i32 v2 = m_hitList.GetCount();
-            s->Write(&v2, sizeof(v2));
+            count = m_hitList.GetCount();
+            s->Write(&count, sizeof(count));
 
             POSITION pos = m_hitList.GetHeadPosition();
             while (pos != NULL) {
