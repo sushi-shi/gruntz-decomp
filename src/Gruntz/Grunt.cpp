@@ -994,12 +994,15 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 }
 
 // @early-stop
-// The reProbe retry is a full copy of the dropHead block, not a `goto` back to
-// it (retail 0x4bdd6-0x4be00 re-tests m_coordList.m_nCount, pops its head into
-// the pool and jumps to pathGate at 0x4b4ff). cl cross-jumps our copy back into
-// dropHead's, so the RemoveHead/g_coordPool counts still read 3/18 against
-// retail's 4/21. The remaining deficit is block LAYOUT: retail emits the
-// pathGate/probe/commit chain before the nudge path, we emit it after.
+// Block LAYOUT, and it is one decision: cl hoists the forward-goto target, so the
+// nudge block lands immediately after the SearchEdge test and pathGate is pushed
+// past it, where retail runs dropHead (0x4b4d9) -> pathGate (0x4b4ff) -> ... ->
+// nudge (0x4bxxx) in source order. Retail's back edges into pathGate are the same
+// ones we have (0x4bac9, 0x4bdde, 0x4be00), so the goto graph is not the
+// difference. Spelling the branch `!= 0 / goto dropHead` recovers dropHead's two
+// blocks exactly; pathGate's placement needs the whole chain inside the if, which
+// the `CPtrList probe(10)` scopes make a goto-into-block problem.
+// See docs/patterns/forward-goto-hoists-target-block.md.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -1053,9 +1056,10 @@ i32 CGrunt::StepArrivalDrop(
     maskC = maskCIn | m_passableMask;
     if (g_gameReg->m_tileGrid
             ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
-        == 0) {
-        goto nudgeTarget;
+        != 0) {
+        goto dropHead;
     }
+    goto nudgeTarget;
 dropHead:
     if (CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
