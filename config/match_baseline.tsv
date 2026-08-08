@@ -4149,7 +4149,7 @@ tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollis
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	1	09c82d54c9aa	0x115f60	100.0000
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HHHPAHHHH@Z	80.0000	80.0000	8	67158bc3c899	0x116cf0	80.0000
 tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHHHHH@Z	80.1184	80.1184	2	00da89f8c91c	0x116a40	80.1184
-tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	72.3043	72.3043	2	50059e37da0d	0x116b80	72.3043
+tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	75.7826	75.7826	3	04fa39ef6afc	0x116b80	75.7826
 tiletriggercontainer	?DelFromList1@CTileTriggerContainer@@QAEHPAVCTileTriggerLogic@@@Z	100.0000	100.0000	3	6edcce1eb4d1	0x116e60	100.0000
 tiletriggercontainer	?DelFromList3@CTileTriggerContainer@@QAEHPAVCTileActionEvent@@@Z	100.0000	100.0000	3	f1466a4bd151	0x117200	100.0000
 tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	3	d2781164c724	0x115b60	100.0000

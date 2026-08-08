@@ -375,24 +375,24 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
             d = 1;
             break;
     }
-    if (m->m_live == 0) {
-        m->m_tileX = tileX;
-        m->m_tileY = tileY;
-        m->m_cellKey = cellKey;
-        m->m_playerFlags[2] = b;
-        m->m_actionCode = actionCode;
-        m->m_owner = this;
-        m->m_live = 1;
-        m->m_playerFlags[0] = d;
-        m->m_playerFlags[1] = c;
-        m->m_playerFlags[3] = a;
-        m->SetActionCode(actionCode);
-        m_list3.AddTail(m);
-        return m;
+    if (m->m_live != 0) {
+        m->m_live = 0;
+        ::operator delete(m);
+        return 0;
     }
-    m->m_live = 0;
-    ::operator delete(m);
-    return 0;
+    m->m_tileX = tileX;
+    m->m_tileY = tileY;
+    m->m_cellKey = cellKey;
+    m->m_playerFlags[2] = b;
+    m->m_actionCode = actionCode;
+    m->m_owner = this;
+    m->m_live = 1;
+    m->m_playerFlags[0] = d;
+    m->m_playerFlags[1] = c;
+    m->m_playerFlags[3] = a;
+    m->SetActionCode(actionCode);
+    m_list3.AddTail(m);
+    return m;
 }
 
 // @early-stop
