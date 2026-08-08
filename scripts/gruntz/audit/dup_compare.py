@@ -13,7 +13,16 @@ and the base has fewer branches overall.
 
     python -m gruntz.audit.dup_compare              # the worklist
     python -m gruntz.audit.dup_compare --near 20    # only pairs within 20 bytes
+    python -m gruntz.audit.dup_compare --any-dest   # + pairs whose targets DIFFER
     python -m gruntz.audit.dup_compare --max N      # exit 1 if the hit count exceeds N
+
+`--any-dest` drops the same-destination half of the fingerprint. It is needed whenever the
+re-test feeds a MATERIALISED expression: the outer `je` continues the loop, the inner one
+falls into the `xor reg,reg` false arm, so the destinations differ and the default sweep
+reports nothing. That is the whole
+docs/patterns/guard-reads-the-array-element-not-the-cached-local.md family
+(CStatusBarMgr::HitTest 0x105280 88.50 -> 100.00 EXACT), and it was invisible to the
+default fingerprint.
 
 **Read the byte gap between the two offsets.** Within ~20 bytes the tests are adjacent and
 the operand swap is the lever. Far apart with calls in between it is the different
@@ -90,18 +99,22 @@ def _clobbers(insns, i, j, regs):
     return False
 
 
-def dup_pairs(insns, stop):
-    """Adjacent branch pairs that re-test the SAME value to the same destination.
+def dup_pairs(insns, stop, any_dest=False):
+    """Adjacent branch pairs that re-test the SAME value.
 
     "Same value", not merely the same compare text: the registers the compare reads
-    must be untouched between the two branches.
+    must be untouched between the two branches. By default the two branches must also
+    share a destination; `any_dest` drops that half, which is what catches a re-test
+    feeding a materialised expression (the two `je`s then go to different places).
     """
     brs = branches(insns, stop)
     at = {off: i for i, (off, _, _) in enumerate(insns)}
     out = []
     for k in range(len(brs) - 1):
         (o1, m1, t1), (o2, m2, t2) = brs[k], brs[k + 1]
-        if m1 != m2 or t1 is None or t1 != t2:
+        if m1 != m2:
+            continue
+        if not any_dest and (t1 is None or t1 != t2):
             continue
         i1, i2 = at[o1], at[o2]
         s1, s2 = _setter(insns, i1), _setter(insns, i2)
@@ -114,7 +127,7 @@ def dup_pairs(insns, stop):
     return out
 
 
-def sweep():
+def sweep(any_dest=False):
     report = json.loads(REPORT.read_text())
     hits = []
     for u in report.get("units") or []:
@@ -138,7 +151,8 @@ def sweep():
             nb, nt = len(branches(bi, bcs)), len(branches(ti, tcs))
             if nb >= nt:
                 continue
-            tp, bp = dup_pairs(ti, tcs), dup_pairs(bi, bcs)
+            tp = dup_pairs(ti, tcs, any_dest)
+            bp = dup_pairs(bi, bcs, any_dest)
             if len(tp) <= len(bp):
                 continue
             hits.append({"unit": unit, "name": name,
@@ -152,6 +166,9 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--near", type=int, default=None,
                     help="only pairs whose two branches are within N bytes")
+    ap.add_argument("--any-dest", action="store_true",
+                    help="also report pairs whose two branches have DIFFERENT targets "
+                         "(the materialised-expression re-test family)")
     ap.add_argument("--max", type=int, default=None,
                     help="exit 1 if the hit count exceeds N (ratchet)")
     a = ap.parse_args()
@@ -160,7 +177,7 @@ def main() -> int:
         print("dup-compare: no build/objdiff/report.json - run `gruntz build` first")
         return 2
 
-    hits = sweep()
+    hits = sweep(a.any_dest)
     if a.near is not None:
         for h in hits:
             h["pairs"] = [p for p in h["pairs"] if p[1] - p[0] <= a.near]

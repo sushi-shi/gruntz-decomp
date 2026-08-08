@@ -2,7 +2,7 @@
 tags: cpp:expr cpp:branch | asm:test asm:xor asm:jcc | topic:codegen-idiom
 symptoms: retail ends a guard with `mov reg,1 / jmp / xor reg,reg / test reg,reg / jcc` and the base has none of it - the base branches straight out of the comparison chain; every other instruction matches, same registers, same prologue
 confidence: 8/10 (single measured site, mechanism corroborated by the sibling site in the same TU)
-variants: bool-local-materializes-what-should-be-short-circuit.md, redundant-test-elimination-is-syntactic.md
+variants: bool-local-materializes-what-should-be-short-circuit.md, redundant-test-elimination-is-syntactic.md, guard-reads-the-array-element-not-the-cached-local.md
 
 `CGameLevel::PointInRect` is a `static i32` inline returning an `&&`-chain. At an inlined
 call site cl5 materialises the return value into `1`/`0` and the caller then `test`s it -
@@ -26,7 +26,7 @@ Two spellings that do NOT work and are worth not re-trying:
 - hoisting the expression into a file-static helper - cl5 refuses to inline it and emits
   a real `call` (34.58).
 
-## Residue, and the sieve blind spot it exposes
+## The residue: CLOSED (2026-08-08), and the sieve blind spot it exposed
 
 Retail additionally **re-tests `m_enabled` inside** the materialised expression (the outer
 guard already tested it) and keeps an explicit `mov ecx,1` true arm:
@@ -46,5 +46,9 @@ DONE:  test ecx,ecx / jne RETURN_I
 That is the redundant-test family (redundant-test-elimination-is-syntactic.md) - but the
 two `je`s go to **different destinations** (the outer one continues the loop, the inner one
 falls into the materialised false arm). `gruntz.audit.dup_compare`'s fingerprint requires
-"the same mnemonic, the same destination", so it reports **0 hits** on this shape. Widening
-the sieve to same-register/different-destination pairs is open work.
+"the same mnemonic, the same destination", so it reported **0 hits** on this shape;
+`--any-dest` now covers it.
+
+The residue closes by spelling the outer guard on the **array element** and the body on the
+cached local - see guard-reads-the-array-element-not-the-cached-local.md. `HitTest`
+@0x105280 went **88.50 -> 100.00 EXACT**.

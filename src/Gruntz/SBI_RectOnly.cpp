@@ -811,10 +811,11 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
 }
 
 // @early-stop
-// STRUCTURAL, not regalloc: retail carries a /GX EH frame (push -1 / push handler /
-// mov fs:0,esp) and per-site EH-state stores that our body has no reason to emit -
-// something in each `new CSBI_*` + Setup/SetupImage group is destructible in retail
-// and is missing here. Find that object before treating anything else as residue.
+// Retail CALLS ??0CStatusBarItem@@QAE@XZ at the five `new CSBI_MenuItem` sites and
+// inlines it at the three CSBI_RectOnly ones, which is what gives retail its /GX EH
+// frame and 0x20 of locals; cl inlines the whole chain for us. The cut depth varies
+// per new-site, so no declaration form expresses it - see
+// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -826,10 +827,9 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
     CDDrawSurfaceMgr* code = m_world;
-    CStatusBarItem* it;
 
-    it = new CSBI_RectOnly;
-    if (!it->Setup(
+    CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
+    if (!dockLeft->Setup(
             this,
             code,
             SBICMD_DOCK_LEFT,
@@ -838,15 +838,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (it) {
-            delete it;
+        if (dockLeft) {
+            delete dockLeft;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
+    m_tabLists[0].AddTail(dockLeft);
 
-    it = new CSBI_RectOnly;
-    if (!it->Setup(
+    CSBI_RectOnly* dockRight = new CSBI_RectOnly;
+    if (!dockRight->Setup(
             this,
             code,
             SBICMD_DOCK_RIGHT,
@@ -855,15 +855,15 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (it) {
-            delete it;
+        if (dockRight) {
+            delete dockRight;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
+    m_tabLists[0].AddTail(dockRight);
 
-    it = new CSBI_RectOnly;
-    if (!it->Setup(
+    CSBI_RectOnly* hide = new CSBI_RectOnly;
+    if (!hide->Setup(
             this,
             code,
             SBICMD_HIDE,
@@ -872,126 +872,120 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (it) {
-            delete it;
+        if (hide) {
+            delete hide;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
+    m_tabLists[0].AddTail(hide);
 
-    it = new CSBI_MenuItem;
-    if (!(static_cast<CSBI_MenuItem*>(it))
-             ->SetupImage(
-                 this,
-                 static_cast<CDDrawSurfaceMgr*>(code),
-                 SBICMD_TAB_STATZ,
-                 TAB_CONTROLS,
-                 SbGeom(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
-                 "GAME_STATUSBAR_TABZ_STATZTAB",
-                 -1,
-                 0
-             )) {
-        if (it) {
-            delete it;
+    CSBI_MenuItem* statzTab = new CSBI_MenuItem;
+    if (!statzTab->SetupImage(
+            this,
+            code,
+            SBICMD_TAB_STATZ,
+            TAB_CONTROLS,
+            SbGeom(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
+            "GAME_STATUSBAR_TABZ_STATZTAB",
+            -1,
+            0
+        )) {
+        if (statzTab) {
+            delete statzTab;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
-    m_tabSprite0 = static_cast<CSBI_MenuItem*>(it);
+    m_tabLists[0].AddTail(statzTab);
+    m_tabSprite0 = statzTab;
 
-    it = new CSBI_MenuItem;
-    if (!(static_cast<CSBI_MenuItem*>(it))
-             ->SetupImage(
-                 this,
-                 static_cast<CDDrawSurfaceMgr*>(code),
-                 SBICMD_TAB_GRUNTZ,
-                 TAB_CONTROLS,
-                 SbGeom(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
-                 "GAME_STATUSBAR_TABZ_GRUNTZTAB",
-                 -1,
-                 0
-             )) {
-        if (it) {
-            delete it;
+    CSBI_MenuItem* gruntzTab = new CSBI_MenuItem;
+    if (!gruntzTab->SetupImage(
+            this,
+            code,
+            SBICMD_TAB_GRUNTZ,
+            TAB_CONTROLS,
+            SbGeom(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
+            "GAME_STATUSBAR_TABZ_GRUNTZTAB",
+            -1,
+            0
+        )) {
+        if (gruntzTab) {
+            delete gruntzTab;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
-    m_tabSprite2 = static_cast<CSBI_MenuItem*>(it);
+    m_tabLists[0].AddTail(gruntzTab);
+    m_tabSprite2 = gruntzTab;
 
-    it = new CSBI_MenuItem;
-    if (!(static_cast<CSBI_MenuItem*>(it))
-             ->SetupImage(
-                 this,
-                 static_cast<CDDrawSurfaceMgr*>(code),
-                 SBICMD_TAB_RESOURCE,
-                 TAB_CONTROLS,
-                 SbGeom(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
-                 "GAME_STATUSBAR_TABZ_RESOURCETAB",
-                 -1,
-                 0
-             )) {
-        if (it) {
-            delete it;
+    CSBI_MenuItem* resourceTab = new CSBI_MenuItem;
+    if (!resourceTab->SetupImage(
+            this,
+            code,
+            SBICMD_TAB_RESOURCE,
+            TAB_CONTROLS,
+            SbGeom(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
+            "GAME_STATUSBAR_TABZ_RESOURCETAB",
+            -1,
+            0
+        )) {
+        if (resourceTab) {
+            delete resourceTab;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
-    m_tabSprite1 = static_cast<CSBI_MenuItem*>(it);
+    m_tabLists[0].AddTail(resourceTab);
+    m_tabSprite1 = resourceTab;
 
-    it = new CSBI_MenuItem;
-    if (!(static_cast<CSBI_MenuItem*>(it))
-             ->SetupImage(
-                 this,
-                 static_cast<CDDrawSurfaceMgr*>(code),
-                 SBICMD_TAB_MULTIPLAYER,
-                 TAB_CONTROLS,
-                 SbGeom(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
-                 "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
-                 -1,
-                 0
-             )) {
-        if (it) {
-            delete it;
+    CSBI_MenuItem* multiTab = new CSBI_MenuItem;
+    if (!multiTab->SetupImage(
+            this,
+            code,
+            SBICMD_TAB_MULTIPLAYER,
+            TAB_CONTROLS,
+            SbGeom(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
+            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
+            -1,
+            0
+        )) {
+        if (multiTab) {
+            delete multiTab;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
-    m_tabSprite3 = static_cast<CSBI_MenuItem*>(it);
+    m_tabLists[0].AddTail(multiTab);
+    m_tabSprite3 = multiTab;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-        CSBI_MenuItem* mp = static_cast<CSBI_MenuItem*>(it);
-        mp->m_state = MENUITEM_DISABLED;
-        CDDrawWorker* f = mp->m_record;
+        multiTab->m_state = MENUITEM_DISABLED;
+        CDDrawWorker* f = multiTab->m_record;
         CImage* v;
         if (f != NULL && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
             v = static_cast<CImage*>(f->m_items.GetAt(4));
         } else {
             v = NULL;
         }
-        mp->m_frame = v;
-        mp->m_enabled = 0;
-        mp->SetSubtype();
+        multiTab->m_frame = v;
+        multiTab->m_enabled = 0;
+        multiTab->SetSubtype();
     }
 
-    it = new CSBI_MenuItem;
-    if (!(static_cast<CSBI_MenuItem*>(it))
-             ->SetupImage(
-                 this,
-                 static_cast<CDDrawSurfaceMgr*>(code),
-                 SBICMD_TAB_GAME,
-                 TAB_CONTROLS,
-                 SbGeom(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
-                 "GAME_STATUSBAR_TABZ_GAMETAB",
-                 -1,
-                 0
-             )) {
-        if (it) {
-            delete it;
+    CSBI_MenuItem* gameTab = new CSBI_MenuItem;
+    if (!gameTab->SetupImage(
+            this,
+            code,
+            SBICMD_TAB_GAME,
+            TAB_CONTROLS,
+            SbGeom(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
+            "GAME_STATUSBAR_TABZ_GAMETAB",
+            -1,
+            0
+        )) {
+        if (gameTab) {
+            delete gameTab;
         }
         return 0;
     }
-    m_tabLists[0].AddTail(it);
-    m_tabSprite4 = static_cast<CSBI_MenuItem*>(it);
+    m_tabLists[0].AddTail(gameTab);
+    m_tabSprite4 = gameTab;
 
     if (BuildSideTabs() == 0) {
         return 0;
@@ -1401,10 +1395,9 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
-// STRUCTURAL, not regalloc: retail carries a /GX EH frame (push -1 / push handler /
-// mov fs:0,esp) and per-site EH-state stores that our body has no reason to emit -
-// something in each `new CSBI_*` + Setup/SetupImage group is destructible in retail
-// and is missing here. Find that object before treating anything else as residue.
+// Same ctor inline-cut wall as BuildStatusBarTabs: retail calls ??0CSBI_RectOnly
+// @0x101fa0 at three `new` sites and ??0CStatusBarItem @0x1005d0 at a fourth, so it
+// carries a /GX EH frame we do not. docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1764,6 +1757,9 @@ i32 CStatusBarMgr::Activate() {
 }
 
 // @early-stop
+// Retail keeps `mode` in ebx across the calls and reads the LeafCue fields as memory
+// operands; we spill mode to the frame and hoist both fields into registers, which
+// costs the extra reload before the final m_statFlags store.
 RVA(0x00104e60, 0xed)
 i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, i32 value) {
     StatusSampleMode mode = static_cast<StatusSampleMode>(value);
@@ -1837,13 +1833,12 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
         for (i32 i = 0; i < 15; i++) {
-            CSBI_SideTab* p = m_hitRects[i];
-            if (p && p->m_enabled) {
+            if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
+                CSBI_SideTab* p = m_hitRects[i];
                 i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
                 if (hit) {
                     return i;
@@ -1950,6 +1945,9 @@ void CStatusBarMgr::ArmSlot(i32 idx) {
 }
 
 // @early-stop
+// cl CSEs the slot address as `this + idx*24` where retail forms `&m_slots[idx]`
+// (`lea ebx,[esi+eax*8+0x220]`), so our four m_startTime/m_interval stores use
+// +0x22c..+0x234 displacements instead of retail's +0..+0xc off one re-derived lea.
 RVA(0x001055b0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
@@ -2310,10 +2308,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         col = (which >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                     }
                     i32 found = 0;
-                    for (i32 r = 3; r >= 0; r--) {
+                    i32 r = 3;
+                    while (found == 0) {
+                        if (r < 0) {
+                            break;
+                        }
                         if (m_hlGrid[col * 4 + r].m_state == IDX(HLROW_OFF)) {
                             found = 1;
-                            break;
+                        } else {
+                            r--;
                         }
                     }
                     if (found) {
@@ -2746,6 +2749,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 }
 
 // @early-stop
+// Retail reserves the 16-byte home of the `RECT rc` local (`sub esp,0x10`) and spills
+// rc.left through it; cl scalar-replaces the whole struct for us and needs no frame.
+// A shared rc for both m_fallRect and m_rect14, `RECT rc = SbGeom(...)` and a
+// function-scope declaration were all measured and none allocate the home.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
@@ -2777,6 +2784,9 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
 }
 
 // @early-stop
+// `stepped` gets a second frame slot here (`sub esp,0x8` vs retail's one-dword
+// `push ecx`) plus a reload after ConfigureItem; retail constant-propagates it per
+// path and keeps only the Lookup out-param in the frame.
 RVA(0x001076a0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
@@ -3116,12 +3126,12 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
 }
 
 // @early-stop
-// The 25 flat SER sites: cl CSEs the two parameter loads (p4/p5) into edi/ebp once
-// before the chain; retail reloads both from their parameter homes at every site
-// (`mov eax,[esp+0x34]` twice, the second reading the post-push slot). That is 2
-// instructions per site and the WHOLE 42-instruction shortfall - every other block
-// is byte-identical. The member-offset SET is verified identical to retail's,
-// including the duplicated 0x1f0 (m_tabSprite10 really is serialized twice).
+// Retail never enregisters p4/p5: every one of the ~30 SerializeFields sites reloads
+// both from their parameter homes into eax, which frees ebp for the loop counters.
+// We cache p5 in ebp and spill each counter, costing 2 instructions per site - the
+// whole 42-instruction shortfall; every other block is byte-identical. Frames are
+// identical (sub esp,0x8 both), and the member-offset SET is verified identical to
+// retail's, including the duplicated 0x1f0 (m_tabSprite10 really is serialized twice).
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
     if (s == NULL) {
