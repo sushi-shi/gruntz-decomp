@@ -169,3 +169,34 @@ mentions, so the `CMapStringToOb::Lookup` half is invisible and the row reads as
 - `docs/patterns/base-trio-in-ctor-body-misplaces-vptr.md`
 - `docs/patterns/msvc5-variable-ctor-inline-depth.md`
 - `docs/patterns/rezalloc-placement-new-no-eh-frame.md`
+
+## The one-level-up test, applied to every recorded budget wall (2026-08-09)
+
+The rule is: **before recording a budget wall, `sema xref` the callee one level UP and
+check whether retail splits it by CLASS.** Ran on all of them. It is not a universal
+solvent - it cracked four and left four standing, and the ones it leaves standing have a
+shared shape worth naming.
+
+CRACKED (the wall was a missing entity):
+
+| recorded wall | what the xref showed | result |
+|---|---|---|
+| `??0CLoadable` 0x156cb0 | 4 callers; `CDDrawSurfaceMgr::Init` alone calls it for 4 child classes and expands it for 4 | +7 exact tree-wide |
+| `CAniAdvanceCursor` in `CWwdGameObject::CreateObject` 0x166640 | 3 users of ONE `CWwdGameObjectA` ctor; two call, one expands | 76.90 -> 87.40 |
+| `??0CStatusBarItem` 0x1005d0 | 4 callers, 38 `new` sites; depth-2 classes 6/6 inline, `CSBI_Image` 10/14 call | BuildStatusBarTabs 71.58 -> 78.21 + 4 more |
+| `??0CSBI_RectOnly` 0x101fa0 | the depth-5 chains are 8/8 `call` | previously-unclaimed COMDAT -> 100.00 EXACT |
+
+SURVIVED, and all four for the same reason - **the callee has ONE caller, so there is no
+population to find a per-class majority in**:
+
+| recorded wall | xref | why it stands |
+|---|---|---|
+| `??1CWwdGameObject` 0x15bd10 / `??1CLoadable` 0xd5d70 | 2 callers (`??_GCLoadable` + this dtor); every other derived dtor expands it | a base DESTRUCTOR is invoked implicitly and cannot carry a tag parameter, so the recipe has no spelling |
+| `CGruntzMgr::ChangeState` 0x8fab0 / `??1CMoviePlayer` 0x38fc0 | 1 caller, `CCreditsState::ReleaseResources`' `delete vh` | ChangeState EXPANDS it; out-of-lining it measured 74.88 -> 70.54 |
+| `SnapshotChildren` / `RestoreChildren` / `LoadRecordFile` / `??1CFileMemBase` | corroborated independently: retail's own `??1CFileMem` expands it | already measured, see above |
+| `FontRenderer::DrawWrapped` 0x17a460 / `CRect::Width` 0x17b500 | 1 caller - DrawWrapped itself, 4 sites inside it | the callee is an MFC header inline; a second entity would mean editing MFC |
+
+So the test's discriminator is cheap and mechanical: **count the DISTINCT callers, and if
+there is more than one, tabulate the call/expand choice by the constructed class.** One
+caller means the split is inside a single function and there is nothing to model. Several
+callers with a unanimous or near-unanimous per-class column means an entity is missing.

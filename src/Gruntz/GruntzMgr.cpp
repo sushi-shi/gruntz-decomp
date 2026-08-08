@@ -2076,6 +2076,12 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 // retail CALLS ??1CFecFile (0x390a0) and the CArray<PLAYLISTINFOSTRUCT*> ctor/dtor
 // COMDATs here; cl expands all three (Teardown + vptr stamp + operator delete,
 // Close + ~CDWordArray + ~CFile). One authentic inline definition stays.
+// Re-audited 2026-08-09 with the one-level-up xref rule: `sema xref 0x00038fc0` gives
+// ??1CMoviePlayer exactly ONE caller, CCreditsState::ReleaseResources' `delete vh`,
+// so retail EXPANDS the movie-player dtor here and only the ??1CFecFile inside it is
+// a call - i.e. one shape per entity, no per-class split to model.  Declaring
+// ~CMoviePlayer out of line in CreditsState.cpp (its 0xa5 COMDAT stays 100.00 either
+// way) does remove our expansion but scores 74.88 -> 70.54; reverted.
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {

@@ -205,6 +205,11 @@ RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // (0x15be49) and CALLS ??1CLoadable (0xd5d70); cl inverts both decisions.
 // Spelling the dtor body out makes cl outline ~CGameObject entirely (58.8%),
 // and routing it through a non-virtual helper is byte-identical.
+// Re-audited 2026-08-09 with the one-level-up xref rule that cracked ??0CLoadable:
+// `sema xref 0x000d5d70` gives ??1CLoadable exactly two real callers - ??_GCLoadable
+// and this dtor - and every other derived dtor expands it, so there is no per-class
+// majority to model.  A base DESTRUCTOR is also invoked implicitly and cannot carry a
+// tag, so the two-shapes-need-two-entities recipe has no spelling here.  Survives.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
