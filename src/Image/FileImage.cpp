@@ -321,11 +321,9 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 }
 
 // @early-stop
-// Residue is cl's frame choice: retail parks the row counter in the never-read `flag`
-// parameter's home slot ([esp+0x7c], decremented in place and tested with js/jns) and
-// keeps `this` in ebp, where cl allocates a real local and spills `this` - so the frame
-// is 4 bytes wider (sub esp,0x58 vs 0x54) and every [esp+N] is off by 4. Retail also
-// materialises its zero in esi where cl uses immediates.
+// residue: which dead parameter home slot each spill lands in.  Retail parks the row
+// counter in `flag`'s and the packed-byte temp in `path`'s; cl picks the other way
+// round, and the register names rotate with it.
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -346,6 +344,8 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     i32 height = this->m_height;
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
+    bi.bmiHeader.biCompression = 0;
+    bi.bmiHeader.biSizeImage = 0;
     i32 width = this->m_width;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
@@ -354,8 +354,6 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
-    bi.bmiHeader.biCompression = 0;
-    bi.bmiHeader.biSizeImage = 0;
     bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = new u8[3 * width];
@@ -388,20 +386,22 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
-    for (i32 row = height - 1; row >= 0; row--) {
+    for (i32 row = this->m_height - 1; row >= 0; row--) {
         u8* src = locked + row * this->m_pitch;
         u8* dst = line;
-        for (i32 x = 0; x < width; x++) {
+        for (i32 x = 0; x < this->m_width; x++) {
             Pix16Ptr sp;
             sp.m_bytes = src;
             u16 px = *sp.m_words;
             src += 2;
-            dst[0] = static_cast<u8>((static_cast<u8>(px) << g_bDown));
-            dst[1] = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-            dst[2] = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-            dst += 3;
+            u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+            u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+            u8 b = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+            *dst++ = b;
+            *dst++ = g;
+            *dst++ = r;
         }
-        file.Write(line, 3 * width);
+        file.Write(line, 3 * this->m_width);
     }
 
     this->m_ddSurface->Unlock(0);
