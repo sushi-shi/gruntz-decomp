@@ -2418,7 +2418,7 @@ gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	16	aed096bb0eee	0
 gruntzmgr	?WarpCheat@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	86c76237e395	0x8eaf0	100.0000
 gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	12	49cfcb7d284c	0x8e4e0	100.0000
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	7	253129545170	0x8dc20	100.0000
-gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	97.3440	97.3440	4	3ceeb5dc8112	0x862f0	97.3440
+gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	97.3853	97.3853	5	91835303da44	0x862f0	97.3853
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	100.0000	100.0000	5	94b13a6e65da	0xda790	100.0000
 gruntzplayer	?ChannelSlots_FindFree@@YAHXZ	100.0000	100.0000	3	697b7fda646b	0xdb280	100.0000
 gruntzplayer	?ChannelSlots_Get@@YAHH@Z	100.0000	100.0000	2	27274cbc4f28	0xdb2d0	100.0000
@@ -3332,7 +3332,7 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	37.0038	37.0038	11	8b7c2fe7dde1	0xd0db0	37.1456
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	1	b3c8fcfaa28d	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
-play	?LoadByMode@CPlay@@UAEHHH@Z	83.1514	83.1514	23	ce6ec2b0b731	0xca200	83.1514
+play	?LoadByMode@CPlay@@UAEHHH@Z	83.8795	83.8795	24	c3ba457e5009	0xca200	83.8795
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	78.3187	78.3187	2	2bc41ee15757	0xc7ec0	78.3187
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000

@@ -1015,10 +1015,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             i32 v = m_soundEnabled ^ 1;
             m_soundEnabled = v;
             g_sndEnabled = v;
-            if (v == 0) {
-                m_inputState->Stop();
-            } else {
+            if (v != 0) {
                 m_inputState->Resume();
+            } else {
+                m_inputState->Stop();
             }
             return 1;
         }
