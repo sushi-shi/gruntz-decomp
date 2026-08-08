@@ -329,6 +329,9 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 }
 
 // @early-stop
+// Frame is 4 B short of retail's 0x4c: retail leaves an unused dword hole at the
+// dtop slot and spills `bottom` into the dead incoming param home, where cl gives
+// us the reverse. Every [esp+N] in the body is that one displacement apart.
 RVA(0x00153470, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     i32 mode = info->m_stateFlags;
@@ -350,21 +353,24 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
             return;
         }
     }
-    i32 hFlip = mode & 4;
     i32 vFlip = mode & 2;
-    if (vFlip) {
-        if (hFlip) {
-            if (m_owned) {
-                BlitShadeNorm(info, dst);
-            } else {
-                BlitNorm(info, dst);
-            }
+    i32 hFlip = mode & 4;
+    // Four sibling arms, not a nested if/else: retail re-tests vFlip at the head of
+    // the second arm (docs/patterns/redundant-sibling-guard-retest.md), which only
+    // survives when the arms are written as separate statements.
+    if (vFlip && hFlip) {
+        if (m_owned) {
+            BlitShadeNorm(info, dst);
         } else {
-            if (m_owned) {
-                BlitShadeFlipV(info, dst);
-            } else {
-                BlitFlipV(info, dst);
-            }
+            BlitNorm(info, dst);
+        }
+        return;
+    }
+    if (vFlip) {
+        if (m_owned) {
+            BlitShadeFlipV(info, dst);
+        } else {
+            BlitFlipV(info, dst);
         }
         return;
     }
