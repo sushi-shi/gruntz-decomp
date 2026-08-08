@@ -1910,7 +1910,7 @@ void RegisterGruntActions() {
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
     REGISTER_KEY_644AF0("R", &CGrunt::LoadGruntDecayConfig2);
-    REGISTER_KEY_644AF0_DERIVED(k_60df94, &CGrunt::FinishEntranceMove);
+    REGISTER_KEY_644AF0_DERIVED(s_codeS, &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)

@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-extern char k_60df94[];
+extern char s_codeS[];
 
 static void GruntScratchTeardown();
 

@@ -331,10 +331,25 @@ public:
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
+    // The next five are the tail of retail's multiplayer CRC line - the format
+    // string CNetSession::BuildGruntzCrcInfo (0x000bf1d0) pushes them into, in
+    // this order, is the naming oracle for them:
+    //   ia=  m_combatActive        ...  iad= m_neighborScanEnabled
+    //   qat= m_neighborValid       ...  qax= m_arrivalPhase
+    //   iic= m_poweredUp           ...  da=  m_daFlag
+    // The dev-build desync log preserved in STATEZ\CREDITZ\CREDITZ printed the
+    // same fields plus sel/lck/iid/ait/locked, which retail dropped. In its one
+    // sample iic is 1 exactly for the gruntz whose act is ATTACK/ATTACKIDLE/
+    // DEATH, so "iic" most likely reads "is in combat" - suggestive, one frame,
+    // not proof.
     i32 m_combatActive;
     i32 m_neighborValid;
     i32 m_poweredUp;
-    i32 m_daFlag; // "da=" in retail CRC line; role unrecovered
+    // "da=" in retail's CRC line. Set to 1 by CGrunt::Activate and never written
+    // again anywhere we have reconstructed; only serialized and CRC'd. A
+    // default-on per-grunt toggle whose writer is still unreconstructed - the
+    // credits list names "Auto defending", but nothing binds it here yet.
+    i32 m_daFlag;
     i32 m_entranceStamped;
     i32 m_bombRunActive;
     i32 m_arrivalActive;
@@ -910,6 +925,23 @@ bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 
 void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRandB, i32 unused);
 
+// The grunt ACT codes. A CGrunt's state IS its act name: code resolves
+// m_objAux->m_actKey through g_typeColl and strcmp()s the result.
+// RegisterGruntActions (GruntCombat.cpp) binds all nineteen, "A".."S", each to
+// the step method that runs while the grunt is in that act.
+//
+// Four letters are decoded from a dev-build desync log pasted into the shipped
+// credits text (REZ STATEZ\CREDITZ\CREDITZ), which printed the act by NAME -
+// [s=IDLE] [s=ATTACK] [s=ATTACKIDLE] [s=MOVINGTOY] [s=DEATH] - before the names
+// were shortened to single letters:
+//   "A" IDLE       the default act and the log's most common state; PlaySound
+//                  gives it the _IDLE1 pose and ResolveArrivalReposition
+//                  already reads it as "not idle".
+//   "C" DEATH      BuildGruntDeathAnimation latches it with SORTKEY_GRUNT_DEATH.
+//   "E" ATTACKIDLE the only act PlaySound gives m_poseAttackIdle.
+//   "F" ATTACK     latched by RearmAttackAnim/RearmAttackAnim2; its step is
+//                  StepAttackAction.
+// MOVINGTOY is one of the remaining letters; which is not yet proven.
 extern char s_codeD[];
 extern char s_codeF[];
 extern char s_codeH[];

@@ -184,6 +184,130 @@ declared-only, so the blast radius is small; it needs one lane that owns UserLog
 
 ---
 
+## Six retail compiland names from the game's own credits (lane/compiland-names, 2026-08-08)
+
+`STATEZ\CREDITZ\CREDITZ` (REZ entry at file offset `0x04485fc1`, 0x25a7 B, plain
+CRLF text) carries six `.cpp` names that appear nowhere else in the shipped data
+or either EXE. **They come from two different places and are NOT equally strong
+evidence** - a distinction worth keeping:
+
+1. **A pasted dev-build desync log** (the tail of the entry) prints, over and
+   over, `C:\Proj\Gruntz\Grunt_State.cpp, 922` and once
+   `C:\Proj\Gruntz\Grunt_Combat.cpp, 411`. Full `C:\Proj\Gruntz\` paths with
+   line numbers, in the project's CamelCase - the same shape as the one path
+   retail itself leaks (`C:\Proj\Gruntz\GruntzMgr.cpp`, referenced by
+   `CGruntzMgr::InitializeLobbyConnectionSettings` @0x0008eca0).
+2. **A joke "we would like to acknowledge" list** (~70 in-jokes: `CTRL+Y`,
+   `Subway`, `MPKELLY`, `ButeMgr`, `MoveGruntAroundObstacle()`,
+   `ActuallyRemoveGrunt()`, ...) contains **`booty.cpp`, `compconai.cpp`,
+   `statusbar.cpp`, `nakedchix.cpp`** - bare, all-lowercase, no path, no line.
+   Two of that list's function names (`MoveGruntAroundObstacle`,
+   `ActuallyRemoveGrunt`) exist nowhere in our tree either, so the list names
+   real code; but nothing dates it, and lowercase is not the project's style.
+
+`.cpp` occurs exactly 17 times in the whole REZ - 4 (list) + 12 + 1 (log) - so
+these six are the complete set. `GruntDem.exe` leaks the same paths as retail and
+adds nothing.
+
+### What each maps to
+
+Method: the linker lays one obj's *ordinary* `.text` down contiguously, so a
+function of TU *B* sitting strictly between two functions of TU *A* proves A and
+B are one compiland (COMDAT-shaped bodies - `??0`/`??1`/`??_G`/`$E`/inline
+accessors - are excluded; the linker pools those).
+
+| credits name | retail band | strength |
+|---|---|---|
+| `booty.cpp` | `0x00018830`-`0x0001f928` | **strong** |
+| `statusbar.cpp` | `0x000fdc00`-`~0x0010bc30` | **strong** |
+| `compconai.cpp` | `0x00024dc0`-`0x00036051` | plausible |
+| `Grunt_Combat.cpp` | `0x00056f80`-`0x0005d084` | plausible |
+| `Grunt_State.cpp` | undetermined | - |
+| `nakedchix.cpp` | undetermined | - |
+
+- **booty.cpp** - the band is 44 functions and **every one is a `CBootyState` or
+  `CMultiBootyState` method**, no interlopers. Our tree splits it over six TUs:
+  `BootyCheatState.cpp`, `BootyStateActivate.cpp`, `GameMode.cpp`,
+  `BootyWalkAnim.cpp`, `IconLoaders.cpp`, `GameText.cpp`. `IconLoaders.cpp`
+  (0x1c070 and 0x1e720) is *bracketed* by `BootyStateActivate.cpp` functions on
+  both sides, as are `GameMode.cpp` and `GameText.cpp` - contiguity therefore
+  **proves** they are one compiland. Three of those six TU names
+  (`GameMode`, `IconLoaders`, `GameText`) hold nothing but booty-screen methods
+  and are actively misleading.
+- **statusbar.cpp** - 135 functions, effectively all `CStatusBarMgr` plus
+  `CWarpStoneFly`/`CStatusBarSprite` and the pooled `??1`/`??_G` group of every
+  `CSBI_*` item class (which is exactly the vtable-realization group of the TU
+  that constructs them). `StatusBarMgr.cpp` (0x102250-0x104cb0),
+  `SBI_TabzDialogEh.cpp`, `SBI_SideTabBuild.cpp`, `WarpStoneFly.cpp` and
+  `MgrSettings.cpp` are each bracketed by `SBI_RectOnly.cpp` functions - one
+  compiland, ~14 of our TUs. Note our `StatusBarMgr.cpp` is a 4-function
+  fragment of it while `SBI_RectOnly.cpp` carries the bulk.
+  A **separate, earlier** band `0x000e6020`-`0x000ebae4` holds only the
+  `CSBI_*` item classes' own methods (WellGoo/Image/ImageSet/ImageSetAni/
+  MenuItem/GruntMachine/SideTab/StatzTabArrow/StatzTabGruntBar/WarlordHead) -
+  a sibling compiland, unnamed; it cannot be the same one (not contiguous).
+- **compconai.cpp** = "computer-controlled AI". The band is one class,
+  `CBattlezMapConfig` - `ChooseIdleBehavior`, `RouteToNearbyEnemy`,
+  `PathToNearestGoal`, `RetargetIdleUnit`, `TrackAssignedEnemy`,
+  `AdvanceToEnemyBase`, `StepDefenderUnit`, ... i.e. an RTS opponent - split
+  over eleven of our TUs (`BattlezMapConfig.cpp`, `GruntMoveStep.cpp`,
+  `BattlezUnitStep.cpp`, `GruntTileScan.cpp`, `GruntStateStep.cpp`,
+  `BattlezSpecialAnim.cpp`, `BattlezSpawnCheck.cpp`, `BattlezRepath.cpp`,
+  `BattlezReservePlace.cpp`, `BattlezRetarget.cpp`, `TileScan.cpp`).
+  `GruntMoveStep.cpp`'s single function is bracketed by `BattlezMapConfig.cpp`,
+  proving at least that pair. Battlez is where the game itself says "Computer
+  (easy/normal/difficult)", which is what makes this the better reading; the
+  rival reading is the enemy-grunt behaviour band below. Not proven.
+- **Grunt_Combat.cpp** - `0x00056f80`-`0x0005d084` is our `GruntCombat.cpp`
+  almost exactly: `OnStruck`, `BeginAttack`, `CommitNeighbor`, `FindGridNeighbor`,
+  `EnsureStruckSlot/Voice`, `LoadGruntCombatAnimations`, `PathScan`, plus
+  `CreateGrunt`/`RegisterGruntActions`/`Activate`. Its COMDAT group sits at
+  `0x58b60`-`0x58f6c` *bracketed by its own functions* (incl.
+  `??0CUserLogic@@QAE@PAUCGameObject@@@Z`, which is exactly what a TU containing
+  `CreateGrunt` emits) - so the band is one compiland. That it is *the* file
+  called `Grunt_Combat.cpp` is inference from content, not proof; the adjoining
+  `0x0005d210`-`0x0005fe6e` (the 17-way AI tick + `FinalizeStep` +
+  `AdvanceMotion`) is contiguous with it and could belong to either side.
+- **Grunt_State.cpp** - **undetermined.** The file has >=922 lines and contains a
+  per-grunt trace that prints act name, goal position, a `tg` flag and a random
+  number for all twelve gruntz at once. The two structural candidates are
+  (a) `0x000ec670`-`0x000f87f9` - sixteen consecutive one-function TUs of ours,
+  every one a `CGrunt` behaviour step that switches on `m_defenderState`
+  (`WanderStep`, `ChargeStep`, `SeekTarget`, `ScanNearestTarget`, `PhaseStep`,
+  `StepArrivalDefense{,Alt,Lean}`, `StepBrickLayerBehavior`,
+  `StepGooSuckerBehavior`, `StepDiggerBehavior`, ... plus the file-static
+  `_CellTargetable`), ~49 KB, all called from the single 17-way dispatch at
+  0x0005d210 - and (b) the `CGrunt` core at `0x00047a10`-`0x00055160`. Against
+  (a): the log's five state names are act codes (see below), not the
+  SEEK/CHASE/ATTACK/RETURN/COOLDOWN/RETREAT of `m_defenderState`. No TU in (a)
+  brackets another - each holds exactly one function - so contiguity proves
+  nothing there. **Do not rename on this.**
+- **nakedchix.cpp** - **undetermined, and possibly not in the shipped build.**
+  The token occurs exactly once in the whole REZ (in this list); `chick`,
+  `bikini` and any asset-side variant occur zero times; the movie-player theory
+  dies because playback lives inside `CGruntzMgr::MakeRezPath`, not a compiland
+  of its own. The four list names being lowercase, when every path the binaries
+  leak is CamelCase, is weak evidence that they are older files.
+
+### Partition defects this exposes
+
+Three retail compilands are shattered across our tree, and in two of them the
+fragment names mislead: **booty** (6 TUs), **statusbar** (14 TUs, with the bulk
+under `SBI_RectOnly.cpp`), **compconai/Battlez** (11 TUs). None of this changes
+matching; it changes where a body should live and what a unit should be called.
+
+### Negative result: string literals cannot attribute compilands here
+
+Worth recording so nobody re-derives it. `.data` holds exactly **one** copy of
+each game string, and single addresses (e.g. `LogicBump` @0x0020a470) are
+referenced from 58 functions spread over the whole image, in compilands that
+provably differ. Retail therefore folded string literals across objects, so the
+"each TU pools its own strings, so a string address names its owner" test - the
+obvious second axis for the contribution manifest - **does not work**. (Not
+universal folding: `'1252'` still has 27 copies and one save-game message has 2.)
+
+---
+
 ## Per-unit partition notes (migrated out of `config/units.toml`, 2026-08-03)
 
 These were inline comments in the manifest. They are **archaeology**, not build

@@ -71,7 +71,7 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile";
 static const char s_animKeyA[] = "A";
 
 DATA(0x0020df94)
-char k_60df94[] = "S";
+char s_codeS[] = "S";
 
 DATA(0x0020dc0c)
 char s_codeO[] = "O";

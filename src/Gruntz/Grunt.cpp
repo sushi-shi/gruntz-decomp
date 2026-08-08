@@ -4115,7 +4115,7 @@ void CGrunt::FinalizeStep(char* name) {
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool eqPos = (strcmp(*rec, k_60df94) == 0);
+    bool eqPos = (strcmp(*rec, s_codeS) == 0);
     if (eqPos) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
             return;
