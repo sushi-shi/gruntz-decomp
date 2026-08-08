@@ -107,6 +107,26 @@ Measured, so nobody re-runs it: declaring `virtual ~CFileMemBase();` and definin
 -5.03, `??1CFileMem` -19.26 and `LoadRecordFile` -12.54 in the same unit. Reverted: the
 +9 is the wall paying out at one site while the shape it needs is wrong everywhere else.
 
+## A 4-of-5 control group, which is what makes the verdict cheap (2026-08-08)
+
+`CUserLogic::BuildLogicTypeTable` is expanded into exactly five derived constructors, and
+each expansion contains three `CDDrawWorkerCache::Find` sites. Retail calls all three in
+`CGuardPoint`, `CLevelTime` (twice - `leveltimedtor` and `statedispatch`) and `CWayPoint`,
+and in `CLightFx` alone it EXPANDS the first one, which is why that site reads
+`?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z` on the target side and
+`?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z` on ours.
+
+Four identical siblings that already agree settle it in one command: the divergence is one
+site's budget, not the visibility of `Find`. Making `Find` an in-class inline to buy back
+`CLightFx` would expand it in the other four, which currently match. Before spending a
+header change on a single-site row, run
+`gruntz.audit.global_refs`-style whole-tree counting for the symbol and look for the
+siblings - if most of them agree, there is nothing to model.
+
+Note also that the sieve can only show HALF of this row. It drops a name only one side
+mentions, so the `CMapStringToOb::Lookup` half is invisible and the row reads as a bare
+"we invented a `Find`". The ordered relocation SEQUENCE is what names the substitution.
+
 ## Related
 
 - `docs/patterns/base-trio-in-ctor-body-misplaces-vptr.md`
