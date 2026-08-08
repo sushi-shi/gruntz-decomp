@@ -9,6 +9,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
+#include <Pix16.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -52,14 +53,6 @@ inline CShadeTableArray::~CShadeTableArray() {
     if (m_pData) {
         delete[] m_pData;
     }
-}
-
-static inline u16* Pix16(void* p) {
-    return static_cast<u16*>(p);
-}
-
-static inline const u16* Pix16(const void* p) {
-    return static_cast<const u16*>(p);
 }
 
 RVA(0x0014de30, 0x1a)

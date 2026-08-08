@@ -41,10 +41,6 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
     );
 }
 
-static inline u16* Pix16(void* p) {
-    return static_cast<u16*>(p);
-}
-
 RVA(0x000a32c0, 0x72)
 i32 CLightFxRender::Init(CGruntzMgr* mgr, i32 refreshInterval) {
     if (mgr == NULL) {

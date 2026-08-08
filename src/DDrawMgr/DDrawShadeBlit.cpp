@@ -27,9 +27,6 @@ CShadeTable* g_shadeDescr21c = 0;
 DATA(0x002bf220)
 CShadeTable* g_shadeDescr220 = 0;
 
-static inline u16* Pix16(void* p) {
-    return static_cast<u16*>(p);
-}
 static inline void Store16(u8* p, i32 v) {
     Pix16Ptr c;
     c.m_bytes = p;
