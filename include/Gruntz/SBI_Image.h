@@ -17,12 +17,19 @@ class CImage;
 
 class CSBI_RectOnly : public CStatusBarItem {
 public:
+    // Out-of-line at 0x101fa0 (the base ctor is folded into its body).  Retail's
+    // deep chains all `call` it: CSBI_ImageSetAni 2/2, CSBI_WarlordHead 4/4,
+    // CSBI_StatzTabArrow 1/1, CSBI_WellGoo 1/1.
+    CSBI_RectOnly();
     // `new CSBI_RectOnly` runs the whole chain inline in retail (the three sites in
     // BuildStatusBarTabs carry no ctor call at all), so this one seeds the base.
-    CSBI_RectOnly() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+    enum EInlineSelf {
+        INLINE_SELF
+    };
+    CSBI_RectOnly(EInlineSelf) : CStatusBarItem(CStatusBarItem::NO_SEED) {
         m_kind = SBI_KIND_RECT_ONLY;
     }
-    // The derived chain takes this one: every `new CSBI_Image` in retail's four
+    // The CSBI_Image chain takes this one: every `new CSBI_Image` in retail's four
     // status-bar builders is `call ??0CStatusBarItem` + the derived stores inline.
     enum EBaseCall {
         BASE_CALL
@@ -53,6 +60,14 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 class CSBI_Image : public CSBI_RectOnly {
 public:
     CSBI_Image() : CSBI_RectOnly(BASE_CALL) {
+        m_kind = SBI_KIND_IMAGE;
+        m_frame = NULL;
+    }
+    // The chains below CSBI_Image cut one level higher - they `call ??0CSBI_RectOnly`.
+    enum ECallRectOnly {
+        CALL_RECTONLY
+    };
+    CSBI_Image(ECallRectOnly) : CSBI_RectOnly() {
         m_kind = SBI_KIND_IMAGE;
         m_frame = NULL;
     }

@@ -878,7 +878,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     i32 by = m_rect10.top;
     CDDrawSurfaceMgr* code = m_world;
 
-    CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
+    CSBI_RectOnly* dockLeft = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
     if (!dockLeft->Setup(
             this,
             code,
@@ -895,7 +895,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(dockLeft);
 
-    CSBI_RectOnly* dockRight = new CSBI_RectOnly;
+    CSBI_RectOnly* dockRight = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
     if (!dockRight->Setup(
             this,
             code,
@@ -912,7 +912,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(dockRight);
 
-    CSBI_RectOnly* hide = new CSBI_RectOnly;
+    CSBI_RectOnly* hide = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
     if (!hide->Setup(
             this,
             code,
@@ -1702,15 +1702,13 @@ i32 CStatusBarMgr::BuildGameMenu() {
     return 1;
 }
 
-// ??0CSBI_RectOnly: retail's 0x101fa0 inlines the CStatusBarItem base ctor and stamps
-// m_kind, but nothing in our tree emits the COMDAT - cl inlines the whole chain at all
-// three `new CSBI_RectOnly` sites. Defining the ctor out-of-line here DOES land this
-// claim, and costs more than it wins: the base ctor stops being emitted anywhere
-// (0x1005d0's pin in SBI_TabzDialogEh.cpp dangles instead), BuildStatusBarTabs goes
-// 71.58 -> 69.24 and BuildGameMenu 72.33 -> 66.93. Same per-site cut-depth wall,
-// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md.
-
-RVA_COMPGEN(0x00101fa0, 0x1b, ??0CSBI_RectOnly@@QAE@XZ)
+// The untagged entity of the pair in SBI_Image.h: retail's 0x101fa0 folds the
+// CStatusBarItem base ctor into its body (vptr + [+4]/[+0x24]/[+0x28] zeroed,
+// [+8] = 1) and the deep chains all `call` it.
+RVA(0x00101fa0, 0x1b)
+CSBI_RectOnly::CSBI_RectOnly() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+    m_kind = SBI_KIND_RECT_ONLY;
+}
 
 RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 

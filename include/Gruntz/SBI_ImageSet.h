@@ -19,6 +19,13 @@ public:
         m_kind = SBI_KIND_IMAGE_SET;
         m_frameSet = NULL;
     }
+    // CSBI_ImageSetAni and CSBI_WarlordHead cut one level higher (7 sites, all
+    // `call ??0CSBI_RectOnly`), so they take this one.
+    CSBI_ImageSet(CSBI_Image::ECallRectOnly) : CSBI_Image(CSBI_Image::CALL_RECTONLY) {
+        m_frame = NULL;
+        m_kind = SBI_KIND_IMAGE_SET;
+        m_frameSet = NULL;
+    }
     virtual ~CSBI_ImageSet() OVERRIDE;
 
     virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj)
