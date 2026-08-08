@@ -262,7 +262,7 @@ netsessionnode	3	3
 packetpool	1	1
 palettebmp	2	2
 pathhazard	13	10
-play	91	64
+play	91	65
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
@@ -3311,17 +3311,17 @@ play	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	2	a609e028be41	0xcee70	100.00
 play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	11	fa0c77dfc76e	0xcb480	100.0000
 play	?GetAmbientId@CPlay@@QAEHXZ	100.0000	100.0000	4	67743eddace9	0xda200	100.0000
 play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
-play	?HandleDragMove@CPlay@@UAEHHHH@Z	37.0038	37.0038	10	d07d7d407636	0xd0db0	37.1456
+play	?HandleDragMove@CPlay@@UAEHHHH@Z	37.0038	37.0038	11	8b7c2fe7dde1	0xd0db0	37.1456
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	1	b3c8fcfaa28d	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
 play	?LoadByMode@CPlay@@UAEHHH@Z	82.8332	82.8332	22	182b52107263	0xca200	82.8332
-play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	10	90dee4e8fafe	0xd0120	99.0221
+play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	78.3187	78.3187	2	2bc41ee15757	0xc7ec0	78.3187
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	ea06ab3ca6ec	0xd7440	95.8064
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	91.8290	91.8290	2	e6ef3d3e5d4a	0xd8060	91.8290
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	2	842142fa3f32	0xd1710	100.0000
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	19	354981ba5aac	0xd12b0	98.7500
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.6750	19	354981ba5aac	0xd12b0	98.7500
 play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	3	409f991bb413	0xd65d0	99.4069
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	8	05f7283351bb	0xcb740	100.0000
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	15	0254a5e3ef9e	0xd9050	100.0000
@@ -3351,7 +3351,7 @@ play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	7	e61042ec7712	0xd656
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	8	634f0a2f3808	0xc8700	100.0000
 play	?Render@CPlay@@UAEHXZ	85.7914	85.7892	34	4c12e1350a5c	0xc8cf0	85.7914
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	12	c9815d61e053	0xd5f00	100.0000
-play	?ResetPlayState@CPlay@@QAEHXZ	96.6250	96.6250	17	ec58fb43078f	0xd60b0	96.6250
+play	?ResetPlayState@CPlay@@QAEHXZ	96.6250	96.6250	18	ad8f00da114e	0xd60b0	96.6250
 play	?ResetViewport@CPlay@@QAEHXZ	100.0000	100.0000	14	54b1546a4a94	0xd8c60	100.0000
 play	?RestoreDisplay@CPlay@@UAEHXZ	99.4928	99.4928	3	2618b7991eb2	0xcba10	99.4928
 play	?ResumeGame@CPlay@@UAEHXZ	100.0000	100.0000	2	2471edd41549	0xcef00	100.0000
@@ -3364,7 +3364,7 @@ play	?SetRandomMoveIconsCurse@CPlay@@QAEHH@Z	100.0000	100.0000	1	446bac91dcaf	0x
 play	?SetTinyViewportCurse@CPlay@@QAEHH@Z	100.0000	100.0000	1	226030f393ec	0xd8a00	100.0000
 play	?StepGridWalk@CPlay@@QAEHH@Z	100.0000	100.0000	9	58201c904c55	0xd0a60	100.0000
 play	?StepInputA@CPlay@@QAEHXZ	100.0000	100.0000	12	b4026e60f6d7	0xd11e0	100.0000
-play	?StepScroll@CPlay@@QAEXXZ	100.0000	88.0345	13	38c040def23b	0xd1ac0	100.0000
+play	?StepScroll@CPlay@@QAEXXZ	100.0000	100.0000	13	38c040def23b	0xd1ac0	100.0000
 play	?StepViewportResize@CPlay@@QAEHXZ	100.0000	100.0000	2	99127790ae22	0xd8d90	100.0000
 play	?SyncState@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	a208227e6361	0xd7520	100.0000
 play	?TickStateMgrs@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0000

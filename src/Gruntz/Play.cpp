@@ -3749,7 +3749,7 @@ i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
             return 0;
         }
         if (this->m_scrollSink != NULL) {
-            this->m_scrollSink->m_stateFlags &= ~static_cast<i32>(SPRITE_STATE_HIDDEN);
+            this->m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
@@ -4179,7 +4179,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
                 }
             } else {
                 if (m_scrollSink != NULL) {
-                    m_scrollSink->m_stateFlags &= ~static_cast<i32>(SPRITE_STATE_HIDDEN);
+                    m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 }
             }
             CGameLevel* v = m_world->m_level;
@@ -4640,7 +4640,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     if (m_scrollSink != NULL) {
-        m_scrollSink->m_stateFlags &= ~static_cast<i32>(SPRITE_STATE_HIDDEN);
+        m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
     m_inGame = 0;
     if (!PlaceStartGruntz()) {
