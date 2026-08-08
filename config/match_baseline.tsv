@@ -2099,7 +2099,7 @@ gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	89.8214	89.8214	13	ff509a
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	5	d871f928c1b0	0x7d810	100.0000
 gruntreticlescan	?ArrivalReticleScan@CGrunt@@QAEHXZ	85.1361	85.1361	12	7b101318dfb9	0xee800	85.1361
 gruntscantarget	?ScanNearestTarget@CGrunt@@QAEHXZ	68.2783	68.2776	3	55a4823ef93f	0xf42f0	68.2783
-gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	77.4150	77.4150	20	cebca7c9d712	0xf71c0	77.4150
+gruntseektarget	?SeekTarget@CGrunt@@QAEHXZ	80.8211	80.8211	21	3997514c0c24	0xf71c0	80.8211
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	96.4583	96.4583	9	bbc37ae9d391	0x7e3e0	96.4583
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	2	e4dba9b44f5d	0x11e80	100.0000
 gruntselectedsprite	??_GCGruntSelectedSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:f3954bbe791a	0x11e50	100.0000
