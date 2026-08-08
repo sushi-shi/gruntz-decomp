@@ -865,7 +865,5 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     return 1;
 }
 
-RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
-
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}

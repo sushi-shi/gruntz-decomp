@@ -35,6 +35,15 @@ docs/patterns/function-local-static-dynamic-init-guard.md.
   python -m gruntz.audit.static_guards            # all guards, claimed first
   python -m gruntz.audit.static_guards --claimed  # only ones in a reconstructed fn
   python -m gruntz.audit.static_guards --deltas   # guard->datum offset histogram
+  python -m gruntz.audit.static_guards --verify  # are cl's own `$E` bodies byte-exact?
+
+Three of the buckets need NO work.  A guard inside a compiler-private `$E<n>` helper
+is already reconstructed - cl emits that helper from the object definition, and the
+ordinal is too volatile to pin, so it can never carry an RVA().  A guard inside CRT/MFC
+code is carved out.  Only the last bucket is a worklist; `--verify` turns the `$E`
+bucket from an assumption into a byte proof (and that proof is what finds the real
+defects: a wrong ctor argument, an undefined global, or the /GX inlining mismatch in
+docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
 """
 import argparse
 import bisect
@@ -178,6 +187,122 @@ def owner(ent, starts, rva):
     return e if (e[1] == 0 or rva < e[0] + e[1]) else None
 
 
+def compgen_spans():
+    """[(lo, hi, name, unit)] for every compiler-private `$E<n>` helper.
+
+    cl EMITS these itself from a file-scope/template-static object definition, so a
+    guard inside one is already reconstructed - it just cannot carry an RVA() (the
+    ordinal is volatile; see labels.VOLATILE_ORDINAL_FN_RE). Reporting them as
+    unwritten functions manufactures a worklist of bodies nobody can write.
+    """
+    out = []
+    p = REPO / "config/retail/compiler-generated-functions.tsv"
+    for ln in p.read_text().splitlines():
+        if not ln.strip() or ln.startswith("#"):
+            continue
+        f = ln.split("\t")
+        rva, size = int(f[0], 16), int(f[1], 16)
+        out.append((rva, rva + size, f[2], f[3] if len(f) > 3 else ""))
+    out.sort()
+    return out
+
+
+def library_spans():
+    """[(rva, name, lib)] for every FID/anchored library label (CRT/MFC carve-out)."""
+    out = []
+    p = REPO / "config/retail/library_labels.csv"
+    for ln in p.read_text().splitlines()[1:]:
+        f = ln.split(",")
+        if len(f) >= 3 and f[0].startswith("0x"):
+            out.append((int(f[0], 16), f[1], f[2]))
+    out.sort()
+    return out
+
+
+def _span_hit(spans, rva):
+    k = bisect.bisect_right([s[0] for s in spans], rva) - 1
+    return spans[k] if k >= 0 and rva < spans[k][1] else None
+
+
+def _lib_hit(libs, rva, window=0x80):
+    """Nearest library label at or just below `rva` (library sizes are not recorded)."""
+    k = bisect.bisect_right([l[0] for l in libs], rva) - 1
+    return libs[k] if k >= 0 and rva - libs[k][0] <= window else None
+
+
+def verify_compgen_emitted():
+    """Every retail `$E` body must appear byte-identically in some base obj.
+
+    Masks the 4-byte fields at the BASE object's own relocation offsets on both
+    sides (COFF relocates DIR32 and REL32 alike, so that offset list covers every
+    address operand objdiff would mask). A row with no byte-equal counterpart is a
+    real source defect - a wrong ctor argument, a global nobody defines, or a /GX
+    mismatch that stopped cl inlining the ctor
+    (docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
+
+    Returns (hits, misses); misses are the (rva, size, name, unit) rows.
+    """
+    from gruntz.core import pe
+
+    data, secs = pe.load()
+    _n, base, _v, rp, _rsz = pe.text(secs)
+
+    def coff_e_bodies(path):
+        d = path.read_bytes()
+        nsec = struct.unpack_from("<H", d, 2)[0]
+        symoff = struct.unpack_from("<I", d, 8)[0]
+        nsym = struct.unpack_from("<I", d, 12)[0]
+        secs_ = []
+        for i in range(nsec):
+            o = 20 + 40 * i
+            sz = struct.unpack_from("<I", d, o + 16)[0]
+            ptr = struct.unpack_from("<I", d, o + 20)[0]
+            rptr = struct.unpack_from("<I", d, o + 24)[0]
+            nrel = struct.unpack_from("<H", d, o + 32)[0]
+            secs_.append((sz, ptr, [struct.unpack_from("<I", d, rptr + 10 * k)[0]
+                                    for k in range(nrel)]))
+        strtab = symoff + 18 * nsym
+        out, i = [], 0
+        while i < nsym:
+            o = symoff + 18 * i
+            raw = d[o:o + 8]
+            if raw[:4] == b"\0\0\0\0":
+                off = struct.unpack_from("<I", raw, 4)[0]
+                nm = d[strtab + off:d.index(b"\0", strtab + off)].decode("latin1")
+            else:
+                nm = raw.rstrip(b"\0").decode("latin1")
+            val = struct.unpack_from("<I", d, o + 8)[0]
+            sec = struct.unpack_from("<h", d, o + 12)[0]
+            if sec > 0 and re.match(r"^_\$E\d+$", nm):
+                sz, ptr, rel = secs_[sec - 1]
+                out.append((d[ptr + val:ptr + sz], [r - val for r in rel if val <= r < sz]))
+            i += 1 + d[o + 17]
+        return out
+
+    def masked(b, rl):
+        a = bytearray(b)
+        for r in rl:
+            if 0 <= r and r + 4 <= len(a):
+                a[r:r + 4] = b"\0\0\0\0"
+        return bytes(a)
+
+    bodies = []
+    for p in sorted((REPO / "build/objdiff/base").glob("*.obj")):
+        bodies += [(p.stem, body, rl) for body, rl in coff_e_bodies(p)]
+
+    hits, misses = [], []
+    for rva, hi, nm, unit in compgen_spans():
+        size = hi - rva
+        rb = data[rp + (rva - base):rp + (rva - base) + size]
+        for bunit, body, rl in bodies:
+            if len(body) >= size and masked(body[:size], rl) == masked(rb, rl):
+                hits.append((rva, size, nm, bunit))
+                break
+        else:
+            misses.append((rva, size, nm, unit))
+    return hits, misses
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -185,6 +310,9 @@ def main(argv=None):
                     help="only guards inside a function src/ already claims")
     ap.add_argument("--deltas", action="store_true",
                     help="print the guard->datum offset histogram and exit")
+    ap.add_argument("--verify", action="store_true",
+                    help="prove every compiler-private `$E` body reproduces byte-identically "
+                         "in build/objdiff/base (needs a build); a miss is a real defect")
     args = ap.parse_args(argv)
 
     if args.deltas:
@@ -195,25 +323,67 @@ def main(argv=None):
         print("\nNo fixed relationship: the guard and its datum are independent bss objects.")
         return 0
 
+    if args.verify:
+        hits, misses = verify_compgen_emitted()
+        print(f"{len(hits) + len(misses)} compiler-private `$E` bodies: "
+              f"{len(hits)} reproduce byte-identically, {len(misses)} do NOT")
+        for rva, size, nm, unit in misses:
+            print(f"  MISSING 0x{rva:06x} size=0x{size:x}  {nm}  (last seen in {unit})")
+        if misses:
+            print("\nA missing body is a real source defect: a wrong ctor argument, a global\n"
+                  "nobody defines, or a /GX mismatch that stopped cl inlining the ctor\n"
+                  "(docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).")
+        return 0
+
     ent = src_claims()
     starts = [e[0] for e in ent]
+    cgen = compgen_spans()
+    libs = library_spans()
     rows = guards()
-    claimed, unclaimed = [], []
+    claimed, compgen, library, unclaimed = [], [], [], []
     for g, sites, bits in rows:
         hit = next((o for o in (owner(ent, starts, s) for s in sites) if o), None)
-        (claimed if hit else unclaimed).append((g, sites, bits, hit))
+        if hit:
+            claimed.append((g, sites, bits, hit))
+            continue
+        cg = next((c for c in (_span_hit(cgen, s) for s in sites) if c), None)
+        if cg:
+            compgen.append((g, sites, bits, cg))
+            continue
+        lb = next((l for l in (_lib_hit(libs, s) for s in sites) if l), None)
+        if lb:
+            library.append((g, sites, bits, lb))
+            continue
+        unclaimed.append((g, sites, bits, None))
 
     print(f"{len(rows)} function-local-static guard(s) in retail .text: "
-          f"{len(claimed)} in a reconstructed function, {len(unclaimed)} not yet reconstructed")
+          f"{len(claimed)} in a reconstructed function, "
+          f"{len(compgen)} in a compiler-emitted `$E` helper, "
+          f"{len(library)} in library code, "
+          f"{len(unclaimed)} not yet reconstructed")
     print("\n-- inside a function src/ claims (spell these `static T x = <init>;`) --")
     for g, sites, bits, hit in claimed:
         b = " bits=" + ",".join(hex(x) for x in bits) if bits else ""
         print(f"  guard 0x{g:06x}  n={len(sites)}{b}  -> 0x{hit[0]:06x}  {hit[2]}:{hit[3]}")
-    if not args.claimed:
-        print("\n-- not yet reconstructed (the body will need a local static) --")
-        for g, sites, bits, _ in unclaimed:
-            print(f"  guard 0x{g:06x}  n={len(sites)}  sites "
-                  + " ".join(f"0x{s:06x}" for s in sites))
+    if args.claimed:
+        return 0
+
+    print("\n-- inside a compiler-emitted `$E` helper: ALREADY reconstructed, nothing to write --")
+    print("   cl emits these from the object definition itself; the ordinal is volatile so they")
+    print("   carry no RVA(). `--verify` proves each one reproduces byte-identically.")
+    for g, sites, bits, cg in compgen:
+        print(f"  guard 0x{g:06x}  n={len(sites)}  -> 0x{cg[0]:06x} {cg[2]}  [{cg[3]}]")
+
+    print("\n-- inside library code (CRT/MFC carve-out: never reconstructed) --")
+    for g, sites, bits, lb in library:
+        print(f"  guard 0x{g:06x}  n={len(sites)}  -> 0x{lb[0]:06x} {lb[1]}  [{lb[2]}]")
+
+    print("\n-- not yet reconstructed (the body will need a local static) --")
+    for g, sites, bits, _ in unclaimed:
+        print(f"  guard 0x{g:06x}  n={len(sites)}  sites "
+              + " ".join(f"0x{s:06x}" for s in sites))
+    if not unclaimed:
+        print("  (none)")
     return 0
 
 
