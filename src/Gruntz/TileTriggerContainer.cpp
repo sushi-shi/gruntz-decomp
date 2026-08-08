@@ -288,8 +288,8 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj->m_dutyOffSpan = dutyOffSpan;
             if (logicType != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
                 obj->m_dutyOffSpan = dutyOnSpan;
+                obj->m_startClock = g_frameTime;
             }
-            obj->m_startClock = g_frameTime;
             ok = 1;
         }
     }
@@ -410,31 +410,31 @@ CGiantRockLogic* CTileTriggerContainer::AddToList1(
     if (e == NULL) {
         return 0;
     }
-    if (e->m_initGate != 0) {
-        CTileTriggerLogic* dead = e;
-        delete dead;
-        return 0;
+    if (e->m_initGate == 0) {
+        memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
+        e->m_powerupType = static_cast<PickupType>(powerupType);
+        e->m_textId = textId;
+        e->m_typeTag = TRIGID_GIANT_ROCK_22;
+        e->m_tileX = tileX;
+        e->m_tileY = tileY;
+        e->m_cellKey = cellKey;
+        e->m_owner = this;
+        e->m_initGate = 1;
+        e->m_dutyOn = 0;
+        e->m_startClock = g_frameTime;
+        e->m_dutyOnSpan = 0;
+        e->m_tileToken = 0;
+        e->m_leadInSpan = 0;
+        e->m_dutyOffSpan = 0;
+        e->m_startClock = g_frameTime;
+        e->m_dutyOffSpan = dutyOffSpan;
+        m_list1.AddTail(e);
+        return e;
     }
 
-    memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
-    e->m_powerupType = static_cast<PickupType>(powerupType);
-    e->m_textId = textId;
-    e->m_typeTag = TRIGID_GIANT_ROCK_22;
-    e->m_tileX = tileX;
-    e->m_tileY = tileY;
-    e->m_cellKey = cellKey;
-    e->m_owner = this;
-    e->m_initGate = 1;
-    e->m_dutyOn = 0;
-    e->m_startClock = g_frameTime;
-    e->m_dutyOnSpan = 0;
-    e->m_tileToken = 0;
-    e->m_leadInSpan = 0;
-    e->m_dutyOffSpan = 0;
-    e->m_startClock = g_frameTime;
-    e->m_dutyOffSpan = dutyOffSpan;
-    m_list1.AddTail(e);
-    return e;
+    CTileTriggerLogic* dead = e;
+    delete dead;
+    return 0;
 }
 
 RVA(0x00116e60, 0x59)
@@ -596,93 +596,93 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         return 0;
     }
     switch (op) {
-    case SERIAL_SAVE: {
-        POSITION pos;
-        i32 cnt = m_base.GetCount();
-        s->Write(&cnt, sizeof(cnt));
-        pos = m_base.GetHeadPosition();
-        while (pos != NULL) {
-            CTileTriggerSwitchLogic* e0 =
-                static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
-            if (SerializeApplyA(s, SERIAL_SAVE, typeId, pObj, e0) == 0) {
+        case SERIAL_SAVE: {
+            POSITION pos;
+            i32 cnt = m_base.GetCount();
+            s->Write(&cnt, sizeof(cnt));
+            pos = m_base.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerSwitchLogic* e0 =
+                    static_cast<CTileTriggerSwitchLogic*>(m_base.GetNext(pos));
+                if (SerializeApplyA(s, SERIAL_SAVE, typeId, pObj, e0) == 0) {
+                    return 0;
+                }
+            }
+            cnt = m_list1.GetCount();
+            s->Write(&cnt, sizeof(cnt));
+            pos = m_list1.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerLogic* e1 = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
+                if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e1) == 0) {
+                    return 0;
+                }
+            }
+            cnt = m_list2.GetCount();
+            s->Write(&cnt, sizeof(cnt));
+            pos = m_list2.GetHeadPosition();
+            while (pos != NULL) {
+                CTileTriggerLogic* e2 = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
+                if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e2) == 0) {
+                    return 0;
+                }
+            }
+            cnt = m_list3.GetCount();
+            s->Write(&cnt, sizeof(cnt));
+            pos = m_list3.GetHeadPosition();
+            while (pos != NULL) {
+                CTileActionEvent* e3 = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
+                if (e3->Serialize(s, SERIAL_SAVE, typeId, pObj) == 0) {
+                    return 0;
+                }
+            }
+            if (TransferFlag74(s) == 0) {
                 return 0;
             }
+            return 1;
         }
-        cnt = m_list1.GetCount();
-        s->Write(&cnt, sizeof(cnt));
-        pos = m_list1.GetHeadPosition();
-        while (pos != NULL) {
-            CTileTriggerLogic* e1 = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
-            if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e1) == 0) {
+        case SERIAL_LOAD: {
+            RemoveAll();
+            u32 n;
+            u32 i;
+            void* e;
+            s->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                if (e == NULL) {
+                    return 0;
+                }
+                m_base.AddTail(e);
+            }
+            s->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                if (e == NULL) {
+                    return 0;
+                }
+                m_list1.AddTail(e);
+            }
+            s->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+                if (e == NULL) {
+                    return 0;
+                }
+                m_list2.AddTail(e);
+            }
+            s->Read(&n, sizeof(n));
+            for (i = 0; i < n; i++) {
+                CTileActionEvent* m = new CTileActionEvent;
+                if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
+                    return 0;
+                }
+                m->m_owner = this;
+                m_list3.AddTail(m);
+            }
+            if (LoadFlag74(s) == 0) {
                 return 0;
             }
+            return 1;
         }
-        cnt = m_list2.GetCount();
-        s->Write(&cnt, sizeof(cnt));
-        pos = m_list2.GetHeadPosition();
-        while (pos != NULL) {
-            CTileTriggerLogic* e2 = static_cast<CTileTriggerLogic*>(m_list2.GetNext(pos));
-            if (SerializeApplyB(s, SERIAL_SAVE, typeId, pObj, e2) == 0) {
-                return 0;
-            }
-        }
-        cnt = m_list3.GetCount();
-        s->Write(&cnt, sizeof(cnt));
-        pos = m_list3.GetHeadPosition();
-        while (pos != NULL) {
-            CTileActionEvent* e3 = static_cast<CTileActionEvent*>(m_list3.GetNext(pos));
-            if (e3->Serialize(s, SERIAL_SAVE, typeId, pObj) == 0) {
-                return 0;
-            }
-        }
-        if (TransferFlag74(s) == 0) {
-            return 0;
-        }
-        return 1;
-    }
-    case SERIAL_LOAD: {
-        RemoveAll();
-        u32 n;
-        u32 i;
-        void* e;
-        s->Read(&n, sizeof(n));
-        for (i = 0; i < n; i++) {
-            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-            if (e == NULL) {
-                return 0;
-            }
-            m_base.AddTail(e);
-        }
-        s->Read(&n, sizeof(n));
-        for (i = 0; i < n; i++) {
-            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-            if (e == NULL) {
-                return 0;
-            }
-            m_list1.AddTail(e);
-        }
-        s->Read(&n, sizeof(n));
-        for (i = 0; i < n; i++) {
-            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-            if (e == NULL) {
-                return 0;
-            }
-            m_list2.AddTail(e);
-        }
-        s->Read(&n, sizeof(n));
-        for (i = 0; i < n; i++) {
-            CTileActionEvent* m = new CTileActionEvent;
-            if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
-                return 0;
-            }
-            m->m_owner = this;
-            m_list3.AddTail(m);
-        }
-        if (LoadFlag74(s) == 0) {
-            return 0;
-        }
-        return 1;
-    }
     }
 
     return 1;

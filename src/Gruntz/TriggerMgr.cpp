@@ -1725,8 +1725,8 @@ RVA(0x0007b930, 0x3e0)
 i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 flag) {
     i32 r = radius << TILE_SHIFT_PX;
     i32 xLo = x - r - 7;
-    i32 yLo = y - r - 7;
     i32 xHi = x + r + 7;
+    i32 yLo = y - r - 7;
     i32 yHi = y + r + 7;
     i32 rangeA = m_world->m_level->m_mainPlane->m_gridW - 2;
     i32 rangeB = m_world->m_level->m_mainPlane->m_gridH - 2;
@@ -1773,8 +1773,8 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         }
                         i32 done = 0;
                         do {
-                            i32 dx = rangeA ? rand() % rangeA + 1 : rand() & 1;
-                            i32 dy = rangeB ? rand() % rangeB + 1 : rand() & 1;
+                            i32 dx = rangeA == 0 ? rand() & 1 : rand() % rangeA + 1;
+                            i32 dy = rangeB == 0 ? rand() & 1 : rand() % rangeB + 1;
                             if (g->TryTeleportToCell(dx, dy, 0, 1)) {
                                 CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                                     0,
@@ -1972,15 +1972,13 @@ RVA(0x0007c110, 0x166)
 i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     CGrunt* src = m_grid[col * TM_GRID_COLS + a1c];
     i32 free = 0;
-    if (m_grid[row * TM_GRID_COLS] != NULL) {
-        CGrunt** p = &m_grid[row * TM_GRID_COLS];
-        while (free < 15) {
-            p++;
-            free++;
-            if (*p == NULL) {
-                break;
-            }
+    CGrunt** p = &m_grid[row * TM_GRID_COLS];
+    while (*p != NULL) {
+        if (free >= 15) {
+            break;
         }
+        p++;
+        free++;
     }
     if (free >= 15) {
         return 0;

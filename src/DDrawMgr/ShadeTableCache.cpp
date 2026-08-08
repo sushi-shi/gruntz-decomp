@@ -97,6 +97,12 @@ void CShadeTableCache::FreeNodes() {
 // Measured byte-identical to the current spelling: the HSV_MIN(expr, g_255) macro at all
 // six sites, and the explicit `if (EXPR < g_255) v = EXPR; else v = g_255;` statement
 // form. That recompute is the whole +16 fmul / +15 fxch / +10 fild deficit.
+// The `sub esp,0x28` vs retail's `0x34` is DOWNSTREAM of the same recompute, not a
+// separate lever: both sides give the four u8 clamp results their own dword (base
+// 0x24/0x28/0x30/0x34, retail 0x34/0x38/0x3c/0x40), and the three extra dwords are
+// retail's `fild` staging slots (0x14/0x2c/0x30) plus an x87 spill (0x28) that the
+// second, recomputed copy of each channel needs. CSE the recompute away and the three
+// slots go with it, which is exactly what our build does.
 RVA(0x0014df40, 0x5f4)
 CShadeTable*
 CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {

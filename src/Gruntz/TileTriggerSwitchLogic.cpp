@@ -1000,37 +1000,31 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 damageParam,
     i32 checkpointType
 ) {
-    i32 px;
-    i32 py;
-    CWwdGameObjectA* spr;
-
     if (m_initGate != 0) {
-        goto fail;
+        return 0;
     }
     if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
-        goto fail;
+        return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));
     if (!Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType)) {
-        goto fail;
+        return 0;
     }
-    px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (checkpointType == 0) {
-        return 1;
-    }
-    spr = g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
-    if (!spr) {
-        goto fail;
-    }
-    spr->m_animWorker->m_notify(spr);
-    spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
-    if (spr->m_layer == NULL) {
-        goto fail;
+    i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    i32 py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    if (checkpointType != 0) {
+        CWwdGameObjectA* spr =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 0, "BehindCandy", 0x40001);
+        if (!spr) {
+            return 0;
+        }
+        spr->m_animWorker->m_notify(spr);
+        spr->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", checkpointType);
+        if (spr->m_layer == NULL) {
+            return 0;
+        }
     }
     return 1;
-fail:
-    return 0;
 }
 
 // @early-stop

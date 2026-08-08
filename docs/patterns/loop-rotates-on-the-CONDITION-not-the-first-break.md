@@ -90,6 +90,34 @@ This also explains the earlier measured negative that `while`, `for(;;)`+top-`br
 compile byte-identically: those all keep the SAME test as the condition, and the keyword is indeed
 not the lever. Which test is the condition is.
 
+## The same defect with the peeled guard ALREADY transcribed into the source
+
+`CTriggerMgr::SpawnGrunt` 0x7c110 shows the sibling form: the reconstruction had written cl's
+own rotation *back into the C++*, entry guard and all, which is why it read as a plain
+"guard + counted loop" and not as a rotation question at all.
+
+```cpp
+// NO - the `if (m_grid[...] != NULL)` IS cl's peeled guard, and `free < 15` is now the
+//      condition, so cl rotates THAT: base `test; je / mov; add; inc; test; je; cmp; jl`
+i32 free = 0;
+if (m_grid[row * TM_GRID_COLS] != NULL) {
+    CGrunt** p = &m_grid[row * TM_GRID_COLS];
+    while (free < 15) { p++; free++; if (*p == NULL) break; }
+}
+
+// YES - the pointer test is the condition (cl re-peels it itself), the bound is the break
+i32 free = 0;
+CGrunt** p = &m_grid[row * TM_GRID_COLS];
+while (*p != NULL) { if (free >= 15) break; p++; free++; }
+```
+
+Retail: `test edi,edi / je out` (cl's own peel), then `LOOP: cmp ebp,0xf / jge out /
+mov edi,[ecx+4] / add ecx,4 / inc ebp / test edi,edi / jne LOOP`. 74.49 -> 80.31 and both
+`OTHER` rows (`je->jge`, `jl->jne`) closed on that edit alone. **Tell:** the sieve bucket is
+`OTHER`, not `POLARITY` - the two branches swap *kind* (`je`/`jl` vs `jge`/`jne`) because the
+entry guard and the back-edge trade tests. A hand-written entry guard that duplicates a test
+the loop already makes is the fingerprint; delete it and promote its test to the condition.
+
 ## How to read it off the target
 
 `--diff` and `--blocks --diff` mask address operands and will report the two functions identical.
