@@ -72,6 +72,28 @@ The first row also settles the regime table's "positive-gate nest" row from
 `&&` chain is the SAME codegen as the `&&`, so it is not an exit-splitting lever
 in either direction.
 
+## `goto fail;` DOES reach part of this bucket — the mirror is not wholly unsolved
+
+[goto-fail-shares-one-exit-block](goto-fail-shares-one-exit-block.md) records the
+OVER-MERGE direction as "NOT solved" on the strength of two `goto` attempts that
+scored worse. That is too strong. **When the site is a single guard whose
+`return K` retail parks at the END of the function and ours emits inline as the
+test's fall-through, the `goto` form flips the branch polarity to retail's and is
+worth real points**, even though it does not sink the block:
+
+`CProjectile::SerializeMove` 0xe0d40, `if (CMovingLogic::SerializeMove(...) == 0)
+return 0;` -> `goto fail;` + a trailing `fail: return 0;`: **94.39 -> 94.82**, and
+blocks B32-B38 go from permuted to `==`. Base had `jne <continue> | fall <ret0>`,
+retail has `je <sunk ret0> | fall <continue>`; the goto buys the polarity.
+Residue: the block is still inline rather than sunk, which is why the SERIAL_LOAD
+arm still falls into the trailing `return 1` (12i + a shared 7i) instead of
+carrying its own epilogue the way retail's 19i block does.
+
+Folding the same two guards into `||` instead scores **92.08** — worse than doing
+nothing, because the TOTAL regime also swallows the entry `reg == NULL` and the
+`m_shadow` guard, both of which retail keeps inline. Screen by counting retail's
+`return 0` copies before reaching for `||`.
+
 ## Where the cost actually shows up
 
 Because the merge happens first, everything downstream re-flows from it:
