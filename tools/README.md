@@ -189,9 +189,12 @@ version:
   serve resources from `blob + (pos - dir_min_pos)`. All three archives satisfy
   it for every directory; only 290 / 0 / 171 have entries in
   ascending-position or lexicographic order. The on-disk stride-19 sibling
-  order is retail's own 19-bucket name hash (`CRezMgr` ctor @0x13aa10), and
-  lookup goes through that hash, so order is free. In `GRUNTZ.EXE` the flag is
-  inert: `CRezDir::Load` has no caller and no vtable slot.
+  order is retail's own resource-name hash, traceable end to end:
+  `CRezMgr::m_70 = 19` @0x13aa10 -> the `CRezTyp` ctor's 4th argument @0x13a95c
+  -> `Construct(typ->m_24, 19)` @0x139c38 -> every resource inserted there by
+  name @0x13a7e5. Lookup goes through the same hash, so order is free. In
+  `GRUNTZ.EXE` the flag is inert anyway: `CRezDir::Load` has no caller and no
+  vtable slot.
 * **`next_write_pos` is exactly `max(pos + size)`** — the end of the payload
   region, not a pointer into a hole. What follows it is directory bodies plus
   orphaned earlier copies of them, which is the whole reason a re-encode is
@@ -199,6 +202,11 @@ version:
 * **`root_dir_time` is undetermined.** Not a `time_t` like `time` is; the three
   archives carry 0x0012fd1c, 0x0040c9d8, 0x0040c9d8 — a stack address and an
   image-base address, unchanged across builds three days apart.
+
+The doc's appendix carries the recovered field map for all four reader classes
+(`CRezMgr` 0x94, `CRezDir` 0x4c, `CRezTyp` 0x30, `CRezItm` 0x3c), marked proven
+/ inferred / unknown per field. None of them exists in `src/` yet; the container
+reader is unreconstructed retail at 0x138000-0x13c4cx.
 
 ## What the codecs turned out to be
 

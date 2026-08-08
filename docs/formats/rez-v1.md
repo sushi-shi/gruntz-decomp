@@ -179,10 +179,18 @@ Observed conventions (not enforced by the parser):
 
 The on-disk sibling order is not lexicographic and not ascending by position:
 `rezls Gruntz.REZ grep AREA1` walks 323, 304, 285, 266, … — a stride-19 pattern
-that falls straight out of retail's own data structure. `CRezMgr`'s constructor
-@0x13aa10 sets `m_70 = m_74 = 0x13` (19) — the bucket counts it hands each
-resource-name hash — so the packer's own enumeration order was hash-bucket
-order, and that is what got written.
+that falls straight out of retail's own data structure. Follow the 19:
+
+```
+CRezMgr ctor  @0x13aa10   m_70 = 0x13                     (19)
+GetOrCreateTyp@0x13a95c   passes m_70 as the CRezTyp ctor's 4th argument
+CRezTyp  ctor @0x139c38   CHashBase::Construct(&typ->m_24, that argument)
+ReadDirBlock  @0x13a7e5   inserts every resource into typ->m_24 by NAME
+```
+
+So each resource type indexes its members in a 19-bucket name hash, and the
+packer that wrote these archives enumerated through that hash. Bucket order is
+what got written; the stride is the bucket count.
 
 Lookup never cares. `CRezDir::ReadDirBlock` inserts each resource into its
 type's name hash (@0x13a7d5), and a lookup hashes the name and walks one bucket
@@ -305,6 +313,122 @@ archive produced here has been loaded by `GRUNTZ.EXE`. The evidence that one
 would load is the reader disassembly above plus the round-trip, not an
 observation.
 
+## Appendix: the reader's runtime classes
+
+Not part of the on-disk format — this is the **evidence base** for everything
+above, and the head start for whoever reconstructs retail 0x138000–0x13c4cx.
+None of these classes exists in `src/` today.
+
+Confidence is marked per field: **P** proven (a store/load whose meaning is
+forced by how the value is produced or consumed), **I** inferred (consistent
+with every use, but only one witness), **?** unknown.
+
+Sizes are ground truth from `push <n>; call operator new`:
+
+| class | size | allocated at |
+|---|---|---|
+| `CRezMgr` | 0x94 | 0x83c66, 0x91bba |
+| `CRezDir` (container) | 0x4c | 0x13ae27, 0x13af1f, 0x13b037, 0x13a73a |
+| `CRezTyp` | 0x30 | 0x13a961 |
+| `CRezItm` (container) | 0x3c | pooled 100 at a time, 0x13c133 |
+| `CRezItm` (file driver, = `src/Rez/RezFile.cpp`) | 0x24 | 0x13ae90 |
+| `CRezDir` (file driver, = `src/Rez/RezFile.cpp`) | 0x38 | 0x13ad9f |
+
+### `CRezMgr` — 0x94
+
+| Off | Meaning | | Evidence |
+|---|---|---|---|
+| 0x00 | vptr (0x5ef750) | P | ctor @0x13aa10 |
+| 0x08 | **`is_sorted`** | P | header buf+0xa7 `and ecx,0xff` @0x13afe3; tested @0x13a108; forced to 0 by the merge Open @0x13b0f2; ctor default 1 |
+| 0x0c | archive-is-open flag | I | set to 1 on both successful Open paths, never read in this module |
+| 0x10 | embedded list of file drivers (vptr 0x5ef75c, head/tail at 0x14/0x18) | P | `lea ecx,[mgr+0x10]` + AddHead @0x1851e0 per opened driver |
+| 0x1c | **count of opened archives** | P | ctor 0; incremented per Open @0x13ae0c/@0x13aefe/@0x13b13e; `<= 1` gate in `CRezDir::Load` |
+| 0x20 | the primary file driver | P | `mov [mgr+0x20],esi` @0x13adf3; `Load` reads its vtable slot +8 (`Read`) |
+| 0x24 | 1 | ? | ctor only |
+| 0x28 | 0x77359400 (2 000 000 000) | ? | ctor only; smells like a size/space limit, never read here |
+| 0x2c | max simultaneously-open files = 3 | P | passed as `maxOpen` to the file-driver `CRezDir` ctor, which `src/Rez/RezFile.cpp` already models |
+| 0x30 | `root_dir_pos` | P | header buf+0x83 |
+| 0x34 | `root_dir_size` | P | header buf+0x87 |
+| 0x38 | `root_dir_time` | P | header buf+0x8b; handed to the root dir ctor @0x13b062 |
+| 0x3c | `next_write_pos` | P | header buf+0x8f; set to 0xa8 when creating @0x13af21 |
+| 0x40 | Open's `readonly` argument | P | stored at entry; Open returns 0 immediately if it is 0; ctor default 1 |
+| 0x44 | the root `CRezDir*` | P | `mov [mgr+0x44],eax` after the root ctor |
+| 0x48 | header `time` | P | header buf+0x93 |
+| 0x4c | set to 1 only on the create path | I | never read in this module; "created, needs flush"? |
+| 0x50 | `version` | P | header buf+0x7f, compared to 1 |
+| 0x54 | `largest_key_ary` | P | header buf+0x97; `max`-folded @0x13b276 |
+| 0x58 | `largest_dir_name_size` | P | header buf+0x9b; `max`-folded @0x13b287 |
+| 0x5c | `largest_rez_name_size` | P | header buf+0x9f; `max`-folded @0x13b298 |
+| 0x60 | `largest_comment_size` | P | header buf+0xa3; `max`-folded @0x13b2a9 |
+| 0x64 | `strdup`'d archive filename | P | strlen/malloc/copy of Open's arg; freed on every failure path |
+| 0x68 | case-insensitive-names flag | P | `sete cl` on `m_68 == 0` @0x13a750, passed to the directory-name lookup |
+| 0x6c | build the second `CRezTyp` index | P | selects the two-hash vs one-hash `CRezTyp` ctor @0x13a95c; **0 by default**, which is why `id` is stored and never indexed |
+| 0x70 | resource-name hash buckets = **19** | P | 4th arg to the `CRezTyp` ctor, which `Construct`s the name hash at `typ+0x24` with it |
+| 0x74 | second-index hash buckets = 19 | P | 3rd arg, `Construct`s `typ+0x1c` |
+| 0x78 | child-directory hash buckets = 5 | P | passed to every `CRezDir` ctor, which `Construct`s `dir+0x38` |
+| 0x7c | type hash buckets = 9 | P | same, for `dir+0x40` |
+| 0x80 | `CRezItm` free-list hash (1 bucket) | I | ctor `Construct(1)`; the pool at 0x13c0c0 |
+| 0x88 | list of allocated item blocks | I | AddHead @0x13c1c8 |
+| 0x90 | items per pool block = 100 | P | `blocksize = m_90 * 0x3c` @0x13c127 (`lea/lea/shl` = *60) |
+
+`m_70` is the field behind your stride-19: the packer walked a 19-bucket
+resource-name hash and wrote siblings out in bucket order.
+
+### `CRezDir` (container) — 0x4c
+
+| Off | Meaning | | Evidence |
+|---|---|---|---|
+| 0x00 | `strdup`'d name | P | ctor @0x139de0 |
+| 0x04 | body `pos` | P | ctor arg; re-read by `ReadDirBlock`'s recursion @0x13a5f0 |
+| 0x08 | body `size` | P | same |
+| 0x0c | **min resource `pos`** | P | init 0xffffffff @0x13a65c, `min`-folded @0x13a8dc |
+| 0x10 | **sum of resource sizes** | P | init 0, accumulated @0x13a8cd |
+| 0x14 | `time` | P | ctor arg; refreshed on re-parse @0x13a789 |
+| 0x18 | the owning `CRezMgr*` | P | every `mgr->` access goes through it |
+| 0x1c | parent `CRezDir*` | I | ctor arg, 0 for the root |
+| 0x20 | embedded `CHashElement` (vptr 0x5ef748) | P | see the cross-check below |
+| 0x34 | back-pointer to `this` | P | `mov [dir+0x34],dir` — element+0x14 |
+| 0x38 | child-directory hash | P | `Construct(mgr->m_78)`; searched @0x13c3f0 |
+| 0x40 | resource-type hash | P | `Construct(mgr->m_7c)`; searched @0x13c360 |
+| 0x48 | **the preloaded payload blob** | P | allocated + filled by `Load` @0x13a11e; consumed by `CRezItm::Read` @0x139a44 |
+
+### `CRezTyp` — 0x30
+
+| Off | Meaning | | Evidence |
+|---|---|---|---|
+| 0x00 | the 4CC type tag | P | ctor @0x139c49 |
+| 0x04 | embedded `CHashElement` (vptr 0x5ef744) | P | back-pointer at 0x18 |
+| 0x1c | second index, sized `mgr->m_74` | P | left **empty** (`CHash::CHash()`) unless `mgr->m_6c` |
+| 0x24 | **resource-name hash**, sized `mgr->m_70` = 19 | P | `ReadDirBlock` inserts every resource here @0x13a7e5 |
+| 0x2c | owning `CRezDir*` | P | ctor @0x139c4e |
+
+### `CRezItm` (container) — 0x3c
+
+| Off | Meaning | | Evidence |
+|---|---|---|---|
+| 0x00 | `strdup`'d name (or NULL) | P | ctor @0x139710 |
+| 0x0c | payload `size` | P | `CRezItm::GetData` @0x139989 allocates it |
+| 0x10 | owning `CRezDir*` | P | `Read` @0x139a43 reaches `dir->m_48`/`dir->m_0c` through it |
+| 0x14 | payload `pos` | P | `Read` computes `blob + (m_14 - dir->m_0c)` |
+| 0x1c | embedded `CHashElement` | P | `CHashBase::Insert(&itm->m_1c)` @0x13a8a5; back-pointer at 0x30 |
+| 0x38 | private read buffer | P | allocated on the slow path @0x13998f, freed on failure |
+
+### The cross-check that validates the embedded-element offsets
+
+`CHashElement`'s object back-pointer sits at `element + 0x14` (`ReadDirBlock`
+and `Load` both reach the owner through `element->m_14`). So any ctor that
+writes a table pointer at `this+X` **and** `this` at `this+X+0x14` is embedding
+an element at X. All three agree:
+
+| class | table written at | `this` written at | delta |
+|---|---|---|---|
+| `CRezDir` | 0x20 | 0x34 | 0x14 |
+| `CRezTyp` | 0x04 | 0x18 | 0x14 |
+| `CRezItm` | (insert uses 0x1c) | 0x30 | 0x14 |
+
+Three independent classes landing on the same delta is what makes the offset
+assignments above safe to build on, rather than one reading of one function.
+
 ## Open questions
 
 * `root_dir_time`'s encoding. Not a `time_t`; looks like uninitialised memory.
@@ -312,5 +436,10 @@ observation.
   bytes. No shipped archive has one, so both are unobservable. The writer emits
   the element count.
 * Whether banner line 2 was ever used. It is 60 spaces in all three archives.
-* Whether `id` means anything. It is stored and never indexed, and it is not
-  unique.
+* Whether `id` means anything. `CRezMgr::m_6c` gates a second per-type index
+  that would plausibly be keyed by it, and that flag is 0 in every code path
+  here — so in this game `id` is stored, never indexed, and not unique (458
+  distinct values across 21 303 resources). Whether the editor sets the flag is
+  outside this binary.
+* `CRezMgr::m_24` (1) and `m_28` (2 000 000 000): written by the constructor,
+  never read anywhere in the module.
