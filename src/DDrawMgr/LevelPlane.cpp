@@ -681,19 +681,27 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     CString sound(buf);
 
     if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
+        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
-        return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        return used;
     }
 
-    AnimWorkerObj* tmpl = 0;
-    if (logic.GetLength() != 0) {
+    if (logic.GetLength() == 0) {
+        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        delete obj;
+        return used;
+    }
+
+    AnimWorkerObj* tmpl;
+    {
         CObject* foundOb = 0;
         OwnerMgr()->m_workerCache->m_workers.Lookup(static_cast<const char*>(logic), foundOb);
         tmpl = static_cast<AnimWorkerObj*>(foundOb);
     }
     if (tmpl == NULL) {
+        i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
-        return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
+        return used;
     }
 
     if (obj->Setup(x, y, z, tmpl) == 0) {
