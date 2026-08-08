@@ -169,7 +169,7 @@ gruntwingztimesprite	5
 gruntzapp	13
 gruntzcmdmgr	46
 gruntzmapmgr	3
-gruntzmgr	175
+gruntzmgr	176
 gruntzmgrcmd	1
 gruntzplayer	17
 gruntzsoundz	36
@@ -333,7 +333,7 @@ waypoint	5
 winapicdrom	4
 winapimodule	1
 winmain	1
-worldsoundset	37
+worldsoundset	36
 wormhole	29
 wormholeacts	2
 wwdfactoryobject	56

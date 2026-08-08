@@ -177,6 +177,8 @@ RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
 
 RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
+RVA_COMPGEN(0x00085ed0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
+
 // @early-stop
 RVA(0x0008b8c0, 0x76)
 i32 PumpIdleFrame() {
@@ -1566,8 +1568,8 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     if (m_inputState != NULL) {
         delete m_inputState;
+        m_inputState = NULL;
     }
-    m_inputState = NULL;
 
     CSymParser* surf = m_symParser;
     if (surf) {
@@ -1609,12 +1611,12 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     m_symParser = new CSymParser;
 
-    bool parseFailed;
-    {
-        CString path = GetRezPath();
-        parseFailed =
-            m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(path)), 1, 0) == 0;
-    }
+    // The argument is spelled on the returned temporary, not on a named CString:
+    // retail reads the buffer through the return register (`mov ecx,[eax]`), which a
+    // named local turns into a direct frame-slot load.
+    bool parseFailed =
+        m_symParser->ParseBuffer(const_cast<char*>(static_cast<const char*>(GetRezPath())), 1, 0)
+        == 0;
     if (parseFailed) {
         ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x441);
         return 0;
@@ -1624,8 +1626,8 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     if (m_inputState != NULL) {
         delete m_inputState;
+        m_inputState = NULL;
     }
-    m_inputState = NULL;
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_inputState = ni;
@@ -2757,8 +2759,7 @@ void CGruntzMgr::Close() {
         m_sound = NULL;
     }
     if (m_inputState) {
-        m_inputState->Teardown();
-        operator delete(m_inputState);
+        delete m_inputState;
         m_inputState = NULL;
     }
     if (m_faderMgr) {

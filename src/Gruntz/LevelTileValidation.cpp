@@ -752,12 +752,6 @@ i32 CPlay::ValidateLevelTiles() {
     return ok;
 }
 
-// @early-stop
-// @early-stop
-// retail re-tests the goal pointer (two consecutive `test eax,eax` on the same,
-// unclobbered value); cl5's peephole drops the second. The operand-order lever in
-// docs/patterns/redundant-test-elimination-is-syntactic.md has no `test reg,reg` form,
-// and the member-vs-copy spelling used here does not reproduce it either.
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
@@ -791,16 +785,15 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     pt->m_baseY = ey;
 done:
 
-    CTriggerMgr* g = m_mgr->m_cmdGrid;
-    // The outer gate reads the member and the inner one the copy: cl5's
-    // redundant-test peephole is syntactic, so both survive as retail has them
-    // (docs/patterns/redundant-test-elimination-is-syntactic.md).
-    if (g->m_goal != NULL) {
-        CWwdGameObjectA* goal = g->m_goal;
-        if (goal != NULL) {
-            goal->m_flags |= 0x10000;
+    // The outer gate spells the whole member chain and the body caches it: cl5's
+    // redundant-test peephole is syntactic, so both `test eax,eax` survive as retail
+    // has them (docs/patterns/guard-reads-the-array-element-not-the-cached-local.md).
+    if (m_mgr->m_cmdGrid->m_goal != NULL) {
+        CTriggerMgr* g = m_mgr->m_cmdGrid;
+        if (g->m_goal != NULL) {
+            g->m_goal->m_flags |= 0x10000;
+            g->m_goal = NULL;
         }
-        g->m_goal = NULL;
         m_mgr->m_cmdGrid->LoadCameraSprite();
     }
     return 1;

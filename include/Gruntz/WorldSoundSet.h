@@ -89,8 +89,12 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_volume = kSoundVolumeMax;
 }
 
-// Out-of-line in retail: CGruntzMgr::Close CALLS 0x85ed0 (through ILT thunk
-// 0x31f7). The body lives in src/Gruntz/WorldSoundSet.cpp.
+// Inline in retail: CGruntzMgr::LoadWorldMode expands it (Deactivate + the m_list
+// CPtrList dtor) at both of its delete sites, while CGruntzMgr::Close calls the
+// COMDAT copy the same object file emits at 0x85ed0.
+inline CWorldSoundSet::~CWorldSoundSet() {
+    Deactivate();
+}
 
 extern i32 g_posSoundReq;
 

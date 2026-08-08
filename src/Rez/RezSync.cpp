@@ -354,10 +354,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     if (m_inputState) {
-        m_inputState->Deactivate();
-
-        (&m_inputState->m_list)->CPtrList::~CPtrList();
-        ::operator delete(m_inputState);
+        delete m_inputState;
         m_inputState = NULL;
     }
     m_inputState = new CWorldSoundSet;
