@@ -599,26 +599,40 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
+    CWwdGameObjectA* obj;
+    CWwdGameObjectA* o;
+    CWwdGameObjectA* r;
+    CWwdGameObjectA* owner;
+    CWwdGameObjectA* rend;
+    CGrunt* cell;
+    CGrunt* placed;
+    AnimWorkerObj* aux;
+    PickupType cmd;
+    i32 param;
+    i32 matchActive;
+    i32 flag;
+    i32 sub;
+    i32 idx;
+    i32 ok;
     CGruntzMgr* reg = g_gameReg;
     PickupType pickup = static_cast<PickupType>(m_object->m_smarts);
     if (reg->m_gameMode == GAMEMODE_SINGLE && tileOwnerHi != g_curPlayer
-        && pickup != PICKUP_TOYBOX) {
-        return 0;
+        && static_cast<PickupType>(m_object->m_smarts) != PICKUP_TOYBOX) {
+        goto fail;
     }
-    CWwdGameObjectA* obj = m_object;
+    obj = m_object;
     if (pickup == PICKUP_TOYBOX) {
 
-        i32 param = obj->m_points;
-        i32 matchActive = 0;
-        i32 flag = 1;
+        param = obj->m_points;
+        matchActive = 0;
+        flag = 1;
         if (obj->m_score == tileOwnerHi) {
             matchActive = 1;
             flag = 0;
         }
-        i32 sub = obj->m_faceDirection;
-        i32 idx = tileOwnerHi * 15 + tileOwnerLo;
-        CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
-        i32 ok;
+        sub = obj->m_faceDirection;
+        idx = tileOwnerHi * 15 + tileOwnerLo;
+        cell = reg->m_cmdGrid->m_grid[idx];
         if (cell == NULL || cell->m_entranceCommitted == 0) {
             ok = 0;
         } else if (matchActive) {
@@ -628,10 +642,10 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         }
         reg = g_gameReg;
         if (ok == 0) {
-            return 0;
+            goto fail;
         }
         if (m_cue != NULL) {
-            CWwdGameObjectA* o = m_object;
+            o = m_object;
             if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
                 m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -639,16 +653,15 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
             }
         }
         ClearTileBit(reg, m_object);
-        CWwdGameObjectA* r = m_wwdObject;
+        r = m_wwdObject;
         r->m_flags |= 0x10000;
         return 1;
     }
 
-    i32 sub = obj->m_faceDirection;
-    PickupType cmd = static_cast<PickupType>(obj->m_smarts);
-    i32 idx = tileOwnerHi * 15 + tileOwnerLo;
-    CGrunt* cell = reg->m_cmdGrid->m_grid[idx];
-    i32 ok;
+    sub = obj->m_faceDirection;
+    cmd = static_cast<PickupType>(obj->m_smarts);
+    idx = tileOwnerHi * 15 + tileOwnerLo;
+    cell = reg->m_cmdGrid->m_grid[idx];
     if (cell == NULL || cell->m_entranceCommitted == 0) {
         ok = 0;
     } else {
@@ -656,17 +669,17 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     }
     reg = g_gameReg;
     if (ok == 0) {
-        return 0;
+        goto fail;
     }
     if (cmd == PICKUP_WARPSTONE) {
-        CGrunt* placed = reg->m_cmdGrid->m_grid[idx];
+        placed = reg->m_cmdGrid->m_grid[idx];
         if (placed != NULL) {
             placed->m_warpstoneAnchorIndex = m_object->m_health;
             reg = g_gameReg;
         }
     }
     if (m_cue != NULL) {
-        CWwdGameObjectA* o = m_object;
+        o = m_object;
         if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
             m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
@@ -674,10 +687,10 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         }
     }
     ClearTileBit(reg, m_object);
-    CWwdGameObjectA* owner = m_wwdObject;
+    owner = m_wwdObject;
     if (owner->m_damage > 0) {
         owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        AnimWorkerObj* aux = m_objAux;
+        aux = m_objAux;
         m_prevAnimSetNode = aux->m_actKey;
         aux->m_actKey = ActFindId("B");
         owner = m_wwdObject;
@@ -687,14 +700,16 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         m_driftThresh.m_hi = 0;
         return 1;
     }
-    CWwdGameObjectA* rend = m_glitterSprite;
+    rend = m_glitterSprite;
     if (rend != NULL) {
         rend->m_flags |= 0x10000;
         m_glitterSprite = NULL;
     }
-    CWwdGameObjectA* r = m_wwdObject;
+    r = m_wwdObject;
     r->m_flags |= 0x10000;
     return 1;
+fail:
+    return 0;
 }
 
 // @early-stop

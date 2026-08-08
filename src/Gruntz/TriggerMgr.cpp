@@ -446,7 +446,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
-        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
+        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     if (cell == NULL || cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
@@ -847,7 +847,6 @@ reportError:
     return 0;
 }
 
-// @early-stop
 RVA(0x000798d0, 0x1b6)
 i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) {
     if (m_overlay == NULL) {
@@ -860,17 +859,19 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
                 m_overlay = NULL;
             }
             g_gameReg->ReportError(IDX(IDS_INITIALIZE_GAME), 0x3ff);
+            return 0;
         }
-        return 0;
     }
     if (m_overlay->m_active != 0) {
         return 0;
     }
+    CGrunt* cellp;
     if (m_recList.GetCount() != 1) {
-        return 0;
+        cellp = NULL;
+    } else {
+        i32* rec = static_cast<i32*>(m_recList.GetHead());
+        cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
-    i32* rec = static_cast<i32*>(m_recList.GetHead());
-    CGrunt* cellp = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     if (cellp == NULL) {
         return 0;
     }
@@ -889,9 +890,9 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
         return 0;
     }
     CGameLevel* view = m_world->m_level;
-    CDDrawWorkerHost* pl = view->m_mainPlane;
-    i32 ox = pl->m_viewRect.left - view->m_planeCtx.left + worldX;
-    i32 oy = pl->m_viewRect.top - view->m_planeCtx.top + worldY;
+    RECT* vr = &view->m_mainPlane->m_viewRect;
+    i32 ox = vr->left - view->m_planeCtx.left + worldX;
+    i32 oy = vr->top - view->m_planeCtx.top + worldY;
     this->PlaceObjectFull(ox, oy);
     return 1;
 }
@@ -2628,7 +2629,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
-        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
+        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     if (cell != NULL && cell->m_tileOwnerHi == g_curPlayer) {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
@@ -2669,7 +2670,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
-        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
+        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
     }
     if (cell != NULL && cell->m_tileOwnerHi == g_curPlayer) {
         if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {

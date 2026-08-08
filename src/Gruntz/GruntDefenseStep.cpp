@@ -37,11 +37,8 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
-// Reloc sequence is 35 vs retail's 34: the AISTATE_ATTACK arm's CommitNeighbor is
-// cross-jumped into the AISTATE_SEEK arm's identical tail in retail and kept
-// separate here. Everything else matches in order.
+// cl folds the second `occ == NULL` test that retail re-emits after the
+// GruntInRadius/m_entranceCommitted guards, so we are two branches short.
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepArrivalDefense() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -55,8 +52,7 @@ i32 CGrunt::StepArrivalDefense() {
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             // the CHASE-and-shout arm is the FALL-THROUGH: forward gotos would
             // hoist it above the scroll arm, which retail emits first.
@@ -92,8 +88,7 @@ i32 CGrunt::StepArrivalDefense() {
                     return 1;
                 }
             } else if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             m_defenderState = AISTATE_CHASE;
             {
@@ -117,16 +112,13 @@ i32 CGrunt::StepArrivalDefense() {
                 return 1;
             }
             if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (occ->m_entranceCommitted == 0) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
@@ -292,4 +284,7 @@ i32 CGrunt::StepArrivalDefense() {
         default:
             return 1;
     }
+seek:
+    m_defenderState = AISTATE_SEEK;
+    return 1;
 }

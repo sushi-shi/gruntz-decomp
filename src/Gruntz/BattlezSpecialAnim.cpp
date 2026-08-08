@@ -82,7 +82,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     CGameObject* lvl = unit->m_object;
     if (lvl->m_screenX != unit->m_lastTilePx.m_x) {
-        return 0;
+        goto fail;
     }
     if (lvl->m_screenY != unit->m_lastTilePx.m_y) {
         return 0;
@@ -116,7 +116,9 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
 
     CString* recs;
     CString* slot;
+    CString* sel;
     i32 cnt;
+    i32 ci;
 
     recs = g_typeColl.ScratchResolve(unit->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
@@ -157,11 +159,10 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
-        return 0;
+        goto fail;
     }
 
-    i32 ci = unit->m_objAux->ActKey();
-    CString* sel;
+    ci = unit->m_objAux->ActKey();
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
         sel = g_typeColl.Elem(ci);
@@ -182,6 +183,8 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     eq = (strcmp(*sel, "R") == 0);
     return !eq;
+fail:
+    return 0;
 }
 
 RVA(0x00034960, 0x24)

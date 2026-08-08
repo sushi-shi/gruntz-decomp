@@ -61,16 +61,13 @@ i32 CWarpStoneFly::Tick(u32 dt) {
 
     if (m_yDirection > 0.0) {
         if (static_cast<i32>(newY) > m_targetY) {
-            goto clampY;
+            m_currentY = static_cast<double>(m_targetY);
         }
     } else if (m_yDirection < 0.0) {
         if (static_cast<i32>(newY) < m_targetY) {
-            goto clampY;
+            m_currentY = static_cast<double>(m_targetY);
         }
     }
-    return 1;
-clampY:
-    m_currentY = static_cast<double>(m_targetY);
     return 1;
 }
 

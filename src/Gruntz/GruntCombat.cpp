@@ -992,9 +992,8 @@ void CGrunt::OnStruck(i32 wasHit) {
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
         if (CGameLevel::PointInRect(vr, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x371, -1, 0, -1, -1);
-        } else {
-            m_struckCount = 0;
         }
+        m_struckCount = 0;
         return;
     }
 

@@ -59,7 +59,6 @@ store changes it (all seven measured on a `if (!m_p) goto fail; if (!m_p->IsLoad
 goto fail; ... fail: return 0;` probe).
 
 Screen: `python -m gruntz.audit.exit_merge_sieve --dup` (base ret count > target's).
-27 more candidates tree-wide after the four below.
 
 Measured 2026-08-08:
 `CSBI_ImageSetAni::Init` 0xe7980 88.49 -> 96.43 (rets 6->4, exits byte-exact),
@@ -68,6 +67,62 @@ Measured 2026-08-08:
 `CDDrawSubMgrPages::TransEnter` 0x158e40 88.21 -> 97.31 (6->5, one `xor` left).
 `CGameInfo::SetNames` 0x118040 already used this spelling and is EXACT - it is where
 the recipe was found, not invented.
+
+## Read WHERE retail's shared block sits - that is what picks `goto` vs `||`
+
+The two merging spellings differ in PLACEMENT as well as in reach, and the placement is
+the cheaper thing to read off the target:
+
+| retail's shared exit sits | spelling |
+|---|---|
+| between the guards and the rest of the body | `goto fail;` - cl inverts the LAST goto and gives it the fall-through |
+| sunk PAST the whole body, after the success return | `\|\|` - the total regime |
+
+`CPlay::OnLButtonDblClk` 0xce660 is the worked example: two adjacent `return 0` guards
+that retail merges into a block at the very END. `goto fail;` merged them but parked the
+block mid-function (86.53 -> 90.35, rets 10=10 but one branch polarity wrong); the same
+two guards as `if (a || b) return 0;` put it where retail has it (-> **95.70**, branch
+sequences agree). **The label's position in the SOURCE is irrelevant** - moving
+`StepArrivalDefense`'s `seek:` label from function scope into the end of the `case` block
+it is emitted in was byte-identical.
+
+## The shared block does not have to be a bare `return`
+
+Any statement list that several guards jump to is one label. `CGrunt::StepArrivalDefense`
+0xf2b20 had FIVE copies of `{ m_defenderState = AISTATE_SEEK; return 1; }` against
+retail's one; a `seek:` label took it 76.85 -> **83.09** (rets 16->13, target 12). Its
+near-clone `CGrunt::StepArrivalDefenseLean` 0xf8240 took the same edit 54.22 -> **63.47**
+(rets 13->10, matching retail).
+
+## An EH (`/GX`) function's duplicated exits are an EPILOGUE cross-jump, NOT this lever
+
+When the duplicated blocks are the whole `mov ecx,[esp+N]; pop...; mov fs:0,ecx; pop ebx;
+add esp,N; ret` unwind epilogue, no source construct moves them. Retail emits ONE epilogue
+and `xor eax,eax; jmp <it>` at each failure site; we emit a full copy per exit. Measured on
+`CLatencyList::FillCombo` 0x37ff0 (2 rets vs retail's 1): a trailing `fail:` label, three
+plain `return 0;`s, a single `i32 n; ... done: return n;` result variable, and flattening
+the nested `if (combo != NULL) {...} return 0;` into a flat guard were ALL tried - the flat
+and single-variable forms are strictly worse (3 rets, 72.01 -> 63.45) and the rest are
+byte-identical. The cause is visible in the two base epilogues: cl schedules `mov fs:0,ecx`
+*before* the pops on the path with no spare instruction and *after* them on the path that
+has a `xor eax,eax` to fill with, so the two epilogues are not identical and the cross-jumper
+declines. Retail's single epilogue is the second ordering minus the `xor`.
+
+It is not "our cl never shares EH epilogues" either - the OVER-MERGE direction shows the
+same coin landing the other way (`CButeMgr::SetInt` 0x171b80: we emit 1 epilogue, retail 5).
+Treat this family as a scheduling wall and skip it: 0x18830, 0x3f5f0, 0x37ff0, 0x22160,
+0x101580, 0xffde0, 0x10a340, 0x102250, 0x156ad0.
+
+## DUP-EXIT is also a correctness-bug detector
+
+Two of the biggest wins in the 2026-08-08 sweep were not spelling at all - the surplus ret
+was a real reconstruction bug the ret count made visible:
+`CTriggerMgr::DestroyGroup` 0x798d0 had `return 0;` *outside* the `LoadAssets() == 0` block,
+so it bailed even when the overlay was built (86.63 -> **100.00 EXACT**, with a
+`RECT* vr = &view->m_mainPlane->m_viewRect;` for the last two loads);
+`CGrunt::OnStruck` 0x588f0 had `m_struckCount = 0;` in an `else` where retail runs it
+unconditionally after the `if` (75.48 -> **90.39**). Check the guard's semantics against the
+target blocks before reaching for a label.
 
 **The mirror direction is NOT solved.** When retail has MORE exits than we do
 (`exit_merge_sieve --over`, 47 functions) our source has a `||`/`&&` guard collapsing

@@ -3131,19 +3131,22 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
     if (m_dragInhibit1 != 0) {
         return 1;
     }
+    CGameLevel* h;
+    RECT* vr;
+    i32 px;
+    i32 py;
+    i32 i;
     i32 area = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_options[area];
-    if (cfg == NULL) {
-        return 0;
-    }
-    if (g_gameReg->m_cmdGrid->m_rowCount[area] >= cfg->m_comboSel) {
+    if (cfg == NULL || g_gameReg->m_cmdGrid->m_rowCount[area] >= cfg->m_comboSel) {
         return 0;
     }
 
-    CGameLevel* h = m_mgr->m_world->m_level;
-    i32 px = h->m_mainPlane->m_viewRect.left - h->m_planeCtx.left + x;
-    i32 py = h->m_mainPlane->m_viewRect.top - h->m_planeCtx.top + y;
-    for (i32 i = 0; i < StartMarkerCount(); i++) {
+    h = m_mgr->m_world->m_level;
+    vr = &h->m_mainPlane->m_viewRect;
+    px = vr->left - h->m_planeCtx.left + x;
+    py = vr->top - h->m_planeCtx.top + y;
+    for (i = 0; i < StartMarkerCount(); i++) {
         Coord* e = StartMarkerAt(i);
         if (e == NULL) {
             continue;

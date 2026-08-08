@@ -37,8 +37,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -56,8 +54,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             }
             occ = m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
             if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
                 goto c2_occcheck;
@@ -101,8 +98,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             return 1;
         c2_occcheck:
             if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             m_defenderState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
@@ -127,16 +123,13 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 return 1;
             }
             if (occ == NULL) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (occ->m_entranceCommitted == 0) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                m_defenderState = AISTATE_SEEK;
-                return 1;
+                goto seek;
             }
             if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
                 StepArrivalDrop(
@@ -237,4 +230,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
         default:
             return 1;
     }
+seek:
+    m_defenderState = AISTATE_SEEK;
+    return 1;
 }

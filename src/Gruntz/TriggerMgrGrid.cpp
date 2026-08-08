@@ -1241,6 +1241,14 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
 // @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
+    i32 bx;
+    i32 by;
+    CGrunt* hit;
+    PickupType kind;
+    i32 moveKind;
+    CString* typeRec;
+    CString* slot;
+    i32 grown;
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
@@ -1251,7 +1259,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
     if (o->m_screenX != cell->m_lastTilePx.m_x) {
-        return -1;
+        goto bad;
     }
     if (o->m_screenY != cell->m_lastTilePx.m_y) {
         return -1;
@@ -1261,29 +1269,34 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         && g_traitorMode == 0) {
         return 0;
     }
-    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (cell->RectContainsGated(bx, by) == 0) {
-        return -1;
+        goto bad;
     }
 
     cell->m_arrivalPhase = 0;
     i32 hitRow;
     i32 hitCol;
-    CGrunt* hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, TM_GRID_ROW_ALL);
+    hit = CellHitTest(worldX, worldY, &hitRow, &hitCol, TM_GRID_ROW_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        i32 flags = 1;
+        i32 flags;
         if (static_cast<u32>(argTileX) < map->m_width
             && static_cast<u32>(argTileY) < map->m_height) {
             flags = map->m_rows[argTileY][argTileX].m_flags;
+        } else {
+            flags = 1;
         }
         if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;
         }
 
         PickupType kind = cell->m_vehiclePickupType;
-        i32 moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
+        i32 moveKind = 0;
+        if (kind == PICKUP_SCROLL) {
+            moveKind = cell->m_moveKind;
+        }
         if (LoadToyBoxIcon(bx, by, col, kind, moveKind) == 0) {
             return 0;
         }
@@ -1322,8 +1335,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
 
-    PickupType kind = cell->m_vehiclePickupType;
-    i32 moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
+    kind = cell->m_vehiclePickupType;
+    moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
     cell->PlayMoveSound(bx, by);
     cell->m_neighborValid = 0;
     if (cell->m_poweredUp != 0) {
@@ -1334,9 +1347,9 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         cell->ResetEntranceAnimation(1, 0, 0);
     }
 
-    CString* typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
-    CString* slot = g_typeColl.Slots();
-    i32 grown = g_typeColl.m_grown;
+    typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
+    slot = g_typeColl.Slots();
+    grown = g_typeColl.m_grown;
     if (grown != 0) {
         do {
             if (slot != NULL) {
@@ -1370,6 +1383,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 1;
     }
     return 0;
+bad:
+    return -1;
 }
 
 RVA(0x0006e7e0, 0x5)
