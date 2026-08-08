@@ -764,8 +764,6 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     return 1;
 }
 
-#pragma intrinsic(atan2, sin, cos, sqrt, fabs)
-
 // @early-stop
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(

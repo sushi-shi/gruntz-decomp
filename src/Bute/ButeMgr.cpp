@@ -1877,7 +1877,6 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
 }
-#pragma inline_depth()
 
 RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
@@ -1961,7 +1960,6 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
-#pragma inline_depth()
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
 RVA(0x001741f0, 0x4e)
@@ -2044,7 +2042,6 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
-#pragma inline_depth()
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
 RVA(0x00174770, 0x4e)
@@ -2127,7 +2124,6 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
-#pragma inline_depth()
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)
 // CBSecStream's inline dtor: cl emits the deleting-dtor COMDAT here because the

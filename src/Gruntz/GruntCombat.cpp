@@ -64,8 +64,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#pragma intrinsic(strcmp, sqrt)
-
 static const char s_GRUNTZ_[] = "GRUNTZ_";
 DATA(0x0020dd40)
 static const char s__LOSEITEM[] = "_LOSEITEM";

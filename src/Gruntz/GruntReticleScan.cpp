@@ -1,40 +1,39 @@
-#include <Enums.h>
-#include <Gruntz/PickupType.h>
-#include <Gruntz/GameRand.h>
+#include <rva.h>
+
 #include <Mfc.h>
-#include <Gruntz/GruntSpawnConfig.h>
-#include <Gruntz/Brickz.h>
-#include <Gruntz/GruntzMapMgr.h>
-#include <Gruntz/GameRegMfcPtr.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Grunt.h>
-#include <Gruntz/TileCollisionKind.h>
-#include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GameLevel.h>
-#include <Wap32/ZVec.h>
-#include <Ints.h>
-#include <string.h>
-#include <stdlib.h>
-#include <Gruntz/FreeNodePool.h>
 #include <MfcWin.h>
-#include <new>
-#include <Gruntz/TypeKeyColl.h>
+
+#include <Enums.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
-#include <rva.h>
-#include <Gruntz/GruntDirStatics.h>
-
-#pragma intrinsic(strcmp)
-
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/TriggerMgrRecords.h>
-#include <Wap32/TileGeometry.h>
-#include <Gruntz/StaminaPct.h>
+#include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzMapMgr.h>
+#include <Gruntz/GruntzMgr.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
+#include <Gruntz/StaminaPct.h>
+#include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TriggerMgrRecords.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Ints.h>
+#include <Wap32/TileGeometry.h>
+#include <Wap32/ZVec.h>
+
 #include <limits.h>
+#include <new>
+#include <stdlib.h>
+#include <string.h>
 
 // @early-stop
 // The logic is present; the CROSS-JUMP FACTOR is not. 664 instructions against retail's

@@ -20,9 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#pragma intrinsic(memcpy)
-#pragma intrinsic(strcat)
-
 RVA(0x000bef80, 0x51)
 i32 CNetSession::Init(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     if (mgr == NULL) {

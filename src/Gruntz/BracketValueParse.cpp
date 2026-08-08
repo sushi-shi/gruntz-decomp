@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma intrinsic(strlen)
-
 RVA(0x000f9160, 0xd2)
 i32 ExtractBracketValue(char* out, char* src, char* key) {
     char marker[256];

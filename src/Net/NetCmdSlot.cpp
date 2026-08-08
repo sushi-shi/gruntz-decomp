@@ -21,9 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#pragma intrinsic(memcpy)
-#pragma intrinsic(strcat)
-
 DATA(0x00249858)
 char g_lobbyRecvBuf[0x800];
 DATA(0x0024a058)

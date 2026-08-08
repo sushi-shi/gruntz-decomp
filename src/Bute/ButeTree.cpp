@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#pragma intrinsic(strlen, strcmp, strcpy)
-
 RVA(0x00193340, 0x61)
 void zPTree::Walk(
     void(__cdecl* fn)(char* key, void* value, void* ctx),
