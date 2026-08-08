@@ -910,8 +910,9 @@ i32 CGrunt::SetArrivalTarget(i32 a, i32 b, i32 c, i32 d) {
 RVA(0x00052f40, 0x4b)
 void CGrunt::ConsiderArrival(i32 a) {
     CWwdGameObjectA* h = m_object;
-    i32 tx = m_lastTilePx.m_x;
-    i32 ty = m_lastTilePx.m_y;
+    Coord tile = m_lastTilePx;
+    i32 tx = tile.m_x;
+    i32 ty = tile.m_y;
     i32 px = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 py = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     if (px != tx || py != ty) {
