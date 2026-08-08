@@ -72,6 +72,40 @@ use crate::bute_pi::{INIT_P, INIT_S};
 /// a wrong key on a correctly-framed stream looks like.
 pub const ATTRIBUTEZ_KEY: &[u8] = b"1212";
 
+/// The additive shift the `[CheatN] Text` fields are obfuscated with.
+///
+/// Not a guess and not a statistical fit — `CCheatMgr::CheckCode` @0x00023090
+/// spells it out:
+///
+/// ```text
+/// code.MakeUpper();
+/// for (i = 0; i < code.GetLength(); i++)
+///     code.SetAt(i, code[i] + 0x3d);
+/// ```
+///
+/// i.e. what the player types is upper-cased and then shifted by `+0x3d`, and
+/// the result is compared against the stored `Text`. So the stored form is
+/// **upper-case ASCII plus 0x3d**, and de-obfuscating is `-0x3d`. All 69
+/// `[CheatN]` sections in the shipped `ATTRIBUTEZ` decode to `A`-`Z` (plus one
+/// digit) under it, with no exceptions and no second variant.
+///
+/// A `-0x1d` shift appears to work because `0x3d - 0x1d == 0x20`, the ASCII
+/// case bit, so letters come out lower-case instead of upper. It is not a
+/// case-preserving alternative: `Cheat57` is `MPBACK2LIFE`, whose `2` comes out
+/// as `R` under `-0x1d`. There is exactly one shift.
+pub const CHEAT_SHIFT: u8 = 0x3d;
+
+/// Undo [`CHEAT_SHIFT`] over a stored `[CheatN] Text` field, in place.
+///
+/// The inverse — what `CCheatMgr::CheckCode` does to the player's input — is
+/// `MakeUpper` followed by `+ CHEAT_SHIFT`; this is only the reading half,
+/// because upper-casing is not invertible.
+pub fn cheat_deobfuscate(text: &mut [u8]) {
+    for c in text {
+        *c = c.wrapping_sub(CHEAT_SHIFT);
+    }
+}
+
 /// Everything that can go wrong decoding a bute stream. Integers only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ButeError {

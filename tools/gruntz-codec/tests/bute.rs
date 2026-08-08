@@ -202,6 +202,75 @@ fn cheatz_does_not_open_under_the_attributez_key() {
     );
 }
 
+/// Every `[CheatN] Text` field in the shipped archive must come out of
+/// [`bute::cheat_deobfuscate`] as upper-case ASCII.
+///
+/// The scheme is not inferred from these 69 samples -- `CCheatMgr::CheckCode`
+/// @0x00023090 *is* `MakeUpper()` then `+0x3d`. This checks the data agrees,
+/// and in particular that there is only ONE shift: `Cheat57` decodes to
+/// `MPBACK2LIFE`, and its digit is what rules out the `-0x1d` reading (which
+/// would turn the `2` into an `R` while still looking like lower-case words).
+#[test]
+fn every_shipped_cheat_decodes_to_upper_case() {
+    let Some(rez) = retail_rez() else { return };
+    let attributez = find(&rez, "GAME\\ATTRIBUTEZ").expect("GAME\\ATTRIBUTEZ");
+    let bf = Blowfish::attributez();
+    let mut plain = vec![0u8; bute::decoded_len(attributez).unwrap()];
+    bute::decode_into(&bf, attributez, &mut plain).unwrap();
+    // BYTES, not a `String`: the obfuscated fields are >0x7f, so
+    // `from_utf8_lossy` would replace every one of them with U+FFFD and the
+    // shift would then be applied to the replacement char's UTF-8 encoding.
+    let mut seen = 0;
+    let mut saw_back2life = false;
+    let mut in_cheat = false;
+    for line in plain.split(|&c| c == b'\n') {
+        let t = trim_ascii(line);
+        if t.first() == Some(&b'[') {
+            in_cheat = t.starts_with(b"[Cheat") && t != b"[Cheatz]";
+            continue;
+        }
+        if !in_cheat || !t.starts_with(b"Text") {
+            continue;
+        }
+        let Some(open) = t.iter().position(|&c| c == b'"') else {
+            continue;
+        };
+        let Some(close) = t[open + 1..].iter().position(|&c| c == b'"') else {
+            continue;
+        };
+        let mut code = t[open + 1..open + 1 + close].to_vec();
+        bute::cheat_deobfuscate(&mut code);
+        let code = String::from_utf8(code).expect("ascii after the shift");
+        assert!(
+            code.bytes()
+                .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit()),
+            "cheat {code:?} is not upper-case ASCII"
+        );
+        // Every shipped code is typed as `MP<word>`; a wrong shift breaks this
+        // prefix long before it breaks the printability check.
+        assert!(code.starts_with("MP"), "cheat {code:?} lacks the MP prefix");
+        saw_back2life |= code == "MPBACK2LIFE";
+        seen += 1;
+    }
+    assert_eq!(seen, 69, "[CheatN] sections with a Text field");
+    assert!(
+        saw_back2life,
+        "the digit-bearing cheat that rules out -0x1d"
+    );
+}
+
+/// `[u8]::trim_ascii` is stable, but only from 1.80 and only on slices -- spell
+/// it out so the suite does not carry a toolchain floor for a two-line helper.
+fn trim_ascii(mut b: &[u8]) -> &[u8] {
+    while b.first().is_some_and(|c| c.is_ascii_whitespace()) {
+        b = &b[1..];
+    }
+    while b.last().is_some_and(|c| c.is_ascii_whitespace()) {
+        b = &b[..b.len() - 1];
+    }
+    b
+}
+
 // -- retail corpus helpers -------------------------------------------------
 
 fn retail_rez() -> Option<Vec<u8>> {

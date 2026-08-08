@@ -53,6 +53,16 @@ enum Cmd {
         #[arg(long)]
         raw: bool,
     },
+    /// The `[CheatN]` table of `GAME\ATTRIBUTEZ`, with `Text` de-obfuscated.
+    ///
+    /// `CCheatMgr::CheckCode` @0x00023090 upper-cases the player's input and
+    /// adds `0x3d` before looking it up, so the stored field is the code
+    /// shifted by `+0x3d`. See `gruntz_codec::bute::CHEAT_SHIFT`.
+    Cheatz {
+        /// Which resource to read the table out of.
+        #[arg(long, default_value = "GAME\\ATTRIBUTEZ")]
+        path: String,
+    },
     /// Write every `.TXT` into a directory, decrypting the bute streams.
     Dump {
         /// Destination directory (created if absent).
@@ -165,6 +175,43 @@ fn main() -> ExitCode {
             if std::io::stdout().write_all(&out).is_err() {
                 return ExitCode::FAILURE;
             }
+        }
+        Cmd::Cheatz { path } => {
+            let Some(r) = find(&rez, &path) else {
+                eprintln!("butez: no such resource: {path}");
+                return ExitCode::FAILURE;
+            };
+            let data = r.data(rez.bytes());
+            let Some(plain) = decrypt(&bf, data) else {
+                eprintln!("butez: {path} is not a bute stream");
+                return ExitCode::FAILURE;
+            };
+            let want = bute_int(&plain, "Cheatz", "NumCheatz").unwrap_or(0);
+            println!(
+                "{:<4} {:<28} {:>7} {:<8} COMMENT",
+                "N", "CODE", "VALUE", "NONCHEAT"
+            );
+            let mut found = 0;
+            for n in 1..=want {
+                let sec = format!("Cheat{n}");
+                let Some((text, comment)) = bute_str(&plain, &sec, "Text") else {
+                    // NumCheatz over-counts the table: retail guards every read
+                    // with `Exists(group, "Text")` (CCheatMgr::LoadCheatConfig
+                    // @0x00022e60), so a gap is skipped, not an error.
+                    println!("{n:<4} -- absent --");
+                    continue;
+                };
+                let mut code = text;
+                bute::cheat_deobfuscate(&mut code);
+                let value = bute_int(&plain, &sec, "Value").unwrap_or(0x807b);
+                let noncheat = bute_int(&plain, &sec, "NonCheat").unwrap_or(0);
+                println!(
+                    "{n:<4} {:<28} {value:>7} {noncheat:<8} {comment}",
+                    String::from_utf8_lossy(&code)
+                );
+                found += 1;
+            }
+            eprintln!("[butez] NumCheatz={want}, {found} sections present");
         }
         Cmd::Dump { outdir, r#type } => {
             let mut want: Vec<String> = r#type.iter().map(|t| t.to_ascii_uppercase()).collect();
@@ -365,6 +412,97 @@ fn decrypt(bf: &Blowfish, data: &[u8]) -> Option<Vec<u8>> {
     let mut out = vec![0u8; need];
     bute::decode_into(bf, data, &mut out).ok()?;
     Some(out)
+}
+
+/// The body of `[section]` in a decrypted bute file, `//` comments included.
+///
+/// Deliberately a scanner and not a parser: `CButeMgr::Parse` builds a tree we
+/// have no need of here, and the file is line-oriented `key<tabs>= value`.
+fn bute_section<'a>(plain: &'a [u8], section: &str) -> Option<&'a [u8]> {
+    let head = format!("[{section}]");
+    let mut at = 0;
+    while at < plain.len() {
+        let end = plain[at..]
+            .iter()
+            .position(|&c| c == b'\n')
+            .map_or(plain.len(), |n| at + n);
+        let line = plain[at..end]
+            .strip_suffix(b"\r")
+            .unwrap_or(&plain[at..end]);
+        if line == head.as_bytes() {
+            let body = &plain[end.min(plain.len())..];
+            // to the next section header, or end of file
+            let mut scan = 0;
+            while scan < body.len() {
+                let e = body[scan..]
+                    .iter()
+                    .position(|&c| c == b'\n')
+                    .map_or(body.len(), |n| scan + n);
+                if body[scan..e].starts_with(b"[") {
+                    return Some(&body[..scan]);
+                }
+                scan = e + 1;
+            }
+            return Some(body);
+        }
+        at = end + 1;
+    }
+    None
+}
+
+/// `key = <value>` inside `[section]`, split into the value and its trailing
+/// `//` comment. A quoted value is returned unquoted and undecoded.
+fn bute_str(plain: &[u8], section: &str, key: &str) -> Option<(Vec<u8>, String)> {
+    let body = bute_section(plain, section)?;
+    for line in body.split(|&c| c == b'\n') {
+        let line = line.strip_suffix(b"\r").unwrap_or(line);
+        // A blank or all-whitespace line is not an error, it is just not this
+        // key -- skip it. (`?` here would abandon the whole scan on the empty
+        // line that follows every section header.)
+        let Some(s) = line.iter().position(|c| !c.is_ascii_whitespace()) else {
+            continue;
+        };
+        let t = &line[s..];
+        if !t.starts_with(key.as_bytes()) {
+            continue;
+        }
+        let rest = &t[key.len()..];
+        if !rest
+            .iter()
+            .next()
+            .is_some_and(|c| c.is_ascii_whitespace() || *c == b'=')
+        {
+            continue; // `Value` must not match `ValueTwo`
+        }
+        let Some(eq) = rest.iter().position(|&c| c == b'=') else {
+            continue;
+        };
+        let val = &rest[eq + 1..];
+        let val = &val[val
+            .iter()
+            .position(|c| !c.is_ascii_whitespace())
+            .unwrap_or(val.len())..];
+        // a quoted value ends at its closing quote; the rest of the line is comment
+        let (text, tail) = if val.first() == Some(&b'"') {
+            let close = val[1..].iter().position(|&c| c == b'"')? + 1;
+            (val[1..close].to_vec(), &val[close + 1..])
+        } else {
+            let end = val.windows(2).position(|w| w == b"//").unwrap_or(val.len());
+            (val[..end].to_vec(), &val[end..])
+        };
+        let comment = String::from_utf8_lossy(tail).trim().to_string();
+        return Some((text, comment));
+    }
+    None
+}
+
+/// The same, parsed as an integer. `(DWORD)n` and bare `n` both read as `n`;
+/// the annotation only decides which accessor retail may use, not the digits.
+fn bute_int(plain: &[u8], section: &str, key: &str) -> Option<i64> {
+    let (v, _) = bute_str(plain, section, key)?;
+    let s = String::from_utf8_lossy(&v);
+    let s = s.trim().trim_start_matches("(DWORD)").trim();
+    s.parse().ok()
 }
 
 /// Which byte values a brute-force position may take.
