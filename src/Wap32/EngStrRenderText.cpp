@@ -1,13 +1,12 @@
 #include <rva.h>
 
-#include <MfcNoInline.h>
+#include <Mfc.h>
 
 #include <Font/Font.h>
 #include <Font/FontSel.h>
 #include <Ints.h>
 #include <Wap32/EngStr.h>
 
-// @early-stop
 RVA(0x00115930, 0x18f)
 i32 EngStr_RenderText(
     void* self,
@@ -59,7 +58,6 @@ i32 EngStr_RenderText(
         g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
     }
     g_textObj.SetColor(((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff));
-    rect = *rc;
-    g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);
+    g_textObj.DrawWrapped(*str, drawSurface, *rc, 1, flag, 0);
     return 1;
 }
