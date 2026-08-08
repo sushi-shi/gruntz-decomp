@@ -3865,7 +3865,6 @@ i32 CStatusBarMgr::HlClickGroup2(StatusBarHighlightRow row) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
 
@@ -3914,33 +3913,32 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         if (m_slots[idx].m_state != SLOT_READY) {
             goto notActivated;
         }
-        if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-            goto notActivated;
-        }
-        CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
-        if (host->m_emitGate == 0) {
-            void* found = 0;
-            CMapStringToPtr* map = &host->m_cues;
-            map->Lookup("GAME_TABHIGHLIGHT1", found);
-            if (found) {
-                i32 gate = g_sndEnabled;
-                i32 item = g_sndCueTag;
-                if (gate != 0) {
-                    LeafCue* p = static_cast<LeafCue*>(found);
-                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                        >= static_cast<u32>(p->m_replayDelay)) {
-                        p->m_lastPlayTime = g_killCueClock;
-                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_emitGate == 0) {
+                void* found = 0;
+                CMapStringToPtr* map = &host->m_cues;
+                map->Lookup("GAME_TABHIGHLIGHT1", found);
+                if (found) {
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
+                    if (gate != 0) {
+                        LeafCue* p = static_cast<LeafCue*>(found);
+                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                            >= static_cast<u32>(p->m_replayDelay)) {
+                            p->m_lastPlayTime = g_killCueClock;
+                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        }
                     }
                 }
             }
+            m_activeSlot = idx;
+            m_slots[idx].m_value = 1;
+            if (m_slotNotify[idx]) {
+                m_slotNotify[idx]->Notify(1);
+            }
+            return 1;
         }
-        m_activeSlot = idx;
-        m_slots[idx].m_value = 1;
-        if (m_slotNotify[idx]) {
-            m_slotNotify[idx]->Notify(1);
-        }
-        return 1;
     }
 notActivated:
     return 0;
