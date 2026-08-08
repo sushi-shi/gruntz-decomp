@@ -198,8 +198,7 @@ public:
     i32 HandleControlMsg(CNetCtrlMsg* msg, i32 unused);
     i32 OnPlayerLeft(i32 playerId);
     void AckDropPlayer(i32 id);
-    RVA(0x000bd4a0, 0x3)
-    void WriteTag(const char*) {}
+    void WriteTag(const char*);
 
     void RecordDropPlayer2(CNetSessionNode* a, i32 id);
     i32 WaitForOtherPlayers();

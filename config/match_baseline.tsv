@@ -118,7 +118,7 @@ fadereffects	37	25
 fadermgr	12	12
 feccrypt	11	8
 fileimage	19	10
-filestream	3	3
+filestream	4	4
 font	21	17
 fontconfig	14	9
 fonts	2	2
@@ -1709,6 +1709,7 @@ fileimage	?SaveTga@CDDSurface@@QAEHPBDPAXH@Z	86.6546	86.6546	8	b0ef6d8859bf	0x14
 filestream	?CloseFileIOGlobal@@YAXXZ	100.0000	100.0000	1	c07846052c87	0xbd430	100.0000
 filestream	?OpenGruntzLog@CFileLog@@QAEXXZ	100.0000	100.0000	1	5a2e5a9ab3f9	0xbd450	100.0000
 filestream	?ReopenSharedFile@CFileLog@@QAEXPAD@Z	100.0000	100.0000	1	476bbb42c092	0xbd3e0	100.0000
+filestream	?WriteTag@CMulti@@QAEXPBD@Z	100.0000	100.0000	1	bb9bb9a1ea46	0xbd4a0	100.0000
 font	??0Font@@QAE@XZ	100.0000	100.0000	6	3ca4d0e6ccac	0x179700	100.0000
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	5	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000
@@ -3254,7 +3255,7 @@ netsessionmgr	?AdvanceAllSlots@CNetSession@@QAEXH@Z	100.0000	100.0000	2	e867edeb
 netsessionmgr	?AllSlotsReachedSeq@CNetSession@@QAEHH@Z	100.0000	100.0000	3	7eb1ef3fea34	0xc0320	100.0000
 netsessionmgr	?ArmSlot@CNetSession@@QAEXPAXE@Z	100.0000	100.0000	1	3d8bd9710b7b	0xc03f0	100.0000
 netsessionmgr	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	4	55da87b22acd	0xc04a0	100.0000
-netsessionmgr	?Checksum@CNetSession@@QAEHXZ	85.6013	85.5946	2	80d4ecabbbbf	0xc0590	85.6013
+netsessionmgr	?Checksum@CNetSession@@QAEHXZ	85.6013	85.6013	2	80d4ecabbbbf	0xc0590	85.6013
 netsessionmgr	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	e5e7ebd7d632	0xbf120	100.0000
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	1	ab3bf773b8c8	0xbfff0	100.0000
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetCtrlMsg@@H@Z	100.0000	100.0000	5	f987123cc6a7	0xbf700	100.0000
@@ -3275,7 +3276,7 @@ netsessionmgr	?SendAll@CNetSession@@QAEHXZ	100.0000	100.0000	6	428336c87d1a	0xbf
 netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	3	d5cf8c62362e	0xbfd40	100.0000
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	3	c908e81ff168	0xbfc70	97.6316
 netsessionmgr	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.2105	84.2105	6	3ff41ccb471b	0xbfeb0	84.2105
-netsessionmgr	?Tick@CNetSession@@QAEHXZ	85.9677	85.9677	6	d80261106f8b	0xbf9e0	85.9677
+netsessionmgr	?Tick@CNetSession@@QAEHXZ	86.0323	86.0323	7	eabb5da5e93a	0xbf9e0	86.0323
 netsessionmgr	?Verify@CNetSession@@QAEHH@Z	100.0000	100.0000	6	b2b21951de05	0xc0290	100.0000
 netsessionmgr	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	6	b2b21951de05	0xc04f0	100.0000
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	3	02a098f8ad05	0x1793b0	100.0000

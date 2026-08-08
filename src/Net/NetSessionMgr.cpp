@@ -246,7 +246,9 @@ i32 CNetSession::Tick() {
         rec->m_payloadLen = static_cast<i32>((payload - rb2.m_chars - 0x10));
         m_snapshotDone = 1;
     }
-    return SendBatch() + SendAll();
+    i32 r = SendBatch();
+    r += SendAll();
+    return r;
 }
 
 // @identity-TODO NoopSync - thunk oracle: retail gave this NO incremental

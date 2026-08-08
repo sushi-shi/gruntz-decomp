@@ -2,6 +2,8 @@
 
 #include <Io/FileStream.h>
 
+#include <Gruntz/Multi.h>
+
 RVA(0x000bd3e0, 0x34)
 void CFileLog::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);
@@ -19,3 +21,6 @@ void CFileLog::OpenGruntzLog() {
     CloseFileIOGlobal();
     ReopenSharedFile("c:\\gruntz.log");
 }
+
+RVA(0x000bd4a0, 0x3)
+void CMulti::WriteTag(const char*) {}
