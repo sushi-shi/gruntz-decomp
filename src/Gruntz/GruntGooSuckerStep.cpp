@@ -59,10 +59,12 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 }
 
 // @early-stop
-// Blocks agree through the powered-up arm. First divergence: the last
-// `if (m_poweredUp == 0) return 1;` of the >= STAMINA_FULL arm keeps its own exit copy
-// where retail reaches the shared one, and the whole post-powerup scan region is still
-// laid out differently. Re-derive with `sema disasm 0x000f0e20 --blocks --diff --lite`.
+// Block count is exact (98 = 98) and the topology lines up one block off, from
+// the same fold SeekTarget has: retail keeps the <STAMINA_FULL arm's
+// m_poweredUp re-test at 0xf102c against the cached ecx, cl proves it dead.
+// The rest is spill placement inside the two CommitNeighbor blocks (retail
+// loads m_lastTilePx.m_x twice at 0xf10c6/0xf10cc into slots that are dead on
+// that path).
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
