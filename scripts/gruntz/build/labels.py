@@ -41,10 +41,22 @@ How the map is built per TU:
 A compiler-generated thunk with no source body (a `??_G` scalar-deleting dtor)
 cannot hang an RVA() attribute, so it is pinned with a self-contained
 `RVA_COMPGEN(<rva>, <size>, <mangled>)` invocation (text-scanned - the name is
-given verbatim, so no join and no IR). There is NO data analog: every datum is a
-real C++ definition carrying `DATA(<rva>)`, whose name comes from the AST and is
+given verbatim, so no join and no IR). Every datum, likewise, is a real C++
+definition carrying `DATA(<rva>)`, whose name comes from the AST and is
 authority-checked against the base obj (`msvc5_data_symbol` resolves the
 clang-vs-VC5 spellings, including cl's `$S<n>` file-static decoration).
+
+The DATA analog of RVA_COMPGEN is a MANIFEST, not a macro:
+config/retail/compiler-generated-data.tsv. It reaches the data whose real C++
+definition sits in a HEADER - a function-local static inside a header inline, and
+the `??_B` dynamic-init guard byte cl emits beside it, which has no source
+spelling at ALL. DATA() cannot reach either (collect_vars is main-file-only) and
+neither can DATA_COMPGEN (it wraps a value expression at a use site). It is a
+manifest and not a macro because these data have no owning TU: cl emits each as a
+COFF COMMON into every TU that instantiates the inline and the linker merges them,
+so any source position would fabricate an owner. Each row is re-proven against
+every base obj's COMMON table at every build (see compgen_data_tu), which is what
+keeps it from being the retired declaration-only DATA_SYMBOL in a new coat.
 
 VENDORED PATH: vendored C TUs (vendor/zlib-1.0.4/*.c) keep their source PRISTINE -
 no labels in the source at all. They are mostly `static`/`local` K&R functions
@@ -114,6 +126,13 @@ MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|DATA_COMPGEN)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/retail/zlib_labels.csv"
+
+# The compiler-generated DATA pins - the DATA analog of RVA_COMPGEN, but a manifest
+# rather than a source macro because these data have no owning TU: cl emits each one
+# as a COFF COMMON into EVERY TU that instantiates the header inline, and the linker
+# merges them into one bss slot. See the file's own header for the full rationale
+# (and why this is not the retired DATA_SYMBOL). Gated by gruntz.audit.compgen_data.
+COMPGEN_DATA = REPO / "config/retail/compiler-generated-data.tsv"
 
 
 def log(msg):
@@ -767,6 +786,54 @@ def load_label_config(path):
     return cfg
 
 
+def load_compgen_data(path=None):
+    """[(rva, size, symbol, emitter)] from config/retail/compiler-generated-data.tsv.
+
+    The compiler-generated DATA pins: a datum cl.exe emits from a definition that
+    already exists in the tree, but that neither source-side data device can reach -
+    a function-local static inside a HEADER inline (DATA() is main-file-only) and its
+    dynamic-init guard byte (no source spelling at all; cl names it `??_B...@<n>`).
+    Only the retail ADDRESS is stated here; the symbol and its extent are re-proven
+    against the base objs at every build, so a stale or invented row binds nothing.
+    """
+    out = []
+    p = Path(path or COMPGEN_DATA)
+    if not p.exists():
+        return out
+    for ln in p.read_text().splitlines():
+        if not ln.strip() or ln.lstrip().startswith("#"):
+            continue
+        parts = ln.split("\t")
+        if len(parts) < 3:
+            continue
+        rva_s, size_s, sym = parts[0], parts[1], parts[2]
+        emitter = parts[3] if len(parts) > 3 else ""
+        out.append((int(rva_s, 16), int(size_s, 16), sym, emitter))
+    return out
+
+
+def compgen_data_tu(unit, pins, common_syms, rows, misses):
+    """Emit a symbol_names row for each pinned datum THIS TU's base obj emits.
+
+    Authority is the COMMON symbol table of the obj cl.exe just produced: the name
+    must be there and the size cl computed must equal the pinned extent. A COMMON is
+    a tentative definition, so every emitting TU is an owner (exactly like a folded
+    COMDAT); write_symbol_names collapses the copies to one row per rva.
+    """
+    if common_syms is None:
+        return
+    for rva, size, sym, _emitter in pins:
+        got = common_syms.get(sym)
+        if got is None:
+            continue
+        if got != size:
+            misses.append((rva, sym, unit,
+                           "compiler-generated data pin says 0x%x but cl emitted "
+                           "COMMON size 0x%x" % (size, got)))
+            continue
+        rows.append((rva, sym, unit, size, "data"))
+
+
 def config_tu(unit, entries, obj_syms, all_syms, rows, misses, addr_sites):
     """Emit symbol_names rows for a vendored C TU straight from the static config
     table, authority-checked against the base obj. No source parse, no join."""
@@ -811,6 +878,31 @@ def nm_all_symbols(obj, nm="llvm-nm"):
         if parts:
             syms.add(parts[-1])
     return syms
+
+
+def nm_common_symbols(obj, nm="llvm-nm"):
+    """{name: size} for the obj's COFF COMMON symbols (llvm-nm type `C`).
+
+    A COMMON is a TENTATIVE DEFINITION - section 0 with a non-zero Value that holds
+    the size - so the linker allocates it and merges every identically-named copy.
+    It is neither a plain reference nor a sectioned definition, which is why the
+    other two helpers here both mis-classify it: nm_symbols wants T/t/W/w, and
+    nm_all_symbols cannot tell it apart from an undefined external.
+
+    cl emits one of these per TU for a function-local static whose enclosing
+    function has external linkage - i.e. every `static T x = <init>;` inside a
+    header inline - plus its `??_B` dynamic-init guard byte.
+    """
+    res = subprocess.run([nm, obj], capture_output=True, text=True)
+    out = {}
+    for line in res.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 3 and parts[-2] == "C":
+            try:
+                out[parts[-1]] = int(parts[0], 16)
+            except ValueError:
+                continue
+    return out
 
 
 # A destructor-variant operator code: ??_D (vbase), ??_E (vector deleting),
@@ -1246,6 +1338,7 @@ def main():
 
     compdb = load_compdb(args.compdb) if args.compdb else {}
     label_config = load_label_config(LABEL_CONFIG)
+    compgen_data = load_compgen_data()
 
     rows = []          # (rva, name, unit, size, kind)
     misses = []        # (rva, candidate, unit, reason)
@@ -1269,6 +1362,7 @@ def main():
         have_obj = i < len(args.obj)
         obj_syms = nm_symbols(args.obj[i], args.nm) if have_obj else None
         all_syms = nm_all_symbols(args.obj[i], args.nm) if have_obj else None
+        common_syms = nm_common_symbols(args.obj[i], args.nm) if have_obj else None
         cl_flags = compdb.get(os.path.realpath(tu))
 
         # A TU with no include/rva.h macro is a vendored C TU with pristine source;
@@ -1392,6 +1486,13 @@ def main():
         # join produced no rows) - the same class of silent hole as `no_ir` above.
         if len(rows) == rows_before:
             no_rows.append(tu)
+
+        # --- compiler-generated DATA pins (config/retail/compiler-generated-data.tsv):
+        # a COMMON cl emitted from a definition that lives in a HEADER, so no source
+        # macro can reach it. Deliberately AFTER the no_rows check - these rows are
+        # inherited from a shared header, so they must never satisfy the "this TU
+        # contributed something" gate on their own. ---
+        compgen_data_tu(unit, compgen_data, common_syms, rows, misses)
 
     # ------------------------------------------------------------------
     # BUILD-INTEGRITY GATE (fatal): a TU that compiles must CONTRIBUTE.

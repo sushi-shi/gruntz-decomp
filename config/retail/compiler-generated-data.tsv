@@ -1,0 +1,44 @@
+# compiler-generated DATA pins - the DATA analog of the RVA_COMPGEN source pin.
+#
+# A row names a datum cl.exe emits from a definition we already have in source, but
+# which NEITHER of the two source-side data devices can reach:
+#
+#   * DATA(rva) rides an AST VarDecl in the MAIN file, so it is ignored inside a
+#     header (labels.collect_vars is main-file-only) - and a function-local static
+#     inside a header inline function lives exactly there;
+#   * DATA_COMPGEN(rva, name, value) wraps a compiler-generated allocation AT ITS
+#     USE SITE, so it needs a value expression - and a dynamic-init guard byte has
+#     no source spelling at all (cl names it with a `??_B...@<counter>` ordinal it
+#     assigns itself).
+#
+# WHY A MANIFEST AND NOT A MACRO. RVA_COMPGEN is a SOURCE pin because a
+# compiler-generated FUNCTION belongs to one COMDAT in one TU's contribution, and
+# its source position encodes that ownership (compgen_order ratchets it). These
+# data have NO owning TU: cl emits each one as a COFF COMMON (a tentative
+# definition) into EVERY TU that instantiates the inline, and the linker merges
+# them into one bss slot. Any source position would fabricate an owner, so the pin
+# has to be TU-independent.
+#
+# THIS IS NOT A RETURN OF THE RETIRED DATA_SYMBOL. DATA_SYMBOL was a SOURCE
+# DECLARATION that let a datum exist as a name-only pin INSTEAD of a real C++
+# definition. Every datum below has a real definition in the tree (see `emitter`);
+# the only fact stated here is the retail ADDRESS, which the compiler cannot know.
+# A row is refused unless cl actually emitted that symbol, at that size, as a
+# COMMON in at least one base obj - so this can never conjure a datum that has no
+# definition. Gated by `python -m gruntz.audit.compgen_data`, which also ratchets
+# COMPLETENESS: every COMMON symbol in any base obj must be pinned here.
+#
+# Contrast with the `-functions` sibling in this directory: that file is
+# evidence-only (never consumed) because `_$E<n>` ordinals are volatile. These
+# names are stable - they are derived from the enclosing function's own mangling.
+#
+# Canonical spelling (gated): 4 tab-separated columns, rva zero-padded to 8 hex
+# digits, size unpadded lowercase hex, rows sorted ascending by rva.
+#
+# rva	size	symbol	emitter
+0x002c127d	0x1	??_B?1??GetRandomNumber@@YAHXZ@51	include/Gruntz/GameRand.h:GetRandomNumber
+0x002c1288	0x4	?holdrand@?1??GetRandomNumber@@YAHXZ@4JA	include/Gruntz/GameRand.h:GetRandomNumber
+0x002c278c	0x1	??_B?1??GetRandomNumber@CAniRecordView@@QAEHXZ@51	include/Gruntz/AniRecordView.h:CAniRecordView::GetRandomNumber
+0x002c2798	0x4	?holdrand@?1??GetRandomNumber@CAniRecordView@@QAEHXZ@4JA	include/Gruntz/AniRecordView.h:CAniRecordView::GetRandomNumber
+0x002c279c	0x1	??_B?1??GetRandomNumber@CFaderSine@@QAEHXZ@51	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber
+0x002c27a8	0x4	?holdrand@?1??GetRandomNumber@CFaderSine@@QAEHXZ@4JA	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber

@@ -453,6 +453,15 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.compgen_order", ["--gate"],
           "compgen-order ratchet violated - move the RVA_COMPGEN invocation to its "
           "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "normal")
+    # The DATA half of the same problem: a datum cl emits as a COFF COMMON from a
+    # header-inline's local static. No source macro can reach it, so its retail rva
+    # lives in config/retail/compiler-generated-data.tsv - and this re-proves every
+    # pin against the base objs and ratchets COVERAGE, because an unnamed COMMON
+    # costs 0% (objdiff masks relocs) and so nothing else would ever report it.
+    _gate("gruntz.audit.compgen_data", ["--gate"],
+          "compgen-data ratchet violated - a compiler-generated COMMON is unpinned, "
+          "or a pin is mis-spelled/stale/unbacked by the base objs "
+          "(python -m gruntz.audit.compgen_data)", "normal")
     _gate("gruntz.audit.data_tu_order", ["--ratchet"],
           "data-tu-order ratchet violated - a DATA def lands inside another TU's "
           "same-storage band (python -m gruntz.audit.data_tu_order)", "normal")
