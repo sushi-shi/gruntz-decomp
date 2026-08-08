@@ -42,17 +42,17 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     PickupType reason,
     WwdAniDrawValue cue
 ) {
+    CGrunt* unit = m_grid[ownerHi * TM_GRID_COLS + ownerLo];
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
-    CGrunt* unit = m_grid[ownerHi * TM_GRID_COLS + ownerLo];
 
     i32 cx = tileX;
+    i32 cy = tileY;
     if (tileX < 0) {
         cx = 0;
     } else if (tileX >= grid->m_mainPlane->m_gridW) {
         cx = grid->m_mainPlane->m_gridW - 1;
     }
-    i32 cy = tileY;
     if (tileY < 0) {
         cy = 0;
     } else if (tileY >= grid->m_mainPlane->m_gridH) {
