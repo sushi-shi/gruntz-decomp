@@ -657,15 +657,20 @@ class TestBestEverRatchet(unittest.TestCase):
         status.write_baseline({("u", "$anon_data_hash_0"): {
             "best": 100.0, "cur": 100.0, "tries": 1, "fp": "aaaa", "addr": None}})
         rows = self.baseline.read_text().splitlines()
-        self.assertEqual(rows[-1], "u\t$anon_data_hash_0\t100.0000\t100.0000\t1\taaaa")
+        self.assertEqual(rows[-1],
+                         "u\t$anon_data_hash_0\t100.0000\t100.0000\t1\taaaa\t\t100.0000")
 
-    def test_editing_a_function_cannot_erode_its_best(self):
-        """THE BUG, minimal: a row with best > current, an EDIT, and a plain update."""
+    def test_editing_a_function_resets_best_and_hist_keeps_the_peak(self):
+        """best_pct is scoped to the IMPLEMENTATION. A changed src_hash means the peak
+        was scored by source that no longer exists, so best resets to cur; hist_pct
+        keeps the all-time number so the headroom is still visible. (Until 2026-08-08
+        this preserved best, which let the ledger assert a peak nothing could reproduce.)"""
         self._seed(best=98.8947, cur=98.8947, fp="aaaa", rva=0xe7440)
         row = self._run_update(87.0526, fp="bbbb", rva=0xe7440)  # source changed, % fell
-        self.assertAlmostEqual(row["best"], 98.8947, places=3)   # old code: 87.0526
+        self.assertAlmostEqual(row["best"], 87.0526, places=3)
         self.assertAlmostEqual(row["cur"], 87.0526, places=3)
-        self.assertEqual(row["tries"], 4)  # the edit is still RECORDED, just not charged
+        self.assertAlmostEqual(row["hist"], 98.8947, places=3)   # the peak is NOT lost
+        self.assertEqual(row["tries"], 4)
 
     def test_a_fallback_fingerprint_is_not_an_edit(self):
         """NOT a fix - a property that was already right, pinned so it stays right. A cold
@@ -718,7 +723,10 @@ class TestBestEverRatchet(unittest.TestCase):
             status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
         rows = status.load_baseline()
         self.assertNotIn(("synthetic", "?F@@QAEHXZ"), rows)
-        self.assertAlmostEqual(rows[("natural", "?F@@QAEHXZ")]["best"], 100.0)
+        # The row SURVIVES the unit move (that is what this test is for). Its fp also
+        # changed, so best is scoped to the new implementation while hist keeps the peak.
+        self.assertAlmostEqual(rows[("natural", "?F@@QAEHXZ")]["best"], 91.0)
+        self.assertAlmostEqual(rows[("natural", "?F@@QAEHXZ")]["hist"], 100.0)
 
     def test_an_absent_body_preserves_its_historical_max(self):
         status.write_baseline({("synthetic", "?F@@QAEHXZ"): {
@@ -745,7 +753,10 @@ class TestBestEverRatchet(unittest.TestCase):
         for identity. Fail LOUD (a false REGRESS a human reads), never silent erosion."""
         self._seed(best=93.3127, cur=93.3127, fp="aaaa", rva=None)
         row = self._run_update(89.5636, fp="bbbb", rva=None)
-        self.assertAlmostEqual(row["best"], 93.3127, places=3)
+        # The rva is unvouchable, so identity cannot erode it - but the FINGERPRINT
+        # changed, and that is what now scopes best. hist keeps the peak.
+        self.assertAlmostEqual(row["best"], 89.5636, places=3)
+        self.assertAlmostEqual(row["hist"], 93.3127, places=3)
 
     def test_accept_regressions_is_the_ONE_way_to_lower_a_best(self):
         """The deliberate, reviewed escape hatch must still work."""

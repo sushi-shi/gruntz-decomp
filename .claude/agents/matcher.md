@@ -63,10 +63,20 @@ the ratchet) and `cur_pct` (a snapshot). The gate compares THIS build against `b
 * **`src_hash` is computed PER FUNCTION** — clangd's `documentSymbol` extent for that function,
   hashed. NOT the whole `.cpp`. So editing a sibling, adding an `#include`, or any other TU-level
   change leaves a function's fingerprint untouched.
-* **`best` is a ratchet ONLY while the rva is unchanged.** Same rva -> `best = max(best, cur)`.
-  If the rva MOVED, the name now labels a different body and `rebound()` resets `best = cur` —
-  correct (the old peak measured the body that used to live there) but it IS a lowering. The build
-  prints `WARNING: best-ever peak(s) RESET by an rva move` on stderr when it happens; read it.
+* **`best_pct` is scoped to THE IMPLEMENTATION, and the fingerprint is what scopes it:**
+  * **same `src_hash`, different %** -> **BANK THE MAX.** The variance is TU composition (cl's
+    regalloc rotates with the unit's cumulative declaration count), not your source, so the high
+    mark is a real property of this source.
+  * **`src_hash` CHANGED** -> **`best` RESETS to `cur`.** The recorded peak was scored by a
+    different implementation; carrying it onto new source would have the ledger assert a peak
+    nothing in the tree can reproduce. `status update` prints `best RESET by a source edit`.
+* **`hist_pct` is the all-time peak and NEVER resets — its job is the opposite of `best`'s:**
+  * **`best` == 100** means **ALREADY FIXED.** Park it, stop spending time on it.
+  * **`hist` > `best`** means **KNOWN HEADROOM** — some earlier implementation scored higher and
+    we lost it. That is a worklist row, and `max_divergence --history` is how you work it.
+* Consequence, deliberately accepted: rewriting a function to a byte-evidenced shape that scores
+  lower DOES drop its `best`. That is honest — the new source has not earned the old number.
+  **If the old shape's peak is worth keeping as evidence, bank it BEFORE you rewrite.**
 * Only `status update --accept-regressions` blesses a regression. The build never passes it, and
   neither should you.
 

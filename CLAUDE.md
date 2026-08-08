@@ -94,13 +94,24 @@ FLIRT + leaked names) → exports. Not part of the build loop.
   `<afxwin.h>` directly — the `_AFX_ENABLE_INLINES` devices live in the two Mfc*
   wrappers. `<Mfc.h>` is a superset of `<Win32.h>`; including both trips MFC's
   C1189. Rules + traps: `docs/patterns/include-order.md`.
-- **MAX match is the metric — never revert on a current-% dip.** Per-fn MAX fuzzy
-  preserves best-ever; a byte-evidenced change (shape seen in the target disasm) is
-  KEPT even if its fn's current-% stalls, a sibling craters, or Overall drops. Revert
-  only when the change's OWN evidence fails or the build breaks. Gate on BUILD, not %.
-  **A sibling drop is NOT a problem and never a reason to stop** — the `permute` skill
-  (forests × islands, banked by MAX) is what recovers those, so land the correct shape
-  and let the search reclaim the percent.
+- **MAX match is the metric — never revert on a current-% dip.** A byte-evidenced change
+  (shape seen in the target disasm) is KEPT even if its fn's current-% stalls, a sibling
+  craters, or Overall drops. Revert only when the change's OWN evidence fails or the build
+  breaks. Gate on BUILD, not %. **A sibling drop is NOT a problem and never a reason to
+  stop** — the `permute` skill (forests × islands, banked by MAX) is what recovers those.
+  The ledger (`config/match_baseline.tsv`) has TWO peaks per function, with opposite jobs:
+  - **`best_pct` is scoped to the IMPLEMENTATION** (the per-function `src_hash`, a clangd
+    extent — NOT the whole `.cpp`). Same hash + a different % ⇒ the variance is TU
+    composition, so **bank the max**. A CHANGED hash ⇒ **`best` resets to `cur`**, because
+    the old peak was scored by source that no longer exists. **`best` == 100 means ALREADY
+    FIXED — park it.** So bank the MAX *before* rewriting if the old peak is worth keeping.
+  - **`hist_pct` never resets** — the all-time peak. **`hist` > `best` means KNOWN
+    HEADROOM**: a better implementation existed and was lost. That is the worklist
+    (`gruntz.audit.max_divergence --history`).
+  - Reaching 100 with the function's own source unchanged **proves that source correct** —
+    the residue is TU state. Perturb the TU, `status update`, then revert the perturbation:
+    the proof is banked and nobody need look at the function again. Never leave the
+    perturbation in the tree; an unused include kept to steer regalloc is a fitted artifact.
 - **Builds are FAST — don't engineer around build time.** A full from-scratch
   `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
   Run them in the foreground and verify changes with a real build — don't background out of

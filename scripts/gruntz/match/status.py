@@ -213,8 +213,11 @@ def real_edit(prev_fp: str, cur_fp: str) -> bool:
     side means "unknown", which must NOT count as an edit (else a stale cache hides
     regressions as TOUCHED and corrupts the baseline on update).
 
-    NB this drives `tries` and the TOUCHED/REGRESS split ONLY. It must NEVER gate
-    `best` - see rebound() and cmd_update()."""
+    This DOES gate `best`: a changed fingerprint means a different implementation, so
+    the recorded peak was scored by source that no longer exists and `best` resets to
+    `cur`. `hist_pct` keeps the all-time peak. (Before 2026-08-08 an edit deliberately
+    preserved `best`; that let the ledger assert a peak no source in the tree could
+    reproduce.)"""
     return not is_fallback(prev_fp) and not is_fallback(cur_fp) and prev_fp != cur_fp
 
 
@@ -366,7 +369,13 @@ HEADER = (
     "#              occupied is a rename, not a loss - so signature edits don't regress.\n"
     "#              It is ALSO what gates best_pct: the rva identifies the BODY, and a\n"
     "#              best measures a body, not a name (see status.rebound()).\n"
-    "#   best_pct = best-ever (max) objdiff fuzzy% - the REGRESSION gate (may be 100%).\n"
+    "#   best_pct = best this IMPLEMENTATION has scored - the REGRESSION gate. Same\n"
+    "#              src_hash + a different %% means TU composition moved, so the high\n"
+    "#              mark is banked; a CHANGED src_hash resets it to cur (the old peak\n"
+    "#              belonged to different source). best == 100 means ALREADY FIXED.\n"
+    "#   hist_pct = the all-time peak any implementation reached; NEVER resets. Its job\n"
+    "#              is the opposite: hist > best means KNOWN HEADROOM, i.e. we had a\n"
+    "#              better implementation once and lost it - a worklist row.\n"
     "#              A RATCHET: for a given rva it never decreases. Only an explicit\n"
     "#              `update --accept-regressions`, or the rva MOVING (the name now labels\n"
     "#              a different body), may lower it. Editing a function does NOT - that is\n"
@@ -420,8 +429,9 @@ def load_baseline(text: str | None = None):
             # whose function had no symbol_names entry writes it empty. None -> the
             # rename check can't vouch for that row (falls back to fingerprint).
             addr = int(c[6], 16) if len(c) > 6 and c[6] else None
+            hist = float(c[7]) if len(c) > 7 and c[7] else float(c[2])
             funcs[(c[0], c[1])] = {"best": float(c[2]), "cur": float(c[3]),
-                                   "tries": int(c[4]), "fp": c[5], "addr": addr}
+                                   "tries": int(c[4]), "fp": c[5], "addr": addr, "hist": hist}
         except ValueError:
             bad += 1
     if bad:  # surface corruption / an old-format (pre-this-PR) commit instead of crashing
@@ -436,7 +446,7 @@ def write_baseline(funcs: dict[tuple[str, str], dict]) -> None:
     for unit in sorted(units):
         u = units[unit]
         lines.append(f"{unit}\t{u['n']}\t{u['matched']}\n")
-    lines.append("# [functions]\tunit\tfunction\tbest_pct\tcur_pct\ttries\tsrc_hash\trva\n")
+    lines.append("# [functions]\tunit\tfunction\tbest_pct\tcur_pct\ttries\tsrc_hash\trva\thist_pct\n")
     for key in sorted(funcs):
         unit, fn = key
         f = funcs[key]
@@ -444,6 +454,9 @@ def write_baseline(funcs: dict[tuple[str, str], dict]) -> None:
         line = f"{unit}\t{fn}\t{f['best']:.4f}\t{f['cur']:.4f}\t{f['tries']}\t{f['fp']}"
         if addr is not None:
             line += f"\t0x{addr:x}"
+        else:
+            line += "\t"
+        line += f"\t{f.get('hist', f['best']):.4f}"
         lines.append(line + "\n")
     BASELINE.write_text("".join(lines))
 
@@ -474,6 +487,7 @@ def cmd_update(args) -> int:
         base_by_addr.pop(addr, None)
 
     raised = touched = added = rebounds = moved = preserved_absent = 0
+    reset_by_edit: list = []
     migrated_old_keys: set[tuple[str, str]] = set()
     new_funcs: dict[tuple[str, str], dict] = {}
     for key, pct in cur.items():
@@ -486,7 +500,8 @@ def cmd_update(args) -> int:
                 migrated_old_keys.add(old_key)
                 moved += 1
         if prev is None:
-            new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp}  # 1st try
+            new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp,
+                              "hist": pct}  # 1st try
             added += 1
         elif rebound(prev.get("addr"), cur_addr):
             # This NAME now labels a DIFFERENT BODY (its rva moved). The recorded peak
@@ -495,24 +510,46 @@ def cmd_update(args) -> int:
             # the old rva keeps it (same-body ratchet) or enters as a new row at its own
             # %. This is the ONLY path that may lower a best without --accept-regressions,
             # and it is keyed on identity, never on "the source text changed".
-            new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp}
+            new_funcs[key] = {"best": pct, "cur": pct, "tries": 1, "fp": cur_fp,
+                              "hist": max(prev.get("hist", prev["best"]), pct)}
             rebounds += 1
         else:
-            # SAME BODY -> RATCHET. best NEVER goes down here; that is the contract the
-            # whole structure-over-current-% doctrine rests on. A lane must be able to
-            # take a proven-correct shape at a %-cost without erasing the high-water -
-            # so a source edit bumps `tries` and NOTHING else. Adopt a real fp if we now
-            # have one, else keep the old one.
-            best = max(prev["best"], pct)
+            # SAME BODY. What `best` means is "the best THIS IMPLEMENTATION has ever
+            # scored", so the fingerprint - not the rva - is what scopes it:
+            #
+            #   same src_hash, different %  -> RATCHET. The variance is TU composition
+            #       (cl's regalloc rotates with the unit's cumulative declaration count),
+            #       not the source, so the high mark is a real property of this source
+            #       and is banked. This is what makes "perturb the TU, bank 100, revert"
+            #       a PROOF that the body is correct.
+            #   src_hash CHANGED           -> RESET best to cur. The recorded peak was
+            #       scored by a DIFFERENT implementation. Carrying it onto new source
+            #       would have the ledger assert a peak that no source in the tree can
+            #       reproduce - the same un-provenanced claim that made the committed
+            #       baseline untrustworthy (docs/max-fuzzy-divergence.md).
+            #
+            # Consequence, deliberately accepted: rewriting a function to a
+            # byte-evidenced shape that scores lower DOES drop its recorded peak. That
+            # is honest - the new source has not earned the old number. Bank the MAX
+            # BEFORE rewriting if the old shape's peak is worth keeping as evidence.
             keep_fp = cur_fp if not is_fallback(cur_fp) else prev["fp"]
             edited = real_edit(prev["fp"], cur_fp)
+            best = pct if edited else max(prev["best"], pct)
             new_funcs[key] = {"best": best, "cur": pct,
                               "tries": prev["tries"] + 1 if edited else prev["tries"],
-                              "fp": keep_fp}
+                              "fp": keep_fp,
+                              # hist_pct NEVER resets - the all-time peak any
+                              # implementation of this body ever reached. Different job
+                              # from best_pct: best == 100 means ALREADY FIXED (park it);
+                              # hist > best means KNOWN HEADROOM (a worklist item, we
+                              # had a better implementation and lost it).
+                              "hist": max(prev.get("hist", prev["best"]), pct)}
             if edited:
                 touched += 1
             if best - prev["best"] > EPS:
                 raised += 1
+            elif prev["best"] - best > EPS:
+                reset_by_edit.append((prev["best"] - best, key))
 
     for key, f in new_funcs.items():  # stamp the stable RVA (for rename-vs-loss in check)
         f["addr"] = rvas.get(key)
@@ -557,6 +594,13 @@ def cmd_update(args) -> int:
     print(f"  raised best: {raised}  tried(touched): {touched}  new: {added}  "
           f"moved(same rva): {moved}  rebound(rva moved, best reset): {rebounds}  "
           f"preserved absent: {preserved_absent}  dropped: {len(lost)}")
+    if reset_by_edit:
+        reset_by_edit.sort(reverse=True)
+        print(f"  best RESET by a source edit: {len(reset_by_edit)} "
+              f"(hist_pct keeps the all-time peak; best_pct now scopes to THIS "
+              f"implementation)")
+        for d, (u, fn) in reset_by_edit[:8]:
+            print(f"    -{d:7.4f}  {u}  {fn}")
     if lost and args.verbose:
         for u, fn in lost:
             print(f"    dropped {u}/{fn}")
