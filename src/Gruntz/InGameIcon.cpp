@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
@@ -52,52 +53,6 @@ template<> DATA(0x00245928)
 CActReg CActRegPool<CToyPeek>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x00245950)
 CActReg CActRegPool<CInGameText>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
-static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
-    CString* r;
-    v->m_grown = 0;
-    if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = v->Elem(idx);
-    } else if (v->GrowTo(idx, 0)) {
-        r = v->Elem(idx);
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(v, msg, 0xc);
-        r = v->Scratch();
-    }
-    CString* slot = v->Slots();
-    i32 n = v->m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    return r;
-}
-
-static inline CString* ResolveNameSlotCallReport(CTypeCollRuntime* v, i32 idx) {
-    CString* r;
-    v->m_grown = 0;
-    if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = v->Elem(idx);
-    } else if (v->GrowTo(idx, 0)) {
-        r = v->Elem(idx);
-    } else {
-        v->Report(g_errOutOfMem, 0xc);
-        r = v->Scratch();
-    }
-    CString* slot = v->Slots();
-    i32 n = v->m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    return r;
-}
 
 RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
 
@@ -494,25 +449,11 @@ void CInGameIcon::FireActivation(i32 id) {
 
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    i32 idxA = ActFindId("A");
-    if (idxA == 0) {
-        ActInsertId("A", g_typeCounter);
-        idxA = g_typeCounter;
-        CString* slot = ResolveNameSlotCallReport(&g_typeColl, g_typeCounter);
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID_CALL_REPORT(idxA, "A")
     CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
     *dslotA = static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
-    i32 idxB = ActFindId("B");
-    if (idxB == 0) {
-        ActInsertId("B", g_typeCounter);
-        idxB = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *slot = "B";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(idxB, "B")
     CActHandler* dslotB = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxB);
     *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
@@ -526,14 +467,7 @@ void CToyPeek::FireActivation(i32 id) {
 
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
-    i32 idx = ActFindId("A");
-    if (idx == 0) {
-        ActInsertId("A", g_typeCounter);
-        idx = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
@@ -1025,14 +959,7 @@ void CInGameText::FireActivation(i32 idx) {
 
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
-    i32 idx = ActFindId("A");
-    if (idx == 0) {
-        ActInsertId("A", g_typeCounter);
-        idx = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }

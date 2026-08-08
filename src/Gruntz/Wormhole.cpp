@@ -45,30 +45,6 @@ CActReg CActRegPool<CTeleporter>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 DATA(0x0020c1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
-    CString* r;
-    v->m_grown = 0;
-    if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = v->Elem(idx);
-    } else if (v->GrowTo(idx, 0)) {
-        r = v->Elem(idx);
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(v, msg, 0xc);
-        r = v->Scratch();
-    }
-    CString* slot = v->Slots();
-    i32 n = v->m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    return r;
-}
-
 RVA_COMPGEN(0x00010950, 0x1e, ??_GCWormhole@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010980, 0x44, ??1CWormhole@@UAE@XZ)
 
@@ -145,14 +121,7 @@ void CWormhole::FireActivation(i32 idx) {
 
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
-    i32 idx = ActFindId("A");
-    if (idx == 0) {
-        ActInsertId("A", g_typeCounter);
-        idx = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
@@ -227,43 +196,11 @@ void CGruntPuddle::FireActivation(i32 id) {
 
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookupCallReport(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id) =
         static_cast<CActHandler>(&CGruntPuddle::Idle);
 
-    i32 id2 = ActFindId("B");
-    if (id2 == 0) {
-        ActInsertId("B", g_typeCounter);
-        id2 = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "B";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID(id2, "B")
     *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2) =
         static_cast<CActHandler>(&CGruntPuddle::Remove);
 }
@@ -489,43 +426,11 @@ void CTeleporter::FireActivation(i32 coord) {
 
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookupCallReport(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id) =
         static_cast<CActHandler>(&CTeleporter::Begin);
 
-    i32 id2 = ActFindId("B");
-    if (id2 == 0) {
-        ActInsertId("B", g_typeCounter);
-        id2 = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "B";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID(id2, "B")
     *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2) =
         static_cast<CActHandler>(&CTeleporter::Update);
 }

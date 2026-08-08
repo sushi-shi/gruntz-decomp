@@ -125,22 +125,7 @@ void CEyeCandyAni::FireActivation(i32 id) {
 // 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
@@ -192,22 +177,7 @@ void CFrontCandyAni::FireActivation(i32 coord) {
 // 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }

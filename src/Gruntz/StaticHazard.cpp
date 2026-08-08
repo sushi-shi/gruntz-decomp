@@ -114,41 +114,11 @@ void CStaticHazard::FireActivation(i32 coord) {
 
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookupCallReport(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID_CALL_REPORT(id, "A")
     (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
         static_cast<CActHandler>(&CStaticHazard::LoadAttributes2);
 
-    i32 id2 = ActFindId("B");
-    if (id2 == 0) {
-        ActInsertId("B", g_typeCounter);
-        id2 = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "B";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id2, "B")
     (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
         static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }

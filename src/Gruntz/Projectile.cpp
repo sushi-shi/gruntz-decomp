@@ -316,7 +316,6 @@ void CProjectile::RegisterType() {
         (*slot) = "A";
         g_typeCounter++;
     }
-
     *ProjActLookup(id) = static_cast<CActHandler>(&CProjectile::DetachRenderObj);
 }
 
@@ -872,22 +871,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::LoadAttributes);
 }
 

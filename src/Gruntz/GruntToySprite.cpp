@@ -3,6 +3,7 @@
 #include <Gruntz/GruntToySprite.h>
 
 #include <Enums.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -52,22 +53,7 @@ void CGruntToySprite::FireActivation(i32 id) {
 
 RVA(0x0007f720, 0x18d)
 void CGruntToySprite::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }

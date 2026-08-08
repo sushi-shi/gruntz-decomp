@@ -102,23 +102,7 @@ void CToobSpikez::FireActivation(i32 coord) {
 
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID(id, "A")
     *CActRegPool<CToobSpikez>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
 }

@@ -212,43 +212,11 @@ void CGruntVoice::FireActivation(i32 coord) {
 
 RVA(0x00119fa0, 0x2ac)
 void RegisterGruntVoiceActions() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookupCallReport(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
         static_cast<CActHandler>(&CGruntVoice::IdleHidden);
 
-    i32 id2 = ActFindId("B");
-    if (id2 == 0) {
-        ActInsertId("B", g_typeCounter);
-        id2 = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "B";
-        g_typeCounter++;
-    }
-
+    ACT_NAME_ID(id2, "B")
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
         static_cast<CActHandler>(&CGruntVoice::Update);
 }
@@ -264,22 +232,7 @@ void CVoiceTrigger::FireActivation(i32 coord) {
 
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     *(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
         static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick);
 }

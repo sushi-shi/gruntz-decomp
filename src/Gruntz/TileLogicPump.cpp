@@ -332,22 +332,7 @@ void CWarpStonePad::FireActivation(i32 coord) {
 
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
@@ -378,22 +363,7 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
@@ -432,22 +402,7 @@ void CTileTrigger::FireActivation(i32 coord) {
 
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
@@ -479,22 +434,7 @@ void CBrickz::FireActivation(i32 coord) {
 
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (cnt-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CBrickz>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
@@ -575,41 +515,11 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookupCallReport(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID_CALL_REPORT(id, "A")
     (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
-    i32 id2 = ActFindId("B");
-    if (id2 == 0) {
-        ActInsertId("B", g_typeCounter);
-        id2 = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "B";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id2, "B")
     (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::AdvanceCheckpointAnimation);
 }
@@ -781,22 +691,7 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }

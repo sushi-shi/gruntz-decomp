@@ -144,22 +144,7 @@ void CFortressFlag::FireActivation(i32 coord) {
 
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
@@ -318,22 +303,7 @@ void CParticlez::FireActivation(i32 coord) {
 
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
@@ -374,7 +344,6 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterExplosionActions() {
     i32 id = RegisterActionName();
-
     *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CExplosion::Update);
 }

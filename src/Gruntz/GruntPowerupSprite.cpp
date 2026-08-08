@@ -2,6 +2,7 @@
 
 #include <Gruntz/GruntPowerupSprite.h>
 
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -49,22 +50,7 @@ void CGruntPowerupSprite::FireActivation(i32 id) {
 
 RVA(0x00080180, 0x18d)
 void CGruntPowerupSprite::RegisterActs() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 n = g_typeColl.m_grown;
-        CString* list = ActNameSlots();
-        while (n-- != 0) {
-            if (list != NULL) {
-                list->CString::CString();
-            }
-            list++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }

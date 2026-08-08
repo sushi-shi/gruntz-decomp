@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
@@ -35,30 +36,6 @@ RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
 template<> DATA(0x00246038)
 CActReg CActRegPool<CSimpleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
-static inline CString* ResolveNameSlot(CTypeCollRuntime* v, i32 idx) {
-    CString* r;
-    v->m_grown = 0;
-    if (idx >= v->m_lo && idx <= v->m_hi) {
-        r = v->Elem(idx);
-    } else if (v->GrowTo(idx, 0)) {
-        r = v->Elem(idx);
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        v->m_errSink->Set(v, msg, 0xc);
-        r = v->Scratch();
-    }
-    CString* slot = v->Slots();
-    i32 n = v->m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    return r;
-}
 
 RVA(0x000ab940, 0x1b8)
 CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
@@ -95,14 +72,7 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 // large for a dtor pool - the placement is UNEXPLAINED; find its real owner.
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
-    i32 idx = ActFindId("A");
-    if (idx == 0) {
-        ActInsertId("A", g_typeCounter);
-        idx = g_typeCounter;
-        CString* slot = ResolveNameSlot(&g_typeColl, g_typeCounter);
-        *slot = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
