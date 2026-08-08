@@ -81,8 +81,7 @@ void ButeParseErrorSink(const char* msg) {
 RVA(0x00119620, 0xf1)
 i32 CreateGruntVoice(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = ctl->WorkerAct();
-    switch (act) {
+    switch (ctl->WorkerAct()) {
         case ACT_UNINITIALISED: {
             ctl->SetWorkerAct(ACT_LIVE);
             CGruntVoice* t = new CGruntVoice(obj);
@@ -120,8 +119,7 @@ i32 CreateGruntVoice(CGameObject* obj) {
 RVA(0x00119760, 0xf1)
 i32 CreateVoiceTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = ctl->WorkerAct();
-    switch (act) {
+    switch (ctl->WorkerAct()) {
         case ACT_UNINITIALISED: {
             ctl->SetWorkerAct(ACT_LIVE);
             CVoiceTrigger* t = new CVoiceTrigger(obj);

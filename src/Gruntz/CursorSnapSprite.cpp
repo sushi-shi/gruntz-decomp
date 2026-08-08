@@ -33,8 +33,7 @@ RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 RVA(0x0003a200, 0xf1)
 i32 CreateCursorSnapSprite(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = rec->WorkerAct();
-    switch (act) {
+    switch (rec->WorkerAct()) {
         case ACT_UNINITIALISED: {
             rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CCursorSnapSprite(owner);

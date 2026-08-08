@@ -23,8 +23,7 @@ RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 RVA(0x00114480, 0xf1)
 i32 CreateToobSpikez(CGameObject* obj) {
     AnimWorkerObj* rec = obj->m_animWorker;
-    AnimWorkerAct act = rec->WorkerAct();
-    switch (act) {
+    switch (rec->WorkerAct()) {
         case ACT_UNINITIALISED: {
             rec->SetWorkerAct(ACT_LIVE);
             CToobSpikez* inst = new CToobSpikez(obj);

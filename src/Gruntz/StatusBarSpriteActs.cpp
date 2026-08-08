@@ -47,8 +47,7 @@ RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 RVA(0x0010c0f0, 0xf1)
 i32 CreateStatusBarSprite(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = ctl->WorkerAct();
-    switch (act) {
+    switch (ctl->WorkerAct()) {
         case ACT_UNINITIALISED: {
             ctl->SetWorkerAct(ACT_LIVE);
             CStatusBarSprite* t = new CStatusBarSprite(obj);

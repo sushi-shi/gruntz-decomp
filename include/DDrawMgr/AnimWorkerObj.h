@@ -64,7 +64,7 @@ struct AnimWorkerObj : public CLoadable {
     void SetActKey(i32 id) {
         m_actKey = id;
     }
-    AnimWorkerAct WorkerAct() const {
+    GZ_ENUM_RETURN(AnimWorkerAct, u32) WorkerAct() const {
         return static_cast<AnimWorkerAct>(m_actKey);
     }
     void SetWorkerAct(AnimWorkerAct act) {

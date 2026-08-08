@@ -64,8 +64,7 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define TILE_LOGIC_WORKER_PUMP(LEAF)                                                               \
     AnimWorkerObj* ctl = obj->m_animWorker;                                                        \
-    AnimWorkerAct act = ctl->WorkerAct();                                                          \
-    switch (act) {                                                                                 \
+    switch (ctl->WorkerAct()) {                                                                    \
         case ACT_UNINITIALISED: {                                                                  \
             ctl->SetWorkerAct(ACT_LIVE);                                                           \
             LEAF* t = new LEAF(obj);                                                               \
@@ -266,8 +265,7 @@ i32 CreateTileTriggerTransition(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTr
 RVA(0x0010d290, 0xf4)
 i32 CreateCheckpointTrigger(CGameObject* obj) {
     AnimWorkerObj* ctl = obj->m_animWorker;
-    AnimWorkerAct act = ctl->WorkerAct();
-    switch (act) {
+    switch (ctl->WorkerAct()) {
         case ACT_UNINITIALISED: {
             ctl->SetWorkerAct(ACT_LIVE);
             CCheckpointTrigger* t = new CCheckpointTrigger(obj);

@@ -181,8 +181,7 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 RVA(0x00046850, 0xf1)
 i32 CreateParticlez(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = rec->WorkerAct();
-    switch (act) {
+    switch (rec->WorkerAct()) {
         case ACT_UNINITIALISED: {
             rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CParticlez(owner);
@@ -220,8 +219,7 @@ i32 CreateParticlez(CGameObject* owner) {
 RVA(0x00046990, 0xf1)
 i32 CreateExplosion(CGameObject* owner) {
     AnimWorkerObj* rec = owner->m_animWorker;
-    AnimWorkerAct act = rec->WorkerAct();
-    switch (act) {
+    switch (rec->WorkerAct()) {
         case ACT_UNINITIALISED: {
             rec->SetWorkerAct(ACT_LIVE);
             CUserLogic* sub = new CExplosion(owner);

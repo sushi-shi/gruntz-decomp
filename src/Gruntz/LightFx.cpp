@@ -35,8 +35,7 @@ RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 RVA(0x0009cdc0, 0xf1)
 i32 CreateLightFx(CGameObject* obj) {
     AnimWorkerObj* aux = obj->m_animWorker;
-    AnimWorkerAct act = aux->WorkerAct();
-    switch (act) {
+    switch (aux->WorkerAct()) {
         case ACT_UNINITIALISED:
             aux->SetWorkerAct(ACT_LIVE);
             {
