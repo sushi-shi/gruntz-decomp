@@ -1344,9 +1344,11 @@ reProbe:
 }
 
 // @early-stop
-// Frame is 8 bytes short of retail's and the three-word pose tuple is allocated
-// differently: retail keeps its first word in edi and spills only the second,
-// cl spills both.
+// cl gives `rec` one home (3 slots); retail's cl split its live range into two
+// (5 slots: word0 stays in edi, word1/word2 spilled per range), so the frame is
+// 0x38 against our 0x30. Every other local matches one-for-one. Two source
+// records instead of one reproduces the second home but costs 6 slots (0x3c),
+// so the split is the allocator's, not a missing declaration.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;

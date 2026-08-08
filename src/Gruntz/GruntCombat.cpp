@@ -1206,9 +1206,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             CGrunt* enemy = m_tileMgr->m_grid[srcRow * TM_GRID_COLS + srcCol];
             if (enemy != NULL && enemy->m_entranceCommitted != 0) {
                 i32 nh = enemy->m_health - hit * 3;
-                if (nh < 0) {
-                    nh = 0;
-                }
+                nh = (nh < 0) ? 0 : nh;
                 enemy->m_health = nh;
                 if (nh <= 0) {
                     m_tileMgr->CellDispatch(srcRow, srcCol, DEATH_NORMAL, -1);
@@ -1218,9 +1216,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     i32 nh = this->m_health - hit;
-    if (nh < 0) {
-        nh = 0;
-    }
+    nh = (nh < 0) ? 0 : nh;
     this->m_health = nh;
     if (this->m_entranceReason == PICKUP_BOMB) {
         m_tileMgr->CellDispatch(this->m_tileOwnerHi, this->m_tileOwnerLo, DEATH_NORMAL, srcRow);
