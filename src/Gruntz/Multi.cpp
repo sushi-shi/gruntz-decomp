@@ -404,12 +404,6 @@ i32 CMulti::EnterState(GameStateId arg) {
     return 1;
 }
 
-// @early-stop
-// frame 0x14 vs retail's 0x10: retail homes the CString `s` in the dead `arg`
-// parameter's slot ([esp+0x24]) and gives the RECT the whole frame; cl allocates a
-// fresh slot for `s` and never touches the param home. 15 spellings tested (CRect,
-// block scopes, decl order, GetModeSize, an LPRECT alias) - all neutral or worse.
-// Same body and same residue as CPlay::LeaveState 0xc8b80.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::LeaveState(GameStateId arg) {
     m_mgr->m_cueSink->PauseAllVoices();
@@ -417,21 +411,21 @@ i32 CMulti::LeaveState(GameStateId arg) {
     if (m_notifyLatch) {
         QuitToMenu();
     }
-    if (arg == GAMESTATE_HELP) {
-        return 1;
-    }
-    RECT r;
-    m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
-    CString s;
-    s.LoadString(0x81a9);
-    r.right = m_mgr->m_modeSize.cx;
-    r.bottom = m_mgr->m_modeSize.cy;
-    r.left = 0;
-    r.top = 0;
-    ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-    RetireScene(0x50, 0x3e8, 0, 1);
-    if (m_mgr && m_mgr->m_cmdGrid) {
-        m_mgr->m_cmdGrid->ClearGridRange(TM_GRID_ROW_ALL);
+    if (arg != GAMESTATE_HELP) {
+        RECT r;
+        m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
+        CString s;
+        s.LoadString(0x81a9);
+        tagSIZE mode = m_mgr->GetModeSize();
+        r.right = mode.cx;
+        r.bottom = mode.cy;
+        r.left = 0;
+        r.top = 0;
+        ShowHudMessage(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+        RetireScene(0x50, 0x3e8, 0, 1);
+        if (m_mgr && m_mgr->m_cmdGrid) {
+            m_mgr->m_cmdGrid->ClearGridRange(TM_GRID_ROW_ALL);
+        }
     }
     return 1;
 }
