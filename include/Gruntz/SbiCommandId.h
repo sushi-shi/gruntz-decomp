@@ -124,12 +124,38 @@ GZ_ENUM_BEGIN(SbiCommandId)
     //   `>= PICKUP_TOYZ_FIRST` picks 1, else 0. So group 0 is toolz, 1 is toyz,
     //   2 is brickz - which is also the order they are drawn in, at
     //   m_itemBaseX 0x1d, 0x45 and 0x6d.
-    SBICMD_HL_GROUP0_FIRST = 0xd3,
-    SBICMD_HL_GROUP0_LAST = 0xd6,
-    SBICMD_HL_GROUP1_FIRST = 0xd7,
-    SBICMD_HL_GROUP1_LAST = 0xda,
-    SBICMD_HL_GROUP2_FIRST = 0xdb,
-    SBICMD_HL_GROUP2_LAST = 0xde
+    //
+    //   Each group holds FOUR ids because the index the arm produces is fed to
+    //   HlClickGroup<n>(StatusBarHighlightRow) - so the four members of a group
+    //   ARE that domain's four rows, in its order. The dispatch is a 12-label
+    //   jump table (`lea eax,[ebx-0xd3]; cmp eax,0xb; ja; mov cl,[eax+lut]`,
+    //   lut `00 00 00 00 01 01 01 01 02 02 02 02` at 0xff51c), which is what
+    //   needs the twelve ids spelled out rather than just their bounds.
+    SBICMD_HL_GROUP0_CATEGORY = 0xd3,
+    SBICMD_HL_GROUP0_FIRST = SBICMD_HL_GROUP0_CATEGORY,
+    SBICMD_HL_GROUP0_UPPER = 0xd4,
+    SBICMD_HL_GROUP0_MIDDLE = 0xd5,
+    SBICMD_HL_GROUP0_LOWER = 0xd6,
+    SBICMD_HL_GROUP0_LAST = SBICMD_HL_GROUP0_LOWER,
+    SBICMD_HL_GROUP1_CATEGORY = 0xd7,
+    SBICMD_HL_GROUP1_FIRST = SBICMD_HL_GROUP1_CATEGORY,
+    SBICMD_HL_GROUP1_UPPER = 0xd8,
+    SBICMD_HL_GROUP1_MIDDLE = 0xd9,
+    SBICMD_HL_GROUP1_LOWER = 0xda,
+    SBICMD_HL_GROUP1_LAST = SBICMD_HL_GROUP1_LOWER,
+    SBICMD_HL_GROUP2_CATEGORY = 0xdb,
+    SBICMD_HL_GROUP2_FIRST = SBICMD_HL_GROUP2_CATEGORY,
+    SBICMD_HL_GROUP2_UPPER = 0xdc,
+    SBICMD_HL_GROUP2_MIDDLE = 0xdd,
+    SBICMD_HL_GROUP2_LOWER = 0xde,
+    SBICMD_HL_GROUP2_LAST = SBICMD_HL_GROUP2_LOWER
 GZ_ENUM_END(SbiCommandId)
+
+// The bands above are INDEXED, not enumerated: four separate arms in
+// CStatusBarMgr::UpdateStatusBarTabHighlight turn an id straight back into a
+// 0-based offset from its band's first id. That makes `SBICMD_X_FIRST + n` the
+// domain's own spelling for "the n'th member of band X", which the STATZ
+// dispatch needs as case labels (30 of them, one per id in 0x12c..0x149).
+GZ_ENUM_STEPPED(SbiCommandId)
 
 #endif // GRUNTZ_GRUNTZ_SBICOMMANDID_H

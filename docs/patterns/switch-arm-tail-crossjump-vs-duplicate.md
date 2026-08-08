@@ -37,8 +37,15 @@ arm tails at once.
 
 WALL, not steerable - measured on `CGrunt::LoadPickupSprites` 0x65e80 (18 of 60 arms
 short by 10 B), `CGrunt::LoadGruntTypeTable` 0x4dd50 (12 of 20 `|= 0x10` sites) and
-named by the 2026-08-08 lane as the mechanism behind `CStatusBarMgr::SetTabState`
-0x100d70 and `CTriggerMgr::ResetGroup` 0x79520, both of which have a CLEAN extent and a
-CLEAN dispatch shape (`python -m gruntz.audit.jump_tables` reports neither). Do not read
-a periodic 10-byte arm deficit as a missing statement: check first whether the short arm
-jumps a few bytes short of where its siblings jump.
+named by the 2026-08-08 lane as the mechanism behind `CTriggerMgr::ResetGroup` 0x79520,
+which has a CLEAN extent and a CLEAN dispatch shape
+(`python -m gruntz.audit.jump_tables` reports it clean). Do not read a periodic 10-byte
+arm deficit as a missing statement: check first whether the short arm jumps a few bytes
+short of where its siblings jump.
+
+RETRACTED for `CStatusBarMgr::SetTabState` 0x100d70 (2026-08-08, later the same day):
+it was listed here and it is NOT this pass. Its fifteen arms end in a statement-identical
+`return 1;`, which feeds cl's EARLY cross-jump of return statements; `break;` in every
+arm plus one trailing `return 1;` takes it **88.53 -> 100.00 EXACT**. Before assigning a
+switch to this (unsteerable) family, check the arm terminator against
+[switch-arm-break-not-return-replicates-the-epilogue.md](switch-arm-break-not-return-replicates-the-epilogue.md).

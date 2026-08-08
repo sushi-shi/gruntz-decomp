@@ -107,4 +107,23 @@ where retail leaves the reload in the shared block. cl's suffix matcher then
 correctly declines. The failed cross-jump is a CONSEQUENCE of a scheduling
 choice, not a merge-policy difference - 45 of its 46 blocks are byte-identical.
 
+## SOLVED for SetTabState - the arm terminator picks the pass (2026-08-08)
+
+`SetTabState` 0x100d70 is **not** a wall either: `return 1;` in all fifteen arms is
+what feeds cl's early cross-jump. Give every arm `break;` and let ONE trailing
+`return 1;` carry them and the late layout pass replicates the epilogue into each
+arm instead - **88.53 -> 100.00 EXACT** on that edit alone. The early-exit
+`if (m_hlBusy) { return 1; }` guards INSIDE the arms keep their own `return`.
+Full recipe and its discriminator:
+[switch-arm-break-not-return-replicates-the-epilogue.md](switch-arm-break-not-return-replicates-the-epilogue.md).
+
+Re-measured on the other two entries above, same session: the break form is
+**byte-neutral** on `ResetGroup` (90.7352 either way - its arms share an
+`Activate(...)` suffix, not just an epilogue) and **91.37 -> 69.81** on
+`SetGeometry` (retail's arms return directly). `SetGeometry`'s real residue is
+an ENCODING accident, not a merge policy: retail's two `WORLDERR_CREATE_DEVICE`
+blocks differ in exactly one byte, the `jne` displacement (`75 74` at 0x1645bc vs
+`75 5a` at 0x1645d6), and cl's cross-jumper compares encoded bytes - so it declined
+there and accepted in our layout. Nothing in the C++ reaches that.
+
 Recognize the rest and stop - the code is already correct.

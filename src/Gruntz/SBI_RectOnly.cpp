@@ -399,11 +399,10 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 }
 
 // @early-stop
-// The TAB_RESOURCE arm is a 12-case jump table in retail (`lea eax,[ebx-0xd3];
-// cmp eax,0xb; ja; mov cl,[eax+idx]; jmp [ecx*4+tbl]` over three group bodies), not
-// the range chain written here. Writing the switch needs the twelve SBICMD_HL_*
-// enumerators, and only the six GROUP<n>_FIRST/LAST bounds are proven, so the labels
-// would have to be invented.
+// All five jump tables and both LUTs now match; the residue is constant/register
+// choice (retail materializes `1` as an immediate where cl hoists it into ebx) and
+// cl cross-jumping the two identical DIALOG_SECONDARY/DIALOG_YES else-arms that
+// retail keeps apart because their `je`/`jne` encodings differ (near vs short).
 RVA(0x000fe910, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
@@ -420,30 +419,29 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 break;
             }
-            if (cmd < SBICMD_DOCK_FIRST) {
-                if (cmd <= SBICMD_NONE || cmd > SBICMD_TAB_LAST) {
+            switch (cmd) {
+                case SBICMD_TAB_STATZ:
+                case SBICMD_TAB_GRUNTZ:
+                case SBICMD_TAB_RESOURCE:
+                case SBICMD_TAB_MULTIPLAYER:
+                case SBICMD_TAB_GAME:
+                    HiCueFind();
+                    SetTabState(cmd, MENUITEM_SELECTED);
+                    return 1;
+                case SBICMD_DOCK_LEFT:
+                    HiCueFind();
+                    RefreshA();
+                    return 1;
+                case SBICMD_DOCK_RIGHT:
+                    HiCueFind();
+                    DockStatusBarRight();
+                    return 1;
+                case SBICMD_HIDE:
+                    HiCueFind();
+                    HideRect();
+                    return 1;
+                default:
                     return 0;
-                }
-                HiCueFind();
-                SetTabState(cmd, MENUITEM_SELECTED);
-                return 1;
-            } else if (cmd == SBICMD_DOCK_LEFT) {
-                HiCueFind();
-                RefreshA();
-                return 1;
-            } else {
-                switch (cmd) {
-                    case SBICMD_DOCK_RIGHT:
-                        HiCueFind();
-                        DockStatusBarRight();
-                        return 1;
-                    case SBICMD_HIDE:
-                        HiCueFind();
-                        HideRect();
-                        return 1;
-                    default:
-                        return 0;
-                }
             }
 
         case TAB_GAME:
@@ -530,17 +528,46 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 break;
             }
-            if (cmd < SBICMD_STAT_TOGGLE_FIRST || cmd > SBICMD_CURSOR_TARGET_LAST) {
-                return 0;
+            switch (cmd) {
+                case SBICMD_CURSOR_TARGET_FIRST + 0x0:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x1:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x2:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x3:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x4:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x5:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x6:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x7:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x8:
+                case SBICMD_CURSOR_TARGET_FIRST + 0x9:
+                case SBICMD_CURSOR_TARGET_FIRST + 0xa:
+                case SBICMD_CURSOR_TARGET_FIRST + 0xb:
+                case SBICMD_CURSOR_TARGET_FIRST + 0xc:
+                case SBICMD_CURSOR_TARGET_FIRST + 0xd:
+                case SBICMD_CURSOR_TARGET_FIRST + 0xe:
+                    HiCueLookup();
+                    PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
+                    return 1;
+                case SBICMD_STAT_TOGGLE_FIRST + 0x0:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x1:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x2:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x3:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x4:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x5:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x6:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x7:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x8:
+                case SBICMD_STAT_TOGGLE_FIRST + 0x9:
+                case SBICMD_STAT_TOGGLE_FIRST + 0xa:
+                case SBICMD_STAT_TOGGLE_FIRST + 0xb:
+                case SBICMD_STAT_TOGGLE_FIRST + 0xc:
+                case SBICMD_STAT_TOGGLE_FIRST + 0xd:
+                case SBICMD_STAT_TOGGLE_FIRST + 0xe:
+                    HiCueLookup();
+                    ToggleStat(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
+                    return 1;
+                default:
+                    return 0;
             }
-            if (cmd <= SBICMD_STAT_TOGGLE_LAST) {
-                HiCueLookup();
-                ToggleStat(IDX(cmd) - IDX(SBICMD_STAT_TOGGLE_FIRST));
-            } else {
-                HiCueLookup();
-                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 0);
-            }
-            return 1;
 
         case TAB_MULTIPLAYER:
             if (m_hitTestDisabled != 0) {
@@ -579,23 +606,33 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 break;
             }
-            if (cmd < SBICMD_HL_GROUP0_FIRST || cmd > SBICMD_HL_GROUP2_LAST) {
-                break;
+            switch (cmd) {
+                case SBICMD_HL_GROUP0_CATEGORY:
+                case SBICMD_HL_GROUP0_UPPER:
+                case SBICMD_HL_GROUP0_MIDDLE:
+                case SBICMD_HL_GROUP0_LOWER:
+                    HlClickGroup0(
+                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP0_FIRST))
+                    );
+                    return 1;
+                case SBICMD_HL_GROUP1_CATEGORY:
+                case SBICMD_HL_GROUP1_UPPER:
+                case SBICMD_HL_GROUP1_MIDDLE:
+                case SBICMD_HL_GROUP1_LOWER:
+                    HlClickGroup1(
+                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP1_FIRST))
+                    );
+                    return 1;
+                case SBICMD_HL_GROUP2_CATEGORY:
+                case SBICMD_HL_GROUP2_UPPER:
+                case SBICMD_HL_GROUP2_MIDDLE:
+                case SBICMD_HL_GROUP2_LOWER:
+                    HlClickGroup2(
+                        static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP2_FIRST))
+                    );
+                    return 1;
             }
-            if (cmd <= SBICMD_HL_GROUP0_LAST) {
-                HlClickGroup0(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP0_FIRST))
-                );
-            } else if (cmd <= SBICMD_HL_GROUP1_LAST) {
-                HlClickGroup1(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP1_FIRST))
-                );
-            } else {
-                HlClickGroup2(
-                    static_cast<StatusBarHighlightRow>(IDX(cmd) - IDX(SBICMD_HL_GROUP2_FIRST))
-                );
-            }
-            return 1;
+            break;
 
         case TAB_DIALOG:
             switch (cmd) {
@@ -608,6 +645,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         HiPost(0x806b);
                     } else {
                         HiCueLookup();
+                        (static_cast<CPlay*>(g_gameReg->m_curState))->ReleaseLevelOverlay(0);
                     }
                     return 1;
                 case SBICMD_DIALOG_SECONDARY:
@@ -636,6 +674,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case SBICMD_DIALOG_NO:
                     HiCueTimed();
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->ReleaseLevelOverlay(0);
                     return 1;
                 default:
                     return 0;
@@ -3162,12 +3201,12 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
 }
 
 // @early-stop
-// Retail never enregisters p4/p5: every one of the ~30 SerializeFields sites reloads
-// both from their parameter homes into eax, which frees ebp for the loop counters.
-// We cache p5 in ebp and spill each counter, costing 2 instructions per site - the
-// whole 42-instruction shortfall; every other block is byte-identical. Frames are
-// identical (sub esp,0x8 both), and the member-offset SET is verified identical to
-// retail's, including the duplicated 0x1f0 (m_tabSprite10 really is serialized twice).
+// Nothing is missing: `--branches --diff` reports the same branch and ret counts, and
+// the only reloc delta is the __except_list/fs:0 typing artifact. Retail spills `this`
+// to [esp+0x10] and re-reads p4/p5 from their parameter homes at every SerializeFields
+// site, which leaves ebp for the loop counters; cl instead enregisters p5 in ebp and
+// spills the counters. Reusing one counter variable across the loops is byte-neutral
+// (measured), so the allocation choice is not decl-scope-driven.
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
     if (s == NULL) {
