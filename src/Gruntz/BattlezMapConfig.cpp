@@ -2590,11 +2590,20 @@ void CBattlezMapConfig::Clear() {
 }
 
 // @early-stop
-// Retail's frame is 0x34 vs our 0x24: it keeps `box` in memory (an unwritten-by-us
-// 16-byte slot between `a` and `bounds`) where cl forwards our `src = &box` reads
-// and drops the object. Retail also re-reads `this->m_board` for the trailing
-// Clip(NULL) - but spelling that `m_board->Clip(0)` MEASURES WORSE (85.96 -> 81.31),
-// so the cached `board` local stays until the frame slot is explained.
+// Frame 0x24 vs retail's 0x34 and 1048 bytes vs 1070 are ONE cause: retail runs out
+// of registers here and we do not. Retail spills only box.top/box.bottom (to
+// [esp+0x28]/[esp+0x30]) and keeps box.left/box.right in ebx/ebp, so `box` needs its
+// own 16-byte slot; we forward all four fields and cl coalesces box's slot onto b's.
+// Both sides still take box's address for the inlined Clip's `src != NULL` test
+// (retail `lea edx,[esp+0x24]`, ours `lea ebx,[esp+0x24]`), so the address-take is
+// not the difference. The ~22 missing bytes are that spill/reload traffic.
+// The trailing `mov ecx,[esi+0xc]` does NOT prove a `m_board->Clip(0)` re-read: esi
+// is reloaded from the `this` spill for the adjacent RouteUnitTo receiver, and with
+// all four callee-saved registers live cl rematerialises m_board from it rather than
+// spill a cached local. Spelling it `m_board->Clip(0)` measures 85.96 -> 81.31.
+// Not fixable by making CMapMgr::Clip a header inline: cl 5.0 then expands BOTH
+// sites (85.93 -> 77.41) and no obj emits the 0x2b340 COMDAT - see
+// docs/patterns/inline-budget-emits-ool-comdat.md.
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     if (unit->m_entranceCommitted == 0) {
