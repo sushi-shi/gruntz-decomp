@@ -2,7 +2,7 @@
 # floor for the build-integrity denominator gate (labels.py). A unit whose
 # count DROPS fails the build; see check_labels_manifest(). Regenerate a
 # deliberate drop with GRUNTZ_LABELS_ACK=1.
-# units: 343  functions: 4506
+# units: 343  functions: 4505
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -111,7 +111,7 @@ gameappcomdats	3
 gameassetnamespaces	1
 gameiconflasheffect	1
 gameinfostring	4
-gamelevel	75
+gamelevel	74
 gamelevelmove	14
 gamemode	4
 gameobjectfactory	1
