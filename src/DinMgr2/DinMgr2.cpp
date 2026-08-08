@@ -34,14 +34,6 @@ i32 g_dinputBeepEnabled;
 DATA(0x00253ab0)
 i32 g_dinputThirdEnabled;
 
-// @identity-TODO ?1DirectInputMgr2 - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (45 fns) came from the static library. It belongs to another compiland.
-RVA(0x00085fc0, 0x57)
-DirectInputMgr2::~DirectInputMgr2() {
-    Shutdown();
-}
-
 RVA(0x00132ce0, 0xae)
 i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     if (owner == NULL) {

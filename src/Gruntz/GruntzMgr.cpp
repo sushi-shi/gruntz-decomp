@@ -179,6 +179,10 @@ RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00085ed0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
 
+RVA_COMPGEN(0x00085fc0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
+
+RVA_COMPGEN(0x00085b50, 0x56, ??1CSaveGame@@QAE@XZ)
+
 // @early-stop
 RVA(0x0008b8c0, 0x76)
 i32 PumpIdleFrame() {

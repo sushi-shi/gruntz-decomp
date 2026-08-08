@@ -51,7 +51,6 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>
-#include <Io/SaveGameDtorInline.h>
 #include <Net/NetMgr.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
@@ -381,14 +380,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     g_inputMgr = new DirectInputMgr2;
     if (!g_inputMgr->Create(m_gameWnd->m_hwnd, m_owner->m_hInstance, 0xb)) {
-        // Retail expands the delete: ~DirectInputMgr2's body plus both member dtors,
-        // in reverse declaration order.
-        DirectInputMgr2* dead = g_inputMgr;
-        dead->Shutdown();
-        (&dead->m_deviceList)->CPtrList::~CPtrList();
-        (&dead->m_devices)->CPtrArray::~CPtrArray();
-        ::operator delete(dead);
-        g_inputMgr = NULL;
+        if (g_inputMgr) {
+            delete g_inputMgr;
+            g_inputMgr = NULL;
+        }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
         return 0;
     }

@@ -68,6 +68,13 @@ public:
 };
 SIZE_UNKNOWN();
 
+// Inline in retail: CGruntzMgr::Run expands it (Shutdown plus both container
+// members, in reverse declaration order) at its delete site, and CGruntzMgr::Close
+// calls the COMDAT copy the same object file emits at 0x85fc0.
+inline DirectInputMgr2::~DirectInputMgr2() {
+    Shutdown();
+}
+
 struct DIMouseStateZ {
     i32 lX;
     i32 lY;

@@ -105,6 +105,13 @@ public:
 };
 SIZE_UNKNOWN();
 
+// Inline in retail: CGruntzMgr::Run expands it (Reset plus the two CString members
+// in reverse declaration order) at its delete site, and CGruntzMgr::Close calls the
+// COMDAT copy the same object file emits at 0x85b50.
+inline CSaveGame::~CSaveGame() {
+    Reset();
+}
+
 i32 CALLBACK SaveGameDialogProc(HWND, UINT, WPARAM, LPARAM);
 i32 CALLBACK LevelPreviewDlgProc(HWND, UINT, WPARAM, LPARAM);
 i32 CALLBACK DeleteSaveDialogProc(HWND, UINT, WPARAM, LPARAM);

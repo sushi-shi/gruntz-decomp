@@ -46,11 +46,6 @@ static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
 static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 static const u32 SAVE_PROGRESS_MAGIC = 0x42a;
 
-RVA(0x00085b50, 0x56)
-CSaveGame::~CSaveGame() {
-    Reset();
-}
-
 RVA(0x000e4b60, 0x158)
 i32 CSaveGame::SaveGameFile(const char* dir) {
     if (dir == NULL) {

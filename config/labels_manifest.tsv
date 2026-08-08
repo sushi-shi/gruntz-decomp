@@ -86,7 +86,7 @@ destructbutton	1
 dialogs	57
 dircellmethods	19
 directdrawmgr	68
-directinputmgr2	46
+directinputmgr2	45
 directsoundmgr	75
 donothing	9
 droppedobject	29
@@ -169,7 +169,7 @@ gruntwingztimesprite	5
 gruntzapp	13
 gruntzcmdmgr	46
 gruntzmapmgr	3
-gruntzmgr	176
+gruntzmgr	178
 gruntzmgrcmd	1
 gruntzplayer	17
 gruntzsoundz	36
@@ -259,7 +259,7 @@ rezsync	3
 rockbreakeffectupdate	1
 rollingball	8
 savefrontbuffershot	2
-savegame	24
+savegame	23
 savegamedialogs	10
 savescreenshot	1
 sbi_image	5
