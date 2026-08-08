@@ -23,8 +23,10 @@ CStatusBarItem::CStatusBarItem() {
 }
 
 // @early-stop
-// Retail CALLS ??0CStatusBarItem@@QAE@XZ at each `new` site; the in-class ctor
-// body lets cl splice it (and drop its dead stores) instead.
+// Both `new CSBI_Image` sites now `call ??0CStatusBarItem` as retail does.  Residue:
+// the CSBI_MenuItem / CSBI_ImageSet sites here take all three cut depths
+// (??0CSBI_RectOnly, ??0CStatusBarItem, fully inline) for one class - the per-SITE
+// budget.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_toggleActive == 0) {

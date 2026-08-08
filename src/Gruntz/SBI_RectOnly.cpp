@@ -861,11 +861,11 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
 }
 
 // @early-stop
-// Retail CALLS ??0CStatusBarItem@@QAE@XZ at the five `new CSBI_MenuItem` sites and
-// inlines it at the three CSBI_RectOnly ones, which is what gives retail its /GX EH
-// frame and 0x20 of locals; cl inlines the whole chain for us. The cut depth varies
-// per new-site, so no declaration form expresses it - see
-// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
+// The per-class half of the cut is modelled now (CStatusBarItem and CSBI_RectOnly are
+// each two entities, SBI_Image.h / StatusBarItem.h), which is what buys retail's /GX EH
+// frame here.  Residue: the fifth `new CSBI_MenuItem` runs the whole chain inline in
+// retail where the other four `call ??0CStatusBarItem` - a per-SITE budget choice with
+// no source spelling.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {

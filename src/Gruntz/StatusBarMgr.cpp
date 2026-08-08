@@ -21,6 +21,8 @@
 // replacing all five arm-trailing `return 1;` with `break;` plus one tail return
 // takes rets to 14 and blocks 239 -> 233 against retail's 237, and scores
 // 76.12 -> 73.75. Retail sits between the two regimes; measured, not guessed.
+// (The 76.12 baseline is now 82.41 - the CStatusBarItem/CSBI_RectOnly entity split
+// gave the `new` sites retail's ctor calls; the DUP-EXIT signal is unchanged.)
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x001047f0, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
