@@ -5,14 +5,21 @@ Retail reads its tuning out of one file, `GAME\\ATTRIBUTEZ` inside Gruntz.REZ,
 through `g_buteMgr`. Two independent things can be checked against that, and
 they fail in different ways:
 
-  * ACCESSOR MIX (needs only GRUNTZ.EXE). `GetIntDef` @0x171aa0 and
+  * ACCESSOR MIX (needs GRUNTZ.EXE + a built tree). `GetIntDef` @0x171aa0 and
     `GetDwordDef` @0x1721e0 are different functions, so picking the wrong one is
     a `call` to the wrong address. Resolve every retail call that reaches a
-    CButeMgr accessor (through the ILT thunks), bucket the sites by our own
-    `RVA()` spans, and compare per function. A function that disagrees on WHICH
-    accessor is called has a source bug; a function that disagrees only on the
-    COUNT is a weaker signal (our spans can absorb a neighbouring COMDAT), but
-    it is still a lead - MSVC does not elide calls.
+    CButeMgr accessor (through the ILT thunks), bucket by our `RVA()` spans, and
+    compare against the calls OUR OBJECT emits - counted from the base obj's
+    REL32 relocations, not from source call sites.
+
+    That distinction is the whole check. Counting source sites reports six false
+    mismatches on this tree, all from loop conditions: retail's
+
+        for (i = 0; i < g_buteMgr.GetIntDef(tag, key, 0); i++)
+
+    re-evaluates the bound, so ONE source site emits TWO calls (the entry test
+    and the bottom test). Compared emitted-to-emitted those functions agree
+    exactly, and the only surviving signal is a genuinely wrong accessor.
 
   * DATA JOIN (needs the decrypted archive, `butez ... cat 'GAME\\ATTRIBUTEZ'`).
     Each accessor returns the stored value only when the record's type matches -
@@ -197,8 +204,29 @@ def parse_bute(path):
 
 # ------------------------------------------------------------------- reports
 
+MANGLED = re.compile(r"\?(Get\w+|Exists)@CButeMgr@@[A-Z]+[\w@$?]*")
+
+
+def emitted_calls(rva):
+    """{accessor: count} our base obj actually emits in the fn at `rva`.
+
+    From the REL32 relocations, so a loop condition that re-evaluates the
+    accessor is counted as the two calls cl emits, not as one source site.
+    """
+    from gruntz.sema import disasm
+    try:
+        text = disasm.base_text(f"{rva:08x}")
+    except SystemExit:
+        return None
+    out = Counter()
+    for m in MANGLED.finditer(text):
+        if m.group(1) in WANTS:
+            out[m.group(1)] += 1
+    return out
+
+
 def accessor_mix(sites, pe):
-    """Per-function {accessor: count}, ours vs retail. Returns the disagreements."""
+    """Per-function {accessor: count}, our OBJECT vs retail. The disagreements."""
     reach = {}
     for rva, name in ACCESSOR_RVA.items():
         reach[rva] = name
@@ -207,12 +235,10 @@ def accessor_mix(sites, pe):
     retail_sites = {site: name for target, name in reach.items()
                     for site, op in pe.call_index.get(target, []) if op == 0xE8}
 
-    ours = defaultdict(Counter)
     spans = {}
     for s in sites:
         if s["owner_rva"] is None or not s["file"].startswith("src/"):
             continue
-        ours[s["owner_rva"]][s["acc"]] += 1
         spans[s["owner_rva"]] = (s["owner_rva"] + s["owner_size"], s["file"])
 
     theirs = defaultdict(Counter)
@@ -223,12 +249,16 @@ def accessor_mix(sites, pe):
                 theirs[lo][name] += 1
                 break
 
-    rows = []
-    for rva in sorted(ours):
-        if ours[rva] != theirs[rva]:
-            kind = "WRONG-ACCESSOR" if set(ours[rva]) != set(theirs[rva]) else "COUNT"
-            rows.append((kind, rva, spans[rva][1], dict(ours[rva]), dict(theirs[rva])))
-    return rows, len(retail_sites)
+    rows, unbuilt = [], 0
+    for rva in sorted(spans):
+        ours = emitted_calls(rva)
+        if ours is None:
+            unbuilt += 1
+            continue
+        if ours != theirs[rva]:
+            kind = "WRONG-ACCESSOR" if set(ours) != set(theirs[rva]) else "COUNT"
+            rows.append((kind, rva, spans[rva][1], dict(ours), dict(theirs[rva])))
+    return rows, len(retail_sites), unbuilt
 
 
 def data_join(sites, bute, exe_strings):
@@ -262,10 +292,11 @@ def main() -> int:
     sites = scan_sources([REPO / "src", REPO / "include"])
     pe = PE()
 
-    print(f"=== accessor mix: our RVA() spans vs retail's call targets "
+    print(f"=== accessor mix: our EMITTED calls vs retail's "
           f"({len(sites)} call site(s) in src/) ===")
-    rows, n_retail = accessor_mix(sites, pe)
-    print(f"{n_retail} retail call site(s) reach a CButeMgr accessor")
+    rows, n_retail, unbuilt = accessor_mix(sites, pe)
+    print(f"{n_retail} retail call site(s) reach a CButeMgr accessor"
+          + (f"; {unbuilt} of our fn(s) have no base obj (build first)" if unbuilt else ""))
     for kind, rva, f, o, t in rows:
         print(f"  {kind:<15} 0x{rva:08x}  {f}")
         print(f"      ours   {o}")
