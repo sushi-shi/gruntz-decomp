@@ -347,6 +347,18 @@ def cmd_build(args) -> None:
     #
     # So: a no-op is now reported, not returned on. The latency-sensitive matcher loop is
     # `--fast`, which deliberately runs no source gates and says so.
+    # build/gen/structs.json is an INPUT to gen_labels: labels.sizeof_qualtype resolves
+    # a DATA() global's byte extent through it, and an unsized datum never enrols in the
+    # delinker data manifest - every reference to it then degrades to
+    # `<previous named symbol>+addend` in the target obj. Measured in a fresh worktree
+    # (which only ever ran --fast, and so never reached the FULL-tier regen below):
+    # 389 sizeless DATA rows vs 301 with the file present, 3323 enrolled manifest rows
+    # vs 3405. So a MISSING file is generated here, at every tier; a merely stale one is
+    # still the FULL tier's business (that regen is ~4.5 min).
+    if not (GEN_NAMES.parent / "structs.json").is_file():
+        log("build/gen/structs.json is absent - generating it once (record layouts are "
+            "an input to the DATA() extent resolver, not just to the class gates).")
+        cmd_structs(argparse.Namespace(tu=[]))
     before = REPORT.stat().st_mtime if REPORT.exists() else 0
     ninja_t0 = time.monotonic()
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed

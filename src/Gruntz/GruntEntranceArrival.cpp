@@ -739,8 +739,11 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 }
 
 // @early-stop
-// Three `rand() % var` sites: retail's toolchain peels a divisor-zero guard that
-// our cl never emits for any honest spelling - docs/patterns/rand-modulo-peel.md.
+// The two GetRandom() sites that carry a `+lo` constant now reproduce retail's
+// instruction sequence exactly; the GetRandom(1, count) one does not, because our
+// cl proves `count == 0` inside the degenerate arm and folds `hi` to the literal 0
+// (retail keeps `mov edi,1` against a live `count`).  Residue outside the rand
+// sites is unrelated.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
@@ -754,8 +757,8 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = g_frameTime;
-        i32 n = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530)) + 1;
-        m_idleDelay = static_cast<u32>(rand() % n + 0x7530);
+        i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
+        m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
     } else if (AT(m_poseIdle, GRUNT_IDLE2) == 0) {
@@ -772,7 +775,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         {
             i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
             applied = 1;
-            m_idleDelay = static_cast<u32>(rand() % (d - 0x4e1f) + 0x4e20);
+            m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
             m_idleAnchor = g_frameTime;
         }
     } else {
@@ -783,7 +786,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         } else {
             count = 2;
         }
-        i32 idx = rand() % count + 1;
+        i32 idx = GetRandom(1, count);
         if (cue != 0) {
             g_gameReg->Rand();
             i32 focused = (m_tileOwnerHi == g_curPlayer);

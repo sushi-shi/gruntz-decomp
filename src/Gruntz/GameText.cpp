@@ -15,7 +15,8 @@
 #include <Gruntz/WarlordOwner.h>
 #include <Rez/RezSync.h>
 
-static CString g_worldName[8] = {
+DATA(0x002454e8)
+CString g_areaNames[8] = {
     "Rocky Roadz",
     "Gruntziclez",
     "Trouble in the Tropicz",
@@ -73,17 +74,6 @@ GruntDeathType g_areaHazardDeath = DEATH_DROP;
 
 DATA(0x00245540)
 FreeNodePool g_coordPool;
-
-static CString g_statLabel[8] = {
-    "Time:",
-    "Survivorz:",
-    "Deathz:",
-    "Toolz:",
-    "Toyz:",
-    "Powerupz:",
-    "Coinz:",
-    "Secretz:",
-};
 
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {

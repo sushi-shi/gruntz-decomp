@@ -313,6 +313,7 @@ _SCALAR_SIZES = {
 }
 _ARRAY_RE = re.compile(r"^(.*?)\s*\[(\d+)\]$")
 _RECORD_SIZES_CACHE = {}
+_ENUM_NAMES_CACHE = {}
 
 
 def record_sizes(path=None):
@@ -338,6 +339,30 @@ def record_sizes(path=None):
             pass
         _RECORD_SIZES_CACHE[path] = {k: v for k, v in out.items() if v}
     return _RECORD_SIZES_CACHE[path]
+
+
+def enum_names(path=None):
+    """The set of enum tags clang saw in this tree (build/gen/enums.json).
+
+    MSVC 5.0 has no `enum class` and sizes EVERY enum as 4 bytes (CLAUDE.md; the
+    GZ_ENUM_* layer in <Enums.h> is built on that invariant), so knowing a name IS
+    an enum is knowing its extent. Without this an enum-typed global stays sizeless,
+    never enrols in the delinker data manifest, and every reference to it degrades to
+    `<previous symbol>+addend` in the target obj - which objdiff then scores as a
+    different referent (found via `gruntz.audit.crt_symbols`: retail's
+    `_g_opt_22bdc4` x4 was our `_g_opt_22bdc4` x2 + `_g_opt_22bdc8` x2)."""
+    path = str(path or (REPO / "build/gen/enums.json"))
+    if path not in _ENUM_NAMES_CACHE:
+        out = set()
+        try:
+            for rec in json.loads(Path(path).read_text()):
+                name = rec.get("name")
+                if name:
+                    out.add(name)
+        except (OSError, json.JSONDecodeError, TypeError, AttributeError):
+            pass
+        _ENUM_NAMES_CACHE[path] = out
+    return _ENUM_NAMES_CACHE[path]
 
 
 # Trailing/leading cv-qualifier, with or without a separating space ("void *const").
@@ -390,7 +415,10 @@ def _sizeof_one(qt, records=None):
         return _SCALAR_SIZES[t]
     recs = record_sizes() if records is None else records
     key = re.sub(r"^(struct|class|union|enum)\s+", "", t)
-    return recs.get(key)
+    size = recs.get(key)
+    if size is None and (t.startswith("enum ") or key in enum_names()):
+        return 4                   # MSVC 5.0 sizes every enum as 4 bytes
+    return size
 
 
 def clang_ast(clang, tu, flags, cl_flags=None):

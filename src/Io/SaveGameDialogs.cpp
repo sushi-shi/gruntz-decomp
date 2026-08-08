@@ -9,6 +9,7 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GameText.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Play.h>
@@ -573,7 +574,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
                 : (n - 1) % 4 + 1,
             (n > IDX(QUESTLEVEL_LAST) && n < IDX(QUESTLEVEL_TRAINING_END))
                 ? static_cast<const char*>(CString("Training"))
-                : g_areaNames[(n - 1) / 4]
+                : static_cast<const char*>(g_areaNames[(n - 1) / 4])
         );
     } else if (lev->m_isBattlez != 0 && lev->m_isCustom == 0) {
 

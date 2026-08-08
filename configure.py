@@ -374,6 +374,11 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py",
                           "scripts/gruntz/build/data_manifest.py",
                           "scripts/gruntz/core/data_audit.py",
+                          # synth_pdb carries the tracked FID library labels into
+                          # the fake PDB, so the delinked target speaks the same
+                          # CRT/MFC symbol names our base objs reference. Editing
+                          # a row must re-delink or objdiff keeps the old name.
+                          "config/retail/library_labels.csv",
                           # vtable_rows() reads the RTTI slot map through
                           # vtable_hierarchy -> vtable_scan; both decide vtable extents.
                           "scripts/gruntz/core/vtable_hierarchy.py",

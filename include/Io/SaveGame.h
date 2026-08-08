@@ -120,7 +120,6 @@ i32 CALLBACK OkCancelDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 extern CSaveGame* g_saveDlgSink;
 
-extern char* g_areaNames[];
 class CImagePool;
 extern CImagePool* g_previewMgr;
 extern void* g_previewImage;

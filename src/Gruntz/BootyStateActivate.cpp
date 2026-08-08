@@ -160,7 +160,16 @@ RECT g_levelMsgRectsB[8] = {
 };
 
 DATA(0x00229ef8)
-CString g_levelMsgStrings[8];
+CString g_levelMsgStrings[8] = {
+    "Time:",
+    "Survivorz:",
+    "Deathz:",
+    "Toolz:",
+    "Toyz:",
+    "Powerupz:",
+    "Coinz:",
+    "Secretz:",
+};
 
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24];
