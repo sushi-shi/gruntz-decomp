@@ -920,7 +920,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
         if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;

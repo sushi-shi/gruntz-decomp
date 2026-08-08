@@ -98,7 +98,7 @@ Dispatched by the `switch` in `CAniAdvanceCursor::Advance` @0x15c360.
 
 | Value | Enumerator | Effect | Corpus |
 |---|---|---|---|
-| 0 | **missing** | falls to the switch `default` — frame unchanged | 6 |
+| 0 | `WWDSTEP_HOLD` | falls to the switch `default` — frame unchanged | 6 |
 | 1 | `WWDSTEP_NEXT` | +1, wrapping to `m_minIndex` | 20 |
 | 2 | `WWDSTEP_PREV` | −1, wrapping to `m_maxIndex` | — |
 | 3 | `WWDSTEP_SET` | jump to the frame in `param` | **13 434** |
@@ -107,10 +107,9 @@ Dispatched by the `switch` in `CAniAdvanceCursor::Advance` @0x15c360.
 | 6 | `WWDSTEP_FORWARD_BY` | += `param` | — |
 | 7 | `WWDSTEP_BACK_BY` | −= `param` | — |
 
-Value **0 occurs 6 times and has no enumerator** — e.g. `GAME\ANIZ\NOTHING`
-record 0, `GRUNTZ\ANIZ\ENTRANCEZ\ONE` record 0. It is the `default` arm: a
-record that holds the current frame for `duration` ms. Naming it would be a
-`src/` change; see the worklist below.
+Value **0 occurs 6 times** — e.g. `GAME\ANIZ\NOTHING` record 0,
+`GRUNTZ\ANIZ\ENTRANCEZ\ONE` record 0. It is the `default` arm: a record that
+holds the current frame for `duration` ms, which is what `WWDSTEP_HOLD` names.
 
 This also explains `param`'s 0..92 range: with `step_mode == 3` on 99.7% of
 records, `param` is overwhelmingly **an absolute frame index**.
@@ -140,12 +139,12 @@ records, `param` is overwhelmingly **an absolute frame index**.
 
 | Value | Enumerator | Corpus |
 |---|---|---|
-| 0 | **missing** | **13 478** — the switch `default`: no position change |
+| 0 | `WWDPOS_NONE` | **13 478** — the switch `default`: no position change |
 | 1 | `WWDPOS_PLOT_OFFSET` | 2 — `STATEZ\MENU\ANIZ\CURSOR` record 3, in both archives |
 | 2 | `WWDPOS_MOVE_RELATIVE` | — |
 | 3 | `WWDPOS_MOVE_ABSOLUTE` | — |
 
-Value 0 is 99.99% of the corpus and **has no enumerator**. And note the pincer
+Value 0 is 99.99% of the corpus. And note the pincer
 with `delta_x`/`delta_y` being 0 everywhere: even the two `WWDPOS_PLOT_OFFSET`
 records apply a zero offset. **No shipped animation moves its object through
 the ANI position mechanism at all.**
@@ -153,26 +152,31 @@ the ANI position mechanism at all.**
 ## `draw_value` — the per-record event code
 
 `Advance` **returns** this value (via `m_curDraw`/`m_pendingDraw`), so it is a
-per-frame event code the caller interprets. There is no single enum for the
-domain; two partial ones exist and they disagree about scope.
+per-frame event code the caller interprets. It has one home,
+`WwdAniDrawValue` in `include/Wwd/WwdAniDrawValue.h`.
 
 | Value | Corpus | Meaning | | Evidence |
 |---|---|---|---|---|
-| 0 | 12 955 | no event. `Advance` zeroes `m_curDraw` after a consuming read | **P** | `Advance` @0x15c360 |
-| 1 | 280 | **animation complete**. 222 of the 280 sit on the *last* record of their animation | **P** | tested `== 1` by `CGruntDecay`, `CRockBreakEffect`, `CWarlord`, and the Grunt entrance/arrival states |
-| 2 | 222 | **effect / impact frame** — `ANI_EVENT_FRAME` in `include/Gruntz/AniAdvanceCursor.h`, `TILE_ARRIVAL_FX_IMPACT` in `include/Gruntz/TileArrivalFxCue.h` | **P** | four consumers: `CGrunt::StepAttackFire` @0x61cb0 (the attack lands), `CStaticHazard` @0xfc1a0, `CDroppedObjectShadow::Advance` @0xc7ab0, and `CTriggerMgr::LoadTileArrivalFx` @0x75e90 (spawns the dirt particle) |
+| 0 | 12 955 | `WWDDRAW_NONE` — no event. `Advance` zeroes `m_curDraw` after a consuming read | **P** | `Advance` @0x15c360 |
+| 1 | 280 | `WWDDRAW_ANIMATION_COMPLETE` — **animation complete**. 222 of the 280 sit on the *last* record of their animation | **P** | tested `== 1` by `CGruntDecay`, `CRockBreakEffect`, `CWarlord`, and the Grunt entrance/arrival states |
+| 2 | 222 | `WWDDRAW_EFFECT_FRAME` — **effect / impact frame** | **P** | four consumers: `CGrunt::StepAttackFire` @0x61cb0 (the attack lands), `CStaticHazard` @0xfc1a0, `CDroppedObjectShadow::Advance` @0xc7ab0, and `CTriggerMgr::LoadTileArrivalFx` @0x75e90 (spawns the dirt particle) |
 | 3 | 2 | — | **?** | both are `GRUNTZ\ANIZ\GAUNTLETZGRUNT\ITEM` record 9, immediately after that animation's `99`. No consumer located |
-| 99 | 18 | **tool effect applies now** — `TILE_ARRIVAL_FX_APPLY = 0x63` | **P** | `CTriggerMgr::LoadTileArrivalFx` @0x75e90: every arm returns early unless the cue is this, then it uncovers the powerup / breaks the brick. Every occurrence is at or near the end of a Grunt tool-use animation: `BOMBGRUNT_ITEM2`, `BRICKGRUNT_ITEM`, `GAUNTLETZGRUNT_ITEM`, `GOOBERGRUNT_ITEM`, `SHOVELGRUNT_ITEM`, `SPYGRUNT_ITEM` |
+| 99 | 18 | `WWDDRAW_TOOL_APPLIES = 0x63` — **tool effect applies now** | **P** | `CTriggerMgr::LoadTileArrivalFx` @0x75e90: every arm returns early unless the cue is this, then it uncovers the powerup / breaks the brick. Every occurrence is at or near the end of a Grunt tool-use animation: `BOMBGRUNT_ITEM2`, `BRICKGRUNT_ITEM`, `GAUNTLETZGRUNT_ITEM`, `GOOBERGRUNT_ITEM`, `SHOVELGRUNT_ITEM`, `SPYGRUNT_ITEM` |
 | 100 | 3 | — | **?** | only `GRUNTZ\ANIZ\WELDERGRUNT\PROJECTILE{2,3,4}`, retail archive only. No consumer located |
 
-`-1` also flows out of `Advance` (`TILE_ARRIVAL_FX_END`) but it is the
+`-1` also flows out of `Advance` (`WWDDRAW_NO_ANIMATION`) but it is the
 "no animation bound" return, never an on-disk value.
 
-The two existing enums each cover only their own consumer's slice of the
-domain, which is legitimate — `Advance` is a generic integer-valued interface —
-but it means neither is the domain. A `WwdAniDrawValue` covering 0/1/2/99 with
-3 and 100 left as documented gaps would be the honest single home; that is a
-`src/` change and is listed below rather than made here.
+The domain used to be spelled twice — `ANI_EVENT_FRAME` in
+`AniAdvanceCursor.h` and `TILE_ARRIVAL_FX_IMPACT`/`_APPLY`/`_END` in a
+`TileArrivalFxCue` enum — each covering only its own consumer's slice, and both
+naming the value 2. `Advance` is a generic integer-valued interface, so neither
+was the domain. They are now folded onto the single `WwdAniDrawValue`, which
+covers 0/1/2/99 (plus the -1 sentinel) and leaves 3 and 100 as documented gaps.
+Folding it retyped `CTriggerMgr::LoadTileArrivalFx`'s last parameter, so that
+function's mangled name moved from `W4TileArrivalFxCue@@` to
+`W4WwdAniDrawValue@@`; its fuzzy score is unchanged at 61.6689 and its
+`match_baseline.tsv` MAX row was re-keyed with it.
 
 ## Undetermined
 
@@ -187,15 +191,14 @@ but it means neither is the domain. A `WwdAniDrawValue` covering 0/1/2/99 with
   the game reads neither. The size hypothesis stays a hypothesis.
 * Record field 9. Even-valued garbage; see above.
 
-## `src/` follow-ups (not applied in this lane)
+## `src/` follow-ups
 
-* `WwdAnimStepMode` has no enumerator for **0**, the switch-default "hold the
-  current frame" arm, which 6 shipped records use.
-* `WwdAnimPositionMode` has no enumerator for **0**, which **13 478 of 13 480**
-  records use.
-* `draw_value` has no domain type; the knowledge is split across
-  `AniAdvanceCursor.h` (`ANI_EVENT_FRAME`) and `TileArrivalFxCue.h`
-  (`TILE_ARRIVAL_FX_IMPACT`/`_APPLY`), which name the same 2 twice.
+Applied (`lane/wwd-renames`): `WWDSTEP_HOLD = 0` and `WWDPOS_NONE = 0` now name
+the two switch-default arms, and `WwdAniDrawValue` is the single `draw_value`
+domain. All three are declaration-only and were measured byte-neutral.
+
+Still open:
+
 * `CAniRecordView::m_positionDeltaX`/`Y` and `m_reserved28` are dead in all
   shipped data; the comment on `m_reserved28` ("never read") is correct and
   could cite the corpus.

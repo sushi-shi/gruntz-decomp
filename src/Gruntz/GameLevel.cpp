@@ -54,7 +54,7 @@ RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
 
-    if (hdr->wwdSignature > sizeof(*hdr)) {
+    if (hdr->headerSize > sizeof(*hdr)) {
         return 0;
     }
 
@@ -67,7 +67,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     u32* pflags = &hdr->flags;
 
     if (*pflags & 0x2) {
-        u32 allocSize = hdr->mainBlockLength + hdr->wwdSignature + 0x40;
+        u32 allocSize = hdr->mainBlockLength + hdr->headerSize + 0x40;
         Bytef* buf = new Bytef[allocSize];
         if (buf == NULL) {
             return 0;
@@ -871,7 +871,7 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     if (moveFlags & 1) {
         i32 col = destX;
         i32 limit = t->m_extent.top + destY - 1;
-        if (AxisProbe(destX, limit) == TILEKIND_HARD) {
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
             bracket = moveFlags & 0x10;
             if (bracket != 0) {
                 i32 lo = col;
@@ -888,7 +888,7 @@ i32 CGameLevel::MoveGrounded(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
     } else if (moveFlags & 2) {
         i32 col = destX;
         i32 limit = t->m_extent.bottom + destY + 2;
-        if (AxisProbe(destX, limit) == TILEKIND_HARD) {
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
             bracket = moveFlags & 0x10;
             if (bracket != 0) {
                 i32 lo = col;
@@ -950,7 +950,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
 
     if (moveFlags & 1) {
         i32 limit = t->m_extent.top + destY - 1;
-        if (AxisProbe(destX, limit) == TILEKIND_HARD) {
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
             i32 mid = destX;
             i32 bracket = moveFlags & 0x10;
             if (bracket != 0) {
@@ -998,7 +998,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
 
     if (moveFlags & 1) {
         i32 limit = t->m_extent.top + destY - 1;
-        if (AxisProbe(destX, limit) == TILEKIND_HARD) {
+        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
             i32 mid = destX;
             if (moveFlags & 0x10) {
                 i32 lo = destX;
@@ -1035,7 +1035,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         if (t->m_moveMode != MOVE_GROUNDED) {
             i32 hi = t->m_extent.bottom + cursor + 1;
             i32 lo = t->m_extent.top + cursor - 1;
-            if (AxisProbe(destX, lo) != TILEKIND_HARD && AxisProbe(destX, hi) != TILEKIND_HARD) {
+            if (AxisProbe(destX, lo) != TILEKIND_CLIMB && AxisProbe(destX, hi) != TILEKIND_CLIMB) {
                 t->m_moveMode = MOVE_FALLING;
             }
         }
@@ -1043,7 +1043,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         cursor = ResolveCeilingCollision(t, destX, destY, moveFlags);
         i32 hi = t->m_extent.bottom + cursor + 1;
         i32 lo = t->m_extent.top + cursor - 1;
-        if (AxisProbe(destX, lo) != TILEKIND_HARD && AxisProbe(destX, hi) != TILEKIND_HARD) {
+        if (AxisProbe(destX, lo) != TILEKIND_CLIMB && AxisProbe(destX, hi) != TILEKIND_CLIMB) {
 
             i32 probe;
             i32 top = t->m_extent.bottom + cursor + 1;
@@ -1076,7 +1076,7 @@ i32 CGameLevel::StepAxisLo(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
     while (cur <= hi) {
         TileCollisionKind result;
         PROBE_TILE(this, mid, cur, result);
-        if (result == TILEKIND_SOFT) {
+        if (result == TILEKIND_SOLID) {
             *outX = t->m_screenX;
             return 0x60000;
         }
@@ -1104,7 +1104,7 @@ i32 CGameLevel::StepAxisHi(CGameObject* t, i32 destX, i32 destY, i32* outX, i32 
     while (cur <= hi) {
         TileCollisionKind result;
         PROBE_TILE(this, mid, cur, result);
-        if (result == TILEKIND_SOFT) {
+        if (result == TILEKIND_SOLID) {
             *outX = t->m_screenX;
             return 0xa0000;
         }
@@ -1133,20 +1133,20 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
         do {
             TileCollisionKind result;
             PROBE_TILE(this, cur, hiY, result);
-            if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+            if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
 
                 TileCollisionKind r2;
                 PROBE_TILE(this, cur, hiY - 1, r2);
-                if (r2 != TILEKIND_SOFT) {
+                if (r2 != TILEKIND_SOLID) {
                     TileCollisionKind r3;
                     PROBE_TILE(this, cur, hiY - 1, r3);
-                    if (r3 != TILEKIND_SOFT2) {
+                    if (r3 != TILEKIND_GROUND) {
                         return destY;
                     }
                 }
-            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_HARD) {
-                if (AxisProbe(cur, hiY) == TILEKIND_HARD) {
-                    if (AxisProbe(cur, hiY - 1) != TILEKIND_HARD) {
+            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
+                if (AxisProbe(cur, hiY) == TILEKIND_CLIMB) {
+                    if (AxisProbe(cur, hiY - 1) != TILEKIND_CLIMB) {
                         return destY;
                     }
                 }
@@ -1172,7 +1172,7 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
 
     TileCollisionKind first;
     PROBE_TILE(this, destX, hiY, first);
-    if (first == TILEKIND_SPECIAL) {
+    if (first == TILEKIND_DEATH) {
         t->m_flags |= 0x400000;
     }
     i32 base = destY - t->m_screenY;
@@ -1182,26 +1182,26 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
         do {
             TileCollisionKind result;
             PROBE_TILE(this, cur, hiY, result);
-            if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+            if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
                 i32 floor = t->m_screenY + t->m_extent.bottom;
                 if (hiY >= floor) {
                     i32 y = hiY;
                     do {
                         TileCollisionKind g = AxisProbe(cur, y);
-                        if (g != TILEKIND_SOFT && g != TILEKIND_SOFT2) {
+                        if (g != TILEKIND_SOLID && g != TILEKIND_GROUND) {
                             t->m_moveMode = MOVE_GROUNDED;
                             return y - t->m_extent.bottom;
                         }
                         --y;
                     } while (y >= floor);
                 }
-            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_HARD) {
+            } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
                 i32 floor = hiY - base;
                 if (hiY > floor) {
                     i32 y = hiY - 1;
                     if (y >= floor) {
                         do {
-                            if (AxisProbe(cur, y) != TILEKIND_HARD) {
+                            if (AxisProbe(cur, y) != TILEKIND_CLIMB) {
                                 t->m_moveMode = MOVE_GROUNDED;
                                 return (y + 1) - t->m_extent.bottom - 1;
                             }
@@ -1233,13 +1233,13 @@ i32 CGameLevel::ResolveCeilingCollision(CGameObject* t, i32 destX, i32 destY, i3
         do {
             TileCollisionKind result;
             PROBE_TILE(this, cur, ceil, result);
-            if (result == TILEKIND_SOFT) {
+            if (result == TILEKIND_SOLID) {
                 i32 floor = t->m_screenY + t->m_extent.top - 1;
                 if (ceil <= floor) {
                     i32 y = ceil;
                     do {
 
-                        if (AxisProbe(startCol, y) != TILEKIND_SOFT) {
+                        if (AxisProbe(startCol, y) != TILEKIND_SOLID) {
                             t->m_moveMode = MOVE_FALLING;
                             return y - t->m_extent.top;
                         }
@@ -1267,7 +1267,7 @@ i32 CGameLevel::SpanCheck(i32 a, i32 b, i32 c, i32* out) {
     while (cur >= c) {
         TileCollisionKind result;
         PROBE_TILE(this, a, cur, result);
-        if (result != TILEKIND_HARD) {
+        if (result != TILEKIND_CLIMB) {
             *out = cur + 1;
             return 1;
         }
@@ -1444,7 +1444,7 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 py = t->m_screenY + t->m_extent.top + dy;
     TileCollisionKind result;
     PROBE_TILE(this, px, py, result);
-    return result == TILEKIND_SOFT;
+    return result == TILEKIND_SOLID;
 }
 
 RVA(0x00160530, 0x125)
@@ -1466,7 +1466,7 @@ i32 CGameLevel::IsValidWwd(const char* name, void* headerBuf) {
         return 0;
     }
 
-    if (*static_cast<u32*>(headerBuf) > sizeof(WwdHeader)) {
+    if (static_cast<WwdHeader*>(headerBuf)->headerSize > sizeof(WwdHeader)) {
         return 0;
     }
 
@@ -1494,7 +1494,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, void* nameOut) {
         return 0;
     }
 
-    if (header.wwdSignature > sizeof(header)) {
+    if (header.headerSize > sizeof(header)) {
         return 0;
     }
 
@@ -1514,7 +1514,7 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
         return 0;
     }
 
-    if (src->wwdSignature > sizeof(*src)) {
+    if (src->headerSize > sizeof(*src)) {
         return 0;
     }
     if ((src->flags & 0x2) == 0) {
@@ -1523,18 +1523,18 @@ Bytef* __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destL
     if (src->mainBlockLength == 0) {
         return 0;
     }
-    if (src->mainBlockLength > destLen + src->wwdSignature) {
+    if (src->mainBlockLength > destLen + src->headerSize) {
         return 0;
     }
 
-    memcpy(dest, src, src->wwdSignature);
-    outLen = static_cast<uLongf>((destLen - src->wwdSignature));
+    memcpy(dest, src, src->headerSize);
+    outLen = static_cast<uLongf>((destLen - src->headerSize));
     if (uncompress(
-            dest + src->wwdSignature,
+            dest + src->headerSize,
             &outLen,
 
             // Byte-forced view of packed WWD storage.
-            reinterpret_cast<Bytef*>(src) + src->wwdSignature,
+            reinterpret_cast<Bytef*>(src) + src->headerSize,
             src->mainBlockLength
         )
         != 0) {
@@ -1604,8 +1604,8 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
 
     i32 startRow = row;
     i32 wrapH = m_mainPlane->m_wrapH;
-    while (result != TILEKIND_SOFT) {
-        if (result == TILEKIND_SOFT2 || result == TILEKIND_HARD) {
+    while (result != TILEKIND_SOLID) {
+        if (result == TILEKIND_GROUND || result == TILEKIND_CLIMB) {
             break;
         }
         ++row;
@@ -1699,7 +1699,7 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
     while (col <= hiX) {
         TileCollisionKind result;
         PROBE_TILE(this, col, fixedY, result);
-        if (result == TILEKIND_SOFT) {
+        if (result == TILEKIND_SOLID) {
             return t->m_screenY;
         }
         if (col == hiX) {
@@ -1717,7 +1717,7 @@ i32 CGameLevel::SnapFloorDown(CGameObject* t, i32 x, i32 y, i32* out) {
     for (i32 row = y; row >= limit; row--) {
         TileCollisionKind result;
         PROBE_TILE(this, x, row, result);
-        if (result != TILEKIND_SOFT && result != TILEKIND_SOFT2) {
+        if (result != TILEKIND_SOLID && result != TILEKIND_GROUND) {
             *out = row - t->m_extent.bottom;
             return 1;
         }
@@ -1731,7 +1731,7 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
     for (i32 row = y; row <= limit; row++) {
         TileCollisionKind result;
         PROBE_TILE(this, x, row, result);
-        if (result != TILEKIND_SOFT) {
+        if (result != TILEKIND_SOLID) {
             *out = row - t->m_extent.top;
             return 1;
         }
@@ -1745,12 +1745,12 @@ i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
     i32 py1 = t->m_extent.top + off - 1;
     TileCollisionKind r1;
     PROBE_TILE(this, x, py1, r1);
-    if (r1 == TILEKIND_HARD) {
+    if (r1 == TILEKIND_CLIMB) {
         return 1;
     }
     TileCollisionKind r2;
     PROBE_TILE(this, x, py2, r2);
-    return r2 == TILEKIND_HARD;
+    return r2 == TILEKIND_CLIMB;
 }
 
 RVA(0x0015f610, 0x191)
@@ -1758,10 +1758,10 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
     y = ResolveCeilingCollision(t, x, y, flags);
     i32 headRow = t->m_extent.bottom + y + 1;
     i32 footRow = t->m_extent.top + y - 1;
-    if (AxisProbe(x, footRow) == TILEKIND_HARD) {
+    if (AxisProbe(x, footRow) == TILEKIND_CLIMB) {
         goto done;
     }
-    if (AxisProbe(x, headRow) == TILEKIND_HARD) {
+    if (AxisProbe(x, headRow) == TILEKIND_CLIMB) {
         goto done;
     }
     {
@@ -1773,7 +1773,7 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
             while (cur >= head2) {
                 TileCollisionKind result;
                 PROBE_TILE(this, x, cur, result);
-                if (result != TILEKIND_HARD) {
+                if (result != TILEKIND_CLIMB) {
 
                     ++cur;
                     if (cur > y) {
@@ -1800,8 +1800,8 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 footRow = t->m_extent.top + y - 1;
     TileCollisionKind result;
     PROBE_TILE(this, x, footRow, result);
-    if (result != TILEKIND_HARD) {
-        if (AxisProbe(x, headRow) != TILEKIND_HARD) {
+    if (result != TILEKIND_CLIMB) {
+        if (AxisProbe(x, headRow) != TILEKIND_CLIMB) {
             t->m_moveMode = MOVE_FALLING;
         }
     }
@@ -1814,7 +1814,7 @@ i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags
     i32 probeY = t->m_extent.bottom + y + 2;
     TileCollisionKind result;
     PROBE_TILE(this, x, probeY, result);
-    if (result != TILEKIND_HARD) {
+    if (result != TILEKIND_CLIMB) {
         return 0;
     }
     if (flags & 0x10) {
@@ -1832,7 +1832,7 @@ i32 CGameLevel::StepGroundUp(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) 
     i32 probeY = t->m_extent.top + y - 1;
     TileCollisionKind result;
     PROBE_TILE(this, x, probeY, result);
-    if (result != TILEKIND_HARD) {
+    if (result != TILEKIND_CLIMB) {
         return 0;
     }
     if (flags & 0x10) {
@@ -1849,12 +1849,12 @@ RVA(0x0015fc30, 0x17f)
 i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
     TileCollisionKind r1;
     PROBE_TILE(this, x, y, r1);
-    if (r1 != TILEKIND_HARD) {
+    if (r1 != TILEKIND_CLIMB) {
         return 0;
     }
     TileCollisionKind r2;
     PROBE_TILE(this, x, y - 1, r2);
-    return r2 != TILEKIND_HARD;
+    return r2 != TILEKIND_CLIMB;
 }
 
 RVA(0x00160080, 0x187)
@@ -1863,10 +1863,10 @@ i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
 
     TileCollisionKind r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
-    if (r1 != TILEKIND_SOFT) {
+    if (r1 != TILEKIND_SOLID) {
         TileCollisionKind r2;
         PROBE_TILE(this, dx + t->m_screenX, row, r2);
-        if (r2 != TILEKIND_SOFT2) {
+        if (r2 != TILEKIND_GROUND) {
             return 0;
         }
     }
@@ -1879,13 +1879,13 @@ i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
 
     TileCollisionKind r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
-    if (r1 != TILEKIND_SOFT) {
+    if (r1 != TILEKIND_SOLID) {
         TileCollisionKind r2;
         PROBE_TILE(this, dx + t->m_screenX, row, r2);
-        if (r2 != TILEKIND_SOFT2) {
+        if (r2 != TILEKIND_GROUND) {
             TileCollisionKind r3;
             PROBE_TILE(this, dx + t->m_screenX, row, r3);
-            if (r3 != TILEKIND_HARD) {
+            if (r3 != TILEKIND_CLIMB) {
                 return 0;
             }
         }
@@ -1903,7 +1903,7 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
         for (i32 col = x0; col <= x1; col += step) {
             TileCollisionKind r;
             PROBE_TILE(this, col, y, r);
-            if (r == TILEKIND_SOFT) {
+            if (r == TILEKIND_SOLID) {
                 return 0;
             }
         }
@@ -1911,12 +1911,12 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
         for (i32 col = x0; col >= x1; col -= step) {
             TileCollisionKind r;
             PROBE_TILE(this, col, y, r);
-            if (r == TILEKIND_SOFT) {
+            if (r == TILEKIND_SOLID) {
                 return 0;
             }
         }
     }
     TileCollisionKind rf;
     PROBE_TILE(this, x1, y, rf);
-    return rf != TILEKIND_SOFT;
+    return rf != TILEKIND_SOLID;
 }

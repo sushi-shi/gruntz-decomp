@@ -166,9 +166,9 @@ i32 FillLevelInfoDialog(HWND hDlg) {
         }
         sprintf(num, "%d", atoi(p));
         setText(hDlg, 0x408, static_cast<const char*>(g_str62c264));
-        setText(hDlg, 0x428, info.levelName + 0x40);
+        setText(hDlg, 0x428, info.author);
         setText(hDlg, 0x40c, num);
-        setText(hDlg, 0x429, info.levelName + 0x80);
+        setText(hDlg, 0x429, info.created);
     } else {
         setText(hDlg, 0x408, "Bad Level File");
         setText(hDlg, 0x428, "Bad Level File");
@@ -245,14 +245,14 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             if (g_dat62c268 != NULL && FileExists(g_pathStr)
                 && g_dat62c268->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
-                SetDlgItemTextA(hDlg, 0x428, info.levelName + 0x40);
+                SetDlgItemTextA(hDlg, 0x428, info.author);
                 char* p = info.levelName;
                 while (*p && (*p < '0' || *p > '9')) {
                     p++;
                 }
                 sprintf(num, "%d", atoi(p));
                 SetDlgItemTextA(hDlg, 0x40c, num);
-                SetDlgItemTextA(hDlg, 0x429, info.levelName + 0x80);
+                SetDlgItemTextA(hDlg, 0x429, info.created);
                 bad = 0;
             }
             if (bad) {

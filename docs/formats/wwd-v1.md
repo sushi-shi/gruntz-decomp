@@ -267,22 +267,27 @@ carry **0x6b and 0x6c**, which that header already names
 `TILEKIND_WATERBRIDGE_DOWN` / `TILEKIND_WATERBRIDGE_UP`. Two independent
 sources, same two tiles.
 
-The **0..4 band is a naming conflict** and the header is likely wrong. Run-length
-mapping index -> attribute over the shipped tables against GooRoo's examples:
+The **0..4 band** was a naming conflict; it is now resolved in favour of the
+editor's vocabulary, because retail's own behaviour matches it arm for arm.
+Run-length mapping index -> attribute over the shipped tables, against GooRoo's
+examples and against what the movement code actually does with each value:
 
-| Value | Editor / spec name | Corpus indices | Retail behaviour | `TileCollisionKind.h` says |
+| Value | Editor / spec name | Corpus indices | Retail behaviour | `TileCollisionKind.h` |
 |---|---|---|---|---|
-| 0 | Clear (`#1..#36`) | 0..38, and most of 330..900 | passable | `TILEKIND_PASSABLE` — agrees |
-| 1 | **Solid** (`#39..#76`) | **39..76** | movement backs the object off the cell (`CGameLevel::MoveStepXHi` @0x167260 and its three siblings) | `TILEKIND_SOFT` — **misleading**; it blocks |
-| 2 | Ground ("no examples") | 69, 74, 180, 181 | blocks, *unless* the mover has flag 0x400, which downgrades it to passable | `TILEKIND_SOFT2` |
-| 3 | Climb ("no examples") | 162, 167 | **no consumer found** anywhere in `src/` | `TILEKIND_HARD` — **no live use backs this** |
-| 4 | **Death** (`#99..#140`) | **102..139** | not passable and not backed off — walked onto | `TILEKIND_SPECIAL` |
+| 0 | Clear (`#1..#36`) | 0..38, and most of 330..900 | passable | `TILEKIND_PASSABLE` |
+| 1 | **Solid** (`#39..#76`) | **39..76** | blocks on *every* axis: `StepAxisLo`/`StepAxisHi` (horizontal), `ResolveCeilingCollision` (up), `ResolveFloorCollision`/`FreeMove` (down) | `TILEKIND_SOLID` |
+| 2 | Ground ("no examples") | 69, 74, 180, 181 | tested only on the **floor** paths, and `MoveStepXHi` rewrites it to 0 when the mover has flag 0x400 (`cmp eax,0x2; test ch,0x4; xor eax,eax`) — a one-way platform | `TILEKIND_GROUND` |
+| 3 | Climb ("no examples") | 162, 167 | blocks like 2 **except** when the mover is already `MOVE_CLIMBING` (`m_moveMode != MOVE_CLIMBING && result == 3`; retail `cmp eax,0x3` twice in `MoveGrounded` @0x15e130) | `TILEKIND_CLIMB` |
+| 4 | **Death** (`#99..#140`) | **102..139** | walked onto, not backed off: `ResolveFloorCollision` sets `m_flags 0x400000`, the cell classifier gives it bit 0x2 (1 gets 0x1), and `CGrunt`/`CRollingBall` handle it in the same switch arm as `TILEKIND_DEATHBRIDGE_UP` | `TILEKIND_DEATH` |
 | >=5 | "User" | the rest | the Gruntz-specific band | the 0x0a..0x9a names |
 
-The index ranges line up with GooRoo's tile numbers to within the 1-vs-0-based
-offset, on two independent bands. This is a **reported finding, not a change** —
-renaming `TILEKIND_SOFT`/`HARD`/`SPECIAL` touches `src/` and belongs to a lane
-that can build.
+The index ranges line up with GooRoo's tile numbers on two independent bands, and
+the `MOVE_CLIMBING` guard on value 3 is a third, independent confirmation — the
+editor's "Climb" is exactly a tile that is solid to walkers and transparent to
+climbers. Values 2 and 3 being near-absent from the corpus is what GooRoo's "there
+don't appear to be any of these" records; it is *not* evidence that retail ignores
+them, and an earlier draft of this table wrongly said value 3 had no consumer in
+`src/`. It has about thirty, in `GameLevel.cpp` alone.
 
 ## Object records
 

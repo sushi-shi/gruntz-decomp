@@ -58,10 +58,10 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // TILEKIND_WATER) but it gets its own cell bit 0x800, not water's 0x100, so
     // calling it water would be a guess.
     switch (typeCode) {
-        case TILEKIND_SOFT:
+        case TILEKIND_SOLID:
             cell->m_flags = 0x1;
             break;
-        case TILEKIND_SPECIAL:
+        case TILEKIND_DEATH:
             cell->m_flags = 0x2;
             break;
         case TILEKIND_WATER:

@@ -234,7 +234,7 @@ i32 CRollingBall::Update() {
             }
 
             switch (static_cast<TileCollisionKind>(act)) {
-                case TILEKIND_SPECIAL:
+                case TILEKIND_DEATH:
                 case TILEKIND_DEATHBRIDGE_UP:
                 case TILEKIND_TOGGLEDEATHBRIDGE_UP: {
 
@@ -277,7 +277,7 @@ i32 CRollingBall::Update() {
                     m_wwdObject->ApplyName(fall);
                     m_value = m_wwdObject->m_animCursor.m_animation;
                     m_wwdObject->ApplyLookupGeometry(explosion, 0);
-                    if (act != IDX(TILEKIND_SPECIAL)) {
+                    if (act != IDX(TILEKIND_DEATH)) {
                         m_explodeLatch = 1;
                         return 0;
                     }

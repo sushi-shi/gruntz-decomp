@@ -3564,7 +3564,7 @@ void CGrunt::XferName(char*) {
                     }
                     break;
                 }
-                case TILEKIND_SPECIAL:
+                case TILEKIND_DEATH:
                 case TILEKIND_DEATHBRIDGE_UP:
                 case TILEKIND_TOGGLEDEATHBRIDGE_UP:
                     hazard = g_areaPitDeath;

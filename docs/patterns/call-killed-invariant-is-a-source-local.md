@@ -15,7 +15,7 @@ trigger: it is a **named local in the original source**. The extra stack slot is
 ```cpp
 // WRONG - the virtual GetCollisionAt() inside PROBE_TILE kills the load, so cl
 // cannot hoist it and re-reads m_mainPlane->m_wrapH every iteration:
-while (result != TILEKIND_SOFT) {
+while (result != TILEKIND_SOLID) {
     ...
     if (row >= m_mainPlane->m_wrapH) { return 0; }
     PROBE_TILE(this, px, row, result);
@@ -23,7 +23,7 @@ while (result != TILEKIND_SOFT) {
 
 // RIGHT - the dev hoisted it, which is the only way the value survives the call:
 i32 wrapH = m_mainPlane->m_wrapH;
-while (result != TILEKIND_SOFT) {
+while (result != TILEKIND_SOLID) {
     ...
     if (row >= wrapH) { return 0; }
     PROBE_TILE(this, px, row, result);

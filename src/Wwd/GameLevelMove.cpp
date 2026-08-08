@@ -113,10 +113,10 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
             result = TILEKIND_PASSABLE;
         }
-        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+        if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.right;
             i32 j = xEnd - 1;
             state |= 0x60000;
@@ -195,10 +195,10 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
             result = TILEKIND_PASSABLE;
         }
-        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+        if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.left;
             i32 j = xEnd + 1;
             state |= 0xa0000;
@@ -277,10 +277,10 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
             result = TILEKIND_PASSABLE;
         }
-        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+        if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.bottom;
             i32 j = fixedY - 1;
             state |= 0x1020000;
@@ -359,10 +359,10 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                 result = set->GetCollisionAt(subX, subY);
             }
         }
-        if (result == TILEKIND_SOFT2 && (t->m_flags & 0x400)) {
+        if (result == TILEKIND_GROUND && (t->m_flags & 0x400)) {
             result = TILEKIND_PASSABLE;
         }
-        if (result == TILEKIND_SOFT || result == TILEKIND_SOFT2) {
+        if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.top;
             i32 j = fixedY + 1;
             state |= 0x820000;
@@ -556,9 +556,4 @@ i32 CWwdSpatialMgr::Init(
     return 0;
 }
 
-#undef TILEKIND_PASSABLE
-#undef TILEKIND_SOFT
-#undef TILEKIND_SOFT2
-#undef TILEKIND_HARD
-#undef TILEKIND_SPECIAL
 #undef PROBE_TILE

@@ -235,7 +235,7 @@ i32 CStaticHazard::LoadAttributes() {
     }
 
 dispatch:
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == ANI_EVENT_FRAME) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 a = 0, b = 0;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != NULL) {

@@ -830,7 +830,7 @@ i32 CGrunt::StepArrivalCommit() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
         if (m_entranceReason != PICKUP_BOMB) {
             goto finalize;
@@ -1274,7 +1274,7 @@ i32 CGrunt::FinishActiveAction() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
         return 1;
     }

@@ -40,7 +40,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     i32 tileX,
     i32 tileY,
     PickupType reason,
-    TileArrivalFxCue cue
+    WwdAniDrawValue cue
 ) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
@@ -74,10 +74,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     switch (reason) {
         case PICKUP_SHOVEL:
-            if (cue == TILE_ARRIVAL_FX_END) {
+            if (cue == WWDDRAW_NO_ANIMATION) {
                 return 1;
             }
-            if (cue == TILE_ARRIVAL_FX_IMPACT) {
+            if (cue == WWDDRAW_EFFECT_FRAME) {
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
@@ -92,7 +92,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 return 1;
             }
-            if (cue != TILE_ARRIVAL_FX_APPLY) {
+            if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
 
@@ -131,10 +131,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 0;
 
         case PICKUP_GAUNTLETZ:
-            if (cue == TILE_ARRIVAL_FX_END) {
+            if (cue == WWDDRAW_NO_ANIMATION) {
                 return 1;
             }
-            if (cue == TILE_ARRIVAL_FX_IMPACT) {
+            if (cue == WWDDRAW_EFFECT_FRAME) {
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
@@ -155,7 +155,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 }
                 return 1;
             }
-            if (cue != TILE_ARRIVAL_FX_APPLY) {
+            if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
 
@@ -222,7 +222,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_GOOBER:
-            if (cue == TILE_ARRIVAL_FX_APPLY || cue == TILE_ARRIVAL_FX_END) {
+            if (cue == WWDDRAW_TOOL_APPLIES || cue == WWDDRAW_NO_ANIMATION) {
                 // Retail primes the gauge id before the scan, so a puddle-less
                 // arrival still credits the default Grunt.
                 i32 gruntType = 25;
@@ -232,7 +232,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     POSITION current = pos;
                     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
                     if (puddle->m_tileX == tileX && puddle->m_tileY == tileY) {
-                        if (cue == TILE_ARRIVAL_FX_END) {
+                        if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                             puddle->SetBute("B");
                             puddle->m_placed = 1;
@@ -254,7 +254,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_SPY:
-            if (cue == TILE_ARRIVAL_FX_APPLY) {
+            if (cue == WWDDRAW_TOOL_APPLIES) {
                 for (i32 radius = 1; radius <= 2; radius++) {
                     i32 topY = tileY - radius;
                     i32 bottomY = tileY + radius;
@@ -562,7 +562,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 1;
 
         case PICKUP_BRICK:
-            if (cue != TILE_ARRIVAL_FX_APPLY) {
+            if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
             if (cellType == TILEKIND_HIDDEN_POWERUP) {
@@ -615,7 +615,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             return 0;
 
         case PICKUP_TOOB: {
-            if (cue != TILE_ARRIVAL_FX_APPLY) {
+            if (cue != WWDDRAW_TOOL_APPLIES) {
                 return 1;
             }
             i32 waterX = unit->m_object->m_screenX;

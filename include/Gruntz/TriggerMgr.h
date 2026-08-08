@@ -16,8 +16,8 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TargetSelectionKind.h>
-#include <Gruntz/TileArrivalFxCue.h>
 #include <Gruntz/WarpStoneFragment.h>
+#include <Wwd/WwdAniDrawValue.h>
 
 extern FreeNodePool g_coordPool;
 
@@ -208,7 +208,7 @@ public:
         i32 tileX,
         i32 tileY,
         PickupType reason,
-        TileArrivalFxCue cue
+        WwdAniDrawValue cue
     );
 
     i32 CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 flag);

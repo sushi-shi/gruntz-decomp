@@ -282,7 +282,7 @@ RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
-    if (advanced == ANI_EVENT_FRAME) {
+    if (advanced == WWDDRAW_EFFECT_FRAME) {
 
         switch (m_entranceReason) {
             case GRUNT_GUNHAT:
@@ -1002,7 +1002,7 @@ i32 CGrunt::StepEntranceReinit() {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
     }
     if (m_poweredUp != 0 && m_neighborValid == 0) {
@@ -1393,7 +1393,7 @@ i32 CGrunt::StepCombatReaction(
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
         goto tail;
     }
@@ -1691,7 +1691,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
     } else {
         CWwdGameObjectA* h = m_object;
@@ -1779,8 +1779,8 @@ RVA(0x00065a60, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     if (advanced > 0) {
-        TileArrivalFxCue cue = static_cast<TileArrivalFxCue>(advanced);
-        if (cue == TILE_ARRIVAL_FX_APPLY) {
+        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
+        if (cue == WWDDRAW_TOOL_APPLIES) {
             m_entranceActive = 1;
             u32 downtime =
                 g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "ItemDowntime");
@@ -1827,7 +1827,7 @@ RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {
-        TileArrivalFxCue cue = static_cast<TileArrivalFxCue>(advanced);
+        WwdAniDrawValue cue = static_cast<WwdAniDrawValue>(advanced);
         m_tileMgr->LoadTileArrivalFx(
             m_tileOwnerHi,
             m_tileOwnerLo,

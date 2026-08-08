@@ -597,7 +597,7 @@ void CDroppedObjectShadow::RegisterActs() {
 // @early-stop
 RVA(0x000c7ab0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
-    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == ANI_EVENT_FRAME) {
+    if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         CWwdGameObjectA* o = m_object;
         g_gameReg->m_world->m_childGroup
             ->CreateSprite(0, o->m_screenX, o->m_screenY, 0, "DroppedObject", 0x40003);

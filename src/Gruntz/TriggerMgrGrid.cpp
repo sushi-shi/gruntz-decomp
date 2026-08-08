@@ -1296,7 +1296,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
                 cell->m_moveTile.m_x,
                 cell->m_moveTile.m_y,
                 cell->m_entranceReason,
-                TILE_ARRIVAL_FX_END
+                WWDDRAW_NO_ANIMATION
             );
         }
         cell->PlayMoveSound(bx, by);
@@ -1352,7 +1352,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             cell->m_moveTile.m_x,
             cell->m_moveTile.m_y,
             cell->m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
     }
     if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) != 0) {
@@ -1418,7 +1418,7 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
             t.m_x,
             t.m_y,
             cell->m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
     }
     i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;

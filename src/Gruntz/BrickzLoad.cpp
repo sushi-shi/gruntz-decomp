@@ -189,10 +189,10 @@ i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
             // TILEKIND_WATER) but it gets its own cell bit 0x800, not water's 0x100, so
             // calling it water would be a guess.
             switch (typeCode) {
-                case TILEKIND_SOFT:
+                case TILEKIND_SOLID:
                     cell->m_flags = 0x1;
                     break;
-                case TILEKIND_SPECIAL:
+                case TILEKIND_DEATH:
                     cell->m_flags = 0x2;
                     break;
                 case TILEKIND_WATER:

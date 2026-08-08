@@ -4015,7 +4015,7 @@ symtab	?Teardown@CParseSource@@QAEXXZ	100.0000	100.0000	4	23c31b4db020	0x1397a0
 symtab	?UnpackTag@@YGXW4RezTypeTag@@PAD@Z	100.0000	100.0000	2	cc4a1e1a83da	0x13b970
 symtab	?UnusedParserAction@CSymParser@@UAEXH@Z	100.0000	100.0000	1	4cc6c1ab6873	0x13ba00
 symtab	?UnusedParserQuery@CSymParser@@UAEHH@Z	100.0000	100.0000	1	a8efec85b32f	0x13b9f0
-terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4TileArrivalFxCue@@@Z	61.6689	61.6689	5	b27a97ab41f6	0x75e90
+terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	61.6689	61.6689	4	f632124888b8	0x75e90
 tilelogicpump	??0CBrickz@@QAE@PAUCGameObject@@@Z	92.8982	92.8982	7	91c9cdc623ab	0x10e800
 tilelogicpump	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	99.8675	99.8675	10	cb27867ee421	0x10ee20
 tilelogicpump	??0CCoveredPowerup@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	ee3b05c7a050	0x10fac0

@@ -18,6 +18,10 @@
 // `case 2` and `case 5` look alike, when one is an absolute jump and the other a
 // relative step.
 GZ_ENUM_BEGIN(WwdAnimStepMode)
+// The switch DEFAULT arm: no case dispatches 0, so the frame index is left
+// alone and the record just holds the current frame for its duration. Six
+// shipped records use it (e.g. GAME\ANIZ\NOTHING record 0).
+    WWDSTEP_HOLD = 0,
     WWDSTEP_NEXT = 1,
     WWDSTEP_PREV = 2,
     WWDSTEP_SET = 3,
@@ -29,6 +33,11 @@ GZ_ENUM_END(WwdAnimStepMode)
 
 // How the position deltas in an ANI record are applied.
 GZ_ENUM_BEGIN(WwdAnimPositionMode)
+    // The switch DEFAULT arm: the deltas are ignored and the object does not
+    // move. 13 478 of the corpus's 13 480 records - and the two that do not use
+    // it carry a zero delta anyway, so no shipped animation moves its object
+    // through this mechanism at all.
+    WWDPOS_NONE = 0,
     WWDPOS_PLOT_OFFSET = 1,
     WWDPOS_MOVE_RELATIVE = 2,
     WWDPOS_MOVE_ABSOLUTE = 3

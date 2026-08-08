@@ -1714,7 +1714,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             m_moveTile.m_x,
             m_moveTile.m_y,
             m_entranceReason,
-            TILE_ARRIVAL_FX_END
+            WWDDRAW_NO_ANIMATION
         );
     } else {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
