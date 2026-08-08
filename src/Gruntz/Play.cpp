@@ -1526,7 +1526,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
             key.Format("Level%i", i);
             CTriggerMgr* bm = gameReg->m_cmdGrid;
-            i32 v = g_buteMgr.GetInt(static_cast<const char*>(key), "WarpStone");
+            i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), static_cast<u8>(v));
         }
     }

@@ -1036,7 +1036,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
         }
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_SPARKLE, 0);
-        m_idleDelay = static_cast<u32>(g_buteMgr.GetIntDef(s_Spellz, s_FreezeDelay, 0x2710));
+        m_idleDelay = g_buteMgr.GetDwordDef(s_Spellz, s_FreezeDelay, 0x2710);
         m_idleAnchor = g_frameTime;
         m_freezeDelayDone = 0;
     }
