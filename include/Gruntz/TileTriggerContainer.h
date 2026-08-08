@@ -48,7 +48,15 @@ public:
 
     i32 DelFromList3(CTileActionEvent* evt);
 
-    ~CTileTriggerContainer();
+    // Inline, like the ctor above: retail's out-of-line copy is a COMDAT emitted by
+    // play.obj - 0xc8640 is interleaved between CPlay::LoadGameAssetNamespaces
+    // (0xc7ec0+0x5f5) and CPlay::ReleaseResources (0xc8700), which are also its only
+    // two direct callers.  The 0x70 body is mostly compiler-generated: the four
+    // CPtrList member dtors plus the /GX unwind states around them.
+    RVA(0x000c8640, 0x70)
+    ~CTileTriggerContainer() {
+        DtorBase();
+    }
 
     CTileTriggerLogic* AddLogic(
         TileCollisionKind tileType,

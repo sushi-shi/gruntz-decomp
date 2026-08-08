@@ -242,7 +242,7 @@ netsessionnode	3
 packetpool	1
 palettebmp	2
 pathhazard	15
-play	93
+play	94
 playassetload	18
 playercommandstep	1
 playplanescan	1
@@ -311,7 +311,7 @@ terraintileloader	1
 tilelogicpump	71
 tilescan	1
 tileswitchlogic	47
-tiletriggercontainer	28
+tiletriggercontainer	27
 timesplit	2
 timestring	1
 titleappstart	2

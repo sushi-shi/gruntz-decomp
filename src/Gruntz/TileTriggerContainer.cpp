@@ -25,11 +25,6 @@
 
 #include <new>
 
-RVA(0x000c8640, 0x70)
-CTileTriggerContainer::~CTileTriggerContainer() {
-    DtorBase();
-}
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00115b60, 0x97)
