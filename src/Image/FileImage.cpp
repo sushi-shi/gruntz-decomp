@@ -351,14 +351,14 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
     bi.bmiHeader.biHeight = height;
     bi.bmiHeader.biSize = 0x28;
     bi.bmiHeader.biWidth = width;
-    bfh.m_hdr.bfSize = 3 * width * height + 0x3a;
+    bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
     bfh.m_hdr.bfOffBits = 0x3a;
 
-    u8* line = new u8[3 * width * height + 0x3a];
+    u8* line = new u8[3 * width];
     if (line == NULL) {
         return 0;
     }

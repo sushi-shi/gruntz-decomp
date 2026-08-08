@@ -71,6 +71,30 @@ doctrine and [no-ifdef-guard-devices] for why a per-TU `#ifdef` switch is not th
 either. The `labels_manifest.tsv` denominator drop is the *acknowledged* cost
 (`GRUNTZ_LABELS_ACK=1`), and it is one row against sixty-five.
 
+## Refinement (2026-08-08): pin the SMALL leaf ctors, keep the expanded one inline
+
+The rule is about the ctor the family *expands*, not about every ctor in the chain. In a
+chain `CLoadable -> CResolveNode -> CGameObject -> CWwdGameObjectA/C/F` retail expands
+`CGameObject::CGameObject` (0x15b390) into every `Create*Object` new-site and, inside that
+expansion, **calls** `CResolveNode::CResolveNode` (0x15b2c0), `AnimWorkerObj::AnimWorkerObj`
+(0x15b300) and `CAniAdvanceCursor::CAniAdvanceCursor` (0x15b730) out-of-line. Three
+configurations, measured whole-tree on the same worktree:
+
+| | exact | fuzzy |
+|---|---|---|
+| all four inline in headers (the naive model) | 3323 | 89.12% |
+| all four pinned out-of-line | 3323 | 89.14% |
+| **three leaf ctors pinned, `CGameObject::CGameObject` inline** | **3326** | **89.17%** |
+
+The winning shape moves `CDDrawChildGroup::CreateDeferredObject` 62.87 -> 93.39,
+`CreateDotObject` 65.67 -> 94.40, `CreateSpriteObject` 66.73 -> 94.56 and banks three new
+EXACT rows, at no denominator cost (`levelplane` -3 / `wwdfactoryobject` +3, so the
+`labels_manifest.tsv` ACK is net-neutral). Pinning `CGameObject::CGameObject` as well costs
+all three `Create*Object` rows ~45 points each - exactly the tax this pattern warns about.
+
+So run the `sema xref` caller test on **each** ctor in the chain separately: the one whose
+callers are the *family* stays inline; the ones the family's expansion *calls* get pinned.
+
 related: [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md),
 [frame-size-mismatch-dominates-the-40-65-band.md](frame-size-mismatch-dominates-the-40-65-band.md)
 (the frame delta this produces is the visible symptom),

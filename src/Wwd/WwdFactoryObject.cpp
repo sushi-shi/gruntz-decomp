@@ -35,6 +35,27 @@
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
+RVA(0x0015b2c0, 0x3d)
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08) {
+    m_screenX = COORD_UNSET;
+    m_clip.left = COORD_UNSET;
+    m_level = NULL;
+    m_stateFlags = SPRITE_STATE_NONE;
+}
+
+RVA(0x0015b300, 0x40)
+AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CLoadable(owner, id, stateFlags) {
+    m_notify = NULL;
+    m_payload = NULL;
+    m_logic = NULL;
+    m_target = NULL;
+    m_actKey = 0;
+    m_targetId = 0;
+    m_payloadSize = 0;
+}
+
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
     i32 remaining = m_timeDelay;
@@ -94,6 +115,15 @@ i32 CAniAdvanceCursor::IsLoaded() {
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
+
+RVA(0x0015b730, 0x2b)
+CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08) {
+    m_boundObject = NULL;
+    m_animation = NULL;
+    m_element = NULL;
+}
+
 RVA(0x0015b760, 0x6)
 LoadableClassId CWwdGameObjectA::GetClassId() {
     return CLASSID_WWDOBJA;

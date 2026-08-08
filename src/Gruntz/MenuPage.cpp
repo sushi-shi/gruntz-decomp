@@ -149,6 +149,9 @@ CMenuItem2* CMenuPage::AddItem2(
     return Append(item) ? item : 0;
 }
 
+// @early-stop
+// cl inlines CMenuItem::Reset() here; retail's budget was spent by the three
+// earlier new-sites and emitted a real call (see MenuItem.h).
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
     const char* name,
