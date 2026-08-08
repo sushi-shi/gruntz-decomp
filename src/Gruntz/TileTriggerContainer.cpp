@@ -587,13 +587,16 @@ i32 CTileTriggerContainer::DelFromList3(CTileActionEvent* want) {
 }
 
 // @early-stop
+// Residue: cl folds the two terminal `return 0`/`return 1` pairs into
+// neg/sbb/neg where retail branches, and lays the switch's implicit default out
+// as its own `mov eax,1` block instead of jumping to the shared return.
 RVA(0x00117280, 0x2ec)
 i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj) {
     if (s == NULL) {
         return 0;
     }
-    if (op == SERIAL_SAVE) {
-
+    switch (op) {
+    case SERIAL_SAVE: {
         POSITION pos;
         i32 cnt = m_base.GetCount();
         s->Write(&cnt, sizeof(cnt));
@@ -637,55 +640,56 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
         }
         return 1;
     }
-    if (op != SERIAL_LOAD) {
+    case SERIAL_LOAD: {
+        RemoveAll();
+        u32 n;
+        u32 i;
+        void* e;
+        s->Read(&n, sizeof(n));
+        for (i = 0; i < n; i++) {
+            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+            if (e == NULL) {
+                return 0;
+            }
+            m_base.AddTail(e);
+        }
+        s->Read(&n, sizeof(n));
+        for (i = 0; i < n; i++) {
+            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+            if (e == NULL) {
+                return 0;
+            }
+            m_list1.AddTail(e);
+        }
+        s->Read(&n, sizeof(n));
+        for (i = 0; i < n; i++) {
+            e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
+            if (e == NULL) {
+                return 0;
+            }
+            m_list2.AddTail(e);
+        }
+        s->Read(&n, sizeof(n));
+        for (i = 0; i < n; i++) {
+            CTileActionEvent* m = new CTileActionEvent;
+            if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
+                return 0;
+            }
+            m->m_owner = this;
+            m_list3.AddTail(m);
+        }
+        if (LoadFlag74(s) == 0) {
+            return 0;
+        }
         return 1;
     }
+    }
 
-    RemoveAll();
-    i32 n;
-    i32 i;
-    void* e;
-    s->Read(&n, sizeof(n));
-    for (i = 0; i < n; i++) {
-        e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == NULL) {
-            return 0;
-        }
-        m_base.AddTail(e);
-    }
-    s->Read(&n, sizeof(n));
-    for (i = 0; i < n; i++) {
-        e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == NULL) {
-            return 0;
-        }
-        m_list1.AddTail(e);
-    }
-    s->Read(&n, sizeof(n));
-    for (i = 0; i < n; i++) {
-        e = LoadElement(s, SERIAL_LOAD, typeId, pObj);
-        if (e == NULL) {
-            return 0;
-        }
-        m_list2.AddTail(e);
-    }
-    s->Read(&n, sizeof(n));
-    for (i = 0; i < n; i++) {
-        CTileActionEvent* m = new CTileActionEvent;
-        if (m->Serialize(s, SERIAL_LOAD, typeId, pObj) == 0) {
-            return 0;
-        }
-        m->m_owner = this;
-        m_list3.AddTail(m);
-    }
-    if (LoadFlag74(s) == 0) {
-        return 0;
-    }
     return 1;
 }
 
 RVA(0x00117630, 0xa4)
-i32 __stdcall SerializeApplyA(
+i32 CTileTriggerContainer::SerializeApplyA(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,
@@ -748,7 +752,7 @@ i32 __stdcall SerializeApplyA(
 }
 
 RVA(0x00117710, 0xc0)
-i32 __stdcall SerializeApplyB(
+i32 CTileTriggerContainer::SerializeApplyB(
     CFileMemBase* s,
     SerialMode mode,
     LogicTypeId typeId,

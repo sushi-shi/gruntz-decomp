@@ -17,26 +17,28 @@ class CGiantRockLogic;
 class CTileTriggerSwitchLogic;
 struct CGameObject;
 
-i32 __stdcall SerializeApplyA(
-    CFileMemBase* s,
-    SerialMode mode,
-    LogicTypeId typeId,
-    i32 pObj,
-    CTileTriggerSwitchLogic* o
-);
-i32 __stdcall SerializeApplyB(
-    CFileMemBase* s,
-    SerialMode mode,
-    LogicTypeId typeId,
-    i32 pObj,
-    CTileTriggerLogic* o
-);
-
 class CTileTriggerContainer {
 public:
     CTileTriggerContainer() {
         m_built = 0;
     }
+
+    // Retail loads `this` into ecx at both call sites (`mov ecx,edi`), so these
+    // are __thiscall members that ignore the receiver, not free functions.
+    i32 SerializeApplyA(
+        CFileMemBase* s,
+        SerialMode mode,
+        LogicTypeId typeId,
+        i32 pObj,
+        CTileTriggerSwitchLogic* o
+    );
+    i32 SerializeApplyB(
+        CFileMemBase* s,
+        SerialMode mode,
+        LogicTypeId typeId,
+        i32 pObj,
+        CTileTriggerLogic* o
+    );
 
     i32 DelFromList1(CTileTriggerLogic* elem);
 
