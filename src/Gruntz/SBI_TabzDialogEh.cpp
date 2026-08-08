@@ -14,7 +14,13 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 
-RVA_COMPGEN(0x001005d0, 0x17, ??0CStatusBarItem@@QAE@XZ)
+RVA(0x001005d0, 0x17)
+CStatusBarItem::CStatusBarItem() {
+    m_enabled = 0;
+    m_kind = SBI_KIND_BASE;
+    m_host = NULL;
+    m_redrawFrames = 0;
+}
 
 // @early-stop
 // Retail CALLS ??0CStatusBarItem@@QAE@XZ at each `new` site; the in-class ctor

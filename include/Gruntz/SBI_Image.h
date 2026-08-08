@@ -17,7 +17,17 @@ class CImage;
 
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-    CSBI_RectOnly() {
+    // `new CSBI_RectOnly` runs the whole chain inline in retail (the three sites in
+    // BuildStatusBarTabs carry no ctor call at all), so this one seeds the base.
+    CSBI_RectOnly() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+        m_kind = SBI_KIND_RECT_ONLY;
+    }
+    // The derived chain takes this one: every `new CSBI_Image` in retail's four
+    // status-bar builders is `call ??0CStatusBarItem` + the derived stores inline.
+    enum EBaseCall {
+        BASE_CALL
+    };
+    CSBI_RectOnly(EBaseCall) {
         m_kind = SBI_KIND_RECT_ONLY;
     }
     virtual ~CSBI_RectOnly() OVERRIDE;
@@ -42,7 +52,7 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 
 class CSBI_Image : public CSBI_RectOnly {
 public:
-    CSBI_Image() {
+    CSBI_Image() : CSBI_RectOnly(BASE_CALL) {
         m_kind = SBI_KIND_IMAGE;
         m_frame = NULL;
     }
