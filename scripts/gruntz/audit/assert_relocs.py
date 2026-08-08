@@ -263,7 +263,12 @@ LIBS = None
 def is_fake(sym, data, s, defined=()):
     """A '?'-mangled symbol that resolves to NEITHER CodeView, NOR a DATA() global, NOR any
     toolchain .LIB is FABRICATED: declared, never defined. We compile but never link, so nothing
-    else in the pipeline catches it - it is a guaranteed `unresolved external symbol`."""
+    else in the pipeline catches it - it is a guaranteed `unresolved external symbol`.
+
+    `defined` is the escape hatch and it must be complete, or this over-reports: anything the
+    obj itself resolves - a sectioned definition, a weak-external alias, or a COMMON tentative
+    definition - links, and is at worst an unNAMED datum rather than a link defect. See
+    defined_syms()."""
     if s.startswith("_") or s.startswith("??_C@") or s.startswith("$SG") or not s.startswith("?"):
         return False  # CRT / import / string / local -> outside CodeView, fine
     if s in defined:
@@ -295,13 +300,14 @@ def _addend(raw, insn_off, site_off):
 IMAGE_END = IMAGE_BASE + 0x400000  # generous upper bound on the mapped image
 
 
+IMAGE_SYM_CLASS_EXTERNAL = 2
 IMAGE_SYM_CLASS_WEAK_EXTERNAL = 105
 
 
 def defined_syms(obj):
     """Every symbol the object FILE ITSELF resolves (COFF symbol table).
 
-    Two kinds:
+    Three kinds:
 
     1. section > 0 - the obj DEFINES it. A reloc onto one of these resolves at link time no
        matter what it is called: cl emits a class's ??_7 vftable straight into the obj that
@@ -318,7 +324,18 @@ def defined_syms(obj):
        same obj), and retail agrees: 0x21600 is `sub ecx,8 / jmp ILT:0x4372 -> 0x212e0`, the
        `??_G` body. The link resolves it; only this audit did not, so it reported the alias as
        FABRICATED. Follow the alias instead. (Read from the COFF directly; llvm-objdump -t does
-       not render these symbol tables.)"""
+       not render these symbol tables.)
+
+    3. section 0 with a NON-ZERO Value - a COFF COMMON, i.e. a TENTATIVE DEFINITION whose
+       Value is its size. The linker allocates it and merges every identically-named copy, so
+       it can no more be an unresolved external than a sectioned definition can. Only section
+       0 with a ZERO Value is a real reference. Getting this wrong made the audit report the
+       six `?holdrand@?1??GetRandomNumber...`/`??_B?1??GetRandomNumber...@51` COMMONs (cl's
+       emission of the header-inline GetRandomNumber's local static + its dynamic-init guard,
+       one pair per module) as 26 FAKE refs that "WILL break the link". They do not: the real
+       MSVC 5.0 link resolves all six as `<common>` in GRUNTZ.candidate.map with 0 unresolved
+       externals. They are pinned now (config/retail/compiler-generated-data.tsv), which is
+       what makes their targets VERIFIABLE - but they were never a link defect."""
     b = open(obj, "rb").read()
     symptr = struct.unpack_from("<I", b, 8)[0]
     nsym = struct.unpack_from("<I", b, 12)[0]
@@ -335,12 +352,15 @@ def defined_syms(obj):
     while i < nsym:
         base = symptr + i * 18
         nm = name_at(base)
+        val = struct.unpack_from("<I", b, base + 8)[0]
         sec = struct.unpack_from("<h", b, base + 12)[0]
         scl = b[base + 16]
         naux = b[base + 17]
         byidx[i] = nm
         if sec > 0:
             out.add(nm)
+        elif sec == 0 and val and scl == IMAGE_SYM_CLASS_EXTERNAL:
+            out.add(nm)                                  # COMMON - see (3) above
         elif scl == IMAGE_SYM_CLASS_WEAK_EXTERNAL and naux:
             weak.append((nm, struct.unpack_from("<I", b, base + 18)[0]))
         i += 1 + naux
@@ -670,7 +690,11 @@ def main():
         "[%d FAKE, %d WRONG]" % (seen, THRESHOLD, len(bad), fake, len(bad) - fake)
     )
     if bad:
-        print("objdiff MASKS relocs, so none of these cost %. They WILL break the link.")
+        print("objdiff MASKS relocs, so none of these cost %.")
+        if fake:
+            print("A FAKE ref is a symbol nothing DEFINES - verify with `gruntz link` before "
+                  "calling it a link break; a COMMON/weak/COMDAT definition resolves fine and "
+                  "is only an unNAMED datum (config/retail/compiler-generated-data.tsv).")
         return 1
     print("relocs OK: every near-exact function's reloc targets resolve to the retail address.")
     return 0
