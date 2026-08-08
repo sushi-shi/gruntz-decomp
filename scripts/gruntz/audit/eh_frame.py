@@ -163,70 +163,116 @@ def normalize(insns):
     return [(o, m, uncomment(p)) for o, m, p in insns]
 
 
-def state_slot(insns):
-    """Where cl keeps the unwind-state index in THIS function's frame.
-
-    Two forms and they must not be guessed at by frequency - an ordinary local can
-    easily take more small-immediate stores than the state does (measured: the
-    frequency heuristic picked a loop counter over the real slot in
-    `CStatusBarMgr::BuildStatusBarTabs`).
-
-      * EBP-framed  - always `-0x4(%ebp)`, right under the saved EBP.
-      * frameless   - cl 5.0's /O2 default here.  The registration record sits where
-        the prologue pushed it, so the state field (its third dword) is at
-        `esp + K + 4*P + 8` once `sub $K,%esp` and the P callee-saved pushes that
-        follow the record have run.  Displacements at other ESP depths - inside a
-        call's pushed-argument region - alias other locals and are ignored, which
-        under-counts a little and never invents a state.
-    """
+def framed(insns):
+    """`push ebp; mov esp,ebp` in the prologue - cl's EBP frame form."""
     head = insns[:PROLOGUE_WINDOW + 8]
     for i, (_, mn, op) in enumerate(head):
         if mn.startswith("push") and op == "%ebp" and i + 1 < len(head):
             nxt = head[i + 1]
             if nxt[1].startswith("mov") and nxt[2] == "%esp, %ebp":
-                return "-0x4(%ebp)"
-    k, pushes, seen_record = 0, 0, False
-    for _, mn, op in head:
+                return True
+    return False
+
+
+ESP_MEM = re.compile(r"^(-?0x[0-9a-f]+)\(%esp\)$")
+REG = re.compile(r"^%[a-z]{2,3}$")
+
+
+SAVED = ("%ebx", "%ebp", "%esi", "%edi")
+
+
+def prologue_slot(insns):
+    """`sub K + 4*P + 8` off the prologue - the state's displacement at frame base.
+
+    Only genuine callee-save pushes count (an argument push would over-shoot), and
+    the scan stops at the first control transfer."""
+    k, saves, seen = 0, 0, False
+    for _, mn, op in insns[:PROLOGUE_WINDOW + 10]:
         if mn.startswith("mov") and FS_STORE.match(op):
-            seen_record = True
+            seen = True
             continue
-        if not seen_record:
+        if not seen:
             continue
-        m = SUB_ESP.match(op) if mn.startswith("sub") else None
-        if m:
-            k += int(m.group(1), 16)
-        elif mn.startswith("push") and PUSH_REG.match(op):
-            pushes += 1
-        elif mn.startswith(("j", "call", "ret")):
+        if mn.startswith("sub") and SUB_ESP.match(op):
+            k += int(SUB_ESP.match(op).group(1), 16)
+        elif mn.startswith("push") and op in SAVED:
+            saves += 1
+        elif mn.startswith(("j", "call", "ret", "loop")):
             break
-    return "0x%x(%%esp)" % (k + 4 * pushes + 8)
+    return k + 4 * saves + 8
+
+
+def teardown_slots(insns):
+    """`D + 8` for every unwind teardown's `mov <D>(%esp), %reg` / `mov %reg, fs:[0]`.
+
+    That `D` is the registration record's FIRST dword by construction, so it pins
+    the state's displacement at whatever ESP depth the teardown runs at - which the
+    prologue formula cannot know, because cl 5.0 SHRINK-WRAPS callee-saved pushes
+    (`CFontConfig::MeasureLabel` saves ESI inside the first `if`, putting the state
+    at `[esp+0x2c]` where the prologue says `[esp+0x28]`).  cl interleaves the
+    epilogue pops and the return-value load between the two halves, so the scan is
+    a short backward window rather than an adjacency test."""
+    out = set()
+    for i, (_, mn, op) in enumerate(insns):
+        if not (mn.startswith("mov") and FS_RESTORE.match(op) and not FS_STORE.match(op)):
+            continue
+        reg = op.split(",")[0].strip()
+        for _, m2, o2 in reversed(insns[max(0, i - 6):i]):
+            if not m2.startswith("mov") or o2.rsplit(",", 1)[-1].strip() != reg:
+                continue
+            m = ESP_MEM.match(o2.split(",")[0].strip())
+            if m:
+                out.add(int(m.group(1), 16) + 8)
+            break
+    return out
 
 
 def eh_states(insns):
     """(slot, [(offset, state|None), ...]) - the unwind-state stores of an EH function.
 
-    Counted SOURCE-INDEPENDENTLY: every `mov <anything>, slot` is a state store,
-    because that displacement is the registration record's state field and nothing
-    else lives there.  Reading only immediates under-counts and manufactures
-    findings - `CDDSurface::SaveTga` sets state 0 with `mov %esi,0x68(%esp)` on our
-    side against retail's `movl $0x0,0x68(%esp)`, identical code that a
-    immediates-only reading scored 0 states against 1.
+    **This is a heuristic lead, not the exact signal the frame's PRESENCE is.**  The
+    frameless state lives at `record+8`, so the displacement naming it moves with
+    ESP, and neither anchor is sufficient alone: the prologue formula misses a
+    shrink-wrapped save, while an early-exit teardown fires before that save and so
+    names a shallower displacement that ALIASES an ordinary local (`MeasureLabel`'s
+    `[esp+0x28]` is `rc.bottom`).  Exact ESP tracking is not available either - a
+    `__thiscall`/`__stdcall` callee pops its own arguments, so the walk would need
+    every callee's `ret N`, which is not in this object.
 
-    `None` is a store whose value is in a register, so the VALUE set is a lower
-    bound while the store COUNT is exact."""
-    slot = state_slot(insns)
-    out = []
+    So: take the union of both anchors as the candidate set and pick the one that
+    is actually written most.  Frequency over a two-element principled candidate
+    set is safe in a way a frequency scan over every frame slot is not - that
+    version picked a loop counter over the real slot in `BuildStatusBarTabs`.
+    Validated by hand on `BuildStatusBarTabs` (4), `SaveTga` (4/4),
+    `CFontConfig::MeasureLabel` (3/3) and `CAniCycle::CAniCycle` (5/5).
+
+    Stores are counted SOURCE-INDEPENDENTLY - any width, any source.  Reading only
+    dword immediates under-counts twice over: `SaveTga` sets state 0 with
+    `mov %esi,<slot>` where retail writes `movl $0x0,<slot>`, and `MeasureLabel`
+    writes states 1 and 2 as `movb`.  `None` is a store whose value is in a
+    register, so the VALUE set is a lower bound while the COUNT is exact."""
+    if framed(insns):
+        cands = ["-0x4(%ebp)"]
+    else:
+        cands = ["0x%x(%%esp)" % d
+                 for d in ({prologue_slot(insns)} | teardown_slots(insns))]
+    hits = {}
     for off, mn, op in insns:
         op = uncomment(op)
-        if not mn.startswith("mov") or not op.endswith(slot):
+        if not mn.startswith("mov") or "," not in op:
             continue
-        src = op[: -len(slot)].rstrip(", ")
+        src, dst = op.rsplit(",", 1)[0].strip(), op.rsplit(",", 1)[-1].strip()
+        if dst not in cands:
+            continue
         if src.startswith("$"):
             v = int(src[1:], 16)
-            out.append((off, -1 if v == 0xFFFFFFFF else v))
-        elif re.match(r"^%e\w\w$", src):
-            out.append((off, None))
-    return slot, out
+            hits.setdefault(dst, []).append((off, -1 if v in (0xFFFFFFFF, 0xFF) else v))
+        elif REG.match(src):
+            hits.setdefault(dst, []).append((off, None))
+    if not hits:
+        return (cands[0] if cands else "-"), []
+    slot = max(hits, key=lambda d: (len(hits[d]), d))
+    return slot, hits[slot]
 
 
 SYM_HDR = re.compile(r"^([0-9a-f]{8}) <(.+)>:$")
@@ -243,9 +289,10 @@ def rel32_calls(obj):
     as `gruntz.core.branches`: `--disassemble-symbols` stops at the first switch-arm
     label, which on a jump-table function hides most of the body's calls."""
     import subprocess
+
+    from gruntz.core.branches import is_local_label
     out = subprocess.run(["llvm-objdump", "-d", "-r", "--no-show-raw-insn", str(obj)],
                          capture_output=True, text=True).stdout
-    from gruntz.core.branches import is_local_label
     syms, cur = {}, None
     for ln in out.split("\n"):
         m = SYM_HDR.match(ln.strip())
@@ -278,7 +325,7 @@ def cause(verdict, delta, only_t, only_b):
         the function gets a frame.  SAME object, different inline cut - and cl 5.0
         picks the cut depth PER `new`-SITE, so no declaration form expresses it and
         `#pragma inline_depth` is a fitted artifact that must not enter the tree.
-        See docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md.
+        See docs/patterns/new-site-eh-states-are-a-called-base-ctor.md.
       MISSING_OBJECT - retail owns a destructible object our source never declared
         (no ctor/dtor call difference explains the frame).  The actionable half:
         a by-value `CString` where we wrote `LPCSTR`, a by-value `CRect`/`CPoint`,
@@ -287,10 +334,6 @@ def cause(verdict, delta, only_t, only_b):
         temporary something retail kept as a pointer or reference.
     """
     retail_side = verdict == "TARGET_ONLY" or (verdict == "BOTH" and delta > 0)
-    if retail_side and only_t:
-        return "INLINE_CUT"
-    if not retail_side and only_b:
-        return "INLINE_CUT"
     if only_t or only_b:
         return "INLINE_CUT"
     return "MISSING_OBJECT" if retail_side else "EXTRA_OBJECT"
