@@ -239,5 +239,5 @@ void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
         MessageBoxA(hWnd, szLine, "Net Manager", MB_ICONEXCLAMATION);
     }
 
-    // The unknown third option was probably discarded in the final version of the binary.
+    // The unknown third option (g_unknownOptionEnabled) was probably only present in the debug build.
 }
