@@ -79,7 +79,7 @@ meaning; a re-encoder must preserve it verbatim, which `ani.rs` does.
 | Bit | `ani.rs` name | Occurs? | | Evidence |
 |---|---|---|---|---|
 | 0x01 | `FLAG_TICK_DURATION` | **never** | **P** | `CAniRecordView::GetSize` @0x168e50: set means `duration` counts engine updates and is scaled by 22 ms; clear means `duration` is already ms |
-| 0x02 | `FLAG_HAS_CUES` | 785 records | **P** | `Parse` @0x168ca8 `test 0x2` — a NUL-terminated cue string follows the fixed 20 bytes |
+| 0x02 | `FLAG_HAS_CUES` | 785 records | **P** | `Parse` @0x168cd3 `test 0x2` — a NUL-terminated cue string follows the fixed 20 bytes |
 | 0x04 | `FLAG_POSITIONAL_CUE` | **never** | **?** | named in `ani.rs`; no consumer identified in this pass |
 | 0x08 | `FLAG_FORCE_CUE` | **never** | **P** | `CAniAdvanceCursor::Advance`: with it (or object flag 0x2000000) set, the cue fires even when the object's dirty-rect is unarmed |
 

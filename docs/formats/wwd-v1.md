@@ -78,26 +78,26 @@ Read by `CGameLevel::LoadWwd` @0x15d280, `CGameLevel::ReadWwdHeaderName`
 
 | Offset | Size | Field | | Evidence |
 |---|---|---|---|---|
-| 0x000 | 4 | **`headerSize`** | **C** | Spec calls it `signature = 0x5f4`. It is a **size**: `mov eax,[ebx]; cmp eax,0x5f4; jbe` @0x15d29d rejects only values **greater** than `sizeof(WwdHeader)`, and the value is then used in arithmetic — `lea edi,[mainBlockLength+headerSize+0x20]` @0x15d2e6 sizes the inflate buffer, and 0x160790 uses it as both the `memcpy` length and the offset of the compressed bytes. 0x5f4 in all 63 |
+| 0x000 | 4 | **`headerSize`** | **C** | Spec calls it `signature = 0x5f4`. It is a **size**: `mov eax,[ebx]; cmp eax,0x5f4; jbe` @0x15d29b rejects only values **greater** than `sizeof(WwdHeader)`, and the value is then used in arithmetic — `lea edi,[mainBlockLength+headerSize+0x20]` @0x15d2db sizes the inflate buffer, and 0x160790 uses it as both the `memcpy` length and the offset of the compressed bytes. 0x5f4 in all 63 |
 | 0x004 | 4 | — | **U** | Never loaded by any of the four readers; 0 in all 63 |
-| 0x008 | 4 | **`flags`** | **P** | `lea eax,[ebx+8]; mov cl,[eax]; test cl,0x2` @0x15d2cd selects the inflate path; the whole dword is stored to `CGameLevel+0x8`. **3 in all 63** |
+| 0x008 | 4 | **`flags`** | **P** | `lea eax,[ebx+8]; mov cl,[eax]; test cl,0x2` @0x15d2ca selects the inflate path; the whole dword is stored to `CGameLevel+0x8`. **3 in all 63** |
 | | | bit 0 — *use z coords* | **P** | `CGameLevel::VisitVisible` @0x15dc90 gates the **z-interleaved** draw on it: planes are drawn in order and, before each, every `CGameObject` whose `m_sortKey <` that plane's `m_zBound` (the plane header's `zCoord`) is rendered. Matches the spec |
 | | | bit 1 — *compressed* | **P** | as above. Matches the spec |
 | 0x00c | 4 | — | **U** | never loaded; 0 in all 63 |
-| 0x010 | 0x40 | **`levelName`** | **P** | `lea edi,[edx+0x10]` + `repnz scas`/`rep movs` @0x15d321 copies it to `CGameLevel::m_levelName`; also the sole output of `ReadWwdHeaderName` @0x160660. `WwdFile::ValidateMainBlock` @0x3b470 runs `atoi` over its first digit run to get the **level number**. Sixteen distinct values, e.g. `"Gruntz - Level Set 13"` |
+| 0x010 | 0x40 | **`levelName`** | **P** | `lea edi,[edx+0x10]` + `repnz scas`/`rep movs` @0x15d328 copies it to `CGameLevel::m_levelName`; also the sole output of `ReadWwdHeaderName` @0x160660. `WwdFile::ValidateMainBlock` @0x3b470 runs `atoi` over its first digit run to get the **level number**. Sixteen distinct values, e.g. `"Gruntz - Level Set 13"` |
 | 0x050 | 0x40 | **`author`** | **P** | `FillLevelInfoDialog` @0x3b1a0 and `CustomWorldInfoDlgProc` @0x3b600 both `SetDlgItemTextA(hDlg, 0x428, header + 0x50)`. `"Monolith Productions Inc."` in all 63 |
 | 0x090 | 0x40 | **`created`** | **P** | same two functions, control 0x429, `header + 0x90`. Fourteen distinct values, all of the form `"December 7, 1998"` |
 | 0x0d0 | 0x100 | **`rezFile`** | **U** | never read. `"C:\PROJ\GRUNTZ\GRUNTZ.REZ"` in all 63 |
 | 0x1d0 | 0x80 | **`tileDirectory`** | **U** | never read — see [Image-set registry keys](#image-set-registry-keys). `"\AREA<n>\TILEZ"`, 8 distinct |
 | 0x250 | 0x80 | **`palette`** | **U** | never read; **empty string in all 63** |
-| 0x2d0 | 4 | **`startX`** | **P** | `mov edx,[edx+0x2d0]; fild` @0x15d444 — the initial scroll origin, multiplied by the main plane's parallax scale unless that plane has flag bit 0 |
+| 0x2d0 | 4 | **`startX`** | **P** | `mov edx,[edx+0x2d0]; fild` @0x15d43b — the initial scroll origin, multiplied by the main plane's parallax scale unless that plane has flag bit 0 |
 | 0x2d4 | 4 | **`startY`** | **P** | same instruction pair. Also the only field of `CGameLevel::m_header` any other code reads (`CPlay::ResetGoals`, `Play.cpp:4617`) |
 | 0x2d8 | 4 | — | **U** | never loaded; 0 in all 63 |
 | 0x2dc | 4 | **`numPlanes`** | **P** | `cmp edi,[ecx+0x2dc]` @0x15d39a bounds the plane loop. **1 (45 files) or 2 (18 files)** |
-| 0x2e0 | 4 | **`planesOffset`** | **P** | `mov esi,[edx+0x2e0]; add esi,ebx` @0x15d36b. **0x5f4 in all 63** — the plane headers immediately follow |
-| 0x2e4 | 4 | **`tileDescriptionsOffset`** | **P** | `mov eax,[edx+0x2e4]` @0x15d3a3; zero means "no attribute table" and skips the block |
-| 0x2e8 | 4 | **`mainBlockLength`** | **P** | `mov ecx,[ebx+0x2e8]` @0x15d2df sizes the inflate buffer; 0x160790 uses it as the zlib source bound and asserts the inflated size equals it |
-| 0x2ec | 4 | **`checksum`** | **P** *(stored)* | `mov eax,[edx+0x2ec]; mov [ebp+0xac],eax` @0x15d34e. **Retail never verifies it** — it is stored, then returned by `CGruntzMgr::BuildLevelRezPath` @0x93d40 as the level's multiplayer identity token. Algorithm: [below](#checksum) |
+| 0x2e0 | 4 | **`planesOffset`** | **P** | `mov esi,[edx+0x2e0]; add esi,ebx` @0x15d368. **0x5f4 in all 63** — the plane headers immediately follow |
+| 0x2e4 | 4 | **`tileDescriptionsOffset`** | **P** | `mov eax,[edx+0x2e4]` @0x15d3a4; zero means "no attribute table" and skips the block |
+| 0x2e8 | 4 | **`mainBlockLength`** | **P** | `mov ecx,[ebx+0x2e8]` @0x15d2d3 sizes the inflate buffer; 0x160790 uses it as the zlib source bound and asserts the inflated size equals it |
+| 0x2ec | 4 | **`checksum`** | **P** *(stored)* | `mov eax,[edx+0x2ec]; mov [ebp+0xac],eax` @0x15d362. **Retail never verifies it** — it is stored, then returned by `CGruntzMgr::BuildLevelRezPath` @0x93d40 as the level's multiplayer identity token. Algorithm: [below](#checksum) |
 | 0x2f0 | 4 | — | **U** | never loaded; 0 in all 63 |
 | 0x2f4 | 0x80 | **`launchApp`** | **U** | never read. Three distinct, incl. `"C:\PROJ\GRUNTZ\DEBUG\GRUNTZ.EXE"` |
 | 0x374 | 0x80 | **`imageDirectory[0]`** | **U** | never read. `"AREA<n>\IMAGEZ"`, 8 distinct |
@@ -128,33 +128,33 @@ back out of that copy.
 
 | Offset | Size | Field | | Evidence |
 |---|---|---|---|---|
-| 0x00 | 4 | **`headerSize`** | **P** | `mov eax,[edx]; cmp eax,0xa0; je` @0x16164c — exact match required, unlike the file header's `<=`. 0xa0 in all 81 planes |
+| 0x00 | 4 | **`headerSize`** | **P** | `mov eax,[edx]; cmp eax,0xa0; je` @0x16164f — exact match required, unlike the file header's `<=`. 0xa0 in all 81 planes |
 | 0x04 | 4 | — | **U** | never loaded; 0 in all 81 |
-| 0x08 | 4 | **`flags`** | **P** | `mov eax,[edx+0x8]` @0x161721, re-read at 0x161851. Observed: **1** (63 planes) and **0xc** (18) |
-| | | bit 0 — *main plane* | **P** | `CGameLevel::ReadPlane` @0x15d8d0 sets `m_mainPlane`/`m_mainIndex` on it; and `test al,0x1` @0x161985 suppresses the parallax multiply for the scroll origin. Every file has exactly one |
+| 0x08 | 4 | **`flags`** | **P** | `mov eax,[edx+0x8]` @0x161721, re-read at 0x161864. Observed: **1** (63 planes) and **0xc** (18) |
+| | | bit 0 — *main plane* | **P** | `CGameLevel::ReadPlane` @0x15d8d0 sets `m_mainPlane`/`m_mainIndex` on it; and `test al,0x1` @0x161989 suppresses the parallax multiply for the scroll origin. Every file has exactly one |
 | | | bit 1 — *no draw* | **P** | `CDDrawWorkerHost::Draw` @0x162010 returns immediately. Never set in shipped data |
 | | | bit 2 — *wrap X* | **P** | `CDDrawWorkerHost::WrapCoord` @0xa000 `m_flags & 0x4`; also `ActivateVisibleObjects` @0x163300 |
 | | | bit 3 — *wrap Y* | **P** | same, `& 0x8` |
-| | | bit 4 — *auto tile size* | **P** | `test al,0x10` @0x161810 — take the tile size from the first frame of image set 0 instead of 0x58/0x5c. Never set in shipped data |
+| | | bit 4 — *auto tile size* | **P** | `test al,0x10` @0x1617ad — take the tile size from the first frame of image set 0 instead of 0x58/0x5c. Never set in shipped data |
 | 0x0c | 4 | — | **U** | never loaded; 0 in all 81 |
-| 0x10 | 0x40 | **`name`** | **P** | `lea edi,[edx+0x10]` + `rep movs` @0x161834 → `m_name`. Two distinct: `"Action"`, `"Back"` |
+| 0x10 | 0x40 | **`name`** | **P** | `lea edi,[edx+0x10]` + `rep movs` @0x16183a → `m_name`. Two distinct: `"Action"`, `"Back"` |
 | 0x50 | 4 | **`pixelWidth`** | **U** | **never loaded.** Redundant: equals `tilesWide * tilePixelWidth` in all 81 planes |
 | 0x54 | 4 | **`pixelHeight`** | **U** | **never loaded.** Equals `tilesHigh * tilePixelHeight` in all 81 planes |
-| 0x58 | 4 | **`tilePixelWidth`** | **P** | `mov ecx,[edx+0x58]` @0x161747 → `m_tilePxW`; `m_wrapW = m_tilePxW * m_gridW`. **32 in all 81** |
-| 0x5c | 4 | **`tilePixelHeight`** | **P** | `mov ecx,[edx+0x5c]` @0x16174d. **32 in all 81** |
-| 0x60 | 4 | **`tilesWide`** | **P** | `mov ecx,[edx+0x60]` @0x16173b → `m_gridW`, the tile-grid row stride. 25–90 |
-| 0x64 | 4 | **`tilesHigh`** | **P** | `mov ecx,[edx+0x64]` @0x161741 → `m_gridH`, the row count. 25–80 |
-| 0x68 | 4 | **`scrollX`** | **P** | `mov ecx,[esi+0x68]; fild` @0x161975 — the plane's own scroll origin. **0 in all 81** |
-| 0x6c | 4 | **`scrollY`** | **P** | `mov eax,[esi+0x6c]` @0x161972. **0 in all 81** |
-| 0x70 | 4 | **`movementXPercent`** | **P** | `mov ecx,[edx+0x70]` @0x161729; `m_scaleX = value * 0.01f` (the `fmul ds:0x5f02a0` @0x161901), the parallax factor. **100 in all 81** |
-| 0x74 | 4 | **`movementYPercent`** | **P** | `mov eax,[edx+0x74]` @0x16172f. **100 in all 81** |
-| 0x78 | 4 | **`fillColor`** | **P** | `mov ecx,[edx+0x78]` @0x161868 → `m_bltFx.dwFillColor`, used by the `TILE_FILL` blit in `Draw`. **0x80 in all 81** — and no cell in any shipped level is `TILE_FILL`, so the value is never exercised |
-| 0x7c | 4 | **`imageSetsCount`** | **P** | `mov eax,[edx+0x7c]` @0x161673 bounds the name-table walk. **1 in all 81** |
-| 0x80 | 4 | **`objectsCount`** | **P** | `mov edx,[esi+0x80]` @0x1619bd — the object-record count. 0–1281 |
-| 0x84 | 4 | **`tilesOffset`** | **P** | `mov ecx,[esi+0x84]` @0x1618f9 — start of the u32 grid. Always `planesOffset + numPlanes*0xa0` for plane 0 |
+| 0x58 | 4 | **`tilePixelWidth`** | **P** | `mov ecx,[edx+0x58]` @0x16175e → `m_tilePxW`; `m_wrapW = m_tilePxW * m_gridW`. **32 in all 81** |
+| 0x5c | 4 | **`tilePixelHeight`** | **P** | `mov ecx,[edx+0x5c]` @0x161764. **32 in all 81** |
+| 0x60 | 4 | **`tilesWide`** | **P** | `mov ecx,[edx+0x60]` @0x161752 → `m_gridW`, the tile-grid row stride. 25–90 |
+| 0x64 | 4 | **`tilesHigh`** | **P** | `mov ecx,[edx+0x64]` @0x161758 → `m_gridH`, the row count. 25–80 |
+| 0x68 | 4 | **`scrollX`** | **P** | `mov ecx,[esi+0x68]; fild` @0x161973 — the plane's own scroll origin. **0 in all 81** |
+| 0x6c | 4 | **`scrollY`** | **P** | `mov eax,[esi+0x6c]` @0x161970. **0 in all 81** |
+| 0x70 | 4 | **`movementXPercent`** | **P** | `mov ecx,[edx+0x70]` @0x16172e; `m_scaleX = value * 0.01f` (the `fmul ds:0x5f02a0` @0x1618e0), the parallax factor. **100 in all 81** |
+| 0x74 | 4 | **`movementYPercent`** | **P** | `mov eax,[edx+0x74]` @0x161737. **100 in all 81** |
+| 0x78 | 4 | **`fillColor`** | **P** | `mov ecx,[edx+0x78]` @0x16185b → `m_bltFx.dwFillColor`, used by the `TILE_FILL` blit in `Draw`. **0x80 in all 81** — and no cell in any shipped level is `TILE_FILL`, so the value is never exercised |
+| 0x7c | 4 | **`imageSetsCount`** | **P** | `mov eax,[edx+0x7c]` @0x161675 bounds the name-table walk. **1 in all 81** |
+| 0x80 | 4 | **`objectsCount`** | **P** | `mov edx,[esi+0x80]` @0x1619ae — the object-record count. 0–1281 |
+| 0x84 | 4 | **`tilesOffset`** | **P** | `mov ecx,[esi+0x84]` @0x161919 — start of the u32 grid. Always `planesOffset + numPlanes*0xa0` for plane 0 |
 | 0x88 | 4 | **`imageSetsOffset`** | **P** | `mov edi,[edx+0x88]` @0x161668 — start of this plane's slice of the shared name table |
-| 0x8c | 4 | **`objectsOffset`** | **P** | `mov eax,[esi+0x8c]; test eax,eax; je` @0x1619b4 — zero means "no objects" |
-| 0x90 | 4 | **`zCoord`** | **P** | `mov ecx,[edx+0x90]` @0x161753 → `m_zBound`, the render-order threshold `VisitVisible` compares `CGameObject::m_sortKey` against. **0 in all 81** |
+| 0x8c | 4 | **`objectsOffset`** | **P** | `mov eax,[esi+0x8c]; test eax,eax; je` @0x1619a4 — zero means "no objects" |
+| 0x90 | 4 | **`zCoord`** | **P** | `mov ecx,[edx+0x90]` @0x16176a → `m_zBound`, the render-order threshold `VisitVisible` compares `CGameObject::m_sortKey` against. **0 in all 81** |
 | 0x94..0x9f | 12 | — | **U** | never loaded; 0 in all 81 |
 
 Naming note: the third-party spec calls 0x58/0x5C `tiles_width`/`tiles_height`
@@ -193,7 +193,7 @@ name, so a two-plane file overlaps: plane 0 sees `"BACK\0ACTION\0…"` and plane
 `"ACTION\0…"`.
 
 The walk is a character-class scanner, not a NUL split —
-`CDDrawWorkerHost::Read` @0x161680 skips bytes outside `['0', 0x80)` and then
+`CDDrawWorkerHost::Read` @0x161688 skips bytes outside `['0', 0x80)` and then
 takes the run inside it, `imageSetsCount` times. Every shipped level's table is
 `"ACTION"` (single-plane) or `"BACK\0ACTION"`.
 
@@ -225,7 +225,7 @@ variable-stride records, indexed by a tile handle's low word.
 |---|---|---|---|
 | 0x00 | — | **U** | `LoadWwd` hardcodes `lea ebx,[eax+0x20]` for the first record; it never reads this. 0x20 in all 63 |
 | 0x04 | — | **U** | never read; 0 in all 63 |
-| 0x08 | **`count`** | **P** | `mov ecx,[eax+0x8]` @0x15d3da bounds the loop. **910 in all 63** |
+| 0x08 | **`count`** | **P** | `mov ecx,[eax+0x8]` @0x15d3cf bounds the loop. **910 in all 63** |
 | 0x0c..0x1f | — | **U** | never read; 0 in all 63 |
 
 Records are dispatched on their first dword by `CGameLevel::ReadImageSet`
@@ -313,16 +313,20 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 ### `flags_add` is proven unread
 
 Retail's cursor steps over record `+0x24` without loading it. In the target
-disassembly the tell is two increments against one load:
+disassembly the tell is two increments against one load, at 0x162f10:
 
 ```
-mov eax,DWORD PTR [ebp+0x4]     ; reads record +0x28 while the cursor is at +0x24
-mov edx,DWORD PTR [ebx+0x8]
-add ebp,0x4                     ; skip +0x24  -- no load
-or  edx,eax
-add ebp,0x4                     ; consume +0x28
-mov DWORD PTR [ebx+0x8],edx     ; obj->m_flags |= flags_dynamic
+162f10:  8b 45 04     mov eax,DWORD PTR [ebp+0x4]  ; record +0x28, cursor still at +0x24
+162f13:  8b 53 08     mov edx,DWORD PTR [ebx+0x8]
+162f16:  83 c5 04     add ebp,0x4                  ; skip +0x24 -- no load
+162f19:  0b d0        or  edx,eax
+162f1b:  83 c5 04     add ebp,0x4                  ; consume +0x28
+162f1e:  89 53 08     mov DWORD PTR [ebx+0x8],edx  ; obj->m_flags |= flags_dynamic
 ```
+
+Every other field is `mov e?x,[ebp+0x0]` / `add ebp,0x4` / store, e.g. the six
+user values land with `mov [ebx+0x114],eax` at 0x162f39 through
+`mov [ebx+0x128],edx` at 0x162f75.
 
 So none of the spec's six `flags_add` bits (difficult / eye candy / high detail
 / multiplayer / extra memory / fast cpu) can affect Gruntz. That agrees with
