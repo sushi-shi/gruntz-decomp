@@ -1953,7 +1953,7 @@ grunt	?CreateStaminaSprite@CGrunt@@QAEHXZ	99.6491	99.6491	18	c9b8efffae4b	0x4d2f
 grunt	?CreateToySprite@CGrunt@@QAEHXZ	91.2264	91.2264	19	063627a9daaa	0x4d220	91.2264
 grunt	?CreateToyTimeSprite@CGrunt@@QAEHXZ	99.7222	99.7222	19	0eccf8f1b38b	0x4d3e0	99.7222
 grunt	?CreateWingzTimeSprite@CGrunt@@QAEHXZ	99.7059	99.7059	19	2a5af68c6db7	0x4d520	99.7059
-grunt	?FinalizeStep@CGrunt@@UAEXPAD@Z	94.2383	94.2383	4	5d124cac0415	0x5ecd0	94.2383
+grunt	?FinalizeStep@CGrunt@@UAEXPAD@Z	94.2383	94.2383	5	d48b9de21d55	0x5ecd0	94.2383
 grunt	?IntersectsTileObjectAxes@CGrunt@@QAEHXZ	100.0000	100.0000	2	fe0cdd3112b2	0x4a9f0	100.0000
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	100.0000	100.0000	12	1874c715a3cd	0x49c60	100.0000
 grunt	?LoadCellAnimNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	9	d14418977f1c	0x48470	100.0000
@@ -1993,7 +1993,7 @@ gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.3929	90.3929	17	41990a925613	0x588f0	90.3929
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.3647	87.3647	20	e0ffd8ce9db7	0x57db0	87.3647
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	eef01da589dd	0x57d10	100.0000
-gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	1	429983273d30	0x5be30	99.4414
+gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	2	48f8454ac97c	0x5be30	99.4414
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	7	4884bd7f7b9e	0x57800	100.0000
 gruntcombat	?StopStruckSlotSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	548879ed1823	0x57c10	100.0000
 gruntcombat	?StopStruckVoiceSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	6183b34eeacb	0x57ce0	100.0000
