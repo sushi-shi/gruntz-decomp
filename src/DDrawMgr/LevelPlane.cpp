@@ -736,8 +736,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     p++;
 
-    u32 dynFlags = static_cast<u32>(*p++);
-    obj->m_flags |= dynFlags;
+    obj->m_flags |= static_cast<u32>(*p++);
     obj->m_stateFlags = static_cast<SpriteStateFlags>(*p++);
     anim->m_userFlags = *p++;
 
