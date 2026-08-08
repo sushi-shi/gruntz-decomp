@@ -65,6 +65,19 @@ opposite bug: `bcb6cb0cd` did that at six sites and four functions stopped calli
 Count the initializer's fingerprint in retail (for the LCG, the `0x269ec3` addend) per function and
 match your call count to it.
 
+**Most guards are NOT a worklist.** Of the 71 guards in `GRUNTZ.EXE`, only 16 sit in a
+function `src/` reconstructs. 54 sit inside a compiler-private `_$E<n>` helper - cl emits
+those from the object definition itself (a file-scope or template-static object with a
+non-trivial dtor; see [[msvc-static-object-e-helper-family]]), and the ordinal is too
+volatile to pin, so they can never carry an `RVA()` and there is no body for anyone to
+write. The last one is MFC's four `CWnd` statics (`wndTop`/`wndBottom`/`wndTopMost`/
+`wndNoTopMost`, i.e. `HWND_TOP`/`BOTTOM`/`TOPMOST`/`NOTOPMOST` = 0/1/-1/-2 through
+`??0CWnd@@AAE@PAUHWND__@@@Z`), which is carved out. `python -m gruntz.audit.static_guards`
+buckets all four cases; `--verify` proves the `$E` bucket byte-for-byte against the base
+objs rather than assuming it. A guard whose `$E` body does NOT reproduce is a real defect -
+that check is what found the `/GX` inlining mismatch in
+[[gx-blocks-ctor-inlining-into-e-helper]].
+
 **Pinning.** `DATA(rva)` goes on the local static itself — cl5 spells it `_?s_x@?<n>??<Fn>@@...@4HA$S<m>`
 where clang reports `?s_x@?1??<Fn>@@...@4HA` (extra leading `_`, a scope ordinal cl counts by blocks
 already left, and the `$S` CodeView suffix); `labels.msvc5_data_symbol` wildcards all three,

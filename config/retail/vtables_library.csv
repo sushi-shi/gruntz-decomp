@@ -90,7 +90,6 @@ name,rva,size,unit,note
 ??_7ostream@@6B@,0x1f047c,0x4,,MFC/CRT (statically linked; not reconstructed)
 ??_7ostream_withassign@@6B@,0x1f048c,0x4,,MFC/CRT (statically linked; not reconstructed)
 ??_7iostream@@6B@,0x1f049c,0x4,,MFC/CRT (statically linked; not reconstructed)
-??_7_zdvec@@6B@,0x1f04dc,0x4,,UNRECOVERED container-family class (its one slot is the ??_G at 0x16ea80); sits between zDArray (0x1f04d4) and CButeNodeEntry (0x1f04d8) in the band - likely _zdvec of the RTTI chain zDArray:_zdvec:_zvec:zErrHandling. @identity-TODO - was previously bound under the fabricated name ??_7CButeStore@@6BCButeStoreSecond@@@
 ??_7CMemFile@@6B@,0x1f0964,0x70,,MFC/CRT (statically linked; not reconstructed)
 ??_7CStringArray@@6B@,0x1f09ec,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7fstream@@6B@,0x1f0ad4,0x4,,MFC/CRT (statically linked; not reconstructed)
