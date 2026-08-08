@@ -21,11 +21,11 @@ direct readout of how many times the SOURCE mentioned it.
 three times against retail's five: 45.93 -> 50.43, exactly-matching basic blocks 41 ->
 120). `base > target` = we invented a read, or retail hoisted one we did not.
 
-## The four filters, each of which was a false-positive family first
+## The five filters, each of which was a false-positive family first
 
 The raw comparison is useless - the first draft reported 1117 rows of which 752 were in
 functions objdiff already scores at 100.00%. **Never read a raw per-function relocation
-list**: three of the four families below re-appear the moment you dump relocations by hand
+list**: three of the five families below re-appear the moment you dump relocations by hand
 instead of going through the tool, and each one looks exactly like a finding.
 
 1. **Window each side at the NEXT DEFINED SYMBOL in its own section.** The base is
@@ -49,7 +49,14 @@ instead of going through the tool, and each one looks exactly like a finding.
    with a pooled string: `CTriggerMgr::ResetGroup`'s `"LightFx"` reads as
    `??_C@_09MHNK@DemoMover?$AA@ + 0xc` on the target side, which by hand looks like we
    passed the wrong sprite-logic name and is nothing but the pool's previous symbol.
-4. **Drop a name only ONE side references inside the function.** This is what takes the
+4. **Drop a unit `report.json` does not score.** `build/objdiff/normalized/` is
+   incremental: a unit a later `configure.py` dropped leaves its base/target pair there
+   forever. One worktree held **72** of them, the oldest five days stale, and each scored
+   0.00% - which sorts it to the very top of the worklist. `gamekeyhandler` (a superseded
+   split of `play`) cost a re-derivation of `CPlay::OnKeyDown` before its `.symbols.tsv`
+   turned out to be one empty header row. Paired functions 4428 -> 4301, exactly
+   `report.json`'s count; 8 REL32 rows and 1 DIR32 row were phantoms.
+5. **Drop a name only ONE side references inside the function.** This is what takes the
    rate to 0, and it is what makes the sieve answer "how many times" and never "which
    symbol". A wrong REFERENT (`??_C@_01PFH@A` against
    `??_C@_0BE@MAOF@GAME_ACTIONAREA_RED`, same offset, same byte;

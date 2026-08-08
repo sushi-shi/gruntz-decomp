@@ -51,7 +51,7 @@ CALIBRATION
 -----------
 `--calibrate` restricts to the functions objdiff scores at 100.00%. Those agree by
 construction, so any row there is a DETECTOR BUG, and the rate prints on every run.
-It reached 0 of 4301 paired functions only after four filters, each of which was a
+It reached 0 of 4301 paired functions only after five filters, each of which was a
 real false-positive family the first draft reported as a finding:
 
   1. the WINDOW above  (unbounded target reads picked up the neighbour);
@@ -66,9 +66,13 @@ real false-positive family the first draft reported as a finding:
      array element on one side and not the other, so `_g_rasterEdgeL + 0x14`
      against `_g_rasterEdgeL + 0` is the SAME reference and a zero-addend rule
      reported all seven of `WarpTextureBlit`'s as ours-only;
-  4. a name only ONE side references INSIDE THE FUNCTION dropped.
+  4. a unit `report.json` does not score dropped -- `normalized/` is incremental,
+     so a unit a later configure.py removed leaves its base/target pair behind
+     forever and it scores 0.00%, sorting straight to the top of the worklist
+     (72 such pairs in one worktree, `gamekeyhandler` the expensive one);
+  5. a name only ONE side references INSIDE THE FUNCTION dropped.
 
-Filter 4 is the one that costs coverage, and deliberately: it means this sieve
+Filter 5 is the one that costs coverage, and deliberately: it means this sieve
 answers "how many times", never "which symbol". A reference we point at the wrong
 global, or a pooled literal the two sides name differently
 (`??_C@_01PFH@A` against `??_C@_0BE@MAOF@GAME_ACTIONAREA_RED`, same offset, same
@@ -306,6 +310,18 @@ def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False,
     if unit_filter:
         units = [u for u in units if u == unit_filter]
     rows, seen, dropped = [], 0, collections.Counter()
+    # `normalized/` is an incremental directory: a unit dropped by a later
+    # configure.py leaves its base/target pair behind forever. 70 such pairs were
+    # sitting in one worktree, the oldest five days stale, and every one of them
+    # scores 0.00% because report.json has never heard of it - which sorts it
+    # straight to the top of the worklist. `gamekeyhandler` (a superseded split of
+    # `play`) cost a lane a full CPlay::OnKeyDown re-derivation before its
+    # `.symbols.tsv` turned out to be an empty header row.
+    live = {u for u, _sym in scores}
+    if live:
+        for u in [u for u in units if u not in live]:
+            dropped["unit not in report.json (stale normalized pair)"] += 1
+            units.remove(u)
     for u in units:
         base, target = NORM / "base" / f"{u}.obj", NORM / "target" / f"{u}.c.obj"
         if not base.is_file() or not target.is_file():
