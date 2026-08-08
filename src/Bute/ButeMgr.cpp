@@ -1386,10 +1386,11 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
+// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
+// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
+// or spelling choice lands on retail's count.
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1474,10 +1475,11 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
+// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
+// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
+// or spelling choice lands on retail's count.
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1562,15 +1564,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 }
 
 // @early-stop
-// The /Ob1 budget cutoff is a PREFIX of the construction sites and no whole-callee
-// visibility choice reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md). Census
-// from `insn_seq --multiset`: retail expands the ctor at 3 of the 7 sites and CALLS
-// the other 4 (4 calls / 9 operator new), expands 2 of 3 CopyValue and 2 of 3
-// ~CButeValue (whose switch FOLDS to a bare delete because the expanded ctor makes
-// box.type constant, and whose two tails cross-jump into ONE operator delete). cl
-// expands 5 ctors, 2 CopyValue and all 3 dtors - and the third dtor keeps its full
-// jump table, because a CALL to CopyValue(&box) escapes &box and kills the constant.
+// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
+// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
+// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
+// or spelling choice lands on retail's count.
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1655,10 +1653,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
+// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
+// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
+// or spelling choice lands on retail's count.
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1743,10 +1742,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
+// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
+// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
+// or spelling choice lands on retail's count.
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1827,12 +1827,15 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
-// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
-// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
+// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
+// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
+// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
+// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
+// definition in the compiland; this exact source is byte-identical to retail through
+// the shared arm set and its `push <pValue>; call operator delete` tail when it is
+// the compiland's first optimized function.
+// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1913,12 +1916,15 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
-// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
-// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
+// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
+// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
+// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
+// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
+// definition in the compiland; this exact source is byte-identical to retail through
+// the shared arm set and its `push <pValue>; call operator delete` tail when it is
+// the compiland's first optimized function.
+// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1998,16 +2004,15 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Same /Ob1 prefix cutoff as SetFloat, one expansion earlier: retail expands the
-// ctor at 3 of 7 sites and only ONE CopyValue / ONE ~CButeValue. The coordinated
-// move this note used to prescribe HAS NOW BEEN RUN and it fails - taking the ctor,
-// CopyValue and ~CButeValue out of line together only reaches the opposite endpoint
-// (0 expansions everywhere; the nine Set<T> total 592.28 -> 491.13 fuzzy, SetFloat
-// +48 insns -> -64). The budget is shared across callees, so there is no visibility
-// split that lands on retail's middle position; see
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md.
-// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
-// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
+// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
+// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
+// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
+// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
+// definition in the compiland; this exact source is byte-identical to retail through
+// the shared arm set and its `push <pValue>; call operator delete` tail when it is
+// the compiland's first optimized function.
+// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2087,12 +2092,15 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 prefix cutoff, family-wide across the Set<T> block: retail expands the
-// ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
-// neither all-inline nor all-out-of-line reaches retail's middle position
-// (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
-// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
-// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
+// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
+// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
+// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
+// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
+// definition in the compiland; this exact source is byte-identical to retail through
+// the shared arm set and its `push <pValue>; call operator delete` tail when it is
+// the compiland's first optimized function.
+// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
+// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
