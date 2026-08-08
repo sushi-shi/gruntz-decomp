@@ -43,13 +43,22 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     i32 idxB
 ) {
 
+    CDDrawSurfaceMgr* h;
+    CObject* found;
+    CDDrawWorker* rec;
+    CImage* spr;
+    CDDrawWorker* cfg;
+    CImage* s;
+    CShadeTable* sel;
+    CImage* val;
+
     if (host == NULL) {
-        return 0;
+        goto fail;
     }
     if (owner == NULL) {
-        return 0;
+        goto fail;
     }
-    CDDrawSurfaceMgr* h = host;
+    h = host;
     m_owner = owner;
     m_tab = tab;
     m_host = h;
@@ -58,11 +67,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
 
     m_rect14 = g;
 
-    CObject* found = 0;
+    found = 0;
     m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", found);
-    CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
-    CImage* spr;
+    rec = static_cast<CDDrawWorker*>(found);
     if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = NULL;
     } else {
@@ -74,14 +82,13 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     found = NULL;
     m_host->m_imageRegistry->m_10map.Lookup(key, found);
-    CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
+    cfg = static_cast<CDDrawWorker*>(found);
     m_config = cfg;
     if (cfg == NULL) {
         return 0;
     }
     m_frameIdxA = idxA;
     m_frameIdxB = idxB;
-    CImage* s;
     if (idxA < m_config->m_minIndex || idxA > m_config->m_maxIndex) {
         s = NULL;
     } else {
@@ -89,16 +96,15 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     m_frameA = s;
     if (s == NULL) {
-        return 0;
+        goto fail;
     }
-    CShadeTable* sel =
+    sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex), 0);
     if (sel == NULL) {
         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
     m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);
-    CImage* val;
     if (m_frameIdxB < m_config->m_minIndex || m_frameIdxB > m_config->m_maxIndex) {
         val = NULL;
     } else {
@@ -106,6 +112,8 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     m_frameB = val;
     return val != NULL;
+fail:
+    return 0;
 }
 
 RVA(0x000e8c70, 0xc)

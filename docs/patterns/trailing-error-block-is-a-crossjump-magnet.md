@@ -34,7 +34,17 @@ steerable. Related: with the guard inline, our cl still merges just the `xor eax
 the shared epilogue at every site (5i vs retail's 6i) - that residue is the same mechanism at
 one-instruction scale.
 
-related: [allocate-check-then-body-is-the-then-block.md](allocate-check-then-body-is-the-then-block.md),
+**UPDATE 2026-08-08 - this is NOT "our cl cross-jumps harder than retail's".** The three
+regimes are measured in
+[goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md): the collapse above
+is the TOTAL regime, entered because the trailing arm makes every guard reach one shared
+`return`. `goto fail;` + a trailing `fail:` label is the PARTIAL regime and shares only the
+sites that say `goto` - which is what retail's guarded functions are. Re-attack `CGruntzMgr::Run`
+with the goto spelling (25 sites keeping their inline copies, the trailing arm shared) before
+treating this as a wall.
+
+related: [goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md) (the lever),
+[allocate-check-then-body-is-the-then-block.md](allocate-check-then-body-is-the-then-block.md),
 [identical-arms-need-distinct-locals.md](identical-arms-need-distinct-locals.md)
 (the same cl cross-jumper, where the fix DOES work because the receiver expression can
 honestly differ),

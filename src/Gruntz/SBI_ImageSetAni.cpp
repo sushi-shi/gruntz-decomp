@@ -20,10 +20,6 @@
 #include <Io/FileMem.h>
 
 // @early-stop
-// retail shares ONE return block for the host/owner guards (an `||`) and keeps a
-// separate inline one for each later guard. Writing the `||` feeds cl's cross-jump
-// magnet and collapses them all (88.49 -> 81.75), so the separate `if`s stay - see
-// docs/patterns/trailing-error-block-is-a-crossjump-magnet.md.
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
@@ -38,12 +34,14 @@ i32 CSBI_ImageSetAni::Init(
     i32 b3,
     i32 b4
 ) {
+    CObject* found;
+    CDDrawWorker* tbl;
 
     if (host == NULL) {
-        return 0;
+        goto fail;
     }
     if (owner == NULL) {
-        return 0;
+        goto fail;
     }
     m_owner = owner;
     m_tab = tab;
@@ -56,12 +54,12 @@ i32 CSBI_ImageSetAni::Init(
     if (key == NULL) {
         return 0;
     }
-    CObject* found = 0;
+    found = 0;
     host->m_imageRegistry->m_10map.Lookup(key, found);
-    CDDrawWorker* tbl = static_cast<CDDrawWorker*>(found);
+    tbl = static_cast<CDDrawWorker*>(found);
     m_frameSet = tbl;
     if (tbl == NULL) {
-        return 0;
+        goto fail;
     }
     m_interval = b2;
     m_loop = b3;
@@ -87,6 +85,8 @@ i32 CSBI_ImageSetAni::Init(
     }
     m_frame = cel;
     return cel != NULL;
+fail:
+    return 0;
 }
 
 RVA(0x000e7ae0, 0x8)

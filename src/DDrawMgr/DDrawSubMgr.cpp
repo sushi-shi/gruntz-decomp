@@ -1122,27 +1122,35 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 // docs/patterns/trailing-error-block-is-a-crossjump-magnet.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
+    CDDrawSurfacePair* a;
+    CDDrawSurfaceChildA* b;
+    CDDSurface* bs;
+    CDDSurface* as;
+    i32 hr;
+
     if (!m_overlayPair) {
-        return 0;
+        goto fail;
     }
     if (!m_overlayPair->IsLoaded()) {
-        return 0;
+        goto fail;
     }
-    CDDrawSurfacePair* a = m_overlayPair;
-    CDDrawSurfaceChildA* b = m_frontPair;
+    a = m_overlayPair;
+    b = m_frontPair;
     if (!b) {
         return 0;
     }
-    CDDSurface* bs = b->m_surface;
+    bs = b->m_surface;
     if (!bs) {
         return 0;
     }
-    CDDSurface* as = a->m_surface;
+    as = a->m_surface;
     if (!as) {
         return 0;
     }
-    i32 hr = as->Blt(bs);
+    hr = as->Blt(bs);
     return hr == 0;
+fail:
+    return 0;
 }
 
 RVA(0x00158e90, 0x47)

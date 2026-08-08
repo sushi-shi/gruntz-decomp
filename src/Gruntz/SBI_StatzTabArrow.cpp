@@ -77,14 +77,17 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     i32 unitCol,
     i32 selMode
 ) {
+    CDDrawSurfaceMgr* h;
+    CObject* found;
+    CDDrawWorker* head;
 
     if (host == NULL) {
-        return 0;
+        goto fail;
     }
     if (owner == NULL) {
-        return 0;
+        goto fail;
     }
-    CDDrawSurfaceMgr* h = host;
+    h = host;
     m_owner = owner;
     m_tab = tab;
     m_host = h;
@@ -93,10 +96,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     m_rect14 = g;
 
-    CObject* found = 0;
+    found = 0;
     m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup(key, found);
-    CDDrawWorker* head = static_cast<CDDrawWorker*>(found);
+    head = static_cast<CDDrawWorker*>(found);
     m_glyphMap = head;
     if (head == NULL) {
         return 0;
@@ -165,7 +168,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     }
     m_overrideGlyph = val;
     if (val == NULL) {
-        return 0;
+        goto fail;
     }
     m_unitRow = unitRow;
     m_unitCol = unitCol;
@@ -180,4 +183,6 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     m_timerWindowHi = 0;
     Update();
     return 1;
+fail:
+    return 0;
 }
