@@ -70,6 +70,8 @@ FILLER_MIN = 4
 # cl aligns the next COMDAT to 16, so at most 15 `0x90` bytes can separate a
 # function's last instruction from its own switch table.
 PAD_MAX = 15
+# `jmp DWORD PTR [<index>*4 + disp32]`: SIB = `10 <index> 101`, every legal index.
+DISPATCH_SIB = frozenset((0x85, 0x8D, 0x95, 0x9D, 0xAD, 0xB5, 0xBD))
 
 
 def _warn_wrong_tree():
@@ -135,19 +137,44 @@ class Obj:
                        if s == sn and v > off and not is_local_label(n))
         return sn, off, (after[0] if after else self.sec[sn - 1]["size"])
 
-    def table(self, sn, start, end):
-        """(offset, entries) of the widest DIR32 jump table in [start,end), or None."""
+    def raw(self, sn, start, end):
+        s = self.sec[sn - 1]
+        return self.buf[s["raw"] + start:s["raw"] + end] if s["raw"] else b""
+
+    def dispatches(self, sn, start, end):
+        """Offsets of every indexed `jmp DWORD PTR [reg*4+TABLE]` in [start,end).
+
+        MSVC5 always spells the dense dispatch `ff 24 <mod=00 rm=100> <SIB scale=2,
+        base=101> disp32`, so the SIB byte is `10 <index> 101` for every index register
+        that is legal (esp - index 100 - is the "no index" encoding).  All SEVEN must be
+        listed: leaving out `ebp` (0xad) alone hid one of the two dispatches in
+        `CGrunt::LoadGruntCombatAnimations` and manufactured a base-vs-target count
+        mismatch that was not there.
+
+        COUNTING THE DISPATCHES, not the relocation runs, is what makes a multi-switch
+        function readable: adjacent tables are contiguous DIR32 runs at stride 4 and a
+        reloc-only reading MERGES them (retail's `UpdateStatusBarTabHighlight` has FIVE
+        tables of 7/9/3/4/5 entries, of which the first three are adjacent and read as
+        one run of 19)."""
+        d = self.raw(sn, start, end)
+        out = []
+        for i in range(len(d) - 6):
+            if d[i] == 0xFF and d[i + 1] == 0x24 and d[i + 2] in DISPATCH_SIB:
+                out.append(start + i)
+        return out
+
+    def tables(self, sn, start, end):
+        """[(offset, entries)] for every DIR32 run at stride 4 - tables, possibly merged."""
         rel = [r for r in self.sec[sn - 1]["dir32"] if start <= r < end]
-        best, i = None, 0
+        out, i = [], 0
         while i < len(rel):
             j = i
             while j + 1 < len(rel) and rel[j + 1] - rel[j] == 4:
                 j += 1
-            n = j - i + 1
-            if n >= 3 and (best is None or n > best[1]):
-                best = (rel[i], n)
+            if j - i + 1 >= 3:
+                out.append((rel[i], j - i + 1))
             i = j + 1
-        return best
+        return out
 
 
 class Image:
@@ -274,19 +301,26 @@ def scan(names_by_unit, pins, image):
             be, te = base.extent(name), tgt.extent(name)
             if not be or not te:
                 continue
-            bt = base.table(*be)
-            tt = tgt.table(*te)
-            if bt and not tt:
-                hits.append(("TABLE-ONLY-BASE", unit, name, fuzzy, bt[1],
-                             f"base builds a {bt[1]}-entry jump table, "
-                             f"target dispatches without one"))
-            elif tt and not bt:
-                hits.append(("TABLE-ONLY-TARGET", unit, name, fuzzy, tt[1],
-                             f"target builds a {tt[1]}-entry jump table, "
-                             f"base dispatches without one"))
-            elif bt and tt and bt[1] != tt[1]:
-                hits.append(("TABLE-ENTRIES", unit, name, fuzzy, abs(bt[1] - tt[1]),
-                             f"base {bt[1]} entries vs target {tt[1]}"))
+            bd, td = len(base.dispatches(*be)), len(tgt.dispatches(*te))
+            bt = sorted(n for _o, n in base.tables(*be))
+            tt = sorted(n for _o, n in tgt.tables(*te))
+            if bd == td and bt == tt:
+                continue
+            shape = (f"base {bd} indexed dispatch(es) {bt or '[]'} vs "
+                     f"target {td} {tt or '[]'} (DIR32 run lengths; adjacent tables merge)")
+            if bd and not td:
+                hits.append(("TABLE-ONLY-BASE", unit, name, fuzzy, bd,
+                             f"base dispatches through a jump table, target uses a "
+                             f"comparison ladder - {shape}"))
+            elif td and not bd:
+                hits.append(("TABLE-ONLY-TARGET", unit, name, fuzzy, td,
+                             f"target dispatches through a jump table, base uses a "
+                             f"comparison ladder - {shape}"))
+            elif bd != td:
+                hits.append(("TABLE-COUNT", unit, name, fuzzy, abs(td - bd), shape))
+            else:
+                hits.append(("TABLE-ENTRIES", unit, name, fuzzy,
+                             abs(sum(tt) - sum(bt)) or 1, shape))
     return hits
 
 

@@ -4,6 +4,7 @@
 
 #include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <Gruntz/BattlezData.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
@@ -281,6 +282,13 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_flags |= 0x10000;
                     break;
                 case TILEKIND_SECRET_SWITCH:
+                    // Only the DOWN variant counts: an UP secret switch has already
+                    // been triggered. Retail gives case 0x3d its own 12-byte entry
+                    // point at 0xd32b7 that falls into the shared body at 0xd32c3,
+                    // which is what makes the dispatch a DIRECT 16-entry table rather
+                    // than the byte-index LUT cl builds when the pairs all coincide.
+                    g_gameReg->m_scoreHud->m_secretsAvailable++;
+                    // fall through
                 case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_beginMarker->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
@@ -697,24 +705,25 @@ i32 CPlay::ValidateLevelTiles() {
                         continue;
                     }
                     i32 kind = obj->m_smarts;
-                    i32 bit;
-                    if (static_cast<u32>(kind) > 3) {
-                        bit = 0;
-                    } else {
-                        switch (static_cast<PlayerSlot>(kind)) {
-                            case PLAYER_SLOT_0:
-                                bit = 0x100000;
-                                break;
-                            case PLAYER_SLOT_1:
-                                bit = 0x200000;
-                                break;
-                            case PLAYER_SLOT_2:
-                                bit = 0x400000;
-                                break;
-                            default:
-                                bit = 0x800000;
-                                break;
-                        }
+                    // Four dense cases and NO default: that is what makes cl lower this
+                    // to retail's `cmp eax,3 / ja / jmp [eax*4+T]` (0xd41cf) instead of a
+                    // comparison ladder. Retail's out-of-range path leaves `bit` at
+                    // whatever it held and still does `counts[kind]++`; spelling that as
+                    // an uninitialised read costs 0.4% and is not worth writing.
+                    i32 bit = 0;
+                    switch (static_cast<PlayerSlot>(kind)) {
+                        case PLAYER_SLOT_0:
+                            bit = 0x100000;
+                            break;
+                        case PLAYER_SLOT_1:
+                            bit = 0x200000;
+                            break;
+                        case PLAYER_SLOT_2:
+                            bit = 0x400000;
+                            break;
+                        case PLAYER_SLOT_3:
+                            bit = 0x800000;
+                            break;
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
