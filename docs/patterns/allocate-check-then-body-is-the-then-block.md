@@ -4,10 +4,10 @@ tags: cpp:if cpp:new | asm:jcc | topic:codegen-idiom
 symptoms: a `new X; check; init; AddTail; return` factory sits at 70-80% with the block skeleton
 diverging at the first branch after the allocation; `--blocks --diff` reports `jcc B7 | fall B4`
 against `jcc B5 | fall B4` and the two tails are in the opposite order
-confidence: 9/10
+confidence: 6/10
 
 MSVC 5.0 emits an `if (c) { S }` with the THEN-block laid out inline immediately after the
-inverted branch. So for the object-factory family the fall-through arm reads the source
+inverted branch. So for the object-factory family the fall-through arm usually reads the source
 directly, and it is worth transcribing arm-by-arm instead of assuming a shape:
 
 | retail | source |
@@ -17,32 +17,48 @@ directly, and it is worth transcribing arm-by-arm instead of assuming a shape:
 | `mov eax,[esi+0x10]` / `test` / `jne <tail at END>` | `if (m->m_live == 0) { <body>; return m; }` then `delete; return 0;` |
 | `mov eax,[esi+0x10]` / `test` / `je <body>` | `if (m->m_live != 0) { delete; return 0; }` then the body |
 
-The pair matters: writing the guard the "wrong" way around moves BOTH the branch polarity and
-the physical order of the two tails, which is why the fuzzy score moves by ~10 points and the
-skeleton diff reports a kind mismatch rather than a size drift.
+## Do NOT read row 2 off the base
 
+**Row 2 is what OUR build collapses row-1 source into**, not an independent source shape.
 `CTileTriggerContainer::AddToList3` / `AddToList3Switch` / `AddToList1` (0x116a40 / 0x116b80 /
-0x116cf0) are one family. All three take the **first and third** rows: an early
-`if (p == NULL) return 0;`, then `if (p->m_live == 0) { ...init...; list.AddTail(p); return p; }`,
-then the teardown as the trailing statements.
+0x116cf0) all branch `jne <body>` in RETAIL — row 1, a real early return. An earlier revision of
+this file claimed they took row 2, which would have had a matcher rewrite three already-correct
+guards into the shape cl produces by itself.
 
-**Correction (2026-08-08).** This file previously said the family takes the *second* row on the
-null check. It does not: all three retail bodies branch `jne <body>` there (0x116a8b, 0x116bd0,
-0x116d45), which is row 1. Row 2 is what OUR build emits from the row-1 source, and it is a
-cl cross-jump, not a source shape — see
-[`identical-return-epilogue-tailmerge`](identical-return-epilogue-tailmerge.md). Do not "fix" the
-null check by writing `if (p != NULL) { ... } return 0;`; that spelling is what the recompile is
-already collapsing to on its own.
+## The rows are not independently steerable — measure, do not generalise
 
-The two rows are also **independent**, and the twins prove it: `AddToList1` was written
-teardown-first (row 4) and moving it to row 3 closed its `m_live` polarity row but flipped the
-null check into row 2 (80.00 -> 77.41), while `AddToList3`, already on row 3, sits at 80.12 with
-the same row-2 residue. Both numbers are the row-2 cross-jump, not the row-3 edit; keep row 3,
-which is the byte-evidenced order (retail's teardown block is laid out after the `return p`
-epilogue in all three).
+Measured 2026-08-08 on all three, twice each: flipping the guard between rows 3 and 4 moves BOTH
+the gate polarity and the null-return block, in opposite directions, and never lands both.
+
+| function | shape | gate polarity | null-return block | fuzzy |
+|---|---|---|---|---|
+| AddToList1 0x116cf0 | `if (gate != 0) { teardown }` then body | wrong | **right** (own `xor eax,eax; jmp`) | **80.00** |
+| AddToList1 | `if (gate == 0) { body }` then teardown | **right** | wrong (merged into the teardown's xor) | 77.41 |
+| AddToList3Switch 0x116b80 | teardown-first | wrong | **right** | **75.78** |
+| AddToList3Switch | body-first | **right** | wrong | 72.30 |
+| AddToList3 0x116a40 | body-first | **right** | wrong | 80.12 |
+
+An explicit `else` on the teardown is byte-identical to the trailing-statement form (measured on
+AddToList1). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
+
+The residue underneath is a three-block ROTATION no guard spelling reaches: retail lays out
+`[body][shared epilogue][teardown jmp back up]`, we lay out `[teardown][body][epilogue]` or
+`[body][teardown][epilogue]`. A 0..15 throwaway-declaration sweep over the whole TU left all four
+functions bit-for-bit unchanged, so this is source-determined, not TU state.
+
+## The control that says the idioms themselves are fine
+
+`CTileTriggerContainer::AddSwitchLogic` 0x115f60 is **100%** in the same TU with the same
+`new` / null-check / `if (init failed) { delete; return 0; }` / `AddTail; return obj` idiom, and
+retail gives it three separate full epilogues. So MSVC5 does not always cross-jump these; when it
+does, look for the cause in the epilogue's own shape (below), not in the guard.
 
 ## Related
 
+- [`retail-duplicates-small-return-epilogues`](retail-duplicates-small-return-epilogues.md)
+- [`hand-rotated-loop-merges-the-exit-epilogues`](hand-rotated-loop-merges-the-exit-epilogues.md)
+  — the same "our two `return 0`s merged, retail's did not" symptom WITH a working lever, when a
+  loop is involved.
 - `docs/patterns/forward-goto-hoists-target-block.md`
 - [`identical-return-epilogue-tailmerge`](identical-return-epilogue-tailmerge.md) — the row-2
   residue that survives a correct row-1 source.
