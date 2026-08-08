@@ -266,32 +266,33 @@ RVA(0x000b3160, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_smarts;
 
-    i32 tileX, tileY;
+    Coord tile;
     i32 found = 0;
-    for (i32 i = 0; i <= 4;) {
+    i32 i = 0;
+    while (found == 0) {
         CGameObject* lvl = Level();
         i32 sw = lvl->m_smarts;
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH:
-                tileX = m_tilePosition.m_x;
-                tileY = m_tilePosition.m_y - 0x20;
+                tile.m_x = m_tilePosition.m_x;
+                tile.m_y = m_tilePosition.m_y - 0x20;
                 break;
             case CARDINAL_EAST:
-                tileX = m_tilePosition.m_x + 0x20;
-                tileY = m_tilePosition.m_y;
+                tile.m_x = m_tilePosition.m_x + 0x20;
+                tile.m_y = m_tilePosition.m_y;
                 break;
             case CARDINAL_SOUTH:
-                tileX = m_tilePosition.m_x;
-                tileY = m_tilePosition.m_y + 0x20;
+                tile.m_x = m_tilePosition.m_x;
+                tile.m_y = m_tilePosition.m_y + 0x20;
                 break;
             case CARDINAL_WEST:
-                tileX = m_tilePosition.m_x - 0x20;
-                tileY = m_tilePosition.m_y;
+                tile.m_x = m_tilePosition.m_x - 0x20;
+                tile.m_y = m_tilePosition.m_y;
                 break;
         }
 
-        i32 gx = tileX >> TILE_SHIFT_PX;
-        i32 gy = tileY >> TILE_SHIFT_PX;
+        i32 gx = tile.m_x >> TILE_SHIFT_PX;
+        i32 gy = tile.m_y >> TILE_SHIFT_PX;
         i32 tileFlags;
         CMapMgr* map = g_gameReg->m_tileGrid;
         if (static_cast<u32>(gx) >= static_cast<u32>(map->m_width)
@@ -301,31 +302,27 @@ i32 CKitchenSlime::LoadSprites() {
             tileFlags = ((map->m_rowInts[gy]))[gx * 7];
         }
 
-        if (tileY >= lvl->m_extent.top && tileX <= lvl->m_extent.right
-            && tileY <= lvl->m_extent.bottom && tileX >= lvl->m_extent.left
+        if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
+            && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
             && !(tileFlags & BRICKZ_BLOCKED_MASK) && !(tileFlags & 2)) {
             found = 1;
-            break;
-        }
-
-        if (++i > 4) {
-            return 0;
-        }
-
-        if (lvl->m_direction == 1) {
-            lvl->m_smarts = sw;
-            if (Level()->m_smarts <= 0) {
-                Level()->m_smarts = 4;
-            }
         } else {
-            lvl->m_smarts++;
-            if (Level()->m_smarts > 4) {
-                Level()->m_smarts = 1;
+            if (++i > 4) {
+                return 0;
+            }
+
+            if (lvl->m_direction == 1) {
+                lvl->m_smarts = sw - 1;
+                if (Level()->m_smarts <= 0) {
+                    Level()->m_smarts = 4;
+                }
+            } else {
+                lvl->m_smarts++;
+                if (Level()->m_smarts > 4) {
+                    Level()->m_smarts = 1;
+                }
             }
         }
-    }
-    if (!found) {
-        return 0;
     }
 
     m_posX = 0;
@@ -333,33 +330,33 @@ i32 CKitchenSlime::LoadSprites() {
     i32 changed = (Level()->m_smarts != savedDir);
     switch (static_cast<CardinalDir>(Level()->m_smarts)) {
         case CARDINAL_NORTH:
-            m_posY = -m_stepMag;
             m_dirX = 0.0;
             m_dirY = -1.0;
+            m_posY = -m_stepMag;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case CARDINAL_EAST:
-            m_posX = m_stepMag;
             m_dirX = 1.0;
             m_dirY = 0.0;
+            m_posX = m_stepMag;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case CARDINAL_SOUTH:
-            m_posY = m_stepMag;
-            m_dirY = 1.0;
             m_dirX = 0.0;
+            m_dirY = 1.0;
+            m_posY = m_stepMag;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case CARDINAL_WEST:
-            m_posX = -m_stepMag;
             m_dirX = -1.0;
             m_dirY = 0.0;
+            m_posX = -m_stepMag;
             if (changed) {
                 Anim()->ApplyName("LEVEL_KITCHENSLIME_WEST");
             }
@@ -376,23 +373,25 @@ i32 CKitchenSlime::LoadSprites() {
         time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
+    m_tilePosition = tile;
     m_speed = g_slimeSpeedNum / static_cast<double>(time);
-    m_tilePosition.m_x = tileX;
-    m_tilePosition.m_y = tileY;
 
-    CWwdGameObjectA* player = Anim();
-    CDDrawWorker* spr = player->m_frameSet;
-    if (changed != 0 && spr != NULL) {
-        if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
+    if (changed != 0) {
+        CWwdGameObjectA* player = Anim();
+        CDDrawWorker* spr = player->m_frameSet;
+        if (spr != NULL) {
+            if (spr->m_minIndex <= 1 && spr->m_maxIndex >= 1) {
+                CImage* img = static_cast<CImage*>(spr->m_items.GetAt(1));
+                player->m_frameIndex = 1;
+                player->m_layer = img;
+                m_stepMag = 0.0;
+                return 1;
+            }
             player->m_frameIndex = 1;
-            player->m_layer = static_cast<CImage*>(spr->m_items.GetAt(1));
+            player->m_layer = NULL;
             m_stepMag = 0.0;
             return 1;
         }
-        player->m_frameIndex = 1;
-        player->m_layer = NULL;
-        m_stepMag = 0.0;
-        return 1;
     }
     m_stepMag = 0.0;
     return 1;

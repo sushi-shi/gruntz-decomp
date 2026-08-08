@@ -2721,7 +2721,7 @@ kitchenslime	??0CKitchenSlime@@QAE@PAUCGameObject@@@Z	99.5795	99.5795	19	f3d2696
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	3	6ba2c6b9f0c8	0x13100	100.0000
 kitchenslime	??_GCKitchenSlime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4633618f8d3a	0x130d0	100.0000
 kitchenslime	?FireActivation@CKitchenSlime@@UAEXH@Z	100.0000	100.0000	2	ad04679fa600	0xb2940	100.0000
-kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	73.8960	73.8960	27	0b0fd51302f4	0xb3160	73.8960
+kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	94.7480	94.7480	28	1975f52c6d91	0xb3160	94.7480
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	100.0000	100.0000	10	e087b8b36351	0xb2aa0	100.0000
 kitchenslime	?SerializeMove@CKitchenSlime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	c76319dcf5ed	0xb2ff0	100.0000
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	95.1542	95.1542	25	dd1af700ec02	0xb2ca0	95.1542
