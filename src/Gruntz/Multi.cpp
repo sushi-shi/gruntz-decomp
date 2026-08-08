@@ -187,8 +187,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_removedByHost = 0;
     m_gameClosed = 0;
     m_pollAbort = 0;
-    m_gameFull = 0;
     m_colorSelectionRejected = 0;
+    m_gameFull = 0;
     m_outOfSync = 0;
     m_notifyLatch = 0;
     m_completedFinalLevel = 0;
@@ -210,9 +210,8 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     m_connectAccepted = 0;
     m_roundComplete = 0;
 
-    i32* clat = m_channelLatency;
     for (i32 i = 0; i < 4; i++) {
-        *clat++ = 0;
+        m_channelLatency[i] = 0;
         PlayerLatency* lat = &g_gameReg->m_options[i].m_latency;
         lat->m_avg = 0;
         lat->m_count = 0;
