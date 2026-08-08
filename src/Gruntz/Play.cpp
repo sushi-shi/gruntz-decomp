@@ -6168,77 +6168,71 @@ i32 CPlay::DrawLevelInfoText() {
 }
 
 // @early-stop
-// Register allocation: cl keeps g_gameReg in ebp for the whole function where
-// retail keeps the &m_placedObjectCells[blockIdx] cursor there and re-reads the
-// global at each of its three uses. 200 permuter variants all land on this shape.
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
         CPtrArray* rec = &m_placedObjectCells[blockIdx];
         i32 i = 0;
-        i32 restart = 0;
-        while (i < rec->GetSize()) {
-            Coord* obj = static_cast<Coord*>(rec->GetAt(i));
-            CMapMgr* grid = g_gameReg->m_tileGrid;
+        i32 done = 0;
+        while (!done) {
+            if (i < rec->GetSize()) {
+                Coord* obj = static_cast<Coord*>(rec->GetAt(i));
+                CMapMgr* grid = g_gameReg->m_tileGrid;
 
-            i32 occupantId = 0;
-            i32 cellX = obj->m_x;
-            i32 cellY = obj->m_y;
-            if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
-                i32 stride = cellX * 7;
-                i32* row = grid->m_rowInts[cellY];
-                occupantId = row[stride + 2];
-            }
-            i32 stillPlaced = 0;
-            if (occupantId != 0) {
-                void* out = 0;
-
-                CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
-
-                // Byte-evidenced shipped pointer/id bug.
-                CGameObject* result = reinterpret_cast<CGameObject*>(occupantId);
-                if (MapLookupById(*map, occupantId, out)) {
-                    result = static_cast<CGameObject*>(out);
+                i32 occupantId;
+                i32 cellX = obj->m_x;
+                i32 cellY = obj->m_y;
+                if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
+                    && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
+                    i32 stride = cellX * 7;
+                    i32* row = grid->m_rowInts[cellY];
+                    occupantId = row[stride + 2];
+                } else {
+                    occupantId = 0;
                 }
-                if (result == NULL) {
+                if (occupantId != 0) {
+                    void* out = 0;
 
-                    CMapMgr* g = g_gameReg->m_tileGrid;
-                    i32 freeX = obj->m_x;
-                    i32 freeY = obj->m_y;
-                    if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
-                        && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
-                        i32 stride = freeX * 7;
-                        i32* row = g->m_rowInts[freeY];
-                        row[stride + 2] = 0;
-                        i32* row2 = g->m_rowInts[freeY];
-                        row2[stride] &= 0xfffbffff;
+                    CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
+
+                    CGameObject* result = 0;
+                    if (MapLookupById(*map, occupantId, out)) {
+                        result = static_cast<CGameObject*>(out);
                     }
-                    m_placedObjectCells[blockIdx].RemoveAt(i, 1);
+                    if (result == NULL) {
 
-                    CoordPoolNode* node = g_coordPool.NodeOf(obj);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
-                    return -1;
+                        CMapMgr* g = g_gameReg->m_tileGrid;
+                        i32 freeX = obj->m_x;
+                        i32 freeY = obj->m_y;
+                        if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
+                            && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
+                            i32 stride = freeX * 7;
+                            i32* row = g->m_rowInts[freeY];
+                            row[stride + 2] = 0;
+                            i32* row2 = g->m_rowInts[freeY];
+                            row2[stride] &= 0xfffbffff;
+                        }
+                        m_placedObjectCells[blockIdx].RemoveAt(i, 1);
+
+                        CoordPoolNode* node = g_coordPool.NodeOf(obj);
+                        node->m_next = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
+                        return -1;
+                    }
+                    if (result->m_smarts != IDX(PICKUP_WARPSTONE)) {
+                        done = 1;
+                    }
+                } else {
+                    done = 1;
                 }
-                stillPlaced = (result->m_smarts == IDX(PICKUP_WARPSTONE));
-            }
-
-            if (!stillPlaced) {
-                restart = 1;
-            }
-            ++i;
-            if (restart) {
-                break;
+                ++i;
+            } else {
+                if (i > 0) {
+                    return blockIdx;
+                }
+                done = 1;
             }
         }
-        if (i >= rec->GetSize() && !restart) {
-            if (i > 0) {
-                return blockIdx;
-            }
-            restart = 1;
-        }
-        static_cast<void>(restart);
     }
     return -1;
 }

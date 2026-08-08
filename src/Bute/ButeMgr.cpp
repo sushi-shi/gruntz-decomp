@@ -1833,6 +1833,8 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 // ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
 // neither all-inline nor all-out-of-line reaches retail's middle position
 // (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
+// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1917,6 +1919,8 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 // ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
 // neither all-inline nor all-out-of-line reaches retail's middle position
 // (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
+// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2004,6 +2008,8 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 // +48 insns -> -64). The budget is shared across callees, so there is no visibility
 // split that lands on retail's middle position; see
 // docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md.
+// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
+// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2087,6 +2093,8 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 // ctor at 3 of the 7 construction sites and calls the rest; cl expands more, and
 // neither all-inline nor all-out-of-line reaches retail's middle position
 // (docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md).
+// Also: cl DROPS both inlined ~CButeValue bodies AND their `return`s here
+// (docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md).
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));

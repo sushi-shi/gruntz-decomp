@@ -15,7 +15,7 @@ magic case labels	0
 unnamed domain compares	0
 .cpp-local enums	19
 C-style casts	0
-reinterpret_casts	37
+reinterpret_casts	36
 unexplained casts	0
 void* m_ members	0
 offset-cast macros	0

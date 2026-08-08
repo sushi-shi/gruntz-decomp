@@ -786,39 +786,43 @@ commit:
 // and only reloads them on the default arm.
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
-    i32 x = m_lastTilePx.m_x;
-    i32 y = m_lastTilePx.m_y;
     // retail's arm layout (jump table at 0x452e24) proves the SW/S and NW/N pairs
     // fall through: NW's body is `x -= 0x20` followed by N's `y -= 0x20`, and the
-    // table sends DIR_NORTH straight at that second instruction.
+    // table sends DIR_NORTH straight at that second instruction.  x and y carry no
+    // initializer - the out-of-range block at 0x452cc2 reads their never-written
+    // stack homes - so the seed pair is separate locals the arms read.
+    i32 px = m_lastTilePx.m_x;
+    i32 py = m_lastTilePx.m_y;
+    i32 x;
+    i32 y;
     switch (m_entranceCell.direction) {
         case DIR_NORTHEAST:
-            x += 0x20;
-            y -= 0x20;
+            x = px + 0x20;
+            y = py - 0x20;
             break;
         case DIR_EAST:
-            x += 0x20;
+            x = px + 0x20;
+            y = py;
             break;
         case DIR_SOUTHEAST:
-            x += 0x20;
-            y += 0x20;
+            x = px + 0x20;
+            y = py + 0x20;
             break;
         case DIR_SOUTHWEST:
-            x -= 0x20;
+            x = px - 0x20;
             // fall through
         case DIR_SOUTH:
-            y += 0x20;
+            y = py + 0x20;
             break;
         case DIR_WEST:
-            x -= 0x20;
+            x = px - 0x20;
+            y = py;
             break;
         case DIR_NORTHWEST:
-            x -= 0x20;
+            x = px - 0x20;
             // fall through
         case DIR_NORTH:
-            y -= 0x20;
-            break;
-        default:
+            y = py - 0x20;
             break;
     }
 
