@@ -367,6 +367,11 @@ static __inline void HiPost(i32 cmdId) {
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, cmdId, 0);
 }
 
+// @early-stop
+// Retail loads `y` into esi in the prologue region and reloads m_barSprite into edx;
+// cl swaps the pair (sprite in esi, y loaded late into edx). Same 45 bytes, same
+// instruction selection. Permuter exhausted: 25 graded declaration counts, 80
+// tu_state_* islands and 7 body spellings, every cell 96.6875.
 RVA(0x000fe860, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
@@ -2040,6 +2045,8 @@ void CStatusBarMgr::SetGauge(i32 value) {
 }
 
 // @early-stop
+// One scheduling slot: retail emits `mov ecx,edi` (the LoadCameraSprite receiver)
+// after the first m_recordPosition store, cl before it. 5 spellings measured.
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_curPlayer;
@@ -3106,6 +3113,9 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 }
 
 // @early-stop
+// Retail hoists the `a` parameter load to function entry (eax, before the pushes)
+// and keeps the pool head in edx; cl loads `a` lazily and colours the head esi.
+// Same 142 bytes. 7 body spellings measured, all 83.21.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
@@ -3694,6 +3704,9 @@ void CStatusBarMgr::ExitMode() {
 }
 
 // @early-stop
+// One store slot, twice (both switch arms): retail writes the i64 m_destructWarnLast
+// HIGH dword straight after the low one, cl sinks it past the m_modeNotify load and
+// its null compare. 5 spellings measured, including the i64-union assignment form.
 RVA(0x0010b320, 0x167)
 void CStatusBarMgr::UpdateDestructButtonStatusBar() {
 

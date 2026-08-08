@@ -1,7 +1,7 @@
 # Retail gives each entry guard its own `return` epilogue where cl shares one
-tags: cpp:branch cpp:switch cpp:goto | asm:jcc asm:ret asm:jmp | topic:wall
+tags: cpp:branch cpp:switch cpp:goto | asm:jcc asm:ret asm:jmp | topic:codegen-idiom topic:wall
 symptoms: base and target agree instruction-for-instruction but the base has FEWER `ret` blocks; `--blocks --diff` shows `jcc <shared tail>` in the base against `jcc <continue> | fall <inline epilogue>` in the target; the base is short by a whole multiple of one epilogue; `insn_count` reports a negative delta with no operand differences anywhere
-confidence: 8/10
+confidence: 9/10
 variants: tail-block-placement-cross-jump-wall.md, single-predecessor-tail-block-gets-replicated.md, error-report-guard-falls-through-to-a-shared-return.md
 
 A function with several source-identical `return <const>;` sites where retail
@@ -35,21 +35,57 @@ the merged block then has 4-5 predecessors, and the replication never fires.
     je     <shared epilogue at the end of the function>
 ```
 
-**Wall.** Measured and rejected: `if (p == NULL) return 0;` vs `if (!p) return 0;`
+## STEERABLE when the sites are switch arms: `break` to ONE trailing `return`
+
+`CStatusBarMgr::SetTabState` 0x100d70 was listed below as a wall and is now **100.00
+EXACT**. Seventeen arms each ended in `return 1;` and cl chain-merged three of them
+where retail merges two. Replacing every arm's `return 1;` with `break;` and letting
+the single `return 1;` after the `switch` carry them closes it outright:
+
+```cpp
+// BEFORE - 88.53: each arm returns; cl cross-jumps arm1->arm2->arm4
+    case SBICMD_TAB_STATZ:
+        if (m_hlBusy) { return 1; }
+        m_tabSprite0->SetState(state, 1);
+        ...
+        return 1;
+// AFTER - 100.00: each arm breaks; cl replicates the tiny epilogue per arm
+    case SBICMD_TAB_STATZ:
+        if (m_hlBusy) { return 1; }        // the GUARD keeps its own return
+        m_tabSprite0->SetState(state, 1);
+        ...
+        break;
+    }
+    return 1;
+```
+
+Counter-intuitive but consistent with
+`single-predecessor-tail-block-gets-replicated.md`: a `return` per arm gives cl N
+source-identical return statements to merge FIRST, and the merged block then has too
+many predecessors to replicate. One `return` reached by N `break`s is a single block
+that the layout pass duplicates into each arm - which is exactly retail's shape. Note
+the early-exit guard inside an arm (`if (m_hlBusy) return 1;`) STAYS a `return`: retail
+gives each of those its own epilogue copy too.
+
+Untested but indicated by the same reasoning: the three sites below whose duplicated
+epilogues are also switch-arm returns.
+
+**Wall (the non-switch sites).** Measured and rejected: `if (p == NULL) return 0;` vs `if (!p) return 0;`
 vs `if (p == NULL) { return 0; }` (identical); routing the deep sites through
 `goto fail; ... fail: return 0;` so the entry guards are single-predecessor
 (byte-identical - cl merges the returns before the layout pass); an explicit
 `default:` arm instead of falling out of a switch (identical); and adding an
 explicit `case <zero>:` arm, which additionally re-lowers the switch from a jump
-table to a compare chain (91.37 -> 66.42). Four independent sites this session:
-`CStatusBarMgr::SetTabState` 0x100d70 (retail keeps two arms' `sprite1->Probe`
-tails apart and merges the rest into arm 3; we chain-merge one level deeper),
+table to a compare chain (91.37 -> 66.42). Sites:
+`CStatusBarMgr::SetTabState` 0x100d70 - **CLOSED 100.00 by the `break` form above**,
 `CDDrawSurfaceChildA::SetGeometry` 0x1644a0 (retail emits the
 `WORLDERR_CREATE_DEVICE` block twice - once for the switch default, once for the
 `err == 0` else - we fold them and both branches target one address, 91.37),
 `CTriggerMgr::ResetGroup` 0x79520 (retail merges all three cursor-spawn arms into
 one tail, we leave the third out, 90.74), `CTriggerMgr::ScanGroup` 0x7a760 (three
-`return 0` epilogues vs our one; every other byte matches, 89.48).
+`return 0` epilogues vs our one; every other byte matches, 89.48). Try the `break`
+form on any of those whose sites are switch arms BEFORE calling it a wall.
+
 
 ## NOT always a wall - re-check for the hidden `||` first (2026-08-08)
 

@@ -163,6 +163,11 @@ i32 CGrunt::UpdateGruntStatus() {
 }
 
 // @early-stop
+// cl hoists `idx = 1` out of the two switch arms and then re-uses that ebx as the
+// function's constant-1 register (m_combatActive, m_entranceActive, the rand()%2
+// mask all read ebx where retail uses immediates); retail's constant register holds
+// 0 instead, shared by the two i64 high-dword stores. 9 arm/timer spellings and 13
+// graded declaration counts measured, all 88.50.
 RVA(0x00061940, 0x200)
 i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     if (m_entranceReason >= PICKUP_TOYZ_FIRST) {

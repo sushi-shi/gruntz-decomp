@@ -2039,7 +2039,7 @@ gruntentrancearrival	?UpdateGruntStatus@CGrunt@@QAEHXZ	100.0000	100.0000	20	9c30
 gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEXW4GruntEntranceMode@@@Z	79.4977	79.4977	4	6728b58d0690	0x67bd0	79.4977
 gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	76.0443	76.0443	5	31e5f4c329b8	0x6a6d0	76.0443
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	10	8b0bcb6a82cb	0x69fd0	100.0000
-gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	80.3878	80.3878	4	efec11aa94ed	0x67b00	80.4082
+gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9388	90.9388	5	b3bb2f011329	0x67b00	90.9388
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	86.6710	86.6710	4	7b9944baa823	0x67f80	86.6710
 gruntentrancemove	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	87.3806	87.3806	19	7f498fdabd96	0x69d60	87.3881
 gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	12	534cfb8987ce	0x6a060	100.0000
@@ -4632,7 +4632,7 @@ wwdobjmgr	?ForEachSerialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId
 wwdobjmgr	?InsertSorted@CDDrawChildGroup@@QAEXPAUCGameObject@@H@Z	100.0000	100.0000	4	d303731389a8	0x159e40	100.0000
 wwdobjmgr	?InvalidateChildShadows@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	2fd5f729183a	0x159d90	100.0000
 wwdobjmgr	?IsKindUnique@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	6	278c5a6e91b6	0x15aa20	100.0000
-wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	71.0238	71.0238	1	5b57aa2c43dd	0x15ad30	71.0238
+wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	75.2857	75.2857	2	e8306cd5a353	0x15ad30	75.2857
 wwdobjmgr	?PruneList@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	5	661ae2747ef2	0x15aa90	100.0000
 wwdobjmgr	?PruneOrphans@CDDrawChildGroup@@QAEHXZ	93.7541	93.7541	5	bc238fd9d1b8	0x15b1d0	93.7541
 wwdobjmgr	?ReinsertUnflagged@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	72f292b08208	0x159e10	100.0000

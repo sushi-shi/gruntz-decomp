@@ -237,6 +237,9 @@ clearMove:
 }
 
 // @early-stop
+// Retail defers the `sum` operand loads until after the two imuls; cl hoists
+// m_defenderRadius above the coordinate shifts. Size exact, 5 tail spellings
+// measured. (The dx/dy declaration order was a real bug: 80.39 -> 90.94.)
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 col, i32 row) {
     CGrunt* other = m_tileMgr->m_grid[col * TM_GRID_COLS + row];
@@ -245,10 +248,10 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
         i32 oy = other->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 tx = m_defenderPx.m_x >> TILE_SHIFT_PX;
         i32 ty = m_defenderPx.m_y >> TILE_SHIFT_PX;
-        i32 dx = oy - ty;
-        i32 dy = ox - tx;
+        i32 dx = ox - tx;
+        i32 dy = oy - ty;
         i32 sum = m_defenderRadius + m_reachRect.right;
-        i32 dist2 = abs(dx * dx + dy * dy);
+        i32 dist2 = abs(dy * dy + dx * dx);
         return dist2 < sum * sum ? 1 : 0;
     }
     return 0;

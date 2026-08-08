@@ -1112,6 +1112,10 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
 }
 
 // @early-stop
+// Retail caches `reader` in ebx and uses ebp as the function's zero register; cl
+// swaps them and therefore reloads `reader` from its parameter home every
+// iteration. Size is exact. 13 body spellings measured; `createdObj` left
+// uninitialised with an explicit zero in every non-creating arm was worth 71.0 -> 75.3.
 RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
@@ -1130,7 +1134,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         savedCounter = g_wwdObjIdCounter;
         g_wwdObjIdCounter = desc.m_objectId;
 
-        CGameObject* createdObj = 0;
+        CGameObject* createdObj;
         switch (desc.m_classId) {
             case CLASSID_WWDOBJA: {
                 CObject* val;
@@ -1147,6 +1151,8 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         static_cast<AnimWorkerObj*>(val),
                         0
                     );
+                } else {
+                    createdObj = 0;
                 }
                 break;
             }
@@ -1179,6 +1185,8 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         static_cast<AnimWorkerObj*>(val),
                         0
                     );
+                } else {
+                    createdObj = 0;
                 }
                 break;
             }
@@ -1218,6 +1226,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             default:
+                createdObj = 0;
                 break;
         }
 
