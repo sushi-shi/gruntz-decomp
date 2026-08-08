@@ -10,8 +10,6 @@
 
 #include <stddef.h>
 
-void* operator new(u32 size);
-
 struct CSymTabNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;

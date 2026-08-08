@@ -306,7 +306,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
             // Reserve raw capacity: unused serialized mesh slots are zero-filled explicitly.
             if (newSize == 0) {
                 if (mesh->m_pData) {
-                    ::operator delete(mesh->m_pData);
+                    delete[] mesh->m_pData;
                     mesh->m_pData = NULL;
                 }
                 mesh->m_nMaxSize = 0;
@@ -340,7 +340,7 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 RezElem40* nd = static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
                 memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
                 memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
-                ::operator delete(mesh->m_pData);
+                delete[] mesh->m_pData;
                 mesh->m_pData = nd;
                 mesh->m_nSize = newSize;
                 mesh->m_nMaxSize = newMax;

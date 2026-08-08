@@ -11,6 +11,10 @@
 #include <new.h>
 #include <string.h>
 
+// MFC CArray's storage idiom: a RAW BYTE buffer, elements built later by the
+// placement-new loop below. Retail allocates exactly n*0x28 with no ??0RezElem40
+// after `call ??2`, so this is NOT `new RezElem40[n]` (that emits a vector-ctor
+// loop + a /GX frame). See docs/patterns/msvc5-has-no-array-new-read-the-vector-ctor.md.
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
@@ -28,7 +32,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         i32 n = ar.ReadCount();
         if (n == 0) {
             if (m_pData != NULL) {
-                ::operator delete(m_pData);
+                delete[] m_pData;
                 m_pData = NULL;
             }
             m_nMaxSize = 0;
@@ -64,7 +68,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
 
             ZeroRecords(&nd[m_nSize], n - m_nSize);
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newMax;
@@ -94,7 +98,7 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     }
     if (nNewSize == 0) {
         if (m_pData != NULL) {
-            ::operator delete(m_pData);
+            delete[] m_pData;
             m_pData = NULL;
         }
         m_nSize = m_nMaxSize = 0;
@@ -126,7 +130,7 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         RezElem40* pNewData = static_cast<RezElem40*>(::operator new(nNewMax * sizeof(RezElem40)));
         memcpy(pNewData, m_pData, m_nSize * sizeof(RezElem40));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(RezElem40));
-        ::operator delete(m_pData);
+        delete[] m_pData;
         m_pData = pNewData;
         m_nSize = nNewSize;
         m_nMaxSize = nNewMax;

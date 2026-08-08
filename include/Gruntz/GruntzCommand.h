@@ -11,9 +11,6 @@
 #include <Ints.h>
 #include <Utils/PtrListPool.h>
 
-typedef u32 gz_size_t;
-void* operator new(gz_size_t);
-
 GZ_ENUM_BEGIN(GruntzCommandRecordKind)
     COMMAND_RECORD_INVALID = 0,
     COMMAND_RECORD_SINGLE = 1,

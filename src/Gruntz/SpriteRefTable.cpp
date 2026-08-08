@@ -13,8 +13,6 @@
 
 #include <stdio.h>
 
-void* ::operator new(u32);
-
 RVA(0x000e2250, 0x26)
 i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
     if (!cache) {

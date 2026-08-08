@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Net/CmdPool.h>
+#include <Net/NetMgr.h>
 
 RVA(0x000bf530, 0x3b)
 void* AllocateGruntRecord(int bClear) {
@@ -10,9 +11,9 @@ void* AllocateGruntRecord(int bClear) {
     if (freeList.GetCount()) {
         void* p = freeList.RemoveTail();
         if (bClear) {
-            memset(p, 0, 0x410);
+            memset(p, 0, sizeof(GruntRec));
         }
         return p;
     }
-    return ::operator new(0x410);
+    return new GruntRec;
 }

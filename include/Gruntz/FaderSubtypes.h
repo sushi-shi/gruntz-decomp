@@ -32,9 +32,6 @@ public:
     virtual void RenderFrame(i32 f) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    void* operator new(u32) {
-        return ::operator new(0x6c);
-    }
     i32 ApplyInit(CFxModeDesc* src);
 
     CDDSurface* m_bltSrc;
@@ -67,9 +64,6 @@ public:
     virtual void RenderFrame(i32 f) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    void* operator new(u32) {
-        return ::operator new(0x7d5c);
-    }
     i32 ApplyInit(CFxModeDesc* src);
 
     CDDSurface* m_srcBox;
@@ -97,9 +91,6 @@ public:
     virtual void RenderFrame(i32 f) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    void* operator new(u32) {
-        return ::operator new(0x50);
-    }
     i32 ApplyInit(CFxModeDesc* src);
 
     CDDSurface* m_desc04;
@@ -120,9 +111,6 @@ public:
     virtual void RenderFrame(i32 f) OVERRIDE;
     virtual i32 GetFrameCount() OVERRIDE;
 
-    void* operator new(u32) {
-        return ::operator new(0x206c);
-    }
     i32 ApplyInit(CFxModeDesc* src);
     void SubFree();
 

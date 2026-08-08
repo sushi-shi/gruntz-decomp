@@ -7,6 +7,4 @@
 
 #include <Ints.h>
 
-void* operator new(u32 n);
-
 #endif // GRUNTZ_GAMESTATERECORDLOAD_H

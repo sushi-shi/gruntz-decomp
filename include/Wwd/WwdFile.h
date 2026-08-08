@@ -183,7 +183,6 @@ SIZE_UNKNOWN();
 
 class CFileMemBase;
 
-extern void* operator new(u32 size);
 extern void operator delete(void* p);
 
 extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLong sourceLen);

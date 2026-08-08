@@ -35,6 +35,6 @@ SIZE_UNKNOWN();
 
 inline CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {
-        ::operator delete(m_pData);
+        delete[] m_pData;
     }
 }

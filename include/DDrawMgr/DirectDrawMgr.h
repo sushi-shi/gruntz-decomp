@@ -34,9 +34,6 @@ public:
         m_firstColorIndex = 0;
         m_colorCount = 0;
     }
-    void* operator new(u32) {
-        return ::operator new(0x38);
-    }
 
     i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags);
 

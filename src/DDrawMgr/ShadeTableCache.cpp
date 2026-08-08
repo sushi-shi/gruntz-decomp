@@ -39,8 +39,6 @@ float g_inv255 = 0.003921568859368563f;
 DATA(0x001efb5c)
 float g_negone = -1.0f;
 
-void* ::operator new(u32);
-
 inline CShadeTableArray::CShadeTableArray() {
 
     m_pData = NULL;

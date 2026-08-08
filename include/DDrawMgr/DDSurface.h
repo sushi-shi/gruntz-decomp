@@ -296,8 +296,6 @@ extern "C" const GUID IID_IDirectDrawSurface3;
 extern u8 g_clut[];
 extern u16 g_lut16[256];
 
-void* operator new(u32);
-
 extern CPtrArray g_imageCache;
 
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx);
