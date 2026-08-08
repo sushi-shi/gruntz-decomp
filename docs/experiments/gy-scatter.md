@@ -32,7 +32,7 @@ Per-TU **fragments** (maximal contiguous runs in the linked `/MAP`; 1 = contiguo
   **zero** difference to a TU's own unique body. Cross-TU callers are *not* pulled toward callees.
 - The **only** movers are forced-COMDATs (`??_G`/`??_E` deleting dtors, COMDAT even without `/Gy`)
   and **shared inline/template** functions, which the linker **folds to one copy** (COMDAT dedup —
-  MSVC 5.0 has no `/OPT:ICF`) placed at their **first-referencer**, so they appear inside a TU they
+  retail did not fold; see `docs/linker-flags.md`) placed at their **first-referencer**, so they appear inside a TU they
   don't belong to (never *interspersed* in another TU's body — they sit at the block edge).
 
 ## ISLE run — real code validation

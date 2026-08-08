@@ -31,7 +31,7 @@ class": they are five DISTINCT classes in one hierarchy.
 MSVC 5.0 emits each class's inline dtor as a COMDAT in every TU that `new`s /
 destroys that class. The linker keeps ONE copy per symbol (COMDAT *selection* —
 the default) and discards the rest; it does NOT fold *different* symbols with
-identical bytes (that is `/OPT:ICF`, off by default). Both the image TU and the
+identical bytes (that is `/OPT:ICF`; retail was linked without it -- measured, `docs/linker-flags.md`). Both the image TU and the
 ddraw pool `new` base + a58 items, so those two dtor COMDATs exist in both — the
 linker kept the IMAGE copies (0x141350 / 0x142360). a88/ab8/ae8 are `new`'d only
 by the pool, so their dtors live only in the ddraw region.

@@ -88,7 +88,7 @@ at all.
 `verify_unique_names` used to enforce only one RVA per NAME — it never looked at
 EXTENTS, which is how this fragment sat inside its parent, scored, indefinitely. It now
 also fails on any two claims with overlapping `[rva, rva+size)` ranges (MSVC5 has no
-`/OPT:ICF`, so no two functions ever share bytes). The first run found two more, both
+ICF folding in retail -- measured, `docs/linker-flags.md` -- so no two functions ever share bytes). The first run found two more, both
 over-declared sizes rather than phantoms:
 
 | claim | was | is | what it ran into |

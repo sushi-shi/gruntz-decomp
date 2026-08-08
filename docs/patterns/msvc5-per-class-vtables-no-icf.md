@@ -10,7 +10,7 @@
 `??_7<Class>@@6B@` vtable for every polymorphic class** — the base *and* every
 derived class — even when the derived class overrides nothing, is empty, or has a
 vtable whose contents would be byte-identical. There is **no vtable sharing and no
-COMDAT/ICF folding** across classes. Therefore any reconstruction that points one
+COMDAT/ICF folding** across classes (retail was linked without ICF -- measured, `docs/linker-flags.md`). Therefore any reconstruction that points one
 class's vtable at *another* class's RVA (`RELOC_VTBL(X, <Y's rva>)`, and the
 `L_<rva>` / `S_<rva>` placeholder "shared-vtable" classes) is modeling a fiction and
 must be dissolved into a real, distinct per-class vtable.
@@ -49,7 +49,8 @@ The `.rdata` relocations of e1's two vtables (`llvm-objdump -r`):
 With a **virtual destructor**, MSVC places a **per-class `??_G`** (scalar-deleting
 destructor) in vtable slot 0. `??_GD` destroys D's members and frees `sizeof(D)`;
 `??_GB` does B's. So the two vtables aren't merely separate symbols — they hold
-**different content**, so even a compiler *with* `/OPT:ICF` (MSVC5 has none) could
+**different content**, so even a link *with* `/OPT:ICF` (which LINK 5.10.7303 does offer;
+retail simply did not fold) could
 not fold them.
 
 Almost every polymorphic class in a real codebase has or inherits a virtual

@@ -24,7 +24,8 @@ claim overlapping [rva, rva+size) stretches and both get scored, indefinitely:
     LaunchWebBrowser 0x264->0x170 (swallowed its own padding + a whole real function),
     CMoviePlayer::InitMode 0x14e->0x120 (ran 0x2e into Teardown).
 
-An overlap is always a defect - MSVC5 has no /OPT:ICF, so no two functions share bytes.
+An overlap is always a defect - retail was linked without ICF folding (measured; see
+docs/linker-flags.md), so no two functions share bytes.
 It is either a wrong size arg (usually) or a phantom claim on a fragment of a real
 function (worse). Rows with no size are skipped: they cannot be checked, and a missing
 size is not evidence of an overlap.
@@ -79,7 +80,7 @@ def main() -> int:
     overlaps = _overlaps(extents)
     if overlaps:
         print(f"claim-extents: FATAL - {len(overlaps)} overlapping RVA range(s). MSVC5 has "
-              "no /OPT:ICF, so two functions never share bytes: each is a wrong size arg, "
+              "retail folded no COMDATs, so two functions never share bytes: each is a wrong size arg, "
               "or a phantom claim on a fragment of the function above it.")
         for a, b in overlaps:
             kind = "CONTAINS" if a[0] + a[1] >= b[0] + b[1] else "overlaps"

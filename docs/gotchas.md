@@ -118,11 +118,20 @@ change, and a search harness must treat it differently.
   `reghelpers.c`). ninja never GCs orphaned outputs. Fix (build/ is gitignored): delete
   `build/gen/labels/<stem>.{csv,functions.json,globals.json}` + `build/objdiff/{base,target,normalized}/<stem>.obj`
   for every `<stem>` NOT in `config/units.toml`, then `rm -f build/objdiff/.delink.stamp`, rebuild.
-- **`build.ninja` stale after a header was DELETED** → `ninja: error: <hdr> missing and no
-  known rule to make it`. The manifest's `configure` edge fires only on `config/units.toml`/
-  `configure.py` mtime changes, so a source-only tree change doesn't regenerate it. Fix:
-  `rm -f build.ninja .ninja_deps .ninja_log .ninja_lock` (ROOT ninja state ONLY, NOT `build/`
-  — keeps the expensive delink/Ghidra caches). A reset worktree may need BOTH this and the GC above.
+- **`build.ninja` stale after the include graph changed** — FIXED 2026-08-08; the note below
+  is why you may still see it in an old tree. The `cl` edges DO carry per-header implicit deps
+  (159 headers on `gamemode.obj`) and touching a listed header DOES rebuild — but the lists are
+  baked by `configure.py`'s `local_headers()`, and the `configure` edge used to fire only on
+  `config/units.toml`/`configure.py`. So a deleted/renamed header gave
+  `ninja: error: <hdr> missing and no known rule to make it`, and — the silent, dangerous half —
+  a NEWLY ADDED `#include` was absent from the baked list, so later edits to that header
+  rebuilt nothing and you diffed stale code. **That is the failure any "byte-neutral header
+  edit" claim rests on not happening.** Now every file the include scan reads is an implicit
+  input of the `build.ninja` edge, and `gruntz build` runs `configure.py` unconditionally
+  (~0.3 s, after memoizing a scan that used to cost 13.4 s) so a rename cannot wedge ninja.
+  `/showIncludes` would give real depfiles but MSVC 5.0 rejects it (`D4002`).
+  Manual escape hatch if a tree is still wedged: `rm -f build.ninja .ninja_deps .ninja_log
+  .ninja_lock` (ROOT ninja state ONLY, NOT `build/` — keeps the expensive delink/Ghidra caches).
 - **`GRUNTZ_SKIP_INIT=1`** before `nix develop -c <cmd>` skips the slow shell-entry `gruntz init`
   warmup — use it for quick one-off commands in a warm worktree.
 - **Wineserver leak** — subagent builds leak `wineserver` processes; `pkill -9 -f wineserver`
@@ -199,7 +208,10 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   in that header's consumers; a "byte-neutral" fold across a 40-consumer header is NOT
   byte-neutral (it can net +/- a few exact via the ripple — measure). Enum-vs-int is neutral
   ONLY if the TU already includes the enum header (adding the include perturbs regalloc).
-- **MSVC5 has no ICF** — two source functions with identical bodies are two functions. If a
+- **Retail was linked without ICF** (measured: 574 byte-identical functions at distinct
+  addresses; `docs/linker-flags.md`). NOT because the linker lacks it -- LINK 5.10.7303 does
+  advertise `/OPT:{ICF|NOICF|NOREF|REF}` -- but because retail did not fold. So two source
+  functions with identical bodies are two functions. If a
   retail function shows up under two names at the SAME RVA, that's the fake-view symptom (the
   same body reconstructed on a fake view and on the real class); recover the one real identity.
 

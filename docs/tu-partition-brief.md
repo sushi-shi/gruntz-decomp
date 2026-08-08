@@ -19,7 +19,7 @@ attempt was measured and found blocked. Companion: `docs/data-attribution.md`.
 > **Proof (not inference):** 0xf470 `CAniCycle::Serialize`, 0x10a10
 > `CSecretLevelTrigger::Serialize` and 0x12bc0 `CToobSpikez::Serialize` are all
 > **exactly 71 bytes and byte-for-byte identical** (all three `call 0x16e7f0`, zero
-> relocations). MSVC5 has no `/OPT:ICF`, so they are three separate COMDAT copies of
+> relocations). retail was linked without ICF (measured, `docs/linker-flags.md`), so they are three separate COMDAT copies of
 > one macro-generated member that the linker pooled - not one compiland. The band
 > 0xf2f0..0x13d00 is dozens of these: `Serialize` at +0x47 and `~X` at +0x44, over and
 > over, for ~20 unrelated classes.

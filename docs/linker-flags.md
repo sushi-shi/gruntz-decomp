@@ -68,7 +68,17 @@ Mostly relevant to the link-reproduction phase, **not** per-function matching.
   This resolves the reference's "confirm `/OPT:ICF` default for VC5" caveat: for
   **retail Gruntz v0.76 we MEASURED ICF did not fold** — **574 byte-identical
   functions live at distinct addresses** (including 47 that are ≥32 bytes, well
-  past any minimum-size threshold). So:
+  past any minimum-size threshold).
+
+  **The flag EXISTS — do not restate this as "MSVC5 has no `/OPT:ICF`".** Our own
+  `LINK.EXE`, *Microsoft (R) 32-Bit Incremental Linker Version 5.10.7303*, prints
+
+      /OPT:{ICF[,iterations]|NOICF|NOREF|REF}
+
+  in its usage text, and our link line already passes `/OPT:NOICF`. The measured
+  conclusion below is about how RETAIL was linked, not about what the toolchain
+  can do; nothing downstream changes, because every use of it only needs "retail
+  did not fold", which the 574 duplicates establish directly. So:
   - **Do NOT force `/OPT:ICF`** and **do NOT model COMDAT folding** when
     reproducing the link — duplicated identical bodies are expected to remain
     separate.
