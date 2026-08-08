@@ -89,7 +89,23 @@ Everything past it is directory bodies. That is why it is less than
 
 ### `largest_*` are `max(strlen) + 1` over *present* strings
 
-They are maxima over what was written, not limits. Measured:
+They are maxima over what was written, not limits — and retail says so itself.
+The second `Open` overload @0x13b0c0, which merges an additional archive into an
+open manager, reads the newcomer's header and folds each of the four fields in
+with a `max`:
+
+```
+mov eax,[esp+0xab]      ; the new header's largest_key_ary        (buf+0x97)
+cmp eax,[ebx+0x54]      ; ... against the manager's
+jbe  +                  ; keep the larger
+mov [ebx+0x54],eax
+                        ; then the same for buf+0x9b, +0x9f, +0xa3
+```
+
+That also confirms, independently of the primary parse, which header offset maps
+to which field.
+
+Measured:
 
 * longest directory name in `Gruntz.REZ` is 20 (`largest_dir_name_size` 21);
   in the VRZ 17 (18); in the demo 20 (21).
@@ -213,10 +229,13 @@ anything that does call `Load` (the level editor, `RezComp`, a later Monolith
 title). `gruntz-rez` lays out contiguously and earns the flag rather than
 asserting it.
 
-`mgr->open_file_count <= 1` is the second half of the same idea: the mgr
-increments a counter per opened archive (@0x13ad0c, @0x13aefe) and the second
-`Open` overload @0x13b0c0 forces `is_sorted = 0`, because a merged multi-file
-view has no single file to slurp from.
+`mgr->open_file_count <= 1` is the second half of the same idea: the manager
+increments a counter per opened archive (@0x13ae0c, @0x13aefe, @0x13b13e) and
+the second `Open` overload @0x13b0c0 sets `is_sorted = 0` on its very first
+statement, because a merged multi-file view has no single file to slurp a
+directory from. The default in the constructor @0x13aa10 is 1, so an archive
+created by `CRezMgr` and never merged into claims the flag; that is where the
+shipped `1` comes from.
 
 ## Why we cannot be byte-identical
 

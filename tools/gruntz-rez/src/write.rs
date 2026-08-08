@@ -454,12 +454,16 @@ fn emit(p: &mut Placed<'_, '_>, out: &mut Vec<u8>) -> Result<(), WriteError> {
 
 /// The four `largest_*` header fields.
 ///
-/// They are maxima over what was written, not limits. Measured against all
-/// three shipped archives, each name field is `max(strlen) + 1` — the buffer
-/// retail allocates for the string, NUL included (retail `Gruntz.REZ`: longest
-/// directory name 20 -> 21, longest resource name 24 -> 25). `largest_comment`
-/// is 0 there while every comment is the empty string, which fixes the other
-/// half of the rule: an absent (empty) string does not participate.
+/// They are maxima over what was written, not limits — retail's merge path says
+/// so directly: the second `Open` overload @0x13b0c0 folds an additional
+/// archive's four fields into the manager's with `max` (0x13b276..0x13b2b7).
+///
+/// Measured against all three shipped archives, each name field is
+/// `max(strlen) + 1` — the buffer retail allocates for the string, NUL included
+/// (retail `Gruntz.REZ`: longest directory name 20 -> 21, longest resource name
+/// 24 -> 25). `largest_comment` is 0 there while every comment is the empty
+/// string, which fixes the other half of the rule: an absent (empty) string
+/// does not participate.
 ///
 /// `largest_key_ary` is written as the largest **element count**. With no
 /// archive carrying a key array, count-versus-bytes is undetermined; it is
