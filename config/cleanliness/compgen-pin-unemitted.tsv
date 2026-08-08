@@ -1,0 +1,11 @@
+# RVA_COMPGEN pins cl does not emit in their own TU. Gated by
+# gruntz.audit.compgen_pins --gate: a pin NOT listed here is FATAL, because a
+# dropped pin silently removes a compiler-generated body from the scored
+# universe and surfaces only as the README's anonymous (unmatched) row.
+#
+# A row here is an EMISSION problem, never a matching one: the body is
+# compiler-generated and byte-correct the moment cl emits it.
+#
+# rva	symbol	reason
+0x00101fa0	??0CSBI_RectOnly@@QAE@XZ	No obj emits it. Retail has BOTH this out-of-line ctor COMDAT and inline expansions at the four Build*/LoadTabSprites sites; cl gives us only the inlines. Forcing emission was measured: the COMDAT lands at 100.00 but nothing then emits ??0CStatusBarItem@@QAE@XZ, so 0x1005d0's pin dangles instead (claim count a wash) and BuildStatusBarTabs 71.58 -> 69.24, BuildGameMenu 72.33 -> 66.93. Needs the force-a-COMDAT device.
+0x000d5d70	??1CLoadable@@UAE@XZ	Emitted by 11 objs, none of them cimagecomdats - but 0xd5d70 lies INSIDE that TU's own RVA band (0xd5c10 CState::DrawScreenTextImage .. 0xd5da0 CWapObj::IsReady), so the pin cannot simply move without breaking TU contiguity. ~CLoadable is a header inline in Loadable.h; cl inlines it here and emits no COMDAT. Same force-a-COMDAT device as the row above.

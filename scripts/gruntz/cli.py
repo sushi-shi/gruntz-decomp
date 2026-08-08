@@ -508,6 +508,10 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.label_style", ["--gate"],
           "label-style ratchet violated - spell the label canonically "
           "(python -m gruntz.audit.label_style)", "normal")
+    _gate("gruntz.audit.compgen_pins", ["--gate"],
+          "compgen-pin ratchet violated - an RVA_COMPGEN pin is not emitted by its "
+          "own TU, so a compiler-generated body silently left the scored universe "
+          "(python -m gruntz.audit.compgen_pins)", "normal")
     _gate("gruntz.audit.view_typedef", ["--ratchet"],
           "view-typedef ratchet violated - delete the alias typedef and use the real "
           "class name (python -m gruntz.audit.view_typedef)", "normal")

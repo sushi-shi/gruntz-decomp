@@ -107,7 +107,7 @@ dialogs	57	54
 dircellmethods	19	18
 directdrawmgr	68	67
 directinputmgr2	45	45
-directsoundmgr	75	71
+directsoundmgr	76	72
 donothing	7	6
 droppedobject	26	23
 engstrrendertext	1	0
@@ -1493,6 +1493,7 @@ directsoundmgr	??0SoundDevice@@QAE@XZ	100.0000	100.0000	4	2b76d7d766f0	0x136440	
 directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	2	c1840ba484d2	0x136260	100.0000
 directsoundmgr	??1DSoundCloneInst@@UAE@XZ	100.0000	100.0000	5	810f5ec59d9b	0x135bb0	100.0000
 directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	2	25a0537188d4	0x135300	100.0000
+directsoundmgr	??1PureSoundElem@@QAE@XZ	100.0000	100.0000	1	cpp:596e1e9359c9	0x137330	100.0000
 directsoundmgr	??1SoundDevice@@UAE@XZ	100.0000	100.0000	2	629e4e8d59c6	0x136500	100.0000
 directsoundmgr	??_GDSoundBaseSub@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7a05020af994	0x136210	100.0000
 directsoundmgr	??_GDSoundCloneInst@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7a05020af994	0x135b80	100.0000

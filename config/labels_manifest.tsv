@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 342  functions: 4536
+# units: 342  functions: 4537
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -87,7 +87,7 @@ dialogs	57
 dircellmethods	19
 directdrawmgr	68
 directinputmgr2	45
-directsoundmgr	75
+directsoundmgr	76
 donothing	9
 droppedobject	29
 engstrrendertext	1

@@ -1420,3 +1420,5 @@ IDirectSoundBuffer* SoundDevice::GetPrimary() {
     }
     return m_primaryBuffer;
 }
+
+RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)

@@ -26,8 +26,6 @@ i32 g_ssBeepEnabled;
 DATA(0x00253c58)
 i32 g_ssThirdEnabled;
 
-RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)
-
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(CParseSource* src, u32 off, u32 len) {
     if (src == NULL) {
