@@ -266,7 +266,7 @@ play	91	64
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
-projectile	20	12
+projectile	20	13
 queuedrainhost	1	1
 raincloud	5	5
 registryhelper	11	11
@@ -887,7 +887,7 @@ customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	2	f
 customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	7	d6347be95dcf	0x3b600	100.0000
 customworlddialog	?FillCustomLevelList@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	f6e5cb785d3e	0x3af90	100.0000
 customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	10	6f8b0a5a3d07	0x3b1a0	100.0000
-customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	3	e71e2eebd57b	0x3bb50	83.2887
+customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	88.2371	88.2371	4	a8e2acdd7cd2	0x3bb50	88.2371
 customworlddialog	?LoadCustomWorldInfo@@YAHPAUHWND__@@@Z	100.0000	100.0000	10	0d6cf19d8f5b	0x3b7c0	100.0000
 customworlddialog	?LoadCustomWorldSelection@@YAHPAUHWND__@@@Z	100.0000	100.0000	9	9d8b2b73487d	0x3b310	100.0000
 customworlddialog	?RunCustomWorldDialog@@YA?AVCString@@PAUHWND__@@PAV1@@Z	95.7143	95.7143	3	456fd9a3543b	0x3ad90	95.7143
@@ -2716,12 +2716,12 @@ leafcueplay	?PlayIfElapsed@LeafCue@@QAEHHHHH@Z	100.0000	100.0000	4	c90ce49ad54e	
 levelplane	??0CDDrawWorkerHost@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	8	8b72414685f5	0x1615a0	100.0000
 levelplane	??1CWwdGridIter@@UAE@XZ	100.0000	100.0000	1	cpp:beb80a54ab0d	0x163a10	100.0000
 levelplane	??1CWwdSpatialMgr@@QAE@XZ	100.0000	100.0000	1	ddb32f57ee4d	0x163a40	100.0000
-levelplane	?ActivateVisibleObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	3	d6a29dd0ab49	0x163300	100.0000
+levelplane	?ActivateVisibleObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	99.9286	3	d6a29dd0ab49	0x163300	100.0000
 levelplane	?Build@CDDrawWorkerHost@@QAEXPAUtagRECT@@@Z	100.0000	100.0000	3	da0c43300391	0x161e80	100.0000
 levelplane	?DeactivateDistantObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	3	b14cae63dd8f	0x163370	100.0000
 levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	81.5202	81.5202	2	77e920b4aa5f	0x162010	81.5202
 levelplane	?GetSize@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	4	0250e4a3f01c	0x1633e0	100.0000
-levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	94.0229	94.0229	5	e2d98ccc7728	0x1619f0	94.0229
+levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	95.8857	95.8857	6	a7b455680437	0x1619f0	95.8857
 levelplane	?InitScrollRects@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	8	ada4398b9be3	0x163420	100.0000
 levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9841	5	204550b2b76f	0x1638c0	100.0000
 levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	4	433149a38dee	0x1628d0	100.0000
@@ -2731,7 +2731,7 @@ levelplane	?RebuildPlanes@CDDrawWorkerHost@@QAEHPBDH@Z	96.6667	96.6667	4	24d8abd
 levelplane	?RecomputePlaneCoords@CDDrawWorkerHost@@QAEXXZ	97.0640	97.0640	6	43399c913269	0x161c90	97.0640
 levelplane	?RegisterNamed@CDDrawWorkerHost@@QAEXDPBD@Z	90.4762	90.4762	6	3dfc9b2170fa	0x161c50	90.4762
 levelplane	?ResolveColorKey@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	11	905a891ac872	0x163670	100.0000
-levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9833	5	ab160211ca7d	0x163780	100.0000
+levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	ab160211ca7d	0x163780	100.0000
 levelplane	?SerializeDispatch@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	fdd17d64825e	0x163710	100.0000
 levelplane	?SetTileSize@CDDrawWorkerHost@@QAEXHH@Z	88.3846	88.3846	1	080526ee1270	0x161f00	88.3846
 levelplane	?SetTileSizeFromImageSet@CDDrawWorkerHost@@QAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	3	fe0fbecdcb29	0x161fa0	100.0000
@@ -3406,7 +3406,7 @@ projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	11	540ccdb30744	0xe
 projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	81.9548	81.9548	3	7e02f3548a59	0xdf050	81.9548
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	9	3a4fa0bb4236	0xe1990	100.0000
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	12	4ac3951951d7	0xdfb00	100.0000
-projectile	?ScanTargets@CProjectile@@QAEXH@Z	95.3731	95.3731	22	4fa935a6826a	0xe0b10	95.3731
+projectile	?ScanTargets@CProjectile@@QAEXH@Z	100.0000	100.0000	23	d3e0bebcd426	0xe0b10	100.0000
 projectile	?SerializeMove@CProjectile@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	94.8191	94.8191	3	ee1d985b5271	0xe0d40	94.8191
 projectile	?SerializeMove@CTimeBomb@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	ef8d09867e68	0xe2080	100.0000
 queuedrainhost	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	4	cacd15498538	0x31250	100.0000
@@ -3773,7 +3773,7 @@ shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	4	f6966bb46107	0x1
 shadetablecache	??_GCShadeTableArray@@UAEPAXI@Z	100.0000	100.0000	1	cpp:098b15f0ad8b	0x150020	100.0000
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@VCString@@@Z	100.0000	100.0000	12	cb6cf16dd4d6	0x14f6c0	100.0000
 shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	100.0000	100.0000	11	b3b68a5ebcd8	0x14f8b0	100.0000
-shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	87.2308	87.2308	11	d54ec0fb9dbf	0x14f080	92.2088
+shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	92.2088	92.2088	11	d54ec0fb9dbf	0x14f080	92.2088
 shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	99.9770	99.9770	2	25fbc91156f9	0x14f5b0	99.9770
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	86.7143	86.7143	5	2f9324d5e2c8	0x14fa60	86.9143
 shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	70.0000	70.0000	6	06cc005eae8c	0x14ed10	70.0000
@@ -3783,13 +3783,13 @@ shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	100.0000	10
 shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	60.9382	60.9382	8	d945e40e8a6f	0x14df40	60.9382
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	5	07578596cabf	0x14ded0	100.0000
 shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	91.1200	91.1200	4	a7b1257d6a2c	0x14e9f0	91.1200
-shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	81.0530	81.0530	11	361c094728dc	0x14eef0	86.8561
+shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	82.2348	82.2348	12	add952648e0b	0x14eef0	86.8561
 shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	84.8486	84.8486	6	0e695c23d37b	0x14e540	84.8486
 shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	100.0000	100.0000	5	f13c118d1e4c	0x14e830	100.0000
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	82e0fd84636f	0x14ede0	100.0000
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	ab2228634a41	0x14dec0	100.0000
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	48a975031cf6	0x14ec00	100.0000
-shadetablecache	?RgbToHsv@@YAPAUColorHSV@@PAU1@I@Z	83.6460	83.6460	3	263925c7d71b	0x14fcc0	83.6460
+shadetablecache	?RgbToHsv@@YAPAUColorHSV@@PAU1@I@Z	83.6460	83.5575	3	263925c7d71b	0x14fcc0	83.6460
 shadetablecache	?Serialize@CShadeTableArray@@UAEXAAVCArchive@@@Z	100.0000	100.0000	8	f17036bc2d6b	0x14fe90	100.0000
 shadetablecache	?SetSizeGrow@CShadeTableArray@@QAEXHH@Z	100.0000	100.0000	7	73aa64fb3661	0x150040	100.0000
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	78.7874	78.7874	11	cb7dd1d250b1	0x14f310	78.7874
