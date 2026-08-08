@@ -983,11 +983,13 @@ void CBattlezDlg::OnPlayerNameKillFocus3() {
     ReadPlayerName(3);
 }
 
-// @early-stop
 RVA(0x00017340, 0x73)
 void CBattlezDlg::ReadPlayerName(i32 index) {
     CString s;
     GetCtrlB(index)->GetWindowText(s);
+    if (strlen(s) == 0) {
+        return;
+    }
 }
 
 RVA(0x000173e0, 0x1)
