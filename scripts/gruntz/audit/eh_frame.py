@@ -31,9 +31,9 @@ tagged (see `cause()`).  Only the last is what the frame naively suggests:
     by-value `CRect`/`CPoint`/MFC collection, a stack helper whose dtor releases
     something.
 
-Measured 2026-08-08 over the 3 presence + 35 state rows: 20 INLINE_CUT, 9
-EXIT_MERGE, 5 MISSING_OBJECT, 4 EXTRA_OBJECT.  Reading the frame as "a destructible
-object" without the split would have sent a lane after 29 phantoms.
+Measured 2026-08-08 over the 3 presence + 35 state rows: 22 INLINE_CUT, 9
+EXIT_MERGE, 5 MISSING_OBJECT, 3 EXTRA_OBJECT.  Reading the frame as "a destructible
+object" without the split would have sent a lane after 31 phantoms.
 
 ## What is detected
 
@@ -216,27 +216,47 @@ def prologue_slot(insns):
 
 
 def teardown_slots(insns):
-    """`D + 8` for every unwind teardown's `mov <D>(%esp), %reg` / `mov %reg, fs:[0]`.
+    """`D + 8 + 4*pops` for every unwind teardown, i.e. the state's BODY displacement.
 
-    That `D` is the registration record's FIRST dword by construction, so it pins
-    the state's displacement at whatever ESP depth the teardown runs at - which the
-    prologue formula cannot know, because cl 5.0 SHRINK-WRAPS callee-saved pushes
+    An unwind path ends `mov <D>(%esp), %reg` / `mov %reg, fs:[0]`, and that `D` is
+    the registration record's FIRST dword by construction - so it pins the state at
+    whatever ESP depth the teardown runs at.  That anchor is needed because the
+    prologue formula cannot see a SHRINK-WRAPPED callee-save
     (`CFontConfig::MeasureLabel` saves ESI inside the first `if`, putting the state
-    at `[esp+0x2c]` where the prologue says `[esp+0x28]`).  cl interleaves the
-    epilogue pops and the return-value load between the two halves, so the scan is
-    a short backward window rather than an adjacency test."""
+    at `[esp+0x2c]` where the prologue says `[esp+0x28]`).
+
+    But the teardown's own depth is not the body's: cl freely interleaves the
+    epilogue's `pop`s with the load, and every pop that has ALREADY run makes `D`
+    name a shallower address.  `BuildLevelTitleString` pops ESI and EDI before the
+    load on our side and after it in retail - identical code, `0x384dc` against
+    `0x384e4` - which reads as a two-state difference if the pops are ignored.  So
+    count the pops between the start of the epilogue block and the load, and add
+    them back."""
     out = set()
     for i, (_, mn, op) in enumerate(insns):
         if not (mn.startswith("mov") and FS_RESTORE.match(op) and not FS_STORE.match(op)):
             continue
         reg = op.split(",")[0].strip()
-        for _, m2, o2 in reversed(insns[max(0, i - 6):i]):
-            if not m2.startswith("mov") or o2.rsplit(",", 1)[-1].strip() != reg:
+        # walk back to the top of this epilogue block, remembering where the load of
+        # `prev` was and how many pops preceded it
+        m, pops, load = None, 0, None
+        for j in range(i - 1, max(-1, i - 24), -1):
+            _, mj, oj = insns[j]
+            if mj.startswith(("call", "j", "ret", "loop")):
+                break
+            if mj.startswith("pop"):
+                pops += 1 if load is not None else 0
                 continue
-            m = ESP_MEM.match(o2.split(",")[0].strip())
-            if m:
-                out.add(int(m.group(1), 16) + 8)
-            break
+            if load is None and mj.startswith("mov") and \
+                    oj.rsplit(",", 1)[-1].strip() == reg:
+                m = ESP_MEM.match(oj.split(",")[0].strip())
+                load = j
+                if m is None:
+                    break
+        if load is not None and m is not None:
+            d = int(m.group(1), 16) + 8 + 4 * pops
+            if d >= 0:
+                out.add(d)
     return out
 
 

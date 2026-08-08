@@ -47,6 +47,6 @@ this way and both manufactured `±1` rows: reading only immediate state stores m
 stores.
 
 Tree-wide 2026-08-08: 750 EH-framed target functions, 3 presence mismatches (all
-INLINE_CUT, all `CStatusBarMgr`) and 35 state-count rows — 20 INLINE_CUT, 9 EXIT_MERGE,
-5 MISSING_OBJECT, 4 EXTRA_OBJECT. Presence is closed; without the cause split a lane
-would have gone after 29 phantom objects.
+INLINE_CUT, all `CStatusBarMgr`) and 35 state-count rows — 22 INLINE_CUT, 9 EXIT_MERGE,
+5 MISSING_OBJECT, 3 EXTRA_OBJECT. Presence is closed; without the cause split a lane
+would have gone after 31 phantom objects.
