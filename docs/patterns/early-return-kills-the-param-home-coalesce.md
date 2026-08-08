@@ -63,11 +63,21 @@ llvm-objdump -d --no-show-raw-insn build/probe/p.obj
 Each compile is ~2 s, so a five-way bisect of the statements ahead of the local costs
 less than one build of the real tree and gives a categorical answer.
 
-**Not every param-home difference is this.** When retail and your build BOTH use param
-homes but assign different variables to them (`CWarpStoneFly::Init` 0x109bd0: retail
-homes a delta scalar in `fragment`'s slot and `dist2` in `owner`'s, we do the reverse),
-that is a placement permutation and the guard inversion makes it worse (91.33 -> 82.26,
-reverted). Check WHICH variable is in the home before reaching for this.
+## Two ways to be wrong about this - check both BEFORE inverting
+
+1. **Both sides already use param homes, just for different variables.** That is a
+   placement permutation, not a suppressed coalesce, and the inversion makes it worse:
+   `CWarpStoneFly::Init` 0x109bd0 (retail homes a delta scalar in `fragment`'s slot and
+   `dist2` in `owner`'s; we do the reverse) went 91.33 -> 82.26, reverted. Read WHICH
+   variable is in the home first.
+2. **Retail genuinely wants the early return.** Count the `ret`s / read the exit tails
+   before inverting - `rets()` in `gruntz.core.branches`, or
+   `gruntz sema disasm <rva> --branches --diff`. `CPlay::DrawCursorSaveUnder` 0xd0b30
+   has the same call+early-return+DDSCAPS shape, but retail emits a SEPARATE early-exit
+   epilogue (`jne` into its own `xor eax,eax` / pops / `ret 4`); inverting the guard
+   merges that tail away and cost 99.99 -> 90.57, reverted. Same caveat as
+   [positive-gate-enables-shrink-wrap.md](positive-gate-enables-shrink-wrap.md): count
+   the rets first.
 
 related: positive-gate-enables-shrink-wrap.md, frame-size-counts-the-locals.md,
 return-inside-dtor-scope-splits-the-exit-tails.md
