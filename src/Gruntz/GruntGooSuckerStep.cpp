@@ -207,101 +207,101 @@ L_ed006b:
     }
 
 L_scanb:
-    if (CoordCount() != 0) {
-        Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
-        i32 col = coord->m_x;
-        i32 row = coord->m_y;
-        if (CellTargetable(col, row) != 0) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
-                (row << TILE_SHIFT_PX) + TILE_HALF_PX
-            );
-            SetEntrancePos(1, 1);
-            m_dwell = 0;
+    if (CoordCount() == 0) {
+        if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
+            return 1;
         }
-        return 1;
-    }
-    if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
-        return 1;
-    }
 
-    i32 r = m_defenderRadius;
-    RECT box;
-    box.left = cx - r;
-    box.right = cx + r;
-    box.top = cy - r;
-    box.bottom = cy + r;
-    RECT gb;
-    gb.left = 0;
-    gb.top = 0;
-    gb.right = grid->m_width;
-    gb.bottom = grid->m_height;
-    RECT isect;
-    if (!IntersectRect(&isect, &box, &gb)) {
-        isect = box;
-    }
-    GRID_CLIP_INL(grid, &isect);
+        i32 r = m_defenderRadius;
+        RECT box;
+        box.left = cx - r;
+        box.right = cx + r;
+        box.top = cy - r;
+        box.bottom = cy + r;
+        RECT gb;
+        gb.left = 0;
+        gb.top = 0;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
+        RECT isect;
+        if (!IntersectRect(&isect, &box, &gb)) {
+            isect = box;
+        }
+        GRID_CLIP_INL(grid, &isect);
 
-    i32 best = INT_MAX;
-    i32 bestX = 0;
-    i32 bestY = 0;
+        i32 best = INT_MAX;
+        i32 bestX = 0;
+        i32 bestY = 0;
 
-    POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
-    while (pos != NULL) {
-        CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
-        if (gg->m_pending == 0) {
-            i32 gx = gg->m_tileX;
-            i32 gy = gg->m_tileY;
-            if (RectContains(
-                    (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (gy << TILE_SHIFT_PX) + TILE_HALF_PX
-                )
-                != 0) {
-                m_tileMgr->ApplyTriggerA(
-                    m_tileOwnerHi,
-                    m_tileOwnerLo,
-                    (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (gy << TILE_SHIFT_PX) + TILE_HALF_PX
-                );
-                GRID_RECT_BOUNDS(grid);
-                return 1;
-            }
-            i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-            dx = abs(dx);
-            i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
-            i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
-            if (dist < best) {
-                POINT pt;
-                pt.x = gx;
-                pt.y = gy;
-                if (PtInRect(&isect, pt)) {
-                    best = dist;
-                    bestX = gx;
-                    bestY = gy;
+        POSITION pos = m_tileMgr->m_baseList.GetHeadPosition();
+        while (pos != NULL) {
+            CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_tileMgr->m_baseList.GetNext(pos));
+            if (gg->m_pending == 0) {
+                i32 gx = gg->m_tileX;
+                i32 gy = gg->m_tileY;
+                if (RectContains(
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                    )
+                    != 0) {
+                    m_tileMgr->ApplyTriggerA(
+                        m_tileOwnerHi,
+                        m_tileOwnerLo,
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                    );
+                    GRID_RECT_BOUNDS(grid);
+                    return 1;
+                }
+                i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
+                dx = abs(dx);
+                i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
+                i32 dist = ((dy ^ (dy >> 31)) - (dy >> 31)) + dx;
+                if (dist < best) {
+                    POINT pt;
+                    pt.x = gx;
+                    pt.y = gy;
+                    if (PtInRect(&isect, pt)) {
+                        best = dist;
+                        bestX = gx;
+                        bestY = gy;
+                    }
                 }
             }
         }
-    }
-    if (best != INT_MAX) {
-        i32 dx = bestX - cx;
-        dx = abs(dx);
-        i32 dy = bestY - cy;
-        dy = abs(dy);
-        if (dx <= 1 && dy <= 1) {
-            m_tileMgr->ApplyTriggerA(
-                m_tileOwnerHi,
-                m_tileOwnerLo,
-                (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
-                (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
-            );
-            SetEntrancePos(1, 1);
-        } else {
-            TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+        if (best != INT_MAX) {
+            i32 dx = bestX - cx;
+            dx = abs(dx);
+            i32 dy = bestY - cy;
+            dy = abs(dy);
+            if (dx <= 1 && dy <= 1) {
+                m_tileMgr->ApplyTriggerA(
+                    m_tileOwnerHi,
+                    m_tileOwnerLo,
+                    (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
+                );
+                SetEntrancePos(1, 1);
+            } else {
+                TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+            }
         }
+        GRID_RECT_INLINE(grid);
+    } else {
+        Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
+        if (CellTargetable(col, row) == 0) {
+            return 1;
+        }
+        m_tileMgr->ApplyTriggerA(
+            m_tileOwnerHi,
+            m_tileOwnerLo,
+            (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (row << TILE_SHIFT_PX) + TILE_HALF_PX
+        );
+        SetEntrancePos(1, 1);
     }
-    GRID_RECT_INLINE(grid);
     m_dwell = 0;
     return 1;
 }
