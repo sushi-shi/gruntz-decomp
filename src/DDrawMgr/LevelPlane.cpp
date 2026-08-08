@@ -239,8 +239,15 @@ i32 CDDrawWorkerHost::InitGeometry(
     for (i32 i = 0; i < m_gridH; i++) {
         m_colOffsets[i] = i * m_gridW;
     }
-    m_scaledX = 0;
-    m_scaledY = 0;
+    // Read()'s parallax tail with a literal (0,0) origin: cl folds both arms to the same
+    // zero store and keeps only retail's branchless `mov al,[m_flags]; test al,1`.
+    if ((m_flags & 1) == 0) {
+        m_scaledX = 0.0f * m_scaleX;
+        m_scaledY = 0.0f * m_scaleY;
+    } else {
+        m_scaledX = 0.0f;
+        m_scaledY = 0.0f;
+    }
     RecomputePlaneCoords();
     return 1;
 }
