@@ -301,6 +301,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
     return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
 
+RVA_COMPGEN(0x001051d0, 0x1e, ??_GCSBI_SideTab@@UAEPAXI@Z)
 RVA(0x00105200, 0x55)
 CSBI_SideTab::~CSBI_SideTab() {
     Reset();

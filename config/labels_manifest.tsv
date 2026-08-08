@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 342  functions: 4529
+# units: 342  functions: 4533
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -59,7 +59,7 @@ cimagecomdats	8
 cmdscrollapply	3
 creditsstate	40
 creditzassets	1
-cremusnode	3
+cremusnode	4
 cursorsnapactreg	2
 cursorsnapsprite	7
 customleveldlg	4
@@ -169,7 +169,7 @@ gruntwingztimesprite	5
 gruntzapp	14
 gruntzcmdmgr	46
 gruntzmapmgr	3
-gruntzmgr	178
+gruntzmgr	179
 gruntzmgrcmd	1
 gruntzplayer	17
 gruntzsoundz	36
@@ -268,10 +268,10 @@ sbi_imagesetani	5
 sbi_menuitem	11
 sbi_rectonly	98
 sbi_rectonlybase	3
-sbi_sidetab	7
+sbi_sidetab	8
 sbi_sidetab_build	1
 sbi_statztabarrow	3
-sbi_statztabarrow_eh	1
+sbi_statztabarrow_eh	2
 sbi_statztabgruntbar	6
 sbi_tabzdialog_eh	2
 sbi_warlordhead	7

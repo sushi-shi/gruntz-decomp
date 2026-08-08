@@ -79,7 +79,7 @@ cimagecomdats	8	8
 cmdscrollapply	3	2
 creditsstate	20	18
 creditzassets	1	1
-cremusnode	3	3
+cremusnode	4	4
 cursorsnapactreg	2	2
 cursorsnapsprite	6	5
 customleveldlg	4	3
@@ -189,7 +189,7 @@ gruntwingztimesprite	4	3
 gruntzapp	14	14
 gruntzcmdmgr	46	41
 gruntzmapmgr	3	2
-gruntzmgr	155	141
+gruntzmgr	156	142
 gruntzmgrcmd	1	0
 gruntzplayer	17	17
 gruntzsoundz	36	35
@@ -288,10 +288,10 @@ sbi_imagesetani	5	3
 sbi_menuitem	11	8
 sbi_rectonly	98	74
 sbi_rectonlybase	3	3
-sbi_sidetab	7	5
+sbi_sidetab	8	6
 sbi_sidetab_build	1	1
 sbi_statztabarrow	3	2
-sbi_statztabarrow_eh	1	1
+sbi_statztabarrow_eh	2	2
 sbi_statztabgruntbar	6	5
 sbi_tabzdialog_eh	2	1
 sbi_warlordhead	7	5
@@ -869,6 +869,7 @@ creditsstate	?SetupTitle@CCreditsState@@QAEHXZ	99.9048	99.9048	9	250a0dd93b45	0x
 creditsstate	?StepVideo@CCreditsState@@QAEHXZ	100.0000	100.0000	6	2cc542b63f6a	0x39c60	100.0000
 creditzassets	?LoadCreditzAssets@CCreditsState@@QAEXXZ	100.0000	100.0000	6	9e9161dc533a	0x39dc0	100.0000
 cremusnode	??0CResolveNode@@QAE@XZ	100.0000	100.0000	12	0919a30dbb9e	0x1549d0	100.0000
+cremusnode	??_GCResolveNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:dfd887302de1	0x154a30	100.0000
 cremusnode	?GetClassId@CLoadable@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	f7751a6d1068	0x154a00	100.0000
 cremusnode	?IsLoaded@CResolveNode@@UAEHXZ	100.0000	100.0000	2	471509acc5d9	0x154a10	100.0000
 cursorsnapactreg	?AdvanceAnim@CCursorSnapSprite@@QAEHXZ	100.0000	100.0000	2	f9a281fe6a22	0x3a910	100.0000
@@ -2277,6 +2278,7 @@ gruntzmgr	??_GCHelpState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e5466afada70	0x8cf00
 gruntzmgr	??_GCMenuState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e5466afada70	0x8ce30	100.0000
 gruntzmgr	??_GCMulti@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e5466afada70	0x8d240	100.0000
 gruntzmgr	??_GCPlay@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e5466afada70	0x8c9a0	100.0000
+gruntzmgr	??_GCRgn@@UAEPAXI@Z	100.0000	100.0000	1	cpp:78d4b5cb3f05	0x8c3d0	100.0000
 gruntzmgr	??_GCSplashState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e5466afada70	0x8cfd0	100.0000
 gruntzmgr	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:63ebd6ae8453	0x8c710	100.0000
 gruntzmgr	?AccrueScoreTime@CGruntzMgr@@QAEXXZ	100.0000	100.0000	16	1fd5ed17537c	0x861e0	100.0000
@@ -3674,6 +3676,7 @@ sbi_rectonlybase	?Refresh@CSBI_RectOnly@@UAEHH@Z	100.0000	100.0000	1	09a4412d68b
 sbi_rectonlybase	?Reset@CSBI_RectOnly@@UAEXXZ	100.0000	100.0000	1	e5dedd6092ab	0xe8760	100.0000
 sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	100.0000	100.0000	2	a3fbf9ace1cd	0xe86e0	100.0000
 sbi_sidetab	??1CSBI_SideTab@@UAE@XZ	100.0000	100.0000	1	640619ca6550	0x105200	100.0000
+sbi_sidetab	??_GCSBI_SideTab@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8ee529168ea2	0x1051d0	100.0000
 sbi_sidetab	?BuildHandle@CSBI_SideTab@@QAEHXZ	86.0101	86.0101	13	8fc02dce08da	0xe9850	86.0101
 sbi_sidetab	?BuildStatzTabStatusBar@CSBI_SideTab@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHW4StatusSampleMode@@H@Z	80.1866	80.1866	2	ad72651e3979	0xe9600	80.1866
 sbi_sidetab	?Refresh@CSBI_SideTab@@UAEHH@Z	100.0000	100.0000	1	359b97a7b4d7	0xe9820	100.0000
@@ -3685,6 +3688,7 @@ sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCS
 sbi_statztabarrow	?SetDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	1	c20629687f0d	0xea0f0	100.0000
 sbi_statztabarrow	?SetDirectionAlt@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	1	ddf113076fd2	0xea170	100.0000
 sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	4	9cffdff857da	0x1048f0	100.0000
+sbi_statztabarrow_eh	??_GCSBI_StatzTabArrow@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cec1613c22	0x1048c0	100.0000
 sbi_statztabgruntbar	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	526d272501bb	0x104b00	100.0000
 sbi_statztabgruntbar	??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2ccdbfd870e6	0x104ad0	100.0000
 sbi_statztabgruntbar	?Refresh@CSBI_StatzTabGruntBar@@UAEHH@Z	100.0000	100.0000	2	efb04eaf49eb	0xea4b0	100.0000

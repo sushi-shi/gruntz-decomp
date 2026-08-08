@@ -312,6 +312,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
     }
 }
 
+RVA_COMPGEN(0x0008c3d0, 0x1e, ??_GCRgn@@UAEPAXI@Z)
 RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
 
 RVA(0x0008c530, 0x8)
