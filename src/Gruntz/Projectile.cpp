@@ -569,10 +569,6 @@ step:
     }
 }
 
-// @early-stop
-// Only residue: the do-while's exit shares the void-return epilogue with the three
-// early returns in its body; retail emits its own copy. See
-// docs/patterns/retail-duplicates-small-return-epilogues.md
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 tileY = 0;
@@ -584,7 +580,7 @@ void CProjectile::ScanTargets(i32 impact) {
     i32 rowBase = 0;
     i32 colOff;
     i32 col;
-    do {
+    while (rowBase < 0x3c) {
         col = 0;
         colOff = rowBase;
         for (; col < 0xf; col++, colOff++) {
@@ -652,7 +648,7 @@ void CProjectile::ScanTargets(i32 impact) {
         }
         tileY++;
         rowBase += 15;
-    } while (rowBase < 0x3c);
+    }
 }
 
 // @early-stop
