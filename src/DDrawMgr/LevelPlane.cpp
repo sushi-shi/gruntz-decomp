@@ -208,20 +208,16 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_anchorX = m_viewW / 2;
     m_anchorY = m_viewH / 2;
     m_shiftX = 0;
-    if (tileW > 1) {
-        i32 v = tileW;
-        do {
-            v >>= 1;
-            m_shiftX = m_shiftX + 1;
-        } while (v > 1);
+    i32 v = tileW;
+    while (v > 1) {
+        v >>= 1;
+        m_shiftX = m_shiftX + 1;
     }
     m_shiftY = 0;
-    if (tileW > 1) {
-        i32 v = tileW;
-        do {
-            v >>= 1;
-            m_shiftY = m_shiftY + 1;
-        } while (v > 1);
+    v = tileW;
+    while (v > 1) {
+        v >>= 1;
+        m_shiftY = m_shiftY + 1;
     }
     if (name != NULL) {
         strcpy(m_name, name);

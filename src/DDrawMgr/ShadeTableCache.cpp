@@ -424,13 +424,15 @@ CShadeTable* CShadeTableCache::GreyTable() {
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
         for (i32 v = 0; v < 0x10000; v++) {
             *out++ = static_cast<u16>(
-                ((((static_cast<u8>((v >> 0xb)) << 4) + ((v >> 6) & 0xf)) << 4) + ((v >> 1) & 0xf))
+                ((((static_cast<u8>((v >> 0xb)) << 4) + static_cast<u8>((v >> 6) & 0xf)) << 4)
+                 + static_cast<u8>((v >> 1) & 0xf))
             );
         }
     } else {
         for (i32 v = 0; v < 0x10000; v++) {
             *out++ = static_cast<u16>(
-                ((((static_cast<u8>((v >> 0xc)) << 4) + ((v >> 7) & 0xf)) << 4) + ((v >> 1) & 0xf))
+                ((((static_cast<u8>((v >> 0xc)) << 4) + static_cast<u8>((v >> 7) & 0xf)) << 4)
+                 + static_cast<u8>((v >> 1) & 0xf))
             );
         }
     }
