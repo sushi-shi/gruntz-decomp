@@ -286,7 +286,7 @@ sbi_image	5	4
 sbi_imageset	6	4
 sbi_imagesetani	5	3
 sbi_menuitem	11	9
-sbi_rectonly	98	72
+sbi_rectonly	98	74
 sbi_rectonlybase	3	3
 sbi_sidetab	7	5
 sbi_sidetab_build	1	1
@@ -1849,7 +1849,7 @@ gamelevel	?MoveFalling@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	81.7834	81.7834	3	f
 gamelevel	?MoveGrounded@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	97.6101	97.6101	3	39f98178f764	0x15e130	97.6101
 gamelevel	?MovePlane@CGameLevel@@AAEHHH@Z	100.0000	100.0000	5	bb5cf27bc1b0	0x15dbe0	100.0000
 gamelevel	?MoveRising@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	4	0a7ffb70c6b2	0x15e4b0	100.0000
-gamelevel	?MoveToward@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	76.0210	76.0210	5	6758d255b60b	0x15de40	76.0210
+gamelevel	?MoveToward@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	78.0070	78.0070	6	5a97f02958b5	0x15de40	78.0070
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	9	aad9131c1ad4	0x160f40	100.0000
 gamelevel	?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z	100.0000	100.0000	2	984578c48f22	0x6b330	100.0000
 gamelevel	?ProbeColumn@CGameLevel@@QAE?AW4TileCollisionKind@@PAUCGameObject@@H@Z	100.0000	100.0000	1	8f0661447f93	0x160980	100.0000
@@ -2027,7 +2027,7 @@ gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	4	b7
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	79.9686	79.9686	23	b56581237ba3	0x65630	79.9686
 gruntentrancearrival	?StepArrivalCommitA@CGrunt@@QAEHXZ	100.0000	100.0000	15	17bbb18bc427	0x65300	100.0000
 gruntentrancearrival	?StepArrivalCommitB@CGrunt@@QAEHXZ	100.0000	100.0000	14	eeaa13022c66	0x654b0	100.0000
-gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	85.0382	85.0382	21	a4f2f5aa0309	0x63b60	85.0382
+gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	95.3758	95.3758	22	56077bcde847	0x63b60	95.3758
 gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	98.7612	98.7612	13	8786209e6861	0x61cb0	98.7612
 gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	84.0906	84.0906	6	10b031ec9603	0x646b0	84.0906
 gruntentrancearrival	?StepEntranceReinit@CGrunt@@QAEHXZ	90.1838	90.1838	19	aff664c1903d	0x637a0	90.1838
@@ -3601,7 +3601,7 @@ sbi_rectonly	?GetActiveValue@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	2	bc82aa36b
 sbi_rectonly	?HideRect@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	848e533375d4	0xfe600	100.0000
 sbi_rectonly	?HitTest@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	8	036694ef97e7	0x105280	100.0000
 sbi_rectonly	?HitTestLayer@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	3	e5e0d48113ea	0xfe8a0	100.0000
-sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	95.2717	95.2717	6	528d36fef03d	0xffcb0	95.2717
+sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	100.0000	100.0000	7	2e1eec4ddaec	0xffcb0	100.0000
 sbi_rectonly	?HlClickGroup0@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	a6227cbdebb6	0x10b5d0	100.0000
 sbi_rectonly	?HlClickGroup1@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	d8a768d2f0db	0x10b6f0	100.0000
 sbi_rectonly	?HlClickGroup2@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	8c95f564f237	0x10b810	100.0000
@@ -3641,7 +3641,7 @@ sbi_rectonly	?SetMode@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	e41646ec2606	0x
 sbi_rectonly	?SetSpritePos@CStatusBarMgr@@QAEHHH@Z	96.6875	96.6875	5	093753cbee0c	0xfe860	96.6875
 sbi_rectonly	?SetState@CStatusBarMgr@@QAEHW4StatusBarDock@@@Z	100.0000	100.0000	1	042261c6486c	0xfe3e0	100.0000
 sbi_rectonly	?SetTab@CStatusBarMgr@@QAEHW4GameTabContent@@H@Z	100.0000	100.0000	1	2fb892ed4e7c	0x1020a0	100.0000
-sbi_rectonly	?SetTabState@CStatusBarMgr@@QAEHW4SbiCommandId@@W4SbiMenuItemState@@@Z	88.5293	88.5293	1	d4c0a1026ce6	0x100d70	88.5293
+sbi_rectonly	?SetTabState@CStatusBarMgr@@QAEHW4SbiCommandId@@W4SbiMenuItemState@@@Z	100.0000	100.0000	2	2e6b5121c31d	0x100d70	100.0000
 sbi_rectonly	?StartChipMachineCycle@CStatusBarMgr@@QAEHXZ	96.2732	96.2732	3	f4625beffacf	0x107d00	96.2732
 sbi_rectonly	?Sync@CStatusBarMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	90.4315	90.4315	1	fd7bc9a96e86	0x1084d0	90.4315
 sbi_rectonly	?Teardown@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	6fa52f359d85	0xfe350	100.0000
