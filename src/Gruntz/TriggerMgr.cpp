@@ -163,44 +163,45 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
         } while (k != 0);
     }
     POSITION pos = m_recList.GetHeadPosition();
-    if (pos == NULL) {
-        return 0;
-    }
-    POSITION cur;
-    i32* p;
-    do {
-        cur = pos;
-        p = static_cast<i32*>(m_recList.GetNext(pos));
-        if (p[0] == x && p[1] == y) {
-            goto found;
+    while (pos != NULL) {
+        POSITION cur = pos;
+        Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
+        if (p->m_x == x && p->m_y == y) {
+            if (m_recList.GetCount() == 1) {
+                StopPendingFx();
+            }
+            CGrunt* cell = m_grid[y + x * TM_GRID_COLS];
+            if (cell != NULL) {
+                (static_cast<CGrunt*>(cell))->ClearAllSprites();
+            }
+            i32 px = p->m_x;
+            i32 py = p->m_y;
+            if (px == m_recordPosition.m_x && py == m_recordPosition.m_y) {
+                CWwdGameObjectA* goal = m_goal;
+                if (goal != NULL) {
+                    goal->m_flags |= 0x10000;
+                    m_goal = NULL;
+                }
+                m_armed = 0;
+            }
+            CActionOptionsMenuBar* ov = m_overlay;
+            if (ov != NULL) {
+                i32 qx = p->m_x;
+                i32 ax = ov->m_gridX;
+                i32 qy = p->m_y;
+                i32 ay = ov->m_gridY;
+                if (ax == qx && ay == qy) {
+                    OverlayTick();
+                }
+            }
+            CoordPoolNode* slot = g_coordPool.NodeOf(p);
+            slot->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = slot;
+            m_recList.RemoveAt(cur);
+            return 1;
         }
-    } while (pos != NULL);
+    }
     return 0;
-found:
-    if (m_recList.GetCount() == 1) {
-        StopPendingFx();
-    }
-    CGrunt* cell = m_grid[y + x * TM_GRID_COLS];
-    if (cell != NULL) {
-        (static_cast<CGrunt*>(cell))->ClearAllSprites();
-    }
-    if (m_recordPosition.m_x == p[0] && m_recordPosition.m_y == p[1]) {
-        CWwdGameObjectA* goal = m_goal;
-        if (goal != NULL) {
-            goal->m_flags |= 0x10000;
-            m_goal = NULL;
-        }
-        m_armed = 0;
-    }
-    CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != NULL && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
-        OverlayTick();
-    }
-    CoordPoolNode* slot = g_coordPool.NodeOf(p);
-    slot->m_next = g_coordPool.m_freeHead;
-    g_coordPool.m_freeHead = slot;
-    m_recList.RemoveAt(cur);
-    return 1;
 }
 
 RVA(0x00078430, 0x7f)
@@ -2539,16 +2540,14 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
     return best;
 }
 
-// @early-stop
 RVA(0x0007d2a0, 0x64)
 i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
     if (key != g_curPlayer) {
         return 0;
     }
     i32 result = 0;
-    i32 i = 0;
     CPtrList* list = m_selLists;
-    do {
+    for (i32 i = 0; i < 10; i++, list++) {
         POSITION pos = list->GetHeadPosition();
         while (pos != NULL) {
             i32* payload = static_cast<i32*>(list->GetNext(pos));
@@ -2559,9 +2558,7 @@ i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
                 result = i;
             }
         }
-        i++;
-        list++;
-    } while (i < 10);
+    }
     return result;
 }
 
