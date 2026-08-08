@@ -59,7 +59,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     i32 cell = unit->m_arrivalCell.m_x;
     if (cell >= 0 && cell < 4) {
         recA = &m_ctx->m_options[cell];
-        cfgB = &m_ctx->m_options[cell].m_battlezConfig;
+        cfgB = &recA->m_battlezConfig;
     }
     if (unit->CoordCount() == 0) {
         if (cell == -1) {
