@@ -88,14 +88,6 @@ static inline i32 TileFlags(const char* rec) {
     return *r.m_dwords;
 }
 
-static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        return 1;
-    }
-    return b->m_rowInts[ty][tx * 7];
-}
-
 static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
@@ -172,15 +164,6 @@ static __inline void SerRecord(CFileMemBase* ar, SerialMode mode, void* p) {
             ar->Read(static_cast<char*>(p) + 8, 8);
             break;
     }
-}
-
-static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        return 1;
-    }
-    return b->m_rowInts[ty][tx * 7];
 }
 
 RVA(0x00050ca0, 0x2b)
@@ -538,7 +521,7 @@ i32 CGrunt::StepCompassMove() {
     i32 moveY = y;
     GruntDirectionCell voice;
 
-    if (s_TileFlags(board, tx, ty) & 0x80) {
+    if (board->CellFlagsAt(tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
         // retail's arrow arms tail-merge into the matching arm of the
@@ -607,7 +590,7 @@ i32 CGrunt::StepCompassMove() {
         }
         i32 mtx = moveX >> TILE_SHIFT_PX;
         i32 mty = moveY >> TILE_SHIFT_PX;
-        i32 tflags = s_TileFlags(board, mtx, mty);
+        i32 tflags = board->CellFlagsAt(mtx, mty);
         if ((tflags & 0x20000000) && !(tflags & 0x80)) {
 
             i32 owner;
@@ -906,7 +889,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     if (m_entranceCommitted == 0) {
         return 1;
     }
-    i32 flags = GruntTileFlags(tileX, tileY);
+    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tileX, tileY);
     if ((flags & 0xd39) || (flags & 0x82)) {
         return 0;
     }

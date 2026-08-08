@@ -159,14 +159,6 @@ DATA(0x0020ee64)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 static const char s_animKeyS[] = "S";
 
-static __inline i32 s_TileFlags(CGruntzMapMgr* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        return 1;
-    }
-    return b->m_rowInts[ty][tx * 7];
-}
-
 void CGrunt::ApplyMoveKind(i32 v) {}
 
 // @early-stop
@@ -1034,8 +1026,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadCellAnimNames(0, 0);
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
-            if (s_TileFlags(
-                    g_gameReg->m_tileGrid,
+            if (g_gameReg->m_tileGrid->CellFlagsAt(
                     m_lastTilePx.m_x >> TILE_SHIFT_PX,
                     m_lastTilePx.m_y >> TILE_SHIFT_PX
                 )

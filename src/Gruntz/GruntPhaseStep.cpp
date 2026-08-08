@@ -41,13 +41,6 @@
 // tile test (out-of-bounds reads back as flag bit 0, which every BRICKZ mask
 // treats as blocked). Declared in MapMgr.h; defined here because the body needs
 // BrickzCell complete.
-inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
-    if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
-        return m_rows[y][x].m_flags;
-    }
-    return 1;
-}
-
 // @early-stop
 // Instruction stream and block skeleton both match 1:1; the frame is 0x64 where
 // retail's is 0x44 because retail's cl overlaid the mirror Coords, the clip

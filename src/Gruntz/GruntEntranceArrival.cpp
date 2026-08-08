@@ -16,6 +16,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
@@ -97,14 +98,6 @@ DATA(0x0020e1f8)
 static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
 DATA(0x0020e1c8)
 static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
-
-static __inline i32 s_TileFlags(CMapMgr* b, i32 tx, i32 ty) {
-    if (static_cast<u32>(tx) >= static_cast<u32>(b->m_width)
-        || static_cast<u32>(ty) >= static_cast<u32>(b->m_height)) {
-        return 1;
-    }
-    return ((b->m_rowInts[ty]))[tx * 7];
-}
 
 // @early-stop
 RVA(0x000616e0, 0xa8)
@@ -1554,8 +1547,7 @@ tail:
                 i32 cy = oh->m_screenY;
                 if (m_neighborScanEnabled != 0 && m_entranceCommitted != 0
                     && RectContains(cx, cy)) {
-                    if (!(s_TileFlags(
-                              g_gameReg->m_tileGrid,
+                    if (!(g_gameReg->m_tileGrid->CellFlagsAt(
                               m_lastTilePx.m_x >> TILE_SHIFT_PX,
                               m_lastTilePx.m_y >> TILE_SHIFT_PX
                           )

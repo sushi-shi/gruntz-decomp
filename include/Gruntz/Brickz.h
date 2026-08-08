@@ -70,4 +70,15 @@ struct BrickzCell {
 };
 SIZE_UNKNOWN();
 
+// The bounds-checked cell-flag read.  cl expands it at every tile test - 22
+// functions across 12 units in retail - and out-of-bounds reads back as flag bit 0,
+// which every BRICKZ mask treats as blocked.  Declared in MapMgr.h; defined here
+// because the body needs BrickzCell complete and Brickz.h is what completes it.
+inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
+    if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
+        return m_rows[y][x].m_flags;
+    }
+    return 1;
+}
+
 #endif // GRUNTZ_BRICKZ_H
