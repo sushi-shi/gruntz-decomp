@@ -2359,32 +2359,34 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     Coord center;
     (static_cast<CUserLogic*>(unit))->GetScreenPos((&center));
     CMapMgr* board = m_board;
-    i32 cx = center.m_x >> TILE_SHIFT_PX;
-    i32 cy = center.m_y >> TILE_SHIFT_PX;
-    CRect bounds(0, 0, board->m_width, board->m_height);
-    RECT box;
-    box.left = cx - 6;
-    box.top = cy - 6;
-    box.right = cx + 6;
-    box.bottom = cy + 6;
+    center.m_y >>= TILE_SHIFT_PX;
+    center.m_x >>= TILE_SHIFT_PX;
+    {
+        CRect bounds(0, 0, board->m_width, board->m_height);
+        RECT box;
+        box.left = center.m_x - 6;
+        box.top = center.m_y - 6;
+        box.right = center.m_x + 6;
+        box.bottom = center.m_y + 6;
 
-    // CMapMgr::Clip(&box) expanded in place.
-    const RECT* src = &box;
-    RECT a;
-    if (src != NULL) {
-        a.left = src->left;
-        a.top = src->top;
-        a.right = src->right + 1;
-        a.bottom = src->bottom + 1;
-    } else {
-        a = bounds;
+        // CMapMgr::Clip(&box) expanded in place.
+        const RECT* src = &box;
+        RECT a;
+        if (src != NULL) {
+            a.left = src->left;
+            a.top = src->top;
+            a.right = src->right + 1;
+            a.bottom = src->bottom + 1;
+        } else {
+            a = bounds;
+        }
+        RECT* aDst = &board->m_bounds;
+        if (!IntersectRect(aDst, &a, &bounds)) {
+            *aDst = a;
+        }
+        board->m_gridW = aDst->right - aDst->left;
+        board->m_gridH = aDst->bottom - aDst->top;
     }
-    RECT* aDst = &board->m_bounds;
-    if (!IntersectRect(aDst, &a, &bounds)) {
-        *aDst = a;
-    }
-    board->m_gridW = aDst->right - aDst->left;
-    board->m_gridH = aDst->bottom - aDst->top;
     Coord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
@@ -2426,7 +2428,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         if (prim == PICKUP_SPRING) {
             flags = 0x1000;
         }
-        if (board->SearchEdge(cx, cy, coord->m_x, coord->m_y, &list, 1, 0x2000098f, flags) != 0
+        if (board->SearchEdge(center.m_x, center.m_y, coord->m_x, coord->m_y, &list, 1, 0x2000098f, flags) != 0
             && list.GetCount() != 0) {
             void* head = list.RemoveHead();
             if (head != NULL) {
@@ -2464,7 +2466,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 POSITION qp = list.GetHeadPosition();
                 while (qp != NULL) {
                     Coord* c3 = static_cast<Coord*>(list.GetNext(qp));
-                    if (c3 != NULL && (c3->m_x != cx || c3->m_y != cy)) {
+                    if (c3 != NULL && (c3->m_x != center.m_x || c3->m_y != center.m_y)) {
                         coordList->AddTail(c3);
                     }
                 }
@@ -2486,14 +2488,16 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         iter++;
     }
 
-    CRect tailFull(0, 0, board->m_width, board->m_height);
-    RECT tailBox = CRect(0, 0, board->m_width, board->m_height);
-    RECT* tailBoxDst = &board->m_bounds;
-    if (!IntersectRect(tailBoxDst, &tailBox, &tailFull)) {
-        *tailBoxDst = tailBox;
+    {
+        CRect tailFull(0, 0, board->m_width, board->m_height);
+        RECT tailBox = CRect(0, 0, board->m_width, board->m_height);
+        RECT* tailBoxDst = &board->m_bounds;
+        if (!IntersectRect(tailBoxDst, &tailBox, &tailFull)) {
+            *tailBoxDst = tailBox;
+        }
+        board->m_gridW = tailBoxDst->right - tailBoxDst->left;
+        board->m_gridH = tailBoxDst->bottom - tailBoxDst->top;
     }
-    board->m_gridW = tailBoxDst->right - tailBoxDst->left;
-    board->m_gridH = tailBoxDst->bottom - tailBoxDst->top;
     return 0;
 }
 
