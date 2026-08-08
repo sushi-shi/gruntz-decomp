@@ -2756,9 +2756,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2779,9 +2779,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2801,9 +2801,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2824,9 +2824,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2846,9 +2846,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2868,9 +2868,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2891,9 +2891,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2915,9 +2915,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2937,9 +2937,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2959,9 +2959,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            const char* rec = *g_typeColl.ScratchResolve(m_objAux->m_actKey);
+            CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(rec, s_codeD) == 0);
+            eq = (strcmp(*rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
