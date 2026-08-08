@@ -1991,10 +1991,9 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         i32 gx = pt.m_x >> TILE_SHIFT_PX;
         (static_cast<CUserLogic*>(unit))->GetScreenPos((&pt));
         i32 gy = pt.m_y >> TILE_SHIFT_PX;
-        if (abs(ux - gx) >= 2) {
-            goto recycleBail;
-        }
-        if (abs(uy - gy) >= 2) {
+        i32 dx = abs(ux - gx);
+        i32 dy = abs(uy - gy);
+        if (dx >= 2 || dy >= 2) {
             goto recycleBail;
         }
         CMapMgr* board = m_board;
