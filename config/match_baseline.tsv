@@ -337,7 +337,7 @@ timestring	1	1
 titleappstart	2	2
 toobspikez	9	8
 trees	21	21
-triggermgr	49	28
+triggermgr	49	29
 triggermgrgrid	18	9
 triggermgrhittest	6	4
 trirecordserialize	1	1
@@ -1729,7 +1729,7 @@ fontconfig	??1CFontConfig@@QAE@XZ	100.0000	100.0000	1	5d3b273e09e9	0x85f40	100.0
 fontconfig	??1FontItem@@QAE@XZ	100.0000	100.0000	2	cbbf9e73ae2f	0x21c40	100.0000
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	5	c2c192de55cf	0x21c60	100.0000
 fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	93.9167	91.2083	3	f1f00c8a9d8f	0x22810	93.9167
-fontconfig	?DrawTextLines@CFontConfig@@QAEHHPAUHDC__@@PAUtagRECT@@I@Z	89.5087	89.5087	5	a0157ef17e8f	0x22360	89.5087
+fontconfig	?DrawTextLines@CFontConfig@@QAEHHPAUHDC__@@PAUtagRECT@@I@Z	93.3010	93.3010	6	3c8325bc5a3d	0x22360	93.3010
 fontconfig	?DrawWithFont@CFontConfig@@QAEHPBDPAUHDC__@@PAUtagRECT@@I@Z	100.0000	100.0000	2	140896b97896	0x22770	100.0000
 fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	3	3735f7655262	0x21ef0	100.0000
 fontconfig	?FreeNodes@CFontConfig@@QAEXXZ	100.0000	100.0000	5	d7059a052025	0x21bd0	100.0000
@@ -4148,8 +4148,8 @@ tiletriggercontainer	?AddLogicDefaults@CTileTriggerContainer@@QAEPAVCTileTrigger
 tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollisionKind@@W4TrigLogicId@@PAUCGameObject@@@Z	100.0000	100.0000	1	9e25e018f215	0x1164a0	100.0000
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	1	09c82d54c9aa	0x115f60	100.0000
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HHHPAHHHH@Z	77.4051	77.4051	9	53276478c063	0x116cf0	80.0000
-tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHHHHH@Z	80.1184	80.1184	2	00da89f8c91c	0x116a40	80.1184
-tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	75.7826	75.7826	3	04fa39ef6afc	0x116b80	75.7826
+tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHHHHH@Z	80.1184	80.1184	3	7a1b866aada6	0x116a40	80.1184
+tiletriggercontainer	?AddToList3Switch@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	75.7826	75.7826	4	e3b4c6baaee6	0x116b80	75.7826
 tiletriggercontainer	?DelFromList1@CTileTriggerContainer@@QAEHPAVCTileTriggerLogic@@@Z	100.0000	100.0000	3	6edcce1eb4d1	0x116e60	100.0000
 tiletriggercontainer	?DelFromList3@CTileTriggerContainer@@QAEHPAVCTileActionEvent@@@Z	100.0000	100.0000	3	f1466a4bd151	0x117200	100.0000
 tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	3	d2781164c724	0x115b60	100.0000
@@ -4237,7 +4237,7 @@ triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	9
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	89.3103	89.3103	12	1f73c740e031	0x7cc60	89.3103
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	11	d67d7997d8cf	0x784d0	100.0000
 triggermgr	?ReinitGroup@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	22	0c19a197d2e5	0x79b80	100.0000
-triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	84.6320	84.6320	17	dbdfd04ff0ef	0x78260	84.6320
+triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	95.1440	95.1440	18	8d1d3f4c41b9	0x78260	95.1440
 triggermgr	?ReportRecordsA@CTriggerMgr@@QAEXHHH@Z	100.0000	100.0000	5	fa19ab0e0366	0x78520	100.0000
 triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHH@Z	100.0000	100.0000	5	66aacd91cf0c	0x78680	100.0000
 triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	100.0000	100.0000	16	75e1a7aa6f27	0x78430	100.0000
@@ -4245,7 +4245,7 @@ triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHW4TargetSelectionKind@@H@Z	90.7352	
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	100.0000	100.0000	24	41a92a09073b	0x79d90	100.0000
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	18	1d0c8aba7327	0x7a760	99.1927
 triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	99.1379	8	7814ca8db28b	0x788d0	100.0000
-triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	12	03594e673c62	0x7d2a0	84.5833
+triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	13	ae8bd1b981df	0x7d2a0	100.0000
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	bb198cd45dc6	0x7a5e0	100.0000
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	80.3125	80.3125	23	2cd551287da3	0x7c110	80.3125
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	19	2621a4d1bd22	0x7a180	100.0000
