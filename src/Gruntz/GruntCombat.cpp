@@ -1235,7 +1235,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             LK(s_DEATHTOUCHHIT);
             goto L_cue;
         }
-        if (attackKind == PICKUP_GLOVEZ || attackKind == PICKUP_NERFGUN
+        if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ
             || attackKind == PICKUP_WINGZ) {
             if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
                 LK(s_BLOCKBODY2);
