@@ -339,8 +339,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3(
         m_list3.AddTail(m);
         return m;
     }
-    m->m_live = 0;
-    ::operator delete(m);
+    delete m;
     return 0;
 }
 
@@ -376,8 +375,7 @@ CTileActionEvent* CTileTriggerContainer::AddToList3Switch(
             break;
     }
     if (m->m_live != 0) {
-        m->m_live = 0;
-        ::operator delete(m);
+        delete m;
         return 0;
     }
     m->m_tileX = tileX;
