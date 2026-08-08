@@ -2433,9 +2433,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                             delete[] static_cast<i32*>(m_payloads.RemoveHead());
                         }
                     }
-                    i32* payload = new i32[0xb];
-                    if (payload != NULL) {
-                        memset(payload, 0, 0x2c);
+                    i32* mem = new i32[0xb];
+                    i32* payload;
+                    if (mem != NULL) {
+                        memset(mem, 0, 0x2c);
+                        payload = mem;
+                    } else {
+                        payload = NULL;
                     }
                     payload[0] = 9;
                     m_payloads.AddHead(payload);
