@@ -1002,6 +1002,51 @@ def cmd_summary(args) -> int:
         }, indent=2, default=float))
         return 0
 
+    if args.write_readme:
+        # Refresh the baseline BEFORE rendering. The Overall/Fuzzy columns come from
+        # report.json and are regenerated every build, but `Fuzzy Max` is read from
+        # config/match_baseline.tsv, which otherwise only moves when someone runs
+        # `status update` by hand. Without this the block is freshly written, freshly
+        # committed, and still carries a MAX measured against a different tree - a
+        # gap that reached 26 commits and 200 changed files in one session.
+        #
+        # This is a plain update: it raises peaks and refreshes cur_pct, and never
+        # blesses a regression (--accept-regressions is never passed here).
+        #
+        # `best` is a ratchet ONLY while a row's rva is unchanged. If the rva moved,
+        # the name now labels a DIFFERENT BODY and `rebound()` resets best = cur --
+        # correct (the old peak measured the body that used to be there) but it is a
+        # LOWERING, and the build DEVNULLs this subprocess's stdout. So diff the best
+        # column across the update and shout on stderr, which is not suppressed. An
+        # automatic peak reset that nobody sees is exactly the failure this whole
+        # refresh was meant to stop.
+        before = {k: v["best"] for k, v in base.items()}
+        upd = argparse.Namespace(report=args.report, accept_regressions=False,
+                                 verbose=False)
+        cmd_update(upd)
+        base = load_baseline()          # re-read; cmd_update rewrote it
+        dropped = sorted(
+            ((before[k] - v["best"], k) for k, v in base.items()
+             if k in before and v["best"] < before[k] - EPS), reverse=True)
+        if dropped:
+            print(f"[match_status] WARNING: {len(dropped)} best-ever peak(s) RESET by "
+                  f"an rva move (rebound). The name now labels a different body, so "
+                  f"the old peak was not its floor -- but review these:",
+                  file=sys.stderr)
+            for d, (unit, fn) in dropped[:10]:
+                print(f"[match_status]   -{d:7.4f}  {unit}  {fn}", file=sys.stderr)
+        for a in mods.values():
+            a["cw"] = 0.0
+        for (unit, fn), cur in funcs.items():
+            b = base.get((unit, fn))
+            if not b:
+                continue
+            churn = b["best"] - cur
+            if churn > EPS:
+                mod = manifest.get(unit, {}).get("module", "?")
+                if mod in mods:
+                    mods[mod]["cw"] += churn * sizes.get((unit, fn), 0)
+
     block = render_report(overall, mods, started_fzw, started_code)
     if args.write_readme:
         write_readme(block)
