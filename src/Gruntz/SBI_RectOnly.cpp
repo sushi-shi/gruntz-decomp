@@ -2978,6 +2978,11 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     TryActivate();
 }
 // @early-stop
+// Four WapRand expansions shift the LCG seed with `sar` where retail uses `shr`;
+// GetRandomNumber's `long holdrand` is right (CGruntzMgr::RandRange keeps retail's
+// `sar eax,0x10; and eax,0x7fff`), so the flip comes from whatever spelling of the
+// range==0 arm lets cl drop the sign - `GetRandomNumber() & 1` does not. The rest is
+// register rotation around the SetRect call.
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
@@ -3075,7 +3080,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
             result = PICKUP_GAUNTLETZ;
         }
     }
-    m_extraNotifyArg1 = IDX(result);
+    m_extraNotifyArg0 = IDX(result);
     m_machinePhase = BELT_IDLE;
     SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
