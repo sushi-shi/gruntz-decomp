@@ -1191,8 +1191,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
-    CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_SINGLE
+    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE
         && this->m_tileOwnerHi == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
@@ -1230,6 +1229,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     LeafCue* cue = 0;
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
+    CGruntzMgr* reg = g_gameReg;
     if (CGameLevel::PointInRect(&reg->m_viewBounds, vx, vy)) {
         if (attackerGruntKind == GRUNT_DEATHTOUCH) {
             LK(s_DEATHTOUCHHIT);
