@@ -26,7 +26,12 @@ GZ_ENUM_BEGIN(StatusBarDock)
     STATUSBAR_DOCK_LEFT = 1,
     STATUSBAR_HIDDEN = 2,
     STATUSBAR_NONRIGHT_FIRST = STATUSBAR_DOCK_LEFT,
-    STATUSBAR_NONRIGHT_LAST = STATUSBAR_HIDDEN
+    STATUSBAR_NONRIGHT_LAST = STATUSBAR_HIDDEN,
+    // The exclusive lower edge of the non-right band. Retail spells the guard
+    // `pos > this` (reusing the `test eax,eax` flags of the preceding
+    // != DOCK_RIGHT test), not `pos >= NONRIGHT_FIRST` - one `jle` against two
+    // instructions. CTriggerMgr::LoadCameraSprite 0x78960.
+    STATUSBAR_NONRIGHT_BEFORE_FIRST = STATUSBAR_DOCK_RIGHT
 GZ_ENUM_END(StatusBarDock)
 
 #endif // GRUNTZ_GRUNTZ_STATUSBARDOCK_H

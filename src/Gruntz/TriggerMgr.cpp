@@ -397,7 +397,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
 
     i32 ax, cx;
     if (pos != STATUSBAR_DOCK_RIGHT) {
-        if (pos >= STATUSBAR_NONRIGHT_FIRST && pos <= STATUSBAR_NONRIGHT_LAST) {
+        if (pos > STATUSBAR_NONRIGHT_BEFORE_FIRST && pos <= STATUSBAR_NONRIGHT_LAST) {
             ax = vx - 0x28;
             cx = vy - 0x28;
         }
