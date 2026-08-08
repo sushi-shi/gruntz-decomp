@@ -54,7 +54,7 @@ i32 CSBI_ImageSetAni::Init(
     if (key == NULL) {
         return 0;
     }
-    found = 0;
+    found = NULL;
     host->m_imageRegistry->m_10map.Lookup(key, found);
     tbl = static_cast<CDDrawWorker*>(found);
     m_frameSet = tbl;

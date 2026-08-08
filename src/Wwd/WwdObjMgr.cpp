@@ -1152,7 +1152,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         0
                     );
                 } else {
-                    createdObj = 0;
+                    createdObj = NULL;
                 }
                 break;
             }
@@ -1186,7 +1186,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                         0
                     );
                 } else {
-                    createdObj = 0;
+                    createdObj = NULL;
                 }
                 break;
             }
@@ -1226,7 +1226,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             default:
-                createdObj = 0;
+                createdObj = NULL;
                 break;
         }
 

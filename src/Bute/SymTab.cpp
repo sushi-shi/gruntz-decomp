@@ -1162,7 +1162,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             node->AddNodeSubEntry(rec, entry);
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         } else {
-            source = 0;
+            source = NULL;
         }
         if (source != NULL) {
             source->m_typeTag = static_cast<i32>(fd.time_write);

@@ -3561,7 +3561,7 @@ sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	98.8947	86.7368	8	9624ce00d918	0xe744
 sbi_imageset	?Reset@CSBI_ImageSet@@UAEXXZ	100.0000	100.0000	3	303e3bd3468f	0xe7400	100.0000
 sbi_imageset	?SerializeFields@CSBI_ImageSet@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	9987eaa779a6	0xe74f0	100.0000
 sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	74.6308	74.6308	2	03ca9c348c69	0xe72f0	74.6308
-sbi_imagesetani	?Init@CSBI_ImageSetAni@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	96.4348	96.4348	2	3e7f96436b32	0xe7980	96.4348
+sbi_imagesetani	?Init@CSBI_ImageSetAni@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	96.4348	96.4348	3	3594d44a8895	0xe7980	96.4348
 sbi_imagesetani	?Refresh@CSBI_ImageSetAni@@UAEHH@Z	100.0000	100.0000	1	e19451579b19	0xe7ae0	100.0000
 sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	99.4444	99.4444	7	702268255552	0xe7b00	99.4444
 sbi_imagesetani	?SerializeFields@CSBI_ImageSetAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	864fa15c49ac	0xe7cd0	100.0000
@@ -3687,7 +3687,7 @@ sbi_sidetab	?Render@CSBI_SideTab@@UAEHXZ	100.0000	100.0000	5	95866f4e32a6	0xe99c
 sbi_sidetab	?Reset@CSBI_SideTab@@UAEXXZ	100.0000	100.0000	2	f132d568c3b6	0xe9800	100.0000
 sbi_sidetab	?SerializeFields@CSBI_SideTab@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	a9b049a29f8b	0xe9a30	100.0000
 sbi_sidetab_build	?BuildSideTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	01219872dd45	0x105070	100.0000
-sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	94.6796	94.6796	2	b1207756afa3	0xea1f0	94.6796
+sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	94.6796	94.6796	3	52bde3eba746	0xea1f0	94.6796
 sbi_statztabarrow	?SetDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	1	c20629687f0d	0xea0f0	100.0000
 sbi_statztabarrow	?SetDirectionAlt@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	1	ddf113076fd2	0xea170	100.0000
 sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	4	9cffdff857da	0x1048f0	100.0000
@@ -3962,7 +3962,7 @@ statusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	100.0000	100.0000	11	d
 statusbarspriteacts	?SerializeMove@CStatusBarSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	936871675b61	0x11ae0	100.0000
 statusbarspriteacts	_CreateStatusBarSprite	100.0000	100.0000	5	f9e34543e659	0x10c0f0	100.0000
 statusbartabbuilders	??1CSBI_GruntMachine@@UAE@XZ	100.0000	100.0000	1	bb192049d5e0	0x104ce0	100.0000
-statusbartabbuilders	?BuildResourceTabStatusBar@CSBI_GruntMachine@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	93.1704	93.1704	2	a0226998b9e4	0xe8a70	93.1704
+statusbartabbuilders	?BuildResourceTabStatusBar@CSBI_GruntMachine@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	93.1704	93.1704	3	b6e35087ffb6	0xe8a70	93.1704
 statusbartabbuilders	?Refresh@CSBI_GruntMachine@@UAEHH@Z	100.0000	100.0000	1	d7ecb21a8c97	0xe8c90	100.0000
 statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	100.0000	6	c2e472826a06	0xe8cb0	100.0000
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@UAEXXZ	100.0000	100.0000	2	ab73dab21f01	0xe8c70	100.0000
@@ -4022,7 +4022,7 @@ symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	f20b8c6532c9	0x13a310	
 symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	cfa7b4fa1078	0x13a2d0	100.0000
 symtab	?PackTag@CSymParser@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	1	59a82eb4ec6f	0x13b910	100.0000
 symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	98.4567	98.4567	10	7d7d12c30d36	0x13ad00	98.4567
-symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	99.6710	99.6710	13	f90457e545f2	0x13b300	99.6710
+symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	99.6710	99.6710	14	80cbf3f8f32e	0x13b300	99.6710
 symtab	?PopParseSlot@CSymParser@@QAEPAUCParseSource@@XZ	98.2174	98.2174	5	d99f58780a63	0x13c0c0	98.2174
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050	100.0000
 symtab	?Read@CParseSource@@QAEHPAXIH@Z	94.6739	94.6739	5	5cb64ff888ff	0x139af0	94.6739
@@ -4652,7 +4652,7 @@ wwdobjmgr	?ForEachSerialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId
 wwdobjmgr	?InsertSorted@CDDrawChildGroup@@QAEXPAUCGameObject@@H@Z	100.0000	100.0000	4	d303731389a8	0x159e40	100.0000
 wwdobjmgr	?InvalidateChildShadows@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	2fd5f729183a	0x159d90	100.0000
 wwdobjmgr	?IsKindUnique@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	6	278c5a6e91b6	0x15aa20	100.0000
-wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	75.2857	75.2857	2	e8306cd5a353	0x15ad30	75.2857
+wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	75.2857	75.2857	3	3a91ec359352	0x15ad30	75.2857
 wwdobjmgr	?PruneList@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	5	661ae2747ef2	0x15aa90	100.0000
 wwdobjmgr	?PruneOrphans@CDDrawChildGroup@@QAEHXZ	93.7541	93.7541	5	bc238fd9d1b8	0x15b1d0	93.7541
 wwdobjmgr	?ReinsertUnflagged@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	72f292b08208	0x159e10	100.0000

@@ -67,7 +67,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
 
     m_rect14 = g;
 
-    found = 0;
+    found = NULL;
     m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", found);
     rec = static_cast<CDDrawWorker*>(found);

@@ -96,7 +96,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     m_rect14 = g;
 
-    found = 0;
+    found = NULL;
     m_cmd = cmd;
     h->m_imageRegistry->m_10map.Lookup(key, found);
     head = static_cast<CDDrawWorker*>(found);
