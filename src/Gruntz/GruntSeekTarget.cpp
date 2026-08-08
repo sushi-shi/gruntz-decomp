@@ -130,7 +130,110 @@ i32 CGrunt::SeekTarget() {
     if (reason > 0x16) {
         reason = IDX(this->m_toolId);
     }
-    if (reason == 0) {
+    if (reason != 0) {
+        CGrunt* g = m_tileMgr->FindNearestEnemy(this);
+        i32 atTarget = 0;
+        if (g != NULL) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+
+                && RectContains(x, g->m_object->m_screenY) != 0) {
+                atTarget = 1;
+            }
+        }
+        if (this->m_poweredUp != 0) {
+            if (this->m_neighborValid == 0) {
+                if (this->m_combatActive != 0) {
+                    return 1;
+                }
+                if (this->m_stamina >= STAMINA_FULL) {
+                    if (FindGridNeighbor(1) != NULL) {
+                        return 1;
+                    }
+                    if (atTarget && g == NULL) {
+                        return 1;
+                    }
+                    if (this->m_poweredUp == 0) {
+                        return 1;
+                    }
+                    if (this->m_neighborValid != 0) {
+                        return 1;
+                    }
+                    this->m_entranceActive = 0;
+                    this->m_combatActive = 0;
+                    this->m_neighborValid = 0;
+                    this->m_poweredUp = 0;
+                    ResetEntranceAnimation(1, 0, 0);
+                    return 1;
+                } else {
+                    if (atTarget) {
+                        return 1;
+                    }
+                    if (this->m_poweredUp == 0) {
+                        return 1;
+                    }
+                    if (this->m_neighborValid != 0) {
+                        return 1;
+                    }
+                    this->m_entranceActive = 0;
+                    this->m_combatActive = 0;
+                    this->m_neighborValid = 0;
+                    this->m_poweredUp = 0;
+                    ResetEntranceAnimation(1, 0, 0);
+                    return 1;
+                }
+            } else {
+                this->m_neighborValid = 0;
+            }
+            return 1;
+        }
+        this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
+        this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+        if (g == NULL || GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
+            this->m_blockedVoicePending = 0;
+            return 1;
+        }
+        if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL) {
+            i32 x = g->m_object->m_screenX;
+            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
+
+                && RectContains(x, g->m_object->m_screenY) != 0) {
+                CommitNeighbor(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    g->m_lastTilePx.m_x,
+                    g->m_lastTilePx.m_y
+                );
+            }
+        }
+        if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
+            return 1;
+        }
+        if (TileSwitch(
+                g->m_object->m_screenX >> TILE_SHIFT_PX,
+                g->m_object->m_screenY >> TILE_SHIFT_PX,
+                0,
+                this->m_arrivalFlags,
+                1,
+                0
+            )
+            == 0) {
+            return 1;
+        }
+        if (this->m_blockedVoicePending != 0) {
+            i32 r = CGameLevel::PointInBounds(
+                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                this->m_object->m_screenX,
+                this->m_object->m_screenY
+            );
+            if (r != 0) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+            }
+            this->m_blockedVoicePending = 0;
+            this->m_dwell = 0;
+            return 1;
+        }
+    } else {
         if (this->CoordCount() == 0) {
             if (this->m_defenderState != AISTATE_SEEK) {
                 return 1;
@@ -192,7 +295,7 @@ i32 CGrunt::SeekTarget() {
         if (this->m_defenderState != AISTATE_SEEK) {
             return 1;
         }
-        if (static_cast<u32>(this->m_dwell) < 0x3e9) {
+        if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
         CGameObject* base =
@@ -205,104 +308,6 @@ i32 CGrunt::SeekTarget() {
             1,
             0
         );
-    } else {
-        CGrunt* g = m_tileMgr->FindNearestEnemy(this);
-        i32 atTarget = 0;
-        if (g != NULL) {
-            i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
-
-                && RectContains(x, g->m_object->m_screenY) != 0) {
-                atTarget = 1;
-            }
-        }
-        if (this->m_poweredUp != 0) {
-            if (this->m_neighborValid != 0) {
-                this->m_neighborValid = 0;
-                return 1;
-            }
-            if (this->m_combatActive != 0) {
-                return 1;
-            }
-            if (this->m_stamina < STAMINA_FULL) {
-                if (atTarget) {
-                    return 1;
-                }
-                if (this->m_poweredUp == 0) {
-                    return 1;
-                }
-                this->m_entranceActive = 0;
-                this->m_combatActive = 0;
-                this->m_neighborValid = 0;
-                this->m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
-                return 1;
-            }
-            if (FindGridNeighbor(1) != NULL) {
-                return 1;
-            }
-            if (atTarget && g == NULL) {
-                return 1;
-            }
-            if (this->m_poweredUp == 0) {
-                return 1;
-            }
-            if (this->m_neighborValid != 0) {
-                return 1;
-            }
-            this->m_entranceActive = 0;
-            this->m_combatActive = 0;
-            this->m_neighborValid = 0;
-            this->m_poweredUp = 0;
-            ResetEntranceAnimation(1, 0, 0);
-            return 1;
-        }
-        this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
-        this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
-        if (g == NULL || g->GruntInRadius(g->m_tileOwnerHi, g->m_tileOwnerLo) == 0) {
-            this->m_blockedVoicePending = 0;
-            return 1;
-        }
-        if (this->m_poweredUp == 0 && this->m_stamina > 99) {
-            i32 x = g->m_object->m_screenX;
-            if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
-
-                && RectContains(x, g->m_object->m_screenY) != 0) {
-                CommitNeighbor(
-                    g->m_tileOwnerHi,
-                    g->m_tileOwnerLo,
-                    g->m_lastTilePx.m_x,
-                    g->m_lastTilePx.m_y
-                );
-            }
-        }
-        if (static_cast<u32>(this->m_dwell) < 0x1f5) {
-            return 1;
-        }
-        if (TileSwitch(
-                g->m_object->m_screenX >> TILE_SHIFT_PX,
-                g->m_object->m_screenY >> TILE_SHIFT_PX,
-                0,
-                this->m_arrivalFlags,
-                1,
-                0
-            )
-            == 0) {
-            return 1;
-        }
-        if (this->m_blockedVoicePending != 0) {
-            i32 r = CGameLevel::PointInBounds(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                this->m_object->m_screenX,
-                this->m_object->m_screenY
-            );
-            if (r != 0) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
-            }
-            this->m_blockedVoicePending = 0;
-            this->m_dwell = 0;
-            return 1;
-        }
     }
     this->m_dwell = 0;
     return 1;

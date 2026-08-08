@@ -473,15 +473,12 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
-// Content is right (an order-insensitive instruction multiset differs only in how
-// many copies of the notify/restore block survive); the CROSS-JUMP FACTOR is not:
-// retail merges arms LOAD+POSTLOAD whole and duplicates the restore into PRESAVE and
-// SAVE, so its after-switch join lands right behind PRESAVE, while cl merges
-// PRESAVE+SAVE+LOAD's restore and pushes the join to the end. objdiff's percent
-// clamps at 0 on that layout swap, so it reads 0.00 and report.json omits the key -
-// use `sema disasm --blocks` here, not the score. No source lever found in ~15
-// spellings (case/default order, per-arm vs shared locals, goto-fail vs return 0,
-// inverted lookup guard).
+// `sema disasm --diff --lite` reduces to two rows, both downstream of register
+// allocation: retail keeps three copies of the post-notify restore where cl keeps two
+// (the PRESAVE/SAVE pair is byte-identical on BOTH sides, so the merge decision is not
+// byte-driven), and the POSTLOAD lookup-failure store is `mov [esi+0x98],eax` against
+// cl's `edi`, which is what lets cl fold it into the node==0 store. Everything else -
+// jump table span, arm bodies, act keys, the neg/sbb/neg tail - agrees.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == NULL) {
