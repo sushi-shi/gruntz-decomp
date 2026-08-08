@@ -233,3 +233,18 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   `verify_library_overlap`, `gate_selftest`, `tu_order_check`. **Caveat:** a cleanliness
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh
   identifier enumeration, not proof.
+
+## A new delinker patch needs a REFRESHED nix shell (2026-08-08)
+
+`nix/patches/vostok-comdat-leader-nonzero-offset.patch` changed
+`vostok-delinker`, so a `nix develop` session entered before that commit still
+has the old binary on PATH and every `gruntz build` dies with:
+
+```
+Error: candidate data COMDAT section 1 has no external offset-zero leader
+```
+
+That is not a source defect and not a manifest defect - it is a stale shell.
+Re-enter `nix develop`, or run `nix develop --command gruntz build`. The same
+applies in every worktree: they share the store, but each shell pins whatever
+delinker path it resolved at entry.
