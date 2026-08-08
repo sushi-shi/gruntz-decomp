@@ -246,20 +246,17 @@ i32 CGrunt::SeekTarget() {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->m_entranceCommitted != 0) {
                     PickupType k = sv->m_entranceReason;
-                    PickupType kk = k;
-                    if (k > PICKUP_EQUIPPABLE_LAST) {
-                        kk = sv->m_toolId;
-                    }
-                    if (kk != PICKUP_NONE && kk != PICKUP_WARPSTONE && kk != PICKUP_BOMB
-                        && !(
-                            k > PICKUP_EQUIPPABLE_LAST ? (sv->m_toolId == PICKUP_WARPSTONE) : false
-                        )
-                        && sv->m_gruntKind != GRUNT_GHOST) {
+                    if ((k > PICKUP_EQUIPPABLE_LAST ? sv->m_toolId : k) != PICKUP_NONE
+                        && (k > PICKUP_EQUIPPABLE_LAST ? sv->m_toolId : k) != PICKUP_WARPSTONE
+                        && (k > PICKUP_EQUIPPABLE_LAST ? sv->m_toolId : k) != PICKUP_BOMB
+                        && (sv->m_gruntKind != GRUNT_GHOST
+                            && (k > PICKUP_EQUIPPABLE_LAST ? sv->m_toolId : k)
+                                   != PICKUP_WARPSTONE)) {
                         i32 ex = sv->m_object->m_screenX >> TILE_SHIFT_PX;
                         i32 ddx = ex - (this->m_object->m_screenX >> TILE_SHIFT_PX);
                         i32 ey = (sv->m_object->m_screenY >> TILE_SHIFT_PX)
                                  - (this->m_object->m_screenY >> TILE_SHIFT_PX);
-                        i32 dist = ddx * ddx + ey * ey;
+                        i32 dist = abs(ddx * ddx) + abs(ey * ey);
                         if (dist < best
                             && dist <= this->m_defenderRadius * this->m_defenderRadius) {
                             best = dist;
