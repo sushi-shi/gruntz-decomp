@@ -28,7 +28,13 @@ False-positive profile, both detectors:
   - MFC inline accessors (`CPtrArray::GetAt`, `GetNext`) - real inlines, but library
   - genuine per-site duplication the devs wrote by hand (copy-paste in one subsystem)
   - a helper we ALREADY model as a shared function - the cluster is a true positive
-    for the detector and needs no fix.  Those are the calibration points.
+    for the detector and needs no fix.  Those are the calibration points.  As of
+    2026-08-08 EVERY cluster above rank 11 is one: the act-name registrar
+    (`ACT_NAME_ID`/`R3Lookup`), `LOGIC_WORKER_PUMP`, `CMapMgr::CellFlagsAt`, the
+    `m_rows[y][x]` 2-D member array, and `CGameLevel::PointInBounds`.
+
+The boilerplate filter is a BLOCKLIST, so each new compiler family sits at the top
+of the ranking until it is added.  Add it - do not work around it.
 
 Usage:
     python -m gruntz.audit.inline_clones --consts               # ranked constants
@@ -301,7 +307,13 @@ BOILER = (
     ("repne scas", "inline strlen"),
     ("rep stos", "inline memset"),
     (", -0x1", "inline strcmp/strcmpi return normalisation (sbb r,r; sbb r,-1)"),
-    ("neg r0", "`!= 0` boolean normalisation of a call result"),
+)
+# Same job, but matched by shape rather than substring: the alpha-renamed register
+# index is NOT stable across windows, so a literal probe like "neg r0" only fires
+# when the register happens to be the window's first-seen one.  Both families below
+# reached the top of the ranking with a literal probe in place.
+BOILER_RE = (
+    (re.compile(r"^neg r\d+$", re.M), "`!= 0` boolean normalisation of a call result"),
 )
 
 
@@ -311,6 +323,15 @@ def score(key: str):
     for probe, why in BOILER:
         if any(probe in ln for ln in lines):
             return 0.0, why
+    for rx, why in BOILER_RE:
+        if rx.search(key):
+            return 0.0, why
+    # /Oi BYTE-at-a-time strcmp: two `mov rA, byte ptr [rB + 0x1]` loads inside one
+    # window, feeding a compare.  The word-at-a-time probe below wants two ADJACENT
+    # 2-byte cursor bumps, which this unrolling never has, and the bump falls outside
+    # most of its windows - so probe the paired +1 byte loads instead.
+    if sum(1 for ln in lines if "byte ptr [r" in ln and ln.endswith("+ 0x1]")) >= 2:
+        return 0.0, "inline strcmp (byte-at-a-time)"
     # /Oi word-at-a-time strcmp: two 2-byte cursor bumps side by side, then the
     # sbb/sbb-(-1) sign trick.  Its middle windows carry neither marker, so probe
     # the stride pair instead of the return.
