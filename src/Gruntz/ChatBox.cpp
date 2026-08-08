@@ -285,16 +285,12 @@ i32 CChatBox::Draw(CDDrawSurfacePair* target, CMenuItem* sprite, i32 x0, i32 y0)
     return 1;
 }
 
-// @early-stop
-RVA(0x00183030, 0x7b)
-i32 CChatBox::PlayFocusSound() {
-    if (m_row0Key.GetLength() == 0) {
-        return 0;
-    }
-    CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
+// Both PlayFocusSound and PlayActivationSound inline this: cl5 defers the callee-save
+// pushes into the inlined region, which is what gives the guard its own epilogue.
+static __inline i32 PlayChatCue(CDDrawSubMgrLeafScan* roster, const char* key) {
     if (!roster->m_emitGate) {
         void* t_ob = 0;
-        roster->m_cues.Lookup(static_cast<const char*>(m_row0Key), t_ob);
+        roster->m_cues.Lookup(key, t_ob);
         LeafCue* t = static_cast<LeafCue*>(t_ob);
         if (t != NULL) {
             i32 enabled = g_sndEnabled;
@@ -312,31 +308,20 @@ i32 CChatBox::PlayFocusSound() {
     return 0;
 }
 
-// @early-stop
+RVA(0x00183030, 0x7b)
+i32 CChatBox::PlayFocusSound() {
+    if (m_row0Key.GetLength() == 0) {
+        return 0;
+    }
+    return PlayChatCue(m_page->m_soundRegistry, m_row0Key);
+}
+
 RVA(0x001830b0, 0x7b)
 i32 CChatBox::PlayActivationSound() {
     if (m_row1Key.GetLength() == 0) {
         return 0;
     }
-    CDDrawSubMgrLeafScan* roster = m_page->m_soundRegistry;
-    if (!roster->m_emitGate) {
-        void* t_ob = 0;
-        roster->m_cues.Lookup(static_cast<const char*>(m_row1Key), t_ob);
-        LeafCue* t = static_cast<LeafCue*>(t_ob);
-        if (t != NULL) {
-            i32 enabled = g_sndEnabled;
-            i32 delta = g_sndCueTag;
-            if (enabled != 0) {
-                i32 clock = g_killCueClock;
-                u32 elapsed = static_cast<u32>(clock) - static_cast<u32>(t->m_lastPlayTime);
-                if (elapsed >= static_cast<u32>(t->m_replayDelay)) {
-                    t->m_lastPlayTime = clock;
-                    return t->m_sound->ConfigureItem(delta, 0, 0, 0);
-                }
-            }
-        }
-    }
-    return 0;
+    return PlayChatCue(m_page->m_soundRegistry, m_row1Key);
 }
 
 RVA(0x00183130, 0x16)

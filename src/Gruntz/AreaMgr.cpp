@@ -289,7 +289,6 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0009a830, 0xa4)
 CString CSpawnEntry::GetTail() {
     CString tmp;
@@ -297,9 +296,10 @@ CString CSpawnEntry::GetTail() {
     if (len == 0) {
         return tmp;
     }
-    if (len > 8) {
-        tmp = static_cast<const char*>(m_name) + 8;
+    if (len <= 8) {
+        return tmp;
     }
+    tmp = static_cast<const char*>(m_name) + 8;
     return tmp;
 }
 

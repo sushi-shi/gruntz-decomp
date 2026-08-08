@@ -30,13 +30,16 @@ void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
 
     i32 span = end - start;
     i32 prime;
-    if (span < 100000) {
-        while (span < 100000) {
-            if (IsPrime(span)) {
-                prime = span;
+    // The search walks a COPY: retail's [esp+0x18] still holds the original span
+    // at the `r - 1 <= span` test below, so the loop must not clobber it.
+    i32 probe = span;
+    if (probe < 100000) {
+        while (probe < 100000) {
+            if (IsPrime(probe)) {
+                prime = probe;
                 goto have_prime;
             }
-            span++;
+            probe++;
         }
     }
     prime = count;
@@ -73,7 +76,10 @@ have_prime:
         i32 r = (step * count) % prime;
         if (r - 1 <= span) {
             i32 v = r + start - 1;
-            i32 c = v < end ? v : end;
+            i32 c = v;
+            if (v >= end) {
+                c = end;
+            }
             if (c < 0) {
                 v = 0;
             } else if (v >= end) {

@@ -925,7 +925,6 @@ void CBattlezDlg::ApplyColorSlot3() {
     }
 }
 
-// @early-stop
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(0);
@@ -934,10 +933,11 @@ void CBattlezDlg::ShowCustomDlg() {
             dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
             CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
-            if (child != NULL) {
-                child->SetWindowTextA(dlg.m_customName);
-                m_customNameFlag = 1;
+            if (child == NULL) {
+                return;
             }
+            child->SetWindowTextA(dlg.m_customName);
+            m_customNameFlag = 1;
         }
     }
 }

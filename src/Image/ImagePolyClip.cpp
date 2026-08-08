@@ -243,7 +243,7 @@ i32 ImagePolyClipRect(
             if (!(prev->y < top)) {
                 *out++ = *prev;
             }
-            if ((prev->y < top && !(cur->y < top)) || (!(prev->y < top) && cur->y < top)) {
+            if ((!(prev->y < top) && cur->y < top) || (prev->y < top && !(cur->y < top))) {
                 out->y = top;
                 out->x = prev->x + (top - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
                 out++;

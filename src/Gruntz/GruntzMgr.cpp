@@ -617,9 +617,13 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
+            // Only a 4-plane level has an object layer, and it is plane count-2:
+            // any other size leaves idx == count, which the bounds check rejects.
+            i32 idx = view->m_planes.GetSize();
+            if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
+                idx -= 2;
+            }
             i32 count = view->m_planes.GetSize();
-
-            i32 idx = (count == LEVEL_EXTENDED_PLANE_COUNT ? count - 1 : count) - 1;
             CDDrawWorkerHost* layer =
                 (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
             if (layer && !(layer->m_flags & 1)) {

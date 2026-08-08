@@ -876,9 +876,10 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     if (m_leadInSpan != 0) {
         CGameObject* rec =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, px, py, 95000, "InGameText", 0x40003);
-        if (rec != NULL) {
-            rec->m_smarts = m_leadInSpan;
+        if (rec == NULL) {
+            return 0;
         }
+        rec->m_smarts = m_leadInSpan;
     }
     return 1;
 }

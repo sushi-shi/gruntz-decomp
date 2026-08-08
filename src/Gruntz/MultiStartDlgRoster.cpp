@@ -669,15 +669,15 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
             } else {
                 ready->EnableWindow(0);
             }
-            if (slot->m_readyFlag) {
+            if (slot->m_readyFlag == 0) {
                 if (slot->m_liveGate) {
-                    ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 1, 0);
+                    ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
+                    f1c = 0;
                 } else {
                     ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
                 }
             } else if (slot->m_liveGate) {
-                ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
-                f1c = 0;
+                ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 1, 0);
             } else {
                 ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
             }
