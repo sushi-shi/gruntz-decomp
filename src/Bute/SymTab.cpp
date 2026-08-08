@@ -791,12 +791,8 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
     return rec;
 }
 
-// @early-stop
 RVA(0x0013aa10, 0xdc)
-CSymParser::CSymParser() {
-    m_list.m_head = NULL;
-    m_list.m_tail = NULL;
-    m_hash.Construct(1);
+CSymParser::CSymParser() : m_hash(1) {
     m_parseArmed = 0;
     m_activeNode = NULL;
     m_list.m_count = 0;
@@ -817,24 +813,19 @@ CSymParser::CSymParser() {
     m_valueBucketCount = 0x13;
     m_keyBucketCount = 0x13;
     m_reserved24 = 1;
-    m_readOnly = 1;
     m_nextGeneratedFileKey = 0x77359400;
+    m_readOnly = 1;
     m_sorted = 1;
-    m_symbolBucketCount = 9;
     m_maxOpenFiles = 3;
     m_subTabBucketCount = 5;
+    m_symbolBucketCount = 9;
     m_parseSlotBlockCount = 0x64;
 }
 
 RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
 
-// @early-stop
 RVA(0x0013ab00, 0xac)
-CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
-
-    m_list.m_head = NULL;
-    m_list.m_tail = NULL;
-    m_hash.Construct(1);
+CSymParser::CSymParser(void* buf, i32 a2, i32 a3) : m_hash(1) {
     {
         CSymParser tmp;
     }

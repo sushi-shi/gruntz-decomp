@@ -17,6 +17,8 @@ union DwordBytes {
 
 struct CObjList : public CObjListBase {
 
+    CObjList() : m_head(NULL), m_tail(NULL) {}
+
     CRezItmBase* m_head;
     CRezItmBase* m_tail;
     void AddHead(CRezItmBase* node);

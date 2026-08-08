@@ -30,14 +30,6 @@ struct CSlotNode : public DSoundLink {
 };
 SIZE(0xc);
 
-struct CParserHash : public CHashBase {
-
-    ~CParserHash() {
-        RemoveAll();
-    }
-};
-SIZE(0x8);
-
 #pragma pack(push, 1)
 GZ_ENUM_CONST_BEGIN(SymTabFileMagic)
     SYMTAB_MAGIC_CR = '\r',
@@ -139,7 +131,7 @@ public:
     i32 m_keyBucketCount;
     i32 m_subTabBucketCount;
     i32 m_symbolBucketCount;
-    CParserHash m_hash;
+    CHash m_hash;
     DSoundList m_nodes;
     i32 m_parseSlotBlockCount;
 };
