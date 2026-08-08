@@ -60,9 +60,12 @@ TGT_DIR = REPO / "build" / "objdiff" / "target"
 # A WHITELIST, not `j` minus `jmp`: llvm-objdump spells the indirect jump `jmpl`, which
 # a `(?!mp\b)` exclusion lets through (`\b` fails before the `l`) - that put unconditional
 # jumps into the branch sequence and produced a `jne->jmpl` "flip". This is the complete
-# set observed over every base+target obj in the tree; `jcxz`/`loop*` never appear in
-# MSVC5 /O2 output and an unexpected spelling raises rather than being dropped silently.
-JCC = frozenset("je jne jl jle jg jge ja jae jb jbe js jns jo jno jp jnp".split())
+# set observed over every base+target obj in the tree; `loop*` never appears in MSVC5 /O2
+# output and an unexpected spelling raises rather than being dropped silently.
+# `jecxz` DOES appear (cl5 emits it ahead of an inline `rep` block, where a zero count
+# must skip the string op). It is a real conditional branch, so it belongs in the
+# sequence; it has no signed/unsigned twin, so a flip involving it lands in OTHER.
+JCC = frozenset("je jne jl jle jg jge ja jae jb jbe js jns jo jno jp jnp jecxz".split())
 JUMPY = re.compile(r"^j[a-z]+$")
 UNCOND = frozenset(("jmp", "jmpl", "jmpw"))
 

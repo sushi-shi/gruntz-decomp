@@ -169,3 +169,6 @@ and pay off only at a scale of thousands of TUs. The useful core —
 best-% high-water mark, per-function source-fingerprint gating, and the
 regress/improve/new/lost categorisation — survives in a couple of text-file
 scripts.
+
+See [max-fuzzy-divergence.md](max-fuzzy-divergence.md) for why current fuzzy and MAX diverge,
+and `python -m gruntz.audit.max_divergence --history` for the git-recovered peak set.
