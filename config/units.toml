@@ -27,6 +27,10 @@ cpp-rtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
 # Retail's movinglogic unit has ZERO EH frames while every sibling has them:
 # it was compiled with RTTI but without /GX (proven by insn_count --eh).
 cpp-rtti-noeh = ["/nologo", "/c", "/O2", "/MT", "/GR"]
+# Bute's two container globals: retail's `$E` dynamic-init helpers carry the ctor and
+# dtor bodies INLINE, which MSVC 5 only does without /GX (proven by probe - see
+# docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
+cpp-noeh = ["/nologo", "/c", "/O2", "/MT"]
 
 [[unit]]
 unit = "adler32"
@@ -1451,6 +1455,11 @@ flags = "cpp"
 unit = "typekeycoll"
 source = "src/Bute/TypeKeyColl.cpp"
 flags = "cpp"
+
+[[unit]]
+unit = "buteglobals"
+source = "src/Bute/ButeGlobals.cpp"
+flags = "cpp-noeh"
 
 [[unit]]
 unit = "feccrypt"

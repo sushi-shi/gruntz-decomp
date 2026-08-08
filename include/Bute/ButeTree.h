@@ -49,7 +49,7 @@ SIZE(0x14);
 
 class CButeTree : public zPTree {
 public:
-    CButeTree(void(__cdecl* teardown)(void*), i32 n);
+    CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
 SIZE_UNKNOWN();
 

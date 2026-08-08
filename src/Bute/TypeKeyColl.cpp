@@ -28,33 +28,6 @@ void* g_retAddrBreadcrumb;
 DATA(0x002bf400)
 i32 g_helperRefCount;
 
-inline CTypeCollRuntime::CTypeCollRuntime()
-
-    : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
-    CString* item = Slots();
-    i32 count = m_grown;
-    if (item != NULL && count != 0) {
-        do {
-            item->CString::CString();
-            ++item;
-        } while (--count);
-    }
-}
-
-CTypeCollRuntime::~CTypeCollRuntime() {
-    CString* item = Elem(m_lo);
-    i32 count = m_hi - m_lo + 1;
-    if (item != NULL && count != 0) {
-        do {
-            item->CString::~CString();
-            ++item;
-        } while (--count);
-    }
-}
-
-DATA(0x002bf650)
-CTypeCollRuntime g_typeColl;
-
 // Interior fields of one CActReg; do not define overlapping globals.
 
 DATA(0x0021ad28)
@@ -892,16 +865,7 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     return 1;
 }
 
-__inline CButeTree::CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
-
-DATA(0x002bf620)
-CButeTree g_buteTree = CButeTree(&ButeTreeNopFree, 0);
-
 RVA_COMPGEN(0x0016e7a0, 0x48, ??__Fg_typeColl@@YAXXZ)
-
-RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}
-
-RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)
