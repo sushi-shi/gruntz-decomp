@@ -4176,11 +4176,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     i32 tx;
     i32 ty;
     i32 found = 0;
-    if (useArg != 0) {
-        tx = ax;
-        ty = ay;
-        found = 1;
-    } else {
+    if (useArg == 0) {
 
         CoordNode* n = unit->CoordHead();
         while (n != NULL) {
@@ -4197,6 +4193,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 }
             }
         }
+    } else {
+        tx = ax;
+        ty = ay;
+        found = 1;
     }
     if (found == 0) {
         return 0;
