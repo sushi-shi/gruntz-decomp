@@ -1,3 +1,96 @@
+//! **WWD → PNG** — render a level exactly the way retail composites its tile
+//! planes, and report every reference it could not resolve.
+//!
+//! One PNG per plane. The main plane goes to the caller's path; the others to
+//! a sibling `<stem>-planes/NN-<name>.png`. Nothing here reads `src/` or runs
+//! the game — it is an independent second opinion on the format, so that a
+//! wrong idea about the layout shows up as a corrupt image or a missing-key
+//! row rather than as silence.
+//!
+//! The field map this walks is verified in `docs/formats/wwd-v1.md`; that
+//! document is the evidence, this module is one consumer of it.
+//!
+//! ## Pipeline, and what each step is imitating
+//!
+//! | Step | Here | Retail |
+//! |---|---|---|
+//! | inflate the main block | [`expand`] | `WwdFile_InflateMainBlock` @0x160790 |
+//! | walk the plane headers | `wwd::split` | `CGameLevel::LoadWwd` @0x15d280 |
+//! | read one plane | [`render_plane`] | `CDDrawWorkerHost::Read` @0x161640 |
+//! | resolve an image-set name | [`load_frame_set`] | `CDDrawWorkerRegistry::m_10map.Lookup` |
+//! | build the registry keys | [`installed_key`] | `CDDrawWorkerRegistry::InstallTree` @0x154f80 |
+//! | pick the three registry roots | [`registry_roots`] | `CPlay::LoadActionTileSprites` @0xdb600, `LoadLevelImages` @0xdb7e0, `LoadGameImages` @0xdb8a0 |
+//! | frame number from a resource name | [`first_number`] | `CDDrawWorker::BuildFramesFromSymTab` @0x1521f0 — skip to the first digit, then `atoi` |
+//! | draw one cell | the `plane.tiles()` loop | `CDDrawWorkerHost::Draw` @0x162010 |
+//! | complain about a bad handle | [`record_missing`] | `CDDrawWorkerHost::ValidateTiles` @0x163510 |
+//!
+//! ## Addressing
+//!
+//! [`expand`] rebuilds `header || inflated main block` and hands that whole
+//! image to `wwd::split`, because **every offset in a WWD is absolute from
+//! byte 0 of the image, header included** — retail relies on the same thing,
+//! `memcpy`ing the header ahead of the inflate output at 0x160790. Dropping
+//! the header to save 1524 bytes would shift every plane, tile and object
+//! offset.
+//!
+//! ## Tile handles
+//!
+//! A cell is a `u32` split into two halves, and retail's own diagnostics name
+//! them: `ValidateTiles` @0x163510 formats *"Bad map image set value (%i)"*
+//! for `handle >> 16` and *"Bad map tile value (%i)"* for `handle & 0xffff`.
+//! So the high word selects one of the plane's image sets and the low word
+//! selects a frame inside it. Two handles are reserved, both proven from
+//! `Draw`: `wwd::TILE_CLEAR` (`0xffffffff`) draws nothing, and
+//! `wwd::TILE_FILL` (`0xeeeeeeee`) colour-fills the cell — retail issues
+//! `BltEx(..., 0x1000400, &m_bltFx)` with `m_bltFx.dwFillColor` taken from the
+//! plane header's `fill_color`, which [`rgba_for_fill`] imitates by treating
+//! that value as a palette index.
+//!
+//! In practice neither branch fires much: across all 63 shipped WWDs the high
+//! word is 0 in every one of 261 129 cells, and `TILE_FILL` never appears at
+//! all. Both paths exist for correctness on a hand-authored level, not because
+//! retail data needs them.
+//!
+//! ## Image-set registry keys
+//!
+//! This is the only genuinely non-obvious part. A plane names its image sets
+//! with keys like `ACTION`, `LEVEL_WATER`, `GAME_CURSORZ` — but nothing in the
+//! WWD says how those map onto archive directories. Retail builds them at load
+//! time: `CDDrawWorkerRegistry::InstallTree` @0x154f80 walks a resource
+//! subtree and joins each directory level onto a prefix with `"_"`
+//! (`sprintf(buf, "%s%s%s", sub, prefix, e->m_name)`), and `CPlay` installs
+//! exactly three trees:
+//!
+//! ```text
+//! <level bank>\TILEZ    prefix ""        ->  ROCKZ_EDGE      CPlay::LoadActionTileSprites @0xdb600
+//! <level bank>\IMAGEZ   prefix "LEVEL"   ->  LEVEL_WATER     CPlay::LoadLevelImages       @0xdb7e0
+//! <game bank>\IMAGEZ    prefix "GAME"    ->  GAME_CURSORZ    CPlay::LoadGameImages        @0xdb8a0
+//! ```
+//!
+//! [`installed_key`] is that join run backwards: given a resource's directory
+//! path, produce the key retail would have filed it under. The header *also*
+//! carries the same three `(directory, prefix)` pairs at 0x1d0/0x374/0x3f4 and
+//! 0x574/0x594, so [`registry_roots`] prefers those and falls back to the
+//! hardcoded triple — but retail never reads them (`docs/formats/wwd-v1.md`
+//! marks them proven-unread), so the fallback is the authoritative path and
+//! the header values are a cross-check that happens to agree on all 63 files.
+//!
+//! ## Missing references are data, not errors
+//!
+//! An unresolved image set or absent frame does not abort the render; it is
+//! counted in [`MapReport`] and emitted as a TSV row (level, plane, image set,
+//! frame, cell count, reason). A level that renders with zero rows is one
+//! whose entire tile-reference graph resolved, which is the actual assertion
+//! this module makes about the format.
+//!
+//! ## Not modelled
+//!
+//! Planes are rendered independently, so `z_coord` ordering, the parallax
+//! `movement_x/y_percent`, `scroll_x/y` and the wrap flags — all of which
+//! `CDDrawWorkerHost` applies at runtime — have no effect on the output. Plane
+//! objects (`offset_objects`) are not drawn at all: this renders the tile
+//! geometry, not a frame of the game.
+
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};

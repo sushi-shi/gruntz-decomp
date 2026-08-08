@@ -240,6 +240,31 @@ See the module docs for the per-field disassembly citations; the short version:
   palette from EOF and stops the token loop when the last row fills.
 * **The fill-run cap is 126, not 127** — the exporter never emits the byte `0xFF`.
 
+### WWD and ANI
+
+Both now have a verified field/value map in `docs/formats/`, tiered per field:
+[`wwd-v1.md`](../docs/formats/wwd-v1.md) and
+[`ani-v1.md`](../docs/formats/ani-v1.md). Note that `wwd.rs`'s field names came
+from a [third-party spec](../docs/reference/wwd-spec-datashenanigans.md), not
+from this project's own recovery — so the write-up is a *verification* of that
+spec against retail's readers and all 63 shipped WWDs, not a transcription of
+it. Headlines:
+
+* **`+0x00` is a header size, not a signature.** Retail compares `<=` and then
+  does arithmetic with the value; the spec (and our `WwdFile.h`) call it
+  `signature`.
+* **Sixteen file-header slots and five plane-header slots are proven unread**,
+  including `width_px`/`height_px`
+  (redundant with `tilesWide * tilePixelWidth`) and every path/prefix string.
+  The object record's `flags_add` is stepped over without a load.
+* **The checksum runs over the *compressed* block.** The spec's formula matches
+  0 of 63 files; corrected, 52 of 63, the rest within one byte. Retail never
+  verifies it.
+* **ANI's four mode fields** now have their complete observed domains, over
+  1038 resources / 13 480 records — plus the two enumerators our `GZ_ENUM_*`
+  types are missing (`step_mode` 0 and `position_mode` 0, the latter being
+  13 478 of 13 480 values).
+
 ## Conventions
 
 * No `as` casts. `gruntz-cast` provides `as_usize` / `as_u64` / `as_i64` for the
