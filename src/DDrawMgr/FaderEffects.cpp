@@ -177,6 +177,8 @@ CFaderRadial::~CFaderRadial() {
 }
 
 // @early-stop
+// Retail spills the inner `x` counter and keeps m_srcSurface in edi across the
+// Lock/Unlock pair; cl does the reverse, so its frame is one dword smaller.
 RVA(0x0017fa40, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
     CFxModeT4* cfg = static_cast<CFxModeT4*>(desc);
@@ -219,28 +221,25 @@ i32 CFaderRadial::ApplyInit(CFxModeDesc* desc) {
         for (i32 x = 0; x < m_srcSurface->m_width; x++) {
             i32 dx = x - m_centerX;
             i32 dy = y - m_centerY;
-            float r = static_cast<float>(
+            CFaderRadialCell cell;
+            cell.m_radius = static_cast<float>(
                 (static_cast<double>(m_maxRadius)
                  - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale - g_faderBiasR)
             );
-            float fade = r / m_fadeDivisor - g_faderBiasFade;
-            float vx = static_cast<float>(dx) * fade;
-            float vy = static_cast<float>(-dy) * fade;
-            u8 pix;
+            float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
+            cell.m_vx = static_cast<float>(dx) * fade;
+            cell.m_vy = static_cast<float>(m_centerY - y) * fade;
             u8* base = static_cast<u8*>(m_srcSurface->Lock(0));
             if (base != NULL) {
-                pix = *static_cast<u8*>(
+                u8 pix = *static_cast<u8*>(
                     (base + m_srcSurface->m_bytesPerPixel * x + m_srcSurface->m_pitch * y)
                 );
                 m_srcSurface->m_ddSurface->Unlock(0);
+                cell.m_pixel = pix;
             } else {
-                pix = 0;
+                cell.m_pixel = 0;
             }
-            CFaderRadialCell* cell = &m_cells[y * m_srcSurface->m_width + x];
-            cell->m_vx = vx;
-            cell->m_vy = vy;
-            cell->m_radius = r;
-            cell->m_pixel = pix;
+            m_cells[y * m_srcSurface->m_width + x] = cell;
         }
     }
     return 1;
@@ -272,7 +271,7 @@ void CFaderRadial::RenderFrame(i32 frame) {
             i32 px = m_centerX + static_cast<i32>((c->m_vx / sf));
             i32 py = m_centerY - static_cast<i32>((c->m_vy / sf));
             if (px > 0 && px < m_dstSurface->m_width && py > 0 && py < m_dstSurface->m_height) {
-                (base)[py * m_dstSurface->m_pitch + px] = static_cast<u8>(c->m_pixel);
+                (base)[py * m_dstSurface->m_pitch + px] = c->m_pixel;
             }
         }
     }

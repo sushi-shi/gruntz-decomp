@@ -18,6 +18,9 @@
 
 DATA(0x001efb10)
 const float g_c10 = 0.0f;
+// Degrees -> radians, NEGATED: ImageRotateBlit rotates clockwise.
+DATA(0x001efb14)
+const float g_degToRadNeg = -0.01745329238474369f;
 DATA(0x001efb18)
 const float g_rasterScale = 16384.0f;
 DATA(0x001efb1c)
@@ -56,9 +59,6 @@ DATA(0x002becf8)
 i32 g_rasterVtxCount = 0;
 DATA(0x002becfc)
 i16 g_warpColorkey = 0;
-
-DATA(0x001efb14)
-const float g_val_1efb14 = -0.01745329238474369f;
 
 RVA(0x00145e00, 0x26)
 i32 WarpIsPow2(i32 x) {
@@ -108,7 +108,15 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     return dir == POLYGON_WINDING_CLOCKWISE;
 }
 
+// sq[] is the source-texture rectangle (left, top, right, bottom); the quad is
+// built in WINDING order TL, TR, BR, BL, so `prod`/`mtx` index 2 is the bottom
+// RIGHT corner, not the bottom left.  Getting that wrong makes the quad a
+// bowtie: retail's own store order (0x146097 loop + the u/v tail at 0x1460e7)
+// pins it.
 // @early-stop
+// Block skeleton, slot map and the whole store set agree; the residue is which
+// x87 spill slot each `fild` temp lands in and the fxch schedule around the four
+// scale multiplies.
 RVA(0x00145f60, 0x242)
 void ImageRotateBlit(
     i32 destX,
@@ -122,8 +130,8 @@ void ImageRotateBlit(
     i32 colorkey
 ) {
 
-    i32 h = src->m_width;
-    i32 w = src->m_height;
+    i32 w = src->m_width;
+    i32 h = src->m_height;
 
     i32 sq[4];
     if (pivot != NULL) {
@@ -134,44 +142,49 @@ void ImageRotateBlit(
     } else {
         sq[0] = 0;
         sq[1] = 0;
-        sq[2] = h - 1;
-        sq[3] = w - 1;
+        sq[2] = w - 1;
+        sq[3] = h - 1;
     }
 
-    float rad = rot * 0.01745329238f;
+    float rad = rot * g_degToRadNeg;
     float sn = static_cast<float>(sin(rad));
     float cs = static_cast<float>(cos(rad));
 
-    i32 hy = h >> 1;
-    i32 hx = w >> 1;
-    i32 ex[2] = {-hx, w - hx};
-    i32 ey[2] = {-hy, h - hy};
+    i32 cx = w >> 1;
+    i32 cy = h >> 1;
+
+    float ex0 = static_cast<float>(-cx) * scale;
+    float ey0 = static_cast<float>(-cy) * scale;
+    float ex1 = static_cast<float>(w - cx) * scale;
+    float ey1 = static_cast<float>(h - cy) * scale;
+
+    ClipVtx prod[4];
+    prod[0].x = ex0;
+    prod[0].y = ey0;
+    prod[1].x = ex1;
+    prod[1].y = ey0;
+    prod[2].x = ex1;
+    prod[2].y = ey1;
+    prod[3].x = ex0;
+    prod[3].y = ey1;
 
     float tx = static_cast<float>(destX);
     float ty = static_cast<float>(destY);
 
-    ClipVtx prod[4];
-    i32 k = 0;
-    i32 iy, ix;
-    for (iy = 0; iy < 2; iy++) {
-        for (ix = 0; ix < 2; ix++) {
-            prod[k].x = static_cast<float>(ex[ix]) * scale;
-            prod[k].y = static_cast<float>(ey[iy]) * scale;
-            k++;
-        }
+    ClipVtx mtx[4];
+    for (i32 k = 0; k < 4; k++) {
+        mtx[k].y = prod[k].y * cs - prod[k].x * sn + ty;
+        mtx[k].x = prod[k].x * cs + prod[k].y * sn + tx;
     }
 
-    ClipVtx mtx[4];
-    k = 0;
-    for (iy = 0; iy < 2; iy++) {
-        for (ix = 0; ix < 2; ix++) {
-            mtx[k].x = prod[k].x * cs - prod[k].y * sn + tx;
-            mtx[k].y = prod[k].x * sn + prod[k].y * cs + ty;
-            mtx[k].u = static_cast<float>(sq[ix != 0 ? 3 : 0]);
-            mtx[k].v = static_cast<float>(sq[iy != 0 ? 2 : 1]);
-            k++;
-        }
-    }
+    mtx[0].u = static_cast<float>(sq[0]);
+    mtx[0].v = static_cast<float>(sq[1]);
+    mtx[1].u = static_cast<float>(sq[2]);
+    mtx[1].v = static_cast<float>(sq[1]);
+    mtx[2].u = static_cast<float>(sq[2]);
+    mtx[2].v = static_cast<float>(sq[3]);
+    mtx[3].u = static_cast<float>(sq[0]);
+    mtx[3].v = static_cast<float>(sq[3]);
 
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }

@@ -1639,7 +1639,7 @@ fadereffects	??_GCFaderShape@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x1
 fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17fdd0	100.0000
 fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	7	ba9fd6b0e73f	0x17f5e0	100.0000
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	96.1197	96.1197	8	3560d595bb62	0x1804a0	96.1197
-fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	86.3860	86.3860	8	d268bad2f168	0x17fa40	86.3860
+fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	91.6023	91.6023	9	0a9d9cff5239	0x17fa40	91.6023
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	82.9134	82.9134	9	7f9bf125dca6	0x1817e0	82.9134
 fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	96.5000	96.5000	6	d344b571dcbe	0x17fe00	96.5000
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	471a472ee35d	0x181660	100.0000
@@ -1653,11 +1653,11 @@ fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	97.9257	2	b8429a8e25ea	0x180fb0	98.8538
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	3	f39c044ffd10	0x17f660	90.0654
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	84.1354	84.1354	5	87b88082f560	0x180640	84.1354
-fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	7	b6487e9e89ac	0x17fc60	88.5833
+fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	8	1bf4ecf4e429	0x17fc60	88.5833
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	79.1288	78.9601	4	fdf1bf49d974	0x181b00	79.1288
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	79.3985	79.3985	5	f8c792890931	0x17ff30	79.3985
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	5	0aa0f545213f	0x182610	99.9831
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	60.5154	60.5154	8	d06b3d634d41	0x181e50	60.5154
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	60.5154	60.5073	8	d06b3d634d41	0x181e50	60.5154
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	4	98e20e0705d5	0x17d8f0	100.0000
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:83fdeb88f0de	0x17e240	100.0000
@@ -2523,7 +2523,7 @@ imageowned	?Rebuild@CDDrawShadeBlit@@QAEHVCString@@HH@Z	89.8816	89.8816	5	0f798c
 imageowned	?Teardown@CDDrawShadeBlit@@QAEXXZ	100.0000	100.0000	3	7047e4950e75	0x148d10	100.0000
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	68.3273	68.3273	3	a4bff2e37bc5	0x146fe0	68.3273
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3578	99.3578	6	3e9cc4a7c9c5	0x1461b0	99.3578
-imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	36.4251	36.4192	3	7a3ece01fb14	0x145f60	36.4251
+imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	4	378c6ebd3241	0x145f60	79.4671
 imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	85.7027	3	04a8dbc7f9c4	0x145e30	85.7027
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	39.2950	39.2950	3	3c4226537380	0x1471d0	39.2950
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	52.1496	52.1496	2	17b59cdd83ae	0x146550	52.1496

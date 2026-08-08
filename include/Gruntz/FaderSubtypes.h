@@ -17,11 +17,15 @@ GZ_ENUM_FORWARD(FaderMode);
 class CDDSurface;
 struct CDDPalette;
 
+// m_pixel is a BYTE, not an i32: CFaderRadial::RenderFrame reads it with
+// `mov al,BYTE PTR [ebx+0xc]` (0x17fd2a) and ApplyInit writes it with a byte
+// store (0x17fbc9).  The three trailing pad bytes are why ApplyInit's cell
+// write is a 4-dword struct copy - it carries the padding too.
 struct CFaderRadialCell {
     float m_vx;
     float m_vy;
     float m_radius;
-    i32 m_pixel;
+    u8 m_pixel;
 };
 SIZE(0x10);
 
