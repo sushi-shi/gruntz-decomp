@@ -551,7 +551,6 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
     return 1;
 }
 
-// @early-stop
 RVA(0x000c7490, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -561,9 +560,11 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_wwdObject->m_flags |= 0x2000002;
-    m_object->m_drawFillArg = g_gameReg->m_logicPump->m_tables[5];
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
+    CWwdGameObjectA* draw = m_object;
+    draw->m_drawActive = 1;
+    draw->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    draw->m_drawFillArg = fill;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_ACTOR_BEHIND) {
         o->m_sortKey = SORTKEY_ACTOR_BEHIND;

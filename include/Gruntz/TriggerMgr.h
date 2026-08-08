@@ -167,7 +167,7 @@ public:
 
     i32 DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY);
 
-    i32 ReinitGroup(i32 col, i32 row);
+    void ReinitGroup(i32 col, i32 row);
 
     i32 Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId unusedC, i32 unusedD);
 
@@ -270,6 +270,8 @@ public:
     i32
     LoadPowerupIconSprites(PickupType type, i32 geoB, i32 geoA, i32 m130, i32 warpIdx, i32 m120);
 
+    i32 SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
+
     i32 LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind);
 
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
@@ -333,8 +335,6 @@ public:
     i32 m_groupFlag;
 };
 SIZE_UNKNOWN();
-
-i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex);
 
 extern i32 g_groupSentinel;
 

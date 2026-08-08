@@ -366,75 +366,60 @@ i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
 
 RVA(0x00036f30, 0x114)
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
-    if (!hDlg) {
-        return;
-    }
+    if (hDlg) {
+        HWND hCombo = GetDlgItem(hDlg, nIDCombo);
+        if (hCombo) {
+            CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
+            if (pCtrl) {
+                pCtrl->SetRange(1, 3, 1);
+                SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, TRUE, IDX(nSel));
 
-    HWND hCombo = GetDlgItem(hDlg, nIDCombo);
-    if (!hCombo) {
-        return;
+                HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
+                if (hCaption) {
+                    char szCaption[64] = "Video Resolution ";
+                    switch (g_videoResolutionMode) {
+                        case RES_640X480:
+                            strcat(szCaption, "(640x480)");
+                            break;
+                        case RES_800X600:
+                            strcat(szCaption, "(800x600)");
+                            break;
+                        case RES_1024X768:
+                            strcat(szCaption, "(1024x768)");
+                            break;
+                    }
+                    SetWindowTextA(hCaption, szCaption);
+                }
+            }
+        }
     }
-
-    CSliderCtrl* pCtrl = static_cast<CSliderCtrl*>(CWnd::FromHandle(hCombo));
-    if (!pCtrl) {
-        return;
-    }
-
-    pCtrl->SetRange(1, 3, 1);
-    SendMessageA(pCtrl->m_hWnd, TBM_SETPOS, TRUE, IDX(nSel));
-
-    HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
-    if (!hCaption) {
-        return;
-    }
-
-    char szCaption[64] = "Video Resolution ";
-    switch (g_videoResolutionMode) {
-        case RES_640X480:
-            strcat(szCaption, "(640x480)");
-            break;
-        case RES_800X600:
-            strcat(szCaption, "(800x600)");
-            break;
-        case RES_1024X768:
-            strcat(szCaption, "(1024x768)");
-            break;
-        default:
-            return;
-    }
-    SetWindowTextA(hCaption, szCaption);
 }
 
 RVA(0x000370a0, 0xf1)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
-    if (!pCtrl) {
-        return;
-    }
+    if (pCtrl) {
+        // The slider position arrives from Windows as a raw LRESULT.
+        g_videoResolutionMode =
+            static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, TBM_GETPOS, 0, 0));
 
-    // The slider position arrives from Windows as a raw LRESULT.
-    g_videoResolutionMode = static_cast<Resolution>(SendMessageA(pCtrl->m_hWnd, TBM_GETPOS, 0, 0));
-
-    HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
-    if (!hCaption) {
-        return;
+        HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
+        if (hCaption) {
+            char szCaption[64] = "Video Resolution ";
+            switch (g_videoResolutionMode) {
+                case RES_640X480:
+                    strcat(szCaption, "(640x480)");
+                    break;
+                case RES_800X600:
+                    strcat(szCaption, "(800x600)");
+                    break;
+                case RES_1024X768:
+                    strcat(szCaption, "(1024x768)");
+                    break;
+            }
+            SetWindowTextA(hCaption, szCaption);
+        }
     }
-
-    char szCaption[64] = "Video Resolution ";
-    switch (g_videoResolutionMode) {
-        case RES_640X480:
-            strcat(szCaption, "(640x480)");
-            break;
-        case RES_800X600:
-            strcat(szCaption, "(800x600)");
-            break;
-        case RES_1024X768:
-            strcat(szCaption, "(1024x768)");
-            break;
-        default:
-            return;
-    }
-    SetWindowTextA(hCaption, szCaption);
 }
 
 RVA(0x000371e0, 0x5b)

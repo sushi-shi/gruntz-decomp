@@ -233,12 +233,6 @@ i32 CBootyState::LeaveState(GameStateId) {
     return 1;
 }
 
-// @early-stop
-// frame 0x54 vs retail's 0x48 and one extra callee-saved push: cl pins `this` in ebx
-// and promotes 0 into ebp as the function-wide zero register (`push ebp` for every
-// zero argument, `cmp eax,ebp` for every null test); retail pins `this` in ebp, spills
-// a copy to [esp+0x20], and pushes the immediates. See
-// docs/patterns/redundant-local-becomes-the-zero-register.md - find the spurious local.
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0 && (g_gameReg->m_scoreHud)->AllRecordsInBounds()) {
@@ -246,73 +240,79 @@ i32 CBootyState::ShowSecretBonusMessage() {
         if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
             return 0;
         }
-        RECT r1, r2, r3;
-        SetRect(&r1, 0, -15, SCREEN_W_PX, 0x1d1);
-        SetRect(&r2, 0, 0x19, SCREEN_W_PX, 0x1f9);
-        SetRect(&r3, 0, 0x38, SCREEN_W_PX, 0x78);
+        RECT rA, rB, rTitle;
+        SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
+        SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
+        SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
         s.Format("The Secret of Secretz:");
-        ShowHudMessage(m_world, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         CString s2(g_secretMsgA);
         CString s3(g_secretMsgB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
-        ShowHudMessage(m_world, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_world, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s2, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_world, &s3, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        return 1;
+    } else {
+        i32 count = static_cast<i32>(((g_gameReg->m_scoreHud)->GroupRatio() * g_secretRatioScale));
+        i32 rowBase = (g_gameReg->m_scoreHud->m_count - 1) / 4;
+        SecretBonusTier category =
+            (count >= 0x64) ? SECRET_BONUS_TIER_THREE
+                            : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
+
+        if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+            return 0;
+        }
+        CString title;
+        RECT rTitle;
+        SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
+        // Retail branches on the tier here and calls Format on both arms with a literal that
+        // pools to one address (0x60babc): the singular/plural texts came out identical.
+        if (category == SECRET_BONUS_TIER_ONE) {
+            title.Format("Secret Bonus Acquired:");
+        } else {
+            title.Format("Secret Bonus Acquired:");
+        }
+        ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+
+        for (i32 j = 0; j < IDX(category); j++) {
+            RECT rA, rB;
+            if (category == SECRET_BONUS_TIER_ONE) {
+                SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
+                SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
+            } else if (category == SECRET_BONUS_TIER_TWO) {
+                if (j == 0) {
+                    SetRect(&rA, 0, -20, SCREEN_W_PX, 0x1cc);
+                    SetRect(&rB, 0, 0x14, SCREEN_W_PX, 0x1f4);
+                } else {
+                    SetRect(&rA, 0, 0x46, SCREEN_W_PX, 0x226);
+                    SetRect(&rB, 0, 0x6e, SCREEN_W_PX, 0x24e);
+                }
+            } else {
+                if (j == 0) {
+                    SetRect(&rA, 0, -60, SCREEN_W_PX, 0x1a4);
+                    SetRect(&rB, 0, -20, SCREEN_W_PX, 0x1cc);
+                } else if (j == 1) {
+                    SetRect(&rA, 0, 0x1e, SCREEN_W_PX, 0x1fe);
+                    SetRect(&rB, 0, 0x46, SCREEN_W_PX, 0x226);
+                } else {
+                    SetRect(&rA, 0, 0x78, SCREEN_W_PX, 0x24e);
+                    SetRect(&rB, 0, 0xa0, SCREEN_W_PX, 0x276);
+                }
+            }
+            i32 idx = rowBase * 3 + j;
+            CString s5(g_secretMsgRows[idx].strA);
+            CString s6(g_secretMsgRows[idx].strB);
+            for (i32 k = 0; k < s5.GetLength(); k++) {
+                s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
+            }
+            ShowHudMessage(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        }
         return 1;
     }
-
-    i32 count = static_cast<i32>(((g_gameReg->m_scoreHud)->GroupRatio() * g_secretRatioScale));
-    i32 rowBase = (g_gameReg->m_scoreHud->m_count - 1) / 4;
-    SecretBonusTier category =
-        (count >= 0x64) ? SECRET_BONUS_TIER_THREE
-                        : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
-
-    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
-        return 0;
-    }
-    CString title;
-    RECT rTitle;
-    SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
-    title.Format("Secret Bonus Acquired:");
-    ShowHudMessage(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
-
-    for (i32 j = 0; j < IDX(category); j++) {
-        RECT rA, rB;
-        if (category == SECRET_BONUS_TIER_ONE) {
-            SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
-            SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
-        } else if (category == SECRET_BONUS_TIER_TWO) {
-            if (j == 0) {
-                SetRect(&rA, 0, -20, SCREEN_W_PX, 0x1cc);
-                SetRect(&rB, 0, 0x14, SCREEN_W_PX, 0x1f4);
-            } else {
-                SetRect(&rA, 0, 0x46, SCREEN_W_PX, 0x226);
-                SetRect(&rB, 0, 0x6e, SCREEN_W_PX, 0x24e);
-            }
-        } else {
-            if (j == 0) {
-                SetRect(&rA, 0, -60, SCREEN_W_PX, 0x1a4);
-                SetRect(&rB, 0, -20, SCREEN_W_PX, 0x1cc);
-            } else if (j == 1) {
-                SetRect(&rA, 0, 0x1e, SCREEN_W_PX, 0x1fe);
-                SetRect(&rB, 0, 0x46, SCREEN_W_PX, 0x226);
-            } else {
-                SetRect(&rA, 0, 0x78, SCREEN_W_PX, 0x24e);
-                SetRect(&rB, 0, 0xa0, SCREEN_W_PX, 0x276);
-            }
-        }
-        i32 idx = rowBase * 3 + j;
-        CString s5(g_secretMsgRows[idx].strA);
-        CString s6(g_secretMsgRows[idx].strB);
-        for (i32 k = 0; k < s5.GetLength(); k++) {
-            s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
-        }
-        ShowHudMessage(m_world, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_world, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
-    }
-    return 1;
 }
 
 // @early-stop

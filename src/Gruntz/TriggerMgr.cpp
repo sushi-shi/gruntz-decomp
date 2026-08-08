@@ -723,7 +723,7 @@ i32 CTriggerMgr::ResetGroup(
         cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
-        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
+        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
 
     TargetSelectionKind sel;
@@ -870,7 +870,7 @@ i32 CTriggerMgr::DestroyGroup(i32 screenX, i32 screenY, i32 worldX, i32 worldY) 
         return 0;
     }
     i32* rec = static_cast<i32*>(m_recList.GetHead());
-    CGrunt* cellp = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
+    CGrunt* cellp = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     if (cellp == NULL) {
         return 0;
     }
@@ -917,11 +917,10 @@ i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00079b80, 0x194)
-i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
+void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_groupInitialized != 0 || g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        return 0;
+        return;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
     CString name;
@@ -952,10 +951,9 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (lvl->m_guts->EnsureSub(outR, outC, fragment) != 0) {
         lvl->m_guts->m_hlBusy = 1;
     } else {
-        m_byteArr.SetAtGrow(m_byteArr.GetSize(), static_cast<u8>(IDX(fragment)));
+        m_byteArr.Add(static_cast<u8>(IDX(fragment)));
     }
     m_groupInitialized = 1;
-    return 1;
 }
 
 RVA(0x00079d90, 0xc5)
@@ -990,9 +988,8 @@ void CTriggerMgr::ResetSpawnState() {
     this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_RESET);
 }
 
-// @early-stop
 RVA(0x00079ea0, 0xc2)
-i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
+i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         return 0;
     }
@@ -1007,7 +1004,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
         tile = grid->m_rowInts[ty][tx * 8 - tx];
     }
     if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
-        g_gameReg->m_cmdGrid->LoadPowerupIconSprites(
+        this->LoadPowerupIconSprites(
             PICKUP_WARPSTONE,
             (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
             (ty << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1015,19 +1012,20 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
             anchorIndex,
             0
         );
-        return 1;
-    }
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    i32 idx = anchorIndex - 1;
-    CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
-    if (rec != NULL) {
-        g_gameReg->m_cmdGrid
-            ->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
+    } else {
+        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+        i32 idx = anchorIndex - 1;
+        CPlay::Anchor* rec = (idx < 0 || idx >= 4) ? NULL : &world->m_anchors[idx];
+        if (rec != NULL) {
+            this->LoadPowerupIconSprites(PICKUP_WARPSTONE, rec->m_x, rec->m_y, 0, anchorIndex, 0);
+        }
     }
     return 1;
 }
 
 // @early-stop
+// retail's only frame is an 8-byte `Coord` written twice and never read; no source
+// spelling reproduces it - docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = col * TM_GRID_COLS + row;
@@ -1060,28 +1058,25 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         if (k > PICKUP_EQUIPPABLE_LAST) {
             k = cell->m_toolId;
         }
-        if (k != PICKUP_WARPSTONE) {
-            goto mark;
-        }
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            CWarlord* fx = m_pendingFx;
-            if (fx != NULL) {
-                fx->RaiseBattleAlert();
+        if (k == PICKUP_WARPSTONE) {
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                CWarlord* fx = m_pendingFx;
+                if (fx != NULL) {
+                    fx->RaiseBattleAlert();
+                }
             }
+            this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
         }
-        this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_EXIT);
-        cell->m_cellRemovalNotified = 1;
-        return;
+    } else {
+        k = cell->m_entranceReason;
+        if (k > PICKUP_EQUIPPABLE_LAST) {
+            k = cell->m_toolId;
+        }
+        if (k == PICKUP_WARPSTONE) {
+            this->ResetSpawnState();
+        }
+        m_gruntzLostByPlayer[col] += 1;
     }
-    k = cell->m_entranceReason;
-    if (k > PICKUP_EQUIPPABLE_LAST) {
-        k = cell->m_toolId;
-    }
-    if (k == PICKUP_WARPSTONE) {
-        this->ResetSpawnState();
-    }
-    m_gruntzLostByPlayer[col] += 1;
-mark:
     cell->m_cellRemovalNotified = 1;
 }
 
@@ -1533,7 +1528,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         cell = NULL;
     } else {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
-        cell = m_grid[rec[1] + rec[0] * TM_GRID_COLS];
+        cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
@@ -2617,6 +2612,8 @@ void CTriggerMgr::DestroyAllAnims() {
 }
 
 // @early-stop
+// same dead 8-byte Coord temp as NotifyCell - see
+// docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
@@ -2633,33 +2630,32 @@ i32 CTriggerMgr::ToggleRegionA() {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == NULL) {
-        return 1;
+    if (cell != NULL && cell->m_tileOwnerHi == g_curPlayer) {
+        if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
+            OverlayTick();
+        } else {
+            PickupType v = cell->m_entranceReason;
+            if (v > PICKUP_EQUIPPABLE_LAST) {
+                v = cell->m_toolId;
+            }
+            if (v == PICKUP_WAND) {
+                Coord pt = cell->m_lastTilePx;
+                g_gameReg->m_cmdGrid
+                    ->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+            } else {
+                m_pendingFxKind = IDX(v) + kPendingFxIdBase;
+                (static_cast<CPlay*>(g_gameReg->m_curState))
+                    ->LoadCursorSprites(IDX(v) + kPendingFxIdBase, 0);
+            }
+            OverlayTick();
+        }
     }
-    if (cell->m_tileOwnerHi != g_curPlayer) {
-        return 1;
-    }
-    if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
-        OverlayTick();
-        return 1;
-    }
-    PickupType v = cell->m_entranceReason;
-    if (v > PICKUP_EQUIPPABLE_LAST) {
-        v = cell->m_toolId;
-    }
-    if (v == PICKUP_WAND) {
-        Coord pt = cell->m_lastTilePx;
-        g_gameReg->m_cmdGrid->ResetGroup(pt.m_x, pt.m_y, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
-        OverlayTick();
-        return 1;
-    }
-    m_pendingFxKind = IDX(v) + kPendingFxIdBase;
-    (static_cast<CPlay*>(g_gameReg->m_curState))->LoadCursorSprites(IDX(v) + kPendingFxIdBase, 0);
-    OverlayTick();
     return 1;
 }
 
 // @early-stop
+// 99.73: retail accumulates the grid index into the rec[0]*15 register (edi holds
+// rec[1]); operand order is inert, so this is a register-assignment residue.
 RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
@@ -2675,32 +2671,23 @@ i32 CTriggerMgr::ToggleRegionB() {
         i32* rec = static_cast<i32*>(m_recList.GetHead());
         cell = m_grid[rec[0] * TM_GRID_COLS + rec[1]];
     }
-    if (cell == NULL) {
-        return 1;
+    if (cell != NULL && cell->m_tileOwnerHi == g_curPlayer) {
+        if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
+            OverlayTick();
+        } else {
+            PickupType kind = cell->m_vehiclePickupType;
+            if (kind == PICKUP_SCROLL) {
+                CGameObject* o = cell->m_object;
+                g_gameReg->m_cmdGrid
+                    ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+            } else if (kind != PICKUP_NONE) {
+                m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
+                (static_cast<CPlay*>(g_gameReg->m_curState))
+                    ->LoadCursorSprites(IDX(kind) + kPendingFxIdBase, 0);
+            }
+            OverlayTick();
+        }
     }
-    if (cell->m_tileOwnerHi != g_curPlayer) {
-        return 1;
-    }
-    if (cell->m_entranceReason >= PICKUP_TOYZ_FIRST) {
-        OverlayTick();
-        return 1;
-    }
-    PickupType kind = cell->m_vehiclePickupType;
-    if (kind == PICKUP_SCROLL) {
-        CGameObject* o = cell->m_object;
-        g_gameReg->m_cmdGrid
-            ->ResetGroup(o->m_screenX, o->m_screenY, 0, 0, 0, TARGET_SELECTION_TOY, 1);
-        OverlayTick();
-        return 1;
-    }
-    if (kind == PICKUP_NONE) {
-        OverlayTick();
-        return 1;
-    }
-    m_pendingFxKind = IDX(kind) + kPendingFxIdBase;
-    (static_cast<CPlay*>(g_gameReg->m_curState))
-        ->LoadCursorSprites(IDX(kind) + kPendingFxIdBase, 0);
-    OverlayTick();
     return 1;
 }
 

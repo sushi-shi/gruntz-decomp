@@ -115,6 +115,8 @@ void CUserLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
+// 96.36: only instruction scheduling around the CMapStringToPtr::Lookup call
+// (retail pushes &val before computing the name `lea`).
 RVA(0x00008c00, 0x152)
 i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj) {
     char name[SERIAL_NAME_LEN];
@@ -132,14 +134,13 @@ i32 CWapX::Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameOb
             m_animWorker = obj->m_animWorker;
             if (strlen(name) == 0) {
                 m_value = NULL;
-                return 1;
+            } else {
+                CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
+                void* val = 0;
+                map->Lookup(name, val);
+                m_value = static_cast<CAniElement*>(val);
             }
-
-            CMapStringToPtr* map = &m_animWorker->m_ownerCtx->m_animRegistry->m_animations;
-            void* val = 0;
-            map->Lookup(name, val);
-            m_value = static_cast<CAniElement*>(val);
-            return 1;
+            break;
         }
         case SERIAL_SAVE: {
 

@@ -413,7 +413,7 @@ finalize:
 tail:
 
     if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-        SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
+        m_tileMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
     }
     if (m_arrivalState == AI_TOOLTHIEF) {
         TryPowerupAtTile();

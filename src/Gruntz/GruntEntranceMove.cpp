@@ -1017,8 +1017,8 @@ finalize:
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    if (cur->m_finished != 0 && cur->m_frameTicksLeft == 0) {
         if (m_freezeUnfrozen != 0) {
             m_entranceActive = 0;
             ReadConfigFromButeMgr();
