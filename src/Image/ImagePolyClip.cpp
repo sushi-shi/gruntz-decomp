@@ -91,8 +91,8 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float dx2 = v2->x - x0;
         float dy2 = v2->y - y0;
         float cross = dx1 * dy2 - dx2 * dy1;
-        if (cross != 0.0f) {
-            if (cross > 0.0f) {
+        if (cross != g_c10) {
+            if (cross > g_c10) {
                 sign = POLYGON_WINDING_COUNTERCLOCKWISE;
             } else {
                 sign = POLYGON_WINDING_CLOCKWISE;
@@ -313,10 +313,10 @@ i32 RotateRasterize(
     float bound0, clip0, clip1, clip2;
     if (clipFlag == -1) {
 
-        clip1 = 0.0f;
+        clip1 = g_c10;
         clip0 = static_cast<float>(dst->m_width);
         clip2 = static_cast<float>(dst->m_height);
-        bound0 = 0.0f;
+        bound0 = g_c10;
     } else {
         bound0 = static_cast<float>(clipFlag);
         clip0 = static_cast<float>(clipB);

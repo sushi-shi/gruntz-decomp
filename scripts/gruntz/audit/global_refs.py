@@ -58,8 +58,14 @@ real false-positive family the first draft reported as a finding:
   2. `$S<n>` / `$Sdata_data_<hash>` local-static suffixes canonicalized away -- the
      hash covers recorded relocations the delinker does not reproduce, so one
      `s_QUESTZ` reads as two different symbols;
-  3. NONZERO ADDEND dropped, which is the delinker's unsized-datum fallback
-     (`?s_table@?$CActRegPool@VCGrunt@@...` -> `?g_gruntDirNorthEast + 0x2b0`);
+  3. an addend PAST THE END of the symbol it names dropped, which is the
+     delinker's unsized-datum fallback (`?s_table@?$CActRegPool@VCGrunt@@...`
+     resolves to `?g_gruntDirNorthEast + 0x2b0`, and `g_gruntDirNorthEast` is 12
+     bytes). Bounding by the symbol's own extent rather than demanding a zero
+     addend matters: cl folds a field offset into the address of an indexed
+     array element on one side and not the other, so `_g_rasterEdgeL + 0x14`
+     against `_g_rasterEdgeL + 0` is the SAME reference and a zero-addend rule
+     reported all seven of `WarpTextureBlit`'s as ours-only;
   4. a name only ONE side references INSIDE THE FUNCTION dropped.
 
 Filter 4 is the one that costs coverage, and deliberately: it means this sieve
@@ -195,7 +201,7 @@ def _functions(secs) -> dict[str, tuple[int, int, list]]:
     return out
 
 
-def _refs(start: int, end: int, relocs, want: int, dropped) -> collections.Counter:
+def _refs(start, end, relocs, want, dropped, bounds=None):
     """The multiset of ADDEND-ZERO relocation targets in [start, end).
 
     A nonzero addend is dropped, and that single rule is what makes this sieve
@@ -213,11 +219,27 @@ def _refs(start: int, end: int, relocs, want: int, dropped) -> collections.Count
     for off, nm, ty, addend in relocs:
         if ty != want or not start <= off < end:
             continue
-        if addend:
-            dropped["nonzero addend (delinker fallback / array element)"] += 1
+        nm = canon(nm)
+        if addend and bounds is not None and addend >= bounds.get(nm, 0):
+            dropped["addend past the symbol (delinker unsized-datum fallback)"] += 1
             continue
-        c[canon(nm)] += 1
+        c[nm] += 1
     return c
+
+
+def _extents(secs) -> dict[str, int]:
+    """{defined symbol: bytes it owns} -- next symbol in its section, or the end.
+
+    Bounds the addend test below. A datum's own field offset is IN bounds; the
+    delinker's unsized-datum fallback lands far past the symbol it named.
+    """
+    out: dict[str, int] = {}
+    for sec in secs:
+        owners = sec["owners"]
+        for i, (val, nm) in enumerate(owners):
+            end = owners[i + 1][0] if i + 1 < len(owners) else sec["size"]
+            out[canon(nm)] = max(out.get(canon(nm), 0), end - val)
+    return out
 
 
 def _universe(secs) -> set[str]:
@@ -294,6 +316,7 @@ def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False,
             continue
         bf, tf = _functions(bsecs), _functions(tsecs)
         buniv, tuniv = _universe(bsecs), _universe(tsecs)
+        bext, text = _extents(bsecs), _extents(tsecs)
         for sym in sorted(set(bf) & set(tf)):
             if COMPGEN.match(sym):
                 dropped["compiler-generated COMDAT"] += 1
@@ -312,8 +335,8 @@ def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False,
             # "we invented a read" rows in one function.
             if clamp:
                 te = min(te, ts + extent)
-            b = _refs(bs, be, brel, want, dropped)
-            t = _refs(ts, te, trel, want, dropped)
+            b = _refs(bs, be, brel, want, dropped, bext)
+            t = _refs(ts, te, trel, want, dropped, text)
             for name in [n for n in b if n not in tuniv]:
                 dropped["symbol the target never names"] += b.pop(name)
             for name in [n for n in t if n not in buniv]:
