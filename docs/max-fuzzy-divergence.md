@@ -270,3 +270,114 @@ Concrete, in the order they pay:
 - **`gruntz.core.branches` raised on `jecxz`**, taking `jcc_sieve` down entirely.
   cl5 does emit it ahead of an inline `rep` block. Added to `JCC` (no signed/unsigned
   twin, so a flip involving it lands in `OTHER`).
+
+---
+
+## 8. The baseline reproduces; the SNAPSHOT in it does not (2026-08-08)
+
+A lane building a **pristine worktree at `main`, zero source bytes changed**, reported
+12 LOST + 40 REGRESS against the committed `config/match_baseline.tsv`. If a clean
+build cannot reproduce the committed baseline, every lane's "N up, M down, MAX held"
+is measured against a moving reference. It was investigated as nondeterminism. **It is
+not.**
+
+### The build is deterministic — measured three ways
+
+`report.json` is **byte-identical** across all of:
+
+| pair | result |
+|---|---|
+| two from-scratch builds in the SAME worktree (build products wiped between) | identical |
+| two DIFFERENT worktrees, different absolute paths, same commit | identical |
+| INCREMENTAL (built at `c088e0a6f`, then `git checkout` HEAD, rebuild) vs from-scratch | identical |
+
+`build/gen/symbol_names.csv` is identical too. Two independent `cl` invocations on the
+same source differ in exactly **2 bytes** — the COFF header `TimeDateStamp` at offset
+4 — which is why every base `.obj` md5 changes between runs while nothing downstream
+does. 27 of 343 delinked target objs also differ byte-wise run to run, and likewise
+score identically. **Do not chase an obj-hash difference; chase `report.json`.**
+
+### What actually moved: the baseline is a hand-taken snapshot with no provenance
+
+`cur_pct` records the build that the last `python -m gruntz.match.status update` saw.
+**Nothing regenerates it.** `gruntz build` only *reads* the file (`status check`); the
+integrate step banks `README.md` automatically (it is written inside the build, by
+`status summary --write-readme`) but the baseline only ever changes when a human runs
+`update` and commits it.
+
+At the time of measurement the committed baseline had last been written at
+`c088e0a6f` — **26 commits and 200 changed source files** behind `HEAD`. 172 of 4300
+rows disagreed with a clean build before anyone touched anything. Worse, even a
+from-scratch build **at `c088e0a6f` itself** disagreed on **20 rows** (e.g.
+`?DrawBorder@CLightFxRender` 100.00 → 88.10, `?Verify@CNetSession` 100.00 → 89.53):
+the file was written from a report whose source is not the source it was committed
+with — a lane worktree's state, carried in by cherry-pick.
+
+This cannot corrupt the MAX gate — `best_pct` is a ratchet and a stale row can only
+*over*-report — but it buries the one dip a lane owns among the ones it inherited,
+which is how a real regression gets waved through. That is the whole cost, and it is
+enough: **a baseline that cannot reproduce launders regressions.**
+
+### Two real tool bugs found underneath it
+
+Both were `cmd_check` disagreeing with `cmd_update` about the same row. Fixed, and
+pinned by `TestCheckReportsWhatUpdateAlreadyKnows` in `gruntz.match.gate_selftest`.
+
+1. **TOUCHED pre-empted REGRESS.** `classify` tested `real_edit()` *before*
+   `pct < best`, so an **edited** function's drop below its own high-water was never
+   reported — inverting the module's own doctrine, which is that editing a body is
+   exactly when the ratchet must hold. **Twelve** below-best rows were invisible inside
+   a 252-row TOUCHED bucket, the worst of them **−38.24**
+   (`?Blowfish_decipher@@YAXPAI0@Z`, 99.88 → 61.64, whose sibling
+   `?Blowfish_encipher` moved 60.41 → 100.00 in the same window — look there first).
+   The below-best test now runs first; TOUCHED means "edited and NOT below best".
+2. **A cross-unit COMDAT move was reported as a LOST.** `cmd_update` carries a
+   high-water across a unit change **by rva alone**; `cmd_check` keyed the same test on
+   `(unit, rva)` and so could not see it. **5 of the 7 "LOST" were transfers** — every
+   one of them at **100.00%** under its new unit, two of them large *improvements*
+   (`??_GCButeTree` 45.58 → 100.00, `??_GCTypeCollRuntime` 31.59 → 100.00) reported as
+   losses. `check` now emits **MOVED** (new unit) / **RENAMED** (same unit, new mangled
+   name) and gates the carried best at the row's new home, so a transfer that *dropped*
+   is a REGRESS instead of an ungated NEW.
+
+Net at `30a9b5ec9`, same build: LOST 7 → **2** (the two genuine ones are
+`??1CRezBufferObject` / `??_GCRezBufferObject` in `fader`, whose rva nothing claims),
+REGRESS 32 → **44** (the 12 that TOUCHED was hiding).
+
+### The third LOST category: a preserved-absent row reports forever
+
+`cmd_update` deliberately RETAINS a baseline row whose body no current source claim
+emits (`preserved_absent`), so an inline COMDAT that temporarily loses its emitter
+keeps its high-water. Correct — but `check` then prints it as LOST on **every**
+subsequent build until an emitter returns, so a lane inherits a standing LOST floor it
+had no part in. `a15276c63` (remove artificial COMDAT emitters) created a batch of
+these; `fef59116a` and `30a9b5ec9` gave most of them real emitters again.
+
+This is what the original 12-LOST report was made of. **Every single row it named is
+at 100.00% today** — `?PointInBounds@CGameLevel`, `?ResetParamBlock@CGameLevel`,
+`??0WwdRegion`, `??0WwdDirtyRect`, `??0WwdGridNode`, `??1CWorldSoundSet`,
+`??0CUserLogic` (best 89.04 → 100.00), `??0CGameObject` (91.06 → 100.00) — some in
+their original unit, some transferred. **Not one was a loss.** Read a LOST row as
+"nothing emits this body right now"; check the rva before calling it a regression.
+
+### `check` now states its own currency
+
+```
+BASELINE CURRENCY: 172 of 4298 rows differ from the cur_pct snapshot in
+config/match_baseline.tsv, so that file describes an OLDER tree than this build.
+  Of the 44 REGRESS above, 14 were ALREADY below best in that snapshot (inherited)
+  and 30 are NEW since it.
+```
+
+**`carried` is not yours; `fresh` is the set you are answerable for.** Read that line
+before attributing anything to your own edit.
+
+### What a lane / the orchestrator must do
+
+- **Commit the baseline with the source it measures.** `status update` belongs in the
+  integrate step next to the README bank, at the *integration* commit — not in the
+  lane worktree whose tree differs from the merge result.
+- **Do not auto-refresh it from the build.** It would erase the drift signal (`cur` is
+  what makes carried-vs-fresh computable) and dirty 25 worktrees on every build.
+- **Never diagnose drift from obj hashes or from a current-% total.** The pipeline is
+  deterministic; if a number moved and the source did not, the reference moved.

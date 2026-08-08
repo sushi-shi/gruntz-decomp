@@ -566,39 +566,144 @@ def cmd_update(args) -> int:
 # --------------------------------------------------------------------------- #
 # check: regressions vs baseline                                              #
 # --------------------------------------------------------------------------- #
-def classify(cur, base_funcs, fp, cur_rvas=frozenset()):
+def index_by_rva(rows: dict[tuple[str, str], dict]) -> dict[int, tuple[str, str]]:
+    """{rva: key} over the rows whose rva is UNIQUE. Mirrors cmd_update's base_by_addr.
+
+    Non-unique addresses are dropped rather than guessed at: symbol_names can pack
+    several names onto one retail rva (jump-table/COMDAT packing), and carrying a
+    high-water onto the wrong one of those is exactly the erosion the ratchet exists
+    to prevent."""
+    by: dict[int, tuple[str, str]] = {}
+    dup: set[int] = set()
+    for key, row in rows.items():
+        addr = row.get("addr")
+        if addr is None:
+            continue
+        if addr in by:
+            dup.add(addr)
+        else:
+            by[addr] = key
+    for addr in dup:
+        by.pop(addr, None)
+    return by
+
+
+def classify(cur, base_funcs, fp, cur_rvas=frozenset(), rvas=None):
     """Yield (kind, unit, fn, cur_pct, best_pct) for every interesting delta.
 
-    TOUCHED/REMOVED require a *real* edit (both fingerprints real and differing); a
-    fallback fingerprint is "unknown", so it can't excuse a drop - the function
-    still gets gated against best (REGRESS) or counted as LOST. This is what keeps a
-    stale/absent cache from silently hiding regressions.
+    REMOVED requires a *real* edit (both fingerprints real and differing) or a
+    still-occupied rva; a fallback fingerprint is "unknown", so it can't excuse a
+    drop - the function still gets gated against best (REGRESS) or counted as LOST.
+    This is what keeps a stale/absent cache from silently hiding regressions.
 
-    `cur_rvas` is the set of (unit, rva) present in this build. A vanished baseline
-    row whose recorded rva is still in it is a RENAME (same function, new mangled
-    name - e.g. a signature change), classed REMOVED not LOST, so it doesn't gate."""
+    TOUCHED DOES NOT SUPPRESS REGRESS (fixed 2026-08-08). It used to: `real_edit`
+    was tested BEFORE `pct < best`, so an edited function's drop below its own
+    high-water was never reported. Measured on an untouched tree at main: TWELVE
+    below-best rows were invisible inside a 252-row TOUCHED bucket, the worst of them
+    -38.24 (?Blowfish_decipher@@YAXPAI0@Z, 99.88 -> 61.64). That inverted the
+    module's own doctrine - editing a body is EXACTLY when the high-water must hold -
+    and it is the mechanism by which a wall of TOUCHED launders real regressions. The
+    below-best test now runs FIRST; TOUCHED means "edited and NOT below its best".
+
+    IDENTITY IS THE RVA, NOT THE UNIT. `rvas` is {(unit, fn): rva} for this build.
+    A COMDAT inline ctor/dtor legitimately migrates between units when its emitters
+    change (?PointInBounds@CGameLevel, ??0WwdRegion, ??_GCCButeTree ...); cmd_update
+    already carries the high-water across such a move by rva alone, so cmd_check must
+    recognise the same thing or it reports a TRANSFER as a LOST. Measured at main:
+    5 of 7 "LOST" were transfers, all sitting at 100.00% under their new unit (two of
+    them were 45.58 -> 100.00 and 31.59 -> 100.00 IMPROVEMENTS). Such a row is yielded
+    as MOVED *and* gated against the same body's best at its new home.
+
+    `cur_rvas` (the legacy per-unit {(unit, rva)} set) is only consulted when `rvas`
+    is not supplied; it cannot see a cross-unit move, which is why it is superseded."""
+    rvas = rvas or {}
+    if rvas:
+        here = {addr for key, addr in rvas.items() if key in cur and addr is not None}
+    else:                                   # legacy caller: per-unit tuples only
+        here = {addr for _, addr in cur_rvas}
+    # A baseline row whose (unit, fn) has vanished but whose BODY (rva) is emitted
+    # under a new key that has no baseline row of its own: the high-water travels.
+    base_by_addr = index_by_rva(base_funcs)
+    migrated: dict[tuple[str, str], tuple[str, str]] = {}   # old key -> new key
+    for key in cur:
+        if key in base_funcs:
+            continue
+        addr = rvas.get(key)
+        old = base_by_addr.get(addr) if addr is not None else None
+        if old is not None and old != key and old not in cur and old not in migrated:
+            migrated[old] = key
+    moved_from = {new: old for old, new in migrated.items()}
+
     for key, pct in sorted(cur.items()):
         unit, fn = key
         prev = base_funcs.get(key)
+        old_key = moved_from.get(key)
+        if prev is None and old_key is not None:
+            prev = base_funcs[old_key]
         if prev is None:
             yield ("NEW", unit, fn, pct, None)
+            continue
+        if old_key is not None:             # informational; the gating happens below
+            yield ("MOVED" if old_key[0] != unit else "RENAMED",
+                   unit, fn, pct, prev["best"])
+        if pct < prev["best"] - EPS:        # BELOW-BEST FIRST - see the docstring
+            yield ("REGRESS", unit, fn, pct, prev["best"])
         elif real_edit(prev["fp"], fp(*key)):
             yield ("TOUCHED", unit, fn, pct, prev["best"])
-        elif pct < prev["best"] - EPS:
-            yield ("REGRESS", unit, fn, pct, prev["best"])
         elif pct > prev["best"] + EPS:
             yield ("IMPROVE", unit, fn, pct, prev["best"])
 
     for key, prev in sorted(base_funcs.items()):
-        if key in cur:
+        if key in cur or key in migrated:
             continue
         unit, fn = key
         addr = prev.get("addr")
-        # vanished: a rename (rva still occupied) or a real source edit -> REMOVED;
-        # otherwise a genuine loss of a previously-matched function (LOST, gated).
-        renamed = addr is not None and (unit, addr) in cur_rvas
+        # vanished: a rename (rva still occupied ANYWHERE) or a real source edit ->
+        # REMOVED; otherwise a genuine loss of a previously-matched function (LOST).
+        renamed = addr is not None and addr in here
         yield ("REMOVED" if (renamed or real_edit(prev["fp"], fp(*key))) else "LOST",
                unit, fn, None, prev["best"])
+
+
+def baseline_currency(cur, base_funcs, regress) -> dict:
+    """How far the committed baseline's SNAPSHOT is from this build, and which of the
+    reported dips the snapshot already contained.
+
+    THE PROBLEM THIS ANSWERS (measured 2026-08-08). The build is deterministic - two
+    from-scratch builds, in two different worktrees, at two different filesystem
+    paths, produce a BYTE-IDENTICAL report.json - yet a pristine worktree at main
+    reported 32 REGRESS + 7 LOST with not one source byte changed. The reason is that
+    `cur_pct` is a hand-taken snapshot: nothing regenerates config/match_baseline.tsv,
+    `gruntz build` only READS it, and the integrate step banks README.md (automatic,
+    inside the build) but not the baseline (manual, `status update`). At the time of
+    measurement the committed baseline was written 26 commits and 200 changed source
+    files earlier, so 172 of 4300 rows disagreed with a clean build before anyone
+    touched anything.
+
+    That does NOT corrupt the MAX gate - `best_pct` is a ratchet and a stale row can
+    only over-report - but it buries the ONE dip a lane owns in a wall of dips it
+    inherited, which is how a real regression gets waved through. So split them:
+
+      carried - the snapshot ALREADY had this row below its best. Pre-existing debt;
+                not this lane's, and it will still be here after a plain `update`.
+      fresh   - the snapshot had it AT or ABOVE its best and now it is below. This is
+                the set a lane is actually answerable for.
+
+    `drift` counts rows whose current % differs from the recorded snapshot at all -
+    the direct measure of how out-of-date the file is."""
+    drift = sum(1 for key, prev in base_funcs.items()
+                if key in cur and abs(cur[key] - prev["cur"]) > EPS)
+    carried = fresh = 0
+    for unit, fn, _pct, _best in regress:
+        prev = base_funcs.get((unit, fn))
+        if prev is None:                      # a MOVED row, gated at its new home
+            fresh += 1
+        elif prev["cur"] < prev["best"] - EPS:
+            carried += 1
+        else:
+            fresh += 1
+    return {"snapshot_drift": drift, "compared_rows": len(cur),
+            "regress_carried": carried, "regress_fresh": fresh}
 
 
 def cmd_check(args) -> int:
@@ -607,12 +712,13 @@ def cmd_check(args) -> int:
     if not base_funcs:
         sys.exit("no baseline yet - seed it: python -m gruntz.match.status update")
     fp, _, stale = fingerprinter()
-    # (unit, rva) present now - lets a vanished baseline row be recognised as a rename.
+    # (unit, fn) -> rva for this build. The rva is the BODY's identity, so it is what
+    # tells a rename and a cross-unit COMDAT move from a genuine loss (see classify).
     rvas = func_rvas()
     cur_rvas = {(u, rvas[(u, fn)]) for (u, fn) in cur if (u, fn) in rvas}
 
     buckets: dict[str, list] = {}
-    for kind, unit, fn, pct, best in classify(cur, base_funcs, fp, cur_rvas):
+    for kind, unit, fn, pct, best in classify(cur, base_funcs, fp, cur_rvas, rvas):
         buckets.setdefault(kind, []).append((unit, fn, pct, best))
 
     # `stale` is now populated (classify called fp for every function). A stale/absent
@@ -627,9 +733,10 @@ def cmd_check(args) -> int:
     regress = buckets.get("REGRESS", [])
     lost = buckets.get("LOST", [])
     n = len(regress) + len(lost)
+    currency = baseline_currency(cur, base_funcs, regress)
 
     if args.json:
-        print(json.dumps({"degraded_units": sorted(stale), **{k: [
+        print(json.dumps({"degraded_units": sorted(stale), "currency": currency, **{k: [
             {"unit": u, "function": f, "cur": p, "best": b,
              "delta": (None if p is None else round(p - b, 4) if b is not None else None)}
             for (u, f, p, b) in v] for k, v in buckets.items()}}, indent=2))
@@ -652,9 +759,28 @@ def cmd_check(args) -> int:
     show("LOST", lost, "->")
     if args.all:
         show("IMPROVE", buckets.get("IMPROVE", []), "->")
+        show("MOVED", buckets.get("MOVED", []), "->")
+        show("RENAMED", buckets.get("RENAMED", []), "->")
         show("TOUCHED", buckets.get("TOUCHED", []), "~>")
         show("NEW", buckets.get("NEW", []), "")
         show("REMOVED", buckets.get("REMOVED", []), "->")
+
+    moved, renamed = buckets.get("MOVED", []), buckets.get("RENAMED", [])
+    if moved or renamed:
+        print(f"\n{len(moved)} MOVED between units + {len(renamed)} RENAMED in place "
+              f"(same retail rva, high-water carried; `--all` lists them) - transfers, "
+              f"not losses.")
+    drift = currency["snapshot_drift"]
+    if drift:
+        print(f"\nBASELINE CURRENCY: {drift} of {currency['compared_rows']} rows differ "
+              f"from the cur_pct snapshot in config/match_baseline.tsv, so that file "
+              f"describes an OLDER tree than this build.\n"
+              f"  Of the {len(regress)} REGRESS above, {currency['regress_carried']} were "
+              f"ALREADY below best in that snapshot (inherited) and "
+              f"{currency['regress_fresh']} are NEW since it.\n"
+              f"  The MAX gate is unaffected (best_pct is a ratchet), but attribution is: "
+              f"refresh with `python -m gruntz.match.status update` and commit it with the "
+              f"source it measures.")
 
     if n:
         # Non-fatal by design: a fuzzy% drop is often NOT something the matcher

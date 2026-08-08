@@ -754,6 +754,100 @@ class TestBestEverRatchet(unittest.TestCase):
         self.assertAlmostEqual(row["best"], 87.0526, places=3)
 
 
+class TestCheckReportsWhatUpdateAlreadyKnows(unittest.TestCase):
+    """`check` must classify a row the same way `update` does. Where the two disagreed,
+    `check` invented losses and hid regressions (both measured on main, 2026-08-08)."""
+
+    @staticmethod
+    def _buckets(cur, base, rvas, fps=None):
+        """Classify with UNEDITED source by default: an unlisted function reports the
+        fingerprint its baseline row already carries, so only `fps` marks a real edit."""
+        fps = fps or {}
+
+        def fp(unit, fn):
+            row = base.get((unit, fn))
+            return fps.get((unit, fn), row["fp"] if row else "unseen")
+
+        kinds: dict[str, set] = {}
+        for kind, unit, fn, _pct, _best in status.classify(
+                cur, base, fp, frozenset(), rvas):
+            kinds.setdefault(kind, set()).add((unit, fn))
+        return kinds
+
+    def test_an_edited_function_below_its_best_is_a_REGRESS_not_a_TOUCHED(self):
+        """THE MASK. `real_edit` used to be tested BEFORE `pct < best`, so editing a body
+        hid its drop below the high-water - inverting the module's own doctrine (an edit
+        is exactly when the ratchet must hold). Twelve rows were hidden this way at main,
+        the worst -38.24 (?Blowfish_decipher@@YAXPAI0@Z, 99.88 -> 61.64)."""
+        base = {("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"): {
+            "best": 99.8750, "cur": 99.8750, "tries": 2, "fp": "aaaa", "addr": 0x1a2b30}}
+        kinds = self._buckets(
+            {("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"): 61.6375}, base,
+            {("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"): 0x1a2b30},
+            {("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"): "bbbb"})
+        self.assertIn(("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"),
+                      kinds.get("REGRESS", set()))
+        self.assertNotIn(("blowfish", "?Blowfish_decipher@@YAXPAI0@Z"),
+                         kinds.get("TOUCHED", set()))
+
+    def test_an_edited_function_at_its_best_is_still_a_TOUCHED(self):
+        """The mask fix must not swallow the bucket: an edit that held is TOUCHED."""
+        base = {("u", "?F@@QAEHXZ"): {"best": 90.0, "cur": 90.0, "tries": 2,
+                                      "fp": "aaaa", "addr": 0x1000}}
+        kinds = self._buckets({("u", "?F@@QAEHXZ"): 90.0}, base,
+                              {("u", "?F@@QAEHXZ"): 0x1000},
+                              {("u", "?F@@QAEHXZ"): "bbbb"})
+        self.assertEqual(kinds.get("TOUCHED"), {("u", "?F@@QAEHXZ")})
+        self.assertNotIn("REGRESS", kinds)
+
+    def test_a_comdat_that_migrates_units_is_MOVED_not_LOST(self):
+        """A COMDAT inline ctor/dtor legitimately changes emitting unit. cmd_update
+        already carries its high-water by rva; cmd_check keyed the same test on
+        (unit, rva) and so called the transfer a LOSS. Five of main's seven "LOST"
+        were this - every one of them sitting at 100.00% under its new unit."""
+        base = {("typekeycoll", "??_GCButeTree@@UAEPAXI@Z"): {
+            "best": 45.5833, "cur": 45.5833, "tries": 4, "fp": "aaaa", "addr": 0x16e9c0}}
+        cur = {("buteglobals", "??_GCButeTree@@UAEPAXI@Z"): 100.0}
+        kinds = self._buckets(cur, base,
+                              {("buteglobals", "??_GCButeTree@@UAEPAXI@Z"): 0x16e9c0})
+        self.assertNotIn("LOST", kinds)
+        self.assertNotIn("NEW", kinds)      # nor an ungated fresh row at the new unit
+        self.assertEqual(kinds.get("MOVED"), {("buteglobals", "??_GCButeTree@@UAEPAXI@Z")})
+
+    def test_a_migrated_comdat_that_dropped_is_gated_at_its_new_home(self):
+        """The transfer must not become an ungated NEW row - that would launder the drop."""
+        base = {("old", "??0X@@QAE@XZ"): {"best": 100.0, "cur": 100.0, "tries": 1,
+                                          "fp": "aaaa", "addr": 0x15b300}}
+        kinds = self._buckets({("new", "??0X@@QAE@XZ"): 72.5}, base,
+                              {("new", "??0X@@QAE@XZ"): 0x15b300})
+        self.assertEqual(kinds.get("REGRESS"), {("new", "??0X@@QAE@XZ")})
+        self.assertNotIn("NEW", kinds)
+
+    def test_a_body_with_no_emitter_anywhere_is_still_a_real_LOST(self):
+        """The fix must not turn every loss into a transfer: an rva nothing claims is
+        a genuine loss (main's two, ??1CRezBufferObject and its ??_G, are exactly this)."""
+        base = {("fader", "??1CRezBufferObject@@UAE@XZ"): {
+            "best": 100.0, "cur": 100.0, "tries": 1, "fp": "aaaa", "addr": 0x17f330}}
+        kinds = self._buckets({}, base, {})
+        self.assertEqual(kinds.get("LOST"), {("fader", "??1CRezBufferObject@@UAE@XZ")})
+
+    def test_currency_splits_inherited_dips_from_the_ones_a_lane_caused(self):
+        """A stale cur_pct snapshot cannot corrupt the MAX ratchet, but it does bury the
+        one dip a lane owns among the ones it inherited. Name the split."""
+        base = {
+            ("u", "?carried@@QAEHXZ"): {"best": 95.0, "cur": 76.6, "tries": 1,
+                                        "fp": "a", "addr": 0x1},
+            ("u", "?fresh@@QAEHXZ"): {"best": 100.0, "cur": 100.0, "tries": 1,
+                                      "fp": "a", "addr": 0x2},
+        }
+        cur = {("u", "?carried@@QAEHXZ"): 76.6, ("u", "?fresh@@QAEHXZ"): 66.4}
+        regress = [("u", "?carried@@QAEHXZ", 76.6, 95.0),
+                   ("u", "?fresh@@QAEHXZ", 66.4, 100.0)]
+        c = status.baseline_currency(cur, base, regress)
+        self.assertEqual((c["regress_carried"], c["regress_fresh"]), (1, 1))
+        self.assertEqual(c["snapshot_drift"], 1)   # only ?fresh moved off the snapshot
+
+
 # --------------------------------------------------------------------------- #
 # cleanliness: an UNMEASURED metric is not a measurement of zero               #
 # --------------------------------------------------------------------------- #
