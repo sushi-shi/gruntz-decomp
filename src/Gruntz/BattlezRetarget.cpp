@@ -53,15 +53,6 @@
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/GruntDirStatics.h>
 
-static inline Coord** CoordArrayData(CPtrArray& a) {
-    union {
-        void** m_untyped;
-        Coord** m_typed;
-    } band;
-    band.m_untyped = a.GetData();
-    return band.m_typed;
-}
-
 // @early-stop
 RVA(0x000358a0, 0x2d6)
 i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {

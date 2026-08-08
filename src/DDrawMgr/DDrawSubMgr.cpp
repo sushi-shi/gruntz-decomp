@@ -52,10 +52,6 @@
 DATA(0x001eff2c)
 float g_sndPanScale = 0.009999999776482582f;
 
-static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
-    return p->m_cues.GetCount();
-}
-
 // @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (118 fns) came from the static library. It belongs to another compiland.
@@ -560,7 +556,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry(const char* key, void* src) {
     if (m_emitGate != 0) {
         return 0;
     }
-    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
+    LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
         return 0;
     }
@@ -578,7 +574,7 @@ LeafCue* CDDrawSubMgrLeafScan::CreateEntry2(const char* key, void* src) {
     if (m_emitGate != 0) {
         return 0;
     }
-    LeafCue* e = new LeafCue(LeafReadMapCount(this), m_ownerCtx);
+    LeafCue* e = new LeafCue(CueCount(), m_ownerCtx);
     if (e == NULL) {
         return 0;
     }

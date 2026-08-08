@@ -46,10 +46,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static inline CGruntzMgr* Owner(CState* s) {
-    return s->m_mgr;
-}
-
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled;
 
@@ -171,7 +167,7 @@ i32 CCreditsState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontPair->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
         if (!InputVirtual()) {
-            Owner(this)->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
+            owner()->ReportError(IDX(IDS_RESTORE_GAME), 0xfa0);
             return 0;
         }
     }
@@ -198,8 +194,8 @@ i32 CCreditsState::Render() {
                 if (m_previousStateId == GAMESTATE_MENU) {
                     wp = IDX(CMD_MAIN_MENU);
                 }
-                PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
-                Owner(this)->m_owner->m_running = 0;
+                PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
+                owner()->m_owner->m_running = 0;
                 break;
             }
         }
@@ -212,13 +208,13 @@ i32 CCreditsState::Render() {
     v4->m_frontPair->m_surface->Flip(0);
     v4->m_backPair->BltSelf(v4->m_overlayPair);
 
-    if (!m_musicStarted && Owner(this)->m_musicEnabled) {
-        Owner(this)->m_sound->PlayByName("CREDITZ", 1);
+    if (!m_musicStarted && owner()->m_musicEnabled) {
+        owner()->m_sound->PlayByName("CREDITZ", 1);
         m_musicStarted = 1;
     }
 
     if (m_fxEnabled) {
-        CGruntzSoundInnerZ* s = Owner(this)->m_sound->FindBank("MONOLITH");
+        CGruntzSoundInnerZ* s = owner()->m_sound->FindBank("MONOLITH");
         if (s && !s->IsStarted()) {
             LoadCreditzAssets();
         }
@@ -256,9 +252,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
         } else {
-            PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+            PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
         }
     }
     return 1;
@@ -273,9 +269,9 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
         return 1;
     }
     if (m_previousStateId == GAMESTATE_MENU) {
-        PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        PostMessageA(Owner(this)->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
+        PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
     }
     return 1;
 }

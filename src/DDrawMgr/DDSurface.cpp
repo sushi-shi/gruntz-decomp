@@ -16,6 +16,7 @@
 #include <Image/PcxFormat.h>
 #include <Image/RasterVtx.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 
 #include <ddraw.h>
@@ -23,15 +24,6 @@
 #include <string.h>
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
-
-static __inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
-    RECT rc;
-    rc.left = l;
-    rc.top = t;
-    rc.right = r;
-    rc.bottom = b;
-    return rc;
-}
 
 DATA(0x00253c88)
 CPtrArray g_imageCache;

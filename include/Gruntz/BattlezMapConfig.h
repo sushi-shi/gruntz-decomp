@@ -19,6 +19,16 @@ class CGrunt;
 class CGruntzMgr;
 class CPlay;
 
+// CPtrArray stores Coord* as void*; this is the typed view of its backing store.
+static inline Coord** CoordArrayData(CPtrArray& a) {
+    union {
+        void** m_untyped;
+        Coord** m_typed;
+    } band;
+    band.m_untyped = a.GetData();
+    return band.m_typed;
+}
+
 class CBattlezMapConfig {
 public:
     i32 LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff);

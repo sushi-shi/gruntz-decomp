@@ -68,15 +68,6 @@ i32 g_stepRow;
 DATA(0x0022b738)
 i32 g_diffTier;
 
-static inline Coord** CoordArrayData(CPtrArray& a) {
-    union {
-        void** m_untyped;
-        Coord** m_typed;
-    } band;
-    band.m_untyped = a.GetData();
-    return band.m_typed;
-}
-
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     list->m_walkCursor = list->m_list.GetHeadPosition();
     if (list->m_walkCursor == NULL) {

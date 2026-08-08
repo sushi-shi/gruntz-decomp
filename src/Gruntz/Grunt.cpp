@@ -68,6 +68,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
@@ -95,15 +96,6 @@ double s_fpZero = 0.0;
 // `CRect(l,t,r,b)` here would be a `call ??0CRect@@QAE@HHHH@Z`; retail has none.
 // A pointer-taking inline is what produces the `lea <reg>,[esi+off]` base plus
 // one register per value that the retail schedule shows.
-static __inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
-    RECT rc;
-    rc.left = l;
-    rc.top = t;
-    rc.right = r;
-    rc.bottom = b;
-    return rc;
-}
-
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;
 

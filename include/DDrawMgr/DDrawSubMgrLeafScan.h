@@ -65,6 +65,11 @@ public:
     CString FindKeyOfValue(LeafCue* target);
     i32 MatchSub(LeafCue* cue, i32 startPrimary);
 
+    // The registered-cue count; retail expands it at every use.
+    i32 CueCount() const {
+        return m_cues.GetCount();
+    }
+
     void ClearMap();
 
     void RemoveByValue(struct LeafCue* p);

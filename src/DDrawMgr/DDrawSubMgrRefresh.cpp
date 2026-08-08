@@ -45,10 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
-    return p->m_cues.GetCount();
-}
-
 // @identity-TODO RefreshAsset@CDDrawSubMgrLeafScan - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (118 fns) came from the static library. It belongs to another compiland.

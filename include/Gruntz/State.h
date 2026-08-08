@@ -143,7 +143,7 @@ public:
         return static_cast<CSymParser*>(m_symParser);
     }
     CGruntzMgr* owner() {
-        return static_cast<CGruntzMgr*>(m_mgr);
+        return m_mgr;
     }
     CSymTab* attractState() {
         return (m_stateBank);
