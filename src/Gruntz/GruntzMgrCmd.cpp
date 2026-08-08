@@ -299,7 +299,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         ITEMCHEAT(0x12, "Toobz are cool!");
                     case CHEAT_GIVE_MAGIC_WAND:
                         ITEMCHEAT(0x13, "Magic Wandz are cool!");
-                    case CHEAT_GIVE_SECRET:
+                    // 0x14 == PICKUP_WARPSTONE. The private CHEATZ.TXT names this
+                    // code MPWARPSTONEZ, and the item list is alphabetical, so 0x14
+                    // sits exactly between Wandz (0x13) and Welder's Kitz (0x15).
+                    // Retail's message is the developers acknowledging that the code
+                    // for it was withheld from the shipped ATTRIBUTEZ cheat table.
+                    case CHEAT_GIVE_WARPSTONE:
                         ITEMCHEAT(0x14, "Hey, how did you get this cheat?");
                     case CHEAT_GIVE_WELDERS_KIT:
                         ITEMCHEAT(0x15, "Welder's Kitz are cool!");

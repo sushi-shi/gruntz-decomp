@@ -92,6 +92,11 @@ GZ_ENUM_BEGIN_SPLIT(PickupType, i8)
     // m_brickPickupType seed uses.
     PICKUP_BROWNBRICK = 0x22,
     PICKUP_BRICKZ_FIRST = PICKUP_BROWNBRICK,
+    // The colour names come from the break cues (GAME_REDBRICKBREAK, ...); the
+    // cheat messages in CGruntzMgr::OnCommand name the same four by FUNCTION,
+    // which is what each colour actually does:
+    //     red 0x23 = Gauntlet-Breaker   blue 0x24 = Teleport
+    //     gold 0x25 = Indestructible    black 0x26 = Bomb
     PICKUP_REDBRICK = 0x23,
     // The four COLOURED bricks; brown (0x22) is the plain one and is excluded.
     PICKUP_COLORBRICK_FIRST = PICKUP_REDBRICK,
