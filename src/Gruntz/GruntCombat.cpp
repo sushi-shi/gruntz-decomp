@@ -195,7 +195,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         LeafCue* out = 0;                                                                          \
-        MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, (key), out);                        \
+        MapLookup(reg->m_world->m_soundRegistry->m_cues, (key), out);                              \
         cue = out;                                                                                 \
     } while (0)
 
