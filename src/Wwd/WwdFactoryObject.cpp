@@ -735,7 +735,6 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 }
 
 // @early-stop
-// @early-stop
 // Retail re-reads m_element for the final guard - it loads it into the register
 // that held `this`, since every member address it still needs is already in a
 // spill slot from the ar->Read() calls. cl forwards the store instead and drops
