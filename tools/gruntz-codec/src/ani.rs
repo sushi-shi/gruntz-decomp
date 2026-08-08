@@ -6,17 +6,32 @@
 //! @0x165460 and `CAniRecordView::Parse` @0x168c60.
 //!
 //! ```text
-//! +0x00 [u8; 8]   header words whose meaning is not yet proven
-//! +0x08 i32       animation flags
-//! +0x0c i32       record count
-//! +0x10 u32       animation-name byte length
-//! +0x14 [u8; 12]  reserved/header words
+//! +0x00 u32       always 0x20; NEVER READ by retail        (see below)
+//! +0x04 u32       always 0;    NEVER READ by retail
+//! +0x08 i32       animation flags                          `[ebp-0x18]` @0x165477
+//! +0x0c i32       record count                             `[ebx+0x0c]` @0x1654c7
+//! +0x10 u32       animation-name byte length               `[ebx+0x10]` @0x165483
+//! +0x14 [u8; 12]  always zero; NEVER READ by retail
 //! +0x20 [u8; n]   animation name (not NUL-terminated on disk)
 //! then `count` records:
 //!   10 x i16      flags, step, loop, position, param, duration, draw,
 //!                 delta-x, delta-y, reserved
 //!   if flags&2    NUL-terminated whitespace-separated sound-cue names
 //! ```
+//!
+//! The name offset is **hard-coded**, not derived: `CAniElement::Build` opens
+//! with `mov ebx,ebp / add ebp,0x20` and reads the name from `ebp` directly.
+//! Enumerating every header access in that function gives exactly four —
+//! `[ebp-0x18]`, `[ebx+0x0c]`, `[ebx+0x10]` and `[ebp+0x00]` — so **20 of the
+//! 32 header bytes are never read at all**.
+//!
+//! Those 20 bytes are also constant across the whole corpus: `+0x00` is 0x20
+//! and `+0x04`/`+0x14..0x1f` are zero in all 660 retail and 378 demo ANI
+//! resources. It is tempting to read `+0x00 == 0x20` as a header size, and the
+//! authoring tool may well have meant it that way — but the sibling PID/RID
+//! header, which is also 0x20 bytes, carries **10** in the same slot
+//! (constant across 29 798 sprites), so the two cannot both be a size. The
+//! honest statement is the one that is proven: the game ignores the field.
 
 use core::fmt;
 
@@ -31,10 +46,14 @@ pub const FLAG_FORCE_CUE: u16 = 0x08;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct AniHeader {
+    /// `+0x00..0x08`. Proven **never read** by `CAniElement::Build`; constant
+    /// `20 00 00 00 00 00 00 00` across all 1038 shipped ANI resources. Kept
+    /// verbatim so a re-encode cannot silently drop it.
     pub prefix: [u8; 8],
     pub flags: i32,
     pub count: i32,
     pub name_len: u32,
+    /// `+0x14..0x20`. Proven never read; all-zero across the corpus.
     pub reserved: [u8; 12],
 }
 

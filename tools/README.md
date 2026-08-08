@@ -246,7 +246,14 @@ See the module docs for the per-field disassembly citations; the short version:
   conversions that are provably lossless on x86-64 (asserted at compile time),
   and `low_byte()` for the places the *format* deliberately truncates. Anything
   that could silently lose information uses `TryFrom` and reports the failure.
-* Every public item cites the retail RVA that proves it.
+* Every public item cites the evidence that proves it, which is the retail RVA
+  wherever the proof is retail's own code. Two kinds of module legitimately
+  cannot: `xmi.rs`, derived from Miles' shipped declarations
+  (`vendor/miles-6.0c/mss.h`) rather than from `GRUNTZ.EXE`, and the oracle's
+  own output writers `gif.rs` / `midi.rs`, which encode formats Gruntz never
+  reads. Everything else is engine-read and cites retail — including `bmp.rs`
+  (`CDDSurface::DecodeBmp` @0x143fc0, `SaveRle16` @0x144640). A citation-free
+  claim outside those two kinds is a gap, not a convention.
 * A hypothesis that the corpus refuted stays in the code as a named variant
   (`LiteralRule::HighBitClear`) rather than being deleted, so the next reader
   does not re-derive it.
