@@ -10,6 +10,7 @@
 #include <Enums.h>
 #include <Gruntz/CustomWorldInfoDlg.h>
 #include <Gruntz/ParseSource.h>
+#include <Pix16.h>
 #include <PlacementNew.h>
 #include <Rez/DebugPrintf.h>
 #include <Rez/RezFile.h>
@@ -666,6 +667,9 @@ i32 CSymTab::ApplyRecursive(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 
 }
 
 // @early-stop
+// residue: cl hoists the `q` address computation out of the tag branch (`lea esi,[ebx+4]`
+// ahead of the compare) where retail keeps the tag test as a bare `cmp [esi],1`, and
+// keeps &m_subTabs in a register across the two calls where cl re-leas it.
 RVA(0x0013a640, 0x2f7)
 i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 mergeDuplicates) {
     m_totalSourceLength = 0;
@@ -682,27 +686,28 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
     char* p = buf;
     char* end = buf + dataSize;
     while (p < end) {
-        if (PeekI32(p) == 1) {
+        Pix16Ptr q;
+        q.m_chars = p;
+        if (*q.m_dwords == 1) {
 
-            i32 fA = PeekI32(p + 4);
-            p += 8;
-            i32 fB = PeekI32(p);
-            i32 fC = PeekI32(p + 4);
-            p += 8;
+            q.m_dwords++;
+            i32 fA = *q.m_dwords++;
+            i32 fB = *q.m_dwords++;
+            i32 fC = *q.m_dwords++;
+            p = q.m_chars;
             char* name = p;
             p += strlen(name) + 1;
             void* existing = m_subTabs.Walk(name, m_owner->m_caseSensitive == 0);
             if (existing == NULL) {
-                CSymParser* o = m_owner;
                 CSymTab* node = new CSymTab(
-                    o,
+                    m_owner,
                     this,
                     name,
                     fA,
                     fB,
                     fC,
-                    o->m_subTabBucketCount,
-                    o->m_symbolBucketCount
+                    m_owner->m_subTabBucketCount,
+                    m_owner->m_symbolBucketCount
                 );
                 m_subTabs.Insert(&node->m_node20);
             } else {
@@ -712,16 +717,14 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             }
         } else {
 
-            i32 f1 = PeekI32(p + 4);
-            p += 8;
-            i32 f3 = PeekI32(p);
-            i32 f2 = PeekI32(p + 4);
-            p += 8;
-            i32 f4 = PeekI32(p);
-            i32 f5 = PeekI32(p + 4);
-            p += 8;
-            i32 f6 = PeekI32(p);
-            p += 4;
+            q.m_dwords++;
+            i32 f1 = *q.m_dwords++;
+            i32 f3 = *q.m_dwords++;
+            i32 f2 = *q.m_dwords++;
+            i32 f4 = *q.m_dwords++;
+            i32 f5 = *q.m_dwords++;
+            i32 f6 = *q.m_dwords++;
+            p = q.m_chars;
             char* name1 = p;
             p += strlen(name1) + 1;
             CSymRec* rec = FindOrAddSym(f5);
@@ -740,10 +743,10 @@ i32 CSymTab::ApplyRange(CRezItmBase* stream, i32 dataOff, i32 dataSize, i32 merg
             }
             p += strlen(p) + 1;
             i32* arr;
-            if (f6 != 0) {
+            if (static_cast<u32>(f6) > 0) {
                 arr = new i32[f6];
                 i32* dst = arr;
-                for (i32 i = f6; i != 0; i--) {
+                for (u32 i = static_cast<u32>(f6); i > 0; i--) {
                     *dst++ = PeekI32(p);
                     p += 4;
                 }
