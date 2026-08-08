@@ -6,6 +6,18 @@
 # A row here is an EMISSION problem, never a matching one: the body is
 # compiler-generated and byte-correct the moment cl emits it.
 #
+# MECHANISM (measured 2026-08-09, docs/patterns/inline-budget-emits-ool-comdat.md):
+# cl 5.0 keeps ONE inline-expansion budget PER CALLING FUNCTION, shared across
+# every inline expanded there. Sites that overrun it become real calls, and
+# THOSE DECLINED SITES ARE WHAT EMIT THE COMDAT. So retail having both an
+# out-of-line body and inline expansions needs no device at all - just `inline`
+# in the header and callers that expand enough to overrun the budget.
+# The budget is per CALLER, not per TU, and caller SIZE alone does nothing
+# (2 sites in a caller padded 86 -> 3779 instructions still both inlined).
+#
+# Therefore a row below means OUR CALLERS INLINE LESS THAN RETAIL'S DID - a
+# reconstruction gap in the callers, not a missing device. Fix the callers.
+#
 # rva	symbol	reason
-0x00101fa0	??0CSBI_RectOnly@@QAE@XZ	No obj emits it. Retail has BOTH this out-of-line ctor COMDAT and inline expansions at the four Build*/LoadTabSprites sites; cl gives us only the inlines. Forcing emission was measured: the COMDAT lands at 100.00 but nothing then emits ??0CStatusBarItem@@QAE@XZ, so 0x1005d0's pin dangles instead (claim count a wash) and BuildStatusBarTabs 71.58 -> 69.24, BuildGameMenu 72.33 -> 66.93. Needs the force-a-COMDAT device.
-0x000d5d70	??1CLoadable@@UAE@XZ	Emitted by 11 objs, none of them cimagecomdats - but 0xd5d70 lies INSIDE that TU's own RVA band (0xd5c10 CState::DrawScreenTextImage .. 0xd5da0 CWapObj::IsReady), so the pin cannot simply move without breaking TU contiguity. ~CLoadable is a header inline in Loadable.h; cl inlines it here and emits no COMDAT. Same force-a-COMDAT device as the row above.
+0x00101fa0	??0CSBI_RectOnly@@QAE@XZ	No obj emits it. Retail's four callers (BuildStatusBarTabs, BuildGameMenu, BuildTabzDialog, LoadTabSprites) overrun their inline budget and leave some sites as calls; ours do not, so cl expands every site. Forcing emission by hand was measured: the COMDAT lands at 100.00 but nothing then emits ??0CStatusBarItem@@QAE@XZ, so 0x1005d0's pin dangles instead (claim count a wash) and BuildStatusBarTabs 71.58 -> 69.24, BuildGameMenu 72.33 -> 66.93. Fix the callers, not the pin.
+0x000d5d70	??1CLoadable@@UAE@XZ	Emitted by 11 objs, none of them cimagecomdats - and 0xd5d70 lies INSIDE that TU's own RVA band (0xd5c10 CState::DrawScreenTextImage .. 0xd5da0 CWapObj::IsReady), so the pin cannot move without breaking TU contiguity. ~CLoadable is a header inline; cimagecomdats' own functions never overrun their budget, so cl expands it there and emits nothing. Same class as the row above.
