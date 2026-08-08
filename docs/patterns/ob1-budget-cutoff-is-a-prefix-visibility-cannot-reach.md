@@ -52,9 +52,18 @@ together (this measurement) does not recover it — it just reaches the other en
 
 Model the accepted prefix as `sum(cost) <= B`. Our expansions are byte-identical to retail's
 through expansion #7, so the per-callee costs are equal; the observed cutoffs then require
-different `B`. `B` is not reachable from the source: `#pragma inline_depth(0)` in the TU is
-accepted by cl 5.0 with no warning and produces a **byte-identical obj** (verified: the
-`report.json` for all 344 units was unchanged), and `/O2` already implies `/Ob1`.
+different `B`, and `/O2` already implies `/Ob1`.
+
+**Correction (2026-08-08).** This section used to claim `#pragma inline_depth(0)` "produces a
+byte-identical obj". **That is false** — it was measured with the pragma in a placement where
+cl ignores it. `inline_depth` *is* a live lever; see
+[`msvc5-inline-depth-zero-is-the-only-live-lever`](msvc5-inline-depth-zero-is-the-only-live-lever.md).
+What it cannot do is land on the middle of the range: depth 0 gives 0 of 7 expansions,
+depth 1 gives 5 of 7, depth >= 2 gives 6 of 7, and retail's 3 of 7 is between two of those
+cells with nothing in it. The prefix conclusion stands; only the "no lever exists" clause was
+wrong. Also re-measured: cl expands **6** of 7 whether the function is compiled alone or in
+the full TU — the "7 when alone" figure below is wrong, and the alone/TU difference is the
+dropped destructor, not an expansion count.
 
 ## Rule
 

@@ -1827,15 +1827,16 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 }
 
 // @early-stop
-// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
-// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
-// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
-// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
-// definition in the compiland; this exact source is byte-identical to retail through
-// the shared arm set and its `push <pValue>; call operator delete` tail when it is
-// the compiland's first optimized function.
+// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
+// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
+// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
+// so control falls through into the sibling m_tree48 lookup and the payload leaks.
+// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
+// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
+// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
 // docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
 // docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+#pragma inline_depth(0)
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1876,6 +1877,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
 }
+#pragma inline_depth()
 
 RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
@@ -1916,15 +1918,16 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
-// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
-// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
-// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
-// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
-// definition in the compiland; this exact source is byte-identical to retail through
-// the shared arm set and its `push <pValue>; call operator delete` tail when it is
-// the compiland's first optimized function.
+// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
+// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
+// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
+// so control falls through into the sibling m_tree48 lookup and the payload leaks.
+// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
+// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
+// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
 // docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
 // docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+#pragma inline_depth(0)
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1965,6 +1968,7 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
+#pragma inline_depth()
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
 RVA(0x001741f0, 0x4e)
@@ -2004,15 +2008,16 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
-// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
-// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
-// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
-// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
-// definition in the compiland; this exact source is byte-identical to retail through
-// the shared arm set and its `push <pValue>; call operator delete` tail when it is
-// the compiland's first optimized function.
+// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
+// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
+// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
+// so control falls through into the sibling m_tree48 lookup and the payload leaks.
+// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
+// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
+// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
 // docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
 // docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+#pragma inline_depth(0)
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2053,6 +2058,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
+#pragma inline_depth()
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
 RVA(0x00174770, 0x4e)
@@ -2092,15 +2098,16 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 }
 
 // @early-stop
-// cl 5.0 wrong-code, on top of the /Ob1 expansion-count wall: both inlined
-// ~CButeValue bodies AND the branch out of their scope are dropped, so control runs
-// on into the sibling lookup and the two inlined CopyValue jump tables stop sharing
-// one arm set (the 70-vs-52 block skeleton).  The trigger is any preceding OPTIMIZED
-// definition in the compiland; this exact source is byte-identical to retail through
-// the shared arm set and its `push <pValue>; call operator delete` tail when it is
-// the compiland's first optimized function.
+// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
+// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
+// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
+// so control falls through into the sibling m_tree48 lookup and the payload leaks.
+// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
+// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
+// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
 // docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
 // docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+#pragma inline_depth(0)
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2141,5 +2148,6 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     CButeNode* made74 = static_cast<CButeNode*>(m_tree74.Insert(tag, new CButeNode(2)));
     made74->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
+#pragma inline_depth()
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)

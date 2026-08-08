@@ -78,16 +78,31 @@ instruction-sequence diff; none restores the destructor.
   but the destructor is still gone, and they crater `CButeMgr::Parse`, so they are not
   retail's flags either.
 * **Pragmas:** `optimize("",on)`, `optimize("g",on)`, `optimize("",off)/on` *at the
-  victim*, `auto_inline`, `inline_depth(255)`, `inline_recursion`, `intrinsic`,
-  `function`, `code_seg(".text")`, `code_seg()`, `component(browser,off)`,
-  `warning(push/pop)`, `pack(push/pop)` — all inert. Only `optimize("",off)` wrapped
-  around the *preceding* definition avoids the state, which is a diagnosis, not a fix.
+  victim*, `auto_inline`, `inline_recursion`, `intrinsic`, `function`,
+  `code_seg(".text")`, `code_seg()`, `component(browser,off)`, `warning(push/pop)`,
+  `pack(push/pop)` — all inert. `optimize("",off)` wrapped around the *preceding*
+  definition avoids the state, which is a diagnosis, not a fix.
+* **`inline_depth` is the ONE pragma that is NOT inert** (2026-08-08). `inline_depth(2)`
+  and above (incl. `255`) are inert, but **`inline_depth(0)` scoped to the victim, and
+  `inline_depth(1)` written above the whole include block, both bring the destructor
+  back** — see
+  [`msvc5-inline-depth-zero-is-the-only-live-lever`](msvc5-inline-depth-zero-is-the-only-live-lever.md)
+  for the placement rules and the whole sweep. Neither reproduces retail's 3-of-7
+  expansion count, so both are workarounds, not the recovered source; the four victims
+  in `src/Bute/ButeMgr.cpp` carry the scoped `inline_depth(0)` because the alternative
+  is shipping the leak.
 * **Source spelling:** extra braces around the local + `return` outside — bit-identical
   to the plain early `return`. An `if/else` chain with no `return`s, and a
   `goto done;` chain, both raise the masked-diff ratio a little but **still emit the
   fall-through into the sibling branch** — the branch is dropped whatever it is spelled
-  as. In the defect-free (first-function) state the plain-`return` spelling is the one
-  that matches retail (and is the shorter of the three), so it stays.
+  as. Also tried and still defective: the **temporary** form
+  `hit->CopyValue(&CButeValue(BUTE_POINT, val));` (which ends the payload's lifetime at
+  the full-expression instead of at scope exit) and a **consumed return value**
+  `CButeValue* r = hit->CopyValue(&box);`. Both make the census uniform across all nine
+  (`new`=11, out-of-line ctor=2, in-body `??3`=3) yet still emit
+  `mov __$EHRec$[esp+N],-1` falling through into the `m_tree48` lookup. In the
+  defect-free (first-function) state the plain-`return` spelling is the one that matches
+  retail (and is the shortest), so it stays.
 * **Header shape:** moving every `CButeValue` ctor out of the class body into
   `inline CButeValue::CButeValue(...)` definitions after the class produces a
   byte-identical obj for all nine `Set<T>`. MSVC 5.0 makes no in-class/out-of-class
