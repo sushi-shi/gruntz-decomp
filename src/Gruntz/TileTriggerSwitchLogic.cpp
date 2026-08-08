@@ -1162,8 +1162,11 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
         == IDX(code)) {
         return 0;
     }
-    // The write goes through the UN-CACHED global on purpose: it defeats the
-    // read/write address CSE so cl re-walks the chain, as retail does.
+    // The write goes through the UN-CACHED global to defeat the read/write address
+    // CSE, so cl re-walks the chain as retail does. It is a DEVICE, not the source:
+    // retail reads _g_gameReg once (global_refs: base 2, target 1) and still
+    // re-walks. Caching it here matches the count and costs 11 points (95.06 ->
+    // 83.78 with `reg->`, 87.01 with a `plane` local, 81.73 fully un-cached).
     g_gameReg->m_world->m_level->m_mainPlane
         ->m_tileGrid[g_gameReg->m_world->m_level->m_mainPlane->m_colOffsets[ty] + tx] = IDX(code);
     reg->m_tileGrid->ComputeCellFlags(tx, ty, IDX(code));

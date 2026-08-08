@@ -292,7 +292,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
         return 0;
     }
 
-    CTime now;
+    CTime now = CTime::GetCurrentTime();
     CSnapshotHeader header;
     memset(&header, 0, sizeof(header));
     header.m_version = 1;
