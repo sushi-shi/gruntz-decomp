@@ -2474,11 +2474,11 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             } else {
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
-            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-                m_arrivalFlags |= 0x10;
-            }
             if (m_arrivalState == AI_DEFENDER) {
                 m_defenderRadius = 1;
+            }
+            if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
             m_toolConfigured = 1;
