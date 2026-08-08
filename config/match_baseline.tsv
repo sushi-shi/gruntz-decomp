@@ -114,7 +114,7 @@ engstrrendertext	1	0
 exittrigger	4	2
 eyecandy	4	3
 fader	25	20
-fadereffects	37	24
+fadereffects	37	25
 fadermgr	12	12
 feccrypt	11	8
 fileimage	19	11
@@ -1637,11 +1637,11 @@ fadereffects	??_GCFaderLight@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x1
 fadereffects	??_GCFaderRadial@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17f9d0	100.0000
 fadereffects	??_GCFaderShape@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x181700	100.0000
 fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17fdd0	100.0000
-fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	89.7442	89.7442	6	0ab1386bb2b1	0x17f5e0	89.7442
+fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	7	ba9fd6b0e73f	0x17f5e0	100.0000
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	92.2465	92.2465	7	cf4df6cf84e0	0x1804a0	92.2465
 fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	86.3860	86.3860	8	d268bad2f168	0x17fa40	86.3860
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	82.9134	82.9134	9	7f9bf125dca6	0x1817e0	82.9134
-fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	87.0882	87.0882	5	8bb75d4ca3af	0x17fe00	87.0882
+fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	96.5000	96.5000	6	d344b571dcbe	0x17fe00	96.5000
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	471a472ee35d	0x181660	100.0000
 fadereffects	?EndFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	da061837edfb	0x1816a0	100.0000
 fadereffects	?FreeBuffer@CFaderRadial@@QAEXXZ	100.0000	100.0000	5	c38e6181c51b	0x17fc40	100.0000
@@ -1655,7 +1655,7 @@ fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	3	f39c044ffd10	0x1
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	84.1354	84.1354	5	87b88082f560	0x180640	84.1354
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	7	b6487e9e89ac	0x17fc60	88.5833
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	79.1288	78.9601	4	fdf1bf49d974	0x181b00	79.1288
-fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	76.4597	76.4597	4	1651b5f65276	0x17ff30	76.4597
+fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	79.3985	79.3985	5	f8c792890931	0x17ff30	79.3985
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	5	0aa0f545213f	0x182610	99.9831
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	60.5154	60.5154	8	d06b3d634d41	0x181e50	60.5154
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000
@@ -2999,7 +2999,7 @@ multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	6	89e7a60e5975	0xb7fe0	100.0
 multi	?LeaveState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	84114b393e8a	0xb63f0	100.0000
 multi	?LoadByMode@CMulti@@UAEHHH@Z	100.0000	100.0000	6	630a2af380c0	0xb6580	100.0000
 multi	?LoadConfig@CMulti@@QAEHPAX@Z	100.0000	100.0000	5	315e27546751	0xbce80	100.0000
-multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	80.2104	80.2104	3	c2ef78a4282a	0xb5460	80.2104
+multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	84.4591	84.4591	4	ebdd06ce705b	0xb5460	84.4591
 multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	16	1c8b0fbd22b4	0xba620	100.0000
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	bf84314f1a8c	0xb8020	100.0000
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	27424bc38f9b	0xb7b10	100.0000

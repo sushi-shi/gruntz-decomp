@@ -56,8 +56,11 @@ public:
         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
     }
 
-    i32 FxRand(i32 range) {
-        return GetRandomNumber() % range;
+    // Monolith's inclusive-range companion. Retail's three call sites all show the
+    // `dec` of the loaded bound before the seed guard and the matching `inc` before
+    // `idiv` - i.e. `hi - lo + 1` with a folded-away `lo == 0`.
+    i32 GetRandom(i32 lo, i32 hi) {
+        return lo + GetRandomNumber() % (hi - lo + 1);
     }
     CFaderSine();
     virtual ~CFaderSine() OVERRIDE;

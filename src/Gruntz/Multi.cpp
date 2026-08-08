@@ -206,8 +206,9 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     i32* clat = m_channelLatency;
     for (i32 i = 0; i < 4; i++) {
         *clat++ = 0;
-        g_gameReg->m_options[i].m_latency.m_avg = 0;
-        g_gameReg->m_options[i].m_latency.m_count = 0;
+        PlayerLatency* lat = &g_gameReg->m_options[i].m_latency;
+        lat->m_avg = 0;
+        lat->m_count = 0;
     }
 
     NetGameMgr()->m_loadingSaveGame = 0;
@@ -289,12 +290,10 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     CStatusBarMgr* sess = new CStatusBarMgr;
     m_guts = sess;
     if (sess->LoadBattlezItemConfig(m_world) == 0) {
-        CStatusBarMgr* so = m_guts;
-        if (so == NULL) {
+        if (m_guts == NULL) {
             return 0;
         }
-        so->Teardown();
-        delete so;
+        delete m_guts;
         m_guts = NULL;
         return 0;
     }
@@ -302,11 +301,10 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     CTileTriggerContainer* cmd = new CTileTriggerContainer();
     m_beginMarker = cmd;
     if (cmd->GetFlag74() == 0) {
-        CTileTriggerContainer* co = m_beginMarker;
-        if (co == NULL) {
+        if (m_beginMarker == NULL) {
             return 0;
         }
-        delete co;
+        delete m_beginMarker;
         m_beginMarker = NULL;
         return 0;
     }

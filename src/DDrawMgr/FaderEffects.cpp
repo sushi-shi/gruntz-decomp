@@ -67,24 +67,23 @@ CFaderFlat::~CFaderFlat() {
     }
 }
 
-// @early-stop
 RVA(0x0017f5e0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFxModeDesc* desc) {
     CFxModeT5* s = static_cast<CFxModeT5*>(desc);
-    CDDSurface* a = s->m_targetSurface;
-    if (!a) {
-        a = m_timerA;
-    }
-    m_desc04 = a;
-    if (s->m_sourceSurface) {
-        m_src = s->m_sourceSurface;
+    if (s->m_targetSurface == NULL) {
+        m_desc04 = m_timerA;
     } else {
+        m_desc04 = s->m_targetSurface;
+    }
+    if (s->m_sourceSurface == NULL) {
         m_src = m_timerB;
+    } else {
+        m_src = s->m_sourceSurface;
     }
     m_desc0c = s->m_param0c;
     m_percent = s->m_durationPercent;
-    m_previousFrame = 0;
     m_desc14 = s->m_splitPercent;
+    m_previousFrame = 0;
     m_frames = new i32[m_src->m_height];
     for (i32 i = 0; i < m_src->m_height; i++) {
         m_frames[i] = 0;
@@ -306,11 +305,11 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 i;
     m_previousFrame = 0;
     m_boxParam = cfg->m_clearToBlack;
-    CDDSurface* src = cfg->m_targetSurface;
-    if (!src) {
-        src = m_timerA;
+    if (cfg->m_targetSurface == NULL) {
+        m_srcBox = m_timerA;
+    } else {
+        m_srcBox = cfg->m_targetSurface;
     }
-    m_srcBox = src;
     CDDSurface* alt = cfg->m_sourceSurface;
     if (!alt) {
         alt = m_timerB;
@@ -331,12 +330,12 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
     m_intensity = p;
-    m_scaledMag = static_cast<i32>((static_cast<float>(p) * g_faderScale_5f085c * w));
+    m_scaledMag = static_cast<i32>(w * (static_cast<float>(p) * g_faderScale_5f085c));
     for (i = 0; i < 2000; i++) {
         m_arr0[i] = 0;
         m_arr2[i] = 0;
         m_arr3[i] = 0;
-        m_arr1[i] = FxRand(m_elemCount);
+        m_arr1[i] = GetRandom(0, m_elemCount - 1);
     }
     ScatterSamples(m_arr3, 0, m_elemCount, 1);
     return 1;
@@ -396,7 +395,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_arr0[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = FxRand(m_elemCount);
+                    i32 pick = GetRandom(0, m_elemCount - 1);
                     if (bpp > 0) {
                         memset(srcRow + pick * bpp, 0, bpp);
                     }
@@ -433,7 +432,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_arr0[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = FxRand(m_elemCount);
+                    i32 pick = GetRandom(0, m_elemCount - 1);
                     if (bpp > 0) {
                         u8* p = srcRow + pick * bpp;
                         u8* q = dstRow + pick * bpp;
