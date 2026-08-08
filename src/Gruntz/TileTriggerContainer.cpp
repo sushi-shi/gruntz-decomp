@@ -799,6 +799,8 @@ i32 __stdcall SerializeApplyB(
 }
 
 // @early-stop
+// residue: two switch arms whose identical tails cl emits in full where retail
+// cross-jumps them into the family's single copy.
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::LoadElement(
     CFileMemBase* reader,
@@ -899,19 +901,18 @@ void* CTileTriggerContainer::LoadElement(
             CGameLevel* level = g_gameReg->m_world->m_level;
             i32 x = obj->m_tileX;
             i32 y = obj->m_tileY;
-            CDDrawWorkerHost* geo = level->m_mainPlane;
             if (x < 0) {
                 x = 0;
-            } else if (x >= geo->m_gridW) {
-                x = geo->m_gridW - 1;
+            } else if (x >= level->m_mainPlane->m_gridW) {
+                x = level->m_mainPlane->m_gridW - 1;
             }
             if (y < 0) {
                 y = 0;
-            } else if (y >= geo->m_gridH) {
-                y = geo->m_gridH - 1;
+            } else if (y >= level->m_mainPlane->m_gridH) {
+                y = level->m_mainPlane->m_gridH - 1;
             }
-            i32 cell = geo->m_colOffsets[y] + x;
-            i32 tile = geo->m_tileGrid[cell];
+            i32 cell = level->m_mainPlane->m_colOffsets[y] + x;
+            i32 tile = level->m_mainPlane->m_tileGrid[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {
                 tileKind = TILEKIND_PASSABLE;
