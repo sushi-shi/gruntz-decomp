@@ -1025,8 +1025,9 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
 }
 
 // @early-stop
-// retail's only frame is an 8-byte `Coord` written twice and never read; no source
-// spelling reproduces it - docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
+// regalloc: retail spills x/y into its `sub esp,0x8` frame and never reloads them - a
+// spill pair, not a source local (both values also stay in ecx/edx and every use reads
+// them there). docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     i32 idx = col * TM_GRID_COLS + row;
@@ -2613,8 +2614,8 @@ void CTriggerMgr::DestroyAllAnims() {
 }
 
 // @early-stop
-// same dead 8-byte Coord temp as NotifyCell - see
-// docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
+// same regalloc spill pair as NotifyCell - retail spills x/y and pushes them from the
+// registers. docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {

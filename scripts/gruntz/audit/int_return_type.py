@@ -133,8 +133,14 @@ def _eax_definer(insns, i):
 
     Returns ('const', mn, op) / ('value', mn, op) / ('call', ...) / None.
     Stops at a `call` (the value is a callee's result, not something the function
-    materialised) and at any jump (crossing a block boundary backwards)."""
-    for j in range(i - 1, max(-1, i - 10), -1):
+    materialised) and at any jump (crossing a block boundary backwards).
+
+    The walk is bounded by the BASIC BLOCK, not by a fixed instruction count: a
+    fixed window is an off-by-one waiting to happen, and it was.
+    `CBootyState::LoadGameAssetNamespaces` parks its `mov eax,0x1` exactly ten
+    instructions ahead of the `ret` - one past a 10-deep window - so a window read
+    a plainly-int function as materialising nothing."""
+    for j in range(i - 1, -1, -1):
         _off, mn, op = insns[j]
         if mn.startswith("call"):
             return ("call", mn, op)

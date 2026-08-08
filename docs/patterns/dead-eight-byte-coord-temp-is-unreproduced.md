@@ -1,14 +1,15 @@
-# Retail keeps a DEAD 8-byte `Coord` temp that no source spelling reproduces (OPEN)
+# The "dead 8-byte `Coord` temp" is a REGISTER-ALLOCATOR SPILL, not a source local
 
-tags: cpp:local cpp:struct | asm:sub asm:mov | topic:wall
+tags: cpp:local cpp:struct | asm:sub asm:mov | topic:wall topic:scoring-artifact
 symptoms: retail's whole frame is `sub esp,0x8`, written by exactly two `mov [esp+k],reg`
 stores and **never read**; our base has no frame at all, so every `[esp+N]`, the register
 assignment and one callee-saved `push`/`pop` all differ
-confidence: 8/10 (the observation), 0/10 (a fix)
+confidence: 9/10 (the diagnosis), 0/10 (a source-level fix - there is none)
 
-Three independent functions show the identical shape. In each, the source has (or clearly
-had) a `Coord` local copied out of `X->m_lastTilePx`, and retail stores both halves into
-an 8-byte frame it then never loads:
+**This file previously said the source "has (or clearly had) a `Coord` local" and asked
+for a spelling that reproduces it. That framing was wrong and it cost three lanes.** The
+two stores are a **spill pair the allocator emitted and then never needed**, because the
+same two values also stay live in registers and every use reads them from there.
 
 | fn | rva | the two dead stores |
 |---|---|---|
@@ -16,34 +17,70 @@ an 8-byte frame it then never loads:
 | `CTriggerMgr::ToggleRegionA` | 0x7d450 | `mov [esp+0x20],ecx` / `mov [esp+0x28],edx` |
 | `CGrunt::ResolveArrivalNeighbor` | 0xf26f0 | `mov [esp+0x8],eax` / `mov [esp+0x1c],edx` |
 
-`gruntz sema disasm <rva> --target --lite | grep esp` confirms each: `sub esp,0x8`, two
-stores, one or more `add esp,0x8`, and no load.
+In all three the slots are `[S-8]` and `[S-4]` (S = esp at entry), i.e. exactly the
+`sub esp,0x8` area, and in all three they hold `x` then `y` out of `m_lastTilePx` - which
+is what made a `Coord` local look obvious.
 
-## What has been ruled out (fast-probe matrix, cl 5.0 /O2 /MT /GX, 2026-08-08)
+## The three facts that kill the `Coord`-local reading
 
-Nine spellings of an 8-byte struct local, all compiled in one probe TU; **cl deleted the
-local in every one**:
+**1. The "copy" is also in registers, and that is where every use reads it.**
 
-1. `Pt t = o->p;` (copy-init)  2. field-by-field  3. a member call on the local so its
-address escapes as `this`  4. a struct with a user-declared copy ctor  5. an inline free
-helper taking the struct BY VALUE  6. a user `operator=`  7-9. the same three but with the
-local actually READ afterwards (cl forwards the stores to the reads and deletes both).
+```asm
+; NotifyCell - x and y are spilled AND kept live, simultaneously
+  mov  edx,[esi+0x17c]     ; x
+  mov  eax,[esi+0x180]     ; y
+  mov  [esp+0x10],edx      ; spill x        <- dead
+  mov  ecx,edx             ; ...and keep x in ecx
+  mov  edx,eax             ; ...and keep y in edx
+  sar  eax,0x5             ; y>>5   (from the REGISTER)
+  mov  [esp+0x14],edx      ; spill y        <- dead
+  ...
+  sar  ecx,0x5             ; x>>5   (from the REGISTER)
+```
 
-Also ruled out on the live tree: an inlined by-value accessor
-(`Coord GetLastTilePos() { Coord out; out.m_x = …; return out; }` -> `Coord pt = cell->GetLastTilePos();`)
-changed nothing in `ToggleRegionA`.
+A source-level struct copy produces a store *or* a register copy, not both of each. Same
+in `ToggleRegionA` (`mov [esp+0x20],ecx` then `push ecx`) and in
+`ResolveArrivalNeighbor` (`mov [esp+0x8],eax` beside a second, un-CSE'd
+`mov ecx,[esi+0x17c]` for the push). The un-CSE'd reload is the giveaway: that is
+rematerialisation, which is an allocator decision, not an expression.
 
-So the temp is not any ordinary dead local. Whatever holds it alive in retail escapes its
-address into something our reconstruction does not have, or retail's build ran a pass
-ordering ours does not. **Do not fabricate a helper to force it** - a lane already tried
-and got zero.
+**2. cl uses `sub esp,0x8` for ordinary scalar spills all over the tree, and we already
+match 39 of them.** Of the 75 retail functions whose entire frame is `sub esp,0x8`, **39
+are 100% EXACT for us and 64 have the same `sub esp,0x8` in our base** - none of those
+sources declares an 8-byte local. `CTriggerMgr::CycleMoveIcons` 0x7a690 is in the same
+file, 100% EXACT, and its 8 bytes are the spill area for loop scalars.
 
-## Cost, so you can budget
+**3. Nothing in the C++ language reaches it.** 38 probe cells, cl 5.0 `/O2 /MT /GX /GR`:
+the nine originally documented (copy-init, field-wise, address escaped via `this`, user
+copy ctor, by-value inline param, user `operator=`, and all three again with the local
+READ) plus 29 more (2026-08-08): whole-struct copy-init tried **live** in `NotifyCell`;
+by-value return from an inlined accessor for a POD, for a struct with a user ctor and for
+one with a user copy ctor; in-place construction; a local array; writing through a
+pointer to itself; a union; aggregate init; `*(double*)&p = ...`; declare-then-assign;
+an inline out-parameter accessor (`GetPos(&p)`), the same returning the pointer, and free
+inline fillers; a by-value struct argument to an out-of-line callee in first and middle
+position, with and without the fields read afterwards; and passing by value to an inline
+that uses it. **cl deleted the local in every one.**
 
-It is not a rounding error: it moves one callee-saved register and every `[esp+N]` in the
-function. `ToggleRegionA` is parked at 79.13 (from 75.40) and `NotifyCell` at 85.89
-(MAX 87.15) with this as the only remaining mechanism, both otherwise block-exact.
+Exactly three things keep the frame, and each is refuted by retail's own bytes:
 
-If you crack it, say so loudly and update this file - it is worth at least three functions.
+| construct | keeps the 8 bytes? | why it is not the answer |
+|---|---|---|
+| a real out-of-line call taking `&p` | yes | emits a `call` retail does not have |
+| a user-declared destructor | yes | drags in the `/GX` EH frame (`push -1`), which retail does not have |
+| **`volatile` on the local** | yes - **byte-for-byte retail's idiom**, stores interleaved into the argument pushes | forcing a store is the definition of `volatile`; it proves the residue is a DSE/allocation decision, not a missing declaration |
+
+The `volatile` cell is the useful one *as a diagnostic*: it reproduces the shape exactly,
+which means what retail has is "a store that was not eliminated" - not "a local we failed
+to declare". **Do not put `volatile` in the tree to buy the bytes.**
+
+## What to do with these three functions
+
+Treat them as an ordinary **regalloc wall** and hand them to the permuter, not to another
+source-construct hunt. They are otherwise block-exact; the residue is one callee-saved
+register and every `[esp+N]`. If a variants run flips the allocation, it flips all of it
+at once.
+
+`ToggleRegionA` is parked at 79.13 (from 75.40) and `NotifyCell` at 85.89 (MAX 87.15).
 
 related: [shrink-wrapped-prologue-needs-one-tail-return.md](shrink-wrapped-prologue-needs-one-tail-return.md)
