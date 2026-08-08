@@ -59,8 +59,6 @@ RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
 
-// @early-stop
-
 RVA_COMPGEN(0x00011cd0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 

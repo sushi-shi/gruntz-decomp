@@ -475,19 +475,18 @@ i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     return DecodeBmpHeader(dc, w, h, bitCount, flag);
 }
 
-// @early-stop
 RVA(0x00175d50, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
-        value &= 0xff;
-        memset(m_pixels, value, m_stride * m_height);
+        i32 fill = value & 0xff;
+        memset(m_pixels, fill, m_stride * m_height);
     } else {
 
         i32 y = 0;
         if (y < m_height) {
-            value &= 0xff;
+            i32 fill = value & 0xff;
             do {
-                memset(m_pixels + m_rowOffsets[y], value, m_width);
+                memset(m_pixels + m_rowOffsets[y], fill, m_width);
                 y++;
             } while (y < m_height);
         }

@@ -7,7 +7,10 @@
 // ONE domain - CParseSource::GetEntryTag() returns it and callers compare it
 // against both families below. The IMGTAG_* names were a second enum
 // (include/Image/ImageFormatTag.h) over the same field; merged here.
-GZ_ENUM_BEGIN(RezTypeTag)
+// Retail's switch key is UNSIGNED: CImage::Resolve/Reload and
+// CDDrawSurfacePair::LoadImageA all dispatch the tag with `ja`, not `jg`
+// (`sema disasm 0x00152f20 --branches --diff`). So the domain is returned as u32.
+GZ_ENUM_BEGIN_SPLIT(RezTypeTag, u32)
 // 0 = no type filter: CSymTab::Insert/Find accept it to mean
 // "any entry", the same wildcard role TRIGID_ANY plays.
     REZ_TAG_NONE = 0,
@@ -29,6 +32,6 @@ GZ_ENUM_BEGIN(RezTypeTag)
     // A third spelling that lived in ParseSource.h over the same field.
     PARSETAG_VAW = REZ_TAG_WAV,
     PARSETAG_INA = REZ_TAG_ANI
-GZ_ENUM_END(RezTypeTag)
+GZ_ENUM_END_SPLIT(RezTypeTag, u32)
 
 #endif // GRUNTZ_REZ_REZTYPETAG_H

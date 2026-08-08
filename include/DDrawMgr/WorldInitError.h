@@ -7,7 +7,10 @@
 // Each value is written immediately after the named operation fails. The
 // 0x80e9 bank is the same five DirectDraw-device stages re-banked by
 // CDDrawSurfaceChildA::SetGeometry for the outer manager.
-GZ_ENUM_BEGIN(WorldInitError)
+// Retail's dispatch switch is UNSIGNED: CGruntzMgr::ReportWorldStatus lowers its
+// binary search with `ja`, not `jg` (`sema disasm 0x00090ac0 --branches --diff`),
+// so the field and the switch key are u32.
+GZ_ENUM_BEGIN_SPLIT(WorldInitError, u32)
     WORLDERR_NONE = 0,
     WORLDERR_CHILD_GROUP = 0x3e9,
     WORLDERR_WORKER_LIST = 0x3ea,
@@ -33,7 +36,7 @@ GZ_ENUM_BEGIN(WorldInitError)
     WORLDERR_DDRAW_CAPABILITIES = 0x80eb,
     WORLDERR_DDRAW_DISPLAY_MODE = 0x80ec,
     WORLDERR_DDRAW_COLOR_MASKS = 0x80ed
-GZ_ENUM_END(WorldInitError)
+GZ_ENUM_END_SPLIT(WorldInitError, u32)
 
 // Identifies the outer operation whose world initialization failed. Used only
 // when CDDrawSurfaceMgr has no more specific WorldInitError to report.

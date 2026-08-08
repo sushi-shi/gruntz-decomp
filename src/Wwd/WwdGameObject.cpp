@@ -1054,7 +1054,7 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
     while (sym != NULL) {
         void* val = tab->NextSym2(sym);
         while (val != NULL) {
-            RezTypeTag tag = (static_cast<CParseSource*>(val))->GetEntryTag();
+            GZ_ENUM_RETURN(RezTypeTag, u32) tag = (static_cast<CParseSource*>(val))->GetEntryTag();
             if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
                 char* p = (static_cast<CParseSource*>(val))->m_name;
                 while (*p != 0) {

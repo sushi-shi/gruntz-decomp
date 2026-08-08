@@ -8,7 +8,6 @@
 #include <Ints.h>
 #include <Io/FileStream.h>
 
-// @early-stop
 RVA(0x00177480, 0x169)
 i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
     CFile f;
@@ -36,7 +35,7 @@ i32 CImagePaletteNode::LoadBmpFile(char* path, i32 arg) {
         out.m_bytes[i + 2] = raw[i + 0];
         out.m_bytes[i + 3] = 0;
     }
-    return Build(out.m_entries, 0);
+    return Build(out.m_entries, arg);
 }
 
 RVA(0x001775f0, 0x62)

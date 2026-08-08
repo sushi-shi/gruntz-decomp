@@ -59,7 +59,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                     x2 += static_cast<i32>(m_rleData[srcidx]) - 0x80;
                     srcidx++;
                 } else {
-                    i32 n = src[srcidx];
+                    u32 n = src[srcidx];
                     outidx++;
                     if (n > 0) {
                         const u8* run = src + srcidx + 1;
@@ -70,7 +70,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                             out[outidx + 1] = static_cast<u8>((px >> 8));
                             outidx += 2;
                             k++;
-                        } while (k < n);
+                        } while (k < static_cast<i32>(n));
                     }
                     x2 += static_cast<i32>(m_rleData[srcidx]);
                     srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;

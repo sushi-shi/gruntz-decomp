@@ -23,7 +23,6 @@ LoadableClassId CDDrawWorkerHost::GetClassId() {
 RVA(0x00163ac0, 0x3)
 void CDDrawWorkerHost::UnusedPlaneHook(i32) {}
 
-// @early-stop
 RVA_COMPGEN(0x00163ad0, 0x1e, ??_GCDDrawWorkerHost@@UAEPAXI@Z)
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {

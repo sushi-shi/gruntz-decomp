@@ -1101,7 +1101,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
-    WorldInitError status = m_world->m_lastError;
+    GZ_ENUM_STORAGE(WorldInitError, u32) status = m_world->m_lastError;
     if (status == WORLDERR_NONE) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }

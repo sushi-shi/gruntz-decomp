@@ -94,7 +94,7 @@ public:
 
     HWND m_hWnd;
     i32 m_flags;
-    WorldInitError m_lastError;
+    GZ_ENUM_STORAGE(WorldInitError, u32) m_lastError;
     HP_Callback m_callback;
 };
 SIZE(0x40);

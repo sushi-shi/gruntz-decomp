@@ -860,7 +860,6 @@ void CShadeTableArray::Serialize(CArchive& arc) {
     }
 }
 
-// @early-stop
 RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
 RVA(0x00150040, 0x136)
 void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {

@@ -17,7 +17,9 @@ class CRezItmBase;
 struct CParserObjList : public CObjList {
     virtual void UnusedListHook() OVERRIDE;
     ~CParserObjList() {}
-    i32 m_count;
+    // Unsigned: CRezDirNode::Load compares it with `ja`, not `jg`
+    // (`sema disasm 0x0013a0f0 --branches --diff`).
+    u32 m_count;
 };
 SIZE(0x10);
 

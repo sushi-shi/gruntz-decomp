@@ -1335,7 +1335,6 @@ bool CButeMgr::Save() {
     return true;
 }
 
-// @early-stop
 RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)

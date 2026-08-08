@@ -211,7 +211,6 @@ static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-// @early-stop
 RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {

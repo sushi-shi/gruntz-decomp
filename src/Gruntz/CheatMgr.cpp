@@ -2,7 +2,6 @@
 
 #include <Gruntz/CheatMgr.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <EmptyString.h>
 #include <Gruntz/GruntzCommandId.h>
@@ -96,15 +95,8 @@ RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     void* existing = 0;
 
-
-
-
-
-    i32 mask = m_map.Lookup(code, existing) ? -1 : 0;
-    AddrWord<char> hit;
-    hit.m_addr = static_cast<char*>(existing);
-    i32 found = mask & hit.m_word;
-    if (found != 0) {
+    void* hit = m_map.Lookup(code, existing) ? existing : NULL;
+    if (hit != NULL) {
         return FALSE;
     }
     CheatEntry* entry = new CheatEntry;

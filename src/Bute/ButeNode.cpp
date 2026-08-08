@@ -5,7 +5,6 @@
 #include <Bute/PTreeNode.h>
 #include <Gruntz/String.h>
 
-// @early-stop
 RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 // @early-stop
 // Scoring artifact, not a source defect: the switch's case bodies compile into a

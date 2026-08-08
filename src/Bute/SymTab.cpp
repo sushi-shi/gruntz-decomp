@@ -125,7 +125,7 @@ void CParseSource::Teardown() {
 }
 
 RVA(0x00139800, 0x6)
-RezTypeTag CParseSource::GetEntryTag() {
+GZ_ENUM_RETURN(RezTypeTag, u32) CParseSource::GetEntryTag() {
     // CSymRec::m_key is the generic symbol key; for a REZ entry it holds the
     // entry tag, which is what this accessor exists to expose.
     return static_cast<RezTypeTag>(m_entry->m_key);

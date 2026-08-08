@@ -143,7 +143,6 @@ void CWwdGameObjectF::BltDirtyEx(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawS
 RVA(0x0015baa0, 0x3)
 void CWwdGameObjectF::BltDirtyRegions(CDDrawSurfacePair*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
-// @early-stop
 RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdGameObjectF@@UAEPAXI@Z)
 RVA(0x0015bad0, 0x153)
 CWwdGameObjectF::~CWwdGameObjectF() {

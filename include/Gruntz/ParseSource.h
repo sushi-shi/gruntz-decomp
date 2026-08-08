@@ -27,7 +27,7 @@ SIZE(0x18);
 
 struct CParseSource {
 
-    RezTypeTag GetEntryTag();
+    GZ_ENUM_RETURN(RezTypeTag, u32) GetEntryTag();
     char* BeginParse();
     i32 EndParse();
 
