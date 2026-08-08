@@ -547,13 +547,7 @@ i32 CInGameIcon::PeekCycle() {
         i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cell = grid->m_rows[tileY][tileX].m_flags;
-        } else {
-            cell = 1;
-        }
+        i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & 2) != 0) {
             if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {

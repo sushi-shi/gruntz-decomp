@@ -1114,6 +1114,12 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 }
 
 // @early-stop
+// @early-stop
+// retail shares ONE return block for the first two guards (an `||`) and keeps a
+// separate inline `xor eax,eax; pop esi; ret` for each of the other three. Writing
+// the `||` feeds cl's cross-jump magnet and collapses ALL five onto one tail
+// (88.21 -> 50.13), so the separate `if`s stay - see
+// docs/patterns/trailing-error-block-is-a-crossjump-magnet.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
     if (!m_overlayPair) {

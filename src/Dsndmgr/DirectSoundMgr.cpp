@@ -518,7 +518,6 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
     }
 }
 
-// @early-stop
 RVA(0x00135d70, 0x92)
 DirectSoundMgr* DSoundCloneInst::GetItem() {
     if (!m_owner->m_initialized) {
@@ -549,12 +548,11 @@ DirectSoundMgr* DSoundCloneInst::GetItem() {
     }
     if (!found) {
         found = Clone(1);
-        if (!found) {
-            return found;
-        }
     }
-    ((&m_cloneList))->Unlink(&found->m_cloneNode);
-    ((&m_cloneList))->InsertTail(&found->m_cloneNode);
+    if (found) {
+        m_cloneList.Unlink(&found->m_cloneNode);
+        m_cloneList.InsertTail(&found->m_cloneNode);
+    }
     return found;
 }
 

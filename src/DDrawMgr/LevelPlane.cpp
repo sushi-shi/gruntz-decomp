@@ -816,6 +816,9 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 }
 
 // @early-stop
+// same source shape as DeactivateDistantObjects (which is EXACT); the two
+// `add` operand materializations invert here - TU-cumulative optimizer state,
+// inert to every operand-order and local-hoist spelling tried.
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -825,23 +828,22 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 
     u32 flags = m_flags;
 
-    i32 x;
+    i32 x, y;
     if (flags & 0x4) {
         x = static_cast<i32>(m_scaledX);
     } else {
-        x = (m_viewRect.left + m_viewRect.right) / 2 + 1;
+        i32 right = m_viewRect.right;
+        x = (right + m_viewRect.left) / 2 + 1;
     }
-
-    i32 y;
     if (flags & 0x8) {
         y = static_cast<i32>(m_scaledY);
-        return scroll->ScrollTo(x, y);
+    } else {
+        i32 bottom = m_viewRect.bottom;
+        y = (bottom + m_viewRect.top) / 2 + 1;
     }
-    y = (m_viewRect.top + m_viewRect.bottom) / 2 + 1;
     return scroll->ScrollTo(x, y);
 }
 
-// @early-stop
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -851,22 +853,19 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
 
     u32 flags = m_flags;
 
-    i32 x;
+    i32 x, y;
     if (flags & 0x4) {
         x = static_cast<i32>(m_scaledX);
     } else {
-
         i32 right = m_viewRect.right;
         x = (right + m_viewRect.left) / 2 + 1;
     }
-
-    i32 y;
     if (flags & 0x8) {
         y = static_cast<i32>(m_scaledY);
-        return scroll->Relocate(x, y);
+    } else {
+        i32 bottom = m_viewRect.bottom;
+        y = (bottom + m_viewRect.top) / 2 + 1;
     }
-    i32 bottom = m_viewRect.bottom;
-    y = (bottom + m_viewRect.top) / 2 + 1;
     return scroll->Relocate(x, y);
 }
 

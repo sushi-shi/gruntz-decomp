@@ -579,19 +579,17 @@ void CMapMgr::ResetCells() {
     }
 }
 
-// @early-stop
 RVA(0x0009f690, 0x5d)
 void CMapMgr::Unlink(BrickzNode* node) {
     if (node->m_openPrev != NULL && node->m_openNext != NULL) {
         node->m_openPrev->m_openNext = node->m_openNext;
         node->m_openNext->m_openPrev = node->m_openPrev;
-    }
-    if (node->m_openPrev == NULL && node->m_openNext == NULL) {
+    } else if (node->m_openPrev == NULL && node->m_openNext == NULL) {
         m_openList = NULL;
-    }
-    if (node->m_openPrev == NULL && node->m_openNext != NULL) {
-        m_openList = node->m_openNext;
-        node->m_openNext->m_openPrev = NULL;
+    } else if (node->m_openPrev == NULL && node->m_openNext != NULL) {
+        BrickzNode* next = node->m_openNext;
+        m_openList = next;
+        next->m_openPrev = NULL;
     }
     if (node->m_openPrev != NULL && node->m_openNext == NULL) {
         node->m_openPrev->m_openNext = NULL;

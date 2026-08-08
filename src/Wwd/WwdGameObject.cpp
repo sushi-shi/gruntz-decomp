@@ -81,10 +81,11 @@ void CWwdGameObjectA::ApplyName(const char* name) {
         m_frameIndex = n;
         if (n >= spr->m_minIndex && n <= spr->m_maxIndex) {
             m_layer = static_cast<CImage*>(spr->m_items.GetAt(n));
-            return;
+        } else {
+            CImage* none = 0;
+            m_layer = none;
         }
     }
-    m_layer = NULL;
 }
 
 RVA(0x001505b0, 0x5e)

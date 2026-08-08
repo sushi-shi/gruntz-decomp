@@ -225,7 +225,6 @@ i32 CMultiStartDlg::UpdateColorItems() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c1e60, 0x115)
 i32 CMultiStartDlg::BuildSlotList() {
     m_slotList = new CLatencyList(0xa);
@@ -252,7 +251,7 @@ i32 CMultiStartDlg::BuildSlotList() {
     HWND v = GetSafe1c();
     m_slotList->FillCombo(v, 0x527);
     m_slotList->SelectItem(v, 0x527, 0, 0);
-    reg->m_autoCommandDelay = 1;
+    g_multiState->m_autoCommandDelay = 1;
     return 1;
 }
 

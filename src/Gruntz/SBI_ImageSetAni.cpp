@@ -20,6 +20,10 @@
 #include <Io/FileMem.h>
 
 // @early-stop
+// retail shares ONE return block for the host/owner guards (an `||`) and keeps a
+// separate inline one for each later guard. Writing the `||` feeds cl's cross-jump
+// magnet and collapses them all (88.49 -> 81.75), so the separate `if`s stay - see
+// docs/patterns/trailing-error-block-is-a-crossjump-magnet.md.
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,

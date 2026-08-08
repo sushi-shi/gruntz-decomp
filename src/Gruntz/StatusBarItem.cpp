@@ -14,7 +14,6 @@ i32 CStatusBarItem::Refresh(i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00100660, 0x50)
 i32 CStatusBarItem::Setup(
     CStatusBarMgr* owner,
@@ -31,10 +30,7 @@ i32 CStatusBarItem::Setup(
     m_owner = owner;
     m_host = host;
     m_tab = tab;
-    m_rect14.left = rc.left;
-    m_rect14.top = rc.top;
-    m_rect14.right = rc.right;
-    m_rect14.bottom = rc.bottom;
+    m_rect14 = rc;
     m_cmd = cmd;
     return 1;
 }

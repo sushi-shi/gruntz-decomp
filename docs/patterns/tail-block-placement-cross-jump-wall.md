@@ -40,7 +40,15 @@ same source. Recognize it and stop; do not restructure the source to chase it.
 
 ## What DOES move it
 
-Only a change in predecessor count — see
+**BROKEN for the shrink-wrap half (2026-08-08).** Collapsing the body to a SINGLE tail
+`return` (guard + one trailing return, nested `if`/`else` in between) is exactly the
+predecessor-count change this wall wanted, and it makes cl sink the callee-saved pushes
+past the entry guard - see
+[`shrink-wrapped-prologue-needs-one-tail-return`](shrink-wrapped-prologue-needs-one-tail-return.md).
+`CPlay::StepGridWalk` 0xd0a60, listed below as unmovable, went **66.67 -> 100.00 EXACT**
+with that one edit.
+
+Only a change in predecessor count - see
 [`single-predecessor-tail-block-gets-replicated`](single-predecessor-tail-block-gets-replicated.md).
 When the counts already agree with retail, the remaining difference is the cross-jump
 decision itself and there is no known source spelling for it.

@@ -3985,7 +3985,6 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     return 1;
 }
 
-// @early-stop
 RVA(0x000d0a60, 0x92)
 i32 CPlay::StepGridWalk(i32 dt) {
     if (m_gridWalkActive == 0) {
@@ -3993,22 +3992,22 @@ i32 CPlay::StepGridWalk(i32 dt) {
     }
     if (static_cast<u32>(m_gridDelayCount) > static_cast<u32>(dt)) {
         m_gridDelayCount = m_gridDelayCount - dt;
-        return 1;
-    }
-    m_gridDelayCount = m_gridDelayBase;
-    m_gridRow = m_gridRow + 1;
-    i32 idx = m_gridRow;
-    CDDrawWorker* g = m_grid;
-    CImage* frame;
-    if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
-        frame = static_cast<CImage*>(g->m_items.GetAt(idx));
     } else {
-        frame = NULL;
-    }
-    m_gridCurFrame = frame;
-    if (frame == NULL) {
-        m_gridCurFrame = static_cast<CImage*>(g->m_items.GetAt(g->m_minIndex));
-        m_gridRow = g->m_minIndex;
+        m_gridDelayCount = m_gridDelayBase;
+        m_gridRow = m_gridRow + 1;
+        i32 idx = m_gridRow;
+        CDDrawWorker* g = m_grid;
+        CImage* frame;
+        if (idx >= g->m_minIndex && idx <= g->m_maxIndex) {
+            frame = static_cast<CImage*>(g->m_items.GetAt(idx));
+        } else {
+            frame = NULL;
+        }
+        m_gridCurFrame = frame;
+        if (frame == NULL) {
+            m_gridCurFrame = static_cast<CImage*>(g->m_items.GetAt(g->m_minIndex));
+            m_gridRow = g->m_minIndex;
+        }
     }
     return 1;
 }

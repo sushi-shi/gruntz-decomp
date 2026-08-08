@@ -123,7 +123,6 @@ i32 CGrunt::ResetGeometry() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000617c0, 0x127)
 i32 CGrunt::UpdateGruntStatus() {
     if (m_poweredUp == 0) {
@@ -134,40 +133,32 @@ i32 CGrunt::UpdateGruntStatus() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (m_stamina >= STAMINA_FULL) {
-        if (m_neighborValid == 0) {
-            return 0;
+        if (m_neighborValid != 0) {
+            m_neighborValid = 0;
+            CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
+            if (n != NULL && n->m_entranceCommitted != 0) {
+                if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
+                    CommitNeighbor(
+                        m_neighborCell.m_x,
+                        m_neighborCell.m_y,
+                        n->m_object->m_screenX,
+                        n->m_object->m_screenY
+                    );
+                }
+            }
         }
-        m_neighborValid = 0;
-        CGrunt* n = m_tileMgr->m_grid[m_neighborCell.m_x * TM_GRID_COLS + m_neighborCell.m_y];
-        if (n == NULL || n->m_entranceCommitted == 0) {
-            return 0;
+    } else if (m_stamina > STAMINA_HALF) {
+        if (m_lowStaminaCued == 0) {
+            CGruntzMgr* g = g_gameReg;
+            i32 y = m_object->m_screenY;
+            i32 x = m_object->m_screenX;
+            const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
+            if (CGameLevel::PointInRect(&vr, x, y)) {
+                g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
+            }
+            m_lowStaminaCued = 1;
         }
-        if (RectContains(n->m_object->m_screenX, n->m_object->m_screenY)) {
-            CommitNeighbor(
-                m_neighborCell.m_x,
-                m_neighborCell.m_y,
-                n->m_object->m_screenX,
-                n->m_object->m_screenY
-            );
-        }
-        return 0;
     }
-
-    if (m_stamina <= STAMINA_HALF) {
-        return 0;
-    }
-    if (m_lowStaminaCued != 0) {
-        return 0;
-    }
-
-    CGruntzMgr* g = g_gameReg;
-    i32 y = m_object->m_screenY;
-    i32 x = m_object->m_screenX;
-    const RECT& vr = g->m_world->m_level->m_mainPlane->m_viewRect;
-    if (CGameLevel::PointInRect(&vr, x, y)) {
-        g->m_cueSink->LoadGruntSpawnConfig(this, 2, -1, -1, -1);
-    }
-    m_lowStaminaCued = 1;
     return 0;
 }
 
@@ -1321,29 +1312,27 @@ i32 CGrunt::BuildGruntExitAnimation() {
 }
 
 // @early-stop
+// instruction stream is identical; retail holds `this` in edi and the sunk save
+// in esi, cl picks them the other way round - callee-saved allocation order only.
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
-    if (sub->m_finished == 0) {
-        return 0;
-    }
-    if (sub->m_frameTicksLeft != 0) {
-        return 0;
-    }
-    if (m_deathType == GRUNT_DEATH_WARPOUT) {
-        CState* st = g_gameReg->m_curState;
-        i32 lvl = st->m_levelIndex + 0x64;
-        CString s;
-        s.Format("WORLDZ\\LEVEL%i", lvl);
-        if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
-            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
+    if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
+        if (m_deathType == GRUNT_DEATH_WARPOUT) {
+            CState* st = g_gameReg->m_curState;
+            i32 lvl = st->m_levelIndex + 0x64;
+            CString s;
+            s.Format("WORLDZ\\LEVEL%i", lvl);
+            if (st->m_levelBank->ResolveQualified(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
+                PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
+            }
         }
+        if (m_cellRemovalNotified == 0) {
+            m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
+        }
+        m_wwdObject->m_flags |= 0x10000;
     }
-    if (m_cellRemovalNotified == 0) {
-        m_tileMgr->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 1);
-    }
-    m_wwdObject->m_flags |= 0x10000;
     return 0;
 }
 

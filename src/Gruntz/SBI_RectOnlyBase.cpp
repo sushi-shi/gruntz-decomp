@@ -5,7 +5,6 @@
 #include <Gruntz/SBI_Image.h>
 #include <Ints.h>
 
-// @early-stop
 RVA(0x000e86e0, 0x53)
 i32 CSBI_RectOnly::Setup(
     CStatusBarMgr* owner,
@@ -22,10 +21,7 @@ i32 CSBI_RectOnly::Setup(
     m_owner = owner;
     m_host = host;
     m_tab = tab;
-    m_rect14.left = rc.left;
-    m_rect14.top = rc.top;
-    m_rect14.right = rc.right;
-    m_rect14.bottom = rc.bottom;
+    m_rect14 = rc;
     m_cmd = cmd;
     m_enabled = 1;
     return 1;
