@@ -361,16 +361,7 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
         return 0;
     }
 
-    switch (tag) {
-        case SERIAL_SAVE:
-            ar->Write(&m_lastDropTime, sizeof(m_lastDropTime));
-            ar->Write(&m_dropInterval, sizeof(m_dropInterval));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&m_lastDropTime, sizeof(m_lastDropTime));
-            ar->Read(&m_dropInterval, sizeof(m_dropInterval));
-            break;
-    }
+    SerBandPair(ar, tag, &m_dropTiming);
 
     switch (tag) {
         case SERIAL_SAVE:

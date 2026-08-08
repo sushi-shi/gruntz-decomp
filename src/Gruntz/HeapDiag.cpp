@@ -116,9 +116,7 @@ int HeapStats() {
     ReportHeapStatus(status);
     unsigned long total = 0, used = 0, free = 0;
     if (status == _HEAPOK) {
-        hinfo._pentry = NULL;
-        hinfo._size = 0;
-        hinfo._useflag = 0;
+        memset(&hinfo, 0, sizeof(hinfo));
         _heapwalk(&hinfo);
         hinfo._pentry = NULL;
         int r = _heapwalk(&hinfo);

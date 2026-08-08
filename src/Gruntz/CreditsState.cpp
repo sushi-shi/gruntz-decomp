@@ -190,11 +190,11 @@ i32 CCreditsState::Render() {
         for (i32 j = 0; j < n; j++) {
             if (L->m_items[j]->m_currentKeys & 0xffffff) {
 
-                u32 wp = IDX(CMD_ATTRACT);
                 if (m_previousStateId == GAMESTATE_MENU) {
-                    wp = IDX(CMD_MAIN_MENU);
+                    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
+                } else {
+                    PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
                 }
-                PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, wp, 0);
                 owner()->m_owner->m_running = 0;
                 break;
             }
@@ -215,7 +215,7 @@ i32 CCreditsState::Render() {
 
     if (m_fxEnabled) {
         CGruntzSoundInnerZ* s = owner()->m_sound->FindBank("MONOLITH");
-        if (s && !s->IsStarted()) {
+        if (s && !s->IsBusy()) {
             LoadCreditzAssets();
         }
     }
@@ -297,10 +297,11 @@ i32 CCreditsState::InitAttractTitle() {
         return 0;
     }
     i32 faded = FadeInTitle(titleName, 0, 0, 1, 0, 0);
-    m_stateBank = saved;
     if (faded == 0) {
+        m_stateBank = saved;
         return 0;
     }
+    m_stateBank = saved;
     CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), 0);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
