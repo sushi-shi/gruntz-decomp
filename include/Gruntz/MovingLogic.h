@@ -49,7 +49,9 @@ public:
 };
 SIZE_UNKNOWN();
 
-inline CMovingLogic::CMovingLogic() {}
+// The default ctor expands CMotionState's body; the owner-taking one below leaves it
+// a call, which is the 0x13940-vs-0x47a10 split retail shows.
+inline CMovingLogic::CMovingLogic() : m_motion(CMotionState::INLINE_BASE) {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     i32 lo0 = m_objAux->m_minX;

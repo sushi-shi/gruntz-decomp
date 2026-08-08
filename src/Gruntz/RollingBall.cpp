@@ -48,7 +48,8 @@ RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
 // @early-stop
 RVA(0x000af820, 0x40d)
-CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CRollingBall::CRollingBall(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_explodeStart = 0;
     m_explodeWindow = 0;
     m_value = m_wwdObject->m_animCursor.m_animation;

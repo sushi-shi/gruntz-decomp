@@ -56,7 +56,7 @@ RVA_COMPGEN(0x0000ff90, 0x1e, ??_GCEyeCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 
 RVA(0x000abfa0, 0x1b6)
-CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_OVERLAY) {
         o->m_sortKey = SORTKEY_OVERLAY;
@@ -80,7 +80,8 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
 
 // @early-stop
 RVA(0x000ac870, 0x20e)
-CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
@@ -148,7 +149,8 @@ i32 CEyeCandyAni::AdvanceAnim() {
 // orders); every assign-BEFORE-call form also costs an extra zero-constant use,
 // which makes cl claim a 4th callee-saved register and shifts every frame offset.
 RVA(0x000acf40, 0x16e)
-CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {

@@ -54,7 +54,8 @@ RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 
 // @early-stop
 RVA(0x000b23a0, 0x3f8)
-CKitchenSlime::CKitchenSlime(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CKitchenSlime::CKitchenSlime(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->m_flags |= 0x2000002;
 
     i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;

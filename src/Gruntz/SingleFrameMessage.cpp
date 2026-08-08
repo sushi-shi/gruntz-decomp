@@ -33,7 +33,8 @@ RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
 RVA(0x000ab310, 0x18d)
-CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);

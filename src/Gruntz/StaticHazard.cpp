@@ -46,7 +46,8 @@ static inline CActHandler* HaznLookup(i32 coord) {
 
 // @early-stop
 RVA(0x000fb7a0, 0x2f0)
-CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CStaticHazard::CStaticHazard(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);

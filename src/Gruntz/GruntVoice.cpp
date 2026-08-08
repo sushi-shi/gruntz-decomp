@@ -156,7 +156,7 @@ i32 CreateVoiceTrigger(CGameObject* obj) {
 
 // @early-stop
 RVA(0x001198a0, 0x195)
-CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startStampLo = 0;
     m_startStampHi = 0;
     m_durationMs = 0;
@@ -186,7 +186,8 @@ RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
 
 // @early-stop
 RVA(0x00119b50, 0x1ce)
-CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_prevAnimSetNode = m_objAux->m_actKey;

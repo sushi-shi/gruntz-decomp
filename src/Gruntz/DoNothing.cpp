@@ -44,7 +44,7 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
 
 // @early-stop
 RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->m_flags |= 1;
     CImage* aux = m_object->m_layer;
     if (aux != NULL) {

@@ -43,7 +43,7 @@ LogicTypeId CRainCloud::GetTypeTag() {
 // @early-stop
 // Regalloc colour only: retail keeps m_object in eax across the sortKey block.
 RVA(0x000b35a0, 0x401)
-CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     m_wwdObject->m_flags |= 0x2000002;
 

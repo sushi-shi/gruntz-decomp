@@ -51,7 +51,7 @@ RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
 // @early-stop
 RVA(0x000b1200, 0x2cb)
-CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;

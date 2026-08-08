@@ -70,7 +70,8 @@ i32 CreateCursorSnapSprite(CGameObject* owner) {
 
 // @early-stop
 RVA(0x0003a340, 0x16e)
-CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_CURSORSNAPSPRITE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);

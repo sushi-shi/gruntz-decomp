@@ -40,6 +40,22 @@ SIZE(0x18);
 struct WwdRegion : WwdGridNode {
     WwdRegion();
 
+    // The same seed, INLINE: CGameObject's out-of-line ctor (0x15b390) expands m_region
+    // in place - it calls neither 0x15b2a0 nor 0x15b2b0 - while the three factories that
+    // expand CGameObject's body still reach the pinned ctor above.
+    enum EInlineSeed {
+        INLINE_SEED
+    };
+    WwdRegion(EInlineSeed) : WwdGridNode(WwdGridNode::NO_SEED) {
+        SeedFields();
+    }
+
+    void SeedFields() {
+        m_bucket = NULL;
+        m_reserved08 = 0;
+        m_object = NULL;
+    }
+
     ~WwdRegion() {}
     struct CGameObject* m_object;
 };

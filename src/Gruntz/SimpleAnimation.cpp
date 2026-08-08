@@ -38,7 +38,8 @@ template<> DATA(0x00246038)
 CActReg CActRegPool<CSimpleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x000ab940, 0x1b8)
-CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     CImage* aux = m_object->m_layer;

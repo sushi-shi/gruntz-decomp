@@ -84,7 +84,8 @@ i32 CreateStatusBarSprite(CGameObject* obj) {
 
 // @early-stop
 RVA(0x0010c230, 0x178)
-CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_STATUSBARSPRITE");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);

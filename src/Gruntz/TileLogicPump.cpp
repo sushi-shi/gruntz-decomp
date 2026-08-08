@@ -308,7 +308,8 @@ i32 CreateWarpStonePad(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 // @early-stop
 RVA(0x0010d650, 0x16c)
-CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CWarpStonePad::CWarpStonePad(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->m_flags |= 2;
     m_wwdObject->m_flags |= 1;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
@@ -341,7 +342,8 @@ i32 CWarpStonePad::AdvanceAnim() {
 }
 
 RVA(0x0010dc40, 0x154)
-CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
 
@@ -375,7 +377,8 @@ i32 CTileTriggerSwitch::AdvanceAnim() {
 // The three m_object reloads now match retail; the residual is a callee-saved
 // register rotation (edi/ebp/ecx) around the flag read-modify-writes.
 RVA(0x0010e220, 0x17d)
-CTileTrigger::CTileTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CTileTrigger::CTileTrigger(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
@@ -407,7 +410,7 @@ void CTileTrigger::RegisterActs() {
 
 // @early-stop
 RVA(0x0010e800, 0x17d)
-CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
@@ -449,7 +452,8 @@ i32 CTileTrigger::AdvanceAnim() {
 
 // @early-stop
 RVA(0x0010ee20, 0x27d)
-CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 2;
@@ -668,7 +672,8 @@ CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
 // @early-stop
 RVA(0x0010faf0, 0x128)
-CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->m_flags |= 0x1000000;
 
     CGameObject* o = m_object;

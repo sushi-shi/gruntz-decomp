@@ -340,10 +340,22 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
 // CMovingLogic/CProjectile realization group. Retail inlines CProjectile::CProjectile()
 // into the LOGIC_PROJECTILE arm at depth 1: its base ??0CMovingLogic call stays
 // out-of-line (the LOGIC_BOOMERANG arm likewise calls ??0CProjectile as its base).
-// Our cl inlines that base ctor fully, so ??0CMovingLogic is emitted nowhere and its
-// pin dangles - an inliner-heuristic residue for the permute campaign, not a shape bug.
 RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
+
+// The pinned half of CMotionState's two-entity split: CGrunt::CGrunt,
+// CProjectile::CProjectile and SerialObjectFactory above all `call` it, while the
+// CMovingLogic()/CProjectile() COMDATs beside it expand CMotionState(INLINE_BASE).
+// The COMPGEN form is the accurate one and not a workaround: retail's 0x136d0 IS a
+// compiler-emitted out-of-line copy of an inline ctor cl declined to expand, exactly
+// like the six siblings pinned around it.  The definition below is only how we make
+// our cl emit that same body.  It also keeps this unit's tu_order span honest - the
+// span is measured from RVA() rows, and a real claim at 0x136d0 would stretch
+// SerialObjectFactory across the carved SerializeSyncMarker (0x13610).
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
+CMotionState::CMotionState() {
+    InitBounds();
+}
+
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
 RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
 RVA_COMPGEN(0x00013bb0, 0x4, ?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ)

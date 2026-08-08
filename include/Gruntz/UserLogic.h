@@ -42,8 +42,17 @@ SIZE_UNKNOWN();
 
 class CUserLogic : public CUserBase {
 public:
+    // Tag type: picks the inline sibling of the out-of-line 0x58cd0 ctor.
+    enum EInlineBase {
+        INLINE_BASE
+    };
+
     CUserLogic() {}
+    // Out of line at 0x58cd0.  Only CMovingLogic (CGrunt / CProjectile) and
+    // CDoNothingNormal reach it - retail's three `call` sites.
     CUserLogic(CGameObject* obj);
+    // The expanded sibling: every other derived ctor carries this body inline.
+    CUserLogic(CGameObject* obj, EInlineBase);
     virtual ~CUserLogic() OVERRIDE {}
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE;
@@ -79,6 +88,8 @@ public:
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj);
 
+    void AttachToObject(CGameObject* obj);
+
     void LoadGruntTuningConstants(i32);
 
     typedef i32 (CUserLogic::*ActCallback)();
@@ -110,11 +121,8 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     }
 }
 
-// Inline in the shared header: retail expands this whole body into ~65 derived
-// logic constructors (they show the two vptr stamps, the m_link zBitVec assign and
-// the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
-// CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
-inline CUserLogic::CUserLogic(CGameObject* obj) {
+// The one textual copy of the ctor body.  Both CUserLogic ctor entities expand it.
+inline void CUserLogic::AttachToObject(CGameObject* obj) {
     m_logicObject = obj;
     m_object = static_cast<CWwdGameObjectA*>(obj);
     m_objAux = obj->m_animWorker;
@@ -130,6 +138,14 @@ inline CUserLogic::CUserLogic(CGameObject* obj) {
     m_gatedCallback = 0;
     m_gatedActKey = 0x3e9;
     m_reserved2c = 2;
+}
+
+// Inline in the shared header: retail expands this whole body into ~57 derived
+// logic constructors (they show the two vptr stamps, the m_link zBitVec assign and
+// the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
+// CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
+inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
+    AttachToObject(obj);
 }
 
 class CWapX {

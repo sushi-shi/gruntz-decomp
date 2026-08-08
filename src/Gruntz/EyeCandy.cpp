@@ -24,7 +24,7 @@ RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
 // just tested, so the load retail keeps is missing.
 // docs/patterns/branch-equality-propagated-into-the-guarded-store.md
 RVA(0x000ac620, 0x1cf)
-CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey == 0 && o->m_layer != NULL) {
         i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;

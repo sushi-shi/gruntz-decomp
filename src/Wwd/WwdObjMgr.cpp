@@ -159,7 +159,8 @@ CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     AnimWorkerObj* tmpl,
     i32 stateFlags
 ) {
-    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags);
+    CWwdGameObjectA* result =
+        new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CGameObject::INLINE_BASE);
     if (result->Setup(x, y, sortKey, tmpl) == 0) {
         if (result != NULL) {
             delete result;
@@ -1323,4 +1324,22 @@ RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = NULL;
     m_reserved08 = 0;
+}
+
+// The out-of-line half of the visibility split: the three creators above carry
+// CGameObject's ctor body expanded but still `call` these two.  The TU that expands
+// them (WwdFactoryObject.cpp, inside 0x15b390) takes the *CtorInline.h views instead.
+RVA(0x0015b2c0, 0x3d)
+CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08), m_dirty(WwdDirtyRect::INLINE_SEED) {
+    m_screenX = COORD_UNSET;
+    m_clip.left = COORD_UNSET;
+    m_level = NULL;
+    m_stateFlags = SPRITE_STATE_NONE;
+}
+
+RVA(0x0015b300, 0x40)
+AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CLoadable(owner, id, stateFlags) {
+    ResetWorkerFields();
 }

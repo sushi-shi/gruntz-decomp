@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/AnimWorkerObj.h>
+#include <DDrawMgr/AnimWorkerObjCtorInline.h>
 #include <DDrawMgr/DDrawSubMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -17,6 +18,7 @@
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
+#include <Gruntz/ResolveNodeCtorInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -35,36 +37,10 @@
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
-// Ascending RVA order in this TU's run: 0x15b2b0 -> 0x15b2c0 -> 0x15b300.
+// Ascending RVA order in this TU's run: 0x15b2b0 -> 0x15b340 -> 0x15b370 -> 0x15b390.
 RVA(0x0015b2b0, 0xe)
 WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
-    m_bucket = NULL;
-    m_reserved08 = 0;
-    m_object = NULL;
-}
-
-// Retail's 0x15b2c0 is 61 bytes of straight-line stores ending `ret 0xc`: it seeds
-// m_dirty INLINE ([+0x20]=COORD_UNSET, [+0x38]=-1) and calls nothing, so this body
-// must take the INLINE_SEED sibling rather than the pinned WwdDirtyRect ctor.
-RVA(0x0015b2c0, 0x3d)
-CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08), m_dirty(WwdDirtyRect::INLINE_SEED) {
-    m_screenX = COORD_UNSET;
-    m_clip.left = COORD_UNSET;
-    m_level = NULL;
-    m_stateFlags = SPRITE_STATE_NONE;
-}
-
-RVA(0x0015b300, 0x40)
-AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CLoadable(owner, id, stateFlags) {
-    m_notify = NULL;
-    m_payload = NULL;
-    m_logic = NULL;
-    m_target = NULL;
-    m_actKey = 0;
-    m_targetId = 0;
-    m_payloadSize = 0;
+    SeedFields();
 }
 
 RVA(0x0015b340, 0x2b)
@@ -90,6 +66,22 @@ i32 CGameObject::IsLoaded() {
         return 1;
     }
     return 0;
+}
+
+// The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
+// Retail `call`s this from exactly three sites - CDDrawChildGroup::CreateContainerObject
+// (through CWwdGameObject -> CWwdGameObjectA), CDDrawWorkerHost::ReadPlaneObjects and
+// CWwdGameObject::CreateObject - and expands CGameObject(..., INLINE_BASE) in
+// CreateSpriteObject / CreateDotObject / CreateDeferredObject.
+// Retail's body calls neither 0x15b270 nor 0x15b2b0, so m_region and m_shadow take the
+// INLINE_SEED siblings here; the expanded CGameObject(..., INLINE_BASE) leaves both as
+// the `call`s the three factories show.
+RVA(0x0015b390, 0x128)
+CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
+    : CResolveNode(owner, id, stateFlags),
+      m_region(WwdRegion::INLINE_SEED),
+      m_shadow(WwdDirtyRect::INLINE_SEED) {
+    AttachToOwner(owner, id);
 }
 
 // @early-stop

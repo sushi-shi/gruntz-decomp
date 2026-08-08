@@ -35,3 +35,11 @@ Evidence from the former UserLogic emitter cleanup:
 Classification: **WALL until a real caller emits the copy.** Improving the caller can
 change emission without touching the constructor; recheck after substantive caller or
 declaration recovery.
+
+## RESOLVED (2026-08-08)
+
+0x58cd0 is claimed and EXACT. The emission does not have to be "natural": the retail source had
+two entities, and reproducing them (tag on the inline sibling, one shared body helper, pinned
+body in MotionState.cpp) emits the COMDAT without any artificial sink. Same for
+`??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z` (0x15b390). See
+[nested-ctor-call-vs-expansion-is-a-tu-visibility-split.md](nested-ctor-call-vs-expansion-is-a-tu-visibility-split.md).

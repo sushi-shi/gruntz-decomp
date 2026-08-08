@@ -227,7 +227,8 @@ DATA(0x0020d404)
 static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 
 // @early-stop
-
+// Residual is register assignment: retail parks `owner` in ebp and CSEs the constant 7
+// into ebx; ours holds owner in ebx and re-materialises 7 as an immediate.
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner)
     : CMovingLogic(static_cast<CGameObject*>(owner)),

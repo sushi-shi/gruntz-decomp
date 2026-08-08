@@ -134,3 +134,11 @@ related: [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md),
 (the frame delta this produces is the visible symptom),
 [sortkey-flag-rmw-needs-local-receiver.md](sortkey-flag-rmw-needs-local-receiver.md)
 (the residue left over once the expansion is right).
+
+## RESOLVED (2026-08-08): the trade is not forced
+
+The "one row vs sixty-five" trade only exists while the ctor is ONE entity. A tag parameter on
+an inline sibling plus a shared inline body helper gives both shapes at once:
+`??0CUserLogic@@QAE@PAUCGameObject@@@Z` (0x58cd0) is now 100.00 EXACT with every derived ctor
+keeping its expansion. See
+[nested-ctor-call-vs-expansion-is-a-tu-visibility-split.md](nested-ctor-call-vs-expansion-is-a-tu-visibility-split.md).

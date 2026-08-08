@@ -33,9 +33,15 @@ struct AnimWorkerObj : public CLoadable {
 
     AnimWorkerObj() {}
 
+    // Out of line at 0x15b300 in WwdObjMgr.cpp; <DDrawMgr/AnimWorkerObjCtorInline.h> is
+    // the opt-in inline view of the same body for the one TU that expands it.
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
 
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0) {
+        ResetWorkerFields();
+    }
+
+    void ResetWorkerFields() {
         m_notify = NULL;
         m_payload = NULL;
         m_logic = NULL;

@@ -2,6 +2,7 @@
 
 #include <Gruntz/MotionState.h>
 
+#include <DDrawMgr/DDrawWorkerCacheFindInline.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/Projectile.h>
@@ -41,4 +42,14 @@ void CMotionState::SetZ(double z) {
     m_maxStep.x = z;
     m_maxStep.y = z;
     m_maxStep.z = z;
+}
+
+// The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
+// Retail `call`s this from exactly three sites - CGrunt::CGrunt and
+// CProjectile::CProjectile (both through CMovingLogic's ctor) and
+// CreateDoNothingNormal (through CDoNothingNormal's) - and expands
+// CUserLogic(obj, INLINE_BASE) everywhere else.
+RVA(0x00058cd0, 0x195)
+CUserLogic::CUserLogic(CGameObject* obj) {
+    AttachToObject(obj);
 }

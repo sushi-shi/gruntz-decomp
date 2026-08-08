@@ -70,7 +70,7 @@ RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 // inlined strcmp takes the 3-register form and cl cross-jumps the SetupSprite tails
 // (docs/patterns/inline-strcmp-form-reads-out-a-spilled-register.md).
 RVA(0x00095b10, 0x1720)
-CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     m_driftPos.m_lo = 0;
     m_driftThresh.m_lo = 0;
@@ -475,7 +475,7 @@ void RegisterIconState() {
 // Scheduling: cl issues the m_object load and the final vptr stamp ahead of the
 // m_startClock/m_countdown zero stores; retail issues them after.
 RVA(0x00098140, 0x18e)
-CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startClock.m_v = 0;
     m_countdown.m_v = 0;
     m_object->m_screenY -= 0x18;
@@ -898,7 +898,7 @@ i32 CInGameIcon::SerializeMove(
 
 // @early-stop
 RVA(0x00099110, 0x215)
-CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_wwdObject->m_flags |= 0x10000;
         return;

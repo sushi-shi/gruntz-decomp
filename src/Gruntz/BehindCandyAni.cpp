@@ -45,7 +45,8 @@ RVA_COMPGEN(0x000100f0, 0x44, ??1CBehindCandyAni@@UAE@XZ)
 // orders); every assign-BEFORE-call form also costs an extra zero-constant use,
 // which makes cl claim a 4th callee-saved register and shifts every frame offset.
 RVA(0x000ad540, 0x1f0)
-CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {

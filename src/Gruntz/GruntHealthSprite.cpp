@@ -29,7 +29,8 @@ RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 // The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
 // a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x0007eb00, 0x170)
-CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");

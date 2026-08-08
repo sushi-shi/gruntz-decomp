@@ -20,7 +20,8 @@ RVA_COMPGEN(0x0000fc00, 0x1e, ??_GCBehindCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fc30, 0x44, ??1CBehindCandy@@UAE@XZ)
 
 RVA(0x000ac3f0, 0x1b1)
-CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CBehindCandy::CBehindCandy(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != 0) {
         o->m_sortKey = 0;

@@ -187,7 +187,8 @@ i32 CreateDroppedObjectShadow(CGameObject* obj) {
 // only residue: cl schedules the CObjectDropper vptr store one pair of i64 zero-stores
 // earlier than retail, which renames two registers downstream.
 RVA(0x000c59f0, 0x3e3)
-CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CObjectDropper::CObjectDropper(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
     m_value = m_wwdObject->m_animCursor.m_animation;
@@ -398,7 +399,8 @@ i32 CObjectDropper::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
 
 // @early-stop
 RVA(0x000c68b0, 0x1f5)
-CDroppedObject::CDroppedObject(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CDroppedObject::CDroppedObject(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
@@ -551,7 +553,8 @@ i32 CDroppedObject::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId 
 
 // @early-stop
 RVA(0x000c7490, 0x1a6)
-CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");

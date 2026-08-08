@@ -90,11 +90,8 @@ void CMovingLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
-// Retail CALLS CUserLogic::CUserLogic (0x58cd0, one of its only three callers) where our
-// cl expands the header-inline body: +32 instructions, +0x10 of frame and four extra EH
-// states, all in B0. Body outside that is block-for-block aligned. Making the base ctor
-// out-of-line to flip it is the forbidden trade -
-// docs/patterns/base-ctor-pinned-out-of-line-costs-every-derived-ctor.md.
+// Residual is inside the inlined CMovingLogic(owner): retail re-reads m_objAux before
+// each of the six bound probes, our cl keeps it live in a register across the x87 stores.
 RVA(0x000dec60, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     m_gameObject = owner;
@@ -859,7 +856,7 @@ void CTimeBomb::RegisterActs() {
 
 RVA(0x000e1b90, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
-    : CUserLogic(obj), CWapX(obj), m_startTime(0), m_duration(0) {
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
     m_wwdObject->m_flags |= 0x2000002;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_PROJECTILE) {

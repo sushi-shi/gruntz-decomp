@@ -72,7 +72,8 @@ RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
 
 // @early-stop
 RVA(0x00045d30, 0x220)
-CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CFortressFlag::CFortressFlag(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdGameObjectA* o = m_object;
     i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
     if (o->m_sortKey != v) {
@@ -258,7 +259,7 @@ i32 CreateExplosion(CGameObject* owner) {
 // The vptr stamp is transposed with the body's first m_wwdObject read; the rest is
 // a scratch-register rotation.  docs/patterns/vptr-stamp-transposed-with-second-base-member-load.md
 RVA(0x00046ad0, 0x15e)
-CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
@@ -297,7 +298,7 @@ i32 CParticlez::Update() {
 
 // @early-stop
 RVA(0x000470e0, 0x16b)
-CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
+CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_wwdObject->ApplyName("GAME_EXPLOSION");
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
