@@ -3598,7 +3598,7 @@ sbi_rectonly	?ExitMode@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	6660d0dc1cd5	0x
 sbi_rectonly	?FindReadySlot@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	2	16035efbd748	0x109a90	100.0000
 sbi_rectonly	?GetActiveValue@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	2	bc82aa36bef0	0x10bbe0	100.0000
 sbi_rectonly	?HideRect@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	848e533375d4	0xfe600	100.0000
-sbi_rectonly	?HitTest@CStatusBarMgr@@QAEHHH@Z	80.6250	80.6250	6	bb8e146ce267	0x105280	80.6250
+sbi_rectonly	?HitTest@CStatusBarMgr@@QAEHHH@Z	88.5000	88.5000	7	436276e66606	0x105280	88.5000
 sbi_rectonly	?HitTestLayer@CStatusBarMgr@@QAEHHH@Z	100.0000	100.0000	3	e5e0d48113ea	0xfe8a0	100.0000
 sbi_rectonly	?HitTestRects@CStatusBarMgr@@QAEPAVCStatusBarItem@@HH@Z	95.2717	95.2717	6	528d36fef03d	0xffcb0	95.2717
 sbi_rectonly	?HlClickGroup0@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	a6227cbdebb6	0x10b5d0	100.0000
