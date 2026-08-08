@@ -409,6 +409,100 @@ has real `Serialize`/`Save`/`Load`/`GetTag`/`Parse` bodies where **retail has `_
 (`PreDispatchMessage`/`HandleWindowCommand`/`OnCreate` versus retail's `FUN_00494c40`,
 `FUN_00494c60`, `GameWindowProc`); `??_7CGameApp@@6B@` disagrees at +0x34.
 
+### 3b-ii-c. All three families closed; `.rdata` 1.3% → 66.3% (fixed)
+
+Each family had a different mechanism and a different home. **None of them was a source
+defect**, and the function side did not move by a byte (`matched_code` 472319,
+`matched_functions` 3469, `fuzzy` 90.907135, identical before and after).
+
+**1. The RTTI graph was not in the manifest at all** (357 comparable COL sites over 132
+vtables). `data_manifest.rtti_rows()` enrolls `??_R4`/`??_R3`/`??_R2`/`??_R1`/`??_R0`.
+
+> **Both graphs are walked IN PARALLEL from one anchor per class.** The retail image gives
+> the ADDRESSES (`vtable-4` → COL → hierarchy descriptor → base-class array → base-class
+> descriptors → type descriptors) and the base object that emitted the same vtable gives the
+> NAMES at the identical offsets. Nothing is mangled by hand: a `??_R1`'s spelling encodes
+> its PMD (`??_R1BFA@?0A@A@CWapX@@8` = mdisp 0x150, pdisp −1, vdisp 0) and a `??_R0`'s
+> encodes the decorated type name, so re-deriving either would be a guess where cl already
+> wrote the answer. This is the `apply_string_names` oracle applied to RTTI.
+
+Every node is then **re-proven byte-for-byte** against the shipped image with the relocated
+dwords masked (the type-descriptor name string, the PMD displacements, the base counts). A
+node the walk reaches at two addresses, or whose bytes contradict the candidate record, is
+withheld. Measured: **131 classes walked, 666 distinct nodes located, 0 name/rva conflicts,
+0 payload mismatches**; 1940 rows (one per owning unit — RTTI folds exactly like a string
+literal or a vtable) enroll with **0 withheld**, and no other withheld class in the manifest
+moved. Shapes, read off cl's output: `??_R4` 20 B and `??_R3` 16 B and `??_R1` 24 B in
+`.rdata$r`; `??_R2` is `n*4 + 1` (cl NUL-terminates the base-class array); `??_R0` is
+`8 + strlen(name) + 1` in **`.data`**, because the runtime writes its `spare` field.
+
+`nix/patches/vostok-grouped-section-names.patch` was needed: the section manifest's storage
+check demanded an exact `.rdata`/`.data`/`.bss`, with one hand-rolled `.CRT$` exception. A
+`$` suffix is COFF's **grouped-section** form (a linker ordering key, stripped at link time)
+and cl puts every RTTI record in `.rdata$r`. It compares the group prefix now.
+
+**2. `??_E` → `??_G` weak externals** (477 sites over 190 vtables) — a pure scoring artefact,
+fixed in `canonicalize_data_symbols.canonicalize_coff` through the existing `dup_retargets`
+path, so the fail-closed postcondition already covers it. **No `src/` change.** The
+whole-link precondition (a weak external resolves to its default only while nothing defines
+it strongly) is not assumed: `normalize_objs` re-proves it over the whole processed set every
+build and fails loudly otherwise. Measured 508 weak `??_E<C>@@UAEPAXI@Z` references and 6
+strong `??_E` definitions, and the two name sets are disjoint — the strong ones are
+non-virtual `QAEPAXI@Z` bodies and `W7AEPAXI@Z` thunks, a different mangling.
+
+**3. MFC base slots** (155 sites over 52 vtables). `gruntz.audit.vtable_slot_labels` reads
+`(name → retail rva)` out of the vtable slots themselves: the base object names slot *i*, the
+retail vtable holds its address. Accepted only when the map is 1:1 in BOTH directions, only
+for rvas no src claim (address or extent) and no active library row already covers, and with
+the retail bytes compared against our own COMDAT wherever we emit one. **45 accepted, 0 model
+contradictions, 3 ambiguous.** 32 are MFC bodies and become `HIGH` rows in
+`library_labels.csv` (the `mfc-4.2-header-inline` precedent: `CObject::Serialize` and friends
+are `_AFX_INLINE` in `AFX.INL`, so cl materialises them as COMDATs inside a game TU's
+contribution). The wrong `LOW` FID row `0x014be0,__fpclear` is pruned — that address is
+`CObject::AssertValid`.
+
+**Why an unlabelled MFC virtual did not merely show up blank.** `relocs.rs` names a `.text`
+address by the closest PRECEDING function, and a vtable slot holds an `/INCREMENTAL` **jmp
+thunk**, so the "closest preceding function" is *the previous 5-byte thunk*, which forwards
+somewhere unrelated: `CObject::Serialize` printed as `?ToggleRegionA@CTriggerMgr@@QAEHXZ+5`,
+once per vtable. Off the thunk band it is the enclosing admitted boundary instead —
+`?AfxExtractSubString@@YGHAAVCString@@PBDHD@Z+0x78` for `CObject::GetRuntimeClass`.
+
+`synth_pdb` also had to synthesize a record for the 32: a library label carries no extent
+(the CSV has no size column) and the inventory never carved these bodies — the linker packed
+them **unaligned INSIDE a neighbouring admitted boundary** (`0x1bef01` sits inside
+`0x1bee89+0x120`). The record binds a NAME to an ADDRESS; its extent is the distance to the
+next boundary we do know, which is a bound and not a claim about where the body ends. It is
+restricted to library rows — src claims with no `@size` keep the old WARN-and-skip, or 11
+game functions absent from `functions.tsv` would start being carved (measured: `total_functions`
+4301 → 4312, `fuzzy` 90.907 → 90.834).
+
+| | before | after |
+|---|---|---|
+| `??_7` (name, object) pairs present | 515 | 515 |
+| byte- and reloc-clean | **13** | **498** |
+| residual pairs / distinct names | 142 / 60 | **16 / 8** |
+| COL sites wrong | 357 | **1** |
+| `??_E`/`??_G` sites | 477 | **0** |
+| MFC-label sites | 155 | **0** |
+| `.rdata` bytes / at 100% | 31566 / 416 (1.3%) | **62598 / 41496 (66.3%)** |
+| `.data` bytes / at 100% | 88384 / 46609 (52.7%) | **101368 / 58805 (58.0%)** |
+| `total_data` | 660102 | 704118 |
+| `matched_data` | 55326 (8.38%) | **108602 (15.42%)** |
+| `matched_code` / `matched_functions` / `fuzzy` | 472319 / 3469 / 90.907135 | unchanged |
+
+**The eight names still residual are real signal.** Thirteen `CGameWnd`/`CGameApp` addresses
+and four `??_G` scalar-deleting destructors (`CResolveNode`, `CRgn`, `CSBI_SideTab`,
+`CSBI_StatzTabArrow`) are **byte-identical compiler-generated COMDATs of OUR classes** with
+no claim on their retail rva — so `CGameWnd` slots 1–3 and `CGameApp` **+0x30** (not +0x34)
+are NOT model defects, they are missing `RVA_COMPGEN` pins; `vtable_slot_labels` prints them
+under `home = src-RVA_COMPGEN`. The one real model defect left is `CDDrawWorkerA` slots
+5/7/8, which point at `0x157060`/`0x157130`/`0x1570a0` while our model inherits
+`CDDrawWorkerBase::IsLoaded`/`Unload`/`GetClassId` (claimed at `0x157200`/`0x157310`/
+`0x157210`) — three unreconstructed `CDDrawWorkerA` overrides. `??_7CGruntzCommand@@6B@` is
+now clean, confirming its `__purecall` fix. The last COL site is
+`??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@`, which has no primary-vtable slot map.
+
 ### 3b-iii. `DATA_COMPGEN(rva, name, value)` — reviewed compiler-generated data (wired)
 
 Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic
