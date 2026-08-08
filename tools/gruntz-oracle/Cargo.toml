@@ -12,6 +12,10 @@ path = "src/main.rs"
 name = "fntdump"
 path = "src/bin/fntdump.rs"
 
+[[bin]]
+name = "butez"
+path = "src/bin/butez.rs"
+
 [dependencies]
 gruntz-rez = { workspace = true }
 gruntz-codec = { workspace = true }

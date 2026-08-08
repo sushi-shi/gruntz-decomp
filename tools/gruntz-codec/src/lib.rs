@@ -35,6 +35,8 @@
 
 pub mod ani;
 pub mod bmp;
+pub mod bute;
+mod bute_pi;
 pub mod fnt;
 pub mod pal;
 pub mod pcx;
