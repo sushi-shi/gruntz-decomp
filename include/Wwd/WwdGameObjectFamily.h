@@ -43,12 +43,21 @@ public:
         INLINE_BASE
     };
 
+    // Same expansion, but m_region's ctor is expanded too (`call ??0WwdGridNode`
+    // + the m_object store).  CWwdGameObjectC / CWwdGameObjectF take this one;
+    // CWwdGameObjectA, whose m_animCursor eats the rest of the inline budget,
+    // keeps the plain `call ??0WwdRegion` and takes INLINE_BASE above.
+    enum EInlineBaseAndRegion {
+        INLINE_BASE_AND_REGION
+    };
+
     // Out of line at 0x15b390.  Retail `call`s it from CWwdGameObject's chain and
     // from the two CWwdGameObjectA sites in LevelPlane / WwdGameObjectRender.
     CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
     // The expanded sibling: CreateSpriteObject / CreateDotObject /
     // CreateDeferredObject carry this body inline.
     CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBase);
+    CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, EInlineBaseAndRegion);
     virtual ~CGameObject() OVERRIDE {
         Unload();
     }
@@ -179,12 +188,26 @@ inline CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags,
     AttachToOwner(owner, id);
 }
 
+inline CGameObject::CGameObject(
+    CDDrawSurfaceMgr* owner,
+    i32 id,
+    i32 stateFlags,
+    EInlineBaseAndRegion
+)
+    : CResolveNode(owner, id, stateFlags), m_region(WwdRegion::BASE_CALL) {
+    AttachToOwner(owner, id);
+}
+
 class CWwdGameObjectA : public CGameObject {
 public:
     // Calls the pinned base ctor: CWwdGameObject's chain, LevelPlane's
-    // ReadPlaneObjects and CWwdGameObject::CreateObject all take this one.
+    // ReadPlaneObjects and CWwdGameObject::CreateObject all take this one.  These
+    // sites carry CAniAdvanceCursor's ctor EXPANDED (`call ??0CLoadable`, then the
+    // 0x5f0128 vptr and the three NULLs) - 0x15b730 has exactly one retail caller,
+    // CreateSpriteObject, which is the INLINE_BASE overload below.
     CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags), m_animCursor(owner, id, stateFlags) {
+        : CGameObject(owner, id, stateFlags),
+          m_animCursor(owner, id, stateFlags, CAniAdvanceCursor::INLINE_CURSOR) {
         ResetSpriteFields();
     }
     // Expands the base ctor: CDDrawChildGroup::CreateSpriteObject takes this one.
@@ -291,7 +314,7 @@ class CWwdGameObjectF : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDeferredObject, which expands the base.
     CWwdGameObjectF(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags, INLINE_BASE) {}
+        : CGameObject(owner, id, stateFlags, INLINE_BASE_AND_REGION) {}
     virtual ~CWwdGameObjectF() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
@@ -315,7 +338,7 @@ class CWwdGameObjectC : public CGameObject {
 public:
     // Only created by CDDrawChildGroup::CreateDotObject, which expands the base.
     CWwdGameObjectC(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-        : CGameObject(owner, id, stateFlags, INLINE_BASE) {
+        : CGameObject(owner, id, stateFlags, INLINE_BASE_AND_REGION) {
         m_dotColor = 0;
     }
     virtual ~CWwdGameObjectC() OVERRIDE;

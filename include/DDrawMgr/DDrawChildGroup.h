@@ -133,6 +133,11 @@ public:
 
     void ClearChildren();
 
+    // Both are members in retail: CollideBroadcast spills `this` to [esp] purely
+    // to reload ecx before these two calls (0x159f06 / 0x15a0d8 / 0x15a105).
+    i32 RectsOverlap(struct CDDrawRect* a, struct CDDrawRect* b);
+    i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
+
     CGameObject* Drain();
 };
 SIZE(0x6c);

@@ -7,6 +7,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/AnimWorkerObjCtorInline.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -210,7 +211,7 @@ CWwdGameObject::~CWwdGameObject() {
 }
 
 RVA(0x0015bfb0, 0x4a)
-i32 __stdcall RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
+i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
     if (a->left > b->right) {
         return 0;
     }

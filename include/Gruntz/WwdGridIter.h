@@ -50,6 +50,16 @@ struct WwdRegion : WwdGridNode {
         SeedFields();
     }
 
+    // Expanded, but reaching the base through the pinned 0x15b2a0: CreateDotObject
+    // (0x1592b5) and CreateDeferredObject (0x1594a5) emit `call ??0WwdGridNode`
+    // followed by the lone m_object store, where CreateSpriteObject calls 0x15b2b0.
+    enum EBaseCall {
+        BASE_CALL
+    };
+    WwdRegion(EBaseCall) : WwdGridNode() {
+        m_object = NULL;
+    }
+
     void SeedFields() {
         m_bucket = NULL;
         m_reserved08 = 0;

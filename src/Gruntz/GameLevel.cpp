@@ -1211,14 +1211,16 @@ i32 CGameLevel::ResolveFloorCollision(CGameObject* t, i32 destX, i32 destY, i32 
                 }
             } else if (t->m_moveMode != MOVE_CLIMBING && result == TILEKIND_CLIMB) {
                 i32 floor = hiY - base;
-                if (hiY > floor) {
-                    i32 y = hiY - 1;
+                i32 hi = hiY;
+                if (hi > floor) {
+                    i32 y = hi - 1;
                     if (y >= floor) {
                         do {
                             if (AxisProbe(cur, y) != TILEKIND_CLIMB) {
                                 t->m_moveMode = MOVE_GROUNDED;
-                                return (y + 1) - t->m_extent.bottom - 1;
+                                return hi - t->m_extent.bottom - 1;
                             }
+                            hi = y;
                             --y;
                         } while (y >= floor);
                     }
@@ -1806,19 +1808,20 @@ i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     return y;
 }
 
-// @early-stop
 RVA(0x0015f9f0, 0x11a)
 i32 CGameLevel::StepGroundDown(CGameObject* t, i32 x, i32 y, i32* out, i32 flags) {
-    i32 probeY = t->m_extent.bottom + y + 2;
+    // The foot row; both probes take the row BELOW it, and retail's two separate
+    // `+ 1`s are visible as `lea eax,[edx+eax+1]` + a detached `inc eax`.
+    i32 footY = t->m_extent.bottom + y + 1;
     TileCollisionKind result;
-    PROBE_TILE(this, x, probeY, result);
+    PROBE_TILE(this, x, footY + 1, result);
     if (result != TILEKIND_CLIMB) {
         return 0;
     }
     if (flags & 0x10) {
         i32 lo = x, hi = x;
         *out = x;
-        if (ClampSpan(x, probeY, &lo, &hi) != 0) {
+        if (ClampSpan(x, footY + 1, &lo, &hi) != 0) {
             *out = (lo + hi) / 2;
         }
     }

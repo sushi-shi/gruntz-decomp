@@ -71,7 +71,6 @@ void CDDrawChildGroup::DestroyChildren() {
     m_map48.RemoveAll();
 }
 
-// @early-stop
 RVA(0x00159250, 0x185)
 CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
     int id,
@@ -98,6 +97,9 @@ CWwdGameObjectC* CDDrawChildGroup::CreateDotObject(
 }
 
 // @early-stop
+// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
+// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
+// all byte-identical.
 RVA(0x001593e0, 0x53)
 CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     int id,
@@ -122,7 +124,6 @@ CWwdGameObjectC* CDDrawChildGroup::CreateNamedDotObject(
     );
 }
 
-// @early-stop
 RVA(0x00159440, 0x170)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl, int stateFlags) {
@@ -141,6 +142,9 @@ CDDrawChildGroup::CreateDeferredObject(int id, int sortKey, AnimWorkerObj* tmpl,
 }
 
 // @early-stop
+// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
+// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
+// all byte-identical.
 RVA(0x001595b0, 0x44)
 CWwdGameObjectF*
 CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* name, int stateFlags) {
@@ -149,7 +153,6 @@ CDDrawChildGroup::CreateNamedDeferredObject(int id, int sortKey, const char* nam
     return CreateDeferredObject(id, sortKey, static_cast<AnimWorkerObj*>(val), stateFlags);
 }
 
-// @early-stop
 RVA(0x00159600, 0x1ab)
 CWwdGameObjectA* CDDrawChildGroup::CreateSpriteObject(
     i32 id,
@@ -227,6 +230,10 @@ i32 CDDrawChildGroup::AttachSprite(
 }
 
 // @early-stop
+// CAniAdvanceCursor's ctor is expanded here (INLINE_CURSOR), matching retail, but
+// our cl then also expands the CLoadable base ctor inside it where retail keeps
+// `call ??0CLoadable` - a depth-4 inline decision; #pragma inline_depth(2|3) is
+// ignored by cl 5.0, so there is no source lever for it yet.
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
@@ -251,6 +258,9 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
 }
 
 // @early-stop
+// docs/patterns/outparam-zeroinit-scheduling.md: retail sinks the `val = 0`
+// store past BOTH Lookup arg pushes; eight source spellings re-measured here,
+// all byte-identical.
 RVA(0x00159a10, 0x57)
 CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int id,
@@ -445,7 +455,9 @@ void CDDrawChildGroup::ClearChildren() {
 }
 
 // @early-stop
-
+// Residue is the frame-slot ORDER: retail lays the scalars out this/ip/pos/mask1
+// from esp+0, we get mask1/this/ip/pos. Hoisting the mask decls to function scope
+// does not move it (measured).
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     POSITION pos = m_list.GetHeadPosition();
@@ -545,7 +557,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 
 // @early-stop
 RVA(0x0015a130, 0xdc)
-i32 __stdcall BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
+i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     if (switchObj->m_switchRect.left == COORD_UNSET) {
         return 0;
     }

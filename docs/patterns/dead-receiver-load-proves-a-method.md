@@ -32,3 +32,17 @@ that is fine — names are ours, the RVA binding is what matters.
 **Do not "fix" this with an inline forwarder.** A wrapper whose body ignores `this` gets
 its receiver load deleted by cl, so it reproduces nothing; only real `__thiscall` linkage
 emits the load. STEERABLE: `CSymTab::Find` @0x13a040 98.28 -> **100 EXACT**.
+
+## The inverse tell: the CALLER spills `this` for no other reason
+
+`CDDrawChildGroup::CollideBroadcast` @0x159f00 opened its frame with `sub esp,0x30` +
+`mov [esp],ecx` where we emitted `sub esp,0x2c` and kept `this` in a register — and the
+only two consumers of that slot were dead `mov ecx,[esp+0x14]` / `mov ecx,[esp+0x10]`
+loads immediately before `call RectsOverlap` and `call BoxesOverlap`. Both callees are
+`__stdcall`-shaped (they clobber `ecx` with their first argument) and both were modelled
+as free functions; both were really `__thiscall` members of `CDDrawChildGroup`. So the
+receiver-load tell also shows up as **a spill slot the function has no other use for**:
+if `this` is spilled and never read except right before a call, that call takes it.
+Confirming evidence is one-sided xrefs — `sema xref` gave each helper exactly one caller,
+`CollideBroadcast` itself. 90.93 -> 94.39 in one build; the callee bodies did not move
+(`RectsOverlap` stayed 100% EXACT through the re-mangling).

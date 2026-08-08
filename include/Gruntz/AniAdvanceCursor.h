@@ -21,9 +21,23 @@ GZ_ENUM_CONST_END(AniAdvanceValue)
 
 class CAniAdvanceCursor : public CLoadable {
 public:
+    // Tag type: picks the expanded sibling of the out-of-line 0x15b730 ctor.
+    // Retail calls 0x15b730 from exactly one site (CreateSpriteObject, whose
+    // CGameObject base is itself expanded); every other construction carries the
+    // body inline - `call ??0CLoadable`, then the vptr and the three NULLs.
+    enum EInlineCursor {
+        INLINE_CURSOR
+    };
+
     CAniAdvanceCursor() {}
 
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineCursor)
+        : CLoadable(owner, field04, field08) {
+        m_boundObject = NULL;
+        m_animation = NULL;
+        m_element = NULL;
+    }
     virtual ~CAniAdvanceCursor() OVERRIDE {
         Unload();
         m_id = -1;
