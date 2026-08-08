@@ -9,7 +9,6 @@
 #include <Enums.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FxModeDesc.h>
-#include <Gruntz/GameRand.h>
 #include <Ints.h>
 #include <Rez/RezBufferObject.h>
 
@@ -55,7 +54,10 @@ public:
     // Monolith's GetRandomNumber, in-class (implicitly inline, no keyword) so the
     // local static is emitted COMMON with this class in its mangled name - which
     // is what gives this module its own guard/seed pair. See <Gruntz/GameRand.h>.
-    i32 GetRandomNumber(){GZ_GET_RANDOM_NUMBER_BODY}
+    i32 GetRandomNumber() {
+        static long holdrand = timeGetTime();
+        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+    }
 
     i32 FxRand(i32 range) {
         return GetRandomNumber() % range;

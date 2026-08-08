@@ -5,7 +5,6 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/GameRand.h>
 #include <Ints.h>
 #include <Wwd/WwdAnimStepMode.h>
 
@@ -32,7 +31,8 @@ struct CAniRecordView : public CObject {
     // local static is emitted COMMON with this class in its mangled name - which
     // is what gives this module its own guard/seed pair. See <Gruntz/GameRand.h>.
     i32 GetRandomNumber() {
-        GZ_GET_RANDOM_NUMBER_BODY
+        static long holdrand = timeGetTime();
+        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
     }
 
     inline CAniRecordView() {
