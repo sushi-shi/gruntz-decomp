@@ -558,7 +558,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
             const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
             memcpy(&tileRec, tilePtr, sizeof(tileRec));
             usable = 1;
-            if (tileRec.m_flags & 0x20000000) {
+            if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
                 if (tileRec.m_occupantIdBytes[1] == m_ownerId) {
                     usable = 0;
@@ -1645,7 +1645,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (abs(gx - sx) < 2 && abs(gy - sy) < 2) {
                     cell = m_board->m_rows[gy][gx].m_flags;
                     i32 f = unit->m_arrivalFlags & cell;
-                    if (f & 0x20000000) {
+                    if (f & BRICKZ_CELL_OCCUPIED) {
                         goto LB;
                     }
                     if (f == 0) {
@@ -1654,7 +1654,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if ((cell & unit->m_passableMask) == 0) {
                         goto LB;
                     }
-                    if (cell & 0x20000000) {
+                    if (cell & BRICKZ_CELL_OCCUPIED) {
                         goto LB;
                     }
                     if ((cell & 0x40) == 0) {
@@ -1678,7 +1678,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto nexti;
                     }
                 LC:
-                    if ((cell & 0x20000000) == 0) {
+                    if ((cell & BRICKZ_CELL_OCCUPIED) == 0) {
                         goto tailArm2;
                     }
                     goto nexti;
@@ -2287,7 +2287,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 goto returnZero;
             }
         }
-        if (sA & 0x20000000) {
+        if (sA & BRICKZ_CELL_OCCUPIED) {
             return RepathAroundBlockedTiles(unit);
         }
         PickupType pk = unit->m_entranceReason;
@@ -3268,7 +3268,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         ownFlags = own.m_flags;
     }
 
-    i32 maskFlags = ownFlags & 0xdfffffff;
+    i32 maskFlags = ownFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
     PickupType type = g->m_entranceReason;
     if (type > PICKUP_EQUIPPABLE_LAST) {
         type = g->m_toolId;
@@ -3327,7 +3327,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                     BrickzCell* rowCell = &m_board->m_rows[scanRow][scan.left];
                     for (i32 scanCol = scan.left; scanCol < scan.right; scanCol++) {
                         CPtrList path(0xa);
-                        if (!(rowCell->m_flags & 0x20000000)) {
+                        if (!(rowCell->m_flags & BRICKZ_CELL_OCCUPIED)) {
                             CGameObject* lvl = g->m_object;
                             if (m_board->SearchEdge(
                                     lvl->m_screenX >> TILE_SHIFT_PX,
@@ -3610,13 +3610,13 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
         i32 c0 = arrCell(m_board, col, row);
         i32 c1 = arrCell(m_board, col, row) & 0x987;
-        if (c1 & 0x20000000) {
+        if (c1 & BRICKZ_CELL_OCCUPIED) {
             return 1;
         }
         if (c1) {
             return 1;
         }
-        if (c0 & 0x20000000) {
+        if (c0 & BRICKZ_CELL_OCCUPIED) {
             return 1;
         }
         g->TileSwitch(col, row, 0, 0x987, 1, 0);
@@ -4240,7 +4240,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             } else {
                 word = 1;
             }
-            if (!(word & 0x20000000)) {
+            if (!(word & BRICKZ_CELL_OCCUPIED)) {
                 return 1;
             }
         }

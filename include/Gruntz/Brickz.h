@@ -46,8 +46,29 @@ SIZE(0x24);
 // The individual bits (0, 3, 4, 5, 8, 11) are NOT named: that needs the WWD
 // tile-attribute table recovered from the binary, and nothing in the tree tests
 // them one at a time.
+// Bit 29 of BrickzCell::m_flags: a grunt is standing on / has reserved this
+// cell. Named from its writers, which always move it in lockstep with
+// m_occupantId:
+//
+//   CGrunt::StepArrivalDrop  sets it on the destination cell and writes
+//     m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo in the next
+//     instruction, having just cleared it (`m_flagBytes[3] &= 0xdf`) and set
+//     m_occupantId = -1 on the cell it left.
+//   CGrunt::Place            does the same pair when a grunt is spawned.
+//   CGrunt::StepRespawn      clears it and sets m_occupantId = -1.
+//   CMapMgr::RecomputeCell   carries it across a tile-attribute recompute in
+//     the same breath as the 0x1bf40000 keep-mask: the tile kind decides every
+//     other bit, occupancy is not the tile's business.
+//   CMapMgr::SearchEdge      pulls it out of the caller's route mask
+//     (`m_edgeMask = maskA & BRICKZ_CELL_OCCUPIED`), which is how a caller asks
+//     the pathfinder to route THROUGH occupied cells.
+//
+// It is deliberately NOT in BRICKZ_BLOCKED_MASK: occupancy blocks a path only
+// when the caller opts in through the route mask.
 GZ_ENUM_CONST_BEGIN(BrickzCellMask)
-    BRICKZ_BLOCKED_MASK = 0x939
+    BRICKZ_BLOCKED_MASK = 0x939,
+    BRICKZ_CELL_OCCUPIED = 0x20000000,
+    BRICKZ_CELL_UNOCCUPIED_MASK = ~0x20000000
 GZ_ENUM_CONST_END(BrickzCellMask)
 
 struct BrickzCell {
