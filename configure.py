@@ -39,6 +39,7 @@ regenerated from those), then re-run configure.py and ninja.
 
 import argparse
 import json
+import os
 import re
 import struct
 import sys
@@ -54,6 +55,45 @@ MANIFEST = REPO / "config" / "units.toml"
 _INCLUDE_RE = re.compile(r'^[ \t]*#[ \t]*include[ \t]*[<"]([^>"]+)[>"]', re.M)
 
 
+_direct_cache: dict = {}
+# Every repo-local file the include scan has READ, across all units. It is the
+# exact set whose CONTENT decides the dep lists below, so it is what the
+# build.ninja generator edge must depend on - see emit_ninja().
+scanned_files: set = set()
+
+
+def _direct_includes(rel: str) -> list:
+    """The repo-local files `rel` includes directly, repo-relative, memoized.
+
+    `Path.resolve()` is a syscall per component and the old code paid it once per
+    include-line per *unit* - 180k calls, ~13 s of a 13 s configure - because the
+    walk restarted from scratch for all 344 TUs and re-read every shared header.
+    Resolving is unnecessary anyway: the repo has no symlinked headers and the
+    include paths are already repo-relative, so normpath over strings is both
+    correct and ~40x cheaper."""
+    hit = _direct_cache.get(rel)
+    if hit is not None:
+        return hit
+    out: list = []
+    _direct_cache[rel] = out          # cycle guard: self-referential includes
+    scanned_files.add(rel)
+    try:
+        text = (REPO / rel).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return out
+    parent = os.path.dirname(rel)
+    for inc in _INCLUDE_RE.findall(text):
+        # quoted same-dir first (e.g. All.cpp's `"CFoo.cpp"`), then the include/ tree
+        for base in (parent, "include"):
+            hrel = os.path.normpath(os.path.join(base, inc))
+            if hrel.startswith(".."):
+                continue              # outside the repo (e.g. ../../usr) - skip
+            if (REPO / hrel).exists():
+                out.append(hrel)
+                break
+    return out
+
+
 def local_headers(source: str) -> list:
     """Transitive set of repo-local headers a TU `#include "..."`s (repo-relative).
 
@@ -63,28 +103,13 @@ def local_headers(source: str) -> list:
     see docs/match-learnings.md). We resolve quoted includes relative to each
     file's own dir and emit the dependents so ninja rebuilds exactly the affected
     units (not a coarse all-units rebuild)."""
-    seen: set[str] = set()
-    stack = [Path(source)]
+    seen: set = set()
+    stack = [source]
     while stack:
-        rel = stack.pop()
-        path = REPO / rel
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        for inc in _INCLUDE_RE.findall(text):
-            # quoted same-dir first (e.g. All.cpp's `"CFoo.cpp"`), then the include/ tree
-            for base in (path.parent, REPO / "include"):
-                try:
-                    hrel = (base / inc).resolve().relative_to(REPO)
-                except ValueError:
-                    continue  # outside the repo (e.g. ../../usr) - skip
-                if (REPO / hrel).exists():
-                    key = str(hrel)
-                    if key not in seen:
-                        seen.add(key)
-                        stack.append(hrel)
-                    break
+        for hrel in _direct_includes(stack.pop()):
+            if hrel not in seen:
+                seen.add(hrel)
+                stack.append(hrel)
     return sorted(seen)
 
 # scripts/gruntz/build/ holds the build-pipeline modules incl. the vendored
@@ -217,17 +242,42 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.variable("cflags", " ".join(global_cflags))
         w.newline()
 
-        # Regenerate build.ninja when the manifest or configure.py changes.
+        # PHASE 1: compile each TU's source -> base .obj via the wine-cl wrapper.
+        # Emitted BEFORE the generator edge only so the include scan has run and
+        # `scanned_files` is complete; ninja does not care about edge order.
+        cl_edges = []
+        for u in units:
+            obj = f"{BASE_DIR}/{u['unit']}.obj"
+            variables = {"unit": u["unit"]}
+            # The unit's resolved [flags] profile; emit a per-edge override only
+            # when it differs from build.ninja's global $cflags default.
+            if u["cflags"] != global_cflags:
+                variables["cflags"] = " ".join(u["cflags"])
+            cl_edges.append((obj, u["source"], [CC_WRAP] + local_headers(u["source"]),
+                             variables))
+
+        # Regenerate build.ninja when the manifest, configure.py, or ANY file the
+        # include scan read changes.
+        #
+        # The dep lists on the `cl` edges below are baked HERE, at configure time,
+        # from the #include graph as it stood. So an edit that changes that graph -
+        # adding an #include, adding/renaming/deleting a header - invalidates them,
+        # and without the scanned set on this edge nothing notices: ninja keeps
+        # using the stale list and a later edit to a newly-included header does not
+        # rebuild its TU. That is silent, and it is exactly the failure mode a
+        # byte-neutrality claim from a header-only edit depends on not happening.
+        # /showIncludes would let cl emit real depfiles, but MSVC 5.0 rejects it
+        # (D4002), so the scan is what we have - make it self-invalidating.
         w.rule("configure",
                command=f"{PY} configure.py",
                description="configure.py (regenerate build.ninja)",
                generator=True)
         w.build("build.ninja", "configure",
                 implicit=["configure.py", "config/units.toml",
-                          "scripts/gruntz/build/ninja_syntax.py"])
+                          "scripts/gruntz/build/ninja_syntax.py",
+                          *sorted(scanned_files)])
         w.newline()
 
-        # PHASE 1: compile each TU's source -> base .obj via the wine-cl wrapper.
         w.comment("=== PHASE 1: compile -> base .obj (cl /O2 /MT under wine) ===")
         w.rule("cl",
                command=f"{PY} {CC_WRAP} --out $out --src $in -- $cflags",
@@ -235,17 +285,9 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.newline()
 
         base_objs = []
-        for u in units:
-            obj = f"{BASE_DIR}/{u['unit']}.obj"
+        for obj, src, implicit, variables in cl_edges:
             base_objs.append(obj)
-            variables = {"unit": u["unit"]}
-            # The unit's resolved [flags] profile; emit a per-edge override only
-            # when it differs from build.ninja's global $cflags default.
-            if u["cflags"] != global_cflags:
-                variables["cflags"] = " ".join(u["cflags"])
-            w.build(obj, "cl", inputs=u["source"],
-                    implicit=[CC_WRAP] + local_headers(u["source"]),
-                    variables=variables)
+            w.build(obj, "cl", inputs=src, implicit=implicit, variables=variables)
         w.newline()
 
         # LABELS: per-TU fragment, then a cheap merge -> symbol_names.csv.

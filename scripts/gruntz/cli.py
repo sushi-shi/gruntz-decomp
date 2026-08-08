@@ -304,11 +304,17 @@ def _ensure_wineprefix_configured() -> None:
 
 def cmd_build(args) -> None:
     build_start = time.monotonic()   # wall-clock start (see _record_build_time)
-    # build.ninja regenerates itself via its `configure` generator edge whenever
-    # config/units.toml or configure.py change, so don't re-run configure every
-    # build - only bootstrap it when it doesn't exist yet (fresh tree / pre-init).
-    if not (REPO / "build.ninja").exists():
-        run([sys.executable, str(CONFIGURE)])
+    # Always re-configure. build.ninja's `configure` generator edge covers the
+    # ordinary cases (units.toml, configure.py, any scanned source/header moved),
+    # but it CANNOT cover a DELETED or renamed header: the stale manifest still
+    # lists that header as an input, and ninja refuses to load a manifest whose
+    # own inputs are missing -
+    #     ninja: error: rebuilding 'build.ninja': 'include/X.h', needed by
+    #                   'build.ninja', missing and no known rule to make it
+    # - which wedges the build until someone runs configure.py by hand. Doing it
+    # unconditionally costs ~0.3 s (the include scan is memoized; it was 13 s
+    # before) and makes a rename a non-event.
+    run([sys.executable, str(CONFIGURE)])
     _ensure_wineprefix_configured()                   # free (a stat); see the fn
     _ensure_retail_copy()                             # cheap, idempotent (stable retail copy)
     _ensure_compdb_fresh()                            # cheap, idempotent (unit list moved?)
