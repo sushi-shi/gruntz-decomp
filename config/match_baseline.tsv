@@ -103,7 +103,7 @@ debugtiming	2	2
 deflate	15	15
 demo	8	7
 destructbutton	1	1
-dialogs	57	53
+dialogs	57	54
 dircellmethods	19	18
 directdrawmgr	68	66
 directinputmgr2	46	46
@@ -1334,7 +1334,7 @@ dialogs	?OnPlayerNameKillFocus0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	7848c874
 dialogs	?OnPlayerNameKillFocus1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	73e1fa0356bd	0x172e0	100.0000
 dialogs	?OnPlayerNameKillFocus2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	e7f33cde7db0	0x17300	100.0000
 dialogs	?OnPlayerNameKillFocus3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	490f81206f71	0x17320	100.0000
-dialogs	?ReadPlayerName@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	1	64276999f402	0x17340	69.1389
+dialogs	?ReadPlayerName@CBattlezDlg@@QAEXH@Z	100.0000	100.0000	4	f976009dda57	0x17340	100.0000
 dialogs	?RefreshOptionState@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	29daf76c305d	0x173e0	100.0000
 dialogs	?SaveOptionCombo0@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	72aaf4e7b091	0x17560	100.0000
 dialogs	?SaveOptionCombo1@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	cbdf83258331	0x175a0	100.0000
@@ -4001,7 +4001,7 @@ symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	f20b8c6532c9	0x13a310	
 symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	6	cfa7b4fa1078	0x13a2d0	100.0000
 symtab	?PackTag@CSymParser@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	1	59a82eb4ec6f	0x13b910	100.0000
 symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	98.4567	98.4567	10	7d7d12c30d36	0x13ad00	98.4567
-symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	78.8048	78.8048	9	71d5f12d3553	0x13b300	78.8048
+symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	79.7566	79.7566	12	caca320cf69e	0x13b300	79.7566
 symtab	?PopParseSlot@CSymParser@@QAEPAUCParseSource@@XZ	98.2174	98.2174	5	d99f58780a63	0x13c0c0	98.2174
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050	100.0000
 symtab	?Read@CParseSource@@QAEHPAXIH@Z	94.6739	94.6739	5	5cb64ff888ff	0x139af0	94.6739
