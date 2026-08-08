@@ -1,0 +1,67 @@
+# MSVC 5.0 emits a ctor as bases -> members -> vptr -> body, and the unwind states index that order
+
+tags: cpp:ctor cpp:eh cpp:member | asm:mov | topic:codegen-idiom topic:eh
+symptoms: `eh_frame --states` reports MISSING_OBJECT or EXTRA_OBJECT on a constructor; the two
+sides store a different NUMBER of unwind states, or the same count at different points; a group
+of member stores sits on the wrong side of the `mov [this],<vtable>` stamp
+confidence: 9/10
+
+## The order
+
+cl 5.0 lays a constructor out in exactly four phases, and it never interleaves them:
+
+1. base-class constructors, in declaration order;
+2. member constructors, in declaration order;
+3. the `mov DWORD PTR [this], OFFSET ??_7Class@@6B@` vptr stamp (**after** the members, not
+   before them);
+4. the constructor body.
+
+Stores cannot be scheduled across a `call`, so any call in phase 1/2 pins everything around it.
+That makes the boundary directly readable in the disassembly: **whatever is written before the
+vptr stamp came from a mem-init, whatever is written after it came from the body.**
+
+## The unwind states index phase 1+2
+
+With `/GX` on, cl assigns one unwind state per destructible sub-object and stores the current
+index before every point that can throw. So the state count is a *census of destructible bases
+and members that were constructed by a mem-init*, and the sieve's ±1 rows are usually a
+mem-init that has been written as a body assignment (or vice versa).
+
+Three shapes, all measured 2026-08-08:
+
+| retail | our source | fix |
+|---|---|---|
+| state 0 at the member's `call`, ours stores 2 | `m_hash.Construct(1);` in the body | `: m_hash(1)` mem-init (`CSymParser` 76.68 -> **100.00**) |
+| head/tail zeroed BEFORE the vptr stamp | `m_list.m_head = NULL;` in the body | the ctor belongs to the member's own class, in ITS mem-init list (`CObjList() : m_head(NULL), m_tail(NULL) {}`) |
+| an extra state, then three field stores | `m_gameObject = owner; ...` in the body | the fields belong to a real base - `: CMovingLogic(owner), CWapX(owner)` (`CProjectile` 86.23 -> **99.78**) |
+
+A fourth shape has no member at all: **an extra state with a `call` right after it, at the end of
+a `new`-expression's protected region, is the constructor BODY.** `new CChatBox` stores state 3
+after the last CString and then calls `Init()`; that only happens if `CChatBox::CChatBox()` calls
+`Init()` itself. Writing `p = new CChatBox; p->Init();` puts the call outside the region and
+state 3 disappears (`CMenuState::LoadGameAssetNamespaces` 89.39 -> 95.14).
+
+## How to read a row
+
+1. Find the state slot: it is the `push -1` slot, i.e. `[esp + frame]` where the epilogue's
+   `mov ecx,[esp+N]` reads the saved `fs:[0]` four bytes below it. Track the `push`es - the same
+   slot is spelled with different displacements at different depths.
+2. Walk retail's stores in order and mark the vptr stamp. Everything before it is phase 1/2.
+3. Count the calls between state stores. A state store with no call before the next one is a
+   member whose ctor inlined to nothing but which still has a destructor.
+
+## Two false-positive shapes the sieve also reports
+
+Not every ±1 row is an object.
+
+* **An out-parameter that lands in the state slot's neighbourhood.** `CLightFx::CLightFx` reads
+  as +1 because retail's inlined `CMapStringToOb::Lookup` zeroes its `CObject*` out-parameter in
+  the *incoming argument's* home slot, which the slot heuristic scores as a state store. The real
+  divergence there is an inline cut, not an object.
+* **A duplicated epilogue.** Each copy of a destructor call carries its own state store, so a
+  function whose early `return` cl duplicated instead of tail-merging reads as +1
+  (`CFontConfig::RenderInputText`). That is `exit_merge_sieve`'s lever.
+
+related: [eh-frame-presence-is-a-source-fact.md](eh-frame-presence-is-a-source-fact.md),
+[goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md),
+[ctor-inline-cut-depth-varies-per-new-site.md](ctor-inline-cut-depth-varies-per-new-site.md)
