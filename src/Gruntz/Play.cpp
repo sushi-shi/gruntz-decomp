@@ -1330,7 +1330,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RegisterInputBindings();
 
-    if (!BuildAnizKeyTable(0)) {
+    if (!InitializeLevelArea(level)) {
         goto fail0;
     }
 
@@ -1437,9 +1437,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!BuildWorldLevelPath(1)) {
+    if (!BuildAnizKeyTable(0)) {
         goto fail0;
     }
+    BuildHelpReveal(0);
+    if (savedThis != NULL) {
+        (savedThis)->AckJoinFailure();
+    }
+    RegisterInputBindings();
     BuildHelpReveal(0);
     if (savedThis != NULL) {
         (savedThis)->AckJoinFailure();
