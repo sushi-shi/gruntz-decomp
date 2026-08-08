@@ -171,7 +171,6 @@ void CPreviewState::LoadLevelPreviewScreen() {
     }
 }
 
-// @early-stop
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
     if (g_flag64c69c) {

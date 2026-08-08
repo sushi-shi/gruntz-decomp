@@ -1110,7 +1110,6 @@ bool CButeMgr::SkipToTag() {
     }
 }
 
-// @early-stop
 RVA(0x001711b0, 0xf5)
 bool CButeMgr::ParseTagLine() {
     if (!ScanToken(BUTETOK_NAME)) {

@@ -11,7 +11,6 @@ CNetPlayerListNode::~CNetPlayerListNode() {
     FreeStrings();
 }
 
-// @early-stop
 RVA(0x00179420, 0x8a)
 CNetSessionNode::~CNetSessionNode() {
     m_id = 0;

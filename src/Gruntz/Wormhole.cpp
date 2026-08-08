@@ -457,11 +457,6 @@ i32 CTeleporter::Begin() {
     return 0;
 }
 
-// @early-stop
-// sole residue: cl colours `col` (m_grid[row*15+col]) into ecx and accumulates
-// `col + row*15`, retail takes ebx and accumulates `row*15 + col`; every source
-// spelling of the index (inline, swapped decls, pre-multiplied row) compiles to
-// the identical canonicalised tree.
 RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

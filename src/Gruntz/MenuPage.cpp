@@ -405,7 +405,6 @@ i32 CMenuPage::FocusPrev() {
     return SetFocus(found, 1) != 0;
 }
 
-// @early-stop
 RVA(0x00183dd0, 0x16)
 i32 CMenuPage::Activate() {
     if (!m_focus) {

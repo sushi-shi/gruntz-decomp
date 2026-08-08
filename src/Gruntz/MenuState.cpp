@@ -423,8 +423,6 @@ i32 CMenuState::RestoreDisplay() {
     return 1;
 }
 
-// @early-stop
-
 RVA(0x000a0b90, 0xc7)
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     if (key == VK_DOWN) {

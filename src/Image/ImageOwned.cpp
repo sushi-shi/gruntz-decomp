@@ -221,7 +221,6 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, ColorDepth fmt) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00149250, 0x158)
 i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
     if (m_srcBpp != 1) {

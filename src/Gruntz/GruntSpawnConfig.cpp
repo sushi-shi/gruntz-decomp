@@ -473,7 +473,6 @@ i32 CGruntSpawnConfig::GetButeSlot(CGrunt* config, i32 cue) {
     }
 }
 
-// @early-stop
 RVA(0x0011bee0, 0x230)
 CParseSource* CGruntSpawnConfig::PickWeighted(i32 voiceId, i32 which) {
     if (voiceId < 0) {

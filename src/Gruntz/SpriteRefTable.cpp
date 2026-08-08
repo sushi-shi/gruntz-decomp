@@ -89,7 +89,6 @@ CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     return node->m_alphaKey;
 }
 
-// @early-stop
 RVA(0x000e2400, 0x39e)
 i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
     if (!src) {
@@ -310,7 +309,6 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     return node;
 }
 
-// @early-stop
 RVA(0x000e2980, 0x2cd)
 i32 CSpriteRefTable::LoadToolToyPalettes(CSymParser* src) {
 

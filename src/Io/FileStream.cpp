@@ -2,7 +2,6 @@
 
 #include <Io/FileStream.h>
 
-// @early-stop
 RVA(0x000bd3e0, 0x34)
 void CFileLog::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);

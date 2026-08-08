@@ -339,7 +339,6 @@ void CGrunt::ComputeFacing(double dt) {
         BIND_ACT_644AF0(id, handler);                                                              \
     }
 
-// @early-stop
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     // `forced` arrives from m_moveVariant, which also carries a raw cue-variant

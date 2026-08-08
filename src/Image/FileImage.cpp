@@ -189,8 +189,6 @@ i32 CDDSurface::LoadBmp(CDDrawPtrCollections* pal, char* path) {
     return result;
 }
 
-// @early-stop
-// One SIB byte: retail's `lea` uses the buffer as base and biSize as index.
 RVA(0x00144270, 0xd2)
 i32 CDDSurface::Load(CDDrawPtrCollections* a, char* name, i32 c) {
     HRSRC hr = FindResourceA(g_resModule, name, RT_BITMAP);

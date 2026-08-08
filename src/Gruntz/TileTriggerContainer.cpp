@@ -164,7 +164,6 @@ i32 CTileTriggerContainer::RemoveByKeys(i32 k1, TrigLogicId k2) {
     return 0;
 }
 
-// @early-stop
 RVA(0x001163b0, 0xb2)
 CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     TileCollisionKind tileType,

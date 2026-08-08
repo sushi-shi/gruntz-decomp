@@ -203,9 +203,6 @@ found:
     return 1;
 }
 
-// @early-stop
-// two register-encoding bytes: cl accumulates the grid index into the product's
-// register and reuses ecx for the freelist temp, retail does the opposite.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();

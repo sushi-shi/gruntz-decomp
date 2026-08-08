@@ -124,7 +124,6 @@ void CPathHazard::FireActivation(i32 id) {
     }
 }
 
-// @early-stop
 RVA(0x000b3cc0, 0x2ac)
 void RegisterPathHazardActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")

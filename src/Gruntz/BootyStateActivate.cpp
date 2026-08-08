@@ -887,8 +887,6 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 }
 
-// @early-stop
-
 RVA(0x0001ce10, 0xc)
 i32 CBootyState::RestoreDisplay() {
     return IsActive() != 0;

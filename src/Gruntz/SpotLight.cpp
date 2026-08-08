@@ -118,8 +118,6 @@ void CSpotLight::FireActivation(i32 id) {
     }
 }
 
-// @early-stop
-
 RVA(0x000b1790, 0x2ac)
 void RegisterSpotLightActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")

@@ -16,7 +16,6 @@ void CKeyedList::Clear() {
     m_mode = 0;
 }
 
-// @early-stop
 RVA(0x000379f0, 0x57)
 CKeyedNode::~CKeyedNode() {
     m_key.Empty();

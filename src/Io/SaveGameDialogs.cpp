@@ -316,7 +316,6 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
 }
 
-// @early-stop
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;

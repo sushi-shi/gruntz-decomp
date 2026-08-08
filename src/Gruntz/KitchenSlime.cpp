@@ -135,7 +135,6 @@ void CKitchenSlime::FireActivation(i32 coord) {
     }
 }
 
-// @early-stop
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
     ACT_NAME_ID(id, "A")

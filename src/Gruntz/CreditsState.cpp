@@ -416,7 +416,6 @@ i32 CCreditsState::FinishState() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00039c60, 0x7a)
 i32 CCreditsState::StepVideo() {
     if (!m_videoPlaying) {

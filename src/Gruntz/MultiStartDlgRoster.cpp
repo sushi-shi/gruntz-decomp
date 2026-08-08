@@ -866,7 +866,6 @@ i32 CMultiStartDlg::GetSlotIndex() {
     return slot->m_playerIndex;
 }
 
-// @early-stop
 RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SelectColor(i32 colorIndex, ColorTint playerColor) {
     GruntzPlayer* colorSlot = &m_host->m_options[colorIndex];

@@ -152,7 +152,6 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
@@ -1151,7 +1150,6 @@ void CStatusBarMgr::ClearTabGroup() {
     }
 }
 
-// @early-stop
 RVA(0x00100cb0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == STATUSBAR_HIDDEN) {
@@ -1721,7 +1719,6 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     m_hitTestDisabled = 0;
 }
 
-// @early-stop
 RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
@@ -1796,7 +1793,6 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, i32 value) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00104f90, 0xa8)
 i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSBI_SideTab* r = m_hitRects[idx];
@@ -1893,7 +1889,6 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     } while (--n != 0);
 }
 
-// @early-stop
 RVA(0x00105480, 0x7d)
 void CStatusBarMgr::TickGauge() {
     i32 changed = 0;
@@ -1987,7 +1982,6 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00105710, 0x23)
 i32 CStatusBarMgr::AnySlotActive() {
     for (i32 i = 0; i < 5; i++) {
@@ -2384,7 +2378,6 @@ void CStatusBarMgr::ResetGroupA() {
     }
 }
 
-// @early-stop
 RVA(0x00106660, 0x68)
 void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetHudRectA(
@@ -2462,7 +2455,6 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     m_pendingHlRow = STATUS_HL_ROW_NONE;
 }
 
-// @early-stop
 RVA(0x00106900, 0x8d)
 void CStatusBarMgr::InitTabRects() {
     for (i32 i = 0; i < 4; i++) {
@@ -2526,8 +2518,6 @@ void CStatusBarMgr::NotifyAllSlots() {
         m_extraNotify1->Notify(m_extraNotifyArg1);
     }
 }
-
-// @early-stop
 
 RVA(0x00106af0, 0x37)
 i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
@@ -2843,7 +2833,6 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 }
 
-// @early-stop
 RVA(0x00107920, 0xb7)
 i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
@@ -2874,7 +2863,6 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == 0) {
@@ -2893,7 +2881,6 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00107aa0, 0x23)
 void CStatusBarMgr::ToggleStat(i32 idx) {
     if (m_statFlags[idx] != STATUS_SAMPLE_NONE) {
@@ -3617,7 +3604,6 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragm
     return 1;
 }
 
-// @early-stop
 RVA(0x0010b210, 0xc5)
 void CStatusBarMgr::ExitMode() {
     if (m_toggleActive == 0) {
@@ -3922,7 +3908,6 @@ void CStatusBarMgr::ReportTab(i32 tab) {
     EnterHlRow(1, tab);
 }
 
-// @early-stop
 RVA(0x0010bb90, 0x3f)
 void CStatusBarMgr::SetMode(i32 mode) {
     m_modeArmed = 1;

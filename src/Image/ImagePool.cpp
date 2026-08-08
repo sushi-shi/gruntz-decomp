@@ -494,7 +494,6 @@ void CRezImage::Fill(i32 value) {
     }
 }
 
-// @early-stop
 RVA(0x00175e00, 0x3d)
 i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);

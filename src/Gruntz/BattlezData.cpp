@@ -360,7 +360,6 @@ i32 CBattlezData::SumElapsedTimeForGroup() {
     return sum;
 }
 
-// @early-stop
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
     BattlezRecord* rec = &m_records[index - 1];

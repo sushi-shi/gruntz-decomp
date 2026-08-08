@@ -31,12 +31,8 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         m_scroll->PruneCount();
     }
     if (m_scroll != NULL) {
-
         CWwdSpatialMgr* w = m_scroll;
-        if (w != NULL) {
-            w->FreeGrids();
-            ::operator delete(w);
-        }
+        delete w;
     }
     if (m_tileGrid != NULL) {
         delete[] m_tileGrid;

@@ -89,7 +89,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     return accum;
 }
 
-// @early-stop
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeMove(
     CFileMemBase* arc,
@@ -212,7 +211,6 @@ void CMovingLogic::AdvanceMotion() {
     }
 }
 
-// @early-stop
 RVA(0x0016f4a0, 0x1da)
 i32 CMovingLogic::SerializeMove(
     CFileMemBase* arc,

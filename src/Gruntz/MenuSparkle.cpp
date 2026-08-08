@@ -50,7 +50,6 @@ void RegisterMenuSparkleActions() {
         static_cast<CActHandler>(&CMenuSparkle::AdvanceAnim);
 }
 
-// @early-stop
 RVA(0x000ae1c0, 0xae)
 i32 CMenuSparkle::SerializeMove(
     CFileMemBase* arc,

@@ -434,7 +434,6 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_soundRegistry->SumField("LEVEL");
 }
 
-// @early-stop
 RVA(0x0008dd80, 0x31)
 i32 CDDrawPtrCollections::GetCapsChecked() {
     i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
@@ -475,8 +474,6 @@ i32 CGruntzMgr::HandleDebugPosition() {
     }
     return r != 0;
 }
-
-// @early-stop
 
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {

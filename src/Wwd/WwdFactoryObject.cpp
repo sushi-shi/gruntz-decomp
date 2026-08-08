@@ -71,7 +71,6 @@ void CResolveNode::Unload() {
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
-// @early-stop
 RVA(0x0015b650, 0x4d)
 void CGameObject::Notify(void* p) {
     if (m_flags & 0x8) {

@@ -1071,7 +1071,6 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x001638c0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == NULL) {

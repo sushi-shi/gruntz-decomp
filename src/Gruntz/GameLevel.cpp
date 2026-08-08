@@ -775,7 +775,6 @@ i32 CGameLevel::LoadName(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0015dfb0, 0x180)
 i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     if (m_flags & 4) {
@@ -1364,10 +1363,6 @@ fail:
     return 0;
 }
 
-// @early-stop
-// Canonical 2-term member add: swapping the two operands in the source is
-// byte-identical, and so is the TU-state probe.
-// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x0015ff20, 0xc0)
 i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, i32 moveFlags) {
     if (p == NULL) {
@@ -1434,10 +1429,6 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     return 1;
 }
 
-// @early-stop
-// Canonical 2-term member add: swapping the two operands in the source is
-// byte-identical, and so is the TU-state probe.
-// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x00160450, 0xd6)
 i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
     i32 px = t->m_screenX;
@@ -1561,10 +1552,6 @@ i32 __stdcall WwdFile_CompressMainBlock(
     return WapUncompress(dest, &outLen, src, srcLen) == 0 ? static_cast<i32>(outLen) : 0;
 }
 
-// @early-stop
-// Canonical 2-term member add: swapping the two operands in the source is
-// byte-identical, and so is the TU-state probe.
-// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x001608c0, 0xc0)
 TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
@@ -1574,10 +1561,6 @@ TileCollisionKind CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
     return result;
 }
 
-// @early-stop
-// Canonical 2-term member add: swapping the two operands in the source is
-// byte-identical, and so is the TU-state probe.
-// docs/patterns/commutative-operand-order-is-canonical.md
 RVA(0x00160980, 0xc0)
 TileCollisionKind CGameLevel::ProbeColumn(CGameObject* t, i32 dx) {
     i32 px = t->m_screenX + dx;
