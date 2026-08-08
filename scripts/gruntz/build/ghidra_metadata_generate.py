@@ -45,7 +45,7 @@ REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIP
 TARGET = "i686-pc-windows-msvc"
 MSC_COMPAT = "1100"  # MSVC 5.0 == cl 11.00 == _MSC_VER 1100
 MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
-            "-fms-extensions"]
+            "-fms-extensions", "-Wno-address-of-temporary"]
 
 # Record-layout markers that are NOT data fields (skip them; keep their offset
 # only to recognise the line). Examples from -fdump-record-layouts:

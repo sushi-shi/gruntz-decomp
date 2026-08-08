@@ -151,6 +151,9 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
         f"--target={TARGET}",
         f"-fms-compatibility-version={MSC_COMPAT}",
         "-fms-extensions",
+        # `&Temporary()` is MSVC C4238, a nonstandard extension the retail
+        # sources use; clang errors on it by default.
+        "-Wno-address-of-temporary",
         # MFC's headers are full of un-instantiated templates that only parse
         # under MSVC's lazy two-phase lookup; delay template parsing to match.
         "-fdelayed-template-parsing",

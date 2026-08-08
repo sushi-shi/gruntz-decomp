@@ -92,6 +92,48 @@ is not the target — a shape can hit retail's exact `ctor`/`operator new` numbe
 still score worse (measured: a field-wise ctor variant reached 4/9 with the ctor
 COMDAT at 23%). Match the count AND the arm bodies.
 
+## Which callee is the lever — measured, not assumed
+
+Three inline callees are expanded into each `Set<T>` (the ctor at up to 7 sites,
+`CopyValue` and `~CButeValue` at up to 3 each). Only one of them can move the S4
+decision, and **the caller's own size moves it the wrong way**:
+
+| lever | effect on the out-of-line ctor count |
+|---|---|
+| **ctor** front-end size | monotone, reaches retail's 4 — **this is the lever** |
+| `~CButeValue` front-end size | saturates one notch short until the caller shape is right; then needs 2x the ctor's cost |
+| `CopyValue` front-end size | same |
+| **caller** front-end size | **inverts** — a bigger caller gets MORE expansions (12 dead statements in `SetInt` took it from 2 out-of-line to 1) |
+
+So MSVC 5's `/Ob1` rule is not "stop once the caller is big"; it is a growth
+allowance that scales with the caller. Adding dead code to the *caller* to force a
+callee out of line is therefore counter-productive, and any "the caller is missing a
+statement" hypothesis is refuted by that inversion alone.
+
+## Byte-neutral cost, weighed in dead-statement units
+
+`DWORD dN = k;` in each ctor is the unit (`/O2` deletes it; the nine ctor COMDATs
+stay byte-exact). Against that ruler, with the `&Temporary()` call shape in place
+(see [`address-of-temporary-reuses-ctor-return`](address-of-temporary-reuses-ctor-return.md)),
+every `Set<T>` reaches retail's 4/9 at **+3** and stays there through +6:
+
+| ctor construct (all leave the 11 callee COMDATs byte-identical) | units |
+|---|---|
+| `T* p = new T(v); pValue = p;` (or `void* p`, or a temp for `t`) | 1 |
+| `if (!pValue) { }` / `if (!pValue) { return; }` / a call to an empty inline member | 3 |
+| out-of-class `inline` definitions, `this->`, `const` params, C-style casts, named locals in the `CopyValue` arms | **0** |
+
+Constructs that reach the cell but are **refuted by the ctor bytes**: `pValue = NULL;`
+before the allocation and an `Init()` helper (the null store survives — a call
+intervenes, so cl cannot drop it), and `T* p = new T(v); if (p) pValue = p; else
+pValue = NULL;` (a second `test` survives; the COMDAT grows 0x39 -> 0x43).
+
+**The residue is 3 IR nodes that retail's bytes cannot name.** Only a real statement,
+a branch, or an inline call carries weight — pure style carries none — so the missing
+source is one branch, one inline call, or three statements. Nothing in the binary
+distinguishes them, and a fitted choice would be a guess dressed as a model. Left
+`@early-stop`.
+
 ## Related
 
 [`ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach`](ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md)

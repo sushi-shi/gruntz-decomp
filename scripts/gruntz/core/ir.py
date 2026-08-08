@@ -29,8 +29,12 @@ INC_GCC = [f"-I{p}" for p in (INC, *VENDOR_INCS)]  # plain clang driver (-I)
 
 TARGET = "i686-pc-windows-msvc"
 MSC_COMPAT = "1100"
+# `&Temporary()` (MSVC C4238, a nonstandard extension the retail sources use -
+# see CButeMgr::Set<T>) is a hard error in clang; demote it so the IR pass can
+# read the annotations out of a TU that uses it.
+MS_WARN = ["-Wno-address-of-temporary"]
 MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
-            "-fms-extensions"]
+            "-fms-extensions", *MS_WARN]
 
 
 def _log(msg):
@@ -58,7 +62,7 @@ def emit_ir(clang, tu, flags, cl_flags=None):
                 ll = tf.name
             try:
                 cmd = [clang, "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
-                       *cl_flags, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
+                       *cl_flags, *MS_WARN, *INC_CL, "-Xclang", "-emit-llvm", "-o", ll, tu]
                 res = subprocess.run(cmd, capture_output=True, text=True)
                 # exists-guard: getsize() FileNotFounds on a vanished temp; treat as no-IR.
                 ir = Path(ll).read_text() if (os.path.exists(ll) and os.path.getsize(ll)) else ""

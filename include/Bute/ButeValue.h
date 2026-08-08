@@ -22,11 +22,13 @@ GZ_ENUM_END(ButeType)
 
 struct ButeIntRect {
     ButeIntRect() : a(0), b(0), c(0), d(0) {}
+    ButeIntRect(DWORD a_, DWORD b_, DWORD c_, DWORD d_) : a(a_), b(b_), c(c_), d(d_) {}
     DWORD a, b, c, d;
 };
 SIZE(0x10);
 struct ButeIntPoint {
     ButeIntPoint() : a(0), b(0) {}
+    ButeIntPoint(DWORD a_, DWORD b_) : a(a_), b(b_) {}
     DWORD a, b;
 };
 SIZE(0x8);
@@ -42,6 +44,11 @@ struct ButeDoubleVector : ButeRefLarge {
         y = 0;
         z = 0;
     }
+    ButeDoubleVector(double x_, double y_, double z_) {
+        x = x_;
+        y = y_;
+        z = z_;
+    }
 };
 SIZE(0x18);
 
@@ -49,6 +56,10 @@ struct ButeDoubleRange {
     ButeDoubleRange() {
         x = 0;
         y = 0;
+    }
+    ButeDoubleRange(double x_, double y_) {
+        x = x_;
+        y = y_;
     }
     double x, y;
 };
@@ -100,53 +111,6 @@ struct CButeValue {
         type = t;
         pValue = new ButeDoubleRange(*src);
     }
-    CButeValue(ButeType t, i32 a, i32 b) {
-        type = t;
-        i32* p = new i32[2];
-        if (p) {
-            p[0] = a;
-            p[1] = b;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
-    }
-    CButeValue(ButeType t, i32 a, i32 b, i32 c, i32 d) {
-        type = t;
-        i32* p = new i32[4];
-        if (p) {
-            p[0] = a;
-            p[1] = b;
-            p[2] = c;
-            p[3] = d;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
-    }
-    CButeValue(ButeType t, double x, double y) {
-        type = t;
-        double* p = new double[2];
-        if (p) {
-            p[0] = x;
-            p[1] = y;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
-    }
-    CButeValue(ButeType t, double x, double y, double z) {
-        type = t;
-        double* p = new double[3];
-        if (p) {
-            p[0] = x;
-            p[1] = y;
-            p[2] = z;
-            pValue = p;
-        } else {
-            pValue = NULL;
-        }
-    }
 
     inline ~CButeValue();
 
@@ -155,11 +119,12 @@ struct CButeValue {
 SIZE(0x8);
 
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
-    // The retail jump table (0x17213c) proves the ButeType values AND that the
-    // arms are written in value order: 1 and 3 share one arm because cl folded
-    // the (identical) BUTE_DWORD body into the BUTE_FLOAT one.  Every payload is
-    // copied as a whole object so both pointers stay in registers - a per-field
-    // copy makes cl reload other->pValue for each word.
+    // One arm per ButeType, each through the payload's REAL type - the retail jump
+    // table (0x17213c) has nine entries over eight bodies, and the one shared pair
+    // is cl's own fold of BUTE_FLOAT onto BUTE_DWORD (a float-to-float assignment
+    // lowers to the same integer `mov`, so writing the arm as `DWORD` only erases
+    // the type).  Every payload is copied as a whole object so both pointers stay in
+    // registers - a per-field copy makes cl reload other->pValue for each word.
     switch (type) {
         case BUTE_INT:
             *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
@@ -171,7 +136,7 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
             *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
             break;
         case BUTE_FLOAT:
-            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
+            *static_cast<float*>(pValue) = *static_cast<float*>(other->pValue);
             break;
         case BUTE_STRING:
             *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);

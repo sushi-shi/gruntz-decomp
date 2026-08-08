@@ -1037,7 +1037,7 @@ bool ButeMgr::ParseAttributeFile() {
                 ((*m_pText) << s_strComma) << static_cast<long>(r->d);
                 (*m_pText) << s_strClose;
             } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_RECT, a, b, c, d));
+                m_pNode->Insert(m_str104, new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d)));
             }
             break;
         }
@@ -1049,7 +1049,7 @@ bool ButeMgr::ParseAttributeFile() {
                 ((*m_pText) << s_strComma) << static_cast<long>(r->b);
                 (*m_pText) << s_strClose;
             } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, px, py));
+                m_pNode->Insert(m_str104, new CButeValue(BUTE_POINT, &ButeIntPoint(px, py)));
             }
             break;
         }
@@ -1065,7 +1065,7 @@ bool ButeMgr::ParseAttributeFile() {
                 ((*m_pText) << s_strComma) << static_cast<double>(dz);
                 (*m_pText) << s_strGt;
             } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_VECTOR, x, y, z));
+                m_pNode->Insert(m_str104, new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z)));
             }
             break;
         }
@@ -1079,7 +1079,7 @@ bool ButeMgr::ParseAttributeFile() {
                 ((*m_pText) << s_strComma) << static_cast<double>(dy);
                 (*m_pText) << s_strRBrack;
             } else if (!bDup) {
-                m_pNode->Insert(m_str104, new CButeValue(BUTE_RANGE, x, y));
+                m_pNode->Insert(m_str104, new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y)));
             }
             break;
         }
@@ -1400,10 +1400,11 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
@@ -1411,16 +1412,14 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_INT, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_INT, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_INT, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_INT, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_INT, val));
@@ -1435,8 +1434,7 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_INT, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_INT, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_INT, val));
@@ -1489,10 +1487,11 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
@@ -1500,16 +1499,14 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_DWORD, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_DWORD, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_DWORD, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_DWORD, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_DWORD, val));
@@ -1524,8 +1521,7 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_DWORD, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_DWORD, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_DWORD, val));
@@ -1578,10 +1574,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
@@ -1589,16 +1586,14 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_FLOAT, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_FLOAT, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_FLOAT, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_FLOAT, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_FLOAT, val));
@@ -1613,8 +1608,7 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_FLOAT, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_FLOAT, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_FLOAT, val));
@@ -1667,10 +1661,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
@@ -1678,16 +1673,14 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_DOUBLE, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_DOUBLE, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_DOUBLE, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_DOUBLE, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_DOUBLE, val));
@@ -1702,8 +1695,7 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_DOUBLE, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_DOUBLE, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_DOUBLE, val));
@@ -1756,10 +1748,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
@@ -1767,16 +1760,14 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_STRING, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_STRING, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_STRING, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_STRING, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_STRING, val));
@@ -1791,8 +1782,7 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_STRING, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_STRING, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_STRING, val));
@@ -1844,10 +1834,11 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
@@ -1855,16 +1846,14 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_RECT, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_RECT, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_RECT, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_RECT, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_RECT, val));
@@ -1879,8 +1868,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_RECT, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_RECT, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_RECT, val));
@@ -1930,10 +1918,11 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
@@ -1941,16 +1930,14 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_POINT, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_POINT, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_POINT, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_POINT, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_POINT, val));
@@ -1965,8 +1952,7 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_POINT, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_POINT, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_POINT, val));
@@ -2015,10 +2001,11 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
@@ -2026,16 +2013,14 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_VECTOR, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_VECTOR, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_VECTOR, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_VECTOR, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_VECTOR, val));
@@ -2050,8 +2035,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_VECTOR, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_VECTOR, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_VECTOR, val));
@@ -2100,10 +2084,11 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 }
 
 // @early-stop
-// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
-// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
-// cl's folded jump table under-costed the inline callee); the remainder is the last
-// notch of front-end cost still missing from some inline callee on this path.
+// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
+// function's 7 construction sites where retail expands 3.  The lever is proven to be
+// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
+// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
+// retail's bytes.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
@@ -2111,16 +2096,14 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
-            CButeValue box(BUTE_RANGE, val);
-            hit->CopyValue(&box);
+            hit->CopyValue(&CButeValue(BUTE_RANGE, val));
             return;
         }
         CButeNode* g48 = static_cast<CButeNode*>(m_tree48.Find(tag));
         if (g48) {
             CButeValue* hit48 = static_cast<CButeValue*>(g48->Find(key));
             if (hit48) {
-                CButeValue box(BUTE_RANGE, val);
-                hit48->CopyValue(&box);
+                hit48->CopyValue(&CButeValue(BUTE_RANGE, val));
                 return;
             }
             g48->Insert(key, new CButeValue(BUTE_RANGE, val));
@@ -2135,8 +2118,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     if (g74) {
         CButeValue* hit74 = static_cast<CButeValue*>(g74->Find(key));
         if (hit74) {
-            CButeValue box(BUTE_RANGE, val);
-            hit74->CopyValue(&box);
+            hit74->CopyValue(&CButeValue(BUTE_RANGE, val));
             return;
         }
         g74->Insert(key, new CButeValue(BUTE_RANGE, val));
