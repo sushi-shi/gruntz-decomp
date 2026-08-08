@@ -53,6 +53,35 @@ source produces the standalone `movsx`") with a 2026-07-13 addendum extending th
 claim to the `(char)`-of-`i32` arm. Both were wrong the same way: every spelling
 tested was an *expression*. The missing axis was statement FORM.
 
+## Second statement form: a COMPOUND-ASSIGNMENT split (2026-08-08)
+
+The branch is not the only statement form that survives the peephole. When the
+narrowed value is being *stored into an `i32` local* rather than returned, the
+lever is splitting the cast off the mask:
+
+```cpp
+// narrows to `mov <reg>,eax; and <reg>,1`   -- NOT retail
+band = static_cast<i8>(rand()) & 1;
+
+// keeps `movsx <reg>,al; and <reg>,1`       -- retail
+band = static_cast<i8>(rand());
+band &= 1;
+```
+
+Four spellings were measured side by side in one build, one per site, in
+`CBattlezMapConfig::ChooseIdleBehavior` @0x2f620 (four `pct == 0` fallbacks that
+all read `rand()`): the compound-assignment split above emits `movsx`, while
+`i8 t = static_cast<i8>(rand()); roll = t & 1;`, an extra `i32 u = t;` hop,
+`roll = 1 & static_cast<i8>(rand());` and a plain `char` temp all narrow. Applying
+the split at all four sites took the target from 0 to 4 `movsx` and 52.89 → 53.64
+(the rest of that function is a separate regalloc wall).
+
+The unifying rule is the same as the branch case: the peephole only runs on a
+single straight-line *expression*, so any statement boundary between the cast and
+the mask blocks it — but the boundary has to be one cl cannot collapse. A second
+named local (`t`, then `t & 1`) IS collapsed; re-assigning the SAME variable is
+not.
+
 ## Related
 
 - [`gate-falls-through-to-shared-latch.md`](gate-falls-through-to-shared-latch.md)

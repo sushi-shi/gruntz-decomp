@@ -248,6 +248,9 @@ i32 CPlay::OnMouseMove(i32 unused, i32 cursorX, i32 cursorY) {
 }
 
 // @early-stop
+// The residue is the inlined CStatusBarMgr constructor (operator new(0x630)):
+// retail zero-fills members this reconstruction of the class does not model yet.
+// Owned by the sbi_rectonly lane, not fixable from here.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -1063,6 +1066,9 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
+// Frame is 8 bytes short of retail's, and cl declines the tail merge retail makes
+// between the Battlez and Multi arms of the world-file branch (retail's first arm
+// is a bare `jmp` into the second arm's atoi/EndParse tail).
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
@@ -1657,6 +1663,8 @@ fail0:
 #undef PTR
 
 // @early-stop
+// Register choice only: retail routes the world pointer through eax and copies
+// it into ecx for the virtual dispatch, cl loads straight into ecx.
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
@@ -2758,6 +2766,8 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 }
 
 // @early-stop
+// Control-flow layout inside the tool/waypoint dispatch (first divergence at the
+// m_dragInhibit2 arm); the block topology matches everywhere else.
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
 
@@ -3046,30 +3056,25 @@ guts_dispatch:
     return m_guts->UpdateStatusBarTabHighlight(a, x, y);
 }
 
-// @early-stop
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 a, i32 x, i32 y) {
-    if (m_hudSuppressed != 0) {
-        return 1;
+    if (m_hudSuppressed == 0) {
+        if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
+            && m_guts->m_activeTab != TAB_GAME) {
+            m_lightFx->EndMinimapPan(a, x, y);
+        }
+        if (m_worldReady != 0) {
+            m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
+        }
+        m_worldReady = 0;
+        m_dragSnapActive = 0;
+        if (m_guts->m_position != STATUSBAR_HIDDEN) {
+            LevelCoordRect vp = m_world->m_level->m_planeCtx;
+            if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
+                return m_guts->OnPointerRelease(a, x, y);
+            }
+        }
     }
-    if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-        && m_guts->m_activeTab != TAB_GAME) {
-        m_lightFx->EndMinimapPan(a, x, y);
-    }
-    if (m_worldReady != 0) {
-        m_mgr->m_cmdGrid->HudRect(m_hudRect, g_spawnConfig->m_edgeKeys & 0x20);
-    }
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
-    if (m_guts->m_position == STATUSBAR_HIDDEN) {
-        return 1;
-    }
-
-    LevelCoordRect vp = m_world->m_level->m_planeCtx;
-    if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
-        return 1;
-    }
-    m_guts->OnPointerRelease(a, x, y);
     return 1;
 }
 
@@ -3182,6 +3187,9 @@ i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
 }
 
 // @early-stop
+// Retail emits its own `mov eax,1` epilogue after the minimap-command arm and
+// rematerialises y from the parameter slot at each use; cl shares one return-1
+// tail and pins both coordinates in callee-saved registers.
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -3216,10 +3224,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         return 1;
     }
     if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
-        && m_guts->m_activeTab != TAB_GAME) {
-        if (m_lightFx->IssueMinimapCommand(a, x, y)) {
-            return 1;
-        }
+        && m_guts->m_activeTab != TAB_GAME && m_lightFx->IssueMinimapCommand(a, x, y)) {
+        return 1;
     }
 
     if (CGameLevel::PointInRect(&m_guts->m_rect10, x, y)) {
@@ -3240,7 +3246,8 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
-    if (CGameLevel::PointInRect(&ph->m_planeCtx, x, y)) {
+    LevelCoordRect pr = ph->m_planeCtx;
+    if (CGameLevel::PointInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
         i32 rawX = geom->m_viewRect.left - ds->m_planeCtx.left + x;
@@ -4098,10 +4105,15 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 }
 
 // @early-stop
+// Block LAYOUT only: cl sinks the in-box HitTest/PlaceObjectFull chain past the
+// out-of-box path and tail-merges the three scrollSink-hide exits into one,
+// where retail keeps the chain in source order and emits two copies of the exit.
+// Every instruction sequence inside the blocks now matches retail.
 RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
 
     i32 left, top, right, bottom;
+    LevelCoordRect box;
     if (m_inGame != 0) {
         return 1;
     }
@@ -4122,11 +4134,10 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     if (m_overlayDrag != 0) {
-        m_guts->ClickToggle(a, x, y);
-        return 1;
+        return m_guts->ClickToggle(a, x, y);
     }
 
-    LevelCoordRect box = m_world->m_level->m_planeCtx;
+    box = m_world->m_level->m_planeCtx;
     left = box.left;
     top = box.top;
     right = box.right;
@@ -4140,35 +4151,41 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         if (m_worldReady != 0) {
 
             m_hudRect.left = m_cursorX < m_dragClampMaxX ? m_cursorX : m_dragClampMaxX;
-            m_hudRect.right = m_cursorX > m_dragClampMaxX ? m_cursorX : m_dragClampMaxX;
+            m_hudRect.right = m_cursorX <= m_dragClampMaxX ? m_dragClampMaxX : m_cursorX;
             m_hudRect.top = m_cursorY < m_dragClampMaxY ? m_cursorY : m_dragClampMaxY;
-            m_hudRect.bottom = m_cursorY > m_dragClampMaxY ? m_cursorY : m_dragClampMaxY;
-            goto rearm;
-        }
-
-        if (m_hitTest->HitTest(x, y) != 0 || m_mgr->m_frameGate != 0 || m_inGame != 0
-            || m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
-
-            CWwdGameObjectA* s2 = m_scrollSink;
-            if (s2 == NULL) {
+            m_hudRect.bottom = m_cursorY <= m_dragClampMaxY ? m_dragClampMaxY : m_cursorY;
+        rearm:
+            CWwdGameObjectA* s = m_scrollSink;
+            if (s == NULL) {
                 return 1;
             }
-            s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            s->m_stateFlags |= SPRITE_STATE_HIDDEN;
             return 1;
         }
-        if (m_levelId != 0) {
-            if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+        if (m_hitTest->HitTest(x, y) == 0 && m_mgr->m_frameGate == 0 && m_inGame == 0
+            && m_dragInhibit1 == 0 && m_dragInhibit2 == 0) {
+
+            if (m_levelId != 0) {
+                if (m_scrollSink != NULL) {
+                    m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                }
+            } else {
+                if (m_scrollSink != NULL) {
+                    m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                }
             }
-        } else {
-            if (m_scrollSink != NULL) {
-                m_scrollSink->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-            }
+            CGameLevel* v = m_world->m_level;
+            i32 wx = v->m_mainPlane->m_viewRect.left - v->m_planeCtx.left + x;
+            i32 wy = v->m_mainPlane->m_viewRect.top - v->m_planeCtx.top + y;
+            m_mgr->m_cmdGrid->PlaceObjectFull(wx, wy);
+            return 1;
         }
-        CGameLevel* v = m_world->m_level;
-        i32 wx = v->m_mainPlane->m_viewRect.left - v->m_planeCtx.left + x;
-        i32 wy = v->m_mainPlane->m_viewRect.top - v->m_planeCtx.top + y;
-        m_mgr->m_cmdGrid->PlaceObjectFull(wx, wy);
+        CWwdGameObjectA* s2 = m_scrollSink;
+        if (s2 == NULL) {
+            return 1;
+        }
+        s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
         return 1;
     }
 
@@ -4179,38 +4196,18 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     m_guts->ClickToggle(a, x, y);
     if (m_worldReady != 0) {
 
-        i32 lo = m_cursorX > left ? m_cursorX : left;
-        m_hudRect.left = lo;
-        if (lo >= m_dragClampMaxX) {
-            m_hudRect.left = m_dragClampMaxX;
-        }
-        i32 hi = m_cursorX < right ? m_cursorX : right;
-        m_hudRect.right = hi;
-        if (hi > m_dragClampMaxX) {
-            m_hudRect.right = m_dragClampMaxX;
-        }
-        i32 tlo = m_cursorY <= top ? m_cursorY : top;
-        m_hudRect.top = tlo;
-        if (tlo < m_dragClampMaxY) {
-            m_hudRect.top = m_dragClampMaxY;
-        }
-        i32 thi = m_cursorY < bottom ? m_cursorY : bottom;
-        m_hudRect.bottom = thi;
-        if (thi > m_dragClampMaxY) {
-            m_hudRect.bottom = m_dragClampMaxY;
-        }
+        m_hudRect.left = m_cursorX > left ? m_cursorX : left;
+        m_hudRect.left = m_hudRect.left < m_dragClampMaxX ? m_hudRect.left : m_dragClampMaxX;
+        m_hudRect.right = m_cursorX < right ? m_cursorX : right;
+        m_hudRect.right = m_hudRect.right > m_dragClampMaxX ? m_hudRect.right : m_dragClampMaxX;
+        m_hudRect.top = m_cursorY <= top ? top : m_cursorY;
+        m_hudRect.top = m_hudRect.top < m_dragClampMaxY ? m_hudRect.top : m_dragClampMaxY;
+        m_hudRect.bottom = m_cursorY < bottom ? m_cursorY : bottom;
+        m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
     }
     if (m_dragEndNotify != 0 && m_mgr->m_cmdGrid->m_pendingFxKind == 0) {
         FlushPendingOps();
     }
-    return 1;
-
-rearm:
-    CWwdGameObjectA* s = m_scrollSink;
-    if (s == NULL) {
-        return 1;
-    }
-    s->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 1;
 }
 
@@ -4363,6 +4360,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
 }
 
 // @early-stop
+// One-instruction schedule: retail sinks the `set_ob = 0` store past the
+// Lookup argument pushes, cl emits it before the lea that takes its address.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
@@ -4371,7 +4370,7 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
-            LevelCoordRect& vp = m_world->m_level->m_planeCtx;
+            LevelCoordRect vp = m_world->m_level->m_planeCtx;
             i32 cx = vp.left + (vp.right - vp.left) / 2;
             i32 cy = vp.top + (vp.bottom - vp.top) / 2;
             LayerBlitFrame(m_world, frame, cx, cy, useFront, 1);
@@ -4465,6 +4464,8 @@ i32 CPlay::SetCursorFrame(i32 item) {
 }
 
 // @early-stop
+// Register allocation: retail homes `this` in a pushed slot and gives ebp to the
+// CObList POSITION cursor; cl does the reverse and spills the cursor.
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CObList* chain = &m_world->m_childGroup->m_list;
@@ -5743,6 +5744,8 @@ i32 CPlay::ClampViewport(i32 inset) {
 }
 
 // @early-stop
+// Register renaming: retail keeps the CStatusBarMgr pointer in ebp and compares
+// m_position straight from memory; cl keeps the loaded m_position value instead.
 RVA(0x000d8ed0, 0x128)
 i32 CPlay::ClampViewport2(i32 stride) {
     i32 clamped = 0;
@@ -6168,6 +6171,9 @@ i32 CPlay::DrawLevelInfoText() {
 }
 
 // @early-stop
+// Strength reduction: retail biases the row pointer by +8 and the record cursor
+// by +8 so the stores use negative displacements, and splits the flag clear into
+// load/and/store; cl anchors both pointers at offset 0.
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {

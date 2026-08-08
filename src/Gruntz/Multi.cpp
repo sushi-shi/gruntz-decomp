@@ -500,9 +500,11 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
 }
 
 // @early-stop
+// Constant-0 materialisation: retail keeps 0 in a fifth register (push edi/xor
+// edi,edi) and stores it to the five zeroed sites, and emits both return-0 tails
+// separately; cl uses imm32 stores and merges the tails.
 RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
-    i32 r = 0;
     m_connected = 0;
     m_allPlayersReady = 0;
     if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
@@ -510,7 +512,7 @@ i32 CMulti::Connect(i32 mode) {
         return 0;
     }
     m_pumpGuard = 1;
-    r = PumpA();
+    i32 r = PumpA();
     m_pumpGuard = 0;
     if (r == 0) {
         return 0;
@@ -790,6 +792,9 @@ void CMulti::PumpB() {
 }
 
 // @early-stop
+// Two-instruction schedule: retail keeps m_netGate in eax and materialises the
+// strcpy destination address before the m_playerSel store; cl uses edx and sinks
+// the lea past it.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
@@ -818,16 +823,21 @@ i32 CMulti::StartTitle() {
     m_stateBank = saved;
     while (ShowCursor(1) < 0) {
     }
-    if (!Mgr()->m_lobby) {
+    IDirectPlayLobby* lobby = Mgr()->m_lobby;
+    if (!lobby) {
         return 0;
     }
     CNetLobbyConnection* desc = Mgr()->m_connSettings;
     if (!desc) {
         return 0;
     }
-    m_isHost = (desc->m_dwFlags & 2) ? 1 : 0;
+    if (desc->m_dwFlags & 2) {
+        m_isHost = 1;
+    } else {
+        m_isHost = 0;
+    }
 
-    if (m_netGate->Init(Mgr()->m_lobby, g_dplayAppGuid) == 0) {
+    if (m_netGate->Init(lobby, g_dplayAppGuid) == 0) {
         return 0;
     }
     m_netGate->ClearPlayerList();
@@ -836,14 +846,16 @@ i32 CMulti::StartTitle() {
         return 0;
     }
     m_netGate->m_playerSel = player;
-    CString hostName(desc->m_playerName->m_shortName);
+    char hostName[12];
+    strcpy(hostName, desc->m_playerName->m_shortName);
+    hostName[10] = '\0';
     SetServiceName(hostName);
-    char* grp = player->GroupName();
-    CString grpName(grp);
-    ApplyDynSetting(grpName);
+    ApplyDynSetting(player->GroupName());
 
-    i32 r = m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer();
-    return r ? 1 : 0;
+    if ((m_isHost ? SetupTcpIpConfig() : CreateLocalPlayer()) == 0) {
+        return 0;
+    }
+    return 1;
 }
 
 RVA(0x000b76a0, 0x4)
@@ -2815,6 +2827,9 @@ CNetCmdSlot::CNetCmdSlot() {
 }
 
 // @early-stop
+// Strength reduction: retail biases the slot cursor by +8 and the record cursor
+// by +8, and spills the outer loop counter to the stack; cl keeps the counter in
+// edi and anchors both cursors at offset 0.
 RVA(0x000bbf80, 0xb7)
 void CNetSession::ResetAll() {
     m_mgr = NULL;
@@ -2860,6 +2875,7 @@ void CNetSession::ResetAll() {
 }
 
 // @early-stop
+// Register renaming only (esi/edi swapped for `this` and the sampled tick).
 RVA(0x000bc070, 0x73)
 u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
@@ -3193,6 +3209,7 @@ i32 CMulti::LoadConfig(void* cfg) {
 }
 
 // @early-stop
+// Register renaming plus one hoisted load in the per-slot reset loop.
 RVA(0x000bcf20, 0xaf)
 i32 CMulti::ResetPlayerCommands(i32 id) {
     if (m_connected == 0) {
@@ -3283,6 +3300,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
 }
 
 // @early-stop
+// Register renaming plus a two-push reorder in the SendPacket argument setup.
 RVA(0x000bd180, 0x66)
 void CMulti::AnnounceVersion(CNetSessionNode* param) {
     CNetVersionPacket packet;

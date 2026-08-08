@@ -821,6 +821,9 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 }
 
 // @early-stop
+// Block layout: retail keeps the seven inline strcmp probes contiguous and puts
+// the idle/walk bodies after them; cl inverts the 4th probe's branch and lays the
+// idle body out as its fallthrough, interleaving bodies with probes.
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     static_cast<void>(range);
@@ -833,8 +836,9 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     if (eq) {
         return;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
-    if (eq) {
+    bool ne;
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    if (!ne) {
         goto walk;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeA) == 0);
@@ -978,7 +982,6 @@ void CGrunt::ClearAllSprites() {
     m_arrived = 0;
 }
 
-// @early-stop
 // @early-stop
 // regalloc wall: retail shuttles the four pass-through args through esi
 // (push esi/pop esi) so col+row stay live from the first load; cl keeps only
@@ -1341,6 +1344,9 @@ reProbe:
 }
 
 // @early-stop
+// Frame is 8 bytes short of retail's and the three-word pose tuple is allocated
+// differently: retail keeps its first word in edi and spills only the second,
+// cl spills both.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;

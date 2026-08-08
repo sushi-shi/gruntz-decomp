@@ -527,6 +527,9 @@ i32 CBattlezMapConfig::StepBoard() {
 }
 
 // @early-stop
+// Two residues: retail keeps the candidate index in ebp and the cursor on the
+// stack (cl does the reverse), and its budget product is A*(B*C) - written that
+// way cl folds A into an `fimul`, which is further from retail than (A*B)*C.
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     i32 occupied = 0;
@@ -2510,6 +2513,8 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 // @early-stop
+// Register allocation: retail spills the 0x1c-stride byte offset to the stack and
+// gives the freed register to the scan cursor; cl keeps the offset in ebp.
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
@@ -2705,11 +2710,9 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
 }
 
 // @early-stop
-// cl materializes TWO zero registers in the entry block (xor eax / xor ecx) where
-// retail keeps one in edi and compares `src` against it (cmp eax,edi, not test);
-// the extra zero costs a third callee-saved push (ebx holds `src` instead of eax)
-// and rotates every register after it. Retail also keeps &m_bounds in edi for the
-// final four reads where we go back through `this`.
+// Register pressure: retail keeps one zero register (edi) for b.left, b.top and
+// the src NULL test, so it needs no fifth callee-saved register; cl materialises
+// two zeros and pushes ebx to hold src.
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
@@ -2724,11 +2727,12 @@ void CMapMgr::Clip(const RECT* src) {
     } else {
         a = b;
     }
-    if (!IntersectRect(&m_bounds, &a, &b)) {
-        m_bounds = a;
+    RECT* dst = &m_bounds;
+    if (!IntersectRect(dst, &a, &b)) {
+        *dst = a;
     }
-    m_gridW = m_bounds.right - m_bounds.left;
-    m_gridH = m_bounds.bottom - m_bounds.top;
+    m_gridW = dst->right - dst->left;
+    m_gridH = dst->bottom - dst->top;
 }
 RVA(0x0002b420, 0x419)
 i32 CBattlezMapConfig::Serialize(void* arArg) {
@@ -3834,6 +3838,8 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
 }
 
 // @early-stop
+// Register allocation: retail keeps `this` in edi across the three GetScreenPos
+// probes and uses ebp for the shifted x, cl spills `this` to a stack slot.
 RVA(0x0002dfa0, 0x325)
 i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = 1;
@@ -3960,6 +3966,8 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
 }
 
 // @early-stop
+// Block layout in the tail: retail sinks the `best == NULL` bail past the clip and
+// pickup-scan blocks; cl emits it inline right after the double loop.
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
@@ -4378,6 +4386,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
 }
 
 // @early-stop
+// Regalloc + ladder layout: retail homes `this` in ebp and re-reads `unit` from
+// its parameter slot, cl does the reverse and spills `this` to a pushed slot
+// (one extra push/pop per exit); retail also gives every arm of the pickup
+// ladder its own `jmp` to the join, cl lets the first arm fall through.
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->m_entranceCommitted == 0) {
@@ -4490,7 +4502,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     i32 bandPct = m_brickzPct;
     i32 band;
     if (bandPct == 0) {
-        band = static_cast<i8>(rand()) & 1;
+        band = static_cast<i8>(rand());
+        band &= 1;
     } else {
         band = rand() % bandPct;
     }
@@ -4507,7 +4520,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         i32 rollPct = m_wingzPct;
         i32 roll;
         if (rollPct == 0) {
-            roll = static_cast<i8>(rand()) & 1;
+            roll = static_cast<i8>(rand());
+            roll &= 1;
         } else {
             roll = rand() % rollPct;
         }
@@ -4650,7 +4664,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         i32 rollPct = m_yoyozPct;
         i32 roll;
         if (rollPct == 0) {
-            roll = static_cast<i8>(rand()) & 1;
+            roll = static_cast<i8>(rand());
+            roll &= 1;
         } else {
             roll = rand() % rollPct;
         }
@@ -4682,7 +4697,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         i32 rollPct = m_blackBrickPct;
         i32 roll;
         if (rollPct == 0) {
-            roll = static_cast<i8>(rand()) & 1;
+            roll = static_cast<i8>(rand());
+            roll &= 1;
         } else {
             roll = rand() % rollPct;
         }
@@ -4882,6 +4898,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 }
 
 // @early-stop
+// Register renaming only (edi/ebp and esi/edx swapped through the scan loop).
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;

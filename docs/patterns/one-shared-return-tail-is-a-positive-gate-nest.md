@@ -76,6 +76,35 @@ function's last block PLUS the recompile carrying duplicate `xor eax,eax`/teardo
 copies. Count `xor eax,eax` on each side before rewriting: if both sides have one per
 guard, the structure is already right and the difference is scheduling.
 
+## Evidence (2026-08-08): the tail-CALL half
+
+`CPlay::OnLButtonUp` @0xce530 **93.56 -> 100.00 EXACT** needed BOTH halves in one edit,
+and either alone scores worse than the original:
+
+1. the last statement is `return m_guts->OnPointerRelease(a, x, y);`, not
+   `m_guts->OnPointerRelease(a, x, y); return 1;` — retail's final exit sets no `eax`
+   at all, it pops straight off the call's return value (this alone took it to 69.31,
+   because it left four duplicated `mov eax,1` epilogues around a now-different tail);
+2. the four `return 1;` guards nest into positive gates with the box test spelled as a
+   `||` chain, so every one of them `jcc`s to the single sunk `mov eax,1` tail:
+
+```cpp
+if (m_hudSuppressed == 0) {
+    ...
+    if (m_guts->m_position != STATUSBAR_HIDDEN) {
+        LevelCoordRect vp = m_world->m_level->m_planeCtx;
+        if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
+            return m_guts->OnPointerRelease(a, x, y);
+        }
+    }
+}
+return 1;
+```
+
+So when the *last* exit returns a callee's value, an early `return <literal>;` cannot
+share with it — check the target's final `ret` block for a missing `mov eax,imm` before
+you rewrite the gates.
+
 ## Related
 
 - [[gate-falls-through-to-shared-latch]] — the same inversion for a single gate in front
