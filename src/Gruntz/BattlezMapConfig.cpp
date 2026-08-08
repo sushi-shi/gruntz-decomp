@@ -4146,15 +4146,17 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
     }
 
-    CRect gb(0, 0, board->m_width, board->m_height);
-    RECT grc;
-    grc = gb;
-    RECT* grcDst = &board->m_bounds;
-    if (!IntersectRect(grcDst, &grc, &gb)) {
-        *grcDst = grc;
+    {
+        CRect gb(0, 0, board->m_width, board->m_height);
+        RECT grc;
+        grc = gb;
+        RECT* grcDst = &board->m_bounds;
+        if (!IntersectRect(grcDst, &grc, &gb)) {
+            *grcDst = grc;
+        }
+        board->m_gridW = grcDst->right - grcDst->left;
+        board->m_gridH = grcDst->bottom - grcDst->top;
     }
-    board->m_gridW = grcDst->right - grcDst->left;
-    board->m_gridH = grcDst->bottom - grcDst->top;
     unit->m_dwell = 0;
     return 1;
 }
