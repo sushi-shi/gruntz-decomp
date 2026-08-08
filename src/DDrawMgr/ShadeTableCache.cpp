@@ -11,6 +11,7 @@
 #include <Ints.h>
 #include <Pix16.h>
 
+#include <afxtempl.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -121,15 +122,12 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
         m_arr.m_pData = new CShadeTable*[newSize];
-        memset(m_arr.m_pData, 0, newSize * 4);
+        ConstructElements<CShadeTable*>(m_arr.m_pData, newSize);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
     } else if (newSize <= m_arr.m_nMaxSize) {
         if (newSize > m_arr.m_nSize) {
-            CShadeTable** pTail = &m_arr.m_pData[m_arr.m_nSize];
-            for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-                *pTail++ = NULL;
-            }
+            ConstructElements<CShadeTable*>(&m_arr.m_pData[m_arr.m_nSize], newSize - m_arr.m_nSize);
         }
         m_arr.m_nSize = newSize;
     } else {
@@ -142,17 +140,15 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
                 grow = 0x400;
             }
         }
-        i32 newMax = m_arr.m_nMaxSize + grow;
-
-        if (newSize >= newMax) {
+        i32 newMax;
+        if (newSize < m_arr.m_nMaxSize + grow) {
+            newMax = m_arr.m_nMaxSize + grow;
+        } else {
             newMax = newSize;
         }
         CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
-        CShadeTable** pTail = &data[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
-        }
+        ConstructElements<CShadeTable*>(&data[m_arr.m_nSize], newSize - m_arr.m_nSize);
         delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
@@ -250,7 +246,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     return t;
 }
 
-// @early-stop
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
@@ -584,13 +579,12 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
         m_arr.m_pData = new CShadeTable*[newSize];
-        memset(m_arr.m_pData, 0, newSize * 4);
+        ConstructElements<CShadeTable*>(m_arr.m_pData, newSize);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
     } else if (newSize <= m_arr.m_nMaxSize) {
-        CShadeTable** pTail = &m_arr.m_pData[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
+        if (newSize > m_arr.m_nSize) {
+            ConstructElements<CShadeTable*>(&m_arr.m_pData[m_arr.m_nSize], newSize - m_arr.m_nSize);
         }
         m_arr.m_nSize = newSize;
     } else {
@@ -603,17 +597,15 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
                 grow = 0x400;
             }
         }
-        i32 newMax = m_arr.m_nMaxSize + grow;
-
-        if (newSize >= newMax) {
+        i32 newMax;
+        if (newSize < m_arr.m_nMaxSize + grow) {
+            newMax = m_arr.m_nMaxSize + grow;
+        } else {
             newMax = newSize;
         }
         CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
-        CShadeTable** pTail = &data[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
-        }
+        ConstructElements<CShadeTable*>(&data[m_arr.m_nSize], newSize - m_arr.m_nSize);
         delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
@@ -627,7 +619,6 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
     return t;
 }
 
-// @early-stop
 RVA(0x0014f8b0, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     CShadeTable* t = new CShadeTable;
@@ -642,13 +633,12 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == NULL) {
         m_arr.m_pData = new CShadeTable*[newSize];
-        memset(m_arr.m_pData, 0, newSize * 4);
+        ConstructElements<CShadeTable*>(m_arr.m_pData, newSize);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
     } else if (newSize <= m_arr.m_nMaxSize) {
-        CShadeTable** pTail = &m_arr.m_pData[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
+        if (newSize > m_arr.m_nSize) {
+            ConstructElements<CShadeTable*>(&m_arr.m_pData[m_arr.m_nSize], newSize - m_arr.m_nSize);
         }
         m_arr.m_nSize = newSize;
     } else {
@@ -661,17 +651,15 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
                 grow = 0x400;
             }
         }
-        i32 newMax = m_arr.m_nMaxSize + grow;
-
-        if (newSize >= newMax) {
+        i32 newMax;
+        if (newSize < m_arr.m_nMaxSize + grow) {
+            newMax = m_arr.m_nMaxSize + grow;
+        } else {
             newMax = newSize;
         }
         CShadeTable** data = new CShadeTable*[newMax];
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
-        CShadeTable** pTail = &data[m_arr.m_nSize];
-        for (i32 nNew = newSize - m_arr.m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
-        }
+        ConstructElements<CShadeTable*>(&data[m_arr.m_nSize], newSize - m_arr.m_nSize);
         delete[] m_arr.m_pData;
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
@@ -801,7 +789,6 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
 
 RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
 
-// @early-stop
 RVA(0x0014fe90, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
     if (arc.IsStoring()) {
@@ -817,13 +804,12 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             m_nSize = 0;
         } else if (m_pData == NULL) {
             m_pData = new CShadeTable*[n];
-            memset(m_pData, 0, n * 4);
+            ConstructElements<CShadeTable*>(m_pData, n);
             m_nMaxSize = n;
             m_nSize = n;
         } else if (n <= m_nMaxSize) {
-            CShadeTable** pTail = &m_pData[m_nSize];
-            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
-                *pTail++ = NULL;
+            if (n > m_nSize) {
+                ConstructElements<CShadeTable*>(&m_pData[m_nSize], n - m_nSize);
             }
             m_nSize = n;
         } else {
@@ -836,16 +822,15 @@ void CShadeTableArray::Serialize(CArchive& arc) {
                     grow = 0x400;
                 }
             }
-            i32 newcap = m_nMaxSize + grow;
-            if (n >= newcap) {
+            i32 newcap;
+            if (n < m_nMaxSize + grow) {
+                newcap = m_nMaxSize + grow;
+            } else {
                 newcap = n;
             }
             CShadeTable** nd = new CShadeTable*[newcap];
             memcpy(nd, m_pData, m_nSize * 4);
-            CShadeTable** pTail = &nd[m_nSize];
-            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
-                *pTail++ = NULL;
-            }
+            ConstructElements<CShadeTable*>(&nd[m_nSize], n - m_nSize);
             delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
@@ -853,11 +838,7 @@ void CShadeTableArray::Serialize(CArchive& arc) {
         }
     }
 
-    if (arc.IsStoring()) {
-        arc.Write(m_pData, m_nSize * 4);
-    } else {
-        arc.Read(m_pData, m_nSize * 4);
-    }
+    SerializeElements<CShadeTable*>(arc, m_pData, m_nSize);
 }
 
 RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
@@ -874,12 +855,11 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == NULL) {
         m_pData = new CShadeTable*[nNewSize];
-        memset(m_pData, 0, nNewSize * sizeof(CShadeTable*));
+        ConstructElements<CShadeTable*>(m_pData, nNewSize);
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
-        CShadeTable** pTail = &m_pData[m_nSize];
-        for (i32 nNew = nNewSize - m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
+        if (nNewSize > m_nSize) {
+            ConstructElements<CShadeTable*>(&m_pData[m_nSize], nNewSize - m_nSize);
         }
         m_nSize = nNewSize;
     } else {
@@ -900,10 +880,7 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         }
         CShadeTable** pNewData = new CShadeTable*[nNewMax];
         memcpy(pNewData, m_pData, m_nSize * sizeof(CShadeTable*));
-        CShadeTable** pTail = &pNewData[m_nSize];
-        for (i32 nNew = nNewSize - m_nSize; nNew > 0; nNew--) {
-            *pTail++ = NULL;
-        }
+        ConstructElements<CShadeTable*>(&pNewData[m_nSize], nNewSize - m_nSize);
         delete[] m_pData;
         m_pData = pNewData;
         m_nSize = nNewSize;

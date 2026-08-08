@@ -263,7 +263,6 @@ void CFaderMgr::Trace(CString s) {
 
 RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
 
-// @early-stop
 RVA(0x0017e2a0, 0x188)
 RVA_COMPGEN(0x0017e430, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
 void CFaderArray::Serialize(CArchive& ar) {
@@ -280,13 +279,12 @@ void CFaderArray::Serialize(CArchive& ar) {
             m_nSize = 0;
         } else if (m_pData == NULL) {
             m_pData = new CFader*[n];
-            memset(m_pData, 0, n * 4);
+            ConstructElements<CFader*>(m_pData, n);
             m_nMaxSize = n;
             m_nSize = n;
         } else if (n <= m_nMaxSize) {
-            CFader** pTail = &m_pData[m_nSize];
-            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
-                *pTail++ = NULL;
+            if (n > m_nSize) {
+                ConstructElements<CFader*>(&m_pData[m_nSize], n - m_nSize);
             }
             m_nSize = n;
         } else {
@@ -299,25 +297,20 @@ void CFaderArray::Serialize(CArchive& ar) {
                     grow = 0x400;
                 }
             }
-            i32 newMax = m_nMaxSize + grow;
-            if (n >= newMax) {
+            i32 newMax;
+            if (n < m_nMaxSize + grow) {
+                newMax = m_nMaxSize + grow;
+            } else {
                 newMax = n;
             }
             CFader** nd = new CFader*[newMax];
             memcpy(nd, m_pData, m_nSize * 4);
-            CFader** pTail = &nd[m_nSize];
-            for (i32 nNew = n - m_nSize; nNew > 0; nNew--) {
-                *pTail++ = NULL;
-            }
+            ConstructElements<CFader*>(&nd[m_nSize], n - m_nSize);
             delete[] m_pData;
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newMax;
         }
     }
-    if (ar.IsStoring()) {
-        ar.Write(m_pData, m_nSize * 4);
-    } else {
-        ar.Read(m_pData, m_nSize * 4);
-    }
+    SerializeElements<CFader*>(ar, m_pData, m_nSize);
 }
