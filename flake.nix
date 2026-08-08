@@ -57,9 +57,16 @@
         # named the BODY. Resolve through the thunk to reconstruct that, the same
         # way an IAT slot is resolved back to its import. docs/patterns/ilt-thunk-
         # indirection.md.
+        # COMDAT leader: `finish_data_comdats` demanded an external definition at
+        # section offset 0, which is not what COFF means and not what cl emits.
+        # Under /GR a class vtable COMDAT holds the `??_R4` complete-object-locator
+        # POINTER (an unnamed word) at offset 0 and `??_7<class>@@6B@` at offset 4,
+        # and the vtable symbol is that COMDAT's leader. Take the lowest-offset
+        # external definition instead. docs/data-attribution.md §3b-ii.
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
+          ./nix/patches/vostok-comdat-leader-nonzero-offset.patch
         ];
       };
 

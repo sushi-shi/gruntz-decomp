@@ -60,6 +60,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import sys
 from collections import Counter, defaultdict
@@ -220,32 +221,87 @@ def compgen_rows(exe=EXE, table=None):
     return rows, withheld
 
 
+def retail_col_head(pe, vtable_rva):
+    """4 if retail's COMDAT for this vtable opens with an `??_R4` COL pointer, else 0.
+
+    Under `/GR` cl emits a polymorphic class's vtable COMDAT as the complete-object-
+    locator POINTER (an unnamed word) at offset 0 followed by `??_7<class>@@6B@` at
+    offset 4, and gives it SELECT_LARGEST so that copy beats a non-/GR TU's bare slot
+    array. Whether RETAIL's surviving copy has that word is a property of the shipped
+    image, not of how WE compile, so it is read out of the image:
+
+      * the word at `vtable-4` must carry a PE base relocation (a COL pointer always
+        does; the last slot of the PREVIOUS vtable does too, which is why the reloc
+        alone proves nothing and the structure below has to be walked);
+      * its target must be an `.rdata` Complete Object Locator - signature word 0,
+        `pTypeDescriptor` at +12 pointing at a type descriptor whose name begins
+        `.?A`, MSVC's type-descriptor spelling.
+
+    Measured over the 222 `??_7` names with a slot map: 125 have a COL and put the
+    symbol at offset 4 in our objs, 86 have neither. The crude reloc-only test
+    mislabels 45 of the 86 (their `vtable-4` word is the preceding vtable's last
+    slot), so the structural walk is required, not decorative.
+    """
+    sites = pe.reloc_sites                        # sorted and cached on the PE
+    site = vtable_rva - 4
+    if vtable_rva < 4 or bisect.bisect_left(sites, site) >= len(sites) \
+            or sites[bisect.bisect_left(sites, site)] != site:
+        return 0
+    va = pe.u32(vtable_rva - 4)
+    if va is None:
+        return 0
+    col = va - pe.image_base
+    if pe.sec_name(col) != ".rdata" or pe.u32(col) != 0:
+        return 0
+    ptd = pe.u32(col + 12)
+    if ptd is None:
+        return 0
+    name = pe.cstr(ptd - pe.image_base + 8, 64)
+    return 4 if name and name.startswith(".?A") else 0
+
+
 def vtable_rows(exe=EXE, base_dir=None):
     """Enrollable `??_7` vtable definitions + the withheld ones.
 
     A vtable is emitted EXACTLY like a `??_C@` string literal: cl gives each one its
-    own COMDAT (`comdat=2` = PICK_ANY, `.rdata`, align 8) holding that one symbol at
-    offset 0, emits it into EVERY TU that needs it, and the linker folds them onto one
-    surviving rva. Measured on our base objs: 235 distinct `??_7` symbols over 457
-    definitions, every one a lone member at offset 0 of its own `.rdata` COMDAT
-    (`??_7CUserLogic@@6B@` alone is emitted by 47 objects). So they enroll through the
-    same fold path string_rows() uses - once per owning unit - and section_rows()
-    rebuilds them in the candidate's shape.
+    own `.rdata` COMDAT (align 8, `comdat=6` = SELECT_LARGEST), emits it into EVERY TU
+    that needs it, and the linker folds them onto one surviving rva. So they enroll
+    through the same fold path string_rows() uses - once per owning unit - and
+    section_rows() rebuilds them in the candidate's shape.
 
-    This is what `.rdata` was waiting on. Of the 305 kind=data rows that classify
-    rdata, only 68 carried a proven extent; 237 were withheld "no proven extent" and
-    220 of those are vtables - `labels.py` derives extents by sizeof() on a DECLARED
-    C++ type, and a compiler-emitted vtable has no such type. Nothing was ever
-    materialized into the target objects' `.rdata`, which is why objdiff saw only
-    419 bytes of it.
+    THE COMDAT IS NOT ALWAYS JUST THE VTABLE. Under `/GR` the `??_R4` complete-object-
+    locator pointer sits at offset 0 and the `??_7` symbol at offset 4. Measured over
+    every base obj: 101 distinct `??_7` at offset 0 versus 140 at offset 4 (369
+    definitions). An `offset == 0` enrollment test therefore SILENTLY SKIPPED the /GR
+    majority - those vtables were never materialized into a target object at all, so
+    objdiff could not compare them and no defect in them was scorable. Both offsets
+    enroll now; the section spans the whole COMDAT (rva `vtable_rva - offset`) so the
+    COL word is carried and relocated with it.
+
+    OUR OFFSET AND RETAIL'S ARE INDEPENDENT FACTS AND ARE BOTH CHECKED. retail_col_head
+    reads the shipped image; the candidate COMDAT says how WE compiled it. Three
+    outcomes, each evidence-driven:
+
+      * they AGREE -> enroll, section placed at the retail COMDAT start.
+      * we carry a COL word retail's vtable does not have (`cpp-rtti` where retail
+        was not) -> the section would claim four retail bytes that belong to the
+        PREVIOUS datum, so the row is WITHHELD and reported. Real, measured: the five
+        `CFader*` vtables, whose `vtable-4` word is the `g_faderHalfPi` / `g_faderOne`
+        float constant next to them.
+      * retail has a COL and only SOME of our TUs emit it (the `cpp` / `cpp-rtti`
+        split over one class) -> the with-COL emitters take the placed section and
+        the others are enrolled UNPLACED (no section rva). Their COMDAT is a byte-
+        exact copy of the retail slot array either way; leaving it unplaced just
+        keeps two different section extents from claiming one retail range, which
+        the delinker rejects outright.
 
     NOTHING IS FABRICATED. The extent is enrolled only where TWO INDEPENDENT sources
     agree: the retail RTTI slot map (vtable_hierarchy's registry, read out of the
     shipped image's COL/base-class arrays) and the candidate COMDAT cl.exe actually
-    emitted. `slot_count * 4 == candidate section size` or the row is withheld - the
-    same contradiction check section_rows() applies to a literal whose candidate
-    payload disagrees with its retail extent. A disagreement is a real mis-modelling
-    signal (our class has the wrong number of virtuals), not noise.
+    emitted. `offset + slot_count * 4 == candidate section size` or the row is
+    withheld - the same contradiction check section_rows() applies to a literal whose
+    candidate payload disagrees with its retail extent. A disagreement is a real
+    mis-modelling signal (our class has the wrong number of virtuals), not noise.
 
     Only PRIMARY vtables (base_off 0, spelled `??_7<class>@@6B@`) are enrolled; a
     secondary/MI vtable (`??_7<class>@@6B<base>@@@`) is left to the next pass.
@@ -253,6 +309,7 @@ def vtable_rows(exe=EXE, base_dir=None):
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
     from coff_oracle import _Coff  # noqa: E402
+    from gruntz.core.pe import PE  # noqa: E402
 
     try:
         from gruntz.core.vtable_hierarchy import build_registry  # noqa: E402
@@ -268,7 +325,8 @@ def vtable_rows(exe=EXE, base_dir=None):
             primary["??_7%s@@6B@" % name] = (p[0], p[1])
 
     base_dir = Path(base_dir or REPO / "build/objdiff/base")
-    rows, withheld, seen = [], [], {}
+    # name -> {offset-in-COMDAT: [(unit, candidate section), ...]}
+    emitters = defaultdict(lambda: defaultdict(list))
     for obj in sorted(base_dir.glob("*.obj")):
         try:
             c = _Coff(obj)
@@ -276,28 +334,45 @@ def vtable_rows(exe=EXE, base_dir=None):
             continue
         for sec in c.section_table:
             members = c.defined_symbols(sec["index"])
-            if len(members) != 1 or members[0][0] != 0:
+            if len(members) != 1:
                 continue
-            name = members[0][1]
-            if not name.startswith("??_7"):
+            offset, name = members[0]
+            if name.startswith("??_7"):
+                emitters[name][offset].append((obj.stem, sec))
+
+    pe = PE(str(exe))
+    rows, withheld = [], []
+    for name, by_offset in sorted(emitters.items()):
+        hit = primary.get(name)
+        if hit is None:                            # secondary/MI vtable, or no RTTI
+            withheld.append((0, name, "no primary-vtable slot map for this name"))
+            continue
+        rva, slots = hit
+        head = retail_col_head(pe, rva)
+        for offset, group in sorted(by_offset.items()):
+            if offset > head:
+                withheld.append((rva, name,
+                                 "candidate COMDAT opens with a ??_R4 COL word that "
+                                 "retail's vtable does not have (%d obj(s): %s)"
+                                 % (len(group), ", ".join(u for u, _ in group[:4]))))
                 continue
-            hit = primary.get(name)
-            if hit is None:                        # secondary/MI vtable, or no RTTI
-                seen.setdefault(name, "no primary-vtable slot map for this name")
-                continue
-            rva, slots = hit
-            if sec["size"] != slots * 4:
-                seen.setdefault(name, "candidate section 0x%x != RTTI %d slots (0x%x)"
-                                % (sec["size"], slots, slots * 4))
-                continue
-            rows.append({"name": name, "object": "%s.c" % obj.stem, "rva": rva,
-                         "size": sec["size"], "storage": "rdata",
-                         "alignment": _alignment(rva, sec["size"]),
-                         "provenance": "candidate-COFF-vtable"})
-    enrolled = {r["name"] for r in rows}
-    for name, why in sorted(seen.items()):
-        if name not in enrolled:
-            withheld.append((primary.get(name, (0, 0))[0], name, why))
+            for unit, sec in group:
+                if sec["size"] != offset + slots * 4:
+                    withheld.append((rva, name,
+                                     "candidate section 0x%x != 0x%x + RTTI %d slots"
+                                     % (sec["size"], offset, slots)))
+                    continue
+                rows.append({"name": name, "object": "%s.c" % unit, "rva": rva,
+                             "size": slots * 4, "vtable_offset": offset,
+                             # Only the emitters that agree with retail's COMDAT start
+                             # get a placed section; see the docstring.
+                             "section_placed": offset == head, "storage": "rdata",
+                             # cl.exe's own COMDAT alignment, NOT one derived from the
+                             # rva: the placed and unplaced copies of a folded COMDAT
+                             # must agree on every column but the object or the
+                             # delinker reads them as two claims on one rva.
+                             "alignment": sec["alignment"],
+                             "provenance": "candidate-COFF-vtable"})
     return rows, withheld
 
 
@@ -367,7 +442,9 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     # single extent before the neighbour check - otherwise the copies read as mutual
     # overlaps. Every real extent still has to fit the span to its neighbour; an
     # overlap proves one of the pair is mis-modelled but not which, so neither is
-    # enrolled.
+    # enrolled. This scans DEFINITION extents (the delinker's own data-manifest
+    # check); the placed-SECTION extents, which for a /GR vtable start four bytes
+    # earlier at its `??_R4` COL word, are screened in section_rows().
     rows.sort(key=lambda x: (x["rva"], x["size"], x["name"]))
     extents = []                       # [{rva, size, name, copies: [row, ...]}]
     for r in rows:
@@ -426,6 +503,14 @@ def section_rows(rows, base_dir=None):
     Nothing here is invented: `rva`/`size` stay the PROVEN retail extent from
     string_rows(), and name/alignment/characteristics/COMDAT selection are read out
     of the candidate COFF that cl.exe actually emitted.
+
+    A section's rva is where its COMDAT STARTS in retail, which for a /GR vtable is
+    four bytes before the `??_7` symbol - the `??_R4` complete-object-locator pointer
+    is part of the COMDAT, so the delinker copies and relocates it too. A row that
+    vtable_rows() marked unplaced (its TU emits the class without the COL word that
+    retail's copy has) keeps the legacy allocation form: its payload is still the
+    byte-exact retail slot array, it just does not claim a retail RANGE that another
+    object's section already claims.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -438,7 +523,8 @@ def section_rows(rows, base_dir=None):
         # Only cl.exe's string literals and vtables own a whole COMDAT. The DATA()
         # globals share one `.bss`/`.data` per object, so they keep the legacy
         # allocation form.
-        if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable"):
+        if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable") \
+                and r.get("section_placed", True):
             by_obj.setdefault(r["object"], []).append(r)
 
     for obj, rs in sorted(by_obj.items()):
@@ -448,34 +534,79 @@ def section_rows(rows, base_dir=None):
                          for r in rs]
             continue
         c = _Coff(path)
-        # The candidate section that defines each literal, keyed by symbol name.
+        # The candidate section that defines each literal, keyed by symbol name, with
+        # the symbol's offset in it. A string owns its COMDAT from byte 0; a /GR
+        # vtable starts at 4, behind the `??_R4` complete-object-locator pointer.
         owner = {}
         for sec in c.section_table:
             members = c.defined_symbols(sec["index"])
-            if len(members) == 1 and members[0][0] == 0 \
-                    and members[0][1].startswith(("??_C@", "??_7")):
-                owner[members[0][1]] = sec
+            if len(members) != 1:
+                continue
+            offset, name = members[0]
+            if name.startswith("??_C@") and offset == 0:
+                owner[name] = (sec, 0)
+            elif name.startswith("??_7"):
+                owner[name] = (sec, offset)
         for r in rs:
-            sec = owner.get(r["name"])
-            if sec is None:
+            hit = owner.get(r["name"])
+            if hit is None:
                 withheld.append((r["rva"], r["name"],
                                  "no single-symbol COMDAT in the candidate obj"))
                 continue
-            if sec["size"] != r["size"]:
+            sec, offset = hit
+            if offset != r.get("vtable_offset", 0):
+                withheld.append((r["rva"], r["name"],
+                                 "candidate COMDAT offset 0x%x != enrolled 0x%x"
+                                 % (offset, r.get("vtable_offset", 0))))
+                continue
+            if sec["size"] != offset + r["size"]:
                 # The candidate's own payload disagrees with the retail extent that
                 # named it - a real contradiction, so neither side is enrolled.
                 withheld.append((r["rva"], r["name"],
-                                 "candidate section 0x%x != retail extent 0x%x"
-                                 % (sec["size"], r["size"])))
+                                 "candidate section 0x%x != 0x%x + retail extent 0x%x"
+                                 % (sec["size"], offset, r["size"])))
                 continue
             r["section"] = sec
+            r["section_offset"] = offset
             secs.append({"object": obj, "index": sec["index"], "name": sec["name"],
-                         "rva": r["rva"], "size": sec["size"],
+                         "rva": r["rva"] - offset, "size": sec["size"],
                          "alignment": sec["alignment"],
                          "characteristics": sec["characteristics"],
                          "comdat": sec["comdat"], "assoc": sec["assoc"],
                          "storage": r["storage"],
                          "provenance": "candidate-COFF-section"})
+
+    # Two placed sections may not claim overlapping retail bytes unless they are the
+    # SAME folded COMDAT seen from two objects (identical rva/size/shape). The
+    # delinker enforces this and BAILS on a violation, taking the whole delink with
+    # it, so screen it here and withhold instead - a conflict is a real contradiction
+    # about where a COMDAT starts, and dropping the placement leaves both definitions
+    # enrolled in the legacy form rather than losing them.
+    placed = sorted(secs, key=lambda s: (s["rva"], s["size"], s["object"], s["index"]))
+    conflicted = set()
+    for first, second in zip(placed, placed[1:]):
+        if first["rva"] + first["size"] <= second["rva"]:
+            continue
+        alias = (first["object"] != second["object"]
+                 and (first["rva"], first["size"], first["name"], first["alignment"],
+                      first["characteristics"], first["comdat"])
+                 == (second["rva"], second["size"], second["name"],
+                     second["alignment"], second["characteristics"], second["comdat"]))
+        if not alias:
+            conflicted.add((first["rva"], first["size"]))
+            conflicted.add((second["rva"], second["size"]))
+    if conflicted:
+        secs = [s for s in secs if (s["rva"], s["size"]) not in conflicted]
+        for obj, rs in by_obj.items():
+            for r in rs:
+                if "section" not in r:
+                    continue
+                key = (r["rva"] - r["section_offset"], r["section"]["size"])
+                if key in conflicted:
+                    withheld.append((r["rva"], r["name"],
+                                     "candidate section 0x%x+0x%x overlaps another "
+                                     "object's" % key))
+                    del r["section"], r["section_offset"]
 
     # Manifest ordinals are per-object and must be CONTIGUOUS FROM ONE. Number them
     # in the candidate COFF's own section order: objdiff stable-sorts same-named
@@ -505,9 +636,10 @@ def manifest_bytes(rows):
             r["storage"],
             "0x%x" % (r["section"]["alignment"] if placed else r["alignment"]),
             str(r["section_ordinal"]) if placed else "-",
-            # A literal owns its whole COMDAT, so it always sits at offset 0 - the
-            # value cl.exe gives it in the candidate obj.
-            "0x0" if placed else "-",
+            # The value cl.exe gives the symbol in the candidate obj: 0 for a literal
+            # (it owns its whole COMDAT) and 4 for a /GR vtable, which sits behind the
+            # `??_R4` complete-object-locator pointer.
+            "0x%x" % r["section_offset"] if placed else "-",
             "external", r.get("provenance", "src-DATA-sizeof")]))
     return ("\n".join(out) + "\n").encode("utf-8")
 

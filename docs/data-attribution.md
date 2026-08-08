@@ -331,6 +331,84 @@ named — the data-side analog of "a fn flips exact only when its WHOLE referent
 named". ⇒ **`.rdata` unlocks as vtable-slot function naming completes**, and it pays ~21 KB
 when it does. Do not re-derive this; the enrolment is already wired.
 
+### 3b-ii-b. The `offset == 0` test silently skipped the `/GR` majority (fixed)
+
+§3b-ii's enrolment demanded a COMDAT with **exactly one member, at offset 0**. That is the
+shape of a *non-`/GR`* vtable. Under `/GR` cl puts the **`??_R4` complete-object-locator
+POINTER at offset 0** (an unnamed word — the COMDAT's only defined symbol is still the
+vtable) and `??_7<class>@@6B@` at **offset 4**, which is exactly why the selection is
+`SELECT_LARGEST` (6): the four-bytes-bigger `/GR` copy beats a non-`/GR` TU's bare slot
+array. Measured over every base obj: **101 distinct `??_7` at offset 0 versus 140 at offset
+4 (369 definitions)** — so the common case failed the test and was skipped **without a
+withheld row**. Those vtables were never materialized into a target object, so objdiff
+could not compare them and **no defect in them was scorable at all**.
+
+Three independent things had to change:
+
+1. **`vtable_rows()` accepts either offset**; the enrolled section spans the whole COMDAT
+   (`rva = vtable_rva - offset`, so the COL word is carried and relocated with it) and the
+   contradiction check becomes `offset + slots*4 == candidate section size`.
+2. **`retail_col_head()` reads the SHIPPED IMAGE, not our compile.** Whether retail's copy
+   has the COL word is an independent fact: the word at `vtable-4` must carry a base
+   relocation AND point at an `.rdata` COL (signature 0, `pTypeDescriptor` at +12 naming a
+   `.?A…` type descriptor). The reloc alone is not enough — for **45** of the 233 names the
+   word at `vtable-4` is the PREVIOUS vtable's last slot, which relocates too.
+3. **The delinker's COMDAT leader may sit at a non-zero offset**
+   (`nix/patches/vostok-comdat-leader-nonzero-offset.patch`): `finish_data_comdats` had
+   demanded an external definition at offset 0, which is neither what COFF requires nor
+   what cl emits. It now takes the section's lowest-offset external definition.
+
+Outcome, per distinct `??_7` name (233 in the base objs): **125** agree with retail (COL,
+symbol at 4) and enroll placed; **86** have neither and enroll as before; **6** are emitted
+BOTH ways (one `cpp` TU and one `cpp-rtti` TU compiling the same class — `CObject`,
+`CImage`, `CGameApp`, `CGameMgr`, `CGameWnd`, `CGruntzMapMgr`), where the `/GR` emitters take
+the placed section and the others enroll UNPLACED so two section extents never claim one
+retail range; **5** are withheld — `CFaderFlat/Light/Radial/Shape/Sine`, where **we compile
+`/GR` and retail did not**, so the section would claim four retail bytes that are actually
+the `g_faderHalfPi` / `g_faderOne` float constants beside them; **11** are secondary/MI
+vtables with no primary slot map.
+
+|  | before | after |
+|---|---|---|
+| enrolled vtable definitions | 158 | **514** (+356, none lost) |
+| distinct vtable names | 92 | **217** |
+| `??_7` symbols in the target objs | 163 (97 distinct) | **516 (219 distinct)** |
+| `total_data` | 637720 | 660086 |
+| `matched_data` | 55214 (8.66%) | 55326 (**8.38%**) |
+| `matched_code` / `exact` | 471777 / 3471 | unchanged |
+
+The percentage falls for the §3b-ii reason: `matched_data` credits a combined section only
+at exactly 100.0, and the units gaining vtables had `.rdata` below 100 already, so +22366
+bytes of newly-visible content lands entirely in the denominator. **That is the point** —
+what was invisible is now diffable. Comparing every base vtable COMDAT against its target
+counterpart byte-for-byte and reloc-for-reloc gives **354 of 444 present (name, object)
+pairs clean but for two systematic naming families**, and **90 pairs / 46 names with a real
+residual defect**. The three families, each its own follow-on:
+
+* **COL word (336 sites, 125 vtables).** The target's offset-0 reloc names
+  `??_7CMenuItem2@@6B@+addend`: no manifest row covers the COL, so
+  `relocs.rs` falls through to `hypothesis_owner_and_addend_for_rva`, which returns the
+  CLOSEST `.rdata` definition. Fixing it means enrolling the RTTI graph itself
+  (`??_R4` → `??_R3` → `??_R2` → `??_R1` → `??_R0`; the base objs define **717** of these,
+  and their names are readable straight off cl's own relocations, the `apply_string_names`
+  oracle applied to RTTI).
+* **`??_E` vs `??_G` (416 sites, 175 vtables) — a SCORING ARTIFACT, not a defect.** Our base
+  obj's vtable slot names `??_E<C>@@UAEPAXI@Z`, which is a COFF **WEAK EXTERNAL**
+  (`IMAGE_SYM_CLASS_WEAK_EXTERNAL`, storage class 105) whose default is the `??_G<C>` the
+  same object DEFINES. The linker resolves it, so the delinked target correctly names
+  `??_G`. Resolving base-side weak externals to their default in `normalize_objs.py` is the
+  faithful fix.
+* **MFC base slots mislabeled on the TARGET side (314 sites, 40 vtables).** e.g. base
+  `?GetRuntimeClass@CObject@@UBEPAUCRuntimeClass@@XZ` versus target
+  `?AfxExtractSubString@@YGHAAVCString@@PBDHD@Z` — a `library_labels.csv` / FLIRT naming
+  defect, now visible.
+
+The genuine per-class residuals this exposed are the deliverable: `??_7CGruntzCommand@@6B@`
+has real `Serialize`/`Save`/`Load`/`GetTag`/`Parse` bodies where **retail has `__purecall`**;
+`??_7CGameWnd@@6B@` / `??_7CGruntzWnd@@6B@` disagree on slots 1–3
+(`PreDispatchMessage`/`HandleWindowCommand`/`OnCreate` versus retail's `FUN_00494c40`,
+`FUN_00494c60`, `GameWindowProc`); `??_7CGameApp@@6B@` disagrees at +0x34.
+
 ### 3b-iii. `DATA_COMPGEN(rva, name, value)` — reviewed compiler-generated data (wired)
 
 Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic
