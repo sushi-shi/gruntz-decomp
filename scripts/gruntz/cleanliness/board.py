@@ -536,7 +536,14 @@ def _is_scaffolding(path) -> bool:
 # and near-exact codegen residue (a 92%-matched fn shows "MISSING" edges for its inlined zBitVec
 # member ops). Tracking that total as drive-to-0 was wrong. NOT a text scan (reads clang IR + the
 # retail graph), so it needs a build; gracefully absent when no build IR.
-_SEMANTIC_LABELS = ("caller-callee FAKE-VIEW", "nested static_casts")
+# The truncated-mask metric: our base masks a 32-bit word with the 8- or 16-bit
+# complement of the constant retail uses (`andl $0xdf` against `andb $0xdf`), so we clear
+# the intended bit AND every bit above the byte. Always a width or union-member slip in the
+# source - CGrunt::ClaimSwitchTile indexed `i32** m_rowInts` with BYTE arithmetic and wrote
+# into a different cell entirely. objdiff cannot surface it (its diff masks operands), which
+# is why it needs its own count. Byte-derived, so it needs a build; see
+# gruntz.audit.mask_immediates and docs/patterns/enum-complement-is-sixteen-bit.md.
+_SEMANTIC_LABELS = ("caller-callee FAKE-VIEW", "nested static_casts", "truncated masks")
 _SEMANTIC_LABEL_SET = set(_SEMANTIC_LABELS)
 
 
@@ -576,12 +583,29 @@ def _caller_callee_counts() -> dict[str, int]:
     return res
 
 
+def _truncated_mask_count() -> dict[str, int]:
+    """Functions whose base masks 32 bits with a narrow complement of retail's constant.
+
+    Needs the delinked target objects, so it is absent (not zero) without a build. An
+    absent row keeps its committed floor - see merge_baseline_downonly.
+    """
+    try:
+        from gruntz.audit.mask_immediates import scan as mask_scan
+
+        return {"truncated masks": len([r for r in mask_scan() if r[4]])}
+    except Exception as exc:
+        print(f"  cleanliness: truncated masks UNMEASURED ({type(exc).__name__}: {exc}) "
+              "- its baseline floor is carried forward, not re-blessed", file=sys.stderr)
+        return {}
+
+
 def semantic_count() -> list[tuple[str, int]]:
     """Build/AST-derived metrics. This is intentionally full-tier work."""
     from gruntz.audit.nested_static_casts import scan as nested_static_casts
 
     values = {"nested static_casts": len(nested_static_casts())}
     values.update(_caller_callee_counts())
+    values.update(_truncated_mask_count())
     return [(label, values[label]) for label in _SEMANTIC_LABELS if label in values]
 
 

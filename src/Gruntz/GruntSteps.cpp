@@ -846,12 +846,12 @@ i32 CGrunt::ClaimSwitchTile() {
     CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
     i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    gb->m_rowInts[oldTy][oldTx * 7 * 4 + 3] &= 0xdf;
-    *&gb->m_rowInts[oldTy][oldTx * 7 * 4 + 4] = -1;
+    gb->m_rows[oldTy][oldTx].m_flagBytes[3] &= 0xdf;
+    gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-    gb->m_rowInts[ty][tx * 7 * 4 + 3] |= 0x20;
-    *&gb->m_rowInts[ty][tx * 7 * 4 + 4] = owner;
+    gb->m_rows[ty][tx].m_flagBytes[3] |= 0x20;
+    gb->m_rows[ty][tx].m_occupantId = owner;
 
     m_lastTilePx.m_x = x;
     m_lastTilePx.m_y = y;
