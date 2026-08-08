@@ -50,6 +50,11 @@ static inline CSlotNode* HeadSlotNode(DSoundList& list) {
     return static_cast<CSlotNode*>(list.m_head);
 }
 
+// Retail's CSymParser::ParseRecords frame (0x1674 via __chkstk) lays out six
+// path buffers of exactly 0x308 bytes; the three _splitpath component buffers
+// are _MAX_PATH.
+enum { REZ_SCAN_PATH_MAX = 0x308 };
+
 // Byte-forced view of packed serialized storage.
 static inline i32 PeekI32(const char* p) {
     return *reinterpret_cast<const i32*>(p);
@@ -1079,16 +1084,19 @@ i32 CSymParser::LoadEntry(char* name, i32 flag) {
 }
 
 // @early-stop
+// Instruction stream and frame layout are identical to retail; the residue is one
+// callee-saved colour swap (extKey in esi / rec in edi, ours reversed) around the
+// PackTag/AddNodeEntry block.
 RVA(0x0013b300, 0x545)
 i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) {
-    char pattern[0x500];
+    char pattern[REZ_SCAN_PATH_MAX];
     strcpy(pattern, path);
     if (pattern[strlen(pattern) - 1] != '\\') {
-        strcpy(pattern + strlen(pattern), g_sepSlash);
+        strcat(pattern, g_sepSlash);
     }
-    char full[0x600];
+    char full[REZ_SCAN_PATH_MAX];
     strcpy(full, pattern);
-    strcpy(full + strlen(full), g_wildcard);
+    strcat(full, g_wildcard);
     _finddata_t fd;
     i32 h = _findfirst(full, &fd);
     if (h < 0) {
@@ -1100,15 +1108,15 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         }
         if ((fd.attrib & _A_SUBDIR) == _A_SUBDIR) {
 
-            char subName[0x108];
+            char subName[REZ_SCAN_PATH_MAX];
             strcpy(subName, fd.name);
             if (m_caseSensitive == 0) {
                 _strupr(subName);
             }
-            char childpath[0x600];
+            char childpath[REZ_SCAN_PATH_MAX];
             strcpy(childpath, pattern);
-            strcpy(childpath + strlen(childpath), subName);
-            strcpy(childpath + strlen(childpath), g_sepSlash);
+            strcat(childpath, subName);
+            strcat(childpath, g_sepSlash);
             void* child = node->FindSub(subName);
             if (child == NULL) {
                 child = node->CreateSub(subName);
@@ -1120,14 +1128,15 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             continue;
         }
 
-        strcpy(full, pattern);
-        strcpy(full + strlen(full), fd.name);
+        char filepath[REZ_SCAN_PATH_MAX];
+        strcpy(filepath, pattern);
+        strcat(filepath, fd.name);
         char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char splitName[_MAX_FNAME];
-        char fname[0x108];
-        char ext[0x108];
-        _splitpath(full, drive, dir, splitName, ext);
+        char dir[_MAX_PATH];
+        char splitName[_MAX_PATH];
+        char fname[REZ_SCAN_PATH_MAX];
+        char ext[_MAX_PATH];
+        _splitpath(filepath, drive, dir, splitName, ext);
         strcpy(fname, splitName);
         _strupr(fname);
         i32 nleft = static_cast<i32>(strlen(fname));
@@ -1135,31 +1144,35 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         while (i < nleft && fname[i] >= '0' && fname[i] <= '9') {
             i++;
         }
-        i32 key = (i >= nleft) ? atol(fname) : static_cast<i32>(m_nextGeneratedFileKey++);
-        RezTypeTag extKey = REZ_TAG_NONE;
-        char extName[0x10];
-        char unpackedTag[0x10];
+        i32 key = (i < nleft) ? static_cast<i32>(m_nextGeneratedFileKey++) : atol(fname);
+        RezTypeTag extKey;
+        char extName[8];
+        char unpackedTag[8];
         if (strlen(ext) != 0) {
             strcpy(extName, ext + 1);
             _strupr(extName);
             extKey = PackTag(extName);
+        } else {
+            extKey = REZ_TAG_NONE;
         }
         UnpackTag(extKey, unpackedTag);
         CSymRec* rec = node->FindOrAddSym(IDX(extKey));
         CParseSource* entry = node->Insert(fname, extKey);
-        CParseSource* source = 0;
+        CParseSource* source;
         if (entry == NULL) {
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
         } else if (flag != 0) {
             node->AddNodeSubEntry(rec, entry);
             source = node->AddNodeEntry(static_cast<u32>(key), fname, rec, 0);
+        } else {
+            source = 0;
         }
         if (source != NULL) {
             source->m_typeTag = static_cast<i32>(fd.time_write);
             source->m_length = static_cast<u32>(fd.size);
-            source->m_reader = new CRezFile(this, full, static_cast<CRezDir*>(reader));
+            source->m_reader = new CRezFile(this, filepath, static_cast<CRezDir*>(reader));
         }
-    } while (_findnext(h, &fd) != 0);
+    } while (_findnext(h, &fd) == 0);
     _findclose(h);
     return 1;
 }
