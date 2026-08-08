@@ -160,7 +160,7 @@ public:
     i32 Sync(CFileMemBase* s, SerialMode op, LogicTypeId typeId, i32 pObj);
 
     i32 GetActiveValue();
-    i32 LoadStatzTabToggleSprite(i32 idx, i32 value);
+    i32 LoadStatzTabToggleSprite(i32 idx, StatusSampleMode value);
     void UpdateGruntOvenStatusBar();
     void TickGauge();
     void UpdateChipGrinderStatusBar();

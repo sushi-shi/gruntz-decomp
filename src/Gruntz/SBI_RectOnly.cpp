@@ -1765,13 +1765,8 @@ i32 CStatusBarMgr::Activate() {
     return m_barSprite != NULL;
 }
 
-// @early-stop
-// Retail keeps `mode` in ebx across the calls and reads the LeafCue fields as memory
-// operands; we spill mode to the frame and hoist both fields into registers, which
-// costs the extra reload before the final m_statFlags store.
 RVA(0x00104e60, 0xed)
-i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, i32 value) {
-    StatusSampleMode mode = static_cast<StatusSampleMode>(value);
+i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
     if (m_statFlags[idx] == mode) {
         return 1;
     }
@@ -1781,25 +1776,28 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, i32 value) {
         return 0;
     }
 
-    CSBI_SideTab* item = m_hitRects[idx];
-    i32 one = 1;
-    if (item) {
-        item->m_sampleMode = mode;
-        item->m_enabled = one;
+    CSBI_SideTab* r = m_hitRects[idx];
+    if (r != NULL) {
+        r->m_sampleMode = mode;
+        r->m_enabled = 1;
         if (m_activeTab == TAB_STATZ) {
-            m_statObj[idx]->SetDirectionAlt(m_position, one);
-            CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-            if (h->m_emitGate == 0) {
-                void* spr_ob = 0;
-                h->m_cues.Lookup("GAME_STATZTABTOGGLE", spr_ob);
-                LeafCue* spr = static_cast<LeafCue*>(spr_ob);
-                if (spr) {
 
+            m_statObj[idx]->SetDirectionAlt(m_position, 1);
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_emitGate == 0) {
+                void* found = 0;
+                CMapStringToPtr* map = &host->m_cues;
+                map->Lookup("GAME_STATZTABTOGGLE", found);
+                if (found) {
                     i32 gate = g_sndEnabled;
                     i32 item = g_sndCueTag;
-                    if (gate != 0 && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
-                        spr->m_lastPlayTime = g_killCueClock;
-                        spr->m_sound->ConfigureItem(item, 0, 0, 0);
+                    if (gate != 0) {
+                        LeafCue* p = static_cast<LeafCue*>(found);
+                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                            >= static_cast<u32>(p->m_replayDelay)) {
+                            p->m_lastPlayTime = g_killCueClock;
+                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                        }
                     }
                 }
             }
@@ -2916,7 +2914,7 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
     if (m_statFlags[idx] != STATUS_SAMPLE_NONE) {
         ClearStat(idx);
     } else {
-        LoadStatzTabToggleSprite(idx, IDX(STATUS_SAMPLE_HEALTH));
+        LoadStatzTabToggleSprite(idx, STATUS_SAMPLE_HEALTH);
     }
 }
 
