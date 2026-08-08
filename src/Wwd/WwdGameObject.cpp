@@ -749,8 +749,8 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
     if (gate == 0) {
         return 0;
     }
+    void* found = 0;
     if (m_carrierId != 0) {
-        void* found = 0;
         if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, m_carrierId, found) == 0) {
             m_carrier = NULL;
             return 1;
