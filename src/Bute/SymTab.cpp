@@ -10,6 +10,7 @@
 #include <Enums.h>
 #include <Gruntz/CustomWorldInfoDlg.h>
 #include <Gruntz/ParseSource.h>
+#include <PlacementNew.h>
 #include <Rez/DebugPrintf.h>
 #include <Rez/RezFile.h>
 #include <Rez/RezMgr.h>
@@ -24,10 +25,6 @@
 
 DATA(0x0020cff0)
 const char g_sepSlash[] = "\\";
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {

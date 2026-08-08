@@ -13,14 +13,11 @@
 #include <Gruntz/String.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <PlacementNew.h>
 
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 // @identity-TODO ?1CLoadable - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU

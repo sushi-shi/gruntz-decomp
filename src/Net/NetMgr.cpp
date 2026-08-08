@@ -10,6 +10,7 @@
 #include <Net/InterfaceObject.h>
 #include <Net/NetGuids.h>
 #include <Net/NetProviderFindKind.h>
+#include <PlacementNew.h>
 
 #include <dplay.h>
 #include <string.h>
@@ -188,9 +189,6 @@ EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* l
     return self->AddGroupNode(lpGuid, lpName) != NULL;
 }
 
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 RVA(0x00178360, 0xc8)
 InterfaceObject* CNetMgr::AddGroupNode(void* guid, void* name) {

@@ -95,6 +95,7 @@
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
 #include <Pix16.h>
+#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
@@ -109,10 +110,6 @@
 #include <ddraw.h>
 #include <stdio.h>
 #include <string.h>
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 class CImage;
 

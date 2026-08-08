@@ -12,6 +12,7 @@
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
+#include <PlacementNew.h>
 #include <Rez/RezMgr.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -20,10 +21,6 @@
 
 DATA(0x0022990c)
 i32 g_posSoundReq;
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 RVA(0x0000b5e0, 0x29)
 i32 CWorldSoundSet::Init(void* world, i32 volume) {

@@ -11,16 +11,13 @@
 #include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
+#include <PlacementNew.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
 #include <stdlib.h>
 #include <string.h>
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 // @early-stop
 RVA(0x001660f0, 0xd1)

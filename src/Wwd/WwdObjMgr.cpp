@@ -25,6 +25,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Io/FileMem.h>
+#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -35,10 +36,6 @@
 
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 inline void* WwdKey(CGameObject* o) {
     AddrWord<char> k;

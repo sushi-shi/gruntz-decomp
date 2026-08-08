@@ -39,6 +39,7 @@
 #include <Gruntz/StateId.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -1228,9 +1229,6 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     m_srcRect[1] = 0;
     m_srcRect[2] = w;
     return 1;
-}
-inline void* operator new(u32, void* p) {
-    return p;
 }
 
 RVA(0x00159080, 0x8)

@@ -24,6 +24,7 @@
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
+#include <PlacementNew.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdSpatialMgr.h>
 
@@ -537,10 +538,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     DRAW_CELL(m_tileGrid[rowBase + col], x, y, &corner);
 }
 #undef DRAW_CELL
-
-inline void* operator new(u32, void* p) {
-    return p;
-}
 
 // The by-value u8 parameters are load-bearing.  Reading the channels off a
 // PALETTEENTRY& inside the helper makes cl evaluate green before red; passing

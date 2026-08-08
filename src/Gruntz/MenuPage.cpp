@@ -12,12 +12,9 @@
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <PlacementNew.h>
 
 #include <stddef.h>
-
-inline void* operator new(size_t, void* p) {
-    return p;
-}
 
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetKey() {
