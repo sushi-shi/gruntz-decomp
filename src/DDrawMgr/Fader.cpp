@@ -415,3 +415,11 @@ RVA(0x0017f120, 0x6)
 i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
+
+// CRezBufferObject's dtor is inline-in-header, so cl emits its ??1/??_G COMDATs
+// HERE - the TU that expands the ctor, through CFaderMesh::m_meshBuf - and not in
+// rezbufferobject, which never instantiates one. Retail agrees: ??_G is 0x1e bytes
+// (a call to ??1, never an inline expansion) while ??1CFaderMesh carries the member
+// dtor inlined.
+RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)

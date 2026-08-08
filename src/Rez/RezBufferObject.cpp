@@ -81,10 +81,9 @@ void CRezBufferObject::Serialize(CArchive& ar) {
 RVA(0x0017f300, 0x3)
 RezElem40::RezElem40() {}
 
-// @early-stop
-
-RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)
+// ??1CRezBufferObject / ??_GCRezBufferObject are pinned in Fader.cpp: the dtor is
+// inline-in-header, so cl emits both COMDATs in the TU that expands the ctor
+// (fader, via CFaderMesh::m_meshBuf) and none here.
 
 // @early-stop
 RVA(0x0017f390, 0x164)

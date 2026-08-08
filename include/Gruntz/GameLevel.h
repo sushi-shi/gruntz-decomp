@@ -130,11 +130,12 @@ public:
     // 0x1127). LoadGruntDeathAnimations holds 12 calls AND one expansion in one
     // body, which one inline definition cannot produce: cl 5 never declines this
     // body (60 sites probed) and emits no COMDAT when it inlines everywhere.
+    // The &&-chain, not `if (...) return 1; return 0;`: the chain is what cl
+    // MATERIALIZES into retail's `mov reg,1 / jmp / xor reg,reg` at an inlined
+    // call site (CStatusBarMgr::HitTestRects 0xffcb0), where the if-form
+    // collapses into bare branches.
     static i32 PointInRect(const LevelCoordRect* r, i32 x, i32 y) {
-        if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            return 1;
-        }
-        return 0;
+        return x < r->right && x >= r->left && y < r->bottom && y >= r->top;
     }
 
     static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);

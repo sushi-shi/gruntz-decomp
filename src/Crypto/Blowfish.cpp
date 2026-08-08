@@ -5,11 +5,6 @@
 #include <Crypto/BlowfishPi.h>
 #include <Ints.h>
 
-// memcpy comes from <memory.h>, NOT <string.h>: the wider header's intrinsic set
-// re-allocates registers across this whole TU and costs Blowfish_encipher its byte
-// match (docs/patterns/string-h-intrinsics-reallocate-the-tu.md).
-#include <memory.h>
-
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
 DATA(0x0021aef8)
@@ -57,12 +52,14 @@ void Blowfish_encipher(u32* xl, u32* xr) {
     *xl = r;
 }
 
-// @early-stop
-// Its MAX (99.875) came from a TU whose S-box macro went through a
-// reinterpret_cast-flattened pointer; that spelling is the only one that stops cl
-// CSE-ing eight instructions retail keeps, and no cast-free spelling of the same
-// addresses reproduces it (row-0 decay, &g_bfS[0][0], a two-reading union and a flat
-// u32[1024] all give this shape). Encipher's byte match does not depend on it.
+// <string.h> declares the memcpy InitializeBlowfish calls, and its POSITION is
+// load-bearing: cl 5.0 picks a function's register scheme from a TU-cumulative
+// declaration counter, and retail's two ciphers sit on opposite sides of one
+// threshold. Declared here, encipher and decipher both go byte-exact; hoisted above
+// encipher, encipher falls to 60.41
+// (docs/patterns/string-h-intrinsics-reallocate-the-tu.md).
+#include <string.h>
+
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;
