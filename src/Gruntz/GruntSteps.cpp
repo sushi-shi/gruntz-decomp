@@ -825,8 +825,9 @@ i32 CGrunt::ClaimSwitchTile() {
     // table sends DIR_NORTH straight at that second instruction.  x and y carry no
     // initializer - the out-of-range block at 0x452cc2 reads their never-written
     // stack homes - so the seed pair is separate locals the arms read.
-    i32 px = m_lastTilePx.m_x;
-    i32 py = m_lastTilePx.m_y;
+    Coord tile = m_lastTilePx;
+    i32 px = tile.m_x;
+    i32 py = tile.m_y;
     i32 x;
     i32 y;
     switch (m_entranceCell.direction) {
