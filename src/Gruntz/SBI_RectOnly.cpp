@@ -14,6 +14,7 @@
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRand.h>
@@ -781,8 +782,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_rect14.right && x >= r->m_rect14.left && y < r->m_rect14.bottom
-                      && y >= r->m_rect14.top;
+            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -793,8 +793,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_rect14.right && x >= r->m_rect14.left && y < r->m_rect14.bottom
-                      && y >= r->m_rect14.top;
+            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -804,8 +803,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r && r->m_enabled) {
-            i32 hit = x < r->m_rect14.right && x >= r->m_rect14.left && y < r->m_rect14.bottom
-                      && y >= r->m_rect14.top;
+            i32 hit = CGameLevel::PointInBounds(&r->m_rect14, x, y);
             if (hit) {
                 return r;
             }
@@ -1839,8 +1837,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
         for (i32 i = 0; i < 15; i++) {
             CSBI_SideTab* p = m_hitRects[i];
             if (p && p->m_enabled) {
-                i32 hit = p->m_enabled && x < p->m_rect14.right && x >= p->m_rect14.left
-                          && y < p->m_rect14.bottom && y >= p->m_rect14.top;
+                i32 hit = p->m_enabled && CGameLevel::PointInBounds(&p->m_rect14, x, y);
                 if (hit) {
                     return i;
                 }

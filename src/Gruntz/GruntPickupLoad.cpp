@@ -4,6 +4,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -441,8 +442,7 @@ i32 CGrunt::LoadPickupSprites(
     if (id != 0) {
         CWwdGameObjectA* hud = m_object;
         CGruntzMgr* g = g_gameReg;
-        if ((hud->m_screenX < g->m_viewBounds.right && hud->m_screenX >= g->m_viewBounds.left
-             && hud->m_screenY < g->m_viewBounds.bottom && hud->m_screenY >= g->m_viewBounds.top)
+        if ((CGameLevel::PointInBounds(&g->m_viewBounds, hud->m_screenX, hud->m_screenY))
             || forced != 0) {
             g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
         }

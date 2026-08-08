@@ -86,8 +86,7 @@ i32 CGrunt::StepPeerTracking() {
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (x < r->m_viewRect.right && x >= r->m_viewRect.left && y < r->m_viewRect.bottom
-            && y >= r->m_viewRect.top) {
+        if (CGameLevel::PointInBounds(&r->m_viewRect, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
         }
     }

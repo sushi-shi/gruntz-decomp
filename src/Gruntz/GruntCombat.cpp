@@ -591,7 +591,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     i32 y = m_object->m_screenY;
     i32 x = m_object->m_screenX;
     CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_viewRect;
-    if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
+    if (CGameLevel::PointInBounds(rc, x, y)) {
         g->m_cueSink->LoadGruntSpawnConfig(this, 0xe, -1, -1, -1);
     }
 
@@ -850,7 +850,7 @@ i32 CGrunt::PathScan() {
     nb.top = trow - 4;
     nb.right = tcol + 4;
     nb.bottom = trow + 4;
-    if (col5 < nb.right && col5 >= nb.left && row5 < nb.bottom && row5 >= nb.top) {
+    if (CGameLevel::PointInBounds(&nb, col5, row5)) {
 
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
@@ -984,14 +984,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         if (c < 5) {
             CGruntzMgr* g = g_gameReg;
             const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
-            if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
+            if (CGameLevel::PointInBounds(vr, x, y)) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
+        if (CGameLevel::PointInBounds(vr, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x371, -1, 0, -1, -1);
         } else {
             m_struckCount = 0;
@@ -1004,7 +1004,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_object->m_screenY;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
+        if (CGameLevel::PointInBounds(vr, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x320, -1, 0, -1, -1);
         }
         return;
@@ -1014,7 +1014,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_object->m_screenY;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
+        if (CGameLevel::PointInBounds(vr, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x321, -1, 0, -1, -1);
         }
         return;
@@ -1025,7 +1025,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         m_struckCount = 0;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_viewRect;
-        if (x < vr->right && x >= vr->left && y < vr->bottom && y >= vr->top) {
+        if (CGameLevel::PointInBounds(vr, x, y)) {
             g->m_cueSink->SpawnVoiceDriver(this, 0x322, -1, 0, -1, -1);
         }
     }
@@ -1238,8 +1238,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     LeafCue* cue = 0;
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
-    if (vx < reg->m_viewBounds.right && vx >= reg->m_viewBounds.left
-        && vy < reg->m_viewBounds.bottom && vy >= reg->m_viewBounds.top) {
+    if (CGameLevel::PointInBounds(&reg->m_viewBounds, vx, vy)) {
         if (attackerGruntKind == GRUNT_DEATHTOUCH) {
             LK(s_DEATHTOUCHHIT);
             goto L_cue;

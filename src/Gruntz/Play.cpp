@@ -2812,11 +2812,11 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         }
         i32 placed = 0;
         RECT* gr = &m_guts->m_rect10;
-        if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+        if (CGameLevel::PointInBounds(gr, xr, y)) {
 
         } else {
             RECT* wr = (&geom->m_planeCtx);
-            if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
+            if (CGameLevel::PointInBounds(wr, xr, y)) {
                 if (FindStartPointAt(sx, sy, &x, &y)) {
                     char tok = static_cast<char>(g_curPlayer);
                     w->m_cmdSubMgr->EnqueueSingle(
@@ -2853,7 +2853,7 @@ mode_36c:
     }
     {
         RECT* gr = &m_guts->m_rect10;
-        if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+        if (CGameLevel::PointInBounds(gr, xr, y)) {
             if (m_guts->SetFallRect(xr, y, static_cast<char>(m_cursorFrame))) {
                 m_dragInhibit2 = 0;
                 SetCursorFrame(0);
@@ -2864,7 +2864,7 @@ mode_36c:
         CGruntzMgr* w = m_mgr;
         CGameLevel* geom = w->m_world->m_level;
         RECT* wr = (&geom->m_planeCtx);
-        if (!(xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top)) {
+        if (!CGameLevel::PointInBounds(wr, xr, y)) {
             goto waypoint_cancel;
         }
 
@@ -2947,7 +2947,7 @@ drag_path: {
     }
 
     RECT* gr = &m_guts->m_rect10;
-    if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+    if (CGameLevel::PointInBounds(gr, xr, y)) {
         FlushPendingOps();
         return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
     }
@@ -3153,7 +3153,7 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
         }
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
-        if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
+        if (CGameLevel::PointInBounds(&er, px, py)) {
             if (!m_guts->FindReadySlot()) {
                 return 1;
             }
@@ -3222,8 +3222,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         }
     }
 
-    if (x < m_guts->m_rect10.right && x >= m_guts->m_rect10.left && y < m_guts->m_rect10.bottom
-        && y >= m_guts->m_rect10.top) {
+    if (CGameLevel::PointInBounds(&m_guts->m_rect10, x, y)) {
         return 1;
     }
     i32 idx = m_guts->HitTest(x, y);
@@ -3241,8 +3240,7 @@ i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
         return 1;
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
-    if (x < ph->m_planeCtx.right && x >= ph->m_planeCtx.left && y < ph->m_planeCtx.bottom
-        && y >= ph->m_planeCtx.top) {
+    if (CGameLevel::PointInBounds(&ph->m_planeCtx, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
         i32 rawX = geom->m_viewRect.left - ds->m_planeCtx.left + x;
@@ -4554,7 +4552,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
                 if (m != NULL) {
                     RECT rc;
                     SetRect(&rc, m->m_x - 0x20, m->m_y - 0x20, m->m_x + 0x20, m->m_y + 0x20);
-                    if (x < rc.right && x >= rc.left && y < rc.bottom && y >= rc.top) {
+                    if (CGameLevel::PointInBounds(&rc, x, y)) {
                         *outX = m->m_x;
                         *outY = m->m_y;
                         return 1;

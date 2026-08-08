@@ -6,6 +6,7 @@
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
@@ -162,9 +163,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
-                        if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
-                            && y < g_gameReg->m_viewBounds.bottom
-                            && y >= g_gameReg->m_viewBounds.top) {
+                        if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, x, y)) {
                             CWwdGameObjectA* fx =
                                 g_gameReg->m_world->m_childGroup
                                     ->CreateSprite(0, x, y, SORTKEY_OVERLAY, "Explosion", 0x40003);

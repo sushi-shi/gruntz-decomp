@@ -486,10 +486,7 @@ i32 CDroppedObject::AdvanceFall() {
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
-                            if (x < g_gameReg->m_viewBounds.right
-                                && x >= g_gameReg->m_viewBounds.left
-                                && m_landY < g_gameReg->m_viewBounds.bottom
-                                && m_landY >= g_gameReg->m_viewBounds.top) {
+                            if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, x, m_landY)) {
                                 CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                                     0,
                                     x,
@@ -510,9 +507,7 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         } else {
-            if (x < g_gameReg->m_viewBounds.right && x >= g_gameReg->m_viewBounds.left
-                && m_landY < g_gameReg->m_viewBounds.bottom
-                && m_landY >= g_gameReg->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, x, m_landY)) {
                 CWwdGameObjectA* s =
                     g_gameReg->m_world->m_childGroup
                         ->CreateSprite(0, x, m_landY, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);

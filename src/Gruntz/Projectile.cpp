@@ -18,6 +18,7 @@
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -314,9 +315,7 @@ void CProjectile::AdvanceMotion() {
     if (m_kind == PICKUP_WINGZ) {
         CWwdGameObjectA* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
-        if (owner->m_screenX < reg->m_viewBounds.right && owner->m_screenX >= reg->m_viewBounds.left
-            && owner->m_screenY < reg->m_viewBounds.bottom
-            && owner->m_screenY >= reg->m_viewBounds.top) {
+        if (CGameLevel::PointInBounds(&reg->m_viewBounds, owner->m_screenX, owner->m_screenY)) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != NULL) {
             m_sound->StopAndRewind();
@@ -456,8 +455,7 @@ void CProjectile::AdvanceMotion() {
         }
         if (flags & 0x900) {
 
-            if (m_targetX < reg->m_viewBounds.right && m_targetX >= reg->m_viewBounds.left
-                && m_targetY < reg->m_viewBounds.bottom && m_targetY >= reg->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&reg->m_viewBounds, m_targetX, m_targetY)) {
                 CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                     0,
                     m_targetX,
@@ -488,10 +486,7 @@ void CProjectile::AdvanceMotion() {
                         break;
                     default:
 
-                        if (m_targetX < reg->m_viewBounds.right
-                            && m_targetX >= reg->m_viewBounds.left
-                            && m_targetY < reg->m_viewBounds.bottom
-                            && m_targetY >= reg->m_viewBounds.top) {
+                        if (CGameLevel::PointInBounds(&reg->m_viewBounds, m_targetX, m_targetY)) {
                             CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 m_targetX,

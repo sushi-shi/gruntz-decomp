@@ -452,17 +452,6 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     return set->GetCollisionAt(subX, subY);
 }
 
-// @identity-TODO PointInBounds@CGameLevel - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (73 fns) came from the static library. It belongs to another compiland.
-RVA(0x0006b330, 0x2a)
-i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
-    if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-        return 1;
-    }
-    return 0;
-}
-
 // @identity-TODO LookupTile@CGameLevel - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (73 fns) came from the static library. It belongs to another compiland.

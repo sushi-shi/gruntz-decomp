@@ -118,7 +118,19 @@ public:
         m_rectC.h = 576;
     }
 
-    static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
+    // Half-open bounds test. Retail expands this inline at 89 sites and calls the
+    // out-of-line copy (0x6b330, now unclaimed) at 30 more. The expansions are
+    // inline-FUNCTION expansions, not open-coded field tests: at 0x42c94 retail
+    // materialises the rect pointer with `add eax,0x40` before comparing against
+    // [eax+8]/[eax]/[eax+c]/[eax+4], which only an argument temporary produces - a
+    // macro or a direct `rc->m_viewRect.right` folds +0x40 into each displacement.
+    // See docs/patterns/inline-visibility-splits-call-and-expansion.md.
+    static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
+        if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
+            return 1;
+        }
+        return 0;
+    }
 
     TileCollisionKind LookupTile(i32 x, i32 y);
 

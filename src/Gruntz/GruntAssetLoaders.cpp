@@ -379,7 +379,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
-                if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
+                if (CGameLevel::PointInBounds(r, x, y)) {
                     g->m_cueSink->LoadGruntSpawnConfig(this, 3, -1, -1, -1);
                 }
             }

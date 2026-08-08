@@ -261,7 +261,7 @@ i32 CGrunt::UpdateArrival() {
                     const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
                     i32 px = m_object->m_screenX;
                     i32 py = m_object->m_screenY;
-                    if (px < view.right && px >= view.left && py < view.bottom && py >= view.top) {
+                    if (CGameLevel::PointInBounds(&view, px, py)) {
                         g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }

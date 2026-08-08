@@ -13,6 +13,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
@@ -443,7 +444,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
 
-            if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
+            if (CGameLevel::PointInBounds(&r1, x, y)) {
                 return 1;
             }
             return 0;
@@ -451,7 +452,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
+    if (CGameLevel::PointInBounds(&r1, x, y)) {
 
         if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;
@@ -486,14 +487,14 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
-            if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
+            if (CGameLevel::PointInBounds(&r1, x, y)) {
                 return 1;
             }
             return 0;
         }
         return 0;
     }
-    if (x < r1.right && x >= r1.left && y < r1.bottom && y >= r1.top) {
+    if (CGameLevel::PointInBounds(&r1, x, y)) {
 
         if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
             return 1;

@@ -3,6 +3,7 @@
 #include <Gruntz/RainCloud.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
@@ -27,10 +28,7 @@ i32 CRainCloud::HitTest(i32 a, i32 b) {
 
     CWwdGameObjectA* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
-    i32 y = obj->m_screenY;
-    i32 x = obj->m_screenX;
-    if (x < reg->m_viewBounds.right && x >= reg->m_viewBounds.left && y < reg->m_viewBounds.bottom
-        && y >= reg->m_viewBounds.top) {
+    if (CGameLevel::PointInBounds(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
         if (host->m_emitGate == 0) {
             void* out_ob = 0;

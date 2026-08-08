@@ -92,7 +92,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
             const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-            if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
+            if (CGameLevel::PointInBounds(rect, vx, vy)) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
             }
         }
@@ -111,7 +111,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (vx < rect->right && vx >= rect->left && vy < rect->bottom && vy >= rect->top) {
+                if (CGameLevel::PointInBounds(rect, vx, vy)) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                 }
             }

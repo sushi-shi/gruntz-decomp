@@ -16,6 +16,7 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -649,9 +650,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         }
         if (m_cue != NULL) {
             CWwdGameObjectA* o = m_object;
-            if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
-                && o->m_screenY < reg->m_viewBounds.bottom
-                && o->m_screenY >= reg->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
                 m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
                 reg = g_gameReg;
@@ -686,8 +685,7 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     }
     if (m_cue != NULL) {
         CWwdGameObjectA* o = m_object;
-        if (o->m_screenX < reg->m_viewBounds.right && o->m_screenX >= reg->m_viewBounds.left
-            && o->m_screenY < reg->m_viewBounds.bottom && o->m_screenY >= reg->m_viewBounds.top) {
+        if (CGameLevel::PointInBounds(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
             m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
             reg = g_gameReg;
@@ -1004,8 +1002,7 @@ i32 CInGameText::Update() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
-        if (x < reg->m_viewBounds.right && x >= reg->m_viewBounds.left
-            && y < reg->m_viewBounds.bottom && y >= reg->m_viewBounds.top) {
+        if (CGameLevel::PointInBounds(&reg->m_viewBounds, x, y)) {
             CDDrawSubMgrLeafScan* set = reg->m_world->m_soundRegistry;
             if (set->m_emitGate == 0) {
                 void* res_ob = 0;

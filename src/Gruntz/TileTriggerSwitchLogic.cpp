@@ -191,8 +191,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("GAME_PYRAMIDMOVE"));
@@ -207,8 +206,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 set = r->m_world->m_soundRegistry;
                 if (set->m_emitGate == 0) {
                     LeafCue* e = static_cast<LeafCue*>(set->Lookup("LEVEL_WATERBRIDGEMOVE"));
@@ -223,8 +221,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_WATERBRIDGEMOVE");
             }
             return;
@@ -233,8 +230,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -243,8 +239,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -253,8 +248,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             r = g_gameReg;
-            if (px < r->m_viewBounds.right && px >= r->m_viewBounds.left
-                && py < r->m_viewBounds.bottom && py >= r->m_viewBounds.top) {
+            if (CGameLevel::PointInBounds(&r->m_viewBounds, px, py)) {
                 r->m_world->m_soundRegistry->RefreshAsset("LEVEL_CRUMBLE");
             }
             return;
@@ -1309,8 +1303,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
         } else if (brickEffect == BRICKTILE_GOLD_1) {
             i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-            if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
-                && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top
+            if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, px, py)
                 && g_gameReg->m_world->m_soundRegistry->m_emitGate == 0) {
                 LeafCue* snd = static_cast<LeafCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
@@ -1344,8 +1337,7 @@ i32 CTileActionEvent::Process(CGrunt* brick) {
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (px < g_gameReg->m_viewBounds.right && px >= g_gameReg->m_viewBounds.left
-        && py < g_gameReg->m_viewBounds.bottom && py >= g_gameReg->m_viewBounds.top) {
+    if (CGameLevel::PointInBounds(&g_gameReg->m_viewBounds, px, py)) {
         CWwdGameObjectA* spr =
             g_gameReg->m_world->m_childGroup
                 ->CreateSprite(0, px, py, SORTKEY_ACTOR_BEHIND, "Particlez", 0x40003);

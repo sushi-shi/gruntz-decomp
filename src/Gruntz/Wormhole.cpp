@@ -12,6 +12,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
@@ -480,8 +481,7 @@ i32 CTeleporter::Update() {
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (x < mgr->m_viewBounds.right && x >= mgr->m_viewBounds.left
-            && y < mgr->m_viewBounds.bottom && y >= mgr->m_viewBounds.top) {
+        if (CGameLevel::PointInBounds(&mgr->m_viewBounds, x, y)) {
             (static_cast<CTriggerMgr*>(mgr->m_cmdGrid))->m_teleportWanted = 1;
         }
     }
