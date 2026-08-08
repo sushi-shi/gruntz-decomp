@@ -374,8 +374,11 @@
 0x0016e730	0x51	_$E1500976	buteglobals	src/Bute/ButeGlobals.cpp
 0x0016e790	0xe	_$E1501008	buteglobals	src/Bute/ButeGlobals.cpp
 0x0016e7a0	0x48	_$E1501024	buteglobals	src/Bute/ButeGlobals.cpp
-0x00173840	0x0	_$E48	butemgr	src/Bute/ButeMgr.cpp:1214
-0x00173dc0	0x0	_$E50	butemgr	src/Bute/ButeMgr.cpp:1231
+0x00173290	0xa	_$E46	butemgr	src/Bute/ButeMgr.cpp:1736
+0x00173840	0x1	_$E48	butemgr	src/Bute/ButeMgr.cpp:1827
+0x00173dc0	0x1	_$E50	butemgr	src/Bute/ButeMgr.cpp:1912
+0x00174330	0x1	_$E52	butemgr	src/Bute/ButeMgr.cpp:1996
+0x00174890	0x1	_$E54	butemgr	src/Bute/ButeMgr.cpp:2080
 0x00184b60	0xa	_$E1592160	debugprintf	src/Rez/DebugPrintf.cpp:28
 0x00184b70	0xa	_$E1592176	debugprintf	src/Rez/DebugPrintf.cpp:29
 0x00184b80	0xe	_$E1592192	debugprintf	src/Rez/DebugPrintf.cpp:30

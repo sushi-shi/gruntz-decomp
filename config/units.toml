@@ -1520,11 +1520,6 @@ source = "src/Gruntz/StateDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "bsecstream"
-source = "src/Bute/BSecStream.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "butetail"
 source = "src/Bute/ButeTail.cpp"
 flags = "cpp"

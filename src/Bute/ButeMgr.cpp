@@ -767,6 +767,20 @@ static const char s_strLBrack[] = "[";
 DATA(0x00213eec)
 static const char s_strRBrack[] = "]";
 
+RVA(0x00170210, 0x118)
+CButeMgr::CButeMgr() {
+    m_streamBase = 0;
+    m_errCallback = NULL;
+    m_lineNo = 0;
+    m_countLine = 1;
+    m_captureText = 0;
+    m_writeMode = 0;
+    m_encrypted = 0;
+    m_parseFailed = 0;
+    m_str108.Empty();
+    m_tagName.Empty();
+}
+
 RVA(0x00170330, 0x34)
 void CButeMgr::Init() {
     m_pos = 0;
@@ -1386,11 +1400,11 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
-// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
-// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
-// or spelling choice lands on retail's count.
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1475,11 +1489,11 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
-// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
-// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
-// or spelling choice lands on retail's count.
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1564,11 +1578,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
-// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
-// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
-// or spelling choice lands on retail's count.
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1653,11 +1667,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
-// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
-// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
-// or spelling choice lands on retail's count.
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1742,11 +1756,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 }
 
 // @early-stop
-// /Ob1 expansion-count wall, family-wide over the Set<T> block: retail expands the
-// CButeValue ctor at 3 of this function's 7 construction sites and calls the other 4;
-// cl expands 6.  The budget is per-caller and shared across callees, so no visibility
-// or spelling choice lands on retail's count.
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1789,6 +1803,9 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
 }
 
 RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
+// `delete (CString*)pValue` in the inlined ~CButeValue string arm: SetString is the
+// only caller, and it CALLS the helper instead of expanding it.
+RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
@@ -1827,16 +1844,11 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 }
 
 // @early-stop
-// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
-// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
-// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
-// so control falls through into the sibling m_tree48 lookup and the payload leaks.
-// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
-// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
-// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
-// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
-#pragma inline_depth(0)
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1918,16 +1930,11 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 }
 
 // @early-stop
-// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
-// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
-// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
-// so control falls through into the sibling m_tree48 lookup and the payload leaks.
-// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
-// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
-// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
-// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
-#pragma inline_depth(0)
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2008,16 +2015,11 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 // @early-stop
-// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
-// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
-// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
-// so control falls through into the sibling m_tree48 lookup and the payload leaks.
-// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
-// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
-// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
-// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
-#pragma inline_depth(0)
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2098,16 +2100,11 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 }
 
 // @early-stop
-// The pragma is a cl 5.0 WRONG-CODE workaround, not retail's shape: at the default
-// depth cl expands the CButeValue ctor at 6 of this function's 7 construction sites
-// and then drops both inlined ~CButeValue bodies AND the branch out of their scope,
-// so control falls through into the sibling m_tree48 lookup and the payload leaks.
-// depth(0) sends all seven sites to the out-of-line ctor/dtor - correct code, and a
-// higher score.  Retail expands 3 of 7, which no source spelling or depth reaches.
-// docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
-// docs/patterns/ob1-budget-drops-the-inlined-dtor-and-the-return.md
-// docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md
-#pragma inline_depth(0)
+// Residual /Ob1 expansion-count difference over the Set<T> block.  The nine typed
+// `delete` arms in ~CButeValue recovered most of it (the arm-merged transcription of
+// cl's folded jump table under-costed the inline callee); the remainder is the last
+// notch of front-end cost still missing from some inline callee on this path.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2151,3 +2148,6 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
 #pragma inline_depth()
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)
+// CBSecStream's inline dtor: cl emits the deleting-dtor COMDAT here because the
+// CButeMgr ctor above is what instantiates the three CBSecStream members.
+RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)

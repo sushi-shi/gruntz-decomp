@@ -1,7 +1,17 @@
 # The /Ob1 budget cutoff is a PREFIX of the call sites — no visibility choice can reach the middle
-tags: cpp:inline cpp:ctor cpp:dtor cpp:eh | asm:call | topic:wall
+tags: cpp:inline cpp:ctor cpp:dtor cpp:eh | asm:call | topic:wall topic:superseded
 symptoms: a function repeats one construct N times; retail expands the first few inline and CALLS the rest; every whole-callee visibility choice (all inline / all out of line) lands on one end of the range and never in the middle
 confidence: 9/10
+
+## *** SUPERSEDED (2026-08-08) — the middle IS reachable ***
+
+The census method below is right and still the tool to use. The **verdict** is wrong.
+Visibility cannot reach the middle; **callee front-end COST can**, and it walks the
+expansion count down one site at a time. The cost was missing because this very
+header had transcribed cl's own arm FOLD back into the source. Nine typed `delete`
+arms in `~CButeValue` took butemgr 74.4752 -> 85.3231 and `~CButeValue` 99.30 -> 100.00.
+Read [`inline-callee-frontend-cost-drives-ob1-budget`](inline-callee-frontend-cost-drives-ob1-budget.md)
+instead of the "Why the cutoff cannot be moved from source" section below.
 
 ## The census is free — read it off `insn_seq --multiset`
 

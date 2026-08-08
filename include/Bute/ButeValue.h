@@ -22,13 +22,11 @@ GZ_ENUM_END(ButeType)
 
 struct ButeIntRect {
     ButeIntRect() : a(0), b(0), c(0), d(0) {}
-    ~ButeIntRect() {}
     DWORD a, b, c, d;
 };
 SIZE(0x10);
 struct ButeIntPoint {
     ButeIntPoint() : a(0), b(0) {}
-    ~ButeIntPoint() {}
     DWORD a, b;
 };
 SIZE(0x8);
@@ -44,7 +42,6 @@ struct ButeDoubleVector : ButeRefLarge {
         y = 0;
         z = 0;
     }
-    ~ButeDoubleVector() {}
 };
 SIZE(0x18);
 
@@ -53,7 +50,6 @@ struct ButeDoubleRange {
         x = 0;
         y = 0;
     }
-    ~ButeDoubleRange() {}
     double x, y;
 };
 SIZE(0x10);
@@ -197,29 +193,41 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     return this;
 }
 
-// @early-stop
-// Jump table, arm boundaries (0x0f/0x28/0x36/0x44) and every table entry match
-// retail exactly; the three `delete` arms are a cyclic scratch-register rotation
-// (retail edx/eax/ecx, ours eax/ecx/edx).  Body pinned by RVA_COMPGEN(0x00172160)
-// in src/Bute/ButeMgr.cpp.
+// One `delete` per ButeType, each through the payload's REAL type.  Retail's arm
+// bodies prove both halves of this shape: only the BUTE_STRING arm null-tests the
+// pointer, so the other eight payload types have TRIVIAL destructors, and cl
+// tail-merges the eight identical arms back into the 4-body / 9-entry jump table
+// at 0x1721b4.  Transcribing that FOLD as four merged arms is what cost the whole
+// Set<T> family ~11 points of /Ob1 inline accounting.
+// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 inline CButeValue::~CButeValue() {
     switch (type) {
-        case BUTE_STRING:
-            delete static_cast<CString*>(pValue);
-            break;
-        case BUTE_DOUBLE:
-        case BUTE_POINT:
-            delete static_cast<double*>(pValue);
-            break;
         case BUTE_INT:
-        case BUTE_FLOAT:
-        case BUTE_VECTOR:
             delete static_cast<i32*>(pValue);
             break;
         case BUTE_DWORD:
-        case BUTE_RECT:
-        case BUTE_RANGE:
             delete static_cast<u32*>(pValue);
+            break;
+        case BUTE_DOUBLE:
+            delete static_cast<double*>(pValue);
+            break;
+        case BUTE_FLOAT:
+            delete static_cast<float*>(pValue);
+            break;
+        case BUTE_STRING:
+            delete static_cast<CString*>(pValue);
+            break;
+        case BUTE_RECT:
+            delete static_cast<ButeIntRect*>(pValue);
+            break;
+        case BUTE_POINT:
+            delete static_cast<ButeIntPoint*>(pValue);
+            break;
+        case BUTE_VECTOR:
+            delete static_cast<ButeDoubleVector*>(pValue);
+            break;
+        case BUTE_RANGE:
+            delete static_cast<ButeDoubleRange*>(pValue);
             break;
     }
 }
