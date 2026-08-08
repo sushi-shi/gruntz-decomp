@@ -296,7 +296,7 @@ sbi_statztabgruntbar	6	5
 sbi_tabzdialog_eh	2	1
 sbi_warlordhead	7	5
 sbi_wellgoo	7	5
-scattersamples	2	1
+scattersamples	2	2
 secretteleportertrigger	16	14
 serializesyncmarker	1	1
 serialobjectfactory	53	52
@@ -3715,7 +3715,7 @@ sbi_wellgoo	?Reset@CSBI_WellGoo@@UAEXXZ	100.0000	100.0000	3	2637c3619648	0x104c8
 sbi_wellgoo	?SerializeFields@CSBI_WellGoo@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	91.9324	91.9324	2	1bdf4c42567b	0xe64c0	91.9324
 sbi_wellgoo	?Setup@CSBI_WellGoo@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	87.6078	87.6078	1	8e10c7d0392f	0xe6020	87.6078
 scattersamples	?IsPrime@@YAHH@Z	100.0000	100.0000	22	633e870936e7	0x182a80	100.0000
-scattersamples	?ScatterSamples@@YAXPAHHHH@Z	76.3784	76.3784	25	f82ffeaf653f	0x182940	76.3784
+scattersamples	?ScatterSamples@@YAXPAHHHH@Z	100.0000	100.0000	26	95b60704982d	0x182940	100.0000
 secretteleportertrigger	??0CSecretLevelTrigger@@QAE@PAUCGameObject@@@Z	97.7797	97.7797	8	f2f94de18b4f	0x424b0	97.7797
 secretteleportertrigger	??0CSecretLevelTrigger@@QAE@XZ	100.0000	100.0000	8	f2f94de18b4f	0x10b20	100.0000
 secretteleportertrigger	??0CSecretTeleporterTrigger@@QAE@PAUCGameObject@@@Z	97.8760	97.8760	10	37e7b23acb48	0x41e90	97.8760
