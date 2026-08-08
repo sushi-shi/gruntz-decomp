@@ -275,6 +275,7 @@ void CFontConfig::EndInput() {
 }
 
 // @early-stop
+// residue: one eax/ecx register-name swap across the textW/provW subtraction pair.
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
@@ -284,11 +285,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (text.GetLength() == 0) {
         g_chatTextWidth = 0;
     } else {
-        RECT rc;
-        rc.left = rect->left;
-        rc.top = rect->top;
-        rc.right = rect->right;
-        rc.bottom = rect->bottom;
+        RECT rc = *rect;
         DrawTextA(hdc, text, text.GetLength(), &rc, 0x420);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
@@ -310,9 +307,14 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
 }
 
 // @early-stop
+// residue: cl parks the result in esi where retail keeps it in eax, plus the
+// DrawTextA argument-load schedule that follows from it.
 RVA(0x00022160, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
-    if (hdc != NULL) {
+    i32 ok;
+    if (hdc == NULL) {
+        ok = 0;
+    } else {
         CString text(m_inputText);
         if (GetAsyncKeyState(0x11) & 0x8000) {
             for (i32 i = 0; i < text.GetLength(); i++) {
@@ -320,10 +322,10 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
             }
         }
         i32 t;
-        if (g_frameDelta < static_cast<u32>(g_caretBlinkMs)) {
-            t = g_caretBlinkMs - g_frameDelta;
-        } else {
+        if (g_frameDelta >= static_cast<u32>(g_caretBlinkMs)) {
             t = 0;
+        } else {
+            t = g_caretBlinkMs - g_frameDelta;
         }
         g_caretBlinkMs = t;
         if (t == 0) {
@@ -341,22 +343,18 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
                 MeasureLabel(hdc, rect);
             }
             int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
-            RECT rc;
-            rc.left = rect->left;
-            rc.top = rect->top;
-            rc.right = rect->right;
-            rc.bottom = rect->bottom;
+            RECT rc = *rect;
             pDraw(hdc, text, text.GetLength(), &rc, 0x420);
-            i32 fmt = ((rc.right - rc.left) <= maxWidth) ? 0x20 : 0x22;
+            i32 fmt = ((rc.right - rc.left) > maxWidth) ? 0x22 : 0x20;
             g_lastDrawTextFormat = fmt;
             pDraw(hdc, text, text.GetLength(), rect, fmt);
             if (prev) {
                 SelectObject(hdc, prev);
             }
         }
-        return 1;
+        ok = 1;
     }
-    return 0;
+    return ok;
 }
 
 typedef enum FontItemFlag {
