@@ -354,13 +354,11 @@ CString WwdFile::GetMapBaseName(CString path) {
         i32 blen2 = strlen(g_mapNameBuf);
         if (blen2 >= 1) {
             i32 i = blen2 - 1;
-            if (i >= 0) {
-                do {
-                    if (g_mapNameBuf[i] == '\\') {
-                        break;
-                    }
-                    i--;
-                } while (i >= 0);
+            while (i >= 0) {
+                if (g_mapNameBuf[i] == '\\') {
+                    break;
+                }
+                i--;
             }
             result = &g_mapNameBuf[i + 1];
         }
