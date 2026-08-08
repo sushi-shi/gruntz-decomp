@@ -1190,7 +1190,10 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         m_rowOfsC[i] = m_surfC->m_pitch * i;
     }
 
-    mx = (m_rowCount > m_span) ? m_rowCount : m_span;
+    mx = m_span;
+    if (m_rowCount > m_span) {
+        mx = m_rowCount;
+    }
     m_lineBuf = new u8[m_surfA->m_bytesPerPixel * mx];
     return 1;
 fail:

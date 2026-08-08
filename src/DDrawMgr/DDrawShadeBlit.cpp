@@ -110,8 +110,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
 }
 
 // @early-stop
-// retail re-reads clip->top at the loop bottom; cl hoists it and pays a spill
-// slot, so the frame is 0xc against retail's 0x8 and every offset shifts.
+// Branch sequences AGREE. The residue is one frame dword: retail re-reads clip->top
+// through the parameter home at the loop bottom, cl hoists it into a spill slot, so
+// the frame is 0xc against retail's 0x8 and every [esp+N] shifts.
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
@@ -200,11 +201,7 @@ void CDDrawShadeBlit::BlitCopyForward(
                     memcpy(base, &m_rleData[pos] - bytes, bytes);
                 }
             }
-            if (x >= m_width) {
-                row++;
-                base += rowInc;
-                x = 0;
-            } else {
+            if (x < m_width) {
                 if (m_rleData[pos] & 0x80) {
                     x += m_rleData[pos] - 0x80;
                     pos++;
@@ -217,6 +214,10 @@ void CDDrawShadeBlit::BlitCopyForward(
                     x += m_rleData[pos];
                     pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
+            } else {
+                row++;
+                base += rowInc;
+                x = 0;
             }
         }
     } else if (clip->right != m_width - 1) {
@@ -230,11 +231,11 @@ void CDDrawShadeBlit::BlitCopyForward(
                 pos++;
             } else {
                 i32 bytes;
-                if (x + static_cast<i32>(m_rleData[pos]) < clip->right) {
-                    bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                } else {
+                if (x + static_cast<i32>(m_rleData[pos]) >= clip->right) {
                     i32 vis = (clip->right - x) * m_srcBpp;
                     bytes = vis < 0 ? 0 : vis;
+                } else {
+                    bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
                 }
                 memcpy(base + x * m_dstBpp, &m_rleData[pos + 1], bytes);
                 x += m_rleData[pos];
@@ -252,8 +253,9 @@ void CDDrawShadeBlit::BlitCopyForward(
 }
 
 // @early-stop
-// same hoisted clip->top as BlitCopyForward, plus retail keeps the pitch in ebp
-// across the Lock call where cl spills it: frame 0xc against retail's 0x8.
+// Retail keeps the pitch in ebp across the Lock call where cl spills it: frame 0xc
+// against retail's 0x8. One branch still unaccounted for (56 vs 55): retail threads
+// the `x < 0` edge of the clip->right arm straight into the row-advance block.
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
@@ -338,25 +340,38 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 pos++;
             } else {
                 u8* sd = &m_rleData[pos + 1];
-                i32 bytes;
-                if (x - m_rleData[pos] > clip->left) {
-                    bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                } else {
+                if (x - m_rleData[pos] <= clip->left) {
                     i32 vis = (x - clip->left) * m_srcBpp;
-                    bytes = vis < 0 ? 0 : vis;
-                }
-                u8* dbase = base + (x - clip->left) * m_dstBpp;
-                if (m_srcBpp == 1) {
-                    u8* d = dbase;
-                    while (bytes-- > 0) {
-                        *d-- = *sd++;
+                    i32 bytes = vis < 0 ? 0 : vis;
+                    u8* dbase = base + (x - clip->left) * m_dstBpp;
+                    if (m_srcBpp == 1) {
+                        u8* d = dbase;
+                        while (bytes-- > 0) {
+                            *d-- = *sd++;
+                        }
+                    } else {
+                        u16* d = Pix16(dbase);
+                        u16* sw = Pix16(sd);
+                        while (bytes-- > 0) {
+                            *d-- = *sw++;
+                            bytes--;
+                        }
                     }
                 } else {
-                    u16* d = Pix16(dbase);
-                    u16* sw = Pix16(sd);
-                    while (bytes-- > 0) {
-                        *d-- = *sw++;
-                        bytes--;
+                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
+                    u8* dbase = base + (x - clip->left) * m_dstBpp;
+                    if (m_srcBpp == 1) {
+                        u8* d = dbase;
+                        while (bytes-- > 0) {
+                            *d-- = *sd++;
+                        }
+                    } else {
+                        u16* d = Pix16(dbase);
+                        u16* sw = Pix16(sd);
+                        while (bytes-- > 0) {
+                            *d-- = *sw++;
+                            bytes--;
+                        }
                     }
                 }
                 x -= m_rleData[pos];
@@ -406,11 +421,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     }
                 }
             }
-            if (x <= 0) {
-                row++;
-                base += pitch;
-                x = m_width;
-            } else {
+            if (x > 0) {
                 if (m_rleData[pos] & 0x80) {
                     x += 0x80 - static_cast<i32>(m_rleData[pos]);
                     pos++;
@@ -434,6 +445,10 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     x -= m_rleData[pos];
                     pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
+            } else {
+                row++;
+                base += pitch;
+                x = m_width;
             }
         }
     }
