@@ -156,16 +156,37 @@ i32 CStaticHazard::LoadAttributes2() {
 }
 
 // @early-stop
+// two instruction-selection residues: retail compares the HitTestCell pointer with
+// its cached zero register (`cmp eax,ebx`) where cl emits `test eax,eax`, and it
+// forms the m_animCursor sub-object address once (`add eax,0x1a0`) where cl folds
+// 0x1a0 into both field displacements.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
     if (rem > static_cast<u32>(m_activeWindow)) {
 
-        if (m_fired == 0) {
-            goto dispatch;
-        }
-        if (m_object->m_damage != 0) {
+        if (m_fired != 0) {
+
+            if (m_object->m_damage == 0) {
+
+                m_value = m_wwdObject->m_animCursor.m_animation;
+                m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+                {
+                    CAniElement* d = m_wwdObject->m_animCursor.m_animation;
+                    CAniRecordView* e = d->m_records.GetSize() > 0
+                                            ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
+                                            : 0;
+                    m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
+                }
+                CWwdGameObjectA* o = m_object;
+                if (o->m_sortKey != 0) {
+                    o->m_sortKey = 0;
+                    o->m_flags |= 0x20000;
+                }
+                m_fired = 0;
+                return 0;
+            }
 
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("A");
@@ -185,37 +206,15 @@ i32 CStaticHazard::LoadAttributes() {
             }
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
-                grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+            i32 row = m_tileRow;
+            i32 col = m_tileCol;
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+                grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
             }
             return 0;
         }
-
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
-        {
-            CAniElement* d = m_wwdObject->m_animCursor.m_animation;
-            CAniRecordView* e = d->m_records.GetSize() > 0
-                                    ? static_cast<CAniRecordView*>(d->m_records.GetAt(0))
-                                    : 0;
-            m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
-        }
-        CWwdGameObjectA* o = m_object;
-        if (o->m_sortKey != 0) {
-            o->m_sortKey = 0;
-            o->m_flags |= 0x20000;
-        }
-        m_fired = 0;
-        return 0;
-    } else {
-
-        if (m_fired != 0) {
-            goto dispatch;
-        }
-        if (m_object->m_damage != 0) {
-            goto dispatch;
-        }
+    } else if (m_fired == 0 && m_object->m_damage == 0) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
@@ -235,9 +234,8 @@ i32 CStaticHazard::LoadAttributes() {
         return 0;
     }
 
-dispatch:
     if (m_wwdObject->m_animCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
-        i32 a = 0, b = 0;
+        i32 a, b;
         if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != NULL) {
             g_gameReg->m_cmdGrid
@@ -249,15 +247,19 @@ dispatch:
             o->m_flags |= 0x20000;
         }
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[m_tileRow][m_tileCol * 7] |= 0x8000000;
+        i32 row = m_tileRow;
+        i32 col = m_tileCol;
+        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[row][col * 7] |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+        i32 row = m_tileRow;
+        i32 col = m_tileCol;
+        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
         }
         CWwdGameObjectA* o = m_object;
         if (o->m_sortKey != 0) {
@@ -278,9 +280,11 @@ dispatch:
                 m_wwdObject->ApplyLookupSprite("LEVEL_STATICHAZARD", e->m_param);
             }
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            if (static_cast<u32>(m_tileCol) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(m_tileRow) < static_cast<u32>(grid->m_height)) {
-                grid->m_rowInts[m_tileRow][m_tileCol * 7] &= 0xf7ffffff;
+            i32 row = m_tileRow;
+            i32 col = m_tileCol;
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+                grid->m_rowInts[row][col * 7] &= 0xf7ffffff;
             }
         }
     }

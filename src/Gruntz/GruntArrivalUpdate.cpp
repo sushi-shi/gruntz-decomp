@@ -37,8 +37,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);

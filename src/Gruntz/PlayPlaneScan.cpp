@@ -145,5 +145,3 @@ i32 CPlay::ScanBuildTiles() {
     }
     return 1;
 }
-
-// @early-stop

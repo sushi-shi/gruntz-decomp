@@ -37,8 +37,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 RVA(0x000f7d90, 0x171)
 i32 CGrunt::StepPeerTracking() {
     m_defenderPx.m_x = m_lastTilePx.m_x;

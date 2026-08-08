@@ -38,12 +38,14 @@
 #include <limits.h>
 
 // @early-stop
-// Instruction count is -1 against retail; the residue is block placement - retail
-// lays the CommitNeighbor+drain arm right after the powerup block where cl parks
-// it at the end of the function.
+// Blocks agree through the powered-up arm. First divergence: the last
+// `if (m_poweredUp == 0) return 1;` of the >= STAMINA_FULL arm keeps its own exit copy
+// where retail reaches the shared one, and the post-powerup scan region is still laid
+// out differently. Re-derive with `sema disasm 0x000ecc90 --blocks --diff --lite`.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
+    bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    if (eqI) {
         return 1;
     }
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -69,39 +71,39 @@ i32 CGrunt::StepBrickLayerBehavior() {
     }
 
     if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
+        if (m_neighborValid == 0) {
+            if (m_combatActive != 0) {
+                return 1;
+            }
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && g == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+            } else {
+                if (atTarget) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+            }
+            if (m_neighborValid != 0) {
+                return 1;
+            }
+            m_entranceActive = 0;
+            m_combatActive = 0;
             m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (m_combatActive != 0) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
-                return 1;
-            }
-            if (atTarget && g == NULL) {
-                return 1;
-            }
-            if (m_poweredUp == 0) {
-                return 1;
-            }
-        } else {
-            if (atTarget) {
-                return 1;
-            }
-            if (m_poweredUp == 0) {
-                return 1;
-            }
-        }
-        if (m_neighborValid != 0) {
-            return 1;
-        }
-        m_entranceActive = 0;
-        m_combatActive = 0;
         m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 

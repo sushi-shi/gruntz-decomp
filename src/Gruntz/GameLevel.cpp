@@ -997,7 +997,6 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
     return result;
 }
 
-// @early-stop
 RVA(0x0015e4b0, 0xf7)
 i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
@@ -1011,18 +1010,20 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
     destY = ResolveCeilingCollision(t, destX, destY, moveFlags);
 
     if (moveFlags & 1) {
+        i32 coord = destX;
         i32 limit = t->m_extent.top + destY - 1;
-        if (AxisProbe(destX, limit) == TILEKIND_CLIMB) {
-            i32 mid = destX;
+        if (AxisProbe(coord, limit) == TILEKIND_CLIMB) {
             if (moveFlags & 0x10) {
-                i32 lo = destX;
-                i32 hi = destX;
-                if (ClampSpan(destX, limit, &lo, &hi) != 0) {
-                    mid = (hi + lo) / 2;
+                i32 lo = coord;
+                i32 hi = coord;
+                if (ClampSpan(coord, limit, &lo, &hi) != 0) {
+                    coord = (hi + lo) / 2;
                 }
+            } else {
+                coord = destX;
             }
             if (moveFlags & 0x10) {
-                destX = mid;
+                destX = coord;
             }
             t->m_moveMode = MOVE_CLIMBING;
         }
@@ -1033,7 +1034,6 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
     return result;
 }
 
-// @early-stop
 // @early-stop
 // instruction-exact; residue is which callee-saved register takes `this` (retail
 // edi, cl ebp) and where `push edi` lands. Writing back through `&destX` instead

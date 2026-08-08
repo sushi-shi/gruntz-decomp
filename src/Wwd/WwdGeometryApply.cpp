@@ -46,5 +46,3 @@ void CWwdGameObjectA::ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefau
         m_animCursor.Advance(g_engineFrameDelta);
     }
 }
-
-// @early-stop

@@ -295,5 +295,3 @@ i32 CSpotLight::SerializeMove(CFileMemBase* arc, SerialMode mode, LogicTypeId c,
     }
     return 1;
 }
-
-// @early-stop

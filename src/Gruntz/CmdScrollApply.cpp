@@ -172,5 +172,3 @@ i32 g_lastScrollX;
 
 DATA(0x0024cfd4)
 i32 g_lastScrollY;
-
-// @early-stop

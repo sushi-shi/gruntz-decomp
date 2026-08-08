@@ -37,8 +37,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     this->m_defenderPx.m_x = this->m_lastTilePx.m_x;

@@ -266,5 +266,3 @@ WwdRegion* CWwdGridIter::GetNext() {
 
 RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}
-
-// @early-stop

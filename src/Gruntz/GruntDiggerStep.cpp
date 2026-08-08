@@ -38,8 +38,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 // Reloc sequence is identical to retail's (29/29, in order) and the instruction
 // count is +4; the residue is that cl spills `this` to [esp+0x44] where retail
 // keeps it in ebp, so the frame is wider and every [esp+N] shifts.

@@ -3929,5 +3929,3 @@ i32 CStatusBarMgr::GetActiveValue() {
     }
     return 0;
 }
-
-// @early-stop

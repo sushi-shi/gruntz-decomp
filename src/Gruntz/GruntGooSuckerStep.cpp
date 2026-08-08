@@ -38,8 +38,6 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
@@ -62,9 +60,10 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 }
 
 // @early-stop
-// Frame is 8 bytes wider than retail (sub esp,0x88); retail also emits an OUT-OF-LINE
-// CRect(0,0,w,h) ctor call for the GRID_RECT_BOUNDS locals that cl inlines here. See
-// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
+// Blocks agree through the powered-up arm. First divergence: the last
+// `if (m_poweredUp == 0) return 1;` of the >= STAMINA_FULL arm keeps its own exit copy
+// where retail reaches the shared one, and the whole post-powerup scan region is still
+// laid out differently. Re-derive with `sema disasm 0x000f0e20 --blocks --diff --lite`.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -94,39 +93,39 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
 
     if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
+        if (m_neighborValid == 0) {
+            if (m_combatActive != 0) {
+                return 1;
+            }
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && g == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+            } else {
+                if (atTarget) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+            }
+            if (m_neighborValid != 0) {
+                return 1;
+            }
+            m_entranceActive = 0;
+            m_combatActive = 0;
             m_neighborValid = 0;
+            m_poweredUp = 0;
+            ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (m_combatActive != 0) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
-                return 1;
-            }
-            if (atTarget && g == NULL) {
-                return 1;
-            }
-            if (m_poweredUp == 0) {
-                return 1;
-            }
-        } else {
-            if (atTarget) {
-                return 1;
-            }
-            if (m_poweredUp == 0) {
-                return 1;
-            }
-        }
-        if (m_neighborValid != 0) {
-            return 1;
-        }
-        m_entranceActive = 0;
-        m_combatActive = 0;
         m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
