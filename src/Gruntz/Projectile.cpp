@@ -28,6 +28,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MotionStateSetZInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -90,13 +91,10 @@ void CMovingLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
-// Residual is inside the inlined CMovingLogic(owner): retail re-reads m_objAux before
-// each of the six bound probes, our cl keeps it live in a register across the x87 stores.
+// residue: one instruction, the vptr stamp, which cl schedules after the first
+// m_wwdObject load instead of before it.
 RVA(0x000dec60, 0x255)
-CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
-    m_gameObject = owner;
-    m_wwdObject = static_cast<CWwdGameObjectA*>(owner);
-    m_animWorker = owner->m_animWorker;
+CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
     m_wwdObject->m_flags |= 0x2000002;
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdGameObjectA* o = m_object;
