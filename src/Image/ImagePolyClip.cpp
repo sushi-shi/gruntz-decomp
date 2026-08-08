@@ -778,6 +778,10 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 }
 
 // @early-stop
+// cl CSEs `(double)dx` / `(double)dy` between the atan2 and the two fabs and
+// spills both as qwords across `fpatan` (hence the extra `sub esp,0x10`);
+// retail simply re-`fild`s the two int slots.  Block skeleton and both loops
+// agree.
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
@@ -791,31 +795,42 @@ i32 ProjectWallQuad(
 ) {
     i32 dx = x1 - x0;
     i32 dy = y1 - y0;
-    double ang = atan2(static_cast<double>(dy), static_cast<double>(dx));
-    double adx = fabs(static_cast<double>(dx));
-    double ady = fabs(static_cast<double>(dy));
-    double len = sqrt(adx * adx + ady * ady - g_c24);
-    double s = sin(ang);
-    double c = cos(ang);
-    double hw = static_cast<double>(halfWidth);
+    // atan2's arguments are (dx, dy), not (dy, dx): retail's `fpatan` takes the
+    // FIRST-loaded operand as the numerator, and it loads dx first.  g_c24 is
+    // -pi, so `ang - g_c24` is the angle turned half a revolution - it belongs
+    // to the angle, NOT to the length under the sqrt.
+    double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
+    float adx = static_cast<float>(fabs(static_cast<double>(dx)));
+    float ady = static_cast<float>(fabs(static_cast<double>(dy)));
+    float turn = static_cast<float>(ang - g_c24);
+    float len = static_cast<float>(sqrt(adx * adx + ady * ady));
+    double s = sin(turn);
+    double c = cos(turn);
+    float hw = static_cast<float>(halfWidth);
 
-    float* w = &g_rasterVtxB[0].x;
-    w[0] = static_cast<float>((-s));
-    w[1] = static_cast<float>(len);
-    w[5] = static_cast<float>(c);
-    w[6] = static_cast<float>((c + len));
+    // The quad in wall-local space, wound: (-hw/2, len) (hw/2, len) (hw/2, 0)
+    // (-hw/2, 0).  Retail reads vertex 0's x back to build vertex 1's.
+    g_rasterVtxB[0].y = len;
+    g_rasterVtxB[0].x = -(hw * g_c20);
+    g_rasterVtxB[1].y = len;
+    g_rasterVtxB[1].x = g_rasterVtxB[0].x + hw;
+    g_rasterVtxB[2].y = g_c10;
+    g_rasterVtxB[2].x = g_rasterVtxB[1].x;
+    g_rasterVtxB[3].y = g_c10;
+    g_rasterVtxB[3].x = g_rasterVtxB[0].x;
 
+    ClipVtx* v;
     for (i32 i = 0; i < 4; i++) {
-        float* v = &w[i * 7 + 1];
-        double bx = static_cast<double>(v[-1]);
-        double by = -static_cast<double>(v[0]);
-        v[-1] = static_cast<float>((bx * c * hw - by * s * hw));
-        v[0] = static_cast<float>((bx * s * hw + by * c * hw));
+        v = &g_rasterVtxB[i];
+        float bx = v->x;
+        float by = -v->y;
+        v->x = static_cast<float>((by * s - bx * c));
+        v->y = static_cast<float>((bx * s + by * c));
     }
     for (i32 j = 0; j < 4; j++) {
-        float* v = &w[j * 7 + 1];
-        v[-1] = static_cast<float>((static_cast<double>(x0) + static_cast<double>(v[-1])));
-        v[0] = static_cast<float>((static_cast<double>(y0) + static_cast<double>(v[0])));
+        v = &g_rasterVtxB[j];
+        v->x = static_cast<float>(x0) + v->x;
+        v->y = static_cast<float>(y0) + v->y;
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, clip.left, clip.top, clip.right, clip.bottom) != 0) {
