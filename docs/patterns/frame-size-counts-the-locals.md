@@ -64,10 +64,13 @@ five causes, and only the first three are source-steerable today:
 4. **The dead-PARAMETER-home coalesce** - retail homes a local in a dead parameter's
    slot and cl does not (or vice versa). Seen on `CFecFile::AddFile`,
    `CMulti::LeaveState` + `CPlay::LeaveState`, `CWarpStoneFly::Init`,
-   `FontRenderer::LayoutWrapped`, `CPlay::DrawCursorSaveUnder`'s DDSCAPS. **NOT a
-   compiler flag**: /Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave
-   the frame unchanged (measured on `CWarpStoneFly::Init`). Scope tricks, decl order,
-   CRect/CPoint spellings and writing through the parameter were all neutral or worse.
+   `FontRenderer::LayoutWrapped`, `CPlay::DrawCursorSaveUnder`'s DDSCAPS. It is **NOT a
+   compiler flag** (/Oa /Ow /Ox /Ob2 /Og /Gy /Oi- /Ot /G4 /G5 /Gf /GF /Op /Gd all leave
+   the frame unchanged) and it is **NOT** scope tricks, decl order or CRect/CPoint
+   spellings - **it is CONTROL FLOW**: a call plus an early `return` ahead of the
+   local's definition suppresses it, and inverting the guard to wrap the body restores
+   it. See [early-return-kills-the-param-home-coalesce.md](early-return-kills-the-param-home-coalesce.md)
+   - both `LeaveState` copies went 92.75 -> **100.00 EXACT** on that one change.
 5. **A promoted zero/one register** ([redundant-local-becomes-the-zero-register.md](redundant-local-becomes-the-zero-register.md))
    - `CBootyState::ShowSecretBonusMessage` (extra `push ebx`, `cmp eax,ebp` for every
    null test), `CGiantRockLogic::BuildRockBreakInGameText`.
