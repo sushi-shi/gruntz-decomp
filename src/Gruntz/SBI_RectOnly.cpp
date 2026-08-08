@@ -1872,19 +1872,21 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = SLOT_READY;
                 frame = 0x1a;
-                CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-                if (h->m_emitGate == 0) {
-                    void* spr_ob = 0;
-                    h->m_cues.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
-                    LeafCue* spr = static_cast<LeafCue*>(spr_ob);
-                    if (spr) {
-
+                CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+                if (host->m_emitGate == 0) {
+                    void* found = 0;
+                    CMapStringToPtr* map = &host->m_cues;
+                    map->Lookup("GAME_COOKINGCOMPLETE", found);
+                    if (found) {
                         i32 gate = g_sndEnabled;
                         i32 item = g_sndCueTag;
-                        if (gate != 0
-                            && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
-                            spr->m_lastPlayTime = g_killCueClock;
-                            spr->m_sound->ConfigureItem(item, 0, 0, 0);
+                        if (gate != 0) {
+                            LeafCue* p = static_cast<LeafCue*>(found);
+                            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                >= static_cast<u32>(p->m_replayDelay)) {
+                                p->m_lastPlayTime = g_killCueClock;
+                                p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            }
                         }
                     }
                 }
@@ -2605,16 +2607,18 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_cues.Lookup("GAME_CHIPFALLOUT", found);
-                        LeafCue* p = static_cast<LeafCue*>(found);
-                        if (p) {
+                        CMapStringToPtr* map = &host->m_cues;
+                        map->Lookup("GAME_CHIPFALLOUT", found);
+                        if (found) {
                             i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            if (gate != 0
-                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                       >= static_cast<u32>(p->m_replayDelay)) {
-                                p->m_lastPlayTime = g_killCueClock;
-                                p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            if (gate != 0) {
+                                LeafCue* p = static_cast<LeafCue*>(found);
+                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                    >= static_cast<u32>(p->m_replayDelay)) {
+                                    p->m_lastPlayTime = g_killCueClock;
+                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
@@ -2638,16 +2642,18 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_cues.Lookup("GAME_CHIPLAND", found);
-                        LeafCue* p = static_cast<LeafCue*>(found);
-                        if (p) {
+                        CMapStringToPtr* map = &host->m_cues;
+                        map->Lookup("GAME_CHIPLAND", found);
+                        if (found) {
                             i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            if (gate != 0
-                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                       >= static_cast<u32>(p->m_replayDelay)) {
-                                p->m_lastPlayTime = g_killCueClock;
-                                p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            if (gate != 0) {
+                                LeafCue* p = static_cast<LeafCue*>(found);
+                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                    >= static_cast<u32>(p->m_replayDelay)) {
+                                    p->m_lastPlayTime = g_killCueClock;
+                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
@@ -2719,16 +2725,18 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                     if (host->m_emitGate == 0) {
                         void* found = 0;
-                        host->m_cues.Lookup("GAME_CHIPLAND", found);
-                        LeafCue* p = static_cast<LeafCue*>(found);
-                        if (p) {
+                        CMapStringToPtr* map = &host->m_cues;
+                        map->Lookup("GAME_CHIPLAND", found);
+                        if (found) {
                             i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            if (gate != 0
-                                && g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                       >= static_cast<u32>(p->m_replayDelay)) {
-                                p->m_lastPlayTime = g_killCueClock;
-                                p->m_sound->ConfigureItem(item, 0, 0, 0);
+                            if (gate != 0) {
+                                LeafCue* p = static_cast<LeafCue*>(found);
+                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                    >= static_cast<u32>(p->m_replayDelay)) {
+                                    p->m_lastPlayTime = g_killCueClock;
+                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
@@ -2812,19 +2820,21 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         } else if (m_fallRect.bottom >= 0x1bf) {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    CDDrawSubMgrLeafScan* h = g_gameReg->m_world->m_soundRegistry;
-                    if (h->m_emitGate == 0) {
-                        void* spr_ob = 0;
-                        h->m_cues.Lookup("GAME_REZGRINDING", spr_ob);
-                        LeafCue* spr = static_cast<LeafCue*>(spr_ob);
-                        if (spr) {
-
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_emitGate == 0) {
+                        void* found = 0;
+                        CMapStringToPtr* map = &host->m_cues;
+                        map->Lookup("GAME_REZGRINDING", found);
+                        if (found) {
                             i32 gate = g_sndEnabled;
                             i32 item = g_sndCueTag;
-                            if (gate != 0
-                                && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
-                                spr->m_lastPlayTime = g_killCueClock;
-                                spr->m_sound->ConfigureItem(item, 0, 0, 0);
+                            if (gate != 0) {
+                                LeafCue* p = static_cast<LeafCue*>(found);
+                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                    >= static_cast<u32>(p->m_replayDelay)) {
+                                    p->m_lastPlayTime = g_killCueClock;
+                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                }
                             }
                         }
                     }
