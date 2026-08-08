@@ -394,6 +394,11 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 }
 
 // @early-stop
+// The TAB_RESOURCE arm is a 12-case jump table in retail (`lea eax,[ebx-0xd3];
+// cmp eax,0xb; ja; mov cl,[eax+idx]; jmp [ecx*4+tbl]` over three group bodies), not
+// the range chain written here. Writing the switch needs the twelve SBICMD_HL_*
+// enumerators, and only the six GROUP<n>_FIRST/LAST bounds are proven, so the labels
+// would have to be invented.
 RVA(0x000fe910, 0xc2c)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
@@ -417,23 +422,23 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 HiCueFind();
                 SetTabState(cmd, MENUITEM_SELECTED);
                 return 1;
-            }
-            if (cmd == SBICMD_DOCK_LEFT) {
+            } else if (cmd == SBICMD_DOCK_LEFT) {
                 HiCueFind();
                 RefreshA();
                 return 1;
-            }
-            switch (cmd) {
-                case SBICMD_DOCK_RIGHT:
-                    HiCueFind();
-                    DockStatusBarRight();
-                    return 1;
-                case SBICMD_HIDE:
-                    HiCueFind();
-                    HideRect();
-                    return 1;
-                default:
-                    return 0;
+            } else {
+                switch (cmd) {
+                    case SBICMD_DOCK_RIGHT:
+                        HiCueFind();
+                        DockStatusBarRight();
+                        return 1;
+                    case SBICMD_HIDE:
+                        HiCueFind();
+                        HideRect();
+                        return 1;
+                    default:
+                        return 0;
+                }
             }
 
         case TAB_GAME:
@@ -464,8 +469,9 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 case SBICMD_QUIT:
                     HiCueLookup();
                     if (g_gameReg->m_frameGate != 0) {
-                        g_gameReg->m_frameGate ^= 1;
-                        g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
+                        i32 flipped = g_gameReg->m_frameGate ^ 1;
+                        g_gameReg->m_frameGate = flipped;
+                        g_gameReg->FinishLevel(flipped, 1);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(1);
                     return 1;
