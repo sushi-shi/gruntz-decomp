@@ -71,6 +71,9 @@ CMenuState::~CMenuState() {
 }
 
 // @early-stop
+// residue: a 4-byte frame difference.  Retail spills the `new CChatBox` result into
+// the dead areaArg parameter slot and puts `fm` in prevStateId's; cl takes mgr's slot
+// for `fm` and allocates a fifth local for the spill, shifting every esp reference.
 RVA(0x0009fe50, 0x343)
 i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (prevStateId == 0) {
@@ -116,28 +119,30 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     rc.right = 0x27f;
     rc.bottom = 0x1df;
     m_menuTree = new CChatBox;
-    m_menuTree->Init();
 
     if (!m_menuTree->InitRegion(m_world, m_mgr->m_gameWnd->m_hwnd, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
-    if (m_menuTree->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
-        m_menuTree->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
+    CChatBox* ui = m_menuTree;
+    if (ui->ConfigureLeftCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20)) {
+        ui->ConfigureRightCursorAnimation(const_cast<char*>("MENU_CURSOR"), 0x64, 0x20);
     }
-    m_menuTree->m_row0Key = "MENU_SELECT";
-    m_menuTree->m_row1Key = "MENU_ACTIVATE";
+    ui = m_menuTree;
+    ui->m_row0Key = "MENU_SELECT";
+    ui->m_row1Key = "MENU_ACTIVATE";
 
-    LeafCue* e;
+    LeafCue* e = NULL;
     MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
     if (e != NULL) {
+        e = NULL;
         MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
         m_activateCueDurationMs = e->m_sound->m_durationMs;
     } else {
         m_activateCueDurationMs = 0;
     }
 
-    if (!BuildMainMenuTree(m_menuTree, -1)) {
+    if (!BuildMainMenuTree(m_menuTree, prevStateId)) {
         return 0;
     }
 

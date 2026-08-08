@@ -26,6 +26,11 @@ public:
     void Clear();
 
     CMenuPage* Find(const char* s);
+    // Retail's ctor body: `new CChatBox` at 0x9ff85 sets unwind state 3 after the
+    // last CString member and then calls Init() inside the same protected region.
+    CChatBox() {
+        Init();
+    }
     ~CChatBox();
     i32 AddNode(CMenuPage* node);
     i32 AttachNode(CMenuPage* n);
