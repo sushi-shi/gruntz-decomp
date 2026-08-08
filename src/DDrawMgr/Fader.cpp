@@ -364,8 +364,9 @@ void CFaderMesh::RenderFrame(i32 frame) {
     }
     for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
         RezElem40 elem = m_meshBuf.m_pData[i];
-        float t = static_cast<float>(static_cast<u32>(frame))
-                  / static_cast<float>(static_cast<u32>(GetFrameCount()));
+        u32 cur = frame;
+        u32 total = GetFrameCount();
+        float t = static_cast<float>(cur) / static_cast<float>(total);
         RECT srcRect = elem.m_startRect;
         RECT dstRect;
         RECT boundRect = elem.m_endRect;
