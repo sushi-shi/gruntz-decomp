@@ -214,31 +214,11 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
     return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
-i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
-    return 0;
-}
-
-i32 CGameWnd::HandleWindowCommand(i32, i32, i32) {
-    return 0;
-}
+RVA(0x0013d390, 0x5)
 i32 CGameWnd::OnCreate(LPARAM) {
     return 0;
 }
-i32 CGameWnd::OnMove(i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnSize(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnPaint() {
-    return 0;
-}
-i32 CGameWnd::OnChar(WPARAM, LPARAM) {
-    return 0;
-}
-i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
-    return 0;
-}
+
 RVA(0x0013d3a0, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>((wParam >> 16));
@@ -253,6 +233,36 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     return m_owner->m_gameMgr
                ->HandleCommand(notifyCode, static_cast<GruntzCommandId>(cmdId), lParam)
            != 0;
+}
+
+RVA(0x0013d410, 0x5)
+i32 CGameWnd::OnMove(i32, i32) {
+    return 0;
+}
+
+RVA(0x0013d420, 0x5)
+i32 CGameWnd::OnSize(WPARAM, i32, i32) {
+    return 0;
+}
+
+RVA(0x0013d430, 0x3)
+i32 CGameWnd::OnPaint() {
+    return 0;
+}
+
+RVA(0x0013d440, 0x5)
+i32 CGameWnd::OnChar(WPARAM, LPARAM) {
+    return 0;
+}
+
+RVA(0x0013d450, 0x5)
+i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
+    return 0;
+}
+
+RVA(0x0013d460, 0x5)
+i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
+    return 0;
 }
 
 RVA(0x0013d470, 0x12)

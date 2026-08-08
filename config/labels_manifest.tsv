@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 342  functions: 4516
+# units: 342  functions: 4529
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -119,8 +119,8 @@ gameobjectfactory	1
 gamesave	1
 gamestaterecordload	1
 gametext	1
-gamewnd	10
-gamewndcomdats	5
+gamewnd	17
+gamewndcomdats	10
 glyphstr	5
 goowellmgr	1
 grunt	31
@@ -166,7 +166,7 @@ grunttubeanim	1
 gruntvoice	22
 gruntwanderstep	1
 gruntwingztimesprite	5
-gruntzapp	13
+gruntzapp	14
 gruntzcmdmgr	46
 gruntzmapmgr	3
 gruntzmgr	178

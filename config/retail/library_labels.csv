@@ -346,7 +346,6 @@ rva,name,lib,confidence,source
 0x080760,__inc,LIBCMT,LOW,anchored
 0x0807b0,__inc,LIBCMT,LOW,anchored
 0x080800,__inc,LIBCMT,LOW,anchored
-0x080db0,__fpclear,LIBCMT,LOW,anchored
 0x080e20,__inc,LIBCMT,LOW,anchored
 0x080e70,__inc,LIBCMT,LOW,anchored
 0x080ec0,__inc,LIBCMT,LOW,anchored
@@ -1568,7 +1567,6 @@ rva,name,lib,confidence,source
 0x132c30,_copy_environ,LIBCMT,HIGH,anchored
 0x139dd0,__inc,LIBCMT,LOW,anchored
 0x139ed0,__inc,LIBCMT,LOW,anchored
-0x13d430,___init_collate,LIBCMT,LOW,anchored
 0x154a30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x161560,??1CObject@@UAE@XZ,NAFXCW,HIGH,object-unwind-inlinee
 0x169030,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

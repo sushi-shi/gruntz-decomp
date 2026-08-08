@@ -139,8 +139,8 @@ gameobjectfactory	1	1
 gamesave	1	1
 gamestaterecordload	1	0
 gametext	1	1
-gamewnd	10	10
-gamewndcomdats	5	5
+gamewnd	17	17
+gamewndcomdats	10	10
 glyphstr	5	5
 goowellmgr	1	0
 grunt	30	11
@@ -186,7 +186,7 @@ grunttubeanim	1	0
 gruntvoice	22	19
 gruntwanderstep	1	0
 gruntwingztimesprite	4	3
-gruntzapp	13	13
+gruntzapp	14	14
 gruntzcmdmgr	46	41
 gruntzmapmgr	3	2
 gruntzmgr	155	141
@@ -1920,16 +1920,28 @@ gamewnd	?CreateAndShow@CGameWnd@@QAEHPAUtagCREATESTRUCTA@@PAVCGameApp@@@Z	100.00
 gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	8	1443a78bb248	0x13cfb0	100.0000
 gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	100.0000	100.0000	12	1f66f1dda51b	0x13cff0	100.0000
 gamewnd	?OnActivateApp@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	6	a614e7287f08	0x13d470	100.0000
+gamewnd	?OnChar@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	44eed7b6f996	0x13d440	100.0000
 gamewnd	?OnClose@CGameWnd@@UAEHXZ	100.0000	100.0000	3	c369ef3fa202	0x13d4c0	100.0000
 gamewnd	?OnCommand@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	6	aad908ab1e87	0x13d3a0	100.0000
+gamewnd	?OnCreate@CGameWnd@@UAEHJ@Z	100.0000	100.0000	1	9b207f71a2d8	0x13d390	100.0000
+gamewnd	?OnKeyDown@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	7398d44d5891	0x13d450	100.0000
+gamewnd	?OnMove@CGameWnd@@UAEHHH@Z	100.0000	100.0000	1	6c1607bdbaf9	0x13d410	100.0000
+gamewnd	?OnPaint@CGameWnd@@UAEHXZ	100.0000	100.0000	1	185c3433957e	0x13d430	100.0000
+gamewnd	?OnSize@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	35a9f87b480c	0x13d420	100.0000
+gamewnd	?OnSysKeyDown@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	893f7adbd35c	0x13d460	100.0000
 gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	3	ec164a67264b	0x13d4e0	100.0000
 gamewnd	?PumpMessagesRange@CGameWnd@@QAEXIIH@Z	100.0000	100.0000	1	4d345e2f53cd	0x13d530	100.0000
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	8	db409a40cc22	0x13d490	100.0000
+gamewndcomdats	?HandleWindowCommand@CGameWnd@@UAEHHHH@Z	100.0000	100.0000	1	9bd870b19b43	0x94c60	100.0000
 gamewndcomdats	?OnKeyUp@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	3d474891f576	0x94c80	100.0000
 gamewndcomdats	?OnLButtonDblClk@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	f74105780cf3	0x94d40	100.0000
+gamewndcomdats	?OnLButtonDown@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	643d009e4390	0x94ca0	100.0000
 gamewndcomdats	?OnLButtonUp@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	011ee0c8f87e	0x94ce0	100.0000
+gamewndcomdats	?OnMouseMove@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	f893f2d1d130	0x94d20	100.0000
+gamewndcomdats	?OnRButtonDblClk@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	2759b6d8f9ab	0x94d60	100.0000
 gamewndcomdats	?OnRButtonDown@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	5994c847c9e2	0x94cc0	100.0000
 gamewndcomdats	?OnRButtonUp@CGameWnd@@UAEHIHH@Z	100.0000	100.0000	1	7c09218811cb	0x94d00	100.0000
+gamewndcomdats	?PreDispatchMessage@CGameWnd@@UAEHIIJ@Z	100.0000	100.0000	1	a736b679e4f3	0x94c40	100.0000
 glyphstr	?DrawGlyphString@@YAHPAVCDDrawSurfaceMgr@@HHPBDPAVCDDrawWorker@@H@Z	100.0000	100.0000	6	015d4a600c6c	0x115220	100.0000
 glyphstr	?EngStr_DrawText@@YAHPAVCDDrawSurfaceMgr@@PAVCString@@PAUtagRECT@@HHHHHH@Z	100.0000	100.0000	2	ae2a61585706	0x115440	100.0000
 glyphstr	?LayerBlitFrame@@YAHPAVCDDrawSurfaceMgr@@PAVCImage@@HHHH@Z	100.0000	100.0000	3	8e70f80bf436	0x115300	100.0000
@@ -2194,6 +2206,7 @@ gruntzapp	?HandleCommand@CGruntzApp@@UAEHHW4GruntzCommandId@@H@Z	100.0000	100.00
 gruntzapp	?Init@CGruntzApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	2	642ebe91fc86	0x80930	100.0000
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@@XZ	100.0000	100.0000	1	5d601d3eaff0	0x80a20	100.0000
 gruntzapp	?InitializeGameWindow@CGruntzApp@@UAEPAVCGameWnd@@XZ	100.0000	100.0000	1	34bcde63445b	0x809a0	100.0000
+gruntzapp	?ShowError@CGameApp@@UAEXXZ	100.0000	100.0000	1	cpp:0fe9be8fd34c	0x80db0	100.0000
 gruntzapp	?ShowError@CGruntzApp@@UAEXXZ	100.0000	100.0000	14	13953cf8849a	0x80ac0	100.0000
 gruntzapp	?ShowMessage@CGruntzApp@@QAEXPBDPAUHWND__@@@Z	100.0000	100.0000	2	659e31b7b85f	0x80c00	100.0000
 gruntzcmdmgr	??1CGruntzCmdMgr@@QAE@XZ	100.0000	100.0000	2	e2bc73efff6f	0x85bd0	100.0000
