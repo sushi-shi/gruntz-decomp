@@ -31,26 +31,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj), CWapX(obj) {
     m_objAux->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
 }
 
-static inline i32 RegisterActionName() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* nodes = g_typeColl.Slots();
-        while (cnt-- != 0) {
-            if (nodes != NULL) {
-                nodes->CString::CString();
-            }
-            nodes++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-    return id;
-}
-
 typedef i32 (CUserLogic::*CActHandler)();
 
 RVA(0x000ade60, 0x102)
@@ -65,7 +45,7 @@ void CMenuSparkle::FireActivation(i32 coord) {
 
 RVA(0x000adfc0, 0x18d)
 void RegisterMenuSparkleActions() {
-    i32 id = RegisterActionName();
+    ACT_NAME_ID(id, "A")
     *CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CMenuSparkle::AdvanceAnim);
 }

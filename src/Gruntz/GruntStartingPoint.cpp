@@ -64,22 +64,7 @@ void CGruntStartingPoint::FireActivation(i32 coord) {
 
 RVA(0x0003e300, 0x18d)
 void ActReg4RegisterType() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* nodes = g_typeColl.Slots();
-        while (cnt-- != 0) {
-            if (nodes != NULL) {
-                nodes->CString::CString();
-            }
-            nodes++;
-        }
-        (*slot) = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
 
     *R4Lookup(id) = static_cast<CActHandler>(&CGruntStartingPoint::Idle);
 }

@@ -138,22 +138,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // @early-stop
 RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* nodes = g_typeColl.Slots();
-        while (cnt-- != 0) {
-            if (nodes != NULL) {
-                nodes->CString::CString();
-            }
-            nodes++;
-        }
-        (*slot) = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
 
     *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }

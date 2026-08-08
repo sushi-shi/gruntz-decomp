@@ -67,22 +67,7 @@ void CActionArea::FireActivation(i32 coord) {
 
 RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* nodes = g_typeColl.Slots();
-        while (cnt-- != 0) {
-            if (nodes != NULL) {
-                nodes->CString::CString();
-            }
-            nodes++;
-        }
-        (*slot) = "A";
-        g_typeCounter++;
-    }
+    ACT_NAME_ID(id, "A")
 
     *R3Lookup(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }

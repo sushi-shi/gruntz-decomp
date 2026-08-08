@@ -41,26 +41,6 @@ static inline CActHandler* PartLookup(i32 coord) {
     return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
 }
 
-static inline i32 RegisterActionName() {
-    i32 id = ActFindId("A");
-    if (id == 0) {
-        ActInsertId("A", g_typeCounter);
-        id = g_typeCounter;
-        CString* slot = ActNameLookup(g_typeCounter);
-        i32 cnt = g_typeColl.m_grown;
-        CString* nodes = g_typeColl.Slots();
-        while (cnt-- != 0) {
-            if (nodes != NULL) {
-                nodes->CString::CString();
-            }
-            nodes++;
-        }
-        *slot = "A";
-        g_typeCounter++;
-    }
-    return id;
-}
-
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
@@ -343,7 +323,7 @@ void CExplosion::FireActivation(i32 id) {
 
 RVA(0x000474b0, 0x18d)
 void RegisterExplosionActions() {
-    i32 id = RegisterActionName();
+    ACT_NAME_ID(id, "A")
     *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CExplosion::Update);
 }
