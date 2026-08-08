@@ -2510,14 +2510,14 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 // @early-stop
-// Register allocation: retail spills the 0x1c-stride byte offset to the stack and
-// gives the freed register to the scan cursor; cl keeps the offset in ebp.
+// Retail spills the strength-reduced grid byte offset and gives ebp to cx; cl does
+// the reverse, so retail's frame carries one extra local (0x20 vs 0x1c).
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     rect.left = cx - halfW;
-    rect.right = cx + halfW;
     rect.top = cy - halfH;
+    rect.right = cx + halfW;
     rect.bottom = cy + halfH;
     CGrunt* best = 0;
     i32 bestDist = INT_MAX;
@@ -2535,8 +2535,8 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             }
             CGameObject* lvl = u->m_object;
             POINT wpt;
-            wpt.x = lvl->m_screenX >> TILE_SHIFT_PX;
             wpt.y = lvl->m_screenY >> TILE_SHIFT_PX;
+            wpt.x = lvl->m_screenX >> TILE_SHIFT_PX;
             if (!PtInRect(&rect, wpt)) {
                 continue;
             }
