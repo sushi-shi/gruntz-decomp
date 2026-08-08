@@ -16,6 +16,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Wap32/ZVec.h>
 
 #include <stddef.h>

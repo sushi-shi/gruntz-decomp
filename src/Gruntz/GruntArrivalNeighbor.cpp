@@ -87,11 +87,7 @@ i32 CGrunt::ResolveArrivalNeighbor() {
     if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
         return 1;
     }
-    CommitNeighbor(
-        occ->m_tileOwnerHi,
-        occ->m_tileOwnerLo,
-        occ->m_lastTilePx.m_x,
-        occ->m_lastTilePx.m_y
-    );
+    Coord tile = occ->m_lastTilePx;
+    CommitNeighbor(occ->m_tileOwnerHi, occ->m_tileOwnerLo, tile.m_x, tile.m_y);
     return 1;
 }

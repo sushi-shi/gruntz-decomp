@@ -622,8 +622,7 @@ RVA(0x0016e100, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
     u32 n = static_cast<u32>(nbits);
     if (n > 0x20) {
-        i32 nwords =
-            static_cast<i32>((n >> BITARRAY_WORD_SHIFT) + ((n & BITARRAY_BIT_MASK) != 0 ? 1u : 0u));
+        i32 nwords = static_cast<i32>((n >> BITARRAY_WORD_SHIFT) + ((n & BITARRAY_BIT_MASK) != 0));
         m_capacity = nwords;
         u32* band = static_cast<u32*>(malloc(nwords * 4));
         m_words = band;

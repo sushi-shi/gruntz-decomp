@@ -61,6 +61,28 @@ an inline out-parameter accessor (`GetPos(&p)`), the same returning the pointer,
 inline fillers; a by-value struct argument to an out-of-line callee in first and middle
 position, with and without the fields read afterwards; and passing by value to an inline
 that uses it. **cl deleted the local in every one.**
+**TU STATE IS ALSO RULED OUT (2026-08-08).** The one axis the source probes could not
+reach - the TU declaration count that re-colours other functions
+([declaration-count-window-steers-regalloc.md](declaration-count-window-steers-regalloc.md))
+- is dead flat here. 50 `tu_state_*` island cells per function
+(`match_variants --families "" --state-trials 60`), across all ten families:
+
+| fn | rva | cells | result |
+|---|---|---|---|
+| `CTriggerMgr::NotifyCell` | 0x79fb0 | 50 | 50/50 identical at 85.892 |
+| `CTriggerMgr::ToggleRegionA` | 0x7d450 | 50 | 50/50 identical at 79.133 |
+| `CGrunt::ResolveArrivalNeighbor` | 0xf26f0 | 50 | 50/50 identical at 86.608 |
+
+A user-declared `Coord` copy ctor was re-tried on the live tree and does not even build -
+it makes `Coord` non-POD and `GruntWanderStep.cpp:257` then fails C2362 (`goto ph1` skips
+the initialization of `cp`), which is itself weak evidence that retail's `Coord` was a POD.
+
+One real gain came out of the re-audit: in `ResolveArrivalNeighbor` the local was copied
+and then IGNORED, with `CommitNeighbor` re-reading `occ->m_lastTilePx` - passing
+`tile.m_x, tile.m_y` instead took it 81.10 -> 86.61 (size 222 -> 237, retail 262). The
+local is still elided; the remaining 25 bytes are the frame and the two stores.
+
+## Cost, so you can budget
 
 Exactly three things keep the frame, and each is refuted by retail's own bytes:
 

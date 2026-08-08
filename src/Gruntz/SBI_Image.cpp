@@ -17,6 +17,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>

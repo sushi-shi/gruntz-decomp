@@ -335,7 +335,7 @@ triggermgr	49	28
 triggermgrgrid	18	9
 triggermgrhittest	6	4
 trirecordserialize	1	1
-typekeycoll	37	31
+typekeycoll	37	30
 ufo	7	6
 uncompr	1	1
 userlogic	18	16
@@ -1961,7 +1961,7 @@ grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	33.3863	33.3863	7	04a624c1098b	0x4b3
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	67.8148	67.8148	33	e2653daab383	0x4c170
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320
 grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9994	79.9976	7	01c0b43185e3	0x5d210
-gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	81.1013	80.9747	7	e8bcdb96d41f	0xf26f0
+gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670
 gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	70.4190	62.1496	25	4a6ca85d5428	0xf0130
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	90.5684	89.7982	6	b1d4fb79781d	0x60150
@@ -3526,7 +3526,7 @@ savegamedialogs	?SaveGameDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	2fb
 savegamedialogs	?SetSaveSlotDialogName@@YAXPAUHWND__@@PAXPAUSaveSlot@@@Z	100.0000	100.0000	2	7fdf7f60b484	0xe4850
 savescreenshot	?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	96.7564	96.7564	3	acf8e65b383e	0x114ff0
 sbi_image	?Refresh@CSBI_Image@@UAEHH@Z	100.0000	100.0000	1	5a3e4e512f95	0xe6db0
-sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	74.0357	7	2717dd6d36a6	0xe6dd0
+sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	74.0714	7	2717dd6d36a6	0xe6dd0
 sbi_image	?Reset@CSBI_Image@@UAEXXZ	100.0000	100.0000	2	a5bb981d51af	0xe6d90
 sbi_image	?SerializeFields@CSBI_Image@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	84.9697	84.9697	1	2b6541e48f45	0xe6e40
 sbi_image	?SetupImage@CSBI_Image@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	100.0000	100.0000	2	d826137557be	0xe6c80
@@ -4303,7 +4303,7 @@ typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	77.9734	77.9734	4	dc53de579926	0x16da80
 typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	89.9948	89.9948	7	7121e3cd4271	0x16db90
 typekeycoll	?ProjTypeXfer@@YAHPAVCUserLogic@@@Z	100.0000	100.0000	4	540f2bf0a670	0x16e4f0
 typekeycoll	?Set@CVariantSlot@@QAEXPAX0H@Z	100.0000	100.0000	3	5812d1c47fff	0x16d850
-typekeycoll	?SetSize@zBitVec@@QAEHH@Z	100.0000	100.0000	5	c41ba3a10d0a	0x16e100
+typekeycoll	?SetSize@zBitVec@@QAEHH@Z	100.0000	85.2979	6	3c82c9c689ba	0x16e100
 typekeycoll	?TmErrorHandler@@YAXPADH@Z	100.0000	100.0000	6	5c80ae3c88de	0x16e220
 typekeycoll	_FirstDiffBit	100.0000	100.0000	1	2b62c6cedb7b	0x16e480
 typekeycoll	_LogicAttackFactory	100.0000	100.0000	1	971328b83139	0x16e4d0
