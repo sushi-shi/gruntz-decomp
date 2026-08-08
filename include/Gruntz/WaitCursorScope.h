@@ -20,5 +20,6 @@ public:
         afxCurrentWinApp->EndWaitCursor();
     }
 };
+SIZE(0x1);
 
 #endif // GRUNTZ_GRUNTZ_WAITCURSORSCOPE_H
