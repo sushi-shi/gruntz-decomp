@@ -497,16 +497,15 @@ RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc);
     m_previousFrame = 0;
-    CDDSurface* s = d->m_targetSurface;
-    if (s == NULL) {
-        s = m_timerA;
+    if (d->m_targetSurface == NULL) {
+        m_surface = m_timerA;
+    } else {
+        m_surface = d->m_targetSurface;
     }
-    m_surface = s;
-    CDDSurface* b = d->m_sourceSurface;
-    if (b == NULL) {
+    if (d->m_sourceSurface == NULL) {
         m_dstSurface = m_timerB;
     } else {
-        m_dstSurface = b;
+        m_dstSurface = d->m_sourceSurface;
     }
     m_lightGate = d->m_clearMode;
     m_centerX = d->m_centerX;
