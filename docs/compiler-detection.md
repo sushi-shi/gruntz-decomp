@@ -29,8 +29,8 @@ XOR key `0x32022d89`; `DanS` at file offset 0x80, `Rich` at 0xA8. Entries
 
 | prodID        | build | count | meaning (see section 2)                |
 |---------------|-------|-------|----------------------------------------|
-| 0x0013 (19)   | 8034  | 12    | **Linker 5.12** (prodidLinker512)      |
-| 0x0000 (0)    | 0     | 1057  | Unknown / import bucket (prodidImport0)|
+| 0x0013 (19)   | 8034  | 12    | **DX6 SDK import libs** (see item 2)   |
+| 0x0000 (0)    | 0     | 1057  | every input obj with no `@comp.id`     |
 | 0x0006 (6)    | 1668  | 1     | **cvtres 5.00** (prodidCvtres500)      |
 
 **IMPORTANT CORRECTION to the brief.** The brief described the 12-count
@@ -149,13 +149,18 @@ And the decisive provenance comment block in `comp_id.txt`:
    C++ 5.0 Service Pack 3** specifically. cvtres was *not* updated after the SP,
    so a SP3-or-later VC5 toolchain produces exactly cvtres 1668.
 
-2. **Linker prodID 0x13 build 8034 -> "Linker 5.12" (Linker512).** [prodID
-   CONFIRMED by 4 DBs]. richprint labels build 8034 as `5.12 build 8034 (Likely
-   Libs)`. The `(Likely Libs)` annotation means the table author mostly saw this
-   exact build stamp coming in via static-library objects rather than from a
-   freshly-run link of a normal project — i.e. the build number is real but its
-   precise retail provenance is less pinned than cvtres. [INFERRED meaning of
-   the annotation.]
+2. **Linker prodID 0x13 build 8034 is NOT the linker — it is the DirectX 6 SDK
+   import libraries.** [RESOLVED 2026-08-08, empirically.] Our own candidate
+   EXE, linked by our `link.exe` 5.10.7303, carries the **identical record**
+   (`0x0013 / 8034 / count 12`). Its source is `dx/Lib`: every member of
+   `ddraw.lib` (28), `dsound.lib` (9), `dplayx.lib` (10) and `d3dim.lib` (18)
+   carries `@comp.id = 0x00131f62`, while `dinput.lib`, `d3drm.lib` and
+   `dxguid.lib` carry none. Count 12 is the number of DX import members actually
+   pulled in, and it is the same 12 in both binaries. That is precisely what
+   richprint's `(Likely Libs)` annotation is telling you — the stamp arrives via
+   library objects, not from the link. The 5.10-vs-5.12 "discrepancy" below is
+   therefore not a discrepancy at all; there is only one linker here and it is
+   ours.
 
 3. **PE optional-header linker version 5.10** [CONFIRMED locally] is consistent
    with the VC++ 5.0 SP3 linker, which self-reports `link 5.10.7303` (per
@@ -165,7 +170,11 @@ And the decisive provenance comment block in `comp_id.txt`:
    linker family. The 5.10 vs 5.12 discrepancy is a known quirk of how the
    prodID enumeration names linker variants and is not a contradiction.
 
-### Ambiguity to flag  [UNCONFIRMED bits]
+### Ambiguity to flag  [RESOLVED — kept for the record]
+- The 8034-vs-7303 puzzle below is **answered by item 2 above**: build 8034 is
+  the DX6 SDK's library stamp, not a linker version, so there was never a newer
+  linker to explain. The reasoning is preserved because the conclusion it
+  reached (SP3-era) was right for the wrong reason.
 - VC++ 5.0 RTM linker = `5.10.7303` (build 7303). Our Rich build is **8034**,
   higher than 7303. So the LINKER that stamped this file is newer than RTM —
   consistent with an SP3+ linker, but 8034 does not equal the canonical 7303
