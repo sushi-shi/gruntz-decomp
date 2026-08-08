@@ -2491,7 +2491,7 @@ gruntzwnd	?OnPaint@CGruntzWnd@@UAEHXZ	100.0000	100.0000	1	6c6c11c1ba65	0x94bc0	1
 gruntzwnd	?OnRButtonDblClk@CGruntzWnd@@UAEHIHH@Z	100.0000	100.0000	2	a1410613a68b	0x94ae0	100.0000
 gruntzwnd	?OnRButtonDown@CGruntzWnd@@UAEHIHH@Z	100.0000	100.0000	2	8d45baf98e16	0x94a20	100.0000
 gruntzwnd	?OnRButtonUp@CGruntzWnd@@UAEHIHH@Z	100.0000	100.0000	2	f3df7a5718e9	0x94a60	100.0000
-gruntzwnd	?PreDispatchMessage@CGruntzWnd@@UAEHIIJ@Z	98.1944	98.1944	8	b6722d80ceb8	0x94790	98.1944
+gruntzwnd	?PreDispatchMessage@CGruntzWnd@@UAEHIIJ@Z	98.1944	98.1944	9	0e494596f3b6	0x94790	98.1944
 guardpoint	??0CGuardPoint@@QAE@PAUCGameObject@@@Z	99.6818	99.6818	7	689f8b239c39	0xae5f0	99.6818
 guardpoint	??1CGuardPoint@@UAE@XZ	100.0000	100.0000	2	5f60f2822a55	0x10410	100.0000
 guardpoint	??_GCGuardPoint@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d2465f07ba52	0x103e0	100.0000

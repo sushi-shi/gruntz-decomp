@@ -39,14 +39,13 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
             if (wParam == SC_KEYMENU) {
                 return 1;
             }
-            BOOL(WINAPI * isIconic)(HWND) = IsIconic;
             i32 mm = wParam & 0xfff0;
             if (mm == SC_SCREENSAVE || mm == SC_MONITORPOWER) {
-                if (!isIconic(m_hwnd)) {
+                if (!IsIconic(m_hwnd)) {
                     return 1;
                 }
             }
-            if (!isIconic(m_hwnd)) {
+            if (!IsIconic(m_hwnd)) {
                 break;
             }
             if (NetLobby::g_curDlg == NULL) {
