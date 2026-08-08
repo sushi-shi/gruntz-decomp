@@ -39,10 +39,17 @@ under-reports at the epilogue.
 differently shaped and the positional pairing is meaningless; a 30-branch function with
 11 flips is telling you the reconstruction is wrong, not that a comparison is signed.
 
-**A truncated stream is not a clean result.** llvm-objdump disassembles linearly, and a
-jump table embedded in `.text` after an indirect `jmp` decodes as garbage. `first_bad()`
-finds where that starts; `branches()` stops there so the list it returns is a reliable
-PREFIX, and callers must say so rather than printing a short list that looks complete.
+**A jump table is not a branch.** llvm-objdump disassembles linearly, and a jump table
+embedded in `.text` after an indirect `jmp` decodes as instructions - including `ja`/`je`,
+which invent branches out of nowhere. It is ASYMMETRIC: on the base side each table entry
+carries a DIR32 relocation and prints as a reloc row the parser skips, while the delinked
+target packs raw addresses that disassemble as code. So the target reads MORE branches
+than the base on every switch function - `_EngStr_RenderText` 6 against 9,
+`CSpriteRef::Build` 1 against 3, `CPlay::LoadCursorSprites` 48 against 51, all of them
+phantoms. `table_stop()` cuts at the last `ret` (MSVC5 parks the table at the end of the
+COMDAT) whenever the function contains an indirect `jmp`, and `code_stop()` combines that
+with `first_bad()`. Only a `first_bad` BEFORE the table is a real truncation - a switch
+function is a clean result and must not be excluded from the sweep.
 
 **A hit is a lead, not a verdict.** cl picks the branch polarity that suits its block
 layout, so a POLARITY row can be pure codegen preference (see
@@ -199,6 +206,39 @@ def first_bad(insns):
     return None
 
 
+def table_stop(insns):
+    """Offset where a switch's trailing JUMP TABLE begins, or None.
+
+    `first_bad` only catches a table whose bytes happen to decode as `(bad)`. Plenty
+    decode as perfectly plausible instructions instead - and among them, as CONDITIONAL
+    BRANCHES, which then inflate the target side's branch count out of nowhere. The
+    asymmetry is the delinker's: on the BASE side each 4-byte table entry carries a DIR32
+    relocation, so llvm-objdump prints it as a reloc row this module's parser skips,
+    while the delinked target packs raw absolute addresses that disassemble as code.
+    `_EngStr_RenderText` read 6 branches against 9 and `CSpriteRef::Build` 1 against 3,
+    all six of the extra "branches" being table bytes.
+
+    MSVC5 parks the table at the END of the function's COMDAT, so everything past the
+    last `ret` is data. Gated on the function actually containing an indirect `jmp` so a
+    body that legitimately ends in a tail jump is never truncated.
+    """
+    if not any(mn.startswith("jmp") and "*" in op for _, mn, op in insns):
+        return None
+    last = None
+    for off, mn, _ in insns:
+        if mn.startswith("ret"):
+            last = off
+    if last is None or insns[-1][0] <= last:
+        return None
+    return last + 1
+
+
+def code_stop(insns):
+    """The earliest of `first_bad` and `table_stop` - where real code ends."""
+    stops = [s for s in (first_bad(insns), table_stop(insns)) if s is not None]
+    return min(stops) if stops else None
+
+
 def branches(insns, stop=None):
     """The ordered conditional-branch list: [(offset, mnemonic, target|None)].
 
@@ -296,12 +336,21 @@ def compare(bi, ti, max_flips=4):
               [(index, base_block, target_block)] for topology
       nbr     branch count (both sides agree whenever status is not 'struct')
       rets    (base, target)
-      trunc   (base_offset|None, target_offset|None) - the stream truncation points
+      trunc   (base_offset|None, target_offset|None) - where the stream stopped decoding
+              real CODE. A `table_stop` boundary is not a truncation: the code region
+              before it is complete, so a switch function is a clean result and must not
+              be excluded from the sweep the way an undecodable body is.
     """
-    bstop, tstop = first_bad(bi), first_bad(ti)
+    bstop, tstop = code_stop(bi), code_stop(ti)
     bb, tb = branches(bi, bstop), branches(ti, tstop)
+
+    def bad_before(insns, stop):
+        at = first_bad(insns)
+        return at if at is not None and (stop is None or at < stop) else None
+
     res = {"kind": None, "rows": [], "nbr": len(bb), "nbr_t": len(tb),
-           "rets": (rets(bi, bstop), rets(ti, tstop)), "trunc": (bstop, tstop)}
+           "rets": (rets(bi, bstop), rets(ti, tstop)),
+           "trunc": (bad_before(bi, table_stop(bi)), bad_before(ti, table_stop(ti)))}
     if len(bb) != len(tb):
         res["status"] = "struct"
         return res

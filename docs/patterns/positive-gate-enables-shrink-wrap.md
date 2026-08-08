@@ -322,11 +322,27 @@ Same family: `CMulti::WaitForOtherPlayers` @0xbb700 4→3, 75.04 → **80.47**;
 control-flow bug the count exposed: retail runs the held-flag tail on the probe MISS of both
 arms, so it is not an `else`).
 
-### The INVERSE direction (`b_ret < t_ret`) is a WALL — do not spend a session on it
+### The INVERSE direction (`b_ret < t_ret`) — CHECK THE RETURN TYPE FIRST, then it is a wall
 
 Everything above is for `b_ret > t_ret` (we duplicate an exit retail merges). The mirror —
-**retail has MORE epilogues than we do** — is not source-steerable, because cl5 tail-merges
-identical epilogues regardless of where the source puts the block.
+**retail has MORE epilogues than we do** — is not source-steerable *once the signature is
+right*, because cl5 tail-merges identical epilogues regardless of where the source puts the
+block. But the signature is the thing to check first, and on the two worked cases below it
+was wrong on one of them.
+
+**Refuted 2026-08-08 for `EngStr_DrawText` and friends.** The three functions this section
+listed as the wall's second instance were a `void` reconstruction of an `int` function. Their
+guards are `return 0;` where eax already holds the just-tested NULL, and their success path is
+`return EngStr_RenderText(...)` — a callee's result, so NO constant is materialised anywhere
+and the disassembly of the `int` function is indistinguishable from a `void` one. Declared
+`void`, the empty returns cross-jump; declared `i32`, all three are byte-exact.
+0x115440 / 0x1154b0 / 0x115520 **94.29 -> 100.00 EXACT** each, and `SaveFrontBufferShotImpl`
+@0x114f00 **87.69 -> 100.00** on the identical flip. Sweep the tree for the rest with
+`python -m gruntz.audit.void_return_type`; the mechanism is
+[void-return-collapses-the-guard-ret](void-return-collapses-the-guard-ret.md).
+
+So `rets N -> N+1` is *diagnosed, not actionable* only AFTER the declared return type has been
+checked against the call sites and the file's neighbours.
 
 `CProjectile::ScanTargets` @0xe0b10 (1 -> 2 rets) is the worked case. Retail lays out
 `[loop][epilogue A][self-cell handler][epilogue B]` — the row loop's fall-out gets its own
@@ -343,9 +359,11 @@ cl has no reason to prefer retail's form. Three spellings measured 2026-07-28, a
 3. (2) plus the hit-list `return` routed to a `done:` label placed *after* the handler —
    i.e. retail's exact edge structure spelled out
 
-Same wall as `EngStr_DrawText` @0x115440 / `ShowHudMessage(Alt)` @0x1154b0/0x115520 (1 -> 2
-rets), where a previous lane enumerated `if(!cfg)return` / `==0` / `else` and none split the
-bare `void` ret — see [identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md).
+`EngStr_DrawText` @0x115440 / `ShowHudMessage(Alt)` @0x1154b0/0x115520 (1 -> 2 rets) used to
+be quoted here as the same wall — they are NOT; they were a wrong `void` return type and all
+three are now EXACT (see above). `ScanTargets` differs from them in exactly the way that
+matters: its retail exits leave eax holding three different values, so no `return 0` reading
+of them exists. Check that before filing an inverse-direction function as a wall.
 
 So: when `jcc_sieve` shows `rets N -> N+1`, read it as *diagnosed, not actionable*, and spend
 the budget on the function's other residue.

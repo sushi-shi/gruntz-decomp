@@ -100,9 +100,8 @@ i32 LayerBlitFrame(CDDrawSurfaceMgr* host, CImage* src, i32 x, i32 y, i32 useFro
     return 1;
 }
 
-// @early-stop
 RVA(0x00115440, 0x45)
-void EngStr_DrawText(
+i32 EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
     CString* text,
     RECT* dst,
@@ -116,13 +115,13 @@ void EngStr_DrawText(
     CDDrawSurfaceChildA* pair = obj->m_drawTarget->m_frontPair;
 
     if (pair == NULL) {
-        return;
+        return 0;
     }
-    EngStr_RenderText(obj, text, dst, pair->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(obj, text, dst, pair->m_surface, fontSel, shadow, r, g, b, flag);
 }
 
 RVA(0x001154b0, 0x45)
-void ShowHudMessage(
+i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
@@ -136,13 +135,12 @@ void ShowHudMessage(
     CDDrawSurfacePair* page = sink->m_drawTarget->m_overlayPair;
 
     if (page == NULL) {
-        return;
+        return 0;
     }
-    EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }
-// @early-stop
 RVA(0x00115520, 0x45)
-void ShowHudMessageAlt(
+i32 ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
@@ -155,7 +153,7 @@ void ShowHudMessageAlt(
 ) {
     CDDrawSurfacePair* page = sink->m_drawTarget->m_backPair;
     if (page == NULL) {
-        return;
+        return 0;
     }
-    EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
+    return EngStr_RenderText(sink, text, box, page->m_surface, fontSel, shadow, r, g, b, flag);
 }

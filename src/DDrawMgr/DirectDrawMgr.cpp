@@ -789,14 +789,16 @@ void CDDrawPtrCollections::SetupCaps() {
     }
     g_modeArray.SetSize(0, -1);
     i32 n = m_poolItems.GetSize();
-    for (i32 a = 0; a < n - 1; a++) {
-        for (i32 b = a + 1; b < n; b++) {
+    if (n > 1) {
+        for (i32 a = 0; a < n - 1; a++) {
+            for (i32 b = a + 1; b < n; b++) {
 
-            void* pa = m_poolItems.GetData()[a];
-            void* pb = m_poolItems.GetData()[b];
-            if (Compare(pa, pb)) {
-                m_poolItems.GetData()[a] = pb;
-                m_poolItems.GetData()[b] = pa;
+                void* pa = m_poolItems.GetData()[a];
+                void* pb = m_poolItems.GetData()[b];
+                if (Compare(pa, pb)) {
+                    m_poolItems.GetData()[a] = pb;
+                    m_poolItems.GetData()[b] = pa;
+                }
             }
         }
     }

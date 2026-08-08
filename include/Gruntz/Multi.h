@@ -311,7 +311,7 @@ extern "C" HWND g_sharedFlag;
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;
 
-void ShowHudMessage(
+i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,

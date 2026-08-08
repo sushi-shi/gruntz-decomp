@@ -488,7 +488,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper);
 
 i32 LayerBlitFrame(CDDrawSurfaceMgr* mgr, CImage* img, i32 x, i32 w, i32 one, i32 zero);
 void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);
-void ShowHudMessage(
+i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
@@ -499,7 +499,7 @@ void ShowHudMessage(
     i32 e,
     i32 f
 );
-void ShowHudMessageAlt(
+i32 ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,

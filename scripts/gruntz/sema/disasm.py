@@ -703,10 +703,18 @@ def branch_view(rva: str, want_diff: bool, want_target: bool = False) -> int:
     def trunc_note(side, insns):
         # SAY the list is partial. A silently short branch list on exactly the functions
         # people most need one for is half the reason the block view is not trusted.
-        at = B.first_bad(insns)
-        if at is not None:
-            print(f"[{side} stream truncated at +0x{at:x} - jump-table data in .text; "
+        # A `table_stop` cut is NOT partial - the code region before it is complete, and
+        # cutting there is what stops a switch's jump table from inventing branches on
+        # the target side (see gruntz.core.branches.table_stop).
+        at = B.code_stop(insns)
+        tbl = B.table_stop(insns)
+        bad = B.first_bad(insns)
+        if bad is not None and (tbl is None or bad < tbl):
+            print(f"[{side} stream truncated at +0x{bad:x} - undecodable bytes in .text; "
                   "branch list is partial]")
+        elif tbl is not None:
+            print(f"[{side} jump table at +0x{tbl:x} excluded - switch table data, not "
+                  "code (gruntz.core.branches.table_stop)]")
         return at
 
     if not want_diff:

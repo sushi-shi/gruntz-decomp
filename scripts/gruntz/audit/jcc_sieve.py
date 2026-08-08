@@ -88,6 +88,9 @@ def sieve(unit_filter=None, max_flips=4):
             # A truncated stream is not a clean result, so the SWEEP excludes it rather
             # than reporting a prefix as if it were the whole function. The interactive
             # `--branches` view prints the prefix WITH the truncation notice instead.
+            # `res["trunc"]` is only an UNDECODABLE body: a switch's trailing jump table
+            # is cut by `table_stop` and is not a truncation (2026-08-08, that cut moved
+            # 18 functions out of "uncomparable" and 7 out of the branch-COUNT bucket).
             if any(t is not None for t in res["trunc"]):
                 stats["skip"] += 1
                 continue

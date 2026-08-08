@@ -734,11 +734,11 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // @early-stop
-// residue: a whole-function ebp<->ebx colour swap (cl seeds `j` in ebp, retail in ebx)
-// plus one spare frame dword - cl reserves the full 8-byte POINT `pt` where retail
-// reserves 4. Loop-counter hoists and `< 3` vs `<= 2` are all neutral.
+// residue: an ebp<->ebx colour swap, one spare frame dword, and a cached `gameMgr`
+// local retail does not keep (it re-reads g_gameReg->m_world at the sound-registry
+// site). The return type was the `xor eax,eax` half and is fixed.
 RVA(0x001122a0, 0x241)
-void CGiantRockLogic::BuildRockBreakInGameText() {
+i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     CDDrawSurfaceMgr* gameMgr = g_gameReg->m_world;
 
@@ -782,7 +782,7 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
         CGameObject* txt = g_gameReg->m_world->m_childGroup
                                ->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
         if (txt == NULL) {
-            return;
+            return 0;
         }
         txt->m_smarts = m_textId;
     }
@@ -791,28 +791,29 @@ void CGiantRockLogic::BuildRockBreakInGameText() {
     i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (bx >= g_gameReg->m_viewBounds.right || bx < g_gameReg->m_viewBounds.left
         || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
-        return;
+        return 0;
     }
     CDDrawSubMgrLeafScan* sreg = gameMgr->m_soundRegistry;
     if (sreg->m_emitGate != 0) {
-        return;
+        return 0;
     }
     void* out_ob = 0;
     sreg->m_cues.Lookup("LEVEL_ROCKBREAK", out_ob);
     LeafCue* out = static_cast<LeafCue*>(out_ob);
     if (out == NULL) {
-        return;
+        return 0;
     }
     i32 tag = g_sndCueTag;
     if (g_sndEnabled == 0) {
-        return;
+        return 0;
     }
     i32 kc = g_killCueClock;
     if (static_cast<u32>((kc - out->m_lastPlayTime)) < static_cast<u32>(out->m_replayDelay)) {
-        return;
+        return 0;
     }
     out->m_lastPlayTime = kc;
     out->m_sound->ConfigureItem(tag, 0, 0, 0);
+    return 0;
 }
 
 // @early-stop

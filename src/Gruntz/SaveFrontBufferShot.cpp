@@ -24,9 +24,8 @@ void SaveFrontBufferShot(
     SaveFrontBufferShotImpl(bute, mgr, w, h, name, saveFlag);
 }
 
-// @early-stop
 RVA(0x00114f00, 0x3e)
-void SaveFrontBufferShotImpl(
+i32 SaveFrontBufferShotImpl(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,
     i32 w,
@@ -36,11 +35,11 @@ void SaveFrontBufferShotImpl(
 ) {
     CDDrawSurfaceChildA* pair = mgr->m_world->m_drawTarget->m_frontPair;
     if (pair == NULL) {
-        return;
+        return 0;
     }
     if (pair->m_surface == NULL) {
-        return;
+        return 0;
     }
 
-    SaveScreenshot(pair->m_surface, bute, mgr, w, h, name, saveFlag);
+    return SaveScreenshot(pair->m_surface, bute, mgr, w, h, name, saveFlag);
 }

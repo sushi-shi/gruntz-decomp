@@ -118,7 +118,7 @@ class CGiantRockLogic : public CTileTriggerLogic {
 public:
     CGiantRockLogic();
 
-    void BuildRockBreakInGameText();
+    i32 BuildRockBreakInGameText();
 
     i32 ApplyByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 SerializeMatrix(CFileMemBase* s);

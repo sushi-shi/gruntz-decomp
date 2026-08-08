@@ -576,14 +576,17 @@ i32 CFontConfig::Draw3DText(
         return 0;
     }
     HGDIOBJ selPrev = 0;
-    RECT rc;
-    rc.left = dst->left;
-    rc.top = dst->top;
-    rc.right = dst->right;
-    rc.bottom = dst->bottom;
-    HGDIOBJ obj = fontFlag ? m_messageFont : m_trainingFont;
-    if (obj) {
-        selPrev = SelectObject(hdc, obj);
+    RECT rc = *dst;
+    // Retail tests each font for NULL in its own arm and lets cl tail-merge the
+    // shared SelectObject; selecting the handle first collapses the two tests.
+    if (fontFlag == 0) {
+        if (m_trainingFont) {
+            selPrev = SelectObject(hdc, m_trainingFont);
+        }
+    } else {
+        if (m_messageFont) {
+            selPrev = SelectObject(hdc, m_messageFont);
+        }
     }
     SetBkMode(hdc, 1);
     SetBkColor(hdc, 0);

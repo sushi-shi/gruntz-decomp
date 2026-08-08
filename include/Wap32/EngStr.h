@@ -18,7 +18,7 @@ extern "C" i32 EngStr_RenderText(
     i32 flag
 );
 
-void EngStr_DrawText(
+i32 EngStr_DrawText(
     CDDrawSurfaceMgr* obj,
     class CString* text,
     struct tagRECT* dst,

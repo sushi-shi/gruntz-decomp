@@ -6,7 +6,7 @@
 
 extern "C" tagRECT g_versionRect;
 
-void ShowHudMessage(
+i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,

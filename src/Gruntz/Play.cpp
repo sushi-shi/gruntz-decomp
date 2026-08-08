@@ -5104,11 +5104,6 @@ i32 CPlay::PostActionCue(i32 cueId) {
     return 1;
 }
 
-// @early-stop
-// Retail emits the loop guard `cmp edi,0x37 / jge` TWICE back to back before the
-// strip loop; cl folds the second away from every spelling tried (if+for, if+if+
-// do/while, `||` with one or two predecessors on the preheader). Nothing else
-// differs.
 RVA(0x000d72c0, 0x128)
 i32 CPlay::BuildHelpReveal(i32 final) {
     CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
@@ -5137,8 +5132,11 @@ i32 CPlay::BuildHelpReveal(i32 final) {
     if (counter < 0x37 && final != 1) {
         LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), col + 0xe0, 0x1a6, 1, 0);
     } else {
+        // cl5's redundant-compare peephole is SYNTACTIC on the operand order, so
+        // reversing the loop bound keeps retail's second `cmp edi,0x37 / jge`
+        // (docs/patterns/redundant-test-elimination-is-syntactic.md).
         if (counter < 0x37) {
-            for (i32 i = counter; i < 0x37; i++) {
+            for (i32 i = counter; 0x37 > i; i++) {
                 i32 x = 0xe0
                         - static_cast<i32>(
                             (static_cast<float>(i)

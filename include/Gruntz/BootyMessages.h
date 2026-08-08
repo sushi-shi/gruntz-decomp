@@ -23,7 +23,7 @@ extern float g_secretRatioScale;
 extern char g_secretMsgA[0x20];
 extern char g_secretMsgB[0x80];
 
-void ShowHudMessage(
+i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,

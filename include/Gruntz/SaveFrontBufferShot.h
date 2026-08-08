@@ -13,7 +13,7 @@ namespace Utils {
     class RegistryHelper;
 }
 
-void SaveFrontBufferShotImpl(
+i32 SaveFrontBufferShotImpl(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,
     i32 w,

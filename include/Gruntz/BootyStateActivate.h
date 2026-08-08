@@ -20,7 +20,7 @@ GZ_ENUM_CONST_BEGIN(BootyEffectCount)
     BOOTY_EXPLOSION_COUNT = 8
 GZ_ENUM_CONST_END(BootyEffectCount)
 
-void ShowHudMessageAlt(
+i32 ShowHudMessageAlt(
     CDDrawSurfaceMgr* sink,
     CString* text,
     RECT* box,
