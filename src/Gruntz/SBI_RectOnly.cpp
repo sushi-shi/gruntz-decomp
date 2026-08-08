@@ -785,8 +785,11 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
-        if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+        if (r) {
+            i32 hit = r->m_enabled;
+            if (hit) {
+                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+            }
             if (hit) {
                 return r;
             }
@@ -796,8 +799,11 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     n = tab.GetHeadPosition();
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+        if (r) {
+            i32 hit = r->m_enabled;
+            if (hit) {
+                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+            }
             if (hit) {
                 return r;
             }
@@ -806,8 +812,11 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     n = m_tabLists[6].GetHeadPosition();
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        if (r && r->m_enabled) {
-            i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+        if (r) {
+            i32 hit = r->m_enabled;
+            if (hit) {
+                hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+            }
             if (hit) {
                 return r;
             }
@@ -1186,11 +1195,6 @@ i32 CStatusBarMgr::Deactivate() {
     return 1;
 }
 
-// @early-stop
-// cl cross-jumps the switch arms' identical ProbeState suffix (each arm ends in a
-// `jmp` to a shared tail); retail duplicates the whole tail plus the `mov eax,1` /
-// pops / `ret 8` in every arm. That is the entire 10-instruction shortfall - the
-// arm bodies, the SetState/ProbeState order and the member offsets all match.
 RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     if (m_tabSprite0 == NULL || m_tabSprite1 == NULL || m_tabSprite2 == NULL || m_tabSprite3 == NULL
@@ -1207,7 +1211,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite1->ProbeState(state);
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_TAB_GRUNTZ:
             if (m_hlBusy) {
                 return 1;
@@ -1217,7 +1221,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite1->ProbeState(state);
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_TAB_RESOURCE:
             if (m_hlBusy) {
                 return 1;
@@ -1227,7 +1231,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite1->SetState(state, 1);
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_TAB_MULTIPLAYER:
             if (m_hlBusy) {
                 return 1;
@@ -1237,7 +1241,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite1->ProbeState(state);
             m_tabSprite3->SetState(state, 1);
             m_tabSprite4->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_TAB_GAME:
             if (m_hlBusy) {
                 return 1;
@@ -1247,7 +1251,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite1->ProbeState(state);
             m_tabSprite3->ProbeState(state);
             m_tabSprite4->SetState(state, 1);
-            return 1;
+            break;
         case SBICMD_PAUSE:
             if (m_hlBusy) {
                 return 1;
@@ -1258,7 +1262,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->ProbeState(state);
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_LOAD_GAME:
             if (m_hlBusy) {
                 return 1;
@@ -1269,7 +1273,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->ProbeState(state);
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_SAVE_GAME:
             if (m_hlBusy) {
                 return 1;
@@ -1280,7 +1284,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->ProbeState(state);
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_SETTINGS:
             if (m_hlBusy) {
                 return 1;
@@ -1291,7 +1295,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->SetState(state, 1);
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_BOOTY_STATE:
             if (m_hlBusy) {
                 return 1;
@@ -1302,7 +1306,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->ProbeState(state);
             m_tabSprite9->SetState(state, 1);
             m_tabSprite10->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_QUIT:
             if (m_hlBusy) {
                 return 1;
@@ -1313,33 +1317,33 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
             m_tabSprite8->ProbeState(state);
             m_tabSprite9->ProbeState(state);
             m_tabSprite10->SetState(state, 1);
-            return 1;
+            break;
         case SBICMD_GAME_TAB:
             if (m_hlBusy) {
                 return 1;
             }
             m_tabSprite10->SetState(state, 1);
-            return 1;
+            break;
         case SBICMD_DIALOG_PRIMARY:
             if (m_tabSprite11) {
                 m_tabSprite11->SetState(state, 1);
             }
             m_tabSprite12->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_DIALOG_SECONDARY:
             if (m_tabSprite11) {
                 m_tabSprite11->ProbeState(state);
             }
             m_tabSprite12->SetState(state, 1);
-            return 1;
+            break;
         case SBICMD_DIALOG_YES:
             m_tabSprite13->SetState(state, 1);
             m_tabSprite14->ProbeState(state);
-            return 1;
+            break;
         case SBICMD_DIALOG_NO:
             m_tabSprite13->ProbeState(state);
             m_tabSprite14->SetState(state, 1);
-            return 1;
+            break;
     }
     return 1;
 }

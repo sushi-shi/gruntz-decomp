@@ -576,6 +576,9 @@ void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor) {
 }
 
 // @early-stop
+// Liveness wall: retail holds destX in ecx and homes dy / kind / ok / stepX / goalX in
+// stack slots (it reuses the dead parameter slots); cl keeps them in registers, so the
+// body is 12 bytes short of retail's 0x164 with identical instruction selection.
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     CGameObject* t = target;
@@ -600,6 +603,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
         return DispatchMove(target, destX, destY, moveFlags);
     }
 
+    i32 ok = 1;
     i32 stepX = limX;
     i32 goalX = destX;
     if (sx > destX) {
@@ -609,8 +613,6 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
     if (t->m_screenY > destY) {
         stepY = -stepY;
     }
-
-    i32 ok = 1;
     do {
         i32 nx = stepX + t->m_screenX;
         if (stepX > 0) {

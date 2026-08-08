@@ -1050,6 +1050,8 @@ i32 CGrunt::StepEntranceReinit() {
 }
 
 // @early-stop
+// Register-coloring wall: retail colours `this` ebx and the timeGetTime import
+// pointer ebp; cl swaps the pair. Size, relocs and instruction selection match.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -1085,15 +1087,13 @@ i32 CGrunt::StepArrivalReroll() {
     CWwdGameObjectA* h = m_object;
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
-    CGruntzMgr* g = g_gameReg;
-    const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
     if (pick > 0x19) {
-        if (CGameLevel::PointInRect(&r, xp, y)) {
-            g->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
+        if (CGameLevel::PointInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) {
+            g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
-        if (CGameLevel::PointInRect(&r, xp, y)) {
-            g->m_cueSink->LoadGruntSpawnConfig(this, 9, -1, -1, -1);
+        if (CGameLevel::PointInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) {
+            g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 9, -1, -1, -1);
         }
     }
     return 0;
