@@ -105,7 +105,7 @@ demo	8	7
 destructbutton	1	1
 dialogs	57	54
 dircellmethods	19	18
-directdrawmgr	68	66
+directdrawmgr	68	67
 directinputmgr2	45	45
 directsoundmgr	75	71
 donothing	7	6
@@ -338,7 +338,7 @@ titleappstart	2	2
 toobspikez	9	8
 trees	21	21
 triggermgr	49	29
-triggermgrgrid	18	9
+triggermgrgrid	18	10
 triggermgrhittest	6	4
 trirecordserialize	1	1
 typekeycoll	37	31
@@ -1401,7 +1401,7 @@ directdrawmgr	?CreatePaletteFromTrailingData@CDDrawPtrCollections@@QAEPAUCDDPale
 directdrawmgr	?CreatePaletteSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHH@Z	100.0000	100.0000	1	318d65827f9f	0x142940	100.0000
 directdrawmgr	?CreatePaletteSurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	a360db69db37	0x142aa0	100.0000
 directdrawmgr	?CreatePoolItem@CDDrawPtrCollections@@QAEPAXPAXH@Z	100.0000	100.0000	2	05a43963247d	0x143630	100.0000
-directdrawmgr	?CreateRange@CDDrawPtrCollections@@QAEHPAPAVCDDSurface@@HHPAD1HH@Z	84.0213	84.0213	8	52d883cc35d9	0x142630	84.0213
+directdrawmgr	?CreateRange@CDDrawPtrCollections@@QAEHPAPAVCDDSurface@@HHPAD1HH@Z	100.0000	100.0000	9	0a221d05b9b2	0x142630	100.0000
 directdrawmgr	?CreateRgbPalette@CDDrawPtrCollections@@QAEPAUCDDPalette@@PAXH@Z	100.0000	100.0000	1	edfef53e0108	0x142fc0	100.0000
 directdrawmgr	?CreateSurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	100.0000	100.0000	1	043765119625	0x1421a0	100.0000
 directdrawmgr	?DDrawLogLine@@YAXPADZZ	100.0000	100.0000	1	848b4018ce87	0x141cb0	100.0000
@@ -4281,7 +4281,7 @@ triggermgrgrid	?CellDispatch@CTriggerMgr@@QAEHHHW4GruntDeathType@@H@Z	100.0000	1
 triggermgrgrid	?CellHitTest@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	80.7093	80.7093	4	285158934c10	0x6bea0	80.7093
 triggermgrgrid	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	4e3a1ac5a98d	0x6b680	100.0000
 triggermgrgrid	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	76.9091	76.9091	13	3c41881e35df	0x6e800	76.9091
-triggermgrgrid	?ClearGridRange@CTriggerMgr@@QAEHH@Z	66.9688	66.9688	9	43c7a861e4be	0x6bd40	66.9688
+triggermgrgrid	?ClearGridRange@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	10	f971d0cfa591	0x6bd40	100.0000
 triggermgrgrid	?DispatchCellForObject@CTriggerMgr@@QAEHPAVCGrunt@@HW4GruntDeathType@@H@Z	100.0000	100.0000	1	cd1e604d31f6	0x6bc20	100.0000
 triggermgrgrid	?FindAtPixel@CTriggerMgr@@QAEPAVCGrunt@@HH@Z	100.0000	100.0000	1	67e433169b92	0x6e7e0	100.0000
 triggermgrgrid	?GridAction6@CTriggerMgr@@QAEXHH@Z	100.0000	100.0000	2	0f1668529e4f	0x6da60	100.0000
