@@ -4252,7 +4252,7 @@ triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	10	0d57524b
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	85.8922	85.8922	23	43a728654961	0x79fb0	87.1471
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00	100.0000
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30	100.0000
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	40.6624	40.6624	32	103304691d31	0x78a50	40.6624
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	71.8870	71.8870	33	8b307bc342b3	0x78a50	71.8870
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	100.0000	100.0000	9	32bcbd4b4335	0x7a240	100.0000
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	89.3103	89.3103	12	1f73c740e031	0x7cc60	89.3103
 triggermgr	?RecordListHas@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	11	d67d7997d8cf	0x784d0	100.0000

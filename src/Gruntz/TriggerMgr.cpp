@@ -428,17 +428,21 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-// The case order above is read off retail's own jump table (byte index at
-// 0x792cc, slots at 0x79298), which is also the source order because cl emits
-// arms in source order. The remaining deficit is one INLINED WrapCoord: the
-// second path block (retail 0x79080) calls WrapCoord for `source` but expands
-// it in full for `destination` (0x790c6-0x79144 is CDDrawWorkerHost::WrapCoord
-// verbatim - flags&4/&8, m_wrapW/m_wrapH, m_viewRect, then
-// `+= m_bounds50.left - m_viewRect.left`). cl cannot inline across a TU, so
-// retail's WrapCoord is an INLINE member declared in the Wwd header and the
-// 0xa000 body is its COMDAT copy; one expansion here fits the per-function
-// inline budget and the other does not. Moving it into the header is a
-// cross-TU change this lane did not take.
+// The case order is read off retail's own jump table (13 slots at 0x79298, byte
+// index at 0x792cc); sorting its distinct targets by address gives the source
+// order, and it is the order below.
+//
+// Two known residues.  (1) The second path block (retail 0x79080) CALLS
+// WrapCoord for `source` but has it expanded for `destination`, which never
+// leaves edi/ebx - so that expansion must come from an inline WrapCoord in the
+// Wwd header, not from a hand-written copy here.  Transcribing the body into
+// this arm reproduces the clamp blocks and un-merges the two path-preview
+// return tails, but it also makes cl re-order the switch arms (BOOMERANG moves
+// from ninth to third), measured 71.89 -> 38.61; an inline clone is also what
+// gruntz.audit.inline_clones exists to prevent.  The real fix is to make
+// CDDrawWorkerHost::WrapCoord an inline member and let the /Ob1 budget produce
+// retail's one-call/one-expansion split.  (2) cl merges identical
+// `LoadCursorSprites(...); return 1;` blocks that retail keeps duplicated.
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
@@ -487,13 +491,14 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     } else if (ty >= view->m_mainPlane->m_gridH) {
         cy = view->m_mainPlane->m_gridH - 1;
     }
-    TileCollisionKind collision = TILEKIND_PASSABLE;
+    TileCollisionKind collision;
     i32 cval = view->m_mainPlane->m_tileGrid[view->m_mainPlane->m_colOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
-
         CTileImageSet* tc = static_cast<CTileImageSet*>(view->m_imageSets.GetAt(cval & 0xffff));
         // Ingest: the raw WWD attribute byte for this cell.
         collision = tc->GetCollisionAt(0, 0);
+    } else {
+        collision = TILEKIND_PASSABLE;
     }
 
     i32 pfk = m_pendingFxKind;
@@ -524,37 +529,36 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         gruntKind = cell->m_toolId;
     }
 
-    if (hitFlag != 0 && pfk != 0) {
-        // Retail's compare chain is written POSITIVE and in this order: rock,
-        // welder, boomerang, gunhat, nerfgun, wingz.  A pfk of 0 falls all the
-        // way through to the shared tail instead of returning here.
-        if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
-            && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
-            && gruntKind != GRUNT_WINGZ) {
-            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+    if (hitFlag != 0) {
+        if (pfk != 0) {
+            // Retail's compare order is rock, welder, boomerang, gunhat,
+            // nerfgun, wingz; the positive spelling is byte-identical here.
+            if (gruntKind != GRUNT_ROCK && gruntKind != GRUNT_WELDER && gruntKind != GRUNT_BOOMERANG
+                && gruntKind != GRUNT_GUNHAT && gruntKind != GRUNT_NERFGUN
+                && gruntKind != GRUNT_WINGZ) {
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+                return 1;
+            }
+
+            POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
+            view->m_mainPlane->WrapCoord(&source.x, &source.y);
+            POINT destination = {x, y};
+            view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
+            u16 color;
+            if (cell->RectContains(x, y)) {
+                color = PackRgb16(0xff, 0, 0);
+                world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
+            } else {
+                color = PackRgb16(0x20, 0x20, 0x20);
+                world->LoadCursorSprites(pfk, 0);
+            }
+            world->m_pathPreviewSource = source;
+            world->m_pathPreviewDestination = destination;
+            world->m_pathPreviewColor = color;
+            world->m_drewThisFrame = 1;
             return 1;
         }
-
-        POINT source = {cell->m_object->m_screenX, cell->m_object->m_screenY};
-        view->m_mainPlane->WrapCoord(&source.x, &source.y);
-        POINT destination = {x, y};
-        view->m_mainPlane->WrapCoord(&destination.x, &destination.y);
-        u16 color;
-        if (cell->RectContains(x, y)) {
-            color = PackRgb16(0xff, 0, 0);
-            world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
-        } else {
-            color = PackRgb16(0x20, 0x20, 0x20);
-            world->LoadCursorSprites(pfk, 0);
-        }
-        world->m_pathPreviewSource = source;
-        world->m_pathPreviewDestination = destination;
-        world->m_pathPreviewColor = color;
-        world->m_drewThisFrame = 1;
-        return 1;
-    }
-
-    if (hitFlag == 0) {
+    } else {
         switch (gruntKind) {
             case PICKUP_GAUNTLETZ:
                 if (collision == TILEKIND_GAUNTLET_ROCK_A || collision == TILEKIND_GAUNTLET_ROCK_B
