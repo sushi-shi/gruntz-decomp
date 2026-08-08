@@ -152,6 +152,13 @@ DATA(0x002c448c)
 i32 g_val_2c448c;
 
 // @early-stop
+// Residue is one register-allocation tie-break that cascades: retail homes `this`
+// in ebx and the constant 0 in ebp, cl does the reverse, so almost every line of
+// the diff is that swap. The remaining CONTENT gap is the m_beginMarker cleanup -
+// retail inlines ~CTileTriggerContainer (DtorBase + four CPtrList member dtors)
+// where cl calls it, which needs the dtor inline in TileTriggerContainer.h; that
+// costs tiletriggercontainer its only definition of the symbol (a labelled-function
+// drop) and takes CPlay::LoadGameAssetNamespaces 78.26 -> 73.41, so it is parked.
 RVA(0x000b5460, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
@@ -1564,6 +1571,11 @@ i32 CMulti::SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag) {
 }
 
 // @early-stop
+// Retail keeps TWO tests cl folds away: the second `LocalPlayer() == NULL` and the
+// loop-top `count <= 0`. The operand-swap lever of
+// docs/patterns/redundant-test-elimination-is-syntactic.md reaches neither -
+// swapping the loop test (87.34 -> 84.82), the pre-loop test (84.82) and Yoda-
+// spelling the pointer compare (no change) were all measured.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == NULL) {

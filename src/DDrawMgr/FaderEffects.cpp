@@ -297,6 +297,10 @@ RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // @early-stop
+// Block structure and both surface-pair shapes agree. The residue is register
+// colouring: retail lets the m_dstBox value die and RELOADS the member for the
+// `if (!m_dstBox)` guard, and its inlined GetRandom keeps the `inc` next to the
+// `idiv`; cl keeps the alias in a register and hoists the `inc`.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     CFxModeT3* cfg = static_cast<CFxModeT3*>(desc);
@@ -493,6 +497,9 @@ CFaderLight::~CFaderLight() {
 }
 
 // @early-stop
+// 29/29 blocks. Residue: retail re-materialises the palette pointer through eax
+// before the null test and stores m_flag = 1 as an immediate rather than sharing
+// the return value's register.
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc);

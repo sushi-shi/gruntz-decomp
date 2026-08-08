@@ -249,8 +249,10 @@ i32 CPlay::OnMouseMove(i32 unused, i32 cursorX, i32 cursorY) {
 
 // @early-stop
 // The residue is the inlined CStatusBarMgr constructor (operator new(0x630)):
-// retail zero-fills members this reconstruction of the class does not model yet.
-// Owned by the sbi_rectonly lane, not fixable from here.
+// retail rolls ONE member-array loop and straight-lines the other two (10i + a 7i
+// loop + 117i) where cl emits three 7i loops + 101i - and it does so from the same
+// ctor that CMulti::LoadGameAssetNamespaces expands with three loops on BOTH sides.
+// The decision lives in CStatusBarMgr, not here.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -282,11 +284,11 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CChatBoxOwner* ctl = new CChatBoxOwner;
         m_hitTest = ctl;
         if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
-            CChatBoxOwner* dead = m_hitTest;
-            if (dead) {
-                dead->Deactivate();
-                ::operator delete(dead);
+            if (m_hitTest == NULL) {
+                return 0;
             }
+            m_hitTest->Deactivate();
+            ::operator delete(m_hitTest);
             m_hitTest = NULL;
             return 0;
         }
@@ -295,12 +297,10 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         m_guts = new CStatusBarMgr;
         if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
-            CStatusBarMgr* w2 = m_guts;
-            if (w2 == NULL) {
+            if (m_guts == NULL) {
                 return 0;
             }
-
-            delete w2;
+            delete m_guts;
             m_guts = NULL;
             return 0;
         }
@@ -308,7 +308,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CTileTriggerContainer* r78 = new CTileTriggerContainer;
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
-
+            if (m_beginMarker == NULL) {
+                return 0;
+            }
             delete m_beginMarker;
             m_beginMarker = NULL;
             return 0;
@@ -3715,6 +3717,11 @@ void CPlay::PostSetup(void* dc) {
     }
 
 // @early-stop
+// Residue: cl constant-folds `frame` into the m_levelId store inside the
+// CURSOR_POINTER and CURSOR_FLAILINGGRUNT arms (it propagates the compared
+// constant along the equality edge); retail re-reads the parameter home slot in
+// every arm. Neither dropping the enum local nor comparing the raw parameter
+// stops the fold.
 RVA(0x000d0120, 0x65c)
 i32 CPlay::LoadCursorSprites(i32 frame, i32 flag) {
     // Callers build the id by arithmetic (`<grunt kind> + CURSOR_TOOL_HANDZ`, the
@@ -4566,6 +4573,11 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 }
 
 // @early-stop
+// 36/36 blocks. Two residues: retail RELOADS fm->m_currentMs for m_accum (the
+// preceding store through the same pointer defeats its CSE) and puts m_running
+// last, where cl keeps the tested value in a register. The arm-statement order
+// below is a HOIST BLOCKER - writing m_startStamp first, which is retail's
+// EMITTED order, makes cl hoist those three instructions into the predecessor.
 RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char buf[0x40];
@@ -4642,10 +4654,10 @@ i32 CPlay::ResetPlayState() {
     if (fm != NULL) {
         fm->m_unusedStamp.m_v = 0xffffffff;
         if (fm->m_currentMs != 0) {
+            fm->m_running = 1;
             fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
             fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);
             fm->m_baseTime.m_v = static_cast<u32>(g_frameTime);
-            fm->m_running = 1;
         } else {
             fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
         }

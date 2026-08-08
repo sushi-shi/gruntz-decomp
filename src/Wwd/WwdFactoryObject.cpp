@@ -735,6 +735,13 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
 }
 
 // @early-stop
+// @early-stop
+// Retail re-reads m_element for the final guard - it loads it into the register
+// that held `this`, since every member address it still needs is already in a
+// spill slot from the ar->Read() calls. cl forwards the store instead and drops
+// the test, so its `e != NULL` edge jumps straight into the body. Storing the
+// member directly in the arms, or reading it back through a fresh local, does not
+// stop it.
 RVA(0x0015ca70, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
