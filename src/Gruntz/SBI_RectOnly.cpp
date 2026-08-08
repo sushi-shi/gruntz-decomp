@@ -1832,7 +1832,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
         for (i32 i = 0; i < 15; i++) {
             CSBI_SideTab* p = m_hitRects[i];
             if (p && p->m_enabled) {
-                i32 hit = p->m_enabled && CGameLevel::PointInRect(&p->m_rect14, x, y);
+                i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
                 if (hit) {
                     return i;
                 }
