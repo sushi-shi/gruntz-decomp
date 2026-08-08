@@ -150,14 +150,17 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
     if (m_fp != NULL) {
-        i32 ok = 0;
-        while (ok == 0) {
+        i32 ok;
+        do {
             if (fclose(m_fp) == 0) {
                 ok = 1;
-            } else if (m_parent->Retry() == 0) {
-                return 0;
+            } else {
+                ok = 0;
+                if (m_parent->Retry() == 0) {
+                    return 0;
+                }
             }
-        }
+        } while (!ok);
 
         m_fp = NULL;
         if (m_readBuf != NULL) {
