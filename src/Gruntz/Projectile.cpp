@@ -956,16 +956,7 @@ i32 CTimeBomb::SerializeMove(
         return 0;
     }
     CFileMemBase* sa = static_cast<CFileMemBase*>(arc);
-    switch (mode) {
-        case SERIAL_LOAD:
-            sa->Read(&m_startTime, sizeof(m_startTime));
-            sa->Read(&m_duration, sizeof(m_duration));
-            break;
-        case SERIAL_SAVE:
-            sa->Write(&m_startTime, sizeof(m_startTime));
-            sa->Write(&m_duration, sizeof(m_duration));
-            break;
-    }
+    SerBandPair(sa, mode, &m_timing);
     switch (mode) {
         case SERIAL_LOAD:
             sa->Read(&m_fastPhase, sizeof(m_fastPhase));

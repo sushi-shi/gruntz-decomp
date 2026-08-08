@@ -14,6 +14,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecords.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -89,15 +90,6 @@ i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId
         == 0) {
         return 0;
     }
-    switch (mode) {
-        case SERIAL_LOAD:
-            arc->Read(&m_start64, sizeof(m_start64));
-            arc->Read(&m_window64, sizeof(m_window64));
-            break;
-        case SERIAL_SAVE:
-            arc->Write(&m_start64, sizeof(m_start64));
-            arc->Write(&m_window64, sizeof(m_window64));
-            break;
-    }
+    SerBandPair(arc, mode, &m_start64);
     return 1;
 }
