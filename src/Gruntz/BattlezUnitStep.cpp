@@ -294,16 +294,9 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             }
 
             CMapMgr* board = m_board;
-            RECT r1;
-            static_cast<RECT*>(new (&r1) CRect(0, 0, board->m_width, board->m_height));
-            RECT r2;
-            RECT* boardRect =
-                static_cast<RECT*>(new (&r2) CRect(0, 0, board->m_width, board->m_height));
+            CRect r1(0, 0, board->m_width, board->m_height);
             RECT rc;
-            rc.left = boardRect->left;
-            rc.top = boardRect->top;
-            rc.right = boardRect->right;
-            rc.bottom = boardRect->bottom;
+            rc = CRect(0, 0, board->m_width, board->m_height);
             RECT* rcDst = &board->m_bounds;
             if (!IntersectRect(rcDst, &rc, &r1)) {
                 *rcDst = rc;
