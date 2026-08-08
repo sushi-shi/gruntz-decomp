@@ -477,7 +477,7 @@ areamgr	?InitializeTrainingStage1@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	8b7e4ec07
 areamgr	?InitializeTrainingStage2@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	60ecaca950ea	0x9b3d0	100.0000
 areamgr	?InitializeTrainingStage3@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	5c1af147a97e	0x9b3f0	100.0000
 areamgr	?InitializeTrainingStage4@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	2d9596782226	0x9b410	100.0000
-areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	58.5000	58.5000	3	f06c6ed10d01	0x9b430	58.6471
+areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	58.6471	58.6471	4	d55a68bf6b43	0x9b430	58.6471
 areamgr	?LoadObjectAnimResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	8	771b00524656	0x9ac20	100.0000
 areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	7	3d102abe807d	0x9a510	100.0000
 areamgr	?LoadObjectResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	2	afadbc689abe	0x9a4c0	100.0000
@@ -723,7 +723,7 @@ butemgr	?GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0PAU2@@Z	100.0000	100.00
 butemgr	?Init@CButeMgr@@QAEXXZ	100.0000	100.0000	4	3846f28ab899	0x170330	100.0000
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	7	5b62daf4fca0	0x170390	88.6667
 butemgr	?Parse@CButeMgr@@QAE_NXZ	98.1208	98.1208	13	912cdb814c29	0x1704c0	98.1208
-butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	76.5391	76.5391	21	f338ee91edda	0x170750	76.5391
+butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	76.5391	76.5391	22	20bd723aad55	0x170750	76.5391
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	97.7536	97.7536	9	3186db87e98b	0x171580	97.7536
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	14	f25151331eea	0x1711b0	100.0000
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	5	28c9f0692d87	0x170430	100.0000

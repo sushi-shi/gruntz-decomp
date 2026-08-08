@@ -640,9 +640,12 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 }
 
 // @early-stop
-// Body restored to the spelling that scored 100 at 7f5851bd7 (compare `currentWorld ==
-// requestedWorld`); the residue is the parameter-vs-member evaluation order, which did not
-// move for any source spelling here - it tracks TU composition, not this function.
+// Retail evaluates the PARAMETER side first: it divides [esp+0x4]-1 by 36 with esi as
+// the divisor (this still live in ecx), defers `push esi` past the guard, and only then
+// loads [ecx].  cl does the member side first in every spelling tried - 15 of them, incl.
+// declaration order, if/else vs early return, in-place `levelIndex--`, split numerators,
+// `&&`, and a single-expression compare - and a 0..16 TU declaration-count sweep does not
+// move it either, so it is not TU state.  `< 1` for the guard is definitely wrong (27.94).
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
@@ -650,5 +653,5 @@ b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     }
     i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
     i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;
-    return currentWorld == requestedWorld;
+    return requestedWorld == currentWorld;
 }
