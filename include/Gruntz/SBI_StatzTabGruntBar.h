@@ -99,6 +99,6 @@ public:
         };
     };
 };
-SIZE_UNKNOWN();
+SIZE(0x88);
 
 #endif // SBI_STATZTABGRUNTBAR_H

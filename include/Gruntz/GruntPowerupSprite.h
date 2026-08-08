@@ -28,6 +28,6 @@ public:
     Coord m_cell;
     i32 m_powerupId;
 };
-SIZE_UNKNOWN();
+SIZE(0x60);
 
 #endif // GRUNTZ_CGRUNTPOWERUPSPRITE_H

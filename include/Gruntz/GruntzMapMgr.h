@@ -25,6 +25,6 @@ public:
     CPtrArray m_arr;
     i32 m_reserved90;
 };
-SIZE_UNKNOWN();
+SIZE(0x94);
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

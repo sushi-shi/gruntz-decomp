@@ -33,7 +33,7 @@ public:
     double m_fallY;
     i32 m_landY;
 };
-SIZE_UNKNOWN();
+SIZE(0x70);
 
 extern const double g_objDropDiv;
 extern double g_dropFallBias;

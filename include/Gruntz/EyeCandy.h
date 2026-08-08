@@ -19,6 +19,6 @@ public:
     }
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 #endif // GRUNTZ_CEYECANDY_H

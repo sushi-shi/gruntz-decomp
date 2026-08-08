@@ -25,6 +25,6 @@ public:
     static void RegisterActs();
     i32 AdvanceAnim();
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 #endif // GRUNTZ_CFRONTCANDYANI_H

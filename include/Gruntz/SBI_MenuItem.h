@@ -52,7 +52,7 @@ public:
 
     CDDrawWorker* m_record;
 };
-SIZE_UNKNOWN();
+SIZE(0x3c);
 
 inline CSBI_MenuItem::~CSBI_MenuItem() {
     Reset();

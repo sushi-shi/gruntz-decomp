@@ -12,7 +12,7 @@ public:
     CTileSecretTrigger() {}
     CTileSecretTrigger(CGameObject* obj);
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 class CGiantRock : public CTileTrigger {
 public:
@@ -20,7 +20,7 @@ public:
     CGiantRock() {}
     CGiantRock(CGameObject* obj);
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 class CCoveredPowerup : public CTileTrigger {
 public:
@@ -28,6 +28,6 @@ public:
     CCoveredPowerup() {}
     CCoveredPowerup(CGameObject* obj);
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 #endif // GRUNTZ_TILETRIGGER_H

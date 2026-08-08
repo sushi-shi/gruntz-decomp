@@ -20,6 +20,6 @@ public:
     CFrontCandy() {}
     CFrontCandy(CGameObject* obj);
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 #endif // GRUNTZ_CFRONTCANDY_H

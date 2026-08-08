@@ -40,7 +40,7 @@ public:
         CPairRecord m_timing;
     };
 };
-SIZE_UNKNOWN();
+SIZE(0x68);
 
 typedef i32 (CUserLogic::*CActHandler)();
 SIZE_UNKNOWN();

@@ -84,7 +84,7 @@ public:
     CDDSurface* m_surface;
     CDDrawShadeBlit* m_owned;
 };
-SIZE_UNKNOWN();
+SIZE(0x34);
 
 inline CImage::~CImage() {
     FreeAll();

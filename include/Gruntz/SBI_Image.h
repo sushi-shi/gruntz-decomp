@@ -34,7 +34,7 @@ public:
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
 };
-SIZE_UNKNOWN();
+SIZE(0x30);
 
 inline CSBI_RectOnly::~CSBI_RectOnly() {
     Reset();

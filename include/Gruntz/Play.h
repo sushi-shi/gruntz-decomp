@@ -451,7 +451,7 @@ public:
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();
 };
-SIZE_UNKNOWN();
+SIZE(0x520);
 SIZE_UNKNOWN();
 
 extern "C" i32 g_curPlayer;

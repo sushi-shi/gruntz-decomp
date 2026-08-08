@@ -206,7 +206,7 @@ public:
     i32 m_inputWarmup2;
     i32 m_inputHalfSel;
 };
-SIZE_UNKNOWN();
+SIZE(0x1b4);
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();
 SIZE_UNKNOWN();

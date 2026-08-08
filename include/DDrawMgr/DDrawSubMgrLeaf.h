@@ -32,7 +32,7 @@ public:
 
     CMapStringToPtr m_animations;
 };
-SIZE_UNKNOWN();
+SIZE(0x2c);
 
 extern const char g_fmtPathJoin[];
 

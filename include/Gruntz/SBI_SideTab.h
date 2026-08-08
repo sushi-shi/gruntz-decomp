@@ -59,6 +59,6 @@ public:
     i32 m_onLeft;
     i32 m_drawGate;
 };
-SIZE_UNKNOWN();
+SIZE(0x5c);
 
 #endif // GRUNTZ_SBI_SIDETAB_H

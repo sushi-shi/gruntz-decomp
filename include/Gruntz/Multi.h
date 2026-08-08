@@ -283,7 +283,7 @@ public:
 
     char m_pad618[0x660 - 0x618];
 };
-SIZE_UNKNOWN();
+SIZE(0x660);
 SIZE_UNKNOWN();
 
 extern CMulti* g_multiState;

@@ -51,7 +51,7 @@ public:
     i32 m_frameEnd;
     i32 m_frameStart;
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     Reset();

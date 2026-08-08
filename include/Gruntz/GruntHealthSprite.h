@@ -34,6 +34,6 @@ public:
     i32 m_health;
     i32 m_yOffset;
 };
-SIZE_UNKNOWN();
+SIZE(0x64);
 
 #endif // GRUNTZ_CGRUNTHEALTHSPRITE_H

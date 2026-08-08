@@ -48,7 +48,7 @@ public:
 
     i32 m_placeIndex;
 };
-SIZE_UNKNOWN();
+SIZE(0x70);
 
 SIZE_UNKNOWN();
 

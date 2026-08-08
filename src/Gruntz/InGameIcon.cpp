@@ -1047,7 +1047,7 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
 
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
-    void* found = 0;
+    void* found = NULL;
     if (category != NULL) {
         found = NULL;
         g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);

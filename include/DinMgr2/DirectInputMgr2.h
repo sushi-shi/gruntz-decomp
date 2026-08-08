@@ -215,7 +215,7 @@ public:
 
     i32 m_flags;
 };
-SIZE_UNKNOWN();
+SIZE(0x2b8);
 
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref);
 

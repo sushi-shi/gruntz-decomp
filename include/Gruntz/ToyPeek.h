@@ -31,6 +31,6 @@ public:
     Clock64 m_startClock;
     Clock64 m_countdown;
 };
-SIZE_UNKNOWN();
+SIZE(0x68);
 
 #endif // GRUNTZ_CTOYPEEK_H

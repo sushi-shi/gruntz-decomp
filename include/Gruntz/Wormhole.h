@@ -24,7 +24,7 @@ public:
     CWormhole(CGameObject* obj);
     i32 SpawnPartners();
 };
-SIZE_UNKNOWN();
+SIZE(0x54);
 
 typedef i32 (CUserLogic::*CActHandler)();
 

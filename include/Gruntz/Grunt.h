@@ -219,6 +219,10 @@ public:
     virtual void OnObjectRemoved() OVERRIDE;
     virtual void AdvanceMotion() OVERRIDE;
 
+    // Retail reads m_lastTilePx (+0x17c/+0x180), which only CGrunt has - the body
+    // sat on CUserLogic (0x34 bytes) behind a static_cast<CGrunt*>(this).
+    i32 IsAtSavedScreenPos();
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();

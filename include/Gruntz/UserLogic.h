@@ -83,8 +83,6 @@ public:
     // stored back in place.
     void GetScreenTile(Coord* out);
 
-    i32 IsAtSavedScreenPos();
-
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj);
 

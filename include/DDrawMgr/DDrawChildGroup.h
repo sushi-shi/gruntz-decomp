@@ -135,6 +135,6 @@ public:
 
     CGameObject* Drain();
 };
-SIZE_UNKNOWN();
+SIZE(0x6c);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

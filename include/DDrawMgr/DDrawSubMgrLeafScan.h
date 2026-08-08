@@ -86,7 +86,7 @@ public:
     i32 m_emitGate;
     i32 m_replayDelay;
 };
-SIZE_UNKNOWN();
+SIZE(0x38);
 SIZE_UNKNOWN();
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRLEAFSCAN_H

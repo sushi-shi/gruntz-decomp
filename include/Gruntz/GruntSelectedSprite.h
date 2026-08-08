@@ -26,6 +26,6 @@ public:
     i32 Update();
     Coord m_cell;
 };
-SIZE_UNKNOWN();
+SIZE(0x5c);
 
 #endif // GRUNTZ_CGRUNTSELECTEDSPRITE_H

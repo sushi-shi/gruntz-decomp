@@ -45,6 +45,6 @@ public:
 
     i32 m_direction;
 };
-SIZE_UNKNOWN();
+SIZE(0x40);
 
 #endif // SBI_WARLORDHEAD_H

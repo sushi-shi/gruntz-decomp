@@ -49,6 +49,6 @@ public:
 
     CMapStringToOb m_workers;
 };
-SIZE_UNKNOWN();
+SIZE(0x2c);
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERCACHE_H

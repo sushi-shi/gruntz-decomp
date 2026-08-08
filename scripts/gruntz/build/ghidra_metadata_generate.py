@@ -61,6 +61,15 @@ _LAYOUT_NONFIELD = re.compile(
 _LAYOUT_FIELD = re.compile(r"^\s*(\d+)\s*\|(\s+)(\S.*\S|\S)\s*$")
 _SIZEOF = re.compile(r"\[sizeof=(\d+)")
 _RECORD_TYPE = re.compile(r"^(?:class|struct|union)\s+")
+# clang annotates a record with no data members `(empty)`, BOTH on its own header
+# line (`0 | struct CButeTail (empty)`) and at every use as a member
+# (`271 |   struct CButeTail m_crypt (empty)`). Neither form parsed: the header
+# regex demands the name at end-of-line and split_field demands a trailing
+# identifier, so an empty class vanished from structs.json entirely AND its member
+# vanished from the enclosing class's field list. That is a silent layout blind
+# spot - `CButeMgr::m_crypt` at +0x10f, which retail's ctor constructs explicitly,
+# read as an unaccounted hole. Strip the marker before either check.
+_EMPTY_TAG = re.compile(r"\s*\(empty\)\s*$")
 # compiler-synthesised records we never want to emit.
 _BUILTIN_RE = re.compile(r"^(__|_GUID$|type_info$)")
 
@@ -113,6 +122,7 @@ def parse_record_layouts(text):
         if not m:
             continue
         off, indent, decl = int(m.group(1)), len(m.group(2)), m.group(3)
+        decl = _EMPTY_TAG.sub("", decl)
         if skip_below is not None:
             if indent > skip_below:
                 continue          # inside an embedded member's interior

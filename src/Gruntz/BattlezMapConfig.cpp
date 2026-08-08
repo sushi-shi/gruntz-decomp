@@ -1973,12 +1973,11 @@ void CUserLogic::GetScreenPos(Coord* out) {
 }
 
 RVA(0x00029a80, 0x29)
-i32 CUserLogic::IsAtSavedScreenPos() {
+i32 CGrunt::IsAtSavedScreenPos() {
     CWwdGameObjectA* o = m_object;
 
-    CGrunt* g = static_cast<CGrunt*>(this);
-    i32 sx = g->m_lastTilePx.m_x;
-    if (o->m_screenX == sx && o->m_screenY == g->m_lastTilePx.m_y) {
+    i32 sx = m_lastTilePx.m_x;
+    if (o->m_screenX == sx && o->m_screenY == m_lastTilePx.m_y) {
         return 1;
     }
     return 0;
