@@ -141,3 +141,25 @@ distinguishes them, and a fitted choice would be a guess dressed as a model. Lef
 [`ob1-budget-drops-the-inlined-dtor-and-the-return`](ob1-budget-drops-the-inlined-dtor-and-the-return.md),
 [`shared-inline-transcribed-once-per-call-site`](shared-inline-transcribed-once-per-call-site.md),
 [`inline-switch-serialize-record-unroll`](inline-switch-serialize-record-unroll.md).
+
+
+## Measured by the parallel lane (superseded spelling, but the boundary data stands)
+
+| spelling | ctor COMDAT | expansions |
+|---|---|---|
+| `pValue = new T(x);` | 100% | 5 of 7 |
+| `T* p = new T(x); pValue = p;` | 100% | **4 of 7** |
+| …with `this->` qualification | 100% | 4 of 7 (identical obj) |
+| …via a `void*` temp | 100% | 4 of 7 (identical obj) |
+| …`type` in a member-init list | 100% | 4 of 7 (identical obj) |
+| …declare-then-assign the temp | 100% | 4 of 7 (identical obj) |
+| …two pointer temps | 100% | 4 of 7 (identical obj) |
+| `type` stored *after* the allocation | **60-70%** | 4 of 7 |
+| any null-check form (`if (p) … else pValue = NULL`) | **22-67%** | varies |
+
+* **`default: break;`** on either inline `switch` — completely inert (identical census
+  in all four cells; it only flips one unrelated function via ripple).
+* **Routing the callers through the inline `Tree()`/`Tree48()` accessors** (the `Get<T>`
+  functions already do) moves the count the **wrong way**: 3/4 -> 2/4 on all nine. So the
+  budget *grows* with the caller's front-end size — a bigger caller buys more expansions.
+  That direction is worth remembering; shrinking the caller is the untried half.
