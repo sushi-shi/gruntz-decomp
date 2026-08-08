@@ -51,6 +51,17 @@ SIZE(0x6c);
 
 class CFaderSine : public CFader {
 public:
+    // Monolith's GetRandomNumber, in-class (implicitly inline, no keyword) so the
+    // local static is emitted COMMON with this class in its mangled name - which
+    // is what gives this module its own guard/seed pair. See <Gruntz/GameRand.h>.
+    i32 GetRandomNumber() {
+        static long holdrand = timeGetTime();
+        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+    }
+
+    i32 FxRand(i32 range) {
+        return GetRandomNumber() % range;
+    }
     CFaderSine();
     virtual ~CFaderSine() OVERRIDE;
     virtual void RenderFrame(i32 f) OVERRIDE;

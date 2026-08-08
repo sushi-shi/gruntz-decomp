@@ -754,15 +754,6 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     return 1;
 }
 
-// Wwd's own copy of Monolith's GetRandomNumber (see <Gruntz/GameRand.h>). The
-// static lives HERE, in the module's copy, not in the wrapper below - which is
-// why this module's guard/seed pair is distinct from the Gruntz module's at
-// 0x2c127d/0x2c1288.
-static __inline i32 GetRandomNumber() {
-    static long holdrand = timeGetTime();
-    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
-}
-
 RVA(0x0015cbe0, 0x46)
 i32 CAniRecordView::Rng2Next() {
     return GetRandomNumber();

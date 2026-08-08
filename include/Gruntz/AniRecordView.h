@@ -27,6 +27,14 @@ struct CAniRecordView : public CObject {
     // before each `call 0x15cbe0`, dead for a __cdecl callee.
     i32 Rng2Next();
 
+    // Monolith's GetRandomNumber, in-class (implicitly inline, no keyword) so the
+    // local static is emitted COMMON with this class in its mangled name - which
+    // is what gives this module its own guard/seed pair. See <Gruntz/GameRand.h>.
+    i32 GetRandomNumber() {
+        static long holdrand = timeGetTime();
+        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+    }
+
     inline CAniRecordView() {
         m_cueCount = 0;
         m_cues = NULL;
