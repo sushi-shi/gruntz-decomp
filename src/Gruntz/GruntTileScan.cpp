@@ -34,7 +34,8 @@ static inline i32 ScanCellY(CGrunt* g) {
 }
 
 // @early-stop
-
+// The two signed/unsigned twins are fixed (`hits` is unsigned - retail spells the
+// range guards `ja`/`jae`); what is left is register/spill colouring.
 RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {
@@ -77,7 +78,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             gb.bottom = m_board->m_height;
             RECT isect;
             if (IntersectRect(&isect, &box, &gb)) {
-                i32 hits = 0;
+                u32 hits = 0;
                 for (i32 row = isect.top; row < isect.bottom; row++) {
                     if (hits > 4) {
                         break;

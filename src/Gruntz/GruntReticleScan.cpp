@@ -37,10 +37,14 @@
 #include <limits.h>
 
 // @early-stop
-
-// @early-stop
-// objdiff pairs the symbol but scores 0 - the instruction alignment
-// carries more inserts+deletes than matches, so the body still diverges structurally.
+// The logic is present; the CROSS-JUMP FACTOR is not. 664 instructions against retail's
+// 729 and four coord-drain copies against retail's five: the `m_combatActive == 0 &&
+// stamina && occOnTile` arm and the bare `occOnTile` arm below it are textually identical
+// drains, so cl unifies them where retail (0xeea4b and 0xeea95) emits both and shares only
+// the trailing RemoveAll. Same family as CGameObject::Play - no source spelling reaches
+// cl's merge decision. objdiff's percent clamps at 0 on that much insert/delete, so
+// report.json omits the key; read `sema disasm --blocks/--branches` (98 vs 100 branches),
+// not the score.
 RVA(0x000ee800, 0x971)
 i32 CGrunt::ArrivalReticleScan() {
     i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;

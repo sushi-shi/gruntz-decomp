@@ -33,6 +33,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from gruntz.core.report import fn_fuzzy
+
 REPO = Path(__file__).resolve().parents[3]
 ROOTS = ("src", "include")
 RVA_RE = re.compile(r"\bRVA(?:_COMPGEN)?\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)")
@@ -95,7 +97,9 @@ def main():
     if REPORT.exists():
         for u in json.load(open(REPORT))["units"]:
             for f in u.get("functions", []):
-                pct[f["name"]] = f.get("fuzzy_match_percent", -1.0)
+                # objdiff omits the key at exactly 0.0 (serde skip-default); -1.0 is
+                # reserved for "not in the report at all". See gruntz.core.report.
+                pct[f["name"]] = fn_fuzzy(f)
     for line in SYM_CSV.read_text().splitlines():
         f = line.split(",")
         if len(f) >= 5 and f[4] == "func":

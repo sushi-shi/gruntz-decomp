@@ -895,6 +895,9 @@ CSymParser::~CSymParser() {
 }
 
 // @early-stop
+// 300/300 instructions at 952/952 bytes with every block boundary on retail's offset;
+// the residue is 18 register NAMES in arm 1 (cl reuses the freed edi as the m_count
+// scratch where retail keeps eax/ecx/edx). 472 variants found nothing.
 RVA(0x0013ad00, 0x3b8)
 i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_readOnly = a;
@@ -907,8 +910,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     char* src = new char[strlen(static_cast<char*>(buf)) + 1];
     m_cachedSourceBuffer = src;
     strcpy(src, static_cast<char*>(buf));
-    i32 tag = Classify(static_cast<char*>(buf));
-    if (tag != 0) {
+    if (Classify(static_cast<char*>(buf)) != 0) {
 
         if (m_readOnly == 0) {
             return 0;
@@ -984,9 +986,18 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     m_longestLeafNameLen = hdr.m_longestLeafNameLen;
     m_largestCommentSize = hdr.m_largestCommentSize;
     m_sorted = hdr.m_sorted;
-    // The fourth field is the serialized format version.
-    if (hdr.m_magic0 != SYMTAB_MAGIC_CR || hdr.m_magic3f != SYMTAB_MAGIC_LF
-        || hdr.m_magic7e != SYMTAB_MAGIC_EOF || hdr.m_version != 1) {
+    // Four separate guards: retail emits four inline `xor eax,eax; jmp ret` blocks,
+    // not the single short-circuit target a `||` chain produces.
+    if (hdr.m_magic0 != SYMTAB_MAGIC_CR) {
+        return 0;
+    }
+    if (hdr.m_magic3f != SYMTAB_MAGIC_LF) {
+        return 0;
+    }
+    if (hdr.m_magic7e != SYMTAB_MAGIC_EOF) {
+        return 0;
+    }
+    if (hdr.m_version != 1) {
         return 0;
     }
     CSymTab* node = new CSymTab(

@@ -1056,6 +1056,10 @@ CFaderShape::~CFaderShape() {
 }
 
 // @early-stop
+// The two signed/unsigned twins are fixed: retail carries the fader mode as an
+// UNSIGNED word, so its range guards are `jbe`/`jae` (both m_mode fields are now
+// GZ_ENUM_STORAGE(FaderMode, u32)). The rest is register/spill colouring plus one
+// inlined-vs-shared fail epilogue.
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
@@ -1633,7 +1637,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
 
 RVA(0x00182900, 0x35)
 i32 CFaderShape::GetFrameCount() {
-    FaderMode mode = m_mode;
+    GZ_ENUM_STORAGE(FaderMode, u32) mode = m_mode;
     if (mode == FADER_SWEEP_FORWARD || mode == FADER_SWEEP_REVERSE) {
         return m_span - m_halfWidth * 2;
     }

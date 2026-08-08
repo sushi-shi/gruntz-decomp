@@ -1506,6 +1506,11 @@ def main(argv=None, *, prog=None, description=None) -> int:
         if parsed_axes_rva != args.rva:
             parser.error("--axes-from RVA does not match generated manifest RVA")
         payload["axes"] = axes_payload["axes"]
+        if not candidates:
+            # Axes-only (the --max-depth 0 default): the batch front-end rejects an
+            # EMPTY candidates list, so drop the key rather than ship []. Axes alone
+            # are a complete manifest.
+            payload.pop("candidates", None)
     args.output.write_text(json.dumps(payload, indent=2) + "\n")
     counts = {
         family: sum(mutation.family == family for mutation in mutations)
@@ -1530,8 +1535,12 @@ def main(argv=None, *, prog=None, description=None) -> int:
     if args.run:
         from gruntz.permute.batch_source_variants import main as run_batch
 
+        # --max-depth 0 (the default, axes-only) generates NO AST candidates, so the
+        # product must floor the candidate count at 1 or --limit lands on 0 and the
+        # batch front-end rejects it.
         batch_args = [
-            str(args.output), "--limit", str(len(candidates) * max(1, _axis_product(payload))),
+            str(args.output),
+            "--limit", str(max(1, len(candidates)) * max(1, _axis_product(payload))),
             "--top", str(args.top), "--compile-timeout", str(args.compile_timeout),
         ]
         if args.batch_output is not None:

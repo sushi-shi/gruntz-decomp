@@ -472,8 +472,15 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
-// objdiff pairs the symbol but scores 0: retail duplicates the shared
-// Dispatch tail into the first switch arm where cl tail-merges ours.
+// Content is right (an order-insensitive instruction multiset differs only in how
+// many copies of the notify/restore block survive); the CROSS-JUMP FACTOR is not:
+// retail merges arms LOAD+POSTLOAD whole and duplicates the restore into PRESAVE and
+// SAVE, so its after-switch join lands right behind PRESAVE, while cl merges
+// PRESAVE+SAVE+LOAD's restore and pushes the join to the end. objdiff's percent
+// clamps at 0 on that layout swap, so it reads 0.00 and report.json omits the key -
+// use `sema disasm --blocks` here, not the score. No source lever found in ~15
+// spellings (case/default order, per-arm vs shared locals, goto-fail vs return 0,
+// inverted lookup guard).
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == NULL) {

@@ -189,7 +189,7 @@ public:
     i32* m_rowOfsA;
     i32* m_rowOfsB;
     i32* m_rowOfsC;
-    FaderMode m_mode;
+    GZ_ENUM_STORAGE(FaderMode, u32) m_mode;
     i32 m_stripCopy;
     i32 m_halfWidth;
     i32 m_useLut;

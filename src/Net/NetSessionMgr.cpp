@@ -501,6 +501,13 @@ i32 CNetSession::Advance() {
     return 1;
 }
 
+// @early-stop
+// Same size and control flow; cl anchors the strength-reduced slot cursor on
+// m_baseSeq (`lea esi,[ecx+0x34]`) where retail anchors it on m_isRemote
+// (`lea esi,[ecx+0x24]`), so retail's two `m_isRemote` tests get a disp-0
+// `cmp [esi],0` and ours spend an extra `mov`+`test` each. Not reachable from the
+// source: 11 spellings (pointer loop, hoisted state/remote locals, swapped `&&`
+// operands, `m_slots+i`, FALSE compares) all leave the anchor on m_baseSeq.
 RVA(0x000c0290, 0x63)
 i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {

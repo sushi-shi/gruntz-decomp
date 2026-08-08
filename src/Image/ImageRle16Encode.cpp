@@ -6,6 +6,10 @@
 #include <Rez/RezMgr.h>
 
 // @early-stop
+// 147/147 instructions on retail's frame (0x20c); the residue is one register
+// coloring flip - cl gives srcidx edi and k esi where retail has them the other
+// way round - plus `add ecx,2` for the two `outidx++` retail splits into two `inc`s
+// (spelling them apart costs more than it saves).
 RVA(0x001495d0, 0x1a6)
 void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];
@@ -59,9 +63,10 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                     x2 += static_cast<i32>(m_rleData[srcidx]) - 0x80;
                     srcidx++;
                 } else {
-                    u32 n = src[srcidx];
+                    // Re-read the run length rather than naming it: a local is live
+                    // across the loop and costs a spill slot retail does not have.
                     outidx++;
-                    if (n > 0) {
+                    if (src[srcidx] > 0) {
                         const u8* run = src + srcidx + 1;
                         i32 k = 0;
                         do {
@@ -70,7 +75,7 @@ void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
                             out[outidx + 1] = static_cast<u8>((px >> 8));
                             outidx += 2;
                             k++;
-                        } while (k < static_cast<i32>(n));
+                        } while (k < src[srcidx]);
                     }
                     x2 += static_cast<i32>(m_rleData[srcidx]);
                     srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;
