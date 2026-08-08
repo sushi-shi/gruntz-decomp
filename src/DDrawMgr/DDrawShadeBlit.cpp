@@ -494,15 +494,12 @@ void CDDrawShadeBlit::BlitShadedForward(
                 x += b - 0x80;
                 pos++;
             } else {
-                u8* dst0 = base + x * m_dstBpp;
-                u8* src0 = &m_rleData[pos + 1];
-                i32 count = b;
-                i32 i;
                 if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
 
-                        u8* d = dst0;
-                        u8* s = src0;
+                        u8* d = base + x * m_dstBpp;
+                        u8* s = &m_rleData[pos + 1];
+                        i32 count = b;
                         switch (m_drawType) {
                             case SHADE_DST_BY_SRC: {
                                 u8* pal = m_palDescr->m_data;
@@ -588,8 +585,9 @@ void CDDrawShadeBlit::BlitShadedForward(
                     }
                 } else {
 
-                    u8* d = dst0;
-                    u8* s = src0;
+                    u8* d = base + x * m_dstBpp;
+                    u8* s = &m_rleData[pos + 1];
+                    i32 count = b;
                     switch (m_drawType) {
                         case SHADE_DST_BY_SRC: {
                             u8* pal = m_palDescr->m_data;
@@ -1054,15 +1052,12 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 x += 0x80 - static_cast<i32>(b);
                 pos++;
             } else {
-                u8* dst0 = base + x * m_dstBpp;
-                u8* src0 = &m_rleData[pos + 1];
-                i32 count = b;
-                i32 i;
                 if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
 
-                        u8* d = dst0;
-                        u8* s = src0;
+                        u8* d = base + x * m_dstBpp;
+                        u8* s = &m_rleData[pos + 1];
+                        i32 count = b;
                         switch (m_drawType) {
                             case SHADE_DST_BY_SRC: {
                                 u8* pbase = m_palDescr->m_data;
@@ -1149,8 +1144,9 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                     }
                 } else {
 
-                    u8* d = dst0;
-                    u8* s = src0;
+                    u8* d = base + x * m_dstBpp;
+                    u8* s = &m_rleData[pos + 1];
+                    i32 count = b;
                     u8* cbase = m_palDescr ? m_palDescr->m_data : s;
                     switch (m_drawType) {
                         case SHADE_DST_BY_SRC: {
