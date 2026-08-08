@@ -12,6 +12,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/State.h>
 #include <Gruntz/Wnd.h>
 #include <MsgParam.h>

@@ -155,6 +155,139 @@ def _count_offset_macro_casts(code: str) -> int:
 # mangling are the residual; the rest belong in owner headers. A header `extern` IS the owner decl.
 _CPP_EXTERN = re.compile(r"^\s*extern\b", re.MULTILINE)
 
+# ... but ONLY the owner's. This metric read 0 for months while 45 globals were
+# `extern`-declared in 2+ headers (g_frameTime in EIGHT, and GruntzMgr.h declared
+# eight of its own globals TWICE) - the banned construct had simply moved out of the
+# .cpp files the counter scans, and the counter went quiet instead of following it.
+# So: count the REDUNDANT header declarations (occurrences - 1 per name), which is
+# exactly the debt. One declaration per symbol, in its owner header, is 0 here.
+#
+# Why redundancy and not "header externs": a header extern IS the legitimate owner
+# decl, so counting them all would ratchet against correct code. A SECOND one is
+# always wrong - the two copies drift (type, linkage, array bound), and every TU
+# that sees both pays for the duplicate in cl 5.0's cumulative declaration count,
+# which steers /O2 register allocation (docs/patterns/declaration-count-window-
+# steers-regalloc.md).
+_HEADER_EXTS = {".h", ".hpp", ".inl"}
+# `extern` up to the declarator: skip the optional language linkage and the type,
+# then take every comma-separated declarator name before the `;`. A `{` means an
+# `extern "C" { ... }` BLOCK, not a declaration - its members are matched on their
+# own lines (they may or may not respell `extern`, so the block body is rescanned).
+_EXTERN_DECL = re.compile(
+    r'\bextern\b\s*(?:"[^"]*")?\s*(?![{;])([^;{}]*);',
+    re.DOTALL,
+)
+# NOTE the optional linkage string: `_strip` has already blanked `"C"` to a space by
+# the time these run, so a regex that REQUIRES the quotes matches nothing. That bug
+# silently dropped every bare member of an `extern "C" { ... }` block.
+_EXTERN_BLOCK = re.compile(r'\bextern\s*(?:"[^"]*")?\s*\{')
+_IDENT = re.compile(r"[A-Za-z_]\w*")
+# A `(` opens a prototype's parameter list (or a function-pointer declarator); the
+# declared name is the last identifier BEFORE it. `[` opens an array bound.
+_ARRAY_BOUND = re.compile(r"\[[^\]]*\]")
+# ... except when the `(` belongs to a DECL-SPECIFIER, which is not the declarator:
+# `extern "C" __declspec(dllimport) unsigned long WINAPI timeGetTime(void);` would
+# otherwise report `__declspec` as the declared symbol (it did; two umbrella headers
+# then read as a duplicate pair of it).
+_DECLSPEC = re.compile(r"\b(?:__declspec|__attribute__)\s*\([^()]*(?:\([^()]*\)[^()]*)*\)")
+
+
+def _declarator_name(part: str) -> str | None:
+    """The symbol a single declarator declares - the last identifier in it once the
+    decl-specifiers, parameter list and array bounds are cut. `const double g_max`
+    -> g_max; `char g_slots[TINT_COUNT]` -> g_slots; `void Sink(const char* m)` ->
+    Sink; `__declspec(dllimport) unsigned long WINAPI timeGetTime(void)` -> the
+    function, not the attribute."""
+    head = _DECLSPEC.sub(" ", part)           # cut __declspec(...)/__attribute__(...)
+    head = head.split("(", 1)[0]              # cut a prototype's parameter list
+    head = _ARRAY_BOUND.sub(" ", head)        # cut array bounds
+    ids = _IDENT.findall(head)
+    return ids[-1] if ids else None
+
+
+def _header_extern_names(code: str) -> list[str]:
+    """Every symbol an `extern` declaration in this header declares.
+
+    Handles the four spellings this tree uses: plain `extern T g;`, language-linkage
+    `extern "C" T g;`, comma lists (`extern i32 a, b, c;`) and `extern "C" { ... }`
+    blocks (whose members are re-scanned, so a member that omits `extern` still
+    counts). Array bounds and prototype parameter lists are stripped before the name
+    is taken, so `g_slots[TINT_COUNT]` and `Sink(const char*)` both yield one name.
+    """
+    names: list[str] = []
+    # An `extern "C" { ... }` block gives every declaration inside it external
+    # linkage whether or not it respells `extern`; splice those bodies in so the
+    # bare members are seen. (FrameClock.h respells it, NetLobby's blocks do not.)
+    spliced = code
+    for m in _EXTERN_BLOCK.finditer(code):
+        depth, i, n = 0, m.end() - 1, len(code)
+        while i < n:
+            if code[i] == "{":
+                depth += 1
+            elif code[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        body = code[m.end():i]
+        spliced += "\n" + "\n".join(
+            f"extern {stmt};" for stmt in body.split(";")
+            if stmt.strip() and "extern" not in stmt
+        )
+    for m in _EXTERN_DECL.finditer(spliced):
+        decl = m.group(1)
+        if "=" in decl:          # a definition with an initialiser, not a declaration
+            continue
+        # split the declarator list at top level (commas inside (...) are parameters)
+        parts, depth, cur = [], 0, ""
+        for ch in decl:
+            if ch in "([":
+                depth += 1
+            elif ch in ")]":
+                depth -= 1
+            if ch == "," and depth == 0:
+                parts.append(cur)
+                cur = ""
+            else:
+                cur += ch
+        parts.append(cur)
+        for part in parts:
+            name = _declarator_name(part)
+            if name:
+                names.append(name)
+    return names
+
+
+# `<Mfc.h>` and `<Win32.h>` are the two MUTUALLY EXCLUSIVE platform umbrellas -
+# Mfc.h is a superset of Win32.h and including both trips MFC's C1189 - so a symbol
+# declared once in each is never declared twice in any TU. Their mirrored preludes
+# (timeGetTime, INT_PTR) are that, not duplication. Any THIRD declaring header, or a
+# repeat inside one umbrella, still counts.
+_UMBRELLA_PAIR = {"include/Mfc.h", "include/Win32.h"}
+
+
+def _duplicate_header_externs() -> dict[str, list[str]]:
+    """symbol -> the header paths declaring it, for every symbol declared in 2+
+    places (the same header twice counts: GruntzMgr.h had eight such pairs)."""
+    import collections
+    seen: dict[str, list[str]] = collections.defaultdict(list)
+    for root in ROOTS:
+        base = REPO / root
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*")):
+            if path.suffix not in _HEADER_EXTS or not path.is_file():
+                continue
+            try:
+                code = _strip(path.read_text(errors="ignore"))
+            except OSError:
+                continue
+            rel = str(path.relative_to(REPO))
+            for name in _header_extern_names(code):
+                seen[name].append(rel)
+    return {k: v for k, v in seen.items()
+            if len(v) > 1 and set(v) != _UMBRELLA_PAIR}
+
 # A function prototype has external linkage even when it does not spell `extern`:
 #
 #     void ChannelSlots_Set(i32, i32);
@@ -467,6 +600,9 @@ _RATCHET = _VIEW_METRICS | _SEMANTIC_LABEL_SET | {
     "forced COMDAT emitters",
     "cpp extern decls",
     "cpp external prototypes",
+    # The header half of the same construct. `cpp extern decls` sat at 0 while 45
+    # globals were declared in 2+ headers; ratcheted so it cannot regrow quietly.
+    "duplicate header externs",
     # A newly reconstructed body must NOT arrive with `i32 a3`-style parameters. The meaning
     # is available at the moment of reconstruction - from the call sites and the body - and it
     # is far cheaper to name then than to re-derive later. Ratcheted at the standing count, so
@@ -533,6 +669,12 @@ def count(*, include_semantic: bool = False) -> list[tuple[str, int]]:
             except OSError:
                 pass
     rows.append(("view classes (*Views.h)", vh))
+    # Cross-FILE, so it cannot be a per-file regex like the rows above: the same
+    # symbol `extern`-declared in two headers (or twice in one) is the `cpp extern
+    # decls` construct after it migrated out of the .cpp files that metric scans.
+    # Counted as REDUNDANT declarations (occurrences - 1 per symbol).
+    rows.append(("duplicate header externs",
+                 sum(len(v) - 1 for v in _duplicate_header_externs().values())))
     if include_semantic:
         rows.extend(semantic_count())
     return rows
@@ -638,6 +780,15 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
 
 def main() -> int:
     include_semantic = "--semantic" in sys.argv
+    if "--dup-externs" in sys.argv:
+        dups = _duplicate_header_externs()
+        for name in sorted(dups, key=lambda k: (-len(dups[k]), k)):
+            print(f"{name}  ({len(dups[name])} decls)")
+            for path in dups[name]:
+                print(f"    {path}")
+        print(f"# {len(dups)} symbol(s), "
+              f"{sum(len(v) - 1 for v in dups.values())} redundant declaration(s)")
+        return 0
     rows = count(include_semantic=include_semantic)
     if "--update" in sys.argv:
         save_baseline(rows, include_semantic=include_semantic)

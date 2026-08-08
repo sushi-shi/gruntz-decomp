@@ -33,6 +33,4 @@ public:
     CFaderMgr* m_faderMgr;
 };
 SIZE_UNKNOWN();
-
-extern "C" i32 g_disableFades;
 #endif // GRUNTZ_CSOUNDFXEMITTER_H

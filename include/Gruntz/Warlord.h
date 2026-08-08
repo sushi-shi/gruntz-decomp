@@ -12,10 +12,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
 
-extern "C" u32 g_engineFrameDelta;
-
-extern "C" u32 g_frameTime;
-
 class CWarlord : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;

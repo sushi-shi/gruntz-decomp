@@ -2,8 +2,8 @@
 
 #include <Net/NetMgrReportError.h>
 
+#include <EmptyString.h>
 #include <Enums.h>
-#include <Net/EmptyString.h>
 #include <Net/NetMgr.h>
 
 #include <dplay.h>

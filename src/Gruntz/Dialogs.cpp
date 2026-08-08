@@ -16,6 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <MsgParam.h>
 #include <Utils/RegistryHelper.h>

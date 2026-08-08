@@ -95,5 +95,4 @@ inline CImage::~CImage() {
 
 struct _DDBLTFX;
 extern _DDBLTFX g_bltFx;
-extern i32 g_surfaceColorKey;
 #endif // SRC_IMAGE_CIMAGE_H

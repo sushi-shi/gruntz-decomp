@@ -69,6 +69,23 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 | directly nested casts | `nested static_casts` (semantic baseline) | 0 through correct typing/conversions — inspect the reported source/intermediate/final types; never hide a pair in a helper/local |
 | hand-rolled vtables | `*Vtbl structs`, `->vtbl accesses`, `g_*Vtbl globals`, `m_vtbl/m_vptr members`, `placeholder vtable slots` | 0 — model real virtuals |
 | `.cpp` extern decls / external prototypes | `cpp extern decls`, `cpp external prototypes` | 0 (declare in the owning header) |
+| the same symbol `extern`-declared in 2+ headers (or twice in one) | `duplicate header externs` | 0 — **one** declaration, in the owner header, which consumers `#include`. List them with `python -m gruntz.cleanliness.board --dup-externs` |
+
+> `cpp extern decls` reads 0 and always did once the .cpp copies were drained — but the
+> construct had simply moved into headers, where that metric does not look: 52 symbols
+> were `extern`-declared in 2+ headers (`g_frameTime` in **eight**; `GruntzMgr.h`
+> declared eight of its own globals **twice**), 72 redundant declarations in all, and
+> the counter stayed green throughout. `duplicate header externs` is the half that
+> follows the construct. It counts REDUNDANCY (occurrences − 1 per symbol), not header
+> externs, because a header extern IS the legitimate owner declaration — only a second
+> one is debt. Exactly one pair is exempt: `<Mfc.h>` / `<Win32.h>` are mutually
+> exclusive umbrellas (MFC's C1189 forbids both), so their mirrored prelude
+> declarations are never both visible in a TU.
+>
+> Removing a duplicate is usually byte-neutral, but it is not free: every TU that saw
+> both copies loses one from cl 5.0's cumulative declaration count, which steers /O2
+> register allocation (`docs/patterns/declaration-count-window-steers-regalloc.md`).
+> Work **one symbol at a time** and read the per-function objdiff.
 
 ## Build gates (fatal at 0)
 

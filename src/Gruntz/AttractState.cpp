@@ -22,6 +22,7 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/String.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezSync.h>
 
 #include <ddraw.h>
 #include <stddef.h>

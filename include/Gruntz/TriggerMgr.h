@@ -19,8 +19,6 @@
 #include <Gruntz/WarpStoneFragment.h>
 #include <Wwd/WwdAniDrawValue.h>
 
-extern FreeNodePool g_coordPool;
-
 void operator delete(void*);
 
 // Grid extents, used only as array dimensions and in index arithmetic.

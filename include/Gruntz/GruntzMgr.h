@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
+#include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/LogicTypeId.h>
@@ -368,24 +369,12 @@ extern "C" u32 g_gruntCreation;
 extern "C" u32 g_gooPuddlez;
 extern "C" u32 g_explosionz;
 extern "C" u32 g_resolutionChanged;
-extern "C" CGruntzMgr* g_gameReg;
 
-extern "C" u32 g_gruntDestruction;
-extern "C" u32 g_gruntCreation;
-extern "C" u32 g_gooPuddlez;
-extern "C" i32 g_monologoShown;
-extern "C" i32 g_cdPromptResult;
 extern i32 g_debugDisplayFlags;
-extern "C" u32 g_explosionz;
-extern CString g_brickText1;
 extern CString g_brickText2;
-
-extern "C" CGruntzMgr* g_gameReg;
 
 extern i32 g_warpX;
 extern i32 g_warpY;
-extern "C" i32 g_cdPromptResult;
-extern i32 g_debugDisplayFlags;
 
 CString RunCustomWorldDialog(HWND parent, CString* out);
 i32 FindProcessByName(const char* name, i32 flag, void** out);

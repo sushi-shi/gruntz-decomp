@@ -5,13 +5,8 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/UserLogic.h>
-
-extern "C" {
-    i32 LogicHitFactory(CGameObject* obj);
-    i32 LogicAttackFactory(CGameObject* obj);
-    i32 LogicBumpFactory(CGameObject* obj);
-}
 
 // The INLINED shape.  It is not the same instruction stream as the out-of-line
 // copy in UserLogic.cpp (0x8a40) and it must not be: when this body is expanded

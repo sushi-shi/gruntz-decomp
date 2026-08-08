@@ -11,8 +11,6 @@
 
 struct CIndicatorSyncHelper {};
 SIZE_UNKNOWN();
-extern "C" u32 g_engineFrameDelta;
-
 SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTINDICATORSPRITE_H

@@ -38,11 +38,13 @@
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SplashParams.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/String.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/EngStr.h>

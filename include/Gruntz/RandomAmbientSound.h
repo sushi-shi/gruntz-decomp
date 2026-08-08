@@ -10,8 +10,6 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 
-extern "C" i32 __ftol(double v);
-
 struct AmbSoundRecord {
     char m_pad00[0x10];
     DirectSoundMgr* m_mgr;

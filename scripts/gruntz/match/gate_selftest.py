@@ -973,6 +973,47 @@ class TestCleanlinessRatchet(unittest.TestCase):
         )
         self.assertEqual(merged["cpp external prototypes"], 2)
 
+    def test_header_extern_names_covers_every_spelling_in_the_tree(self):
+        # The `duplicate header externs` metric is only as good as this extractor;
+        # `cpp extern decls` sat at 0 for months while 52 symbols were declared in
+        # 2+ headers, so the failure mode here is a SILENT zero, not a loud one.
+        names = cleanliness._header_extern_names(
+            cleanliness._strip(
+                """
+                extern "C" u32 g_frameTime;
+                extern const double g_movingLogicMax;
+                extern i32 g_a, g_b, g_c;
+                extern "C" char g_slots[TINT_COUNT];
+                extern "C" void ButeParseErrorSink(const char* msg);
+                extern "C" BOOL __stdcall
+                NetEnumCb(u32 dpId, NetDPName* lpName, CNetMgr* ctx);
+                extern "C" __declspec(dllimport) unsigned long WINAPI timeGetTime(void);
+                extern "C" {
+                    extern i32 g_lastNow;
+                    i32 g_bareInsideBlock;
+                }
+                """
+            )
+        )
+        self.assertEqual(
+            names,
+            ["g_frameTime", "g_movingLogicMax", "g_a", "g_b", "g_c", "g_slots",
+             "ButeParseErrorSink", "NetEnumCb", "timeGetTime", "g_lastNow",
+             "g_bareInsideBlock"],
+        )
+        self.assertIn("duplicate header externs", cleanliness._RATCHET)
+
+    def test_duplicate_header_externs_ratchets_and_exempts_the_umbrella_pair(self):
+        cleanliness.save_baseline([("duplicate header externs", 1)])
+        merged = dict(
+            cleanliness.merge_baseline_downonly([("duplicate header externs", 9)])
+        )
+        self.assertEqual(merged["duplicate header externs"], 1)
+        # Mfc.h and Win32.h can never both be included (MFC's C1189), so a symbol
+        # declared once in each is not a duplicate; a third declarer still is.
+        self.assertEqual(cleanliness._UMBRELLA_PAIR,
+                         {"include/Mfc.h", "include/Win32.h"})
+
     def test_cpp_external_prototypes_exclude_qualified_direct_initialized_data(self):
         code = cleanliness._strip(
             """

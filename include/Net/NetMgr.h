@@ -703,13 +703,6 @@ SIZE(0x8c);
 extern "C" i32 g_spEnumValidated;
 class CNetMgr;
 struct NetDPName;
-extern "C" BOOL __stdcall
-NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
-extern "C" BOOL __stdcall
-NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
-
-extern "C" i32 g_activePlayerCount;
-
 static i32 __stdcall
 EnumProviderCb(GUID* lpGuid, char* lpName, DWORD dwMajor, DWORD dwMinor, void* lpContext);
 

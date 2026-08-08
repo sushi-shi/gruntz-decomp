@@ -91,8 +91,6 @@ extern GruntDirectionCell g_gruntDirWest;
 extern GruntDirectionCell g_gruntDirNorthWest;
 extern GruntDirectionCell g_gruntDirCenter;
 
-extern FreeNodePool g_coordPool;
-
 class CGruntCoordList : public CPtrList {
 public:
     void*& NextData(POSITION& pos);
@@ -155,11 +153,7 @@ extern GruntDirectionCell g_gruntMoveDirWest;
 extern GruntDirectionCell g_gruntMoveDirNorthWest;
 extern GruntDirectionCell g_gruntMoveDirCenter;
 
-extern const double g_movingLogicMin;
-extern const double g_movingLogicMax;
-extern u32 g_defaultZ;
 extern u32 g_gruntSpawnClock;
-extern "C" u32 g_frameTime;
 
 class CProjectile;
 

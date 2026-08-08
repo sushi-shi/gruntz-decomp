@@ -15,8 +15,6 @@ class CFileMemBase;
 struct CGruntPuddleSink {};
 SIZE_UNKNOWN();
 
-extern "C" u32 g_engineFrameDelta;
-
 extern char g_puddleSpriteKey[];
 
 class CGruntPuddle : public CUserLogic, public CWapX {

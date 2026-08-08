@@ -19,6 +19,7 @@
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Io/FileMem.h>
+#include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 

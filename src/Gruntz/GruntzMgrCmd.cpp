@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameText.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -22,6 +23,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>

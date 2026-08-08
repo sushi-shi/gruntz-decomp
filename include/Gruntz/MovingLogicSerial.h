@@ -12,6 +12,4 @@ class istream;
 
 istream& ReadCurve(istream& accum, CMotionState& c);
 
-extern i32 g_logicTypesRegistered;
-
 #endif // GRUNTZ_CMOVINGLOGICSERIAL_H

@@ -8,8 +8,6 @@
 #include <Gruntz/State.h>
 #include <Ints.h>
 
-extern "C" i32 g_attractStateCount;
-
 class CSymParser;
 
 class DirectSoundMgr;

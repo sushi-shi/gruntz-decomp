@@ -11,10 +11,6 @@
 
 class CFileMemBase;
 
-extern "C" u32 g_engineFrameDelta;
-
-extern "C" u32 g_frameTime;
-
 // The Teleporter WWD object's Smarts field selects its lifetime and destination
 // behavior. The shared WWD field remains raw because other logic classes give
 // Smarts unrelated meanings.

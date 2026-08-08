@@ -4,10 +4,6 @@
 #include <Image/RasterVtx.h>
 #include <Ints.h>
 
-extern "C" i16* g_rasterDestPtr;
-
-extern "C" u8* g_rasterDestRow;
-
 extern "C" const float g_rasterScale;
 extern "C" const float g_rasterScaleNeg;
 

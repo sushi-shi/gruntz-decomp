@@ -59,6 +59,7 @@
 #include <Net/NetSession.h>
 #include <Net/NetSlotState.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezSync.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/RegistryHelper.h>
 #include <Wap32/EngStr.h>

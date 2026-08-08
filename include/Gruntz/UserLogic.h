@@ -24,8 +24,6 @@ class CDDrawWorker;
 
 class CImage;
 
-extern CButeMgr g_buteMgr;
-
 extern i32 g_logicTypesRegistered;
 
 class CFileMemBase;
@@ -184,9 +182,5 @@ public:
     i32 AdvanceAnim();
 };
 SIZE(0x54);
-
-extern "C" i32 LogicHitFactory(CGameObject* obj);
-extern "C" i32 LogicAttackFactory(CGameObject* obj);
-extern "C" i32 LogicBumpFactory(CGameObject* obj);
 
 #endif // GRUNTZ_USERLOGIC_H

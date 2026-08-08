@@ -38,6 +38,7 @@
 #include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>
 #include <Rez/RezMgr.h>
+#include <Rez/RezSync.h>
 #include <Rez/RezTypeTag.h>
 #include <Wap32/EngStr.h>
 #include <Wap32/ScreenGeometry.h>

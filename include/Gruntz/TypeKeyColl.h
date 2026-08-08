@@ -11,7 +11,6 @@ extern CTypeCollRuntime g_typeColl;
 extern i32 g_typeCounter;
 
 extern "C" i32 g_recCount23;
-extern CButeTree g_buteTree;
 
 extern "C" i32 g_helperRefCount;
 

@@ -454,8 +454,6 @@ public:
 SIZE(0x520);
 SIZE_UNKNOWN();
 
-extern "C" i32 g_curPlayer;
-
 i32 ChannelSlots_FindFree();
 void ChannelSlots_Set(i32 slot, i32 value);
 i32 ChannelSlots_Get(i32 slot);
@@ -469,18 +467,13 @@ extern "C" i32 g_profAccA;
 extern "C" i32 g_profAccB;
 extern "C" i32 g_soundChannelInUse[TINT_COUNT];
 
-extern "C" u32 g_killCueClock;
-
 extern i32 g_lastLevelNum;
 // Per-world death cause a StaticHazard inflicts; copied into the hazard
 // object's WWD `Smarts` slot at construction.
 extern "C" GruntDeathType g_areaHazardDeath;
 extern "C" i32 g_levelBias100;
-extern "C" i32 g_soundChannelInUse[TINT_COUNT];
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
-extern "C" i32 g_profAccA;
-extern "C" i32 g_profAccB;
 
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
 CString GetColorName(i32 colorIdx, i32 upper);

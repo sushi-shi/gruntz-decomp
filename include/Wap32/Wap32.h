@@ -170,7 +170,4 @@ public:
     i32 m_errorDetail;
 };
 SIZE(0x254);
-
-extern CGameWnd* g_activeGameWnd;
-extern i32 g_gameAppInstanceCount;
 #endif // WAP32_H

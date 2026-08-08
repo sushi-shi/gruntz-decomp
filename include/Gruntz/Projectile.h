@@ -67,7 +67,5 @@ public:
 
 SIZE_UNKNOWN();
 
-extern const double g_movingLogicMax;
-
 extern const double g_projPhase1;
 #endif // GRUNTZ_PROJECTILE_H

@@ -51,6 +51,4 @@ public:
 };
 SIZE(0xa0);
 
-extern "C" i32 __ftol(double x);
-
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

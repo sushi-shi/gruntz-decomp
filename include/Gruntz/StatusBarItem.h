@@ -65,6 +65,4 @@ inline CStatusBarItem::~CStatusBarItem() {
     Reset();
 }
 
-extern "C" i32 g_curPlayer;
-
 #endif // STATUSBARITEM_H

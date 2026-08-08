@@ -4,8 +4,6 @@
 #include <Gruntz/GameMode.h>
 #include <Ints.h>
 
-extern "C" tagRECT g_versionRect;
-
 i32 ShowHudMessage(
     CDDrawSurfaceMgr* sink,
     CString* text,

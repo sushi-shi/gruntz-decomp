@@ -55,7 +55,6 @@ GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_READY3 = 0x538
 GZ_ENUM_CONST_END(DialogCtrlId)
 
-extern "C" HWND g_sharedFlag;
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 class CLatencyList;

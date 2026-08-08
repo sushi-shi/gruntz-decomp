@@ -1,4 +1,3 @@
-#include <DDrawMgr/DDPageMgr.h>
 #include <Mfc.h>
 #include <MfcWin.h>
 #include <Ints.h>

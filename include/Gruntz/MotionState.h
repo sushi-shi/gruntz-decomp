@@ -102,7 +102,4 @@ inline void CMotionState::InitBounds() {
     m_maxVelocity.y = g_movingLogicMax;
     m_maxVelocity.z = g_movingLogicMax;
 }
-
-extern const double g_motionNegHalf;
-extern const double g_motionNegTwo;
 #endif // GRUNTZ_MOTIONSTATE_H

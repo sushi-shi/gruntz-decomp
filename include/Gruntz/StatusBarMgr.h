@@ -89,8 +89,6 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-extern CButeMgr g_buteMgr;
-
 const i32 kSlotCommitLevel = 0x1a;
 
 const i32 kActivateErrId = 0x80e4;

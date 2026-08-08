@@ -16,6 +16,7 @@
 #undef isdigit
 #pragma function(memcpy)
 
+#include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/XferArchive.h>

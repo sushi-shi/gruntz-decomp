@@ -10,12 +10,9 @@
 #include <Gruntz/MotionState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
+#include <Rez/FrameClock.h>
 #include <Wwd/MoveMode.h>
 
-extern const double g_movingLogicMin;
-extern const double g_movingLogicMax;
-
-extern "C" u32 g_frameTime;
 extern const double g_motionZScale;
 extern u32 g_defaultZ;
 

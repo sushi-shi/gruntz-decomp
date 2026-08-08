@@ -291,8 +291,6 @@ inline CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
 
-extern "C" const GUID IID_IDirectDrawSurface3;
-
 extern u8 g_clut[];
 extern u16 g_lut16[256];
 

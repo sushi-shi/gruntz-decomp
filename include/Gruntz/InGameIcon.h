@@ -17,8 +17,6 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/UserLogic.h>
 
-extern "C" u32 g_frameTime;
-
 class LeafCue;
 
 GZ_ENUM_BEGIN(InGameIconGlitter)

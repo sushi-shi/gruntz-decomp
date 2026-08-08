@@ -5,6 +5,4 @@
 
 extern i32 g_serialCounter;
 
-extern i32 g_serialCounter;
-
 #endif // INCLUDE_GRUNTZ_SERIALCOUNTER_H

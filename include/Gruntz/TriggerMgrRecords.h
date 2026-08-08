@@ -16,9 +16,6 @@ enum {
 
 class CGruntPuddle;
 
-extern CButeMgr g_buteMgr;
-extern "C" u32 g_frameTime;
-
 void Str_Free(void* node);
 
 struct CGridCell {

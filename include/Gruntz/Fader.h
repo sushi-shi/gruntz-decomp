@@ -38,8 +38,6 @@ public:
 };
 SIZE(0x38);
 
-extern "C" i32 __ftol(double v);
-
 extern const float g_faderScale_5f085c;
 extern const double g_faderPowK;
 extern const float g_faderHalf;

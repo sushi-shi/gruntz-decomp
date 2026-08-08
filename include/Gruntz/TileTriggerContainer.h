@@ -17,8 +17,6 @@ class CGiantRockLogic;
 class CTileTriggerSwitchLogic;
 struct CGameObject;
 
-extern "C" u32 g_frameTime;
-
 i32 __stdcall SerializeApplyA(
     CFileMemBase* s,
     SerialMode mode,

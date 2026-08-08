@@ -304,7 +304,6 @@ extern "C" i32 g_serviceId;
 
 extern "C" CMulti* g_connectRptMgr;
 extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList);
-extern CFile g_obj646778;
 
 extern "C" HWND g_sharedFlag;
 

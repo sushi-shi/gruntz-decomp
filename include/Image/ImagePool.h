@@ -58,8 +58,6 @@ SIZE_UNKNOWN();
 
 extern "C" HINSTANCE g_hResModule;
 
-extern "C" HINSTANCE g_hResModule;
-
 extern char g_bmpHeaderTemplate[];
 
 i32 DisplayUsesPalette();
