@@ -443,8 +443,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
                 work.bottom = cur.bottom + 1;
                 DrawTextA(hdc, item->name, strlen(item->name), &work, format);
             }
-            COLORREF color;
             if (item->type & FONTITEM_COLORED) {
+                COLORREF color;
                 switch (item->data) {
                     case TEXTCOLOR_NAVY:
                         color = TCLR_NAVY;
@@ -498,10 +498,10 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
                         color = TCLR_BLACK;
                         break;
                 }
+                SetTextColor(hdc, color);
             } else {
-                color = TCLR_WHITE;
+                SetTextColor(hdc, TCLR_WHITE);
             }
-            SetTextColor(hdc, color);
             calc.left = cur.left;
             calc.right = cur.right;
             calc.bottom = cur.bottom;
