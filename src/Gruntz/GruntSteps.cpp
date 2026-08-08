@@ -531,38 +531,46 @@ i32 CGrunt::StepCompassMove() {
             case TILEKIND_ARROW_CURRENT:
                 switch (m_entranceCell.direction) {
                     case DIR_NORTH:
+                        moveX = x;
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorth;
                         break;
                     case DIR_EAST:
                         moveX = x + 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirEast;
                         break;
                     case DIR_SOUTH:
+                        moveX = x;
                         moveY = y + 0x20;
                         voice = g_gruntMoveDirSouth;
                         break;
                     case DIR_WEST:
                         moveX = x - 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirWest;
                         break;
                     case DIR_NORTHEAST:
                         moveX = x + 0x20;
+                        moveX = x;
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorthEast;
                         break;
                     case DIR_SOUTHEAST:
                         moveY = y + 0x20;
                         moveX = x + 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirSouthEast;
                         break;
                     case DIR_SOUTHWEST:
                         moveY = y + 0x20;
                         moveX = x - 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirSouthWest;
                         break;
                     case DIR_NORTHWEST:
                         moveX = x - 0x20;
+                        moveX = x;
                         moveY = y - 0x20;
                         voice = g_gruntMoveDirNorthWest;
                         break;
@@ -570,22 +578,26 @@ i32 CGrunt::StepCompassMove() {
                 break;
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
+                moveX = x;
                 moveY = y - 0x20;
                 voice = g_gruntMoveDirNorth;
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
                 moveX = x + 0x20;
+                moveY = y;
                 voice = g_gruntMoveDirEast;
                 break;
             case TILEKIND_ARROW_DOWN_A:
             case TILEKIND_ARROW_DOWN_B:
+                moveX = x;
                 moveY = y + 0x20;
                 voice = g_gruntMoveDirSouth;
                 break;
             case TILEKIND_ARROW_LEFT_A:
             case TILEKIND_ARROW_LEFT_B:
                 moveX = x - 0x20;
+                moveY = y;
                 voice = g_gruntMoveDirWest;
                 break;
         }
@@ -631,38 +643,46 @@ i32 CGrunt::StepCompassMove() {
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:
+                    moveX = x;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
                     break;
                 case DIR_NORTHEAST:
                     moveY = y - 0x20;
                     moveX = x + 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirNorthEast;
                     break;
                 case DIR_EAST:
                     moveX = x + 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirEast;
                     break;
                 case DIR_SOUTHEAST:
                     moveY = y + 0x20;
                     moveX = x + 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirSouthEast;
                     break;
                 case DIR_SOUTH:
+                    moveX = x;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouth;
                     break;
                 case DIR_SOUTHWEST:
                     moveY = y + 0x20;
                     moveX = x - 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirSouthWest;
                     break;
                 case DIR_WEST:
                     moveX = x - 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
                     moveX = x - 0x20;
+                    moveX = x;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorthWest;
                     break;
@@ -705,39 +725,47 @@ i32 CGrunt::StepCompassMove() {
             moveY = y;
             switch (static_cast<GruntDirection>(dir)) {
                 case DIR_NORTH:
+                    moveX = x;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
                     break;
                 case DIR_NORTHEAST:
                     moveX = x + 0x20;
+                    moveX = x;
                     moveY = y - 0x20;
                     voice = g_gruntMoveDirNorthEast;
                     break;
                 case DIR_EAST:
                     moveX = x + 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirEast;
                     break;
                 case DIR_SOUTHEAST:
                     moveX = x + 0x20;
+                    moveX = x;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouthEast;
                     break;
                 case DIR_SOUTH:
+                    moveX = x;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouth;
                     break;
                 case DIR_SOUTHWEST:
                     moveX = x - 0x20;
+                    moveX = x;
                     moveY = y + 0x20;
                     voice = g_gruntMoveDirSouthWest;
                     break;
                 case DIR_WEST:
                     moveX = x - 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
                     moveY = y - 0x20;
                     moveX = x - 0x20;
+                    moveY = y;
                     voice = g_gruntMoveDirNorthWest;
                     break;
             }
