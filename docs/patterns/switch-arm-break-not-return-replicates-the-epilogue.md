@@ -90,3 +90,47 @@ shared tail through a near `0f 84` and the other through a short `74`.
 `return <const>;` and contain no other shared suffix. Otherwise you are in
 `switch-arm-tail-crossjump-vs-duplicate.md` (periodic arm deficit driven by the
 register rotation), which this does not fix.
+
+## The precondition is NECESSARY but NOT SUFFICIENT - full sweep, 2026-08-08
+
+A tree-wide sweep settles this: the recipe is a **one-off** until a second
+positive exists. Screened all 830 sub-100% functions in two stages - parse every
+`RVA()`-pinned body, split each `switch` into top-level arms, classify each arm's
+terminator (**19 sites** have >=2 arms ending in one identical `return <const>;`,
+`default` excluded from the identity test), then test legality: the recipe only
+preserves semantics when the switch's fall-out is itself `return <same const>;`.
+**6 of 19 are legal. All 6 were applied and measured. None improved** - three
+byte-neutral, three worse.
+
+| fn | rva | before -> after |
+|---|---|---|
+| `CGrunt::ScanNearestTarget` | 0xf42f0 | 68.28 -> 67.73 |
+| `CProjectile::SerializeMove` | 0xe0d40 | byte-neutral |
+| `CStatusBarMgr::LoadTabSprites` | 0x102250 | 76.12 -> 73.75 |
+| `CSBI_WellGoo::SerializeFields` | 0xe64c0 | byte-neutral |
+| `CMulti::DispatchRecvMsg` | 0xb9750 | 99.05 -> 98.21 |
+| `CPlay::OnKeyDown` | 0xcbcc0 | byte-neutral |
+
+The other 13 are **illegal**: the arm returns deliberately bypass real
+post-switch work (a `goto` label - `seek:`/`resetState:`/`reportError:`/
+`timeout:` - a differing `return 0;`, or a whole trailing block).
+`CGrunt::LoadGruntTypeTable` 0x4dd50 is the clearest, its 17 arm-returns skipping
+the `BuildAssetNamespacePrefixes`/`ReadConfigFromButeMgr` tail. This is also why
+`CTriggerMgr::ResetGroup` measured byte-neutral: a `reportError:` label sits after
+its switch.
+
+**Two things this retires.**
+
+1. **"Looks like the exemplar" is not a predictor.** `CPlay::OnKeyDown`'s numpad
+   switch is *shape-identical* to `SetTabState` - 13 arms, one call per arm, 12
+   arm-terminal `return 1;` plus one already-`break;`, trailing `return 1;` - and
+   converting all 12 is byte-identical output.
+2. **Exit-count parity is not a proxy for bytes.** `ScanNearestTarget`'s break
+   form fired the layout replicator and took its ret count 12 -> 13, *exactly*
+   matching retail's 13, while the score went DOWN. `LoadTabSprites` moved 17 ->
+   14 *toward* retail's 13 and lost 2.37.
+
+The OVER+LEGAL screen has produced **zero** positives in three attempts. It has
+ruling-out power only; no positive predictive power. The 39-row OVER-MERGE bucket
+is not reachable by this lever at all - only 5 of its rows contain a qualifying
+switch.
