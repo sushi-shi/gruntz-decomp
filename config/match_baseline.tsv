@@ -2768,7 +2768,7 @@ levelpreview	?Tick@CPreviewState@@QAEHXZ	100.0000	100.0000	13	a8d17f790729	0xde2
 levelrezpath	?BuildLevelRezPath@CGruntzMgr@@QAEHHHHHVCString@@@Z	97.8582	97.8582	10	da6a57225442	0x93d40	97.8582
 leveltilevalidation	?PlaceStartGruntz@CPlay@@QAEHXZ	100.0000	100.0000	14	f92e776825d0	0xd2b20	100.0000
 leveltilevalidation	?PositionBridgeToggle@CPlay@@QAEHW4StatusBarDock@@0@Z	97.5000	97.5000	4	21ce75c1a952	0xd5b20	97.5000
-leveltilevalidation	?ValidateLevelTiles@CPlay@@QAEHXZ	85.0719	85.0719	19	f80b012a8aab	0xd2dd0	85.0719
+leveltilevalidation	?ValidateLevelTiles@CPlay@@QAEHXZ	85.8743	85.8743	20	88606f7b3230	0xd2dd0	85.8743
 leveltime	?SerializeMove@CLevelTime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	2bfaca43de88	0x119b0	100.0000
 lightfx	??0CLightFx@@QAE@PAUCGameObject@@@Z	94.9115	94.9115	6	ad626aed6599	0x9cf00	94.9115
 lightfx	??1CLightFx@@UAE@XZ	100.0000	100.0000	2	a0f0681a21ef	0x12430	100.0000
