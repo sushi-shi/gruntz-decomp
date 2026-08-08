@@ -83,6 +83,30 @@ differs. Disproved as causes, each by a rebuild of `wwdobjmgr.obj`:
 actually references - but that is exactly the banned per-TU device. Treat the
 vtbl-absent row on `wwdobjmgr` as this wall's readout, not as a hierarchy bug.
 
+## Same shape for a DESTRUCTOR, and the sieve is what surfaces it (2026-08-08)
+
+`gruntz.audit.global_refs --rel32` reads `??1CFileMemBase@@UAE@XZ` **3 times** in
+retail's `CDDrawSurfaceMgr::SnapshotChildren` and **11 times** in `RestoreChildren`
+against 1 and 6 in ours - and, in the other direction, `??1CFile@@UAE@XZ` 3 vs our 11.
+That reads like a dtor-chain modelling error and is not one. Both sides agree on the
+chain: `~CFileMem` = vptr `??_7CFileMem` + `Close()` through the vtable slot,
+`~CFile` on the `CFile m_file` member at `+0x10`, then `~CFileMemBase` = vptr
+`??_7CFileMemBase` + `Close()` + `~CString` on `m_name` at `+0xc`. Only the cut differs:
+retail CALLS `~CFileMemBase` at all three cleanup sites in those two big functions, we
+expand it, and the extra vptr stamp per site is why our body is 0x620 bytes against
+retail's 0x505.
+
+Retail refutes the out-of-line reading itself. `??1CFileMem` at `0x157980` is 116 bytes
+and **expands** `~CFileMemBase` inline (`mov [esi],0x5efe68` / `call [0x5efe74]` /
+`lea ecx,[esi+0xc]` / `call ??1CString`); a `.cpp`-side definition could only have
+produced a call there. So `~CFileMemBase(){ Close(); }` is inline-in-header and the
+call/expand split is budget, exactly as for the constructors above.
+
+Measured, so nobody re-runs it: declaring `virtual ~CFileMemBase();` and defining it in
+`DDrawSubMgr.cpp` moves `SnapshotChildren` 63.71 -> 72.89 and costs `RestoreChildren`
+-5.03, `??1CFileMem` -19.26 and `LoadRecordFile` -12.54 in the same unit. Reverted: the
++9 is the wall paying out at one site while the shape it needs is wrong everywhere else.
+
 ## Related
 
 - `docs/patterns/base-trio-in-ctor-body-misplaces-vptr.md`
