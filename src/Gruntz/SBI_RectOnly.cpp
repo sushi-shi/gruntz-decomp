@@ -1663,10 +1663,13 @@ i32 CStatusBarMgr::BuildGameMenu() {
     return 1;
 }
 
-// ??0CSBI_RectOnly: BuildGameMenu's construction set is complete; retail keeps
-// 5 base-ctor calls where our cl flattens the chains (variable per-site inline
-// depth, see docs/patterns/msvc5-variable-ctor-inline-depth.md), so nothing
-// emits this COMDAT and the pin dangles.
+// ??0CSBI_RectOnly: retail's 0x101fa0 inlines the CStatusBarItem base ctor and stamps
+// m_kind, but nothing in our tree emits the COMDAT - cl inlines the whole chain at all
+// three `new CSBI_RectOnly` sites. Defining the ctor out-of-line here DOES land this
+// claim, and costs more than it wins: the base ctor stops being emitted anywhere
+// (0x1005d0's pin in SBI_TabzDialogEh.cpp dangles instead), BuildStatusBarTabs goes
+// 71.58 -> 69.24 and BuildGameMenu 72.33 -> 66.93. Same per-site cut-depth wall,
+// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md.
 
 RVA_COMPGEN(0x00101fa0, 0x1b, ??0CSBI_RectOnly@@QAE@XZ)
 
