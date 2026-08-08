@@ -598,9 +598,9 @@ public:
     CNetPlayerListNode*
     EnumGroupsInto(i32 maxPlayers, char* sessionName, i32 user1, const char* password);
 
-    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
+    static void ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd);
 
-    static void SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third);
+    static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption);
 
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
