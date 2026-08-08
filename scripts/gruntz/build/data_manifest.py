@@ -376,6 +376,192 @@ def vtable_rows(exe=EXE, base_dir=None):
     return rows, withheld
 
 
+#: MSVC's RTTI records, keyed by symbol prefix -> (field offsets we walk).
+#: `??_R4` complete-object-locator: +0xc pTypeDescriptor, +0x10 pClassHierarchyDescriptor.
+#: `??_R3` class-hierarchy descriptor: +0x8 numBaseClasses, +0xc pBaseClassArray.
+#: `??_R2` base-class array: numBaseClasses pointers to `??_R1` (plus cl's NUL word).
+#: `??_R1` base-class descriptor: +0x0 pTypeDescriptor.
+#: `??_R0` type descriptor: +0x0 the `type_info` vftable, +0x8 the `.?A...` name.
+COL_TYPE_DESC, COL_HIERARCHY = 0x0c, 0x10
+CHD_NUM_BASES, CHD_BASE_ARRAY = 0x08, 0x0c
+
+
+def rtti_rows(exe=EXE, base_dir=None):
+    """Enrollable `??_R4`/`??_R3`/`??_R2`/`??_R1`/`??_R0` definitions + the withheld.
+
+    Under `/GR` the word at offset 0 of a vtable COMDAT points at the class's
+    complete-object locator, and from there the whole RTTI graph hangs off `.rdata$r`
+    (`??_R1`..`??_R4`) and `.data` (`??_R0`, whose `spare` field the runtime writes).
+    None of it was in the manifest, so the delinker had no definition to name that
+    word by and `hypothesis_owner_and_addend_for_rva` fell back to the closest
+    `.rdata` definition - the vtable itself, named `??_7<class>@@6B@+<addend>`. The
+    same fallback mislabels every interior RTTI pointer.
+
+    THE NAMES ARE READ OFF cl's OWN RELOCATIONS, the `apply_string_names` oracle
+    applied to RTTI. Both graphs are walked IN PARALLEL from one anchor per class -
+    the retail image gives the ADDRESSES (`vtable-4` -> COL -> hierarchy -> base-class
+    array -> descriptors -> type descriptors) and the base object that emitted the
+    same vtable gives the NAMES at the identical offsets. Nothing is mangled by hand:
+    a `??_R1`'s spelling encodes its PMD and a `??_R0`'s encodes the decorated type
+    name, and re-deriving either would be a guess where cl already wrote the answer.
+
+    EVERY node is then proven byte-for-byte: the retail bytes at the walked address
+    must equal the candidate COMDAT's payload with the relocated dwords masked out
+    (the type-descriptor name string, the PMD displacements, the base counts). A node
+    that fails, or whose name the walk reaches at two different addresses, is
+    withheld - never enrolled on the strength of the walk alone.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+    from gruntz.core.pe import PE  # noqa: E402
+
+    try:
+        from gruntz.core.vtable_hierarchy import build_registry  # noqa: E402
+        reg, _src = build_registry()
+    except Exception as exc:
+        return [], [(0, "??_R*", "vtable registry unavailable (%s)" % type(exc).__name__)]
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    # name -> {unit: {"sec": section row, "payload": bytes, "rel": {site: name}}}
+    defs = defaultdict(dict)
+    # ??_7 name -> {unit: the ??_R4 name its COMDAT's offset-0 word points at}
+    anchors = defaultdict(dict)
+    for obj in sorted(base_dir.glob("*.obj")):
+        try:
+            c = _Coff(obj)
+        except Exception:
+            continue
+        for sec in c.section_table:
+            members = c.defined_symbols(sec["index"])
+            if len(members) != 1:
+                continue
+            offset, name = members[0]
+            if name.startswith("??_R"):
+                defs[name][obj.stem] = {
+                    "sec": sec, "payload": c.section_payload(sec["index"]),
+                    "rel": c.relocations(sec["index"])}
+            elif name.startswith("??_7") and offset == 4:
+                head = c.relocations(sec["index"]).get(0)
+                if head and head.startswith("??_R4"):
+                    anchors[name][obj.stem] = head
+
+    pe = PE(str(exe))
+    primary = {}
+    for name, ci in reg.items():
+        p = ci.vtables.get(0)
+        if p is not None:
+            primary["??_7%s@@6B@" % name] = p[0]
+
+    located, withheld = {}, []          # name -> rva
+
+    def place(name, rva):
+        """Record one walked node; a name reached at two addresses is a defect."""
+        prev = located.get(name)
+        if prev is None:
+            located[name] = rva
+            return True
+        if prev != rva:
+            withheld.append((rva, name, "RTTI walk reaches one name at two RVAs"))
+            return False
+        return True
+
+    for vtable, units in sorted(anchors.items()):
+        rva = primary.get(vtable)
+        if rva is None or retail_col_head(pe, rva) != 4:
+            continue                    # no slot map, or retail is not /GR here
+        col = pe.u32(rva - 4) - pe.image_base
+        unit = sorted(units)[0]
+
+        def shape(name):
+            """The candidate COMDAT for `name`, preferring the anchor's own unit."""
+            group = defs.get(name)
+            if not group:
+                return None
+            return group.get(unit) or group[sorted(group)[0]]
+
+        chain, ok = [], True
+        node = shape(units[unit])
+        if node is None:
+            withheld.append((col, units[unit], "no candidate COMDAT for the COL"))
+            continue
+        chain.append((units[unit], col))
+        r3name = node["rel"].get(COL_HIERARCHY)
+        for field in (COL_TYPE_DESC, COL_HIERARCHY):
+            nm, ptr = node["rel"].get(field), pe.u32(col + field)
+            if nm is None or ptr is None:
+                ok = False
+                break
+            chain.append((nm, ptr - pe.image_base))
+        if not ok or r3name is None:
+            withheld.append((col, units[unit], "COL record is not walkable"))
+            continue
+        chd, r3 = shape(r3name), pe.u32(col + COL_HIERARCHY) - pe.image_base
+        r2name = chd["rel"].get(CHD_BASE_ARRAY) if chd else None
+        bases = pe.u32(r3 + CHD_NUM_BASES)
+        r2 = pe.u32(r3 + CHD_BASE_ARRAY)
+        if r2name is None or bases is None or r2 is None:
+            withheld.append((r3, r3name or "??_R3?", "hierarchy record is not walkable"))
+            continue
+        r2 -= pe.image_base
+        chain.append((r2name, r2))
+        array = shape(r2name)
+        for i in range(bases):
+            r1name = array["rel"].get(i * 4) if array else None
+            r1 = pe.u32(r2 + i * 4)
+            if r1name is None or r1 is None:
+                ok = False
+                break
+            r1 -= pe.image_base
+            chain.append((r1name, r1))
+            desc = shape(r1name)
+            r0name = desc["rel"].get(0) if desc else None
+            r0 = pe.u32(r1)
+            if r0name is None or r0 is None:
+                ok = False
+                break
+            chain.append((r0name, r0 - pe.image_base))
+        if not ok:
+            withheld.append((r2, r2name, "base-class array is not walkable"))
+            continue
+        for name, addr in chain:
+            place(name, addr)
+
+    # Every located node is re-proven against the shipped bytes before it enrolls.
+    rows, storage_pe = [], read_pe(exe)
+    for name, rva in sorted(located.items()):
+        group = defs.get(name) or {}
+        sizes = {d["sec"]["size"] for d in group.values()}
+        if len(sizes) != 1:
+            withheld.append((rva, name, "candidate COMDATs disagree on the extent"))
+            continue
+        size = sizes.pop()
+        off = pe.off(rva)
+        if off is None:
+            withheld.append((rva, name, "RTTI record is not mapped in the image"))
+            continue
+        sample = next(iter(group.values()))
+        want, got = bytearray(sample["payload"][:size]), bytearray(pe.data[off:off + size])
+        if len(want) != size or len(got) != size:
+            withheld.append((rva, name, "RTTI record is truncated"))
+            continue
+        for site in sample["rel"]:      # the pointers differ by construction
+            want[site:site + 4] = got[site:site + 4] = b"\0\0\0\0"
+        if want != got:
+            withheld.append((rva, name, "retail bytes contradict the candidate record"))
+            continue
+        storage = classify_pe_storage(storage_pe, rva)["class"]
+        if storage not in STORAGE:
+            withheld.append((rva, name, "RTTI storage %s is not enrollable" % storage))
+            continue
+        for unit, d in sorted(group.items()):
+            rows.append({"name": name, "object": "%s.c" % unit, "rva": rva,
+                         "size": size, "storage": STORAGE[storage],
+                         "alignment": d["sec"]["alignment"], "section_placed": True,
+                         "provenance": "candidate-COFF-rtti"})
+    return rows, withheld
+
+
 def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
@@ -413,6 +599,11 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     vtables, vtable_withheld = vtable_rows(exe=exe)
     rows += vtables
     withheld += vtable_withheld
+
+    # The RTTI graph each /GR vtable's offset-0 word points into.
+    rtti, rtti_withheld = rtti_rows(exe=exe)
+    rows += rtti
+    withheld += rtti_withheld
 
     # The reviewed DATA_COMPGEN claims (one per owning unit, labels.py-gated).
     compgen, compgen_withheld = compgen_rows(exe=exe)
@@ -523,7 +714,8 @@ def section_rows(rows, base_dir=None):
         # Only cl.exe's string literals and vtables own a whole COMDAT. The DATA()
         # globals share one `.bss`/`.data` per object, so they keep the legacy
         # allocation form.
-        if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable") \
+        if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable",
+                                   "candidate-COFF-rtti") \
                 and r.get("section_placed", True):
             by_obj.setdefault(r["object"], []).append(r)
 
@@ -543,7 +735,7 @@ def section_rows(rows, base_dir=None):
             if len(members) != 1:
                 continue
             offset, name = members[0]
-            if name.startswith("??_C@") and offset == 0:
+            if (name.startswith("??_C@") or name.startswith("??_R")) and offset == 0:
                 owner[name] = (sec, 0)
             elif name.startswith("??_7"):
                 owner[name] = (sec, offset)

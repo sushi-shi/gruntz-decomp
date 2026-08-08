@@ -2,8 +2,9 @@
 """Batch-normalize base + target COFF objs into disposable objdiff comparison copies.
 
 Thin ninja driver around `canonicalize_data_symbols.canonicalize_coff`: for every
-manifest unit it rewrites the compiler-private data names (`$SG`/`$T`/`name$S<n>`)
-and same-function jump-table `DIR32` labels of both the recompiled base obj and its
+manifest unit it rewrites the compiler-private data names (`$SG`/`$T`/`name$S<n>`),
+resolves COFF weak externals to their default, and rewrites same-function jump-table
+`DIR32` labels of both the recompiled base obj and its
 delinked target obj into a content-addressed, side-by-side view under
 `build/objdiff/normalized/`. `objdiff.json` points at these copies; the real
 `build/objdiff/base/` and `build/objdiff/target/` objects are never touched, so the
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import struct
 import sys
 from pathlib import Path
 
@@ -29,6 +31,7 @@ _MODULE_MTIME = max(
     Path(canon.__file__).stat().st_mtime,
     Path(__file__).stat().st_mtime,
 )
+SYMBOL_SIZE = canon.SYMBOL_SIZE
 
 
 def _stale(src: Path, out: Path) -> bool:
@@ -48,6 +51,60 @@ def _normalize_one(src: Path, out_obj: Path, out_sidecar: Path) -> str:
     return "wrote"
 
 
+def _weak_and_strong_names(path: Path) -> tuple[set[str], set[str]]:
+    """({weakly referenced}, {strongly defined}) symbol names of one COFF object.
+
+    A raw symbol-table scan, not a full parse: the whole-link check below only
+    needs the two name sets and runs over every processed object each build.
+    """
+    data = path.read_bytes()
+    symptr, nsym = struct.unpack_from("<II", data, 8)
+    strtab = symptr + nsym * SYMBOL_SIZE
+    weak: set[str] = set()
+    strong: set[str] = set()
+    index = 0
+    while index < nsym:
+        base = symptr + index * SYMBOL_SIZE
+        section, _typ, storage, aux = struct.unpack_from("<hHBB", data, base + 12)
+        if struct.unpack_from("<I", data, base)[0]:
+            name = data[base:base + 8].split(b"\0")[0].decode("latin1")
+        else:
+            offset = strtab + struct.unpack_from("<I", data, base + 4)[0]
+            name = data[offset:data.index(b"\0", offset)].decode("latin1")
+        if storage == canon.WEAK_EXTERNAL_STORAGE:
+            weak.add(name)
+        elif storage == canon.EXTERNAL_STORAGE and section > 0:
+            strong.add(name)
+        index += 1 + aux
+    return weak, strong
+
+
+def _assert_weak_externals_have_no_strong_definition(paths: list[Path]) -> int:
+    """Fail the build if a weakly-referenced name is defined strongly anywhere.
+
+    `canonicalize_coff` resolves each weak external to its auxiliary default,
+    which is what the linker does ONLY while no object supplies a strong
+    definition of that name. That is a whole-link fact, so it is re-proven here
+    over the whole processed set rather than assumed per object. Measured today:
+    508 weak `??_E<C>@@UAEPAXI@Z` references, 6 strong `??_E` definitions, and
+    the two name sets are disjoint (the strong ones are non-virtual `QAEPAXI@Z`
+    bodies and `W7AEPAXI@Z` thunks, a different mangling).
+    """
+    weak: set[str] = set()
+    strong: set[str] = set()
+    for path in paths:
+        one_weak, one_strong = _weak_and_strong_names(path)
+        weak |= one_weak
+        strong |= one_strong
+    clash = sorted(weak & strong)
+    if clash:
+        raise SystemExit(
+            "[normalize] FATAL: %d weak external(s) also have a strong definition, "
+            "so resolving them to their default is no longer what the linker does: %s"
+            % (len(clash), ", ".join(clash[:8])))
+    return len(weak)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--base-dir", required=True, type=Path)
@@ -61,6 +118,10 @@ def main(argv=None) -> int:
     target_out = args.out_dir / "target"
     wrote = skipped = base_n = target_n = 0
     processed = []
+    inputs = [p for unit in sorted(args.units)
+              for p in (args.base_dir / f"{unit}.obj",
+                        args.target_dir / f"{unit}.c.obj") if p.exists()]
+    weak_n = _assert_weak_externals_have_no_strong_definition(inputs)
     for unit in sorted(args.units):
         base_src = args.base_dir / f"{unit}.obj"
         if base_src.exists():
@@ -95,7 +156,8 @@ def main(argv=None) -> int:
          f"wrote\t{wrote}\n"
          f"skipped\t{skipped}\n"
          f"set_sha256\t{digest}\n").encode("utf-8"))
-    print(f"[normalize] base={base_n} target={target_n} wrote={wrote} skipped={skipped}")
+    print(f"[normalize] base={base_n} target={target_n} wrote={wrote} "
+          f"skipped={skipped} weak-externals-resolved={weak_n}")
     return 0
 
 

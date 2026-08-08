@@ -80,12 +80,14 @@ class _Coff:
                 end = b.index(b"\0", self.strtab_off + off)
                 name = b[self.strtab_off + off:end].decode("latin1")
             vsize, _vaddr, rawsize, rawptr = struct.unpack_from("<IIII", b, o + 8)
+            relptr, nrel = struct.unpack_from("<IxxxxH", b, o + 24)
             chars = struct.unpack_from("<I", b, o + 36)[0]
             self.sections.append((rawptr, rawsize))
             self.section_table.append({
                 "index": i + 1, "name": name, "characteristics": chars,
                 "alignment": section_alignment(chars),
                 "size": rawsize or vsize, "comdat": 0, "assoc": 0,
+                "reloc_offset": relptr, "reloc_count": nrel,
             })
         # The section-definition aux record carries the authoritative length
         # (.bss has rawsize 0) plus the COMDAT selection/associate.
@@ -127,6 +129,35 @@ class _Coff:
             if scl == 2:                      # IMAGE_SYM_CLASS_EXTERNAL
                 out.append((value, self.sym_name(idx)))
         out.sort()
+        return out
+
+    def section_payload(self, secnum: int) -> bytes:
+        """The raw bytes of one section (b"" when it has none, e.g. .bss)."""
+        if not (1 <= secnum <= self.nsec):
+            return b""
+        rawptr, rawsize = self.sections[secnum - 1]
+        return self.buf[rawptr:rawptr + rawsize] if rawptr else b""
+
+    def relocations(self, secnum: int):
+        """{site -> referent name} for one section's COFF relocations.
+
+        Only DIR32 sites matter to the callers here and every entry is 10 bytes
+        (VA, symbol index, type); `IMAGE_SCN_LNK_NRELOC_OVFL` moves the real
+        count into a leading pseudo-record, which is honoured.
+        """
+        if not (1 <= secnum <= self.nsec):
+            return {}
+        sec = self.section_table[secnum - 1]
+        ptr, count, first = sec["reloc_offset"], sec["reloc_count"], 0
+        if not ptr:
+            return {}
+        if sec["characteristics"] & 0x01000000 and count == 0xFFFF:
+            count = struct.unpack_from("<I", self.buf, ptr)[0]
+            first = 1
+        out = {}
+        for i in range(first, count):
+            site, idx, _typ = struct.unpack_from("<IIH", self.buf, ptr + i * 10)
+            out[site] = self.sym_name(idx)
         return out
 
     def cstring(self, secnum: int, value: int, limit: int = 512):

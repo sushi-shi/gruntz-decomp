@@ -63,10 +63,16 @@
         # POINTER (an unnamed word) at offset 0 and `??_7<class>@@6B@` at offset 4,
         # and the vtable symbol is that COMDAT's leader. Take the lowest-offset
         # external definition instead. docs/data-attribution.md §3b-ii.
+        # Grouped section names: the section manifest's storage check demanded an
+        # exact `.rdata` / `.data` / `.bss`, with one hand-rolled exception for
+        # `.CRT$`. A `$` suffix is COFF's grouped-section form (a linker ordering
+        # key, stripped at link time), and cl emits every RTTI record that way -
+        # `??_R1`..`??_R4` in `.rdata$r`. Compare the group prefix instead.
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
           ./nix/patches/vostok-comdat-leader-nonzero-offset.patch
+          ./nix/patches/vostok-grouped-section-names.patch
         ];
       };
 

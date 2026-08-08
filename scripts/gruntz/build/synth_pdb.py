@@ -32,6 +32,7 @@ Section -> (1-based PE/object-crate section index, section base RVA):
 """
 
 import argparse
+import bisect
 import csv
 from pathlib import Path as _Path
 
@@ -376,7 +377,7 @@ def read_names_map(path):
     return overlay
 
 
-def read_functions(path, names_map=None, thunk_names=None):
+def read_functions(path, names_map=None, thunk_names=None, library_rvas=()):
     """Yield (rva, size, name) for .text functions with size > 0.
 
     If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
@@ -384,8 +385,12 @@ def read_functions(path, names_map=None, thunk_names=None):
 
     Source sizes may grow an admitted code-only boundary to include an inline
     jump table that belongs to the function's original /Gy COMDAT.
+
+    ``library_rvas`` are the tracked library labels, which carry no extent; a
+    record is synthesized for one the inventory never carved (see below).
     """
     names_map = names_map or {}
+    library_rvas = set(library_rvas)
     thunk_names = thunk_names or {}
     out = []
     seen = set()
@@ -444,15 +449,19 @@ def read_functions(path, names_map=None, thunk_names=None):
               % synth_thunks, file=sys.stderr)
 
     synth = 0
+    unsized = []
     for rva, (name, _unit, size) in sorted(names_map.items()):
         if rva in seen:
             continue
         if not (TEXT_BASE <= rva < TEXT_END):
             continue
         if size <= 0:
-            print("[synth_pdb] WARN: 0x%x %r absent from functions.tsv and has "
-                  "no @size - cannot synthesize a boundary; skipping." % (rva, name),
-                  file=sys.stderr)
+            if rva in library_rvas:
+                unsized.append((rva, name))
+            else:
+                print("[synth_pdb] WARN: 0x%x %r absent from functions.tsv and has "
+                      "no @size - cannot synthesize a boundary; skipping."
+                      % (rva, name), file=sys.stderr)
             continue
         out.append((rva, size, name))
         seen.add(rva)
@@ -460,6 +469,31 @@ def read_functions(path, names_map=None, thunk_names=None):
     if synth:
         print("[synth_pdb] synthesized %d function record(s) from @size for "
               "matched RVAs absent from functions.tsv" % synth, file=sys.stderr)
+
+    # A tracked LIBRARY label carries no extent (the CSV has no size column) and
+    # frequently names a body the inventory never carved: the tiny MFC virtuals
+    # (`CObject::GetRuntimeClass`, `CCmdTarget::GetDispatchMap`, ...) the linker
+    # packed unaligned INSIDE a neighbouring admitted boundary. Without a record
+    # the delinker cannot name a reference to them at all - it takes the nearest
+    # PRECEDING function and emits `?AfxExtractSubString@@...+0x78`, once per
+    # vtable slot that holds the virtual. The record exists to bind the NAME to
+    # the ADDRESS; the extent is not claimed knowledge, so it is the distance to
+    # the next boundary we do know (the next inventory start or the next tracked
+    # label), which is a bound and never a statement about where the body ends.
+    boundaries = sorted({r for r, _s, _n in out} | {r for r, _n in unsized})
+    library = 0
+    for rva, name in unsized:
+        after = boundaries[bisect.bisect_right(boundaries, rva):]
+        end = after[0] if after else TEXT_END
+        if end <= rva:
+            continue
+        out.append((rva, end - rva, name))
+        seen.add(rva)
+        library += 1
+    if library:
+        print("[synth_pdb] synthesized %d library-label record(s) at RVAs the "
+              "inventory never carved (extent bounded by the next boundary)"
+              % library, file=sys.stderr)
     out.sort()
     return out
 
@@ -899,7 +933,7 @@ def main():
     # into the PDB so the delinked target speaks the same names as the base.
     # Curated src rows always win; the unit stays empty, so this only RENAMES -
     # library code is still partitioned into the linker bucket, never into a TU.
-    nlib = 0
+    nlib, library_rvas = 0, set()
     for row in library_active_rows(REPO / "config/retail/library_labels.csv"):
         raw = (row.get("rva") or "").strip()
         name = (row.get("name") or "").strip()
@@ -912,6 +946,7 @@ def main():
         if rva in names_map or rva in overlay:
             continue
         names_map[rva] = (name, "", 0)
+        library_rvas.add(rva)
         nlib += 1
     if nlib:
         print("[synth_pdb] applied %d tracked library symbol name(s)" % nlib,
@@ -927,7 +962,7 @@ def main():
     if thunk_names:
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"
               % len(thunk_names), file=sys.stderr)
-    funcs = read_functions(args.functions, names_map, thunk_names)
+    funcs = read_functions(args.functions, names_map, thunk_names, library_rvas)
     rdata_syms, data_syms = read_data_symbols(args.exe)
     if data_names:
         ndat = apply_named_data(rdata_syms, data_syms, data_names)

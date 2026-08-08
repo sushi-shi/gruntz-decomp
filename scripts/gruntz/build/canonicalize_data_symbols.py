@@ -5,7 +5,9 @@ manifest, a paired object, source text, or retail addresses.  Symbol indices do
 not change. Compiler-private data receives stable, content-derived names.
 `$E<n>` text helpers are also canonicalized when their object evidence is
 complete, but that comparison aid does not make the ordinal a stable source
-identity. In
+identity. A COFF weak external is retargeted to the auxiliary DEFAULT the linker
+would have chosen (cl's `??_E<C>` vector-deleting-destructor slot -> `??_G<C>`).
+In
 embedded .text jump tables, same-function DIR32 references to volatile local
 labels are rewritten to the containing external function plus an equivalent
 owner-relative addend; all resolved section offsets are proved unchanged.
@@ -72,6 +74,7 @@ RELOCATION_WIDTHS = {
 DIR32 = 0x0006
 FUNCTION_TYPE = 0x0020
 EXTERNAL_STORAGE = 2
+WEAK_EXTERNAL_STORAGE = 105
 
 
 @dataclass(frozen=True)
@@ -965,6 +968,36 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 symbol.name, renames[symbol.index], "dup", "undefined",
                 0, 0, 0, 0, 0, "-", "undef-dup-of-definition", "",
             ))
+
+    # A COFF WEAK EXTERNAL (IMAGE_SYM_CLASS_WEAK_EXTERNAL) is a reference the LINKER
+    # resolves to the DEFAULT named by its auxiliary record whenever nothing supplies
+    # a strong definition. cl spells a class's vector-deleting destructor slot that
+    # way: `??_E<C>@@UAEPAXI@Z` weak, defaulting to the scalar `??_G<C>@@UAEPAXI@Z`.
+    # The delinked target reads the LINKED image and so correctly names `??_G`, which
+    # made every such vtable slot report a naming difference the source cannot fix -
+    # measured 477 sites over 190 vtables. Do here what the linker did. The resolution
+    # is local and total: all 508 weak externals in the tree are that one `??_E`/`??_G`
+    # pair, and no object anywhere defines one of those names strongly (normalize_objs
+    # re-proves that over the whole processed set, and fails the build if it changes).
+    for symbol in coff.symbols.values():
+        if symbol.storage_class != WEAK_EXTERNAL_STORAGE or symbol.aux_count < 1:
+            continue
+        tag = struct.unpack_from("<I", coff.data, symbol.offset + SYMBOL_SIZE)[0]
+        default = coff.symbols.get(tag)
+        if default is None or default.index == symbol.index:
+            continue
+        dup_retargets[symbol.index] = default.index
+        rows.append(CanonicalRow(
+            symbol.name, symbol.name, "weak", "undefined", 0, 0, 0, 0, 0, "-",
+            "weak-external-resolved-to-" + default.name, "",
+        ))
+    # A default may itself be an undefined duplicate that the pass above retargeted.
+    for index in list(dup_retargets):
+        seen, target = {index}, dup_retargets[index]
+        while target in dup_retargets and target not in seen:
+            seen.add(target)
+            target = dup_retargets[target]
+        dup_retargets[index] = target
 
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
