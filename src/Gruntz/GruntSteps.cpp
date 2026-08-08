@@ -422,6 +422,9 @@ void CGrunt::SnapToLastTile(i32 a) {
 }
 
 // @early-stop
+// retail stores m_lastTilePx into r1.left/r1.top before the reach-rect copy
+// (two loads + two stores we do not emit); every spelling of a dead field
+// store is eliminated by cl, so the source of those four is still unknown.
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
     x >>= TILE_SHIFT_PX;
@@ -430,12 +433,13 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     RECT r1 = m_reachRect;
+    RECT r2 = m_reachExclusionRect;
     r1.left += dx;
     r1.top += dy;
-    r1.right += dx + 1;
-    r1.bottom += dy + 1;
-
-    RECT r2 = m_reachExclusionRect;
+    r1.right += dx;
+    r1.bottom += dy;
+    r1.right++;
+    r1.bottom++;
     r2.left += dx;
     r2.top += dy;
     r2.right += dx;
@@ -462,6 +466,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 }
 
 // @early-stop
+// same four-instruction head as RectContains (m_lastTilePx pre-stored into r1).
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     x >>= TILE_SHIFT_PX;
@@ -470,12 +475,13 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 dy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
 
     RECT r1 = m_toyRectA;
+    RECT r2 = m_toyRectB;
     r1.left += dx;
     r1.top += dy;
-    r1.right += dx + 1;
-    r1.bottom += dy + 1;
-
-    RECT r2 = m_toyRectB;
+    r1.right += dx;
+    r1.bottom += dy;
+    r1.right++;
+    r1.bottom++;
     r2.left += dx;
     r2.top += dy;
     r2.right += dx;
