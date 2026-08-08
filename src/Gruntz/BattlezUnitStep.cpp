@@ -384,17 +384,19 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             band++;
         }
         band = band % 4;
-        if (m_ctx->m_options[band].m_clearedRound != 0) {
+        GruntzPlayer* slot = &m_ctx->m_options[band];
+        if (slot->m_clearedRound != 0) {
             return 1;
         }
-        if (m_ctx->m_options[band].m_liveGate == 0) {
+        if (slot->m_liveGate == 0) {
             return 1;
         }
         unit->m_targetTeam = band;
         unit->m_defenderPx.m_x = -1;
         unit->m_defenderPx.m_y = -1;
     } else {
-        if (m_ctx->m_options[band].m_clearedRound != 0 || m_ctx->m_options[band].m_liveGate == 0) {
+        GruntzPlayer* slot = &m_ctx->m_options[band];
+        if (slot->m_clearedRound != 0 || slot->m_liveGate == 0) {
 
             if (unit->CoordCount() != 0) {
                 POSITION pos = unit->m_coordList.GetHeadPosition();
@@ -471,177 +473,180 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
         return 1;
     }
-    if (unit->m_defenderState == AISTATE_SEEK) {
-        unit->m_routeMaskA = g_spawnCfg;
-        unit->m_routeMaskC = g_spawnState;
-        i32 gx = unit->m_defenderPx.m_x;
-        if (gx == -1) {
-            i32 x, y;
-
-            if (bundle->m_attackWaypoints.GetSize() != 0) {
-                Coord out;
-                Coord* r = static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
-                x = r->m_x;
-                y = r->m_y;
-            } else {
-                x = rx;
-                y = ry;
-            }
-            unit->m_defenderPx.m_x = x;
-            unit->m_defenderPx.m_y = y;
-            unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
-            return 1;
-        }
-        i32 gy = unit->m_defenderPx.m_y;
-        Coord c1;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-        i32 dxA = abs(rx - (c1.m_x >> TILE_SHIFT_PX));
-        Coord c2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
-        i32 dyA = abs(ry - (c2.m_y >> TILE_SHIFT_PX));
-        i32 distA = dxA * dxA + dyA * dyA;
-        i32 dxB = abs(rx - gx);
-        i32 dyB = abs(ry - gy);
-        i32 distB = dxB * dxB + dyB * dyB;
-        if (distA > distB) {
-            unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
-        }
-        return 1;
-    }
-    if (unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
-        if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
-            return 1;
-        }
-        i32 gx = unit->m_defenderPx.m_x;
-        i32 gy = unit->m_defenderPx.m_y;
-        if (gx == -1 || gy == -1) {
-
-            unit->m_defenderState = AISTATE_SEEK;
-            if (unit->CoordCount() != 0) {
-                CoordNode* n = unit->CoordHead();
-                while (n != NULL) {
-                    CoordNode* cur = n;
-                    n = n->m_next;
-                    if (cur->m_coord != NULL) {
-                        g_coordPool.Push(cur->m_coord);
-                    }
-                }
-                unit->m_coordList.RemoveAll();
-            }
-            unit->m_defenderPx.m_x = -1;
-            unit->m_defenderPx.m_y = -1;
-            return 1;
-        }
-        CGameObject* lvl = unit->m_object;
-        i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
-        i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
-        if (dx * dx + dy * dy <= 0x10) {
-            unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
+    switch (unit->m_defenderState) {
+        case AISTATE_SEEK: {
             unit->m_routeMaskA = g_spawnCfg;
-            unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+            unit->m_routeMaskC = g_spawnState;
+            i32 gx = unit->m_defenderPx.m_x;
+            if (gx == -1) {
+                i32 x, y;
+
+                if (bundle->m_attackWaypoints.GetSize() != 0) {
+                    Coord out;
+                    Coord* r = static_cast<Coord*>(PickSpawnCoord(&out, unit, band));
+                    x = r->m_x;
+                    y = r->m_y;
+                } else {
+                    x = rx;
+                    y = ry;
+                }
+                unit->m_defenderPx.m_x = x;
+                unit->m_defenderPx.m_y = y;
+                unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
+                return 1;
+            }
+            i32 gy = unit->m_defenderPx.m_y;
+            Coord c1;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
+            i32 dxA = abs(rx - (c1.m_x >> TILE_SHIFT_PX));
+            Coord c2;
+            (static_cast<CUserLogic*>(unit))->GetScreenPos((&c2));
+            i32 dyA = abs(ry - (c2.m_y >> TILE_SHIFT_PX));
+            i32 distA = dxA * dxA + dyA * dyA;
+            i32 dxB = abs(rx - gx);
+            i32 dyB = abs(ry - gy);
+            i32 distB = dxB * dxB + dyB * dyB;
+            if (distA > distB) {
+                unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
+            }
             return 1;
         }
-        PickupType prim = unit->m_entranceReason;
-        i32 cfg = unit->m_routeMaskA;
-        i32 flags = unit->m_routeMaskC;
-        PickupType t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
-        }
-        if (t == PICKUP_TOOB) {
-            flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-        } else {
-            t = prim;
+        case AISTATE_BATTLEZ_ROUTE_TARGET: {
+            if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
+                return 1;
+            }
+            i32 gx = unit->m_defenderPx.m_x;
+            i32 gy = unit->m_defenderPx.m_y;
+            if (gx == -1 || gy == -1) {
+
+                unit->m_defenderState = AISTATE_SEEK;
+                if (unit->CoordCount() != 0) {
+                    CoordNode* n = unit->CoordHead();
+                    while (n != NULL) {
+                        CoordNode* cur = n;
+                        n = n->m_next;
+                        if (cur->m_coord != NULL) {
+                            g_coordPool.Push(cur->m_coord);
+                        }
+                    }
+                    unit->m_coordList.RemoveAll();
+                }
+                unit->m_defenderPx.m_x = -1;
+                unit->m_defenderPx.m_y = -1;
+                return 1;
+            }
+            CGameObject* lvl = unit->m_object;
+            i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
+            i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
+            if (dx * dx + dy * dy <= 0x10) {
+                unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
+                unit->m_routeMaskA = g_spawnCfg;
+                unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+                return 1;
+            }
+            PickupType prim = unit->m_entranceReason;
+            i32 cfg = unit->m_routeMaskA;
+            i32 flags = unit->m_routeMaskC;
+            PickupType t = prim;
             if (prim > PICKUP_EQUIPPABLE_LAST) {
                 t = unit->m_toolId;
             }
-            if (t == PICKUP_SPRING) {
-                flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
+            if (t == PICKUP_TOOB) {
+                flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
             } else {
+                t = prim;
                 if (prim > PICKUP_EQUIPPABLE_LAST) {
-                    prim = unit->m_toolId;
+                    t = unit->m_toolId;
                 }
-                if (prim == PICKUP_WINGZ) {
-                    flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+                if (t == PICKUP_SPRING) {
+                    flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
+                } else {
+                    if (prim > PICKUP_EQUIPPABLE_LAST) {
+                        prim = unit->m_toolId;
+                    }
+                    if (prim == PICKUP_WINGZ) {
+                        flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+                    }
                 }
             }
-        }
-        if (unit->TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
-            unit->m_routeMaskA = g_spawnCfg;
-            unit->m_routeMaskC = g_spawnState;
+            if (unit->TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
+                unit->m_routeMaskA = g_spawnCfg;
+                unit->m_routeMaskC = g_spawnState;
+                unit->m_dwell = 0;
+                return 1;
+            }
+            i32 st = unit->m_routeMaskC;
+            if (st == g_spawnState) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL;
+            } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
+            } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_OTHER_TOOLS;
+            } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED;
+            } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED;
+            } else if (st == BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED) {
+                unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
+            }
             unit->m_dwell = 0;
             return 1;
         }
-        i32 st = unit->m_routeMaskC;
-        if (st == g_spawnState) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL;
-        } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
-        } else if (st == BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_OTHER_TOOLS;
-        } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED;
-        } else if (st == BATTLEZ_ROUTE_OTHER_TOOLS_EXPANDED) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED;
-        } else if (st == BATTLEZ_ROUTE_ALL_TOOLS_EXPANDED) {
-            unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
-        }
-        unit->m_dwell = 0;
-        return 1;
-    }
-    if (unit->m_defenderState != AISTATE_BATTLEZ_FINAL_ROUTE) {
-        return 1;
-    }
-    CMapMgr* board = m_board;
-    RECT box2;
-    box2.left = 0;
-    box2.top = 0;
-    RECT bounds;
-    RECT* bp = static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
-    box2.right = board->m_width;
-    box2.bottom = board->m_height;
-    RECT rc;
-    rc.left = bp->left;
-    rc.top = bp->top;
-    rc.right = bp->right;
-    rc.bottom = bp->bottom;
-    RECT* rcDst = &board->m_bounds;
-    if (!IntersectRect(rcDst, &rc, &box2)) {
-        *rcDst = rc;
-    }
-    board->m_gridW = rcDst->right - rcDst->left;
-    board->m_gridH = rcDst->bottom - rcDst->top;
-    PickupType prim = unit->m_entranceReason;
-    i32 flags = unit->m_routeMaskC;
-    PickupType t = prim;
-    if (prim > PICKUP_EQUIPPABLE_LAST) {
-        t = unit->m_toolId;
-    }
-    if (t == PICKUP_TOOB) {
-        flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-    } else {
-        t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
-        }
-        if (t == PICKUP_SPRING) {
-            flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-        } else {
+        case AISTATE_BATTLEZ_FINAL_ROUTE: {
+            CMapMgr* board = m_board;
+            RECT box2;
+            box2.left = 0;
+            box2.top = 0;
+            RECT bounds;
+            RECT* bp =
+                static_cast<RECT*>(new (&bounds) CRect(0, 0, board->m_width, board->m_height));
+            box2.right = board->m_width;
+            box2.bottom = board->m_height;
+            RECT rc;
+            rc.left = bp->left;
+            rc.top = bp->top;
+            rc.right = bp->right;
+            rc.bottom = bp->bottom;
+            RECT* rcDst = &board->m_bounds;
+            if (!IntersectRect(rcDst, &rc, &box2)) {
+                *rcDst = rc;
+            }
+            board->m_gridW = rcDst->right - rcDst->left;
+            board->m_gridH = rcDst->bottom - rcDst->top;
+            PickupType prim = unit->m_entranceReason;
+            i32 flags = unit->m_routeMaskC;
+            PickupType t = prim;
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_toolId;
+                t = unit->m_toolId;
             }
-            if (prim == PICKUP_WINGZ) {
-                flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+            if (t == PICKUP_TOOB) {
+                flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
+            } else {
+                t = prim;
+                if (prim > PICKUP_EQUIPPABLE_LAST) {
+                    t = unit->m_toolId;
+                }
+                if (t == PICKUP_SPRING) {
+                    flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
+                } else {
+                    if (prim > PICKUP_EQUIPPABLE_LAST) {
+                        prim = unit->m_toolId;
+                    }
+                    if (prim == PICKUP_WINGZ) {
+                        flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+                    }
+                }
             }
+            if (unit->TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
+                unit->m_routeMaskA = g_spawnCfg;
+                unit->m_routeMaskC = g_spawnState;
+                unit->m_dwell = 0;
+                return 1;
+            }
+            unit->m_dwell = 0;
+            unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
+            return 1;
         }
     }
-    if (unit->TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
-        unit->m_routeMaskA = g_spawnCfg;
-        unit->m_routeMaskC = g_spawnState;
-        unit->m_dwell = 0;
-        return 1;
-    }
-    unit->m_dwell = 0;
-    unit->m_routeMaskC = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
     return 1;
 }
