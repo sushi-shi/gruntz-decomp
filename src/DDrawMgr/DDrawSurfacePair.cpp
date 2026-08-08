@@ -175,7 +175,7 @@ void CDDrawSurfacePair::Unload() {
 RVA(0x00163e50, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CParseSource* src) {
     FileImageFormat type;
-    switch (src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case IMGTAG_PMB:
             type = FMT_BMP;
             break;

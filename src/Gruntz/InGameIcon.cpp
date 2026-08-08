@@ -519,7 +519,6 @@ i32 CInGameIcon::RefreshCell() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000983e0, 0x98)
 i32 CToyPeek::SerializeMove(
     CFileMemBase* ar,
@@ -1046,18 +1045,14 @@ i32 CInGameText::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId a, 
     return 1;
 }
 
-// @early-stop
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
-    LeafCue* cue = 0;
+    void* found = 0;
     if (category != NULL) {
-
-        CGruntzMgr* reg = g_gameReg;
-        void* found = 0;
-        reg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
-        cue = static_cast<LeafCue*>(found);
+        found = 0;
+        g_gameReg->m_world->m_soundRegistry->m_cues.Lookup(category, found);
     }
-    m_cue = cue;
+    m_cue = static_cast<LeafCue*>(found);
 }
 DATA(0x0020d7f8)
 char s_codeK[] = "K";

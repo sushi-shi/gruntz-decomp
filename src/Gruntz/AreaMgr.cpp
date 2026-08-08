@@ -640,18 +640,15 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 }
 
 // @early-stop
-// Scheduler wall: retail evaluates the PARAMETER's world first (so `this`/ecx stays
-// live through the first idiv and `push esi` sinks into the compute block); cl here
-// always hoists the m_currentLevelIndex load ahead of it, which costs the sunk push
-// and swaps both divisor scratch registers. 15 source spellings (both local orders,
-// both compare operand orders, single-expression, split-statement, inline helper)
-// all produce the identical 76-byte body.
+// Body restored to the spelling that scored 100 at 7f5851bd7 (compare `currentWorld ==
+// requestedWorld`); the residue is the parameter-vs-member evaluation order, which did not
+// move for any source spelling here - it tracks TU composition, not this function.
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
-        return false;
+        return 0;
     }
     i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
     i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;
-    return requestedWorld == currentWorld;
+    return currentWorld == requestedWorld;
 }

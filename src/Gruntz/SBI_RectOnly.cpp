@@ -690,7 +690,6 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
         return 1;
     }
     SbiCommandId cmd = r->m_cmd;
-    StatusBarTab itemTab = r->m_tab;
     if (m_hitTestDisabled == 0) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
@@ -699,14 +698,14 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
         }
     }
     if (m_activeTab == TAB_GAME) {
-        if (itemTab == TAB_GAME) {
+        if (r->m_tab == TAB_GAME) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
             ClearTabSprites(TAB_GAME);
         }
     }
     if (m_toggleActive) {
-        if (itemTab == TAB_DIALOG) {
+        if (r->m_tab == TAB_DIALOG) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
             return 1;
         }

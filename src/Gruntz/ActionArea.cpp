@@ -74,19 +74,24 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    if (static_cast<i64>(g_frameTime) - m_timestamp >= m_duration) {
-        m_phase = (m_phase == 0);
+    // The two members are addressed through locals: retail's store schedule (the
+    // m_duration constant AFTER the m_phase flip) only reproduces with the
+    // pointer-local spelling; direct member access lets cl hoist the constant store.
+    i64* ts = &m_timestamp;
+    i32* phase = &m_phase;
+    if (static_cast<i64>(g_frameTime) - *ts >= m_duration) {
+        *phase = (*phase == 0);
         m_duration = 0x1f4;
-        m_timestamp = static_cast<u32>(g_frameTime);
+        *ts = static_cast<u32>(g_frameTime);
     }
-    if (m_phase != 0) {
-        i64 d2 = static_cast<i64>(g_frameTime) - m_timestamp;
+    if (*phase != 0) {
+        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
         m_wwdObject->m_frameSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
-        i64 d2 = static_cast<i64>(g_frameTime) - m_timestamp;
+        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
         double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
         m_wwdObject->m_frameSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }

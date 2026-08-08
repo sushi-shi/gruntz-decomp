@@ -2115,7 +2115,8 @@ i32 CMulti::BroadcastChannelTable(CNetSessionNode* recipient) {
         if (ch != NULL) {
             i32 v = ch->m_liveGate;
             packet.m_rows[i].m_liveGate = static_cast<u8>(v);
-            packet.m_rows[i].m_colorIndex = ch->m_colorIndex;
+            v = ch->m_colorIndex;
+            packet.m_rows[i].m_colorIndex = static_cast<u8>(v);
             v = ch->m_humanControlled;
             packet.m_rows[i].m_humanControlled = static_cast<u8>(v);
             v = ch->m_configId;
@@ -2331,8 +2332,9 @@ i32 CMulti::BroadcastOneChannel(GruntzPlayer* ch) {
     packet.m_statId = STAT_CHANNEL_ONE;
     packet.m_playerIndex = ch->m_playerIndex;
 
-    packet.m_colorIndex = ch->m_colorIndex;
-    i32 v = ch->m_humanControlled;
+    i32 v = ch->m_colorIndex;
+    packet.m_colorIndex = static_cast<u8>(v);
+    v = ch->m_humanControlled;
     packet.m_humanControlled = static_cast<u8>(v);
     v = ch->m_configId;
     packet.m_configId = static_cast<u8>(v);

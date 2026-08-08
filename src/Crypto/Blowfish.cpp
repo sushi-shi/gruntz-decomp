@@ -5,7 +5,10 @@
 #include <Crypto/BlowfishPi.h>
 #include <Ints.h>
 
-#include <string.h>
+// memcpy comes from <memory.h>, NOT <string.h>: the wider header's intrinsic set
+// re-allocates registers across this whole TU and costs Blowfish_encipher its byte
+// match (docs/patterns/string-h-intrinsics-reallocate-the-tu.md).
+#include <memory.h>
 
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
@@ -26,13 +29,6 @@ RVA(0x0016f6c0, 0x12)
 void __stdcall Blowfish_InitKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
-// @early-stop
-// Register-rotation wall: the 16 macro rounds are instruction-for-instruction
-// identical to retail, only the eax/ecx/ebx/esi assignment rotates (retail zeroes
-// eax and loads the >>16 byte into al; cl zeroes ecx and loads it into cl). cl emits
-// BYTE-IDENTICAL output for all 10 spellings tried - both addend orders, the xor
-// operand order, and a statement-form macro with an explicit temp - so the operand
-// order is canonicalised before regalloc and there is no source lever.
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;
@@ -62,6 +58,11 @@ void Blowfish_encipher(u32* xl, u32* xr) {
 }
 
 // @early-stop
+// Its MAX (99.875) came from a TU whose S-box macro went through a
+// reinterpret_cast-flattened pointer; that spelling is the only one that stops cl
+// CSE-ing eight instructions retail keeps, and no cast-free spelling of the same
+// addresses reproduces it (row-0 decay, &g_bfS[0][0], a two-reading union and a flat
+// u32[1024] all give this shape). Encipher's byte match does not depend on it.
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;
@@ -86,8 +87,8 @@ void Blowfish_decipher(u32* xl, u32* xr) {
     BF_ENC(l, r, g_bfP[1]);
     r ^= g_bfP[0];
 
-    *xr = l;
     *xl = r;
+    *xr = l;
 }
 
 RVA(0x00170100, 0x104)
@@ -103,10 +104,10 @@ i16 InitializeBlowfish(const char* key, i16 keybytes) {
     j = 0;
     for (i = 0; i < 18; i++) {
 
-        data = (static_cast<u32>(static_cast<u8>(key[j])) << 24)
-               | (static_cast<u32>(static_cast<u8>(key[(j + 1) % keybytes])) << 16)
-               | (static_cast<u32>(static_cast<u8>(key[(j + 2) % keybytes])) << 8)
-               | static_cast<u32>(static_cast<u8>(key[(j + 3) % keybytes]));
+        data = static_cast<u32>(static_cast<u8>(key[j])) << 24;
+        data |= static_cast<u32>(static_cast<u8>(key[(j + 1) % keybytes])) << 16;
+        data |= static_cast<u32>(static_cast<u8>(key[(j + 2) % keybytes])) << 8;
+        data |= static_cast<u32>(static_cast<u8>(key[(j + 3) % keybytes]));
         g_bfP[i] ^= data;
         j = (j + 4) % keybytes;
     }

@@ -1105,7 +1105,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (status == WORLDERR_NONE) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
     }
-    switch (status) {
+    switch (static_cast<u32>(status)) {
         case WORLDERR_CREATE_PAGES:
             ReportError(IDX(IDS_WORLD_CREATE_PAGES), IDX(WORLDERR_CREATE_PAGES));
             return;

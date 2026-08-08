@@ -74,7 +74,7 @@ i32 CImage::Create(char* path, i32 keyed) {
 RVA(0x00152f20, 0x86)
 i32 CImage::Resolve(CParseSource* src, i32 arg) {
     FileImageFormat index;
-    switch (src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case IMGTAG_PMB:
             index = FMT_BMP;
             break;
@@ -295,7 +295,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     }
 
     FileImageFormat index;
-    switch (src->GetEntryTag()) {
+    switch (static_cast<u32>(src->GetEntryTag())) {
         case IMGTAG_PMB:
             index = FMT_BMP;
             break;

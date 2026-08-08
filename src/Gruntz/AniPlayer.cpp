@@ -79,7 +79,6 @@ i32 CAniPlayer::RenderCel() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e5c90, 0x87)
 i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
     if (arc == NULL) {

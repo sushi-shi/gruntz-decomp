@@ -112,7 +112,6 @@
 
 class CImage;
 
-// @early-stop
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         CDDrawSubMgrLeafScan* _s = (sndHost);                                                      \
