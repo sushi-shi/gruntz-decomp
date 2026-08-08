@@ -60,22 +60,6 @@ i32 g_dlgVal_645564;
 DATA(0x00245568)
 i32 g_dlgVal_645568;
 
-i32 CGruntzCommand::Serialize(CFileMemBase*, SerialMode, LogicTypeId, i32) {
-    return 1;
-}
-i32 CGruntzCommand::Save(CFileMemBase*) {
-    return 0;
-}
-i32 CGruntzCommand::Load(CFileMemBase*) {
-    return 0;
-}
-char CGruntzCommand::GetTag() {
-    return 0;
-}
-i32 CGruntzCommand::Parse(void*, i32) {
-    return 0;
-}
-
 static inline i16 PeekI16(const void* p) {
 
     return *static_cast<const i16*>(p);

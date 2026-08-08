@@ -44,17 +44,17 @@ public:
 
     virtual ~CGruntzCommand() {}
 
-    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj);
+    virtual i32 Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 pObj) = 0;
 
-    virtual i32 Save(CFileMemBase* s);
-    virtual i32 Load(CFileMemBase* s);
+    virtual i32 Save(CFileMemBase* s) = 0;
+    virtual i32 Load(CFileMemBase* s) = 0;
 
     virtual i32 SetParams(char targetIndex, char cmdKind, char targetType, i16 posX, i16 posY);
     virtual i32 UnusedCommandQuery();
 
-    virtual char GetTag();
+    virtual char GetTag() = 0;
 
-    virtual i32 Parse(void* data, i32 len);
+    virtual i32 Parse(void* data, i32 len) = 0;
 
     virtual i32 Pack(char* buf, i32 unused) = 0;
 

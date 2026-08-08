@@ -2980,7 +2980,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     m_reserved2b8 = 0;
     m_hlBusy = 0;
     if (m_retabNotify) {
-        free(m_retabNotify);
+        ::operator delete(m_retabNotify);
         m_retabNotify = NULL;
     }
     ExitMode();

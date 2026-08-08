@@ -176,10 +176,10 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         } while (isspace(*p));
     }
     if (*p == 0) {
-        if (!SetSize(minSize)) {
-            goto oom;
+        if (SetSize(minSize)) {
+            return;
         }
-        return;
+        goto oom;
     }
     if (!isdigit(*p)) {
         goto badchar;
@@ -235,31 +235,34 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             break;
         }
         if (isspace(*q)) {
-            while (isspace(q[1])) {
+            do {
                 ++q;
-            }
+            } while (isspace(*q));
         }
         char sep = *q;
         ++q;
         if (isspace(*q)) {
-            while (isspace(q[1])) {
+            do {
                 ++q;
-            }
+            } while (isspace(*q));
         }
         if (sep == '-') {
             i32 v2 = 0;
+            if (*q == 0) {
+                break;
+            }
             while (isdigit(*q)) {
                 v2 = v2 * 10 + (*q - '0');
                 ++q;
             }
-            if (v > v2) {
+            if (static_cast<u32>(v) > static_cast<u32>(v2)) {
                 i32 t = v;
                 v = v2;
                 v2 = t;
             }
-            for (i32 b = v + 1; b <= v2; ++b) {
+            for (++v; static_cast<u32>(v) <= static_cast<u32>(v2); ++v) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
-                band[static_cast<u32>(b) >> BITARRAY_WORD_SHIFT] |= 1u << (b & BITARRAY_BIT_MASK);
+                band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
             }
             while (*q != 0 && !isdigit(*q)) {
                 ++q;
@@ -390,19 +393,20 @@ RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     void* p;
     if (idx < m_lo) {
-        p = realloc(m_base, (m_hi - (idx - at) + 1) * m_stride);
+        i32 lonew = idx - at;
+        p = realloc(m_base, (m_hi - lonew + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
             m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-        i32 shift = m_lo - (idx - at);
+        i32 shift = m_lo - lonew;
         m_grown = shift;
         m_alloc = static_cast<char*>(p);
         memcpy(m_alloc + shift * m_stride, p, oldbytes);
         memset(m_alloc, 0, m_grown * m_stride);
-        m_lo = idx - at;
+        m_lo = lonew;
         m_base = static_cast<char*>(p);
         return p;
     }
@@ -561,7 +565,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, const_cast<char*>("out of memory"), 0xc);
+    m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0xc);
 }
 
 RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)

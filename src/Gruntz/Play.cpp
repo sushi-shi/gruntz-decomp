@@ -1068,9 +1068,6 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
-// Frame is 8 bytes short of retail's, and cl declines the tail merge retail makes
-// between the Battlez and Multi arms of the world-file branch (retail's first arm
-// is a bare `jmp` into the second arm's atoi/EndParse tail).
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
@@ -1172,26 +1169,30 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CGruntzMgr* host = self->m_mgr;
     if (host->m_strWorldFile.GetLength() != 0) {
+        CParseSource* ins;
+        void* desc;
+        char* p;
+        char c;
         if (host->m_isBattlezLevel != 0) {
 
             set = host->m_symParser->ResolvePath("GAME_BATTLEZ");
             if (set == NULL) {
                 goto fail0;
             }
-            CParseSource* ins = (static_cast<CSymTab*>(set))
-                                    ->Insert(
-                                        static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        REZ_TAG_WWD
-                                    );
+            ins = (static_cast<CSymTab*>(set))
+                      ->Insert(
+                          static_cast<const char*>(self->m_mgr->GetWorldFileName()),
+                          REZ_TAG_WWD
+                      );
             if (ins == NULL) {
                 return 0;
             }
-            void* desc = ins->BeginParse();
+            desc = ins->BeginParse();
             if (desc == NULL) {
                 goto fail0;
             }
-            char* p = static_cast<char*>(desc) + 0x10;
-            char c = *p;
+            p = static_cast<char*>(desc) + 0x10;
+            c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
                     ++p;
@@ -1200,29 +1201,28 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
                 break;
             }
-            i32 num = atoi(p);
+            level = atoi(p);
             ins->EndParse();
-            level = num;
         } else if (host->m_isMultiLevel != 0) {
 
             set = host->m_symParser->ResolvePath("GAME_MULTI");
             if (set == NULL) {
                 goto fail0;
             }
-            CParseSource* ins = (static_cast<CSymTab*>(set))
-                                    ->Insert(
-                                        static_cast<const char*>(self->m_mgr->GetWorldFileName()),
-                                        REZ_TAG_WWD
-                                    );
+            ins = (static_cast<CSymTab*>(set))
+                      ->Insert(
+                          static_cast<const char*>(self->m_mgr->GetWorldFileName()),
+                          REZ_TAG_WWD
+                      );
             if (ins == NULL) {
                 return 0;
             }
-            void* desc = ins->BeginParse();
+            desc = ins->BeginParse();
             if (desc == NULL) {
                 goto fail0;
             }
-            char* p = static_cast<char*>(desc) + 0x10;
-            char c = *p;
+            p = static_cast<char*>(desc) + 0x10;
+            c = *p;
             while (c != 0) {
                 if (c < '0' || c > '9') {
                     ++p;
@@ -1231,9 +1231,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 }
                 break;
             }
-            i32 num = atoi(p);
+            level = atoi(p);
             ins->EndParse();
-            level = num;
         } else {
 
             level = WwdFile::ValidateMainBlock(self->m_mgr->GetWorldFileName());
