@@ -3619,17 +3619,17 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             return 1;
         }
         i32 c0 = arrCell(m_board, col, row);
-        i32 c1 = arrCell(m_board, col, row);
-        if ((c1 & 0x987) & 0x20000000) {
+        i32 c1 = arrCell(m_board, col, row) & 0x987;
+        if (c1 & 0x20000000) {
             return 1;
         }
-        if (c1 & 0x987) {
+        if (c1) {
             return 1;
         }
         if (c0 & 0x20000000) {
             return 1;
         }
-        g->TileSwitch(col, row, 0x987, 0, 1, 0);
+        g->TileSwitch(col, row, 0, 0x987, 1, 0);
     }
     return 1;
 }
@@ -4249,10 +4249,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             } else {
                 word = 1;
             }
-            if (word & 0x20000000) {
-                return 0;
+            if (!(word & 0x20000000)) {
+                return 1;
             }
-            return 1;
         }
     }
     if (IsCoordOccupied(unit, tx, ty) != 0) {
