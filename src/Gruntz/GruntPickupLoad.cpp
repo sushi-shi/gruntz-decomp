@@ -31,7 +31,7 @@
 // sete proves the polarity. Residue: cl allocates one 4-byte stack local (push ecx)
 // where retail has none - it reuses the never-read 4th parameter's home slot for the
 // CAniElement* scratch - so every [esp+N] in the 5 KB body is off by 4.
-RVA(0x00065e80, 0x13a0)
+RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
     i32 forced,

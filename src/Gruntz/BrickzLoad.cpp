@@ -88,7 +88,7 @@ static __inline BrickTileId PickC(i32 total, i32 t1, i32 t2, i32 t3, i32 t4) {
 // @early-stop
 // Retail carries a live zero-register (ebx) through the whole body - it passes 0
 // to AllocGrid and keeps both loop counters in registers; cl spills them.
-RVA(0x000810f0, 0xab0)
+RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::LoadAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
     CDDrawWorkerHost* grid = m_attrMgr->m_level->m_mainPlane;

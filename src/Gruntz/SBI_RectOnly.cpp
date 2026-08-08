@@ -399,7 +399,7 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // the range chain written here. Writing the switch needs the twelve SBICMD_HL_*
 // enumerators, and only the six GROUP<n>_FIRST/LAST bounds are proven, so the labels
 // would have to be invented.
-RVA(0x000fe910, 0xc2c)
+RVA(0x000fe910, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
     if (w == NULL) {

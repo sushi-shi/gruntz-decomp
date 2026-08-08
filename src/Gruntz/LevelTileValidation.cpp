@@ -129,7 +129,7 @@ b32 CPlay::PlaceStartGruntz() {
 }
 
 // @early-stop
-RVA(0x000d2dd0, 0x1de4)
+RVA(0x000d2dd0, 0x1e40)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
     i32 counts[4];

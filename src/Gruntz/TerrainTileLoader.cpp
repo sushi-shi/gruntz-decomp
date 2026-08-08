@@ -33,7 +33,7 @@
 // cl tail-merges the four inlined CDDrawSubMgrLeafScan::PlayCue expansions onto one
 // shared LeafCue::PlayIfElapsed call; retail keeps three separate calls and inlines
 // the fourth (see docs/patterns/tail-merged-inline-helper-collapses-repeat-cues.md).
-RVA(0x00075e90, 0x1329)
+RVA(0x00075e90, 0x1400)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,
     i32 ownerLo,

@@ -2185,7 +2185,7 @@ i32 CGrunt::Place(
 }
 
 // @early-stop
-RVA(0x0004dd50, 0x2880)
+RVA(0x0004dd50, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;
     if (kind == PICKUP_INVALID) {
@@ -2562,7 +2562,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
-            m_passableMask = 0x1000;
+            m_passableMask = 0;
             m_toolConfigured = 1;
             break;
         }
@@ -2589,7 +2589,6 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "SPYGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
-            m_coordToggle = 0;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -2601,7 +2600,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
-            m_passableMask = 0x100;
+            m_passableMask = 0;
             m_toolConfigured = 1;
             break;
         }
@@ -2609,7 +2608,6 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "SWORDGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
-            m_coordToggle = 0;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -2621,7 +2619,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
-            m_passableMask = 0x100;
+            m_passableMask = 0;
             m_toolConfigured = 1;
             break;
         }
@@ -2629,7 +2627,6 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "TIMEBOMBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
-            m_coordToggle = 0;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -2641,7 +2638,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 m_arrivalFlags |= 0x10;
             }
-            m_passableMask = 0x100;
+            m_passableMask = 0;
             m_toolConfigured = 1;
             break;
         }

@@ -15,7 +15,7 @@
 #include <limits.h>
 
 // @early-stop
-RVA(0x00077790, 0x630)
+RVA(0x00077790, 0x4f0)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 id3) {
 
     BrickzCell* cell = &m_rows[y][x];

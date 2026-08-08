@@ -443,8 +443,7 @@ void CDroppedObject::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceImpactAnimation);
 }
 
-// @early-stop
-RVA(0x000c7090, 0x21b)
+RVA(0x000c7090, 0x230)
 i32 CDroppedObject::AdvanceFall() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
