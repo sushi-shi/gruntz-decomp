@@ -44,4 +44,12 @@ uniform `[esp+N]` shift in `gruntz sema disasm --diff --lite` both point straigh
 Count the delta in units of `sizeof(the local you suspect)` before reaching for regalloc
 explanations.
 
+The same rule applies to a construct expanded N times in one function, which is how it shows
+up in the Battlez pathing code: `CMapMgr::Clip` is inlined three times in
+`CBattlezMapConfig::RepathAroundBlockedTiles` 0x2a570, and the head and tail copies declared
+their `CRect`/`RECT` pair at FUNCTION scope, so cl gave each its own group - frame 0xa8 against
+retail's 0x5c. Putting a bare `{ }` around each expansion made them siblings and recovered 64
+of the 76 surplus bytes (the last 8 came from shifting the screen `Coord` in place instead of
+copying into fresh `cx`/`cy` locals). Frame 0xa8 -> 0x60.
+
 related: [shrink-wrapped-prologue-needs-one-tail-return.md](shrink-wrapped-prologue-needs-one-tail-return.md)

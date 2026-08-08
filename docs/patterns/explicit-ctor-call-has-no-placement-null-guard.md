@@ -27,3 +27,13 @@ mov    DWORD PTR [eax+0x34],ecx        ; ... the enclosing function continues of
 STEERABLE. `CParseSource::Init` @0x1396f0 went **56.00% -> 100.00% EXACT** with this one
 change (26 B, symtab). Same guard is visible at the `new (&r) CRect(...)` sites
 (GruntCombat.cpp:263 notes it independently); the explicit-call spelling is the lever there too.
+
+For a **fresh local** rather than a sub-object the spelling is simply a declaration - the
+placement form buys nothing and costs the guard. The two CRect operands of an inlined
+`CMapMgr::Clip` are `CRect full(0, 0, w, h);` (four inline stores) plus `RECT rc = CRect(0, 0,
+w, h);` (an out-of-line `CRect::CRect` call whose return value is copied field-by-field); that
+is exactly what retail emits, with no `test`/`je` anywhere. All 14 `new (&r) CRect(...)` sites
+in `BattlezMapConfig.cpp` / `BattlezUnitStep.cpp` were converted 2026-08-08:
+`CBattlezMapConfig::AdvanceToEnemyBase` 0x32060 79.42 -> 80.36,
+`CBattlezMapConfig::TrackAssignedEnemy` 0x31ca0 78.20 -> 86.30,
+`CBattlezMapConfig::StepRowUnits` 0x267c0 85.84 -> 86.65.
