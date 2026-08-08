@@ -16,6 +16,11 @@
 #include <Image/ImageSet.h>
 
 // @early-stop
+// exit_merge_sieve calls this DUP-EXIT (rets 17 -> retail 13) and retail's arm
+// tails are `jmp <shared ret>`, but the goto-fail/break lever OVERSHOOTS here:
+// replacing all five arm-trailing `return 1;` with `break;` plus one tail return
+// takes rets to 14 and blocks 239 -> 233 against retail's 237, and scores
+// 76.12 -> 73.75. Retail sits between the two regimes; measured, not guessed.
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x001047f0, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
