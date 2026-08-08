@@ -2310,7 +2310,6 @@ i32 CTriggerMgr::LoadPowerupIconSprites(
 // @early-stop
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    CPtrList* sel = &m_selLists[idx];
     POSITION pos = m_selLists[idx].GetHeadPosition();
     if (pos != NULL) {
         void* head = g_coordPool.m_freeHead;
@@ -2324,6 +2323,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
             }
         } while (pos != NULL);
     }
+    CPtrList* sel = &m_selLists[idx];
     sel->RemoveAll();
     pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
