@@ -2744,7 +2744,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_BABYWALKER: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2761,13 +2761,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
-                defer = 1;
             }
+            fresh = 1;
+            defer = 1;
             break;
         }
         case PICKUP_BEACHBALL: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2784,12 +2784,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_BIGWHEEL: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2806,13 +2806,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
-                defer = 1;
             }
+            fresh = 1;
+            defer = 1;
             break;
         }
         case PICKUP_GOKART: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2829,12 +2829,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_JACKINTHEBOX: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2851,12 +2851,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_JUMPROPE: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2873,13 +2873,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
-                defer = 1;
             }
+            fresh = 1;
+            defer = 1;
             break;
         }
         case PICKUP_POGOSTICK: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2896,13 +2896,13 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
-                defer = 1;
             }
+            fresh = 1;
+            defer = 1;
             break;
         }
         case PICKUP_SCROLL: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2920,12 +2920,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_SQUEAKTOY: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2942,12 +2942,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_YOYO: {
-            if (m_arrivalState == AI_DUMBCHASER) {
+            if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
             } else if (m_arrivalState == AI_BATTLEZ_PATH) {
                 m_arrivalFlags = ARRIVAL_FLAGS_BATTLEZ;
@@ -2964,8 +2964,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(rec, s_codeD) == 0);
             if (eq) {
                 ConsiderArrival(0);
-                fresh = 1;
             }
+            fresh = 1;
             break;
         }
         case PICKUP_HEALTH1: {
