@@ -29,9 +29,14 @@ WINDOWING IS THE WHOLE TOOL
 The base is COMDAT-per-function, so a base section IS one function. The delinked
 target packs a whole unit's `.text` into ONE section, so reading "the target's
 relocations" without a window picks up the NEIGHBOUR's and inflates every count.
-A previous attempt at this sieve reported garbage for exactly that reason. Each
-function is therefore read over `[target_offset, target_offset + base_extent)`,
-additionally clamped at the next defined symbol in the target section.
+A previous attempt at this sieve reported garbage for exactly that reason.
+
+Each side is therefore cut at the NEXT DEFINED SYMBOL in its own section. Cutting
+the target at the BASE function's length instead sounds safer and is worse: our
+body is shorter than retail's in 213 of 4301 functions, and the clamp then hides
+retail's tail and reports everything in it as ours-only. It cost
+`CStatusBarMgr::LoadTabSprites` 0x274 bytes and seven phantom rows.
+`--clamp-to-base` restores it for comparison.
 
 It reads `build/objdiff/normalized/`, the copies objdiff actually scores, and it
 must: `canonicalize_data_symbols` content-addresses compiler-private data, so a
@@ -271,7 +276,8 @@ class Row:
         return self.magnitude * self.size
 
 
-def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False):
+def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False,
+         clamp=False):
     """[Row] for every function whose reference multiset differs, plus the totals."""
     scores = _scores()
     units = sorted(Path(p).stem for p in glob.glob(str(NORM / "base" / "*.obj")))
@@ -295,9 +301,17 @@ def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False):
             bs, be, brel = bf[sym]
             ts, te, trel = tf[sym]
             extent = be - bs
-            # Window the target to the BASE function's extent, and never past the
-            # next definition packed into the same delinked section.
-            te = min(te, ts + extent)
+            # Each side is windowed by the NEXT DEFINED SYMBOL in its own section.
+            # For the base that is the COMDAT, which cl pads to alignment, so the
+            # overshoot is zero bytes carrying no relocations. For the target it is
+            # the next packed definition. Clamping the target additionally to the
+            # base's extent looks safer and is not: our body is SHORTER than
+            # retail's in 213 of 4301 functions, and the clamp then cuts retail's
+            # tail off and reports every reference in it as ours-only. It cost
+            # `CStatusBarMgr::LoadTabSprites` 0x274 bytes and manufactured seven
+            # "we invented a read" rows in one function.
+            if clamp:
+                te = min(te, ts + extent)
             b = _refs(bs, be, brel, want, dropped)
             t = _refs(ts, te, trel, want, dropped)
             for name in [n for n in b if n not in tuniv]:
@@ -342,6 +356,9 @@ def main(argv=None) -> int:
                     help="count REL32 (call/jmp) targets instead of DIR32 data refs")
     ap.add_argument("--self", action="store_true",
                     help="keep self-references (jump-table entries) in the counts")
+    ap.add_argument("--clamp-to-base", action="store_true",
+                    help="also cut the target window at the base function's length "
+                         "(hides retail tail when our body is short - see the docstring)")
     ap.add_argument("--one-sided", action="store_true",
                     help="also report names only ONE side references in the function "
                          "(a different defect - a wrong referent, not a wrong count - "
@@ -354,7 +371,8 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     want = REL32 if args.rel32 else DIR32
-    rows, seen, dropped = scan(args.unit, want, args.self, args.one_sided)
+    rows, seen, dropped = scan(args.unit, want, args.self, args.one_sided,
+                               args.clamp_to_base)
     exact = [r for r in rows if r.pct >= 100.0]
 
     shown = exact if args.calibrate else [
