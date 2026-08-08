@@ -409,7 +409,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                     i32 leftX = tileX - radius;
                     i32 rightX = tileX + radius;
-                    for (i32 scanY = tileY - radius + 1; scanY < tileY + radius; scanY++) {
+                    for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
                         if (state->m_beginMarker->SetCell(leftX, scanY, ownerHi) != 0
                             && ownerHi == g_curPlayer) {
                             i32 fxX = leftX * 0x20 + 0x10;
