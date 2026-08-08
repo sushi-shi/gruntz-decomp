@@ -2377,7 +2377,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
             a.right = src->right + 1;
             a.bottom = src->bottom + 1;
         } else {
-            a = bounds;
+            a = CRect(0, 0, board->m_width, board->m_height);
         }
         RECT* aDst = &board->m_bounds;
         if (!IntersectRect(aDst, &a, &bounds)) {
@@ -2427,7 +2427,16 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         if (prim == PICKUP_SPRING) {
             flags = 0x1000;
         }
-        if (board->SearchEdge(center.m_x, center.m_y, coord->m_x, coord->m_y, &list, 1, 0x2000098f, flags) != 0
+        if (board->SearchEdge(
+                center.m_x,
+                center.m_y,
+                coord->m_x,
+                coord->m_y,
+                &list,
+                1,
+                0x2000098f,
+                flags
+            ) != 0
             && list.GetCount() != 0) {
             void* head = list.RemoveHead();
             if (head != NULL) {
