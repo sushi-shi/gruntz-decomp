@@ -1142,7 +1142,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         RezTypeTag extKey = REZ_TAG_NONE;
         char extName[0x10];
         char unpackedTag[0x10];
-        if (ext[0] != 0) {
+        if (strlen(ext) != 0) {
             strcpy(extName, ext + 1);
             _strupr(extName);
             extKey = PackTag(extName);
