@@ -197,7 +197,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                     sizeof(me)
                 )) {
                 if (isFullPath) {
-                    if (_stricmp(name, me.szExePath) == 0) {
+                    if (_strcmpi(name, me.szExePath) == 0) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
@@ -208,7 +208,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                         }
                     }
                 } else {
-                    if (_stricmp(name, me.szModule) == 0) {
+                    if (_strcmpi(name, me.szModule) == 0) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
