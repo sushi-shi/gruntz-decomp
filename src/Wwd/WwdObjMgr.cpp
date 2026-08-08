@@ -229,11 +229,6 @@ i32 CDDrawChildGroup::AttachSprite(
     return 1;
 }
 
-// @early-stop
-// CAniAdvanceCursor's ctor is expanded here (INLINE_CURSOR), matching retail, but
-// our cl then also expands the CLoadable base ctor inside it where retail keeps
-// `call ??0CLoadable` - a depth-4 inline decision; #pragma inline_depth(2|3) is
-// ignored by cl 5.0, so there is no source lever for it yet.
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
@@ -1113,9 +1108,8 @@ i32 CDDrawChildGroup::ForEachProbe(CFileMemBase* ar, LogicTypeId typeId) {
 
 // @early-stop
 // Retail caches `reader` in ebx and uses ebp as the function's zero register; cl
-// swaps them and therefore reloads `reader` from its parameter home every
-// iteration. Size is exact. 13 body spellings measured; `createdObj` left
-// uninitialised with an explicit zero in every non-creating arm was worth 71.0 -> 75.3.
+// swaps them (ebp=reader, ebx=zero, edi=this vs retail's esi) and therefore
+// reloads `reader` from its parameter home every iteration. Size is exact.
 RVA(0x0015ad30, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
@@ -1126,7 +1120,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         WwdSnapshot desc;
         reader->Read(&desc, sizeof(desc));
 
-        void* found;
+        void* found = NULL;
         if (MapLookupById(m_map48, desc.m_objectId, found) && found != NULL) {
             return 0;
         }
@@ -1137,7 +1131,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         CGameObject* createdObj;
         switch (desc.m_classId) {
             case CLASSID_WWDOBJA: {
-                CObject* val;
+                CObject* val = NULL;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
                     val
@@ -1157,7 +1151,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             case CLASSID_WWDOBJF: {
-                CObject* val;
+                CObject* val = NULL;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
                     val
@@ -1171,7 +1165,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 break;
             }
             case CLASSID_WWDOBJB: {
-                CObject* val;
+                CObject* val = NULL;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
                     static_cast<const char*>(desc.m_workerName),
                     val
