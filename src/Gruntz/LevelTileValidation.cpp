@@ -57,6 +57,35 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
     return tc->GetCollisionAt(subX, subY);
 }
 
+// The three placement arms below are hand-copies that diverged in retail: arm 1
+// (CreateTileTriggerSwitch) reaches the grid through CDDrawWorkerHost::GetTileHandle
+// (0xd2ee7 call), arms 2 and 3 subscript it (0xd3a6d, 0xd3e5b), and arm 2's powerup
+// test lists three tile kinds where arm 1 lists four.
+static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
+    CDDrawWorkerHost* g = level->m_mainPlane;
+    if (x < 0) {
+        x = 0;
+    } else if (x >= g->m_wrapW) {
+        x = g->m_wrapW - 1;
+    }
+    if (y < 0) {
+        y = 0;
+    } else if (y >= g->m_wrapH) {
+        y = g->m_wrapH - 1;
+    }
+    i32 tx = x >> g->m_shiftX;
+    i32 ty = y >> g->m_shiftY;
+    i32 subX = x - (tx << g->m_shiftX);
+    i32 subY = y - (ty << g->m_shiftY);
+    i32 cell = g->m_tileGrid[g->m_colOffsets[ty] + tx];
+    if (cell == UNINIT_FILL || cell == -1) {
+        return TILEKIND_PASSABLE;
+    }
+
+    CImageSet1* tc = static_cast<CImageSet1*>(level->m_imageSets.GetAt(cell & 0xffff));
+    return tc->GetCollisionAt(subX, subY);
+}
+
 RVA(0x000d2b20, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
@@ -474,7 +503,7 @@ i32 CPlay::ValidateLevelTiles() {
         } else if (who == CreateTileTrigger) {
             CGameLevel* grid = LevelOf(m_world);
             TileCollisionKind type =
-                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (type == TILEKIND_GIANT_ROCK) {
 
                 void* hit = 0;
@@ -597,7 +626,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == CreateTileSecretTrigger) {
             TileCollisionKind type =
-                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
             if (!m_beginMarker->AddLogic(
                     type,
                     TRIGID_SECRET_TRIGGER_25,
