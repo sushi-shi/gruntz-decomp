@@ -86,6 +86,20 @@ flip it but neither is used by the TU), `CImage::BlitShadeNorm` 0x154270 (99.85,
 and no amount of TU state reaches it. `CDDrawChildGroup::SumWeighted` 0x15aaf0 moves only
 99.852 -> 99.889.
 
+2026-08-08, `sbi_rectonly` + `gruntentrancearrival`: 155 more dead-flat cells, equal to
+six decimal places. `CStatusBarMgr::SetSpritePos` 0xfe860 (25 graded free-function
+prototypes AND 80 `tu_state_*` islands across all twelve families),
+`CStatusBarMgr::HitTestRects` 0xffcb0, `CStatusBarMgr::PlaceCursorTarget` 0x105800 and
+`CGrunt::RearmAttackAnim` 0x61940 (17/17/13 graded classes-with-inline-bodies, the
+densest carrier). `#include <string.h>` above the first project include is neutral in
+that TU too. The substitution machinery was verified live in the same run - a
+deliberately broken option is dropped as a compile failure - so the flatness is real.
+Two of the four then closed on a plain source-shape fix
+([one-flag-local-carries-both-tests.md](one-flag-local-carries-both-tests.md),
+[retail-duplicates-small-return-epilogues.md](retail-duplicates-small-return-epilogues.md)).
+**Map the window ONCE per TU, on one function. If it is flat there, do not re-run it on
+that TU's other functions - spend the budget on the disassembly instead.**
+
 related: [string-h-intrinsics-reallocate-the-tu.md](string-h-intrinsics-reallocate-the-tu.md),
 [commutative-operand-order-is-canonical.md](commutative-operand-order-is-canonical.md),
 [dead-eight-byte-coord-temp-is-unreproduced.md](dead-eight-byte-coord-temp-is-unreproduced.md)
