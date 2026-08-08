@@ -178,28 +178,56 @@ fn creditz_is_not_a_bute_stream() {
     );
 }
 
-/// The still-unsolved one. Recorded as a test so the day someone finds the key
-/// this fails loudly instead of going unnoticed.
+/// The developers' private cheat file, under the key recovered by known
+/// plaintext (see [`bute::CHEATZ_KEY`]).
+///
+/// Two halves, and both matter. The ATTRIBUTEZ key must NOT open it -- that is
+/// what says the two resources really are keyed differently -- and the CHEATZ
+/// key must open it into the banner and table we expect.
 #[test]
-fn cheatz_does_not_open_under_the_attributez_key() {
+fn cheatz_opens_only_under_its_own_key() {
     let Some(rez) = retail_rez() else { return };
     let cheatz = find(&rez, "STATEZ\\CREDITZ\\PALETTEZ\\CHEATZ").expect("CHEATZ");
     assert_eq!(cheatz.len(), 865);
     // It IS framed as a bute stream - 8*108 + 1, trailer 5.
     assert_eq!(bute::decoded_len(cheatz), Ok(861));
 
-    let bf = Blowfish::attributez();
-    let mut plain = vec![0u8; 861];
-    bute::decode_into(&bf, cheatz, &mut plain).unwrap();
-    let printable = plain
-        .iter()
-        .filter(|&&c| (0x20..0x7f).contains(&c) || matches!(c, b'\t' | b'\r' | b'\n'))
-        .count();
+    let printable = |b: &[u8]| {
+        b.iter()
+            .filter(|&&c| (0x20..0x7f).contains(&c) || matches!(c, b'\t' | b'\r' | b'\n'))
+            .count()
+    };
+
+    let mut wrong = vec![0u8; 861];
+    bute::decode_into(&Blowfish::attributez(), cheatz, &mut wrong).unwrap();
     assert!(
-        printable * 2 < plain.len(),
-        "CHEATZ decoded under the ATTRIBUTEZ key ({printable}/861 printable) - \
-         the key question is SOLVED, update tools/gruntz-codec/src/bute.rs"
+        printable(&wrong) * 2 < wrong.len(),
+        "the ATTRIBUTEZ key opened CHEATZ - the two are supposed to differ"
     );
+
+    let mut plain = vec![0u8; 861];
+    bute::decode_into(&Blowfish::cheatz(), cheatz, &mut plain).unwrap();
+    let text = String::from_utf8_lossy(&plain).into_owned();
+    assert!(
+        text.starts_with("/****"),
+        "banner: {:?}",
+        &text[..40.min(text.len())]
+    );
+    assert!(text.contains("Gruntz cheatz file"));
+    assert!(text.contains("NumCheatz"));
+    // The Warpstonez cheat that is MISSING from the shipped ATTRIBUTEZ table
+    // (its [Cheat24] gap, between 33015 // Wandz and 33017 // Welderz).
+    assert!(
+        text.contains("33016"),
+        "the [Cheat24] value should live here"
+    );
+    // 94.5%; the shortfall is the obfuscated Text fields, which are >0x7f.
+    assert!(printable(&plain) * 100 / plain.len() >= 90);
+
+    // And it re-encodes to the archived bytes, same as ATTRIBUTEZ.
+    let mut again = vec![0u8; bute::encoded_len(&plain)];
+    bute::encode_into(&Blowfish::cheatz(), &plain, &mut again).unwrap();
+    assert_eq!(again, cheatz, "re-encode is not byte-identical");
 }
 
 /// Every `[CheatN] Text` field in the shipped archive must come out of

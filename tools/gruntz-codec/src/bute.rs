@@ -48,8 +48,9 @@
 //!   so the effective key is **four** bytes, `"1212"` — the trailing `C` of the
 //!   literal is never read. See [`ATTRIBUTEZ_KEY`].
 //!
-//! `CHEATZ` does **not** decode under that key (see [`ATTRIBUTEZ_KEY`] docs);
-//! its key is still unknown.
+//! `CHEATZ` uses a different key, and it is not in the shipped files at all:
+//! `CChatBoxOwner::ProcessCheatInput` @0x000205c0 takes it from what the player
+//! types. It is recovered anyway — see [`CHEATZ_KEY`].
 //!
 //! # Shape of the API
 //!
@@ -67,10 +68,42 @@ use crate::bute_pi::{INIT_P, INIT_S};
 /// `"1212C"`, and `InitializeBlowfish` @0x00170100 wraps every byte index
 /// modulo `keybytes`. The `C` is dead.
 ///
-/// This key does *not* decode `STATEZ\CREDITZ\PALETTEZ\CHEATZ`: that resource
-/// comes out at 38% printable with a visible 8-byte ECB period, which is what
-/// a wrong key on a correctly-framed stream looks like.
+/// This key does *not* decode `STATEZ\CREDITZ\PALETTEZ\CHEATZ` — see
+/// [`CHEATZ_KEY`], which does.
 pub const ATTRIBUTEZ_KEY: &[u8] = b"1212";
+
+/// The key for `STATEZ\CREDITZ\PALETTEZ\CHEATZ`, recovered by known plaintext.
+///
+/// This one is not a literal in the binary. `CChatBoxOwner::ProcessCheatInput`
+/// @0x000205c0 parses `Enable Cheatzfile <NAME> <KEY>` out of the chat box and
+/// hands `<KEY>` to `Blowfish_InitKey`, so the developer typed it. But
+/// `Blowfish_InitKey` consumes only FOUR bytes however long the password was,
+/// which caps the search at the four printable characters the player typed:
+/// 95^4 = 81 450 625 schedules, about 90 s on 24 cores.
+///
+/// The probe is what matters. Printability is far too weak here, and not for
+/// the usual reason: the file opens on a `/****...` banner, so cipher blocks
+/// 1..6 and 14..18 are all the SAME block, and "N blocks of text" is really
+/// asking for two distinct ones — three junk keys clear even N = 4. ECB block
+/// EQUALITY, though, is a property of the PLAINTEXT and survives any key, and
+/// CHEATZ's first 19 cipher blocks have the pattern `ABBBBBBCDEFGHIBBBBB`,
+/// which is exactly `GAME\ATTRIBUTEZ`'s — whose plaintext we can read. Eleven
+/// copies of one 8-byte block at the top of a text file is `********`. Probing
+/// on those 88 known bytes (and wildcarding the banner wording in between,
+/// which is free to differ, and does: "Gruntz cheatz file") leaves exactly ONE
+/// key in the whole space, at 94.5% printable.
+///
+/// `K3V1` is the leetspelling of `KEVI`, and `CCheatMgr::RegisterCheats`
+/// @0x00022c80 already registers four cheats we named after Kevin Lambert. The
+/// full password is unrecoverable — bytes past the fourth are never read.
+///
+/// What it opens is the developers' private cheat file: six codes, five of them
+/// `NonCheat = 1`, including `MPCLEARCHEATZ` and `MPWARPSTONEZ`. That last one
+/// is `Value = 33016`, which is precisely the gap in the shipped ATTRIBUTEZ
+/// table — its `[Cheat24]` is missing, between `// Wandz` (33015) and
+/// `// Welderz` (33017). The Warpstonez cheat was moved out of the public file
+/// into this one.
+pub const CHEATZ_KEY: &[u8] = b"K3V1";
 
 /// The additive shift the `[CheatN] Text` fields are obfuscated with.
 ///
@@ -155,6 +188,11 @@ impl Blowfish {
     /// key bytes.
     pub fn attributez() -> Blowfish {
         Blowfish::with_key_bytes(ATTRIBUTEZ_KEY, 4)
+    }
+
+    /// The `STATEZ\CREDITZ\PALETTEZ\CHEATZ` schedule — [`CHEATZ_KEY`].
+    pub fn cheatz() -> Blowfish {
+        Blowfish::with_key_bytes(CHEATZ_KEY, 4)
     }
 
     /// The ordinary Blowfish key schedule: the whole of `key` is used.

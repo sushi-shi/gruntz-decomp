@@ -85,9 +85,29 @@ enum Cmd {
         #[arg(long, value_enum, default_value_t = Alphabet::Printable)]
         alphabet: Alphabet,
         /// Blocks that must all decode to text before a candidate is reported.
-        /// Two is already ~1 false positive in 10^7.
+        ///
+        /// A printability probe is weak on THIS corpus, and not for the usual
+        /// reason: the file opens on a `/****...` banner, so cipher blocks 1..6
+        /// and 14..18 are all the SAME block. Asking for "4 blocks of text" is
+        /// really asking for 2 distinct ones, and 3 junk keys clear that bar.
+        /// Prefer `--known`.
         #[arg(long, default_value_t = 3)]
         blocks: usize,
+        /// A file holding this resource's known leading PLAINTEXT; every whole
+        /// block it covers must decrypt to it exactly.
+        ///
+        /// For `CHEATZ` that is not a guess: ECB block-EQUALITY is a property of
+        /// the plaintext, not of the key, and CHEATZ's first 19 cipher blocks
+        /// have the pattern `ABBBBBBCDEFGHIBBBBB` -- byte-for-byte the same
+        /// pattern as `GAME\ATTRIBUTEZ`, whose plaintext we can read. So the
+        /// first 152 bytes are the same shape. What that pins EXACTLY is the
+        /// 11 repeated blocks (1..6 and 14..18): eleven copies of one 8-byte
+        /// plaintext, in a text file opening on a banner, is `********`. The
+        /// blocks BETWEEN them are the banner's wording, which is free to
+        /// differ, so a NUL byte in this file means DON'T CARE -- the plaintext
+        /// is ASCII, so a real NUL cannot collide with the wildcard.
+        #[arg(long)]
+        known: Option<PathBuf>,
         /// Worker threads.
         #[arg(long, default_value_t = 0)]
         threads: usize,
@@ -135,7 +155,7 @@ fn main() -> ExitCode {
         );
         return ExitCode::FAILURE;
     }
-    let bf = Blowfish::with_key_bytes(key, cli.key_bytes);
+    let explicit_key = std::env::args().any(|a| a == "--key" || a.starts_with("--key="));
 
     match cli.cmd {
         Cmd::List => {
@@ -164,6 +184,7 @@ fn main() -> ExitCode {
                 return ExitCode::FAILURE;
             };
             let data = r.data(rez.bytes());
+            let bf = schedule_for(&path, &cli.key, cli.key_bytes, explicit_key);
             let out = if raw {
                 data.to_vec()
             } else {
@@ -182,6 +203,7 @@ fn main() -> ExitCode {
                 return ExitCode::FAILURE;
             };
             let data = r.data(rez.bytes());
+            let bf = schedule_for(&path, &cli.key, cli.key_bytes, explicit_key);
             let Some(plain) = decrypt(&bf, data) else {
                 eprintln!("butez: {path} is not a bute stream");
                 return ExitCode::FAILURE;
@@ -232,6 +254,7 @@ fn main() -> ExitCode {
                     }
                 }
                 let data = r.data(rez.bytes());
+                let bf = schedule_for(&rel, &cli.key, cli.key_bytes, explicit_key);
                 let (out, how) = match decrypt(&bf, data) {
                     Some(p) => (p, "decrypted"),
                     None => (data.to_vec(), "stored"),
@@ -249,6 +272,7 @@ fn main() -> ExitCode {
             path,
             alphabet,
             blocks,
+            known,
             threads,
         } => {
             let Some(r) = find(&rez, &path) else {
@@ -260,7 +284,25 @@ fn main() -> ExitCode {
                 eprintln!("butez: {path} is not a bute stream");
                 return ExitCode::FAILURE;
             }
-            let want = blocks.max(1).min((data.len() - 1) / 8);
+            // A known-plaintext probe when we have one, else printability.
+            let expect: Option<Vec<u8>> = match &known {
+                Some(kp) => match std::fs::read(kp) {
+                    Ok(b) => Some(b),
+                    Err(e) => {
+                        eprintln!("butez: {}: {e}", kp.display());
+                        return ExitCode::FAILURE;
+                    }
+                },
+                None => None,
+            };
+            let want = match &expect {
+                Some(kp) => (kp.len() / 8).min((data.len() - 1) / 8),
+                None => blocks.max(1).min((data.len() - 1) / 8),
+            };
+            if want == 0 {
+                eprintln!("butez: nothing to probe (need at least one whole block)");
+                return ExitCode::FAILURE;
+            }
             let probe: Vec<[u8; 8]> = (0..want)
                 .map(|b| {
                     let mut blk = [0u8; 8];
@@ -276,16 +318,21 @@ fn main() -> ExitCode {
             };
             eprintln!(
                 "[butez] brute-forcing 4 key bytes over {} values ({} candidates) \
-                 on {nthreads} threads, {want} probe blocks",
+                 on {nthreads} threads, {want} probe blocks ({})",
                 alpha.len(),
-                (alpha.len() as u64).pow(4)
+                (alpha.len() as u64).pow(4),
+                if expect.is_some() {
+                    "known plaintext"
+                } else {
+                    "printability"
+                }
             );
             let hits = std::sync::Mutex::new(Vec::<[u8; 4]>::new());
             std::thread::scope(|scope| {
                 for t in 0..nthreads {
-                    let (alpha, probe, hits) = (&alpha, &probe, &hits);
+                    let (alpha, probe, hits, expect) = (&alpha, &probe, &hits, &expect);
                     scope.spawn(move || {
-                        let mut bf = Blowfish::attributez();
+                        let mut bf = Blowfish::attributez(); // rekeyed per candidate
                         let mut key = [0u8; 4];
                         for (i0, &a) in alpha.iter().enumerate() {
                             if i0 % nthreads != t {
@@ -299,10 +346,21 @@ fn main() -> ExitCode {
                                     for &d in alpha.iter() {
                                         key[3] = d;
                                         bf.rekey(&key, 4);
-                                        if probe.iter().all(|blk| {
+                                        if probe.iter().enumerate().all(|(i, blk)| {
                                             let mut blk = *blk;
                                             bf.decipher_block(&mut blk);
-                                            blk.iter().all(|&ch| is_text(ch))
+                                            match expect {
+                                                // NUL is the wildcard: the
+                                                // plaintext is ASCII text, so a
+                                                // real NUL cannot occur, and the
+                                                // known bytes are not contiguous
+                                                // (see --known).
+                                                Some(kp) => blk
+                                                    .iter()
+                                                    .zip(&kp[i * 8..i * 8 + 8])
+                                                    .all(|(&g, &w)| w == 0 || g == w),
+                                                None => blk.iter().all(|&ch| is_text(ch)),
+                                            }
                                         }) {
                                             hits.lock().expect("lock").push(key);
                                         }
@@ -315,7 +373,7 @@ fn main() -> ExitCode {
             });
             let hits = hits.into_inner().expect("lock");
             if hits.is_empty() {
-                eprintln!("[butez] no key in this alphabet decodes {want} blocks to text");
+                eprintln!("[butez] EXHAUSTED: no key in this alphabet reproduces {want} block(s)");
                 return ExitCode::FAILURE;
             }
             let need = bute::decoded_len(data).expect("checked");
@@ -404,6 +462,16 @@ fn main() -> ExitCode {
         }
     }
     ExitCode::SUCCESS
+}
+
+/// The schedule for one resource. Retail keys its two encrypted resources
+/// differently (`"1212C"` truncated to 4 for ATTRIBUTEZ, the typed `K3V1` for
+/// CHEATZ), so `list`/`cat`/`dump` pick by path unless `--key` was given.
+fn schedule_for(path: &str, cli_key: &str, key_bytes: usize, explicit: bool) -> Blowfish {
+    if !explicit && path.to_ascii_uppercase().ends_with("CHEATZ") {
+        return Blowfish::cheatz();
+    }
+    Blowfish::with_key_bytes(cli_key.as_bytes(), key_bytes)
 }
 
 /// Decrypt if the resource is a well-formed bute stream, else `None`.
