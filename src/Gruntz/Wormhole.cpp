@@ -166,6 +166,12 @@ i32 CWormhole::SpawnPartners() {
 }
 
 // @early-stop
+// Every member store, offset and call matches; the residue is which literal gets a
+// callee-saved register - retail parks 1 in ebx and 0 in ebp, we do the reverse, so
+// retail's `and al,0xe0` (value in eax) becomes our `and ecx,0xffffffe0` and the
+// `mov reg,1` inside the RegisterLogicTypesOnce guard has to be duplicated across
+// both arms. Not moved by TU declaration count (swept 0..16); the shared
+// CUserLogic::AttachToObject inline is fine (67 sibling ctors, median 96.5).
 RVA(0x00040490, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

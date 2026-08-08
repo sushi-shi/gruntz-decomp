@@ -1256,8 +1256,8 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    u8* src = static_cast<u8*>(srcv);
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
+        u8* src = static_cast<u8*>(srcv);
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
@@ -1287,6 +1287,7 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
             }
         }
     } else {
+        u8* src = static_cast<u8*>(srcv);
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {

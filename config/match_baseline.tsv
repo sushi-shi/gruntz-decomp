@@ -1205,7 +1205,7 @@ ddsurface	?Blit168@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	92.0354	92.0354	2	f2
 ddsurface	?Blit2416@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	100.0000	100.0000	2	b5ba39f4114c	0x13ff80	100.0000
 ddsurface	?Blit248@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	94.3103	94.3103	1	9d4a92f0afa6	0x13fe60	94.3103
 ddsurface	?Blit816@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	70.0593	70.0593	2	7132cbabfd51	0x140420	70.0593
-ddsurface	?Blit824@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	58.7490	58.7490	2	f3f9e7b6c30b	0x140110	58.7490
+ddsurface	?Blit824@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	65.0000	65.0000	3	7b5cdcefc927	0x140110	65.0000
 ddsurface	?Blit@CDDSurface@@QAEHPAXW4ColorDepth@@0W4RasterRowOrder@@@Z	100.0000	100.0000	1	412824fdbdee	0x13faa0	100.0000
 ddsurface	?BlitDirect@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	78.8353	78.8353	2	664c1993069b	0x13ece0	78.8353
 ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAX@Z	100.0000	100.0000	4	8b15ef4d67be	0x13e2e0	100.0000
@@ -1621,7 +1621,7 @@ fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	69.7873	69.7873	13	6539cfd79
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790	100.0000
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0	100.0000
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120	100.0000
-fader	?RenderFrame@CFaderMesh@@UAEXH@Z	90.8793	90.8793	6	2ada0709b255	0x17ef00	90.8793
+fader	?RenderFrame@CFaderMesh@@UAEXH@Z	90.8793	90.8793	7	7f4fd30bf7d1	0x17ef00	90.8793
 fader	?RunFade@CFader@@QAEXIHH@Z	86.4057	86.4057	9	b495d342363f	0x17e620	86.4057
 fader	?RunFadeStepped@CFader@@QAEXHHH@Z	86.8750	86.8750	6	c17d1ece953d	0x17e540	86.8750
 fader	?Set2c@CFader@@QAEXPAVCDDrawPtrCollections@@@Z	100.0000	100.0000	1	d7ac21aff78e	0x17e780	100.0000
