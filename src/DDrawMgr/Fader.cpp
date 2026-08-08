@@ -352,61 +352,57 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 }
 
 // @early-stop
+// Residue is an ebx<->ebp rotation: retail hands the zero constant the first
+// callee-saved register and `this` the second; the instruction stream is otherwise
+// the same. Not steerable by TU declaration count (swept 0..16).
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
-    CDDSurface* dst = m_dstSurface;
     if (m_primeSrc != NULL) {
-        dst->Blt(m_primeSrc);
+        m_dstSurface->Blt(m_primeSrc);
     } else {
-        dst->Clear(0);
+        m_dstSurface->Clear(0);
     }
-    if (m_meshBuf.m_nSize > 0) {
-        float ff = static_cast<float>(frame);
-        RezElem40* recs = m_meshBuf.m_pData;
-        for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
-            RezElem40* rec = &recs[i];
-            i32 r0 = rec->m_startRect.left, r1 = rec->m_startRect.top;
-            i32 r2 = rec->m_startRect.right, r3 = rec->m_startRect.bottom;
-            i32 r4 = rec->m_endRect.left, r5 = rec->m_endRect.top;
-            i32 r6 = rec->m_endRect.right, r7 = rec->m_endRect.bottom;
-            float t = ff / static_cast<float>(GetFrameCount());
+    for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
+        RezElem40 elem = m_meshBuf.m_pData[i];
+        float t = static_cast<float>(static_cast<u32>(frame))
+                  / static_cast<float>(static_cast<u32>(GetFrameCount()));
+        RECT srcRect = elem.m_startRect;
+        RECT dstRect;
+        RECT boundRect = elem.m_endRect;
 
-            i32 x0 = r0 + static_cast<i32>((static_cast<float>((r4 - r0)) * t));
-            i32 y0 = r1 + static_cast<i32>((static_cast<float>((r5 - r1)) * t));
-            i32 x1 = r2 + static_cast<i32>((static_cast<float>((r6 - r2)) * t));
-            i32 y1 = r3 + static_cast<i32>((static_cast<float>((r7 - r3)) * t));
+        dstRect.left =
+            elem.m_startRect.left
+            + static_cast<i32>(static_cast<float>(elem.m_endRect.left - elem.m_startRect.left) * t);
+        dstRect.top =
+            elem.m_startRect.top
+            + static_cast<i32>(static_cast<float>(elem.m_endRect.top - elem.m_startRect.top) * t);
+        dstRect.right = elem.m_startRect.right
+                        + static_cast<i32>(
+                            static_cast<float>(elem.m_endRect.right - elem.m_startRect.right) * t
+                        );
+        dstRect.bottom = elem.m_startRect.bottom
+                         + static_cast<i32>(
+                             static_cast<float>(elem.m_endRect.bottom - elem.m_startRect.bottom) * t
+                         );
 
-            i32 bx0 = r4, by0 = r5, bx1 = r6, by1 = r7;
-            if (x0 < 0 && x1 > 0) {
-                bx0 = r4 - x0;
-                x0 = 0;
-            } else if (x1 <= dst->m_width && x0 > dst->m_width) {
-                bx1 = r6 - x1 + dst->m_width;
-                x1 = dst->m_width - 1;
-            }
-            if (y0 < 0 && y1 > 0) {
-                by0 = r5 - y0;
-                y0 = 0;
-            } else if (y1 <= dst->m_height && y0 > dst->m_height) {
-                by1 = r7 - y1 + dst->m_height;
-                y1 = dst->m_height - 1;
-            }
-
-            RECT dstRect = {x0, y0, x1, y1};
-            RECT srcRect;
-            if (m_recOrderFlag != 0) {
-                srcRect.left = r0;
-                srcRect.top = r1;
-                srcRect.right = r2;
-                srcRect.bottom = r3;
-            } else {
-                srcRect.left = bx0;
-                srcRect.top = by0;
-                srcRect.right = bx1;
-                srcRect.bottom = by1;
-            }
-            dst->BltEx(&dstRect, m_bltSrc, &srcRect, 0x1000000, 0);
+        if (dstRect.left < 0 && dstRect.right > 0) {
+            boundRect.left = elem.m_endRect.left - dstRect.left;
+            dstRect.left = 0;
+        } else if (dstRect.right >= m_dstSurface->m_width && dstRect.left < m_dstSurface->m_width) {
+            boundRect.right = elem.m_endRect.right - dstRect.right + m_dstSurface->m_width;
+            dstRect.right = m_dstSurface->m_width - 1;
         }
+        if (dstRect.top < 0 && dstRect.bottom > 0) {
+            boundRect.top = boundRect.top - dstRect.top;
+            dstRect.top = 0;
+        } else if (dstRect.bottom >= m_dstSurface->m_height
+                   && dstRect.top < m_dstSurface->m_height) {
+            boundRect.bottom = boundRect.bottom + (m_dstSurface->m_height - dstRect.bottom);
+            dstRect.bottom = m_dstSurface->m_height - 1;
+        }
+
+        m_dstSurface
+            ->BltEx(&dstRect, m_bltSrc, m_recOrderFlag != 0 ? &srcRect : &boundRect, 0x1000000, 0);
     }
     m_flipTarget->Flip(0);
 }
