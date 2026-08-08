@@ -1,30 +1,41 @@
-//! Monolith **REZ version 1** archive reader (`.REZ` and `.VRZ`) — `no_std`, no `alloc`,
-//! zero-copy.
+//! Monolith **REZ version 1** archive reader and writer (`.REZ` and `.VRZ`) —
+//! `no_std`, zero-copy on the read side.
 //!
-//! Clean-room: the layout below was derived by hexdump-walking
+//! Clean-room: the layout below was first derived by hexdump-walking
 //! `GRUNTDEM.REZ` / `Gruntz.REZ` and validated structurally — every directory
 //! parse must consume its declared `size` **exactly** (see [`Rez::validate`]).
-//! No field is taken on faith from the C++ reconstruction under `src/Rez/`.
+//! It was subsequently confirmed field-for-field against retail's own header
+//! parser and directory parser in `GRUNTZ.EXE`; the RVAs are cited per field
+//! below. No field is taken on faith from the C++ reconstruction under
+//! `src/Rez/` (which models only the file-driver layer, not the container).
 //!
 //! # On-disk layout
 //!
 //! ```text
-//! file header:
-//!   b"\r\n" <ascii comment, space padded> b"\r\n" ... 0x1a       (variable length,
-//!                                                                terminated by 0x1a)
-//!   u32 version              == 1
-//!   u32 root_dir_pos
-//!   u32 root_dir_size
-//!   u32 root_dir_time
-//!   u32 next_write_pos
-//!   u32 time
-//!   u32 largest_key_ary
-//!   u32 largest_dir_name_size
-//!   u32 largest_rez_name_size
-//!   u32 largest_comment_size
-//!   u8  is_sorted
+//! file header — EXACTLY 168 bytes, fixed offsets  (CRezMgr::Open @0x13ad00
+//!                                                  reads 0xa8 bytes at offset 0)
+//!   0x00  b"\r\n"                                 (retail asserts byte 0x00 == '\r')
+//!   0x02  60 bytes  banner line 1, space padded
+//!   0x3e  b"\r\n"                                 (retail asserts byte 0x3f == '\n')
+//!   0x40  60 bytes  banner line 2, space padded
+//!   0x7c  b"\r\n"
+//!   0x7e  0x1a                                    (retail asserts byte 0x7e == 0x1a;
+//!                                                  DOS `TYPE` stops here)
+//!   0x7f  u32 version                             == 1, retail asserts it
+//!   0x83  u32 root_dir_pos
+//!   0x87  u32 root_dir_size
+//!   0x8b  u32 root_dir_time
+//!   0x8f  u32 next_write_pos
+//!   0x93  u32 time                                time_t of the last write
+//!   0x97  u32 largest_key_ary
+//!   0x9b  u32 largest_dir_name_size
+//!   0x9f  u32 largest_rez_name_size
+//!   0xa3  u32 largest_comment_size
+//!   0xa7  u8  is_sorted
+//!   0xa8  first payload byte
 //!
-//! directory body (`root_dir_pos .. +root_dir_size`, a packed entry list):
+//! directory body (`root_dir_pos .. +root_dir_size`, a packed entry list;
+//!                 CRezDir::ReadDirBlock @0x13a640):
 //!   u32 kind                 1 = directory, 0 = resource
 //!   u32 pos                  byte offset of the child directory body / file data
 //!   u32 size                 byte length of same
@@ -37,6 +48,7 @@
 //!   cstr name
 //!   -- resource only --
 //!   cstr comment
+//!   u32 keys[num_keys]       absent in every shipped archive (largest_key_ary == 0)
 //! ```
 //!
 //! Note the asymmetry: **directories carry a name and no comment**, resources
@@ -44,18 +56,71 @@
 //! a comment field on directories, `AREA2`'s 0xb7-byte body over-runs; without
 //! one it lands on the byte. The shipped demo/retail REZ corpora (10 553 and
 //! 21 303 resources) and retail VRZ voice bank (1 517 resources) parse to the
-//! byte under this rule.
+//! byte under this rule. Retail's parser reads the two fields in that order at
+//! 0x13a7f6 (name) and 0x13a825 (comment), and treats an empty comment as
+//! absent.
+//!
+//! The header scan below looks for the 0x1a terminator rather than indexing
+//! 0x7e directly. That is a superset of what retail does — retail hard-codes
+//! the offsets — and it agrees on every archive whose banner is the standard
+//! 127-byte block, which is all three shipped ones.
+//!
+//! # What `is_sorted` means
+//!
+//! It is **not** an ordering claim about sibling entries, and it drives no
+//! search. It asserts that each directory's resource payloads occupy **one
+//! contiguous span** of the file, so a whole directory can be preloaded with a
+//! single read.
+//!
+//! `CRezDir::ReadDirBlock` accumulates, per directory, `min(pos)` and
+//! `sum(size)` over its own resources (0x13a8c8..0x13a8e6). `CRezDir::Load`
+//! @0x13a0f0 then reads exactly `[min(pos), min(pos) + sum(size))` into one
+//! heap block, but only after checking `mgr->is_sorted != 0` and
+//! `mgr->open_file_count <= 1`; otherwise it prints
+//! `"CRezDir::Load Failed! (File is not sorted!)"` and returns 0. Once that
+//! block exists, `CRezItm::Read` @0x139a40 serves resource bytes from
+//! `blob + (item.pos - dir.min_pos)` instead of touching the file — which is
+//! correct only if the resources tile that span exactly.
+//!
+//! All three shipped archives satisfy the predicate for every one of their
+//! non-empty directories (1784 / 58 / 915), while only 290 / 0 / 171
+//! directories have their entries in ascending-position or lexicographic
+//! order — so the flag cannot be describing entry order. [`Rez::is_contiguous`]
+//! checks the real predicate.
+//!
+//! In the shipped `GRUNTZ.EXE` the flag is nonetheless **inert**: the only
+//! rel32 caller of `CRezDir::Load` is its own recursion at 0x13a15b and no
+//! vtable slot holds its address, so `dir->blob` is always null and the
+//! fast path at 0x139a40 is never taken.
 //!
 //! # Zero-copy
 //!
 //! [`Rez`] borrows the archive image; names, comments and payloads are `&str` /
 //! `&[u8]` slices into it. Traversal is an [`Iterator`] driven by an explicit
 //! stack of at most [`MAX_DEPTH`] frames, so nothing is allocated and nothing
-//! recurses.
+//! recurses. The writer in [`write`] is the one part that needs an allocator
+//! and is behind the `alloc` feature; the reader never allocates in either
+//! configuration.
 
 #![no_std]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 pub mod fec;
+#[cfg(feature = "alloc")]
+pub mod write;
+
+/// Size of the REZ v1 file header, in bytes.
+///
+/// Retail hard-codes this: `CRezMgr::Open` @0x13ad00 issues one
+/// `Read(0, 0, 0xa8, buf)` and then indexes fixed offsets into `buf`. A newly
+/// created archive gets `next_write_pos = 0xa8` at 0x13af21, and the first
+/// payload byte of all three shipped archives is at 0xa8.
+pub const HEADER_SIZE: usize = 168;
+
+/// Offset of the `version` field, i.e. one past the 0x1a terminator.
+pub const HEADER_FIELDS_AT: usize = 0x7f;
 
 use core::fmt;
 
@@ -89,6 +154,9 @@ pub enum RezError<'a> {
     BadEntryKind { dir: &'a str, kind: u32 },
     /// Nesting deeper than [`MAX_DEPTH`].
     TooDeep { dir: &'a str },
+    /// A directory's resources do not tile one contiguous span, so the archive
+    /// cannot honestly claim `is_sorted = 1`. See [`Rez::is_contiguous`].
+    NotContiguous { dir: &'a str },
 }
 
 impl fmt::Display for RezError<'_> {
@@ -116,6 +184,10 @@ impl fmt::Display for RezError<'_> {
                 "{dir}: entry kind {kind} is neither 0 (resource) nor 1 (directory)"
             ),
             RezError::TooDeep { dir } => write!(f, "{dir}: nesting deeper than {MAX_DEPTH}"),
+            RezError::NotContiguous { dir } => write!(
+                f,
+                "{dir}: resources do not tile one contiguous span; is_sorted would be a lie"
+            ),
         }
     }
 }
@@ -127,6 +199,19 @@ impl core::error::Error for RezError<'_> {}
 pub struct FourCc(pub u32);
 
 impl FourCc {
+    /// Build a tag from its on-screen spelling: `"PID"` becomes the dword
+    /// 0x00504944, which stores as `b"DIP\0"`. The inverse of [`FourCc::as_str`].
+    pub const fn from_tag(tag: &str) -> FourCc {
+        let bytes = tag.as_bytes();
+        let mut v = 0u32;
+        let mut i = 0;
+        while i < bytes.len() && i < 4 {
+            v = (v << 8) | bytes[i] as u32;
+            i += 1;
+        }
+        FourCc(v)
+    }
+
     /// The tag as it reads on screen: stored `b"DIP\0"` is `PID`.
     pub fn as_str(self, buf: &mut [u8; 4]) -> &str {
         let raw = self.0.to_le_bytes();
@@ -181,6 +266,10 @@ pub struct Resource<'a> {
     pub size: u32,
     pub time: u32,
     pub num_keys: u32,
+    /// The `num_keys * 4` raw little-endian bytes that follow the comment, as
+    /// they sit in the directory body. Empty in every shipped archive. Read
+    /// them with [`Resource::keys`].
+    pub keys_raw: &'a [u8],
     /// The enclosing directory chain, outermost first — e.g.
     /// `["AREA2", "IMAGEZ", "TREE2"]`. Renders as a path via [`Path`].
     pub dirs: Dirs<'a>,
@@ -191,6 +280,15 @@ impl<'a> Resource<'a> {
     pub fn data(&self, archive: &'a [u8]) -> &'a [u8] {
         let start = self.pos.as_usize();
         &archive[start..start + self.size.as_usize()]
+    }
+
+    /// The key array, decoded. Retail allocates `num_keys * 4` bytes and copies
+    /// that many dwords out of the body (0x13a856..0x13a86e); it is empty in
+    /// every shipped archive, so what the keys *mean* is undetermined.
+    pub fn keys(&self) -> impl Iterator<Item = u32> + 'a {
+        self.keys_raw
+            .chunks_exact(4)
+            .map(|c| u32::from_le_bytes([c[0], c[1], c[2], c[3]]))
     }
 
     /// `AREA2\IMAGEZ\TREE2\FRAME001`, formatted on demand — no string is built
@@ -323,6 +421,400 @@ impl<'a> Rez<'a> {
             n += 1;
         }
         Ok(n)
+    }
+
+    /// Depth-first iterator over every directory in the archive, root excluded
+    /// (the root has no entry anywhere — the header points straight at its
+    /// body).
+    ///
+    /// [`Rez::resources`] cannot stand in for this: an archive may hold
+    /// directories with no resources beneath them at all — retail `Gruntz.REZ`
+    /// has 25 and the demo 11 — and their `time` fields exist only here.
+    pub fn directories(&self) -> Directories<'a> {
+        let mut it = Directories {
+            bytes: self.bytes,
+            stack: [DirFrame::EMPTY; MAX_DEPTH],
+            depth: 1,
+            dirs: Dirs {
+                names: [""; MAX_DEPTH],
+                len: 0,
+            },
+            failed: false,
+        };
+        it.stack[0] = DirFrame {
+            pos: self.header.root_dir_pos,
+            size: self.header.root_dir_size,
+            name: "<root>",
+            next_child: 0,
+        };
+        it
+    }
+
+    /// Check the predicate `is_sorted` actually asserts: that **every**
+    /// directory's own resources tile one contiguous span
+    /// `[min(pos), min(pos) + sum(size))` with no gap and no overlap.
+    ///
+    /// That is the precondition `CRezDir::Load` @0x13a0f0 relies on when it
+    /// slurps a whole directory into one block and `CRezItm::Read` @0x139a40
+    /// then serves each resource from `blob + (pos - min_pos)`. An archive that
+    /// claims `is_sorted = 1` without it would hand out the wrong bytes.
+    ///
+    /// Empty directories are vacuously contiguous. Returns the offending
+    /// directory's name on failure.
+    pub fn is_contiguous(&self) -> Result<(), RezError<'a>> {
+        // Depth-first with one frame per NESTING level, so MAX_DEPTH bounds it.
+        // `next_child` is an index into the frame's directory entries rather
+        // than a saved cursor, which costs a rescan per descent and keeps the
+        // frame Copy.
+        #[derive(Clone, Copy)]
+        struct Frame<'a> {
+            pos: u32,
+            size: u32,
+            name: &'a str,
+            next_child: usize,
+        }
+        let mut stack = [Frame {
+            pos: 0,
+            size: 0,
+            name: "",
+            next_child: 0,
+        }; MAX_DEPTH];
+        stack[0] = Frame {
+            pos: self.header.root_dir_pos,
+            size: self.header.root_dir_size,
+            name: "<root>",
+            next_child: 0,
+        };
+        let mut depth = 1;
+        while depth > 0 {
+            let f = stack[depth - 1];
+            if f.next_child == 0 {
+                self.check_tiling(f.pos, f.size, f.name)?;
+            }
+            let mut seen = 0usize;
+            let mut found = None;
+            for e in Body::new(self.bytes, f.pos, f.size, f.name) {
+                if let Entry::Dir {
+                    pos, size, name, ..
+                } = e?
+                {
+                    if seen == f.next_child {
+                        found = Some(Frame {
+                            pos,
+                            size,
+                            name,
+                            next_child: 0,
+                        });
+                        break;
+                    }
+                    seen += 1;
+                }
+            }
+            stack[depth - 1].next_child += 1;
+            match found {
+                Some(child) => {
+                    if depth >= MAX_DEPTH {
+                        return Err(RezError::TooDeep { dir: child.name });
+                    }
+                    stack[depth] = child;
+                    depth += 1;
+                }
+                None => depth -= 1,
+            }
+        }
+        Ok(())
+    }
+
+    /// One directory's own resources must tile `[min(pos), min(pos) + sum(size))`.
+    fn check_tiling(&self, pos: u32, size: u32, name: &'a str) -> Result<(), RezError<'a>> {
+        let mut min_pos = u32::MAX;
+        let mut total = 0u64;
+        let mut count = 0usize;
+        for e in Body::new(self.bytes, pos, size, name) {
+            if let Entry::Res { pos, size, .. } = e? {
+                min_pos = min_pos.min(pos);
+                total += u64::from(size);
+                count += 1;
+            }
+        }
+        if count == 0 {
+            return Ok(());
+        }
+        // Walk the span: at each cursor there must be at least one resource
+        // starting exactly there, and the sizes of all such resources are the
+        // step forward. O(n^2) in a directory's resource count -- 299 at worst
+        // in retail, 933k entry decodes for the whole archive -- and it needs
+        // no allocation, which a sort would.
+        let mut cursor = u64::from(min_pos);
+        let end = cursor + total;
+        let mut consumed = 0usize;
+        while consumed < count {
+            let mut step = 0u64;
+            let mut hits = 0usize;
+            for e in Body::new(self.bytes, pos, size, name) {
+                if let Entry::Res { pos, size, .. } = e? {
+                    if u64::from(pos) == cursor {
+                        step += u64::from(size);
+                        hits += 1;
+                    }
+                }
+            }
+            consumed += hits;
+            cursor += step;
+            if hits == 0 || (step == 0 && consumed < count) {
+                return Err(RezError::NotContiguous { dir: name });
+            }
+        }
+        if cursor != end {
+            return Err(RezError::NotContiguous { dir: name });
+        }
+        Ok(())
+    }
+}
+
+/// A directory entry as it appears in its parent's body.
+#[derive(Debug, Clone, Copy)]
+pub struct Directory<'a> {
+    pub name: &'a str,
+    pub pos: u32,
+    pub size: u32,
+    pub time: u32,
+    /// The enclosing chain, outermost first, NOT including `name` itself.
+    pub parents: Dirs<'a>,
+}
+
+impl<'a> Directory<'a> {
+    /// `AREA2\IMAGEZ\TREE2`, formatted on demand.
+    pub fn path(&self) -> DirPath<'a, '_> {
+        DirPath(self)
+    }
+}
+
+/// `Display` adaptor for a directory's full path.
+pub struct DirPath<'a, 'd>(&'d Directory<'a>);
+
+impl fmt::Display for DirPath<'_, '_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for d in self.0.parents.as_slice() {
+            f.write_str(d)?;
+            f.write_str("\\")?;
+        }
+        f.write_str(self.0.name)
+    }
+}
+
+#[derive(Clone, Copy)]
+struct DirFrame<'a> {
+    pos: u32,
+    size: u32,
+    name: &'a str,
+    /// How many of this body's directory entries have already been descended
+    /// into. Re-scanning the body per descent keeps the frame `Copy` and the
+    /// whole walk allocation-free; a body holds a few hundred entries at most.
+    next_child: usize,
+}
+
+impl DirFrame<'_> {
+    const EMPTY: DirFrame<'static> = DirFrame {
+        pos: 0,
+        size: 0,
+        name: "",
+        next_child: 0,
+    };
+}
+
+/// Depth-first directory iterator. Yields `Err` once and then stops.
+pub struct Directories<'a> {
+    bytes: &'a [u8],
+    stack: [DirFrame<'a>; MAX_DEPTH],
+    depth: usize,
+    dirs: Dirs<'a>,
+    failed: bool,
+}
+
+impl<'a> Iterator for Directories<'a> {
+    type Item = Result<Directory<'a>, RezError<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.failed || self.depth == 0 {
+                return None;
+            }
+            let f = self.stack[self.depth - 1];
+            let mut seen = 0usize;
+            let mut found = None;
+            for e in Body::new(self.bytes, f.pos, f.size, f.name) {
+                match e {
+                    Ok(Entry::Dir {
+                        pos,
+                        size,
+                        time,
+                        name,
+                    }) => {
+                        if seen == f.next_child {
+                            found = Some((pos, size, time, name));
+                            break;
+                        }
+                        seen += 1;
+                    }
+                    Ok(Entry::Res { .. }) => {}
+                    Err(e) => {
+                        self.failed = true;
+                        return Some(Err(e));
+                    }
+                }
+            }
+            self.stack[self.depth - 1].next_child += 1;
+            match found {
+                Some((pos, size, time, name)) => {
+                    if self.depth >= MAX_DEPTH || self.dirs.len >= MAX_DEPTH {
+                        self.failed = true;
+                        return Some(Err(RezError::TooDeep { dir: name }));
+                    }
+                    let out = Directory {
+                        name,
+                        pos,
+                        size,
+                        time,
+                        parents: self.dirs,
+                    };
+                    self.dirs.names[self.dirs.len] = name;
+                    self.dirs.len += 1;
+                    self.stack[self.depth] = DirFrame {
+                        pos,
+                        size,
+                        name,
+                        next_child: 0,
+                    };
+                    self.depth += 1;
+                    return Some(Ok(out));
+                }
+                None => {
+                    self.depth -= 1;
+                    if self.dirs.len > 0 {
+                        self.dirs.len -= 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// One decoded entry of a directory body.
+#[derive(Debug, Clone, Copy)]
+enum Entry<'a> {
+    Dir {
+        pos: u32,
+        size: u32,
+        time: u32,
+        name: &'a str,
+    },
+    Res {
+        pos: u32,
+        size: u32,
+        #[allow(dead_code)]
+        name: &'a str,
+    },
+}
+
+/// Entries of ONE directory body, without descending. Kept separate from
+/// [`Resources`] so the depth-first walk that every other caller uses is not
+/// disturbed.
+struct Body<'a> {
+    bytes: &'a [u8],
+    at: usize,
+    end: usize,
+    dir: &'a str,
+    done: bool,
+}
+
+impl<'a> Body<'a> {
+    fn new(bytes: &'a [u8], pos: u32, size: u32, dir: &'a str) -> Body<'a> {
+        let start = pos.as_usize();
+        Body {
+            bytes,
+            at: start,
+            end: start.saturating_add(size.as_usize()).min(bytes.len()),
+            dir,
+            done: false,
+        }
+    }
+}
+
+impl<'a> Iterator for Body<'a> {
+    type Item = Result<Entry<'a>, RezError<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.done || self.at >= self.end {
+            return None;
+        }
+        let fail = |s: &mut Self| {
+            s.done = true;
+            Some(Err(RezError::UnterminatedString {
+                dir: s.dir,
+                at: s.at,
+            }))
+        };
+        let b = self.bytes;
+        let mut at = self.at;
+        if at + 16 > self.end {
+            return fail(self);
+        }
+        let (Some(kind), Some(pos), Some(size), Some(time)) = (
+            rd_u32(b, at),
+            rd_u32(b, at + 4),
+            rd_u32(b, at + 8),
+            rd_u32(b, at + 12),
+        ) else {
+            return fail(self);
+        };
+        at += 16;
+        let num_keys = if kind == 0 {
+            if at + 12 > self.end {
+                return fail(self);
+            }
+            let Some(n) = rd_u32(b, at + 8) else {
+                return fail(self);
+            };
+            at += 12;
+            n
+        } else if kind == 1 {
+            0
+        } else {
+            self.done = true;
+            return Some(Err(RezError::BadEntryKind {
+                dir: self.dir,
+                kind,
+            }));
+        };
+        let name = match read_cstr(b, &mut at, self.end, self.dir) {
+            Ok(s) => s,
+            Err(e) => {
+                self.done = true;
+                return Some(Err(e));
+            }
+        };
+        if kind == 0 {
+            if let Err(e) = read_cstr(b, &mut at, self.end, self.dir) {
+                self.done = true;
+                return Some(Err(e));
+            }
+            match num_keys.as_usize().checked_mul(4) {
+                Some(n) if at + n <= self.end => at += n,
+                _ => return fail(self),
+            }
+        }
+        self.at = at;
+        Some(Ok(if kind == 1 {
+            Entry::Dir {
+                pos,
+                size,
+                time,
+                name,
+            }
+        } else {
+            Entry::Res { pos, size, name }
+        }))
     }
 }
 
@@ -462,6 +954,17 @@ impl<'a> Iterator for Resources<'a> {
             } else {
                 ""
             };
+            // The key array trails the comment (0x13a856: `malloc(num_keys * 4)`
+            // then a dword copy loop that advances the body cursor). Every
+            // shipped archive has num_keys == 0, so this is normally a no-op.
+            let keys_raw = match num_keys.as_usize().checked_mul(4) {
+                Some(n) if at + n <= frame.end => {
+                    let s = &b[at..at + n];
+                    at += n;
+                    s
+                }
+                _ => return self.fail(short),
+            };
             self.stack[top].at = at;
 
             if pos.as_usize() + size.as_usize() > b.len() {
@@ -487,6 +990,7 @@ impl<'a> Iterator for Resources<'a> {
                 size,
                 time,
                 num_keys,
+                keys_raw,
                 dirs: self.dirs,
             }));
         }

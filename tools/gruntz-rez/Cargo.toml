@@ -4,9 +4,21 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
-# The LIBRARY is `#![no_std]` with no `alloc` - it borrows the archive image and
-# walks it with an inline stack. `rezls` is a separate crate root and is free to
-# use std/clap.
+# The READER is `#![no_std]` and allocation-free - it borrows the archive image
+# and walks it with an inline stack. `cargo build --no-default-features` gives
+# exactly that and nothing else.
+#
+# The WRITER cannot be: a directory body's length is unknown until its children
+# are placed, so it needs a growable buffer. It lives behind the `alloc` feature
+# (on by default so `cargo build` produces `rezpack`), still `no_std`, and it
+# borrows the payloads rather than copying them. Enabling the feature adds no
+# allocation to the reader, which never touches `alloc` in either build.
+#
+# `rezls` / `fecls` / `rezpack` are separate crate roots and use std/clap.
+
+[features]
+default = ["alloc"]
+alloc = []
 
 [lib]
 path = "src/lib.rs"
@@ -18,6 +30,11 @@ path = "src/bin/rezls.rs"
 [[bin]]
 name = "fecls"
 path = "src/bin/fecls.rs"
+
+[[bin]]
+name = "rezpack"
+path = "src/bin/rezpack.rs"
+required-features = ["alloc"]
 
 [dependencies]
 gruntz-cast = { workspace = true }
