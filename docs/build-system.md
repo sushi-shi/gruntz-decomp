@@ -97,6 +97,20 @@ sizes differ upstream). The comparison lives in `gruntz.core.branches`;
 When `--diff` or `--blocks --diff` has nothing to show but the function is not 100%,
 they now print a one-line pointer to it.
 
+**`python -m gruntz.audit.eh_frame`** is the same idea for the `/GX` exception frame.
+`/GX` is on project-wide, so cl 5.0 emits the registration-record prologue (`push -1` /
+`push <handler>` / `mov fs:[0],esp`) in a function **iff** that function owns something
+whose destructor must run during an unwind — a source fact, not a codegen preference.
+The sieve classifies both sides of every scoring function and reports the presence
+disagreements in both directions, plus (`--states`) the wider set where both sides are
+framed but store a different NUMBER of `mov [esp+N],<n>` unwind states. Each row is
+tagged by cause: a retail-only ctor/dtor COMDAT call inside the guarded region means the
+object is the SAME and only cl's inline cut differs (a wall —
+`docs/patterns/new-site-eh-states-are-a-called-base-ctor.md`), while no call difference
+means one side really does own an object the other's source never declared. `--calibrate`
+measures both signals against the functions objdiff already scores at 100.00%, which are
+byte-identical and must agree.
+
 **`disasm --rich`** interleaves the BASE disassembly with the C++ source lines it
 came from, so you can see which statements survive `/O2` and which instruction(s)
 each produced (source line flush-left, its instructions indented — a homm2-style
