@@ -703,6 +703,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 }
 
 // @early-stop
+// One block differs (B25, the TARGET_SELECTION_TOY arm): retail cross-jumps its
+// `Activate(...,3,1); return 1;` tail into the block the other two arms share
+// (`jmp` over ~0x117 bytes); cl duplicates those 11 instructions instead. The other
+// 45 blocks are byte-identical, so the source shape of all three arms is right.
 RVA(0x00079520, 0x2e3)
 i32 CTriggerMgr::ResetGroup(
     i32 x,
@@ -1242,6 +1246,11 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode kind, LogicTypeId, i32) 
 }
 
 // @early-stop
+// OVER-MERGE: cl folds all four `return 0` exits into one shared epilogue; retail
+// gives each guard its own inline `xor eax,eax` + pops + `ret 4` (2 entry guards +
+// the m_overlay->Serialize check). Those duplicated epilogues are exactly the
+// 14-instruction shortfall; everything else matches. See
+// docs/patterns/goto-fail-shares-one-exit-block.md - no lever yet for this direction.
 RVA(0x0007a760, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (ar == NULL) {

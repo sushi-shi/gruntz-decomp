@@ -2588,6 +2588,11 @@ void CBattlezMapConfig::Clear() {
 }
 
 // @early-stop
+// Retail's frame is 0x34 vs our 0x24: it keeps `box` in memory (an unwritten-by-us
+// 16-byte slot between `a` and `bounds`) where cl forwards our `src = &box` reads
+// and drops the object. Retail also re-reads `this->m_board` for the trailing
+// Clip(NULL) - but spelling that `m_board->Clip(0)` MEASURES WORSE (85.96 -> 81.31),
+// so the cached `board` local stays until the frame slot is explained.
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     if (unit->m_entranceCommitted == 0) {
@@ -2700,11 +2705,15 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
 }
 
 // @early-stop
+// cl materializes TWO zero registers in the entry block (xor eax / xor ecx) where
+// retail keeps one in edi and compares `src` against it (cmp eax,edi, not test);
+// the extra zero costs a third callee-saved push (ebx holds `src` instead of eax)
+// and rotates every register after it. Retail also keeps &m_bounds in edi for the
+// final four reads where we go back through `this`.
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
-    b.left = 0;
-    b.top = 0;
+    b.left = b.top = 0;
     b.right = m_width;
     b.bottom = m_height;
     if (src) {

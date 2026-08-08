@@ -811,6 +811,10 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
 }
 
 // @early-stop
+// STRUCTURAL, not regalloc: retail carries a /GX EH frame (push -1 / push handler /
+// mov fs:0,esp) and per-site EH-state stores that our body has no reason to emit -
+// something in each `new CSBI_*` + Setup/SetupImage group is destructible in retail
+// and is missing here. Find that object before treating anything else as residue.
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -1183,6 +1187,10 @@ i32 CStatusBarMgr::Deactivate() {
 }
 
 // @early-stop
+// cl cross-jumps the switch arms' identical ProbeState suffix (each arm ends in a
+// `jmp` to a shared tail); retail duplicates the whole tail plus the `mov eax,1` /
+// pops / `ret 8` in every arm. That is the entire 10-instruction shortfall - the
+// arm bodies, the SetState/ProbeState order and the member offsets all match.
 RVA(0x00100d70, 0x548)
 i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     if (m_tabSprite0 == NULL || m_tabSprite1 == NULL || m_tabSprite2 == NULL || m_tabSprite3 == NULL
@@ -1393,6 +1401,10 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
+// STRUCTURAL, not regalloc: retail carries a /GX EH frame (push -1 / push handler /
+// mov fs:0,esp) and per-site EH-state stores that our body has no reason to emit -
+// something in each `new CSBI_*` + Setup/SetupImage group is destructible in retail
+// and is missing here. Find that object before treating anything else as residue.
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -3104,6 +3116,12 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode op, i64* pair) {
 }
 
 // @early-stop
+// The 25 flat SER sites: cl CSEs the two parameter loads (p4/p5) into edi/ebp once
+// before the chain; retail reloads both from their parameter homes at every site
+// (`mov eax,[esp+0x34]` twice, the second reading the post-push slot). That is 2
+// instructions per site and the WHOLE 42-instruction shortfall - every other block
+// is byte-identical. The member-offset SET is verified identical to retail's,
+// including the duplicated 0x1f0 (m_tabSprite10 really is serialized twice).
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) {
     if (s == NULL) {

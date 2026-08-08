@@ -562,7 +562,7 @@ battlezmapconfig	?ChooseIdleBehavior@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	52.894
 battlezmapconfig	?ClaimCellFromRow@CBattlezMapConfig@@QAEHHHHH@Z	89.3461	89.3461	4	ad661b86cd7e	0x30730	89.3461
 battlezmapconfig	?ClaimTilesAround@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z	72.2775	72.2775	4	129cbcf3328c	0x2d800	72.2775
 battlezmapconfig	?Clear@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	2	7fb22e52e6f0	0x2ade0	100.0000
-battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	83.8500	83.8500	2	2712e1f9b2ce	0x2b340	83.8500
+battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	83.9500	83.9500	3	e027df3280ac	0x2b340	83.9500
 battlezmapconfig	?Deserialize@CBattlezMapConfig@@QAEHPAX@Z	99.5079	99.5079	8	5852237b93d0	0x2b950	99.5079
 battlezmapconfig	?EnterDefenderMode@CBattlezMapConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	3	6cd232e42259	0x2c0a0	100.0000
 battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	77.4911	77.4911	3	e7f52db8f685	0x2ab80	77.4911
@@ -3030,7 +3030,7 @@ multi	?PollSession@CMulti@@QAEHXZ	87.3398	87.3398	6	bc156b8b80b1	0xb95f0	87.3398
 multi	?PollSessionGated@CMulti@@QAEHHH@Z	100.0000	100.0000	2	6acb72dbccd8	0xb9180	100.0000
 multi	?PostLoadImageBanks@CPlay@@UAEXXZ	100.0000	100.0000	1	cpp:b021ab506d22	0xd0030	100.0000
 multi	?PumpA@CMulti@@QAEHXZ	95.9024	95.9024	24	9c9a89991758	0xb6b40	95.9024
-multi	?PumpB@CMulti@@QAEXXZ	83.3789	83.3789	25	6edcd656c5ce	0xb6e90	83.3789
+multi	?PumpB@CMulti@@QAEXXZ	98.3242	98.3242	26	dfe5a702fa99	0xb6e90	98.3242
 multi	?RecordDropPlayer2@CMulti@@QAEXPAVCNetSessionNode@@H@Z	100.0000	100.0000	3	66f802225c3d	0xbb5e0	100.0000
 multi	?RegisterChannel@CMulti@@QAEHPBDW4ColorTint@@HHHH@Z	100.0000	100.0000	1	3e6aa57b4d6f	0xbaac0	100.0000
 multi	?RegisterChannelFrom@CMulti@@QAEHPBDW4ColorTint@@HH@Z	100.0000	100.0000	1	acdcae504fb8	0xbaa90	100.0000

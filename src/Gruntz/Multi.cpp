@@ -687,30 +687,33 @@ i32 CMulti::PumpA() {
 }
 
 // @early-stop
+// Residue is two `cmp dword ptr [eax],imm` that cl CSEs into one `mov ecx,[eax]`,
+// plus where cl schedules the second `rc.top` store. NOTE: the local
+// `CDDrawSurfaceMgr* mgr = m_world;` this used to open with was an invented local -
+// retail reloads m_world at every use - and removing it took the function 83.4 -> 92.4.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    CDDrawSurfaceMgr* mgr = m_world;
     if (m_roundComplete == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
-        mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
-        mgr->m_workerList->PruneWorkers(
-            mgr->m_drawTarget->m_backPair,
-            mgr->m_drawTarget->m_overlayPair
+        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
+        m_world->m_workerList->PruneWorkers(
+            m_world->m_drawTarget->m_backPair,
+            m_world->m_drawTarget->m_overlayPair
         );
         m_guts->LoadMainStatusBarSprite();
-        CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_backPair);
+        CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         if (h == NULL) {
             return;
         }
         StepGridWalk(g_frameDelta);
         DrawCursorSaveUnder(h);
-        mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
         return;
     }
     StepInputA();
     StepViewportResize();
     if (m_region0Gate != 0) {
-        (static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_backPair))->m_surface->Fill(0);
+        (static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair))->m_surface->Fill(0);
         m_guts->Deactivate();
     }
     if (m_worldReady == 0) {
@@ -722,16 +725,16 @@ void CMulti::PumpB() {
     }
     StepScroll();
     Mgr()->m_inputState->Retune(
-        (mgr->m_level->m_mainPlane)->m_snappedX,
-        (mgr->m_level->m_mainPlane)->m_snappedY
+        (m_world->m_level->m_mainPlane)->m_snappedX,
+        (m_world->m_level->m_mainPlane)->m_snappedY
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        mgr->m_level->VisitVisible(mgr->m_drawTarget->m_backPair, mgr->m_childGroup);
-        mgr->m_workerList->PruneWorkers(
-            mgr->m_drawTarget->m_backPair,
-            mgr->m_drawTarget->m_overlayPair
+        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
+        m_world->m_workerList->PruneWorkers(
+            m_world->m_drawTarget->m_backPair,
+            m_world->m_drawTarget->m_overlayPair
         );
     }
     m_guts->LoadMainStatusBarSprite();
@@ -742,20 +745,21 @@ void CMulti::PumpB() {
             if (fx->m_position == STATUSBAR_DOCK_LEFT) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = g_gameReg->m_modeSize.cy;
-                i32 cy = g_gameReg->m_modeSize.cx;
-                rc.top = cx;
-                SetRect(&rc, cy - 140, 5, cy - 20, 125);
+                rc.top = g_gameReg->m_modeSize.cy;
+                i32 right = g_gameReg->m_modeSize.cx - 20;
+                i32 left = g_gameReg->m_modeSize.cx - 140;
+                rc.top = g_gameReg->m_modeSize.cy;
+                SetRect(&rc, left, 5, right, 125);
             }
             m_lightFx->Resize(static_cast<i32>(g_frameDelta), 0);
             m_lightFx->ComputeRect(
-                static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_backPair),
+                static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
                 &rc
             );
         }
     }
     Mgr()->m_chatLog->Scroll(g_frameDelta);
-    CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(mgr->m_drawTarget->m_backPair);
+    CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
     if (h == NULL) {
         return;
     }
@@ -767,10 +771,10 @@ void CMulti::PumpB() {
     if (m_worldReady != 0) {
         h->DrawBox(&m_hudRect, 0xff);
     }
-    mgr->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     UpdateMgrScroll(g_gameReg, m_guts, m_region0Gate);
-    if (mgr->m_level->m_mainPlane != NULL) {
-        (mgr->m_level->m_mainPlane)->DeactivateDistantObjects();
+    if (m_world->m_level->m_mainPlane != NULL) {
+        (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
     if (m_region0Gate != 0) {
         if (static_cast<i64>(g_frameTime) - m_region0Timer64.m_v >= m_region0Interval64.m_v) {
