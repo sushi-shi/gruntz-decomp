@@ -23,11 +23,16 @@ mov  DWORD PTR [esp+0x38], 1   ; one unwind state per live destructible object
 reports the disagreements; `--states` is the wider secondary sieve (both sides framed,
 different NUMBER of state stores — one object's worth of resolution).
 
-**Two causes, opposite work, and the tool separates them.** A *retail-only* ctor/dtor
-COMDAT call inside the guarded region means the object is the SAME on both sides and
-only cl's inline cut differs — an out-of-line ctor can throw, an inlined one cannot, and
-cl picks that cut per `new`-site, so it is a wall (see the variant). No such call
-difference means one side really does own an object the other's source never declared:
+**Three causes, different work, and the tool separates them — only the last is what
+the frame naively suggests.** A ctor/dtor COMDAT one side calls and the other never
+calls at all is **INLINE_CUT**: same object, and cl picks the cut per `new`-site, so it
+is a wall (see the variant). The SAME ctor/dtor called a different NUMBER of times is
+**EXIT_MERGE**: cl gives every `if (...) return 0;` its own exit block but collapses all
+of them when a `||`/`&&` guard sends them to a common destination, and each surviving
+dtor copy carries its own state store — `CGruntSpawnConfig::SpawnVoiceDriver` calls
+`??1CString` twice for us and eight times in retail off one `&&`. That is
+`gruntz.audit.exit_merge_sieve`'s lever, not this one. Only when neither kind of call
+difference exists does one side really own an object the other's source never declared:
 a by-value `CString` where the other wrote `LPCSTR`, a by-value `CRect`/MFC collection,
 a stack helper whose dtor releases something.
 
@@ -42,5 +47,6 @@ this way and both manufactured `±1` rows: reading only immediate state stores m
 stores.
 
 Tree-wide 2026-08-08: 750 EH-framed target functions, 3 presence mismatches (all
-INLINE_CUT, all `CStatusBarMgr`), 43 state-count rows. Presence is nearly closed; the
-state count is where the remaining evidence is.
+INLINE_CUT, all `CStatusBarMgr`) and 35 state-count rows — 20 INLINE_CUT, 9 EXIT_MERGE,
+5 MISSING_OBJECT, 4 EXTRA_OBJECT. Presence is closed; without the cause split a lane
+would have gone after 29 phantom objects.

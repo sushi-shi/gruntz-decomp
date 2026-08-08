@@ -11,16 +11,29 @@ presence DISAGREEMENT between base and target is a hard SOURCE fact:
   * **TARGET_ONLY** - retail has the frame, we do not.
   * **BASE_ONLY** - we have the frame, retail does not.
 
-A presence mismatch has TWO causes and they need opposite work, so every row is
-tagged (see `cause()`): **MISSING_OBJECT**/**EXTRA_OBJECT** - one side really does
-own a destructible object the other's source never declared (a by-value `CString`
-where the other wrote `LPCSTR`, a by-value `CRect`/`CPoint`/MFC collection, a stack
-helper whose dtor releases something) - versus **INLINE_CUT**, where the object is
-the SAME on both sides and only cl's inline cut for its ctor/dtor differs.  An
-out-of-line ctor can throw, so a called ctor takes an unwind state and pulls in a
-frame while an inlined one does not.  cl 5.0 picks that cut PER `new`-SITE, so no
-declaration form expresses it: an INLINE_CUT row is a census entry, not a worklist
-item.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md.
+A mismatch has THREE causes needing completely different work, so every row is
+tagged (see `cause()`).  Only the last is what the frame naively suggests:
+
+  * **INLINE_CUT** - one side CALLS a ctor/dtor COMDAT the other never calls.  Same
+    object, different inline cut: an out-of-line ctor can throw and so takes an
+    unwind state, an inlined one cannot.  cl 5.0 picks the cut PER `new`-SITE, so no
+    declaration form expresses it - a census entry, not a worklist item.
+    docs/patterns/new-site-eh-states-are-a-called-base-ctor.md.
+  * **EXIT_MERGE** - the SAME ctor/dtor, a different NUMBER of call sites.  Not an
+    object difference at all: cl gives every `if (...) return 0;` its own exit block
+    but collapses them all when a `||`/`&&` guard sends them to a common
+    destination, and each surviving dtor copy carries its own state store.  The
+    lever and the wider sweep are `gruntz.audit.exit_merge_sieve` +
+    docs/patterns/goto-fail-shares-one-exit-block.md.
+  * **MISSING_OBJECT** / **EXTRA_OBJECT** - no ctor/dtor difference of either kind
+    explains it, so one side really does own a destructible object the other's
+    source never declared: a by-value `CString` where the other wrote `LPCSTR`, a
+    by-value `CRect`/`CPoint`/MFC collection, a stack helper whose dtor releases
+    something.
+
+Measured 2026-08-08 over the 3 presence + 35 state rows: 20 INLINE_CUT, 9
+EXIT_MERGE, 5 MISSING_OBJECT, 4 EXTRA_OBJECT.  Reading the frame as "a destructible
+object" without the split would have sent a lane after 29 phantoms.
 
 ## What is detected
 
@@ -311,31 +324,43 @@ def rel32_calls(obj):
 
 
 def ctor_delta(base_calls, tgt_calls):
-    """(retail-only, ours-only) ctor/dtor COMDAT callees of one function."""
-    b = {n for _, n in base_calls if CTOR_DTOR.match(n)}
-    t = {n for _, n in tgt_calls if CTOR_DTOR.match(n)}
-    return sorted(t - b), sorted(b - t)
+    """(retail-only, ours-only, same-callee-more-sites) ctor/dtor COMDAT callees."""
+    b = Counter(n for _, n in base_calls if CTOR_DTOR.match(n))
+    t = Counter(n for _, n in tgt_calls if CTOR_DTOR.match(n))
+    shared = {n for n in set(b) & set(t) if b[n] != t[n]}
+    return (sorted(set(t) - set(b)), sorted(set(b) - set(t)),
+            sorted("%s x%d/%d" % (n, b[n], t[n]) for n in shared))
 
 
-def cause(verdict, delta, only_t, only_b):
-    """WHY the two sides disagree about the frame - two mechanisms, opposite work.
+def cause(verdict, delta, only_t, only_b, resited):
+    """WHY the two sides disagree about the frame - three mechanisms, different work.
 
-      INLINE_CUT     - one side CALLS a ctor/dtor COMDAT where the other inlines it.
-        An out-of-line ctor can throw, so each such site takes an unwind state and
-        the function gets a frame.  SAME object, different inline cut - and cl 5.0
-        picks the cut depth PER `new`-SITE, so no declaration form expresses it and
-        `#pragma inline_depth` is a fitted artifact that must not enter the tree.
+      INLINE_CUT     - one side CALLS a ctor/dtor COMDAT the other never calls at
+        all.  An out-of-line ctor can throw, so each such site takes an unwind state
+        and the function gets a frame.  SAME object, different inline cut - and cl
+        5.0 picks the cut depth PER `new`-SITE, so no declaration form expresses it
+        and `#pragma inline_depth` is a fitted artifact that must not enter the tree.
         See docs/patterns/new-site-eh-states-are-a-called-base-ctor.md.
-      MISSING_OBJECT - retail owns a destructible object our source never declared
-        (no ctor/dtor call difference explains the frame).  The actionable half:
-        a by-value `CString` where we wrote `LPCSTR`, a by-value `CRect`/`CPoint`,
-        a stack helper whose dtor releases something.
+      EXIT_MERGE     - the SAME ctor/dtor, called a different NUMBER of times.  Not
+        an object difference at all: cl gives every `if (...) return 0;` its own
+        exit block but collapses all of them when a `||`/`&&` guard sends them to a
+        common destination, and each surviving copy of the dtor carries its own
+        state store.  `CGruntSpawnConfig::SpawnVoiceDriver` calls `??1CString` twice
+        for us and EIGHT times in retail off one `&&` guard.  The lever, and the
+        wider sweep, are `gruntz.audit.exit_merge_sieve` +
+        docs/patterns/goto-fail-shares-one-exit-block.md.
+      MISSING_OBJECT - no ctor/dtor difference of either kind explains the frame, so
+        retail owns a destructible object our source never declared: a by-value
+        `CString` where we wrote `LPCSTR`, a by-value `CRect`/`CPoint`, a stack
+        helper whose dtor releases something.
       EXTRA_OBJECT   - the mirror: we invented one, or spelled as a by-value
         temporary something retail kept as a pointer or reference.
     """
     retail_side = verdict == "TARGET_ONLY" or (verdict == "BOTH" and delta > 0)
     if only_t or only_b:
         return "INLINE_CUT"
+    if resited:
+        return "EXIT_MERGE"
     return "MISSING_OBJECT" if retail_side else "EXTRA_OBJECT"
 
 
@@ -379,14 +404,14 @@ def scan(units=None, quiet=False):
             bslot, bst = eh_states(bi) if has_eh(bi) else ("", [])
             tslot, tst = eh_states(ti) if has_eh(ti) else ("", [])
             src, slot, states = ((ti, tslot, tst) if has_eh(ti) else (bi, bslot, bst))
-            only_t, only_b = ctor_delta(bc.get(sym, []), tc.get(sym, []))
+            only_t, only_b, resited = ctor_delta(bc.get(sym, []), tc.get(sym, []))
             verdict = classify(bi, ti)
-            why = cause(verdict, len(tst) - len(bst), only_t, only_b)
+            why = cause(verdict, len(tst) - len(bst), only_t, only_b, resited)
             rows.append(dict(
                 unit=name, name=sym, rva=rvas.get(sym, ""),
                 fuzzy=fn_fuzzy(fn), size=int(fn.get("size") or 0),
                 verdict=verdict, cause=why,
-                extra_ctors=only_t, our_ctors=only_b,
+                extra_ctors=only_t, our_ctors=only_b, resited=resited,
                 trunc=truncated(*b) or truncated(*t),
                 base_insn=len(bi), tgt_insn=len(ti),
                 slot=slot, states=sorted({s for _, s in states if s is not None}),
@@ -445,7 +470,7 @@ def main(argv=None):
         print("  %-12s %4d" % (k, tally.get(k, 0)))
         if k == "TARGET_ONLY":
             sub = Counter(r["cause"] for r in rows if r["verdict"] == k)
-            for c in ("INLINE_CUT", "MISSING_OBJECT"):
+            for c in ("INLINE_CUT", "EXIT_MERGE", "MISSING_OBJECT"):
                 if sub.get(c):
                     print("    %-10s %4d" % (c, sub[c]))
     print("calibration on the %d functions objdiff scores at 100.00%%:" % len(exact))
@@ -475,7 +500,8 @@ def main(argv=None):
                             ",".join(str(s) for s in r["states"]), r["slot"],
                             "" if r["first"] is None else "0x%x" % r["first"],
                             "" if r["last"] is None else "0x%x" % r["last"],
-                            "Y" if r["trunc"] else "", " ".join(r["extra_ctors"]),
+                            "Y" if r["trunc"] else "",
+                            " ".join(r["extra_ctors"] + r["resited"]),
                             r["name"]])
         print("wrote %s" % a.tsv)
 
@@ -489,9 +515,9 @@ def main(argv=None):
             print("%+3d states  %5d B  %-9s %-22s %6.2f%%  base=%d tgt=%d  %-14s %s"
                   % (r["tgt_states"] - r["base_states"], r["size"], r["rva"], r["unit"],
                      r["fuzzy"], r["base_states"], r["tgt_states"], r["cause"], r["name"]))
-            if a.detail and r["extra_ctors"]:
-                print("            retail-only ctor/dtor calls: %s"
-                      % " ".join(r["extra_ctors"]))
+            if a.detail and (r["extra_ctors"] or r["resited"]):
+                print("            ctor/dtor call delta: %s"
+                      % " ".join(r["extra_ctors"] + r["resited"]))
         return 0
 
     want = {"target": ("TARGET_ONLY",), "base": ("BASE_ONLY",),
@@ -509,8 +535,9 @@ def main(argv=None):
             print("            unwind-state slot %s, lifetime bracket 0x%x..0x%x%s"
                   % (r["slot"], r["first"], r["last"],
                      "" if r["unwind"] else "  [NO TEARDOWN - suspect decode]"))
-        if a.detail and r["extra_ctors"]:
-            print("            retail-only ctor/dtor calls: %s" % " ".join(r["extra_ctors"]))
+        if a.detail and (r["extra_ctors"] or r["resited"]):
+            print("            ctor/dtor call delta: %s"
+                  % " ".join(r["extra_ctors"] + r["resited"]))
     return 0
 
 
