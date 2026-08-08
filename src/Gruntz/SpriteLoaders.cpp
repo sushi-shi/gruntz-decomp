@@ -291,27 +291,9 @@ i32 CTimer::HandleEvent(CFileMemBase* ar, SerialMode kind, LogicTypeId typeId, i
         }
     }
 
-    switch (kind) {
-        case SERIAL_SAVE:
-            ar->Write(&m_baseTime, sizeof(m_baseTime));
-            ar->Write(&m_accum, sizeof(m_accum));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&m_baseTime, sizeof(m_baseTime));
-            ar->Read(&m_accum, sizeof(m_accum));
-            break;
-    }
+    SerBandPair(ar, kind, &m_baseTime);
 
-    switch (kind) {
-        case SERIAL_SAVE:
-            ar->Write(&m_startStamp, sizeof(m_startStamp));
-            ar->Write(&m_unusedStamp, sizeof(m_unusedStamp));
-            return 1;
-        case SERIAL_LOAD:
-            ar->Read(&m_startStamp, sizeof(m_startStamp));
-            ar->Read(&m_unusedStamp, sizeof(m_unusedStamp));
-            break;
-    }
+    SerBandPair(ar, kind, &m_startStamp);
     return 1;
 }
 

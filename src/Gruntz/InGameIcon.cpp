@@ -536,16 +536,7 @@ i32 CToyPeek::SerializeMove(
         return 0;
     }
 
-    switch (mode) {
-        case SERIAL_SAVE:
-            ar->Write(&m_startClock, sizeof(m_startClock));
-            ar->Write(&m_countdown, sizeof(m_countdown));
-            break;
-        case SERIAL_LOAD:
-            ar->Read(&m_startClock, sizeof(m_startClock));
-            ar->Read(&m_countdown, sizeof(m_countdown));
-            break;
-    }
+    SerBandPair(ar, mode, &m_startClock);
     return 1;
 }
 
