@@ -11,13 +11,13 @@
 #include <string.h>
 
 DATA(0x002bf6e8)
-BOOL g_logEnabled = FALSE;
+b32 g_logEnabled = FALSE;
 DATA(0x002bf6ec)
-BOOL g_msgBoxEnabled = FALSE;
+b32 g_msgBoxEnabled = FALSE;
 DATA(0x002bf6f0)
-BOOL g_beepEnabled = FALSE;
+b32 g_beepEnabled = FALSE;
 DATA(0x002bf6f4)
-BOOL g_unknownOptionEnabled = FALSE;
+b32 g_unknownOptionEnabled = FALSE;
 DATA(0x002bf6f8)
 HRESULT g_hr = 0;
 DATA(0x002bf6fc)
@@ -31,7 +31,7 @@ DATA(0x002293f4)
 char g_emptyString[] = "";
 
 RVA(0x00177670, 0x27)
-void CNetMgr::SetReportMode(BOOL log, BOOL msgBox, BOOL beep, BOOL unknownOption) {
+void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption) {
     g_logEnabled = log;
     g_msgBoxEnabled = msgBox;
     g_beepEnabled = beep;

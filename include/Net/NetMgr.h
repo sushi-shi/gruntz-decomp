@@ -600,7 +600,7 @@ public:
 
     static void ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd);
 
-    static void SetReportMode(BOOL log, BOOL msgBox, BOOL beep, BOOL unknownOption);
+    static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption);
 
     void HandleVersionCheck(CNetVersionMsg* msg);
     void AnnounceVersion(i32 param);
