@@ -1073,9 +1073,11 @@ def cmd_summary(args) -> int:
             ((before[k] - v["best"], k) for k, v in base.items()
              if k in before and v["best"] < before[k] - EPS), reverse=True)
         if dropped:
-            print(f"[match_status] WARNING: {len(dropped)} best-ever peak(s) RESET by "
-                  f"an rva move (rebound). The name now labels a different body, so "
-                  f"the old peak was not its floor -- but review these:",
+            print(f"[match_status] WARNING: {len(dropped)} best-ever peak(s) RESET. "
+                  f"Either the function's src_hash changed (best is scoped to the "
+                  f"IMPLEMENTATION, so the peak belonged to source that no longer "
+                  f"exists) or its rva moved (the name now labels a different body). "
+                  f"hist_pct keeps the all-time number. Review these:",
                   file=sys.stderr)
             for d, (unit, fn) in dropped[:10]:
                 print(f"[match_status]   -{d:7.4f}  {unit}  {fn}", file=sys.stderr)
