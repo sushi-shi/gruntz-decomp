@@ -302,7 +302,7 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 | Record | Field | Lands at | |
 |---|---|---|---|
 | 0x00 | object id | `CWwdGameObjectA` ctor arg | **P** |
-| 0x04..0x10 | byte lengths of the four strings: name, logic, image set, sound | consumed in order from `record + 0x11c` | **P** |
+| 0x04..0x10 | byte lengths of the four strings: name, logic, image set, animation | consumed in order from `record + 0x11c` | **P** |
 | 0x14 / 0x18 / 0x1c | x / y / z | `Setup(x, y, z, template)`; out-of-range x/y drops the object | **P** |
 | 0x20 | grid index | selects `ApplyLookupSprite` vs `ApplyName`; -1 = no index | **P** |
 | 0x24 | `flags_add` | **nothing** | **U** |
@@ -314,6 +314,24 @@ map. Selected rows (offsets proven by the store sequence at 0x162e9c onward):
 | 0x10c | `object_type` | `CGameObject::m_objectType` | **P** |
 | 0x110 | hit-type mask | `m_hitTypeFlags` | **P** |
 | 0x114 / 0x118 | `move_res_x` / `move_res_y` | `m_strideX` / `m_strideY`, **only if > 0** | **P** |
+
+### The four strings
+
+All four are read into a 0x400 stack buffer and handed to a `CString`; the walk
+of all 54 retail files is in
+[`game-data-strings.md`](game-data-strings.md#3-the-wwd-object-corpus)
+(27 110 records) and is produced by `python -m gruntz.audit.wwd_objects`.
+
+| # | Field | Consumed as | | |
+|---|---|---|---|---|
+| 0 | **`name`** | `obj->m_name` — `lea ecx,[ebx+0xdc]` @0x162f05 + `CString::operator=` | **P** | Present on **14 of 27 110** objects, all `WEENIE_SWITCH` in `AREA2\WORLDZ\LEVEL7`. The only reader of `m_name` in the tree is the release-dead `TRACE` in `CDDrawChildGroup::Deserialize` @0x15b0e0, so it is a designer annotation the shipped build never looks at |
+| 1 | **`logic`** | `m_workerCache->m_workers.Lookup(logic)`; a miss **drops the object** | **P** | 34 distinct, every one registered by `RegisterGameObjectTypes` @0xa3b0 |
+| 2 | **`image_set`** | `ApplyLookupSprite(s, gridIndex)` when `gridIndex != -1`, else `ApplyName(s)` | **P** | 186 distinct; all 27 110 references resolve to a real `<NS>\IMAGEZ` path |
+| 3 | **`animation`** | `ApplyLookupGeometry(s, 0)` **and** `LookupAnimSprite(s)` | **P** | 29 distinct. Resolves in **two** registries — 2 945 references name an `<NS>\ANIZ` resource, 211 an `<NS>\SOUNDZ\AMBIENT` WAV (the `GlobalAmbientSound` objects). One reference in the corpus dangles |
+
+The third-party spec calls field 3 "animation" and earlier revisions of this
+document called it "sound". Both are half right: it is a **registry key that may
+name either**, and which registry answers depends on the logic.
 
 ### `flags_add` is proven unread
 

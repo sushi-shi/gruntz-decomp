@@ -8,47 +8,52 @@
 
 #include <stddef.h>
 
+// The built-in developer cheat table. Codes are stored plaintext + 0x3d,
+// because CheckCode uppercases the typed string and adds 0x3d before the map
+// lookup (@0x23090). The decoded code is on each line; docs/formats/
+// game-data-strings.md carries the table and its corroboration.
 // clang-format off
-wchar_t* s_cheat_1 = L"MPWAWAWAWAWAWA";
+// Unreferenced, unpinned: the same code as s_cheatWaWa, unobfuscated and wide.
+wchar_t* s_cheatWaWaWide = L"MPWAWAWAWAWAWA";
 
 DATA(0x0020c838)
-char s_cheat_20c838[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e";
+char s_cheatWaWa[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e"; // MPWAWAWAWAWAWA
 DATA(0x0020c84c)
-char s_cheat_20c84c[16] = "\x8a\x8d\x94\x86\x89\x81\x94\x7e\x80\x88\x96";
+char s_cheatWildWacky[16] = "\x8a\x8d\x94\x86\x89\x81\x94\x7e\x80\x88\x96"; // MPWILDWACKY
 DATA(0x0020c85c)
-char s_cheat_20c85c[12] = "\x8a\x8d\x7f\x92\x86\x89\x81";
+char s_cheatBuild[12] = "\x8a\x8d\x7f\x92\x86\x89\x81"; // MPBUILD
 DATA(0x0020c868)
-char s_cheat_20c868[16] = "\x8a\x8d\x81\x82\x93\x85\x82\x7e\x81\x90";
+char s_cheatDevHeads[16] = "\x8a\x8d\x81\x82\x93\x85\x82\x7e\x81\x90"; // MPDEVHEADS
 DATA(0x0020c878)
-char s_cheat_20c878[12] = "\x8a\x8c\x8b\x8c\x89\x86\x91\x85";
+char s_cheatMonolithBare[12] = "\x8a\x8c\x8b\x8c\x89\x86\x91\x85"; // MONOLITH
 DATA(0x0020c884)
-char s_cheat_20c884[16] = "\x8a\x8d\x8a\x8c\x8b\x8c\x89\x86\x91\x85";
+char s_cheatMonolith[16] = "\x8a\x8d\x8a\x8c\x8b\x8c\x89\x86\x91\x85"; // MPMONOLITH
 DATA(0x0020c894)
-char s_cheat_20c894[8] = "\x8a\x8d\x89\x8c\x84\x8c";
+char s_cheatLogo[8] = "\x8a\x8d\x89\x8c\x84\x8c"; // MPLOGO
 DATA(0x0020c89c)
-char s_cheat_20c89c[8] = "\x8a\x8d\x89\x86\x91\x85";
+char s_cheatLith[8] = "\x8a\x8d\x89\x86\x91\x85"; // MPLITH
 DATA(0x0020c8a4)
-char s_cheat_20c8a4[8] = "\x8a\x8d\x80\x85\x8c\x8d";
+char s_cheatChop[8] = "\x8a\x8d\x80\x85\x8c\x8d"; // MPCHOP
 DATA(0x0020c8ac)
-char s_cheat_20c8ac[12] = "\x8a\x8d\x90\x80\x8c\x8f\x8d\x86\x8c";
+char s_cheatScorpio[12] = "\x8a\x8d\x90\x80\x8c\x8f\x8d\x86\x8c"; // MPSCORPIO
 DATA(0x0020c8b8)
-char s_cheat_20c8b8[12] = "\x8a\x8d\x84\x8c\x7f\x89\x82";
+char s_cheatGoble[12] = "\x8a\x8d\x84\x8c\x7f\x89\x82"; // MPGOBLE
 DATA(0x0020c8c4)
-char s_cheat_20c8c4[16] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91\x86\x7e\x8b";
+char s_cheatLambertian[16] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91\x86\x7e\x8b"; // MPLAMBERTIAN
 DATA(0x0020c8d4)
-char s_cheat_20c8d4[12] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91";
+char s_cheatLambert[12] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91"; // MPLAMBERT
 DATA(0x0020c8e0)
-char s_cheat_20c8e0[16] = "\x8a\x8d\x85\x8c\x89\x8c\x84\x8f\x7e\x8a";
+char s_cheatHologram[16] = "\x8a\x8d\x85\x8c\x89\x8c\x84\x8f\x7e\x8a"; // MPHOLOGRAM
 DATA(0x0020c8f0)
-char s_cheat_20c8f0[16] = "\x8a\x8d\x90\x91\x8c\x8d\x94\x7e\x91\x80\x85";
+char s_cheatStopwatch[16] = "\x8a\x8d\x90\x91\x8c\x8d\x94\x7e\x91\x80\x85"; // MPSTOPWATCH
 DATA(0x0020c900)
-char s_cheat_20c900[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c";
+char s_cheatNoInfo[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c"; // MPNOINFO
 DATA(0x0020c90c)
-char s_cheat_20c90c[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90";
+char s_cheatObjects[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90"; // MPOBJECTS
 DATA(0x0020c918)
-char s_cheat_20c918[8] = "\x8a\x8d\x8d\x8c\x90";
+char s_cheatPos[8] = "\x8a\x8d\x8d\x8c\x90"; // MPPOS
 DATA(0x0020c920)
-char s_cheat_20c920[8] = "\x8a\x8d\x83\x8d\x90";
+char s_cheatFps[8] = "\x8a\x8d\x83\x8d\x90"; // MPFPS
 
 RVA(0x00022ad0, 0x1f)
 BOOL CCheatMgr::Init(HWND owner) {
@@ -111,25 +116,25 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
 
 RVA(0x00022c80, 0x173)
 void CCheatMgr::RegisterCheats() {
-    AddCheat(s_cheat_20c920, IDX(CHEAT_FRAME_RATE_DISPLAY), 1);
-    AddCheat(s_cheat_20c918, IDX(CHEAT_WORLD_POSITION_DISPLAY), 1);
-    AddCheat(s_cheat_20c90c, IDX(CHEAT_OBJECT_COUNT_DISPLAY), 1);
-    AddCheat(s_cheat_20c900, IDX(CHEAT_DEBUG_FLAG20), 1);
-    AddCheat(s_cheat_20c8f0, IDX(CHEAT_ELAPSED_TIME_DISPLAY), 1);
-    AddCheat(s_cheat_20c8e0, IDX(CHEAT_KEVIN_LAMBERT), 1);
-    AddCheat(s_cheat_20c8d4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
-    AddCheat(s_cheat_20c8c4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
-    AddCheat(s_cheat_20c8b8, IDX(CHEAT_PROGRAMMING_GOD), 1);
-    AddCheat(s_cheat_20c8ac, IDX(CHEAT_PROGRAMMING_GOD), 1);
-    AddCheat(s_cheat_20c8a4, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
-    AddCheat(s_cheat_20c89c, IDX(CHEAT_MONOLITH), 1);
-    AddCheat(s_cheat_20c894, IDX(CHEAT_MONOLITH), 1);
-    AddCheat(s_cheat_20c884, IDX(CHEAT_MONOLITH), 1);
-    AddCheat(s_cheat_20c878, IDX(CHEAT_MONOLITH), 1);
-    AddCheat(s_cheat_20c868, IDX(CHEAT_NO_OP), 1);
-    AddCheat(s_cheat_20c85c, IDX(CHEAT_DEBUG_FLAG400), 1);
-    AddCheat(s_cheat_20c84c, 0x80be, 1);
-    AddCheat(s_cheat_20c838, IDX(CHEAT_WAWA), 1);
+    AddCheat(s_cheatFps, IDX(CHEAT_FRAME_RATE_DISPLAY), 1);
+    AddCheat(s_cheatPos, IDX(CHEAT_WORLD_POSITION_DISPLAY), 1);
+    AddCheat(s_cheatObjects, IDX(CHEAT_OBJECT_COUNT_DISPLAY), 1);
+    AddCheat(s_cheatNoInfo, IDX(CHEAT_DEBUG_FLAG20), 1);
+    AddCheat(s_cheatStopwatch, IDX(CHEAT_ELAPSED_TIME_DISPLAY), 1);
+    AddCheat(s_cheatHologram, IDX(CHEAT_KEVIN_LAMBERT), 1);
+    AddCheat(s_cheatLambert, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheatLambertian, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheatGoble, IDX(CHEAT_PROGRAMMING_GOD), 1);
+    AddCheat(s_cheatScorpio, IDX(CHEAT_PROGRAMMING_GOD), 1);
+    AddCheat(s_cheatChop, IDX(CHEAT_KEVIN_LAMBERT_ALT), 1);
+    AddCheat(s_cheatLith, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheatLogo, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheatMonolith, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheatMonolithBare, IDX(CHEAT_MONOLITH), 1);
+    AddCheat(s_cheatDevHeads, IDX(CHEAT_NO_OP), 1);
+    AddCheat(s_cheatBuild, IDX(CHEAT_DEBUG_FLAG400), 1);
+    AddCheat(s_cheatWildWacky, IDX(CHEAT_WILD_WACKY), 1);
+    AddCheat(s_cheatWaWa, IDX(CHEAT_WAWA), 1);
     LoadCheatConfig();
 }
 

@@ -46,6 +46,17 @@ Two more corpus facts worth having: **990 of 1038 files have `name_len == 0`**
 (the on-disk animation name is usually absent — the registry key is the name),
 and record counts run 1..89.
 
+**And where it is present it is stale.** Of the 32 retail files with a non-empty
+name, **29 carry the literal string `GRUNTZ_IMAGEZ_NORMALGRUNT_NORTH_WALK`** —
+in `CLUBGRUNT_DEATH`, `GUNHATGRUNT_IDLE1`, `SCROLLGRUNT_TOY2` and 26 others
+alike. It is an editor default nobody updated, and it names an *image set*, not
+an animation. The remaining three are `GAME_IMAGES_SPARKLE` (×2) and
+`GAME_IMAGES_CURSOR`, whose `IMAGES` spelling matches no shipped namespace
+(`IMAGEZ`). So the field is authoring residue: it must be preserved by a
+re-encoder and must not be read as a name.
+[`game-data-strings.md`](game-data-strings.md#6-ani-cues-and-the-stale-name-field)
+also lists the 281 cue tokens, all of which resolve to a real WAV.
+
 ## Record fields
 
 `CAniRecordView::Parse` @0x168c60 reads all ten `i16`s in order into members,

@@ -13,6 +13,7 @@ disagree and be caught.
 | [rez-v1.md](rez-v1.md) | Monolith **REZ v1** container (`.REZ`, `.VRZ`): the 168-byte header, the directory/resource entry grammar, what `is_sorted` actually asserts, and the reader + writer in `tools/gruntz-rez` |
 | [wwd-v1.md](wwd-v1.md) | **WWD** level geometry: the 1524-byte file header and 160-byte plane header field-by-field, the tile grid and handle split, the tile-attribute table and its value domain, the object record, and the checksum. Every field tiered proven / proven-unread / inferred / contradicted |
 | [ani-v1.md](ani-v1.md) | **ANI** record **value domains**: `flags`, `step_mode`, `loop_mode`, `position_mode`, `param`, `duration`, `draw_value` — the complete observed value set over 1038 resources / 13 480 records, against the retail consumers and the `GZ_ENUM_*` types we already have |
+| [game-data-strings.md](game-data-strings.md) | **What the shipped data NAMES**, across every resource class: the credits' leaked source paths and `GetRandomNumber` listing, the 27 110 WWD object records' four strings, the art-pipeline `.BAT`, the two cheat tables, the ANI cue and VRZ voice taxonomies — each identifier cross-checked against `src/` with a verdict, plus the classes proven to contain nothing |
 
 ### A note on third-party specs
 

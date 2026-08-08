@@ -112,6 +112,27 @@ them from band analysis, but they must drain eventually too. (`src/Stub/All.cpp`
 prose survives in `config/units.toml` comments. Excluding it changes nothing: 8/86
 clean either way.)
 
+## Six more retail compiland names, from the shipped credits (2026-08-08)
+
+`GRUNTZ.EXE`'s own string table leaks nine `.cpp` paths, exactly one of them
+under `C:\Proj\Gruntz\` (`GruntzMgr.cpp`). The shipped credits resource
+`STATEZ\CREDITZ\CREDITZ` names six more, two of them with line numbers, in a
+pasted multiplayer desync log and a joke list:
+
+| Name | Evidence |
+|---|---|
+| `C:\Proj\Gruntz\Grunt_State.cpp` line **922** | 12 occurrences in the log |
+| `C:\Proj\Gruntz\Grunt_Combat.cpp` line **411** | 1 occurrence in the log |
+| `booty.cpp` · `compconai.cpp` · `statusbar.cpp` · `nakedchix.cpp` | joke list |
+
+None of the six appears anywhere in `src/`, `include/`, `config/` or `docs/`.
+Our tree splits the same code across many small units — `GruntCombat.cpp`,
+`GruntStateStep.cpp` / `GruntStateRec.cpp`, `StatusBarMgr.cpp` and siblings,
+`BootyStateActivate.cpp` and siblings — so these are the *original* compilands
+those units were carved out of, and merging toward them is a candidate
+consolidation. Full quotation and the rest of the credits' contents:
+[`formats/game-data-strings.md`](formats/game-data-strings.md#2a-retail-source-file-names--tu-partition-evidence).
+
 ## Instruments already in place
 
 - `gruntz link` → candidate EXE + `.map` (392 objs, 4886 unresolved externs under
