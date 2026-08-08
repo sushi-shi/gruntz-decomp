@@ -316,7 +316,7 @@ i32 RotateRasterize(
         clip1 = g_c10;
         clip0 = static_cast<float>(dst->m_width);
         clip2 = static_cast<float>(dst->m_height);
-        bound0 = g_c10;
+        bound0 = clip1;
     } else {
         bound0 = static_cast<float>(clipFlag);
         clip0 = static_cast<float>(clipB);
