@@ -170,10 +170,23 @@ void* CDDrawWorkerList::CreateWorkerA(i32 x, i32 y, i32 frame) {
     return w;
 }
 
+RVA(0x00157060, 0x16)
+i32 CDDrawWorkerA::IsLoaded() {
+    if (m_ownerCtx != NULL && m_id != -1) {
+        return 1;
+    }
+    return 0;
+}
+
 RVA(0x00157080, 0x19)
 i32 CDDrawWorkerBase::SetPosition(i32 x, i32 y) {
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
+}
+
+RVA(0x001570a0, 0x6)
+LoadableClassId CDDrawWorkerA::GetClassId() {
+    return CLASSID_WORKERPIXEL;
 }
 
 RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
@@ -197,6 +210,16 @@ i32 CDDrawWorkerA::PlaceFrameValue(i32 x, i32 y, i32 frame) {
     m_pixelValue = static_cast<char>(frame);
     m_refCount = 2;
     return CResolveNode::SetPosition(x, y);
+}
+
+RVA(0x00157130, 0x17)
+void CDDrawWorkerA::Unload() {
+
+    i32 v = COORD_UNSET;
+    m_pixelValue = 0;
+    m_screenX = v;
+    m_dirty.m_rect.left = v;
+    m_dirty.m_armed = -1;
 }
 
 RVA(0x00157150, 0xa5)

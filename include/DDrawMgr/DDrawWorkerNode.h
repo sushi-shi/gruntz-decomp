@@ -51,8 +51,16 @@ public:
 };
 SIZE(0x7c);
 
+// +0x78 holds a raw pixel VALUE, not a CImage*, so the three CDDrawWorkerBase
+// virtuals that treat it as a pointer are overridden back (retail vtable
+// 0x1efea0 slots 5/7/8 point at 0x157060/0x157130/0x1570a0, not the base's
+// 0x157200/0x157310/0x157210).
 struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerA() OVERRIDE;
+
+    virtual i32 IsLoaded() OVERRIDE;
+    virtual void Unload() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual void RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;
     CDDrawWorkerA() {}
