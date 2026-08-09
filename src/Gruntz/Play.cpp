@@ -2874,9 +2874,9 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
                 }
 
                 CGameLevel* ds = m_world->m_level;
-                CDDrawWorkerHost* cam2 = ds->m_mainPlane;
-                i32 wx = cam2->m_viewRect.left - ds->m_planeCtx.left + xr;
-                i32 wy = cam2->m_viewRect.top - ds->m_planeCtx.top + y;
+                LevelCoordRect* vr2 = &ds->m_mainPlane->m_viewRect;
+                i32 wx = vr2->left - ds->m_planeCtx.left + xr;
+                i32 wy = vr2->top - ds->m_planeCtx.top + y;
                 if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &a, &y, g_curPlayer) != NULL) {
                     m_mgr->m_cmdSubMgr->EnqueueSingle(
                         1,
