@@ -14,7 +14,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/LogicTypeTableInline.h>
+#include <Gruntz/LogicTypeTableFirstLookupInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/XferArchive.h>
 #include <Image/ImageSet.h>
