@@ -27,6 +27,20 @@
 # attribution worklist: 0x229eb8 (dialogs -> bootycheatstate), 0x245168
 # (brickzload -> gruntzmgr), 0x24c3b0 (play -> gruntzplayer), 0x24c548
 # (play -> playassetload).
+#
+# A NON-INLINE FUNCTION'S LOCAL STATIC IS SPELLED BY cl, SO STATE cl's SPELLING
+# (the butemgr band, 0x2bf67c-0x2bf6e0). These are not per-TU copies at all -
+# `CButeMgr::GetRect`'s `static ButeIntRect s_default;` and its 1-byte guard are
+# emitted once, into butemgr's own `.bss`, as PRIVATE decorated symbols
+# (docs/compiler-data-layout.md "Function-local statics: the six cases"). They
+# need a reviewed row only because a `DATA()` pin cannot spell a name cl invents.
+# Naming them `_s_default_rect_butemgr` left the whole band unpaired - the base
+# obj calls it `_?s_default@?1??GetRect@CButeMgr@@...@4U3@A$S20265` - and butemgr
+# was the tree's last non-exact `.bss` section (8.70%). The rows therefore carry
+# cl's decorated name verbatim. BOTH `$S<n>` counters in it are volatile and are
+# masked by canonicalize_data_symbols.STATIC_ORDINAL, so only the name AROUND
+# them is load-bearing; the numbers below are the ones cl emitted when the rows
+# were written and are documentation, not a claim.
 0x2293f8	?s_gruntDirEast_2293f8@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229408	?s_gruntDirNorth_229408@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229418	?s_gruntDirSouth_229418@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
@@ -697,16 +711,16 @@
 0x2467b8	?s_gruntDirCenter_2467b8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467c8	?s_gruntDirSouthWest_2467c8@@3UGruntDirectionCell@@A	multi	0xc	data
 # CButeMgr getter-local statics (guards + static return slots), ButeMgr.cpp
-0x2bf67c	_s_guard_GetPoint_butemgr	butemgr	0x1	data
-0x2bf680	_s_guard_GetRange_butemgr	butemgr	0x1	data
-0x2bf684	_s_guard_GetVector_butemgr	butemgr	0x1	data
-0x2bf688	_s_guard_GetRect_butemgr	butemgr	0x1	data
-0x2bf690	_s_default_point_butemgr	butemgr	0x8	data
-0x2bf698	_s_default_string_butemgr	butemgr	0x8	data
-0x2bf6a0	_s_default_vector_butemgr	butemgr	0x18	data
-0x2bf6b8	_s_guard_GetString_butemgr	butemgr	0x1	data
-0x2bf6c0	_s_default_range_butemgr	butemgr	0x10	data
-0x2bf6d0	_s_default_rect_butemgr	butemgr	0x10	data
+0x2bf67c	_?$S49@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S20347	butemgr	0x1	data
+0x2bf680	_?$S53@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4EA$S20507	butemgr	0x1	data
+0x2bf684	_?$S51@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4EA$S20427	butemgr	0x1	data
+0x2bf688	_?$S47@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4EA$S20267	butemgr	0x1	data
+0x2bf690	_?s_default@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4U3@A$S20345	butemgr	0x8	data
+0x2bf698	_?s_empty@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4VCString@@A$S20173	butemgr	0x4	data
+0x2bf6a0	_?s_default@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4U3@A$S20425	butemgr	0x18	data
+0x2bf6b8	_?$S45@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4EA$S20175	butemgr	0x1	data
+0x2bf6c0	_?s_default@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4U3@A$S20505	butemgr	0x10	data
+0x2bf6d0	_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265	butemgr	0x10	data
 #
 # 2026-08-09, lane/unmodelled-data: the 25 blocks the data-access sieve still
 # reported as `unclaimed`. Each cell's IDENTITY is read off its own `$E`

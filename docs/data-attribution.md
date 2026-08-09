@@ -778,6 +778,99 @@ What does NOT port: homm2's NB09/`sstModule`-sourced ordering, contribution rang
 `cv-public-data` inventory (no debug stream in GRUNTZ.EXE — use Ghidra + candidate `.map` +
 `DATA()`); and homm2's VC4.0 LINK 3.00 `/Od` flags (Gruntz is VC5 `/O2` LINK 5.10).
 
+### 3d-ii. `matched_data` 100.00% (2026-08-09) — the c2 alignment rule, the COMDAT append, and butemgr's `.bss` names
+
+Three defects, all of them about the CONTAINER rather than the bytes. After them every one
+of the 515 data sections is exactly 100.0.
+
+**(1) The manifest synthesised an alignment cl never uses.** `data_manifest._alignment` was
+"the largest power of two ≤ 8 dividing BOTH the retail rva and the size" — a rule with no
+counterpart in the compiler. It hands a `char` guard byte alignment 1, a `short` 2, and a
+12-byte struct 4. `docs/compiler-data-layout.md` reverse-engineered what c2 actually does
+(probe-validated 41/41 on a blind TU) and `gruntz.audit.data_layout.obj_align` implements
+it; the manifest now CALLS that function instead of guessing. Its inputs:
+
+* **size** — already proven (`labels.sizeof_qualtype`);
+* **object kind** — the declared type, from two oracles that are both the compiler's own
+  statement: `build/gen/globals.json` (clang's printed qualType for the `DATA()` pin,
+  written by the same labels merge edge that writes `symbol_names.csv`) and, for anything
+  it does not cover, the MSVC mangled type inside a `?`-decorated symbol name. cl's `$T`
+  pool is float/double by construction, so its extent names its type.
+* **the per-section ratchet** — **NOT RECOVERABLE**, see below.
+
+The kind question collapses almost entirely into the size: `size < 4` is 4 for every kind,
+`size > 8` is 8 for every kind (no i386 scalar is wider than 8), and with the ratchet at
+its un-latched 4 the whole 4..8 band is 4 unless the object is a `double`/`__int64`. So the
+only thing the oracles have to decide is *"is this an 8-byte wide scalar?"* — and three
+rows tree-wide reach that question with neither oracle answering (`AFX_MSGMAP`,
+`ButeIntPoint`, `CString`), all three aggregates, all three 4 either way.
+
+**Why the ratchet cannot be recovered, and why 4 is the conservative branch.** c2 latches
+the ratchet in cl's EMISSION order inside the ORIGINAL TU, and neither half of that is
+available to a manifest. For `.bss` the emission order is c1xx's end-of-TU hash walk over
+the ORIGINAL identifiers — our names are reconstructions, so the order is unknowable in
+principle. For `.data`/`.rdata` the order IS declaration order = ascending retail rva, but a
+legacy row is by definition one NOT placed in a candidate section, so the manifest sees a
+SUBSET of the section's objects and cannot know whether one it cannot see latched first.
+The ratchet only ever decides a 4..8-byte AGGREGATE, and 4 there never fabricates padding
+the original may not have had — and every case the retail image can adjudicate agrees with
+it (`?g_pathStr@@3VCString@@A` at `0x22c25c`, `_g_chatTextWidth` at `0x22b434` and eighteen
+more sit at rva ≡ 4 mod 8, which an 8-aligned object cannot).
+
+**The image refutes an over-alignment, and that is a worklist.** The linker honours an
+object's alignment, so `align` must divide the object's retail rva. `data_manifest` now
+prints every row where the modelled value does not — three of them, and each is a real
+source defect the rule found rather than an alignment question:
+
+| rva | symbol | size | c2 says | image says |
+|---|---|---|---|---|
+| `0x253c9e` | `g_clut` | `0x30002` | 8 | **2** — an array that size cannot start at an odd-word rva. The real object is `u8 g_clut[0x30000]` at `0x253ca0` (8-aligned, ending exactly at `g_lut16`); our pin is 2 low and every use site carries a compensating `+2`. |
+| `0x2bf28c` | `g_imageClipRect` | `0x10` | 8 | **4** — a 16-byte array would be 8-aligned. Four consecutive `i32`s at `+0x0/4/8/c` fit a 4-mod-8 start exactly, so retail most likely had four separate globals (`left/top/right/bottom`), not an array. |
+| `0x2c127d` | `??_B?1??GetRandomNumber@@YAHXZ@51` | 1 | 4 | **1** — correct and expected: an INLINE function's local-static guard is a COFF COMMON, placed by the LINKER, so c2's section allocator never sees it (`docs/compiler-data-layout.md`, the six cases). |
+
+**(2) A legacy row was appended to a COMDAT** (`nix/patches/vostok-legacy-data-not-into-comdat.patch`).
+`ObjectFile::with_sections` adopted the FIRST manifest section of each storage class as the
+container for definitions the manifest does not place — and with the candidate section
+manifest that is a per-symbol COMDAT. A COMDAT holds exactly the one symbol cl put in it,
+so the appended definition and the alignment gap in front of it are content the base object
+does not have. `fadereffects` is the clean demonstration: its sixteen ordinary `.rdata`
+globals were appended to `??_7CFaderFlat@@6B@`'s `0x14`-byte COMDAT, taking it to `0x70`
+and starting the run at a 4-aligned offset, which pushed every `double` off the 8-aligned
+slot cl gave it. Only an ORDINARY manifest section may be the fallback; when there is none,
+`data_section()`/`rdata_section()` already create a fresh one lazily — which is also where
+cl puts a unit's non-COMDAT globals. (`.bss` was never affected: no `.bss` section is ever
+declared in the section manifest, so its fallback was always a fresh section.)
+
+The two defects interact, which is why they land together: with the correct alignment and
+the wrong container, `gruntsteps .data` fell 100 → 98.18 (the `char[9]` `_s_ToyTiles`
+correctly asked for 8 and got six pad bytes inside the `YOYOGRUNT` literal's COMDAT).
+
+**(3) butemgr's `.bss` band was enrolled under names cl does not use.** The tree's last
+non-exact `.bss` (88 B at 8.70%). `CButeMgr::GetRect`'s `static ButeIntRect s_default;` and
+its guard are a NON-INLINE function's local statics, so cl emits them once, into butemgr's
+own `.bss`, as private decorated symbols — `_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265`
+(`docs/compiler-data-layout.md`, "Function-local statics: the six cases"). They need a
+reviewed `config/static_data_copies.tsv` row only because a `DATA()` pin cannot spell a
+name cl invents — but the rows named them `_s_default_rect_butemgr`, so the two sides never
+paired. The rows now carry cl's spelling verbatim. BOTH `$S<n>` counters in such a name are
+volatile — c2's `outdname` appends the trailing one, and c1xx spells the guard's own
+unnamed object `?$S<n>@…` — so `canonicalize_data_symbols.STATIC_ORDINAL` masks *every*
+`$S<n>` run rather than only the last, and the pair content-addresses on the enclosing
+function. Proven collision-free: 13 symbols tree-wide carry more than one `$S<n>` and no
+base obj holds two that mask together. `_s_default_string_butemgr` was also 8 B where
+`s_empty` is a 4-byte `CString`; the extra 4 is the pad in front of the 8-aligned
+`ButeDoubleVector` that follows it.
+
+| | before | after |
+|---|---|---|
+| `matched_data` | 720539/720835 = **99.96%** | 723351/723351 = **100.00%** |
+| size-weighted | `.bss` 99.99 · `.data` 100.00 · `.rdata` 100.00 | **100.00 / 100.00 / 100.00** |
+| data sections at exactly 100.0 | 513 / 515 | **515 / 515** |
+
+`matched_functions` 3498 and the whole per-function ledger are unmoved — nothing in `src/`
+changed, so the base objs are bit-identical; `assert_relocs` and `data_relocs --gate` are
+unchanged (0 defect rows, 0 orphans).
+
 ## 4. The reloc-TARGET audit (`gruntz.audit.data_relocs`, gated at `--normal`)
 
 Everything above measures whether the right BYTES are in the right place. This

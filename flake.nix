@@ -75,11 +75,18 @@
         # `.CRT$`. A `$` suffix is COFF's grouped-section form (a linker ordering
         # key, stripped at link time), and cl emits every RTTI record that way -
         # `??_R1`..`??_R4` in `.rdata$r`. Compare the group prefix instead.
+        # Legacy data into a COMDAT: `with_sections` adopted the FIRST manifest
+        # section of each storage as the container for definitions the manifest
+        # does not place, and with the candidate section manifest that is a
+        # per-symbol COMDAT. A COMDAT holds exactly cl's one symbol, so the
+        # appended definition (plus its alignment gap) is content the base object
+        # does not have. Only an ordinary section may be the fallback.
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
           ./nix/patches/vostok-comdat-leader-nonzero-offset.patch
           ./nix/patches/vostok-grouped-section-names.patch
+          ./nix/patches/vostok-legacy-data-not-into-comdat.patch
         ];
       };
 

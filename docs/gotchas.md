@@ -284,6 +284,12 @@ Error: <manifest>:2: storage does not match candidate section name/characteristi
            form; the unpatched delinker demands a literal `.rdata`)
 ```
 
+The third one (`vostok-legacy-data-not-into-comdat.patch`, 2026-08-09) fails
+**SILENTLY**, which is worse: an old binary still appends every unplaced data
+definition to the object's first COMDAT, so the delink succeeds and only the DATA
+numbers are wrong (`fadereffects .rdata` 98.61 instead of 100.00). If a data
+section you did not touch is a hair under 100, check the shell before the model.
+
 That is not a source defect and not a manifest defect - it is a stale shell.
 Re-enter `nix develop`, or run `nix develop --command gruntz build`. The same
 applies in every worktree: they share the store, but each shell pins whatever

@@ -90,8 +90,9 @@ emission order:
 
 This explains the previously-contradictory observations (`char[5]` getting 8
 in one TU and 4 in another: a double or size>8 array earlier in the SAME
-section flips the ratchet). The delinker's synthetic "8 iff size % 8 == 0"
-matches none of this and should be replaced by the rule above.
+section flips the ratchet). The delink data manifest's synthetic "largest power
+of two dividing both the rva and the size" matched none of this; it now calls
+`data_layout.obj_align` (item 3 under "What this means for the project").
 
 ## VC5 vs VC6 (12.00.8964 SP5, homm2-buka toolchain)
 
@@ -120,9 +121,25 @@ matches none of this and should be replaced by the rule above.
      both validates attributions and refutes invented names (e.g. the eight
      `actionoptionsmenubar` `s_gruntDir*` names cannot all be original
      file-scope identifiers in that order).
-3. **Delinker alignment**: replace `8 iff size % 8 == 0` with the VC5 rule
-   above (needs object kind scalar/double/aggregate + the per-section
-   ratchet; both recoverable from size + the section's earlier content).
+3. **Delinker alignment**: DONE, 2026-08-09 (`docs/data-attribution.md`
+   §3d-ii). `data_manifest._alignment` calls `data_layout.obj_align` instead of
+   the synthetic rule. Object kind comes from the declared type —
+   `build/gen/globals.json` (clang's qualType for the `DATA()` pin) or the MSVC
+   mangled type in the symbol name — and the question collapses to *"is this an
+   8-byte wide scalar?"*, because `size < 4` is 4 and `size > 8` is 8 for every
+   kind. **The per-section ratchet is NOT recoverable** and is left un-latched
+   at 4: c2 advances it in cl's EMISSION order inside the original TU, which for
+   `.bss` is the hash walk over the ORIGINAL identifiers (unknowable — our names
+   are reconstructions) and for `.data`/`.rdata` needs the whole section, while a
+   row that still needs a modelled alignment is by definition one whose section
+   could not be reconstructed. 4 is the conservative branch (it never fabricates
+   padding) and every case the image can adjudicate agrees with it. The image is
+   also the refutation: `align` must divide the object's retail rva, and the
+   three rows where it does not are source defects the rule FOUND (`g_clut`
+   pinned two bytes low; `g_imageClipRect` modelled as one array where the
+   4-mod-8 rva says four separate `i32`s; and the one correct exception, an
+   inline function's guard byte, which is a COMMON the LINKER places — see the
+   six cases below, c2 never saw it).
 4. Function-local statics participate in the same `.bss` walk under their
    decorated names — a TU's `.bss` is one interleaved pool, not
    "globals first, then per-function statics".

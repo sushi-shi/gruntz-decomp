@@ -47,7 +47,17 @@ from pathlib import Path
 SYMBOL_SIZE = 18
 VOLATILE_SG = re.compile(r"^\$SG[0-9]+$")
 VOLATILE_T = re.compile(r"^\$T[0-9]+$")
-NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
+NAMED_STATIC = re.compile(r"^.+\$S[0-9]+$")
+# EVERY `$S<n>` counter in the name is volatile, not just the trailing one. c2's
+# `outdname` appends `$S<n>` to a TU-local static; c1xx ALSO spells an unnamed
+# object - the 1-byte guard of a function-local static with a dynamic initializer -
+# `?$S<n>@?1??Fn@@...@4EA` (docs/compiler-data-layout.md "Function-local statics"),
+# and that inner counter renumbers on any TU edit exactly as the trailing one does.
+# Mask both so a guard content-addresses on its enclosing function, not on a
+# number: `_?$S47@?1??GetRect@CButeMgr@@...@4EA$S20267` -> `_?$S@?1??GetRect@...$S`.
+# Proven collision-free: no base obj holds two distinct symbols that mask together
+# (13 symbols tree-wide carry more than one `$S<n>`, none of them a pair).
+STATIC_ORDINAL = re.compile(r"\$S[0-9]+(?=@|$)")
 # `$E<n>` - a compiler-generated dynamic-initializer / EH-cleanup TEXT funclet for a
 # file-scope object with a non-trivial ctor (e.g. `static CString g_worldName[8]={...}`).
 # The `<n>` is a per-object counter that renumbers on ANY static-init add/remove in the
@@ -499,9 +509,8 @@ def _family(name: str) -> tuple[str, str | None] | None:
         return "t", None
     if VOLATILE_E.fullmatch(name):
         return "e", None
-    match = NAMED_STATIC.fullmatch(name)
-    if match:
-        return "named", match.group("prefix")
+    if NAMED_STATIC.fullmatch(name):
+        return "named", STATIC_ORDINAL.sub("$S", name)
     match = DELINKED_STATIC_COPY.fullmatch(name)
     if match:
         return "named", f"_{match.group('stem')}$S"

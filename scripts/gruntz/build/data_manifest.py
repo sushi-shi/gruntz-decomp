@@ -53,6 +53,14 @@ Withholding the two `data-unprovable-tail` rows (the .data rawsize-edge artifact
 docs/data-attribution.md §2) then took it to 80902/292476 (27.66%), +3000 more:
 asserting `.data` for them had been breaking their containers.
 
+An UNPLACED row's alignment is now c2's own rule (_alignment, reusing
+gruntz.audit.data_layout.obj_align) rather than a synthetic divisibility test, and the
+delinker no longer appends such a row to a COMDAT (nix/patches/vostok-legacy-data-not-
+into-comdat.patch). With butemgr's `.bss` band enrolled under cl's own decorated names,
+every data section in the tree is exactly 100.0 (docs/data-attribution.md §3d-ii):
+    matched_data   720539/720835 (99.96%)  ->  723351/723351 (100.00%)
+    exact          3498 (unchanged - nothing in src/ moved)
+
 Usage:
     python -m gruntz.build.data_manifest              # -> build/gen/delink_data_*manifest.tsv
     python -m gruntz.build.data_manifest --report     # print the withheld/defect lists
@@ -62,6 +70,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import csv
+import json
 import re
 import sys
 from collections import Counter, defaultdict
@@ -70,10 +79,12 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "scripts"))
 
+from gruntz.audit.data_layout import obj_align  # noqa: E402
 from gruntz.core.data_audit import read_pe, classify_pe_storage  # noqa: E402
 
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
 EXE = REPO / "build/exe/GRUNTZ.EXE"
+GLOBAL_TYPES = REPO / "build/gen/globals.json"
 OUTPUT = REPO / "build/gen/delink_data_manifest.tsv"
 SECTION_OUTPUT = REPO / "build/gen/delink_data_section_manifest.tsv"
 
@@ -89,16 +100,121 @@ SECTION_HEADER = ("object", "ordinal", "name", "rva", "size", "alignment",
 STORAGE = {"rdata": "rdata", "data-initialized": "data", "data-loader-zero-tail": "bss"}
 
 
-def _alignment(rva, size):
-    """Largest power of two (<=8) that divides BOTH the retail address and the size.
+#: The value c2's per-section alignment ratchet starts at, before any object in the
+#: section has taken 8. See _alignment() for why the manifest can never advance it.
+UNLATCHED_RATCHET = 4
 
-    Derived from observed facts rather than assumed: the retail RVA's own alignment
-    is a hard property of the shipped image.
+#: MSVC data-symbol mangling: `?name@@3<type><cv>` (global), `?name@Class@@2<type><cv>`
+#: (class static), `?name@?1??fn@@YAXXZ@4<type><cv>` (function-local static). The digit
+#: is the storage code and everything after it is the TYPE, so a C++-mangled datum
+#: carries its own declared type. Matched from the right: the type itself never opens
+#: a `@<digit>` group.
+_MANGLED_STORAGE_CODE = re.compile(r"@([0-9])(?=[A-Z_?$])")
+#: The mangled primitive codes for the only i386 scalars c2 gives alignment 8:
+#: `N` double, `O` long double, `_J`/`_K` (unsigned) __int64.
+_MANGLED_WIDE_SCALAR = ("N", "O", "_J", "_K")
+#: ... and their clang spellings, as `build/gen/globals.json` prints them.
+_CLANG_WIDE_SCALAR = frozenset((
+    "double", "long double", "__int64", "unsigned __int64", "signed __int64",
+    "long long", "unsigned long long", "i64", "u64"))
+_CV_QUALIFIER = re.compile(r"\b(?:const|volatile)\b")
+
+_GLOBAL_TYPE_CACHE = {}
+
+
+def declared_types(path=None):
+    """{rva: clang qualType} for every DATA()-pinned global.
+
+    `build/gen/globals.json` is written by the SAME labels merge edge that writes
+    `symbol_names.csv` (the delink edge's own input), so it is always current here.
+    It carries clang's own printed type for the pinned declaration - the identical
+    authority `labels.sizeof_qualtype` derives the extent from.
     """
-    a = 1
-    while a < 8 and rva % (a * 2) == 0 and size % (a * 2) == 0:
-        a *= 2
-    return a
+    key = str(path or GLOBAL_TYPES)
+    if key not in _GLOBAL_TYPE_CACHE:
+        out = {}
+        try:
+            for g in json.loads(Path(key).read_text()):
+                if g.get("type"):
+                    out[int(g["rva"], 16)] = g["type"]
+        except (OSError, json.JSONDecodeError, TypeError, ValueError):
+            pass
+        _GLOBAL_TYPE_CACHE[key] = out
+    return _GLOBAL_TYPE_CACHE[key]
+
+
+def _object_kind(name, rva, size, types=None):
+    """`double` | `scalar` | `array` for c2's alignment rule, or None if unproven.
+
+    Two oracles, both the compiler's own statement of the declared type:
+      * globals.json - clang's printed qualType for the DATA() pin, keyed by rva;
+      * the MSVC mangled type carried inside a `?`-decorated symbol name.
+    """
+    if name.startswith("$T"):
+        # cl's own floating-point constant pool. Its members are float and double
+        # literals and nothing else, so the extent names the type.
+        return "double" if size == 8 else "scalar"
+    qt = (declared_types() if types is None else types).get(rva)
+    if qt:
+        t = re.sub(r"\s+", " ", _CV_QUALIFIER.sub("", qt)).strip()
+        if t.endswith("]"):
+            return "array"
+        if t.endswith("*") or t.endswith("&"):
+            return "scalar"
+        if t in _CLANG_WIDE_SCALAR:
+            return "double"
+        # A record, a typedef'd handle, an enum - `size` decides all of those (see
+        # _alignment), so there is nothing left to prove.
+        return None
+    code = list(_MANGLED_STORAGE_CODE.finditer(name))
+    if code:
+        mangled = name[code[-1].end():]
+        if mangled.startswith(_MANGLED_WIDE_SCALAR):
+            return "double"
+    return None
+
+
+def _alignment(rva, size, kind):
+    """`(alignment, modelled)` - c2's VC5 object alignment, and what it was before
+    the shipped image refuted it (equal when it did not).
+
+    The rule is `gruntz.audit.data_layout.obj_align`, reverse-engineered from
+    c1xx.dll/c2.exe and validated 41/41 on a blind TU (docs/compiler-data-layout.md
+    "Alignment"). It replaces the synthetic "largest power of two dividing both the
+    rva and the size", which cl never used: it hands a `char` alignment 1 and a
+    12-byte struct alignment 4, where c2 gives 4 and 8.
+
+    THE PER-SECTION RATCHET IS NOT RECOVERABLE HERE, so the conservative branch is
+    its un-latched value. c2 advances the ratchet in cl's EMISSION order inside the
+    ORIGINAL translation unit, and neither half of that is available to a manifest:
+
+      * `.bss` is emitted by c1xx's end-of-TU hash walk over the ORIGINAL identifiers
+        (docs/compiler-data-layout.md "The .bss walk"). Our names are reconstructions,
+        so we cannot reproduce that order even in principle;
+      * `.data`/`.rdata` order IS declaration order = ascending retail rva, but a
+        legacy row is by definition one NOT placed in a candidate section, so we see
+        a SUBSET of the section's objects and cannot know whether one we do not see
+        latched the ratchet first.
+
+    The ratchet only ever decides a 4..8-byte AGGREGATE, and 4 there never fabricates
+    padding the original may not have had. Every case in this tree the retail image
+    can adjudicate agrees with 4: `?g_pathStr@@3VCString@@A` (0x22c25c),
+    `_g_chatTextWidth` (0x22b434) and eighteen more sit at rva = 4 mod 8, which an
+    8-aligned object cannot.
+
+    Finally the image itself refutes an over-alignment. The linker honours an
+    object's alignment, so `align` MUST divide the object's retail rva; when the
+    model says otherwise the model is wrong about that datum, and the largest
+    divisor is used instead. main() prints every such row - they are a real
+    worklist (a 197 KB array pinned at an odd rva is a mis-modelled base, not an
+    alignment question).
+    """
+    modelled = obj_align(kind or ("array" if size > 8 else "scalar"), size,
+                         UNLATCHED_RATCHET)
+    a = modelled
+    while rva % a:
+        a //= 2
+    return a, modelled
 
 
 def string_rows(exe=EXE, base_dir=None):
@@ -169,7 +285,7 @@ def string_rows(exe=EXE, base_dir=None):
             for unit, name in sorted(units.items()):
                 by_name[name].append(
                     {"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
-                     "storage": STORAGE[start], "alignment": _alignment(rva, size),
+                     "storage": STORAGE[start],
                      "provenance": "candidate-COFF-string"})
     for name, group in by_name.items():
         # N owners of ONE rva is a fold and enrolls; one content-derived name over
@@ -218,7 +334,7 @@ def compgen_rows(exe=EXE, table=None):
                     else "src-DATA_COMPGEN")
             rows.append({"name": r["name"], "object": "%s.c" % r["unit"],
                          "rva": rva, "size": size, "storage": STORAGE[start],
-                         "alignment": _alignment(rva, size), "provenance": prov})
+                         "provenance": prov})
     return rows, withheld
 
 
@@ -765,8 +881,7 @@ def fp_pool_rows(exe=EXE, base_dir=None, symbols=SYMBOLS):
                 return
             rows.append({"name": "$T%d" % rva, "member": member,
                          "object": "%s.c" % obj.stem, "rva": rva, "size": size,
-                         "storage": storage, "alignment": _alignment(rva, size),
-                         "provenance": how})
+                         "storage": storage, "provenance": how})
 
         stranded = []
         for member in sorted(pool):
@@ -880,7 +995,7 @@ def candidates(symbols=SYMBOLS, exe=EXE):
                 withheld.append((rva, name, "extent crosses %s -> %s" % (start, end)))
                 continue
             rows.append({"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
-                         "storage": STORAGE[start], "alignment": _alignment(rva, size),
+                         "storage": STORAGE[start],
                          "provenance": "src-DATA-sizeof"})
 
     # The compiler-emitted string literals of each unit. Without them a manifest
@@ -1329,17 +1444,30 @@ def ordinary_sections(rows, base_dir):
     return secs, placed
 
 
-def manifest_bytes(rows):
+def manifest_bytes(rows, refuted=None):
     """The --data-manifest. A row placed in a candidate section carries its
     (section_ordinal, section_offset); the rest keep the legacy `-` allocation
-    form, which lets the delinker pack them itself."""
+    form, which lets the delinker pack them itself.
+
+    A PLACED row's alignment is cl's own, read off the candidate COMDAT it sits in;
+    only a legacy row needs the c2 rule modelled (_alignment), because only a legacy
+    row is one the delinker allocates itself. `refuted` collects the rows whose
+    modelled alignment does not divide their retail rva.
+    """
     out = ["\t".join(HEADER)]
+    types = declared_types()
     for r in rows:
         placed = "section_ordinal" in r
+        if placed:
+            align = r["section"]["alignment"]
+        else:
+            kind = _object_kind(r["name"], r["rva"], r["size"], types)
+            align, modelled = _alignment(r["rva"], r["size"], kind)
+            if align != modelled and refuted is not None:
+                refuted.append((r["rva"], r["name"], r["size"], kind, modelled, align))
         out.append("\t".join([
             r["name"], r["object"], "0x%x" % r["rva"], "0x%x" % r["size"],
-            r["storage"],
-            "0x%x" % (r["section"]["alignment"] if placed else r["alignment"]),
+            r["storage"], "0x%x" % align,
             str(r["section_ordinal"]) if placed else "-",
             # The value cl.exe gives the symbol in the candidate obj: 0 for a literal
             # (it owns its whole COMDAT) and 4 for a /GR vtable, which sits behind the
@@ -1375,7 +1503,8 @@ def main(argv=None):
     secs, sec_withheld = section_rows(enrolled)
     withheld += sec_withheld
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_bytes(manifest_bytes(enrolled))
+    refuted = []
+    args.output.write_bytes(manifest_bytes(enrolled, refuted))
     args.section_output.parent.mkdir(parents=True, exist_ok=True)
     args.section_output.write_bytes(section_manifest_bytes(secs))
     folds = len(enrolled) - len({(r["name"], r["rva"]) for r in enrolled})
@@ -1389,6 +1518,13 @@ def main(argv=None):
     print("[data-manifest] withheld %d (never guessed): %s" % (
         len(withheld), ", ".join("%s=%d" % kv for kv in sorted(
             Counter(w[2].split("(")[0].strip() for w in withheld).items()))))
+    if refuted:
+        print("[data-manifest] %d row(s) the retail rva refutes (c2 alignment does "
+              "not divide the shipped address - a mis-modelled base or extent):"
+              % len(refuted))
+        for rva, name, size, kind, modelled, used in refuted:
+            print("    0x%06x %-46s size 0x%-6x kind=%-6s c2 %d -> used %d"
+                  % (rva, name[:46], size, kind or "?", modelled, used))
     if args.report:
         print("\n--- overlap contradictions (a real mis-modelling worklist) ---")
         for a, b, by in overlaps:

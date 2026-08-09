@@ -142,12 +142,22 @@ delinker's rva-suffixed enrolments (`?s_gruntDirEast_22bd28@@3U...`) onto cl's
 identity (`DELINKED_STATIC_COPY`, proof `bss-no-content` - the same
 two-allocators argument as this patch), and (b) materializes base-side COFF
 COMMONs (header-inline local statics + `??_B` guards) into `.bss` as the
-linker would. The `CButeMgr` statics took real `DATA()` pins instead of the
-invented C names; the two library data no cl output can re-emit (CDialog's
+linker would. The two library data no cl output can re-emit (CDialog's
 messageMap, type_info's vtable) moved to the non-compared `library_data`
 holding unit; and every one of the 71 `GruntDirectionCell` blocks is enrolled
-rva-suffixed and pairs against its TU's own emission. All data sections sit at
-exactly 100.0.
+rva-suffixed and pairs against its TU's own emission.
+
+**`butemgr` was the last hole, and it was the same naming defect one level
+deeper (fixed 2026-08-09, `docs/data-attribution.md` §3d-ii).** Its band stayed
+at 8.70% because `config/static_data_copies.tsv` enrolled it under invented C
+names (`_s_default_rect_butemgr`) while the base obj spells it the way cl does
+—`_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265`, a
+NON-inline function's local static (`docs/compiler-data-layout.md`, the six
+cases). The rows now carry cl's name, and `STATIC_ORDINAL` masks EVERY `$S<n>`
+counter in it — c1xx spells the guard's own unnamed object `?$S<n>@…`, and that
+inner counter renumbers exactly as c2's trailing `outdname` suffix does. With
+that, **all 515 data sections sit at exactly 100.0 and `matched_data` is
+100.00%.**
 
 ## See also
 
