@@ -9,6 +9,13 @@ Reproduce everything here with
 
     python -m gruntz.audit.link_sections [--selftest] [--thunks] [--gaps N]
 
+**This document answers "how big is the delta and what is it made of". It does not
+answer "do the bytes match" — size parity is not a byte match, and two of these
+sections sit at `+0` while only one is actually identical.** For the per-section
+BYTE similarity (regions paired by symbol, address operands masked by resolving
+them to their referent) and the wrong-referent worklist, see
+[`docs/image-diff.md`](image-diff.md) / `python -m gruntz.audit.image_diff`.
+
 ## Method: partition both images the same way
 
 A section total tells you nothing on its own, so both images are cut into the same

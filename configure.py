@@ -238,12 +238,19 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
     # build: `gruntz build` does not link, so the block is only as fresh as the
     # last `ninja candidate`. It states the candidate's digest and link time so a
     # stale block is visible rather than silent.
+    #
+    # It carries a per-section BYTE-similarity column from gruntz.audit.image_diff,
+    # which reads build/gen/delink_data_manifest.tsv - and prune_orphan_artifacts()
+    # deletes that file whenever it prunes, so the delink stamp is an input here or
+    # `ninja candidate` would score the image against a manifest that is not there.
     w.rule("linkscore",
            command=f"{PY} -m gruntz.audit.link_sections --write-readme && "
                    f"touch $out",
            description="candidate EXE -> README link status")
     w.build("build/gen/.link_score.stamp", "linkscore", inputs=[cand],
-            implicit=["scripts/gruntz/audit/link_sections.py"])
+            implicit=["scripts/gruntz/audit/link_sections.py",
+                      "scripts/gruntz/audit/image_diff.py",
+                      "build/objdiff/.delink.stamp"])
     w.build("candidate", "phony",
             inputs=[cand, "build/gen/.link_score.stamp"])
     w.newline()

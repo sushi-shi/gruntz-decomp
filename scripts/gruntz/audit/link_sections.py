@@ -525,21 +525,75 @@ def link_block(R, C):
 
     exact = [n for n in sorted(set(rs) & set(cs))
              if rs[n]['virtual_size'] == cs[n]['virtual_size']]
-    L += ["| section | retail | candidate | delta |", "| :-- | --: | --: | --: |"]
+
+    # Size parity is necessary and nowhere near sufficient: two images can agree
+    # on every section length and share almost no bytes. gruntz.audit.image_diff
+    # pairs the content by symbol, masks the address operands and reports what
+    # fraction of RETAIL's bytes we actually reproduce, so the table carries both.
+    sim, refs = {}, None
+    try:
+        from gruntz.audit import image_diff
+        _R, _C, _reps = image_diff.analyse()
+        sim = {r.name: r for r in _reps}
+        rt = sum(r.cmp.ref_total for r in _reps)
+        ro = sum(r.cmp.ref_ok for r in _reps)
+        refs = (ro, rt)
+    except BaseException as e:                 # never block the link on the audit
+        L.append(f"_Byte similarity unavailable ({type(e).__name__}: "
+                 f"{str(e)[:160]}). Run `gruntz build`, then `ninja candidate`._")
+        L.append("")
+
+    L += ["| section | retail | candidate | delta | retail bytes reproduced | "
+          "not measurable |",
+          "| :-- | --: | --: | --: | --: | --: |"]
     for n in sorted(set(rs) | set(cs)):
         rv = rs.get(n, {}).get('virtual_size', 0)
         cv = cs.get(n, {}).get('virtual_size', 0)
         mark = " &check;" if rv == cv and rv else ""
-        L.append(f"| `{n}` | {rv:,} | {cv:,} | {cv - rv:+,}{mark} |")
+        r = sim.get(n)
+        pct = f"**{100.0 * r.reproduced:.2f}%**" if r else "-"
+        unm = f"{r.unmeasured_r:,}" if r and r.unmeasured_r else ("0" if r else "-")
+        L.append(f"| `{n}` | {rv:,} | {cv:,} | {cv - rv:+,}{mark} | {pct} | {unm} |")
+    if sim:
+        tm = sum(r.cmp.matching for r in sim.values())
+        tr = sum(r.rsize for r in sim.values())
+        tu = sum(r.unmeasured_r for r in sim.values())
+        L.append(f"| **total** | {tr:,} | {sum(r.csize for r in sim.values()):,} | "
+                 f"{sum(r.delta for r in sim.values()):+,} | "
+                 f"**{100.0 * tm / tr:.2f}%** | {tu:,} |")
     L += ["",
           f"_{len(exact)} of {len(set(rs) | set(cs))} sections are at exact size parity"
           + (f": {', '.join('`%s`' % n for n in exact)}._" if exact else "._"),
-          "",
-          "_A section at exact size is NOT a byte match - `.rsrc` reaches parity with "
-          "18 of its 75 resources still carried retail bytes (art), the other 57 "
-          "compiled from `src/Gruntz/Gruntz.rc`. Read `docs/link-section-audit.md` for "
-          "what each delta is made of; the `.text` shortfall is dominated by retail "
-          "code no TU has claimed, not by functions we match badly._",
+          ""]
+    if sim:
+        L += ["_**Size parity is not a byte match.** `retail bytes reproduced` is "
+              "measured by `python -m gruntz.audit.image_diff`, which pairs regions "
+              "by SYMBOL (never by file offset - our `.text` is 26 KB short, so a "
+              "positional differ would call everything after the first delta "
+              "different) and masks address operands by resolving each to its "
+              "REFERENT, the way objdiff scores a function. Retail bytes we never "
+              "paired count against the figure; bytes we emit that retail does not "
+              "have never count for it. `not measurable` is retail bytes no honest "
+              "alignment exists for - `.bss` zero fill, the `.text$x` unwind "
+              "funclets and the `.xdata$x` EH blobs, none of which carry a symbol in "
+              "either image - and they stay in the denominator, so each figure is a "
+              "floor._",
+              ""]
+        if refs and refs[1]:
+            L += [f"_Independently of where the bytes landed, **{refs[0]:,} of "
+                  f"{refs[1]:,} address operands ({100.0 * refs[0] / refs[1]:.2f}%) "
+                  f"in paired regions reach the same referent in the same order**. "
+                  f"That is the measure a byte diff cannot give and per-object "
+                  f"objdiff masks away: it is what catches a wrong string literal or "
+                  f"a call to the wrong function._", ""]
+        rr = sim.get(".rsrc")
+        if rr and rr.cmp.differ == 0 and rr.cmp.slot_content:
+            L += [f"_`.rsrc` is byte-exact: all {rr.cmp.slot_content} differing bytes "
+                  f"are `OffsetToData` fields shifted by the section placement delta, "
+                  f"zero unexplained._", ""]
+    L += ["_Read `docs/image-diff.md` for the per-section attribution (the size "
+          "delta broken into named buckets that must sum to it) and "
+          "`docs/link-section-audit.md` for the `.text`/`.rdata` region census._",
           "",
           f"_Candidate `{dg}`, linked {stamp}. Regenerate: `ninja candidate`._",
           RM_END]
