@@ -32,6 +32,7 @@ Usage:
     python -m gruntz.audit.link_sections --selftest # prove the derivation
     python -m gruntz.audit.link_sections --thunks   # which modules were static .LIBs
     python -m gruntz.audit.link_sections --gaps 20  # unreconstructed-code worklist
+    python -m gruntz.audit.link_sections --undersized 20   # under-modelled .rdata data
 
 Findings and the full byte budget: docs/link-section-audit.md.
 """
@@ -328,6 +329,47 @@ def coff_functions():
     return out, plain, textx
 
 
+def undersized_data(top=25):
+    """Pinned .rdata data whose retail extent runs PAST what we claim.
+
+    objdiff only compares the bytes a datum claims, so modelling
+    `struct { float x, y; }` as a bare `float x` scores 100% while the trailing
+    bytes are never looked at.  The link is where it shows: our section comes out
+    short.  Retail's real extent is bounded by the next pinned address; slack that
+    is not plain zero padding is a candidate under-model.
+    """
+    R = PE(str(RETAIL))
+    rd = section(R, '.rdata')
+    d = body(R, rd)
+    rows = {}
+    with DATAMAN.open() as f:
+        for r in csv.DictReader(f, delimiter='\t'):
+            if r['storage'] != 'rdata':
+                continue
+            a, s = int(r['rva'], 16), int(r['size'], 16)
+            if a not in rows or s > rows[a][0]:
+                rows[a] = (s, r['name'], r['object'])
+    addrs = sorted(rows)
+    out = []
+    for i, a in enumerate(addrs[:-1]):
+        s, nm, obj = rows[a]
+        gap = addrs[i + 1] - (a + s)
+        if gap <= 0:
+            continue
+        tail = d[a + s - rd['rva']: a + s - rd['rva'] + gap]
+        if all(b == 0 for b in tail):
+            continue            # zero padding, incl. the incremental-link kind
+        out.append((gap, a, s, nm, obj, addrs[i + 1]))
+    out.sort(reverse=True)
+    print(f"\n=== pinned .rdata data with NON-ZERO unclaimed slack ===")
+    print(f"  {len(out)} of {len(addrs)} pinned addresses; {sum(x[0] for x in out):,d} B")
+    print("  (most of it is library data we never pinned; the interesting rows are the")
+    print("   ones where the slack looks like MORE OF THE SAME DATUM)")
+    for gap, a, s, nm, obj, nxt in out[:top]:
+        print(f"    {a:#08x} claim {s:#7x} -> next pin {nxt:#08x}  slack {gap:7,d}  "
+              f"{obj:22s} {nm[:46]}")
+
+
 def thunk_partition():
     """Decode retail's thunk targets: which code was in a command-line .obj?
 
@@ -459,6 +501,8 @@ def main(argv=None):
                     help='list the N largest unreconstructed retail code regions')
     ap.add_argument('--thunks', action='store_true',
                     help="decode retail's thunk targets: which module was a .LIB")
+    ap.add_argument('--undersized', type=int, default=0, metavar='N',
+                    help='list N pinned .rdata data whose retail extent runs past our claim')
     a = ap.parse_args(argv)
 
     for p in (RETAIL, CAND, CMAP):
@@ -593,6 +637,8 @@ def main(argv=None):
 
     if a.thunks:
         thunk_partition()
+    if a.undersized:
+        undersized_data(a.undersized)
 
     # ---------------- unreconstructed code worklist
     if a.gaps:

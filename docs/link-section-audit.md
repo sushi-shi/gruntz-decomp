@@ -249,14 +249,33 @@ between contributions — e.g. 44 zero bytes between `??_7CBattlezDlg@@6B@` and 
 vtable) or library data we have not pinned at all (the MFC message-map block at
 `0x1eb068`, 13,628 B; the CRT export-name pool after `?g_dot@@3PBDB`, 3,386 B).
 
-Genuine candidates, where the slack is non-zero and adjoins our own datum:
+`--undersized N` prints the ranked list (149 of 909 pinned addresses, 29,506 B). Most of
+it is library data we never pinned — the MFC message-map block at `0x1eb068` (13,628 B),
+the CRT export-name pool after `?g_dot@@3PBDB` (3,386 B), MFC/CRT `.rdata` behind
+`??_7CMenuItem2@@6B@` (5,612 B, which is simply the unpinned tail of the group). The rows
+that matter are the ones where **the slack is more of the same datum**.
 
-| pinned datum | claimed | slack | the slack looks like |
-|---|---:|---:|---|
-| `?g_multiBootyGeom@@3PAY03$$CBUCoord@@A` `0x1e9078` | 0x100 | 560 | more plausible `Coord` pairs (200, 415, 284, 465, 316 …) |
-| `?g_sineOne@@3MB` `0x1f0864` | 4 | 32 | another float (`0x40000000` = 2.0f) |
+### Worked example: `g_multiBootyGeom` is a third of the real table
 
-Those are worth re-deriving from the retail bytes; the rest of the slack is not ours.
+`?g_multiBootyGeom@@3PAY03$$CBUCoord@@A` (`bootystateactivate`, `0x1e9078`) is declared
+`Coord[N][4]` and claims `0x100` = 32 `Coord`. objdiff compares those 256 bytes, finds
+them perfect, and stops. Retail keeps going for another **560 bytes** — right up to the
+next pin, `?g_secretChars@@3PBDB` at `0x1e93a8` — and it is plainly more of the same:
+
+    0x1e9078  190 437  306 437  422 437  538 437     <- what we model: X in {190,306,422,538}
+    ...
+    0x1e9178  200 415  284 465  316 415  400 465     <- 48 Coord, X in {200,284,316,400,
+    0x1e9198  432 415  516 465  548 415  632 465        432,516,548,632} - a WIDER layout
+    ...                                                 (6 Y levels x 8 columns)
+    0x1e92f8   50  87  390 115  166  87  506 115     <- 8 Coord, a different shape
+    0x1e9338   45 155  175 215   50 198  180 258     <- 28 Coord, a third shape
+    ...
+    0x1e93a8  ?g_secretChars@@3PBDB
+
+Three more geometry tables (384 + 64 + 112 = 560 B) that no TU declares. This is the
+canonical form of the trap: **we chose the size, so the metric agrees with us.** Only the
+link notices, because the section comes out short. `?g_sineOne@@3MB` (`0x1f0864`, claim 4,
+slack 32 opening `0x40000000` = 2.0f) is a small instance of the same thing.
 
 ## What this changes
 
