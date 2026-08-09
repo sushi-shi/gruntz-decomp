@@ -62,6 +62,7 @@ from __future__ import annotations
 import argparse
 import bisect
 import csv
+import re
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -593,6 +594,238 @@ def rtti_rows(exe=EXE, base_dir=None):
     return rows, withheld
 
 
+#: cl's floating-point literal pool. `$T<n>` is a per-TU emission counter with no
+#: source spelling at all, and `canonicalize_data_symbols.VOLATILE_T` content-
+#: addresses BOTH sides of the comparison to `$anon_f{32,64}_<bits>`, so the digits
+#: never reach objdiff. The retail ADDRESS is what has to be proven, and it is.
+FP_POOL_NAME = re.compile(r"^\$T[0-9]+$")
+#: `IMAGE_REL_I386_DIR32` - the only relocation type that makes the linker write an
+#: absolute address, hence the only one that appears in the PE's `.reloc` directory.
+COFF_DIR32 = 0x0006
+#: `IMAGE_SCN_MEM_EXECUTE`.
+MEM_EXECUTE = 0x20000000
+
+
+def fp_pool_rows(exe=EXE, base_dir=None, symbols=SYMBOLS):
+    """`$T<n>` FP-pool constants, ADDRESSED OUT OF RETAIL'S OWN RELOCATION TABLE.
+
+    A unit's ordinary `.rdata`/`.data` is admitted only when EVERY member has a
+    proven extent (ordinary_sections), and cl's floating-point pool is the member
+    that has no source pin to give it one: `DATA()` needs a VarDecl and
+    `DATA_COMPGEN` needs a value expression, but a `$T` entry is neither - it is the
+    compiler's own spill of a literal, numbered by a per-TU counter. 18 candidate
+    sections were rejected for that single missing row.
+
+    CONTENT MATCHING CANNOT ANSWER IT. That is the oracle string_rows() uses, and it
+    works there because a `??_C@` payload is /Gf-pooled to exactly one address. FP
+    pools are NOT pooled, so `0.5` sits at a dozen retail rvas at once and its bits
+    identify nothing. Worse, a content-derived address is self-confirming: we would
+    copy the retail bytes from the address we found BY those bytes, so a wrong
+    constant in our source would still score 100.
+
+    RETAIL'S RELOCATION TABLE ANSWERS IT, with no disassembly and no guessing:
+
+      * the PE `.reloc` directory lists EVERY site the linker wrote an absolute
+        address into, so retail's DIR32 sites inside [fn_rva, fn_rva+size) are known
+        exactly - and so are our base obj's, from its COFF relocations;
+      * equal counts pair the two lists positionally;
+      * THE PAIRING PROVES ITSELF. Every base symbol whose rva we already know must
+        equal the address retail wrote at its partner site (plus the addend in our
+        own instruction bytes). A single disagreement means the two instruction
+        streams do not correspond, and the whole function is discarded - which is
+        what happens to the ones our reconstruction still gets wrong;
+      * only then is a site whose base symbol is a `$T` read off, and the address is
+        re-proven against the shipped bytes: retail's payload there must EQUAL the
+        candidate's. A wrong constant in our source therefore withholds the row
+        instead of hiding behind it (measured: `fadereffects $T28704` is a true
+        double pi where retail's site loads the float-widened one at 0x1f08a8).
+
+    THE MANIFEST NAME IS `$T<decimal rva>`, NOT cl's COUNTER. That is already
+    labels.py's spelling for a `DATA_COMPGEN` float claim, and it has to be: our TU
+    partition is a reconstruction, so two of our units can both spill a literal that
+    retail's TU boundary put in ONE pool slot (`kitchenslime $T35488` and
+    `pathhazard $T35508` are both 0x1ea400), and the delinker admits N objects at one
+    rva only under ONE name. Addressing the group by its rva makes the fold explicit
+    AND makes these rows coalesce with the 43 `DATA_COMPGEN` pins that already state
+    the same slots - the two channels were previously two claims on one address, and
+    `candidates()` withheld BOTH as an overlap.
+
+    Each row also carries `member`, cl's real symbol name for the constant in THAT
+    object. `ordinary_sections` matches the section's COFF members by name, so
+    without it the pin and the member never met - which is why 43 pinned pool entries
+    still left their sections rejected. The delinker never sees `member`.
+    """
+    import struct  # noqa: E402
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+    from gruntz.core.pe import PE, IMAGEBASE  # noqa: E402
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    if not base_dir.is_dir() or not Path(exe).is_file():
+        return [], []
+    pe = PE(str(exe))
+    storage_pe = read_pe(exe)
+    sites = pe.reloc_sites
+
+    known, fn_extent, pins = {}, {}, defaultdict(list)
+    with Path(symbols).open(newline="") as f:
+        for r in csv.DictReader(l for l in f if not l.lstrip().startswith("#")):
+            rva = int(r["rva"], 16)
+            known[r["name"]] = rva
+            if (r.get("kind") or "") == "func" and (r.get("size") or "").strip():
+                fn_extent[r["name"]] = (rva, int(r["size"], 16))
+            elif (r.get("kind") or "") == "data" and FP_POOL_NAME.fullmatch(r["name"]) \
+                    and (r.get("size") or "").strip():
+                pins[(r.get("unit") or "").strip()].append((rva, int(r["size"], 16)))
+
+    rows, withheld = [], []
+    for obj in sorted(base_dir.glob("*.obj")):
+        try:
+            c = _Coff(obj)
+        except Exception:
+            continue
+
+        pool = {}                       # $T name -> (storage, offset, payload, size)
+        for sec in c.section_table:
+            storage = ORDINARY_STORAGE.get(sec["name"])
+            if storage is None or sec["characteristics"] & LNK_COMDAT:
+                continue
+            members = c.section_members(sec["index"])
+            offsets = sorted(o for o, _n, _s in members)
+            payload = c.section_payload(sec["index"])[:sec["size"]]
+            for off, name, _scl in members:
+                if not FP_POOL_NAME.fullmatch(name):
+                    continue
+                end = next((o for o in offsets if o > off), sec["size"])
+                pool[name] = (storage, off, payload[off:end], end - off)
+        if not pool:
+            continue
+
+        votes = defaultdict(set)
+        for sec in c.section_table:
+            if not sec["characteristics"] & MEM_EXECUTE:
+                continue
+            ptr, count, first, rel = sec["reloc_offset"], sec["reloc_count"], 0, {}
+            if not ptr:
+                continue
+            if sec["characteristics"] & 0x01000000 and count == 0xFFFF:
+                count = struct.unpack_from("<I", c.buf, ptr)[0]
+                first = 1
+            for i in range(first, count):
+                site, idx, typ = struct.unpack_from("<IIH", c.buf, ptr + i * 10)
+                if typ == COFF_DIR32:
+                    rel[site] = c.sym_name(idx)
+            if not rel:
+                continue
+            text = c.section_payload(sec["index"])
+            for off, name in c.defined_symbols(sec["index"]):
+                hit = fn_extent.get(name)
+                if hit is None:
+                    continue
+                rva, size = hit
+                mine = sorted((s, n) for s, n in rel.items() if off <= s < off + size)
+                lo, hi = bisect.bisect_left(sites, rva), bisect.bisect_left(sites, rva + size)
+                theirs = sites[lo:hi]
+                if not mine or len(mine) != len(theirs):
+                    continue
+                found, corroborated = [], True
+                for (site, sym), target in zip(mine, theirs):
+                    at = pe.off(target)
+                    if at is None:
+                        corroborated = False
+                        break
+                    value = struct.unpack("<I", pe.data[at:at + 4])[0] - IMAGEBASE
+                    if FP_POOL_NAME.fullmatch(sym):
+                        found.append((sym, value))
+                        continue
+                    anchor = known.get(sym)
+                    if anchor is None:      # not ours to check (import, thunk, ...)
+                        continue
+                    addend = struct.unpack("<I", text[site:site + 4])[0]
+                    if value != anchor + addend:
+                        corroborated = False
+                        break
+                if corroborated:
+                    for sym, value in found:
+                        votes[sym].add(value)
+
+        def emit(member, rva, storage, size, want, how):
+            """One proven pool entry, addressed by its rva and byte-re-proven."""
+            at = pe.off(rva)
+            if at is None or pe.data[at:at + size] != want:
+                withheld.append((rva, member,
+                                 "retail bytes contradict the candidate FP constant"))
+                return
+            start = classify_pe_storage(storage_pe, rva)["class"]
+            end = classify_pe_storage(storage_pe, rva + size - 1)["class"]
+            if STORAGE.get(start) != storage or start != end:
+                withheld.append((rva, member, "FP-pool storage %s is not %s"
+                                 % (start, storage)))
+                return
+            rows.append({"name": "$T%d" % rva, "member": member,
+                         "object": "%s.c" % obj.stem, "rva": rva, "size": size,
+                         "storage": storage, "alignment": _alignment(rva, size),
+                         "provenance": how})
+
+        stranded = []
+        for member in sorted(pool):
+            storage, _off, want, size = pool[member]
+            seen = votes.get(member) or set()
+            if len(seen) == 1:
+                emit(member, next(iter(seen)), storage, size, want,
+                     "retail-reloc-fp-pool")
+            elif seen:
+                withheld.append((0, member, "referrers disagree on the rva"))
+            else:
+                stranded.append(member)
+
+        # A `DATA_COMPGEN` float claim in this unit already STATES a pool slot, but
+        # under labels.py's `$T<rva>` spelling - so `ordinary_sections`, which keys
+        # off the COFF member name, never found it. Bridge the two when the claim and
+        # exactly one still-unaddressed member agree on the extent AND on the bytes,
+        # and the pairing is unique in both directions; anything ambiguous is left.
+        taken = {r["rva"] for r in rows}
+        pairs = defaultdict(list)
+        for rva, size in pins.get(obj.stem, ()):
+            if rva in taken:
+                continue
+            at = pe.off(rva)
+            if at is None:
+                continue
+            want = pe.data[at:at + size]
+            for member in stranded:
+                if pool[member][3] == size and pool[member][2] == want:
+                    pairs[rva].append(member)
+        claims = Counter(m for ms in pairs.values() for m in ms)
+        for rva, ms in sorted(pairs.items()):
+            if len(ms) != 1 or claims[ms[0]] != 1:
+                withheld.append((rva, ms[0] if ms else "$T?",
+                                 "DATA_COMPGEN pin matches %d pool members" % len(ms)))
+                continue
+            storage, _off, want, size = pool[ms[0]]
+            emit(ms[0], rva, storage, size, want, "src-DATA_COMPGEN-fp-pool")
+        for member in stranded:
+            if not claims.get(member):
+                withheld.append((0, member, "no relocation-paired referrer"))
+
+    # Copies of one slot must agree on the extent, and one object may claim it once.
+    by_rva = defaultdict(list)
+    for r in rows:
+        by_rva[r["rva"]].append(r)
+    kept = []
+    for rva, group in sorted(by_rva.items()):
+        if len({r["size"] for r in group}) != 1:
+            withheld += [(rva, r["member"], "FP-pool copies disagree on the extent")
+                         for r in group]
+            continue
+        by_object = {}
+        for r in group:
+            by_object.setdefault(r["object"], r)
+        kept += list(by_object.values())
+    return kept, withheld
+
+
 def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
@@ -641,6 +874,24 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     rows += compgen
     withheld += compgen_withheld
 
+    # cl's `$T` FP pool - the one member of an ordinary section that no source pin
+    # can reach, addressed out of retail's own relocation table. A slot some OTHER
+    # channel already names is left to that channel: two names at one rva withhold
+    # BOTH, so a pool row must never displace the row that is already enrolled. Three
+    # such collisions are real modelling news, not noise - `gruntsteps $T45771` and
+    # `grunt _g_slopeNegHalf$S41549` are the same retail double, spelled as an inline
+    # literal in one of our TUs and as a named static in the other.
+    fp, fp_withheld = fp_pool_rows(exe=exe, symbols=symbols)
+    withheld += fp_withheld
+    spoken_for = {r["rva"]: r["name"] for r in rows}
+    for r in fp:
+        other = spoken_for.get(r["rva"])
+        if other in (None, r["name"]):
+            rows.append(r)
+        else:
+            withheld.append((r["rva"], r["member"],
+                             "the pool slot is already named %s" % other))
+
     # One definition may be stated by several provenances - the symbol_names
     # representative row, the auto-inferred candidate-COFF string/vtable, and
     # the explicit DATA_COMPGEN claim are the SAME datum. Collapse them,
@@ -658,6 +909,10 @@ def candidates(symbols=SYMBOLS, exe=EXE):
         elif (not prev["provenance"].startswith("candidate-COFF")
                 and r["provenance"].startswith("candidate-COFF")):
             prev.update(r)
+        elif r.get("member") and "member" not in prev:
+            # The `$T<rva>` pin and the pool row are one datum; only the pool row
+            # knows cl's member name, and ordinary_sections needs it.
+            prev["member"] = r["member"]
     rows = deduped
 
     # The N owners of a folded COMDAT all claim ONE rva, so collapse each fold to a
@@ -918,9 +1173,12 @@ def ordinary_sections(rows, base_dir):
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
     from coff_oracle import _Coff  # noqa: E402
 
+    # Keyed by the name cl gave the symbol IN THIS OBJECT. For everything but the FP
+    # pool that IS the manifest name; a pool slot is addressed as `$T<rva>` because N
+    # objects may own it, so it carries cl's per-object spelling separately.
     by_obj = defaultdict(dict)
     for r in rows:
-        by_obj[r["object"]][r["name"]] = r
+        by_obj[r["object"]][r.get("member") or r["name"]] = r
 
     secs, placed = [], []
     for obj, named in sorted(by_obj.items()):
