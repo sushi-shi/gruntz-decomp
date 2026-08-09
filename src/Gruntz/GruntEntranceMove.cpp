@@ -136,27 +136,9 @@ DATA(0x001e9a48)
 const double g_wingzScale = 100.0;
 DATA(0x001e9a50)
 const double g_wingzBias = -0.5;
-static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
-static char s_IdleDelay[] = "IdleDelay";
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
-static char s_CombatTimeout[] = "CombatTimeout";
-
-static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
 DATA(0x0020cca8)
 static char s_Spellz[] = "Spellz";
-
-static char s_BOMBGRUNT[] = "BOMBGRUNT";
-
-static const char s_animKeyK[] = "K";
-
-DATA(0x0020e998)
-static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
-static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
-
-static const char s_animKeyS[] = "S";
 
 void CGrunt::ApplyMoveKind(i32 v) {}
 
@@ -262,7 +244,7 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_animKeyK);
+    m_objAux->m_actKey = ActFindId("K");
 
     m_entranceArmed = 1;
     m_entranceCommitted = 0;
@@ -317,7 +299,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
-            base = s_GRUNTZ_ENTRANCEZ;
+            base = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
             found = NULL;
             MapLookup(
@@ -328,7 +310,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
-            base = s_GRUNTZ_ENTRANCEZ;
+            base = "GRUNTZ_ENTRANCEZ";
         } else {
             found = NULL;
             MapLookup(
@@ -339,7 +321,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             if (onScreen) {
                 g->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
             }
-            base = s_GRUNTZ_ENTRANCEZ;
+            base = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = NULL;
@@ -356,7 +338,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             s_GRUNTZ_ENTRANCEZ_RESSURECT,
             found
         );
-        base = s_GRUNTZ_DEATHZ_MELT;
+        base = "GRUNTZ_DEATHZ_MELT";
     }
 
     key = base;
@@ -452,7 +434,7 @@ i32 CGrunt::LoadEntranceConfig() {
             }
             m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
-            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
+            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 5000);
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;
@@ -1000,14 +982,14 @@ finalize:
         }
     }
     m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry(s_GRUNTZ_DEATHZ_FREEZE, 0);
+    m_wwdObject->ApplyLookupGeometry("GRUNTZ_DEATHZ_FREEZE", 0);
     {
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
         CAniRecordView* elem = desc->m_records.GetSize() > 0
                                    ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                    : 0;
         i32 frame = elem->m_param;
-        m_wwdObject->ApplyLookupSprite(s_GRUNTZ_DEATHZ_FREEZE, frame);
+        m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_FREEZE", frame);
     }
     m_freezeUnfrozen = 0;
     m_freezeDelayDone = 1;
@@ -1078,7 +1060,7 @@ i32 CGrunt::FinishEntranceMove() {
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed =
-        DATA_COMPGEN(0x001e9a78, fp_1e9a78, 16.0) / static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_MovingDeathTime, 0x3e8));
+        DATA_COMPGEN(0x001e9a78, fp_1e9a78, 16.0) / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_MovingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
@@ -1244,7 +1226,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SW
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_animKeyS);
+    m_objAux->m_actKey = ActFindId("S");
     return 1;
 }
 
@@ -1411,7 +1393,7 @@ i32 CGrunt::FinishActiveAction() {
                 m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             }
             m_entranceDropActive = 1;
-            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 5000);
+            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 5000);
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;

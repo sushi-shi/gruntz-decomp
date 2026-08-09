@@ -64,7 +64,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char s_GRUNTZ_[] = "GRUNTZ_";
 DATA(0x0020d2e8)
 char s_codeF[] = "F";
 DATA(0x0020d7fc)
@@ -117,8 +116,6 @@ DATA(0x0020df54)
 static char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
 DATA(0x0020df6c)
 static char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
-DATA(0x0020a680)
-static const char s_SingleAnimation[] = "SingleAnimation";
 
 // damage% by [entrance reason][attack kind]; retail .rdata 23x23 matrix
 DATA(0x001e9788)
@@ -174,20 +171,8 @@ GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST)
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
-static char s_IdleDelay[] = "IdleDelay";
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
 DATA(0x0020df84)
 static char s_CombatTimeout[] = "CombatTimeout";
-
-static char s_Spellz[] = "Spellz";
-
-DATA(0x0020df30)
-static const char s_IMPACTMM3[] = "GRUNTZ_NORMALGRUNT_IMPACTMM3";
-static const char s_typeO[] = "O";
-static const char s_gruntSec[] = "Grunt";
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
@@ -379,7 +364,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef(s_Spellz, s_FreezeRadius, 8),
+                g_buteMgr.GetIntDef("Spellz", s_FreezeRadius, 8),
                 CUE_FREEZE,
                 -1
             );
@@ -399,7 +384,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef(s_Spellz, s_HealthRadius, 8),
+                g_buteMgr.GetIntDef("Spellz", s_HealthRadius, 8),
                 CUE_HEAL,
                 -1
             );
@@ -419,7 +404,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_tileMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
+                g_buteMgr.GetIntDef("Spellz", s_RessurectionRadius, 8)
             );
         }
         case SPELLZ_TOYZ: {
@@ -437,7 +422,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef(s_Spellz, s_ToyzRadius, 8),
+                g_buteMgr.GetIntDef("Spellz", s_ToyzRadius, 8),
                 CUE_GIVE_TOY,
                 -1
             );
@@ -457,7 +442,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_tileMgr->CombatCue(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef(s_Spellz, s_TeleportRadius, 8),
+                g_buteMgr.GetIntDef("Spellz", s_TeleportRadius, 8),
                 CUE_TELEPORT,
                 -1
             );
@@ -486,10 +471,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
             AnimWorkerObj* ni = n->m_animWorker;
             ni->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
             n->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -502,10 +487,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->ApplyName("LEVEL_ROLLINGBALL_EAST");
             AnimWorkerObj* ei = e->m_animWorker;
             ei->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
             e->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -518,10 +503,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
             AnimWorkerObj* si = s->m_animWorker;
             si->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
             s->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdGameObjectA* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -534,10 +519,10 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             w->ApplyName("LEVEL_ROLLINGBALL_WEST");
             AnimWorkerObj* wi = w->m_animWorker;
             wi->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
             w->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -575,11 +560,11 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         m_object->m_screenX,
         m_object->m_screenY,
         SORTKEY_ACTOR,
-        s_SingleAnimation,
+        "SingleAnimation",
         0x40003
     );
-    spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
-    spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
+    spr->ApplyName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
+    spr->ApplyLookupGeometry("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
 
     CGruntzMgr* g = g_gameReg;
     i32 y = m_object->m_screenY;
@@ -1255,7 +1240,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
                 LK(s_IMPACTMM4);
             } else {
-                LK(s_IMPACTMM3);
+                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
             }
             goto L_cue;
         }
@@ -1304,7 +1289,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
-                    LK(s_IMPACTMM3);
+                    LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_GOOBER:
@@ -1359,7 +1344,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 if (struckPose == 0) {
                     LK(s_BLOCKBODY2);
                 } else {
-                    LK(s_IMPACTMM3);
+                    LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_TOOB:
@@ -1383,7 +1368,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
                 LK(s_IMPACTWM2);
                 break;
             default:
-                LK(s_IMPACTMM3);
+                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 break;
         }
 
@@ -1426,7 +1411,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             p++;
         } while (--n != 0);
     }
-    if (strcmp(*typeRec, s_typeO) == 0) {
+    if (strcmp(*typeRec, "O") == 0) {
         return 1;
     }
 
@@ -1616,11 +1601,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePx.m_x = newX;
         this->m_lastTilePx.m_y = newY;
         this->m_prevAnimSetNode = this->m_objAux->m_actKey;
-        this->m_objAux->m_actKey = ActFindId(s_typeO);
+        this->m_objAux->m_actKey = ActFindId("O");
         double ddx = static_cast<double>(newX) - this->m_object->m_screenX;
         double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
-        u32 kb = g_buteMgr.GetDwordDef(s_gruntSec, s_knockKey, 200);
+        u32 kb = g_buteMgr.GetDwordDef("Grunt", s_knockKey, 200);
         m_moveSpeed = dist / static_cast<double>(kb);
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
@@ -1674,7 +1659,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     CreateHealthSprite();
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
@@ -1744,7 +1729,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_poweredUp = 1;
     nb->CreateHealthSprite();
     nb->m_combatTimeoutLo =
-        static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+        static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
     nb->m_combatTimeoutHi = 0;
     nb->m_combatClockLo = static_cast<i32>(g_frameTime);
     nb->m_combatClockHi = 0;
@@ -1784,7 +1769,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
                 CreateHealthSprite();
 
                 m_combatTimeoutLo =
-                    static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+                    static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
                 m_combatTimeoutHi = 0;
                 m_combatClockLo = static_cast<i32>(g_frameTime);
                 m_combatClockHi = 0;

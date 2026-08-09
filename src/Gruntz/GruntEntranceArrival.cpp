@@ -56,9 +56,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
 DATA(0x0020dc04)
 char s_codeN[] = "N";
 DATA(0x0020dc08)
@@ -83,15 +80,6 @@ DATA(0x0020e23c)
 static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
 DATA(0x0020e250)
 static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
-static char s_CombatTimeout[] = "CombatTimeout";
-
-static char s_BOMBGRUNT[] = "BOMBGRUNT";
-static char s_RunningTimePerTile[] = "RunningTimePerTile";
-
-static const char s_animKeyA[] = "A";
-
-static const char s_exitKeyB[] = "B";
-static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";
 
 // @early-stop
 RVA(0x000616e0, 0xa8)
@@ -113,7 +101,7 @@ i32 CGrunt::ResetGeometry() {
     m_wwdObject->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_animKeyA);
+    m_objAux->m_actKey = ActFindId("A");
     return 0;
 }
 
@@ -199,7 +187,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
 
     CreateHealthSprite();
 
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
@@ -768,7 +756,7 @@ RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
 
-    bool notIdle = strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_animKeyA) != 0;
+    bool notIdle = strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0;
     i32 applied = 0;
 
     if (notIdle && cycle == 0) {
@@ -777,7 +765,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = g_frameTime;
-        i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
+        i32 d = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_IdleDelay, 0x7530));
         m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
@@ -846,7 +834,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
             {
-                i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
+                i32 d = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_IdleDelay, 0x7530));
                 applied = 1;
                 m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
                 m_idleAnchor = g_frameTime;
@@ -860,7 +848,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
 
 latch:
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_animKeyA);
+    m_objAux->m_actKey = ActFindId("A");
 
     if (!applied && apply == 0) {
         return;
@@ -954,7 +942,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                             break;
                         default:
                             m_defenderRadius =
-                                g_buteMgr.GetIntDef(s_Grunt, s_PlayerDefenderRadius, 3) + 1;
+                                g_buteMgr.GetIntDef("Grunt", s_PlayerDefenderRadius, 3) + 1;
                             break;
                     }
                     m_arrivalCell.m_x = -1;
@@ -1132,7 +1120,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             CreateToySprite();
         }
         m_prevAnimSetNode = m_objAux->m_actKey;
-        m_objAux->m_actKey = ActFindId(s_animKeyA);
+        m_objAux->m_actKey = ActFindId("A");
         LoadGruntTypeTable(m_toolId, 1, 0, 0);
         m_entranceActive = 0;
 
@@ -1280,7 +1268,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_exitKeyB);
+    m_objAux->m_actKey = ActFindId("B");
 
     CAniElement* found;
     i32 r = rand() % 0x1e1;
@@ -1325,7 +1313,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CWapX::Apply(found, 0);
     i32 frame =
         static_cast<CAniRecordView*>(m_wwdObject->m_animCursor.m_animation->AtChecked(0))->m_param;
-    m_wwdObject->ApplyLookupSprite(s_GRUNTZ_EXITZ, frame);
+    m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", frame);
     return 0;
 }
 
@@ -1510,7 +1498,7 @@ reject:
 
 tail:
     CreateHealthSprite();
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
@@ -1730,7 +1718,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId(s_codeM);
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
-        m_timePerTile = g_buteMgr.GetDwordDef(s_BOMBGRUNT, s_RunningTimePerTile, 0x64);
+        m_timePerTile = g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_entranceActive = 1;
         m_bombRunActive = 1;
         SetEntrancePos(1, 1);

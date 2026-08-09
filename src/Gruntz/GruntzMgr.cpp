@@ -103,23 +103,18 @@
 #include <time.h>
 
 // owner-TU unproven: bss sits in the pre-gruntzmgr window (before g_buteMgr)
-DATA(0x0020c674)
-static const char s_rezName[] = "Gruntz.REZ";
-
-DATA(0x0020c66c)
-static const char s_join[] = "%s\\%s";
 
 DATA(0x00211054)
-static const char s_dataPath[] = "%c:\\DATA\\%s";
+static char s_dataPath[] = "%c:\\DATA\\%s";
 
 DATA(0x00211044)
-static const char s_fecName[] = "Gruntz.FEC";
+static char s_fecName[] = "Gruntz.FEC";
 
 DATA(0x00211034)
-static const char s_fecLoName[] = "GruntzLo.FEC";
+static char s_fecLoName[] = "GruntzLo.FEC";
 
 DATA(0x00211024)
-static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
+static char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
 DATA(0x0020c5b8)
 char g_nameFmt[] = "%s";
@@ -1428,9 +1423,9 @@ i32 CGruntzMgr::MakeRezPath() {
 
     i32 found = 1;
 
-    CString rez(s_rezName);
+    CString rez("Gruntz.REZ");
     m_haveRez = false;
-    m_strRezPath.Format(s_join, cwd, static_cast<LPCTSTR>(rez));
+    m_strRezPath.Format("%s\%s", cwd, static_cast<LPCTSTR>(rez));
     if (!FileExists(m_strRezPath)) {
         if (drive) {
             m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
@@ -1452,11 +1447,11 @@ i32 CGruntzMgr::MakeRezPath() {
     CString fec(g_disableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
-    m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecHi));
+    m_strMoviePath.Format("%s\%s", cwd, static_cast<LPCTSTR>(fecHi));
     if (!m_inGameDir && !FileExists(m_strMoviePath)) {
         movFound = 0;
         if (!g_disableHqMovie) {
-            m_strMoviePath.Format(s_join, cwd, static_cast<LPCTSTR>(fecLo));
+            m_strMoviePath.Format("%s\%s", cwd, static_cast<LPCTSTR>(fecLo));
             if (FileExists(m_strMoviePath)) {
                 movFound = 1;
             }
