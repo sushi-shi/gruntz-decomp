@@ -223,20 +223,34 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
     # ---- 3. access width vs the declared field -> wrong type ---------------
     nxt_start = {c.rva: (claims[i + 1].rva if i + 1 < len(claims) else None)
                  for i, c in enumerate(claims)}
+    # a `mov [obj+N],&??_7...` is a vptr STAMP, so +N is a base sub-object
+    # boundary, not an unmodelled member. structs.json carries no vptr at all -
+    # primary or MI-secondary - so this is our blind spot, not a layout bug.
+    vtbl = {c.rva for c in claims if c.name.startswith("??_7")}
+    stamps = {ac.insn_rva for ac in accesses
+              if ac.form in ("imm", "lea") and ac.target_rva in vtbl}
+
+    def is_vptr_stamp(acs):
+        return bool(acs) and all(a.width == 4 and "w" in a.rw
+                                 and a.insn_rva in stamps for a in acs)
     for c in claims:
         if not c.fields or not per[c.rva]:
             continue
-        seen = defaultdict(lambda: [Counter(), Counter(), Counter(), Counter()])
+        seen = defaultdict(lambda: [Counter(), Counter(), Counter(), Counter(),
+                                    Counter()])
+        acc_at = defaultdict(list)
         for ac in per[c.rva]:
             if ac.form not in TOUCH or not ac.width:
                 continue
             off = ac.target_rva - c.rva
+            acc_at[off].append(ac)
             seen[off][0][ac.width] += 1
             if ac.fpu:
                 seen[off][1][ac.fpu] += 1
             seen[off][2][(ac.width, ac.rw)] += 1
             seen[off][3][ac.form] += 1
-        for off, (widths, fpus, rws, forms) in sorted(seen.items()):
+            seen[off][4][(ac.width, ac.ext)] += 1
+        for off, (widths, fpus, rws, forms, exts) in sorted(seen.items()):
             # "does retail STORE fewer bytes than the field" must be asked of
             # the NARROW access itself: a 4-byte store plus a 2-byte read is
             # `(u16)x`, not evidence of a u16 field
@@ -256,9 +270,10 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
             if f is None:
                 st["width-skip-unresolved"] += 1
                 continue
-            if f[0] == "vptr":
-                # structs.json omits the vptr of every polymorphic class, so an
-                # access before the first declared field is OUR blind spot
+            if f[0] == "vptr" or is_vptr_stamp(acc_at[off]):
+                # structs.json omits the vptr of every polymorphic class - the
+                # primary one before the first declared field, and every
+                # MI-secondary one at a base sub-object boundary
                 st["width-skip-vptr"] += 1
                 continue
             if f[0] in ("out", "hole"):
@@ -299,6 +314,16 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
                     st["width-skip-byte-buffer"] += 1
                 elif fsz == 4 and wmax == 8 and not fpus:
                     st["width-skip-dword-pair"] += 1
+                elif exts[(wmax, f"m{fsz}")] == widths[wmax]:
+                    # cl 5.0 loads a narrow global with a FULL-WIDTH read and
+                    # masks the register (movzx was slow on the Pentium), so
+                    # every over-wide access here is a `fsz`-byte one in disguise
+                    st["width-skip-and-mask"] += 1
+                elif not stores(wmax) and stores(fsz):
+                    # the same movzx-avoidance, caught by its STORE side: the
+                    # mask can sit past a branch or behind a register copy, but
+                    # nobody writes a wmax-byte object only fsz bytes at a time
+                    st["width-skip-and-mask"] += 1
                 else:
                     rows.append(("width", "high", c.rva, c.name, c.rva + off,
                                  f"+0x{off:x} {path or '.'} declared {fty} "

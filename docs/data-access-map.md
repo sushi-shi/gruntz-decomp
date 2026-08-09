@@ -170,7 +170,23 @@ produce a wrong verdict, and each is counted in the build summary
   reads at `+0` and 13 at `+4`, never an `fld`, and the `double` is correct.
 * **`width-skip-vptr`** — `structs.json` systematically omits the vptr of a
   polymorphic class, so an access before the first declared field is *our* blind
-  spot, not a layout defect. Holes *between* declared members are still reported.
+  spot, not a layout defect. It omits the **MI-secondary** vptrs too, which do
+  land between declared members: an instruction that writes a `??_7…` address
+  into the object is a vptr *stamp*, at whatever offset. `?g_buteTree@@3VCButeTree@@A`
+  `+0x8` is the canonical case — `mov DWORD PTR ds:0x6bf628,0x5f04dc` looked like
+  an unmodelled pointer member in the hole between `m_errSink` (+4) and
+  `m_teardown` (+12), and is `??_7CButeTree@@6BzPtrColl@@@`, already catalogued in
+  `config/retail/vtables_game.csv`. Holes that are *not* vptr stamps are still
+  reported.
+* **`width-skip-and-mask`** — cl 5.0 loads a narrow global with a **full-width**
+  read and masks the register (`mov edx,DWORD PTR ds:g_idx` … `and edx,0xffff`),
+  because `movzx` was slow on the Pentium. Caught two ways, because the mask can
+  sit past a branch or behind a register copy: positively, by finding the `and`
+  within a short single-block window (recorded as `ext = m2`/`m1`); and by its
+  store side — *nobody writes a 4-byte object only 2 bytes at a time*, so a
+  read-only wide access over a field that is stored at its declared width is the
+  same idiom. `?g_idx_64da80@@3GA` and `?g_sfDeviceId@@3GA` are both `u16` and
+  both correct; each takes four such reads inside `SFManager_SelectBestDevice`.
 * **`width-skip-unresolved`** — the declared type could not be sized. Accusing
   through a type we cannot read would be a fabricated finding.
 * **`width-skip-negative-addend`** — an `indexed` access whose reloc target sits
@@ -201,6 +217,14 @@ flags a large fraction of byte-exact, fully-typed claims is measuring its own
 bugs. Two such bugs were found exactly this way (the narrow-read/store confusion
 above, and an array-flattening cap that made every offset past 2048 look
 unmodelled).
+
+The control set is a bound on noise and **nothing more** — it cannot see a
+false-positive class that only fires outside it. All three `width` findings the
+sieve shipped with were false positives, and none of them was in the control set:
+the two `u16` globals score 96.00 and `?g_buteTree@@3VCButeTree@@A` is untyped
+storage. They were caught by reading the retail instruction stream around each
+site, which is what adjudicating a finding actually costs. **`width` is 0 today,
+and a zero here is a claim to re-verify, not a result to trust.**
 
 `--selftest` plants known defects into the in-memory claim set — `src/` is never
 touched — and requires the sieve to report each. **A sieve that returns 0 rows

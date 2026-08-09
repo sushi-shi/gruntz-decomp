@@ -261,6 +261,34 @@ def _fpu_tag(mnem, width):
     return {4: "f32", 8: "f64", 10: "f80"}.get(width, "f?")
 
 
+_ANDMASK = {"0xffff": 2, "0xff": 1}
+
+
+def _and_mask(dec, k, reg, window=6):
+    """`mov r32,[mem]` + `and r32,0xffff` is MSVC5's movzx-avoidance.
+
+    cl 5.0 loads a narrow global with a FULL-WIDTH read and masks the register
+    (movzx was slow on the Pentium), so the 4-byte access is a 2-byte one in
+    disguise. Return the masked width, or 0 if the register is not masked
+    before it is redefined / the block ends. Ambiguous by construction - a real
+    `u32 & 0xffff` looks the same - so callers must SUPPRESS on it, never
+    rewrite the recorded width."""
+    for j in range(k + 1, min(k + 1 + window, len(dec.starts))):
+        rva, asm = dec.starts[j], dec.lines[j]
+        if rva in dec.targets:
+            break
+        mnem, ops = split_operands(asm)
+        if _XFER.match(mnem):
+            break
+        if len(ops) == 2 and ops[0] == reg:
+            if mnem == "and":
+                return _ANDMASK.get(ops[1], 0)
+            return 0                         # redefined without a mask
+        if reg in _CLOBBER.get(mnem, ""):
+            break
+    return 0
+
+
 def classify(site, stored, dec, k, iat):
     """Decode the instruction at index `k` into an Access for reloc `site`."""
     target = stored - IMAGEBASE
@@ -301,6 +329,11 @@ def classify(site, stored, dec, k, iat):
     ac.rw = _direction(mnem, opidx, ops)
     if mnem in ("movzx", "movsx"):
         ac.ext = "u" if mnem == "movzx" else "i"
+    elif mnem == "mov" and opidx == 1 and ac.rw == "r" and width == 4 \
+            and k is not None and _REGWIDTH.get(ops[0]) == 4:
+        m = _and_mask(dec, k, ops[0])
+        if m:
+            ac.ext = f"m{m}"                 # movzx-avoidance: a narrow load
     if mnem in _FPU_LOAD or mnem in _FPU_STORE:
         ac.fpu = _fpu_tag(mnem, width)
     return ac
