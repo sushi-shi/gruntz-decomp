@@ -990,15 +990,15 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 }
 
 // @early-stop
-// Block LAYOUT, and it is one decision: cl hoists the forward-goto target, so the
-// nudge block lands immediately after the SearchEdge test and pathGate is pushed
-// past it, where retail runs dropHead (0x4b4d9) -> pathGate (0x4b4ff) -> ... ->
-// nudge (0x4bxxx) in source order. Retail's back edges into pathGate are the same
-// ones we have (0x4bac9, 0x4bdde, 0x4be00), so the goto graph is not the
-// difference. Spelling the branch `!= 0 / goto dropHead` recovers dropHead's two
-// blocks exactly; pathGate's placement needs the whole chain inside the if, which
-// the `CPtrList probe(10)` scopes make a goto-into-block problem.
-// See docs/patterns/forward-goto-hoists-target-block.md.
+// Residue is a CROSS-JUMP, observed: cl merges the `if (CoordCount()) pop head`
+// at dropHead with the byte-identical one at reProbe, so dropHead ends `jcc/jmp`
+// into the reProbe copy and the whole pathGate chain is dragged behind the nudge
+// region. Retail keeps both copies because it scheduled them differently
+// (0x4b4e3 `mov edx,ds:0x645544; sub eax,ecx` vs 0x4bde4 `sub eax,ecx;
+// mov ecx,ds:0x645544`) - different encoded bytes, so its cross-jumper declined.
+// Same source at both sites here, so a re-spelling cannot separate them; it needs
+// a different SHAPE. Branch/block topology is otherwise reconstructed: 177/173
+// blocks, 131/130 branches, 1/1 ret.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -1053,113 +1053,110 @@ i32 CGrunt::StepArrivalDrop(
     if (g_gameReg->m_tileGrid
             ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
         != 0) {
-        goto dropHead;
-    }
-    goto nudgeTarget;
-dropHead:
-    if (CoordCount() != 0) {
-        pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
-        pooled->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = pooled;
-    }
-pathGate:
-    reinit = 1;
-    cnt = CoordCount();
-    if (cnt == 0) {
-        goto commitEntrance;
-    }
-    tail = CoordHead()->m_coord;
-    headFlags = (static_cast<u32>(tail->m_x) >= g_gameReg->m_tileGrid->m_width
-                 || static_cast<u32>(tail->m_y) >= g_gameReg->m_tileGrid->m_height)
-                    ? 1
-                    : g_gameReg->m_tileGrid->m_rowInts[tail->m_y][tail->m_x * 7];
-    lastFlags = (static_cast<u32>(lastX) >= g_gameReg->m_tileGrid->m_width
-                 || static_cast<u32>(lastY) >= g_gameReg->m_tileGrid->m_height)
-                    ? 1
-                    : g_gameReg->m_tileGrid->m_rowInts[lastY][lastX * 7];
-    if ((lastFlags & 0x80) != 0) {
-        goto commitEntrance;
-    }
-    if ((headFlags & 0x20000000) == 0) {
-        hit = headFlags & maskA;
-        if ((hit & 0x20000000) == 0) {
-            if (hit == 0) {
-                goto commitEntrance;
-            }
-            if ((maskC & headFlags) != 0) {
-                goto commitEntrance;
+        if (CoordCount() != 0) {
+            pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
+            pooled->m_next = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = pooled;
+        }
+    pathGate:
+        reinit = 1;
+        cnt = CoordCount();
+        if (cnt == 0) {
+            goto commitEntrance;
+        }
+        tail = CoordHead()->m_coord;
+        headFlags = (static_cast<u32>(tail->m_x) >= g_gameReg->m_tileGrid->m_width
+                     || static_cast<u32>(tail->m_y) >= g_gameReg->m_tileGrid->m_height)
+                        ? 1
+                        : g_gameReg->m_tileGrid->m_rowInts[tail->m_y][tail->m_x * 7];
+        lastFlags = (static_cast<u32>(lastX) >= g_gameReg->m_tileGrid->m_width
+                     || static_cast<u32>(lastY) >= g_gameReg->m_tileGrid->m_height)
+                        ? 1
+                        : g_gameReg->m_tileGrid->m_rowInts[lastY][lastX * 7];
+        if ((lastFlags & 0x80) != 0) {
+            goto commitEntrance;
+        }
+        if ((headFlags & 0x20000000) == 0) {
+            hit = headFlags & maskA;
+            if ((hit & 0x20000000) == 0) {
+                if (hit == 0) {
+                    goto commitEntrance;
+                }
+                if ((maskC & headFlags) != 0) {
+                    goto commitEntrance;
+                }
             }
         }
-    }
-    if (cnt == 1 && m_arrivalPending == 0) {
+        if (cnt == 1 && m_arrivalPending == 0) {
 
-        SetEntrancePos(1, 1);
-        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
-            PlayMoveSoundAtTile(tileX, tileY);
+            SetEntrancePos(1, 1);
+            if (m_object->m_screenX == m_lastTilePx.m_x
+                && m_object->m_screenY == m_lastTilePx.m_y) {
+                PlayMoveSoundAtTile(tileX, tileY);
+            }
+            return 0;
         }
-        return 0;
-    }
-    if (m_arrivalState == AI_BATTLEZ_PATH) {
-        reinit = 0;
-        goto commitEntrance;
-    }
-    {
+        if (m_arrivalState == AI_BATTLEZ_PATH) {
+            reinit = 0;
+            goto commitEntrance;
+        }
+        {
 
-        CPtrList probe(10);
-        if (g_gameReg->m_tileGrid->SearchEdge(
-                lastX,
-                lastY,
-                tileX,
-                tileY,
-                &probe,
-                clearFlag,
-                maskA | 0x20000000,
-                maskC
-            ) != 0
-            && probe.GetCount() != 0) {
-            if (probe.GetCount() > cnt + 3) {
-                pos = probe.GetHeadPosition();
-                while (pos != NULL) {
-                    pooled = g_coordPool.NodeOf(probe.GetNext(pos));
+            CPtrList probe(10);
+            if (g_gameReg->m_tileGrid->SearchEdge(
+                    lastX,
+                    lastY,
+                    tileX,
+                    tileY,
+                    &probe,
+                    clearFlag,
+                    maskA | 0x20000000,
+                    maskC
+                ) != 0
+                && probe.GetCount() != 0) {
+                if (probe.GetCount() > cnt + 3) {
+                    pos = probe.GetHeadPosition();
+                    while (pos != NULL) {
+                        pooled = g_coordPool.NodeOf(probe.GetNext(pos));
+                        pooled->m_next = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = pooled;
+                    }
+                } else {
+                    pooled = g_coordPool.NodeOf(probe.RemoveHead());
                     pooled->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = pooled;
-                }
-            } else {
-                pooled = g_coordPool.NodeOf(probe.RemoveHead());
-                pooled->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = pooled;
-                if (CoordCount() != 0) {
-                    n = CoordHead();
-                    while (n != NULL) {
-                        cur = n;
-                        n = n->m_next;
-                        if (cur->m_coord != NULL) {
-                            pooled = g_coordPool.NodeOf(cur->m_coord);
-                            pooled->m_next = g_coordPool.m_freeHead;
-                            g_coordPool.m_freeHead = pooled;
+                    if (CoordCount() != 0) {
+                        n = CoordHead();
+                        while (n != NULL) {
+                            cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != NULL) {
+                                pooled = g_coordPool.NodeOf(cur->m_coord);
+                                pooled->m_next = g_coordPool.m_freeHead;
+                                g_coordPool.m_freeHead = pooled;
+                            }
                         }
+                        m_coordList.RemoveAll();
                     }
-                    m_coordList.RemoveAll();
+                    pos = probe.GetHeadPosition();
+                    while (pos != NULL) {
+                        m_coordList.AddTail(probe.GetNext(pos));
+                    }
                 }
-                pos = probe.GetHeadPosition();
-                while (pos != NULL) {
-                    m_coordList.AddTail(probe.GetNext(pos));
-                }
+                probe.RemoveAll();
             }
-            probe.RemoveAll();
         }
+    commitEntrance:
+        m_entrancePx.m_x = pxX;
+        m_entrancePx.m_y = pxY;
+        if (reinit != 0) {
+            StepEntranceReinit();
+        }
+    commitPhase:
+        m_arrivalPhase = arrivalPhase;
+        return 1;
     }
-commitEntrance:
-    m_entrancePx.m_x = pxX;
-    m_entrancePx.m_y = pxY;
-    if (reinit != 0) {
-        StepEntranceReinit();
-    }
-commitPhase:
-    m_arrivalPhase = arrivalPhase;
-    return 1;
 
-nudgeTarget:
     nudged = 0;
 
     if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != IDX(TILEKIND_GIANT_ROCK)) {
@@ -1272,38 +1269,74 @@ nudgeDone:
         step = ((tileY - lastY) << 16) / abs(tileX - lastX);
         acc = lastY << 16;
         sx = lastX;
-        while (blocked == 0) {
-            sy = acc >> 16;
-            err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                   || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
-                      ? 1
-                      : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
-            if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
-                blocked = 1;
-            } else {
-                walkX = sx;
-                walkY = sy;
+        if (tileX - lastX > 0) {
+            while (blocked == 0) {
+                sy = acc >> 16;
+                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                          ? 1
+                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                    blocked = 1;
+                } else {
+                    walkX = sx;
+                    walkY = sy;
+                }
                 acc += step;
-                sx += (tileX > lastX) ? 1 : -1;
+                sx++;
+            }
+        } else {
+            while (blocked == 0) {
+                sy = acc >> 16;
+                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                          ? 1
+                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                    blocked = 1;
+                } else {
+                    walkX = sx;
+                    walkY = sy;
+                }
+                acc += step;
+                sx--;
             }
         }
     } else {
         step = ((tileX - lastX) << 16) / abs(tileY - lastY);
         acc = lastX << 16;
         sy = lastY;
-        while (blocked == 0) {
-            sx = acc >> 16;
-            err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                   || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
-                      ? 1
-                      : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
-            if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
-                blocked = 1;
-            } else {
-                walkX = sx;
-                walkY = sy;
+        if (tileY - lastY > 0) {
+            while (blocked == 0) {
+                sx = acc >> 16;
+                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                          ? 1
+                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                    blocked = 1;
+                } else {
+                    walkY = sy;
+                    walkX = sx;
+                }
                 acc += step;
-                sy += (tileY > lastY) ? 1 : -1;
+                sy++;
+            }
+        } else {
+            while (blocked == 0) {
+                sx = acc >> 16;
+                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
+                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                          ? 1
+                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
+                    blocked = 1;
+                } else {
+                    walkY = sy;
+                    walkX = sx;
+                }
+                acc += step;
+                sy--;
             }
         }
     }
