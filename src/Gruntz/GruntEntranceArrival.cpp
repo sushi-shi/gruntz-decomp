@@ -787,9 +787,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                             m_object->m_screenY
                         )) {
 
-                        AddrWord<CGrunt> src;
-                        src.m_addr = this;
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
+                        g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 4, -1, -1, -1);
                     }
                 } else if (focused || m_entranceReason != PICKUP_NONE) {
                     switch (idx) {
@@ -800,9 +798,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                                     m_object->m_screenY
                                 )) {
 
-                                AddrWord<CGrunt> src;
-                                src.m_addr = this;
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
+                                g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 5, -1, -1, -1);
                             }
                             break;
                         case GRUNT_IDLE_VARIANT_SECONDARY:
@@ -812,9 +808,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                                     m_object->m_screenY
                                 )) {
 
-                                AddrWord<CGrunt> src;
-                                src.m_addr = this;
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
+                                g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 6, -1, -1, -1);
                             }
                             break;
                         default:

@@ -2037,7 +2037,7 @@ gruntentrancearrival	?RearmAttackAnim2@CGrunt@@QAEHXZ	95.7843	95.7843	10	ebaa5a6
 gruntentrancearrival	?RearmAttackAnim@CGrunt@@QAEHHH@Z	88.7423	88.7423	18	4ad5b0fc7a82	0x61940	88.7423
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	90.8515	90.8515	3	6ba6a28b5afc	0x62b70	90.9505
-gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	82.9305	82.9305	27	c696bea34b47	0x62e10	82.9305
+gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	82.9305	82.9305	28	ab8df94f7f61	0x62e10	82.9305
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	95.7000	95.7000	9	4a9245f6ffe1	0x616e0	95.7000
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	5	1dcf7ce2cf54	0x633e0	90.5392
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	82.4431	82.4431	25	5f5428cd488a	0x65630	82.4431
