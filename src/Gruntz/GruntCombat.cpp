@@ -1754,39 +1754,38 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 }
 
 // @early-stop
+// Residue is two register choices in the inlined strcmp: retail lands its result
+// in eax and the bool in cl (`test eax,eax / sete cl`), ours in ecx and al and so
+// needs an extra `xor eax,eax` before the sete; and the GetNameRecord loop's
+// ebx/ebp are swapped.  Branch sequence and block topology are identical.
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 a, i32 b) {
-    if (m_entranceCommitted == 0) {
-        goto fail;
-    }
-    {
+    if (m_entranceCommitted != 0) {
 
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
         bool eq = (strcmp(*rec, s_codeF) == 0);
-        if (eq) {
-            goto fail;
+        if (!eq) {
+            if (m_stamina >= STAMINA_FULL) {
+
+                PlayMoveSound(a, b);
+                m_poweredUp = 1;
+                m_combatActive = 1;
+                CreateHealthSprite();
+
+                m_combatTimeoutLo =
+                    static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
+                m_combatTimeoutHi = 0;
+                m_combatClockLo = static_cast<i32>(g_frameTime);
+                m_combatClockHi = 0;
+                m_neighborScanEnabled = 1;
+                m_attackTargetPx.m_x = a;
+                m_attackTargetPx.m_y = b;
+                RearmAttackAnim2();
+                return 1;
+            }
         }
     }
-    if (m_stamina < STAMINA_FULL) {
-        goto fail;
-    }
-
-    PlayMoveSound(a, b);
-    m_poweredUp = 1;
-    m_combatActive = 1;
-    CreateHealthSprite();
-
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388));
-    m_combatTimeoutHi = 0;
-    m_combatClockLo = static_cast<i32>(g_frameTime);
-    m_combatClockHi = 0;
-    m_neighborScanEnabled = 1;
-    m_attackTargetPx.m_x = a;
-    m_attackTargetPx.m_y = b;
-    RearmAttackAnim2();
-    return 1;
-fail:
     return 0;
 }
 
