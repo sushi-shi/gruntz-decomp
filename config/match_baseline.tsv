@@ -1472,10 +1472,10 @@ directinputmgr2	?PollAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	6	5164658bb5a
 directinputmgr2	?PollArrayA@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	9	4924e4154044	0x1330d0	100.0000
 directinputmgr2	?PollArrayB@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	9	7da8050c5ab6	0x133160	100.0000
 directinputmgr2	?ReadAll@DirectInputMgr2@@QAEHXZ	100.0000	100.0000	6	4148bfc54822	0x133110	100.0000
-directinputmgr2	?ReleaseDevices@CDeviceConfigB@@UAEXXZ	100.0000	100.0000	2	bce5ee5867f8	0x134360	100.0000
-directinputmgr2	?ReleaseDevices@CDeviceConfigC@@UAEXXZ	100.0000	100.0000	2	07071cf421b0	0x1346d0	100.0000
+directinputmgr2	?ReleaseDevices@CDeviceConfigB@@UAEXXZ	100.0000	100.0000	3	e070202cf533	0x134360	100.0000
+directinputmgr2	?ReleaseDevices@CDeviceConfigC@@UAEXXZ	100.0000	100.0000	3	66faee6eae92	0x1346d0	100.0000
 directinputmgr2	?ReleaseDevices@CInputDevBase@@UAEXXZ	100.0000	100.0000	1	77abd8c3e5e8	0x1342b0	100.0000
-directinputmgr2	?ReleaseDevices@CInputDevice@@UAEXXZ	100.0000	100.0000	3	8b3f443c7319	0x133bf0	100.0000
+directinputmgr2	?ReleaseDevices@CInputDevice@@UAEXXZ	100.0000	100.0000	4	5d4985ab5ae3	0x133bf0	100.0000
 directinputmgr2	?ResetState@CInputDevBase@@UAEHXZ	100.0000	100.0000	2	3ade90ea519a	0x1332c0	100.0000
 directinputmgr2	?SetDInputReportModes@@YAXHHHH@Z	100.0000	100.0000	2	be14ee454481	0x133560	100.0000
 directinputmgr2	?SetupAxes@CDeviceConfigC@@QAEHXZ	100.0000	100.0000	3	2943c40ef7df	0x134710	100.0000
@@ -2201,7 +2201,7 @@ gruntwingztimesprite	??_GCGruntWingzTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cp
 gruntwingztimesprite	?GetDisplayedValue@CGruntWingzTimeSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	1	2bb984053934	0x7fd90	100.0000
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	7	b346beed7561	0x80850	100.0000
 gruntzapp	??1CGameApp@@UAE@XZ	100.0000	100.0000	1	cpp:675770d2be69	0x80cf0	100.0000
-gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	10	1180ede8def1	0x808b0	100.0000
+gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	11	18ed19ab9baf	0x808b0	100.0000
 gruntzapp	??_GCGameApp@@UAEPAXI@Z	100.0000	100.0000	1	cpp:675770d2be69	0x80dd0	100.0000
 gruntzapp	??_GCGruntzApp@@UAEPAXI@Z	100.0000	100.0000	1	cpp:931bcd45f8a1	0x80880	100.0000
 gruntzapp	?CloseResources@CGruntzApp@@UAEXXZ	100.0000	100.0000	1	c79861f54495	0x80980	100.0000
@@ -2266,7 +2266,7 @@ gruntzmgr	??0CFecFile@@QAE@XZ	100.0000	100.0000	1	84211b7f9c84	0x8fea0	100.0000
 gruntzmgr	??0CGruntzMgr@@QAE@XZ	100.0000	100.0000	12	a08a6698fa3f	0x83030	100.0000
 gruntzmgr	??0CPlay@@QAE@XZ	94.1037	94.1037	1	cpp:63ebd6ae8453	0x8c9d0	94.1037
 gruntzmgr	??0CState@@QAE@XZ	100.0000	100.0000	1	cpp:63ebd6ae8453	0x8c750	100.0000
-gruntzmgr	??1CDemo@@UAE@XZ	100.0000	100.0000	4	a7d83fc5c54c	0x8d0d0	100.0000
+gruntzmgr	??1CDemo@@UAE@XZ	100.0000	100.0000	5	79f65ca15f7d	0x8d0d0	100.0000
 gruntzmgr	??1CGameMgr@@UAE@XZ	100.0000	100.0000	1	cpp:0328976f29e5	0x85540	100.0000
 gruntzmgr	??1CGruntzMgr@@UAE@XZ	100.0000	100.0000	5	6fe018a5c052	0x83360	100.0000
 gruntzmgr	??1CPlay@@UAE@XZ	100.0000	100.0000	3	6ba3594e0628	0x8c830	100.0000
@@ -2514,7 +2514,7 @@ heapdiag	?HeapStats@@YAHXZ	100.0000	100.0000	9	237f51b4e446	0x118bf0	100.0000
 heapdiag	?ReportHeapStatus@@YAXH@Z	100.0000	100.0000	1	48ed71963746	0x118b50	100.0000
 heapdiag	?SetActiveAndFocus@@YAXPAX@Z	100.0000	100.0000	1	8e5154eb9db2	0x118930	100.0000
 heapdiag	?SetTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	f6ead0a5db84	0x118960	100.0000
-helpstate	??1CHelpState@@UAE@XZ	100.0000	100.0000	5	14f8a6aff056	0x8cf30	100.0000
+helpstate	??1CHelpState@@UAE@XZ	100.0000	100.0000	6	b63e248c85f6	0x8cf30	100.0000
 helpstate	??1CSplashState@@UAE@XZ	100.0000	100.0000	3	922ae3985212	0x8d000	100.0000
 helpstate	?EnterState@CHelpState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	7e1d1aeae461	0x95140	100.0000
 helpstate	?InputVirtual@CHelpState@@UAEHXZ	100.0000	100.0000	9	30205b90f607	0x95320	100.0000
