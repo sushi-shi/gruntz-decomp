@@ -2944,7 +2944,7 @@ menusparkle	??_GCMenuSparkle@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fdc4195b90b6	0x1
 menusparkle	?AdvanceAnim@CMenuSparkle@@QAEHXZ	95.0000	95.0000	9	7febde843aeb	0xae2a0	95.0000
 menusparkle	?FireActivation@CMenuSparkle@@UAEXH@Z	100.0000	100.0000	4	ac6169424d27	0xade60	100.0000
 menusparkle	?RegisterMenuSparkleActions@@YAXXZ	100.0000	100.0000	2	dd8848f47910	0xadfc0	100.0000
-menusparkle	?SerializeMove@CMenuSparkle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	8ac21ac96a41	0xae1c0	100.0000
+menusparkle	?SerializeMove@CMenuSparkle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	b0e9675486a8	0xae1c0	100.0000
 menustate	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	340ab9091e63	0x8ce60	100.0000
 menustate	?BuildVersionString@CMenuState@@QAEXUtagRECT@@@Z	100.0000	100.0000	2	e456f2692e7d	0xa0d80	100.0000
 menustate	?EnterState@CMenuState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	b22d0675a647	0xa03f0	100.0000

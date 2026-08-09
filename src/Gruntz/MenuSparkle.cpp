@@ -72,8 +72,12 @@ i32 CMenuSparkle::SerializeMove(
         if (mode != SERIAL_LOAD) {
             return 1;
         }
-        arc->Read(&g_menuSparkleLo, sizeof(g_menuSparkleLo));
-        arc->Read(&g_menuSparkleHi, sizeof(g_menuSparkleHi));
+        // Retail's SERIAL_LOAD arm reads INTO storage it placed in read-only
+        // `.rdata` (0x5ea3d4/0x5ea3d8, pushed verbatim at 0xae222/0xae230), so
+        // the cast is retail's own: the section characteristics prove the const,
+        // and this arm would fault if it ever ran.
+        arc->Read(const_cast<i32*>(&g_menuSparkleLo), sizeof(g_menuSparkleLo));
+        arc->Read(const_cast<i32*>(&g_menuSparkleHi), sizeof(g_menuSparkleHi));
         return 1;
     }
     arc->Write(&g_menuSparkleLo, sizeof(g_menuSparkleLo));
@@ -103,7 +107,7 @@ i32 CMenuSparkle::AdvanceAnim() {
     return 0;
 }
 DATA(0x001ea3d4)
-i32 g_menuSparkleLo = 1000;
+const i32 g_menuSparkleLo = 1000;
 
 DATA(0x001ea3d8)
-i32 g_menuSparkleHi = 5000;
+const i32 g_menuSparkleHi = 5000;
