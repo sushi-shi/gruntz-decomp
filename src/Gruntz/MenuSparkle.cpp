@@ -106,6 +106,8 @@ i32 CMenuSparkle::AdvanceAnim() {
     }
     return 0;
 }
+// Const (retail .rdata): AdvanceAnim's rand() % 0xfa1 + 0x3e8 is the folded
+// hi-lo+1 / lo pair, which only a known const value produces.
 DATA(0x001ea3d4)
 const i32 g_menuSparkleLo = 1000;
 
