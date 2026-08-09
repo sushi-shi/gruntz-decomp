@@ -6,6 +6,8 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
+#include <stddef.h>
+
 VTBL_ABSENT(CWapObj);
 class CDDrawSurfaceMgr;
 
@@ -20,6 +22,15 @@ public:
     i32 m_id;
     i32 m_flags;
     class CDDrawSurfaceMgr* m_ownerCtx;
+
+    // 0xd5d70: CImage's base-subobject destructor. Retail's ??1CImage EH funclet
+    // CALLS it, and CImage's RTTI base array is CImage -> CWapObj -> CObject, so
+    // the three-field reset belongs to CWapObj, not to a class between them.
+    virtual ~CWapObj() OVERRIDE {
+        m_id = -1;
+        m_flags = 0;
+        m_ownerCtx = NULL;
+    }
 
     CWapObj() {}
 

@@ -50,7 +50,7 @@ i32 CState::DrawScreenTextImage(const char* name) {
 // @identity-TODO IsReady@CWapObj - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (20 fns) came from the static library. It belongs to another compiland.
-RVA_COMPGEN(0x000d5d70, 0x16, ??1CLoadable@@UAE@XZ)
+RVA_COMPGEN(0x000d5d70, 0x16, ??1CWapObj@@UAE@XZ)
 
 RVA(0x000d5da0, 0x6)
 i32 CWapObj::IsReady() {

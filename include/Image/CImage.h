@@ -88,9 +88,6 @@ SIZE(0x34);
 
 inline CImage::~CImage() {
     FreeAll();
-    m_id = -1;
-    m_flags = 0;
-    m_ownerCtx = NULL;
 }
 
 struct _DDBLTFX;

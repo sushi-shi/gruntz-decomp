@@ -79,11 +79,8 @@ public:
         return m_ownerCtx;
     }
 
-    virtual ~CLoadable() OVERRIDE {
-        m_id = -1;
-        m_flags = 0;
-        m_ownerCtx = NULL;
-    }
+    // No destructor here: the three-field reset is CWapObj's (retail 0xd5d70),
+    // reached through the inherited ??1CWapObj@@UAE@XZ.
 };
 SIZE(0x10);
 

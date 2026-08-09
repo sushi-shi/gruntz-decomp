@@ -75,7 +75,7 @@ chatboxowner	12	10
 cheatmgr	7	4
 checkpointdlg	6	5
 cimage	20	11
-cimagecomdats	8	8
+cimagecomdats	9	9
 cmdscrollapply	3	2
 creditsstate	20	18
 creditzassets	1	1
@@ -837,6 +837,7 @@ cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.053
 cimage	?Resolve@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	8	d3b912869d36	0x152f20	100.0000
 cimage	?SetOrigin@CImage@@QAEHPAUPidHeader@@W4FileImageFormat@@@Z	100.0000	100.0000	1	7c87be00e77d	0x153330	100.0000
 cimagecomdats	??1CImage@@UAE@XZ	100.0000	100.0000	1	cpp:dc8b74b6201e	0xd5e80	100.0000
+cimagecomdats	??1CWapObj@@UAE@XZ	100.0000	100.0000	1	cpp:f72627b5cf54	0xd5d70	100.0000
 cimagecomdats	??_GCImage@@UAEPAXI@Z	100.0000	100.0000	1	cpp:dc8b74b6201e	0xd5e50	100.0000
 cimagecomdats	?DrawScreenTextImage@CState@@QAEHPBD@Z	100.0000	100.0000	1	aca2b8e78b83	0xd5c10	100.0000
 cimagecomdats	?FlipBoth@CImage@@UAEXPAX@Z	100.0000	100.0000	1	c59c57547a67	0xd5e20	100.0000
