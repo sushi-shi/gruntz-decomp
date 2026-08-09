@@ -672,13 +672,25 @@ agree on relocations too and the calibration set is real. `--selftest` (which
 `--gate` runs on every invocation, ~0.4 s) injects a redirected slot, a moved
 addend and a deleted relocation record and requires WRONG, WRONG, MISSING back.
 
-**Result and coverage, stated rather than hidden.** 5870 words checked against the
-retail image, 2933 against the delinked object, **zero defects**. Not covered:
-4343 words in data that is neither pinned nor paired, 1078 whose referent resolves
-to no RVA (mostly NAFXCW bodies with no FID label, and `??_R4` COL records), and
-4412 words inside the 2661 data symbols only one side defines (`--unpaired`) —
-mostly `$anon_data_<hash>` content-addressed private data whose two sides hash
-differently, plus 28 `??_7`/`??_R` records our objects emit that retail's delinked
+**Result and coverage, stated rather than hidden** (`--coverage`). 5870 words
+checked against the retail image, 2933 against the delinked object, **zero
+defects** — **8803 of the 10012 relocated words in `.rdata`/`.data`, 87.9%**. The
+1209 not reached are 1078 whose referent resolves to no RVA (mostly NAFXCW bodies
+with no FID label, and `??_R4` COL records) and 131 in a datum that is neither
+pinned nor paired.
+
+A further **4212 words are out of scope and reported separately**: `.xdata$x` (the
+/GX EH state tables, 3509 DIR32s naming `$L` funclet labels) and `.CRT$XC*` (703,
+the static-initializer pointer arrays). Both are compiler-generated metadata that
+neither side pins and the delinker never carves; folding them into the denominator
+would understate real `.rdata`/`.data` coverage by a third. The largest single
+"unpaired data symbol" in the tree is one of them — `grunt`'s 0x388-byte
+`.xdata$x` table with 113 relocations.
+
+`--unpaired` lists the 4412 words inside the 2661 data symbols only one side
+defines: mostly `$anon_data_<hash>` content-addressed private data whose two sides
+hash differently (the hash covers recorded relocations the delinker does not
+reproduce), plus 28 `??_7`/`??_R` records our objects emit that retail's delinked
 side does not.
 
 **The gate also fails on an orphan payload** — an enrolled datum carved into an

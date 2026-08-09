@@ -69,6 +69,15 @@ them structurally rather than by a name heuristic.
 
 WHAT IS NOT COVERED, STATED RATHER THAN HIDDEN
 ----------------------------------------------
+`--coverage`. Of the 10012 relocated words in `.rdata`/`.data`, 8803 are compared
+(87.9%): 1078 have a referent that resolves to no RVA (mostly NAFXCW bodies with
+no FID label, and `??_R4` COL records) and 131 sit in a datum that is neither
+pinned nor paired. A further 4212 words live in `.xdata$x` (the /GX EH state
+tables, whose DIR32s name `$L` funclet labels) and `.CRT$XC*` (static-initializer
+pointer arrays) -- compiler-generated metadata neither side pins and the delinker
+never carves, outside a referent audit's scope and reported separately rather than
+folded into the denominator.
+
 A datum only ONE side defines is an attribution gap, not a reloc defect, and
 `--unpaired` is its own report. `deflate`'s `_configuration_table` -- 10 DIR32s
 into `_deflate_*` -- exists only in our object because retail's copy was never
@@ -418,7 +427,16 @@ def scan(unit_filter=None, norm=None):
             # ---- oracle 2: the delinked object, resolved to addresses ---------
             t = tdata.get(nm)
             if t is None:
-                dropped["datum neither pinned nor paired"] += len(b.rel)
+                # `.xdata$x` (the /GX EH state tables, whose DIR32s name `$L`
+                # funclet labels) and `.CRT$XC*` (the static-initializer pointer
+                # arrays) are compiler-generated metadata that neither side pins
+                # and the delinker never carves. They are 4212 of the 14224 words
+                # in base data sections and are outside a referent audit's scope;
+                # counting them as "uncompared" would understate the real coverage
+                # of `.rdata`/`.data` by a third.
+                if b.rel:
+                    kind = b.section.split("$")[0]
+                    dropped[f"{kind}: datum neither pinned nor paired"] += len(b.rel)
                 continue
             stats["data symbols paired"] += 1
             for off in sorted(set(b.rel) | set(t.rel)):
@@ -628,7 +646,21 @@ def main(argv=None) -> int:
           f"({len(new_orphans)} new) -- --orphans")
 
     if args.coverage:
-        print(f"\nunpaired data symbols: {len(unpaired)} "
+        # `.xdata$x` (/GX EH state tables) and `.CRT$XC*` (static-init pointer
+        # arrays) are compiler-generated metadata neither side pins and the
+        # delinker never carves. Reporting them inside the denominator understates
+        # the real `.rdata`/`.data` coverage by a third, so they are their own row.
+        meta = sum(v for k, v in dropped.items()
+                   if k.startswith((".xdata", ".CRT")))
+        done = stats["words compared (retail)"] + stats["words compared (paired)"]
+        rest = sum(v for k, v in dropped.items()
+                   if not k.startswith((".xdata", ".CRT"))
+                   and "delinked side" not in k)
+        print(f"\ngame data words (.rdata/.data/.bss): {done + rest}   "
+              f"compared {done} ({100.0 * done / max(done + rest, 1):.1f}%)")
+        print(f"compiler-generated metadata out of scope (.xdata EH state tables, "
+              f".CRT initializer arrays): {meta} words")
+        print(f"unpaired data symbols: {len(unpaired)} "
               f"({sum(1 for r in unpaired if r[3])} carrying relocations, "
               f"{sum(r[3] for r in unpaired)} words)")
         print(f"spelling-only disagreements neither side resolves: {len(unresolved)}")
