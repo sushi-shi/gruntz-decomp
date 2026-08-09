@@ -619,6 +619,97 @@ What does NOT port: homm2's NB09/`sstModule`-sourced ordering, contribution rang
 `cv-public-data` inventory (no debug stream in GRUNTZ.EXE — use Ghidra + candidate `.map` +
 `DATA()`); and homm2's VC4.0 LINK 3.00 `/Od` flags (Gruntz is VC5 `/O2` LINK 5.10).
 
+## 4. The reloc-TARGET audit (`gruntz.audit.data_relocs`, gated at `--normal`)
+
+Everything above measures whether the right BYTES are in the right place. This
+measures whether the POINTERS in them point where retail's do, which no byte
+comparison can: a relocated word's own bytes are a placeholder the linker
+overwrites, so both sides hold the same placeholder. A vtable slot bound to the
+wrong method, an RTTI base-class array pointing at the wrong `??_R1`, a pointer
+table ordered differently — none of it moves a byte. It is the DATA analogue of
+`assert_relocs`, and it is what the size-weighted numbers above can still be
+hiding at 95–99%.
+
+**Two oracles, resolving to ADDRESSES rather than comparing names.**
+
+* `retail` — for a datum whose retail RVA is pinned, the retail image itself
+  answers. Its `.reloc` table lists every HIGHLOW fixup, so the set of words
+  retail relocates inside the datum's extent is a FACT and each stored value is
+  the address retail points at. No symbol name enters into it. It also needs no
+  delinked object, so it reaches data the delinker never carved.
+* `paired` — for a datum both objects define, each side's referent resolves to an
+  RVA (`symbol_names.csv`, Ghidra's address-carrying auto-labels, the delinker's
+  `const_<rva>`, plus `library_labels.csv` minus its `vtable-slot-oracle` rows,
+  because a label derived from a vtable slot cannot adjudicate a vtable slot).
+
+Addresses are the design, and NAMES were the first draft's mistake. Ported from
+`global_refs`, the name comparison had to drop "a name only one side has ever
+heard of" to survive the pooled-literal naming split (`??_C@_0BE@MAOF@…` against
+`DAT_002126ec`) — and an injected wrong vtable slot is exactly that shape, so the
+control walked straight through. It reported **0 rows over 9806 words while being
+structurally blind**. Addresses have no such hole: two spellings of one address
+agree, one spelling of two addresses does not, and the whole artefact catalogue
+(pooled literals, twin FID labels, the delinker's unsized-datum fallback
+`?g_gruntDirNorthEast + 0x2b0` / `_inflate_mask + 0x3db4`, `$S<hash>` suffixes)
+is absorbed structurally rather than by a heuristic.
+
+**Windowing is per SYMBOL, not per section.** That is the necessary deviation from
+homm2's `coff_reloc_topology`, whose site key is `(section, offset)`: that works
+there because its delink target is candidate-shaped, ours packs, and
+`?g_projPhase0@@3NB` is `.rdata`+0 for cl and `.rdata$r`+0x28 for the delinker.
+The first symbol in a section also owns the bytes BEFORE it — a `/GR` vtable
+COMDAT opens with the `??_R4` COL pointer four bytes ahead of the `??_7`.
+
+**Both sides go through `resolve_thunk`.** Retail was linked incrementally, so a
+vtable slot holds the ILT `jmp` thunk's address, not the body's. Without it every
+`/GR` vtable reads as wrong: 4725 rows, 3530 of them inside 100.00%-exact sections.
+
+**Calibration and control.** `--calibrate` restricts to the data sections objdiff
+scores at exactly 100.0; a row there is a detector bug. **0 of 8803 compared words
+(2026-08-09).** objdiff does compare a data relocation's target name — redirecting
+one `boomerang` vtable slot takes its `.rdata` 100.00 → 99.37 — so those sections
+agree on relocations too and the calibration set is real. `--selftest` (which
+`--gate` runs on every invocation, ~0.4 s) injects a redirected slot, a moved
+addend and a deleted relocation record and requires WRONG, WRONG, MISSING back.
+
+**Result and coverage, stated rather than hidden.** 5870 words checked against the
+retail image, 2933 against the delinked object, **zero defects**. Not covered:
+4343 words in data that is neither pinned nor paired, 1078 whose referent resolves
+to no RVA (mostly NAFXCW bodies with no FID label, and `??_R4` COL records), and
+4412 words inside the 2661 data symbols only one side defines (`--unpaired`) —
+mostly `$anon_data_<hash>` content-addressed private data whose two sides hash
+differently, plus 28 `??_7`/`??_R` records our objects emit that retail's delinked
+side does not.
+
+**The gate also fails on an orphan payload** — an enrolled datum carved into an
+object `objdiff.json` never opens, so its bytes are withheld from every
+measurement with nothing to report it. This is the ordinary-data twin of the
+`vtables_game.csv` row that named a dropped unit; `vtable_catalog.validate` checks
+names and RVAs, not the unit column. Twenty-eight rows exist today, recorded with
+their evidence in `KNOWN_ORPHAN_UNITS`:
+
+| unit | rows | storage | why |
+|---|---|---|---|
+| `movieplayer` | 1 | `.rdata` | `vtables_game.csv:88` puts `??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@` (0x1e971c, 0x14, six relocated slots) on a unit `units.toml` does not declare. Three real units emit it — `arrayserialize`, `creditsstate`, `gruntzmgr` — so all three show it unpaired. Retail neighbours: `creditsstate` `.rdata` ends 0x1e9710, `grunt` starts 0x1e9738. Suggestive, not proof. |
+| `ghidra` | 27 | `.bss` | `static_data_copies.tsv`'s documented holding unit for the GruntDirStatics copies whose TU is not yet partitioned. No bytes exist, so nothing is withheld from scoring. |
+
+**Spelling divergence in paired data is essentially nil: 9806 of 9812 words carry
+the IDENTICAL symbol name on both sides.** So homm2's `canonicalize_relocs.py`
+paired-target pass — which fixes the nearest-symbol-plus-addend spelling in the
+pipeline instead of per-sieve — would recover ~0 data score here; it is a `.text`
+concern (13.4% of `global_refs`' filtered rows), not a data one.
+
+The six exceptions are one finding, and they name an unenrolled retail datum:
+`?messageMap@CDialog@@1UAFX_MSGMAP@@B` is at **RVA 0x1eb068** (VA 0x005eb068).
+Six dialog TUs (`battlezdlgcolors`, `checkpointdlg`, `customleveldlg`, `dialogs`,
+`multihelpdlg`, `multistartdlg`) each store their message map's base pointer
+there; the delinker has no name for it and spells all six
+`??_7CGruntVoice@@6B@ + 0xfc`. The bytes at 0x1eb068 are `{0x005eb2e0,
+0x005eb070}`, the `AFX_MSGMAP` `{pBaseMessageMap, lpEntries}` shape, which makes
+**0x1eb2e0 `?messageMap@CWnd@@1UAFX_MSGMAP@@B`**. Not landed here:
+`library_labels.csv` is a FUNCTION carve-out list feeding the executable map, so a
+data row belongs in the data pin channel, not in it.
+
 ## The access map (`gruntz.audit.data_access`)
 
 The mis-typed-globals audit: `python -m gruntz.audit.data_access` decodes EVERY

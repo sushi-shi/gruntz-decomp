@@ -92,6 +92,17 @@ change, and a search harness must treat it differently.
   tree-exact rejects a change that fixed **4 link-breaking reloc defects**. `%` is structurally
   blind to relocs, so `assert_relocs` has to be part of the objective.
 
+- **The DATA side of that blindness is worse, and now has its own gate.** A relocated word's
+  bytes are a placeholder the linker overwrites, so both sides hold the SAME placeholder and a
+  byte comparison cannot see a wrong referent at all — a vtable slot bound to the wrong method
+  moves no byte. `gruntz.audit.data_relocs` (normal tier) adjudicates every pinned datum
+  against the retail image's own `.reloc` table. Two traps it cost to learn: compare resolved
+  ADDRESSES, never names (a name comparison must drop one-sided names to survive the pooled-
+  literal split, and a wrong vtable slot is exactly a one-sided name — the first draft reported
+  0 rows over 9806 words while being blind); and run BOTH sides through `resolve_thunk`,
+  because retail's incremental link puts the ILT `jmp` thunk's address in a vtable slot, not
+  the body's (4725 phantom rows without it). Details: `docs/data-attribution.md` §4.
+
 - **Proposed cheap pre-oracle (plausible, not yet verified):** diff `symbol_names.csv`. If a
   candidate shifts any `$S<n>` it disturbed the cone and needs the whole-tree rescore; if the
   CSV is byte-identical, a single-unit score should be sound. Sub-second gate in front of a ~40 s
