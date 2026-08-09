@@ -8,6 +8,7 @@
 #include <rva.h>
 #include <AddrWord.h>
 #include <ctype.h>
+#include <iostream.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -18,6 +19,7 @@
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/TypeKeyCollStr.h>
+#include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/XferArchive.h>
 #include <Wap32/ZVec.h>
 #include <Utils/BitArrayWord.h>
@@ -71,6 +73,76 @@ DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
 
 // @early-stop
+RVA(0x0016cdd0, 0x22f)
+ostream& WriteCurve(ostream& accum, const CMotionState& c) {
+    accum << c.m_time;
+    accum << c.m_deltaTime;
+    accum << c.m_acceleration.x;
+    accum << c.m_acceleration.y;
+    accum << c.m_acceleration.z;
+    accum << c.m_velocity.x;
+    accum << c.m_velocity.y;
+    accum << c.m_velocity.z;
+    accum << c.m_position.x;
+    accum << c.m_position.y;
+    accum << c.m_position.z;
+    accum << c.m_minBounds.x;
+    accum << c.m_minBounds.y;
+    accum << c.m_minBounds.z;
+    accum << c.m_maxBounds.x;
+    accum << c.m_maxBounds.y;
+    accum << c.m_maxBounds.z;
+    accum << c.m_step.x;
+    accum << c.m_step.y;
+    accum << c.m_step.z;
+    accum << c.m_stepDisabled;
+    accum << c.m_reservedc0.x;
+    accum << c.m_reservedc0.y;
+    accum << c.m_reservedc0.z;
+    accum << c.m_maxStep.x;
+    accum << c.m_maxStep.y;
+    accum << c.m_maxStep.z;
+    accum << c.m_maxVelocity.x;
+    accum << c.m_maxVelocity.y;
+    accum << c.m_maxVelocity.z;
+    return accum;
+}
+
+RVA(0x0016d000, 0x189)
+istream& ReadCurve(istream& accum, CMotionState& c) {
+    accum >> c.m_time;
+    accum >> c.m_deltaTime;
+    accum >> c.m_acceleration.x;
+    accum >> c.m_acceleration.y;
+    accum >> c.m_acceleration.z;
+    accum >> c.m_velocity.x;
+    accum >> c.m_velocity.y;
+    accum >> c.m_velocity.z;
+    accum >> c.m_position.x;
+    accum >> c.m_position.y;
+    accum >> c.m_position.z;
+    accum >> c.m_minBounds.x;
+    accum >> c.m_minBounds.y;
+    accum >> c.m_minBounds.z;
+    accum >> c.m_maxBounds.x;
+    accum >> c.m_maxBounds.y;
+    accum >> c.m_maxBounds.z;
+    accum >> c.m_step.x;
+    accum >> c.m_step.y;
+    accum >> c.m_step.z;
+    accum >> c.m_stepDisabled;
+    accum >> c.m_reservedc0.x;
+    accum >> c.m_reservedc0.y;
+    accum >> c.m_reservedc0.z;
+    accum >> c.m_maxStep.x;
+    accum >> c.m_maxStep.y;
+    accum >> c.m_maxStep.z;
+    accum >> c.m_maxVelocity.x;
+    accum >> c.m_maxVelocity.y;
+    accum >> c.m_maxVelocity.z;
+    return accum;
+}
+
 RVA(0x0016d190, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == NULL) {
@@ -866,6 +938,3 @@ i32 ProjTypeXfer(CUserLogic* ar) {
     ar->FinalizeStep(entry->GetBuffer(0));
     return 1;
 }
-
-RVA(0x0016ea10, 0x1)
-void ButeTreeNopFree(void*) {}

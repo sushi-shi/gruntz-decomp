@@ -36,7 +36,7 @@ brickz	4
 brickzcellflags	3
 brickzload	1
 buildgruntzcrcinfo	1
-buteglobals	2
+buteglobals	4
 butemgr	63
 butenode	5
 butestoreclear	1
@@ -212,7 +212,7 @@ menupage	34
 menusparkle	8
 menustate	37
 motionstate	3
-movinglogic	8
+movinglogic	5
 multi	127
 multihelpdlg	5
 multistartdlg	29
@@ -299,7 +299,7 @@ triggermgr	49
 triggermgrgrid	18
 triggermgrhittest	8
 trirecordserialize	1
-typekeycoll	37
+typekeycoll	38
 uncompr	1
 userlogic	18
 videoconfig	16

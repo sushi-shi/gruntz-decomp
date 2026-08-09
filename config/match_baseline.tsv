@@ -56,7 +56,7 @@ brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buildgruntzcrcinfo	1	0
-buteglobals	2	2
+buteglobals	4	4
 butemgr	63	50
 butenode	5	4
 butestoreclear	1	1
@@ -233,7 +233,7 @@ menupage	34	31
 menusparkle	7	5
 menustate	18	16
 motionstate	3	3
-movinglogic	8	4
+movinglogic	5	1
 multi	123	103
 multihelpdlg	5	5
 multistartdlg	17	13
@@ -320,7 +320,7 @@ triggermgr	49	29
 triggermgrgrid	18	10
 triggermgrhittest	8	5
 trirecordserialize	1	1
-typekeycoll	37	30
+typekeycoll	38	32
 uncompr	1	1
 userlogic	18	16
 videoconfig	16	13
@@ -666,6 +666,8 @@ brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	75.4212	75.4158	11	3c93df93f1
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	87.4545	87.4545	7	c53be3c55021	0xbf1d0	87.4545
 buteglobals	??_GCButeTree@@UAEPAXI@Z	100.0000	100.0000	1	cpp:36aab16fc36a	0x16e9c0	100.0000
 buteglobals	??_GCTypeCollRuntime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08a70ee732e7	0x16ea20	100.0000
+buteglobals	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	2	a24c4973a48e	0x16ea10	100.0000
+buteglobals	?SerializeMove@CUserLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	3	56ec3bd88ecc	0x16e7f0	100.0000
 butemgr	??0CButeMgr@@QAE@XZ	100.0000	100.0000	1	867762059e01	0x170210	100.0000
 butemgr	??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z	100.0000	100.0000	1	c35090a43a1a	0x1736a0	100.0000
 butemgr	??0CButeValue@@QAE@W4ButeType@@H@Z	100.0000	100.0000	1	2a98c1f3cf58	0x172000	100.0000
@@ -2960,11 +2962,8 @@ motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	2	c8629b50b90a	0x58ca0
 movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	2	1ab3aa8ae735	0x16ea90	98.5455
 movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	96.2500	1	cbf2b5c34a3d	0x16f3c0	100.0000
 movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	96.2500	1	5e8de14cafaf	0x16f430	100.0000
-movinglogic	?ReadCurve@@YAAAVistream@@AAV1@AAVCMotionState@@@Z	100.0000	100.0000	2	de48118cbde0	0x16d000	100.0000
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab2c6eff9722	0x16f4a0	100.0000
-movinglogic	?SerializeMove@CUserLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	3	56ec3bd88ecc	0x16e7f0	100.0000
 movinglogic	?Step@CMotionState@@QAEXN@Z	82.9390	81.2783	2	b587e5ea5cdd	0x16ecd0	82.9390
-movinglogic	?WriteCurve@@YAAAVostream@@AAV1@ABVCMotionState@@@Z	100.0000	100.0000	2	1c081c8eeebe	0x16cdd0	100.0000
 multi	??0CNetCmdSlot@@QAE@XZ	100.0000	100.0000	5	10c9ad0d19e7	0xbbec0	100.0000
 multi	??1CMulti@@UAE@XZ	100.0000	100.0000	8	f6002d2fbb63	0x8d270	100.0000
 multi	??1CMultiStartDlg@@UAE@XZ	100.0000	100.0000	1	cpp:c09cc2324cc9	0xb8960	100.0000
@@ -4334,7 +4333,6 @@ typekeycoll	??_GzBitVec@@UAEPAXI@Z	100.0000	100.0000	1	cpp:96e5b671ff77	0x16d2d0
 typekeycoll	??_GzErrHandling@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c9da423f6eb0	0x16da40	100.0000
 typekeycoll	??_GzPtrColl@@UAEPAXI@Z	100.0000	100.0000	1	cpp:3c6250feb2d9	0x16dfa0	100.0000
 typekeycoll	?Add@CVariantSlot@@QAEPAXPAX0@Z	88.3000	88.3000	5	a1c8cd7b6eaf	0x16e360	88.3000
-typekeycoll	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	2	a24c4973a48e	0x16ea10	100.0000
 typekeycoll	?ClearRecursive@zPTree@@QAEXPAUCButeTreeNode@@@Z	100.0000	100.0000	2	cedad3b34e4d	0x16e070	100.0000
 typekeycoll	?Find@CVariantSlot@@QAEHH@Z	100.0000	100.0000	3	f393ed5caa5e	0x16e1d0	100.0000
 typekeycoll	?Find@zPTree@@QAEPAXPBD@Z	90.6038	90.6038	6	07b324f6e866	0x16d190	90.6038
@@ -4343,10 +4341,12 @@ typekeycoll	?GetRetAddr@@YAPAXXZ	100.0000	100.0000	1	535250c8cddd	0x16d990	100.0
 typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	82.6372	82.6372	5	0b54da222989	0x16da80	82.6372
 typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	89.9948	89.9948	7	7121e3cd4271	0x16db90	89.9948
 typekeycoll	?ProjTypeXfer@@YAHPAVCUserLogic@@@Z	100.0000	100.0000	4	540f2bf0a670	0x16e4f0	100.0000
+typekeycoll	?ReadCurve@@YAAAVistream@@AAV1@AAVCMotionState@@@Z	100.0000	100.0000	2	de48118cbde0	0x16d000	100.0000
 typekeycoll	?Set@CVariantSlot@@QAEXPAX0H@Z	100.0000	100.0000	3	5812d1c47fff	0x16d850	100.0000
 typekeycoll	?SetSize@zBitVec@@QAEHH@Z	100.0000	100.0000	6	3c82c9c689ba	0x16e100	100.0000
 typekeycoll	?TmErrorHandler@@YAXPADH@Z	100.0000	100.0000	6	5c80ae3c88de	0x16e220	100.0000
 typekeycoll	_FirstDiffBit	98.6667	98.6667	2	4a157b5880de	0x16e480	100.0000
+typekeycoll	?WriteCurve@@YAAAVostream@@AAV1@ABVCMotionState@@@Z	100.0000	100.0000	2	1c081c8eeebe	0x16cdd0	100.0000
 typekeycoll	_LogicAttackFactory	100.0000	100.0000	1	971328b83139	0x16e4d0	100.0000
 typekeycoll	_LogicBumpFactory	100.0000	100.0000	1	868cea7a478c	0x16e4e0	100.0000
 typekeycoll	_LogicHitFactory	100.0000	100.0000	1	fbf0e78142fb	0x16e4c0	100.0000

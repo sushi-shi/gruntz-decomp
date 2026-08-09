@@ -10,6 +10,7 @@
 class ostream;
 class istream;
 
+ostream& WriteCurve(ostream& accum, const CMotionState& c);
 istream& ReadCurve(istream& accum, CMotionState& c);
 
 #endif // GRUNTZ_CMOVINGLOGICSERIAL_H
