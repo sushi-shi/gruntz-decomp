@@ -19,5 +19,4 @@
 # reconstruction gap in the callers, not a missing device. Fix the callers.
 #
 # rva	symbol	reason
-0x00101fa0	??0CSBI_RectOnly@@QAE@XZ	No obj emits it. Retail's four callers (BuildStatusBarTabs, BuildGameMenu, BuildTabzDialog, LoadTabSprites) overrun their inline budget and leave some sites as calls; ours do not, so cl expands every site. Forcing emission by hand was measured: the COMDAT lands at 100.00 but nothing then emits ??0CStatusBarItem@@QAE@XZ, so 0x1005d0's pin dangles instead (claim count a wash) and BuildStatusBarTabs 71.58 -> 69.24, BuildGameMenu 72.33 -> 66.93. Fix the callers, not the pin.
 0x000d5d70	??1CLoadable@@UAE@XZ	Emitted by 11 objs, none of them cimagecomdats - and 0xd5d70 lies INSIDE that TU's own RVA band (0xd5c10 CState::DrawScreenTextImage .. 0xd5da0 CWapObj::IsReady), so the pin cannot move without breaking TU contiguity. ~CLoadable is a header inline; cimagecomdats' own functions never overrun their budget, so cl expands it there and emits nothing. Same class as the row above.
