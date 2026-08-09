@@ -303,8 +303,10 @@ def vtable_rows(exe=EXE, base_dir=None):
     candidate payload disagrees with its retail extent. A disagreement is a real
     mis-modelling signal (our class has the wrong number of virtuals), not noise.
 
-    Only PRIMARY vtables (base_off 0, spelled `??_7<class>@@6B@`) are enrolled; a
-    secondary/MI vtable (`??_7<class>@@6B<base>@@@`) is left to the next pass.
+    Only PRIMARY vtables (base_off 0) are enrolled; a secondary/MI vtable
+    (`??_7<class>@@6B<base>@@@`) is left to the next pass. A primary is usually
+    spelled `??_7<class>@@6B@`, but a template specialization is not - see the
+    name-bridge below.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -318,11 +320,40 @@ def vtable_rows(exe=EXE, base_dir=None):
         return [], [(0, "??_7*", "vtable registry unavailable (%s)" % type(exc).__name__)]
 
     # class -> (primary vtable rva, slot count), straight from the RTTI slot map.
-    primary = {}
+    primary, by_rva = {}, {}
     for name, ci in reg.items():
         p = ci.vtables.get(0)
         if p is not None:
             primary["??_7%s@@6B@" % name] = (p[0], p[1])
+            by_rva[p[0]] = (p[0], p[1])
+
+    # A TEMPLATE SPECIALIZATION'S KEY CANNOT BE REBUILT FROM ITS RTTI NAME. The
+    # registry keys off the decorated name in the `??_R0` type descriptor, decoded on
+    # `@` as a nested scope, so `.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@` becomes
+    # `PAU1::PAUPLAYLISTINFOSTRUCT::?$CArray` and "??_7%s@@6B@" spells a symbol no
+    # object defines. Both of the binary's template vtables missed on that alone and
+    # were withheld as "no primary-vtable slot map" - the CArray one then had to be
+    # hand-routed through vtables_game.csv's `unit` column, which is exactly the
+    # attribution that rotted when its unit was dissolved.
+    #
+    # The manual catalog already states the mangled name and its retail rva, so use
+    # it as the name->rva bridge and take the slot count from the RTTI map as usual.
+    # Two independent sources still have to agree - the catalog rva must BE a base-0
+    # vtable in the registry - and section_rows re-checks the extent against the
+    # COMDAT cl actually emitted, so nothing here is asserted on the catalog's word.
+    try:
+        from gruntz.core import vtable_catalog  # noqa: E402
+        catalog = vtable_catalog.game_rows() + vtable_catalog.library_rows()
+    except Exception:
+        catalog = []
+    for row in catalog:
+        hit = by_rva.get(row["rva"])
+        # A secondary/MI table may deliberately ALIAS a primary's rva; bridging it
+        # would hand it the primary's slot map. Still out of scope, still withheld.
+        if hit is None or row.get("kind") == "secondary" \
+                or vtable_catalog.secondary_classes(row["name"]) is not None:
+            continue
+        primary.setdefault(row["name"], hit)
 
     base_dir = Path(base_dir or REPO / "build/objdiff/base")
     # name -> {offset-in-COMDAT: [(unit, candidate section), ...]}

@@ -50,10 +50,20 @@ def secondary_classes(name: str) -> tuple[str, str] | None:
 
 
 def validate(rows: list[dict]) -> list[str]:
-    """Return structural catalog errors. Deliberate primary/secondary RVA aliases are valid."""
+    """Return structural catalog errors. Deliberate primary/secondary RVA aliases are valid.
+
+    The `unit` column is not decoration: labels.py routes the row's retail extent to
+    `<unit>.c.obj`, so a unit `config/units.toml` does not declare sends the payload
+    into an object objdiff never opens. It is delinked, it is never compared, and no
+    measure reports it - the failure mode is SILENT, which is why it is checked here.
+    Measured 2026-08-09: `movieplayer` (dissolved 2026-08-06) still owned the
+    `CArray<PLAYLISTINFOSTRUCT*>` vtable and its six relocated words went unscored
+    while all three units that really emit it showed the symbol unpaired.
+    """
     errors = []
     seen_pairs = set()
     name_rvas: dict[str, set[int]] = {}
+    live = None
     for row in rows:
         pair = (row["name"], row["rva"])
         if pair in seen_pairs:
@@ -62,6 +72,16 @@ def validate(rows: list[dict]) -> list[str]:
         name_rvas.setdefault(row["name"], set()).add(row["rva"])
         if "kind" in row and row.get("kind") not in {"primary", "secondary", "template"}:
             errors.append(f"invalid kind {row.get('kind')!r} for {row['name']}")
+        unit = (row.get("unit") or "").strip()
+        if unit:
+            if live is None:
+                from gruntz.core.manifest import unit_names
+                live = unit_names()
+            if unit not in live:
+                errors.append(
+                    f"{row['name']} at 0x{row['rva']:06x} names unit {unit!r}, which "
+                    f"config/units.toml does not declare - its extent would be carved "
+                    f"into an object objdiff never opens and go silently unscored")
     for name, rvas in name_rvas.items():
         if len(rvas) > 1:
             errors.append(f"{name} is assigned to multiple RVAs: " +

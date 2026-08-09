@@ -202,21 +202,22 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 # defect and fails the gate; a row leaves the set when its owner is proven, never
 # because it became inconvenient.
 #
-#   movieplayer  config/retail/vtables_game.csv line 88 attributes
-#                ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (0x1e971c, 0x14,
-#                SIX relocated slots) to a unit config/units.toml does not
-#                declare, so the delinker carves it into build/delink/named/
-#                movieplayer.c.obj and objdiff never opens that file. Three real
-#                units emit the vtable (arrayserialize, creditsstate, gruntzmgr)
-#                and all three therefore show it unpaired. Its retail neighbours
-#                are creditsstate's .rdata below and grunt's above, which is
-#                suggestive and not proof; the owner is a data-attribution
-#                decision, not this sieve's to make.
+#   CLOSED 2026-08-09 - movieplayer. vtables_game.csv attributed
+#   ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (0x1e971c, 0x14, SIX relocated
+#   words) to a unit dissolved on 2026-08-06. The `unit` column existed only because
+#   data_manifest.vtable_rows() could not spell a template specialization's mangled
+#   name from its RTTI key (`.?AV?$CArray@PAU...@@` decodes as the nested scope
+#   `PAU1::PAUPLAYLISTINFOSTRUCT::?$CArray`) and withheld it. vtable_rows bridges
+#   those names through the catalog now, so the vtable enrolls the ordinary way -
+#   once per EMITTING object, all three of arrayserialize/creditsstate/gruntzmgr -
+#   the hand-written owner is gone, and vtable_catalog.validate() FAILS the build on
+#   a `unit` config/units.toml does not declare.
+#
 #   ghidra       config/static_data_copies.tsv's documented holding unit for the
 #                GruntDirStatics copies whose owning TU is not yet partitioned
 #                (27 rows). All `.bss`: no bytes exist, so nothing is withheld
 #                from scoring, and the storage rule below already exempts them.
-KNOWN_ORPHAN_UNITS = frozenset({"movieplayer", "ghidra"})
+KNOWN_ORPHAN_UNITS = frozenset({"ghidra"})
 
 # A live unit whose delinked side does not exist at all. objdiff pairs nothing and
 # scores the empty pairing 100.00% on EVERY measure with zero totals, so the unit

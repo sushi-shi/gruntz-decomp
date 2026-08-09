@@ -1354,13 +1354,20 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     # Manually managed game-vtable rows. synth_pdb ignores the cosmetic unit for
     # data symbols, keying each datum rename by rva->name.
     for row in vtable_catalog.game_rows():
-        # Ordinary vtable sizes are evidence, not reconstructed storage extents:
-        # admitting them into the data manifest would duplicate the COFF-emitted
-        # vtable section. The two template rows preserve their former auto-label
-        # owner/size because those names are emitted by that specific base obj.
-        unit = row.get("unit") or "vtables"
-        size = row["size"] if row["kind"] == "template" else None
-        rows.append((row["rva"], row["name"], unit, size, "data"))
+        # NO game-vtable row carries a size here. A vtable's size is evidence, not a
+        # reconstructed storage extent: handing it to the data manifest enrolls the
+        # extent under this row's `unit`, duplicating the COFF-emitted vtable section
+        # that data_manifest.vtable_rows() already enrolls once per EMITTING object
+        # (a vtable is a folded COMDAT, so there is rarely just one).
+        #
+        # The two template rows used to be the exception, because vtable_rows could
+        # not spell a specialization's mangled name from its RTTI key and withheld
+        # them. It bridges those names through this catalog now, so the exception -
+        # and the hand-written `unit` it needed - is retired. That column had already
+        # rotted: `movieplayer` was dissolved on 2026-08-06 and its vtable's six
+        # relocated words went silently unscored until 2026-08-09.
+        rows.append((row["rva"], row["name"], row.get("unit") or "vtables", None,
+                     "data"))
     # A few library vtables are emitted/referenced by reconstructed base objs.
     # Their owning unit retains the prior authority-backed label behavior.
     for row in vtable_catalog.library_rows():

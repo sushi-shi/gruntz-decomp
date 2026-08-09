@@ -1,11 +1,13 @@
 # Manually maintained retail vtables emitted by reconstructed game/engine source.
 # kind separates ordinary primary tables, multiple-inheritance secondary tables, and template specializations.
-# unit is present only when a reconstructed object owns the emitted symbol/extent.
+# unit is RETIRED here (2026-08-09): data_manifest.vtable_rows() enrolls every game
+# vtable once per EMITTING base obj, template specializations included, so no row
+# needs a hand-written owner. A stale one is now a build error (vtable_catalog.validate).
 name,rva,size,kind,unit,note
 ??_7CActionArea@@6B@,0x1e7004,0x40,primary,,
 ??_7CUserLogic@@6B@,0x1e705c,0x40,primary,,
 ??_7CUserBase@@6B@,0x1e70b4,0xc,primary,,
-??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@,0x1e70fc,0x4,template,zdarrayderived,source-emitted zDArray specialization
+??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@,0x1e70fc,0x4,template,,source-emitted zDArray specialization
 ??_7CAmbientSound@@6B@,0x1e710c,0x10,primary,,
 ??_7CAmbientPosSound@@6B@,0x1e7124,0x10,primary,,
 ??_7CRandomAmbientSound@@6B@,0x1e713c,0x10,primary,,
@@ -85,7 +87,7 @@ name,rva,size,kind,unit,note
 ??_7CGruntzSingleCommand@@6B@,0x1e9634,0x2c,primary,,
 ??_7CGruntzCommand@@6B@,0x1e9674,0x2c,primary,,
 ??_7CGruntzMultiCommand@@6B@,0x1e96b4,0x2c,primary,,
-??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@,0x1e971c,0x14,template,movieplayer,source-emitted MFC CArray specialization
+??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@,0x1e971c,0x14,template,,source-emitted MFC CArray specialization
 ??_7CGruntzApp@@6B@,0x1e9ab4,0x44,primary,,
 ??_7CGameApp@@6B@,0x1e9b0c,0x44,primary,,
 ??_7CGruntzMgr@@6B@,0x1e9b64,0x18,primary,,
