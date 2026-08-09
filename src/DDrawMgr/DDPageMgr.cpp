@@ -417,6 +417,31 @@ i32 CMoviePlayer::CloseSmacker() {
     return 1;
 }
 
+RVA(0x0017ca10, 0x49)
+void CMoviePlayer::UploadPalette() {
+    u8* src = m_smackHandle->Palette;
+    u8* p = &m_palEntries[0].peGreen;
+    i32 n = 0x100;
+    do {
+        p[-1] = *src++;
+        p[0] = *src++;
+        p[1] = *src++;
+        p += 4;
+        --n;
+    } while (n != 0);
+    m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
+}
+
+RVA(0x0017ca60, 0x35)
+void CMoviePlayer::ResetPalette() {
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        m_palEntries[i].peRed = 0;
+        m_palEntries[i].peGreen = 0;
+        m_palEntries[i].peBlue = 0;
+    }
+    m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
+}
+
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {

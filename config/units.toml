@@ -1599,10 +1599,6 @@ source = "src/Net/StringStaticPool.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "moviepaletteupload"
-source = "src/Image/MoviePaletteUpload.cpp"
-flags = "cpp"
-[[unit]]
 unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
 flags = "cpp-rtti"
@@ -1618,10 +1614,6 @@ flags = "cpp"
 [[unit]]
 unit = "bitarraystream"
 source = "src/Utils/BitArrayStream.cpp"
-flags = "cpp"
-[[unit]]
-unit = "surfacepalette"
-source = "src/Image/PaletteReset.cpp"
 flags = "cpp"
 
 

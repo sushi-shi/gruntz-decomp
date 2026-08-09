@@ -83,7 +83,7 @@ cursorsnapsprite	6	5
 customleveldlg	4	3
 customworlddialog	10	8
 databuffer	8	8
-ddpagemgr	21	20
+ddpagemgr	23	22
 ddpalette	23	23
 ddrawptrcollections	10	10
 ddrawshadeblit	22	10
@@ -241,7 +241,6 @@ menustate	18	16
 mgrsettings	1	1
 motionstate	3	3
 motionstatestep	3	2
-moviepaletteupload	1	1
 movinglogic	5	4
 multi	123	103
 multihelpdlg	5	5
@@ -919,8 +918,10 @@ ddpagemgr	?OpenLo@CMoviePlayer@@QAEHPBDW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@
 ddpagemgr	?PlayList@CMoviePlayer@@QAE?AW4MoviePlaybackResult@@H@Z	100.0000	100.0000	1	3319e124f19a	0x17d720	100.0000
 ddpagemgr	?Pump@CMoviePlayer@@QAE?AW4MoviePlaybackResult@@HH@Z	100.0000	100.0000	1	bccd292b83bc	0x17c790	100.0000
 ddpagemgr	?RemoveAt@CMoviePlayer@@QAEHH@Z	100.0000	100.0000	6	788ea8224ab2	0x17d600	100.0000
+ddpagemgr	?ResetPalette@CMoviePlayer@@QAEXXZ	100.0000	100.0000	4	c7c0c9e060ff	0x17ca60	100.0000
 ddpagemgr	?Snapshot@CMoviePlayer@@QAEXPAUHWND__@@@Z	100.0000	100.0000	1	692e9a4d6c73	0x17cd90	100.0000
 ddpagemgr	?Teardown@CMoviePlayer@@QAEXXZ	100.0000	100.0000	6	b156eeb24401	0x17c510	100.0000
+ddpagemgr	?UploadPalette@CMoviePlayer@@QAEXXZ	100.0000	100.0000	1	6f05eff44deb	0x17ca10	100.0000
 ddpalette	?Apply@CDDPalette@@QAEXH@Z	100.0000	100.0000	5	5c055ea07cf9	0x147c80	100.0000
 ddpalette	?BlackoutSystemPalette@@YAHXZ	100.0000	100.0000	7	bd93efff1855	0x148720	100.0000
 ddpalette	?BlendRange@CDDPalette@@QAEXHHHEEE@Z	100.0000	100.0000	1	ed3137eb8669	0x1482c0	100.0000
@@ -2981,7 +2982,6 @@ motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	2	c8629b50b90a	0x58ca0
 motionstatestep	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	1	cbf2b5c34a3d	0x16f3c0	100.0000
 motionstatestep	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	1	5e8de14cafaf	0x16f430	100.0000
 motionstatestep	?Step@CMotionState@@QAEXN@Z	82.9390	82.9390	2	b587e5ea5cdd	0x16ecd0	82.9390
-moviepaletteupload	?UploadPalette@CMoviePlayer@@QAEXXZ	100.0000	100.0000	1	6f05eff44deb	0x17ca10	100.0000
 movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	2	1ab3aa8ae735	0x16ea90	98.5455
 movinglogic	?ReadCurve@@YAAAVistream@@AAV1@AAVCMotionState@@@Z	100.0000	100.0000	2	de48118cbde0	0x16d000	100.0000
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab2c6eff9722	0x16f4a0	100.0000
@@ -3989,7 +3989,6 @@ statusbartabbuilders	?SerializeFields@CSBI_GruntMachine@@UAEHPAVCFileMemBase@@W4
 statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	3	cf4de0de8f26	0xe8dc0	100.0000
 streamrecordloaders	?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z	93.9657	93.9657	2	11f451fb59ba	0x9c650	93.9657
 streamrecordloaders	?Find@CDDrawWorkerCache@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	2	4e83d8129ed7	0x9cab0	100.0000
-surfacepalette	?ResetPalette@CMoviePlayer@@QAEXXZ	100.0000	100.0000	4	c7c0c9e060ff	0x17ca60	100.0000
 symtab	??0CParseSource@@QAE@XZ	100.0000	100.0000	3	0d8b75123f92	0x1396f0	100.0000
 symtab	??0CSymParser@@QAE@PAXHH@Z	100.0000	100.0000	7	3ee64c399570	0x13ab00	100.0000
 symtab	??0CSymParser@@QAE@XZ	100.0000	100.0000	7	3ee64c399570	0x13aa10	100.0000
