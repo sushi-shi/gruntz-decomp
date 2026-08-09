@@ -798,7 +798,7 @@ void CMultiStartDlg::Watchdog() {
                 char buf[0x20];
                 wsprintfA(buf, "%d", slot->m_latency.m_avg);
                 item1->SetWindowTextA(buf);
-                item2->SetWindowTextA("R");
+                item2->SetWindowTextA("ms");
             } else {
                 item1->SetWindowTextA("");
                 item2->SetWindowTextA("");
@@ -812,29 +812,29 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_multiState->m_sessionTerminated != 0) {
         ::KillTimer(m_hWnd, 1);
-        g_multiState->ReportVersionMsg("terminated", 0);
+        g_multiState->ReportVersionMsg("The game session has been terminated.", 0);
         g_watchBusy = 0;
         return;
     }
     if (g_multiState->m_colorSelectionRejected != 0) {
         g_multiState->m_colorSelectionRejected = 0;
-        g_multiState->ReportVersionMsg("selected", 0);
+        g_multiState->ReportVersionMsg("Someone has already selected that color.", 0);
         g_watchBusy = 0;
         return;
     }
     char* msg;
     if (g_multiState->m_removedByHost != 0) {
         ::KillTimer(m_hWnd, 1);
-        msg = "removed";
+        msg = "You have been removed from the game by the host.";
     } else if (g_multiState->m_gameClosed != 0) {
         ::KillTimer(m_hWnd, 1);
-        msg = "closed";
+        msg = "This game is closed.";
     } else if (g_multiState->m_gameFull != 0) {
         ::KillTimer(m_hWnd, 1);
-        msg = "full";
+        msg = "This game is already full.";
     } else if (g_multiState->m_versionMismatch != 0) {
         ::KillTimer(m_hWnd, 1);
-        msg = "version";
+        msg = "This version is not the same as the host computer's version of the game.";
     } else {
         if (g_playerLeftFlag != 0) {
             UpdatePlayers(1);

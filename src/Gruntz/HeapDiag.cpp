@@ -130,7 +130,7 @@ int HeapStats() {
             r = _heapwalk(&hinfo);
         }
     }
-    sprintf(buf, "Heap stats: Total = %lu, Free = %lu, Used = %lu", total, used, free);
+    sprintf(buf, "Heap stats: Total = %lu, Free = %lu, Used = %lu\n", total, used, free);
     OutputDebugStringA(buf);
     return status;
 }

@@ -165,7 +165,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
         while (*p && (*p < '0' || *p > '9')) {
             p++;
         }
-        sprintf(num, "%d", atoi(p));
+        sprintf(num, "%i", atoi(p));
         setText(hDlg, 0x408, static_cast<const char*>(g_str62c264));
         setText(hDlg, 0x428, info.author);
         setText(hDlg, 0x40c, num);
@@ -251,7 +251,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
                 while (*p && (*p < '0' || *p > '9')) {
                     p++;
                 }
-                sprintf(num, "%d", atoi(p));
+                sprintf(num, "%i", atoi(p));
                 SetDlgItemTextA(hDlg, 0x40c, num);
                 SetDlgItemTextA(hDlg, 0x429, info.created);
                 bad = 0;

@@ -336,7 +336,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
         if (a == NULL) {
             return 0;
         }
-        a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
+        a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
         a->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     for (i32 k = 0; k <= m_letterIdx; k++) {
@@ -863,23 +863,23 @@ void CBootyState::ShowLevelCompleteMessage() {
         CBattlezData* rec = g_gameReg->m_scoreHud;
         if (rec->m_count > IDX(QUESTLEVEL_LAST)) {
             if (rec->m_allDone != 0) {
-                s = "You have completed training! Now go and conquer the Battlez!";
+                s = "You have completed training! Now, grab the pebble from my hand.";
             } else {
-                s = "You are closer to achieving masterz status!";
+                s = "You are closer to achieving mastery! Keep training!";
             }
             SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
             if (rec->m_allDone != 0) {
                 if ((rec)->GroupAllScored()) {
-                    s.Format("WARP letterz recovered! Prepare to warp!");
+                    s.Format("WARP letterz recovered! Prepare to receive your cheat codez!");
                 } else {
-                    s = "WARP letterz not recovered! No checkpoint this time.";
+                    s = "WARP letterz not recovered! No cheatz for you.";
                 }
             } else {
                 if (rec->m_scoreValue != 0) {
                     s = "Keep finding those WARP letterz!";
                 } else {
-                    s = "Collect all four WARP letterz to reach the checkpoint!";
+                    s = "Collect all four WARP letterz to receive secret bonus!";
                 }
             }
             SetRect(&r, 0x194, 0xe6, 0x263, SCREEN_H_PX);
@@ -1272,7 +1272,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         if (tint == NULL) {
             return 0;
         }
-        tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERT%d", t + 1);
+        tabKey.Format("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD%d", t + 1);
         flagKey.Format("GAME_FORTRESSFLAGZ_%s", static_cast<const char*>(GetWarlordName(t)));
 
         m_tabSprites[t] =

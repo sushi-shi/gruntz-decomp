@@ -170,7 +170,7 @@ CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
 
 RVA(0x0009a290, 0x138)
 CSpawnEntry* CSpawnList::FindByName(const CString& name) {
-    CString key = name + "";
+    CString key = name + "_";
     for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
         CSpawnEntry* e = NextEntry(n);
         if (e == NULL) {
@@ -180,7 +180,7 @@ CSpawnEntry* CSpawnList::FindByName(const CString& name) {
         if (strcmp(name, nm) == 0) {
             return e;
         }
-        nm += "";
+        nm += "_";
         if (strncmp(nm, key, nm.GetLength()) == 0) {
             return e;
         }

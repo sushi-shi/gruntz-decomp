@@ -752,6 +752,8 @@ DATA(0x00224198)
 static char s_strFloat[] = "(FLOAT)";
 DATA(0x002241a0)
 static char s_strDword[] = "(DWORD)";
+DATA(0x002241a8)
+static char s_fmtDupSymbol[] = "ButeMgr:  duplicate symbol encountered - %s";
 DATA(0x002241d4)
 static char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";
 DATA(0x00224204)
@@ -955,7 +957,7 @@ bool ButeMgr::ParseAttributeFile() {
     bool bDup = false;
     if (!m_writeMode) {
         if (m_pNode->Find(m_str104)) {
-            ReportError(s_fmtDupTag, m_str104.GetBuffer(0));
+            ReportError(s_fmtDupSymbol, m_str104.GetBuffer(0));
             bDup = true;
         }
     }

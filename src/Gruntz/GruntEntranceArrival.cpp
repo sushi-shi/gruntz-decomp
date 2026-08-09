@@ -101,7 +101,7 @@ i32 CGrunt::ResetGeometry() {
     m_wwdObject->ApplyLookupSprite(name, frame);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId("A");
+    m_objAux->m_actKey = ActFindId("E");
     return 0;
 }
 

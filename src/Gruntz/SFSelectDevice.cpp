@@ -110,7 +110,7 @@ i32 SFManager_SelectBestDevice() {
         memset(&g_sfCaps, 0, sizeof(g_sfCaps));
         g_sfCaps.m_SizeOf = sizeof(g_sfCaps);
         g_sfDevice->SF_GetDevCaps(g_idx_64da80, &g_sfCaps);
-        sprintf(g_traceBuf_64da90, "Querying %s", g_sfCaps.m_DevName);
+        sprintf(g_traceBuf_64da90, "Querying %s ", g_sfCaps.m_DevName);
         if (g_sfCaps.m_DevCaps & 0x40000000) {
             g_ratings_64e0c0[g_idx_64da80] = 0x20;
         } else if (g_sfCaps.m_DevCaps & 0x80000000) {

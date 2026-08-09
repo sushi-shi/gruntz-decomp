@@ -80,7 +80,7 @@ void CGruntzApp::ShowError() {
     char detail[0x20];
     detail[0] = 0;
     if (detailVal > 0) {
-        sprintf(detail, "(%i)", detailVal);
+        sprintf(detail, " (%i)", detailVal);
     }
 
     if (LoadStringA(m_hInstance, id, g_errorText, 0xfa) <= 0

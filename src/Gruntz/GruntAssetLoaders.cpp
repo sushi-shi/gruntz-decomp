@@ -386,8 +386,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
 
             if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                 m_value = m_wwdObject->m_animCursor.m_animation;
-                m_wwdObject->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
-                m_wwdObject->ApplyName("GAME_GRUNTTWITCH");
+                m_wwdObject->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_DEATH", 0);
+                m_wwdObject->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
             }
             goto tail;
     }

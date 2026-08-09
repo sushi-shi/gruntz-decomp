@@ -33,7 +33,7 @@ RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 RVA(0x0007f350, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
+    m_wwdObject->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;

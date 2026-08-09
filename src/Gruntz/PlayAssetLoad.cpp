@@ -342,7 +342,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
         if (m_mgr->m_isBattlezLevel != 0) {
-            CString key = "BATTLEZ\\" + m_mgr->GetWorldFileName();
+            CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
             CParseSource* node = m_gameBank->ResolveQualified(key, REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;
@@ -351,7 +351,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
                 return 0;
             }
         } else if (m_mgr->m_isMultiLevel != 0) {
-            CString key = "MULTI\\" + m_mgr->GetWorldFileName();
+            CString key = "MULTI_" + m_mgr->GetWorldFileName();
             CParseSource* node = m_gameBank->ResolveQualified(key, REZ_TAG_WWD);
             if (node == NULL) {
                 return 0;

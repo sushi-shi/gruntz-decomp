@@ -423,7 +423,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     CSymParser* src = m_src;
     if (src->m_sorted == 0 || src->m_list.m_count > 1) {
-        RezAssertFail("CRezDir::Load Failed! (File is not sorted!)");
+        RezAssertFail("CRezDir::Load Failed! (File is not sorted!)\n");
         return 0;
     }
 

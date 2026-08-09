@@ -4516,7 +4516,7 @@ i32 CPlay::AddLevelGruntz() {
         );
         if (r == -1) {
             CString msg;
-            msg.Format("Could not add Grunt: Player=%d", g->m_smarts, x, y);
+            msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->m_smarts, x, y);
 
             (g_gameReg)->EnterModalUI(msg);
             return 0;

@@ -2054,13 +2054,13 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
                 LeafCue* p = 0;
-                MapLookup(m_world->m_soundRegistry->m_cues, "GAME\\FINISHLEVEL", p);
+                MapLookup(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL", p);
                 m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_timerBase = g_frameTime;
                 CDDrawSubMgrLeafScan* h28 = m_world->m_soundRegistry;
                 if (h28->m_emitGate == 0) {
                     p = NULL;
-                    MapLookup(h28->m_cues, "GAME\\FINISHLEVEL", p);
+                    MapLookup(h28->m_cues, "GAME_FINISHLEVEL", p);
                     if (p != NULL && g_sndEnabled != 0
                         && static_cast<u32>((g_killCueClock - p->m_lastPlayTime))
                                >= static_cast<u32>(p->m_replayDelay)) {

@@ -75,6 +75,11 @@ DATAMAN = REPO / "build/gen/delink_data_manifest.tsv"
 IMAGEBASE = 0x400000
 FILLER = (0xCC, 0x90)
 
+# What may appear in a C string literal.  `\t\n\r` are text, and testing for
+# printable-only demoted every literal carrying one to a raw byte window.
+TEXT_BYTES = frozenset(range(0x20, 0x7F)) | {0x09, 0x0A, 0x0D}
+_ESCAPES = ((("\\", "\\\\")), ("\n", "\\n"), ("\r", "\\r"), ("\t", "\\t"))
+
 # Suppression classes: things we deliberately do NOT count as a byte defect.
 # Every one is counted and printed on every run so it can be re-argued.
 SUPPRESSIONS = {
@@ -83,6 +88,10 @@ SUPPRESSIONS = {
     "slot content match": "an unnamed target (pool constant / literal) whose bytes agree",
     "trailing filler": "0xCC / 0x90 the linker leaves after a contribution",
     "placement shift": "a stored RVA differing by exactly the section placement delta",
+    "relocated pool window": "an unnamed target whose bytes ARE relocated addresses:"
+                             " a placement fact, so UNDECIDABLE, not a mismatch",
+    "interior self-reference": "an operand naming its OWN region at an offset (a"
+                               " switch jump table): same referent, codegen offset",
 }
 
 
@@ -217,6 +226,18 @@ class Side:
         nm = self.canon.get(nm, nm)
         return ("sym", nm if st == rva else "%s+%#x" % (nm, rva - st), False)
 
+    def relocated_window(self, va, n=8, lead=3):
+        """Does a base relocation overlap [va-lead, va+n)?
+
+        If it does, the bytes there are a PLACEMENT fact - the linker wrote our
+        section addresses into them - so they can never agree across the two
+        images and are no evidence about the referent at all.  `lead=0` asks
+        only about the window itself, which is what the string test wants: a
+        literal butted up against a preceding pointer is still a literal.
+        """
+        rva = va - self.base
+        return any((rva + k) in self.reloc for k in range(-lead, max(n, 1)))
+
     def content(self, va, n=8, smax=256):
         """A comparable fingerprint of what an unnamed address points AT.
 
@@ -226,6 +247,10 @@ class Side:
         the terminator has to be long (a 7-char cap silently demoted every real
         literal to a raw byte compare); the raw fallback stays short, because a
         long window drags in whatever neighbour the pool happened to place next.
+
+        A literal may carry `\\n`/`\\t`/`\\r`, and a printable-ONLY test demoted
+        every one of those to an 8-byte raw window - on ONE side, because the
+        other image's copy is named.  The escapes are text.
         """
         rva = va - self.base
         o = self.pe.off(rva)
@@ -233,7 +258,7 @@ class Side:
             return None
         probe = self.pe.data[o:o + smax]
         z = probe.find(b"\0")
-        if z > 0 and all(0x20 <= b < 0x7F for b in probe[:z]):
+        if z > 0 and all(b in TEXT_BYTES for b in probe[:z]):
             return ("str", bytes(probe[:z]))
         return ("raw", bytes(probe[:n]))
 
@@ -578,13 +603,21 @@ def resolve(side, va):
                      name both images know, the reference is UNDECIDABLE:
                      fingerprinting a function by its first bytes would match
                      every `push ebp; mov ebp,esp` in the binary.
-      3. a string  - the TEXT.  Retail's manifest names literals
+      3. a string  - the TEXT, at ANY length.  Retail's manifest names literals
                      `??_C@_0M@NCPH@LogicAttack?$AA@` and our .map does not
                      publish them at all, so comparing text is both symmetric
-                     and stronger than comparing either name.
+                     and stronger than comparing either name.  The old 4-char
+                     floor was one-sided in exactly the same way: retail names
+                     `"A"` `??_C@_01PFH@A?$AA@`, we name it nothing, and every
+                     one-character literal in the image read as a wrong
+                     referent.  A RELOCATED word is never text - `6b 38 5d 00`
+                     is the address 0x5d386b, not the string "k8]" - so the
+                     relocation table, not the length, is what guards this.
       4. a paired symbol - the name.  ONLY a name both images know can decide a
                      mismatch; one-sided names prove nothing.
       5. other data - the 8 bytes at the target (a pool constant), marked weak.
+                     UNLESS those bytes are themselves RELOCATED: a window over
+                     stored addresses is a placement fact and must differ.
       6. no file bytes (.bss) -> UNDECIDABLE.
 
     UNDECIDABLE is a real answer.  It is counted, never silently folded into
@@ -593,21 +626,41 @@ def resolve(side, va):
     kind, nm, _via = side.label(va)
     if kind == "off":
         return ("%#x" % va, "constant")
+    named = kind == "sym" and nm.split("+")[0] in side.pairable
     if side.pe.is_exec(va - side.base):
-        if kind == "sym" and nm.split("+")[0] in side.pairable:
-            return (nm, "symbol")
-        return (UNDECIDABLE, "undecidable")
+        return (nm, "symbol") if named else (UNDECIDABLE, "undecidable")
+    # An IAT slot is named from the IMPORT TABLE on both sides, so its identity
+    # is symmetric by construction and beats any content test.  It also DEFEATS
+    # one: the slot holds the hint/name RVA until the loader overwrites it, it
+    # carries no base relocation, and `36 55 2c 00` reads as the string "6U,".
+    if named and nm.startswith("__imp_"):
+        return (nm, "symbol")
     c = side.content(va)
-    if c is not None and c[0] == "str" and len(c[1]) >= 4:
-        return ('"%s"' % c[1].decode("latin1")[:48], "string")
-    if kind == "sym" and nm.split("+")[0] in side.pairable:
+    if c is not None and c[0] == "str" and not side.relocated_window(va, len(c[1]), 0):
+        return (_text(c[1]), "string")
+    if named:
         return (nm, "symbol")
     if c is not None and any(c[1]):
+        if side.relocated_window(va, len(c[1])):
+            return (UNDECIDABLE, "undecidable")
         return ("<%s>" % c[1].hex(), "weak")
     # An all-zero window is not evidence: every zeroed slot in the image would
     # "agree" with every other one.  Say UNDECIDABLE instead of banking a match
     # nothing supports.
     return (UNDECIDABLE, "undecidable")
+
+
+def _text(b, cap=48):
+    """A literal as a one-line descriptor, escapes visible."""
+    s = b.decode("latin1")[:cap]
+    for a, e in _ESCAPES:
+        s = s.replace(a, e)
+    return '"%s"' % s
+
+
+def _decidable(seq):
+    """Referent sequence with the explicitly unknowable operands removed."""
+    return [x for x in seq if x != UNDECIDABLE]
 
 
 def _token(side, va, zlib):
@@ -718,22 +771,40 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     # .text right after the body, so our "up to the next public" extent can
     # carry operands retail's carve never included.  Extra tail content is
     # reported as size (`cand_extra`), not as a wrong referent.
+    # An operand naming its OWN region at an interior offset is a switch jump
+    # table (or a computed-goto label).  Its referent is "this function" on both
+    # sides and the offset is pure codegen, so it carries no identity evidence -
+    # while retail's carve routinely ENDS before its table and ours does not,
+    # which made every table read as a wrong referent.  A self-call (offset 0)
+    # is a real referent and stays.
     lim = min(rn, cn)
-    rseq = [_desc(R, rlo, rb, sl) for sl in rsl if sl[0] + 4 <= lim]
-    cseq = [_desc(C, clo, cb, sl) for sl in csl if sl[0] + 4 <= lim]
-    cmp_.ref_undec += sum(1 for x in rseq if x == UNDECIDABLE)
-    cmp_.ref_total += sum(1 for x in rseq if x != UNDECIDABLE)
+    interior = (name + "+") if name else None
+    rraw = [d for d in (_desc(R, rlo, rb, sl) for sl in rsl if sl[0] + 4 <= lim)
+            if not (interior and d.startswith(interior))]
+    craw = [d for d in (_desc(C, clo, cb, sl) for sl in csl if sl[0] + 4 <= lim)
+            if not (interior and d.startswith(interior))]
+    # UNKNOWN IS NOT A REFERENT.  Keeping `<?>` in the sequence let one side's
+    # extra unnamed operand split an otherwise identical decidable sequence and
+    # manufactured a "different referent" row.  LoadPickupSprites was the
+    # decisive counterexample: both sides reach the same complete asset-key set,
+    # but two additional undecidable retail operands turned its source-order-only
+    # difference into ten alleged wrong assets.  Count unknowns, then remove them
+    # before making any identity or ordering claim.
+    cmp_.ref_undec += sum(1 for x in rraw if x == UNDECIDABLE)
+    rseq = _decidable(rraw)
+    cseq = _decidable(craw)
+    cmp_.ref_total += len(rseq)
     if not rseq and not cseq:
         return
     if rseq == cseq:
-        cmp_.ref_ok += sum(1 for x in rseq if x != UNDECIDABLE)
+        cmp_.ref_ok += len(rseq)
         cmp_.ref_pairs_clean += 1
     else:
         import difflib
         sm = difflib.SequenceMatcher(None, rseq, cseq, autojunk=False)
         same = 0
         for b in sm.get_matching_blocks():
-            same += sum(1 for x in rseq[b.a:b.a + b.size] if x != UNDECIDABLE)
+            same += b.size
         cmp_.ref_ok += same
         if sorted(rseq) == sorted(cseq):
             cmp_.ref_pairs_reordered += 1
@@ -742,8 +813,8 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
             for tag, i1, i2, j1, j2 in sm.get_opcodes():
                 if tag == "equal":
                     continue
-                rr = [x for x in rseq[i1:i2] if x != UNDECIDABLE]
-                cc = [x for x in cseq[j1:j2] if x != UNDECIDABLE]
+                rr = rseq[i1:i2]
+                cc = cseq[j1:j2]
                 if rr or cc:
                     cmp_.ref_bad.append((name, rr, cc))
 
@@ -1676,6 +1747,39 @@ def selftest():
           mut2[0].cmp.ref_ok < tb.cmp.ref_ok,
           "referents ok %d -> %d" % (tb.cmp.ref_ok, mut2[0].cmp.ref_ok))
 
+    # UNKNOWN carries no identity and therefore cannot split a sequence of
+    # otherwise identical referents.  This is the exact false-positive shape
+    # that made LoadPickupSprites look as if HEALTH1 reached REDBRICK.
+    a = ["A", UNDECIDABLE, "B"]
+    b = ["A", "B"]
+    check("an undecidable operand cannot manufacture a wrong referent",
+          _decidable(a) == _decidable(b), "sequence split")
+
+    # --- 3b. the resolver's ASYMMETRY traps --------------------------------
+    # Each of these four made a correct operand read as a wrong referent, and
+    # each is one-sided by construction: whatever retail happens to NAME, our
+    # .map does not, so the two images resolved the same target differently.
+    # A wrong implementation reports the FIRST count here in the hundreds.
+    bad = [(t, va) for side in (R, C)
+           for va, t in _resolver_traps(side)]
+    for label, want in (
+        ("an IAT slot resolves to its IMPORT, not to the hint RVA read as text",
+         "iat"),
+        ("a relocated pool window is UNDECIDABLE, not a byte mismatch", "reloc"),
+        ("a literal shorter than 4 chars resolves to its TEXT", "short"),
+        (r"a literal carrying \n resolves to its TEXT", "escape"),
+    ):
+        n = sum(1 for t, _ in bad if t == want)
+        check(label, n == 0, "%d target(s) still mis-resolved" % n)
+
+    # --- 3c. an interior self-reference never reaches the worklist ---------
+    # A switch jump table names its OWN function at a codegen-dependent offset,
+    # and retail's carve routinely ends before its table while ours does not.
+    self_rows = sum(1 for r in base for nm, rr, cc in r.cmp.ref_bad
+                    for d in rr + cc if d.startswith(nm + "+"))
+    check("no wrong-referent row is an interior SELF-reference (a jump table)",
+          self_rows == 0, "%d row(s)" % self_rows)
+
     # --- 4. placement shift is classified, not counted ----------------------
     rr = next((r for r in base if r.name == ".rsrc"), None)
     if rr:
@@ -1695,6 +1799,49 @@ def selftest():
     shutil.rmtree(tmp, ignore_errors=True)
     print("  -> %s" % ("all checks passed" if ok else "SELFTEST FAILED"))
     return 0 if ok else 1
+
+
+def _resolver_traps(side):
+    """[(va, trap)] - targets this side still resolves the WRONG way.
+
+    Four one-sided readings, each of which used to manufacture a wrong-referent
+    row out of a correct operand.  Every one is checkable from a single image:
+    the question is not "do the two agree" but "is this side's answer the kind
+    of answer that can possibly agree".
+    """
+    out = []
+    for slot, name in side.iat.items():
+        d, how = resolve(side, slot + side.base)
+        if how != "symbol" or d != "__imp_" + name:
+            out.append((slot + side.base, "iat"))
+    for rva in side.reloc:
+        s = side.pe.sec_of(rva)
+        if s is None or side.pe.is_exec(rva):
+            continue
+        d, how = resolve(side, rva + side.base)
+        if how in ("weak", "string"):
+            out.append((rva + side.base, "reloc"))
+        if len(out) > 64:
+            break
+    # A `??_C@` symbol IS a string literal by definition, so its bytes decide
+    # what a correct resolver must say - asking `content()` would just ask the
+    # code under test.
+    for rva, _e, nm in side.syms:
+        if not nm.startswith("??_C@"):
+            continue
+        o = side.pe.off(rva)
+        if o is None:
+            continue
+        b = side.pe.data[o:o + 256]
+        z = b.find(b"\0")
+        # this predicate is deliberately LOCAL: asking TEXT_BYTES would ask the
+        # constant under test, and the check would pass by agreeing with itself
+        if z <= 0 or any(not (0x20 <= x < 0x7F or x in (9, 10, 13)) for x in b[:z]):
+            continue
+        if resolve(side, rva + side.base)[1] != "string":
+            out.append((rva + side.base,
+                        "short" if z < 4 else "escape"))
+    return out
 
 
 def _plain_text_pairs(R, C):
@@ -1774,6 +1921,28 @@ def _referent_worklist(reps, top):
     print("  %d paired region(s) reach a different referent than retail does."
           % len(rows))
     print("  Each line: what RETAIL reaches at that point, then what WE reach.")
+
+    # Triage by the STRONGEST evidence behind each region's divergence, because
+    # the three classes cost very different amounts to act on.  A `weak` row is
+    # an 8-byte window over an unnamed target: real, but not proof, and the
+    # reader must not spend a symbol-class effort on it.
+    cls = Counter()
+    for (sec, nm), divs in rows.items():
+        ev = "weak / content only"
+        for rr, cc in divs:
+            for d in rr + cc:
+                if d.startswith('"'):
+                    ev = min(ev, "string literal")
+                elif not (d.startswith("<") or d.startswith("0x")):
+                    ev = "symbol"
+        cls[ev] += 1
+    print("  by strongest evidence:")
+    for k, v in cls.most_common():
+        print("    %-22s %4d region(s)" % (k, v))
+    reordered = sum(r.cmp.ref_pairs_reordered for r in reps)
+    print("  ordering-only (same decidable referent multiset): %d region(s)"
+          % reordered)
+
     for (sec, nm), divs in sorted(rows.items(), key=lambda kv: -len(kv[1]))[:top]:
         print("\n  %s  %s   (%d divergence%s)"
               % (sec, nm[:64], len(divs), "" if len(divs) == 1 else "s"))

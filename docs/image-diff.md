@@ -151,8 +151,9 @@ Byte verdict over retail's 1,987,179:
 
 48.55% headline; **77.28%** within paired regions; **64.93%** of the measurable,
 non-filler part. 4,876 bodies pair in plain `.text` and 904 more in `.text$AFX_*`.
-Of the 32,958 decidable operands, **31,861 (96.67%) reach the same referent**;
-610 regions do not, and that is the worklist below.
+Of the 36,386 decidable operands, **35,769 (98.30%) reach the same referent**;
+248 regions reach a genuinely different decidable referent. Another 40 reach the
+same multiset in a different order and are reported separately.
 
 Three findings the size audit could not state:
 
@@ -209,20 +210,84 @@ unpaired data and are UNMEASURED. Retail relocates 44,604 words and we relocate
 
 ## The wrong-referent worklist
 
-`--referents N`. 610 paired regions reach something else than retail does. A sample,
-each of which is a real defect that scores 100% in a relocation-masked object diff:
+`--referents N` prints the paired regions that reach something else than retail does,
+triaged by the **strongest evidence** behind each one, because the three classes cost
+very different amounts to act on:
+
+| evidence | what it means | how to act |
+|---|---|---|
+| `symbol` | both images name the referent and the names differ | an identity defect: prove the right callee/ctor/global by xref before changing anything |
+| `string literal` | the TEXT at the two targets differs | decisive, and usually a one-line fix — but read retail's bytes, never guess (`"Num Runs"` vs `"Num_Runs"` is exactly what a plausible guess gets backwards) |
+| `weak / content only` | at least one side is only an 8-byte window over an unnamed target | real, but **not proof**; do not spend symbol-class effort on it |
+
+A sample, each a real defect that scores 100% in a relocation-masked object diff:
 
 | region | retail reaches | we reach |
 |---|---|---|
 | `CGruntzMgr::Close` | `"Num Runs"`, `"Num Movies"`, `"High Detail"`, `"Disable Joystick"` | `"Num_Runs"`, `"Num_Movies"`, `"High_Detail"`, `"Disable_Joystick"` |
 | `ButeMgr::ParseAttributeFile` | `"ButeMgr:  duplicate symbol encountered - %s"` | `"ButeMgr:  duplicate tag encountered - %s"` |
 | `CStatusBarMgr::LoadTabSprites` | `CSBI_RectOnly::CSBI_RectOnly` | `CStatusBarItem::CStatusBarItem` |
-| `CGrunt::LoadPickupSprites` | `"GRUNTZ_PICKUPS_HEALTH1..3"` | `"GRUNTZ_PICKUPS_REDBRICK/BLUEBRICK/GOLDBRICK"` |
+| `CGrunt::ResetGeometry` | `ActFindId("E")` | `ActFindId("A")` |
 | `RegisterGruntActions` | `_zvec::IndexToPtr` | `zDArray<…>::Resolve` |
 
 The registry-key underscores and the ButeMgr message are byte-level source bugs; the
 `CSBI_RectOnly` and `_zvec` rows are modelling divergences (wrong class constructed,
 different container API).
+
+### Four asymmetries that were NOT defects
+
+A wrong-referent row is only worth a reader's time if a *correct* candidate could
+have produced a matching one. Four readings could not, and each manufactured rows in
+the hundreds. All four are one-sided by construction: whatever retail happens to
+NAME, our `.map` does not, so the same target resolved differently on the two sides.
+
+* **A relocated pool window.** Rule 5 fingerprints an unnamed target by the 8 bytes
+  there. When those bytes are themselves relocated — a pointer table, a CRT `.data`
+  slot holding an address — they are a **placement fact** and can never agree.
+  `<a0cc5200a0cc5200>` vs `<10ba590010ba5900>` is 0x52cca0 vs 0x59ba10, the same
+  object at two addresses. Now UNDECIDABLE. **208 regions.**
+* **An IAT slot read as text.** The slot holds the hint/name-table RVA until the
+  loader overwrites it, and carries no base relocation, so `36 55 2c 00` reads as the
+  NUL-terminated string `"6U,"`. The import table names the slot on **both** sides,
+  so that identity now wins outright. **~300 targets** (latent until the length floor
+  below was lifted, which is why it never showed before).
+* **A literal shorter than 4 characters.** Rule 3 required 4 chars, so `"A"` fell
+  through to rule 4 — where retail's manifest names it `??_C@_01PFH@A?$AA@` and we
+  name it nothing. Every one-character literal in the image read as a wrong referent.
+  The relocation table, not a length floor, is what tells text from a stored address.
+  **159 targets.**
+* **A literal carrying `\n`.** `content()` tested printable-ONLY, so
+  `"Heap stats: …%lu\n"` was demoted to an 8-byte raw window on the side that has the
+  newline while the other side, lacking it, resolved as a string. `\t\n\r` are text.
+  **103 targets.**
+
+A fifth, different in kind: **an interior self-reference**. A switch jump table names
+its OWN function at a codegen-dependent offset, and retail's carve routinely ends
+before its table while our "up to the next public" extent does not. The referent is
+"this function" on both sides and the offset carries no identity, so interior
+self-references are excluded from the sequence (a self-**call**, offset 0, is a real
+referent and stays). The bytes are still compared: a jump table with different
+targets tokenises differently and lands in `slot not aligned`. **50 regions.**
+
+Together these took the worklist from **610 to 262** without a single source change.
+
+A sixth asymmetry was in the sequence comparison rather than the resolver:
+**`<?>` is not a referent**.  An extra unnamed operand on one side used to split an
+otherwise equal decidable sequence and make an ordering-only body look as if it
+reached different assets.  `CGrunt::LoadPickupSprites` is the counterexample: both
+images reach the same complete pickup-key multiset, while retail has two additional
+undecidable operands and emits the case bodies in a different order.  Unknowns are
+now counted, then removed before identity/order comparison; ordering-only regions are
+reported separately by `--referents`.
+
+That sixth correction removes another 14 false-positive regions: the final static
+worklist is **248 genuine wrong-referent regions**, triaged as **216 symbol**, **29
+weak/content-only**, and **3 string-literal** regions, plus **40 ordering-only**.
+`CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
+retail, and the pickup loader reaches the same decidable key multiset. The observed
+yellow-to-blue startup symptom is therefore not explained by a wrong named-asset
+referent in this path; its remaining cause is elsewhere (for example the player/color
+index or palette path), and static evidence does not justify guessing one.
 
 ## Selftest
 
@@ -236,11 +301,24 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] ...and it is attributed to the right region
     [PASS] a repointed relocated dword -> a REFERENT divergence
     [PASS] ...and the masking did NOT swallow it
+    [PASS] an IAT slot resolves to its IMPORT, not to the hint RVA read as text
+    [PASS] a relocated pool window is UNDECIDABLE, not a byte mismatch
+    [PASS] a literal shorter than 4 chars resolves to its TEXT
+    [PASS] a literal carrying \n resolves to its TEXT
+    [PASS] no wrong-referent row is an interior SELF-reference (a jump table)
+    [PASS] an undecidable operand cannot manufacture a wrong referent
     [PASS] .rsrc: every differing byte is a classified placement shift
     [PASS] every section counts its UNMEASURABLE bytes in the DENOMINATOR
 
 The closure assert is not decoration: an early return added to the region differ
 silently dropped 1,340 B of operand-free `.rdata` regions until it fired.
+
+The four resolver checks are **not** vacuous, and that was verified rather than
+assumed: restoring each pre-fix behaviour one at a time makes exactly its own counter
+go non-zero — no IAT guard **302**, no relocation guard **130**, a 4-character floor
+**159**, printable-only text **103**. The literal check reads the bytes of every
+`??_C@` symbol with its OWN local text predicate: asking `TEXT_BYTES` would be asking
+the constant under test, and the check would pass by agreeing with itself.
 
 ## Known limits
 
@@ -258,6 +336,12 @@ silently dropped 1,340 B of operand-free `.rdata` regions until it fired.
   next public" extent can carry operands retail's carve never included.
 * **The `weak` resolution class** (8 bytes at an unnamed data target) can in
   principle collide — two distinct pool constants with the same leading 8 bytes. An
-  all-zero window is not evidence at all and is demoted to UNDECIDABLE, which leaves
-  weak at **839 of 45,351 `.text` operands (1.8%)**; the rest resolve by symbol
-  (28,120), string (4,129) or are UNDECIDABLE (12,263).
+  all-zero window is not evidence at all and is demoted to UNDECIDABLE, as is a
+  window overlapping a relocation. The surviving weak rows are reported as their own
+  evidence class by `--referents` and should not be worked like symbol rows.
+* **The weak window can straddle the datum.** It is a fixed 8 bytes, so for a 4-byte
+  global it reads the neighbour too, and the two images order their neighbours
+  differently. The residue is visible as pairs whose FIRST dword agrees and second
+  does not (`<0200000000000000>` vs `<0200000020059319>`) and is concentrated in the
+  CRT. Bounding the window by the target's extent needs an extent source neither
+  image publishes for an unnamed datum.

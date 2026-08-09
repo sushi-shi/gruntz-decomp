@@ -461,7 +461,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,
                     TAB_RESOURCE,
                     r,
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
                     m_machineA.m_counter,
                     m_machineB.m_counter
                 )) {
@@ -484,7 +484,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_RESOURCE_MACHINE_FOREGROUND,
                     TAB_RESOURCE,
                     r,
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEFOREGROUND",
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
                     -1,
                     0
                 )) {
@@ -507,7 +507,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_CONVEYOR_TOP,
                     TAB_RESOURCE,
                     r,
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORTOP",
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
                     -1,
                     -1,
                     0x64,
@@ -556,7 +556,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SBICMD_CONVEYOR_BOTTOM,
                     TAB_RESOURCE,
                     r,
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_CONVEYORBOTTOM",
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
                     -1,
                     -1,
                     0x64,

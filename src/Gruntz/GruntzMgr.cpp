@@ -1438,7 +1438,7 @@ i32 CGruntzMgr::MakeRezPath() {
 
     CString rez("Gruntz.REZ");
     m_haveRez = false;
-    m_strRezPath.Format("%s\%s", cwd, static_cast<LPCTSTR>(rez));
+    m_strRezPath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(rez));
     if (!FileExists(m_strRezPath)) {
         if (drive) {
             m_strRezPath.Format(s_dataPath, drive, static_cast<LPCTSTR>(rez));
@@ -1460,11 +1460,11 @@ i32 CGruntzMgr::MakeRezPath() {
     CString fec(g_disableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
-    m_strMoviePath.Format("%s\%s", cwd, static_cast<LPCTSTR>(fecHi));
+    m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecHi));
     if (!m_inGameDir && !FileExists(m_strMoviePath)) {
         movFound = 0;
         if (!g_disableHqMovie) {
-            m_strMoviePath.Format("%s\%s", cwd, static_cast<LPCTSTR>(fecLo));
+            m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecLo));
             if (FileExists(m_strMoviePath)) {
                 movFound = 1;
             }
@@ -2696,27 +2696,27 @@ void CGruntzMgr::Close() {
     }
     FreeFontsMemory();
     if (m_settings) {
-        m_settings->SetValueDword("Num_Runs", m_numRuns);
-        m_settings->SetValueDword("Num_Movies", m_numMovies);
+        m_settings->SetValueDword("Num Runs", m_numRuns);
+        m_settings->SetValueDword("Num Movies", m_numMovies);
         m_settings->SetValueDword("Sound", m_soundEnabled);
         m_settings->SetValueDword("Voice", m_isVoiceEnabled);
         m_settings->SetValueDword("Ambient", m_isAmbientEnabled);
         m_settings->SetValueDword("Music", m_musicEnabled);
         m_settings->SetValueDword("Interlaced", m_isInterlaced);
-        m_settings->SetValueDword("High_Detail", m_isHighDetail);
+        m_settings->SetValueDword("High Detail", m_isHighDetail);
         m_settings->SetValueDword("Effects", m_isEffectsEnabled);
-        m_settings->SetValueDword("Disable_Joystick", g_disableJoystick);
+        m_settings->SetValueDword("Disable Joystick", g_disableJoystick);
         if (m_sound) {
-            m_settings->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
+            m_settings->SetValueDword("Music Volume", m_sound->GetXMidiVolume());
         }
         if (m_cueSink) {
-            m_settings->SetValueDword("Voice_Volume", m_cueSink->m_voiceVolume);
+            m_settings->SetValueDword("Voice Volume", m_cueSink->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
-            m_settings->SetValueDword("Sound_Volume", g_sndCueTag);
+            m_settings->SetValueDword("Sound Volume", g_sndCueTag);
         }
-        m_settings->SetValueDword("Scroll_Speed", m_scrollSpeed);
-        m_settings->SetValueDword("Easy_Mode", m_isEasyMode);
+        m_settings->SetValueDword("Scroll Speed", m_scrollSpeed);
+        m_settings->SetValueDword("Easy Mode", m_isEasyMode);
         Resolution res = RES_640X480;
         if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
             res = RES_1024X768;
@@ -2725,9 +2725,9 @@ void CGruntzMgr::Close() {
             res = RES_800X600;
         }
         m_settings->SetValueDword("Resolution", IDX(res));
-        m_settings->SetValueDword("Checkpoint_Prompts", m_isCheckpointPrompts);
-        m_settings->SetValueDword("Enable_HiColor", m_colorDepth == BPP_RGB_16 ? 1 : 0);
-        m_settings->SetValueDword("Enable_TrueColor", 0);
+        m_settings->SetValueDword("Checkpoint Prompts", m_isCheckpointPrompts);
+        m_settings->SetValueDword("Enable HiColor", m_colorDepth == BPP_RGB_16 ? 1 : 0);
+        m_settings->SetValueDword("Enable TrueColor", 0);
     }
     ClearStateStack();
     if (m_curState) {

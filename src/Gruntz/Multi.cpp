@@ -517,7 +517,7 @@ i32 CMulti::Connect(i32 mode) {
         return 0;
     }
     m_pumpGuard = 1;
-    i32 r = PumpA();
+    i32 r = WaitForOtherPlayers();
     m_pumpGuard = 0;
     if (r == 0) {
         return 0;
@@ -920,13 +920,13 @@ InterfaceObject* CMulti::SetupServices() {
                 store->SetValueDword("Service", g_serviceId);
                 {
                     store->SetValueString(
-                        "Player_Name",
+                        "Player Name",
                         const_cast<char*>(static_cast<const char*>(GetString5a0()))
                     );
                 }
                 {
                     store->SetValueString(
-                        "Game_Name",
+                        "Game Name",
                         const_cast<char*>(static_cast<const char*>(GetString59c()))
                     );
                 }
@@ -940,7 +940,7 @@ InterfaceObject* CMulti::SetupServices() {
                     store->SetValueDword("Service", g_serviceId);
                 }
                 store->SetValueString(
-                    "Player_Name",
+                    "Player Name",
                     const_cast<char*>(static_cast<const char*>(GetString5a0()))
                 );
             }
@@ -977,17 +977,17 @@ INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
             DWORD cap = 0xa;
             g_gameReg->m_settings->GetValueString(
-                const_cast<char*>(static_cast<const char*>(("Player_Name"))),
+                const_cast<char*>(static_cast<const char*>(("Player Name"))),
                 nameBuf,
                 &cap,
                 "Player"
             );
             cap = 0x40;
             g_gameReg->m_settings->GetValueString(
-                const_cast<char*>(static_cast<const char*>(("Game_Name"))),
+                const_cast<char*>(static_cast<const char*>(("Game Name"))),
                 gameBuf,
                 &cap,
-                "Multiplayer_Gruntz"
+                "Multiplayer Gruntz"
             );
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
@@ -1058,7 +1058,7 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
     char buf[0x12a];
     if (Mgr() && Mgr()->m_owner->m_hInstance) {
         if (!LoadStringA(Mgr()->m_owner->m_hInstance, strId, buf, 0xfa)) {
-            strcpy(buf, "Error");
+            strcpy(buf, "Error.");
         }
         ReportVersionMsg(buf, level);
     }
@@ -1179,7 +1179,7 @@ i32 CMulti::DetectConnectionConfig() {
 
     m_providerConfigPrefix = "Other";
     if (provider->IsIpxProvider()) {
-        m_providerConfigPrefix = "IPX";
+        m_providerConfigPrefix = "Ipx";
         m_commandDelay = 2;
         m_drainReload = 0xa;
     } else if (provider->IsTcpIpProvider()) {
@@ -1334,7 +1334,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
-    MakeButeSectionKey(buf, "%s", m_groupName);
+    MakeButeSectionKey(buf, "NAME", m_groupName);
     AppendInt(buf, "CMDDELAY", m_commandDelay);
     AppendInt(buf, "RESEND", m_drainReload);
     AppendInt(buf, "LEVEL", ResyncLParam());
@@ -1345,7 +1345,7 @@ CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
         return 0;
     }
 
-    CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Player"), g_emptyString, 0);
+    CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Host"), g_emptyString, 0);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
@@ -1388,7 +1388,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
     if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "RESEND")) {
         m_drainReload = atoi(buf);
     }
-    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "DynCmdDelay")) {
+    if (ExtractBracketValue(buf, sel->m_desc.m_lpszName, "NAME")) {
         ApplyDynSetting(CString(buf));
     }
     m_syncGate = 0;
@@ -1439,7 +1439,9 @@ i32 CMulti::VerifyCustomLevel(void* h, CNetSessionNode* playerTok) {
         g_connectRptMgr->m_levelVerifyResult = 0;
         if (g_connectRptMgr->Poll(token) == 0) {
             m_customLevelVerificationPending = 0;
-            g_gameReg->EnterModalUI("Unable to verify custom level with other players");
+            g_gameReg->EnterModalUI(
+                "Unable to verify custom level with other players. The game will not start."
+            );
             goto notVerified;
         }
 

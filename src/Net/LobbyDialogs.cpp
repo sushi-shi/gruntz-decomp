@@ -342,7 +342,7 @@ namespace NetLobby {
                 EndDialog(hWnd, session->m_lastSenderId);
             } else if (g_curMulti->m_sessionTerminated) {
                 KillTimer(hWnd, 1);
-                session->ReportVersionMsg("The game session has been terminated.", 0);
+                session->ReportVersionMsg("The game session has been terminated", 0);
                 EndDialog(hWnd, IDX(IDC_NET_ABORT));
             } else {
                 g_sessionFlag = 0;

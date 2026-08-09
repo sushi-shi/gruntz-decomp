@@ -1040,7 +1040,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (BuildSideTabs() == 0) {
         return 0;
     }
-    if (RefreshState() == 0) {
+    if (LoadTabSprites() == 0) {
         return 0;
     }
     if (BuildTabzDialog() == 0) {
@@ -3626,7 +3626,10 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragm
 
     CObject* spr_ob = 0;
     i32 n = IDX(fragment) + 1;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+        spr_ob
+    );
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     CImage* frame = (spr && n >= spr->m_minIndex && n <= spr->m_maxIndex)
                         ? static_cast<CImage*>(spr->m_items.GetAt(n))

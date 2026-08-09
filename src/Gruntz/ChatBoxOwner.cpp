@@ -159,7 +159,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     if (enabled > 0) {
                         CString message;
                         message.Format(
-                            "Congratulations!  You have just enabled %d new cheats!",
+                            "Congratulations!  You have just enabled %d new cheats!\n",
                             enabled
                         );
                         g_gameReg->AppendChatMessage(
