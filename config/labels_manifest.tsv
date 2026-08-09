@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 342  functions: 4540
+# units: 343  functions: 4540
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -325,7 +325,8 @@ typekeycoll	37
 ufo	7
 uncompr	1
 userlogic	18
-videoconfig	19
+videoconfig	16
+videooptions	3
 wapuncompress	1
 warlord	19
 warpstonefly	3

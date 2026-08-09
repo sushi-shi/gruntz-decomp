@@ -878,6 +878,11 @@ source = "src/Gruntz/VideoConfig.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
+unit = "videooptions"
+source = "src/Gruntz/VideoOptions.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
 flags = "cpp-rtti"
