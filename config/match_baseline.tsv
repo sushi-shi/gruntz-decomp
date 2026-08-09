@@ -2843,7 +2843,7 @@ logicworkerhandlersb	_CreateRainCloud	100.0000	100.0000	1	41fde5522aec	0xaf5a0	1
 logicworkerhandlersb	_CreateRollingBall	100.0000	100.0000	1	c98424850a58	0xaf0a0	100.0000
 logicworkerhandlersb	_CreateSpotLight	100.0000	100.0000	1	a5980b6473f2	0xaf1e0	100.0000
 logicworkerhandlersb	_CreateUFO	100.0000	100.0000	1	75f9442c9b1f	0xaf6e0	100.0000
-mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	100.0000	100.0000	5	7608fed20c72	0xa11d0	100.0000
+mainmenubuilder	?BuildMainMenuTree@@YAHPAVCChatBox@@H@Z	100.0000	100.0000	6	b04218067ea1	0xa11d0	100.0000
 mainmenubuilder	?SetMenuTextRect@@YAXXZ	100.0000	100.0000	1	f58ff91e1747	0xa1190	100.0000
 maplogic	?MapSerializeCurve@@YAHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	76be8eb147f4	0xec230	100.0000
 mapmgr	??0CMapArrayA@@QAE@XZ	100.0000	100.0000	7	8ce65d529a2a	0x9e700	100.0000

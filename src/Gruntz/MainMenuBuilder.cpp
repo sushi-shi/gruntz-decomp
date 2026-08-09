@@ -176,7 +176,6 @@ DATA(0x00211aa0)
 static char s_MENU_MAINMENU_TITLE[] = "MENU_MAINMENU_TITLE";
 DATA(0x00211a10)
 static char s_OPTIONZ[] = "OPTIONZ";
-static char s_HELP[] = "HELP";
 DATA(0x00211888)
 static char s_BACK[] = "BACK";
 DATA(0x0020ce90)
@@ -221,7 +220,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (g_cdPromptResult != 0) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddItem(s_HELP, s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
+    page->AddItem("HELP", s_MENU_MAINMENU_HELP, 0x8035, 0, 0);
     page->AddItem(s_QUIT, s_MENU_MAINMENU_QUIT, 0x8008, 0, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
