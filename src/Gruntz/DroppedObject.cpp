@@ -418,7 +418,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
         o->m_flags |= 0x20000;
     }
     m_timePerTile =
-        32.0
+        g_objDropDiv
         / static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
 }
 

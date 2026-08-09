@@ -1565,7 +1565,7 @@ donothing	??_GCDoNothing@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0dcaa7009e31	0xf740	
 donothing	??_GCDoNothingNormal@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0dcaa7009e31	0xf870	100.0000
 donothing	?SerializeMove@CDoNothing@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	c680092ba8ec	0xf6d0	100.0000
 donothing	?SerializeMove@CDoNothingNormal@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	92d90237c74e	0xf800	100.0000
-droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	90.0821	90.0821	14	c1168c720756	0xc68b0	90.0821
+droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	90.0821	90.0821	15	dc8492438623	0xc68b0	90.0821
 droppedobject	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	10	92efcf3de29b	0xc7490	100.0000
 droppedobject	??0CObjectDropper@@QAE@PAUCGameObject@@@Z	96.4626	96.4626	11	447c36fcff0d	0xc59f0	96.4626
 droppedobject	??1CDroppedObject@@UAE@XZ	100.0000	100.0000	2	e39a5644fd4b	0x125b0	100.0000
