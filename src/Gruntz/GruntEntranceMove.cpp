@@ -1252,11 +1252,11 @@ i32 CGrunt::FinishActiveAction() {
     bool ne;
     ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
     if (!ne) {
-        return 0;
+        goto retZero;
     }
     ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
     if (!ne) {
-        return 0;
+        goto retZero;
     }
     bool eq;
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -1334,7 +1334,7 @@ i32 CGrunt::FinishActiveAction() {
 
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) == 0);
     if (!eq || m_entranceArmed == 0) {
-        return 0;
+        goto retZero;
     }
 
     {
@@ -1462,6 +1462,9 @@ modeDispatch: {
     m_entrancePickup = PICKUP_INVALID;
     return 1;
 }
+
+retZero:
+    return 0;
 }
 
 RVA(0x0006b260, 0x5)
