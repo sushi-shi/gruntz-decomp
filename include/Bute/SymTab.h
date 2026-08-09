@@ -137,6 +137,6 @@ public:
 };
 SIZE(0x4c);
 
-extern "C" const char g_sepSlash[];
+extern "C" char g_sepSlash[];
 
 #endif // SRC_BUTE_SYMTAB_H

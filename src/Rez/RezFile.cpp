@@ -10,12 +10,12 @@
 #include <stdio.h>
 
 DATA(0x0021a0a4)
-const char s_rPlusB[] = "r+b";
+char s_rPlusB[] = "r+b";
 DATA(0x0021a0a8)
-const char s_wPlusB[] = "w+b";
+char s_wPlusB[] = "w+b";
 
 DATA(0x0021a0a0)
-const char g_wildcard[] = "*.*";
+char g_wildcard[] = "*.*";
 
 RVA(0x0013c4d0, 0x1)
 void CRezList::UnusedListHook() {}

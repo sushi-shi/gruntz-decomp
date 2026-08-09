@@ -23,21 +23,21 @@ DATA(0x002bf224)
 PALETTEENTRY* g_pal = 0;
 
 DATA(0x001efb40)
-float g_one = 1.0f;
+const float g_one = 1.0f;
 DATA(0x001efb44)
-float g_255 = 255.0f;
+const float g_255 = 255.0f;
 DATA(0x001efb48)
-float g_p01 = 0.01f;
+const float g_p01 = 0.01f;
 DATA(0x001efb4c)
-float g_lumaR = 0.5859375f;
+const float g_lumaR = 0.5859375f;
 DATA(0x001efb50)
-float g_lumaG = 0.296875f;
+const float g_lumaG = 0.296875f;
 DATA(0x001efb54)
-float g_lumaB = 0.109375f;
+const float g_lumaB = 0.109375f;
 DATA(0x001efb58)
-float g_inv255 = 0.003921568859368563f;
+const float g_inv255 = 0.003921568859368563f;
 DATA(0x001efb5c)
-float g_negone = -1.0f;
+const float g_negone = -1.0f;
 
 inline CShadeTableArray::CShadeTableArray() {
 

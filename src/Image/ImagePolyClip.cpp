@@ -28,7 +28,7 @@ const float g_rasterScaleNeg = -16384.0f;
 DATA(0x001efb20)
 const float g_c20 = 0.5f;
 DATA(0x001efb24)
-float g_c24 = -3.1415927f;
+const float g_c24 = -3.1415927f;
 
 DATA(0x002856f0)
 i32 g_warpU = 0;

@@ -25,7 +25,7 @@
 #include <time.h>
 
 DATA(0x0020cff0)
-const char g_sepSlash[] = "\\";
+char g_sepSlash[] = "\\";
 
 static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {

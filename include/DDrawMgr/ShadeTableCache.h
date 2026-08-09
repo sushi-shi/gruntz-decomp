@@ -84,11 +84,11 @@ public:
 };
 SIZE(0x18);
 
-extern float g_one;
-extern float g_255;
-extern float g_p01;
-extern float g_lumaR;
-extern float g_lumaG;
-extern float g_lumaB;
-extern float g_inv255;
+extern const float g_one;
+extern const float g_255;
+extern const float g_p01;
+extern const float g_lumaR;
+extern const float g_lumaG;
+extern const float g_lumaB;
+extern const float g_inv255;
 #endif // GRUNTZ_DDRAWMGR_SHADETABLECACHE_H

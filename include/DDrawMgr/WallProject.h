@@ -8,7 +8,7 @@
 extern const float g_c10;
 extern const float g_c20;
 
-extern float g_c24;
+extern const float g_c24;
 
 class CDDSurface;
 

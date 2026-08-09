@@ -45,7 +45,7 @@
 DATA(0x001ea9f0)
 const double g_objDropDiv = 32.0;
 DATA(0x001eaa00)
-double g_dropFallBias = -0.5;
+const double g_dropFallBias = -0.5;
 
 template<> DATA(0x0024be90)
 CActReg CActRegPool<CObjectDropper>::s_table(ACT_ID_FIRST, ACT_ID_LAST);

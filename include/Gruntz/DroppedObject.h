@@ -36,5 +36,5 @@ public:
 SIZE(0x70);
 
 extern const double g_objDropDiv;
-extern double g_dropFallBias;
+extern const double g_dropFallBias;
 #endif // GRUNTZ_CDROPPEDOBJECT_H

@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 DATA(0x001eab40)
-float g_zeroF = 0.0f;
+const float g_zeroF = 0.0f;
 
 RVA(0x000fc9c0, 0x17)
 i32 CBattlezData::InitWithRecords(void* records) {

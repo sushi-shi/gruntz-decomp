@@ -32,10 +32,10 @@ i32 g_helperRefCount;
 // Interior fields of one CActReg; do not define overlapping globals.
 
 DATA(0x0021ad28)
-i32 g_defaultProjActSize;
+i32 g_defaultProjActSize = 32;
 
 DATA(0x0021adf4)
-const char s_out_of_memory[] = "out of memory";
+char s_out_of_memory[] = "out of memory";
 
 DATA(0x002bf498)
 TypeKeyRec g_recs23[32];

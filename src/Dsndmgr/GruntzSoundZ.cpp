@@ -10,7 +10,7 @@
 #include <string.h>
 
 DATA(0x001ee8ec)
-char g_dot[] = ".";
+const char g_dot[] = ".";
 
 DATA(0x00253c5c)
 HMDIDRIVER g_ailMidiDriver = 0;

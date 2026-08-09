@@ -8,8 +8,8 @@
 #include <Rez/RezMgr.h>
 
 extern const char s_rb[];
-extern const char s_rPlusB[];
-extern const char s_wPlusB[];
+extern char s_rPlusB[];
+extern char s_wPlusB[];
 
 class CRezFile : public CRezItmBase {
 public:
@@ -40,6 +40,6 @@ public:
 };
 SIZE(0x1c);
 
-extern "C" const char g_wildcard[];
+extern "C" char g_wildcard[];
 
 #endif // SRC_REZ_REZFILE_H

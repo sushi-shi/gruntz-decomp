@@ -117,5 +117,5 @@ inline CBattlezData::CBattlezData() {
     Init();
 }
 
-extern float g_zeroF;
+extern const float g_zeroF;
 #endif // GRUNTZ_BATTLEZDATA_H
