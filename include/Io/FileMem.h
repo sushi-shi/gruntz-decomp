@@ -17,6 +17,15 @@ public:
     // inline is fuzzy-neutral (87.75 either way, measured) and un-claims four
     // retail functions, so the OOL definition stays.
     CFileMemBase();
+
+    // The same seed, INLINE: LoadRecordFile (0x156ad0) expands the whole ctor in
+    // place, where SnapshotChildren/RestoreChildren call the pinned 0x157850.
+    enum EInlineSeed {
+        INLINE_SEED
+    };
+    CFileMemBase(EInlineSeed) {
+        SeedFields();
+    }
     virtual ~CFileMemBase() {
         Close();
     }
@@ -36,6 +45,12 @@ public:
     virtual i32 Read(void* buf, i32 n) = 0;
     virtual i32 Write(const void* buf, i32 n) = 0;
 
+    void SeedFields() {
+        m_4 = 0;
+        m_mode = 0;
+        m_name.Empty();
+    }
+
     i32 m_4;
     i32 m_mode;
     CString m_name;
@@ -47,6 +62,9 @@ public:
     CFileMem() {
         Reset();
     }
+    CFileMem(EInlineSeed t) : CFileMemBase(t) {
+        SeedMemFields();
+    }
     virtual ~CFileMem() OVERRIDE {
         Close();
     }
@@ -54,6 +72,12 @@ public:
         Reset();
     }
     virtual void Reset() OVERRIDE;
+
+    void SeedMemFields() {
+        m_length = 0;
+        m_offset = 0;
+        SeedFields();
+    }
     virtual i32 GetLength() OVERRIDE;
     virtual i32 GetOffset() OVERRIDE;
     virtual i32 Open() OVERRIDE;

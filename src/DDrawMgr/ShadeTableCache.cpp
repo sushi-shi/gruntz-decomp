@@ -747,7 +747,7 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
         i32 dr2 = r - pal[i].peRed;
         i32 dg2 = g - pal[i].peGreen;
         i32 db2 = b - pal[i].peBlue;
-        i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
+        i32 d = dg2 * dg2 + dr2 * dr2 + db2 * db2;
         if (d < bestDist) {
             bestDist = d;
             best = i;

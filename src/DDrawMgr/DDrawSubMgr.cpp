@@ -441,9 +441,7 @@ CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
 
 RVA(0x00157850, 0x54)
 CFileMemBase::CFileMemBase() {
-    m_4 = 0;
-    m_mode = 0;
-    m_name.Empty();
+    SeedFields();
 }
 
 RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
@@ -477,18 +475,12 @@ i32 CFileMem::GetOffset() {
 
 RVA(0x00157a40, 0x10)
 void CFileMemBase::Reset() {
-    m_4 = 0;
-    m_mode = 0;
-    m_name.Empty();
+    SeedFields();
 }
 
 RVA(0x00157a50, 0x16)
 void CFileMem::Reset() {
-    m_length = 0;
-    m_offset = 0;
-    m_4 = 0;
-    m_mode = 0;
-    m_name.Empty();
+    SeedMemFields();
 }
 
 RVA(0x00157a80, 0x51)

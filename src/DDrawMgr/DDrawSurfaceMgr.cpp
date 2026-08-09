@@ -427,7 +427,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     if (name == NULL) {
         return 0;
     }
-    CFileMem S;
+    CFileMem S(CFileMem::INLINE_SEED);
     if (S.SetName(name, 1, 0) == 0) {
         return 0;
     }
