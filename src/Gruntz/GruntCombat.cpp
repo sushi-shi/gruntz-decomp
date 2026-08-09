@@ -276,14 +276,23 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-#define BIND_ACT_644AF0(id, handler)                                                               \
+#define BIND_ACT_644AF0_RAW(id, handler)                                                           \
+    {                                                                                              \
+        GruntActPmf _p;                                                                            \
+        _p.m_pmf = (handler);                                                                      \
+        /* The stored generic CUserLogic PMF is reached through retail's raw */                    \
+        /* _zvec accessor; the typed view exists only at this ABI seam. */                         \
+        *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zvec::IndexToPtr(id)) = _p.m_h;             \
+    }
+
+#define BIND_ACT_644AF0_TYPED(id, handler)                                                         \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
         *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
     }
 
-#define REGISTER_KEY_644AF0(key, handler)                                                          \
+#define REGISTER_KEY_644AF0_IMPL(key, handler, bind)                                               \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -304,8 +313,14 @@ void CGrunt::ComputeFacing(double dt) {
             *slot = (key);                                                                         \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        BIND_ACT_644AF0(id, handler);                                                              \
+        bind(id, handler);                                                                         \
     }
+
+#define REGISTER_KEY_644AF0(key, handler)                                                          \
+    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_RAW)
+
+#define REGISTER_KEY_644AF0_TYPED(key, handler)                                                    \
+    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_TYPED)
 
 #define REGISTER_KEY_644AF0_DERIVED(key, handler)                                                  \
     {                                                                                              \
@@ -316,7 +331,7 @@ void CGrunt::ComputeFacing(double dt) {
             *g_typeColl.SlotOf(id) = (key);                                                        \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        BIND_ACT_644AF0(id, handler);                                                              \
+        BIND_ACT_644AF0_TYPED(id, handler);                                                        \
     }
 
 RVA(0x00057100, 0x590)
@@ -1893,7 +1908,7 @@ void RegisterGruntActions() {
     REGISTER_KEY_644AF0(s_codeO, &CGrunt::StepArrivalCommitB);
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_KEY_644AF0("R", &CGrunt::LoadGruntDecayConfig2);
+    REGISTER_KEY_644AF0_TYPED("R", &CGrunt::LoadGruntDecayConfig2);
     REGISTER_KEY_644AF0_DERIVED(s_codeS, &CGrunt::FinishEntranceMove);
 }
 

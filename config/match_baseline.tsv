@@ -829,7 +829,7 @@ cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	7	6207ef7b40e9	0x153260	100.000
 cimage	?LoadDispatch@CImage@@UAEHPAUPidHeader@@W4FileImageFormat@@IH@Z	100.0000	100.0000	1	4e9a05959502	0x152fb0	100.0000
 cimage	?Reload@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	7	8333b18543f7	0x153380	100.0000
 cimage	?RenderFrame@CImage@@QAEXPAVCDDrawSurfacePair@@HHH@Z	100.0000	100.0000	3	7fce5141738d	0x153790	100.0000
-cimage	?RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z	100.0000	100.0000	4	04524d3f1c20	0x153810	100.0000
+cimage	?RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z	100.0000	100.0000	5	73306389b188	0x153810	100.0000
 cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.0533	99.0533	5	24fa8c2b315a	0x153470	99.0533
 cimage	?Resolve@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	8	d3b912869d36	0x152f20	100.0000
 cimage	?SetOrigin@CImage@@QAEHPAUPidHeader@@W4FileImageFormat@@@Z	100.0000	100.0000	1	7c87be00e77d	0x153330	100.0000
@@ -954,7 +954,7 @@ ddrawptrcollections	?LoadKeyed@CFileImageSurface@@UAEHPAXHHW4ColorDepth@@HH@Z	10
 ddrawptrcollections	?ResolveEx@CFileImageSurface@@UAEHPAX0W4FileImageFormat@@IHH@Z	100.0000	100.0000	1	beea55de0cff	0x148890	100.0000
 ddrawptrcollections	?Setup@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@HHH@Z	100.0000	100.0000	4	4e47bbe33d6f	0x148af0	100.0000
 ddrawptrcollections	?UpdateOverlay@CPoolItemA88@@UAEHPAXPAVCDDSurface@@0I0@Z	100.0000	100.0000	3	07b3a5f4a315	0x148ac0	100.0000
-ddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUtagRECT@@PAVCDDSurface@@0HH@Z	100.0000	100.0000	5	1f2d993c2b5d	0x1497f0	100.0000
+ddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUtagRECT@@PAVCDDSurface@@0HH@Z	100.0000	100.0000	6	03855fa323a4	0x1497f0	100.0000
 ddrawshadeblit	?BlitAt@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HHHH@Z	100.0000	100.0000	2	6b55637df03f	0x149780	100.0000
 ddrawshadeblit	?BlitCopyForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.8187	77.8187	3	ac035d23283c	0x149950	77.8187
 ddrawshadeblit	?BlitCopyMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	84.5343	84.5343	6	0ba3f34197b2	0x149d00	84.5343
@@ -1247,7 +1247,7 @@ ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13eae0	100.0000
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80	100.0000
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	3	482a2140b13f	0x13e690	100.0000
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	68.1160	68.1160	12	289329c49746	0x13f020	68.1473
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	68.1160	68.1160	13	cfc706c7aa29	0x13f020	68.1473
 ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	74.6227	74.6227	11	a9bd675a6e30	0x13f460	80.3591
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	3	e6919eb7da93	0x141080	100.0000
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	3	2199bcaca9d3	0x13f990	100.0000
@@ -2008,7 +2008,7 @@ gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.3929	90.3929	17	41990a925613	0x588f0	90.3929
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	86.8499	86.8499	21	30968a2ca889	0x57db0	87.3647
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	eef01da589dd	0x57d10	100.0000
-gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	2	48f8454ac97c	0x5be30	99.4414
+gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	3	43cc37ade298	0x5be30	99.4414
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	7	4884bd7f7b9e	0x57800	100.0000
 gruntcombat	?StopStruckSlotSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	548879ed1823	0x57c10	100.0000
 gruntcombat	?StopStruckVoiceSound@CGrunt@@QAEXXZ	100.0000	100.0000	2	6183b34eeacb	0x57ce0	100.0000
