@@ -60,10 +60,12 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
 
 // @early-stop
 // The six ret blocks now sit at retail's six positions and the four Clip sites
-// have their proven expansions.  Residue: the frame is 0xa4 against retail's
-// 0x88 (seven surplus dwords, all in the rect/Coord group), and cl holds `this`
-// in edi where retail takes esi - `push esi; mov esi,ecx; push edi` vs base's
-// four pushes then `mov edi,ecx`.
+// have their proven expansions.  Residue: the frame is 0x90 against retail's
+// 0x88 (two surplus dwords in the rect group), and cl holds `this` in edi where
+// retail takes esi - `push esi; mov esi,ecx; push edi` vs base's four pushes
+// then `mov edi,ecx`.  (The three `Coord x[2]` locals were frame padding, not a
+// buffer requirement - CUserLogic::GetScreenPos writes exactly two dwords - and
+// removing them took the frame 0xa4 -> 0x90.)
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -75,12 +77,12 @@ i32 CGrunt::StepGooSuckerBehavior() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_CLIP_NULL(grid);
 
-    Coord c1[2];
-    GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
-    Coord c2[2];
-    GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
+    Coord c1;
+    GetScreenPos(&c1);
+    i32 cx = c1.m_x >> TILE_SHIFT_PX;
+    Coord c2;
+    GetScreenPos(&c2);
+    i32 cy = c2.m_y >> TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -180,16 +182,9 @@ L_ed006b:
         goto L_scanb;
     }
     {
-        Coord cc[2];
-        g->GetScreenPos(cc);
-        if (TileSwitch(
-                cc[0].m_x >> TILE_SHIFT_PX,
-                cc[0].m_y >> TILE_SHIFT_PX,
-                0,
-                m_arrivalFlags,
-                1,
-                0
-            )
+        Coord cc;
+        g->GetScreenPos(&cc);
+        if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
             != 0) {
             if (m_blockedVoicePending != 0) {
                 i32 x = m_object->m_screenX;
