@@ -84,9 +84,11 @@ it is not retail's. So the inferred span compares two allocators' padding, and t
 no retail referent in it at all: the delinker even takes each `.bss` size from OUR
 source (`symbol_names.csv` → `data_manifest`, provenance `src-DATA-sizeof`).
 
-**Census, whole tree** (`build/objdiff/normalized/*`, both sides, exact-name pairing):
-**364 paired `.bss` symbols, 51 extent disagreements, |delta| histogram `{3: 1, 4: 49,
-6: 1}`.** Every single one is sub-alignment padding. Not one is a real size.
+**Census, whole tree** — `python -m gruntz.audit.bss_extents` (both sides, exact-name
+pairing, which is what objdiff does for these names): **363 paired `.bss` symbols, 50
+extent disagreements, |delta| histogram `{3: 1, 4: 49}`** — the widest disagreement in
+the whole program is FOUR bytes. Every one is sub-alignment padding; not one is a size.
+The same tool lists the 91 unpaired target symbols, which are the real worklist.
 
 Three routes were considered; only the third is possible.
 

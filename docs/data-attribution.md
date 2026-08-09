@@ -118,8 +118,8 @@ first divergence: ??_7CActionArea@@6B@ rdata ret 0x1e7004 cand 0x101000 Doff -0x
 
 Historical (kept for the mechanism; the numbers are superseded by §3b): `matched_data`
 was **4 / 69184 bytes (0.006%)** vs homm2's **305328/305328 = 100%**. It is now
-**80902/292476 = 27.66%** — and §3c explains why the `.bss` share of the remainder is
-not reachable at all.
+**639859/704148 = 90.87%**; §3c is why the `.bss` share, once written off as
+unreachable, was a measurement artifact rather than a reconstruction gap.
 
 **Root cause (measured, not naming).** The delinked target objs already carry REAL data
 names — `??_7CActionArea@@6B@` in `.rdata`, `_g_gameReg`, `?g_buteMgr@@3VCButeMgr@@A`. The
@@ -602,8 +602,9 @@ steerable from `src/`.
 **Resolution (2026-08-09).** `objdiff-cli` is now built from source with
 `nix/patches/objdiff-bss-inferred-extent.patch`: a BSS symbol's size is compared only
 when at least one side actually STATES one. It is not a relaxation of a real check — a
-census of the whole tree found 364 paired `.bss` symbols with 51 extent disagreements
-and **every delta 3, 4 or 6 bytes**, i.e. sub-alignment padding, none of them a size.
+census of the whole tree (`python -m gruntz.audit.bss_extents`) found 363 paired `.bss`
+symbols with 50 extent disagreements and **every delta 3 or 4 bytes**, i.e. sub-alignment
+padding, none of them a size.
 Unpaired symbols are still a mismatch, and the extent audit that does bite is
 `data_manifest.candidates()` (a reviewed extent must fit the span to its retail
 neighbour, or BOTH rows are withheld). Measured on unchanged objs: `matched_data`
