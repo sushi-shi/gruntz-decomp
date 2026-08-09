@@ -673,26 +673,99 @@ symbol is unmoved (`brickzload` 0.00, `wwdfactoryobject` 0.00, `butemgr` 8.70,
 `battlezmapconfig` 12.90, `worldsoundset` 33.33, `videoconfig` 40.00, `dialogs` 52.00,
 `fadereffects` 66.67, `gruntzapp` 81.01, `netcmdslot` 97.93).
 
-**What still appends into a COMDAT: 275 rows over 23 objects, 16 of them in a sub-100
-section** (`grunt` .data 64.28, `gruntcombat` .data 81.25, `gruntentrancearrival` .data
-77.75, `gruntentrancemove` .data 88.35, `butemgr` .data 99.92, ...). Each is an ordinary
-section rejected for ONE unenrolled member, and the members split into two families:
+### 3d-i. Both legacy-row families closed (2026-08-09) — 92.00% → 97.04%
 
-* **`$T<id>` FP-pool constants** (18 sections) — cl's floating-point literal pool, no
-  source pin. `DATA_COMPGEN(rva, name, value)` is the channel; the claim has to be written
-  in the owning TU.
-* **an exact `(rva, size)` ALIAS of a pooled `??_C@` literal** (44 pairs, listed by
-  `data_manifest --report`) — e.g. `_s_strLBrack$S19420` and `??_C@_01KHLB@?$FL?$AA@` are
-  both 2 bytes at `0x213efc`; /Gf folded one TU's `static char s[] = "["` onto the pooled
-  literal other TUs emit. `candidates()` reads the pair as an extent overlap and withholds
-  **both**, which is why 44 `??_C@` groups (one of them owned by 47 objects) are missing
-  from every target too. It is not an overlap and it is not a fold either: the delinker's
-  `proved_rvas` admits N objects at one rva only under ONE name, and
-  `owner_and_addend_for_rva` hands every referencing object that single name — so enrolling
-  the second spelling needs either per-object owner resolution in the delinker or an alias
-  map in `canonicalize_data_symbols`. Exactly one of the 45 reported overlaps is a REAL
-  contradiction and stays withheld: `?g_idleGeom@@3PAUBzGeomPair@@A` +0x20 at `0x1e8fe4`
-  runs into `_g_bootyLetterCoords` at `0x1e8fe8`.
+275 rows over 23 objects were still appending, each an ordinary section rejected for ONE
+unenrolled member, in two families. Both are now addressed, from the same oracle.
+
+**RETAIL'S `.reloc` DIRECTORY IS THE ADDRESS ORACLE, and it proves itself.** The PE lists
+every site the linker wrote an absolute address into, so retail's DIR32 sites inside
+`[fn_rva, fn_rva+size)` are known exactly — and so are our base obj's, from its COFF
+relocations. Equal counts pair the two lists positionally, and then *every base symbol
+whose rva we already know must equal what retail wrote at its partner site* (plus the
+addend in our own instruction bytes); one disagreement discards the whole function. Only
+then is a site whose symbol we cannot name read off, and the address is re-proven against
+the shipped bytes. This is strictly stronger than content matching, which for FP pools is
+not merely ambiguous but SELF-CONFIRMING: we would copy the retail bytes from the address
+we found *by* those bytes, so a wrong constant in our source would still score 100.
+
+* **`$T<id>` FP-pool constants** (`data_manifest.fp_pool_rows`). cl's floating-point pool
+  has no source pin — `DATA()` needs a VarDecl and `DATA_COMPGEN` needs a value expression,
+  and a `$T<n>` entry is neither. 44 of 66 members resolve from the reloc oracle with zero
+  ambiguity. The other half was ALREADY PINNED and still did not count: 43 `DATA_COMPGEN`
+  float claims state pool slots, but labels.py spells them `$T<rva>` while
+  `ordinary_sections` keys off the COFF member name `$T<counter>`, so the pin and the
+  member never met. Rows now carry `member` (cl's per-object spelling) and the manifest
+  name is `$T<decimal rva>` for both channels — which coalesces them and lets N objects own
+  one slot, as they must: our TU partition is a reconstruction, so `kitchenslime $T35488`
+  and `pathhazard $T35508` are the same 0x1ea400. 14 more bridge on an exact extent+bytes
+  match unique in both directions.
+* **an exact `(rva, size)` ALIAS of a pooled `??_C@` literal.** `_s_strLBrack$S19420` and
+  `??_C@_01KHLB@?$FL?$AA@` are both 2 bytes at `0x213efc`; /Gf (implied by /O2) put one
+  TU's `static char s[] = "["` and the literal other TUs emit at one address. Both claims
+  are true and the tell is that the extents are EXACTLY equal — a real contradiction only
+  INTERSECTS. The pooled literal keeps the authoritative claim (it is what every
+  referencing object's relocation resolves to, and it has the owners) and the named static
+  is re-provenanced **`provisional-`**, which in the delinker means precisely "carve this
+  definition, but do not own the address": `address_authoritative` gates both `proved_rvas`
+  and `owner_and_addend_for_rva`, while `object_files::add_data_definition` carves it
+  either way. No `provisional-` row can re-spell a relocation, so nothing is asserted
+  twice — the objection that blocked this before.
+* **A FOLD NEEDS BOTH SIDES IN ONE STORAGE, and 30 of the 44 fail that.** VC5 pools
+  literals but does not make them read-only (no `/GF`), so a bare literal lands in a
+  `.data` COMDAT — while a static our source declares `const` compiles into `.rdata`,
+  which the linker CANNOT have folded onto it. Those pairs are mis-modelled declarations
+  (retail's code used the literal directly and had no array), and enrolling them appended a
+  phantom tail to the object's first `.data`: measured, `warlord` 100 → 83.07,
+  `gruntsteps` 100 → 76.06, plus `triggermgr`, `gruntassetloaders`, `directsoundmgr`,
+  `ddrawsubmgrleaf`. The candidate obj's own section name refutes the PIN rather than the
+  literal, and the 30 are listed by name by `data_manifest --report` as a source worklist.
+  (The reloc oracle independently confirms their ADDRESSES: retail's code really does load
+  `0x20a5dc` where our `triggermgr` loads its `.rdata` `s_LightFx`. It is the `const`, not
+  the address, that is wrong.)
+
+The last real extent contradiction is gone too: `?g_idleGeom@@3PAUBzGeomPair@@A` at
+`0x1e8fe4` was a PHANTOM. `BuildBootyGruntIdleAnimation` (0x1ce60) carries exactly two data
+relocations, `0x1e8fec` and `0x1e900c` — a `g_bootyLetterCoords + 1` cursor and its end
+after four pairs, the same walk `StepGlitterAnim` already spells over the same table.
+Nothing starts at `0x1e8fe4`. `BzGeomPair` was a type invented to give the phantom a shape
+and went with it.
+
+`data_tu_order` also stops **inventing** a storage class: it defaulted an unenrolled rva to
+`data`, which dragged `BootyStateActivate.cpp`'s `.data` band down over its `.rdata`
+globals at `0x1e8fe4`, and a band stretched that far swallows enough foreign defs to be
+classified a POOL — which EXEMPTS it. It now asks the PE. That deleted one reported
+crossing outright (an artifact) and, with the folds now correctly COMDAT and out of the
+linear band model, unmasked three real ones, recorded with their evidence in
+`config/cleanliness/data-tu-order-baseline.tsv`.
+
+| | before | after |
+|---|---|---|
+| `matched_data` | 649673/706177 = **92.00%** | 686767/707695 = **97.04%** |
+| data sections at exactly 100.0 | 419 | **432** |
+| ordinary sections published | 42 | **57** |
+| legacy `.data`/`.rdata` append rows | 275 / 23 objects | **323 / 19 objects** |
+
+(The append count RISES because enrolling a member does not by itself publish its section:
+157 rows that used to be withheld entirely are now carried, and until the LAST member of a
+section is proven the whole section stays legacy. Objects, not rows, is the number that
+tracks progress here — and the sections that did complete went from 42 to 57.)
+
+`butemgr .data` 99.92 → 100.00 closes the largest single data item (29,480 B);
+`shadetablecache .rdata` 92.31, `pathhazard .rdata` 99.71, `sbi_wellgoo .rdata` 99.81,
+`projectile .rdata` 99.83 and `bootystateactivate .rdata` 99.85 all reach 100, and
+`warpstonefly`, `cursorsnapactreg`, `ddrawworkerregistry`, `wormholeacts` get a section for
+the first time. NOTHING regressed: 0 sections dropped below 100.0, `matched_functions`
+3498 and `matched_code` 474819 are bit-identical, `data_relocs` stays WRONG 0 with 0
+orphans, and every control section whose defect is a genuinely missing symbol is unmoved
+(`brickzload` 0.00 … `netcmdslot` 97.93).
+
+**What is left.** 31 sub-100 data sections holding 21,808 B, most of it `.bss` (the §3c
+NAMING gap, not an extent one). The `.data`/`.rdata` remainder is ~11 KB and splits into:
+the 30 `const`-vs-`.data` declarations above; members with a source declaration but no
+`DATA()` pin at all (`s_HELP` is the ONLY thing left between `mainmenubuilder .data` and
+100); 7 `$T` entries with no relocation-paired referrer; and `?g_menuSparkleLo@@3HA` /
+`?s_cheatWaWaWide@@3PAGA`, both source-modelling questions rather than manifest ones.
 
 **Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in
