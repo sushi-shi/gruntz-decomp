@@ -1368,8 +1368,15 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
         # relocated words went silently unscored until 2026-08-09.
         rows.append((row["rva"], row["name"], row.get("unit") or "vtables", None,
                      "data"))
-    # A few library vtables are emitted/referenced by reconstructed base objs.
-    # Their owning unit retains the prior authority-backed label behavior.
+    # Library tables (MFC/CRT) a reconstructed base obj references or emits. The
+    # SIZE IS LOAD-BEARING AND IS NOT OPTIONAL: it is what enrols the row in the
+    # delinker's data manifest, and the enrolled DEFINITION is what lets the
+    # delinker name that address at all. Dropping it (tried 2026-08-09, on the
+    # theory that NAFXCW owns these so we should only NAME them) did not leave the
+    # name in place - every reference to `??_7type_info@@6B@` immediately fell back
+    # to `?g_dot@@3PADA + 0xfffffcc0`, 435 ADDEND rows in the data-reloc sieve.
+    # The price is that a table our base obj only REFERENCES gets a target-side-only
+    # definition in its unit; that is the cost of naming it.
     for row in vtable_catalog.library_rows():
         if row.get("unit"):
             rows.append((row["rva"], row["name"], row["unit"], row["size"], "data"))

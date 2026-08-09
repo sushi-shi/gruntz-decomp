@@ -1,6 +1,12 @@
 # Manually maintained retail vtables and vtable-like tables from statically linked libraries.
 # These are executable labels used for delinking, but are not reconstructed game-owned classes.
 # unit is present only when a reconstructed object references/emits the catalogued symbol.
+# A unit + a size ENROL the row in the delinker's data manifest, and that enrolled
+# definition is the only thing that lets the delinker name the address: dropping the
+# size does not leave a bare name behind, every reference falls back to
+# `<nearest preceding symbol> + addend` (measured 2026-08-09 on ??_7type_info@@6B@:
+# 435 ADDEND rows in the data-reloc sieve). So a table our objects only REFERENCE
+# pays for its name with a target-side-only definition in the unit named here.
 name,rva,size,unit,note
 ??_7CObject@@6B@,0x1e8cb4,0x14,wwdspatialmgr,MFC/CRT (statically linked; not reconstructed)
 ??_7CGdiObject@@6B@,0x1e8cd4,0x14,multistartdlgroster,MFC/CRT (statically linked; not reconstructed)
@@ -9,6 +15,7 @@ name,rva,size,unit,note
 ??_7CMapStringToOb@@6B@,0x1eafd4,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CMapStringToPtr@@6B@,0x1eb014,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CPtrList@@6B@,0x1eb054,0x14,,MFC/CRT (statically linked; not reconstructed)
+?messageMap@CDialog@@1UAFX_MSGMAP@@B,0x1eb068,0x8,dialogs,"MFC AFX_MSGMAP {pBaseMessageMap=&CWnd::messageMap 0x1eb2e0, lpEntries=0x1eb070}; every CDialog-derived map chains to it - dialogs/battlezdlgcolors/customleveldlg/checkpointdlg/multihelpdlg/multistartdlg"
 ??_7CDialog@@6B@,0x1eb174,0xd8,,MFC/CRT (statically linked; not reconstructed)
 ??_7CWnd@@6B@,0x1eb5c4,0xc0,,MFC/CRT (statically linked; not reconstructed)
 ??_7CTestCmdUI@@6B@,0x1eb6ac,0x10,,MFC/CRT (statically linked; not reconstructed)
