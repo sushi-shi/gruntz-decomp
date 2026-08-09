@@ -22,9 +22,16 @@
       url = "github:srp-survarium/vostok-delinker/81d34b204a0384a92cf3b4c641a8430256b2922e";
       flake = false;
     };
+
+    objdiff-src = {
+      # Same release we used to download prebuilt; `objdiff-cli` is now built from
+      # it so the BSS-extent patch below can apply. The GUI stays prebuilt.
+      url = "github:encounter/objdiff/v3.7.3";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, rust-overlay, vostok-delinker-src }:
+  outputs = { self, nixpkgs, rust-overlay, vostok-delinker-src, objdiff-src }:
     let
       system = "x86_64-linux";
 
@@ -86,17 +93,27 @@
         libx11 libxcursor libxi libxrandr libxcb
       ];
 
-      objdiff-cli = pkgs.stdenv.mkDerivation {
+      # objdiff-cli is built FROM SOURCE (the GUI below stays a prebuilt download)
+      # so that one scoring patch can apply. `.bss` has no bytes, so a BSS symbol's
+      # size is objdiff's whole comparison - but COFF encodes a symbol size only for
+      # a COMMON symbol, so `infer_symbol_sizes` synthesises one from the distance to
+      # the next symbol: the object PLUS its allocator's padding. Our two sides use
+      # different allocators (cl for the base, the delinker's aligned append for the
+      # target), so that span differs for reasons that are not the program. Census
+      # over the whole tree: 364 paired `.bss` symbols, 51 disagreements, every single
+      # delta 3/4/6 bytes - all sub-alignment padding, none a real size. The extent
+      # audit that DOES bite lives in `gruntz.build.data_manifest` (a reviewed extent
+      # must fit the span to its retail neighbour, or both rows are withheld).
+      # docs/patterns/bss-symbol-size-inference-hole.md.
+      objdiff-cli = nightly-rustPlatform.buildRustPackage {
         pname = "objdiff-cli";
         version = objdiffVersion;
-        src = pkgs.fetchurl {
-          url = objdiffUrl "objdiff-cli-linux-x86_64";
-          hash = "sha256-HIp1ZJcOhrVI8JIZCNNuW1Rkb+cvhuXIK4wOumQCDOo=";
-        };
-        dontUnpack = true;
-        nativeBuildInputs = [ pkgs.autoPatchelfHook ];
-        buildInputs = [ pkgs.stdenv.cc.cc.lib ];
-        installPhase = "install -Dm755 $src $out/bin/objdiff-cli";
+        src = objdiff-src;
+        patches = [ ./nix/patches/objdiff-bss-inferred-extent.patch ];
+        cargoHash = "sha256-Z9vyUj35nrHuUoOYM54RLCn7CzcQ6k3A6FsDYKCVqVM=";
+        cargoBuildFlags = [ "-p" "objdiff-cli" ];
+        cargoTestFlags = [ "-p" "objdiff-core" "-p" "objdiff-cli" ];
+        cargoInstallFlags = [ "-p" "objdiff-cli" ];
       };
 
       objdiff = pkgs.stdenv.mkDerivation {
