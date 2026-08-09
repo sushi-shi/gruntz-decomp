@@ -58,16 +58,7 @@
 #include <math.h>
 #include <stdio.h>
 
-DATA(0x001e8fe4)
-BzGeomPair g_idleGeom[4] = {
-    {0, 472},
-    {101, 525},
-    {98, 474},
-    {146, 525},
-};
-
 DATA(0x001e8fe8)
-
 const i32 g_bootyLetterCoords[32] = {
     472, 101, 525, 98,  474, 146, 525, 144, 127, 170, 215, 262, 301, 345, 386, 427,
     127, 170, 215, 262, 301, 345, 386, 427, 127, 170, 215, 262, 301, 345, 386, 427,
@@ -959,10 +950,16 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         }
                     }
                 }
-                for (i32 k = 0; k < 4; k++) {
-                    m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
-                    m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
-                    m_trailSprites[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                // Retail's two relocations here are 0x1e8fec and 0x1e900c - the
+                // `g_bootyLetterCoords + 1` cursor and its end after four pairs -
+                // the same walk StepGlitterAnim does over the same table.
+                CWwdGameObjectA** ap = m_trailSprites;
+                for (const i32* tbl = g_bootyLetterCoords + 1; tbl != g_bootyLetterCoords + 9;
+                     tbl += 2) {
+                    (*ap)->m_screenX = tbl[-1];
+                    (*ap)->m_screenY = tbl[0];
+                    (*ap)->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    ap++;
                 }
                 if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                     return 0;

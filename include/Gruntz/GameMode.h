@@ -24,12 +24,6 @@ extern "C" tagRECT g_versionRect;
 
 GZ_ENUM_FORWARD(GruntDirection);
 
-struct BzGeomPair {
-    i32 m_y;
-    i32 m_x;
-};
-SIZE_UNKNOWN();
-
 extern RECT g_levelMsgRectsB[8];
 
 struct LeafCue;

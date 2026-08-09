@@ -637,7 +637,7 @@ bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d4
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d410	100.0000
 bootystateactivate	??_GCMultiBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d4e0	100.0000
-bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	70.0514	70.0514	1	98d8f69069e8	0x1ce60	70.0514
+bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	69.2810	69.2810	2	96597d705178	0x1ce60	70.0514
 bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	92.4762	92.4762	1	7480a6c864dd	0x19920	92.4762
 bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	86.2255	86.2255	7	ebe4ae2163e8	0x19540	86.2255
 bootystateactivate	?CheckPerfectBonus@CBootyState@@QAEHXZ	100.0000	100.0000	10	7d5b29b7b301	0x1c0f0	100.0000
@@ -2388,7 +2388,7 @@ gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDP6GHPAUHWND__@@IIJ@ZH@Z	100.0000	10
 gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	10	a578c4e2608f	0x92f00	100.0000
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	7	27d0db331b03	0x93620	100.0000
 gruntzmgr	?ScanObjectsInRadius@CGruntzMgr@@QAEHHHHHP6AHPAUCGameObject@@H@ZH@Z	100.0000	100.0000	5	bc06ad584a68	0x92180	100.0000
-gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	84.5844	81.7403	3	0cada312f88b	0x92250	84.5844
+gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHPAUtagRECT@@HP6AHPAUCGameObject@@H@ZH@Z	84.5844	84.5844	3	0cada312f88b	0x92250	84.5844
 gruntzmgr	?SetAssetRoot@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	4	9d4e8269f71c	0x92060	100.0000
 gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHW4ColorDepth@@@Z	100.0000	100.0000	2	8bab5f986b4a	0x91170	100.0000
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	6	b8594f768fc8	0x8f7b0	100.0000
