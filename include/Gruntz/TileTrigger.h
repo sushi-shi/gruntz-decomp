@@ -25,7 +25,7 @@ SIZE(0x54);
 class CCoveredPowerup : public CTileTrigger {
 public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;
-    CCoveredPowerup() {}
+    CCoveredPowerup() : CTileTrigger(CUserLogic::INLINE_BASE) {}
     CCoveredPowerup(CGameObject* obj);
 };
 SIZE(0x54);

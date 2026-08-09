@@ -17,7 +17,7 @@ public:
     }
 
 public:
-    CSimpleAnimation() {}
+    CSimpleAnimation() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CSimpleAnimation(CGameObject* obj);
     i32 AdvanceAnim();
 

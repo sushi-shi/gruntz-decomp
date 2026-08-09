@@ -17,7 +17,7 @@ public:
     }
 
 public:
-    CFrontCandyAni() {}
+    CFrontCandyAni() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CFrontCandyAni(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

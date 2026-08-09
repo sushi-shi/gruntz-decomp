@@ -196,7 +196,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
                     *result = new CTileTriggerSwitch();
                     break;
                 case LOGIC_TILETRIGGER:
-                    *result = new CTileTrigger();
+                    *result = new CTileTrigger(CUserLogic::INLINE_BASE);
                     break;
                 case LOGIC_CHECKPOINTTRIGGER:
                     *result = new CCheckpointTrigger();
@@ -226,7 +226,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
                     *result = new CGruntSelectedSprite();
                     break;
                 case LOGIC_GRUNTHEALTHSPRITE:
-                    *result = new CGruntHealthSprite();
+                    *result = new CGruntHealthSprite(CUserLogic::INLINE_BASE);
                     break;
                 case LOGIC_GRUNTTOYSPRITE:
                     *result = new CGruntToySprite();
@@ -244,7 +244,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
                     *result = new CGruntToyTimeSprite();
                     break;
                 case LOGIC_PROJECTILE:
-                    *result = new CProjectile();
+                    *result = new CProjectile(CUserLogic::INLINE_BASE);
                     break;
                 case LOGIC_BOOMERANG:
                     *result = new CBoomerang();
@@ -298,7 +298,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
                     *result = new CActionArea();
                     break;
                 case LOGIC_PATHHAZARD:
-                    *result = new CPathHazard();
+                    *result = new CPathHazard(CUserLogic::INLINE_BASE);
                     break;
                 case LOGIC_RAINCLOUD:
                     *result = new CRainCloud();
@@ -337,10 +337,25 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
     return g_gameReg->BroadcastCmd(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
+// The pinned halves of the four ctor pairs declared in UserLogic.h,
+// GruntHealthSprite.h, PathHazard.h and MovingLogic.h.  Each body EXPANDS its
+// CUserLogic base - it stamps ??_7CUserBase and carries the single
+// `call ??0CUserBaseLink` - and the classes derived from it `call` the body, while
+// the class's own `new` arm above expands the tagged inline sibling.
+RVA_COMPGEN(0x00011160, 0x4b, ??0CTileTrigger@@QAE@XZ)
+CTileTrigger::CTileTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
+
+RVA_COMPGEN(0x00011ef0, 0x4b, ??0CGruntHealthSprite@@QAE@XZ)
+CGruntHealthSprite::CGruntHealthSprite() : CUserLogic(CUserLogic::INLINE_BASE) {}
+
 // CMovingLogic/CProjectile realization group. Retail inlines CProjectile::CProjectile()
 // into the LOGIC_PROJECTILE arm at depth 1: its base ??0CMovingLogic call stays
 // out-of-line (the LOGIC_BOOMERANG arm likewise calls ??0CProjectile as its base).
 RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
+CProjectile::CProjectile() : CMovingLogic(CMotionState::INLINE_BASE) {}
+
+RVA_COMPGEN(0x00013170, 0x7b, ??0CPathHazard@@QAE@XZ)
+CPathHazard::CPathHazard() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 // The pinned half of CMotionState's two-entity split: CGrunt::CGrunt,
 // CProjectile::CProjectile and SerialObjectFactory above all `call` it, while the
@@ -356,8 +371,17 @@ CMotionState::CMotionState() {
     InitBounds();
 }
 
+// The pinned half of CUserLogic's default-ctor pair: SerialObjectFactory above
+// `call`s it at 45 of its 57 direct-derived sites and expands the CUserLogic(EInlineBase)
+// sibling at the other 11.  Same COMPGEN reasoning as CMotionState below - a real RVA()
+// claim here would stretch this unit's tu_order span across the carved 0x13610.
 RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
+CUserLogic::CUserLogic() {}
+
 RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
+CMovingLogic::CMovingLogic()
+    : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
+
 RVA_COMPGEN(0x00013bb0, 0x4, ?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ)
 RVA_COMPGEN(0x00013bd0, 0x44, ??1CMovingLogic@@UAE@XZ)
 RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)

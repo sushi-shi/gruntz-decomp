@@ -11,7 +11,7 @@
 class CAniCycle : public CUserLogic, public CWapX {
 public:
 public:
-    CAniCycle() {}
+    CAniCycle() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CAniCycle(CGameObject* obj);
 
     RVA(0x0000f450, 0x6)

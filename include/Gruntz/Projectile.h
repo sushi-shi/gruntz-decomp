@@ -23,7 +23,12 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PROJECTILE;
     }
-    CProjectile() {}
+    // Two entities, same tag types.  The out-of-line 0x126e0 expands the whole
+    // CMovingLogic chain (one `call ??0CUserBaseLink` + the CPtrList member) and
+    // CBoomerang `call`s it; the inline sibling leaves the base a
+    // `call ??0CMovingLogic`, which is what `new CProjectile` expands.
+    CProjectile();
+    CProjectile(CUserLogic::EInlineBase) {}
     CProjectile(CGameObject* owner);
     virtual ~CProjectile() OVERRIDE;
 

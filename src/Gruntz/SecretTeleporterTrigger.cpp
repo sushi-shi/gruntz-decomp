@@ -51,7 +51,7 @@ RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010ab0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
 
 RVA(0x00010b20, 0x4b)
-CSecretLevelTrigger::CSecretLevelTrigger() {}
+CSecretLevelTrigger::CSecretLevelTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 RVA(0x00010bb0, 0x47)
 i32 CSecretLevelTrigger::SerializeMove(

@@ -45,7 +45,13 @@ public:
         INLINE_BASE
     };
 
-    CUserLogic() {}
+    // Two entities, same tag type.  Retail's SerialObjectFactory `call`s
+    // ??0CUserLogic@@QAE@XZ (0x138d0) at 45 of its 57 direct-derived `new` sites and
+    // expands it at the other 11 (CRollingBall .. CBehindCandyAni), so the split is
+    // per CLASS - two-shapes-need-two-entities.md.
+    CUserLogic();
+    // The expanded sibling for those 11 classes.
+    CUserLogic(EInlineBase) {}
     // Out of line at 0x58cd0.  Only CMovingLogic (CGrunt / CProjectile) and
     // CDoNothingNormal reach it - retail's three `call` sites.
     CUserLogic(CGameObject* obj);
@@ -174,8 +180,13 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;
 
 public:
-    RVA(0x00011160, 0x4b)
-    CTileTrigger() {}
+    // Two entities, same tag type.  The out-of-line one at 0x11160 EXPANDS its
+    // CUserLogic base (it stamps ??_7CUserBase and `call`s ??0CUserBaseLink);
+    // CTileSecretTrigger and CGiantRock reach it.
+    CTileTrigger();
+    // The inline sibling, whose CUserLogic base stays a `call`: `new CTileTrigger`
+    // and CCoveredPowerup expand this body.
+    CTileTrigger(CUserLogic::EInlineBase) {}
     CTileTrigger(CGameObject* obj);
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();

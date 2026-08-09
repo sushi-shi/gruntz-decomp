@@ -11,7 +11,7 @@
 class CBehindCandyAni : public CUserLogic, public CWapX {
 public:
 public:
-    CBehindCandyAni() {}
+    CBehindCandyAni() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CBehindCandyAni(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

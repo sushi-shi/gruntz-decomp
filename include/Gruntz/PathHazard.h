@@ -32,8 +32,12 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
 
 public:
-    RVA(0x00013170, 0x7b)
-    CPathHazard() {}
+    // Two entities, same tag type.  The out-of-line 0x13170 EXPANDS its CUserLogic
+    // base (??_7CUserBase stamp + `call ??0CUserBaseLink`) and CRainCloud / CUFO
+    // `call` it; the inline sibling, whose base stays a `call`, is what
+    // `new CPathHazard` expands.
+    CPathHazard();
+    CPathHazard(CUserLogic::EInlineBase) {}
     CPathHazard(CGameObject* obj);
 
     RVA(0x00013210, 0x6)

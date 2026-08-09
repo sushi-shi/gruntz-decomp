@@ -54,7 +54,7 @@ void RealizeUfoDtor(CUFO* p) {
 }
 
 RVA(0x00013470, 0x4b)
-CVoiceTrigger::CVoiceTrigger() {}
+CVoiceTrigger::CVoiceTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
 // @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
 // 29 classes), so every TU emits one and the linker folds them to first use.

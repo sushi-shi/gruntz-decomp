@@ -10,7 +10,7 @@
 class CEyeCandy : public CUserLogic, public CWapX {
 public:
 public:
-    CEyeCandy() {}
+    CEyeCandy() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CEyeCandy(CGameObject* obj);
 
     RVA(0x0000fca0, 0x6)

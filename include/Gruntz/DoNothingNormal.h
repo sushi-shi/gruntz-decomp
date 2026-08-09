@@ -9,7 +9,7 @@
 
 class CDoNothingNormal : public CUserLogic, public CWapX {
 public:
-    CDoNothingNormal() {}
+    CDoNothingNormal() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
     CDoNothingNormal(CGameObject* owner) : CUserLogic(owner), CWapX(owner) {
         m_wwdObject->m_flags |= 1;

@@ -28,7 +28,18 @@ public:
     char m_pad34[0x38 - 0x34];
 
 public:
+    // Two entities, same tag type.  The out-of-line 0x13940 EXPANDS both its
+    // CUserLogic base (??_7CUserBase stamp + the single `call ??0CUserBaseLink`) and
+    // its CMotionState member; CProjectile `call`s it.  The inline sibling leaves
+    // both a `call`, which is what CGrunt's construction shows in retail's
+    // SerialObjectFactory: `call ??0CUserLogic`, `call ??0CMotionState`, then the
+    // ??_7CMovingLogic stamp.
     CMovingLogic();
+    CMovingLogic(CUserLogic::EInlineBase);
+    // The same body as the out-of-line 0x13940, as an inline sibling: retail's
+    // ??0CProjectile (0x126e0) expands the whole chain down to the single
+    // `call ??0CUserBaseLink`.
+    CMovingLogic(CMotionState::EInlineBase);
 
     CMovingLogic(CGameObject* owner);
     virtual ~CMovingLogic() OVERRIDE;
@@ -46,9 +57,13 @@ public:
 };
 SIZE_UNKNOWN();
 
-// The default ctor expands CMotionState's body; the owner-taking one below leaves it
-// a call, which is the 0x13940-vs-0x47a10 split retail shows.
-inline CMovingLogic::CMovingLogic() : m_motion(CMotionState::INLINE_BASE) {}
+// The untagged default ctor is out of line in SerialObjectFactory.cpp (0x13940); it
+// expands CMotionState's body, while the owner-taking one below leaves it a call -
+// the 0x13940-vs-0x47a10 split retail shows.
+inline CMovingLogic::CMovingLogic(CUserLogic::EInlineBase) {}
+
+inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
+    : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     i32 lo0 = m_objAux->m_minX;

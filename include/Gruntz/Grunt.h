@@ -717,7 +717,8 @@ public:
     // member's DECLARATION position, interleaved with the member ctor calls, which is
     // what retail's inlined copy in SerialObjectFactory shows (60 stores).
     CGrunt()
-        : m_struckClock64(0),
+        : CMovingLogic(CUserLogic::INLINE_BASE),
+          m_struckClock64(0),
           m_struckTimer64(0),
           m_holdAnchor64(0),
           m_holdWindow64(0),

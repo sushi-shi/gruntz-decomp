@@ -10,7 +10,7 @@
 class CBehindCandy : public CUserLogic, public CWapX {
 public:
 public:
-    CBehindCandy() {}
+    CBehindCandy() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CBehindCandy(CGameObject* obj);
 
     RVA(0x0000fb70, 0x6)

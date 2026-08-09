@@ -17,7 +17,7 @@ public:
     }
 
 public:
-    CSingleFrameMessage() {}
+    CSingleFrameMessage() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CSingleFrameMessage(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;

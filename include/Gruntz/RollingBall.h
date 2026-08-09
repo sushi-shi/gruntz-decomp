@@ -22,7 +22,7 @@ public:
     }
 
 public:
-    CRollingBall() {
+    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE) {
         m_explodeStart = 0;
         m_explodeWindow = 0;
     }
