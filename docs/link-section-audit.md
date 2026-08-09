@@ -168,9 +168,13 @@ non-AFX ≈ 8,031 = 134,195 B. The two agree, so the CRT/MFC/DX pull is the same
 | bucket | retail | candidate | delta |
 |---|---:|---:|---:|
 | `.rdata` (const, vftables, pools) | 44,832 | 50,560 | **+5,728** |
-| `.rdata$r` (RTTI) | 23,472 | 23,472 | **0** |
+| `.rdata$r` (RTTI) | 23,472 | 23,472 | **0** (was +536) |
 | `.xdata$x` (EH tables) | 66,776 | 68,360 | +1,584 |
 | **total** | **135,080** | **142,392** | **+7,312** |
+
+The `.rdata` excess is, in order: **4,368 B of DirectX-SDK GUID drift (76%)**, ~450 B of
+wrong-`const` string duplicates (8%), 1,584 B of EH-table slack, and ~900 B unattributed.
+The RTTI group was +536 and is now exactly 0.
 
 Retail's boundaries are `.rdata$r` at `0x1f1f20` and `.xdata$x` at `0x1f7ad0`; both are
 preceded by zero padding and open with the expected structure (a `??_R1` base-class
@@ -200,10 +204,39 @@ families). `dxguid.lib` keeps its GUIDs in one archive member, so pulling any pu
 and our DX6 SDK member simply has more of them than the SDK retail built against. This is
 toolchain drift, not a source defect; it accounts for 76% of the `.rdata` excess.
 
+The next-largest known contributor is small: **30 named `static const char[]` that we put
+in `.rdata` where retail has the same string once, pooled, in `.data`** — the rows
+`gruntz.build.data_manifest --report` withholds as *"our rdata copy cannot be the data
+literal `??_C@…` it is pinned onto"* (`GRUNTZ_`, `LightFx`, `SingleAnimation`,
+`BABYWALKERGRUNT`, `GRUNTZ_NORMALGRUNT_IMPACTMM3`, …). Decoded, they are ~409 B of string
+plus 4-byte alignment, so **~450 B — about 8% of the excess, not the cause of it.** They
+are still real duplicates and worth dropping the `const` on; that work belongs to the
+`.data` lane, which owns the literals they collide with.
+
+That leaves ~900 B (1.8% of the group) unattributed — within vtable/pool sizing noise.
+
 ### `.xdata$x`: +1,584 on 975 vs 972 records
 
-Three EH records more than retail, 0.5% more bytes. Consistent with the `.text$x` funclet
-delta of −149 and with `/GX` being on project-wide.
+Decoding every `__ehfuncinfo`:
+
+| | retail | candidate |
+|---|---:|---:|
+| records | 972 | 975 |
+| Σ `maxState` (unwind-map entries, 8 B each) | 2,666 | 2,702 |
+| Σ `nTryBlocks` (20 B each) | **19** | **19** |
+
+The try-block count is *identical* — the whole game has 19 `try` blocks and we have all
+of them. The +1,584 is 3 extra records (+84 B of header), 36 extra unwind states (+288 B),
+and ~1,200 B of inter-contribution padding. Consistent with the `.text$x` funclet delta of
+−149 and with `/GX` being on project-wide.
+
+## Section start addresses
+
+Nothing but `.text`'s size moves `.rdata`. In both images
+`rdata_rva == 0x1000 + roundup(text_vsize, 0x1000)` exactly: retail
+`0x1000 + roundup(1,987,179) = 0x1e7000`, candidate
+`0x1000 + roundup(1,952,230) = 0x1de000`. The 36 KB by which our `.rdata` starts early is
+purely the `.text` shortfall; no other cause.
 
 ## Under-modelled data: the trap this audit is built to catch
 
