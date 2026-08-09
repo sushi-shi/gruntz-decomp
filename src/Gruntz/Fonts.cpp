@@ -3,7 +3,6 @@
 #include <Gruntz/Fonts.h>
 
 #include <Font/Font.h>
-#include <Gruntz/GruntDirStatics.h>
 
 DATA(0x0024ea58)
 Font g_tinyFont;

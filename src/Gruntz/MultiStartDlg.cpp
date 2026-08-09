@@ -9,6 +9,7 @@
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MpSymItem.h>
 #include <Gruntz/Multi.h>

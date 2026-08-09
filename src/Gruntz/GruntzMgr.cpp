@@ -41,6 +41,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCmdMgr.h>

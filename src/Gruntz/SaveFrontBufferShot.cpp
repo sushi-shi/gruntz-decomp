@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SaveScreenshot.h>
 #include <Ints.h>

@@ -2,6 +2,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/GruntDirStatics.h>
 #include <MsgParam.h>
 #include <Utils/RegistryHelper.h>
 
