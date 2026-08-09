@@ -1144,6 +1144,16 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 // @early-stop
+// 201 of retail's 215 blocks; the whole deficit is the Wingz-knockback switch.
+// Retail gives every arm its own 12-13 instruction block that ends `jmp 0x5a6d6`
+// (0x5a30a, 0x5a33f, 0x5a375, 0x5a3af, 0x5a3e8, 0x5a42a, 0x5a468, 0x5a4a5) with the
+// post-switch apply block as their common continuation.  cl instead lets ONE arm
+// (base +0xb67, the g_dirVec[1] copy) fall straight through into the apply block
+// and parks the rest at the end jumping BACK into it (base +0x11c3 `jmp` to the
+// apply block's second instruction), so every arm's displacement and the whole
+// tail are misaligned.  Spelling the arms with an explicit `goto L_apply` cannot
+// move it: cl hoists a forward goto's target, which places the apply block exactly
+// where it already is (measured on BeginAttack and PlaceAt in this same batch).
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
