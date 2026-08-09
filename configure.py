@@ -593,6 +593,65 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
         f.write("\n")
 
 
+def prune_orphan_artifacts(manifest: dict) -> int:
+    """Delete build artifacts of units that are no longer in config/units.toml.
+
+    Ninja has no concept of an output whose EDGE disappeared, so dropping a unit
+    (a source deleted, a TU folded, a branch switched in a shared worktree) leaves
+    its `.obj`, label fragments and normalized copies behind - and the downstream
+    readers that GLOB rather than follow the graph keep consuming them. That is not
+    cosmetic: a stale `build/objdiff/base/<gone>.obj` re-enrols its vtables and RTTI
+    into `build/gen/delink_data_manifest.tsv`, and `gruntz.audit.data_relocs` then
+    FATALs the build with "enrolled datum carved into an object objdiff never opens"
+    for a unit that has no source in the tree. Prune at configure time, where the
+    live unit set is known.
+    """
+    live = {u["unit"] for u in manifest["unit"]}
+    patterns = [
+        (REPO / BASE_DIR, "{}.obj"),
+        (REPO / OBJDIFF_DIR / "normalized/base", "{}.obj"),
+        (REPO / OBJDIFF_DIR / "normalized/base", "{}.symbols.tsv"),
+        (REPO / OBJDIFF_DIR / "normalized/target", "{}.c.obj"),
+        (REPO / OBJDIFF_DIR / "normalized/target", "{}.symbols.tsv"),
+        (REPO / TARGET_DIR, "{}.c.obj"),
+        (REPO / DELINK_RAW, "{}.c.obj"),
+        (REPO / "build/gen/labels", "{}.csv"),
+        (REPO / "build/gen/labels", "{}.functions.json"),
+        (REPO / "build/gen/labels", "{}.globals.json"),
+    ]
+    stems = set()
+    for d, pat in patterns:
+        if not d.is_dir():
+            continue
+        head, tail = pat.split("{}")
+        for p in d.iterdir():
+            if p.name.startswith(head) and p.name.endswith(tail):
+                stem = p.name[len(head):len(p.name) - len(tail)] if tail else p.name
+                if stem and stem not in live:
+                    stems.add(stem)
+    if not stems:
+        return 0
+    n = 0
+    for d, pat in patterns:
+        for stem in stems:
+            p = d / pat.format(stem)
+            if p.exists():
+                p.unlink()
+                n += 1
+    # The data manifests are regenerated in-process by delink.py from whatever objs
+    # are present, so they must be rebuilt once an orphan obj is gone.
+    for f in ("delink_data_manifest.tsv", "delink_data_section_manifest.tsv"):
+        p = REPO / "build/gen" / f
+        if p.exists():
+            p.unlink()
+            n += 1
+    stamp = REPO / OBJDIFF_DIR / ".delink.stamp"
+    if stamp.exists():
+        stamp.unlink()
+        n += 1
+    return n
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--manifest", default=MANIFEST, type=Path)
@@ -611,6 +670,10 @@ def main() -> None:
         return
 
     n = len(manifest["unit"])
+    pruned = prune_orphan_artifacts(manifest)
+    if pruned:
+        print(f"[configure] pruned {pruned} artifact(s) of unit(s) no longer in "
+              "config/units.toml")
     emit_ninja(manifest, REPO / "build.ninja")
     # objdiff.json is NOT written here: the `gen_objdiff` ninja edge owns it and
     # rebuilds it after gen_labels, so it always reflects the fresh symbol_names.csv
