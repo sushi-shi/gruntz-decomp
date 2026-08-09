@@ -316,12 +316,36 @@ _RECORD_SIZES_CACHE = {}
 _ENUM_NAMES_CACHE = {}
 
 
+_TYPE_TAG_RE = re.compile(r"\b(?:class|struct|union|enum)\s+")
+
+
+def canon_record_name(name):
+    """One spelling for a record name across clang's TWO printers.
+
+    `-fdump-record-layouts` (which fills structs.json) writes the elaborated form
+    with `(void)` for an empty parameter list:
+        class zDArray<int (CUserLogic::*)(void) __attribute__((thiscall))>
+    the AST's desugaredQualType (which is what a DATA() global carries) writes:
+        zDArray<int (CUserLogic::*)() __attribute__((thiscall))>
+    Both are clang printing the SAME type, so folding the tags, `(void)` and the
+    whitespace is a deterministic normalization, not a guess. Ordinary class names
+    are unaffected - they contain none of those.
+    """
+    t = _TYPE_TAG_RE.sub("", name or "")
+    return re.sub(r"\s+", "", t.replace("(void)", "()"))
+
+
 def record_sizes(path=None):
     """{record name: byte size} from the generated clang record layouts.
 
     build/gen/structs.json is produced by ghidra_metadata_generate with the same
     i386/MSVC target as the build, so its sizes ARE the MSVC layout. Absent file =>
-    no record sizes (scalars/pointers still resolve); never fatal."""
+    no record sizes (scalars/pointers still resolve); never fatal.
+
+    Every record is also indexed under canon_record_name() so a template
+    specialization written one way in the layout dump and another in the AST still
+    resolves. A canonical spelling two DIFFERENT-sized records share is dropped,
+    exactly like a name whose size disagrees across TUs."""
     path = str(path or (REPO / "build/gen/structs.json"))
     if path not in _RECORD_SIZES_CACHE:
         out = {}
@@ -337,6 +361,10 @@ def record_sizes(path=None):
                         out.setdefault(name, size)
         except (OSError, json.JSONDecodeError, TypeError):
             pass
+        for name, size in list(out.items()):
+            canon = canon_record_name(name)
+            if canon != name:
+                out[canon] = size if out.get(canon, size) == size else None
         _RECORD_SIZES_CACHE[path] = {k: v for k, v in out.items() if v}
     return _RECORD_SIZES_CACHE[path]
 
@@ -400,7 +428,19 @@ def _sizeof_one(qt, records=None):
     if not qt:
         return None
     t = _strip_cv(qt)
-    if not t or "(" in t:          # function / function-pointer types: not sized here
+    if not t:
+        return None
+    # A TEMPLATE SPECIALIZATION IS ONE NAME, EVEN WITH PARENTHESES IN IT. Its
+    # argument list can hold a pointer-to-member (`zDArray<int (CUserLogic::*)()>`),
+    # so it must be looked up WHOLE before the function-type screen below rejects it
+    # on the parenthesis. That screen is why all 51 `CActRegPool<T>::s_table`
+    # statics were sizeless.
+    if "<" in t and not t.endswith(("*", "&", "[]")):
+        recs = record_sizes() if records is None else records
+        size = recs.get(canon_record_name(t))
+        if size:
+            return size
+    if "(" in t:                   # function / function-pointer types: not sized here
         return None
     if t.endswith(("*", "&")):     # any pointer/reference is 4 on i386
         return 4

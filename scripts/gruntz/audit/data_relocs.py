@@ -226,25 +226,56 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 #
 KNOWN_ORPHAN_UNITS = frozenset()
 
-# A live unit whose delinked side does not exist at all. objdiff pairs nothing and
-# scores the empty pairing 100.00% on EVERY measure with zero totals, so the unit
-# reports MATCHING in the per-unit table while being entirely unscored.
+# A live unit objdiff does not really compare. It scores an empty pairing 100.00%
+# on EVERY measure with ZERO totals, so the unit reports MATCHING in the per-unit
+# table while being entirely unscored - worse than a missing row, because it
+# inflates the board instead of showing a hole.
 #
-#   logicdispatchinit  src/Gruntz/LogicDispatchInit.cpp is one datum -- the `.bss`
-#                      template static CActRegPool<CEyeCandyAni>::s_table at
-#                      0x246060. The delinker emits no object for it, though other
-#                      units do get `.bss` target sections (72 of them).
-KNOWN_UNPAIRED_UNITS = frozenset({"logicdispatchinit"})
+#   CLOSED 2026-08-09, in both of its two forms:
+#
+#   no delinked object    `logicdispatchinit`. Its whole content is one datum, the
+#                         `.bss` template static CActRegPool<CEyeCandyAni>::s_table
+#                         at 0x246060, and labels.py could not size it: the record
+#                         layouts feeding structs.json dropped every template
+#                         specialization whose name has a space in it, so all 51
+#                         CActRegPool<T>::s_table statics were sizeless, none
+#                         enrolled in the data manifest, and this unit - the only
+#                         one with nothing else - got no contribution to carve.
+#
+#   paired with the dummy `stringstaticpool` (one `CString`) AND logicdispatchinit.
+#                         Both had a real delinked obj on disk; objdiff.json still
+#                         pointed at the empty dummy.obj because configure.py
+#                         PREDICTED the pairing from FUNCTION rows only. It reads
+#                         the delink output now. This form is invisible to a
+#                         file-existence check, which is why the check below also
+#                         reads objdiff.json.
+KNOWN_UNPAIRED_UNITS = frozenset()
+
+OBJDIFF_JSON = REPO / "build" / "objdiff" / "objdiff.json"
 
 
-def units_without_a_target(norm=None) -> list[str]:
-    """Live units for which the delinker produced no object at all."""
+def units_without_a_target(norm=None, project=None) -> list[str]:
+    """Live units objdiff cannot score: no delinked object, or paired to the dummy.
+
+    BOTH forms have to be checked. A file-existence test alone missed
+    `stringstaticpool`, whose target obj existed while objdiff.json still pointed
+    its `target_path` at dummy.obj - the pairing, not the file, is what decides
+    whether anything is compared."""
     from gruntz.core.manifest import unit_names
 
     norm = Path(norm or NORM)
+    dummy = set()
+    project = Path(project or OBJDIFF_JSON)
+    if project.is_file():
+        try:
+            for unit in json.loads(project.read_text()).get("units", []):
+                if Path(unit.get("target_path") or "").name == "dummy.obj":
+                    dummy.add(unit.get("name"))
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
     return sorted(u for u in unit_names()
                   if (norm / "base" / f"{u}.obj").is_file()
-                  and not (norm / "target" / f"{u}.c.obj").is_file())
+                  and (u in dummy or not (norm / "target" / f"{u}.c.obj").is_file()))
 
 
 def orphan_payloads() -> list[tuple[str, str, str, str]]:
@@ -639,8 +670,9 @@ def main(argv=None) -> int:
         for unit, rva, storage, name in orphans:
             print(f"  {unit:<14} {rva:>9} {storage:<6} {name}")
         empty = units_without_a_target()
-        print(f"\nlive units with no delinked object (objdiff scores the empty "
-              f"pairing 100.00%): {len(empty)}")
+        print(f"\nlive units objdiff does not compare - no delinked object, or "
+              f"paired to dummy.obj (it scores the empty pairing 100.00%): "
+              f"{len(empty)}")
         for u in empty:
             print(f"  {u}")
         return 0
@@ -678,7 +710,7 @@ def main(argv=None) -> int:
     by = collections.Counter(r.verdict for r in rows)
     print("verdicts: " + (", ".join(f"{k}={v}" for k, v in sorted(by.items())) or "-"))
     print(f"enrolled data carved into an object objdiff never opens: {len(orphans)} "
-          f"({len(new_orphans)} new); live units with no delinked object at all: "
+          f"({len(new_orphans)} new); live units objdiff does not compare at all: "
           f"{len(empty)} ({len(new_empty)} new) -- --orphans")
 
     if args.coverage:
@@ -742,9 +774,10 @@ def main(argv=None) -> int:
                   "unit to KNOWN_ORPHAN_UNITS with the evidence.")
             return 1
         if new_empty:
-            print(f"\nFAIL: {len(new_empty)} live unit(s) have no delinked object, so "
-                  "objdiff pairs nothing and scores the empty pairing 100.00% on "
-                  "every measure: " + ", ".join(new_empty))
+            print(f"\nFAIL: {len(new_empty)} live unit(s) are not compared at all - "
+                  "no delinked object, or objdiff.json still pairs them with "
+                  "dummy.obj. Either way objdiff scores the empty pairing 100.00% "
+                  "on every measure: " + ", ".join(new_empty))
             return 1
         print(f"data-relocs: {stats['words compared (retail)']}"
               f"+{stats['words compared (paired)']} relocated data words point where "

@@ -418,11 +418,11 @@ def emit_ninja(manifest: dict, out: Path) -> None:
 
         # OBJDIFF MANIFEST: objdiff.json pairs each base obj with its target obj.
         # Whether a unit pairs with its real <unit>.c.obj or the empty dummy.obj is
-        # decided from symbol_names.csv, which gen_labels regenerates ABOVE - so the
-        # manifest must be (re)built AFTER it, in-graph, not at configure time (when
-        # the csv can still be stale for a unit added this build). gen_labels ->
-        # gen_objdiff is the ordering that makes a new unit pair correctly in ONE
-        # build instead of two.
+        # read off the DELINK OUTPUT, so this edge runs after the delink stamp (and
+        # therefore after gen_labels, which delink itself depends on). That is what
+        # makes a unit added this build pair correctly in ONE build - and what stops
+        # a unit whose only contribution is data from being left on the dummy, which
+        # objdiff scores 100.00% with zero totals.
         objdiff_json = f"{OBJDIFF_DIR}/objdiff.json"
         w.comment("=== OBJDIFF: symbol_names.csv -> objdiff.json (post-labels) ===")
         w.rule("gen_objdiff",
@@ -430,7 +430,9 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                description="gen_objdiff (symbol_names.csv -> objdiff.json)",
                restat=True)
         w.build(objdiff_json, "gen_objdiff",
-                inputs=[GEN_NAMES],
+                # AFTER the delink: the pairing is read off the target objs the
+                # delinker actually wrote, not predicted from symbol_names.csv.
+                inputs=[GEN_NAMES, delink_stamp],
                 implicit=["configure.py", "config/units.toml"])
         w.newline()
 
@@ -487,18 +489,27 @@ def write_dummy(path: Path) -> None:
     path.write_bytes(header + section + string_table)
 
 
-def units_with_named_functions(names_csv: Path) -> set:
-    """Units that have >=1 FUNCTION row in symbol_names.csv (so the delinker emits
-    a <unit>.c.obj for them). This is the INTENT that decides objdiff's
-    target_path - we cannot probe the filesystem because configure.py runs
-    BEFORE ninja builds the objs.
+def units_with_a_target(names_csv: Path, target_dir: Path) -> set:
+    """Units the delinker produces a `<unit>.c.obj` for, so objdiff can open one.
 
-    Only `kind == func` rows count: the delinker buckets functions into a per-unit
-    <unit>.c.obj, but routes ALL data symbols into one synthetic module (keyed by
-    rva->name, see synth_pdb.apply_named_data). So a DATA-ONLY unit - notably the
-    consolidated-globals unit (src/Globals.cpp) - never gets a target obj and must
-    pair with the empty dummy.obj."""
-    units = set()
+    THE DELINKED OBJS ON DISK ARE THE ANSWER, and this runs after the delink edge
+    (see emit_ninja's gen_objdiff), so it reads them rather than predicting. It
+    used to predict, from FUNCTION rows only, on the grounds that "the delinker
+    routes ALL data symbols into one synthetic module". That stopped being true
+    when the data manifest arrived: a data-only unit gets a real per-object
+    contribution now. Two units were still pointed at the empty dummy.obj on
+    2026-08-09 while their real target objs sat unopened beside it -
+    `logicdispatchinit` (one `.bss` template static) and `stringstaticpool` (one
+    `CString`). objdiff scores an empty pairing 100.00% on EVERY measure with zero
+    totals, so both reported MATCHING while being entirely unscored.
+
+    The csv is still the fallback for the first configure of a fresh tree, where
+    nothing is delinked yet; ninja re-emits post-delink in the same build.
+    """
+    units = {p.name[:-len(".c.obj")]
+             for p in target_dir.glob("*.c.obj")} if target_dir.is_dir() else set()
+    if units:
+        return units
     if not names_csv.exists():
         return units
     import csv
@@ -506,7 +517,7 @@ def units_with_named_functions(names_csv: Path) -> set:
         rows = [ln for ln in f if not ln.lstrip().startswith("#")]
     for row in csv.DictReader(rows):
         unit = (row.get("unit") or "").strip()
-        if unit and (row.get("kind") or "func").strip() != "data":
+        if unit:
             units.add(unit)
     return units
 
@@ -518,27 +529,27 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
     target : ./normalized/target/<unit>.c.obj  (delinked per symbol_names.csv, normalized)
 
     Symbols are pre-named on both sides (cdecl `_<name>`), so objdiff pairs them
-    directly with no `symbol_mappings` overlay. Paths reflect build INTENT, not
-    the current filesystem: configure.py runs before ninja, so probing for the
-    objs would (wrongly) point everything at the dummy. ninja always builds a
-    base obj for every manifest unit; the delinker emits a <unit>.c.obj only for
-    units that have rows in symbol_names.csv, so a unit with no named target
-    functions yet is paired against the empty dummy.obj (lists at 0%).
+    directly with no `symbol_mappings` overlay. ninja always builds a base obj for
+    every manifest unit; the delinker emits a <unit>.c.obj only for units it has a
+    contribution for, and a unit with no delinked target pairs against the empty
+    dummy.obj (lists at 0%).
 
-    The pairing is read from symbol_names.csv. At configure time that csv can be
-    stale (gen_labels regenerates it during ninja), so the `gen_objdiff` ninja rule
-    re-runs this AFTER gen_labels - that in-graph re-emit is what makes a unit added
-    this build pair correctly in one pass. See emit_ninja's gen_objdiff edge.
+    Which units those are is READ OFF THE DELINK OUTPUT, not predicted: the
+    `gen_objdiff` ninja edge runs after the delink stamp for exactly that reason.
+    Predicting it from symbol_names.csv is what let two data-only units keep
+    pairing with the dummy after the delinker started emitting objects for them -
+    a pairing objdiff scores 100.00% with zero totals. See units_with_a_target.
     """
     build = manifest["build"]
     objdiff_dir.mkdir(parents=True, exist_ok=True)
     write_dummy(objdiff_dir / "dummy.obj")
-    # GEN_NAMES is a BUILD output (ninja's gen_labels), so it may not exist at
-    # configure time. When absent (fresh tree), assume every manifest unit will be
-    # named once gen_labels runs; when present, use it for accurate dummy pairing.
-    named = (units_with_named_functions(REPO / GEN_NAMES)
-             if (REPO / GEN_NAMES).exists()
-             else {u["unit"] for u in manifest["unit"]})
+    # The delinked objs are a BUILD output, so on the first configure of a fresh
+    # tree there are none; units_with_a_target falls back to symbol_names.csv, and
+    # failing that to every manifest unit. ninja re-emits after the delink in the
+    # same build, which is where the pairing becomes exact.
+    named = units_with_a_target(REPO / GEN_NAMES, REPO / TARGET_DIR)
+    if not named:
+        named = {u["unit"] for u in manifest["unit"]}
     units = []
     for u in manifest["unit"]:
         # Pair the NORMALIZED comparison copies (compiler-private data names +

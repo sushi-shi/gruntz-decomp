@@ -2,6 +2,24 @@
 # TU's same-storage band (known scattered singletons / accepted homes).
 # Regenerate: python -m gruntz.audit.data_tu_order --write-baseline
 # rva	name	owner_cpp	container_cpp	storage
+#
+# 0x0020d2e8 was NOT a new interleave - it was UNMASKED on 2026-08-09. This audit
+# defaults an unenrolled DATA rva's storage to "data", and Warlord.cpp's
+# `CActRegPool<CWarlord>::s_table` (0x244610, really `.bss`) was unenrolled, so it
+# joined Warlord's `.data` band and stretched it to 0x244610 - swallowing enough
+# foreign defs to classify the band a POOL, which EXEMPTS it. Sizing the 51
+# template statics moved s_table to the `.bss` band, Warlord's real `.data` band
+# [0x20d1bc,0x20d374] reappeared, and the crossing under it became visible.
+#
+# The crossing itself is real and pre-existing: 0x20d2e8 holds "F\0" and sits one
+# datum below Warlord.cpp's own s_keyE (0x20d2ec), inside Warlord's string run,
+# yet our DATA() pin for it is on GruntCombat.cpp's `char s_codeF[] = "F"` while
+# Warlord.cpp's `static const char s_keyF[] = "F"` is unpinned. GruntCombat's
+# other string static, s_codeH, is at 0x20d7fc - four hundred bytes away - so the
+# retail owner of 0x20d2e8 is Warlord.cpp, and the two source spellings are one
+# /Gf-pooled retail datum modelled twice. Deciding which spelling keeps the pin is
+# a data-attribution call for the pinning lanes, not this audit's.
+0x0020d2e8	s_codeF	GruntCombat.cpp	Warlord.cpp	data
 0x00245268	g_dlgVal_645268	GruntzCmdMgr.cpp	GameText.cpp	bss
 0x0024526c	g_dlgVal_64526c	GruntzCmdMgr.cpp	GameText.cpp	bss
 0x002452a4	g_jitterX	CmdScrollApply.cpp	GameText.cpp	bss

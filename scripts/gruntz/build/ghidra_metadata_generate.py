@@ -72,6 +72,17 @@ _RECORD_TYPE = re.compile(r"^(?:class|struct|union)\s+")
 _EMPTY_TAG = re.compile(r"\s*\(empty\)\s*$")
 # compiler-synthesised records we never want to emit.
 _BUILTIN_RE = re.compile(r"^(__|_GUID$|type_info$)")
+# A record header line, after the tag. It used to demand `[\w:<>]+`, which is every
+# ordinary class but NOT a template specialization over anything but a plain type:
+# `class zDArray<int (CUserLogic::*)(void) __attribute__((thiscall))>` has spaces,
+# parens and a `*`, so it never reached structs.json. That is the only authority
+# labels.py has for a global's byte extent, so all 51 `CActRegPool<T>::s_table`
+# statics stayed sizeless, never enrolled in the delinker data manifest, and
+# `logicdispatchinit` - whose ONLY content is one of them - got no delinked object
+# at all (objdiff then scored the empty pairing 100.00%).
+_LAYOUT_RECORD = re.compile(r"^(?:class|struct|union)\s+(\S.*)$")
+# A local/anonymous record has no spellable name to look a size up by.
+_UNNAMEABLE_RE = re.compile(r"\((anonymous|unnamed|lambda)")
 
 
 def log(msg):
@@ -127,11 +138,13 @@ def parse_record_layouts(text):
             if indent > skip_below:
                 continue          # inside an embedded member's interior
             skip_below = None
-        # record header line: "class/struct/union NAME" with no member name.
+        # record header line: "class/struct/union NAME" with no member name. It is
+        # the FIRST field-shaped line of the block by construction (cur_name is
+        # None only until it is seen), so the name may run to end-of-line.
         if cur_name is None:
-            hm = re.match(r"^(?:class|struct|union)\s+([\w:<>]+)\s*$", decl)
-            if hm:
-                cur_name = hm.group(1)
+            hm = _LAYOUT_RECORD.match(decl)
+            if hm and not _UNNAMEABLE_RE.search(hm.group(1)):
+                cur_name = hm.group(1).strip()
             continue
         if _LAYOUT_NONFIELD.search(decl):
             continue              # base subobject / vptr: flatten its fields in
