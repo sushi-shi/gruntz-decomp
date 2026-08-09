@@ -750,6 +750,18 @@ def section_rows(rows, base_dir=None):
     `add_legacy_data_relocations` relocates it from the definition's own rva. That
     is the correct home for an unplaceable copy, and it costs no evidence: every
     column still comes from the candidate COFF plus the definition's proven extent.
+
+    THE SAME APPEND HITS THE ORDINARY, NON-COMDAT `.data`/`.rdata` TOO. A unit's
+    plain globals do not own a COMDAT, so they were all left in the legacy form and
+    packed by the delinker in manifest (rva) order into whichever section happened to
+    be the object's first of that storage - usually a COMDAT, and never at the offset
+    cl gave them. ordinary_sections() reconstructs those sections the same way: cl's
+    own non-COMDAT `.data`/`.rdata` becomes ONE non-affine section and each global
+    sits at ITS OWN candidate offset. That is admitted only when the section is
+    provably COMPLETE - every external symbol in it has an enrolled row of the right
+    storage, no two definitions overlap, none overruns the section, and every byte
+    left uncovered is ZERO in the candidate payload. A section with a real symbol we
+    cannot enroll would otherwise be published with holes, so it is left alone.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -854,6 +866,12 @@ def section_rows(rows, base_dir=None):
                                      "object's" % key))
                     del r["section"], r["section_offset"]
 
+    # cl's ordinary, non-COMDAT `.data`/`.rdata` - the globals that own no COMDAT.
+    ordinary, ordinary_rows = ordinary_sections(rows, base_dir)
+    secs += ordinary
+    for r in ordinary_rows:
+        by_obj.setdefault(r["object"], []).append(r)
+
     # Manifest ordinals are per-object and must be CONTIGUOUS FROM ONE. Number them
     # in the candidate COFF's own section order: objdiff stable-sorts same-named
     # sections when combining, so section order decides the combined layout and must
@@ -868,6 +886,86 @@ def section_rows(rows, base_dir=None):
                 r["section_ordinal"] = remap[r["section"]["index"]]
     secs.sort(key=lambda s: (s["object"], s["ordinal"]))
     return secs, withheld
+
+
+#: `IMAGE_SCN_LNK_COMDAT` - the bit that separates a per-symbol COMDAT from the
+#: unit's own ordinary data section.
+LNK_COMDAT = 0x00001000
+#: candidate section name -> the delinker's storage keyword. Only these two carry
+#: initialized bytes an ordinary (non-COMDAT) definition can sit in.
+ORDINARY_STORAGE = {".data": "data", ".rdata": "rdata"}
+
+
+def ordinary_sections(rows, base_dir):
+    """Non-affine candidate sections for cl's ordinary, non-COMDAT `.data`/`.rdata`.
+
+    Returns `(section rows, definition rows annotated with section/section_offset)`.
+
+    A unit's plain globals share one section per storage class, at the offsets cl
+    chose. Publishing that section rebuilds the target in the candidate's shape - the
+    same thing the COMDAT path does for a literal - and stops the delinker packing
+    the definitions into another section by manifest order.
+
+    THE SECTION IS ADMITTED ONLY WHEN IT IS PROVABLY COMPLETE. Every external symbol
+    cl defined in it must have an enrolled definition of the matching storage that
+    is still unplaced, no two may overlap, none may overrun the section, and every
+    byte no definition covers must be ZERO in the candidate payload (cl's own
+    inter-symbol padding). Fail any of those and the section is skipped entirely:
+    an incomplete section would publish a hole as retail content, which is exactly
+    the kind of fabrication the rest of this module refuses.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+
+    by_obj = defaultdict(dict)
+    for r in rows:
+        by_obj[r["object"]][r["name"]] = r
+
+    secs, placed = [], []
+    for obj, named in sorted(by_obj.items()):
+        path = Path(base_dir) / (obj[:-2] + ".obj")     # "foo.c" -> foo.obj
+        if not path.exists():
+            continue
+        c = _Coff(path)
+        for sec in c.section_table:
+            storage = ORDINARY_STORAGE.get(sec["name"])
+            if storage is None or sec["characteristics"] & LNK_COMDAT:
+                continue
+            members = c.defined_symbols(sec["index"])
+            if not members:
+                continue
+            payload = c.section_payload(sec["index"])[:sec["size"]]
+            covered, mine, complete = bytearray(sec["size"]), [], True
+            for offset, name in members:
+                r = named.get(name)
+                if r is None or r["storage"] != storage or "section" in r:
+                    complete = False
+                    break
+                end = offset + r["size"]
+                if end > sec["size"] or any(covered[offset:end]):
+                    complete = False
+                    break
+                covered[offset:end] = b"\1" * r["size"]
+                mine.append((r, offset))
+            if not complete or len(payload) != sec["size"]:
+                continue
+            # cl's inter-symbol padding is zero; a NON-zero uncovered byte is real
+            # content we have no definition for, so the section stays unpublished.
+            if any(payload[i] for i in range(sec["size"]) if not covered[i]):
+                continue
+            for r, offset in mine:
+                r["section"] = sec
+                r["section_offset"] = offset
+            placed += [r for r, _o in mine]
+            secs.append({"object": obj, "index": sec["index"], "name": sec["name"],
+                         "rva": None, "size": sec["size"],
+                         "alignment": sec["alignment"],
+                         "characteristics": sec["characteristics"],
+                         "comdat": sec["comdat"], "assoc": sec["assoc"],
+                         "storage": storage,
+                         "provenance": "candidate-COFF-ordinary-nonaffine"})
+    return secs, placed
 
 
 def manifest_bytes(rows):
