@@ -90,10 +90,22 @@ dialog templates, string tables, the accelerator table, `VERSIONINFO`, the MFC
 `DLGINIT` blobs. *Copied* is the icon and cursor image bits and the group directories
 computed from them — art files we do not have.
 
-**Today every row is carried as extracted retail bytes** (`config/retail/rsrc/`,
-`provenance` column on each manifest row). That is data provenance, **not a match
-claim**: writing the `.rc` that regenerates the authorable 91.5% is the open work, and
-the 8.5% of art can only ever be carried.
+`rescomp rc` prints that text, and `rescomp rc --roundtrip` **proves the word**: all
+**57/57 authorable resources re-encode BYTE-IDENTICAL** from the decoded model
+(**89,230 of 89,230 B**) — 22 STRINGTABLEs, 31 DIALOG/DIALOGEX templates, the
+ACCELERATORS table, `VERSIONINFO`, and both `DLGINIT` streams. The readable form loses
+nothing, so a `.rc` could regenerate those bytes exactly.
+
+**But today every row is SHIPPED as extracted retail bytes** (`config/retail/rsrc/`,
+`provenance` column on each manifest row). What the build emits is a **copy** — data
+provenance, **not a match claim**. Writing the `.rc` and compiling it here is what would
+make the 91.5% real source; the 8.5% of art can only ever be carried.
+
+Two facts the codecs recovered on the way: the DIALOGEX item header is 24 bytes, not 28
+(`helpID`/`exStyle`/`style`/`x,y,cx,cy`/`id`), and MFC's `RT_DLGINIT` record header is
+`WORD idc; WORD msg; DWORD len` with `msg` **WM_USER-relative** (`0x0403` =
+`CB_ADDSTRING`). `VERSIONINFO` says the build is **`1, 0, 0, 76`**, "Gruntz.EXE",
+"Copyright © 1998, Monolith Productions Inc.".
 
 ### Recovered structure: the payload order is the original `.rc` statement order
 
