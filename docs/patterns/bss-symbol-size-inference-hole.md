@@ -136,12 +136,18 @@ whose defect is a real *missing symbol* did **not** flip — `videoconfig` 40%, 
 `checkpointdlg`/`fonts`/`play`/`savegame`/`multi`/`customworlddialog` rose only as far
 as their extent-only symbols allowed.
 
-**The remaining `.bss` gap is a NAMING gap** (16 sections, 10,476 B): the delinker
-enrolls the nine `GruntDirectionCell` header statics as
-`?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A` while cl names them
-`_s_gruntDirEast$S17426`, and the normalizer canonicalises only the `$S` side, so the
-two can never pair. Same shape for the `CButeMgr` function-local statics
-(`_s_default_rect_butemgr`, `_s_guard_GetRect_butemgr`, …).
+**The naming gap is CLOSED (2026-08-09).** The normalizer now (a) rewrites the
+delinker's rva-suffixed enrolments (`?s_gruntDirEast_22bd28@@3U...`) onto cl's
+`_s_gruntDirEast$S` family and gives a BSS static a span/payload-independent
+identity (`DELINKED_STATIC_COPY`, proof `bss-no-content` - the same
+two-allocators argument as this patch), and (b) materializes base-side COFF
+COMMONs (header-inline local statics + `??_B` guards) into `.bss` as the
+linker would. The `CButeMgr` statics took real `DATA()` pins instead of the
+invented C names; the two library data no cl output can re-emit (CDialog's
+messageMap, type_info's vtable) moved to the non-compared `library_data`
+holding unit; and every one of the 71 `GruntDirectionCell` blocks is enrolled
+rva-suffixed and pairs against its TU's own emission. All data sections sit at
+exactly 100.0.
 
 ## See also
 
