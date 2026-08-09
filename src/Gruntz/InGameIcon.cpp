@@ -596,11 +596,11 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 }
 
 // @early-stop
-// One block short of retail: cl gives the second `if (ok == 0) goto fail;` its own
-// `xor eax,eax / pop / ret 8` copy where retail cross-jumps it into the shared fail at
-// 0x989b3 (46 blocks vs our 47, one polarity flip).  Spelling either or both `goto
-// fail` as a direct `return 0` scores WORSE (76.7 / 78.0), so the goto is the right
-// shape and the duplicate is cl's cross-jump decision.
+// Branch sequences AGREE (30/30, 4/4 rets); what is left is register-constant
+// assignment.  Retail pins 1 in ebx and spells the sprite-id test with the
+// immediate (`cmp [eax+0x124],0x55`, then re-loads it into ebp for the second
+// test); ours pins 0x55 in ebx and 1 in edi, so the pair of tests and everything
+// downstream carries a different register in every operand.
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
@@ -674,46 +674,45 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
         ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
-    if (ok == 0) {
-        goto fail;
-    }
-    if (cmd == PICKUP_WARPSTONE) {
-        placed = reg->m_cmdGrid->m_grid[idx];
-        if (placed != NULL) {
-            placed->m_warpstoneAnchorIndex = m_object->m_health;
-            reg = g_gameReg;
+    if (ok != 0) {
+        if (cmd == PICKUP_WARPSTONE) {
+            placed = reg->m_cmdGrid->m_grid[idx];
+            if (placed != NULL) {
+                placed->m_warpstoneAnchorIndex = m_object->m_health;
+                reg = g_gameReg;
+            }
         }
-    }
-    if (m_cue != NULL) {
-        o = m_object;
-        if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+        if (m_cue != NULL) {
+            o = m_object;
+            if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-            m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
-            reg = g_gameReg;
+                m_cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                reg = g_gameReg;
+            }
         }
-    }
-    ClearTileBit(reg, m_object);
-    owner = m_wwdObject;
-    if (owner->m_damage > 0) {
-        owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        aux = m_objAux;
-        m_prevAnimSetNode = aux->m_actKey;
-        aux->m_actKey = ActFindId("B");
+        ClearTileBit(reg, m_object);
         owner = m_wwdObject;
-        m_driftPos.m_lo = owner->m_damage;
-        m_driftPos.m_hi = 0;
-        m_driftThresh.m_lo = g_frameTime;
-        m_driftThresh.m_hi = 0;
+        if (owner->m_damage > 0) {
+            owner->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            aux = m_objAux;
+            m_prevAnimSetNode = aux->m_actKey;
+            aux->m_actKey = ActFindId("B");
+            owner = m_wwdObject;
+            m_driftPos.m_lo = owner->m_damage;
+            m_driftPos.m_hi = 0;
+            m_driftThresh.m_lo = g_frameTime;
+            m_driftThresh.m_hi = 0;
+            return 1;
+        }
+        rend = m_glitterSprite;
+        if (rend != NULL) {
+            rend->m_flags |= 0x10000;
+            m_glitterSprite = NULL;
+        }
+        r = m_wwdObject;
+        r->m_flags |= 0x10000;
         return 1;
     }
-    rend = m_glitterSprite;
-    if (rend != NULL) {
-        rend->m_flags |= 0x10000;
-        m_glitterSprite = NULL;
-    }
-    r = m_wwdObject;
-    r->m_flags |= 0x10000;
-    return 1;
 fail:
     return 0;
 }
