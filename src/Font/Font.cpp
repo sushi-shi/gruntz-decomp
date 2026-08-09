@@ -197,6 +197,11 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
 }
 
 // @early-stop
+// Branch sequences AGREE (32/32, one ret) since the non-blend row loop was written
+// `row < rc.bottom` like its blend twin. Residue is address-math hoisting in the
+// innermost blit loop: retail recomputes `glyphBuf + row * gm.width` from the two
+// stack slots on EVERY iteration (0x17a3bd..0x17a3c8) where cl hoists it into ebp
+// before the loop.
 static inline LONG H2AstInline005_0(const CRect& rc, i32 x) {
     return x - rc.left + rc.right;
 }
@@ -338,7 +343,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 }
             }
         } else {
-            for (i32 row = rc.top; rc.bottom > row; row++) {
+            for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = startCol; col < clippedW; col++) {
                     if (glyphBuf[row * gm.width + col] != 0) {
@@ -356,10 +361,14 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 }
 
 // @early-stop
-// /Ob1 inline-budget divergence (docs/patterns/ob1-inline-budget-divergence.md):
-// retail's inliner DECLINES CRect::Width here -> 4 out-of-line calls to the TU
-// COMDAT (retail 0x17b500, unlabeled) + &rc escapes -> rc fields memory-resident.
-// Ours inlines Width (base 121B/4 relocs short). Policy: no scaffolding.
+// Branch sequences AGREE (33/33, one ret) since the tail guard was written with the
+// sum on the left. Residue is the /Ob1 inline-budget divergence
+// (docs/patterns/ob1-inline-budget-divergence.md): retail's inliner DECLINES
+// CRect::Width and emits it as this TU's own COMDAT at 0x17b500 (8 bytes,
+// `mov eax,[ecx+8] / mov edx,[ecx] / sub eax,edx / ret`), calling it at every
+// rc.Width() site; cl inlines all of them here. Not a header device - <MfcNoInline.h>
+// is already in this TU and is a no-op for CRect because Font/Font.h pulls
+// <MfcWin.h> (hence afxwin.h, hence afxwin1.inl) before it. Policy: no scaffolding.
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
@@ -487,7 +496,7 @@ void FontRenderer::DrawWrapped(
             }
         }
     }
-    if (rc.bottom >= rc.top + lineAdvance && line.GetLength() > 0) {
+    if (rc.top + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
             i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
             DrawLine(line, surf, cx, rc.top, z);
