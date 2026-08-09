@@ -36,10 +36,15 @@
 #include <string.h>
 
 // @early-stop
-// cl proves m_poweredUp == 0 on the edge into the switch (the whole powered-up block
-// returns) and deletes the AISTATE_ATTACK body; retail keeps the load in a register and
-// re-compares it, emitting the arm as dead code. cl also cross-jumps the powered-up
-// block's two statement-identical ResetEntranceAnimation tails, which retail emits twice.
+// Three cl-vs-cl differences, none of them steerable from source so far (80 of retail's
+// 83 blocks):
+//   * the `stamina < FULL` arm's `if (m_neighborValid != 0) return 1;` is deleted here -
+//     cl knows the member is 0 from the entry test at 0xef724 - while retail keeps the
+//     compare against the eax that load left behind (0xef7bc);
+//   * the powered-up block's two ResetEntranceAnimation tails are byte-identical in
+//     retail (0xef77c and 0xef7c4) and cl cross-jumps ours into one;
+//   * conversely retail SHARES the SEEK and ATTACK CommitNeighbor tails (0xef8?? jmps
+//     into B58) where cl emits both.
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::ChargeStep() {
     m_defenderPx = m_lastTilePx;
@@ -206,7 +211,7 @@ i32 CGrunt::ChargeStep() {
         }
         case AISTATE_ATTACK: {
 
-            if (powered != 0) {
+            if (m_poweredUp != 0) {
                 CGrunt* t = m_tileMgr->m_grid[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_GRID_COLS];
                 if (t == NULL || GruntInRadius(t->m_tileOwnerHi, t->m_tileOwnerLo) == 0
                     || t->m_entranceCommitted == 0) {
