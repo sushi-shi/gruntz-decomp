@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 337  functions: 4566
+# units: 336  functions: 4566
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -18,7 +18,7 @@ attract	16
 attractstate	32
 battlezdata	31
 battlezdlgcolors	9
-battlezmapconfig	39
+battlezmapconfig	40
 battlezrepath	2
 battlezreserveplace	1
 battlezretarget	1
@@ -141,7 +141,6 @@ gruntentrancemove	14
 gruntgoosuckerstep	2
 grunthealthsprite	10
 gruntindicatorworkerhandlers	7
-gruntmovestep	1
 gruntpeertracking	1
 gruntphasestep	1
 gruntpickupload	1
