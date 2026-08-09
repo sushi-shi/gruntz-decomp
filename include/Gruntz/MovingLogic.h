@@ -18,6 +18,10 @@ extern const u32 g_defaultZ;
 
 class CMovingLogic : public CUserLogic {
 public:
+    enum EGruntScale {
+        GRUNT_SCALE,
+    };
+
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
@@ -42,6 +46,7 @@ public:
     CMovingLogic(CMotionState::EInlineBase);
 
     CMovingLogic(CGameObject* owner);
+    CMovingLogic(CGameObject* owner, EGruntScale);
     virtual ~CMovingLogic() OVERRIDE;
 
     virtual void AdvanceMotion();
@@ -54,6 +59,9 @@ public:
     Coord m_previousScreenPosition;
     i32 m_collisionFlags;
     i32 m_moveFlags;
+
+private:
+    void InitOwner(const double& timeScale);
 };
 SIZE_UNKNOWN();
 
@@ -66,6 +74,10 @@ inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
+    InitOwner(g_motionZScale);
+}
+
+inline void CMovingLogic::InitOwner(const double& timeScale) {
     i32 lo0 = m_objAux->m_minX;
     if (lo0 == 0) {
         Motion()->m_minBounds.x = g_movingLogicMin;
@@ -100,7 +112,7 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
         0.0,
         0.0,
         0.0,
-        static_cast<double>(g_frameTime) * g_motionZScale,
+        static_cast<double>(g_frameTime) * timeScale,
         0.0
     );
     m_motion.SetZ(static_cast<double>(g_defaultZ));

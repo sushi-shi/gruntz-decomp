@@ -48,6 +48,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/MovingLogicGruntScaleInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -316,7 +317,7 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 // into ebx; ours holds owner in ebx and re-materialises 7 as an immediate.
 RVA(0x00047a10, 0x770)
 CGrunt::CGrunt(void* owner)
-    : CMovingLogic(static_cast<CGameObject*>(owner)),
+    : CMovingLogic(static_cast<CGameObject*>(owner), CMovingLogic::GRUNT_SCALE),
       CWapX(static_cast<CGameObject*>(owner)),
       m_struckClockLo(0),
       m_struckTimerLo(0),
