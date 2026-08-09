@@ -123,6 +123,7 @@ PY = "python3"
 CC_WRAP = "scripts/gruntz/core/cc_wrap.py"
 DELINK = "scripts/gruntz/build/delink.py"
 LINK = "scripts/gruntz/build/link.py"
+RESCOMP = "scripts/gruntz/build/rescomp.py"
 # Data-symbol normalization: rewrite compiler-private ($SG/$T/$S) data names +
 # jump-table DIR32 labels of base AND target into a content-addressed, disposable
 # comparison copy so objdiff pairs them BY NAME (matching-neutral; the real objs
@@ -210,14 +211,25 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
 
     This is an OPT-IN target (`ninja candidate`), kept OUT of the default `all` so
     a normal `gruntz build` is unaffected. link.py manages its own wineserver.
+
+    The `.rsrc` section comes from `gruntz.build.rescomp`, which writes the Win32
+    `.RES` container itself because the toolchain tarball ships `cvtres.exe` but no
+    `rc.exe`. Its payloads are carried retail bytes (config/retail/rsrc/), which is
+    data provenance rather than reconstruction - see that module's docstring.
     """
     w.comment("=== PHASE 2: link -> candidate .EXE + .map (opt-in: `ninja candidate`) ===")
     cand = "build/exe/GRUNTZ.candidate.EXE"
+    res = "build/gen/gruntz.res"
+    w.rule("rescomp", command=f"{PY} {RESCOMP} build --out $out",
+           description="resource manifest -> .RES")
+    w.build(res, "rescomp",
+            inputs=["config/retail/rsrc/manifest.tsv"], implicit=[RESCOMP])
     w.rule("link",
-           command=f"{PY} {LINK} --out {cand} --objs-dir {BASE_DIR}",
+           command=f"{PY} {LINK} --out {cand} --objs-dir {BASE_DIR} --res {res}",
            description="link base objs -> candidate EXE + map")
     w.build([cand, "build/exe/GRUNTZ.candidate.map"], "link",
-            inputs=base_objs, implicit=[LINK, "scripts/gruntz/build/msdis_stub.py",
+            inputs=base_objs, implicit=[LINK, res,
+                                        "scripts/gruntz/build/msdis_stub.py",
                                         "scripts/gruntz/build/import_lib.py"])
     w.build("candidate", "phony", inputs=cand)
     w.newline()
