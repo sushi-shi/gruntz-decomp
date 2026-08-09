@@ -48,3 +48,12 @@ that path (`LayerBlitFrame` 0x115300, `CDDSurface::BltFast` 0x13ef90, `CDDSurfac
 0x13e850, `CPlay::BuildHelpReveal` 0xd72c0) diffed byte-identical to retail, so the bug is
 the value handed in, not the code. Always run `run.sh retail` as the control: retail logs
 **0** access violations where the candidate logs ~1400.
+
+**Do not read the emulated register values as data.** Continuation steps each faulting load
+OVER, so a destination register keeps its previous contents and a two-instruction indexed
+read reports the BASE pointer at every index — see
+[`continue-on-fault-retains-the-base-register`](continue-on-fault-retains-the-base-register.md).
+Here that turned "`GetAt(1)` and `GetAt(2)` both returned 0x01e2b3a0" into "`m_items.m_pData`
+is 0x01e2b3a0", which is a different search. The `CDDrawWorker`/`CImage`/`CObArray` graph
+behind it was then swept clean (sizes, offsets, vtable slots, ctor, writer set) — the
+elimination table is in `docs/gotchas.md` § "Runtime triage"; do not redo it.

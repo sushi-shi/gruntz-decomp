@@ -3017,7 +3017,7 @@ drag_box: {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CGrunt* slot;
         if (1 != cg->m_recList.GetCount()) {
-            slot = 0;
+            slot = NULL;
         } else {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
             slot = cg->m_grid[sel[0] * 15 + sel[1]];

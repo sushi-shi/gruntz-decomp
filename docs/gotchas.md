@@ -314,10 +314,61 @@ map them with `build/exe/GRUNTZ.candidate.map`):
 |---|---|---|
 | `LayerBlitFrame+0x6a,+0x7f,+0x86,+0x8b,+0x90` | read `[src+0x2c/0x1c/0x18/0x14/0x10]` | `src` (a `CImage*`) = 0x01e2b3a0, unmapped. 3 calls x 5 field reads per burst == `CPlay::BuildHelpReveal` with `m_revealFrame == 1` |
 | `CDDSurface::BltFast+0x12` | read `[src+8]` | downstream: LayerBlitFrame handed it the emulated garbage |
-| `CPlay::LoadByMode+0x84e,+0x851` | read `[0]+0x2c`, `[0]+0x28` | a NULL object |
+| `CPlay::LoadByMode+0x84e,+0x851` | read `[0]+0x2c`, `[0]+0x28` | `CGameLevel::m_mainPlane` is NULL — see below |
 
 `LayerBlitFrame` 0x115300, `CDDSurface::BltFast` 0x13ef90, `CPlay::BuildHelpReveal`
 0xd72c0 and `CPlay::LoadLoadingBarSprite` 0xd7440 are all byte-identical to retail, and
-retail's `CPlay` ctor also leaves `m_revealCap*` uninitialized — so the bad `CImage*` came
-out of `spr->m_items.GetAt(k)`, i.e. the loading-bar worker's frame array, not out of the
-code that reads it. That array is the open thread.
+retail's `CPlay` ctor also leaves `m_revealCap*` uninitialized (verified: the ctor 0x8c9d0
+stores to +0x4b0 and +0x4cc and to nothing between them, on BOTH sides) — so the bad
+`CImage*` came out of the loading-bar worker, not out of the code that reads it.
+
+**But the repeated value is the array's `m_pData`, not an element** — see
+[`continue-on-fault-retains-the-base-register`](patterns/continue-on-fault-retains-the-base-register.md).
+`LoadLoadingBarSprite` reads each frame as `mov edx,[ecx+0x14]` (the `CObArray` data
+pointer) then `mov edx,[edx+N]`; when the second load faults it is stepped over, so `edx`
+keeps `m_pData` and *both* `GetAt(1)` and `GetAt(2)` store it. That is why the two differ
+by nothing. There is no fill that puts one pointer at two indices — `InsertFrame` 0x151f00
+refuses a non-null slot and every frame path allocates a fresh `CImage`. So the question is
+"what makes `CObArray::m_pData` bad", not "which writer stored a bad `CImage*`".
+
+**The `CDDrawWorker`/`CImage`/`CObArray` object graph is NOT the defect — do not re-audit
+it** (swept 2026-08-09, all evidence static):
+
+| checked | how | result |
+|---|---|---|
+| object sizes | `gruntz.audit.alloc_size` — retail `push <n>; call ??2` vs our `SIZE()` *and* computed `sizeof` | 430 attributed sites, **0 contradictions**. `CImage` 0x34 (0x151f24), `CDDrawWorker` 0x6c (0x154b24), `CDDrawWorkerHost` 0x158 (0x15d8ef), `CPlay` 0x520 |
+| member offsets | `gruntz.audit.subobject_offsets` (831 agree / 0 disagree), `this_offsets` (0 past-sizeof) + hand-check vs retail | `CDDrawWorker`: `CObArray` @+0x10, `m_pData` @+0x14, `m_nSize` @+0x18, `m_name[0x40]` @+0x24, `m_minIndex` @+0x64, `m_maxIndex` @+0x68. The "+0x10 vs +0x14" discrepancy in the first write-up is not one: +0x10 is the sub-object (`lea ecx,[esi+0x10]`), +0x14 is `m_pData` |
+| vtable slots | `vtable_hierarchy --audit` 0 flags, `vtable_owner --audit` 0 MISBOUND / 0 RTTI-MISBOUND, `vtable_slot_binding` all 2887 slots wired | `CImage` 18 slots, `CDDrawWorker` 17 — both match RTTI and our headers in order. `InsertFrame`'s `[edx+0x2c]` is `CImage::Resolve`, `[edx+0x4]` the deleting dtor |
+| ctor init | retail's inlined worker ctor in `InsertFrameByKey` 0x154ae0 | vptr, `m_id`, `m_flags=0`, `m_ownerCtx`, **`call CObArray::CObArray()` on `this+0x10`**, vptr, `m_minIndex=0x1869f`, `m_maxIndex=0` — exactly our header's inline ctor. `Unload` 0x151ee2 resets the same pair |
+| writers | whole `ddrawworkerregistry` unit is 100.00; `AddFrameAt` 0x1521c0 has **no rel32 caller** (inlined everywhere); we define no MFC container method, so `m_pData` is only ever written by `nafxcw:array_o.obj` | every deleter (`RemoveByKey`, `MapTeardown`, `RemoveKeysEqual`) removes the map key *and* deletes — no dangling registry entry |
+
+Vtable "slack" in `link_sections --undersized` is a false lead for this: retail pads between
+`.rdata` contributions with zeros, so `??_7CPlay@@6B@` reads `claim 0xac -> next pin +0xd8`
+while the real vtable is exactly the 43 slots we emit.
+
+`gruntz.audit.link_defects` reports 0 PHANTOM / 0 UNDEFINED-DATA / 0 MULTIPLY-DEFINED and
+**11 DIVERGENT COMDATs** — all characterised as toolchain-flag divergence, none semantic:
+`??_7CImage@@6B@` (72 B in `wwdgameobject` vs 76 B in `cimagecomdats`) is the same 18 slots
+in the same order, differing only by the `??_R4CImage@@6B@` COL prefix `/GR` adds, and the
+symbol correctly points past it (+4) in the `/GR` copy; `??1?$CArray@PAU…` 48 vs 96 B is the
+same body plus a `/GX` frame; `??_GzPTree` 32 vs 80 B is call-the-out-of-line-dtor vs
+inline-it. Real byte-fidelity debt, but the linker cannot pick a wrong *behaviour* here.
+
+So the loading-bar array is a **victim, not the cause**. With ~1400 stepped-over faults the
+process corrupts itself progressively, and every register left stale by a skipped load feeds
+the next store. Triage the FIRST fault in the log — and prefer the first `info[0]=1` (write)
+fault, since that is what can damage an unrelated heap block.
+
+**The third row is the sharper lead, and it is a different subsystem.** The pair of reads is
+retail's `mov ecx,[eax+0x2c]` / `mov edx,[eax+0x28]` at 0xcaaa4/0xcaaa7, where
+`eax = m_world->m_level->m_mainPlane`; note the two sites just above it (0xcaa5e, 0xcaa70)
+DO guard `m_mainPlane != NULL` and this one does not, so retail expects it set by then.
+`CGameLevel::m_mainPlane` is `+0x5c` — confirmed against `ReadPlane` 0x15d8d0, which is the
+only writer: `test BYTE PTR [edi+0x8],0x1` (the plane's `CLoadable::m_flags`) then
+`mov [esi+0x5c],edi` / `mov [esi+0x60],ecx`. Our `ReadPlane`, `ReadObjectPlane` and the
+`CDDrawWorkerHost` ctor are all 100.00, and `CDDrawWorkerHost::Read` 0x161640 (96.72) copies
+the header flags with the identical `mov eax,[edx+0x8]; mov [ebp+0x8],eax` — its residue is
+scheduling plus a `repne`/`repnz` mnemonic alias. So NULL means no plane carried bit 0, i.e.
+the WWD plane records reaching `Read` are wrong: chase the level decode
+(`_WwdFile_InflateMainBlock` 0x160790 is 88.74, `CGameLevel::LoadWwd` 82.41), not the plane
+objects.
