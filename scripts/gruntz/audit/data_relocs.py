@@ -198,9 +198,20 @@ def library_rvas() -> dict[str, int]:
 
 DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 
-# Orphan payload attributions that exist TODAY. Anything not in this set is a new
-# defect and fails the gate; a row leaves the set when its owner is proven, never
-# because it became inconvenient.
+# Orphan payload attributions that exist TODAY - NONE, since 2026-08-09. Anything
+# not in this set is a new defect and fails the gate; a row leaves the set when its
+# owner is proven, never because it became inconvenient. Both entries were closed
+# by proving the owner, so the set is empty and must stay that way.
+#
+#   CLOSED 2026-08-09 - ghidra. config/static_data_copies.tsv's holding unit for
+#   three GruntDirStatics blocks (27 `.bss` rows). Each copy's owner is decided by
+#   its static initializer: cl emits the `$E` that constructs the nine cells at the
+#   HEAD of that TU's .text contribution, so the first named function after the
+#   code that stores into them names the unit. The rule reproduces 63 of the 71
+#   catalogued blocks unaided, and it homes these three: 0x229548 advancedoptions,
+#   0x249620 netlobbydialogs, 0x24bd20 multistartdlg. The second forced a
+#   correction - 0x2496e8 was on netlobbydialogs and is multihelpdlg's - since one
+#   TU cannot emit the copy twice.
 #
 #   CLOSED 2026-08-09 - movieplayer. vtables_game.csv attributed
 #   ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (0x1e971c, 0x14, SIX relocated
@@ -213,11 +224,7 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 #   the hand-written owner is gone, and vtable_catalog.validate() FAILS the build on
 #   a `unit` config/units.toml does not declare.
 #
-#   ghidra       config/static_data_copies.tsv's documented holding unit for the
-#                GruntDirStatics copies whose owning TU is not yet partitioned
-#                (27 rows). All `.bss`: no bytes exist, so nothing is withheld
-#                from scoring, and the storage rule below already exempts them.
-KNOWN_ORPHAN_UNITS = frozenset({"ghidra"})
+KNOWN_ORPHAN_UNITS = frozenset()
 
 # A live unit whose delinked side does not exist at all. objdiff pairs nothing and
 # scores the empty pairing 100.00% on EVERY measure with zero totals, so the unit

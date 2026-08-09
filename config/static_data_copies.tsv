@@ -1,8 +1,29 @@
 # static_data_copies.tsv - compiler-emitted per-TU copies of header statics
 # (the GruntDirStatics device, docs/data-attribution.md): DATA() in a header
 # is ignored, so these reviewed rows are folded into symbol_names.csv by
-# labels.py --merge. rva\tname\tunit\tsize\tkind. Multi-copy (holding-unit)
-# rows carry an rva-suffixed name until the TU partition splits them.
+# labels.py --merge. rva\tname\tunit\tsize\tkind.
+#
+# THE OWNER OF A BLOCK IS ITS STATIC INITIALIZER'S POSITION. Each copy is
+# constructed by a `$E` initializer that cl emits at the HEAD of that TU's .text
+# contribution, so the first named function AFTER the code that stores into the
+# nine cells names the owning unit. That rule reproduces 63 of these 71 blocks
+# unaided; it is how the three former `ghidra` holding-unit blocks were homed on
+# 2026-08-09 (0x229548 advancedoptions, 0x249620 netlobbydialogs, 0x24bd20
+# multistartdlg) and how 0x2496e8 was corrected off netlobbydialogs, which the
+# first of those would otherwise have given two copies.
+#
+# A unit that still holds a SECOND block keeps rva-suffixed names on it (74 rows
+# over 12 units) - four more disagree with the initializer rule and are the
+# remaining worklist: 0x229eb8 (dialogs -> bootycheatstate), 0x245168
+# (brickzload -> gruntzmgr), 0x24c3b0 (play -> gruntzplayer), 0x24c548
+# (play -> playassetload).
+#
+# A PLAIN name is shared by all 71 copies, so the delink data manifest withholds
+# it ("duplicate name in manifest") and no copy is materialized - which costs
+# nothing: `.bss` has no bytes, and objdiff omits a section the target side does
+# not have. An rva-suffixed name IS unique and therefore DOES enroll, so it must
+# never name a unit objdiff cannot open (that was the `ghidra` defect) and must
+# not be given to a TU whose base obj does not emit the cells.
 0x2293f8	?s_gruntDirEast@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229408	?s_gruntDirNorth@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229418	?s_gruntDirSouth@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
@@ -21,15 +42,15 @@
 0x229500	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	gameobjectfactory	0xc	data
 0x229510	?s_gruntDirCenter@@3UGruntDirectionCell@@A	gameobjectfactory	0xc	data
 0x229520	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	gameobjectfactory	0xc	data
-0x229548	?s_gruntDirEast_229548@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x229558	?s_gruntDirNorth_229558@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x229568	?s_gruntDirSouth_229568@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x229578	?s_gruntDirWest_229578@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x229588	?s_gruntDirNorthEast_229588@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x229598	?s_gruntDirNorthWest_229598@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x2295a8	?s_gruntDirSouthEast_2295a8@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x2295b8	?s_gruntDirCenter_2295b8@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x2295c8	?s_gruntDirSouthWest_2295c8@@3UGruntDirectionCell@@A	ghidra	0xc	data
+0x229548	?s_gruntDirEast@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x229558	?s_gruntDirNorth@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x229568	?s_gruntDirSouth@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x229578	?s_gruntDirWest@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x229588	?s_gruntDirNorthEast@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x229598	?s_gruntDirNorthWest@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x2295a8	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x2295b8	?s_gruntDirCenter@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
+0x2295c8	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	advancedoptions	0xc	data
 0x229880	?s_gruntDirEast@@3UGruntDirectionCell@@A	worldsoundset	0xc	data
 0x229890	?s_gruntDirNorth@@3UGruntDirectionCell@@A	worldsoundset	0xc	data
 0x2298a0	?s_gruntDirSouth@@3UGruntDirectionCell@@A	worldsoundset	0xc	data
@@ -282,33 +303,33 @@
 0x245ea8	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	lightfxrender	0xc	data
 0x245eb8	?s_gruntDirCenter@@3UGruntDirectionCell@@A	lightfxrender	0xc	data
 0x245ec8	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	lightfxrender	0xc	data
-0x249620	?s_gruntDirEast_249620@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249630	?s_gruntDirNorth_249630@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249640	?s_gruntDirSouth_249640@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249650	?s_gruntDirWest_249650@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249660	?s_gruntDirNorthEast_249660@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249670	?s_gruntDirNorthWest_249670@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249680	?s_gruntDirSouthEast_249680@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x249690	?s_gruntDirCenter_249690@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x2496a0	?s_gruntDirSouthWest_2496a0@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x2496e8	?s_gruntDirEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x2496f8	?s_gruntDirNorth@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249708	?s_gruntDirSouth@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249718	?s_gruntDirWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249728	?s_gruntDirNorthEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249738	?s_gruntDirNorthWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249748	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249758	?s_gruntDirCenter@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x249768	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
-0x24bd20	?s_gruntDirEast_24bd20@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd30	?s_gruntDirNorth_24bd30@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd40	?s_gruntDirSouth_24bd40@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd50	?s_gruntDirWest_24bd50@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd60	?s_gruntDirNorthEast_24bd60@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd70	?s_gruntDirNorthWest_24bd70@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd80	?s_gruntDirSouthEast_24bd80@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bd90	?s_gruntDirCenter_24bd90@@3UGruntDirectionCell@@A	ghidra	0xc	data
-0x24bda0	?s_gruntDirSouthWest_24bda0@@3UGruntDirectionCell@@A	ghidra	0xc	data
+0x249620	?s_gruntDirEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249630	?s_gruntDirNorth@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249640	?s_gruntDirSouth@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249650	?s_gruntDirWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249660	?s_gruntDirNorthEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249670	?s_gruntDirNorthWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249680	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x249690	?s_gruntDirCenter@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x2496a0	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	netlobbydialogs	0xc	data
+0x2496e8	?s_gruntDirEast@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x2496f8	?s_gruntDirNorth@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249708	?s_gruntDirSouth@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249718	?s_gruntDirWest@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249728	?s_gruntDirNorthEast@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249738	?s_gruntDirNorthWest@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249748	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249758	?s_gruntDirCenter@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x249768	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	multihelpdlg	0xc	data
+0x24bd20	?s_gruntDirEast@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd30	?s_gruntDirNorth@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd40	?s_gruntDirSouth@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd50	?s_gruntDirWest@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd60	?s_gruntDirNorthEast@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd70	?s_gruntDirNorthWest@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd80	?s_gruntDirSouthEast@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bd90	?s_gruntDirCenter@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bda0	?s_gruntDirSouthWest@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
 0x24c548	?s_gruntDirEast@@3UGruntDirectionCell@@A	play	0xc	data
 0x24c558	?s_gruntDirNorth@@3UGruntDirectionCell@@A	play	0xc	data
 0x24c568	?s_gruntDirSouth@@3UGruntDirectionCell@@A	play	0xc	data
