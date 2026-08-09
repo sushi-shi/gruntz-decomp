@@ -2716,9 +2716,9 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
 }
 
 // @early-stop
-// Register pressure: retail keeps one zero register (edi) for b.left, b.top and
-// the src NULL test, so it needs no fifth callee-saved register; cl materialises
-// two zeros and pushes ebx to hold src.
+// docs/patterns/duplicated-zero-constant-claims-the-fourth-callee-saved-register.md
+// - exhausted there: 11 spellings, a 400-iteration hill-climb and a flat
+// declaration-count window. Do not chase the prologue tells on their own.
 RVA(0x0002b340, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
