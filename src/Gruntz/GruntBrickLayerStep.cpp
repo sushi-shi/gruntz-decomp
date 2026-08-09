@@ -37,10 +37,13 @@
 #include <string.h>
 
 // @early-stop
-// Blocks agree through the powered-up arm. First divergence: the last
-// `if (m_poweredUp == 0) return 1;` of the >= STAMINA_FULL arm keeps its own exit copy
-// where retail reaches the shared one, and the post-powerup scan region is still laid
-// out differently. Re-derive with `sema disasm 0x000ecc90 --blocks --diff --lite`.
+// B0-B14 are now instruction-exact.  Divergence starts at the powered-up arm: cl
+// PROVES `m_poweredUp != 0` inside the `stamina < FULL` else-arm and deletes that
+// arm's `if (m_poweredUp == 0) return 1;` (retail keeps it - 0xece99 re-tests the ecx
+// the outer 0xece23 load left behind), and it gives the >= FULL arm's copy its own
+// epilogue instead of the 2-instruction reload+jmp retail has at 0xece85.  Everything
+// downstream is index-shifted by that one missing block.  Frame is 0x8c vs retail's
+// 0x7c, and `this` is spilled where retail parks it in ebx for the whole body.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -52,12 +55,12 @@ i32 CGrunt::StepBrickLayerBehavior() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
-    Coord c1[2];
-    GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
-    Coord c2[2];
-    GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
+    Coord c1;
+    GetScreenPos(&c1);
+    c1.m_x >>= TILE_SHIFT_PX;
+    Coord c2;
+    GetScreenPos(&c2);
+    c2.m_y >>= TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -184,10 +187,10 @@ L_ed153:
 
         i32 r = m_defenderRadius;
         RECT box;
-        box.left = cx - r;
-        box.right = cx + r;
-        box.top = cy - r;
-        box.bottom = cy + r;
+        box.left = c1.m_x - r;
+        box.right = c1.m_x + r;
+        box.top = c2.m_y - r;
+        box.bottom = c2.m_y + r;
         RECT gb;
         gb.left = 0;
         gb.top = 0;
@@ -207,9 +210,9 @@ L_ed153:
             for (i32 col = isect.left; col < isect.right; col++) {
                 if ((cell->m_flags & 0x8000) != 0 || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_A
                     || cell->m_typeCode == TILEKIND_GAUNTLET_BRICK_B) {
-                    i32 dr = row - cy;
+                    i32 dr = row - c2.m_y;
                     dr = abs(dr);
-                    i32 dc = col - cx;
+                    i32 dc = col - c1.m_x;
                     dc = abs(dc);
                     i32 dist = dr + dc;
                     if (dist < best) {
@@ -222,9 +225,9 @@ L_ed153:
             }
         }
         if (best != INT_MAX) {
-            i32 dc = bestCol - cx;
+            i32 dc = bestCol - c1.m_x;
             dc = abs(dc);
-            i32 dr = bestRow - cy;
+            i32 dr = bestRow - c2.m_y;
             dr = abs(dr);
             if (dc <= 1 && dr <= 1) {
                 m_tileMgr->ApplyTriggerA(
