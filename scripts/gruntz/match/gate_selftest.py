@@ -38,7 +38,7 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from gruntz.audit import data_integrity, rename_member, tu_layout
+from gruntz.audit import data_integrity, image_diff, rename_member, tu_layout
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
@@ -131,6 +131,20 @@ class ScoreBankingProvenanceTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "refusing to write"):
                 status.cmd_summary(args)
         update.assert_not_called()
+
+
+class ReferentEvidenceTriageTests(unittest.TestCase):
+    def test_a_later_string_cannot_downgrade_symbol_evidence(self):
+        divs = [(["?KnownRetail@@YAXXZ"], []),
+                ([], ['"plausible but not decisive"'])]
+        self.assertEqual(image_diff._referent_evidence(divs), "symbol")
+
+    def test_literal_only_and_weak_regions_keep_their_classes(self):
+        self.assertEqual(image_diff._referent_evidence(
+            [(['"retail"'], ['"candidate"'])]), "string literal")
+        self.assertEqual(image_diff._referent_evidence(
+            [(["<0011223344556677>"], ["0x12345678"])]),
+            "weak / content only")
 
 
 class ViewDebtLibraryShadowTests(unittest.TestCase):

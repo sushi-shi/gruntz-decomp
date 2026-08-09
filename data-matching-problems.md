@@ -149,14 +149,16 @@ now measures this on the linked image by resolving each address operand to **wha
 reaches**. The first pass reported 610 regions. Source corrections and six independently
 tested resolver/sequence corrections reduce the current result to **35,769 of 36,386
 decidable operands (98.30%) reaching the same referent, with 248 genuinely different
-regions and 40 ordering-only regions**. The 248 split into 216 symbol-proven, 29
-weak/content-only, and 3 string-literal regions.
+regions and 40 ordering-only regions**. The 248 split into 219 symbol-proven and 29
+weak/content-only regions; none is now literal-only.
 
 The original worklist exposed real perfect-score defects such as registry keys spelled
 with underscores, the wrong Bute diagnostic string, and constructor/container identity
 differences. It also exposed methodological false positives: relocated pool windows,
 IAT slots read as text, short/control-character literals, interior self-references, and
-undecidable operands splitting an otherwise equal sequence. Each class now has a negative
+undecidable operands splitting an otherwise equal sequence. A seventh reporting defect
+let a later string downgrade symbol evidence; monotone precedence corrected the three
+supposed literal-only rows to symbol-proven structural rows. Each class now has a negative
 self-test. The remaining 248 are a ratcheted structural worklist, not honestly reducible
 by substituting plausible strings or callees without per-site identity evidence.
 

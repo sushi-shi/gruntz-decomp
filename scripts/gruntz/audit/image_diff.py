@@ -1906,6 +1906,24 @@ def _pick_reloc_pair(R, C):
     return None
 
 
+def _referent_evidence(divs):
+    """Strongest evidence carried by any descriptor in a region's divergences.
+
+    Evidence is monotone: seeing a later string must not downgrade an already
+    symbol-proven region.  The old `min()` spelling did exactly that because
+    "string literal" sorts before "symbol" lexically, misclassifying three mixed
+    structural regions as one-line literal fixes.
+    """
+    rank = 0
+    for rr, cc in divs:
+        for desc in rr + cc:
+            if desc.startswith('"'):
+                rank = max(rank, 1)
+            elif not (desc.startswith("<") or desc.startswith("0x")):
+                rank = 2
+    return ("weak / content only", "string literal", "symbol")[rank]
+
+
 def _referent_worklist(reps, top):
     """The actionable output: paired regions that reach something ELSE.
 
@@ -1928,14 +1946,7 @@ def _referent_worklist(reps, top):
     # reader must not spend a symbol-class effort on it.
     cls = Counter()
     for (sec, nm), divs in rows.items():
-        ev = "weak / content only"
-        for rr, cc in divs:
-            for d in rr + cc:
-                if d.startswith('"'):
-                    ev = min(ev, "string literal")
-                elif not (d.startswith("<") or d.startswith("0x")):
-                    ev = "symbol"
-        cls[ev] += 1
+        cls[_referent_evidence(divs)] += 1
     print("  by strongest evidence:")
     for k, v in cls.most_common():
         print("    %-22s %4d region(s)" % (k, v))

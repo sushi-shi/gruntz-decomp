@@ -281,8 +281,13 @@ now counted, then removed before identity/order comparison; ordering-only region
 reported separately by `--referents`.
 
 That sixth correction removes another 14 false-positive regions: the final static
-worklist is **248 genuine wrong-referent regions**, triaged as **216 symbol**, **29
-weak/content-only**, and **3 string-literal** regions, plus **40 ordering-only**.
+worklist is **248 genuine wrong-referent regions**, plus **40 ordering-only**.
+A seventh reporting defect did not change that total but did change how it should be
+worked: lexical `min()` let a later string descriptor downgrade an already symbol-proven
+region. The three apparent string-literal rows were all mixed structural regions; with
+monotone evidence precedence the honest triage is **219 symbol**, **29 weak/content-only**,
+and **0 literal-only**. A negative control keeps a later plausible string from erasing
+stronger identity evidence.
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
 yellow-to-blue startup symptom is therefore not explained by a wrong named-asset
