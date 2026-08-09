@@ -1244,9 +1244,10 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 }
 
 // @early-stop
-// Same 144 blocks as retail; cl hoists the shared `idleReseed` goto target to
-// ~35% of the function where retail leaves it next to the epilogue
-// (docs/patterns/forward-goto-hoists-target-block.md).
+// 144 blocks, retail's 144.  Residue is constant-register allocation: retail
+// enregisters -1 in ebp from the second strcmp on (`sbb eax,ebp`, `push ebp`,
+// `mov [esi+0x1a0],ebp`) and uses `test cl,cl` for the bool guards, where cl
+// here spells the immediate and reuses the ebx zero-register for the guards.
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
