@@ -334,6 +334,23 @@ source-definition order; cross-TU order = object link order). `gruntz link
 Whole-binary byte-verification against retail is a later step (needs fuller
 reconstruction + the matched link order).
 
+The link also carries a **`.rsrc`**: there is no `rc.exe` in the toolchain, so
+`scripts/gruntz/build/rescomp.py` writes the Win32 `.RES` container itself from
+`config/retail/rsrc/` and `link.exe` (via its built-in `cvtres`) turns it into the
+section. All 75 resources come out byte-identical; the only differing bytes in the
+whole 123,260-byte section are the 75 `OffsetToData` fields, shifted by the section
+placement. Its payloads are *carried retail bytes*, i.e. data provenance and not a
+match — the module docstring and every manifest row say which 91.5% is authorable
+from a `.rc` and which 8.5% is art that can only be copied.
+
+**`docs/link-section-census.md`** classifies every byte of every remaining
+section delta (`python -m gruntz.audit.section_census [--bss] [--reloc]`). The
+headline: retail is an `/INCREMENTAL:YES` link (its `.CRT$XC*` tables sit at the
+exact padded offsets ours do), the incremental linker pads command-line objects by
++20% and library members by 0, and that single fact accounts for the whole `.data`
+excess — modelled with `--engine-lib`, `.data` goes from +67,456 over to 22,304
+under.
+
 ## The target (delink) half
 
 Unchanged in spirit, just orchestrated by ninja. The `delink` rule runs
