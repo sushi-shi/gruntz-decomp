@@ -1716,10 +1716,10 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	5	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	10	b49c6df2be4a	0x179720	100.0000
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	73.2940	73.2940	9	1b8cd050c86c	0x179e70	73.2940
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	72.9607	72.9607	10	837ce4ada5a1	0x179e70	73.2940
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	4	1c99e425f732	0x179c30	100.0000
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	73.5265	73.5265	7	c3172c8c97ed	0x17a460	73.5265
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	73.3641	73.3641	8	dd9cd321c6fe	0x17a460	73.5265
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	7	e5971f41c2e7	0x1797b0	100.0000
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:ccfab244fd57	0x17b4f0	100.0000
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000
@@ -1991,8 +1991,8 @@ gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	62.1496	62.1496	25	4a6ca85d5428
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	89.7982	89.7982	6	b1d4fb79781d	0x60150	90.5684
 gruntbehaviorleaf	?LoadGruntDecayConfig2@CGrunt@@QAEHXZ	81.3658	81.3658	6	42d287426c04	0x61570	81.3658
 gruntbehaviorleaf	?LoadGruntDecayConfig@CGrunt@@QAEHXZ	90.8344	90.8344	5	3e0e258b98e3	0x612a0	90.8344
-gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	58.9333	58.9167	8	210f572b0a18	0xecc90	58.9333
-gruntchargestep	?ChargeStep@CGrunt@@QAEHXZ	69.7505	69.7505	4	2f5f53621ad4	0xef6b0	69.7505
+gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	59.0439	59.0439	9	4e8c0fd8e413	0xecc90	59.0439
+gruntchargestep	?ChargeStep@CGrunt@@QAEHXZ	78.7333	78.7333	5	54f00ed434b4	0xef6b0	78.7333
 gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	6	ec4eb4bdafdb	0x5caa0	100.0000
 gruntcombat	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	94.8461	94.8461	15	9046ea445457	0x59230	94.8461
 gruntcombat	?BeginAttack@CGrunt@@QAEHHH@Z	81.7708	81.7708	12	b12e2fca9100	0x5b570	81.7708
@@ -2684,7 +2684,7 @@ ingameicon	?FireActivation@CInGameText@@UAEXH@Z	100.0000	100.0000	4	9680ac710dcc
 ingameicon	?FireActivation@CToyPeek@@UAEXH@Z	100.0000	100.0000	4	6b44d3c57667	0x97de0	100.0000
 ingameicon	?HandleInput@CInGameIcon@@QAEHXZ	100.0000	100.0000	14	73bcb928f848	0x97680	100.0000
 ingameicon	?PeekCycle@CInGameIcon@@QAEHXZ	88.1818	88.1818	16	1a4bde9a0bde	0x984b0	88.1818
-ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	80.2956	80.2956	30	b6ff3d4dfa99	0x986b0	80.2956
+ingameicon	?PlaceAt@CInGameIcon@@QAEHHH@Z	81.4049	81.4049	31	63113dec5af8	0x986b0	81.4049
 ingameicon	?RefreshCell@CInGameIcon@@QAEHXZ	100.0000	100.0000	20	c4b394141e7d	0x98340	100.0000
 ingameicon	?RegisterIconActions@@YAXXZ	100.0000	100.0000	11	48bcade44a85	0x979e0	100.0000
 ingameicon	?RegisterIconState@@YAXXZ	100.0000	100.0000	11	0a011fe80102	0x97f40	100.0000
@@ -3334,7 +3334,7 @@ play	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	2	a609e028be41	0xcee70	100.00
 play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	11	fa0c77dfc76e	0xcb480	100.0000
 play	?GetAmbientId@CPlay@@QAEHXZ	100.0000	100.0000	4	67743eddace9	0xda200	100.0000
 play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
-play	?HandleDragMove@CPlay@@UAEHHHH@Z	37.0038	37.0038	11	8b7c2fe7dde1	0xd0db0	37.1456
+play	?HandleDragMove@CPlay@@UAEHHHH@Z	94.8851	94.8851	12	db61038baf68	0xd0db0	94.8851
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	1	b3c8fcfaa28d	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
 play	?LoadByMode@CPlay@@UAEHHH@Z	83.8795	83.8795	24	c3ba457e5009	0xca200	83.8795
@@ -3353,7 +3353,7 @@ play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	5	29b62be18a03	0xcb400	94.7917
 play	?OnKeyDown@CPlay@@UAEHHH@Z	90.5799	90.5799	3	3a8d22a42bf9	0xcbcc0	90.5799
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	95.7038	95.7038	6	cf033a7d8845	0xce660	95.7038
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	34.9323	34.9323	4	105bf9c1bd20	0xcdb10	34.9323
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.3652	89.3652	5	2df88e39568c	0xcdb10	89.3652
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	3	3c757657d494	0xce530	100.0000
 play	?OnMouseMove@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	80a201da23b5	0x8c970	100.0000
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	8b4b0527c2b5	0xceab0	100.0000
