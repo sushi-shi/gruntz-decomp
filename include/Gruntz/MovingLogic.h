@@ -14,7 +14,7 @@
 #include <Wwd/MoveMode.h>
 
 extern const double g_motionZScale;
-extern u32 g_defaultZ;
+extern const u32 g_defaultZ;
 
 class CMovingLogic : public CUserLogic {
 public:

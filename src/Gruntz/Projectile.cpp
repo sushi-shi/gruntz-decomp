@@ -53,17 +53,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001f04b0)
-const double g_movingLogicMin = -2147483647.0;
-DATA(0x001f04b8)
-const double g_movingLogicMax = 2147483646.0;
-
 DATA(0x001eaa88)
 const double g_motionZScale = 0.001;
 DATA(0x001eab00)
 const double g_projPhase1 = 6.2831854;
+DATA(0x001f04b0)
+const double g_movingLogicMin = -2147483647.0;
+DATA(0x001f04b8)
+const double g_movingLogicMax = 2147483646.0;
 DATA(0x001f04e8)
-u32 g_defaultZ = 0;
+// retail 0x001f04e8 holds 0x18 in .rdata, so the default is 24 and const.
+const u32 g_defaultZ = 24;
+
 template<> DATA(0x0024c758)
 CActReg CActRegPool<CProjectile>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024c780)

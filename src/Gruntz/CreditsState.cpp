@@ -50,15 +50,14 @@
 DATA(0x0022bf74)
 i32 g_clipRegionEnabled;
 
-DATA(0x001e96f8)
-static const double kScreenH = 480.0;
 DATA(0x001e96f0)
 static const double kScrollRate = 0.025;
-DATA(0x001e9708)
-static const double kStepScale = 1000.0;
-
+DATA(0x001e96f8)
+static const double kScreenH = 480.0;
 DATA(0x001e9700)
 double g_val_1e9700;
+DATA(0x001e9708)
+static const double kStepScale = 1000.0;
 
 RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {

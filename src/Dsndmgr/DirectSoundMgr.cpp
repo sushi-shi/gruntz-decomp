@@ -21,17 +21,14 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x001ef6b0)
-const double c_acosNorm = 2.0;
-
-DATA(0x001ef6a8)
-const double c_powExp = 10.0;
-
-DATA(0x001ef6a0)
-const double c_volNum = 1.0;
-
 DATA(0x001ef698)
 const double c_volScale = 100.0;
+DATA(0x001ef6a0)
+const double c_volNum = 1.0;
+DATA(0x001ef6a8)
+const double c_powExp = 10.0;
+DATA(0x001ef6b0)
+const double c_acosNorm = 2.0;
 
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
