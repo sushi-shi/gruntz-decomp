@@ -415,6 +415,11 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // @early-stop
+// Blocks are 79/79 and the rets 3/3; three branches are still missing, all in the
+// `sel` decision.  Retail cross-jumps the two non-degenerate arms into a shared
+// four-test lattice (0x625d4/0x625d8 each fall into 0x625e0/0x625e4, and both
+// reach the `cmp edi,eax / sbb / inc` at 0x625ef), which a plain nested ?: cannot
+// spell - cl emits the straight tree instead.
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -492,8 +497,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
                 }
             } else {
                 if (m_moveKind == 0) {
-                    i32 md = (g->m_gameMode == GAMEMODE_SINGLE) ? 3 : 6;
-                    m_moveKind = rand() % md + 1;
+                    i32 md = 3;
+                    if (g->m_gameMode != GAMEMODE_SINGLE) {
+                        md = 6;
+                    }
+                    m_moveKind = GetRandom(1, md);
                 }
                 i32 tier = cueTier + m_moveKind - 1;
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
@@ -555,8 +563,14 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (elapsed < 0) {
         cap = 0;
     }
-    i32 d0 = (t0 > cap) ? (t0 - cap) : 0;
-    i32 d1 = (t1 > cap) ? (t1 - cap) : 0;
+    i32 d0 = 0;
+    if (static_cast<u32>(t0) > static_cast<u32>(cap)) {
+        d0 = t0 - cap;
+    }
+    i32 d1 = 0;
+    if (static_cast<u32>(t1) > static_cast<u32>(cap)) {
+        d1 = t1 - cap;
+    }
     i32 sel;
     if (d0 != 0) {
         sel = (d1 != 0) ? ((d0 < d1) ? 0 : 1) : 0;
@@ -1738,7 +1752,10 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         i32 variant = m_moveVariantOverride;
         m_moveVariant = variant;
         if (variant == 0) {
-            i32 n = (g_gameReg->m_gameMode == GAMEMODE_SINGLE) ? 3 : 6;
+            i32 n = 3;
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                n = 6;
+            }
             m_moveVariant = GetRandom(1, n);
         }
 
