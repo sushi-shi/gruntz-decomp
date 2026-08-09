@@ -131,6 +131,29 @@ class _Coff:
         out.sort()
         return out
 
+    def section_members(self, secnum: int):
+        """[(offset, name, storage_class)] of EVERY datum defined in one section.
+
+        Unlike defined_symbols() this keeps the class-STATIC (`scl == 3`) members
+        too - cl gives a function-local `static` a file-scope `$S<id>` symbol with
+        that class, and those account for most of the bytes in a unit's ordinary
+        `.data`. The section-definition symbol itself (same name as the section) is
+        not a datum and is dropped.
+        """
+        out = []
+        for idx, value, sn in self.iter_symbols():
+            if sn != secnum:
+                continue
+            scl = struct.unpack_from("<B", self.buf, self.symptr + idx * 18 + 16)[0]
+            if scl not in (2, 3):
+                continue
+            name = self.sym_name(idx)
+            if name == self.section_table[secnum - 1]["name"]:
+                continue
+            out.append((value, name, scl))
+        out.sort()
+        return out
+
     def section_payload(self, secnum: int) -> bytes:
         """The raw bytes of one section (b"" when it has none, e.g. .bss)."""
         if not (1 <= secnum <= self.nsec):

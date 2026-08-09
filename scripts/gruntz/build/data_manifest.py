@@ -932,12 +932,16 @@ def ordinary_sections(rows, base_dir):
             storage = ORDINARY_STORAGE.get(sec["name"])
             if storage is None or sec["characteristics"] & LNK_COMDAT:
                 continue
-            members = c.defined_symbols(sec["index"])
+            # EVERY member, not just the externals: cl gives a function-local
+            # `static` a class-STATIC `$S<id>` symbol, and those are most of the
+            # bytes in a unit's ordinary `.data`. Miss them and the coverage proof
+            # below passes on a section full of holes.
+            members = c.section_members(sec["index"])
             if not members:
                 continue
             payload = c.section_payload(sec["index"])[:sec["size"]]
             covered, mine, complete = bytearray(sec["size"]), [], True
-            for offset, name in members:
+            for offset, name, _scl in members:
                 r = named.get(name)
                 if r is None or r["storage"] != storage or "section" in r:
                     complete = False
