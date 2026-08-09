@@ -188,7 +188,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
         result = false;
     }
 
-    (static_cast<ifstream*>(m_stream))->sync();
+    (static_cast<ifstream*>(m_stream))->close();
     delete static_cast<ifstream*>(m_stream);
     return result;
 }

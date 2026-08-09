@@ -1354,7 +1354,7 @@ dircellmethods	??_Difstream@@QAEXXZ	100.0000	100.0000	1	cpp:b85e950297bb	0x3cbc0
 dircellmethods	??_Dofstream@@QAEXXZ	100.0000	100.0000	1	cpp:b85e950297bb	0x3cbf0	100.0000
 dircellmethods	?ButeAttributezDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	ee5556dd6260	0x3c990	100.0000
 dircellmethods	?EditDwRectsDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	e186ba2503dd	0x3cdd0	100.0000
-dircellmethods	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	5	8e3f13d8de70	0x3cc20	98.8365
+dircellmethods	?Parse@CButeMgr@@QAE_NVCString@@H@Z	98.8365	98.8365	6	68be624e20d9	0x3cc20	98.8365
 dircellmethods	?RotateClockwise@GruntDirectionCell@@QAEXH@Z	100.0000	100.0000	3	ca3c9050955d	0x3c850	100.0000
 dircellmethods	?RotateCounterclockwise@GruntDirectionCell@@QAEXH@Z	100.0000	100.0000	3	5bfc71d2750c	0x3c8a0	100.0000
 dircellmethods	?SameCellTag@@YA_NPBUGruntDirectionCell@@0@Z	100.0000	100.0000	1	1266a643d5f6	0x3c7f0	100.0000
