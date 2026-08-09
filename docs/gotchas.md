@@ -255,20 +255,37 @@ a `.bss` section it will still show the old 50%-per-inferred-extent rows. That i
 GUI, not a regression. Same stale-shell rule as below: a shell entered before the flake
 change still has the unpatched CLI on PATH.
 
-## A new delinker patch needs a REFRESHED nix shell (2026-08-08)
+## A new delinker patch needs a REFRESHED nix shell (2026-08-08, again 08-09)
 
-`nix/patches/vostok-comdat-leader-nonzero-offset.patch` changed
-`vostok-delinker`, so a `nix develop` session entered before that commit still
-has the old binary on PATH and every `gruntz build` dies with:
+Every `nix/patches/vostok-*.patch` changes `vostok-delinker`, so a `nix develop`
+session entered before that commit still has the OLD binary on PATH and every
+`gruntz build` dies in the delink step. Two sightings so far:
 
 ```
 Error: candidate data COMDAT section 1 has no external offset-zero leader
+        <- vostok-comdat-leader-nonzero-offset.patch
+Error: <manifest>:2: storage does not match candidate section name/characteristics
+        <- vostok-grouped-section-names.patch (`.rdata$r` is COFF's grouped-section
+           form; the unpatched delinker demands a literal `.rdata`)
 ```
 
 That is not a source defect and not a manifest defect - it is a stale shell.
 Re-enter `nix develop`, or run `nix develop --command gruntz build`. The same
 applies in every worktree: they share the store, but each shell pins whatever
 delinker path it resolved at entry.
+
+**Confirm it in one line before you debug anything else** - if these differ, the
+shell is stale and nothing else you are looking at is the cause:
+
+```sh
+readlink -f "$(command -v vostok-delinker)"   # what THIS shell resolved
+nix eval --raw .#vostok-delinker              # what the flake says today
+```
+
+The trap has a nasty second half: it hides behind **`ninja 0.0s`**. A build whose
+graph has nothing to do never reaches the delink step, so it reports green and
+banks a scoreboard - and an integration "verified" that way has verified nothing.
+When a build must prove an integration, check that ninja actually did work.
 
 ## Runtime triage: wine SILENTLY CONTINUES most of our faults (2026-08-09)
 
