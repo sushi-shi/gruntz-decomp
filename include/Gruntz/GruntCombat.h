@@ -10,7 +10,7 @@ extern "C" const float g_quarterScale;
 extern "C" const float g_slopeTwo;
 extern "C" const float g_slopeNegTwo;
 extern "C" const double g_slopeHalf;
-extern "C" const double g_slopeZero;
+extern "C" const double g_slopeNegHalf;
 
 static inline void GruntScratchTeardown();
 

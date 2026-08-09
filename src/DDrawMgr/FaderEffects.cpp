@@ -1136,7 +1136,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_halfWidth = pInit->m_halfWidth;
 
     if (m_mode == FADER_SWEEP_FORWARD || m_mode == FADER_SWEEP_REVERSE) {
-        if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.141592653589793))) {
+        if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
             goto fail;
         }
     }

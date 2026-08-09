@@ -1494,14 +1494,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
             } else {
                 SETDIR(1, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
-        } else if (slope > g_slopeHalf || slope < g_slopeZero) {
+        } else if (slope > g_slopeHalf || slope < g_slopeNegHalf) {
             if (slope > g_slopeHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(6, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y - 0x20);
                 } else {
                     SETDIR(5, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y + 0x20);
                 }
-            } else if (slope < g_slopeZero) {
+            } else if (slope < g_slopeNegHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
                     SETDIR(4, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y + 0x20);
                 } else {
@@ -1991,4 +1991,4 @@ const float g_slopeNegTwo = -2.0f;
 DATA(0x001e99a8)
 const double g_slopeHalf = 0.5;
 DATA(0x001e99b0)
-const double g_slopeZero = 0.0;
+const double g_slopeNegHalf = -0.5;
