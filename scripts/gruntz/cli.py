@@ -207,6 +207,20 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     print(f"  Overall: {mf}/{tf} functions exact ({_pct(mf, tf):.1f}%), "
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
+    # BOTH data figures, because one of them is not a reconstruction measure.
+    # `matched_data` credits a section all-or-nothing, so a `.data` at 99.99%
+    # contributes zero and the headline reads ~16% while the sections average
+    # ~99%. See gruntz.core.report.data_measures.
+    try:
+        from gruntz.core.report import data_measures
+        d = data_measures(report)["total"]
+        if d["bytes"]:
+            print(f"  Data: {100.0 * d['weighted'] / d['bytes']:.2f}% size-weighted "
+                  f"across {d['sections']} sections ({d['bytes']:,} B); objdiff "
+                  f"matched_data {_i(m.get('matched_data')):,} B "
+                  f"({m.get('matched_data_percent', 0.0):.2f}%, whole sections only).")
+    except Exception:                                    # never break the report tail
+        pass
     print(f"  Report: {REPORT}")
     # DOCTRINE reminder is NOT printed here every build - it fires only on a %-drop,
     # from the regressions reporter (gruntz.match.status check), where a matcher is

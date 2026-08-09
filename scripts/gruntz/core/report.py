@@ -28,6 +28,47 @@ def fn_fuzzy(fn):
     return float(fn.get("fuzzy_match_percent") or 0.0)
 
 
+def data_measures(doc=None):
+    """Size-weighted `.data`/`.rdata`/`.bss` match, plus the all-or-nothing figure.
+
+    Returns `{section: {bytes, weighted, exact, sections}}` with a `total` row,
+    where `weighted` is sum(size * percent) / sum(size) over the report's own
+    per-section rows and `exact` is the bytes in sections at exactly 100.0.
+
+    `matched_data` in `measures` is the second one, and it is why the headline
+    reads ~16% while the sections average ~99%: `objdiff-cli report generate`
+    credits a section all-or-nothing, so a `.data` at 99.99% contributes zero.
+    That rule lives in objdiff's report.rs and is not configurable.
+    `combine_data_sections` IS (`-c combine_data_sections=false`, and the CLI
+    validates its config keys), but it only changes which sections exist -- 16.40%
+    -> 17.74% measured, with `fuzzy_match_percent` and `matched_code` bit-identical
+    either way -- so it does not close the gap. Report both numbers instead of
+    picking one: the weighted figure tracks reconstruction, the all-or-nothing one
+    tracks how many sections are finished.
+    """
+    doc = doc or (json.loads(REPORT.read_text()) if REPORT.is_file() else {})
+    out = {}
+    for u in doc.get("units", []):
+        for s in u.get("sections", []):
+            if s["name"] == ".text":
+                continue
+            row = out.setdefault(s["name"],
+                                 {"bytes": 0, "weighted": 0.0, "exact": 0,
+                                  "sections": 0})
+            size, pct = int(s["size"]), float(s.get("fuzzy_match_percent") or 0.0)
+            row["bytes"] += size
+            row["weighted"] += size * pct / 100.0
+            row["sections"] += 1
+            if pct >= 100.0:
+                row["exact"] += size
+    total = {"bytes": 0, "weighted": 0.0, "exact": 0, "sections": 0}
+    for row in out.values():
+        for k in total:
+            total[k] += row[k]
+    out["total"] = total
+    return out
+
+
 class Report:
     def __init__(self):
         self._units = None

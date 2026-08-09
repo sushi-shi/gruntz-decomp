@@ -105,6 +105,7 @@ from gruntz.audit.assert_relocs import load_symbols, resolve, resolve_thunk
 from gruntz.audit.global_refs import DIR32, REPO, _coff, canon
 from gruntz.core.manifest import live_objs
 from gruntz.core.pe import IMAGEBASE, PE
+from gruntz.core.report import data_measures
 
 NORM = REPO / "build" / "objdiff" / "normalized"
 REPORT = REPO / "build" / "objdiff" / "report.json"
@@ -453,31 +454,9 @@ def scan(unit_filter=None, norm=None):
 # --------------------------------------------------------------------------- data %
 
 def section_measures():
-    """(per-section totals, size-weighted %) straight out of report.json.
-
-    `objdiff-cli report generate` credits `matched_data` all-or-nothing per
-    SECTION, so a unit's `.data` at 99.99% contributes nothing and the headline
-    reads ~16% while the sections themselves average ~99%. Same rows, weighted by
-    size. `-c combine_data_sections=false` is accepted by the CLI and changes only
-    which sections exist, not the all-or-nothing rule, so it does not close the
-    gap (measured 16.40% -> 17.74%, function scoring bit-identical).
-    """
+    """(`core.report.data_measures` rows, report.json's own `measures` block)."""
     doc = json.loads(REPORT.read_text())
-    tot: collections.Counter = collections.Counter()
-    matched: collections.Counter = collections.Counter()
-    exact: collections.Counter = collections.Counter()
-    rows: collections.Counter = collections.Counter()
-    for u in doc.get("units", []):
-        for s in u.get("sections", []):
-            if s["name"] == ".text":
-                continue
-            sz, pct = int(s["size"]), s.get("fuzzy_match_percent", 0.0)
-            tot[s["name"]] += sz
-            matched[s["name"]] += sz * pct / 100.0
-            rows[s["name"]] += 1
-            if pct >= 100.0:
-                exact[s["name"]] += sz
-    return tot, matched, exact, rows, doc["measures"]
+    return data_measures(doc), doc["measures"]
 
 
 # --------------------------------------------------------------------------- control
@@ -616,16 +595,13 @@ def main(argv=None) -> int:
         return 0
 
     if args.sections:
-        tot, matched, exact, rows, measures = section_measures()
+        rows, measures = section_measures()
         print("size-weighted data match, from the SAME report.json section rows\n")
-        for k in sorted(tot):
-            print(f"  {k:<7} {rows[k]:>4} sections  {tot[k]:>7} B  "
-                  f"size-weighted {100.0 * matched[k] / tot[k]:6.2f}%  "
-                  f"all-or-nothing {100.0 * exact[k] / tot[k]:6.2f}%")
-        T, M, E = sum(tot.values()), sum(matched.values()), sum(exact.values())
-        print(f"\n  {'total':<7} {sum(rows.values()):>4} sections  {T:>7} B  "
-              f"size-weighted {100.0 * M / T:6.2f}%  "
-              f"all-or-nothing {100.0 * E / T:6.2f}%")
+        for k in [n for n in sorted(rows) if n != "total"] + ["total"]:
+            r = rows[k]
+            print(f"  {k:<7} {r['sections']:>4} sections  {r['bytes']:>7} B  "
+                  f"size-weighted {100.0 * r['weighted'] / r['bytes']:6.2f}%  "
+                  f"all-or-nothing {100.0 * r['exact'] / r['bytes']:6.2f}%")
         print(f"\n  report.json matched_data: {measures['matched_data']}"
               f"/{measures['total_data']} = {measures['matched_data_percent']:.2f}%"
               "  (all-or-nothing per section)")

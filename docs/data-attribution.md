@@ -210,11 +210,28 @@ emits the candidate section manifest and `delink.py` passes it.
 **The defect it kills.** cl.exe emits every `??_C@` literal as its OWN COMDAT section
 holding one symbol at offset 0; the delinked target PACKED a unit's literals into one
 blob (`soundfontpath`: base `0x15|0x16|0x0e|0x0f` vs target one `0x49`). `objdiff-cli
-report generate` hard-codes `combine_data_sections=true`, so it diffed the packed blob
+report generate` defaults to `combine_data_sections=true`, so it diffed the packed blob
 against the base's COMBINED-COMDAT layout — every payload present, all at shifted
 offsets → ~99.3%, never the **exact 100.0** that `report.rs` demands before it credits
 a section. *`matched_data` is all-or-nothing PER SECTION; naming/enrolling alone could
 never move it.*
+
+**`combine_data_sections` IS steerable, and it is not the fix** (measured 2026-08-09,
+objdiff-cli 3.7.3). `report generate` takes `-c key=value` and validates the key
+(`-c bogus_key=1` → `Failed: Invalid configuration property`), so
+`-c combine_data_sections=false` runs: 344 units become 2714 `.data` + 2009 `.rdata`
+rows, `total_data` 704148 → 694617 and `matched_data` 16.40% → **17.74%**, with
+`fuzzy_match_percent` (91.9774) and `matched_code` (475702) **bit-identical** — it
+cannot touch function scoring. But the all-or-nothing credit lives in `report.rs` and
+has no config key, so splitting the sections just makes more of them miss 100.0.
+⇒ **report both numbers instead of choosing one.** `gruntz.core.report.data_measures()`
+computes the size-weighted figure from the report's own per-section rows; the build
+scoreboard and the README block print it beside `matched_data`. Today: **99.16%
+size-weighted over 704,148 B** (`.bss` 99.76, `.data` 95.89, `.rdata` 99.28) against
+`matched_data`'s 16.40%. The weighted number tracks reconstruction; the
+all-or-nothing one tracks how many sections are FINISHED, and `.bss`'s 1.54% there is
+the symbol-size inference hole, not reconstruction debt
+(`docs/patterns/bss-symbol-size-inference-hole.md`).
 
 | | before | + `--data-section-manifest` | + blowfish storage fix |
 |---|---|---|---|

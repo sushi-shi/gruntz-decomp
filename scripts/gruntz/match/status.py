@@ -144,6 +144,35 @@ def engine_universe():
     }
 
 
+def _data_line() -> list[str]:
+    """The data figure, both ways, for the README block.
+
+    `matched_data` credits a section all-or-nothing, so a `.data` at 99.99%
+    contributes nothing and the headline reads ~16% while the sections themselves
+    average ~99%. Neither number alone is honest: the weighted one tracks
+    reconstruction, the all-or-nothing one tracks how many sections are FINISHED.
+    See `gruntz.core.report.data_measures`.
+    """
+    try:
+        from gruntz.core.report import data_measures
+        d = data_measures()
+        total = d["total"]
+        if not total["bytes"]:
+            return []
+        per = ", ".join(
+            f"`{n}` {100.0 * d[n]['weighted'] / d[n]['bytes']:.2f}%"
+            for n in sorted(d) if n != "total" and d[n]["bytes"])
+        return [
+            f"**Data: {100.0 * total['weighted'] / total['bytes']:.2f}% size-weighted "
+            f"across {total['bytes']:,} B** ({per}) &middot; "
+            f"{100.0 * total['exact'] / total['bytes']:.2f}% of bytes in sections that "
+            "are exact, which is what objdiff's `matched_data` reports.",
+            "",
+        ]
+    except Exception:
+        return []
+
+
 def _md_table(headers: list[str], aligns: str, rows: list[list[str]]) -> list[str]:
     """GitHub markdown table with pipes padded to column widths so the raw source
     reads cleanly in an editor. `aligns`: one char/col, 'l' left or 'r' right."""
@@ -985,6 +1014,7 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
         f"({_pct(matched_fn, tot_fn):.2f}%) &middot; {overall_fuzzy:.2f}% fuzzy "
         f"&middot; {overall_fuzzy_max:.2f}% fuzzy max.**",
         "",
+        *_data_line(),
         "_Totals are vs the whole engine = every in-`.text` reconstruction-target "
         "function; the generated/library categories tabled below (compiler EH "
         "funclets, private lifecycle/cleanup helpers, CRT/MFC library, jump thunks) "
