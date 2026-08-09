@@ -45,7 +45,7 @@ Verdicts, in the vocabulary of `assert_relocs`:
 
 NEGATIVE CONTROL
 ----------------
-Three defects injected into `boomerang`'s vtable COMDAT -- a slot redirected to
+Three defects injected into `projectile`'s vtable COMDAT -- a slot redirected to
 another method, a slot's addend moved 0 -> 4, and a slot's relocation record
 deleted -- must come back as WRONG, WRONG and MISSING. `--selftest` runs it.
 
@@ -566,7 +566,7 @@ def section_measures():
 
 # --------------------------------------------------------------------------- control
 
-def selftest(unit="boomerang") -> int:
+def selftest(unit="projectile") -> int:
     """Inject three known defects into one object and require all three back.
 
     A sieve nobody has watched FAIL reports a clean tree whether or not the tree

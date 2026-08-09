@@ -700,11 +700,6 @@ source = "src/Gruntz/GruntzCmdMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "boomerang"
-source = "src/Gruntz/Boomerang.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "splashstate"
 source = "src/Gruntz/SplashState.cpp"
 flags = "cpp-rtti"

@@ -50,7 +50,6 @@ behindcandyani	7	6
 bitarray	3	2
 bitarraystream	2	1
 blowfish	6	5
-boomerang	5	3
 bootycheatstate	1	0
 bootystateactivate	37	24
 bootywalkanim	2	0
@@ -261,7 +260,7 @@ play	93	67
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
-projectile	21	14
+projectile	26	17
 queuedrainhost	1	1
 raincloud	5	5
 registryhelper	11	11
@@ -623,11 +622,6 @@ blowfish	?Decode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	0
 blowfish	?Encode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	c45152cad3b8	0x16f6e0	100.0000
 blowfish	?InitKey@CButeTail@@QAEXPBD@Z	100.0000	100.0000	2	1b2af7d8098b	0x16f6c0	100.0000
 blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	3	a7d893952787	0x170100	100.0000
-boomerang	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.2308	97.2308	4	e0c848bdc92c	0xe0650	97.3077
-boomerang	??1CBoomerang@@UAE@XZ	100.0000	100.0000	1	cpp:a35f2a7c5ac0	0x12a00	100.0000
-boomerang	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:096e761cd109	0x129d0	100.0000
-boomerang	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	73.2439	73.2439	1	a2871a7caacf	0xe0690	73.2439
-boomerang	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	1940f596d55d	0xe15d0	100.0000
 bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.5379	92.5379	5	f3c182846d09	0x18830	92.5568
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440	100.0000
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000
@@ -3424,11 +3418,14 @@ playassetload	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	8	80c2370efbdb	0
 playassetload	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	10	165a7192fc92	0xdc060	67.0648
 playercommandstep	?ExecCommand@CPlay@@QAEHEDDFFDE@Z	69.7691	69.7691	3	38b9eecb4c8b	0xd1b60	69.7691
 playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	99.5915	99.5915	22	aefe16f1a1e5	0xd53d0	99.5915
+projectile	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.2308	97.2308	4	e0c848bdc92c	0xe0650	97.3077
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	99.7721	16	a7b738cb2e3f	0xdec60	99.7785
 projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	88.2129	88.2129	14	1d0e6a7e4d14	0xe1b90	88.2194
 projectile	??1CMotionState@@QAE@XZ	100.0000	100.0000	1	cpp:265fd77e88a2	0x58ba0	100.0000
+projectile	??1CBoomerang@@UAE@XZ	100.0000	100.0000	1	cpp:a35f2a7c5ac0	0x12a00	100.0000
 projectile	??1CProjectile@@UAE@XZ	100.0000	100.0000	10	c353f04dd430	0xdef60	100.0000
 projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70	100.0000
+projectile	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:096e761cd109	0x129d0	100.0000
 projectile	??_GCProjectile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8f6502dd7c51	0x12980	100.0000
 projectile	??_GCTimeBomb@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8f6502dd7c51	0x12a40	100.0000
 projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	73.9535	73.9535	2	d2c24441fe6d	0xe08b0	73.9535
@@ -3440,9 +3437,11 @@ projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	2	3479a2c0846c	0
 projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	100.0000	100.0000	19	f3a6be2a4169	0xe2190	100.0000
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	91.1232	91.1232	11	540ccdb30744	0xe1e60	91.1232
 projectile	?LoadProjectileSprites@CProjectile@@UAEHW4PickupType@@HHHHHH@Z	81.9528	81.9528	4	04fc5a3c3538	0xdf050	81.9548
+projectile	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	73.2439	73.2439	1	a2871a7caacf	0xe0690	73.2439
 projectile	?RegisterActs@CTimeBomb@@SAXXZ	100.0000	100.0000	9	3a4fa0bb4236	0xe1990	100.0000
 projectile	?RegisterType@CProjectile@@SAXXZ	100.0000	100.0000	12	4ac3951951d7	0xdfb00	100.0000
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	100.0000	100.0000	23	d3e0bebcd426	0xe0b10	100.0000
+projectile	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	1940f596d55d	0xe15d0	100.0000
 projectile	?SerializeMove@CProjectile@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	94.8191	94.8191	3	ee1d985b5271	0xe0d40	94.8191
 projectile	?SerializeMove@CTimeBomb@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	ef8d09867e68	0xe2080	100.0000
 queuedrainhost	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	4	cacd15498538	0x31250	100.0000
