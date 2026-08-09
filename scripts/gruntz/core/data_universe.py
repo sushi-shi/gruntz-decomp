@@ -8,7 +8,7 @@ both sides of the comparison**: a datum with no `DATA()` pin is never carved int
 a target object and never declared in a base object, so the byte enters neither
 side of the objdiff pair (docs: `data-matching-problems.md` #1). A 100% there is
 therefore compatible with any amount of unenrolled data, and it read as
-`100.00% size-weighted across 723,491 B` while only **40.10%** of retail's initialized
+`100.00% size-weighted across 723,491 B` while only about **40%** of retail's initialized
 data was enrolled.
 
 Two numbers, never one:

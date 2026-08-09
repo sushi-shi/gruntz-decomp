@@ -1,7 +1,7 @@
 # Data matching: what the 100% does NOT mean
 
 The old **`Data: 100.00%`** headline was arithmetically true and answered the wrong
-question. The replacement reports two denominators: **coverage 40.10%** means 108,827
+question. The replacement reports two denominators: **coverage 40.31%** means 109,385
 distinct addresses are enrolled out of the 271,360 initialized bytes stored in retail;
 **fidelity 99.97%** means the enrolled objdiff sections are almost entirely byte-equal.
 `.bss` is reported separately. A smaller headline is the successful result: bytes omitted
@@ -17,8 +17,9 @@ The distinction is not academic. A wrong model that scores 100% is worse than a 
 because a low score is a worklist and a wrong 100% is a closed question that is not closed.
 
 The campaign found two concrete examples: `g_clut` was pinned two bytes low with every
-use biased by `+2`, and the image clip group was spelled as an integer array rather than
-four independently placed `LONG` globals. Both have now been corrected.
+use biased by `+2`, and the image clip rectangle was spelled as an untyped integer array
+rather than the single `RECT` that retail's assignment code proves. Both have now been
+corrected.
 
 ---
 
@@ -65,14 +66,14 @@ The address-union partition is complete to an explicitly stated residue:
 | :-- | --: |
 | compiler C++ EH records | 53,164 |
 | compiler RTTI records | 13,569 |
-| compiler pooled literals | 41,677 |
+| compiler pooled literals | 41,013 |
 | static-library data | 23,950 |
 | SDK GUID libraries | 1,776 |
 | EH padding | 4,564 |
-| other zero padding/alignment | 23,493 |
+| other zero padding/alignment | 23,599 |
 | target-referenced but ownership unresolved | 28 |
 | other unclassified non-zero | 312 |
-| **total unenrolled** | **162,533** |
+| **total unenrolled** | **161,975** |
 
 The library attribution is NAFXCW 14,164 B, unresolved static-library members 9,786 B,
 dxguid.lib 1,696 B, and UUID.LIB 80 B. No fractional attribution is

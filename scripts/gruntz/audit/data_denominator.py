@@ -2,7 +2,7 @@
 """gruntz.audit.data_denominator - what the UNENROLLED data bytes actually are.
 
 `gruntz.core.data_universe` says how much of retail's data is enrolled (coverage).
-This says what the REST is, because "40.10% covered" is only actionable once the
+This says what the REST is, because "about 40% covered" is only actionable once the
 remainder is partitioned into work and non-work:
 
     unenrolled = game data we can pin              (a worklist)
