@@ -88,7 +88,7 @@ ddrawsubmgr	120	116
 ddrawsubmgrleaf	12	11
 ddrawsubmgrrefresh	1	1
 ddrawsurfacemgr	22	20
-ddrawsurfacepair	43	33
+ddrawsurfacepair	48	36
 ddrawsurfacepairblt	1	1
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
@@ -221,7 +221,6 @@ lightfx	10	8
 lightfxmgr	3	3
 lightfxrender	23	11
 loadgamemenu	4	3
-logicrecord	5	3
 logicrecorddispatch	4	4
 logicworkerhandlersa	15	14
 logicworkerhandlersb	6	6
@@ -1122,6 +1121,7 @@ ddrawsurfacemgr	?SetRestoreHandler@CDDrawSurfaceMgr@@QAEXP6AHXZ@Z	100.0000	100.0
 ddrawsurfacemgr	?SnapshotChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0W4SerialMode@@W4LogicTypeId@@0@ZPAD42@Z	73.1210	73.1210	5	49d6f32dcc9c	0x156020	77.5191
 ddrawsurfacepair	?BlitDirtyRect@CDDrawSurfacePair@@QAEXPAV1@PAH1@Z	100.0000	100.0000	2	5687bbc3be81	0x164650	100.0000
 ddrawsurfacepair	?Build@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	95.3359	95.3359	9	aa252376fc73	0x165460	95.3359
+ddrawsurfacepair	?CacheTargetId@AnimWorkerObj@@QAEHPAX@Z	100.0000	100.0000	4	180c350cde77	0x164920	100.0000
 ddrawsurfacepair	?ClearWorkers@CDDrawWorkerList@@QAEXXZ	100.0000	100.0000	4	43056b3f97be	0x163c60	100.0000
 ddrawsurfacepair	?Configure@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	4	730f2a2f4fd8	0x1655c0	100.0000
 ddrawsurfacepair	?Create@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@H@Z	97.2277	97.2277	1	7c5240efa9fb	0x163c90	97.2277
@@ -1129,6 +1129,7 @@ ddrawsurfacepair	?CreateWorker@CDDrawWorkerCache@@UAEPAXP6AHPAUCGameObject@@@ZPB
 ddrawsurfacepair	?CreateWorkerFromData@CDDrawWorkerMapSmall@@UAEPAXPAXPBDH@Z	100.0000	100.0000	2	b165bf876d20	0x165990	100.0000
 ddrawsurfacepair	?CreateWorkerFromFile@CDDrawWorkerMapSmall@@UAEPAXPADPBDH@Z	100.0000	100.0000	2	ec18f6535671	0x165a10	100.0000
 ddrawsurfacepair	?DeleteAll@CAniElement@@QAEXXZ	100.0000	100.0000	5	033708bea9d7	0x165730	100.0000
+ddrawsurfacepair	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	99.3605	99.3605	3	2a426ff31100	0x164830	99.3605
 ddrawsurfacepair	?DrawBox@CDDrawSurfacePair@@QAEXPAUtagRECT@@H@Z	88.4948	88.4948	5	03b9b6aedd7f	0x163f40	88.4948
 ddrawsurfacepair	?DrawCount@CDDrawSurfacePair@@QAEXPAUtagRECT@@H@Z	100.0000	100.0000	2	72001aeea1e0	0x164380	100.0000
 ddrawsurfacepair	?DrawCross@CDDrawSurfacePair@@QAEXHH@Z	99.7260	99.7260	7	4e7e2b470d04	0x164180	99.7260
@@ -1137,6 +1138,7 @@ ddrawsurfacepair	?FindKeyOfValue@CDDrawWorkerCache@@QAE?AVCString@@PAVCObject@@@
 ddrawsurfacepair	?Helper@CDDrawWorkerB@@QAEHPBDH@Z	95.0000	95.0000	3	2895f671446b	0x166040	95.0000
 ddrawsurfacepair	?Init@CResolveNode@@QAEHPAVCDDrawSurfaceMgr@@HHHHH@Z	100.0000	100.0000	3	270ee6188413	0x1647e0	100.0000
 ddrawsurfacepair	?InitFromSurface@CDDrawSurfacePair@@UAEHPAVCDDSurface@@@Z	77.5000	77.5000	9	3daba9d3e2ce	0x163db0	77.5000
+ddrawsurfacepair	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	c9ff892dbdc5	0x164d80	100.0000
 ddrawsurfacepair	?LoadFile@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	6	8844bf0276f9	0x165620	100.0000
 ddrawsurfacepair	?LoadImageA@CDDrawSurfacePair@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	7	7563ba5d24a0	0x163e50	100.0000
 ddrawsurfacepair	?LoadPaletteFromSource@CDDrawWorkerMapSmall@@UAEPAXPAUCParseSource@@PBDH@Z	100.0000	100.0000	2	9e4625cb19ed	0x1658c0	100.0000
@@ -1152,7 +1154,9 @@ ddrawsurfacepair	?RenderFrame@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0
 ddrawsurfacepair	?RenderFrame@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	4	3fba942a3e8d	0x1660b0	100.0000
 ddrawsurfacepair	?ResetSlots@CDDrawWorkerMapSmall@@QAEXXZ	100.0000	100.0000	7	02a54aae9d22	0x165b90	100.0000
 ddrawsurfacepair	?ResolveImageName@CDDrawSurfacePair@@UAEHPAD@Z	100.0000	100.0000	1	c343b49df361	0x163ee0	100.0000
+ddrawsurfacepair	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	5	178b864c393b	0x1651b0	99.3333
 ddrawsurfacepair	?RestoreIfLost@CDDrawSurfacePair@@QAEHXZ	100.0000	100.0000	7	9bfa84569ff6	0x163f00	100.0000
+ddrawsurfacepair	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	9f57af74fde1	0x164960	100.0000
 ddrawsurfacepair	?SetGeom@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	100.0000	100.0000	1	8b535645caf6	0x1646b0	100.0000
 ddrawsurfacepair	?SetGeom@CDDrawSurfacePair@@UAEHHHW4ColorDepth@@@Z	78.5294	78.5294	2	6246764660a7	0x164250	78.5294
 ddrawsurfacepair	?SetGeometry@CDDrawSurfaceChildA@@UAEHHHW4ColorDepth@@@Z	91.3694	91.3694	2	7bd721229b2b	0x1644a0	91.3694
@@ -2804,11 +2808,6 @@ loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.00
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	24852ad1d2e8	0x9dff0	100.0000
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	31aae3635583	0x9e2d0	100.0000
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	99.0807	99.0807	10	e9830ed3117e	0x9e390	99.0807
-logicrecord	?CacheTargetId@AnimWorkerObj@@QAEHPAX@Z	100.0000	100.0000	4	180c350cde77	0x164920	100.0000
-logicrecord	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	99.3605	99.3605	3	2a426ff31100	0x164830	99.3605
-logicrecord	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	c9ff892dbdc5	0x164d80	100.0000
-logicrecord	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	5	178b864c393b	0x1651b0	99.3333
-logicrecord	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	9f57af74fde1	0x164960	100.0000
 logicrecorddispatch	_CreateBoomerang	100.0000	100.0000	1	bbe5279ac550	0xde9e0	100.0000
 logicrecorddispatch	_CreateProjectile	100.0000	100.0000	1	3fc3cabf21a2	0xde8a0	100.0000
 logicrecorddispatch	_CreateStaticHazard	100.0000	100.0000	1	6bf0db113310	0xfb660	100.0000

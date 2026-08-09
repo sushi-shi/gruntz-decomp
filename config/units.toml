@@ -1175,11 +1175,6 @@ source = "src/Gruntz/LightFxMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "logicrecord"
-source = "src/DDrawMgr/LogicRecord.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "gruntindicatorworkerhandlers"
 source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
 flags = "cpp-rtti"

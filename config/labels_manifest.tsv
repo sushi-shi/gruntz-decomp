@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 318  functions: 4565
+# units: 317  functions: 4565
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -68,7 +68,7 @@ ddrawsubmgr	125
 ddrawsubmgrleaf	12
 ddrawsubmgrrefresh	1
 ddrawsurfacemgr	22
-ddrawsurfacepair	43
+ddrawsurfacepair	48
 ddrawsurfacepairblt	1
 ddrawworkerhost	5
 ddrawworkerregistry	26
@@ -200,7 +200,6 @@ lightfx	11
 lightfxmgr	3
 lightfxrender	23
 loadgamemenu	4
-logicrecord	5
 logicrecorddispatch	4
 logicworkerhandlersa	16
 logicworkerhandlersb	6
