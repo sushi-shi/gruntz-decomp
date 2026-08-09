@@ -626,6 +626,74 @@ so the byte comparison stays real.) Full mechanism + the rejected fabrications:
 shape for the `CButeMgr` function-local statics and their `??_B` guards. That is a
 tooling gap in the pairing, not a pin gap.
 
+### 3d. A legacy-form row is APPENDED to the object's first section — use `rva = -`
+
+**The defect.** A data-manifest row with `section_ordinal = -` is not free-floating: the
+delinker appends it, 8-aligned, to the object's first manifest section of the same
+storage. `object_files.rs::with_sections` picks that section as
+`rdata_section_id`/`data_section_id` and `add_data_definition`'s legacy arm calls
+`append_section_data` on it. So every unplaced row grew a real COMDAT a phantom tail and
+shifted every extent behind it. `interfaceobject`'s `.rdata` came out as ONE 0x2c section
+(`??_7InterfaceObject@@6B@`, four bytes of pad, `??_7CObject@@6B@`) where cl emits two
+separate 0x14 COMDATs.
+
+**The delinker already models the fix.** A *section*-manifest row whose `rva` column is
+`-` is **non-affine**: it keeps the candidate COFF shape (name, size, alignment, COMDAT
+selection) but claims no retail range, so `compatible_folded_comdat_alias`'s overlap check
+skips it, `add_data_definition` copies the definition's own retail payload into the
+zero-filled buffer, and `definition_uses_affine_topology` routes it to
+`add_legacy_data_relocations`, which relocates it from the definition's own rva. Nothing
+is fabricated: the shape comes from the candidate COFF and the bytes from the proven
+retail extent. Two families now use it (`data_manifest.section_rows` /
+`ordinary_sections`):
+
+1. **an unplaceable folded-COMDAT copy** — a TU that emits a class WITHOUT the `??_R4`
+   COL word retail's surviving copy carries cannot claim `[rva, rva+size)`, because the
+   with-COL emitters' placed section already claims `[rva-4, rva+size)` and two
+   overlapping placements bail the delink. 28 such sections, 23 of them `??_7CObject@@6B@`.
+2. **cl's ordinary, non-COMDAT `.data`/`.rdata`** — a unit's plain globals own no COMDAT,
+   so all 149 of them were packed in manifest (rva) order into whatever section came
+   first. Each object's ordinary section is now published as one non-affine section with
+   every global at ITS candidate offset — admitted only when the section is provably
+   COMPLETE: every member (`_Coff.section_members`, class STATIC **and** EXTERNAL, because
+   cl's `$S<id>` function-local statics are class STATIC and are most of the bytes) has an
+   enrolled row of matching storage, no two overlap, none overruns, and every uncovered
+   byte is ZERO in the candidate payload. 42 of 78 candidate sections clear that bar.
+
+| | before | after |
+|---|---|---|
+| `matched_data` | 639627/704140 = **90.84%** | 648397/704305 = **92.06%** |
+| sections at exactly 100.0 | 358 | **383** |
+| size-weighted | 99.6533% | 99.6813% |
+
+25 sections closed, none regressed; `matched_functions` 3498, `matched_code` 474819 and
+`fuzzy_match_percent` 92.14783 are bit-identical, and `data_relocs` stays WRONG 0 with 0
+new orphans. The control also held: every section whose defect is a genuinely missing
+symbol is unmoved (`brickzload` 0.00, `wwdfactoryobject` 0.00, `butemgr` 8.70,
+`battlezmapconfig` 12.90, `worldsoundset` 33.33, `videoconfig` 40.00, `dialogs` 52.00,
+`fadereffects` 66.67, `gruntzapp` 81.01, `netcmdslot` 97.93).
+
+**What still appends into a COMDAT: 275 rows over 23 objects, 16 of them in a sub-100
+section** (`grunt` .data 64.28, `gruntcombat` .data 81.25, `gruntentrancearrival` .data
+77.75, `gruntentrancemove` .data 88.35, `butemgr` .data 99.92, ...). Each is an ordinary
+section rejected for ONE unenrolled member, and the members split into two families:
+
+* **`$T<id>` FP-pool constants** (18 sections) — cl's floating-point literal pool, no
+  source pin. `DATA_COMPGEN(rva, name, value)` is the channel; the claim has to be written
+  in the owning TU.
+* **an exact `(rva, size)` ALIAS of a pooled `??_C@` literal** (44 pairs, listed by
+  `data_manifest --report`) — e.g. `_s_strLBrack$S19420` and `??_C@_01KHLB@?$FL?$AA@` are
+  both 2 bytes at `0x213efc`; /Gf folded one TU's `static char s[] = "["` onto the pooled
+  literal other TUs emit. `candidates()` reads the pair as an extent overlap and withholds
+  **both**, which is why 44 `??_C@` groups (one of them owned by 47 objects) are missing
+  from every target too. It is not an overlap and it is not a fold either: the delinker's
+  `proved_rvas` admits N objects at one rva only under ONE name, and
+  `owner_and_addend_for_rva` hands every referencing object that single name — so enrolling
+  the second spelling needs either per-object owner resolution in the delinker or an alias
+  map in `canonicalize_data_symbols`. Exactly one of the 45 reported overlaps is a REAL
+  contradiction and stays withheld: `?g_idleGeom@@3PAUBzGeomPair@@A` +0x20 at `0x1e8fe4`
+  runs into `_g_bootyLetterCoords` at `0x1e8fe8`.
+
 **Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in
 `/nix/store`: homm2's objdiff-cli 3.7.1 + `objdiff-data-symbol-details.patch` (per-symbol
