@@ -234,7 +234,18 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list) -> None:
             inputs=base_objs, implicit=[LINK, res,
                                         "scripts/gruntz/build/msdis_stub.py",
                                         "scripts/gruntz/build/import_lib.py"])
-    w.build("candidate", "phony", inputs=cand)
+    # The README's link-status block is refreshed HERE and nowhere else in the
+    # build: `gruntz build` does not link, so the block is only as fresh as the
+    # last `ninja candidate`. It states the candidate's digest and link time so a
+    # stale block is visible rather than silent.
+    w.rule("linkscore",
+           command=f"{PY} -m gruntz.audit.link_sections --write-readme && "
+                   f"touch $out",
+           description="candidate EXE -> README link status")
+    w.build("build/gen/.link_score.stamp", "linkscore", inputs=[cand],
+            implicit=["scripts/gruntz/audit/link_sections.py"])
+    w.build("candidate", "phony",
+            inputs=[cand, "build/gen/.link_score.stamp"])
     w.newline()
 
 

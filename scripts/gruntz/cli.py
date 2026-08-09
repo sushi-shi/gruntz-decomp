@@ -971,6 +971,15 @@ def cmd_link(args) -> None:
         run(cmd)
     finally:
         _kill_wine_session()
+    # Refresh the README's link-status block - but ONLY for a plain link. --order
+    # and --opt-ref produce a deliberately non-default image (a layout experiment),
+    # and banking one as the scoreboard would record an experiment as the state of
+    # the tree.
+    if args.order or args.opt_ref:
+        print("[gruntz] experimental link (--order/--opt-ref): README link-status "
+              "left alone; re-run `gruntz link` plain to refresh it")
+    else:
+        run([sys.executable, "-m", "gruntz.audit.link_sections", "--write-readme"])
     if args.analyze:
         run([sys.executable, "-m", "gruntz.audit.link_order",
              "--map", str(REPO / "build" / "exe" / "GRUNTZ.candidate.map"),
