@@ -118,7 +118,69 @@ the objects in retail-block order (fixes cross-TU layout); **(c)** split the
 flagged conflated units. `gruntz link` + `link_order.py` make each step verifiable
 against the real linker before committing to source.
 
-## Whole-EXE metric: `gruntz audit exe-diff`
+## The derived link line: `config/retail/link-order.tsv` (2026-08-09)
+
+The model above is now a **tracked, derived, re-provable artifact**. With the
+placement mechanism proven inside link.exe itself (`docs/link-text-layout.md`:
+contributions append at the group tail in arrival order; nothing splits an obj's
+`.text`; libraries follow all command-line objs), band-start order stopped being
+a heuristic and became a reading of the original link line.
+
+`gruntz.audit.link_line` derives it from four independent inputs and
+cross-checks them:
+
+  * **band extents** — RVA() pins per unit (the tu_order_check universe;
+    kept-COMDAT exiles + the 3 demo-oracle ilink moves excluded, outliers peeled
+    by the same gap law);
+  * **the incremental-thunk oracle** — a thunk target PROVES a band's obj was on
+    the command line (238/238 cmdline rows are thunk-proven; 0 rest on position
+    alone);
+  * **the CRT init table** (`.CRT$XCU`, .data 0x208000) — slot order obeys the
+    same append law; 49 units carry slots, **0 inversions** against band order;
+  * **the padding split** — measured 18.1% inter-band padding among cmdline
+    seams vs 5.8% among lib seams (upper bounds; the probe-measured truth is
+    ~20% vs 0%), corroborating the object/library boundary at
+    0x11cb87 (last cmdline band end) / 0x132ce0 (first lib band start).
+
+Row classes: **cmdline** (238; the command line itself, in order), **lib** (89;
+arrival = library PULL order — a resolution artifact, NOT a command-line fact:
+the original .LIB member order is unrecoverable from layout), **comdat-owner**
+(14; not link-line objects — class-homed units whose every body was a COMDAT
+kept inside a host's contribution). 48 units sit in interleaving bands (the
+tu-partition backlog) - order between those members is ambiguous until the
+partitions are fixed.
+
+    python -m gruntz.audit.link_line             # derivation report
+    python -m gruntz.audit.link_line --emit      # regenerate the tsv
+    python -m gruntz.audit.link_line --check     # gate (build --full): re-derives
+    python -m gruntz.audit.link_line --objlist F # obj order for `gruntz link --order F`
+    python -m gruntz.audit.link_line --measure M # a candidate .map vs the derivation
+    python -m gruntz.audit.link_line --exiles    # kept-COMDAT keeper prediction
+
+**Measured (2026-08-09, real link.exe):** linking with the derived order takes
+the candidate's cross-TU order from Kendall-tau distance **0.4508** (alphabetical
+baseline; 16/326 correct predecessors) to **0.0000** (0 inversions, 326/326
+correct predecessors) — the linker reproduces the input order exactly, including
+the comdat-owner objs inserted at their kept bodies' positions. With the engine
+modules genuinely archived (`--engine-lib`) the command-line region still scores
+0 inversions, but the archives' NATURAL pull order reproduces retail's pull order
+only at Kendall **0.3266** — retail's library-member arrival depends on its real
+per-project archives and their member order, which layout cannot recover.
+
+**Kept-COMDAT keeper prediction** (the first-definer rule made predictive): for
+each `config/retail/kept-comdat-exiles.tsv` row, predict the host as the FIRST
+obj in arrival order among the units whose base obj references the symbol (the
+retail-emitter proxy). Result over the 63 rows: **26 exact, 30 same-seam
+(prediction lands within +-4 arrival positions of the ledger host — all inside
+the known-undecided partitions: the Play region, the ImageSet tangle, the
+GruntCombat block), 7 far**. The far rows are the honest limit of the proxy: our
+objs' reference set is not retail's EMITTER set (cl emits a header-inline's
+COMDAT only where it fails to inline it, which the proxy cannot see). The
+same-seam rows are partition evidence: e.g. the 19 ImageSet rows' predicted
+keeper is `gamelevel` (whose band ends 0xe before the group) rather than the
+ledger's `levelplane` (which starts 0x48 after it) — the ledger hosts there were
+recorded against sprawling spans, and the referencer vote says the group is
+gamelevel's deferred-inline tail.
 
 `gruntz link` gives the candidate; **`gruntz audit exe-diff`**
 (`gruntz.audit.exe_diff`) diffs that whole image against retail — one level up

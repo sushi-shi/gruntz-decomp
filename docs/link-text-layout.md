@@ -223,10 +223,15 @@ with other objs, or genuinely misordered pins. They stay frozen in the ratchet.
    members inline. Whether to migrate such bodies into headers is a separate
    (matching-sensitive) decision — the inline-member-crater lesson stands — so
    the ledger records the fact without forcing the migration.
-4. **Link order is recoverable.** Command-line objs in line order, lib members
-   in pull order, kept COMDATs at first includer: retail `.text` order encodes
-   the original project's file list and link line, which is exactly what the
-   TU-partition lane mines.
+4. **Link order is recoverable — and now RECOVERED.** Command-line objs in line
+   order, lib members in pull order, kept COMDATs at first includer: retail
+   `.text` order encodes the original project's file list and link line.
+   `config/retail/link-order.tsv` (derived + re-proven by
+   `gruntz.audit.link_line`, gated in `build --full`) is that recovery: 238
+   thunk-proven command-line objs in order, 89 lib members in pull order, and a
+   relink with the derived order reproduces the cross-TU layout exactly
+   (Kendall 0.0000 vs 0.4508 for the alphabetical baseline). See
+   `docs/link-order-investigation.md` § "The derived link line".
 5. **Ilink moves are negligible** — the one genuine splitter is bounded at 3
    functions in the whole EXE, and none of the 80 pairs involved one.
 

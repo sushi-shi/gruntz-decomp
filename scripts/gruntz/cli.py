@@ -537,6 +537,14 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.tu_order_check", ["--gate"],
           "tu-order ratchet violated - a function move broke the linker-order "
           "invariant (python -m gruntz.audit.tu_order_check --tu <name>)", "normal")
+    # The derived retail link line (config/retail/link-order.tsv) must re-derive in
+    # the committed order. Set-tolerant (partition work adds/renames units freely),
+    # order-strict (an inversion/class flip means the layout model itself moved).
+    # FULL tier: band coordinates legitimately shift under re-homing; the fix is
+    # one command (--emit), surfaced by the periodic audit, not per-commit.
+    _gate("gruntz.audit.link_line", ["--check"],
+          "link-order snapshot no longer re-derives - regenerate it "
+          "(python -m gruntz.audit.link_line --emit)", "full")
     _gate("gruntz.audit.label_style", ["--gate"],
           "label-style ratchet violated - spell the label canonically "
           "(python -m gruntz.audit.label_style)", "normal")
