@@ -55,7 +55,6 @@ bracketvalue	1	1
 brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
-buildgruntzcrcinfo	1	0
 buteglobals	4	4
 butemgr	63	50
 butenode	5	4
@@ -243,9 +242,8 @@ netlobbydialogs	20	20
 netmgr	47	44
 netmgrerror	2	2
 netsession	1	1
-netsessionmgr	29	23
+netsessionmgr	31	24
 netsessionnode	3	3
-packetpool	1	1
 palettebmp	2	2
 pathhazard	23	19
 play	93	67
@@ -662,7 +660,6 @@ brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	76.3980	76.3980	6	0b8ab0d05
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	73.8252	73.8252	6	e1ad38fab7bb	0x77df0	73.8252
 brickzcellflags	?SetCell@CDDrawWorkerHost@@QAEXHHH@Z	100.0000	100.0000	1	ded21c853ceb	0x77dc0	100.0000
 brickzload	?LoadAttributes@CGruntzMapMgr@@QAEHHH@Z	75.4212	75.4158	11	3c93df93f137	0x810f0	75.4212
-buildgruntzcrcinfo	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	87.4545	87.4545	7	c53be3c55021	0xbf1d0	87.4545
 buteglobals	??_GCButeTree@@UAEPAXI@Z	100.0000	100.0000	1	cpp:36aab16fc36a	0x16e9c0	100.0000
 buteglobals	??_GCTypeCollRuntime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:08a70ee732e7	0x16ea20	100.0000
 buteglobals	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	2	a24c4973a48e	0x16ea10	100.0000
@@ -3242,7 +3239,9 @@ netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	5	59095ad9beb7	0xf93b0	100
 netsessionmgr	?Advance@CNetSession@@QAEHXZ	100.0000	100.0000	3	08f323aef5a2	0xc01d0	100.0000
 netsessionmgr	?AdvanceAllSlots@CNetSession@@QAEXH@Z	100.0000	100.0000	2	e867edeb9acc	0xc0370	100.0000
 netsessionmgr	?AllSlotsReachedSeq@CNetSession@@QAEHH@Z	100.0000	100.0000	3	7eb1ef3fea34	0xc0320	100.0000
+netsessionmgr	?AllocateGruntRecord@@YAPAXH@Z	100.0000	100.0000	2	fe5e59a089ab	0xbf530	100.0000
 netsessionmgr	?ArmSlot@CNetSession@@QAEXPAXE@Z	100.0000	100.0000	1	3d8bd9710b7b	0xc03f0	100.0000
+netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	87.4545	87.4545	7	c53be3c55021	0xbf1d0	87.4545
 netsessionmgr	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	4	55da87b22acd	0xc04a0	100.0000
 netsessionmgr	?Checksum@CNetSession@@QAEHXZ	85.6013	85.6013	2	80d4ecabbbbf	0xc0590	85.6284
 netsessionmgr	?ClearAckFlags@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	e5e7ebd7d632	0xbf120	100.0000
@@ -3266,12 +3265,11 @@ netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	3	d5cf8c62362e	0x
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	3	c908e81ff168	0xbfc70	97.6316
 netsessionmgr	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.1579	84.1579	6	3ff41ccb471b	0xbfeb0	84.2105
 netsessionmgr	?Tick@CNetSession@@QAEHXZ	86.0323	86.0323	7	eabb5da5e93a	0xbf9e0	86.0323
-netsessionmgr	?Verify@CNetSession@@QAEHH@Z	89.5349	89.5349	6	b2b21951de05	0xc0290	100.0000
+netsessionmgr	?Verify@CNetSession@@QAEHH@Z	100.0000	89.5349	6	b2b21951de05	0xc0290	100.0000
 netsessionmgr	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	6	b2b21951de05	0xc04f0	100.0000
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	3	02a098f8ad05	0x1793b0	100.0000
 netsessionnode	??1CNetSessionNode@@UAE@XZ	100.0000	100.0000	7	fb83d73f12fa	0x179420	100.0000
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	5	a75a783e0b2c	0x1795a0	100.0000
-packetpool	?AllocateGruntRecord@@YAPAXH@Z	100.0000	100.0000	2	fe5e59a089ab	0xbf530	100.0000
 palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	1	a9bd58be1c62	0x1775f0	100.0000
 palettebmp	?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	a05f787bb8a9	0x177480	100.0000
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	98.9474	98.9474	15	34c425835b1d	0xb35a0	98.9474

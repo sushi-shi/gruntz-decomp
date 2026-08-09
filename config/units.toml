@@ -118,11 +118,6 @@ source = "src/Gruntz/SaveScreenshot.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "buildgruntzcrcinfo"
-source = "src/Gruntz/BuildGruntzCrcInfo.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "sbi_menuitem"
 source = "src/Gruntz/SBI_MenuItem.cpp"
 flags = "cpp-rtti"
@@ -1500,10 +1495,6 @@ unit = "customworlddialog"
 source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "packetpool"
-source = "src/Net/PacketPool.cpp"
-flags = "cpp"
 [[unit]]
 unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
