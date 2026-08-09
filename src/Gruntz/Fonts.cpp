@@ -4,16 +4,16 @@
 
 #include <Font/Font.h>
 
+DATA(0x0024ea58)
+Font g_tinyFont;
 DATA(0x0024eac0)
 Font g_largeFont;
+DATA(0x0024ead8)
+FontRenderer g_textObj;
 DATA(0x0024eae8)
 Font g_mediumFont;
 DATA(0x0024eb00)
 Font g_smallFont;
-DATA(0x0024ea58)
-Font g_tinyFont;
-DATA(0x0024ead8)
-FontRenderer g_textObj;
 DATA(0x0024eb14)
 i32 g_loadedFlag = 0;
 

@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <strstrea.h>
 
+DATA(0x00213eec)
+static char s_strRBrack[] = "]";
+DATA(0x00213efc)
+static char s_strLBrack[] = "[";
 DATA(0x0021cf40)
 i16 g_charClass[256] = {
     49, 48, 48, 48, 48, 48, 48, 48, 48, 15, 12, 48, 48, 13, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
@@ -717,13 +721,11 @@ i16 g_transTable[97][49][3] = {
 DATA(0x002bf678)
 static i16 g_tokenLen;
 
+DATA(0x002240a8)
+static char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
 DATA(0x002240d0)
 static char s_fmtFormatError[] =
     "ButeMgr (%d):  A formatting error in the attribute file was encountered";
-DATA(0x00213eec)
-static char s_strRBrack[] = "]";
-DATA(0x002240a8)
-static char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
 DATA(0x00224118)
 static char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
 DATA(0x00224144)
@@ -763,9 +765,6 @@ DATA(0x001f0520)
 static const float s_floatErr = FLT_MIN;
 DATA(0x001f0528)
 static const double s_doubleErr = DBL_MIN;
-
-DATA(0x00213efc)
-static const char s_strLBrack[] = "[";
 
 RVA(0x00170210, 0x118)
 CButeMgr::CButeMgr() {

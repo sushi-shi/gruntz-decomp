@@ -87,6 +87,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+DATA(0x001e9738)
+double g_val_1e9738;
+DATA(0x001e9750)
+const double g_slopeNegHalf = -0.5;
+DATA(0x001e9758)
+const double g_slopePosHalf = 0.5;
+DATA(0x001e9760)
+const double g_slopePosTwo = 2.0;
+DATA(0x001e9768)
+const double g_slopeNegTwo = -2.0;
 DATA(0x001e9a68)
 double s_fpZero = 0.0;
 
@@ -96,17 +106,6 @@ double s_fpZero = 0.0;
 // `CRect(l,t,r,b)` here would be a `call ??0CRect@@QAE@HHHH@Z`; retail has none.
 // A pointer-taking inline is what produces the `lea <reg>,[esi+off]` base plus
 // one register per value that the retail schedule shows.
-DATA(0x001e9750)
-const double g_slopeNegHalf = -0.5;
-
-DATA(0x001e9758)
-const double g_slopePosHalf = 0.5;
-
-DATA(0x001e9760)
-const double g_slopePosTwo = 2.0;
-
-DATA(0x001e9768)
-const double g_slopeNegTwo = -2.0;
 
 // @early-stop
 
@@ -574,9 +573,6 @@ void CGrunt::ReadConfigFromButeMgr() {
 }
 
 static const char s_d48_DEATH[] = "_DEATH";
-
-DATA(0x001e9738)
-double g_val_1e9738;
 
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {

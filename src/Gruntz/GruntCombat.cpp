@@ -152,25 +152,24 @@ const u8 g_hitTable[23][23] = {
 // zero-init; filled at runtime by the (unreconstructed) fn in gap 0x58f3c-0x59230
 DATA(0x00244970)
 i32 g_dirVec[9][4];
-
-DATA(0x00244ab0)
-GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
-DATA(0x00244ae0)
-GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
 DATA(0x00244aa0)
 GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, DIR_EAST);
-DATA(0x00244b28)
-GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
+DATA(0x00244ab0)
+GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
 DATA(0x00244ac0)
 GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
-DATA(0x00244b48)
-GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 DATA(0x00244ad0)
 GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, DIR_WEST);
+DATA(0x00244ae0)
+GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
 DATA(0x00244b18)
 GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
+DATA(0x00244b28)
+GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
 DATA(0x00244b38)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
+DATA(0x00244b48)
+GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
