@@ -563,7 +563,7 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 RVA(0x00157c70, 0xf8)
 i32 CDDrawSubMgrLeafScan::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
-    match = str;
+    match += str;
     i32 len = match.GetLength();
     CString key;
     void* val = 0;

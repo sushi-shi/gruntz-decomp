@@ -73,7 +73,7 @@ void CDDrawSubMgrLeaf::FreeAll() {
 RVA(0x001527d0, 0xf8)
 i32 CDDrawSubMgrLeaf::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
-    match = str;
+    match += str;
     i32 len = match.GetLength();
     CString key;
     void* val = 0;

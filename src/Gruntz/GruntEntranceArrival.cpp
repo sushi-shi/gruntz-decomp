@@ -871,7 +871,7 @@ latch:
 
     i32 col = cell.column + cell.row * 2;
     i32 base = cell.row + col;
-    CString key = static_cast<const char*>(m_cells[base].IdleName());
+    CString key = m_cells[base].IdleName();
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniRecordView* elem =

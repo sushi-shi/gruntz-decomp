@@ -259,7 +259,7 @@ void CDDrawWorkerRegistry::MapTeardown() {
 RVA(0x00155360, 0xf8)
 i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     CString match(base);
-    match = str;
+    match += str;
     i32 len = match.GetLength();
     CString key;
     CObject* val = 0;

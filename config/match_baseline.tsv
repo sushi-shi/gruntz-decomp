@@ -1063,7 +1063,7 @@ ddrawsubmgr	?ProbeFirst@CDDrawSubMgrLeafScan@@QAEHH@Z	100.0000	100.0000	6	2f0c24
 ddrawsubmgr	?ProbeWorkerKey@CDDrawWorkerRegistry@@UAEHPAVCSymParser@@PBD@Z	100.0000	100.0000	3	919379fa4944	0x156e80	100.0000
 ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	95.7407	95.7407	5	396d56dffc3e	0x156ec0	95.7407
 ddrawsubmgr	?RemoveByValue@CDDrawSubMgrLeafScan@@QAEXPAULeafCue@@@Z	99.8545	99.8545	4	f66a8e25a91f	0x157b00	99.8545
-ddrawsubmgr	?RemoveKeysEqual@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	6	dbfa266dea6e	0x157c70	100.0000
+ddrawsubmgr	?RemoveKeysEqual@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	7	649c18fc62f9	0x157c70	100.0000
 ddrawsubmgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	2	ae40f47d3f4e	0x157a50	100.0000
 ddrawsubmgr	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	2	28779940718e	0x157a40	100.0000
 ddrawsubmgr	?ResizePages@CDDrawSubMgrPages@@QAEHHHW4ColorDepth@@@Z	100.0000	100.0000	1	fb2229c34fcf	0x158bf0	100.0000
@@ -1094,7 +1094,7 @@ ddrawsubmgrleaf	?FreeAll@CDDrawSubMgrLeaf@@QAEXXZ	100.0000	100.0000	3	b3682b18ed
 ddrawsubmgrleaf	?HasKeyPrefix@CDDrawSubMgrLeaf@@QAEHPBD@Z	100.0000	100.0000	6	93ac303e2c0a	0x152c50	100.0000
 ddrawsubmgrleaf	?IsReady@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	21312d567631	0x152640	100.0000
 ddrawsubmgrleaf	?KeyOfValue@CDDrawSubMgrLeaf@@QAE?AVCString@@PAVCObject@@@Z	100.0000	100.0000	6	d65bca508ba6	0x152d30	100.0000
-ddrawsubmgrleaf	?RemoveKeysEqual@CDDrawSubMgrLeaf@@QAEHPBD0@Z	100.0000	100.0000	8	d05a18f07b5e	0x1527d0	100.0000
+ddrawsubmgrleaf	?RemoveKeysEqual@CDDrawSubMgrLeaf@@QAEHPBD0@Z	100.0000	100.0000	9	b062bda7de13	0x1527d0	100.0000
 ddrawsubmgrleaf	?RemoveValue@CDDrawSubMgrLeaf@@QAEXPAVCAniElement@@@Z	99.8545	99.8545	4	c75c3df1517e	0x152660	99.8545
 ddrawsubmgrleaf	?ScanTree@CDDrawSubMgrLeaf@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	5	a0854b6f25db	0x152ad0	100.0000
 ddrawsubmgrleaf	?Unload@CDDrawSubMgrLeaf@@UAEXXZ	100.0000	100.0000	3	69e4504eb161	0x152650	100.0000
@@ -1190,7 +1190,7 @@ ddrawworkerregistry	?LoadFrameByKey@CDDrawWorkerRegistry@@UAEPAVCImage@@PADPBDHH
 ddrawworkerregistry	?LoadFrameForWorker@CDDrawWorkerRegistry@@UAEPAVCImage@@PADPAVCDDrawWorker@@HH@Z	100.0000	100.0000	1	222aaac6de1f	0x154f00	100.0000
 ddrawworkerregistry	?LoadNamespace@CDDrawWorkerRegistry@@UAEHPAXPBD1@Z	100.0000	100.0000	5	928308d01d31	0x155160	100.0000
 ddrawworkerregistry	?MapTeardown@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	5	cb80a1b9ba3f	0x1552b0	100.0000
-ddrawworkerregistry	?RemoveKeysEqual@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	7	b18b29c8483b	0x155360	100.0000
+ddrawworkerregistry	?RemoveKeysEqual@CDDrawWorkerRegistry@@QAEHPBD0@Z	100.0000	100.0000	8	b48a7e9edd9a	0x155360	100.0000
 ddrawworkerregistry	?RemoveWorker@CDDrawWorkerRegistry@@UAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	3	f8728a82bc3e	0x155280	100.0000
 ddrawworkerregistry	?SetKey@CDDrawWorker@@UAEHPBD@Z	100.0000	100.0000	3	ff89e7f56a86	0x155810	100.0000
 ddrawworkerregistry	?SumSizesEqual@CDDrawWorkerRegistry@@QAEHPBDH@Z	100.0000	100.0000	9	4c5e0ebca4cc	0x155460	100.0000
@@ -2037,7 +2037,7 @@ gruntentrancearrival	?RearmAttackAnim2@CGrunt@@QAEHXZ	95.7843	95.7843	10	ebaa5a6
 gruntentrancearrival	?RearmAttackAnim@CGrunt@@QAEHHH@Z	88.7423	88.7423	18	4ad5b0fc7a82	0x61940	88.7423
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	90.8515	90.8515	3	6ba6a28b5afc	0x62b70	90.9505
-gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	82.9305	82.9305	28	ab8df94f7f61	0x62e10	82.9305
+gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	83.1118	83.1118	29	04b64924da47	0x62e10	83.1118
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	95.7000	95.7000	9	4a9245f6ffe1	0x616e0	95.7000
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	5	1dcf7ce2cf54	0x633e0	90.5392
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	82.4431	82.4431	25	5f5428cd488a	0x65630	82.4431
