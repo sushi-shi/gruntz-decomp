@@ -86,6 +86,38 @@ def load_manifest(root):
     return rva2storage, comdat
 
 
+def pe_storage(root):
+    """rva -> storage, straight from the shipped image's own section layout.
+
+    The manifest only covers rvas the delinker ENROLLS, and an rva it withholds
+    still has a storage class - the PE says which. Defaulting those to "data"
+    invents one, and the invention is not harmless: it drags a TU's `.data` band
+    down over its `.rdata` globals, and a band stretched that far swallows enough
+    foreign defs to be classified a POOL, which EXEMPTS it from this check. Two
+    real crossings under BootyStateActivate.cpp were hidden exactly that way.
+    """
+    try:
+        from gruntz.core.data_audit import read_pe, classify_pe_storage
+    except Exception:
+        return None
+    exe = os.path.join(root, "build", "exe", "GRUNTZ.EXE")
+    if not os.path.exists(exe):
+        return None
+    try:
+        pe = read_pe(exe)
+    except Exception:
+        return None
+    keyword = {"rdata": "rdata", "data-initialized": "data",
+               "data-loader-zero-tail": "bss"}
+
+    def classify(rva):
+        try:
+            return keyword.get(classify_pe_storage(pe, rva)["class"])
+        except Exception:
+            return None
+    return classify
+
+
 def exec_ranges():
     """The retail image's EXECUTABLE rva ranges, or [] if the EXE is unreadable.
 
@@ -245,7 +277,8 @@ def within_file_audit(files, ranges=None):
     return problems
 
 
-def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None, ranges=None):
+def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None,
+                     ranges=None, fallback=None):
     """Band ORDINARY (non-COMDAT) data per (file, storage) and find defs sitting
     strictly inside ANOTHER file's SAME-storage band.
 
@@ -269,8 +302,10 @@ def cross_file_audit(files, pool_threshold=4, rva2storage=None, comdat=None, ran
         for b in data_blocks(path, ranges):
             if not b.is_def or is_comdat(b.rva, b.name):
                 continue
-            storage = rva2storage.get(b.rva, "data")
-            defs.append((b.rva, path, b.name, storage))
+            storage = rva2storage.get(b.rva)
+            if storage is None and fallback is not None:
+                storage = fallback(b.rva)
+            defs.append((b.rva, path, b.name, storage or "data"))
 
     # band per (path, storage)
     byband = {}
@@ -306,7 +341,7 @@ def real_crossings(root, pool_threshold=4):
     files = [f for f in files if "/Stub/" not in f]
     rva2storage, comdat = load_manifest(root)
     defs, bands, crossings, pools, contains = cross_file_audit(
-        files, pool_threshold, rva2storage, comdat)
+        files, pool_threshold, rva2storage, comdat, fallback=pe_storage(root))
     real = [c for c in crossings if (c[3], c[4]) not in pools]
     return real, defs, bands, pools, contains
 

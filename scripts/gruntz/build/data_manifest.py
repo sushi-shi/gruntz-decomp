@@ -826,6 +826,36 @@ def fp_pool_rows(exe=EXE, base_dir=None, symbols=SYMBOLS):
     return kept, withheld
 
 
+def _candidate_member_storage(base_dir=None):
+    """{(object, symbol): "data"|"rdata"} - the storage cl.exe ACTUALLY gave it.
+
+    An independent fact from the retail PE's own classification, and the one that
+    decides whether a named static could have been folded onto a pooled literal:
+    the linker folds identical COMDATs, it does not move a `.rdata` const array into
+    `.data`. Read from every section, COMDAT or not, and via `section_members` -
+    `defined_symbols` lists only the EXTERNALS, and cl makes a function-local
+    `static` class STATIC, which is exactly the `_name$S<n>` family this screens.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff  # noqa: E402
+
+    base_dir = Path(base_dir or REPO / "build/objdiff/base")
+    out = {}
+    for obj in sorted(base_dir.glob("*.obj")):
+        try:
+            c = _Coff(obj)
+        except Exception:
+            continue
+        for sec in c.section_table:
+            storage = ORDINARY_STORAGE.get(sec["name"])
+            if storage is None:
+                continue
+            for _off, name, _scl in c.section_members(sec["index"]):
+                out["%s.c" % obj.stem, name] = storage
+    return out
+
+
 def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
@@ -915,6 +945,62 @@ def candidates(symbols=SYMBOLS, exe=EXE):
             prev["member"] = r["member"]
     rows = deduped
 
+    # A NAMED STATIC THAT /Gf FOLDED ONTO A POOLED LITERAL IS NOT AN OVERLAP.
+    # `static const char s_strLBrack[] = "["` in one TU and the `"["` literal every
+    # other TU spells `??_C@_01KHLB@?$FL?$AA@` are DIFFERENT source objects that the
+    # linker put at ONE rva (/Gf, implied by /O2), so both claims are true and the
+    # extents are EXACTLY equal - which is what tells them apart from a real
+    # contradiction, where the extents merely intersect. Read as an overlap they
+    # withheld each other, and with the pooled side gone its whole owner set lost the
+    # literal: 44 groups, one of them owned by 47 objects.
+    #
+    # The pooled literal keeps the authoritative claim - it is the identity every
+    # referencing object's relocation must resolve to, and it has the owners - and the
+    # named static is re-provenanced `provisional-`, which in the delinker means
+    # exactly "carve this definition, but do not let it own the address"
+    # (`address_authoritative` gates both `proved_rvas` and
+    # `owner_and_addend_for_rva`; `object_files` carves it either way). So the static
+    # gets its bytes into its object, the pool keeps naming the rva, and nothing is
+    # asserted twice.
+    # AN ALIAS IS ONLY A FOLD WHEN BOTH SIDES LIVE IN THE SAME STORAGE. cl puts a
+    # bare literal in a `.data` COMDAT (VC5 pools with /Gf but does not make literals
+    # read-only - there is no /GF here), so a named static that our source declares
+    # `const` compiles into `.rdata` and CANNOT be what the linker folded onto a
+    # `.data` literal: the two never met. Such a pair is not a fold at all, it is a
+    # mis-modelled declaration - retail's code used the literal directly and had no
+    # array - and enrolling it appends a phantom tail to the object's first `.data`
+    # section. Measured: it broke `warlord` 100 -> 83.07, `gruntsteps` 100 -> 76.06,
+    # `triggermgr`, `gruntassetloaders`, `directsoundmgr` and `ddrawsubmgrleaf`,
+    # every one of them a `.rdata` candidate against a `.data` retail address.
+    # A pair the storage class REFUTES is not withheld symmetrically. The literal
+    # agrees with the PE (many objects emit it, into the same storage retail used);
+    # the named static does not, and one claim has to be wrong. So the pin loses and
+    # the pool keeps the address - the pin is reported as the modelling defect it is.
+    candidate_storage = _candidate_member_storage()
+    alias_of, refuted = {}, set()
+    by_extent = defaultdict(list)
+    for r in rows:
+        by_extent[(r["rva"], r["size"])].append(r)
+    for (rva, _size), group in by_extent.items():
+        names = {r["name"] for r in group}
+        pooled = {n for n in names if n.startswith("??_C@")}
+        if len(names) != 2 or len(pooled) != 1:
+            continue
+        literal = next(iter(pooled))
+        for r in group:
+            if r["name"] == literal:
+                continue
+            mine = candidate_storage.get((r["object"], r["name"]))
+            if mine != r["storage"]:
+                refuted.add(r["name"])
+                withheld.append((rva, r["name"],
+                                 "our %s copy cannot be the %s literal %s it is "
+                                 "pinned onto" % (mine or "?", r["storage"], literal)))
+                continue
+            r["provenance"] = "provisional-pooled-literal-alias"
+            alias_of[r["name"]] = literal
+    rows = [r for r in rows if r["name"] not in refuted]
+
     # The N owners of a folded COMDAT all claim ONE rva, so collapse each fold to a
     # single extent before the neighbour check - otherwise the copies read as mutual
     # overlaps. Every real extent still has to fit the span to its neighbour; an
@@ -922,6 +1008,10 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     # enrolled. This scans DEFINITION extents (the delinker's own data-manifest
     # check); the placed-SECTION extents, which for a /GR vtable start four bytes
     # earlier at its `??_R4` COL word, are screened in section_rows().
+    # A `provisional-` alias claims no address, so it sits out this scan exactly as
+    # the delinker's own adjacent-pair check skips it.
+    rows, aliases = ([r for r in rows if r["name"] not in alias_of],
+                     [r for r in rows if r["name"] in alias_of])
     rows.sort(key=lambda x: (x["rva"], x["size"], x["name"]))
     extents = []                       # [{rva, size, name, copies: [row, ...]}]
     for r in rows:
@@ -960,6 +1050,15 @@ def candidates(symbols=SYMBOLS, exe=EXE):
             withheld.append((r["rva"], r["name"], "duplicate definition in one object"))
         else:
             final.append(r)
+    # A pooled-literal alias enrolls only if the literal it aliases did: it exists to
+    # give ONE object the bytes of a slot the pool already owns, and without that
+    # owner it would be an unbacked second claim on the address.
+    live = {r["name"] for r in final}
+    for r in aliases:
+        if alias_of[r["name"]] in live:
+            final.append(r)
+        else:
+            withheld.append((r["rva"], r["name"], "aliases a withheld pooled literal"))
     return final, withheld, overlaps
 
 

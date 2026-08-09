@@ -19,7 +19,36 @@
 # retail owner of 0x20d2e8 is Warlord.cpp, and the two source spellings are one
 # /Gf-pooled retail datum modelled twice. Deciding which spelling keeps the pin is
 # a data-attribution call for the pinning lanes, not this audit's.
+#
+# The three rows added 2026-08-09 (0x20b8b8, 0x21ab20, 0x21ab24) were unmasked the
+# same way, by the same two mechanisms, and NO definition moved to produce them:
+#
+#   * enrolling the /Gf-folded pooled literals put `_s_dbgNoCaps$S29847` (0x20bdc4)
+#     in the manifest under two owners, which correctly makes it COMDAT - and a
+#     COMDAT is linker-pooled, not linearly TU-attributed, so it leaves the band
+#     model. WwdObjMgr.cpp's `.data` band shrank from [0x20bdc4,0x21ab30] (a POOL,
+#     therefore EXEMPT) to its real [0x21ab14,0x21ab30];
+#   * the audit now takes an unenrolled rva's storage from the PE instead of
+#     defaulting it to "data", which stopped BootyStateActivate.cpp's `.data` band
+#     being dragged down over its `.rdata` globals at 0x1e8fe4. (That default was
+#     also inventing a crossing: `AttractState.cpp` 0x20b5bc is no longer one.)
+#
+# Both remaining crossings are real TU-attribution defects, stated here as the
+# worklist they are:
+#
+#   * 0x20b8b8 `g_levelMsgIconPos[16]` (GameMode.cpp) sits EXACTLY between
+#     BootyStateActivate.cpp's `g_levelMsgRectsA[8]` [0x20b838,0x20b8b8) and
+#     `g_levelMsgRectsB[8]` [0x20b8f8,...) - one contiguous 0x100-byte run of
+#     level-message layout data that retail emitted from ONE obj, split across two
+#     of our .cpp files.
+#   * 0x21ab20 `g_sndEnabled` / 0x21ab24 `g_sndCueTag` (GruntzMgr.cpp) sit inside
+#     WwdObjMgr.cpp's [0x21ab14,0x21ab30] run (`g_wwdObjIdCounter`, `s_dbgSys`,
+#     `s_dbgVid`, `s_dbgRle`). A third TU claims 0x21ab18 (ddrawsubmgrleaf's
+#     `?g_fmtPathJoin@@3PBDB`), so at most one of the three owns that run.
+0x0020b8b8	g_levelMsgIconPos	GameMode.cpp	BootyStateActivate.cpp	data
 0x0020d2e8	s_codeF	GruntCombat.cpp	Warlord.cpp	data
+0x0021ab20	g_sndEnabled	GruntzMgr.cpp	WwdObjMgr.cpp	data
+0x0021ab24	g_sndCueTag	GruntzMgr.cpp	WwdObjMgr.cpp	data
 0x00245268	g_dlgVal_645268	GruntzCmdMgr.cpp	GameText.cpp	bss
 0x0024526c	g_dlgVal_64526c	GruntzCmdMgr.cpp	GameText.cpp	bss
 0x002452a4	g_jitterX	CmdScrollApply.cpp	GameText.cpp	bss
