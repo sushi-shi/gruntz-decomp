@@ -232,6 +232,22 @@ class Retail:
             self._pointed = c
         return self._pointed
 
+    def sites_naming(self, lo, hi):
+        """`[(site rva, target rva)]` for every relocated operand that holds an
+        address in `[lo, hi)`. The site is where the reference lives - in `.text`
+        it is the instruction's operand field, so the instruction starts a byte
+        or two earlier."""
+        out = []
+        ib = self.pe.image_base
+        for s in self.sites:
+            o = self.pe.off(s)
+            if o is None:
+                continue
+            t = struct.unpack_from("<I", self.pe.data, o)[0] - ib
+            if lo <= t < hi:
+                out.append((s, t))
+        return out
+
     @property
     def pointed_sorted(self):
         if not hasattr(self, "_ps"):
@@ -547,6 +563,7 @@ def main(argv=None):
                     help="claims no relocation anywhere names (phantom candidates)")
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--near", help="dump the claims and gaps around one rva")
+    ap.add_argument("--refs", help="who names this address (rva, or rva:len)")
     ap.add_argument("--verdict", help="only rows with this verdict")
     ap.add_argument("--min-len", type=int, default=0)
     ap.add_argument("--max-len", type=int, default=1 << 30)
@@ -561,6 +578,12 @@ def main(argv=None):
 
     if a.near:
         return _near(int(a.near, 0), claims, retail, sections=sections)
+
+    if a.refs:
+        spec = a.refs.split(":")
+        lo = int(spec[0], 0)
+        n = int(spec[1], 0) if len(spec) > 1 else 4
+        return _refs(lo, n, retail)
 
     if a.sections:
         rep = section_proof()
@@ -681,6 +704,34 @@ def main(argv=None):
                  r["owning_unit"] if r["owning_unit"] != "-"
                  else "%s | %s" % (r["prev_object"], r["next_object"])))
         print("      %-46s -> %s" % (r["prev_name"][:46], r["next_name"][:46]))
+    return 0
+
+
+def _refs(lo, n, retail):
+    """Every relocated operand naming `[lo, lo+n)`, attributed to its function.
+
+    The attribution is the retail function table, not a name guess: a `.text`
+    site belongs to the function whose range contains it.
+    """
+    from gruntz.core import retail_functions
+    fns = sorted((f["rva"], f.get("size") or 0, f.get("name") or "")
+                 for f in retail_functions.read())
+    fstart = [f[0] for f in fns]
+
+    def owner(site):
+        i = bisect.bisect_right(fstart, site) - 1
+        if i < 0:
+            return "-", 0
+        rva, size, name = fns[i]
+        return (name or "sub_%06x" % rva, site - rva) if not size or site < rva + size \
+            else ("(past %s)" % (name or "sub_%06x" % rva), site - rva)
+
+    hits = retail.sites_naming(lo, lo + n)
+    print("%d relocated operand(s) name [0x%06x, 0x%06x)" % (len(hits), lo, lo + n))
+    for site, target in sorted(hits, key=lambda t: t[0]):
+        sec = retail.pe.sec_name(site)
+        who, off = owner(site) if sec == ".text" else ("<%s>" % sec, 0)
+        print("  operand@0x%06x -> 0x%06x   %s+0x%x" % (site, target, who, off))
     return 0
 
 

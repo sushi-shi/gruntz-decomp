@@ -410,26 +410,45 @@ def _strip_cv(t):
     return t
 
 
-def sizeof_qualtype(qt, records=None, desugared=None):
+def sizeof_qualtype(qt, records=None, desugared=None, typedefs=None):
     """Exact sizeof for a clang qualType, or None when not provable.
 
     `desugared` is clang's own desugaredQualType for the same declaration. Win32/MFC
     typedefs (HWND, WORD, HINSTANCE, ...) are resolved through it rather than a
     hand-rolled typedef table, so the REAL headers stay the authority (see CLAUDE.md).
+
+    `typedefs` is the TU's own TypedefDecl map, needed because clang emits NO
+    `desugaredQualType` for an ARRAY of a typedef'd record: `const RECT[4]` comes
+    through with the sugar only, `RECT` is not a key in structs.json (which is
+    keyed on the TAG, `tagRECT`), and the global silently goes sizeless -> withheld
+    from the data manifest -> its bytes are never compared by objdiff at all. That
+    is the too-small-claim defect in its purest form and it hid 12 real globals,
+    incl. all eight of BootyStateActivate's `RECT` tables (560 B) and
+    `g_paletteRampBuf`. Resolving through the TU's own AST keeps clang the
+    authority; no hand-rolled typedef table is introduced.
     """
     for cand in (qt, desugared):
-        size = _sizeof_one(cand, records)
+        size = _sizeof_one(cand, records, typedefs)
         if size:
             return size
     return None
 
 
-def _sizeof_one(qt, records=None):
+#: A variable of PLAIN function-pointer type - `LRESULT (*)(HWND, UINT, ...)`,
+#: `int (__stdcall *)(void)`. Four bytes on i386, always. Deliberately excludes a
+#: pointer-to-MEMBER-function (`int (CFoo::*)()`), whose MSVC representation is
+#: 4/8/12/16 bytes depending on the inheritance model - that one stays unprovable.
+_FNPTR_RE = re.compile(r"\((?:\s*__\w+)?\s*\*\s*\)\s*\(")
+
+
+def _sizeof_one(qt, records=None, typedefs=None):
     if not qt:
         return None
     t = _strip_cv(qt)
     if not t:
         return None
+    if "::*" not in t and _FNPTR_RE.search(t):
+        return 4
     # A TEMPLATE SPECIALIZATION IS ONE NAME, EVEN WITH PARENTHESES IN IT. Its
     # argument list can hold a pointer-to-member (`zDArray<int (CUserLogic::*)()>`),
     # so it must be looked up WHOLE before the function-type screen below rejects it
@@ -446,7 +465,7 @@ def _sizeof_one(qt, records=None):
         return 4
     m = _ARRAY_RE.match(t)
     if m:
-        elem = _sizeof_one(m.group(1), records)
+        elem = _sizeof_one(m.group(1), records, typedefs)
         n = int(m.group(2))
         return elem * n if elem else None
     if t.endswith("[]"):           # incomplete array: extent unknown
@@ -458,7 +477,40 @@ def _sizeof_one(qt, records=None):
     size = recs.get(key)
     if size is None and (t.startswith("enum ") or key in enum_names()):
         return 4                   # MSVC 5.0 sizes every enum as 4 bytes
+    if size is None and typedefs:
+        # clang leaves an array-of-typedef'd-record undesugared, so follow the
+        # TU's own TypedefDecl chain (bounded, so a self-referential typedef
+        # cannot loop).
+        seen, under = set(), typedefs.get(key)
+        while under and key not in seen and len(seen) < 8:
+            seen.add(key)
+            size = _sizeof_one(under, records)
+            if size:
+                return size
+            key = re.sub(r"^(struct|class|union|enum)\s+", "", _strip_cv(under))
+            under = typedefs.get(key)
     return size
+
+
+def typedef_map(ast):
+    """{typedef name: underlying qualType} over the WHOLE AST, headers included.
+
+    Unlike `collect_vars` this is deliberately not main-file-only: `RECT` is
+    declared in windows.h and used by a global in the .cpp, so restricting it to
+    the main file would defeat the purpose.
+    """
+    out = {}
+
+    def visit(node):
+        if isinstance(node, dict):
+            if node.get("kind") == "TypedefDecl" and node.get("name"):
+                qt = (node.get("type") or {}).get("qualType")
+                if qt:
+                    out.setdefault(node["name"], qt)
+            for c in node.get("inner", []) or []:
+                visit(c)
+    visit(ast)
+    return out
 
 
 def clang_ast(clang, tu, flags, cl_flags=None):
@@ -1604,6 +1656,7 @@ def main():
 
         # --- DATA via AST (IR drops the extern's annotation) ---
         if ast is not None and DATA_MACRO_RE.search(text):
+            tdefs = typedef_map(ast)
             for rva, cand, qtype, dqtype in data_labels(text, ast, tu):
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
@@ -1618,7 +1671,8 @@ def main():
                     # (no CodeView length, no retail symbol sizes) - see
                     # sizeof_qualtype. Unprovable types stay None => empty column =>
                     # the consumer falls back to the next-symbol gap, as before.
-                    dsize = sizeof_qualtype(qtype, desugared=dqtype)
+                    dsize = sizeof_qualtype(qtype, desugared=dqtype,
+                                            typedefs=tdefs)
                     rows.append((rva, cand, unit, dsize, "data"))
                     # remember the declared type so apply.py can type the global
                     global_meta[rva] = {"name": cand, "type": qtype, "unit": unit,
