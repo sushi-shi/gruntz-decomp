@@ -88,7 +88,7 @@
 #include <string.h>
 
 DATA(0x001e9738)
-double g_val_1e9738;
+const double g_val_1e9738 = 0.001;
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;
 DATA(0x001e9758)
@@ -98,7 +98,7 @@ const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
 const double g_slopeNegTwo = -2.0;
 DATA(0x001e9a68)
-double s_fpZero = 0.0;
+const double s_fpZero = 0.0;
 
 // The four-store, base-register rect fill retail emits ~25x inside
 // LoadGruntTypeTable. grunt.cpp compiles with MFC inlines OFF
