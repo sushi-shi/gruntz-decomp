@@ -74,7 +74,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL(grid, NULL);
+    GRID_CLIP_NULL(grid);
 
     Coord c1[2];
     GetScreenPos(c1);
@@ -252,7 +252,7 @@ L_scanb:
                         (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
                         (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
-                    GRID_CLIP(grid, NULL);
+                    GRID_CLIP_INL(grid, NULL);
                     return 1;
                 }
                 i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);

@@ -101,6 +101,23 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
+// CMapMgr::Clip(NULL) expanded in place: the constant-NULL source folds the
+// `src != NULL` arm away, so both rects are built by the out-of-line CRect ctor
+// -- rb directly, ra by assignment from a second, temporary CRect (a four-field
+// copy off the ctor's return register).  m_bounds is reached through one pointer.
+#define GRID_CLIP_NULL(grid)                                                                       \
+    {                                                                                              \
+        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
+        RECT ra;                                                                                   \
+        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
+        RECT* clipBounds = &(grid)->m_bounds;                                                      \
+        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
+            *clipBounds = ra;                                                                      \
+        }                                                                                          \
+        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
+        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+    }
+
 #define GRID_RECT_INLINE(grid)                                                                     \
     {                                                                                              \
         RECT ra;                                                                                   \
