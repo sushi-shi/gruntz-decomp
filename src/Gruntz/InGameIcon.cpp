@@ -596,6 +596,11 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 }
 
 // @early-stop
+// One block short of retail: cl gives the second `if (ok == 0) goto fail;` its own
+// `xor eax,eax / pop / ret 8` copy where retail cross-jumps it into the shared fail at
+// 0x989b3 (46 blocks vs our 47, one polarity flip).  Spelling either or both `goto
+// fail` as a direct `return 0` scores WORSE (76.7 / 78.0), so the goto is the right
+// shape and the duplicate is cl's cross-jump decision.
 RVA(0x000986b0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
@@ -614,12 +619,13 @@ i32 CInGameIcon::PlaceAt(i32 tileOwnerHi, i32 tileOwnerLo) {
     i32 sub;
     i32 idx;
     i32 ok;
+    PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
-    PickupType pickup = static_cast<PickupType>(m_object->m_smarts);
     if (reg->m_gameMode == GAMEMODE_SINGLE && tileOwnerHi != g_curPlayer
         && static_cast<PickupType>(m_object->m_smarts) != PICKUP_TOYBOX) {
         goto fail;
     }
+    pickup = static_cast<PickupType>(m_object->m_smarts);
     obj = m_object;
     if (pickup == PICKUP_TOYBOX) {
 
