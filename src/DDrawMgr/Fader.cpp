@@ -22,6 +22,10 @@
 #include <math.h>
 #include <string.h>
 
+// GetTickCount is in milliseconds; m_measuredFps is frames per second.
+DATA(0x001f07bc)
+static const float kMsToSeconds = 0.001f;
+
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = NULL;
@@ -71,7 +75,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
+    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * kMsToSeconds)));
     EndFade();
 }
 
@@ -112,7 +116,7 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     DWORD elapsed = GetTickCount() - startTick;
-    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * 0.001f)));
+    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * kMsToSeconds)));
     EndFade();
 }
 
