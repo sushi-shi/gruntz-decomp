@@ -15,6 +15,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>

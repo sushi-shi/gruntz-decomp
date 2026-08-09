@@ -220,6 +220,16 @@ public:
     // sat on CUserLogic (0x34 bytes) behind a static_cast<CGrunt*>(this).
     i32 IsAtSavedScreenPos();
 
+    // m_entrancePx by value. Retail 0x000759e0 reads +0x174/+0x178 off ecx and
+    // fills a caller-supplied 8-byte buffer; its only caller, TmDeflectStep,
+    // passes a CGrunt* as `this`. It used to be modelled as
+    // CTriggerMgr::GetOriginXY(Coord*) reading m_cellFlag[22]/[23], which lands
+    // on the same two offsets by coincidence and is byte-identical.
+    RVA(0x000759e0, 0x18)
+    Coord EntrancePx() {
+        return m_entrancePx;
+    }
+
     i32 CreateHealthSprite();
     i32 CreateToySprite();
     i32 CreateStaminaSprite();

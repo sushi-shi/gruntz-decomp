@@ -6,6 +6,8 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/Brickz.h>
+#include <Gruntz/GruntDirection.h>
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
@@ -15,21 +17,38 @@ enum {
 };
 
 class CGruntPuddle;
+class CGrunt;
+struct Coord;
 
 void Str_Free(void* node);
 
-struct CGridCell {
-    i32 m_flags;
-    char _pad[0x1c - 4];
-};
-SIZE_UNKNOWN();
-struct CGridLookup {
-    char _00[8];
-    CGridCell** m_rows;
-    i32 m_width;
-    i32 m_height;
-    i32 Lookup(i32 x, i32 y);
-};
-SIZE_UNKNOWN();
+// "is this cell's flag word compatible with the caller's route masks" - the
+// gate TmDeflectStep runs on every candidate cell. Inline; retail's only
+// out-of-line emission is the COMDAT at 0x00075a90 in TriggerMgrHitTest.cpp,
+// and TmDeflectStep is its only caller.
+RVA(0x00075a90, 0x27)
+inline i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
+    i32 m = b & a;
+    if (m & BRICKZ_CELL_OCCUPIED) {
+        return 0;
+    }
+    if (m != 0 && (c & a) == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+// The eight-way step deflector. Defined in TriggerMgrHitTest.cpp; see the block
+// comment there. Unreferenced in retail.
+GruntDirectionCell __stdcall TmDeflectStep(
+    CGrunt* g,
+    i32 goalX,
+    i32 goalY,
+    i32 unusedX,
+    i32 unusedY,
+    GruntDirection dir,
+    Coord* pCell,
+    i32* pFlags
+);
 
 #endif // GRUNTZ_TRIGGERMGR_RECORDS_H

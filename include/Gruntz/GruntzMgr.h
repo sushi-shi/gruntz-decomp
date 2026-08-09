@@ -92,6 +92,14 @@ public:
 
     void XorLiveObjectFlags(i32 mask);
 
+    // Inline: retail's only out-of-line emission is the COMDAT at 0x00075ad0
+    // (`mov eax,[ecx+0x70]; ret`), left behind in TriggerMgrHitTest.cpp when
+    // cl stopped inlining inside TmDeflectStep, which is also its only caller.
+    RVA(0x00075ad0, 0x4)
+    CGruntzMapMgr* GetTileGrid() {
+        return m_tileGrid;
+    }
+
     void RegisterLevelAssetKeys();
     char GetGruntzDriveLetter();
     i32 IsInPlayState();

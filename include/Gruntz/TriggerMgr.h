@@ -54,8 +54,6 @@ class CTriggerMgr {
 public:
     i32 Load(CFileMemBase* ar);
 
-    Coord* GetOriginXY(Coord* out);
-
     i32 SetLevel(CDDrawSurfaceMgr* lvl);
 
     i32 ScrollToActiveRecord();

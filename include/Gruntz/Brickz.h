@@ -65,8 +65,15 @@ SIZE(0x24);
 //
 // It is deliberately NOT in BRICKZ_BLOCKED_MASK: occupancy blocks a path only
 // when the caller opts in through the route mask.
+// Bit 13. Two observed uses, and only two, so the name states the role both
+// agree on and claims nothing about the writer (which is not reconstructed):
+//
+//   CBrickz::SearchRoute       passes it as CMapMgr::Search's maskB.
+//   TmDeflectStep              requires it on BOTH orthogonal neighbours of a
+//     diagonal candidate before it will let a grunt cut that corner.
 GZ_ENUM_CONST_BEGIN(BrickzCellMask)
     BRICKZ_BLOCKED_MASK = 0x939,
+    BRICKZ_CELL_ROUTE_MASKB = 0x2000,
     BRICKZ_CELL_OCCUPIED = 0x20000000,
     BRICKZ_CELL_UNOCCUPIED_MASK = ~0x20000000
 GZ_ENUM_CONST_END(BrickzCellMask)
@@ -95,6 +102,11 @@ SIZE_UNKNOWN();
 // functions across 12 units in retail - and out-of-bounds reads back as flag bit 0,
 // which every BRICKZ mask treats as blocked.  Declared in MapMgr.h; defined here
 // because the body needs BrickzCell complete and Brickz.h is what completes it.
+// Its one out-of-line emission in retail is the COMDAT at 0x00075a40, which cl
+// left in TriggerMgrHitTest.cpp when its inline budget ran out inside
+// TmDeflectStep - 75 of that function's 96 candidate tests call it rather than
+// expand it. No other unit emits a copy.
+RVA(0x00075a40, 0x34)
 inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
         return m_rows[y][x].m_flags;

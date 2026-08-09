@@ -2,7 +2,7 @@
 # Analysis output, not retail ground truth. Boundary corrections are edited here.
 # The build never regenerates this file and never consults a Ghidra database.
 # GRUNTZ.EXE sha256=7073c2536106ae4cca32e3e82db21001f319678b214c4eae2c689c54902808b3
-# 10699 functions; size is the admitted code-body extent. Source RVA sizes may
+# 10700 functions; size is the admitted code-body extent. Source RVA sizes may
 # additionally include inline tables/padding and are overlaid by synth_pdb only.
 rva	size	kind
 0x1000	1	thunk
@@ -2554,6 +2554,7 @@ rva	size	kind
 0x6e800	393
 0x6ea00	293
 0x6eb80	1519
+0x6f2f0	21031
 0x759e0	24
 0x75a10	18
 0x75a40	52
