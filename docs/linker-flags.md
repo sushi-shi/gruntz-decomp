@@ -218,6 +218,25 @@ the latter mis-assigns units that straddle the line (3242 thunks, worse).
   stamped in the PE header and influences default layout, so reproduce with the
   matching LINK.
 
+### Resources — the runnable candidate has NO `.rsrc` unless `--res` is passed
+
+`link.py --res <file.RES>` appends the `.RES` to the response file; **`ninja candidate`
+does not pass it**, so the linked EXE has five sections (`.text .rdata .data .idata
+.reloc`) against retail's six. Check before blaming behaviour on code:
+
+```
+$ python -c "import pefile" ...   # or just read the section table
+.text .rdata .data .idata .reloc          # candidate  — no .rsrc
+.text .rdata .data .idata .rsrc .reloc    # retail     — .rsrc 0x2c7000, 0x1e17c B
+```
+
+A resource-less image still links and runs, but every `LoadString`/`LoadIcon`/
+`LoadCursor`/`DialogBox` fails, so a runtime triage session that assumes resources are
+present will chase phantom defects. Verified 2026-08-09 on the EXE the user actually ran
+(`~/gruntz-wine/game/GRUNTZ.EXE`, md5 `17c14f31`): identical section table to
+`build/exe/GRUNTZ.candidate.EXE`, both without `.rsrc`, despite a `gruntz.res` having
+been prepared.
+
 ---
 
 ## Relationship to the rest of the pipeline
