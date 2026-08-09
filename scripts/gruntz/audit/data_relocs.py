@@ -218,6 +218,26 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 #                from scoring, and the storage rule below already exempts them.
 KNOWN_ORPHAN_UNITS = frozenset({"movieplayer", "ghidra"})
 
+# A live unit whose delinked side does not exist at all. objdiff pairs nothing and
+# scores the empty pairing 100.00% on EVERY measure with zero totals, so the unit
+# reports MATCHING in the per-unit table while being entirely unscored.
+#
+#   logicdispatchinit  src/Gruntz/LogicDispatchInit.cpp is one datum -- the `.bss`
+#                      template static CActRegPool<CEyeCandyAni>::s_table at
+#                      0x246060. The delinker emits no object for it, though other
+#                      units do get `.bss` target sections (72 of them).
+KNOWN_UNPAIRED_UNITS = frozenset({"logicdispatchinit"})
+
+
+def units_without_a_target(norm=None) -> list[str]:
+    """Live units for which the delinker produced no object at all."""
+    from gruntz.core.manifest import unit_names
+
+    norm = Path(norm or NORM)
+    return sorted(u for u in unit_names()
+                  if (norm / "base" / f"{u}.obj").is_file()
+                  and not (norm / "target" / f"{u}.c.obj").is_file())
+
 
 def orphan_payloads() -> list[tuple[str, str, str, str]]:
     """Enrolled data whose object objdiff never opens: [(unit, rva, storage, name)].
@@ -610,6 +630,11 @@ def main(argv=None) -> int:
         print(f"enrolled data whose object objdiff never opens: {len(orphans)} row(s)")
         for unit, rva, storage, name in orphans:
             print(f"  {unit:<14} {rva:>9} {storage:<6} {name}")
+        empty = units_without_a_target()
+        print(f"\nlive units with no delinked object (objdiff scores the empty "
+              f"pairing 100.00%): {len(empty)}")
+        for u in empty:
+            print(f"  {u}")
         return 0
 
     if args.sections:
@@ -629,6 +654,8 @@ def main(argv=None) -> int:
     fp = [r for r in rows if r.clean]
     orphans = orphan_payloads()
     new_orphans = [o for o in orphans if o[0] not in KNOWN_ORPHAN_UNITS]
+    empty = units_without_a_target()
+    new_empty = [u for u in empty if u not in KNOWN_UNPAIRED_UNITS]
 
     print(f"objs: {NORM.relative_to(REPO)}   reloc: DIR32 in data sections")
     print(f"units {stats['units']}   data symbols {stats['data symbols']} "
@@ -643,7 +670,8 @@ def main(argv=None) -> int:
     by = collections.Counter(r.verdict for r in rows)
     print("verdicts: " + (", ".join(f"{k}={v}" for k, v in sorted(by.items())) or "-"))
     print(f"enrolled data carved into an object objdiff never opens: {len(orphans)} "
-          f"({len(new_orphans)} new) -- --orphans")
+          f"({len(new_orphans)} new); live units with no delinked object at all: "
+          f"{len(empty)} ({len(new_empty)} new) -- --orphans")
 
     if args.coverage:
         # `.xdata$x` (/GX EH state tables) and `.CRT$XC*` (static-init pointer
@@ -704,6 +732,11 @@ def main(argv=None) -> int:
                 print(f"  {unit:<14} {rva:>9} {storage:<6} {name}")
             print("Attribute the row to a live config/units.toml unit, or add the "
                   "unit to KNOWN_ORPHAN_UNITS with the evidence.")
+            return 1
+        if new_empty:
+            print(f"\nFAIL: {len(new_empty)} live unit(s) have no delinked object, so "
+                  "objdiff pairs nothing and scores the empty pairing 100.00% on "
+                  "every measure: " + ", ".join(new_empty))
             return 1
         print(f"data-relocs: {stats['words compared (retail)']}"
               f"+{stats['words compared (paired)']} relocated data words point where "

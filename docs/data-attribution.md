@@ -705,6 +705,15 @@ their evidence in `KNOWN_ORPHAN_UNITS`:
 | `movieplayer` | 1 | `.rdata` | `vtables_game.csv:88` puts `??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@` (0x1e971c, 0x14, six relocated slots) on a unit `units.toml` does not declare. Three real units emit it — `arrayserialize`, `creditsstate`, `gruntzmgr` — so all three show it unpaired. Retail neighbours: `creditsstate` `.rdata` ends 0x1e9710, `grunt` starts 0x1e9738. Suggestive, not proof. |
 | `ghidra` | 27 | `.bss` | `static_data_copies.tsv`'s documented holding unit for the GruntDirStatics copies whose TU is not yet partitioned. No bytes exist, so nothing is withheld from scoring. |
 
+The same family, third form: **a live unit for which the delinker produced no
+object at all**. objdiff pairs nothing and scores the empty pairing **100.00% on
+every measure with zero totals**, so the unit reports MATCHING in the per-unit
+table while being entirely unscored. `logicdispatchinit` is the one today —
+`src/Gruntz/LogicDispatchInit.cpp` is a single `.bss` template static
+(`CActRegPool<CEyeCandyAni>::s_table` at 0x246060) and gets no delinked side,
+though 72 other units do get `.bss` target sections. Recorded in
+`KNOWN_UNPAIRED_UNITS`; a new one fails the gate.
+
 **Spelling divergence in paired data is essentially nil: 9806 of 9812 words carry
 the IDENTICAL symbol name on both sides.** So homm2's `canonicalize_relocs.py`
 paired-target pass — which fixes the nearest-symbol-plus-addend spelling in the
