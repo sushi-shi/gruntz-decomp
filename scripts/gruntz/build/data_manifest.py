@@ -728,11 +728,28 @@ def section_rows(rows, base_dir=None):
 
     A section's rva is where its COMDAT STARTS in retail, which for a /GR vtable is
     four bytes before the `??_7` symbol - the `??_R4` complete-object-locator pointer
-    is part of the COMDAT, so the delinker copies and relocates it too. A row that
-    vtable_rows() marked unplaced (its TU emits the class without the COL word that
-    retail's copy has) keeps the legacy allocation form: its payload is still the
-    byte-exact retail slot array, it just does not claim a retail RANGE that another
-    object's section already claims.
+    is part of the COMDAT, so the delinker copies and relocates it too.
+
+    A ROW THAT CANNOT CLAIM A RETAIL RANGE STILL GETS A SECTION - a NON-AFFINE one.
+    vtable_rows() marks a copy unplaced when its TU emits the class without the COL
+    word retail's surviving copy has: its 0x14-byte COMDAT is the byte-exact retail
+    slot array, but the range [rva, rva+0x14) is already claimed by the with-COL
+    emitters' [rva-4, rva+0x14) section, and the delinker BAILS on two placed
+    sections overlapping. Leaving such a row in the legacy `-` allocation form is
+    NOT free, and that was the bug this function used to ship: the delinker appends
+    a legacy row to the object's FIRST manifest section of the same storage
+    (object_files.rs picks it as `rdata_section_id`/`data_section_id`), 8-aligned,
+    so a real COMDAT grew a phantom tail - `interfaceobject`'s `.rdata` came out
+    0x2c (InterfaceObject's vtable + 4 pad + CObject's) where cl emits two separate
+    0x14 COMDATs, and every extent behind it shifted.
+
+    The delinker already models exactly this case: a section row with `rva = -` is
+    "non-affine" - it retains the candidate COFF shape (name, size, alignment,
+    COMDAT selection) but is NOT assigned a retail range, so the overlap check skips
+    it, `add_data_definition` copies the definition's own retail payload into it and
+    `add_legacy_data_relocations` relocates it from the definition's own rva. That
+    is the correct home for an unplaceable copy, and it costs no evidence: every
+    column still comes from the candidate COFF plus the definition's proven extent.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -746,8 +763,7 @@ def section_rows(rows, base_dir=None):
         # globals share one `.bss`/`.data` per object, so they keep the legacy
         # allocation form.
         if r.get("provenance") in ("candidate-COFF-string", "candidate-COFF-vtable",
-                                   "candidate-COFF-rtti") \
-                and r.get("section_placed", True):
+                                   "candidate-COFF-rtti"):
             by_obj.setdefault(r["object"], []).append(r)
 
     for obj, rs in sorted(by_obj.items()):
@@ -791,13 +807,18 @@ def section_rows(rows, base_dir=None):
                 continue
             r["section"] = sec
             r["section_offset"] = offset
+            # An unplaceable copy takes a NON-AFFINE section (`rva = -`): same
+            # candidate shape, no claim on a retail range.
+            placed_here = r.get("section_placed", True)
             secs.append({"object": obj, "index": sec["index"], "name": sec["name"],
-                         "rva": r["rva"] - offset, "size": sec["size"],
+                         "rva": r["rva"] - offset if placed_here else None,
+                         "size": sec["size"],
                          "alignment": sec["alignment"],
                          "characteristics": sec["characteristics"],
                          "comdat": sec["comdat"], "assoc": sec["assoc"],
                          "storage": r["storage"],
-                         "provenance": "candidate-COFF-section"})
+                         "provenance": "candidate-COFF-section" if placed_here
+                         else "candidate-COFF-section-nonaffine"})
 
     # Two placed sections may not claim overlapping retail bytes unless they are the
     # SAME folded COMDAT seen from two objects (identical rva/size/shape). The
@@ -805,7 +826,8 @@ def section_rows(rows, base_dir=None):
     # it, so screen it here and withhold instead - a conflict is a real contradiction
     # about where a COMDAT starts, and dropping the placement leaves both definitions
     # enrolled in the legacy form rather than losing them.
-    placed = sorted(secs, key=lambda s: (s["rva"], s["size"], s["object"], s["index"]))
+    placed = sorted((s for s in secs if s["rva"] is not None),
+                    key=lambda s: (s["rva"], s["size"], s["object"], s["index"]))
     conflicted = set()
     for first, second in zip(placed, placed[1:]):
         if first["rva"] + first["size"] <= second["rva"]:
@@ -819,10 +841,11 @@ def section_rows(rows, base_dir=None):
             conflicted.add((first["rva"], first["size"]))
             conflicted.add((second["rva"], second["size"]))
     if conflicted:
-        secs = [s for s in secs if (s["rva"], s["size"]) not in conflicted]
+        secs = [s for s in secs
+                if s["rva"] is None or (s["rva"], s["size"]) not in conflicted]
         for obj, rs in by_obj.items():
             for r in rs:
-                if "section" not in r:
+                if "section" not in r or not r.get("section_placed", True):
                     continue
                 key = (r["rva"] - r["section_offset"], r["section"]["size"])
                 if key in conflicted:
@@ -868,10 +891,13 @@ def manifest_bytes(rows):
 
 
 def section_manifest_bytes(secs):
+    """The --data-section-manifest. `rva = -` is a NON-AFFINE section: the candidate
+    COFF shape without a claim on a retail range (see section_rows)."""
     out = ["\t".join(SECTION_HEADER)]
     for s in secs:
         out.append("\t".join([
-            s["object"], str(s["ordinal"]), s["name"], "0x%x" % s["rva"],
+            s["object"], str(s["ordinal"]), s["name"],
+            "0x%x" % s["rva"] if s["rva"] is not None else "-",
             "0x%x" % s["size"], "0x%x" % s["alignment"],
             "0x%x" % s["characteristics"], str(s["comdat"]),
             str(s["assoc"]) if s["assoc"] else "-", s["storage"], s["provenance"]]))
