@@ -78,6 +78,14 @@ struct CNetStatPacket {
 };
 SIZE_UNKNOWN();
 
+struct CNetChannelStatPacket {
+    u8 m_flags;
+    char m_pad1[3];
+    NetMsgId m_statId;
+    i32 m_value;
+};
+SIZE(0xc);
+
 #pragma pack(push, 1)
 struct CNetChannelPacket {
     u8 m_flags;
@@ -500,12 +508,8 @@ class CFontConfig;
 
 extern "C" char g_recvBuffer[];
 
-extern u8 g_chanStat422_flag;
-extern i32 g_chanStat422_id;
-extern i32 g_chanStat422_val;
-extern u8 g_chanStat423_flag;
-extern i32 g_chanStat423_id;
-extern i32 g_chanStat423_val;
+extern CNetChannelStatPacket g_chanStat422;
+extern CNetChannelStatPacket g_chanStat423;
 
 struct CChatPacket {
     u8 m_flag;

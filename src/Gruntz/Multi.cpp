@@ -91,17 +91,9 @@ i32 g_serviceId = NETSERVICE_NONE;
 DATA(0x00211ec4)
 char s_GameKey[] = "GAME_KEY";
 DATA(0x00246378)
-u8 g_chanStat423_flag;
-DATA(0x0024637c)
-i32 g_chanStat423_id;
-DATA(0x00246380)
-i32 g_chanStat423_val;
+CNetChannelStatPacket g_chanStat423;
 DATA(0x00246fd8)
-u8 g_chanStat422_flag;
-DATA(0x00246fdc)
-i32 g_chanStat422_id;
-DATA(0x00246fe0)
-i32 g_chanStat422_val;
+CNetChannelStatPacket g_chanStat422;
 DATA(0x00248ce0)
 HWND g_sharedFlag = 0;
 DATA(0x00248ce4)
@@ -2411,19 +2403,19 @@ i32 CMulti::ParseOneChannel(void* rec) {
 
 RVA(0x000bb0b0, 0x44)
 i32 CMulti::SendChannelStat422() {
-    g_chanStat422_id = 0x422;
-    g_chanStat422_flag |= 0x80;
-    g_chanStat422_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat422_flag, 0xc);
+    g_chanStat422.m_statId = NETMSG_OPTIONS_PRESENT;
+    g_chanStat422.m_flags |= 0x80;
+    g_chanStat422.m_value = 0;
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat422, sizeof(g_chanStat422));
     return 1;
 }
 
 RVA(0x000bb120, 0x44)
 i32 CMulti::SendChannelStat423() {
-    g_chanStat423_id = 0x423;
-    g_chanStat423_flag |= 0x80;
-    g_chanStat423_val = 0;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat423_flag, 0xc);
+    g_chanStat423.m_statId = NETMSG_OPTIONS_ABSENT;
+    g_chanStat423.m_flags |= 0x80;
+    g_chanStat423.m_value = 0;
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chanStat423, sizeof(g_chanStat423));
     return 1;
 }
 
