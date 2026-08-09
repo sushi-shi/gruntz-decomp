@@ -4101,10 +4101,11 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 }
 
 // @early-stop
-// Block LAYOUT only: cl sinks the in-box HitTest/PlaceObjectFull chain past the
-// out-of-box path and tail-merges the three scrollSink-hide exits into one,
-// where retail keeps the chain in source order and emits two copies of the exit.
-// Every instruction sequence inside the blocks now matches retail.
+// Residue is one block: retail's `rearm` exit is a REGISTER read-modify-write
+// (mov eax,[esi+0x40] / or al,1 / mov [esi+0x40],eax at 0xd0f28) while cl emits the
+// memory form `or dword ptr [esi+0x40],1`, which frees eax early so cl also hoists
+// `mov eax,1` out of the shared tail. No source spelling found that steers the RMW
+// form; the other three |= sites in this function pick the memory form in retail too.
 RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
 
@@ -4172,16 +4173,15 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
                 }
             }
             CGameLevel* v = m_world->m_level;
-            i32 wx = v->m_mainPlane->m_viewRect.left - v->m_planeCtx.left + x;
-            i32 wy = v->m_mainPlane->m_viewRect.top - v->m_planeCtx.top + y;
+            LevelCoordRect* vr = &v->m_mainPlane->m_viewRect;
+            i32 wx = vr->left - v->m_planeCtx.left + x;
+            i32 wy = vr->top - v->m_planeCtx.top + y;
             m_mgr->m_cmdGrid->PlaceObjectFull(wx, wy);
             return 1;
         }
-        CWwdGameObjectA* s2 = m_scrollSink;
-        if (s2 == NULL) {
-            return 1;
+        if (m_scrollSink != NULL) {
+            m_scrollSink->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        s2->m_stateFlags |= SPRITE_STATE_HIDDEN;
         return 1;
     }
 
