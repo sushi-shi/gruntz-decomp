@@ -41,7 +41,7 @@ i32 CMapMgr::SearchEdge(
         m_rows[yA][xA].m_flags = 0;
         m_rows[yB][xB].m_flags = 0;
     }
-    i32 ret = Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
+    i32 ret = CMapMgr::Search(xA, yA, xB, yB, list, maskA, 0x2000, maskC);
     m_edgeMask = 0;
     m_rows[yA][xA].m_occupantId = savedA4;
     m_rows[yB][xB].m_occupantId = savedB4;
