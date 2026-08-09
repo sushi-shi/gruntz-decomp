@@ -941,3 +941,67 @@ scores 100**; only retail's own access widths can contradict a declared type.
 It also emits `build/gen/data_touched_ranges.tsv`, the set of bytes retail
 actually touches, for intersection with the from-our-side completeness analysis
 (uncovered AND touched = unmodelled data; uncovered AND untouched = padding).
+
+### Working the joined worklist (2026-08-09, lane/unmodelled-data)
+
+The join was run. **`unclaimed` fell from 4,229 accessed bytes over 69 runs to
+1,221 over 55**, and the shape of what is left is the finding: the sieve's
+worklist was never 69 unrelated unmodelled objects.
+
+**47 of the 69 runs were GruntDirStatics banks with no tsv row.** Each cell's
+identity comes from its own `$E` initializer - the `(row, column, direction)`
+triple it stores - so it is read, not guessed. Decoding all 107 initializers in
+the image gives the same answer every time: **address order == declaration
+order** (East, North, South, West, NE, NW, SE, Center, SW), including for the
+banks the linker split around another static. Three banks are separately claimed
+as real globals (`?g_gruntDir*`, `?g_gruntMoveDir*`, `_g_dirVec`) and all three
+agree cell-for-cell, which is the cross-check. 200 rows landed; the addresses are
+`.bss`, so this buys attribution and closes the findings, not bytes.
+
+**Two of those banks are blocked, each on a claim that contradicts the binary:**
+
+* `0x244970` is claimed by **`_g_dirVec`, an `i32[9][4]` in `GruntCombat.cpp`**
+  that models nine cells as one array. Retail never indexes it - all 45 reads
+  and 27 writes are `direct` absolute addresses, no `indexed` form at any scale -
+  so the storage is nine separately-addressed cells and the array (with its
+  `AT()` offset macro at the use sites) is a fabricated aggregate.
+* `0x249818`'s NE..SW half lands at `0x24a458`, **inside `?g_netCmdSendMsg`'s
+  declared `0x850`**. `g_netCmdSendMsg` is at `0x24a058`, is touched only at
+  `+0..+0xe`, and retail constructs direction cells at `+0x400`; the next real
+  object after those cells is `g_netGruntRecMsg` at `+0x850`. So the struct is
+  `0x400`, not `0x850`, and `m_payload[0x842]` was sized off the distance to the
+  next claim. Correcting it exposes a second unmodelled `0x400` buffer at
+  `0x24a4a8` that nothing references.
+
+**Seven further banks need the rva-suffixed spelling** because their owner unit
+already holds a same-named plain row - two retail TUs merged into one of ours.
+That spelling enrols a target-side symbol whose base-side twin is spelled plainly,
+so it never pairs: the 74 rows that already use it are **896 of the 995 unmatched
+`.bss` bytes in the whole tree**. They are TU-partition work, not naming, and were
+left open rather than paid for.
+
+**The residual 1,221 B is dominated by `??_B` guard bytes** - the
+`mov cl,[g]; mov al,1; test al,cl; jne; or cl,al; mov [g],cl` prologue of a
+function-local `static`. `config/retail/compiler-generated-data.tsv` is their
+natural home but ratchets COFF **COMMON**s, and these are ordinary per-TU `.bss`
+from main-file statics whose functions are not reconstructed, so there is no
+base-side symbol to pair.
+
+**Sieve B's uncovered-nonzero bytes are 48,567, and >99% of them are library.**
+`0x1ef814` (580 B) and `0x1f0530` (536 B) are `dxguid.lib` GUID tables, `0x1ee8ee`
+(3,386 B) is CRT locale/math name strings, `0x1f5584` (85 KB) and `0x1eb070`
+(13 KB) are RTTI and MFC message-map records, and every remaining `.data` run
+under `0x229400` sits between two `??_C@` literals - the unpinnable pooled-string
+class. **Exactly one game-owned initialized run survived that filter**, and it is
+now claimed: `?g_table_20fa78@@3PAHA` (`GruntzMgr.cpp`, 64 B, +64 B compared and
+matching). The reloc table holds no entry anywhere inside it, so its "no reader"
+is proven, not merely unfound; the sieve's `unaccessed` category now reports it
+back, which is the intended behaviour and not a defect.
+
+**Two `stride/high` findings are false positives of one class**: a flat
+`i32[2N]` written `tbl[i * 2]` / `tbl[i * 2 + 1]` lowers to `[reg*8 + base]`, so
+the recorded scale is 8 while the element is 4. `_g_bootyLetterCoords` (0x1e8fe8)
+and `?g_levelMsgIconPos@@3PAHA` (0x20b8b8) are both that, and the flat spelling is
+load-bearing for the first: retail's walk relocates `base+4` and `base+0x24`, i.e.
+it starts at the second `int`, which a `Coord*` loop cannot produce. Retyping
+either to a pair struct would be aggregation without a stride witness.

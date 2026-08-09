@@ -156,6 +156,18 @@ DATA(0x0020fa70)
 i32 g_localVersion = 1;
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1;
+// 64 B of initialized .data no instruction in the image reaches. The reloc
+// table is a complete index of the absolute references, and it holds no entry
+// anywhere in [0x20fa78, 0x20fab8) - so this is not a "we have not found the
+// reader yet": there is no reader, and the payload carries no stride, so its
+// MEANING is not recoverable and the name stays positional. What IS proven is
+// that the bytes exist and belong here: the run is bounded on both sides by a
+// gruntzmgr datum (g_remoteVersion below it, g_dplayAppGuid above it) and a
+// .data contribution is contiguous, and every one of the 16 words is a small
+// signed dword with -1 as its sentinel. Left unmodelled it is 64 bytes objdiff
+// never looks at, which is the one thing a claim can fix.
+DATA(0x0020fa78)
+i32 g_table_20fa78[16] = {1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1, 7, -1, 8, 9, 10};
 DATA(0x0020fab8)
 NetGuid g_dplayAppGuid = {
     {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}}
