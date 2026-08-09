@@ -48,6 +48,47 @@ marked `inline`, at any definition position (before, after, or interleaved with
 its callers — all three measured, all emit 2/2 calls). So a plain out-of-line
 member never gives you the inline half.
 
+## Calibrating a REAL caller: what charges the budget, and in what order
+
+Measured on `CStatusBarMgr::BuildStatusBarTabs` (0xffde0) in its own TU, adding
+K statements just before the last call. Only the *kind* differs:
+
+| K statements added | ctor chains cut |
+|---|---|
+| `L55Burn(this, k)` — a 3-op `static inline` — ×6 | **4** |
+| the same six calls with the helper **not** `inline` | **0** |
+| the helper's body written out by hand, ×6 and ×20 | **0** |
+
+So the charge is against **inline expansions**, not against calls and not
+against code volume — 20 hand-written copies of the identical statements move
+nothing while 6 expansions of them move four sites. The sweep 1..8 gives
+0,0,0,1,3,4,4,5 cuts, and the cuts appear at the **earliest** deep chain first
+and spread forward: the LAST `new` in the function keeps its full expansion
+longest. (That is the shape retail's BuildStatusBarTabs has — sites 4-7 cut,
+site 8 fully inlined — but see
+[two-shapes-need-two-entities](two-shapes-need-two-entities.md): for that family
+the real cut is per CLASS, and the budget reading was a coincidence.)
+
+`/Ob0` is the cheap way to **enumerate** a caller's inline expansions: every one
+becomes a visible `call`. BuildStatusBarTabs: 8 `SbGeom` + 5 `CSBI_MenuItem` +
+3 `CSBI_RectOnly` + 1 `CObArray::GetAt` = 17. No plain flag reproduces an
+intermediate cut, so flags are not a lever here: `/Ob0` calls *everything*
+including `SbGeom`, `/O1` cuts at the OUTERMOST ctor (depth 1), and
+`/Ox`, `/Gy`, `/Gf`, `/Gd`, `/Og /Oi /Ot /Oy /Ob1 /Gs` and dropping `/GR` are
+all byte-identical to `/O2`.
+
+Two candidate constructs for "the inline we are missing" were tested and both
+are **refuted** — record them so they are not re-tried:
+
+- **`CTypedPtrList<CPtrList, T>`** (its `AddTail` is a zero-code forwarder, so 8
+  sites buy 8 free expansions). Retail says no: `~CStatusBarMgr` (0xc8980) hands
+  the vector-dtor iterator `??1CPtrList@@UAE@XZ` (0x1b48c6, the MFC library's
+  own) with element size 0x1c. A typed wrapper overrides CObList's virtual dtor
+  and would have supplied its own COMDAT there. `m_tabLists` is a plain
+  `CPtrList[8]`.
+- **`CRect(l,t,r,b)`** instead of a local `RECT`-returning inline: byte-identical
+  AND budget-identical (both cut nothing). Our `SbGeom` is a faithful stand-in.
+
 ## When the budget will not bite: what NOT to do
 
 If your reconstruction of the caller inlines less than retail's did, cl will
