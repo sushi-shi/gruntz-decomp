@@ -1424,10 +1424,11 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
@@ -1511,10 +1512,11 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
@@ -1598,10 +1600,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
@@ -1685,10 +1688,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
@@ -1772,10 +1776,11 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
@@ -1858,10 +1863,11 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
@@ -1941,10 +1947,11 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
@@ -2023,10 +2030,11 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
@@ -2105,10 +2113,11 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 
 // @early-stop
 // One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3.  The lever is proven to be
-// the CTOR's front-end size (the dtor/CopyValue levers and the caller's own size do
-// not reach the cell); the residue is ~3 IR nodes of ctor source we cannot name from
-// retail's bytes.
+// function's 7 construction sites where retail expands 3 (the extra branch is the
+// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
+// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
+// - this function - so there is no per-CLASS call/expand split to express, and the
+// dtor is already modelled inline.  The lever is the CTOR's front-end size.
 // docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
