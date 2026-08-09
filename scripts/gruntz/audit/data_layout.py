@@ -205,6 +205,35 @@ def cmd_hash(args):
         print(f"{nm}\th={name_hash(nm):#010x}\tcheck16={check16(nm):#06x}\tbucket={bucket(nm):#05x}")
 
 
+def cmd_sieve(args):
+    """For each unknown slot, list wordlist candidates whose bucket fits its window."""
+    rows = []
+    for ln in open(args.tsv):
+        ln = ln.strip()
+        if not ln or ln.startswith("#"):
+            continue
+        parts = ln.split("\t")
+        rows.append([int(parts[0], 0), parts[1]])
+    rows.sort(key=lambda r: r[0])
+    words = [w.strip() for w in open(args.wordlist) if w.strip()]
+    for i, (off, nm) in enumerate(rows):
+        if nm != "?":
+            continue
+        lo, hi = 0, GLOBAL_BUCKETS_MASK
+        for j in range(i - 1, -1, -1):
+            if rows[j][1] != "?":
+                lo = bucket(rows[j][1])
+                break
+        for j in range(i + 1, len(rows)):
+            if rows[j][1] != "?":
+                hi = bucket(rows[j][1])
+                break
+        fits = [w for w in words if lo <= bucket(w) <= hi]
+        print(f"{off:#06x} window [{lo:#x},{hi:#x}]: {len(fits)} candidates")
+        for w in fits[: args.top]:
+            print(f"    {bucket(w):#5x}  {w}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -217,6 +246,11 @@ def main():
     p3 = sub.add_parser("hash", help="print h/check16/bucket for names")
     p3.add_argument("names", nargs="+")
     p3.set_defaults(fn=cmd_hash)
+    p4 = sub.add_parser("sieve", help="filter a candidate-name wordlist by bucket windows")
+    p4.add_argument("tsv", help="observed slots (offset<TAB>name, '?' for unknown)")
+    p4.add_argument("wordlist", help="one candidate name per line")
+    p4.add_argument("--top", type=int, default=40)
+    p4.set_defaults(fn=cmd_sieve)
     args = ap.parse_args()
     args.fn(args)
 
