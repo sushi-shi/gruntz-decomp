@@ -684,14 +684,3 @@
 0x2467a8	?s_gruntDirSouthEast_2467a8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467b8	?s_gruntDirCenter_2467b8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467c8	?s_gruntDirSouthWest_2467c8@@3UGruntDirectionCell@@A	multi	0xc	data
-# CButeMgr getter-local statics (guards + static return slots), ButeMgr.cpp
-0x2bf67c	_s_guard_GetPoint_butemgr	butemgr	0x1	data
-0x2bf680	_s_guard_GetRange_butemgr	butemgr	0x1	data
-0x2bf684	_s_guard_GetVector_butemgr	butemgr	0x1	data
-0x2bf688	_s_guard_GetRect_butemgr	butemgr	0x1	data
-0x2bf690	_s_default_point_butemgr	butemgr	0x8	data
-0x2bf698	_s_default_string_butemgr	butemgr	0x8	data
-0x2bf6a0	_s_default_vector_butemgr	butemgr	0x18	data
-0x2bf6b8	_s_guard_GetString_butemgr	butemgr	0x1	data
-0x2bf6c0	_s_default_range_butemgr	butemgr	0x10	data
-0x2bf6d0	_s_default_rect_butemgr	butemgr	0x10	data
