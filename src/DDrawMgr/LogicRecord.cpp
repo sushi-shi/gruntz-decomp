@@ -14,6 +14,9 @@
 #include <Utils/MapTyped.h>
 
 // @early-stop
+// Register-homing residue: the SerializeMove call transports param d in eax where
+// retail uses edx (and the out=0 store slot differs) - the swapped value is a
+// parameter, so no local spelling reaches it (front-end handle-state class).
 RVA(0x00164830, 0xec)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d) {
     if (a == NULL) {
@@ -42,8 +45,9 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, voi
             if (m_targetId) {
                 void* out = 0;
                 CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
-                m_target = MapLookupById(*res, m_targetId, out) ? static_cast<CGameObject*>(out)
-                                                                : static_cast<CGameObject*>(0);
+                if (MapLookupById(*res, m_targetId, out)) {
+                    m_target = static_cast<CGameObject*>(out);
+                }
             }
             break;
         default:

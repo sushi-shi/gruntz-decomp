@@ -1082,6 +1082,10 @@ i32 CDDSurface::Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrd
 }
 
 // @early-stop
+// Two named residues: (1) cl head-merges the two arms' src/rowOrder loads above
+// the cmp where retail compares [esp+0x1c] in place and loads src per arm;
+// (2) the LUT loop's end-pointer reloc - ours g_lut16+0x400, the delinker names
+// that boundary address &g_rUp. Branch sequences AGREE.
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
     u8* pal = static_cast<u8*>(palv);

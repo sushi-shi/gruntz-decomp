@@ -759,12 +759,10 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
 RVA(0x0014fcc0, 0x16d)
 ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
     ColorHSV hsv;
-    u8 b0 = GetRValue(color);
-    u8 b1 = GetGValue(color);
-    u8 b2 = GetBValue(color);
-
-    float v = static_cast<float>(HSV_MAX(HSV_MAX(b0, b1), b2));
-    float mn = static_cast<float>(HSV_MIN(HSV_MIN(b0, b1), b2));
+    float v =
+        static_cast<float>(HSV_MAX(HSV_MAX(GetRValue(color), GetGValue(color)), GetBValue(color)));
+    float mn =
+        static_cast<float>(HSV_MIN(HSV_MIN(GetRValue(color), GetGValue(color)), GetBValue(color)));
     float h;
 
     hsv.v = v;
@@ -776,12 +774,14 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
         hsv.s = delta / v;
         if (delta == 0.0) {
             h = DATA_COMPGEN(0x001efb68, fp_1efb68, 0.0f);
-        } else if (b0 == v) {
-            h = (b1 - b2) / delta;
-        } else if (b1 == v) {
-            h = (b2 - b0) / delta - DATA_COMPGEN(0x001efb6c, fp_1efb6c, -2.0f);
+        } else if (GetRValue(color) == v) {
+            h = (GetGValue(color) - GetBValue(color)) / delta;
+        } else if (GetGValue(color) == v) {
+            h = (GetBValue(color) - GetRValue(color)) / delta
+                - DATA_COMPGEN(0x001efb6c, fp_1efb6c, -2.0f);
         } else {
-            h = (b0 - b1) / delta - DATA_COMPGEN(0x001efb70, fp_1efb70, -4.0f);
+            h = (GetRValue(color) - GetGValue(color)) / delta
+                - DATA_COMPGEN(0x001efb70, fp_1efb70, -4.0f);
         }
         h = h * DATA_COMPGEN(0x001efb74, fp_1efb74, 60.0f);
         if (h < 0.0) {
