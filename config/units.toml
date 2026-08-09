@@ -447,11 +447,6 @@ source = "src/Gruntz/MotionState.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "motionstatestep"
-source = "src/Gruntz/MotionStateStep.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "movinglogic"
 source = "src/Gruntz/MovingLogic.cpp"
 flags = "cpp-rtti-noeh"
