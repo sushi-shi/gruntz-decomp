@@ -110,6 +110,14 @@ python -m gruntz.match.status diff HEAD~5 --all # ... incl. TOUCHED; revB defaul
 python -m gruntz.match.fingerprints [--all] [-v]  # refresh the per-function cache (needs the dev shell)
 ```
 
+The two writing commands (`update` and `summary --write-readme`) refuse to bank
+scores while a build input has unstaged edits or is untracked. Stage the intended
+source/config/tooling changes first, rebuild, then write the baseline and README;
+the index is the explicit source snapshot that must be committed atomically with
+those generated files. Staged changes are allowed. Read-only status/check/summary
+commands remain available on a dirty tree. `gruntz build` treats this refusal as a
+non-fatal feedback skip and leaves both tracked score files untouched.
+
 `diff` reads each side from `git show <rev>:config/match_baseline.tsv` and reports
 per-unit count moves and per-function `cur%` moves (`10% → 40%`), with each
 function's `max` and `tries` alongside — so you can see both progress and which

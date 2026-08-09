@@ -108,6 +108,53 @@ RM_END = "<!-- match-score:end -->"
 
 EPS = 0.01  # ignore sub-0.01% jitter
 
+# A score snapshot may be committed beside staged source, but it must never be
+# silently written from an unstaged working-tree experiment.  These are every
+# repository path that can change compilation, carving, or the measurement itself.
+# README.md and config/match_baseline.tsv are deliberately absent: they are the two
+# outputs protected by this check.
+BANK_INPUT_PATHS = (
+    "src", "include", "vendor", "config", "scripts/gruntz", "configure.py",
+    "flake.nix", "flake.lock", "nix", "recomp", "tools",
+)
+BANK_OUTPUTS = {"config/match_baseline.tsv"}
+
+
+def unstaged_bank_inputs() -> list[str]:
+    """Build/measurement inputs not represented by the git index.
+
+    Staged changes are intentionally allowed: the index is then an explicit snapshot
+    that can be committed atomically with the generated baseline and README.  An
+    unstaged edit or untracked input has no such provenance and must not be banked.
+    """
+    commands = (
+        ["git", "diff", "--name-only", "--", *BANK_INPUT_PATHS],
+        ["git", "ls-files", "--others", "--exclude-standard", "--",
+         *BANK_INPUT_PATHS],
+    )
+    paths: set[str] = set()
+    for command in commands:
+        result = subprocess.run(command, cwd=str(REPO), capture_output=True, text=True)
+        if result.returncode != 0:
+            raise SystemExit(
+                "cannot verify score-banking provenance: "
+                + (result.stderr.strip() or "git status query failed"))
+        paths.update(line for line in result.stdout.splitlines() if line)
+    return sorted(paths - BANK_OUTPUTS)
+
+
+def require_bankable_tree(action: str) -> None:
+    dirty = unstaged_bank_inputs()
+    if not dirty:
+        return
+    shown = "\n".join(f"  {path}" for path in dirty[:12])
+    more = f"\n  ... and {len(dirty) - 12} more" if len(dirty) > 12 else ""
+    raise SystemExit(
+        f"refusing to {action} from unstaged/untracked build inputs:\n"
+        f"{shown}{more}\n"
+        "stage the intended build-input changes first (or commit them), rebuild, "
+        "then bank the baseline/README beside that exact source snapshot")
+
 
 def _pct(num: float, den: float) -> float:
     return 100.0 * num / den if den else 0.0
@@ -536,6 +583,7 @@ def write_baseline(funcs: dict[tuple[str, str], dict]) -> None:
 # update: recompute best + fingerprint, rewrite baseline                      #
 # --------------------------------------------------------------------------- #
 def cmd_update(args) -> int:
+    require_bankable_tree("write config/match_baseline.tsv")
     _, cur, _ = load_report(Path(args.report))
     base_funcs = load_baseline()
     fp, _, stale = fingerprinter()
@@ -1078,6 +1126,11 @@ def render_report(overall, mods, started_fzw, started_code) -> str:
 
 
 def cmd_summary(args) -> int:
+    if args.write_readme:
+        # This path also calls cmd_update below, so guard before reading the report or
+        # touching either tracked output.  The build invokes it automatically and must
+        # be unable to bank a transient working-tree experiment.
+        require_bankable_tree("write the match baseline and README score block")
     manifest = load_units()
     overall, funcs, umeas = load_report(Path(args.report))
     mods, units, started_fzw, started_code = collect_modules(manifest, umeas)

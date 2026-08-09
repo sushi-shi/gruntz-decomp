@@ -605,9 +605,13 @@ def cmd_build(args) -> None:
                        cwd=str(REPO), env=_pkg_env())
         _timed("feedback:fingerprints", started)
     started = time.monotonic()
-    subprocess.run([sys.executable, "-m", "gruntz.match.status",
-                    "--report", str(REPORT), "summary", "--write-readme"],
-                   cwd=str(REPO), stdout=subprocess.DEVNULL, env=_pkg_env())
+    score_write = subprocess.run(
+        [sys.executable, "-m", "gruntz.match.status",
+         "--report", str(REPORT), "summary", "--write-readme"],
+        cwd=str(REPO), stdout=subprocess.DEVNULL, env=_pkg_env())
+    if score_write.returncode:
+        log("score banking skipped/failed; README.md and match_baseline.tsv were "
+            "left untouched (see diagnostic above)")
     _timed("feedback:readme", started)
     if (REPO / "config" / "match_baseline.tsv").is_file():
         log("regressions vs baseline ...")

@@ -30,6 +30,7 @@ import contextlib
 import io
 import json
 import os
+import subprocess
 import struct
 import sys
 import tempfile
@@ -88,6 +89,48 @@ class DataIntegrityRatchetTests(unittest.TestCase):
         self.assertEqual(
             self._run({**baseline, "wrong_referent_regions": 6}, baseline), 1)
         self.assertEqual(self._run(dict(baseline), baseline), 0)
+
+
+class ScoreBankingProvenanceTests(unittest.TestCase):
+    def test_unstaged_and_untracked_inputs_are_both_reported(self):
+        results = [
+            subprocess.CompletedProcess([], 0, stdout="src/Live.cpp\n", stderr=""),
+            subprocess.CompletedProcess([], 0, stdout="include/New.h\n", stderr=""),
+        ]
+        with mock.patch.object(status.subprocess, "run", side_effect=results):
+            self.assertEqual(status.unstaged_bank_inputs(),
+                             ["include/New.h", "src/Live.cpp"])
+
+    def test_staged_source_is_an_explicit_bankable_snapshot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            source = root / "src" / "Measured.cpp"
+            source.write_text("int measured;\n")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "add", "src/Measured.cpp"], cwd=root, check=True)
+            with mock.patch.object(status, "REPO", root):
+                self.assertEqual(status.unstaged_bank_inputs(), [])
+                source.write_text("int measured = 1;\n")
+                self.assertEqual(status.unstaged_bank_inputs(), ["src/Measured.cpp"])
+
+    def test_update_refuses_before_reading_or_writing_the_baseline(self):
+        args = argparse.Namespace(report="missing-report.json", accept_regressions=False,
+                                  keep_max=False, verbose=False)
+        with mock.patch.object(status, "unstaged_bank_inputs",
+                               return_value=["src/Live.cpp"]):
+            with self.assertRaisesRegex(SystemExit, "refusing to write"):
+                status.cmd_update(args)
+
+    def test_readme_write_refuses_before_refreshing_the_baseline(self):
+        args = argparse.Namespace(report="missing-report.json", write_readme=True,
+                                  json=False, per_unit=False)
+        with mock.patch.object(status, "unstaged_bank_inputs",
+                               return_value=["include/Live.h"]), \
+                mock.patch.object(status, "cmd_update") as update:
+            with self.assertRaisesRegex(SystemExit, "refusing to write"):
+                status.cmd_summary(args)
+        update.assert_not_called()
 
 
 class ViewDebtLibraryShadowTests(unittest.TestCase):
@@ -674,7 +717,8 @@ class TestBestEverRatchet(unittest.TestCase):
         try:
             args = argparse.Namespace(report=str(self.report), accept_regressions=accept,
                                       keep_max=False, verbose=False)
-            with contextlib.redirect_stdout(io.StringIO()):
+            with mock.patch.object(status, "require_bankable_tree"), \
+                    contextlib.redirect_stdout(io.StringIO()):
                 status.cmd_update(args)
         finally:
             status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
@@ -748,7 +792,8 @@ class TestBestEverRatchet(unittest.TestCase):
         try:
             args = argparse.Namespace(report=str(self.report), accept_regressions=False,
                                       keep_max=False, verbose=False)
-            with contextlib.redirect_stdout(io.StringIO()):
+            with mock.patch.object(status, "require_bankable_tree"), \
+                    contextlib.redirect_stdout(io.StringIO()):
                 status.cmd_update(args)
         finally:
             status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
@@ -771,7 +816,8 @@ class TestBestEverRatchet(unittest.TestCase):
         try:
             args = argparse.Namespace(report=str(self.report), accept_regressions=False,
                                       keep_max=False, verbose=False)
-            with contextlib.redirect_stdout(io.StringIO()):
+            with mock.patch.object(status, "require_bankable_tree"), \
+                    contextlib.redirect_stdout(io.StringIO()):
                 status.cmd_update(args)
         finally:
             status.fingerprinter, status.func_rvas = saved_fpr, saved_rvas
