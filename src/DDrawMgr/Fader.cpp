@@ -57,15 +57,13 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     DWORD startTick = GetTickCount();
     i32 loops = 0;
     i32 frame = 1;
-    if (count >= 1) {
-        do {
-            if (vsync && m_ptrColl) {
-                m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
-            }
-            RenderFrame(frame);
-            loops++;
-            frame += step;
-        } while (frame <= count);
+    while (frame <= count) {
+        if (vsync && m_ptrColl) {
+            m_ptrColl->m_device->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, 0);
+        }
+        RenderFrame(frame);
+        loops++;
+        frame += step;
     }
     if (frame != count) {
         RenderFrame(count);
@@ -258,9 +256,6 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
         i32 cellW2 = halfW * halfW;
         i32 cellD = halfW * halfW + halfH * halfH;
         float cellR = sqrt(static_cast<double>(cellD)) + radius - g_fxBias;
-        if (m_cols <= 0) {
-            continue;
-        }
         for (i32 col = 0; col < m_cols; col++) {
             i32 d2 = halfH * halfH + cellW2;
             double v = sqrt(static_cast<double>(d2));
