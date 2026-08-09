@@ -925,3 +925,19 @@ accessor fns are matched, so they stay on the queue rather than taking
 fabricated homes (`python -m gruntz.audit.data_access --unclaimed`).
 Library runs (CRT/MFC/zlib data) are policy-excluded like library code;
 string-pool runs are the unpinnable pooled literals.
+
+### The per-ACCESS map (2026-08-09, lane/data-access-map)
+
+`gruntz.audit.data_access` above is a per-SYMBOL aggregate recomputed on every
+invocation. Its per-access evidence — which byte range each instruction covers,
+how wide, in which direction, through which addressing form — is now persisted
+and queryable as `gruntz.audit.data_access_map`
+(**`docs/data-access-map.md`**): a sqlite index plus a grep-able TSV, with
+`--at` / `--range` / `--symbol` / `--fn` / `--sql`, an offset-resolved field map
+per claim, five derived categories, a control-set calibration, and an
+injected-defect self-test. The two share the same `.reloc` oracle and the same
+premise: **we choose the extent of every claim, so a too-small claim always
+scores 100**; only retail's own access widths can contradict a declared type.
+It also emits `build/gen/data_touched_ranges.tsv`, the set of bytes retail
+actually touches, for intersection with the from-our-side completeness analysis
+(uncovered AND touched = unmodelled data; uncovered AND untouched = padding).

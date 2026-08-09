@@ -194,7 +194,10 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
                      f"site(s){' incl. a WRITE' if wrote else ''}, no DATA() "
                      f"claim covers it",
                      " ".join(f"w{w}x{n}" for w, n in sorted(widths.items()))
-                     + (f"  after {prev.name}+0x{r['start'] - prev.rva:x}"
+                     + (f"  {r['start'] - prev.end} B past the end of "
+                        f"{prev.name}" if prev and r["start"] - prev.end < 0x100
+                        else f"  in {pe.sec_name(r['start']) or '?'}, no claim "
+                             f"within 0x{r['start'] - prev.end:x} B behind it"
                         if prev else "")))
         st["unclaimed"] += 1
 
@@ -229,8 +232,13 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
             seen[off][0][ac.width] += 1
             if ac.fpu:
                 seen[off][1][ac.fpu] += 1
-            seen[off][2][ac.rw] += 1
+            seen[off][2][(ac.width, ac.rw)] += 1
         for off, (widths, fpus, rws) in sorted(seen.items()):
+            # "does retail STORE fewer bytes than the field" must be asked of
+            # the NARROW access itself: a 4-byte store plus a 2-byte read is
+            # `(u16)x`, not evidence of a u16 field
+            def stores(w):
+                return any("w" in rw for (ww, rw) in rws if ww == w)
             ev = " ".join(f"w{w}x{n}" for w, n in sorted(widths.items()))
             f = (_synth_field_at(c, off) if c.extent_src == "INJECTED"
                  and c.fields else types.field_at(c.type, off))
@@ -295,7 +303,7 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
                              f"never touches it with x87", ev))
                 st["width"] += 1
             elif wmin < fsz and not types.is_ptr(fty) and not elem \
-                    and any("w" in rw for rw in rws):
+                    and stores(wmin):
                 # a sub-field STORE is strong: nobody writes half a scalar
                 rows.append(("width", "med", c.rva, c.name, c.rva + off,
                              f"+0x{off:x} {path or '.'} declared {fty} ({fsz} B) "
@@ -336,11 +344,22 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
                              f"{c.type} ({elem} B) - retail treats it as a table",
                              f"sites={n}"))
                 st["stride"] += 1
+            elif dims and sc > elem:
+                rows.append(("stride", "high", c.rva, c.name, c.rva,
+                             f"indexed by *{sc} but the declared element {base} "
+                             f"is only {elem} B - the element is {sc // elem}x "
+                             f"too small (a pair/record, not a scalar array)",
+                             f"type={c.type} sites={n}"))
+                st["stride"] += 1
+            elif dims and sc < elem and elem % sc == 0:
+                # `[i*4 + base + k]` inside a 12-byte record: MSVC scales the
+                # index by the DWORD, not by the element. Benign, counted only.
+                st["stride-skip-subelement"] += 1
             elif dims and sc != elem:
-                sev = "med" if (elem % sc == 0 or sc % elem == 0) else "high"
-                rows.append(("stride", sev, c.rva, c.name, c.rva,
+                rows.append(("stride", "high", c.rva, c.name, c.rva,
                              f"indexed by *{sc}, declared element {base} is "
-                             f"{elem} B", f"type={c.type} sites={n}"))
+                             f"{elem} B - neither divides the other",
+                             f"type={c.type} sites={n}"))
                 st["stride"] += 1
 
     # ---- 5. two claims that are really ONE object --------------------------
@@ -408,6 +427,103 @@ def do_build(args):
         f"{k[5:]}={v}" for k, v in sorted(stats.items()) if k.startswith("cell-")))
     print("[access-map] findings: " + (", ".join(
         f"{k}={v}" for k, v in sorted(fstats.items())) or "none"))
+    print_coverage(ctx, accesses, stats)
+    return 0
+
+
+def print_coverage(ctx, accesses, stats):
+    """State what the map sees and what it structurally cannot.
+
+    The .reloc table is a COMPLETE index of absolute data references, so the
+    absolute half of the map is exhaustive by construction. Register-relative
+    accesses carry no relocation: only the ones whose base was loaded from an
+    absolute operand in the same basic block are recoverable, and the rest are
+    invisible. The escape counts below bound that blind region - they are the
+    number of times an object's ADDRESS leaves the block without our being able
+    to follow it."""
+    esc = Counter()
+    for a in accesses:
+        if a.form not in ("imm", "lea"):
+            continue
+        m = (a.text or "").split(None, 1)[0] if a.text else "?"
+        if m == "push":
+            esc["push (call argument)"] += 1
+        elif m == "mov" and a.text and "PTR" in a.text.split(",")[0]:
+            esc["stored into memory"] += 1
+        elif m in ("mov", "lea"):
+            esc["loaded into a register"] += 1
+        else:
+            esc[m] += 1
+    touch = sum(1 for a in accesses if a.form in TOUCH)
+    derived = sum(1 for a in accesses if a.form == "derived-disp")
+    print("[coverage] SEEN - reloc-anchored byte accesses: "
+          f"{touch - derived} (exhaustive: every absolute operand is relocated)")
+    print(f"[coverage] SEEN - register-relative recovered by provenance: {derived}")
+    print("[coverage] BLIND - address escapes we cannot follow: " + ", ".join(
+        f"{k}={v}" for k, v in esc.most_common()))
+    print(f"[coverage] BLIND - register loads handed straight to a callee: "
+          f"{stats.get('seed-handed-to-callee', 0)} of "
+          f"{stats.get('seed-total', 0)} seeds (the callee's field accesses are "
+          f"`this`-relative)")
+    print("[coverage] BLIND - structurally invisible classes: `this`-relative "
+          "field accesses inside a callee; any access through a pointer loaded "
+          "FROM memory; a member SWAP between two same-sized members (no width "
+          "difference exists to observe)")
+    print(f"[coverage] undecodable .text reloc sites: "
+          f"{stats.get('form-undecoded', 0)} "
+          f"(+{stats.get('cell-in-text', 0)} reloc cells that are DATA living "
+          f"in .text, not instruction operands)")
+
+
+TOUCHED = REPO / "build/gen/data_touched_ranges.tsv"
+
+
+def do_touched(args):
+    """Emit the coalesced byte ranges retail's code TOUCHES.
+
+    The interface for the completeness lane, which computes the complementary
+    set (which bytes no claim of ours covers) from our side. Neither set alone
+    distinguishes padding from an unmodelled field; intersected they do:
+
+        uncovered AND touched   -> unmodelled data
+        uncovered AND untouched -> padding
+
+    One row per maximal run of bytes reached by at least one byte-touching
+    access, with the widest access over it, the read/write split and the
+    claim (if any) it falls in. Address-taking references are NOT included -
+    they prove the object is used, not which of its bytes are."""
+    con = connect(args.sqlite)
+    rows = con.execute(
+        "SELECT target_rva, end_rva, width, rw, form, sym_rva, sym_name "
+        "FROM access WHERE width>0 AND form IN ('direct','indexed',"
+        "'derived-disp') ORDER BY target_rva").fetchall()
+    out, cur = [], None
+    for r in rows:
+        if cur and r["target_rva"] <= cur["end"]:
+            cur["end"] = max(cur["end"], r["end_rva"])
+        else:
+            cur = {"start": r["target_rva"], "end": r["end_rva"], "sites": 0,
+                   "reads": 0, "writes": 0, "maxw": 0, "forms": set(),
+                   "sym": r["sym_name"], "sym_rva": r["sym_rva"]}
+            out.append(cur)
+        cur["sites"] += 1
+        cur["reads"] += "r" in r["rw"]
+        cur["writes"] += "w" in r["rw"]
+        cur["maxw"] = max(cur["maxw"], r["width"])
+        cur["forms"].add(r["form"])
+    args.touched.parent.mkdir(parents=True, exist_ok=True)
+    with args.touched.open("w") as f:
+        f.write("start\tend\tbytes\tsites\treads\twrites\tmax_width\t"
+                "forms\tclaim_rva\tclaim\n")
+        for r in out:
+            f.write(f"0x{r['start']:x}\t0x{r['end']:x}\t{r['end'] - r['start']}\t"
+                    f"{r['sites']}\t{r['reads']}\t{r['writes']}\t{r['maxw']}\t"
+                    f"{','.join(sorted(r['forms']))}\t"
+                    f"{'0x%x' % r['sym_rva'] if r['sym_rva'] else ''}\t"
+                    f"{r['sym'] or ''}\n")
+    total = sum(r["end"] - r["start"] for r in out)
+    print(f"[access-map] {len(out)} touched ranges, {total} bytes -> "
+          f"{args.touched}")
     return 0
 
 
@@ -557,12 +673,29 @@ def do_findings(con, cat, limit):
 
 # --- calibration --------------------------------------------------------------
 def do_calibrate(args):
-    """The control set: claims living in a data section at exactly 100.0 whose
-    declared type FULLY resolves (every field has a known size). Those sections
-    are byte-exact against retail, so any width/layout disagreement there is a
-    claim about the TYPE, not about the bytes - and every one has to be
-    adjudicated by hand. Printing the count WITH its denominator is the point:
-    a sieve without a stated flag rate is not evidence."""
+    """Measure the sieve's flag rate against a control set, with the denominator.
+
+    CONTROL SET: claims that live in a data section objdiff scores at exactly
+    100.0, whose declared type fully resolves, and that retail actually
+    accesses. Those bytes are byte-identical to retail, so nothing about their
+    CONTENT can be wrong.
+
+    What that does and does NOT prove, stated precisely, because getting this
+    wrong is how a sieve gets believed:
+      * It does NOT make a `width` finding a false positive. A section at 100.0
+        means the BYTES match; the declared TYPE can still be wrong, and that is
+        the entire premise of this map. So every control-set finding has to be
+        ADJUDICATED against the retail disassembly by hand - the number below is
+        a FLAG RATE, and the report states the adjudicated split.
+      * It DOES bound the noise: a sieve that flags a large fraction of
+        byte-exact, fully-typed claims is measuring its own bugs. Two such bugs
+        were found and fixed this way (a narrow READ counted as a STORE, and an
+        array flattening cap that made every offset past 2048 look unmodelled).
+
+    `unclaimed` is reported separately and split by whether the run begins
+    exactly at a control claim's END (an extent claim about that claim) or
+    somewhere else (a claim about nobody's claim), because attributing an
+    unclaimed run to the nearest preceding symbol would inflate the rate."""
     ctx = get_context()
     types = Types(STRUCTS)
     accesses, cells, stats = sweep(ctx)
@@ -571,8 +704,8 @@ def do_calibrate(args):
 
     exact = {c.rva for c in claims if c.pct is not None and c.pct >= 100.0}
     resolved = {c.rva for c in claims if c.type and types.sizeof(c.type) is not None}
-    control = exact & resolved
     starts = [c.rva for c in claims]
+    ends = {c.end: c for c in claims}
     ntouch = Counter()
     for a in accesses:
         if a.form not in TOUCH:
@@ -580,34 +713,45 @@ def do_calibrate(args):
         k = bisect.bisect_right(starts, a.target_rva) - 1
         if k >= 0 and a.target_rva < claims[k].end:
             ntouch[claims[k].rva] += 1
-    control_touched = {r for r in control if ntouch[r]}
+    control = {r for r in (exact & resolved) if ntouch[r]}
 
-    print(f"[calibrate] claims                       {len(claims)}")
-    print(f"[calibrate]   in a section at exactly 100.0 {len(exact)}")
-    print(f"[calibrate]   with a fully-resolving type   {len(resolved)}")
-    print(f"[calibrate]   CONTROL SET (both)            {len(control)}")
-    print(f"[calibrate]   control set with >=1 access   {len(control_touched)}")
-    hit = defaultdict(list)
+    print(f"[calibrate] claims                              {len(claims)}")
+    print(f"[calibrate]   in a data section at exactly 100.0  {len(exact)}")
+    print(f"[calibrate]   declared type fully resolves        {len(resolved)}")
+    print(f"[calibrate]   retail accesses it                  "
+          f"{sum(1 for r in ntouch if ntouch[r])}")
+    print(f"[calibrate]   CONTROL SET (all three)             {len(control)}")
+
+    direct = defaultdict(list)                # findings ABOUT a control claim
+    contig, elsewhere = [], []
     for f in findings:
         cat, sev, srva, sname, addr, detail, ev = f
-        if srva in control_touched:
-            hit[cat].append(f)
-    tot = sum(len(v) for v in hit.values())
-    print(f"[calibrate] findings on the control set: {tot} over "
-          f"{len(control_touched)} claims "
-          f"({100.0 * tot / max(len(control_touched), 1):.2f} per 100 claims)")
-    for cat, v in sorted(hit.items()):
-        syms = len({f[2] for f in v})
-        print(f"[calibrate]   {cat:11} {len(v):4} finding(s) on {syms} claim(s)")
-    for cat, v in sorted(hit.items()):
+        if cat == "unclaimed":
+            owner = ends.get(addr)
+            if owner is not None and owner.rva in control:
+                contig.append(f)
+            else:
+                elsewhere.append(f)
+        elif srva in control:
+            direct[cat].append(f)
+    n = sum(len(v) for v in direct.values())
+    print(f"[calibrate] TYPE findings on the control set: {n} over "
+          f"{len(control)} claims = {100.0 * n / max(len(control), 1):.2f}%")
+    for cat, v in sorted(direct.items()):
+        print(f"[calibrate]   {cat:11} {len(v):4} on "
+              f"{len({f[2] for f in v})} claim(s)")
+    print(f"[calibrate] unclaimed runs starting exactly at a control claim's "
+          f"end: {len(contig)}  (elsewhere, not attributable: {len(elsewhere)})")
+    for cat, v in sorted(direct.items()):
         for f in v[:args.limit]:
-            print(f"    [{cat}] 0x{f[4]:08x} {f[3][:52]:52} {f[5]}")
+            print(f"    [{cat}/{f[1]}] 0x{f[4]:08x} {f[3][:50]:50} {f[5]}")
             if f[6]:
                 print(f"        {f[6]}")
+    for f in contig[:args.limit]:
+        print(f"    [unclaimed-contiguous] 0x{f[4]:08x} {f[3][:50]:50} {f[5]}")
     return 0
 
 
-# --- injected-defect self-test ------------------------------------------------
 def _dead_space(pe, claims, accesses, cells):
     """An address in .data that no claim covers and nothing in the image
     references - where a planted phantom must show up as unaccessed."""
@@ -791,6 +935,9 @@ def main(argv=None):
     ap.add_argument("--fn", help="every data reference one function makes")
     ap.add_argument("--findings", nargs="?", const="", help="the derived worklist")
     ap.add_argument("--sql", help="raw SQL over the map")
+    ap.add_argument("--touched", nargs="?", type=Path, const=TOUCHED,
+                    help="emit the coalesced byte ranges retail TOUCHES "
+                         "(the completeness lane's input)")
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--limit", type=int, default=40)
@@ -802,7 +949,10 @@ def main(argv=None):
         return do_calibrate(args)
     if args.selftest:
         return do_selftest(args)
+    if args.touched:
+        return do_touched(args)
     if args.build or not any((args.at, args.rng, args.symbol, args.fn,
+                              args.touched,
                               args.findings is not None, args.sql)):
         return do_build(args)
 
@@ -817,9 +967,15 @@ def main(argv=None):
     if args.fn:
         return do_fn(con, args.fn)
     if args.sql:
-        for row in con.execute(args.sql):
-            print("\t".join(_hex(v) if isinstance(v, int) else str(v)
-                            for v in row))
+        cur = con.execute(args.sql)
+        cols = [d[0] for d in cur.description]
+        addrish = [c.endswith("_rva") or c in ("addr", "start", "end", "off")
+                   for c in cols]
+        print("\t".join(cols))
+        for row in cur:
+            print("\t".join(
+                _hex(v) if a and isinstance(v, int) else str(v)
+                for v, a in zip(row, addrish)))
         return 0
     if args.findings is not None:
         return do_findings(con, args.findings or None, args.limit)

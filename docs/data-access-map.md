@@ -1,0 +1,213 @@
+# The data-access map — what retail's code actually touches
+
+`gruntz audit data_access_map` builds a persisted, queryable record of **every
+instruction in retail `GRUNTZ.EXE` that references `.rdata` / `.data` / `.bss` /
+`.idata`**, decoded for the byte range it covers, the access width, the
+direction, and the addressing form.
+
+## Why it exists — the score structurally cannot answer this
+
+**We choose the extent of every datum we claim, so a too-small claim always
+scores 100.** objdiff only ever compares what we told it to compare. Model
+`float x` where retail has `struct { float x, y; }`, get the four bytes right,
+and the section reports exact while `y` is silently unmodelled.
+
+It runs the other way too. `?g_idleGeom@@3PAUBzGeomPair@@A` was an invented
+object whose member order was `{m_y; m_x}`; both orderings give
+X = 472,525,474,525 so X matched **by coincidence**, while the old Y ran
+`0,101,98,146` against retail's `101,98,146,144`. It survived byte comparison
+and was ultimately a phantom.
+
+The map answers the question the score cannot: *which bytes does retail's code
+actually touch, and how wide?*
+
+Its counterpart is the **completeness** analysis, which computes from *our* side
+which bytes no claim covers. Neither alone distinguishes padding from an
+unmodelled field. Intersected they do:
+
+| | touched by retail | untouched |
+|---|---|---|
+| **covered by a claim** | modelled | possibly over-claimed |
+| **uncovered** | **unmodelled data** | **padding** |
+
+## How the sites are enumerated — `.reloc`, not a disassembly
+
+Every absolute operand in a PE is relocated, so the `.reloc` HIGHLOW table is a
+**complete and reliable index of where the absolute data references are**. The
+sweep walks that table and disassembles only *at* each site, to learn the width
+and the form. That sidesteps needing a correct whole-image disassembly, and it
+covers code we have never reconstructed — which is the point.
+
+Two objdump passes over `.text` back the decode:
+
+* **linear** — the section decoded from its start; desyncs on data-in-text.
+* **anchored** — the same bytes with every byte *outside* a recovered function
+  extent overwritten by `0x90`, so the decoder re-syncs exactly on each function
+  start instead of drifting through an embedded jump table. `0x90` is one byte,
+  so a function start stays on an instruction boundary whatever the gap parity.
+
+A site inside a recovered function is decoded by the anchored pass, otherwise by
+the linear one; whichever actually places the relocated operand in an instruction
+wins. A site neither pass can place, and that lies outside every recovered
+function, is **not an access at all** — it is a relocated pointer cell that lives
+in `.text` (295 of them, a 16-byte-stride table at `0x18faa0`). Those go to the
+`cell` table, not the `access` table.
+
+## Forms — and the blind spot, stated honestly
+
+| form | meaning | complete? |
+|---|---|---|
+| `direct` | `ds:addr` — the datum itself | yes, reloc-anchored |
+| `indexed` | `[reg*s+addr]` — `addr` is a TABLE base, `s` a hard element-size witness | yes, reloc-anchored |
+| `derived-disp` | `[reg+disp]` after a proven `mov reg,&sym` in the same block | partial, recovered |
+| `lea` / `imm` | the address is taken; the object escapes, width unknown | yes, reloc-anchored |
+| `indcall` | `call/jmp [addr]` — the cell holds a function pointer | yes |
+| `iat` | an indirect call into the import table | yes |
+
+**An access through a base register whose value did not come from an absolute
+operand in the same basic block carries no relocation and no local provenance,
+so it is invisible here.** That is:
+
+* every `this`-relative field access inside a callee,
+* every access through a pointer loaded *from* memory,
+* every use of an address that escaped through a call argument.
+
+`derived-disp` recovers only the single-block case, by a deliberately
+conservative forward propagation: it stops at any control transfer, at any
+branch target or function start, at any write to the base register (explicit
+operand *or* implicit clobber such as `mul`/`div`/`stosd`), and after a 48
+instruction budget. It never follows a register copy. A wrong provenance would
+*invent* a data reference, which is worse than missing one.
+
+`--build` prints the coverage accounting, including how many address escapes it
+cannot follow and how many register loads are handed straight to a callee.
+
+**Two further limits worth knowing:**
+
+* For an `indexed` access the recorded range is the **base element only**. The
+  table extends an unknown distance, so a touched range whose `forms` column
+  contains `indexed` is a *lower bound*.
+* A member **swap between two same-sized members** produces no width difference
+  and is therefore invisible to an access map. The `g_idleGeom` bug is only
+  detectable this way when the swapped members differ in size or in float-ness;
+  otherwise it needs *value* evidence.
+
+## Artifacts
+
+| path | what |
+|---|---|
+| `build/gen/data_access_map.sqlite` | the query index (tables below) |
+| `build/gen/data_access_map.tsv` | the access table, grep-able and diffable |
+| `build/gen/data_touched_ranges.tsv` | coalesced byte ranges retail touches — the completeness lane's input |
+
+### Schema
+
+```
+access (insn_rva, insn_len, mnemonic, site_rva, target_rva, width, end_rva,
+        rw, form, base_reg, index_reg, scale, disp, fpu, ext, origin,
+        fn_rva, fn_name, fn_unit, sym_rva, sym_name, sym_off, in_extent, text)
+cell   (site_rva, target_rva, kind, where_sec, sym_rva, sym_name, sym_off,
+        tgt_sym_rva, tgt_sym_name, tgt_sym_off)
+claim  (rva, name, unit, type, section, extent, extent_src, sect_pct,
+        n_access, n_read, n_write, n_addr, n_cells)
+field  (sym_rva, off, size, path, type, is_ptr, is_float, resolved)
+finding(category, severity, sym_rva, sym_name, addr, detail, evidence)
+meta   (key, value)
+```
+
+`width` is the byte count the instruction touches — `0` means the instruction
+takes the *address*. `fpu` records the x87 operand kind (`f32`/`f64`/`f80` for
+`fld`/`fst`, `i16`/`i32`/`i64` for `fild`/`fist`), which is how a `double`
+declared as a `float` is caught. `scale` is the index scale, which is element-size
+evidence: `[base + i*8]` proves an 8-byte element whatever we declared (see
+`docs/patterns/2d-array-codegen-signature.md`). `field.resolved = 0` marks a
+member whose declared type could not be sized — its extent is inferred from the
+next field's offset and **no verdict fires through it**.
+
+### Query surface
+
+```
+gruntz audit data_access_map --build                  # sweep and persist
+gruntz audit data_access_map --at 0x2448d0            # everything touching one address
+gruntz audit data_access_map --range 0x245508:0x245520
+gruntz audit data_access_map --symbol g_sfDeviceId    # claim dossier: field map + every access
+gruntz audit data_access_map --fn StepCompassMove     # every data access one function makes
+gruntz audit data_access_map --findings width         # the derived worklist
+gruntz audit data_access_map --touched                # the coalesced touched-byte ranges
+gruntz audit data_access_map --sql "SELECT ..."       # raw sqlite
+```
+
+## The five derived categories
+
+| category | question | signal |
+|---|---|---|
+| `unclaimed` | accessed but no `DATA()` claim covers it | unmodelled data |
+| `unaccessed` | claimed but nothing in the image reads, writes, addresses or points at it | phantom candidate |
+| `width` | access width disagrees with the declared field | wrong type |
+| `stride` | an index scale inside a claim disagrees with its element size | wrong element size or a missing dimension |
+| `adjacent` | one access spans two claims, or both are reached from one base register | one object, not two |
+
+`unclaimed` runs are triaged before they reach the worklist, each class counted
+separately in the build summary so nothing is silently dropped: `string-pool`
+(printable, read-only — pooled literals reached by an inlined `strcmp`),
+`fp-pool` (x87-only, read-only — an unpinnable constant pool), `library` (every
+accessor is carved library code), `idata` (import thunk slots, the linker's).
+Only `data` is the worklist.
+
+## Suppressed false-positive classes — each measured, each named
+
+These are not noise filters. Each is a codegen idiom that was *observed* to
+produce a wrong verdict, and each is counted in the build summary
+(`width-skip-*`, `stride-skip-*`) so it can be re-argued.
+
+* **`width-skip-byte-buffer`** — a wider access on a byte **array element** is
+  the inlined CRT block move/compare (`rep movsd` over a `char[]`). A byte
+  **scalar** read four bytes wide is still reported: that is a type error, not a
+  block op.
+* **`width-skip-dword-pair`** — MSVC 5.0 copies an 8-byte constant with a pair
+  of dword loads, so 4-byte accesses at `+0` and `+4` of a `double` are the copy,
+  not a layout bug. `?g_movingLogicMin@@3NB` is the canonical case: 13 dword
+  reads at `+0` and 13 at `+4`, never an `fld`, and the `double` is correct.
+* **`width-skip-vptr`** — `structs.json` systematically omits the vptr of a
+  polymorphic class, so an access before the first declared field is *our* blind
+  spot, not a layout defect. Holes *between* declared members are still reported.
+* **`width-skip-unresolved`** — the declared type could not be sized. Accusing
+  through a type we cannot read would be a fabricated finding.
+* **`stride-skip-subelement`** — `[i*4 + base + k]` inside a 12-byte record:
+  MSVC scales the index by the dword, not by the element. Benign. A scale
+  *larger* than the declared element is the opposite and is reported `high`.
+
+**A narrow access only indicts the declared width when the narrow access is
+itself a STORE.** `mov cx, WORD PTR ds:g_rUp` is `(u16)g_rUp`, not evidence of a
+`u16` field. Getting this wrong produced seven false positives before it was
+fixed; the check now asks the question of the narrow access, not of the offset.
+
+## Calibration and the self-test
+
+`--calibrate` runs the sieve over a **control set**: claims that live in a data
+section objdiff scores at exactly 100.0, whose declared type fully resolves, and
+that retail actually accesses. Their bytes are byte-identical to retail.
+
+Read the result carefully. **A section at 100.0 does not make a `width` finding
+a false positive** — the bytes match, the *type* can still be wrong, and that is
+the entire premise. What the control set gives is a bound on noise: a sieve that
+flags a large fraction of byte-exact, fully-typed claims is measuring its own
+bugs. Two such bugs were found exactly this way (the narrow-read/store confusion
+above, and an array-flattening cap that made every offset past 2048 look
+unmodelled).
+
+`--selftest` plants known defects into the in-memory claim set — `src/` is never
+touched — and requires the sieve to report each. **A sieve that returns 0 rows
+because it is blind is indistinguishable from a sieve that returns 0 rows
+because the tree is clean.** The injections are `narrow`, `widen`, `float`,
+`swap`, `halve`, `stride`, `split` and `phantom`, one per detector.
+
+## Evidence rules
+
+* **A content-derived address is self-confirming.** Matching a datum by its
+  bytes means copying retail's bytes from the address found *by* those bytes, so
+  a wrong constant still scores 100. Read the retail instruction **operand**,
+  not the payload.
+* **Adjacency proves nothing.** Do not close a gap by inventing an aggregate;
+  that is the same error in the opposite direction.
+* Do not fabricate an identity — `// @identity-TODO` is the honest marker.

@@ -477,7 +477,17 @@ def sweep(ctx):
     for dec in (anchored, linear):
         if dec is None:
             continue
-        for ac in derive(dec, seeds_from(dec, accesses), in_data, stop):
+        sd = seeds_from(dec, accesses)
+        if dec is (anchored or linear):
+            stats["seed-total"] = len(sd)
+            # a register load followed within 3 instructions by a call is an
+            # object handed to a CALLEE: every field access it makes is
+            # `this`-relative and therefore invisible to this map
+            stats["seed-handed-to-callee"] = sum(
+                1 for k, _r, _a in sd
+                if any(dec.lines[j].startswith("call")
+                       for j in range(k + 1, min(k + 4, len(dec.lines)))))
+        for ac in derive(dec, sd, in_data, stop):
             key = (ac.insn_rva, ac.target_rva, ac.width)
             if key in seen:
                 continue
