@@ -127,6 +127,54 @@ matches none of this and should be replaced by the rule above.
    decorated names — a TU's `.bss` is one interleaved pool, not
    "globals first, then per-function statics".
 
+## Function-local statics: the six cases (probed, VC5 `/O2 /MT /GX /GR`)
+
+`static` inside a function does not pick ONE storage. Which of the two
+mechanisms above applies — or whether *neither* does — depends on the
+initializer AND on whether the enclosing function is `inline`. Six probes,
+`docs/probes/local-statics-1.cpp` + `local-statics-2-inline.cpp`:
+
+**Non-inline function — a PRIVATE static, `$S<id>`-suffixed, placed by the TU:**
+
+| initializer | symbol cl emits | storage |
+| :-- | :-- | :-- |
+| `static int hello = 4;` | `_?hello@?1??a@@YAXXZ@4HA$S167` | **`.data`**, declaration-order stream (rule 1) |
+| `static int zed;` | `_?zed@?1??b@@YAXXZ@4HA$S171` | **`.bss`**, hash walk (rule 2) |
+| `static int dyn = side();` | `_?dyn@?1??c@@YAXXZ@4HA$S176` **+** `_?$S1@?1??c@@YAXXZ@4EA$S178` | **both `.bss`** — the datum plus its 1-byte **guard** |
+
+So a *constant*-initialized local static is ordinary initialized data and obeys
+declaration order at the point the **function body** is parsed — in the probe,
+`hello` (line 2) takes `.data+0`, `CFoo::s_m` (line 15) `+4`, `g_first` (line
+19) `+8`, exactly source order. Only a *dynamic* initializer creates a guard.
+
+Two naming traps: the hash input is the **decorated** name **without** the
+leading `_` and **without** the `$S<id>` suffix (c2 appends both later, in
+`outdname`), and the non-inline guard is spelled `?$S1@…@4EA`, **not** `??_B` —
+grepping for `??_B` will not find it.
+
+**`inline` function (i.e. anything defined in a header) — an EXTERNAL,
+foldable symbol, and the TU does not place it at all:**
+
+| initializer | symbol cl emits | storage |
+| :-- | :-- | :-- |
+| `static int inl = 7;` | `?inl@?1??d@@YAXXZ@4HA` | its own **COMDAT `.data`** section (`char=0xc0301040`), external |
+| `static int zi;` | `?zi@?1??iz@@YAXXZ@4HA` | **COFF COMMON**, size 4 |
+| `static int dv = side();` | `?dv@…@4HA` **+** `??_B?1??id@@YAXXZ@51` | **both COMMON** (4 B + 1 B guard) |
+| `static CBar obj;` | `?obj@…@4UCBar@@A` **+** `??_B…@51` | **both COMMON**, plus a `.text` COMDAT `?obj@…@$AUCBar@@A` — the `atexit` dtor registration |
+
+**This is the case that escapes both mechanisms.** A COMMON is a *request*, not
+a placement: the **linker** chooses its address, so an inline function's local
+static is outside the initializer stream AND outside c1xx's hash walk, and no
+TU can be said to own it. That is precisely why
+`config/retail/compiler-generated-data.tsv` exists (see `CLAUDE.md`) — such a
+datum, and its guard byte, have no source spelling in any single `.cpp` to hang
+a `DATA()` pin on, so only the retail ADDRESS is stated there.
+
+Note also that the inline case emits the guard under a real `??_B` name while
+the non-inline case does not, and that only the inline case takes a COMDAT — so
+the same source line moved from a `.cpp` into a header changes the symbol's
+name, its linkage, its section, AND which component decides its address.
+
 ## Prediction record
 
 - Blind test (single fresh TU, names never used in any calibration probe):
