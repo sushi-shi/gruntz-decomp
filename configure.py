@@ -155,6 +155,10 @@ NORM_DIR = "build/objdiff/normalized"  # disposable normalized objdiff compariso
 DELINK_RAW = "build/delink/named"    # raw vostok-delinker output
 PDB_DIR = "build/pdb"                # synth PDB/YAML
 LABELS_DIR = "build/gen/labels"      # per-TU symbol_names.csv fragments
+# The delinker's holding unit for library DATA (see gruntz.core.vtable_catalog):
+# deliberately NOT in units.toml, so it is not an orphan - see
+# prune_orphan_artifacts(). Spelled out here to keep configure.py import-free.
+LIBRARY_HOLDING_UNIT = "library_data"
 
 
 # --- manifest ---------------------------------------------------------------
@@ -626,8 +630,19 @@ def prune_orphan_artifacts(manifest: dict) -> int:
     FATALs the build with "enrolled datum carved into an object objdiff never opens"
     for a unit that has no source in the tree. Prune at configure time, where the
     live unit set is known.
+
+    The delinker's LIBRARY HOLDING UNIT is live-by-design and must be exempt. It
+    carries library DATA no cl output can re-emit (CDialog's messageMap,
+    type_info's vtable), deliberately absent from config/units.toml so objdiff
+    never opens it - which made every configure see `library_data.c.obj` as an
+    orphan, prune it, and take `delink_data_manifest.tsv` with it (the manifests
+    are dropped whenever ANY orphan is found, since they are rebuilt from the
+    surviving objs). Net effect before this exemption: entering `nix develop`
+    deleted the data manifest every single time, so `data_coverage` /
+    `data_denominator` / `data_relocs` reported "run `gruntz build` first" on a
+    tree that had just been built.
     """
-    live = {u["unit"] for u in manifest["unit"]}
+    live = {u["unit"] for u in manifest["unit"]} | {LIBRARY_HOLDING_UNIT}
     patterns = [
         (REPO / BASE_DIR, "{}.obj"),
         (REPO / OBJDIFF_DIR / "normalized/base", "{}.obj"),

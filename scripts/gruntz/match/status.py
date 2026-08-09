@@ -145,28 +145,70 @@ def engine_universe():
 
 
 def _data_line() -> list[str]:
-    """The data figure, both ways, for the README block.
+    """The data block: COVERAGE and FIDELITY, never blended, `.bss` reported apart.
 
-    `matched_data` credits a section all-or-nothing, so a `.data` at 99.99%
-    contributes nothing and the headline reads ~16% while the sections themselves
-    average ~99%. Neither number alone is honest: the weighted one tracks
-    reconstruction, the all-or-nothing one tracks how many sections are FINISHED.
-    See `gruntz.core.report.data_measures`.
+    The old headline was `matched_data`, and it read 100.00% while 60% of retail's
+    initialized data was not enrolled at all. That is not a rounding problem, it is
+    the wrong denominator: **we generate both sides of the objdiff pair**, so a
+    datum with no `DATA()` pin is never carved on the target side and never
+    declared on the base side, and the byte enters neither. `matched_data` is
+    structurally incapable of seeing it (`data-matching-problems.md` #1).
+
+    So two numbers, with different denominators, and both are printed:
+
+      coverage  of RETAIL's data bytes (the PE section table - a denominator we did
+                not write), how many does a claim or a placed section cover?
+      fidelity  of the ENROLLED bytes, how many are byte-equal? (the old headline)
+
+    and `.bss` sits on its own row rather than inside the total: zero-fill matching
+    zero-fill is real but nearly free, and at 76.8% of `matched_data`'s denominator
+    it was carrying the headline on its own.
+
+    `matched_data` is still printed, because it is objdiff's own number and the only
+    one comparable across the project's history - but it is a PER-UNIT SUM (a COMDAT
+    defined in N units counts N times), so it can never be the headline.
     """
     try:
-        from gruntz.core.report import data_measures
-        d = data_measures()
-        total = d["total"]
-        if not total["bytes"]:
+        from gruntz.core.data_universe import measures
+        d = measures()
+        init, bss, od = d["initialized"], d["bss"], d["objdiff"]
+        if not init["retail"]:
             return []
-        per = ", ".join(
-            f"`{n}` {100.0 * d[n]['weighted'] / d[n]['bytes']:.2f}%"
-            for n in sorted(d) if n != "total" and d[n]["bytes"])
+        if init["enrolled"] is None:                # manifests absent: say so
+            return [f"**Data: coverage unknown** (no delink manifest) &middot; "
+                    f"objdiff `matched_data` {od['matched_data']:,} B "
+                    f"({od['matched_data_percent']:.2f}%).", ""]
+        rows = [
+            [lbl, f"{d[k]['retail']:,}", f"{d[k]['enrolled']:,}",
+             f"{d[k]['coverage']:.2f}%",
+             f"{d[k]['fidelity']:.2f}%" if d[k]["fidelity"] is not None else "—"]
+            for k, lbl in (("rdata", "`.rdata`"),
+                           ("data", "`.data` (initialized)"))]
+        rows.append(["**initialized total**", f"**{init['retail']:,}**",
+                     f"**{init['enrolled']:,}**", f"**{init['coverage']:.2f}%**",
+                     f"**{init['fidelity']:.2f}%**"])
+        rows.append(["`.bss` (zero fill)", f"{bss['retail']:,}",
+                     f"{bss['enrolled']:,}", f"{bss['coverage']:.2f}%",
+                     f"{bss['fidelity']:.2f}%" if bss["fidelity"] is not None else "—"])
         return [
-            f"**Data: {100.0 * total['weighted'] / total['bytes']:.2f}% size-weighted "
-            f"across {total['bytes']:,} B** ({per}) &middot; "
-            f"{100.0 * total['exact'] / total['bytes']:.2f}% of bytes in sections that "
-            "are exact, which is what objdiff's `matched_data` reports.",
+            f"**Data — coverage {init['coverage']:.2f}% &middot; fidelity "
+            f"{init['fidelity']:.2f}%** (initialized data; `.bss` "
+            f"{bss['coverage']:.2f}% / {bss['fidelity']:.2f}% is reported apart).",
+            "",
+            *_md_table(["Data region", "retail B", "enrolled B", "coverage",
+                        "fidelity"], "lrrrr", rows),
+            "",
+            "_**Coverage** = distinct retail bytes an enrolled `DATA()` claim or a "
+            "placed candidate section covers; the denominator is the PE section "
+            "table, not our claims. **Fidelity** = of those enrolled bytes, the "
+            "share objdiff scores byte-equal — the narrow question the old headline "
+            "answered. `.bss` is kept out of the total because zero-fill matching "
+            "zero-fill is nearly free. objdiff's own "
+            f"`matched_data` is {od['matched_data']:,} / {od['total_data']:,} B "
+            f"({od['matched_data_percent']:.2f}%, whole sections only): a PER-UNIT "
+            "sum, so a COMDAT defined in N units counts N times — kept for history, "
+            "never the headline. What the uncovered bytes ARE: "
+            "`gruntz audit data_denominator`._",
             "",
         ]
     except Exception:

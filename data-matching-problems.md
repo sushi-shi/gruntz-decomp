@@ -1,15 +1,24 @@
 # Data matching: what the 100% does NOT mean
 
-**`Data: 100.00% size-weighted · matched_data 723,491 / 723,491 B (100.00%)` is true and
-it is narrow.** It says *every byte we enrolled is byte-equal to retail's*. It does **not**
-say the data is correctly modelled, and this file exists because those two are routinely
-confused — including by the author of the scoreboard text.
+The old **`Data: 100.00%`** headline was arithmetically true and answered the wrong
+question. The replacement reports two denominators: **coverage 40.10%** means 108,827
+distinct addresses are enrolled out of the 271,360 initialized bytes stored in retail;
+**fidelity 99.97%** means the enrolled objdiff sections are almost entirely byte-equal.
+`.bss` is reported separately. A smaller headline is the successful result: bytes omitted
+from both sides can no longer hide outside the score.
+
+The earlier 167,787 / 271,360 (61.8%) estimate added per-object section sizes. A folded
+COMDAT defined by several objects was therefore counted several times. Coverage is an
+address property, so the numerator is the union of retail address ranges and each byte is
+counted once. objdiff's per-object `matched_data` remains visible for historical
+comparison, but it is not a coverage numerator.
 
 The distinction is not academic. A wrong model that scores 100% is worse than a low score,
 because a low score is a worklist and a wrong 100% is a closed question that is not closed.
 
-> Live example, in the tree today: `g_clut` — the game's colour lookup table — is pinned
-> **two bytes low**, every use site is biased `+2` to compensate, and it scores 100%.
+The campaign found two concrete examples: `g_clut` was pinned two bytes low with every
+use biased by `+2`, and the image clip group was spelled as an integer array rather than
+four independently placed `LONG` globals. Both have now been corrected.
 
 ---
 
@@ -47,9 +56,36 @@ that role and they are the data-side answer to `functions.tsv`:
 Their join is the definition of the defect: **uncovered ∧ touched = unmodelled data;
 uncovered ∧ untouched = padding.**
 
-As of this commit `data_access_map --findings unclaimed` reports **55 runs** (49 high, 6
-medium) of data retail reads or writes that no `DATA()` claim covers — down from 69 runs /
-4,229 accessed bytes, but not zero. Every one of those bytes is outside the 100%.
+`data_access_map --findings unclaimed` remains a separate, ratcheted access worklist.
+Those findings are outside fidelity until a real typed claim enrolls them.
+
+The address-union partition is complete to an explicitly stated residue:
+
+| unenrolled class | bytes |
+| :-- | --: |
+| compiler C++ EH records | 53,164 |
+| compiler RTTI records | 13,569 |
+| compiler pooled literals | 41,677 |
+| static-library data | 23,950 |
+| SDK GUID libraries | 1,776 |
+| EH padding | 4,564 |
+| other zero padding/alignment | 23,493 |
+| target-referenced but ownership unresolved | 28 |
+| other unclassified non-zero | 312 |
+| **total unenrolled** | **162,533** |
+
+The library attribution is NAFXCW 14,164 B, unresolved static-library members 9,786 B,
+dxguid.lib 1,696 B, and UUID.LIB 80 B. No fractional attribution is
+invented for a run named from more than one library. The independent access/coverage
+sieve found one game-owned initialized survivor, `g_table_20fa78` (64 B), and it was
+already enrolled; the remaining game-data worklist is therefore 0 B. The 340 B residue
+stays unclassified rather than being folded into “library”.
+
+This lane also enrolled 1,099 B of closeable zlib initialized data: fourteen tables and
+copyright strings whose names, owning archive members, extents, and payloads are all
+recoverable from the shipped zlib 1.0.4 objects/vendor source. They are library-owned,
+but unlike CRT/MFC compiler internals they have a reproducible base-side definition, so
+leaving them excluded would not be honest.
 
 ---
 
@@ -60,7 +96,7 @@ is right*. If the pin is wrong and the source is written around the error, both 
 
 ### `g_clut`, the colour lookup table
 
-`src/DDrawMgr/DDSurface.cpp` says it outright:
+The old source made the compensation explicit:
 
 ```c
 DATA(0x00253c9e)
@@ -72,21 +108,22 @@ DATA(0x00253c9e)
 u8 g_clut[0x30002];
 ```
 
-The pin is **two bytes low**. The real object is `u8 g_clut[0x30000]` at `0x253ca0` —
-8-aligned, ending exactly at `g_lut16`. That was proved independently by the delinker
-alignment work: a `0x30002` array **cannot** start at an odd-word RVA under c2's alignment
-rule (`docs/compiler-data-layout.md`). Someone made the bytes line up by declaring the
-object oversized and biasing every use site, and it has already caused one real colour bug
-(the mis-shifted red channel recorded in that comment).
+The pin is **two bytes low**. The real object is `u8 g_clut[0x30000]` at `0x253ca0`,
+ending exactly at `g_lut16`; every use site carried the same compensating `+2`. Those
+independent extent and use facts prove the correction. Absolute retail-RVA alignment does
+not: c2 aligns within an object contribution and the linker places that contribution.
 
 ### `g_imageClipRect`
 
-`?g_imageClipRect@@3PAHA` at `0x2bf28c` is declared `i32[4]` (`src/Image/CImage.cpp:29`).
-A 16-byte array would be 8-aligned; a 4-mod-8 start fits **four separate `i32` globals**
-(`left`/`top`/`right`/`bottom`). Byte-neutral today, wrong as a model, and it changes
-codegen when fixed.
+`RenderFrameClipped` takes a retail-proven `RECT*` and emits four inline field stores.
+A controlled VC5 `/O2 /MT` probe against the shipped MFC headers distinguishes the
+plausible declarations: both CRect assignment forms call imported `CopyRect` (the pointer
+form also constructs a temporary), while plain `RECT = *RECT*` emits retail's exact four
+direct loads and stores. The source therefore models one `RECT`, not `CRect`, `i32[4]`, or
+four unrelated scalar globals.
 
-**Neither of these costs a single byte of the 100%.** Both are queued for a source lane.
+**Neither defect lowered the old 100% fidelity figure.** Both sit outside what that
+relocation-masked byte comparison can establish.
 
 ---
 
@@ -189,9 +226,9 @@ corrupted one. **None is confirmed**; the game is not run to obtain matching evi
 * Is the extent right? `python -m gruntz.audit.link_sections --undersized N` sweeps pinned
   `.rdata` for non-zero slack before the next pin. Retail pads *between* contributions with
   zeros, so all-zero slack is filler, not an under-model.
-* Is the address right? c2's alignment rule must divide the retail RVA
-  (`docs/compiler-data-layout.md`); a violation is a mis-pin, which is how `g_clut` and
-  `g_imageClipRect` were caught.
+* Is the address right? Use contribution-relative layout, neighbour extents, and access
+  addends. c2's object-relative alignment does **not** have to divide an absolute retail
+  RVA; applying that shortcut rejects 131 established source-backed controls.
 * Is the referent right? `gruntz audit data_relocs` and `python -m gruntz.audit.assert_relocs`.
 
 ## Related

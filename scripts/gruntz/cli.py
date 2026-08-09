@@ -207,18 +207,22 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     print(f"  Overall: {mf}/{tf} functions exact ({_pct(mf, tf):.1f}%), "
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
-    # BOTH data figures, because one of them is not a reconstruction measure.
-    # `matched_data` credits a section all-or-nothing, so a `.data` at 99.99%
-    # contributes zero and the headline reads ~16% while the sections average
-    # ~99%. See gruntz.core.report.data_measures.
+    # COVERAGE and FIDELITY, never one blended number. `matched_data` only ever
+    # answered "of what we enrolled, how much matches" - it read 100% while 60% of
+    # retail's initialized data was not enrolled at all, because an unpinned datum
+    # enters NEITHER side of the objdiff pair. See gruntz.core.data_universe.
     try:
-        from gruntz.core.report import data_measures
-        d = data_measures(report)["total"]
-        if d["bytes"]:
-            print(f"  Data: {100.0 * d['weighted'] / d['bytes']:.2f}% size-weighted "
-                  f"across {d['sections']} sections ({d['bytes']:,} B); objdiff "
-                  f"matched_data {_i(m.get('matched_data')):,} B "
-                  f"({m.get('matched_data_percent', 0.0):.2f}%, whole sections only).")
+        from gruntz.core.data_universe import measures
+        d = measures(report)
+        init, bss = d["initialized"], d["bss"]
+        if init["retail"] and init["enrolled"] is not None:
+            print(f"  Data: coverage {init['coverage']:.2f}% "
+                  f"({init['enrolled']:,}/{init['retail']:,} B of retail's "
+                  f"initialized data enrolled), fidelity {init['fidelity']:.2f}% "
+                  f"of those; .bss {bss['coverage']:.2f}%/{bss['fidelity']:.2f}% "
+                  f"(zero fill, reported apart); objdiff matched_data "
+                  f"{_i(m.get('matched_data')):,} B "
+                  f"({m.get('matched_data_percent', 0.0):.2f}%, per-unit sums).")
     except Exception:                                    # never break the report tail
         pass
     print(f"  Report: {REPORT}")
