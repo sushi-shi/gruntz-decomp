@@ -738,11 +738,18 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 }
 
 // @early-stop
-// The two GetRandom() sites that carry a `+lo` constant now reproduce retail's
-// instruction sequence exactly; the GetRandom(1, count) one does not, because our
-// cl proves `count == 0` inside the degenerate arm and folds `hi` to the literal 0
-// (retail keeps `mov edi,1` against a live `count`).  Residue outside the rand
-// sites is unrelated.
+// Two observed residues, both small and both regalloc-shaped:
+//  1. GetRandom(1, count)'s degenerate arm.  Retail selects with a branch between
+//     the literal lo and the register holding hi (0x62f72 `test al,1 / je / mov
+//     edi,1`); our cl additionally proves `count == 0` from `n == 0`, folds hi to
+//     the literal 0, and collapses `(rand()&1) ? 1 : 0` to `and edi,ebx` - two
+//     instructions shorter, so no source spelling of the shared <GameRand.h>
+//     inline reaches it.
+//  2. retail parks g_gameReg in EBP inside each PointInBounds block (0x6300d,
+//     0x63041) so the shared SpawnVoiceDriver tail is 3 instructions; ours holds
+//     0 in EBP for the whole function and reloads ds:0x64556c per site, making
+//     that tail 8.
+// Block skeleton is otherwise aligned 59/59.
 RVA(0x00062e10, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
@@ -760,81 +767,81 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
-    } else if (AT(m_poseIdle, GRUNT_IDLE2) == 0) {
+    } else if (AT(m_poseIdle, GRUNT_IDLE2) != 0) {
+        if (cycle != 0) {
 
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
-    } else if (cycle == 0) {
+            i32 count = 1;
+            if (AT(m_poseIdle, GRUNT_IDLE3) != 0) {
+                count = 2;
+            }
+            i32 idx = GetRandom(1, count);
+            if (cue != 0) {
+                g_gameReg->Rand();
+                i32 focused = (m_tileOwnerHi == g_curPlayer);
+                if (focused && idx > 0x5a) {
+                    if (CGameLevel::PointInBounds(
+                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                            m_object->m_screenX,
+                            m_object->m_screenY
+                        )) {
 
-        if (m_wwdObject->m_animCursor.m_animation == AT(m_poseIdle, GRUNT_IDLE1)) {
-            goto latch;
-        }
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
-        {
-            i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
+                        AddrWord<CGrunt> src;
+                        src.m_addr = this;
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
+                    }
+                } else if (focused || m_entranceReason != PICKUP_NONE) {
+                    switch (idx) {
+                        case GRUNT_IDLE_VARIANT_PRIMARY:
+                            if (CGameLevel::PointInBounds(
+                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    m_object->m_screenX,
+                                    m_object->m_screenY
+                                )) {
+
+                                AddrWord<CGrunt> src;
+                                src.m_addr = this;
+                                g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
+                            }
+                            break;
+                        case GRUNT_IDLE_VARIANT_SECONDARY:
+                            if (CGameLevel::PointInBounds(
+                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    m_object->m_screenX,
+                                    m_object->m_screenY
+                                )) {
+
+                                AddrWord<CGrunt> src;
+                                src.m_addr = this;
+                                g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(m_poseIdle[idx]);
+            m_resetApplied = 1;
             applied = 1;
-            m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
-            m_idleAnchor = g_frameTime;
+        } else {
+
+            if (m_wwdObject->m_animCursor.m_animation == AT(m_poseIdle, GRUNT_IDLE1)) {
+                goto latch;
+            }
+            m_value = m_wwdObject->m_animCursor.m_animation;
+            m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
+            {
+                i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(s_Grunt, s_IdleDelay, 0x7530));
+                applied = 1;
+                m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
+                m_idleAnchor = g_frameTime;
+            }
         }
     } else {
 
-        i32 count;
-        if (AT(m_poseIdle, GRUNT_IDLE3) == 0) {
-            count = 1;
-        } else {
-            count = 2;
-        }
-        i32 idx = GetRandom(1, count);
-        if (cue != 0) {
-            g_gameReg->Rand();
-            i32 focused = (m_tileOwnerHi == g_curPlayer);
-            if (focused && idx > 0x5a) {
-                if (CGameLevel::PointInBounds(
-                        &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                        m_object->m_screenX,
-                        m_object->m_screenY
-                    )) {
-
-                    AddrWord<CGrunt> src;
-                    src.m_addr = this;
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 4, -1, -1, -1);
-                }
-            } else if (focused || m_entranceReason != PICKUP_NONE) {
-                switch (idx) {
-                    case GRUNT_IDLE_VARIANT_PRIMARY:
-                        if (CGameLevel::PointInBounds(
-                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                                m_object->m_screenX,
-                                m_object->m_screenY
-                            )) {
-
-                            AddrWord<CGrunt> src;
-                            src.m_addr = this;
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 5, -1, -1, -1);
-                        }
-                        break;
-                    case GRUNT_IDLE_VARIANT_SECONDARY:
-                        if (CGameLevel::PointInBounds(
-                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
-                                m_object->m_screenX,
-                                m_object->m_screenY
-                            )) {
-
-                            AddrWord<CGrunt> src;
-                            src.m_addr = this;
-                            g_gameReg->m_cueSink->SpawnVoiceDriver(src.m_word, 6, -1, -1, -1);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseIdle[idx]);
-        m_resetApplied = 1;
-        applied = 1;
+        m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
     }
 
 latch:
