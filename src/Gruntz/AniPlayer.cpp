@@ -33,7 +33,7 @@ i32 CAniPlayer::Start(
     i32 b3,
     i32 b4
 ) {
-    if (Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
+    if (CSBI_ImageSetAni::Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
         return 0;
     }
     m_windowLo = m_interval;

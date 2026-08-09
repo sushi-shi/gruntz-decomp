@@ -406,7 +406,7 @@ anicycle	?RegisterActs@CAniCycle@@SAXXZ	100.0000	100.0000	12	12fff836e7fe	0xab0e
 anicycle	?SerializeMove@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	bf1ab83ba8aa	0xf470	100.0000
 aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	98.4848	12	0d6032600afb	0xe5c10	98.4848
 aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	2	0a3316025e62	0xe5c90	100.0000
-aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	74.8542	74.8542	1	94a7dd5697f9	0xe5ad0	74.8542
+aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	99.7500	99.7500	2	331e1e17d7c0	0xe5ad0	99.7500
 aniplayer	?TickToggle@CAniPlayer@@QAEHH@Z	92.0000	92.0000	7	bfedccb66220	0xe5b90	92.0000
 anirecord	??1CAniRecordBase2@@UAE@XZ	100.0000	100.0000	7	c2ed036c6f36	0x165dd0	100.0000
 anirecord	??1CAniRecordView@@UAE@XZ	100.0000	100.0000	6	5329dce8cbfc	0x1657a0	100.0000
