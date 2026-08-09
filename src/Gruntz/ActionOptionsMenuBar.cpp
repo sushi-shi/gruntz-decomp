@@ -197,11 +197,11 @@ i32 CActionOptionsMenuBar::Render() {
 
     if (m_buttonFrame[0]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
-        m_frame->RenderFrameClipped(ctx, sy - 0xc, sx + 2, &r, 0);
+        m_buttonFrame[0]->RenderFrameClipped(ctx, sy - 0xc, sx + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
-        m_frame->RenderFrameClipped(ctx, sy + 0x10, sx + 2, &r, 0);
+        m_buttonFrame[1]->RenderFrameClipped(ctx, sy + 0x10, sx + 2, &r, 0);
     }
     return 1;
 }

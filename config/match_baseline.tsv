@@ -389,7 +389,7 @@ actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAE?AW4ActionOptionHit@@HH
 actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEHW4ActionOptionButtonState@@0HHHH@Z	95.1321	95.1321	1	a4156038a2f9	0x9220	95.1321
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8723	84.8723	21	53b229396cb0	0x90e0	84.8723
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	100.0000	100.0000	15	4d53010c2064	0x9330	100.0000
-actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	73.4381	73.4381	17	74b5c51bf0a7	0x94c0	73.4381
+actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	82.3238	82.3238	18	48a1f28a6397	0x94c0	82.3238
 actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	95.8667	95.8667	8	ff1c2cbab247	0x9810	95.8667
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0	100.0000
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	21	0eca6a73d25a	0xafb0	100.0000
