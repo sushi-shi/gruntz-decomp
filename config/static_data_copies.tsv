@@ -24,7 +24,7 @@
 # now VISIBLE as an unpaired symbol in that unit's .bss score.
 #
 # Four blocks still disagree with the initializer rule and are the remaining
-# attribution worklist: 0x229eb8 (dialogs -> bootycheatstate), 0x245168
+# attribution worklist: 0x229eb8 (dialogs -> bootystateactivate), 0x245168
 # (brickzload -> gruntzmgr), 0x24c3b0 (play -> gruntzplayer), 0x24c548
 # (play -> playassetload).
 #
@@ -729,15 +729,15 @@
 0x251408	?s_gruntDirCenter_251408@@3UGruntDirectionCell@@A	heapdiag	0xc	data
 0x251418	?s_gruntDirSouthWest_251418@@3UGruntDirectionCell@@A	heapdiag	0xc	data
 # split half-copies (E,N,S,W | NE,NW,SE,C,SW around a per-TU interleaver)
-0x229eb8	?s_gruntDirEast_229eb8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x229ec8	?s_gruntDirNorth_229ec8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x229ed8	?s_gruntDirSouth_229ed8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x229ee8	?s_gruntDirWest_229ee8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x229f20	?s_gruntDirNorthEast_229f20@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x22aed0	?s_gruntDirNorthWest_22aed0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x22aee0	?s_gruntDirSouthEast_22aee0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x22aef0	?s_gruntDirCenter_22aef0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
-0x22af00	?s_gruntDirSouthWest_22af00@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x229eb8	?s_gruntDirEast_229eb8@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x229ec8	?s_gruntDirNorth_229ec8@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x229ed8	?s_gruntDirSouth_229ed8@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x229ee8	?s_gruntDirWest_229ee8@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x229f20	?s_gruntDirNorthEast_229f20@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x22aed0	?s_gruntDirNorthWest_22aed0@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x22aee0	?s_gruntDirSouthEast_22aee0@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x22aef0	?s_gruntDirCenter_22aef0@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
+0x22af00	?s_gruntDirSouthWest_22af00@@3UGruntDirectionCell@@A	bootystateactivate	0xc	data
 0x22bd28	?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bd38	?s_gruntDirNorth_22bd38@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bd48	?s_gruntDirSouth_22bd48@@3UGruntDirectionCell@@A	videoconfig	0xc	data

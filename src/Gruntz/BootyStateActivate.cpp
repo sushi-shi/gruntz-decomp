@@ -3,21 +3,27 @@
 #include <Gruntz/BootyStateActivate.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
+#include <AddrWord.h>
+#include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
+#include <Gruntz/Attract.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattleStatRow.h>
 #include <Gruntz/BattlezData.h>
+#include <Gruntz/BootyCheatState.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
@@ -27,36 +33,52 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DirectionRingIndex.h>
 #include <Gruntz/ErrorStringId.h>
+#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMode.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GameText.h>
+#include <Gruntz/GlyphStringDraw.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/LightFxMgr.h>
+#include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SortKeyLayer.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/String.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WarlordOwner.h>
 #include <Gruntz/WarpLetter.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
+#include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 DATA(0x001e8fe8)
 const i32 g_bootyLetterCoords[32] = {
@@ -183,6 +205,119 @@ DATA(0x0022ae50)
 char g_secretMsgB[0x80];
 
 // @early-stop
+
+char g_cheatTable[0xfa0];
+char g_cheatTableEnd[4];
+DATA(0x0022af10)
+i32 g_bootyCheatBuilt = 0;
+
+// @early-stop
+RVA(0x00018830, 0x380)
+i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
+
+    if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
+        goto fail;
+    }
+
+    if (g_bootyCheatBuilt == 0) {
+        CString bootyCheatz("BootyCheatz");
+        CString empty("");
+        CString grp;
+        CString text;
+        CString desc;
+        i32 i = 0;
+
+        AddrWord<char> cur;
+        AddrWord<char> last;
+        last.m_addr = g_cheatTableEnd;
+        char* p = g_cheatTable;
+        do {
+            grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
+            i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
+            grp.Format("Cheat%i", id);
+            text = *g_buteMgr.GetStringDef(grp, "Text", &empty);
+            desc = *g_buteMgr.GetStringDef(grp, "Desc", &empty);
+            strcpy(p - 0x20, text);
+            strcpy(p, desc);
+            i++;
+            p += 0xa0;
+            cur.m_addr = p;
+        } while (cur.m_word < last.m_word);
+        g_bootyCheatBuilt = 1;
+    }
+
+    m_mgr->RestoreVideoMode(0);
+
+    m_stateBank = static_cast<CSymTab*>(m_symParser->ResolvePath("STATEZ_BOOTY"));
+    if (!m_stateBank) {
+        goto fail;
+    }
+    m_gameBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GAME"));
+    if (!m_gameBank) {
+        goto fail;
+    }
+    m_gruntzBank = static_cast<CSymTab*>(m_symParser->ResolvePath("GRUNTZ"));
+    if (!m_gruntzBank) {
+        goto fail;
+    }
+
+    m_world->m_childGroup->ClearChildren();
+
+    {
+        void* soundz = SymTab2c()->FindSub("SOUNDZ");
+        if (!soundz) {
+            goto fail;
+        }
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "BOOTY", "_");
+
+        void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
+        if (!wand) {
+            goto fail;
+        }
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(wand), "GRUNTZ_WANDGRUNT", "_");
+
+        void* imagez = SymTab2c()->FindSub("IMAGEZ");
+        if (!imagez) {
+            goto fail;
+        }
+        m_world->m_imageRegistry->InstallTree(imagez, "BOOTY", "_");
+    }
+
+    {
+        int(WINAPI * sc)(BOOL) = ShowCursor;
+        while (sc(0) >= 0) {
+        }
+    }
+
+    m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
+
+    m_secretHudHandled = 0;
+
+    if (!BuildWarpStoneGlitterAnimation()) {
+        goto fail;
+    }
+    if (!BuildGruntSprintAnimation()) {
+        goto fail;
+    }
+    if (!LoadGruntEffectSprites()) {
+        goto fail;
+    }
+    if (!BuildBootyWalkingGruntz()) {
+        goto fail;
+    }
+    if (!BuildBootyPerfectAnimation()) {
+        goto fail;
+    }
+
+    m_frameIntervalLo = 0x21;
+    m_frameIntervalHi = 0;
+    m_frameStampLo = g_frameTime;
+    m_frameStampHi = 0;
+    return 1;
+
+fail:
+    return 0;
+}
 
 RVA(0x00018c90, 0x72)
 void CBootyState::ReleaseResources() {
@@ -574,6 +709,422 @@ void CBootyState::MoveLettersByDir() {
     ((m_initOnce != 0 && g_gameReg->m_scoreHud->m_allDone != 0) ? g_gameReg->m_scoreHud->getter()  \
                                                                 : g_gameReg->m_scoreHud->field)
 
+DATA(0x0020b8b8)
+i32 g_levelMsgIconPos[16] = {
+    0xea,
+    0x80,
+    0xec,
+    0xae,
+    0xeb,
+    0xe3,
+    0xe9,
+    0x10b,
+    0xe9,
+    0x12f,
+    0xe7,
+    0x159,
+    0xe8,
+    0x17c,
+    0xe9,
+    0x1a8
+};
+
+// @early-stop
+#include <Gruntz/GlyphStringDraw.h>
+#include <Mfc.h>
+#include <Gruntz/GruntDirection.h>
+#include <Wap32/ScreenGeometry.h>
+#include <Gruntz/SpriteStateFlags.h>
+// @early-stop
+RVA(0x00019cd0, 0x200)
+void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
+    if (!outX || !outY) {
+        return;
+    }
+    // the coin flip is latched into a local; retail spills it to the (now dead)
+    // outX parameter slot in each of the three arms that take it.
+    i32 flip;
+    switch (sel) {
+        case DIR_NORTH:
+            *outX = g_gameReg->Rand() % 0x281;
+            *outY = SCREEN_H_PX;
+            return;
+        case DIR_SOUTH:
+            *outX = g_gameReg->Rand() % 0x281;
+            *outY = 0;
+            return;
+        case DIR_EAST:
+            *outX = 0;
+            goto y_1e1;
+        case DIR_WEST:
+            *outX = SCREEN_W_PX;
+            goto y_1e1;
+        y_1e1:
+            *outY = g_gameReg->Rand() % 0x1e1;
+            return;
+        case DIR_NORTHEAST:
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
+                *outX = 0;
+                goto y_f1;
+            }
+            *outX = g_gameReg->Rand() % 0x141;
+            *outY = SCREEN_H_PX;
+            return;
+        case DIR_NORTHWEST:
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
+                *outX = SCREEN_W_PX;
+                goto y_f1;
+            }
+            *outX = g_gameReg->Rand() % 0x141 + SCREEN_HALF_W_PX;
+            *outY = SCREEN_H_PX;
+            return;
+        y_f1:
+            *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
+            return;
+        case DIR_SOUTHEAST:
+            flip = g_gameReg->Rand() % 2;
+            if (flip) {
+                *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX);
+                *outY = 0;
+                return;
+            }
+            *outX = 0;
+            goto y_f0;
+        case DIR_SOUTHWEST:
+            if (g_gameReg->RandRange(0, 1)) {
+                *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX) + SCREEN_HALF_W_PX;
+                *outY = 0;
+                return;
+            }
+            *outX = SCREEN_W_PX;
+            goto y_f0;
+        y_f0:
+            *outY = g_gameReg->RandRange(0, SCREEN_HALF_H_PX);
+            return;
+    }
+}
+
+// @early-stop
+RVA(0x00019f50, 0xb2)
+i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
+    i32 span = hi - lo + 1;
+    if (span == 0) {
+        if ((GetRandomNumber() & 1)) {
+            return lo;
+        }
+        return hi;
+    }
+    return lo + (GetRandomNumber()) % span;
+}
+
+// @interleaver Rng2Next - 70 B lone body at 0x15cbe0, between Deserialize
+// (wwdfactoryobject) and GetFrame (wwdfactoryobject): a first-use placement.
+
+// @early-stop
+RVA(0x0001a040, 0x55e)
+i32 CBootyState::LoadGruntEffectSprites() {
+    CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    if (handleA == NULL) {
+        return 0;
+    }
+    CShadeTable* handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
+
+    void* img = m_gruntzBank->ResolvePath("IMAGEZ_GOKARTGRUNT");
+    if (img == NULL) {
+        return 0;
+    }
+    m_world->m_imageRegistry->InstallTree(img, "GRUNTZ_GOKARTGRUNT", "_");
+
+    CDDrawChildGroup* f = g_gameReg->m_world->m_childGroup;
+
+    CWwdGameObjectA* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[0] = sw;
+    if (sw == NULL) {
+        return 0;
+    }
+    sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
+    m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_icons[0]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* wh =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[7] = wh;
+    if (wh == NULL) {
+        return 0;
+    }
+    CLightFxMgr* pump = g_gameReg->m_logicPump;
+    CShadeTable* tint = pump->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    m_icons[7]->ApplyName("GAME_WORMHOLE");
+    m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    m_icons[7]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    CWwdGameObjectA* icon7 = m_icons[7];
+    icon7->m_drawActive = 1;
+    icon7->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    icon7->m_drawFillArg = tint;
+
+    CWwdGameObjectA* ex =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[1] = ex;
+    if (ex == NULL) {
+        return 0;
+    }
+    ex->ApplyName("GRUNTZ_EXITZ");
+    m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
+    CWwdGameObjectA* icon1 = m_icons[1];
+    icon1->m_drawActive = 1;
+    icon1->m_drawFillCmd = SHADE_PAL_16;
+    icon1->m_drawFillArg = handleA;
+    m_icons[1]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* dt =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[2] = dt;
+    if (dt == NULL) {
+        return 0;
+    }
+    dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
+    m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
+    CWwdGameObjectA* icon2 = m_icons[2];
+    icon2->m_drawActive = 1;
+    icon2->m_drawFillCmd = SHADE_PAL_16;
+    icon2->m_drawFillArg = handleA;
+    m_icons[2]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* gl =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[3] = gl;
+    if (gl == NULL) {
+        return 0;
+    }
+    gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
+    m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CWwdGameObjectA* icon3 = m_icons[3];
+    icon3->m_drawActive = 1;
+    icon3->m_drawFillCmd = SHADE_PAL_16;
+    icon3->m_drawFillArg = handleA;
+    m_icons[3]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* bb =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[4] = bb;
+    if (bb == NULL) {
+        return 0;
+    }
+    bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
+    m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CWwdGameObjectA* p30c = m_icons[4];
+    p30c->m_drawActive = 1;
+    p30c->m_drawFillCmd = SHADE_PAL_16;
+    p30c->m_drawFillArg = handleA;
+    m_icons[4]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* rz =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[5] = rz;
+    if (rz == NULL) {
+        return 0;
+    }
+    rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
+    m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CWwdGameObjectA* icon5 = m_icons[5];
+    icon5->m_drawActive = 1;
+    icon5->m_drawFillCmd = SHADE_PAL_16;
+    icon5->m_drawFillArg = handleA;
+    m_icons[5]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    CWwdGameObjectA* cn =
+        g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    m_icons[6] = cn;
+    if (cn == NULL) {
+        return 0;
+    }
+    cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
+    m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CWwdGameObjectA* icon6 = m_icons[6];
+    icon6->m_drawActive = 1;
+    icon6->m_drawFillCmd = SHADE_PAL_16;
+    icon6->m_drawFillArg = handleA;
+    m_icons[6]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+    for (i32 i = 0; i < 8; i++) {
+        CWwdGameObjectA* b =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        m_bomb[i] = b;
+        if (b == NULL) {
+            return 0;
+        }
+        b->ApplyName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
+        m_bomb[i]->ApplyLookupGeometry("GAME_GRUNTBOMBSPRINT", 0);
+        CWwdGameObjectA* bp = m_bomb[i];
+        bp->m_drawActive = 1;
+        bp->m_drawFillCmd = SHADE_PAL_16;
+        bp->m_drawFillArg = handleA;
+        m_bomb[i]->m_screenX = 0x2c6;
+        m_bomb[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
+        m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+        CWwdGameObjectA* e =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        m_expl[i] = e;
+        if (e == NULL) {
+            return 0;
+        }
+        e->ApplyName("GAME_EXPLOSION");
+        m_expl[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+
+        CWwdGameObjectA* g =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        m_gokart[i] = g;
+        if (g == NULL) {
+            return 0;
+        }
+        g->ApplyName("GRUNTZ_GOKARTGRUNT_EAST");
+        m_gokart[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        CWwdGameObjectA* gp = m_gokart[i];
+        gp->m_drawActive = 1;
+        gp->m_drawFillCmd = SHADE_PAL_16;
+        gp->m_drawFillArg = handleB;
+        m_gokart[i]->m_screenX = -70;
+        m_gokart[i]->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2;
+        m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    }
+    return 1;
+}
+
+// @early-stop
+RVA(0x0001a700, 0x6b6)
+i32 CBootyState::LevelMsgHudDriver() {
+    if (m_initGate != 0) {
+
+        if (m_slot == BOOTY_EXPLOSION_COUNT) {
+
+            for (i32 i = 0; i < 8; i++) {
+                CWwdGameObjectA* e = m_expl[i];
+                if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
+                    e->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                }
+            }
+            return 1;
+        }
+
+        i32 shown = 0;
+        for (i32 i = 0; i < 8; i++) {
+            RECT box;
+            m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
+            m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
+            CopyRect(&box, &g_levelMsgRectsA[i]);
+            CString text = g_levelMsgStrings[i];
+            m_templateFlags[i] = 1;
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            CopyRect(&box, &g_levelMsgRectsB[i]);
+            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            m_readyFlags[i] = 1;
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == NULL)) {
+                CWwdGameObjectA* e = m_expl[i];
+                e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+                e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
+                e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
+                if (shown == 0) {
+
+                    CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+                    if (host->m_emitGate == 0) {
+                        void* cue_ob = 0;
+                        host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
+                        LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                        if (cue != NULL) {
+                            cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                        }
+                    }
+                    shown = 1;
+                }
+            }
+        }
+        m_slot = 8;
+        return 1;
+    }
+
+    if (m_slot < 8) {
+        if (m_slot == 0
+            && (HAS(m_bomb[0]->m_stateFlags, SPRITE_STATE_HIDDEN)
+                || HAS(m_gokart[0]->m_stateFlags, SPRITE_STATE_HIDDEN))) {
+            m_bomb[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_gokart[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        }
+        m_bomb[m_slot]->m_screenX -= 10;
+        i32 gx = m_gokart[m_slot]->m_screenX + 10;
+        m_gokart[m_slot]->m_screenX = gx;
+        i32 s = m_slot;
+
+        if (m_templateFlags[s] == 0
+            && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
+            RECT box;
+            m_templateFlags[s] = 1;
+            CopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            CString text = g_levelMsgStrings[m_slot];
+            m_templateFlags[m_slot] = 1;
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+        s = m_slot;
+        if (m_readyFlags[s] == 0 && gx >= g_levelMsgIconPos[s * 2]) {
+            m_readyFlags[s] = 1;
+            m_icons[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_icons[m_slot]->m_screenX = g_levelMsgIconPos[m_slot * 2];
+            m_icons[m_slot]->m_screenY = g_levelMsgIconPos[m_slot * 2 + 1];
+        }
+    }
+
+    for (i32 j = 0; j < m_slot; j++) {
+        CWwdGameObjectA* e = m_expl[j];
+        if (e->m_animCursor.m_finished != 0 && e->m_animCursor.m_frameTicksLeft == 0) {
+            e->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        }
+    }
+
+    for (i32 i = m_slot; i < 8; i++) {
+        if (m_gokart[i]->m_screenX >= m_bomb[i]->m_screenX) {
+            RECT box;
+            CString text;
+            CopyRect(&box, &g_levelMsgRectsB[i]);
+            this->FormatHudText(&text, static_cast<BootyStatRow>(i));
+            m_readyFlags[i] = 1;
+            ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
+            CWwdGameObjectA* e = m_expl[i];
+            e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+            e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
+            e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
+            m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+            m_slot++;
+            CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
+            if (host->m_emitGate == 0) {
+                void* cue_ob = 0;
+                host->m_cues.Lookup("GAME_EXPLOSION1", cue_ob);
+                LeafCue* cue = static_cast<LeafCue*>(cue_ob);
+                if (cue != NULL && g_sndEnabled != 0
+                    && static_cast<u32>((g_killCueClock - cue->m_lastPlayTime))
+                           >= static_cast<u32>(cue->m_replayDelay)) {
+                    cue->m_lastPlayTime = g_killCueClock;
+                    cue->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                }
+            }
+            if (m_slot >= 8) {
+                return 1;
+            }
+            m_bomb[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_gokart[m_slot]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        }
+    }
+    return 0;
+}
+
 RVA(0x0001af70, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
     switch (sel) {
@@ -642,6 +1193,249 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
             *buf = "???";
             return;
     }
+}
+
+// @early-stop
+RVA(0x0001b450, 0x1ac)
+i32 CBootyState::BuildBootyWalkingGruntz() {
+    if (g_gameReg->m_scoreHud->m_isCustomLevel != 0) {
+        return 1;
+    }
+    if (g_gameReg->m_scoreHud->m_count > IDX(QUESTLEVEL_LAST)) {
+        return 1;
+    }
+    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+    if (sel == NULL) {
+        return 0;
+    }
+    for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
+        m_animSprites[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        if (m_animSprites[i] == NULL) {
+            return 0;
+        }
+        m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_NORTH_WALK");
+        m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_WALK", 0);
+        m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        m_animSprites[i]->m_drawActive = 1;
+        m_animSprites[i]->m_drawFillCmd = SHADE_PAL_16;
+        m_animSprites[i]->m_drawFillArg = sel;
+        m_visSprites[i] =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
+        if (m_visSprites[i] == NULL) {
+            return 0;
+        }
+        DATA(0x0022af0c)
+        static CString buf;
+        const char* prefix =
+            (i < (g_gameReg->m_scoreHud->m_count - 1) % 4 + 1) ? "GAME_INGAMEICONZ_" : "BOOTY_DIM";
+        buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
+        m_visSprites[i]->ApplyName(buf);
+        m_visSprites[i]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        m_visSprites[i]->m_screenX = g_idleSpriteIds[i] + 0xfa;
+        m_visSprites[i]->m_screenY = 0xdc;
+    }
+    return 1;
+}
+
+// @early-stop
+RVA(0x0001b690, 0x7e0)
+i32 CBootyState::UpdateBootyWalkingGruntz() {
+    CBattlezData* rec = g_gameReg->m_scoreHud;
+    if (rec->m_isCustomLevel != 0) {
+        return 1;
+    }
+    i32 n = rec->m_count;
+    if (n > 0x24) {
+        return 1;
+    }
+    if (m_stepIndex >= WARPLETTER_COUNT) {
+        return 1;
+    }
+
+    if (m_initGate != 0) {
+
+        if (n < 0x24) {
+            for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
+                if (i <= (g_gameReg->m_scoreHud->m_count - 1) % 4) {
+                    m_visSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
+                    m_animSprites[i]->m_screenY = 0xdc;
+                    m_animSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    if ((g_gameReg->m_scoreHud)->GetRecordValue(i) == 0) {
+                        m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                    } else {
+                        CString letter;
+                        switch (static_cast<WarpLetter>(i)) {
+                            case WARPLETTER_W:
+                                letter = "W";
+                                break;
+                            case WARPLETTER_A:
+                                letter = "A";
+                                break;
+                            case WARPLETTER_R:
+                                letter = "R";
+                                break;
+                            case WARPLETTER_P:
+                                letter = "P";
+                                break;
+                        }
+                        m_animSprites[i]->ApplyName("GRUNTZ_PICKUPS");
+                        m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+                    }
+                } else {
+                    m_visSprites[i]->m_screenX = g_idleSpriteIds[i];
+                    m_visSprites[i]->m_screenY = 0xdc;
+                    m_visSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                    m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                }
+            }
+        }
+        m_stepIndex = 4;
+        return 1;
+    }
+
+    if (m_visSprites[0]->m_screenX != g_idleSpriteIds[0]) {
+        for (i32 k = 0; k < 4; k++) {
+            m_visSprites[k]->m_screenX -= 10;
+        }
+    }
+    if (m_stepIndex == 0 && HAS(m_animSprites[0]->m_stateFlags, SPRITE_STATE_HIDDEN)) {
+        m_animSprites[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+        m_animSprites[0]->m_screenX = g_idleSpriteIds[0];
+        m_animSprites[0]->m_screenY = 0x1f4;
+    }
+
+    if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
+        if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) == 0) {
+            m_soundStarted = 1;
+            CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+            if (ss->m_emitGate == 0) {
+                LeafCue* res = 0;
+                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
+                if (res != NULL) {
+                    res->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                }
+            }
+        }
+    }
+
+    if (m_soundStarted != 0) {
+        CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+        LeafCue* res = 0;
+        MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
+        if (res == NULL) {
+            return 1;
+        }
+        if (res->m_sound->IsPlaying() != 0) {
+            m_visSprites[m_stepIndex]->m_stateFlags ^= SPRITE_STATE_HIDDEN;
+        } else {
+            m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        }
+    }
+
+    if (m_walkStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
+        {
+            CString letter;
+            switch (static_cast<WarpLetter>(m_stepIndex)) {
+                case WARPLETTER_W:
+                    letter = "W";
+                    break;
+                case WARPLETTER_A:
+                    letter = "A";
+                    break;
+                case WARPLETTER_R:
+                    letter = "R";
+                    break;
+                case WARPLETTER_P:
+                    letter = "P";
+                    break;
+            }
+            CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
+            if (sel != NULL) {
+                if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) != 0) {
+                    CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
+                    if (ss->m_emitGate == 0) {
+                        LeafCue* res = 0;
+                        MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
+                        if (res != NULL && g_sndEnabled != 0) {
+                            u32 clock = g_killCueClock;
+                            if (clock - res->m_lastPlayTime >= res->m_replayDelay) {
+                                res->m_lastPlayTime = clock;
+                                res->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                            }
+                        }
+                    }
+                    m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_PICKUPS");
+                    m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+                    CWwdGameObjectA* g = m_animSprites[m_stepIndex];
+                    g->m_drawActive = 1;
+                    g->m_drawFillCmd = SHADE_PAL_16;
+                    g->m_drawFillArg = sel;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    g_gameReg->m_cueSink
+                        ->SpawnVoiceDriver(0, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
+                    m_walkStarted = 1;
+                } else {
+                    m_animSprites[m_stepIndex]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                    m_animSprites[m_stepIndex]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                    CWwdGameObjectA* g = m_animSprites[m_stepIndex];
+                    g->m_drawActive = 1;
+                    g->m_drawFillCmd = SHADE_PAL_16;
+                    g->m_drawFillArg = sel;
+                    m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
+                    m_stepIndex++;
+                    g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
+                    if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
+                        m_stepIndex = 4;
+                        return 1;
+                    }
+                    if (m_stepIndex < 4) {
+                        m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                        m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
+                        m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
+                        m_soundStarted = 0;
+                        m_walkStarted = 0;
+                    }
+                }
+            }
+        }
+    } else if (m_walkStarted != 0) {
+
+        CWwdGameObjectA* spr = m_animSprites[m_stepIndex];
+        if (spr->m_animCursor.m_finished != 0 && spr->m_animCursor.m_frameTicksLeft == 0) {
+            m_stepIndex++;
+            if (m_stepIndex == g_gameReg->m_scoreHud->m_count % 4) {
+                m_stepIndex = 4;
+                return 1;
+            }
+            if (m_stepIndex < 4) {
+                m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
+                m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
+                m_walkStarted = 0;
+                m_soundStarted = 0;
+            }
+        }
+    } else {
+        m_animSprites[m_stepIndex]->m_screenY -= 3;
+    }
+    return 0;
+}
+
+RVA(0x0001c070, 0x59)
+i32 CBootyState::BuildBootyPerfectAnimation() {
+    CWwdGameObjectA* spr =
+        g_gameReg->m_world->m_childGroup
+            ->CreateSprite(0, static_cast<i32>(0xffffff7e), 0xf0, 0x64, "SimpleAnimation", 3);
+    m_bootyPerfectSprite = spr;
+    if (!spr) {
+        return 0;
+    }
+    spr->ApplyName("BOOTY_PERFECT");
+    m_bootyPerfectSprite->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    return 1;
 }
 
 RVA(0x0001c0f0, 0xd5)
@@ -1504,6 +2298,227 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
         }
     }
     return 1;
+}
+
+// @early-stop
+RVA(0x0001e720, 0x400)
+void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
+    *reg = "GAME_INGAMEICONZ_";
+    // Callers hand in <category base> + <index within the category>, so the id is
+    // formed by arithmetic and enters the domain here.
+    switch (static_cast<PickupType>(key)) {
+        case PICKUP_BOMB:
+            *reg += "TOOLZ_BOMBZ";
+            return;
+        case PICKUP_BOOMERANG:
+            *reg += "TOOLZ_BOOMERANGZ";
+            return;
+        case PICKUP_BRICK:
+            *reg += "TOOLZ_BRICKZ";
+            return;
+        case PICKUP_CLUB:
+            *reg += "TOOLZ_CLUBZ";
+            return;
+        case PICKUP_GAUNTLETZ:
+            *reg += "TOOLZ_GAUNTLETZ";
+            return;
+        case PICKUP_GLOVEZ:
+            *reg += "TOOLZ_GLOVEZ";
+            return;
+        case PICKUP_GOOBER:
+            *reg += "TOOLZ_GOOBERZ";
+            return;
+        case PICKUP_GRAVITYBOOTZ:
+            *reg += "TOOLZ_GRAVITYBOOTZ";
+            return;
+        case PICKUP_GUNHAT:
+            *reg += "TOOLZ_GUNHATZ";
+            return;
+        case PICKUP_NERFGUN:
+            *reg += "TOOLZ_NERFGUNZ";
+            return;
+        case PICKUP_ROCK:
+            *reg += "TOOLZ_ROCKZ";
+            return;
+        case PICKUP_SHIELD:
+            *reg += "TOOLZ_SHIELDZ";
+            return;
+        case PICKUP_SHOVEL:
+            *reg += "TOOLZ_SHOVELZ";
+            return;
+        case PICKUP_SPRING:
+            *reg += "TOOLZ_SPRINGZ";
+            return;
+        case PICKUP_SPY:
+            *reg += "TOOLZ_SPYZ";
+            return;
+        case PICKUP_SWORD:
+            *reg += "TOOLZ_SWORDZ";
+            return;
+        case PICKUP_TIMEBOMB:
+            *reg += "TOOLZ_TIMEBOMBZ";
+            return;
+        case PICKUP_TOOB:
+            *reg += "TOOLZ_TOOBZ";
+            return;
+        case PICKUP_WAND:
+            *reg += "TOOLZ_WANDZ";
+            return;
+        case PICKUP_WARPSTONE:
+            *reg += "TOOLZ_WARPSTONEZ1";
+            return;
+        case PICKUP_WELDER:
+            *reg += "TOOLZ_WELDERZ";
+            return;
+        case PICKUP_WINGZ:
+            *reg += "TOOLZ_WINGZ";
+            return;
+        case PICKUP_BABYWALKER:
+            *reg += "TOYZ_BABYWALKERZ";
+            return;
+        case PICKUP_BEACHBALL:
+            *reg += "TOYZ_BEACHBALLZ";
+            return;
+        case PICKUP_BIGWHEEL:
+            *reg += "TOYZ_BIGWHEELZ";
+            return;
+        case PICKUP_GOKART:
+            *reg += "TOYZ_GOKARTZ";
+            return;
+        case PICKUP_JACKINTHEBOX:
+            *reg += "TOYZ_JACKINTHEBOXZ";
+            return;
+        case PICKUP_JUMPROPE:
+            *reg += "TOYZ_JUMPROPEZ";
+            return;
+        case PICKUP_POGOSTICK:
+            *reg += "TOYZ_POGOSTICKZ";
+            return;
+        case PICKUP_SCROLL:
+            *reg += "TOYZ_SCROLLZ";
+            return;
+        case PICKUP_SQUEAKTOY:
+            *reg += "TOYZ_SQUEAKTOYZ";
+            return;
+        case PICKUP_YOYO:
+            *reg += "TOYZ_YOYOZ";
+            return;
+        case PICKUP_MEGAPHONE:
+            *reg += "POWERUPZ_MEGAPHONEZ";
+            return;
+        case PICKUP_GHOST:
+            *reg += "POWERUPZ_GHOST";
+            return;
+        case PICKUP_SUPERSPEED:
+            *reg += "POWERUPZ_SUPERSPEED";
+            return;
+        case PICKUP_INVULNERABILITY:
+            *reg += "POWERUPZ_INVULNERABILITY";
+            return;
+        case PICKUP_CONVERSION:
+            *reg += "POWERUPZ_CONVERSION";
+            return;
+        case PICKUP_DEATHTOUCH:
+            *reg += "POWERUPZ_DEATHTOUCH";
+            return;
+        case PICKUP_ROIDZ:
+            *reg += "POWERUPZ_ROIDZ";
+            return;
+        case PICKUP_REACTIVEARMOR:
+            *reg += "POWERUPZ_REACTIVEARMOR";
+            return;
+        case PICKUP_RANDOMCOLORZ:
+            *reg += "POWERUPZ_RANDOMCOLORZ";
+            return;
+        case PICKUP_SCREENSHAKE:
+            *reg += "POWERUPZ_SCREENSHAKE";
+            return;
+        case PICKUP_BLACKSCREEN:
+            *reg += "POWERUPZ_BLACKSCREEN";
+            return;
+        case PICKUP_MINICAM:
+            *reg += "POWERUPZ_MINICAM";
+            return;
+        default:
+            *reg += "POWERUPZ_COIN";
+            return;
+    }
+}
+
+DATA(0x002454e8)
+CString g_areaNames[8] = {
+    "Rocky Roadz",
+    "Gruntziclez",
+    "Trouble in the Tropicz",
+    "High on Sweetz",
+    "High Rollerz",
+    "Honey, I Shrunk the Gruntz!",
+    "The Miniature Masterz",
+    "Gruntz in Space",
+};
+
+DATA(0x002451a8)
+CWinApp g_gruntzWinApp("Gruntz");
+
+DATA(0x00245270)
+GruntDeathType g_areaPitDeath;
+
+DATA(0x002453d8)
+CButeMgr g_buteMgr;
+
+DATA(0x00245508)
+i32 g_panMinX;
+DATA(0x0024550c)
+i32 g_panMaxX;
+
+DATA(0x00245524)
+CString g_brickText1;
+
+DATA(0x00245528)
+CString g_brickText2;
+
+DATA(0x0024552c)
+CString g_str64552c;
+
+DATA(0x00245530)
+CString g_str645530;
+
+DATA(0x00245514)
+CString g_str645514;
+
+DATA(0x00245518)
+CString g_str645518;
+
+DATA(0x0024551c)
+CString g_str64551c;
+
+DATA(0x00245520)
+CString g_str645520;
+
+DATA(0x00245534)
+i32 g_attractStateCount = 0;
+DATA(0x00245538)
+i32 g_dlgVal_645538;
+DATA(0x0024553c)
+GruntDeathType g_areaHazardDeath = DEATH_DROP;
+
+DATA(0x00245540)
+FreeNodePool g_coordPool;
+
+RVA(0x0001ec20, 0xa0)
+CString CMultiBootyState::GetWarlordName(i32 id) {
+    switch (static_cast<WarlordOwner>(id)) {
+        case WARLORDZ_KING:
+            return CString("KING");
+        case WARLORDZ_NAPOLEAN:
+            return CString("NAPOLEAN");
+        case WARLORDZ_PATTON:
+            return CString("PATTON");
+        case WARLORDZ_VIKING:
+            return CString("VIKING");
+        default:
+            return CString("");
+    }
 }
 
 RVA(0x0001ecf0, 0x2a)

@@ -273,18 +273,8 @@ source = "src/Gruntz/BrickzLoad.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "bootycheatstate"
-source = "src/Gruntz/BootyCheatState.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "grunttilescan"
 source = "src/Gruntz/GruntTileScan.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "bootywalkanim"
-source = "src/Gruntz/BootyWalkAnim.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -726,11 +716,6 @@ source = "src/Gruntz/WinMain.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "gamemode"
-source = "src/Gruntz/GameMode.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "creditsstate"
 source = "src/Gruntz/CreditsState.cpp"
 flags = "cpp-rtti"
@@ -791,11 +776,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "fontconfig"
 source = "src/Gruntz/FontConfig.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "gametext"
-source = "src/Gruntz/GameText.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -866,11 +846,6 @@ flags = "cpp"
 [[unit]]
 unit = "statusbarmgr"
 source = "src/Gruntz/StatusBarMgr.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "iconloaders"
-source = "src/Gruntz/IconLoaders.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
