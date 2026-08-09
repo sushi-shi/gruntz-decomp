@@ -479,7 +479,7 @@ void CInputDevice::ReleaseDevices() {
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
-    CInputDevRoot::ReleaseDevices();
+    CInputDevBase::ReleaseDevices();
 }
 
 RVA(0x00133c30, 0xc9)
@@ -779,7 +779,7 @@ void CDeviceConfigB::ReleaseDevices() {
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
-    CInputDevRoot::ReleaseDevices();
+    CInputDevBase::ReleaseDevices();
 }
 
 RVA(0x001343a0, 0xb)
@@ -894,7 +894,7 @@ void CDeviceConfigC::ReleaseDevices() {
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
-    CInputDevRoot::ReleaseDevices();
+    CInputDevBase::ReleaseDevices();
 }
 
 RVA(0x00134710, 0xb2)

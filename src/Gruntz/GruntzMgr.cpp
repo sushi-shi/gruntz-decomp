@@ -345,8 +345,7 @@ RVA_COMPGEN(0x0008cfd0, 0x1e, ??_GCSplashState@@UAEPAXI@Z)
 RVA_COMPGEN(0x0008d0a0, 0x1e, ??_GCDemo@@UAEPAXI@Z)
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
-
-    CPlay::ReleaseResources();
+    CDemo::ReleaseResources();
 }
 
 RVA(0x0008d1e0, 0x6)

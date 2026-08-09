@@ -27,8 +27,7 @@ CGruntzApp::CGruntzApp() {}
 RVA_COMPGEN(0x00080880, 0x1e, ??_GCGruntzApp@@UAEPAXI@Z)
 RVA(0x000808b0, 0x60)
 CGruntzApp::~CGruntzApp() {
-
-    CGameApp::CloseResources();
+    CGruntzApp::CloseResources();
 }
 
 RVA(0x00080930, 0x31)

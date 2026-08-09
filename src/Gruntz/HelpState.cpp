@@ -36,7 +36,7 @@ GameStateId CHelpState::Update() {
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
-    CState::ReleaseResources();
+    CHelpState::ReleaseResources();
 }
 
 RVA(0x0008cfb0, 0x6)
