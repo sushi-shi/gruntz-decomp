@@ -4085,6 +4085,11 @@ kindDispatch:
 }
 
 // @early-stop
+// Branch mnemonics agree 55/55, rets 2/2; one target differs (#23, the eqO
+// early-out at base +0x177) - retail sends it to its own block at 0x5efc1 where
+// cl cross-jumps it into the shared epilogue.  The rest is register naming:
+// retail loads the object into edx/ecx where cl picks eax/ecx, so every operand
+// in the two clamp blocks reads one register over.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
@@ -4118,16 +4123,26 @@ void CGrunt::FinalizeStep(char* name) {
         }
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
-        if (row == GRUNT_DIRECTION_GRID_LOW) {
-            row = GRUNT_DIRECTION_GRID_HIGH;
-        } else if (row == GRUNT_DIRECTION_GRID_HIGH) {
-            row = GRUNT_DIRECTION_GRID_LOW;
+        switch (row) {
+            case GRUNT_DIRECTION_GRID_LOW:
+                row = GRUNT_DIRECTION_GRID_HIGH;
+                break;
+            case GRUNT_DIRECTION_GRID_HIGH:
+                row = GRUNT_DIRECTION_GRID_LOW;
+                break;
+            default:
+                break;
         }
         i32 column = c.column;
-        if (column == GRUNT_DIRECTION_GRID_LOW) {
-            column = GRUNT_DIRECTION_GRID_HIGH;
-        } else if (column == GRUNT_DIRECTION_GRID_HIGH) {
-            column = GRUNT_DIRECTION_GRID_LOW;
+        switch (column) {
+            case GRUNT_DIRECTION_GRID_LOW:
+                column = GRUNT_DIRECTION_GRID_HIGH;
+                break;
+            case GRUNT_DIRECTION_GRID_HIGH:
+                column = GRUNT_DIRECTION_GRID_LOW;
+                break;
+            default:
+                break;
         }
         i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
         double d48 = m_cells[base].m_motion.m_direction.x;
@@ -4136,12 +4151,18 @@ void CGrunt::FinalizeStep(char* name) {
         m_movePosY = static_cast<double>(g_frameDelta) * d50 * m_moveSpeed + m_movePosY;
         i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
         i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
-        if ((d48 > s_fpZero && nx > m_lastTilePx.m_x)
-            || (d48 < s_fpZero && nx < m_lastTilePx.m_x)) {
+        if (d48 > s_fpZero) {
+            if (nx > m_lastTilePx.m_x) {
+                nx = m_lastTilePx.m_x;
+            }
+        } else if (d48 < s_fpZero && nx < m_lastTilePx.m_x) {
             nx = m_lastTilePx.m_x;
         }
-        if ((d50 > s_fpZero && ny > m_lastTilePx.m_y)
-            || (d50 < s_fpZero && ny < m_lastTilePx.m_y)) {
+        if (d50 > s_fpZero) {
+            if (ny > m_lastTilePx.m_y) {
+                ny = m_lastTilePx.m_y;
+            }
+        } else if (d50 < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
         m_object->m_screenX = nx;
