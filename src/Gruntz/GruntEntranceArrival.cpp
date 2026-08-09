@@ -1839,6 +1839,12 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 }
 
 // @early-stop
+// One branch differs (#10, the m_map48 lookup at base +0x160).  Retail leaves the
+// failure value in the BOOL return - `test eax,eax / je 0x65d86 / mov eax,[esp+0xc]`
+// - so `found` never touches memory on that path; passing `found` itself as the
+// out-reference forces the extra `mov [esp+0xc],eax` store cl emits.  Splitting it
+// into a separate out variable plus a register `found` is what retail's shape
+// implies but scores WORSE here (98.22 -> 95.86), so the spelling is not the lever.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
     i32 advanced = m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
