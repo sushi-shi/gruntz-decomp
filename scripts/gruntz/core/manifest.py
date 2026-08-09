@@ -39,3 +39,21 @@ def unit_names() -> set:
 def by_unit() -> dict:
     """unit stem -> its [[unit]] block."""
     return {u["unit"]: u for u in units()}
+
+
+def live_objs(directory, suffix=".obj") -> list:
+    """Sorted [(unit, path)] for the objs in `directory` that belong to a live unit.
+
+    **Never glob an objdiff obj dir directly.** `build/objdiff/{base,normalized/*}`
+    are written incrementally and ninja does not remove the outputs of an edge that
+    no longer exists, so a unit dropped from config/units.toml can leave its obj
+    behind indefinitely. `report.json` is immune (objdiff pairs from the live unit
+    list) but a directory glob is not, and a phantom whose delinked side has gone
+    empty scores 0.00%, which sorts it to the TOP of any ranked worklist.
+    """
+    from pathlib import Path
+
+    live = unit_names()
+    return sorted((p.name[:-len(suffix)], p)
+                  for p in Path(directory).glob("*" + suffix)
+                  if p.name[:-len(suffix)] in live)
