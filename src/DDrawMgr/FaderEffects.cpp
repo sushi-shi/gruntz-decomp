@@ -49,9 +49,6 @@ const float g_sineOne = 1.0f;
 DATA(0x001f0888)
 const double g_faderPowK = 2.0;
 
-DATA(0x002c3fc8)
-i32 g_val_2c3fc8;
-
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_frames = NULL;
