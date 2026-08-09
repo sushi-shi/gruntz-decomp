@@ -184,6 +184,59 @@ def library_rvas() -> dict[str, int]:
     return {n: next(iter(v)) for n, v in seen.items() if len(v) == 1}
 
 
+# ------------------------------------------------------------------ orphan payloads
+
+DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
+
+# Orphan payload attributions that exist TODAY. Anything not in this set is a new
+# defect and fails the gate; a row leaves the set when its owner is proven, never
+# because it became inconvenient.
+#
+#   movieplayer  config/retail/vtables_game.csv line 88 attributes
+#                ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (0x1e971c, 0x14,
+#                SIX relocated slots) to a unit config/units.toml does not
+#                declare, so the delinker carves it into build/delink/named/
+#                movieplayer.c.obj and objdiff never opens that file. Three real
+#                units emit the vtable (arrayserialize, creditsstate, gruntzmgr)
+#                and all three therefore show it unpaired. Its retail neighbours
+#                are creditsstate's .rdata below and grunt's above, which is
+#                suggestive and not proof; the owner is a data-attribution
+#                decision, not this sieve's to make.
+#   ghidra       config/static_data_copies.tsv's documented holding unit for the
+#                GruntDirStatics copies whose owning TU is not yet partitioned
+#                (27 rows). All `.bss`: no bytes exist, so nothing is withheld
+#                from scoring, and the storage rule below already exempts them.
+KNOWN_ORPHAN_UNITS = frozenset({"movieplayer", "ghidra"})
+
+
+def orphan_payloads() -> list[tuple[str, str, str, str]]:
+    """Enrolled data whose object objdiff never opens: [(unit, rva, storage, name)].
+
+    A delink manifest row names the object the payload is carved into. If that
+    object is not a live `units.toml` unit, the delinker still writes it -- into a
+    file `objdiff.json` does not list -- so the payload is withheld from every
+    measurement with nothing to report it. `vtable_catalog.validate` checks names
+    and RVAs, not the unit column, so this is the ordinary-data twin of the
+    vtables_game.csv row that started this: silently unscored, no gate.
+    """
+    from gruntz.core.manifest import unit_names
+
+    if not DATA_MANIFEST.is_file():
+        return []
+    live = unit_names()
+    out = []
+    with DATA_MANIFEST.open(encoding="latin-1", newline="") as stream:
+        for row in csv.DictReader(stream, delimiter="\t"):
+            unit = row["object"].split("/")[-1]
+            for suffix in (".c.obj", ".obj", ".c"):
+                if unit.endswith(suffix):
+                    unit = unit[:-len(suffix)]
+                    break
+            if unit not in live:
+                out.append((unit, row["rva"], row["storage"], row["name"]))
+    return out
+
+
 # --------------------------------------------------------------------------- model
 
 class Datum:
@@ -448,9 +501,10 @@ def selftest(unit="boomerang") -> int:
             lab = Path(td)
             (lab / "base").mkdir()
             (lab / "target").mkdir()
-            for side, suffix in (("base", ".obj"), ("target", ".c.obj")):
-                for _u, p in live_objs(NORM / side, suffix):
-                    shutil.copy2(p, lab / side / p.name)
+            shutil.copy2(src, lab / "base" / f"{unit}.obj")
+            tgt = NORM / "target" / f"{unit}.c.obj"
+            if tgt.is_file():
+                shutil.copy2(tgt, lab / "target" / tgt.name)
             _inject(lab / "base" / f"{unit}.obj", mode)
             rows, _up, _ur, _st, _dr = scan(unit, norm=lab)
             got = [r.verdict for r in rows]
@@ -536,13 +590,30 @@ def main(argv=None) -> int:
                     help="the size-weighted data figure behind `matched_data`")
     ap.add_argument("--selftest", action="store_true",
                     help="inject three known defects and require all three back")
+    ap.add_argument("--orphans", action="store_true",
+                    help="enrolled data carved into an object objdiff never opens")
     ap.add_argument("--gate", action="store_true",
-                    help="exit 1 on any defect row")
+                    help="exit 1 on any defect row or any NEW orphan payload")
     ap.add_argument("--top", type=int, default=40)
     args = ap.parse_args(argv)
 
     if args.selftest:
         return selftest()
+
+    # A gate nobody has watched FAIL reports a clean tree whether or not the tree
+    # is clean, and this one HAS been blind (see selftest's docstring). So the gate
+    # proves itself on every run before it is allowed to report a pass.
+    if args.gate and selftest():
+        print("FAIL: the data-reloc sieve did not catch its own injected defects; "
+              "its verdict on the tree means nothing.")
+        return 1
+
+    if args.orphans:
+        orphans = orphan_payloads()
+        print(f"enrolled data whose object objdiff never opens: {len(orphans)} row(s)")
+        for unit, rva, storage, name in orphans:
+            print(f"  {unit:<14} {rva:>9} {storage:<6} {name}")
+        return 0
 
     if args.sections:
         tot, matched, exact, rows, measures = section_measures()
@@ -562,6 +633,8 @@ def main(argv=None) -> int:
 
     rows, unpaired, unresolved, stats, dropped = scan(args.unit)
     fp = [r for r in rows if r.clean]
+    orphans = orphan_payloads()
+    new_orphans = [o for o in orphans if o[0] not in KNOWN_ORPHAN_UNITS]
 
     print(f"objs: {NORM.relative_to(REPO)}   reloc: DIR32 in data sections")
     print(f"units {stats['units']}   data symbols {stats['data symbols']} "
@@ -575,6 +648,8 @@ def main(argv=None) -> int:
           f"(FALSE POSITIVES): {len(fp)}")
     by = collections.Counter(r.verdict for r in rows)
     print("verdicts: " + (", ".join(f"{k}={v}" for k, v in sorted(by.items())) or "-"))
+    print(f"enrolled data carved into an object objdiff never opens: {len(orphans)} "
+          f"({len(new_orphans)} new) -- --orphans")
 
     if args.coverage:
         print(f"\nunpaired data symbols: {len(unpaired)} "
@@ -609,9 +684,22 @@ def main(argv=None) -> int:
     if len(shown) > args.top:
         print(f"\n... {len(shown) - args.top} more")
 
-    if args.gate and rows:
-        print(f"\nFAIL: {len(rows)} data word(s) do not relocate where retail's do.")
-        return 1
+    if args.gate:
+        if rows:
+            print(f"\nFAIL: {len(rows)} data word(s) do not relocate where retail's do.")
+            return 1
+        if new_orphans:
+            print(f"\nFAIL: {len(new_orphans)} enrolled datum(s) are carved into an "
+                  "object objdiff never opens, so their payload is withheld from "
+                  "every measurement:")
+            for unit, rva, storage, name in new_orphans[:args.top]:
+                print(f"  {unit:<14} {rva:>9} {storage:<6} {name}")
+            print("Attribute the row to a live config/units.toml unit, or add the "
+                  "unit to KNOWN_ORPHAN_UNITS with the evidence.")
+            return 1
+        print(f"data-relocs: {stats['words compared (retail)']}"
+              f"+{stats['words compared (paired)']} relocated data words point where "
+              f"retail's do; {len(orphans)} known orphan payload(s)")
     return 0
 
 

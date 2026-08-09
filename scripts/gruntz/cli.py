@@ -480,6 +480,17 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.single_view", ["--ratchet"],
           "single-view ratchet violated - a global is declared with two types/"
           "linkages (python -m gruntz.audit.single_view)", "normal")
+    # The DATA analogue of assert_relocs. A relocated word's bytes are a
+    # placeholder the linker overwrites, so both sides hold the same placeholder
+    # and a byte comparison cannot see a wrong referent at all: a vtable slot bound
+    # to the wrong method moves no byte. The retail image's own .reloc table
+    # adjudicates every pinned datum. It also fails on a datum enrolled to an
+    # object objdiff never opens, which withholds its payload from every
+    # measurement. Proves itself on each run by injecting three defects first.
+    _gate("gruntz.audit.data_relocs", ["--gate"],
+          "data-reloc gate violated - a .data/.rdata word points somewhere retail's "
+          "does not, or an enrolled datum is carved into an object objdiff never "
+          "opens (python -m gruntz.audit.data_relocs)", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
