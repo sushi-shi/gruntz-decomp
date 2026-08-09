@@ -297,6 +297,11 @@ i32 ImagePolyClipRect(
 }
 
 // @early-stop
+// Block topology, block sizes and all 29 fcom branch polarities now agree.  Residue is
+// the x87 schedule inside the four interpolation blocks: retail evaluates the
+// multiplicand difference before the divide's operands and keeps bound0 live with a
+// single `fst`, where cl orders the subtractions the other way and duplicates the
+// clip plane on the stack.
 RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
@@ -333,12 +338,11 @@ i32 RotateRasterize(
             if (prev->x >= bound0) {
                 *out++ = *prev;
             }
-            if ((prev->x >= bound0) != (cur->x >= bound0)) {
-                float t = (bound0 - prev->x) / (cur->x - prev->x);
+            if ((prev->x < bound0 && cur->x >= bound0) || (prev->x >= bound0 && cur->x < bound0)) {
                 out->x = bound0;
-                out->y = prev->y + (cur->y - prev->y) * t;
-                out->u = prev->u + (cur->u - prev->u) * t;
-                out->v = prev->v + (cur->v - prev->v) * t;
+                out->y = prev->y + (cur->y - prev->y) * ((bound0 - prev->x) / (cur->x - prev->x));
+                out->u = prev->u + (cur->u - prev->u) * ((bound0 - prev->x) / (cur->x - prev->x));
+                out->v = prev->v + (cur->v - prev->v) * ((bound0 - prev->x) / (cur->x - prev->x));
                 out++;
             }
             prev = cur;
@@ -359,12 +363,11 @@ i32 RotateRasterize(
             if (cur->x < clip0) {
                 *out++ = *cur;
             }
-            if ((cur->x < clip0) != (prev->x < clip0)) {
-                float t = (clip0 - cur->x) / (prev->x - cur->x);
+            if ((cur->x < clip0 && prev->x >= clip0) || (cur->x >= clip0 && prev->x < clip0)) {
                 out->x = clip0;
-                out->y = cur->y + (prev->y - cur->y) * t;
-                out->u = cur->u + (prev->u - cur->u) * t;
-                out->v = cur->v + (prev->v - cur->v) * t;
+                out->y = cur->y + (prev->y - cur->y) * ((clip0 - cur->x) / (prev->x - cur->x));
+                out->u = cur->u + (prev->u - cur->u) * ((clip0 - cur->x) / (prev->x - cur->x));
+                out->v = cur->v + (prev->v - cur->v) * ((clip0 - cur->x) / (prev->x - cur->x));
                 out++;
             }
             prev = cur;
@@ -385,12 +388,11 @@ i32 RotateRasterize(
             if (cur->y >= clip1) {
                 *out++ = *cur;
             }
-            if ((cur->y >= clip1) != (prev->y >= clip1)) {
-                float t = (clip1 - cur->y) / (prev->y - cur->y);
+            if ((cur->y >= clip1 && prev->y < clip1) || (cur->y < clip1 && prev->y >= clip1)) {
                 out->y = clip1;
-                out->x = cur->x + (prev->x - cur->x) * t;
-                out->u = cur->u + (prev->u - cur->u) * t;
-                out->v = cur->v + (prev->v - cur->v) * t;
+                out->x = cur->x + (prev->x - cur->x) * ((clip1 - cur->y) / (prev->y - cur->y));
+                out->u = cur->u + (prev->u - cur->u) * ((clip1 - cur->y) / (prev->y - cur->y));
+                out->v = cur->v + (prev->v - cur->v) * ((clip1 - cur->y) / (prev->y - cur->y));
                 out++;
             }
             prev = cur;
@@ -411,12 +413,11 @@ i32 RotateRasterize(
             if (cur->y < clip2) {
                 *out++ = *cur;
             }
-            if ((cur->y < clip2) != (prev->y < clip2)) {
-                float t = (clip2 - cur->y) / (prev->y - cur->y);
+            if ((cur->y < clip2 && prev->y >= clip2) || (cur->y >= clip2 && prev->y < clip2)) {
                 out->y = clip2;
-                out->x = cur->x + (prev->x - cur->x) * t;
-                out->u = cur->u + (prev->u - cur->u) * t;
-                out->v = cur->v + (prev->v - cur->v) * t;
+                out->x = cur->x + (prev->x - cur->x) * ((clip2 - cur->y) / (prev->y - cur->y));
+                out->u = cur->u + (prev->u - cur->u) * ((clip2 - cur->y) / (prev->y - cur->y));
+                out->v = cur->v + (prev->v - cur->v) * ((clip2 - cur->y) / (prev->y - cur->y));
                 out++;
             }
             prev = cur;

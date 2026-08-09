@@ -2546,7 +2546,7 @@ imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3578	99.3578	6	3e9cc
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	4	378c6ebd3241	0x145f60	79.4671
 imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	85.7027	4	b90f4052f6b4	0x145e30	85.7027
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	55.8633	55.8633	4	06457c02abfd	0x1471d0	55.8633
-imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	55.1719	55.1719	3	83cb9cc6689d	0x146550	55.1719
+imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	66.1540	66.1540	4	c99102a2b44d	0x146550	66.1540
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	71.5121	71.5121	4	781491c7fd35	0x146a20	71.5121
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@@PAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	1	5adb796df256	0x175680	100.0000
