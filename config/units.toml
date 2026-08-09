@@ -1365,7 +1365,10 @@ flags = "cpp"
 [[unit]]
 unit = "fadereffects"
 source = "src/DDrawMgr/FaderEffects.cpp"
-flags = "cpp-rtti"
+# NOT cpp-rtti: retail's five CFader* vtables carry no Complete Object Locator at
+# [-4] (0x1f07f8/0x1f0810/0x1f0848/0x1f0870/0x1f0890 hold FP-pool constants there),
+# and retail's .data has no .?AVCFader* type descriptor at all.
+flags = "cpp"
 [[unit]]
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
