@@ -42,9 +42,6 @@ i32 g_volumeTable[VOLUME_PCT_MAX];
 DATA(0x00253c48)
 i32 g_panTable[1];
 
-DATA(0x0020b668)
-const char s_rb[] = "rb";
-
 #pragma optimize("", off)
 
 RVA(0x001350b0, 0x5d)
@@ -974,7 +971,7 @@ DSoundCloneInst* SoundDevice::AcquireFile(char* path, u32 flags, u32 loadOpts) {
     if (m_initialized == 0) {
         return 0;
     }
-    FILE* fp = fopen(path, s_rb);
+    FILE* fp = fopen(path, "rb");
     if (fp == NULL) {
         return 0;
     }
@@ -1083,7 +1080,7 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 loadOpts) {
     if (buf->IsLooping() == 0) {
         return 1;
     }
-    FILE* fp = fopen(path, s_rb);
+    FILE* fp = fopen(path, "rb");
     if (fp == NULL) {
         return 0;
     }

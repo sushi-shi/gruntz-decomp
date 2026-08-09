@@ -13,9 +13,6 @@
 // lookup (@0x23090). The decoded code is on each line; docs/formats/
 // game-data-strings.md carries the table and its corroboration.
 // clang-format off
-// Unreferenced, unpinned: the same code as s_cheatWaWa, unobfuscated and wide.
-wchar_t* s_cheatWaWaWide = L"MPWAWAWAWAWAWA";
-
 DATA(0x0020c838)
 char s_cheatWaWa[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e"; // MPWAWAWAWAWAWA
 DATA(0x0020c84c)

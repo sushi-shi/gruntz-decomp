@@ -14,7 +14,7 @@
 #include <string.h>
 
 DATA(0x0020c7a8)
-i32 g_lastDrawTextFormat = 0;
+i32 g_lastDrawTextFormat = DT_SINGLELINE;
 DATA(0x0022b434)
 i32 g_chatTextWidth = 0;
 DATA(0x0022b438)

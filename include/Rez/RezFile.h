@@ -7,7 +7,6 @@
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 
-extern const char s_rb[];
 extern char s_rPlusB[];
 extern char s_wPlusB[];
 

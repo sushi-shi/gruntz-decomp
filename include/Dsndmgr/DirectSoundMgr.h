@@ -112,7 +112,6 @@ public:
 SIZE(0x60);
 
 extern "C" i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
-extern const char s_rb[];
 
 extern "C" i32 ConvertVolumeToPercent(i32 v);
 

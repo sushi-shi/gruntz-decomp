@@ -119,7 +119,7 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
             }
             m_fp = fopen(filename, s_wPlusB);
         } else if (readonly) {
-            m_fp = fopen(filename, s_rb);
+            m_fp = fopen(filename, "rb");
         } else {
             m_fp = fopen(filename, s_rPlusB);
         }
@@ -384,7 +384,7 @@ i32 CRezFile::OpenFile() {
             }
             m_handle = fopen(m_name, s_wPlusB);
         } else if (m_dir->m_readonly) {
-            m_handle = fopen(m_name, s_rb);
+            m_handle = fopen(m_name, "rb");
         } else {
             m_handle = fopen(m_name, s_rPlusB);
         }
