@@ -604,6 +604,10 @@ i32 CGrunt::StartBombGruntRun() {
 }
 
 // @early-stop
+// Branch sequences AGREE (24/24, 1/1 ret).  Residue is the frame: retail opens
+// `sub esp,0xc` where cl emits `push ecx`, so retail carries two 4-byte slots it
+// never reads (only [esp+0x20], the reused `enable` arg slot, is live) and every
+// local reference is 8 bytes higher.
 RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
     CAniElement* _out;
@@ -703,7 +707,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    if (strcmp(*rec, s_codeD) == 0) {
+    bool eqWalk = (strcmp(*rec, s_codeD) == 0);
+    if (eqWalk) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(m_poseWalk);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
@@ -719,7 +724,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 
     CString* rec2 = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    if (strcmp(*rec2, "A") == 0) {
+    bool eqIdle = (strcmp(*rec2, "A") == 0);
+    if (eqIdle) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
