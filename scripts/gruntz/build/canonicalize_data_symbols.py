@@ -11,6 +11,10 @@ In
 embedded .text jump tables, same-function DIR32 references to volatile local
 labels are rewritten to the containing external function plus an equivalent
 owner-relative addend; all resolved section offsets are proved unchanged.
+COFF COMMON symbols (cl's tentative definitions for a header-inline's local
+static + its `??_B` guard) are first materialized into `.bss` exactly as the
+linker would allocate them, so the delinked target's section symbol for the
+same datum has a base-side counterpart to pair with.
 
 Ported from the sibling homm2-decomp project (docs: data-symbol-normalization).
 MSVC 5.0 emits the same `$SG`/`$T`/`name$S<n>` compiler-private data forms and the
@@ -293,6 +297,159 @@ def _storage(section: Section) -> str | None:
     if not flags & INITIALIZED_DATA:
         return None
     return "data" if flags & MEM_WRITE else "rdata"
+
+
+# cl 5.0's own .bss characteristics (CNT_UNINITIALIZED_DATA | ALIGN_8BYTES |
+# MEM_READ | MEM_WRITE), used when a materialized COMMON needs a host section
+# the object does not otherwise have.
+BSS_CHARACTERISTICS = 0xC0400080
+
+
+def _common_symbols(coff: CoffObject) -> list[Symbol]:
+    """COFF COMMON symbols: tentative definitions whose Value IS their size."""
+    return [
+        symbol for symbol in coff.symbols.values()
+        if symbol.section == 0 and symbol.value > 0
+        and symbol.storage_class == EXTERNAL_STORAGE
+        and symbol.typ == 0 and symbol.aux_count == 0
+    ]
+
+
+def materialize_commons(payload: bytes) -> tuple[bytes, tuple]:
+    """Allocate each COMMON symbol into a .bss section, as the linker would.
+
+    cl 5.0 emits a function-local static of a HEADER inline (and its `??_B`
+    dynamic-init guard byte) as a COFF COMMON into every TU that instantiates
+    the inline; the linker merges the copies into one `.bss` slot. The delinked
+    target reads the LINKED image and so carries the datum as an ordinary
+    section symbol, which a COMMON - sectionless by definition - can never pair
+    with. Do here what the linker did (the same doctrine as the weak-external
+    resolution below): extend the object's `.bss` (or append an empty one) and
+    move each COMMON into it. Offsets are this allocator's, not retail's, but
+    BSS extents are inferred on both sides and therefore not compared
+    (nix/patches/objdiff-bss-inferred-extent.patch); only the symbol's
+    existence, name and storage - the facts the two objects genuinely state -
+    enter the comparison. The transform is verified fail-closed by
+    `_assert_only_materialization_changes`.
+    """
+    coff = CoffObject(payload)
+    commons = sorted(_common_symbols(coff), key=lambda s: s.index)
+    if not commons:
+        return payload, ()
+    bss_sections = [s for s in coff.sections if _storage(s) == "bss"]
+    data = bytearray(payload)
+    if bss_sections:
+        host = bss_sections[-1]
+        host_index = host.index
+        cursor = host.raw_size
+    else:
+        # Append a .bss header after the last section header. Section raw data,
+        # relocation tables, the symbol table and the string table all live
+        # after the header block, so they shift by exactly one 40-byte header;
+        # every stored file offset is fixed up by the same amount. The new
+        # section is LAST, so no existing symbol's section index moves.
+        optional_size = struct.unpack_from("<H", payload, 16)[0]
+        first_section = 20 + optional_size
+        insert_at = first_section + coff.section_count * 40
+        host_index = coff.section_count + 1
+        cursor = 0
+        header = struct.pack(
+            "<8sIIIIIIHHI", b".bss", 0, 0, 0, 0, 0, 0, 0, 0,
+            BSS_CHARACTERISTICS)
+        data = bytearray(payload[:insert_at] + header + payload[insert_at:])
+        struct.pack_into("<H", data, 2, coff.section_count + 1)
+        struct.pack_into("<I", data, 8, coff.symbol_offset + 40)
+        for section in coff.sections:
+            for field_offset, value in (
+                    (20, section.raw_offset), (24, section.reloc_offset)):
+                if value:
+                    struct.pack_into(
+                        "<I", data, section.header_offset + field_offset,
+                        value + 40)
+            lineno = struct.unpack_from(
+                "<I", payload, section.header_offset + 28)[0]
+            if lineno:
+                struct.pack_into(
+                    "<I", data, section.header_offset + 28, lineno + 40)
+    shift = len(data) - len(payload)
+    allocations = []
+    for symbol in commons:
+        size = symbol.value
+        cursor = (cursor + 3) & ~3
+        allocations.append((symbol, cursor))
+        struct.pack_into("<I", data, symbol.offset + shift + 8, cursor)
+        struct.pack_into("<h", data, symbol.offset + shift + 12, host_index)
+        cursor += size
+    if bss_sections:
+        struct.pack_into("<I", data, host.header_offset + 16, cursor)
+    else:
+        new_header_offset = 20 + optional_size + coff.section_count * 40
+        struct.pack_into("<I", data, new_header_offset + 16, cursor)
+    result = bytes(data)
+    _assert_only_materialization_changes(coff, payload, result, allocations)
+    return result, tuple(
+        (symbol.name, offset, symbol.value) for symbol, offset in allocations)
+
+
+def _assert_only_materialization_changes(
+        original: CoffObject, payload: bytes, result: bytes,
+        allocations) -> None:
+    new = CoffObject(result)
+    appended = new.section_count == original.section_count + 1
+    if not appended and new.section_count != original.section_count:
+        raise RuntimeError("materialization changed the section count unexpectedly")
+    moved = {symbol.index: offset for symbol, offset in allocations}
+    host_index = (new.section_count if appended
+                  else max(s.index for s in original.sections
+                           if _storage(s) == "bss"))
+    for index, before in original.symbols.items():
+        after = new.symbols[index]
+        if index in moved:
+            if (after.section != host_index or after.value != moved[index] or
+                    after.name != before.name or
+                    after.storage_class != before.storage_class):
+                raise RuntimeError(
+                    f"materialized COMMON {before.name} landed wrong")
+        elif (before.name, before.value, before.section, before.typ,
+              before.storage_class, before.aux_count) != (
+                  after.name, after.value, after.section, after.typ,
+                  after.storage_class, after.aux_count):
+            raise RuntimeError(
+                f"materialization touched unrelated symbol {before.name}")
+    if len(original.relocations) != len(new.relocations):
+        raise RuntimeError("materialization changed relocation count")
+    for before, after in zip(original.relocations, new.relocations):
+        if (before.section, before.site, before.symbol_index, before.typ) != (
+                after.section, after.site, after.symbol_index, after.typ):
+            raise RuntimeError("materialization changed a relocation")
+    host = new.sections[host_index - 1]
+    if _storage(host) != "bss" or host.raw_offset != 0 or host.reloc_count:
+        raise RuntimeError("materialization host section is not a bare .bss")
+    # Recompute the allocation to prove every recorded offset and the host size.
+    cursor = 0 if appended else next(
+        s.raw_size for s in original.sections if s.index == host_index)
+    for symbol, offset in allocations:
+        cursor = (cursor + 3) & ~3
+        if offset != cursor:
+            raise RuntimeError("materialization allocation drifted")
+        cursor += symbol.value
+    if host.raw_size != cursor:
+        raise RuntimeError("materialization host size mismatch")
+    for before in original.sections:
+        after = new.sections[before.index - 1]
+        if before.name != after.name or before.characteristics != after.characteristics:
+            raise RuntimeError("materialization changed a section identity")
+        if before.index != host_index and before.raw_size != after.raw_size:
+            raise RuntimeError("materialization changed a section size")
+        if before.raw_offset == 0:
+            # Uninitialized: no file bytes exist; only the host may grow.
+            if after.raw_offset != 0:
+                raise RuntimeError("materialization gave a BSS section raw data")
+        elif original.section_bytes(before) != new.section_bytes(after):
+            raise RuntimeError("materialization changed section payload bytes")
+    if (payload[original.string_offset:] !=
+            result[new.string_offset:]):
+        raise RuntimeError("materialization changed the string table")
 
 
 def _definitions(coff: CoffObject) -> tuple[Definition, ...]:
@@ -726,6 +883,7 @@ def _assert_only_canonical_changes(
 
 def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     """Return a normalized comparison copy and its readable rename records."""
+    payload, materialized = materialize_commons(payload)
     coff = CoffObject(payload)
     definitions = _definitions(coff)
     definition_by_symbol = {row.symbol.index: row for row in definitions}
@@ -1022,6 +1180,11 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
             seen.add(target)
             target = dup_retargets[target]
         dup_retargets[index] = target
+
+    for name, offset, size in materialized:
+        rows.append(CanonicalRow(
+            name, name, "common", "bss", 0, offset, size, 0, 0, "-",
+            "materialized-common-into-bss", ""))
 
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
