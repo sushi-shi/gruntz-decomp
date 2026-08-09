@@ -2009,7 +2009,7 @@ gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	19	6fe4d42
 gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	50.4343	50.4343	5	cc1fb666809d	0x597a0	50.4343
 gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	4	ebf8d96b3719	0x5b7e0	100.0000
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.3929	90.3929	17	41990a925613	0x588f0	90.3929
-gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.3647	87.3647	20	e0ffd8ce9db7	0x57db0	87.3647
+gruntcombat	?PathScan@CGrunt@@QAEHXZ	86.8499	86.8499	21	30968a2ca889	0x57db0	87.3647
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	eef01da589dd	0x57d10	100.0000
 gruntcombat	?RegisterGruntActions@@YAXXZ	99.4414	99.4414	2	48f8454ac97c	0x5be30	99.4414
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	7	4884bd7f7b9e	0x57800	100.0000
@@ -2056,7 +2056,7 @@ gruntentrancearrival	?StepWarpExit@CGrunt@@QAEHXZ	98.7662	98.7662	9	d1092b880a8b
 gruntentrancearrival	?UpdateArrival@CGrunt@@QAEHHH@Z	82.3851	82.3851	20	a491468c8b86	0x62110	82.3851
 gruntentrancearrival	?UpdateGruntStatus@CGrunt@@QAEHXZ	100.0000	100.0000	20	9c307bef70c9	0x617c0	100.0000
 gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEXW4GruntEntranceMode@@@Z	79.4977	79.4977	4	6728b58d0690	0x67bd0	79.4977
-gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	76.0443	76.0443	5	31e5f4c329b8	0x6a6d0	76.0443
+gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	87.4437	87.4437	6	c727cfa93bbf	0x6a6d0	87.4437
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	10	8b0bcb6a82cb	0x69fd0	100.0000
 gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.9592	5	b3bb2f011329	0x67b00	90.9592
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	86.6710	86.6710	4	7b9944baa823	0x67f80	86.6710
@@ -2066,10 +2066,10 @@ gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	82.3783	82.3783	24	aee8
 gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	96.8854	96.8854	4	78ddfbe892b8	0x68370	96.8854
 gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	93.6973	93.6973	22	83a7d057e336	0x67850	93.6973
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	98.6952	98.6952	16	b19a6251de31	0x68520	98.6952
-gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	80.0489	80.0489	21	82fc8340ce96	0x692f0	80.0489
+gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	87.6921	87.6921	22	b9d0a5897378	0x692f0	87.6921
 gruntentrancemove	?StepAttackAction@CGrunt@@QAEHXZ	100.0000	100.0000	1	84fd4a8ab460	0x6b260	100.0000
 gruntentrancemove	?UpdateEntranceAnim@CGrunt@@QAEHXZ	94.3456	94.3456	16	83af97f7c2f7	0x690a0	94.3456
-gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	77.3241	77.3241	8	a0ac7557b887	0xf0e20	77.3241
+gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	79.8028	79.8028	9	7914e78bfca8	0xf0e20	79.8028
 gruntgoosuckerstep	_CellTargetable	89.4688	89.4688	1	b6c3e847bfb8	0xf0db0	89.4688
 grunthealthsprite	??0CGruntHealthSprite@@QAE@PAUCGameObject@@@Z	97.6344	97.6344	8	ce238b34a3a2	0x7eb00	97.6344
 grunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	2	852ebd956365	0x11fb0	100.0000

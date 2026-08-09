@@ -96,28 +96,28 @@ i32 CGrunt::StepGooSuckerBehavior() {
     if (m_poweredUp != 0) {
         if (m_neighborValid == 0) {
             if (m_combatActive != 0) {
-                return 1;
+                goto L_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
                 if (FindGridNeighbor(1) != NULL) {
-                    return 1;
+                    goto L_yes;
                 }
                 if (atTarget && g == NULL) {
-                    return 1;
+                    goto L_yes;
                 }
                 if (m_poweredUp == 0) {
-                    return 1;
+                    goto L_yes;
                 }
             } else {
                 if (atTarget) {
-                    return 1;
+                    goto L_yes;
                 }
                 if (m_poweredUp == 0) {
-                    return 1;
+                    goto L_yes;
                 }
             }
             if (m_neighborValid != 0) {
-                return 1;
+                goto L_yes;
             }
             m_entranceActive = 0;
             m_combatActive = 0;
@@ -127,6 +127,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
         } else {
             m_neighborValid = 0;
         }
+    L_yes:
         return 1;
     }
 
