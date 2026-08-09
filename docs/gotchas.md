@@ -269,3 +269,38 @@ That is not a source defect and not a manifest defect - it is a stale shell.
 Re-enter `nix develop`, or run `nix develop --command gruntz build`. The same
 applies in every worktree: they share the store, but each shell pins whatever
 delinker path it resolved at entry.
+
+## Runtime triage: wine SILENTLY CONTINUES most of our faults (2026-08-09)
+
+The first runtime evidence the project has. Reproduce with the user's own runner —
+`WINEDEBUG=+seh,+loaddll ~/gruntz-wine/run.sh` plus `autokey.sh` (attract mode waits for
+Enter) — and read the log with two rules in mind.
+
+**One visible crash hides hundreds of invisible ones.** wine's `krnl386.exe16` installs a
+vectored exception handler; on our access violations it returns `ffffffff`
+(`EXCEPTION_CONTINUE_EXECUTION`), so the faulting instruction is stepped over and the game
+runs on with garbage in the destination register. A single 260 s run dispatches ~1400
+`c0000005`. Count them, do not stop at the one that reached the debugger:
+
+```
+grep "dispatch_exception code=c0000005 .*addr=[0-9A-F]\{8\}$" log \
+  | grep -o "addr=[0-9A-F]*" | sort | uniq -c | sort -rn
+```
+
+**Always run the control.** `run.sh retail` — same prefix, same assets, same keystrokes —
+logs **0** access violations. That is what licenses calling any of ours a real defect.
+
+Faults observed in the candidate, in first-occurrence order (addresses are candidate VAs;
+map them with `build/exe/GRUNTZ.candidate.map`):
+
+| site | access | note |
+|---|---|---|
+| `LayerBlitFrame+0x6a,+0x7f,+0x86,+0x8b,+0x90` | read `[src+0x2c/0x1c/0x18/0x14/0x10]` | `src` (a `CImage*`) = 0x01e2b3a0, unmapped. 3 calls x 5 field reads per burst == `CPlay::BuildHelpReveal` with `m_revealFrame == 1` |
+| `CDDSurface::BltFast+0x12` | read `[src+8]` | downstream: LayerBlitFrame handed it the emulated garbage |
+| `CPlay::LoadByMode+0x84e,+0x851` | read `[0]+0x2c`, `[0]+0x28` | a NULL object |
+
+`LayerBlitFrame` 0x115300, `CDDSurface::BltFast` 0x13ef90, `CPlay::BuildHelpReveal`
+0xd72c0 and `CPlay::LoadLoadingBarSprite` 0xd7440 are all byte-identical to retail, and
+retail's `CPlay` ctor also leaves `m_revealCap*` uninitialized — so the bad `CImage*` came
+out of `spr->m_items.GetAt(k)`, i.e. the loading-bar worker's frame array, not out of the
+code that reads it. That array is the open thread.
