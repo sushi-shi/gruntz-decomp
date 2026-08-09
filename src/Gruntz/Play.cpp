@@ -2772,12 +2772,17 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 }
 
 // @early-stop
-// Control-flow layout inside the tool/waypoint dispatch (first divergence at the
-// m_dragInhibit2 arm); the block topology matches everywhere else.
+// Block topology is now exact (101/101 blocks, every jcc target aligned, 66 branches,
+// 22 rets). Residue is register allocation around `y`: retail keeps y memory-resident
+// and re-reads [esp+0x3c] at every use (B54/B62/B64/B99 are 1-2 instructions LONGER
+// there), while cl here enregisters it; and our frame is 0x24 vs retail's 0x20 because
+// `placed` gets its own slot instead of recycling the dead `a` parameter home.
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
+    i32 xr;
+    i32 sx;
+    i32 sy;
 
-    i32 xr = x;
     if (m_hudSuppressed != 0) {
         return 1;
     }
@@ -2801,190 +2806,178 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
         return 1;
     }
 
-    if (m_overlayDrag == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0) {
-        if (m_mgr->m_frameGate != 0) {
-            goto drag_path;
-        }
+    if (m_overlayDrag != 0 || g_gameReg->m_cmdGrid->m_groupFlag == 0) {
+        return m_guts->UpdateStatusBarTabHighlight(a, x, y);
+    }
 
+    xr = x;
+    if (m_mgr->m_frameGate == 0) {
         if (m_lightFx != NULL && m_guts->m_position != STATUSBAR_HIDDEN
             && m_guts->m_activeTab != TAB_GAME) {
             if (m_lightFx->BeginMinimapPan(a, xr, y)) {
                 return 1;
             }
         }
-        CGruntzMgr* w = m_mgr;
-        CGameLevel* geom = w->m_world->m_level;
+        CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
-        i32 sx = cam->m_viewRect.left - geom->m_planeCtx.left + xr;
-        i32 sy = cam->m_viewRect.top - geom->m_planeCtx.top + y;
-        if (m_dragInhibit1 == 0) {
-            goto mode_36c;
-        }
-        if (m_playerCommandPending != 0) {
-            goto mode_36c;
-        }
-        i32 placed = 0;
-        RECT* gr = &m_guts->m_rect10;
-        if (CGameLevel::PointInRect(gr, xr, y)) {
+        sx = cam->m_viewRect.left - geom->m_planeCtx.left + xr;
+        sy = cam->m_viewRect.top - geom->m_planeCtx.top + y;
 
-        } else {
-            RECT* wr = (&geom->m_planeCtx);
-            if (CGameLevel::PointInRect(wr, xr, y)) {
-                if (FindStartPointAt(sx, sy, &x, &y)) {
-                    char tok = static_cast<char>(g_curPlayer);
-                    w->m_cmdSubMgr->EnqueueSingle(
-                        1,
-                        tok,
-                        0,
-                        static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
-                        static_cast<i16>(x),
-                        static_cast<i16>(y),
-                        0,
-                        0
-                    );
-                    placed = 1;
+        if (m_dragInhibit1 != 0 && m_playerCommandPending == 0) {
+            i32 placed = 0;
+            RECT* gr = &m_guts->m_rect10;
+            if (CGameLevel::PointInRect(gr, xr, y)) {
+
+            } else {
+                LevelCoordRect wr = geom->m_planeCtx;
+                if (CGameLevel::PointInRect(&wr, xr, y)) {
+                    if (FindStartPointAt(sx, sy, &x, &y)) {
+                        char tok = static_cast<char>(g_curPlayer);
+                        m_mgr->m_cmdSubMgr->EnqueueSingle(
+                            1,
+                            tok,
+                            0,
+                            static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
+                            static_cast<i16>(x),
+                            static_cast<i16>(y),
+                            0,
+                            0
+                        );
+                        placed = 1;
+                    }
                 }
             }
+            if (placed == 0) {
+                g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x340, -1, 1, -1, -1);
+            }
+            m_dragInhibit1 = 0;
+            m_guts->CommitSlot(placed);
+            SetCursorFrame(0);
+            return 1;
         }
-        if (placed == 0) {
-            g_gameReg->m_cueSink->SpawnVoiceDriver(0, 0x340, -1, 1, -1, -1);
+
+        if (m_dragInhibit2 != 0 && m_playerCommandPending == 0) {
+            {
+                RECT* gr = &m_guts->m_rect10;
+                if (CGameLevel::PointInRect(gr, xr, y)) {
+                    if (m_guts->SetFallRect(xr, y, static_cast<char>(m_cursorFrame))) {
+                        m_dragInhibit2 = 0;
+                        SetCursorFrame(0);
+                        return 1;
+                    }
+                    goto waypoint_cancel;
+                }
+                CGameLevel* geom2 = m_mgr->m_world->m_level;
+                RECT* wr = (&geom2->m_planeCtx);
+                if (!CGameLevel::PointInRect(wr, xr, y)) {
+                    goto waypoint_cancel;
+                }
+
+                CGameLevel* ds = m_world->m_level;
+                CDDrawWorkerHost* cam2 = ds->m_mainPlane;
+                i32 wx = cam2->m_viewRect.left - ds->m_planeCtx.left + xr;
+                i32 wy = cam2->m_viewRect.top - ds->m_planeCtx.top + y;
+                if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &a, &y, g_curPlayer) != NULL) {
+                    m_mgr->m_cmdSubMgr->EnqueueSingle(
+                        1,
+                        static_cast<char>(a),
+                        static_cast<char>(y),
+                        static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
+                        0,
+                        0,
+                        static_cast<char>(m_cursorFrame),
+                        0
+                    );
+                    m_playerCommandPending = 1;
+                    return 1;
+                }
+
+                RECT box;
+                box.left = wx - 0xf;
+                box.top = wy - 0xf;
+                box.right = wx + 0xf;
+                box.bottom = wy + 0xf;
+
+                RECT span = {0, 0, 0, 0};
+                CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &a, &y, &box);
+                if (p == NULL || g_curPlayer != p->m_tileOwnerHi) {
+                    goto waypoint_cancel;
+                }
+                m_mgr->m_cmdSubMgr->EnqueueSingle(
+                    1,
+                    static_cast<char>(a),
+                    static_cast<char>(y),
+                    static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
+                    0,
+                    0,
+                    static_cast<char>(m_cursorFrame),
+                    0
+                );
+                return 1;
+            }
+
+        waypoint_cancel:
+            m_dragInhibit2 = 0;
+            m_guts->EnterHlRow(0, static_cast<char>(m_cursorFrame));
+            SetCursorFrame(0);
+            return 1;
         }
-        m_dragInhibit1 = 0;
-        m_guts->CommitSlot(placed);
-        SetCursorFrame(0);
-        return 1;
     } else {
-        goto guts_dispatch;
+        sx = y;
+        sy = y;
     }
 
-mode_36c:
-    if (m_dragInhibit2 == 0) {
-        goto drag_path;
-    }
-    if (m_playerCommandPending != 0) {
-        goto drag_path;
-    }
     {
+
+        if (m_guts == NULL) {
+            return 1;
+        }
+        if (m_guts->m_position == STATUSBAR_HIDDEN) {
+            if (m_guts->HitTestLayer(xr, y)) {
+                m_dragSnapActive = 1;
+
+                CGameObject* g8 = m_guts->m_barSprite;
+                i32 dx = 0;
+                if (g8 != NULL) {
+                    dx = g8->m_screenX - xr;
+                }
+                m_snapOriginX = dx;
+                CGameObject* g8b = m_guts->m_barSprite;
+                if (g8b == NULL) {
+                    m_snapOriginY = 0;
+                    return 1;
+                }
+                m_snapOriginY = g8b->m_screenY - y;
+                return 1;
+            }
+            goto drag_box;
+        }
+
         RECT* gr = &m_guts->m_rect10;
         if (CGameLevel::PointInRect(gr, xr, y)) {
-            if (m_guts->SetFallRect(xr, y, static_cast<char>(m_cursorFrame))) {
-                m_dragInhibit2 = 0;
-                SetCursorFrame(0);
-                return 1;
-            }
-            goto waypoint_cancel;
+            FlushPendingOps();
+            return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
         }
-        CGruntzMgr* w = m_mgr;
-        CGameLevel* geom = w->m_world->m_level;
-        RECT* wr = (&geom->m_planeCtx);
-        if (!CGameLevel::PointInRect(wr, xr, y)) {
-            goto waypoint_cancel;
-        }
-
-        CGameLevel* ds = m_world->m_level;
-        CDDrawWorkerHost* cam = ds->m_mainPlane;
-        i32 wx = cam->m_viewRect.left - ds->m_planeCtx.left + xr;
-        i32 wy = cam->m_viewRect.top - ds->m_planeCtx.top + y;
-        i32 tok = static_cast<char>(m_cursorFrame);
-        if (g_gameReg->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != NULL) {
-            w->m_cmdSubMgr->EnqueueSingle(
-                1,
-                static_cast<char>(a),
-                static_cast<char>(y),
-                static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
-                0,
-                0,
-                static_cast<char>(tok),
-                0
-            );
-            m_playerCommandPending = 1;
+        if (m_hitTest->HitTest(xr, y)) {
             return 1;
         }
-
-        RECT box;
-        box.left = wx - 0xf;
-        box.top = wy - 0xf;
-        box.right = wx + 0xf;
-        box.bottom = wy + 0xf;
-
-        RECT span = {0, 0, 0, 0};
-        i32 col = 0;
-        CGrunt* p = g_gameReg->m_cmdGrid->FindGruntAt(wx, wy, &span, &col, &y, &box);
-        if (p == NULL || g_curPlayer != p->m_tileOwnerHi) {
-            goto waypoint_cancel;
-        }
-        w->m_cmdSubMgr->EnqueueSingle(
-            1,
-            static_cast<char>(a),
-            static_cast<char>(y),
-            static_cast<char>(IDX(PLAYERCMD_GIVE_TOOL)),
-            0,
-            0,
-            static_cast<char>(tok),
-            0
-        );
-        return 1;
     }
-
-waypoint_cancel:
-    m_dragInhibit2 = 0;
-    m_guts->EnterHlRow(0, static_cast<char>(m_cursorFrame));
-    SetCursorFrame(0);
-    return 1;
-
-drag_path: {
-
-    static_cast<void>(y);
-    if (m_guts == NULL) {
-        return 1;
-    }
-    if (m_guts->m_position == STATUSBAR_HIDDEN) {
-        if (m_guts->HitTestLayer(xr, y)) {
-            m_dragSnapActive = 1;
-
-            CGameObject* g8 = m_guts->m_barSprite;
-            i32 dx = 0;
-            if (g8 != NULL) {
-                dx = g8->m_screenX - xr;
-            }
-            m_snapOriginX = dx;
-            CGameObject* g8b = m_guts->m_barSprite;
-            if (g8b == NULL) {
-                m_snapOriginY = 0;
-                return 1;
-            }
-            m_snapOriginY = g8b->m_screenY - y;
-            return 1;
-        }
-        goto drag_box;
-    }
-
-    RECT* gr = &m_guts->m_rect10;
-    if (CGameLevel::PointInRect(gr, xr, y)) {
-        FlushPendingOps();
-        return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
-    }
-    if (m_hitTest->HitTest(xr, y)) {
-        return 1;
-    }
-}
 
 drag_box: {
     if (m_mgr->m_frameGate != 0) {
         goto ret1;
     }
-    CGruntzMgr* w = m_mgr;
-    RECT* wr = (&w->m_world->m_level->m_planeCtx);
-    if (!(x < wr->right && x >= wr->left && y < wr->bottom)) {
+    LevelCoordRect wr = m_mgr->m_world->m_level->m_planeCtx;
+    if (!(x < wr.right && x >= wr.left && y < wr.bottom)) {
         goto ret1;
     }
-    if (y < wr->top) {
+    if (y < wr.top) {
         return 1;
     }
 
     if (m_dragEndNotify != 0) {
-        i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 ex = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 ey = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 lv = m_levelId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
@@ -3003,21 +2996,18 @@ drag_box: {
         m_worldReady = 1;
         return 1;
     }
-    {
-        i32 ex = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 ey = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-        if (g_gameReg->m_cmdGrid->TriggerCell(ex, ey)) {
-            return 1;
-        }
+    if (g_gameReg->m_cmdGrid->TriggerCell(sx, sy)) {
+        return 1;
     }
 
     if (m_levelId >= IDX(CURSOR_TOOL_HANDZ)) {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
-        CGrunt* slot = 0;
-        if (1 == cg->m_recList.GetCount()) {
-
+        CGrunt* slot;
+        if (1 != cg->m_recList.GetCount()) {
+            slot = 0;
+        } else {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->m_grid[sel[1] * 15 + sel[0]];
+            slot = cg->m_grid[sel[0] * 15 + sel[1]];
         }
         if (slot != NULL && slot->m_entranceCommitted != 0) {
             g_gameReg->m_cueSink->SpawnVoiceDriver(slot, 0x324, -1, 0, -1, -1);
@@ -3030,36 +3020,31 @@ drag_box: {
         return 1;
     }
 
-    i32 slot38 = 0;
-    CGrunt* picked =
-        static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &slot38, &slot38, 5));
-    if (picked == NULL) {
-        m_dragClampMaxX = xr;
-        m_dragClampMaxY = y;
-        m_hudRect.left = xr;
-        m_hudRect.right = xr;
-        m_hudRect.top = y;
-        m_hudRect.bottom = y;
-        m_worldReady = 1;
-        goto ret1;
-    }
-    m_mgr->m_cmdGrid->ResetCell(slot38, slot38, g_spawnConfig->m_edgeKeys & 0x20, 0);
-    if (a == g_curPlayer) {
-        if (0 != (g_spawnConfig->m_edgeKeys & 0x20)) {
-            goto ret1;
+    CGrunt* picked = static_cast<CGrunt*>(m_mgr->m_cmdGrid->ScreenToCell(xr, y, &a, &x, 5));
+    if (picked != NULL) {
+        m_mgr->m_cmdGrid->ResetCell(a, x, g_spawnConfig->m_edgeKeys & 0x20, 0);
+        if (a == g_curPlayer) {
+            if (g_spawnConfig->m_edgeKeys & 0x20) {
+                goto ret1;
+            }
+            picked->OnStruck(1);
+            return 1;
         }
-        picked->OnStruck(1);
+        picked->OnStruck(0);
         return 1;
     }
-    picked->OnStruck(0);
-    return 1;
+    m_dragClampMaxX = xr;
+    m_dragClampMaxY = y;
+    m_hudRect.left = xr;
+    m_hudRect.right = xr;
+    m_hudRect.top = y;
+    m_hudRect.bottom = y;
+    m_worldReady = 1;
+    goto ret1;
 }
 
 ret1:
     return 1;
-
-guts_dispatch:
-    return m_guts->UpdateStatusBarTabHighlight(a, x, y);
 }
 
 RVA(0x000ce530, 0xe3)
