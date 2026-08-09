@@ -749,12 +749,11 @@ i32 CGrunt::PathScan() {
         } else {
             box = CRect(0, 0, grid->m_width, grid->m_height);
         }
-        RECT* boxDst = &grid->m_bounds;
-        if (!IntersectRect(boxDst, &box, &gb)) {
-            *boxDst = box;
+        if (!IntersectRect(&grid->m_bounds, &box, &gb)) {
+            grid->m_bounds = box;
         }
-        grid->m_gridW = boxDst->right - boxDst->left;
-        grid->m_gridH = boxDst->bottom - boxDst->top;
+        grid->m_gridW = grid->m_bounds.right - grid->m_bounds.left;
+        grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
     CoordNode* tail = CoordTail();
