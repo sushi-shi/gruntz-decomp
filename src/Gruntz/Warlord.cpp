@@ -38,34 +38,34 @@
 
 DATA(0x0020d28c)
 static const char s_GRUNTZ_[] = "GRUNTZ_";
-DATA(0x0020d220)
-static const char s__MOVING[] = "_MOVING";
-DATA(0x0020d22c)
-static const char s__DEATH[] = "_DEATH";
-DATA(0x0020d234)
-static const char s__JOY[] = "_JOY";
-DATA(0x0020d36c)
-static const char s__IDLE[] = "_IDLE";
-DATA(0x0020d374)
-static const char s__BATTLECRY[] = "_BATTLECRY";
-DATA(0x0020d284)
-static const char s__IDLE1[] = "_IDLE1";
-DATA(0x0020d27c)
-static const char s__IDLE2[] = "_IDLE2";
-DATA(0x0020d274)
-static const char s__IDLE3[] = "_IDLE3";
-DATA(0x0020d26c)
-static const char s__IDLE4[] = "_IDLE4";
-DATA(0x0020d25c)
-static const char s__BATTLECRY1[] = "_BATTLECRY1";
-DATA(0x0020d24c)
-static const char s__BATTLECRY2[] = "_BATTLECRY2";
-DATA(0x0020d23c)
-static const char s__BATTLECRY3[] = "_BATTLECRY3";
 DATA(0x0020d218)
-static const char s__PANIC[] = "_PANIC";
+static char s__PANIC[] = "_PANIC";
+DATA(0x0020d220)
+static char s__MOVING[] = "_MOVING";
+DATA(0x0020d22c)
+static char s__DEATH[] = "_DEATH";
+DATA(0x0020d234)
+static char s__JOY[] = "_JOY";
+DATA(0x0020d23c)
+static char s__BATTLECRY3[] = "_BATTLECRY3";
+DATA(0x0020d24c)
+static char s__BATTLECRY2[] = "_BATTLECRY2";
+DATA(0x0020d25c)
+static char s__BATTLECRY1[] = "_BATTLECRY1";
+DATA(0x0020d26c)
+static char s__IDLE4[] = "_IDLE4";
+DATA(0x0020d274)
+static char s__IDLE3[] = "_IDLE3";
+DATA(0x0020d27c)
+static char s__IDLE2[] = "_IDLE2";
+DATA(0x0020d284)
+static char s__IDLE1[] = "_IDLE1";
 DATA(0x0020d2d8)
-static const char s_WARLORDZ_KING[] = "WARLORDZ_KING";
+static char s_WARLORDZ_KING[] = "WARLORDZ_KING";
+DATA(0x0020d36c)
+static char s__IDLE[] = "_IDLE";
+DATA(0x0020d374)
+static char s__BATTLECRY[] = "_BATTLECRY";
 DATA(0x0020d2c0)
 static const char s_WARLORDZ_NAPOLEAN[] = "WARLORDZ_NAPOLEAN";
 DATA(0x0020d2ac)

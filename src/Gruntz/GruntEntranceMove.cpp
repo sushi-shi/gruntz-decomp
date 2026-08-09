@@ -49,11 +49,93 @@ char s_codeM[] = "M";
 
 DATA(0x0020cca4)
 char s_codeD[] = "D";
+DATA(0x0020e264)
+static char s_RunningTimePerTile[] = "RunningTimePerTile";
+DATA(0x0020e924)
+static char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
+DATA(0x0020e944)
+static char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
+DATA(0x0020e960)
+static char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
+DATA(0x0020e97c)
+static char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
+DATA(0x0020e9ac)
+static char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
+DATA(0x0020e9c8)
+static char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
+DATA(0x0020e9e4)
+static char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
+DATA(0x0020ea00)
+static char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
+DATA(0x0020ea1c)
+static char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
+DATA(0x0020ea38)
+static char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
+DATA(0x0020ea54)
+static char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
+DATA(0x0020ea70)
+static char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
+DATA(0x0020ea98)
+static char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
+DATA(0x0020eabc)
+static char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
+DATA(0x0020eae4)
+static char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
+DATA(0x0020eb08)
+static char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
+DATA(0x0020eb2c)
+static char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
+DATA(0x0020eb54)
+static char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
+DATA(0x0020eb78)
+static char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
+DATA(0x0020eba0)
+static char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
+DATA(0x0020ebc8)
+static char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
+DATA(0x0020ebec)
+static char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
+DATA(0x0020ec14)
+static char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
+DATA(0x0020ec38)
+static char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
+DATA(0x0020ec5c)
+static char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
+DATA(0x0020ec84)
+static char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
+DATA(0x0020eca8)
+static char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
+DATA(0x0020ecd0)
+static char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
+DATA(0x0020ecec)
+static char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
+DATA(0x0020ed14)
+static char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
+DATA(0x0020ed38)
+static char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
+DATA(0x0020ed60)
+static char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
+DATA(0x0020ed84)
+static char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
+DATA(0x0020eda8)
+static char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
+DATA(0x0020edd0)
+static char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
+DATA(0x0020edf4)
+static char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
+DATA(0x0020ee1c)
+static char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
+DATA(0x0020ee38)
+static char s_FreezeDelay[] = "FreezeDelay";
+DATA(0x0020ee48)
+static char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
+DATA(0x0020ee64)
+static char s_MovingDeathTime[] = "MovingDeathTime";
 
 DATA(0x001e9a48)
-double g_wingzScale = 100.0;
+const double g_wingzScale = 100.0;
 DATA(0x001e9a50)
-double g_wingzBias = -0.5;
+const double g_wingzBias = -0.5;
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
@@ -63,100 +145,17 @@ static char s_CombatTimeout[] = "CombatTimeout";
 
 static const char s_GRUNTZ_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 
-DATA(0x0020ee48)
-static const char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
-DATA(0x0020ee1c)
-static const char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
 DATA(0x0020cca8)
 static char s_Spellz[] = "Spellz";
-DATA(0x0020ee38)
-static char s_FreezeDelay[] = "FreezeDelay";
 
 static char s_BOMBGRUNT[] = "BOMBGRUNT";
-DATA(0x0020e264)
-static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
 static const char s_animKeyK[] = "K";
 
-DATA(0x0020edf4)
-static const char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
-DATA(0x0020edd0)
-static const char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
-DATA(0x0020eda8)
-static const char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
-DATA(0x0020ed84)
-static const char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
-DATA(0x0020ed60)
-static const char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
-DATA(0x0020ed38)
-static const char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
-DATA(0x0020ed14)
-static const char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
-DATA(0x0020ecec)
-static const char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
-DATA(0x0020eca8)
-static const char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
-DATA(0x0020ec84)
-static const char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
-DATA(0x0020ec5c)
-static const char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
-DATA(0x0020ec38)
-static const char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
-DATA(0x0020ec14)
-static const char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
-DATA(0x0020ebec)
-static const char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
-DATA(0x0020ebc8)
-static const char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
-DATA(0x0020eba0)
-static const char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
-DATA(0x0020eb78)
-static const char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
-DATA(0x0020eb54)
-static const char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
-DATA(0x0020eb2c)
-static const char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
-DATA(0x0020eb08)
-static const char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
-DATA(0x0020eae4)
-static const char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
-DATA(0x0020eabc)
-static const char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
-DATA(0x0020ea98)
-static const char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
-DATA(0x0020ea70)
-static const char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
-DATA(0x0020ecd0)
-static const char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
-DATA(0x0020ea54)
-static const char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
-DATA(0x0020ea38)
-static const char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
-DATA(0x0020ea1c)
-static const char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
-DATA(0x0020ea00)
-static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
-DATA(0x0020e9e4)
-static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
-DATA(0x0020e9c8)
-static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
-
 DATA(0x0020e998)
 static const char s_GRUNTZ_ENTRANCEZ[] = "GRUNTZ_ENTRANCEZ";
-DATA(0x0020e9ac)
-static const char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
-DATA(0x0020e97c)
-static const char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
-DATA(0x0020e960)
-static const char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
-DATA(0x0020e944)
-static const char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
-DATA(0x0020e924)
-static const char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 static const char s_GRUNTZ_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 
-DATA(0x0020ee64)
-static char s_MovingDeathTime[] = "MovingDeathTime";
 static const char s_animKeyS[] = "S";
 
 void CGrunt::ApplyMoveKind(i32 v) {}

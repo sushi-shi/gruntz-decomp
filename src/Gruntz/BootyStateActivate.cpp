@@ -104,10 +104,10 @@ DATA(0x001e92f8)
 RECT g_colorRects[4] =
     {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9068)
-i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
+const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 
 DATA(0x001e9078)
-Coord g_multiBootyGeom[8][4] = {
+const Coord g_multiBootyGeom[8][4] = {
     {{190, 437}, {306, 437}, {422, 437}, {538, 437}},
     {{190, 394}, {306, 394}, {422, 394}, {538, 394}},
     {{190, 351}, {306, 351}, {422, 351}, {538, 351}},
@@ -119,7 +119,7 @@ Coord g_multiBootyGeom[8][4] = {
 };
 
 DATA(0x001e93a8)
-char g_secretChars[] = "WARP";
+const char g_secretChars[] = "WARP";
 
 DATA(0x001e9338)
 RECT g_labelRects[7] = {
@@ -133,7 +133,7 @@ RECT g_labelRects[7] = {
 };
 
 DATA(0x001e93b0)
-float g_secretRatioScale = 100.0f;
+const float g_secretRatioScale = 100.0f;
 
 DATA(0x0020b838)
 RECT g_levelMsgRectsA[8] = {

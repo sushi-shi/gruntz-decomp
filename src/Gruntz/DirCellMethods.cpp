@@ -42,7 +42,7 @@
 // Indexed by row * 3 + column over the 3x3 neighbour grid; each element is the
 // cell one step around the ring from that one.
 DATA(0x0020d008)
-const CTriRecord g_directionClockwiseTable[9] = {
+CTriRecord g_directionClockwiseTable[9] = {
     {0, 1, DIR_NORTH},
     {0, 2, DIR_NORTHEAST},
     {1, 2, DIR_EAST},
@@ -54,7 +54,7 @@ const CTriRecord g_directionClockwiseTable[9] = {
     {2, 1, DIR_SOUTH},
 };
 DATA(0x0020d078)
-const CTriRecord g_directionCounterclockwiseTable[9] = {
+CTriRecord g_directionCounterclockwiseTable[9] = {
     {1, 0, DIR_WEST},
     {0, 0, DIR_NORTHWEST},
     {0, 1, DIR_NORTH},

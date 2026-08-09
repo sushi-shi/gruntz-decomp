@@ -65,8 +65,58 @@
 #include <string.h>
 
 static const char s_GRUNTZ_[] = "GRUNTZ_";
+DATA(0x0020d2e8)
+char s_codeF[] = "F";
+DATA(0x0020d7fc)
+char s_codeH[] = "H";
+DATA(0x0020dc64)
+static char s_RollingBallzTime[] = "RollingBallzTime";
+DATA(0x0020dc78)
+static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
+DATA(0x0020dcac)
+static char s_TeleportRadius[] = "TeleportRadius";
+DATA(0x0020dcc0)
+static char s_ToyzRadius[] = "ToyzRadius";
+DATA(0x0020dcd0)
+static char s_RessurectionRadius[] = "RessurectionRadius";
+DATA(0x0020dce8)
+static char s_HealthRadius[] = "HealthRadius";
+DATA(0x0020dcf8)
+static char s_FreezeRadius[] = "FreezeRadius";
+DATA(0x0020dd30)
+static char s_GAME_ATTACK[] = "GAME_ATTACK";
 DATA(0x0020dd40)
-static const char s__LOSEITEM[] = "_LOSEITEM";
+static char s__LOSEITEM[] = "_LOSEITEM";
+DATA(0x0020dd4c)
+static char s_knockKey[] = "KnockBackTimePerTile";
+DATA(0x0020dd68)
+static char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
+DATA(0x0020dd8c)
+static char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
+DATA(0x0020ddb0)
+static char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
+DATA(0x0020ddd4)
+static char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
+DATA(0x0020ddf8)
+static char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
+DATA(0x0020de1c)
+static char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
+DATA(0x0020de40)
+static char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
+DATA(0x0020de64)
+static char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
+DATA(0x0020de8c)
+static char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
+DATA(0x0020deb8)
+static char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
+DATA(0x0020dee4)
+static char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
+DATA(0x0020df0c)
+static char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
+DATA(0x0020df54)
+static char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
+DATA(0x0020df6c)
+static char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
 DATA(0x0020a680)
 static const char s_SingleAnimation[] = "SingleAnimation";
 
@@ -122,12 +172,6 @@ GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST)
 DATA(0x00244b38)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
 
-DATA(0x0020d7fc)
-char s_codeH[] = "H";
-
-DATA(0x0020d2e8)
-char s_codeF[] = "F";
-
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
@@ -139,57 +183,11 @@ static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
 DATA(0x0020df84)
 static char s_CombatTimeout[] = "CombatTimeout";
 
-DATA(0x0020dd30)
-static const char s_GAME_ATTACK[] = "GAME_ATTACK";
 static char s_Spellz[] = "Spellz";
-DATA(0x0020dcf8)
-static char s_FreezeRadius[] = "FreezeRadius";
-DATA(0x0020dce8)
-static char s_HealthRadius[] = "HealthRadius";
-DATA(0x0020dcd0)
-static char s_RessurectionRadius[] = "RessurectionRadius";
-DATA(0x0020dcc0)
-static char s_ToyzRadius[] = "ToyzRadius";
-DATA(0x0020dcac)
-static char s_TeleportRadius[] = "TeleportRadius";
-DATA(0x0020dc78)
-static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
-DATA(0x0020dc64)
-static char s_RollingBallzTime[] = "RollingBallzTime";
 
-DATA(0x0020df6c)
-static const char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
-DATA(0x0020df54)
-static const char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
-DATA(0x0020de1c)
-static const char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
-DATA(0x0020dd8c)
-static const char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
 DATA(0x0020df30)
 static const char s_IMPACTMM3[] = "GRUNTZ_NORMALGRUNT_IMPACTMM3";
-DATA(0x0020df0c)
-static const char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
-DATA(0x0020ddf8)
-static const char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
-DATA(0x0020ddb0)
-static const char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
-DATA(0x0020dd68)
-static const char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
-DATA(0x0020ddd4)
-static const char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
-DATA(0x0020de40)
-static const char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
-DATA(0x0020dee4)
-static const char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
-DATA(0x0020deb8)
-static const char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
-DATA(0x0020de8c)
-static const char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
-DATA(0x0020de64)
-static const char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
 static const char s_typeO[] = "O";
-DATA(0x0020dd4c)
-static const char s_knockKey[] = "KnockBackTimePerTile";
 static const char s_gruntSec[] = "Grunt";
 
 #define LK(key)                                                                                    \

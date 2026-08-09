@@ -5,8 +5,8 @@
 
 #include <Gruntz/CoordNode.h>
 
-extern i32 g_idleSpriteIds[4];
-extern char g_secretChars[];
+extern const i32 g_idleSpriteIds[4];
+extern const char g_secretChars[];
 
-extern Coord g_multiBootyGeom[8][4];
+extern const Coord g_multiBootyGeom[8][4];
 #endif // GRUNTZ_GRUNTZ_BOOTYWALKANIM_H

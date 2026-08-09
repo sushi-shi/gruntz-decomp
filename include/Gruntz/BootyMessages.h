@@ -19,7 +19,7 @@ class CString;
 
 extern "C" const i32 g_bootyLetterCoords[32];
 
-extern float g_secretRatioScale;
+extern const float g_secretRatioScale;
 extern char g_secretMsgA[0x20];
 extern char g_secretMsgB[0x80];
 

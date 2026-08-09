@@ -718,54 +718,54 @@ DATA(0x002bf678)
 static i16 g_tokenLen;
 
 DATA(0x002240d0)
-static const char s_fmtFormatError[] =
+static char s_fmtFormatError[] =
     "ButeMgr (%d):  A formatting error in the attribute file was encountered";
+DATA(0x00213eec)
+static char s_strRBrack[] = "]";
 DATA(0x002240a8)
-static const char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
+static char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
+DATA(0x00224118)
+static char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
+DATA(0x00224144)
+static char s_fmtRect2[] = "[%lf, %lf]";
+DATA(0x00224150)
+static char s_strLt[] = "<";
+DATA(0x00224154)
+static char s_strGt[] = ">";
+DATA(0x00224158)
+static char s_fmtRect3[] = "<%lf, %lf, %lf>";
+DATA(0x00224168)
+static char s_fmtPoint2[] = "(%d, %d)";
+DATA(0x00224174)
+static char s_strOpen[] = "(";
+DATA(0x00224178)
+static char s_strComma[] = ", ";
+DATA(0x0022417c)
+static char s_strClose[] = ")";
+DATA(0x00224180)
+static char s_fmtPoint4[] = "(%d, %d, %d, %d)";
+DATA(0x00224194)
+static char s_strFloatSuffix[] = "f";
+DATA(0x00224198)
+static char s_strFloat[] = "(FLOAT)";
+DATA(0x002241a0)
+static char s_strDword[] = "(DWORD)";
 DATA(0x002241d4)
-static const char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";
+static char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";
 DATA(0x00224204)
-static const char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s";
+static char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s";
 DATA(0x00224228)
-static const char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]";
+static char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]";
 DATA(0x00224250)
-static const char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";
+static char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";
 
 DATA(0x001f0520)
 static const float s_floatErr = FLT_MIN;
 DATA(0x001f0528)
 static const double s_doubleErr = DBL_MIN;
 
-DATA(0x00224118)
-static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
-DATA(0x002241a0)
-static const char s_strDword[] = "(DWORD)";
-DATA(0x00224198)
-static const char s_strFloat[] = "(FLOAT)";
-DATA(0x00224194)
-static const char s_strFloatSuffix[] = "f";
-DATA(0x00224180)
-static const char s_fmtPoint4[] = "(%d, %d, %d, %d)";
-DATA(0x00224174)
-static const char s_strOpen[] = "(";
-DATA(0x0022417c)
-static const char s_strClose[] = ")";
-DATA(0x00224178)
-static const char s_strComma[] = ", ";
-DATA(0x00224168)
-static const char s_fmtPoint2[] = "(%d, %d)";
-DATA(0x00224158)
-static const char s_fmtRect3[] = "<%lf, %lf, %lf>";
-DATA(0x00224150)
-static const char s_strLt[] = "<";
-DATA(0x00224154)
-static const char s_strGt[] = ">";
-DATA(0x00224144)
-static const char s_fmtRect2[] = "[%lf, %lf]";
 DATA(0x00213efc)
 static const char s_strLBrack[] = "[";
-DATA(0x00213eec)
-static const char s_strRBrack[] = "]";
 
 RVA(0x00170210, 0x118)
 CButeMgr::CButeMgr() {

@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-extern double g_wingzScale;
-extern double g_wingzBias;
+extern const double g_wingzScale;
+extern const double g_wingzBias;
 
 static void GruntScratchTeardown();
 

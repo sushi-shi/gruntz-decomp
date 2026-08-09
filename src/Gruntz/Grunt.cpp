@@ -134,10 +134,140 @@ i32 g_movingSeed;
 
 DATA(0x0020d414)
 static char s_TimePerTile[] = "TimePerTile";
-DATA(0x0020a9ec)
-static char s_Grunt[] = "Grunt";
+DATA(0x0020d424)
+static char s_d48_BREAK[] = "_BREAK";
+DATA(0x0020d42c)
+static char s_d48_SOUTHEAST[] = "_SOUTHEAST";
+DATA(0x0020d43c)
+static char s_d48_SOUTH[] = "_SOUTH";
+DATA(0x0020d444)
+static char s_d48_SOUTHWEST[] = "_SOUTHWEST";
+DATA(0x0020d454)
+static char s_d48_EAST[] = "_EAST";
+DATA(0x0020d45c)
+static char s_d48_WEST[] = "_WEST";
+DATA(0x0020d464)
+static char s_d48_NORTHEAST[] = "_NORTHEAST";
+DATA(0x0020d474)
+static char s_d48_NORTH[] = "_NORTH";
+DATA(0x0020d47c)
+static char s_d48_NORTHWEST[] = "_NORTHWEST";
+DATA(0x0020d48c)
+static char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
+DATA(0x0020d4a0)
+static char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
+DATA(0x0020d4b0)
+static char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
+DATA(0x0020d4c4)
+static char s_d48_EAST_ITEM[] = "_EAST_ITEM";
+DATA(0x0020d4d4)
+static char s_d48_WEST_ITEM[] = "_WEST_ITEM";
+DATA(0x0020d4e4)
+static char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
+DATA(0x0020d4f8)
+static char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
+DATA(0x0020d508)
+static char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
+DATA(0x0020d51c)
+static char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
+DATA(0x0020d530)
+static char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
+DATA(0x0020d540)
+static char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
+DATA(0x0020d554)
+static char s_d48_EAST_IDLE[] = "_EAST_IDLE";
+DATA(0x0020d564)
+static char s_d48_WEST_IDLE[] = "_WEST_IDLE";
+DATA(0x0020d574)
+static char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
+DATA(0x0020d588)
+static char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
+DATA(0x0020d598)
+static char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
+DATA(0x0020d5ac)
+static char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
+DATA(0x0020d5c4)
+static char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
+DATA(0x0020d5d4)
+static char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
+DATA(0x0020d5ec)
+static char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
+DATA(0x0020d5fc)
+static char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
+DATA(0x0020d60c)
+static char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
+DATA(0x0020d624)
+static char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
+DATA(0x0020d634)
+static char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
+DATA(0x0020d64c)
+static char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
+DATA(0x0020d664)
+static char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
+DATA(0x0020d674)
+static char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
+DATA(0x0020d68c)
+static char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
+DATA(0x0020d69c)
+static char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
+DATA(0x0020d6ac)
+static char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
+DATA(0x0020d6c4)
+static char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
+DATA(0x0020d6d4)
+static char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
+DATA(0x0020d6ec)
+static char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
+DATA(0x0020d700)
+static char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
+DATA(0x0020d710)
+static char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
+DATA(0x0020d724)
+static char s_d48_EAST_WALK[] = "_EAST_WALK";
+DATA(0x0020d734)
+static char s_d48_WEST_WALK[] = "_WEST_WALK";
+DATA(0x0020d744)
+static char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
+DATA(0x0020d758)
+static char s_d48_NORTH_WALK[] = "_NORTH_WALK";
+DATA(0x0020d768)
+static char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
+DATA(0x0020d77c)
+static char s_pose_TOYBREAK[] = "_TOY-BREAK";
+DATA(0x0020d78c)
+static char s_pose_TOY2[] = "_TOY2";
+DATA(0x0020d794)
+static char s_pose_TOY1[] = "_TOY1";
+DATA(0x0020d79c)
+static char s_pose_ITEM2[] = "_ITEM2";
+DATA(0x0020d7a4)
+static char s_pose_ITEM[] = "_ITEM";
+DATA(0x0020d7ac)
+static char s_pose_IDLE5[] = "_IDLE5";
+DATA(0x0020d7b4)
+static char s_pose_STRUCK2[] = "_STRUCK2";
+DATA(0x0020d7c0)
+static char s_pose_STRUCK1[] = "_STRUCK1";
+DATA(0x0020d7cc)
+static char s_pose_ATTACKIDLE[] = "_ATTACK-IDLE";
+DATA(0x0020d7dc)
+static char s_pose_ATTACK2[] = "_ATTACK2";
+DATA(0x0020d7e8)
+static char s_pose_ATTACK1[] = "_ATTACK1";
+DATA(0x0020d900)
+static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
+DATA(0x0020d974)
+static char s_ConversionTime[] = "ConversionTime";
 DATA(0x0020df98)
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
+DATA(0x0020dfac)
+static char s_AccelerateFlash[] = "AccelerateFlash";
+DATA(0x0020dfc0)
+static char s_SafeFlashTime[] = "SafeFlashTime";
+DATA(0x0020dfd0)
+static char s_FadeTransparency[] = "FadeTransparency";
+DATA(0x0020a9ec)
+static char s_Grunt[] = "Grunt";
 static char s_IdleDelay[] = "IdleDelay";
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
 static char s_CombatTimeout[] = "CombatTimeout";
@@ -148,18 +278,8 @@ static char s_FreezeDelay[] = "FreezeDelay";
 static char s_BOMBGRUNT[] = "BOMBGRUNT";
 static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
-DATA(0x0020dfd0)
-static char s_FadeTransparency[] = "FadeTransparency";
-DATA(0x0020dfc0)
-static char s_SafeFlashTime[] = "SafeFlashTime";
-DATA(0x0020dfac)
-static char s_AccelerateFlash[] = "AccelerateFlash";
 DATA(0x0020d9b4)
 static char s_Powerupz[] = "Powerupz";
-DATA(0x0020d974)
-static char s_ConversionTime[] = "ConversionTime";
-DATA(0x0020d900)
-static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 
 DATA(0x0020a454)
 static char s_codeA[] = "A";
@@ -171,33 +291,11 @@ i32 g_traitorMode;
 
 DATA(0x0020bb64)
 static const char s_pose_WALK[] = "_WALK";
-DATA(0x0020d7e8)
-static const char s_pose_ATTACK1[] = "_ATTACK1";
-DATA(0x0020d7dc)
-static const char s_pose_ATTACK2[] = "_ATTACK2";
-DATA(0x0020d7cc)
-static const char s_pose_ATTACKIDLE[] = "_ATTACK-IDLE";
-DATA(0x0020d7c0)
-static const char s_pose_STRUCK1[] = "_STRUCK1";
-DATA(0x0020d7b4)
-static const char s_pose_STRUCK2[] = "_STRUCK2";
 static const char s_pose_IDLE1[] = "_IDLE1";
 static const char s_pose_IDLE2[] = "_IDLE2";
 static const char s_pose_IDLE3[] = "_IDLE3";
 static const char s_pose_IDLE4[] = "_IDLE4";
-DATA(0x0020d7ac)
-static const char s_pose_IDLE5[] = "_IDLE5";
-DATA(0x0020d7a4)
-static const char s_pose_ITEM[] = "_ITEM";
-DATA(0x0020d79c)
-static const char s_pose_ITEM2[] = "_ITEM2";
 static const char s_pose_DEATH[] = "_DEATH";
-DATA(0x0020d794)
-static const char s_pose_TOY1[] = "_TOY1";
-DATA(0x0020d78c)
-static const char s_pose_TOY2[] = "_TOY2";
-DATA(0x0020d77c)
-static const char s_pose_TOYBREAK[] = "_TOY-BREAK";
 
 static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
     CAniElement* out = 0;
@@ -475,105 +573,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     }
 }
 
-DATA(0x0020d768)
-static const char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
-DATA(0x0020d758)
-static const char s_d48_NORTH_WALK[] = "_NORTH_WALK";
-DATA(0x0020d744)
-static const char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
-DATA(0x0020d734)
-static const char s_d48_WEST_WALK[] = "_WEST_WALK";
-DATA(0x0020d724)
-static const char s_d48_EAST_WALK[] = "_EAST_WALK";
-DATA(0x0020d710)
-static const char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
-DATA(0x0020d700)
-static const char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
-DATA(0x0020d6ec)
-static const char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
-DATA(0x0020d6d4)
-static const char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
-DATA(0x0020d6c4)
-static const char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
-DATA(0x0020d6ac)
-static const char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
-DATA(0x0020d69c)
-static const char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
-DATA(0x0020d68c)
-static const char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
-DATA(0x0020d674)
-static const char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
-DATA(0x0020d664)
-static const char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
-DATA(0x0020d64c)
-static const char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
-DATA(0x0020d634)
-static const char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
-DATA(0x0020d624)
-static const char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
-DATA(0x0020d60c)
-static const char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
-DATA(0x0020d5fc)
-static const char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
-DATA(0x0020d5ec)
-static const char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
-DATA(0x0020d5d4)
-static const char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
-DATA(0x0020d5c4)
-static const char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
-DATA(0x0020d5ac)
-static const char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
-DATA(0x0020d598)
-static const char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
-DATA(0x0020d588)
-static const char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
-DATA(0x0020d574)
-static const char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
-DATA(0x0020d564)
-static const char s_d48_WEST_IDLE[] = "_WEST_IDLE";
-DATA(0x0020d554)
-static const char s_d48_EAST_IDLE[] = "_EAST_IDLE";
-DATA(0x0020d540)
-static const char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
-DATA(0x0020d530)
-static const char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
-DATA(0x0020d51c)
-static const char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
-DATA(0x0020d508)
-static const char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
-DATA(0x0020d4f8)
-static const char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
-DATA(0x0020d4e4)
-static const char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
-DATA(0x0020d4d4)
-static const char s_d48_WEST_ITEM[] = "_WEST_ITEM";
-DATA(0x0020d4c4)
-static const char s_d48_EAST_ITEM[] = "_EAST_ITEM";
-DATA(0x0020d4b0)
-static const char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
-DATA(0x0020d4a0)
-static const char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
-DATA(0x0020d48c)
-static const char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
 static const char s_d48_DEATH[] = "_DEATH";
-DATA(0x0020d47c)
-static const char s_d48_NORTHWEST[] = "_NORTHWEST";
-DATA(0x0020d474)
-static const char s_d48_NORTH[] = "_NORTH";
-DATA(0x0020d464)
-static const char s_d48_NORTHEAST[] = "_NORTHEAST";
-DATA(0x0020d45c)
-static const char s_d48_WEST[] = "_WEST";
-DATA(0x0020d454)
-static const char s_d48_EAST[] = "_EAST";
-DATA(0x0020d444)
-static const char s_d48_SOUTHWEST[] = "_SOUTHWEST";
-DATA(0x0020d43c)
-static const char s_d48_SOUTH[] = "_SOUTH";
-DATA(0x0020d42c)
-static const char s_d48_SOUTHEAST[] = "_SOUTHEAST";
-DATA(0x0020d424)
-static const char s_d48_BREAK[] = "_BREAK";
 
 DATA(0x001e9738)
 double g_val_1e9738;

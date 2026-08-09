@@ -59,10 +59,30 @@
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
+DATA(0x0020dc04)
+char s_codeN[] = "N";
+DATA(0x0020dc08)
+char s_codeQ[] = "Q";
+DATA(0x0020dc0c)
+char s_codeO[] = "O";
+DATA(0x0020df94)
+char s_codeS[] = "S";
+DATA(0x0020e194)
+static char s_ToyTime[] = "ToyTime";
 DATA(0x0020e1a0)
 static char s_IdleDelay[] = "IdleDelay";
 DATA(0x0020e1ac)
 static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
+DATA(0x0020e1c8)
+static char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
+DATA(0x0020e1f8)
+static char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
+DATA(0x0020e224)
+static char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
+DATA(0x0020e23c)
+static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
+DATA(0x0020e250)
+static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
 static char s_CombatTimeout[] = "CombatTimeout";
 
 static char s_BOMBGRUNT[] = "BOMBGRUNT";
@@ -70,34 +90,8 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile";
 
 static const char s_animKeyA[] = "A";
 
-DATA(0x0020df94)
-char s_codeS[] = "S";
-
-DATA(0x0020dc0c)
-char s_codeO[] = "O";
-
-DATA(0x0020dc04)
-char s_codeN[] = "N";
-
-DATA(0x0020dc08)
-char s_codeQ[] = "Q";
-
-DATA(0x0020e194)
-static char s_ToyTime[] = "ToyTime";
-
 static const char s_exitKeyB[] = "B";
 static const char s_GRUNTZ_EXITZ[] = "GRUNTZ_EXITZ";
-DATA(0x0020e250)
-static const char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
-DATA(0x0020e23c)
-static const char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
-DATA(0x0020e224)
-static const char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
-
-DATA(0x0020e1f8)
-static const char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
-DATA(0x0020e1c8)
-static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
 
 // @early-stop
 RVA(0x000616e0, 0xa8)
