@@ -846,9 +846,9 @@ i32 CGrunt::StepArrivalCommit() {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         return 0;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0
-        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0
-        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0) {
+    if ((eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0))
+        || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0))
+        || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0))) {
         goto idleReseed;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
@@ -863,7 +863,7 @@ i32 CGrunt::StepArrivalCommit() {
         m_entranceActive = 0;
         eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0);
         if (eq) {
-            if (m_poweredUp == 0 && m_neighborValid == 0) {
+            if (m_poweredUp != 0 && m_neighborValid == 0) {
                 m_entranceActive = 0;
                 m_combatActive = 0;
                 m_neighborValid = 0;
@@ -980,7 +980,7 @@ finalize:
         m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = NULL;
     }
-    if (m_poweredUp == 0 && m_neighborValid == 0) {
+    if (m_poweredUp != 0 && m_neighborValid == 0) {
         m_entranceActive = 0;
         m_combatActive = 0;
         m_neighborValid = 0;
@@ -1249,10 +1249,12 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 }
 
 // @early-stop
-// 144 blocks, retail's 144.  Residue is constant-register allocation: retail
-// enregisters -1 in ebp from the second strcmp on (`sbb eax,ebp`, `push ebp`,
-// `mov [esi+0x1a0],ebp`) and uses `test cl,cl` for the bool guards, where cl
-// here spells the immediate and reuses the ebx zero-register for the guards.
+// 144 blocks, retail's 144, and the branch MNEMONICS now agree; what differs is
+// where four of them land - #4, #9, #64 and #65 go to retail's blk82 and to our
+// blk79, i.e. cl merged two of the shared `return 0` exits that retail keeps
+// apart.  Constant-register allocation also differs: retail enregisters -1 in
+// ebp from the second strcmp on (`sbb eax,ebp`, `push ebp`, `mov [esi+0x1a0],ebp`)
+// where cl spells the immediate and reuses the ebx zero-register.
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
@@ -1280,9 +1282,9 @@ i32 CGrunt::FinishActiveAction() {
         );
         return 1;
     }
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0
-        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0
-        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0) {
+    if ((eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0))
+        || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0))
+        || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0))) {
         goto idleReseed;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
