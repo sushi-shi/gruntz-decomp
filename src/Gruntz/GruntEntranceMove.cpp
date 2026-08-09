@@ -1281,16 +1281,9 @@ i32 CGrunt::FinishActiveAction() {
         );
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
-    if (eq) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0
+        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0
+        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0) {
         goto idleReseed;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
@@ -1352,11 +1345,9 @@ i32 CGrunt::FinishActiveAction() {
     }
 
     {
-        CGruntzMgr* game = g_gameReg;
-        CWwdGameObjectA* object = m_object;
-        CMapMgr* grid = game->m_tileGrid;
-        i32 tx = object->m_screenX >> TILE_SHIFT_PX;
-        i32 ty = object->m_screenY >> TILE_SHIFT_PX;
+        CMapMgr* grid = g_gameReg->m_tileGrid;
+        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
+        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
         i32 flags;
         if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
             || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
@@ -1380,20 +1371,19 @@ i32 CGrunt::FinishActiveAction() {
             }
         }
 
-        i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = 0;
-        i32 newX = object->m_screenX;
-        i32 newY = object->m_screenY;
-        i32 oldTx = oldX >> TILE_SHIFT_PX;
+        i32 newX = m_object->m_screenX;
+        i32 newY = m_object->m_screenY;
+        i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 newTx = newX >> TILE_SHIFT_PX;
         i32 newTy = newY >> TILE_SHIFT_PX;
-        if (oldX != -1 && m_lastTilePx.m_y != -1) {
-            CMapMgr* oldGrid = game->m_tileGrid;
+        if (oldTx != -1 && oldTy != -1) {
+            CMapMgr* oldGrid = g_gameReg->m_tileGrid;
             oldGrid->m_rows[oldTy][oldTx].m_flagBytes[3] &= ~0x20;
             oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;
         }
-        CMapMgr* newGrid = game->m_tileGrid;
+        CMapMgr* newGrid = g_gameReg->m_tileGrid;
         newGrid->m_rows[newTy][newTx].m_flagBytes[3] |= 0x20;
         newGrid->m_rowInts[newTy][newTx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         m_lastTilePx.m_x = newX;
@@ -1401,10 +1391,10 @@ i32 CGrunt::FinishActiveAction() {
         m_tileMgr->WireTileSwitchLogic(this, newX, newY);
 
         m_entranceCommitted = 1;
-        i32 sortKey = object->m_screenY + 0x186a0;
-        if (object->m_sortKey != sortKey) {
-            object->m_sortKey = sortKey;
-            object->m_flags |= 0x20000;
+        i32 sortKey = m_object->m_screenY + 0x186a0;
+        if (m_object->m_sortKey != sortKey) {
+            m_object->m_sortKey = sortKey;
+            m_object->m_flags |= 0x20000;
         }
 
         CAniElement* found = 0;
@@ -1416,7 +1406,7 @@ i32 CGrunt::FinishActiveAction() {
         );
         if (found == cached) {
             if (m_tileOwnerHi == g_curPlayer) {
-                game->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x33f, -1, 0, -1, -1);
                 m_tileMgr->ResetCell(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             }
             m_entranceDropActive = 1;
