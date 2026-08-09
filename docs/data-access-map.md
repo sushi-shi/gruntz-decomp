@@ -173,6 +173,12 @@ produce a wrong verdict, and each is counted in the build summary
   spot, not a layout defect. Holes *between* declared members are still reported.
 * **`width-skip-unresolved`** — the declared type could not be sized. Accusing
   through a type we cannot read would be a fabricated finding.
+* **`width-skip-negative-addend`** — an `indexed` access whose reloc target sits
+  in the last few bytes *before* the next claim is `[reg + &next - k]`, the
+  negative-addend spelling of a 1-based index into the FOLLOWING array (the same
+  idiom `assert_relocs` knows). `?g_sfRouterId@@3KA` (DWORD, 0x24df9c) looked
+  like a char buffer at `+3` because `BuildSoundFontPath` scans `?g_sfDir@@3PADA`
+  (0x24dfa0) backwards as `cmp BYTE PTR [ecx+0x64df9f],0x5c`.
 * **`stride-skip-subelement`** — `[i*4 + base + k]` inside a 12-byte record:
   MSVC scales the index by the dword, not by the element. Benign. A scale
   *larger* than the declared element is the opposite and is reported `high`.

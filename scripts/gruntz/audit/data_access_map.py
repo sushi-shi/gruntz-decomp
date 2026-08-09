@@ -221,10 +221,12 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
         st["unaccessed"] += 1
 
     # ---- 3. access width vs the declared field -> wrong type ---------------
+    nxt_start = {c.rva: (claims[i + 1].rva if i + 1 < len(claims) else None)
+                 for i, c in enumerate(claims)}
     for c in claims:
         if not c.fields or not per[c.rva]:
             continue
-        seen = defaultdict(lambda: [Counter(), Counter(), Counter()])
+        seen = defaultdict(lambda: [Counter(), Counter(), Counter(), Counter()])
         for ac in per[c.rva]:
             if ac.form not in TOUCH or not ac.width:
                 continue
@@ -233,13 +235,22 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
             if ac.fpu:
                 seen[off][1][ac.fpu] += 1
             seen[off][2][(ac.width, ac.rw)] += 1
-        for off, (widths, fpus, rws) in sorted(seen.items()):
+            seen[off][3][ac.form] += 1
+        for off, (widths, fpus, rws, forms) in sorted(seen.items()):
             # "does retail STORE fewer bytes than the field" must be asked of
             # the NARROW access itself: a 4-byte store plus a 2-byte read is
             # `(u16)x`, not evidence of a u16 field
             def stores(w):
                 return any("w" in rw for (ww, rw) in rws if ww == w)
             ev = " ".join(f"w{w}x{n}" for w, n in sorted(widths.items()))
+            nxt = nxt_start.get(c.rva)
+            if set(forms) == {"indexed"} and nxt is not None \
+                    and 0 < nxt - (c.rva + off) <= 4:
+                # `[reg + &next - k]` is the negative-addend spelling of the
+                # FOLLOWING symbol (a 1-based index into the next array), not an
+                # access to this claim - assert_relocs knows the same idiom
+                st["width-skip-negative-addend"] += 1
+                continue
             f = (_synth_field_at(c, off) if c.extent_src == "INJECTED"
                  and c.fields else types.field_at(c.type, off))
             if f is None:
