@@ -841,16 +841,9 @@ i32 CGrunt::StepArrivalCommit() {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
         return 0;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
-    if (eq) {
-        goto idleReseed;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
-    if (eq) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0
+        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0
+        || strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0) {
         goto idleReseed;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
