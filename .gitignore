@@ -54,3 +54,9 @@
 # ---------------------------------------------------------------------------
 **/__pycache__/
 *.pyc
+
+# Lane scratch files. Agents are told to use the session scratchpad, but a
+# stray `scratch_*.py` at the repo root got swept in by an integration
+# `git add -A` and lived in the tree for several commits.
+/scratch_*
+/*.tmp
