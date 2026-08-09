@@ -587,26 +587,43 @@ First (and currently only) claims: the three `GetRandomNumber` guard/seed pairs 
 (`CAniRecordView`), 0x2c279c/0x2c27a8 (`CFaderSine`). 26 `assert_relocs` FAKE → 0,
 byte-neutral (3322/4290 exact, 89.08% fuzzy unchanged).
 
-### 3c. `.bss` is capped by an objdiff INFERENCE artifact — do not budget against it
+### 3c. `.bss` was capped by an objdiff INFERENCE artifact — FIXED in the CLI
 
-**`.bss` is 212211 of 279630 `total_data` (~76%), and `ddsurface` alone is 197144 of it
-— stuck at 99.998985% on ONE symbol.** COFF carries no symbol sizes, so objdiff infers
-`size = next symbol's offset` (`obj/read.rs: infer_symbol_sizes`), and `diff_bss_symbol`
-scores 100 iff the two sizes are equal. MSVC5's `.bss` hole-filling allocator always
-parks a 4-byte int in the pad before the first 8-aligned array, so that int measures
-**8** on the base and **4** on the target. Both sides are correct; only the measurement
-differs. Three `cl /O2` probes prove the layout is **declaration-order invariant**, so
-it is not steerable from `src/`.
+**Historical statement of the problem** (kept for the mechanism): `.bss` was 212211 of
+279630 `total_data` (~76%), and `ddsurface` alone 197144 of it — stuck at 99.998985% on
+ONE symbol. COFF carries no symbol sizes, so objdiff infers `size = next symbol's
+offset` (`obj/read.rs: infer_symbol_sizes`), and `diff_bss_symbol` scored 100 iff the
+two sizes were equal. MSVC5's `.bss` hole-filling allocator always parks a 4-byte int in
+the pad before the first 8-aligned array, so that int measured **8** on one side and
+**4** on the other. Both sides were correct; only the measurement differed. Three
+`cl /O2` probes prove the layout is **declaration-order invariant**, so it was never
+steerable from `src/`.
 
-Do NOT candidate-shape `.bss` to "fix" it: `.bss` has no bytes, so mirroring the
-candidate's offsets makes every inferred size agree **by construction, for any set of
-globals** — a vacuous 100%. (Candidate-shaping is legitimate for `.data`/`.rdata`
-precisely because the delinker still fills the container with retail bytes from each
-definition's proven rva, so the byte comparison stays real.) Full mechanism +
-the rejected fabrications: **`docs/patterns/bss-symbol-size-inference-hole.md`**.
+**Resolution (2026-08-09).** `objdiff-cli` is now built from source with
+`nix/patches/objdiff-bss-inferred-extent.patch`: a BSS symbol's size is compared only
+when at least one side actually STATES one. It is not a relaxation of a real check — a
+census of the whole tree found 364 paired `.bss` symbols with 51 extent disagreements
+and **every delta 3, 4 or 6 bytes**, i.e. sub-alignment padding, none of them a size.
+Unpaired symbols are still a mismatch, and the extent audit that does bite is
+`data_manifest.candidates()` (a reviewed extent must fit the span to its retail
+neighbour, or BOTH rows are withheld). Measured on unchanged objs: `matched_data`
+118484/704148 (16.83%) → **639859/704148 (90.87%)**, 19 more sections at 100.0, all
+`.bss`; `matched_functions` 3498 and `fuzzy_match_percent` 91.99114 bit-identical.
 
-⇒ **Read `matched_data` as a `.data`/`.rdata` measure.** Its `.bss` share is gated on
-tooling, not on reconstruction quality.
+Do NOT candidate-shape `.bss`: `.bss` has no bytes, so mirroring the candidate's offsets
+makes every inferred size agree **by construction, for any set of globals** — a vacuous
+100%. (Candidate-shaping is legitimate for `.data`/`.rdata` precisely because the
+delinker still fills the container with retail bytes from each definition's proven rva,
+so the byte comparison stays real.) Full mechanism + the rejected fabrications:
+**`docs/patterns/bss-symbol-size-inference-hole.md`**.
+
+⇒ The residual `.bss` gap is now a **naming** gap, not a measurement one: 16 sections
+(10476 B) still hold target symbols with no base counterpart — chiefly the nine
+`GruntDirectionCell` header statics, which the delinker enrolls as
+`?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A` while cl names them
+`_s_gruntDirEast$S17426`, and the normalizer canonicalises only the `$S` side. Same
+shape for the `CButeMgr` function-local statics and their `??_B` guards. That is a
+tooling gap in the pairing, not a pin gap.
 
 **Ordering + gate.** (a) → re-delink → gate `code exact >= 2385`; then (b) incrementally,
 enrolling reviewed extents in batches and re-gating each time. Also available, already in

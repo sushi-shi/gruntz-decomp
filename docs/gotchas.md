@@ -245,6 +245,16 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh
   identifier enumeration, not proof.
 
+## `objdiff-cli` is BUILT FROM SOURCE; the objdiff GUI is not (2026-08-09)
+
+`flake.nix` builds `objdiff-cli` from `objdiff-src` (v3.7.3) with
+`nix/patches/objdiff-bss-inferred-extent.patch`; the `objdiff` **GUI** is still the
+upstream prebuilt download. Only the CLI generates `report.json`, so every number in
+`gruntz status` / `README.md` comes from the patched build — but if you open the GUI on
+a `.bss` section it will still show the old 50%-per-inferred-extent rows. That is the
+GUI, not a regression. Same stale-shell rule as below: a shell entered before the flake
+change still has the unpatched CLI on PATH.
+
 ## A new delinker patch needs a REFRESHED nix shell (2026-08-08)
 
 `nix/patches/vostok-comdat-leader-nonzero-offset.patch` changed

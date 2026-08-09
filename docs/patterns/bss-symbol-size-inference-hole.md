@@ -1,7 +1,14 @@
 # `.bss` sections cap below 100% — objdiff infers COFF symbol sizes from the next symbol's offset
 
-**Tags:** `data:bss` `data:objdiff` | `topic:wall` `topic:scoring-artifact` `topic:tooling`
+**Tags:** `data:bss` `data:objdiff` | `topic:scoring-artifact` `topic:tooling`
 **Confidence:** c9 (measured; 3 independent cl 5.0 probes + the objdiff source)
+
+> **RESOLVED 2026-08-09** — `objdiff-cli` is built from source with
+> `nix/patches/objdiff-bss-inferred-extent.patch`, which compares a BSS symbol's size
+> only when at least one side actually STATES one. `matched_data` 16.83% → **90.87%**,
+> function scoring bit-identical. Everything below is the mechanism (still true) and the
+> refutation of the two fabrications (still binding). Jump to **The fix, and why the
+> other two routes cannot work**.
 
 ## Symptom
 
@@ -69,16 +76,70 @@ Two tempting moves, both fabrication — reject on sight:
    `--data-section-manifest` win in `data_manifest.section_rows()`.)*
 2. **Add a filler global** to plug the offset-0 hole. Invents a symbol retail never had.
 
+## The fix, and why the other two routes cannot work
+
+**The two sides use different allocators.** The base `.bss` layout is cl's. The target
+`.bss` layout is the *delinker's own* sequential append with per-definition alignment —
+it is not retail's. So the inferred span compares two allocators' padding, and there is
+no retail referent in it at all: the delinker even takes each `.bss` size from OUR
+source (`symbol_names.csv` → `data_manifest`, provenance `src-DATA-sizeof`).
+
+**Census, whole tree** (`build/objdiff/normalized/*`, both sides, exact-name pairing):
+**364 paired `.bss` symbols, 51 extent disagreements, |delta| histogram `{3: 1, 4: 49,
+6: 1}`.** Every single one is sub-alignment padding. Not one is a real size.
+
+Three routes were considered; only the third is possible.
+
+1. **Have the delinker STATE the size.** Impossible. COFF has no symbol-size field; the
+   `object` crate reads a size only for a **COMMON** symbol, where `Value` *is* the size.
+   The delinker already sets `size:` on the `object::write::Symbol` it emits and the
+   COFF writer discards it. Emitting `.bss` data as COMMON instead would take the symbol
+   out of the section entirely.
+2. **Have the delinker pack `.bss` tight**, so the inferred span equals the declared
+   size. It makes the *symbol* extent true and the *section* extent false: the target
+   `.bss` size currently reproduces retail's contribution span exactly (verified —
+   imagepolyclip `0x2856f0..0x2becfe` = 0x3960e; ddsurface `0x253c88..0x283eb8` =
+   0x30230), which is the one genuinely retail-derived number a `.bss` section carries,
+   and it feeds `total_data`. It also cannot fix the biggest case: **ddsurface's 8-byte
+   reading is on the BASE side**, inside cl's output, where nothing we do reaches.
+3. **Compare sizes only when at least one side states one** —
+   `nix/patches/objdiff-bss-inferred-extent.patch`, in `diff_bss_symbol`. Declines to
+   compare a quantity neither object states. Unpaired symbols are still a mismatch, so
+   a missing/extra global is still caught, and COMMON symbols (which DO carry a size)
+   are still compared. Same ruling as the sibling project's
+   `docs/strict-data-allocations.md`: *"The checker never accepts that span as a
+   reviewed extent."*
+
+The extent check that actually bites lives in `gruntz.build.data_manifest.candidates()`:
+a reviewed extent must fit the span to its retail neighbour, and an overlap withholds
+BOTH rows and reports them as a reconstruction-defect worklist.
+
 ## Consequence for the metric
 
-`.bss` is **212211 of 279630** `total_data` bytes (~76%), and `ddsurface` alone is
-197144 of that. A large, permanent-looking slice of `matched_data` is gated on an
-inference artifact, not on reconstruction quality. **Read `matched_data` as a
-`.data`/`.rdata` measure**; do not budget work against the `.bss` share.
+Measured on unchanged objects (only the `objdiff` ninja edge re-ran):
 
-The real fix is upstream, in the tooling, not in `src/`: either teach the delinker to
-emit COFF symbol sizes on the target side, or score BSS by (name → *declared type
-size*) instead of by inferred gaps. Until then this is a documented wall.
+| | before | after |
+|---|---|---|
+| `matched_data` | 118,484/704,148 = **16.83%** | 639,859/704,148 = **90.87%** |
+| data sections at exactly 100.0 | 338 | 357 (+19, **all `.bss`**) |
+| data-bearing units fully exact | 176 | 187 |
+| size-weighted data | 99.6055% | 99.6501% |
+| `matched_functions` / `matched_code` / fuzzy | 3498 / 474,819 / 91.99114 | **identical** |
+
+4325 functions, **zero** changed in size, percent or address; every section's identity
+and size identical. The control that the change is not just inflation: the sections
+whose defect is a real *missing symbol* did **not** flip — `videoconfig` 40%, `butemgr`
+8.7%, `battlezmapconfig` 12.9%, `brickzload` 0%, `netcmdslot`, `dialogs`, `gruntzapp`,
+`worldsoundset`, `wwdfactoryobject`, `fadereffects` all unchanged, and
+`checkpointdlg`/`fonts`/`play`/`savegame`/`multi`/`customworlddialog` rose only as far
+as their extent-only symbols allowed.
+
+**The remaining `.bss` gap is a NAMING gap** (16 sections, 10,476 B): the delinker
+enrolls the nine `GruntDirectionCell` header statics as
+`?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A` while cl names them
+`_s_gruntDirEast$S17426`, and the normalizer canonicalises only the `$S` side, so the
+two can never pair. Same shape for the `CButeMgr` function-local statics
+(`_s_default_rect_butemgr`, `_s_guard_GetRect_butemgr`, …).
 
 ## See also
 
