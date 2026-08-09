@@ -53,6 +53,16 @@ NAMED_STATIC = re.compile(r"^(?P<prefix>.+\$S)[0-9]+$")
 # relocation records, so this is not a source-label authority and an `_$E<n>`
 # RVA_COMPGEN claim is forbidden.
 VOLATILE_E = re.compile(r"^_?\$E[0-9]+$")
+# A delinker-enrolled per-TU copy of a header static (config/static_data_copies.tsv):
+# the copies share one source name, so the manifest disambiguates each with its
+# retail RVA (`?s_gruntDirEast_245168@@3UGruntDirectionCell@@A`). cl spells the
+# same object `_s_gruntDirEast$S<n>` - the volatile-ordinal form this module
+# already content-addresses - so the enrolled spelling is rewritten onto that
+# family (prefix `_s_gruntDirEast$S`) and the two sides pair by source identity.
+# The pattern is proven collision-free against every base obj: no cl output names
+# any symbol `?s_<name>_<hex>@@3<type>A`.
+DELINKED_STATIC_COPY = re.compile(
+    r"^\?(?P<stem>s_\w+?)_[0-9a-f]{5,7}@@3.+A$")
 MSVC_CTOR = re.compile(r"^\?\?0(?P<class_name>[^@]+)@@")
 MSVC_DTOR = re.compile(r"^\?\?1(?P<class_name>[^@]+)@@")
 
@@ -335,6 +345,9 @@ def _family(name: str) -> tuple[str, str | None] | None:
     match = NAMED_STATIC.fullmatch(name)
     if match:
         return "named", match.group("prefix")
+    match = DELINKED_STATIC_COPY.fullmatch(name)
+    if match:
+        return "named", f"_{match.group('stem')}$S"
     return None
 
 
@@ -732,7 +745,17 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         own_relocs = [row for row in section_relocations[definition.section.index]
                       if definition.start <= row.site < definition.end]
         kind, meaningful, proof = "data", raw, "physical-span"
-        if family and family[0] == "e":
+        if definition.storage == "bss":
+            # An uninitialized allocation STATES no bytes: `section_bytes` above
+            # synthesised the zeros, and the physical span is the object PLUS
+            # whatever hole-filling its allocator chose (cl packs 4-byte ints
+            # into the gaps; the delinker appends per-definition) - the same
+            # two-allocators argument as nix/patches/objdiff-bss-inferred-extent
+            # .patch. Neither quantity is part of the object's identity, so a
+            # BSS static's canonical name carries only its source name, storage
+            # and occurrence.
+            meaningful, proof = b"", "bss-no-content"
+        elif family and family[0] == "e":
             # Base COMDATs and packed delinked target text have different
             # alignment spans. The helper body ends before their trailing NOPs.
             meaningful = raw.rstrip(b"\x90")
@@ -849,7 +872,8 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 "schema": "gruntz-anon-symbol-v2",
                 "kind": kind,
                 "storage": definition.storage,
-                "span": _identity_span(kind, physical_size, len(meaningful)),
+                "span": 0 if definition.storage == "bss"
+                else _identity_span(kind, physical_size, len(meaningful)),
                 "meaningful_size": len(meaningful),
                 "payload": bytes(masked).hex(),
                 "relocations": reloc_rows,
