@@ -817,16 +817,17 @@ the original may not have had — and every case the retail image can adjudicate
 it (`?g_pathStr@@3VCString@@A` at `0x22c25c`, `_g_chatTextWidth` at `0x22b434` and eighteen
 more sit at rva ≡ 4 mod 8, which an 8-aligned object cannot).
 
-**The image refutes an over-alignment, and that is a worklist.** The linker honours an
-object's alignment, so `align` must divide the object's retail rva. `data_manifest` now
-prints every row where the modelled value does not — three of them, and each is a real
-source defect the rule found rather than an alignment question:
+**Absolute RVA is not an object-alignment oracle.** c2 aligns a member inside its
+object contribution; the linker then places the contribution. A divisibility mismatch
+is therefore a review lead, not a proof. Applying the old absolute test to all current
+source-backed pins rejects 131 established rows. The three rows that originally
+motivated it now separate into one independently confirmed correction and two controls:
 
 | rva | symbol | size | c2 says | image says |
 |---|---|---|---|---|
-| `0x253c9e` | `g_clut` | `0x30002` | 8 | **2** — an array that size cannot start at an odd-word rva. The real object is `u8 g_clut[0x30000]` at `0x253ca0` (8-aligned, ending exactly at `g_lut16`); our pin is 2 low and every use site carries a compensating `+2`. |
-| `0x2bf28c` | `g_imageClipRect` | `0x10` | 8 | **4** — a 16-byte array would be 8-aligned. Four consecutive `i32`s at `+0x0/4/8/c` fit a 4-mod-8 start exactly, so retail most likely had four separate globals (`left/top/right/bottom`), not an array. |
-| `0x2c127d` | `??_B?1??GetRandomNumber@@YAHXZ@51` | 1 | 4 | **1** — correct and expected: an INLINE function's local-static guard is a COFF COMMON, placed by the LINKER, so c2's section allocator never sees it (`docs/compiler-data-layout.md`, the six cases). |
+| `0x253c9e` | `g_clut` | `0x30002` | 8 | **2** — confirmed independently: `u8 g_clut[0x30000]` starts at `0x253ca0`, ends exactly at `g_lut16`, and every use site carried the same compensating `+2`. Absolute alignment alone would not prove it. |
+| `0x2bf28c` | `g_imageClip` | `0x10` | 8 | **4** — false positive. A VC5/MFC A/B instead identifies a plain `RECT`: `RECT = *RECT*` emits retail's direct four-word copy, while both CRect assignment forms call imported `CopyRect`. |
+| `0x2c127d` | `??_B?1??GetRandomNumber@@YAHXZ@51` | 1 | 4 | **1** — expected: an inline function's local-static guard is a COFF COMMON placed by the linker. |
 
 **(2) A legacy row was appended to a COMDAT** (`nix/patches/vostok-legacy-data-not-into-comdat.patch`).
 `ObjectFile::with_sections` adopted the FIRST manifest section of each storage class as the

@@ -96,9 +96,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     }
     if (drawType == SHADE_ALPHA_16 || drawType == SHADE_PAL_ALPHA_16) {
         i32 bank = (m_light >> 3) * 0x800;
-        m_lutBank0 = Pix16(g_clut + 0x20002 + bank);
-        m_lutBank1 = Pix16(g_clut + 0x2 + bank);
-        m_lutBank2 = Pix16(g_clut + 0x10002 + bank);
+        m_lutBank0 = Pix16(g_clut + 0x20000 + bank);
+        m_lutBank1 = Pix16(g_clut + bank);
+        m_lutBank2 = Pix16(g_clut + 0x10000 + bank);
     }
 
     if (sel) {

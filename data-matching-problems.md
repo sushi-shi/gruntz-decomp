@@ -113,7 +113,7 @@ ending exactly at `g_lut16`; every use site carried the same compensating `+2`. 
 independent extent and use facts prove the correction. Absolute retail-RVA alignment does
 not: c2 aligns within an object contribution and the linker places that contribution.
 
-### `g_imageClipRect`
+### `g_imageClip`
 
 `RenderFrameClipped` takes a retail-proven `RECT*` and emits four inline field stores.
 A controlled VC5 `/O2 /MT` probe against the shipped MFC headers distinguishes the

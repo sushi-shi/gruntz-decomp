@@ -27,14 +27,8 @@
 
 DATA(0x00253c88)
 CPtrArray g_imageCache;
-DATA(0x00253c9e)
-// 0x30002, not 0x30000: every user indexes the three 64K banks with a +2 bias
-// (g_clut+0x2 / +0x10002 / +0x20002), so the top bank runs to g_clut+0x30001.
-// Retail has room for it - its g_clut starts at 0x253c9e and the next datum
-// (g_lut16) is at 0x283ca0, exactly 0x30002 bytes later. Declared 0x30000 here,
-// the 2-byte tail landed on whatever followed in OUR layout, which was g_rDown:
-// it read 0xF000 instead of 3, so every red channel was mis-shifted.
-u8 g_clut[0x30002];
+DATA(0x00253ca0)
+u8 g_clut[0x30000];
 
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0};
@@ -776,14 +770,13 @@ i32 CDDSurface::ShadeBlt(
 
                         Pix16Ptr c;
                         c.m_bytes =
-                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                            ((g_clut + 0x10000) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
                         u16 v = *c.m_words;
                         c.m_bytes =
-                            ((g_clut + 0x20002) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
+                            ((g_clut + 0x20000) + bank + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
                         v |= *c.m_words;
                         c.m_bytes =
-                            ((g_clut + 0x2) + bank
-                             + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
+                            (g_clut + bank + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
                         v |= *c.m_words;
                         *dstPtr = v;
                         dstPtr++;
@@ -812,14 +805,13 @@ i32 CDDSurface::ShadeBlt(
 
                         Pix16Ptr c;
                         c.m_bytes =
-                            ((g_clut + 0x10002) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
+                            ((g_clut + 0x10000) + bank + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
                         u16 v = *c.m_words;
                         c.m_bytes =
-                            ((g_clut + 0x20002) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
+                            ((g_clut + 0x20000) + bank + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
                         v |= *c.m_words;
                         c.m_bytes =
-                            ((g_clut + 0x2) + bank
-                             + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
+                            (g_clut + bank + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
                         v |= *c.m_words;
                         *dstPtr = v;
                         dstPtr++;

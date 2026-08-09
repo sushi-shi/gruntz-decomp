@@ -133,13 +133,14 @@ of two dividing both the rva and the size" matched none of this; it now calls
    are reconstructions) and for `.data`/`.rdata` needs the whole section, while a
    row that still needs a modelled alignment is by definition one whose section
    could not be reconstructed. 4 is the conservative branch (it never fabricates
-   padding) and every case the image can adjudicate agrees with it. The image is
-   also the refutation: `align` must divide the object's retail rva, and the
-   three rows where it does not are source defects the rule FOUND (`g_clut`
-   pinned two bytes low; `g_imageClipRect` modelled as one array where the
-   4-mod-8 rva says four separate `i32`s; and the one correct exception, an
-   inline function's guard byte, which is a COMMON the LINKER places — see the
-   six cases below, c2 never saw it).
+   padding). Do not turn that object-relative c2 rule into an absolute-RVA gate:
+   the linker places whole contributions, and an object's retail RVA need not
+   preserve the alignment c2 used inside its object. The negative control is
+   decisive: applying `modelled_alignment | retail_rva` to current source-backed
+   pins rejects 131 established rows, including ordinary string arrays. The
+   absolute-RVA test is useful as a review lead only when the contribution base
+   and member offset are independently known; by itself it proves neither a bad
+   pin nor an aggregate's identity.
 4. Function-local statics participate in the same `.bss` walk under their
    decorated names — a TU's `.bss` is one interleaved pool, not
    "globals first, then per-function statics".

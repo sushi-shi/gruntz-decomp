@@ -549,6 +549,10 @@ def cmd_build(args) -> None:
     _gate("gruntz.audit.link_line", ["--check"],
           "link-order snapshot no longer re-derives - regenerate it "
           "(python -m gruntz.audit.link_line --emit)", "full")
+    _gate("gruntz.audit.data_integrity", ["--gate"],
+          "data-integrity ratchet violated - unclaimed DATA runs, wrong linked "
+          "referents, or ordering-only referents increased (bank a genuine lower "
+          "count with python -m gruntz.audit.data_integrity --write)", "full")
     _gate("gruntz.audit.label_style", ["--gate"],
           "label-style ratchet violated - spell the label canonically "
           "(python -m gruntz.audit.label_style)", "normal")

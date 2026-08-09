@@ -144,7 +144,7 @@ def declared_types(path=None):
 
 
 def _object_kind(name, rva, size, types=None):
-    """`double` | `scalar` | `array` for c2's alignment rule, or None if unproven.
+    """Compiler alignment kind for c2's rule, or None if unproven.
 
     Two oracles, both the compiler's own statement of the declared type:
       * globals.json - clang's printed qualType for the DATA() pin, keyed by rva;
@@ -175,8 +175,7 @@ def _object_kind(name, rva, size, types=None):
 
 
 def _alignment(rva, size, kind):
-    """`(alignment, modelled)` - c2's VC5 object alignment, and what it was before
-    the shipped image refuted it (equal when it did not).
+    """`(alignment, modelled)` - usable manifest alignment and c2's object model.
 
     The rule is `gruntz.audit.data_layout.obj_align`, reverse-engineered from
     c1xx.dll/c2.exe and validated 41/41 on a blind TU (docs/compiler-data-layout.md
@@ -202,12 +201,11 @@ def _alignment(rva, size, kind):
     `_g_chatTextWidth` (0x22b434) and eighteen more sit at rva = 4 mod 8, which an
     8-aligned object cannot.
 
-    Finally the image itself refutes an over-alignment. The linker honours an
-    object's alignment, so `align` MUST divide the object's retail rva; when the
-    model says otherwise the model is wrong about that datum, and the largest
-    divisor is used instead. main() prints every such row - they are a real
-    worklist (a 197 KB array pinned at an odd rva is a mis-modelled base, not an
-    alignment question).
+    The delinker's legacy allocation form needs an alignment that divides the
+    final retail RVA, so the manifest lowers the object-relative model to the
+    largest usable divisor. That downgrade is not a source refutation: the
+    linker places whole contributions, and current source-backed controls show
+    that absolute retail RVAs need not preserve c2's internal member alignment.
     """
     modelled = obj_align(kind or ("array" if size > 8 else "scalar"), size,
                          UNLATCHED_RATCHET)
@@ -1451,8 +1449,9 @@ def manifest_bytes(rows, refuted=None):
 
     A PLACED row's alignment is cl's own, read off the candidate COMDAT it sits in;
     only a legacy row needs the c2 rule modelled (_alignment), because only a legacy
-    row is one the delinker allocates itself. `refuted` collects the rows whose
-    modelled alignment does not divide their retail rva.
+    row is one the delinker allocates itself. `refuted` is the legacy API name
+    for collecting rows whose manifest alignment had to be lowered for placement;
+    callers must not treat those rows as proven source defects.
     """
     out = ["\t".join(HEADER)]
     types = declared_types()
@@ -1519,9 +1518,8 @@ def main(argv=None):
         len(withheld), ", ".join("%s=%d" % kv for kv in sorted(
             Counter(w[2].split("(")[0].strip() for w in withheld).items()))))
     if refuted:
-        print("[data-manifest] %d row(s) the retail rva refutes (c2 alignment does "
-              "not divide the shipped address - a mis-modelled base or extent):"
-              % len(refuted))
+        print("[data-manifest] %d legacy row(s) use lowered placement alignment "
+              "(not a source refutation):" % len(refuted))
         for rva, name, size, kind, modelled, used in refuted:
             print("    0x%06x %-46s size 0x%-6x kind=%-6s c2 %d -> used %d"
                   % (rva, name[:46], size, kind or "?", modelled, used))

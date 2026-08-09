@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 DATA(0x002bf28c)
-i32 g_imageClipRect[4] = {0};
+RECT g_imageClip = {0};
 DATA(0x002bf318)
 DDBLTFX g_bltFx = {0};
 DATA(0x002bf37c)
@@ -483,10 +483,7 @@ void CImage::RenderFrameClipped(
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
-            g_imageClipRect[0] = clipRect->left;
-            g_imageClipRect[1] = clipRect->top;
-            g_imageClipRect[2] = clipRect->right;
-            g_imageClipRect[3] = clipRect->bottom;
+            g_imageClip = *clipRect;
         }
         this->RenderImage(&clip, target);
     }

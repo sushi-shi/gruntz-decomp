@@ -1,0 +1,4 @@
+metric	maximum	note
+unclaimed_runs	55	retail-accessed runs outside every DATA claim
+wrong_referent_regions	248	paired regions reaching a genuinely different decidable referent
+ordering_only_regions	40	paired regions reaching the same decidable referent multiset in another order

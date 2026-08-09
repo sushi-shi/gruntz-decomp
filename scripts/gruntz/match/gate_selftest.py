@@ -37,7 +37,7 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from gruntz.audit import rename_member, tu_layout
+from gruntz.audit import data_integrity, rename_member, tu_layout
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
@@ -47,7 +47,7 @@ from gruntz.core import branches
 from gruntz.core import function_universe
 from gruntz.core import report
 from gruntz.core import library_labels
-from gruntz.build import canonicalize_data_symbols, labels, synth_pdb
+from gruntz.build import canonicalize_data_symbols, data_manifest, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import residual_queue, status
 from gruntz.permute import permute_sweep
@@ -57,6 +57,37 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class DataManifestAlignmentControls(unittest.TestCase):
+    def test_absolute_rva_mismatch_is_a_placement_adjustment_not_a_gate(self):
+        row = {"name": "?validContributionMember@@3PAY0BA@E",
+               "object": "probe.c", "rva": 0x1004, "size": 16,
+               "storage": "bss", "provenance": "test"}
+        with mock.patch.object(data_manifest, "declared_types",
+                               return_value={0x1004: "unsigned char[16]"}):
+            adjusted = []
+            manifest = data_manifest.manifest_bytes([row], adjusted).decode()
+        self.assertEqual(adjusted[0][4:], (8, 4))
+        self.assertIn("\tbss\t0x4\t-\t-\texternal\ttest\n", manifest)
+
+
+class DataIntegrityRatchetTests(unittest.TestCase):
+    @staticmethod
+    def _run(current, limits):
+        with mock.patch.object(data_integrity, "measures", return_value=current), \
+                mock.patch.object(data_integrity, "_read", return_value=(limits, {})), \
+                mock.patch.object(sys, "argv", ["data_integrity", "--gate"]), \
+                contextlib.redirect_stdout(io.StringIO()):
+            return data_integrity.main()
+
+    def test_increase_and_unbanked_improvement_both_fail(self):
+        baseline = {"unclaimed_runs": 5, "wrong_referent_regions": 7,
+                    "ordering_only_regions": 2}
+        self.assertEqual(self._run({**baseline, "unclaimed_runs": 6}, baseline), 1)
+        self.assertEqual(
+            self._run({**baseline, "wrong_referent_regions": 6}, baseline), 1)
+        self.assertEqual(self._run(dict(baseline), baseline), 0)
 
 
 class ViewDebtLibraryShadowTests(unittest.TestCase):
