@@ -12,7 +12,9 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/StreamFeeder.h>
+#include <Enums.h>
 #include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/CurPlayer.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
@@ -23,6 +25,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -46,9 +49,12 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StatusBarDock.h>
+#include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/StatusBarMgrBuilders.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusBarTabWidgets.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -58,6 +64,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WarpStoneFly.h>
 #include <Image/CImage.h>
+#include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Rez/RezList.h>
@@ -69,6 +76,7 @@
 #include <limits.h>
 #include <math.h>
 #include <new>
+#include <stddef.h>
 #include <string.h>
 
 DATA(0x00244c54)
@@ -1082,7 +1090,47 @@ i32 CStatusBarItem::Click24(i32, i32, i32) {
     return 0;
 }
 
+RVA(0x001005b0, 0x8)
+void CStatusBarItem::SetSubtype() {
+    m_redrawFrames = 2;
+}
+
+RVA(0x001005d0, 0x17)
+CStatusBarItem::CStatusBarItem() {
+    m_enabled = 0;
+    m_kind = SBI_KIND_BASE;
+    m_host = NULL;
+    m_redrawFrames = 0;
+}
+
+RVA(0x00100600, 0x8)
+i32 CStatusBarItem::Refresh(i32) {
+    return 1;
+}
+
 RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
+
+RVA(0x00100660, 0x50)
+i32 CStatusBarItem::Setup(
+    CStatusBarMgr* owner,
+    CDDrawSurfaceMgr* host,
+    SbiCommandId cmd,
+    StatusBarTab tab,
+    RECT rc,
+    const char* key,
+    i32 a10
+) {
+    if (host == NULL || owner == NULL) {
+        return 0;
+    }
+    m_owner = owner;
+    m_host = host;
+    m_tab = tab;
+    m_rect14 = rc;
+    m_cmd = cmd;
+    return 1;
+}
+
 RVA_COMPGEN(0x001006d0, 0x1e, ??_GCSBI_RectOnly@@UAEPAXI@Z)
 RVA_COMPGEN(0x00100700, 0x55, ??1CSBI_RectOnly@@UAE@XZ)
 RVA_COMPGEN(0x00100780, 0xb, ??1CStatusBarItem@@UAE@XZ)
@@ -1776,6 +1824,994 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
     m_hitTestDisabled = 0;
 }
 
+// @early-stop
+// 86.68 -> 91.63 once the framework image's top was read off retail's RELOAD rather
+// than invented (see the SBICMD_RESOURCE_MACHINE_FOREGROUND site).  What is left is the
+// FRAME, not the exits: retail reserves `sub esp,0x34`, we reserve 0x30, and the slot
+// order moves with it - both sides agree up to +0x1c (code +0x10, the loop `y` +0x14,
+// the i32* cursor +0x18, `i` +0x1c), then the prologue spills `by` to +0x20 in retail
+// and +0x28 in ours.  The 25 unwind funclets say it is NOT one uniform shift: eh_band's
+// census row is `mixed -0x8x6 +0x4x3 -0x1cx1`, so three object slots move three ways.
+// `--branches --diff` reports 102/102 and 13/13, so control flow is already right.
+// Measured and REJECTED as the missing local, both leaving the frame at 0x30: hoisting
+// the loops' `CSBI_ImageSet* set` to function scope, and giving any one loop its own
+// counter.  Both were byte-identical, so the extra dword is a SPILL, not a declaration.
+RVA(0x00102250, 0x1de4)
+i32 CStatusBarMgr::LoadTabSprites() {
+    CDDrawSurfaceMgr* code = m_world;
+    i32 bx = m_rect10.left;
+    i32 by = m_rect10.top;
+
+    CSBI_Image* it;
+    CSBI_ImageSetAni* ani;
+    CSBI_StatzTabArrow* arrow;
+    CSBI_GruntMachine* mach;
+    CSBI_StatzTabGruntBar* bar;
+    RECT r;
+    i32 i;
+
+    switch (m_activeTab) {
+        case TAB_GRUNTZ:
+            it = new CSBI_Image;
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_GRUNTZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[2].AddTail(it);
+
+            {
+                CSBI_ImageSet** aptr = m_slotNotify;
+                i32* bptr = &m_slots[0].m_value;
+                i32 y = by + 0xfe;
+                for (i = 0; i < 5; i++) {
+                    CSBI_ImageSet* set = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+                    r.left = bx + 0xe;
+                    r.top = y - 0x32;
+                    r.right = bx + 0x39;
+                    r.bottom = y;
+                    if (!set->SetupImage(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
+                            TAB_GRUNTZ,
+                            r,
+                            "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
+                            *bptr,
+                            0
+                        )) {
+                        if (set) {
+                            delete set;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[2].AddTail(set);
+                    *aptr = set;
+                    CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
+                        IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex),
+                        0
+                    );
+                    if (sel == NULL) {
+                        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                    }
+                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(SHADE_PAL_16);
+                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllFormats(sel);
+                    aptr++;
+                    bptr += 6;
+                    y += 0x36;
+                }
+            }
+            it = new CSBI_Image;
+            r.left = bx + 0x4c;
+            r.top = by + 0xc8;
+            r.right = bx + 0x97;
+            r.bottom = by + 0x1cd;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_GRUNT_WELL,
+                    TAB_GRUNTZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[2].AddTail(it);
+            m_gaugeNotify = it;
+            it = new CSBI_Image;
+            r.left = bx + 0x1e;
+            r.top = by + 0xc4;
+            r.right = bx + 0x3d;
+            r.bottom = by + 0xcd;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_GRUNT_OVENS_TEXT,
+                    TAB_GRUNTZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[2].AddTail(it);
+            it = new CSBI_Image;
+            r.left = bx + 0x68;
+            r.top = by + 0x1cf;
+            r.right = bx + 0x87;
+            r.bottom = by + 0x1d8;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_GRUNT_WELL_TEXT,
+                    TAB_GRUNTZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[2].AddTail(it);
+            it = new CSBI_WellGoo;
+            r.left = bx + 0x6e;
+            r.top = by + 0xf8;
+            r.right = bx + 0x81;
+            r.bottom = by + 0x1b3;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_GRUNT_WELL_GOO,
+                    TAB_GRUNTZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
+                    m_gauge,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[2].AddTail(it);
+            m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
+            return 1;
+
+        case TAB_RESOURCE:
+            it = new CSBI_Image;
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            it = new CSBI_Image;
+            r.left = bx;
+            r.top = by + 0x135;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1be;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_MAIN_BACKGROUND,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_notify0 = it;
+            it = new CSBI_Image;
+            r.left = bx;
+            r.top = by + 0xfb;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x134;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_UPPER_BACKGROUND,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_notify2 = it;
+            it = new CSBI_Image;
+            r.left = bx + 0x48;
+            r.top = by + 0xd3;
+            r.right = bx + 0x67;
+            r.bottom = by + 0xf3;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_WINDOW_BACKGROUND,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_notify3 = it;
+
+            it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+            r.left = bx + 0x19;
+            r.top = by + 0x11c;
+            r.right = bx + 0x3c;
+            r.bottom = by + 0x130;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_BELT_GROUP0,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_groupSlots[0].m_value,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it);
+            it = new CSBI_ImageSet;
+            r.left = bx + 0x40;
+            r.top = by + 0x11c;
+            r.right = bx + 0x63;
+            r.bottom = by + 0x130;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_BELT_GROUP1,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_groupSlots[1].m_value,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it);
+            it = new CSBI_ImageSet;
+            r.left = bx + 0x68;
+            r.top = by + 0x11c;
+            r.right = bx + 0x8b;
+            r.bottom = by + 0x130;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_BELT_GROUP2,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                    m_groupSlots[2].m_value,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
+
+            it = new CSBI_ImageSet;
+            r.left = m_itemRect.left + bx;
+            r.top = m_itemRect.top + by;
+            r.right = m_itemRect.right + bx;
+            r.bottom = m_itemRect.bottom + by;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_CURRENT_ITEM,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_INGAMEICONZ_GREYCHIPZ",
+                    m_extraNotifyArg0,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it);
+            it->m_enabled = 0;
+
+            {
+                i32* cfgp = &m_hlGrid[4].m_value;
+                CSBI_ImageSet** cachep = &m_hlNotify[4];
+                i32 y = by + 0x155;
+                for (i = 0; i < 4; i++) {
+                    CSBI_ImageSet* set = new CSBI_ImageSet;
+                    r.left = bx + 0x1d;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x34;
+                    r.bottom = y;
+                    if (!set->SetupImage(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP0_FIRST) + i),
+                            TAB_RESOURCE,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[-24],
+                            0
+                        )) {
+                        if (set) {
+                            delete set;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[3].AddTail(set);
+                    cachep[-4] = set;
+                    set = new CSBI_ImageSet;
+                    r.left = bx + 0x45;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x5c;
+                    r.bottom = y;
+                    if (!set->SetupImage(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP1_FIRST) + i),
+                            TAB_RESOURCE,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[0],
+                            0
+                        )) {
+                        if (set) {
+                            delete set;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[3].AddTail(set);
+                    cachep[0] = set;
+                    set = new CSBI_ImageSet;
+                    r.left = bx + 0x6d;
+                    r.top = y - 0x17;
+                    r.right = bx + 0x84;
+                    r.bottom = y;
+                    if (!set->SetupImage(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP2_FIRST) + i),
+                            TAB_RESOURCE,
+                            r,
+                            "GAME_INGAMEICONZ_NORMCHIPZ",
+                            cfgp[24],
+                            0
+                        )) {
+                        if (set) {
+                            delete set;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[3].AddTail(set);
+                    cachep[4] = set;
+                    cfgp += 6;
+                    cachep += 1;
+                    y += 0x20;
+                }
+            }
+
+            mach = new CSBI_GruntMachine;
+            r.left = bx;
+            r.top = by + 0xc8;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0xfa;
+            if (!mach->BuildResourceTabStatusBar(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_MACHINE_BACKGROUND,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
+                    m_machineA.m_counter,
+                    m_machineB.m_counter
+                )) {
+                if (mach) {
+                    delete mach;
+                }
+                return 0;
+            }
+            m_machineDisplay = mach;
+            m_tabLists[3].AddTail(mach);
+
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
+            r.left = bx;
+            // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
+            // TAB_RESOURCE image's `by + 0x135` was CSE'd into, and `by + 0x1a6` (what
+            // used to stand here) appears in no immediate anywhere in the function.
+            r.top = by + 0x135;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1df;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_MACHINE_FOREGROUND,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_notify1 = it;
+
+            ani = new CSBI_ImageSetAni;
+            r.left = bx;
+            r.top = by + 0x1bf;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1cc;
+            if (!ani->Init(
+                    this,
+                    code,
+                    SBICMD_CONVEYOR_TOP,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
+                    -1,
+                    -1,
+                    0x64,
+                    1,
+                    1
+                )) {
+                if (ani) {
+                    delete ani;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(ani);
+
+            it = new CSBI_ImageSet;
+            r.left = m_fallRect.left + bx;
+            r.top = m_fallRect.top + by;
+            r.right = m_fallRect.right + bx;
+            r.bottom = m_fallRect.bottom + by;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_RESOURCE_FALLING_ITEM,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_INGAMEICONZ_NORMCHIPZ",
+                    m_extraNotifyArg1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(it);
+            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it);
+            it->m_enabled = 0;
+
+            ani = new CSBI_ImageSetAni;
+            r.left = bx;
+            r.top = by + 0x1c7;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x1df;
+            if (!ani->Init(
+                    this,
+                    code,
+                    SBICMD_CONVEYOR_BOTTOM,
+                    TAB_RESOURCE,
+                    r,
+                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
+                    -1,
+                    -1,
+                    0x64,
+                    1,
+                    1
+                )) {
+                if (ani) {
+                    delete ani;
+                }
+                return 0;
+            }
+            m_tabLists[3].AddTail(ani);
+            return 1;
+
+        case TAB_MULTIPLAYER:
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_MULTIPLAYER,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[4].AddTail(it);
+
+            it = new CSBI_WarlordHead;
+            r.left = bx + 0x53;
+            r.top = by + 0xcf;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x10a;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_MULTIPLAYER_HEAD1,
+                    TAB_MULTIPLAYER,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
+                    1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[4].AddTail(it);
+            m_warlordHead[0] = static_cast<CSBI_WarlordHead*>(it);
+            it = new CSBI_WarlordHead;
+            r.left = bx + 0x53;
+            r.top = by + 0x112;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x14d;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_MULTIPLAYER_HEAD2,
+                    TAB_MULTIPLAYER,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
+                    1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[4].AddTail(it);
+            m_warlordHead[1] = static_cast<CSBI_WarlordHead*>(it);
+            it = new CSBI_WarlordHead;
+            r.left = bx + 0x53;
+            r.top = by + 0x155;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x190;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_MULTIPLAYER_HEAD3,
+                    TAB_MULTIPLAYER,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
+                    1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[4].AddTail(it);
+            m_warlordHead[2] = static_cast<CSBI_WarlordHead*>(it);
+            it = new CSBI_WarlordHead;
+            r.left = bx + 0x53;
+            r.top = by + 0x197;
+            r.right = bx + 0x8e;
+            r.bottom = by + 0x1d2;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_MULTIPLAYER_HEAD4,
+                    TAB_MULTIPLAYER,
+                    r,
+                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
+                    1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[4].AddTail(it);
+            m_warlordHead[3] = static_cast<CSBI_WarlordHead*>(it);
+
+            {
+                CSBI_WarlordHead** slot = m_warlordHead;
+                i32 pi = 0;
+                do {
+                    // Indexed, not a walking pointer: retail's exit test is the
+                    // strength-reduced BYTE offset (`add eax,0x238; cmp eax,0x8e0;
+                    // jl`), which cl only produces from `m_options[pi]` - a
+                    // `p < m_options + 4` pointer guard reloads g_gameReg and
+                    // compares unsigned against a computed limit instead.
+                    GruntzPlayer* p = &g_gameReg->m_options[pi];
+                    CShadeTable* sel;
+                    if (p->m_joined != 0 && p->m_doneFlag == 0) {
+                        sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_colorIndex), 0);
+                        if (pi == m_tabCycle) {
+                            (*slot)->SetState(1);
+                        }
+                    } else {
+                        sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
+                        (*slot)->SetState(2);
+                    }
+
+                    (*slot)->ShowFrames(SHADE_PAL_16, sel);
+                    slot++;
+                    pi++;
+                } while (pi < 4);
+            }
+
+            {
+                i32 by17 = bx + 0x17;
+                i32 by52 = bx + 0x52;
+                i32 y = by + 0xd9;
+                for (i = 0; i < 15; i++) {
+                    bar = new CSBI_StatzTabGruntBar;
+                    r.left = by17;
+                    r.top = y - 0x11;
+                    r.right = by52;
+                    r.bottom = y;
+                    if (!bar->BuildMultiplayerTabStatusBar(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
+                            TAB_MULTIPLAYER,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
+                            m_tabCycle,
+                            i,
+                            0
+                        )) {
+                        if (bar) {
+                            delete bar;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[4].AddTail(bar);
+                    y += 0x12;
+                }
+            }
+            return 1;
+
+        case TAB_STATZ:
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_STATZ,
+                    r,
+                    "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[1].AddTail(it);
+
+            {
+                i32 aOff, cOff;
+                if (m_position == STATUSBAR_DOCK_LEFT) {
+                    aOff = 0x7d;
+                    cOff = 0x95;
+                } else {
+                    aOff = 0xa;
+                    cOff = 0x21;
+                }
+                i32 arrowL = bx + aOff;
+                i32 arrowR = bx + cOff;
+                i32 y = by + 0xd9;
+                for (i = 0; i < 15; i++) {
+                    SbiCommandId id =
+                        static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
+                    arrow = new CSBI_StatzTabArrow;
+                    r.left = arrowL;
+                    r.top = y - 0x11;
+                    r.right = arrowR;
+                    r.bottom = y;
+                    if (!arrow->Init(
+                            this,
+                            code,
+                            static_cast<SbiCommandId>(IDX(SBICMD_STAT_TOGGLE_FIRST) + i),
+                            TAB_STATZ,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
+                            -1,
+                            -1,
+                            0x64,
+                            0,
+                            0
+                        )) {
+                        if (arrow) {
+                            delete arrow;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[1].AddTail(arrow);
+                    m_statObj[i] = arrow;
+                    // Both arms take the same `0` (retail pushes it BEFORE the
+                    // branch); only the entry point differs - a sampled stat gets
+                    // the alternate arrow art (0xea170), an unsampled one the
+                    // plain one (0xea0f0).  This arm was empty, so a sampled stat
+                    // toggle kept whatever direction the ctor left.
+                    if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
+                        arrow->SetDirectionAlt(m_position, 0);
+                    } else {
+                        arrow->SetDirection(m_position, 0);
+                    }
+                    bar = new CSBI_StatzTabGruntBar;
+                    r.left = bx + 0x28;
+                    r.top = y - 0x11;
+                    r.right = bx + 0x77;
+                    r.bottom = y;
+                    if (!bar->BuildMultiplayerTabStatusBar(
+                            this,
+                            code,
+                            id,
+                            TAB_STATZ,
+                            r,
+                            "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
+                            g_curPlayer,
+                            i,
+                            1
+                        )) {
+                        if (bar) {
+                            delete bar;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[1].AddTail(bar);
+                    y += 0x12;
+                }
+            }
+            return 1;
+
+        case TAB_GAME:
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
+            r.left = bx + 0x18;
+            r.top = by + 0xaf;
+            r.right = bx + 0x70;
+            r.bottom = by + 0xbe;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_TAB_TITLE_TEXT,
+                    TAB_GAME,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
+                    -1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[5].AddTail(it);
+
+            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+            r.left = bx;
+            r.top = by;
+            r.right = bx + 0x9f;
+            r.bottom = by + 0x7f;
+            if (!it->SetupImage(
+                    this,
+                    code,
+                    SBICMD_WARPSTONE_BASE,
+                    TAB_GAME,
+                    r,
+                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                    1,
+                    0
+                )) {
+                if (it) {
+                    delete it;
+                }
+                return 0;
+            }
+            m_tabLists[5].AddTail(it);
+            if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                    ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
+                it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+                r.left = bx + 0x17;
+                r.top = by + 0xe;
+                r.right = bx + 0x52;
+                r.bottom = by + 0x44;
+                if (!it->SetupImage(
+                        this,
+                        code,
+                        SBICMD_WARPSTONE_FRAGMENT1,
+                        TAB_GAME,
+                        r,
+                        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                        2,
+                        0
+                    )) {
+                    if (it) {
+                        delete it;
+                    }
+                    return 0;
+                }
+                m_tabLists[5].AddTail(it);
+                if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                        ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
+                    it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+                    r.left = bx + 0x4c;
+                    r.top = by + 0xf;
+                    r.right = bx + 0x87;
+                    r.bottom = by + 0x3e;
+                    if (!it->SetupImage(
+                            this,
+                            code,
+                            SBICMD_WARPSTONE_FRAGMENT2,
+                            TAB_GAME,
+                            r,
+                            "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                            3,
+                            0
+                        )) {
+                        if (it) {
+                            delete it;
+                        }
+                        return 0;
+                    }
+                    m_tabLists[5].AddTail(it);
+                    if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                            ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
+                        it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+                        r.left = bx + 0x1b;
+                        r.top = by + 0x3b;
+                        r.right = bx + 0x52;
+                        r.bottom = by + 0x71;
+                        if (!it->SetupImage(
+                                this,
+                                code,
+                                SBICMD_WARPSTONE_FRAGMENT3,
+                                TAB_GAME,
+                                r,
+                                "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                                4,
+                                0
+                            )) {
+                            if (it) {
+                                delete it;
+                            }
+                            return 0;
+                        }
+                        m_tabLists[5].AddTail(it);
+                        if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
+                                ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
+                            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+                            r.left = bx + 0x4a;
+                            r.top = by + 0x35;
+                            r.right = bx + 0x89;
+                            r.bottom = by + 0x74;
+                            if (!it->SetupImage(
+                                    this,
+                                    code,
+                                    SBICMD_WARPSTONE_FRAGMENT4,
+                                    TAB_GAME,
+                                    r,
+                                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                                    5,
+                                    0
+                                )) {
+                                if (it) {
+                                    delete it;
+                                }
+                                return 0;
+                            }
+                            m_tabLists[5].AddTail(it);
+                        }
+                    }
+                }
+            }
+            BuildGameMenu();
+            return 1;
+    }
+    return 1;
+}
+
+RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
+RVA_COMPGEN(0x001047f0, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
+
+RVA_COMPGEN(0x001048c0, 0x1e, ??_GCSBI_StatzTabArrow@@UAEPAXI@Z)
+RVA(0x001048f0, 0xa9)
+CSBI_StatzTabArrow::~CSBI_StatzTabArrow() {
+    Reset();
+}
+
+RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
+
 RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
@@ -1881,6 +2917,45 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         }
     }
     m_statFlags[idx] = STATUS_SAMPLE_NONE;
+    return 1;
+}
+
+RVA(0x00105070, 0x10e)
+i32 CStatusBarMgr::BuildSideTabs() {
+    i32 i = 0;
+    for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
+        RECT rc;
+        if (m_position == STATUSBAR_DOCK_RIGHT) {
+            rc.left = m_rect10.left - 0x1c;
+            rc.right = m_rect10.left;
+        } else {
+            rc.left = m_rect10.right;
+            rc.right = m_rect10.right + 0x1c;
+        }
+        rc.top = strid - 0x11;
+        rc.bottom = strid;
+        CSBI_SideTab* newobj = new CSBI_SideTab;
+
+        i32 ok = newobj->BuildStatzTabStatusBar(
+            this,
+            g_gameReg->m_world,
+            static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
+            TAB_CONTROLS,
+            rc,
+            "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
+            g_curPlayer,
+            i,
+            m_statFlags[i],
+            m_position == STATUSBAR_DOCK_RIGHT
+        );
+        if (ok == 0) {
+            delete newobj;
+            return 0;
+        }
+        m_tabLists[0].AddTail(newobj);
+        m_hitRects[i] = newobj;
+        i++;
+    }
     return 1;
 }
 
@@ -3668,6 +4743,12 @@ i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, WarpStoneFragment fragment) {
     return o->Init(this, a, b, fragment);
 }
 
+RVA(0x00109bb0, 0xb)
+CWarpStoneFly::CWarpStoneFly() {
+    m_sprite = NULL;
+    m_owner = NULL;
+}
+
 // @early-stop
 // frame 0x18 vs retail's 0x14: retail homes one of the two delta scalars in the dead
 // `fragment` parameter's slot; cl finds only the `owner` param home (both put the
@@ -3748,6 +4829,459 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragm
 
     m_currentX = static_cast<double>(srcX);
     m_currentY = static_cast<double>(srcY);
+    return 1;
+}
+
+RVA(0x00109e00, 0x245)
+i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 pObj) {
+    if (arc == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* lvl = g_gameReg->m_world;
+    if (lvl == NULL) {
+        return 0;
+    }
+    switch (mode) {
+        case SERIAL_LOAD: {
+
+            arc->Read(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Read(&m_targetX, sizeof(m_targetX));
+            arc->Read(&m_targetY, sizeof(m_targetY));
+            arc->Read(&m_currentX, sizeof(m_currentX));
+            arc->Read(&m_currentY, sizeof(m_currentY));
+            arc->Read(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Read(&m_xDirection, sizeof(m_xDirection));
+            arc->Read(&m_yDirection, sizeof(m_yDirection));
+            g_serialCounter++;
+
+            char name[SERIAL_NAME_LEN];
+            i32 index;
+            arc->Read(name, SERIAL_NAME_LEN);
+            arc->Read(&index, sizeof(index));
+            if (strlen(name) != 0) {
+                i32 i = index;
+                CObject* out = 0;
+                lvl->m_imageRegistry->m_10map.Lookup(name, out);
+                CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
+                CImage* r;
+                if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
+                    r = static_cast<CImage*>(rec->m_items.GetAt(i));
+                } else {
+                    r = NULL;
+                }
+                m_sprite = r;
+            } else {
+                m_sprite = NULL;
+            }
+            return 1;
+        }
+        case SERIAL_SAVE: {
+
+            arc->Write(&m_arrivalMode, sizeof(m_arrivalMode));
+            arc->Write(&m_targetX, sizeof(m_targetX));
+            arc->Write(&m_targetY, sizeof(m_targetY));
+            arc->Write(&m_currentX, sizeof(m_currentX));
+            arc->Write(&m_currentY, sizeof(m_currentY));
+            arc->Write(&m_velocityScale, sizeof(m_velocityScale));
+            arc->Write(&m_xDirection, sizeof(m_xDirection));
+            arc->Write(&m_yDirection, sizeof(m_yDirection));
+            g_serialCounter++;
+
+            CImage* obj = m_sprite;
+            char name[SERIAL_NAME_LEN];
+            i32 index = 0;
+            memset(name, 0, SERIAL_NAME_LEN);
+            if (obj != NULL) {
+                lvl->m_imageRegistry->AnyValueMatches(obj, name, &index);
+            }
+            arc->Write(name, SERIAL_NAME_LEN);
+            arc->Write(&index, sizeof(index));
+            break;
+        }
+    }
+    return 1;
+}
+
+// @early-stop
+RVA(0x0010a0f0, 0x184)
+i32 CWarpStoneFly::Tick(u32 dt) {
+    i32 cellY = static_cast<i32>(m_currentY);
+    i32 cellX = static_cast<i32>(m_currentX);
+    if (cellX == m_targetX && cellY == m_targetY) {
+        i32 mode = m_arrivalMode;
+        CByteArray* arr = &g_gameReg->m_cmdGrid->m_byteArr;
+        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
+        m_owner->m_hlBusy = 0;
+        if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
+            m_owner->ResetWidgets(0);
+            m_owner->TryActivate();
+        }
+        CStatusBarMgr* owner = m_owner;
+        if (owner->m_retabNotify != NULL) {
+            ::operator delete(owner->m_retabNotify);
+            owner->m_retabNotify = NULL;
+        }
+        return 1;
+    }
+
+    double t = static_cast<double>(dt);
+    double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
+    double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
+    m_currentX = newX;
+    m_currentY = newY;
+
+    if (m_xDirection > 0.0) {
+        if (static_cast<i32>(newX) > m_targetX) {
+            m_currentX = static_cast<double>(m_targetX);
+        }
+    } else if (m_xDirection < 0.0) {
+        if (static_cast<i32>(newX) < m_targetX) {
+            m_currentX = static_cast<double>(m_targetX);
+        }
+    }
+
+    if (m_yDirection > 0.0) {
+        if (static_cast<i32>(newY) > m_targetY) {
+            m_currentY = static_cast<double>(m_targetY);
+        }
+    } else if (m_yDirection < 0.0) {
+        if (static_cast<i32>(newY) < m_targetY) {
+            m_currentY = static_cast<double>(m_targetY);
+        }
+    }
+    return 1;
+}
+
+RVA(0x0010a2f0, 0x35)
+i32 CWarpStoneFly::Draw() {
+    m_sprite->RenderFrame(
+        g_gameReg->m_world->m_drawTarget->m_backPair,
+        static_cast<i32>(m_currentX),
+        static_cast<i32>(m_currentY),
+        0
+    );
+    return 1;
+}
+
+// @early-stop
+// Both `new CSBI_Image` sites now `call ??0CStatusBarItem` as retail does.  Residue:
+// the CSBI_MenuItem / CSBI_ImageSet sites here take all three cut depths
+// (??0CSBI_RectOnly, ??0CStatusBarItem, fully inline) for one class - the per-SITE
+// budget.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
+RVA(0x0010a340, 0xbcb)
+i32 CStatusBarMgr::BuildTabzDialog() {
+    if (m_toggleActive == 0) {
+        return 1;
+    }
+
+    CDDrawSurfaceMgr* w = m_world;
+    i32 cx;
+    i32 cy;
+    {
+        const LevelCoordRect& lr = w->m_level->m_planeCtx;
+        RECT src;
+        src.left = lr.left;
+        src.top = lr.top;
+        src.right = lr.right;
+        src.bottom = lr.bottom;
+        RECT dst;
+        CopyRect(&dst, &src);
+        cx = dst.left + (dst.right - dst.left) / 2;
+        cy = dst.top + (dst.bottom - dst.top) / 2;
+    }
+
+    if (m_toggleHandle != 0) {
+
+        CSBI_Image* areYouSure = new CSBI_Image;
+        if (!areYouSure->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_FRAME,
+                TAB_DIALOG,
+                SbGeom(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
+                "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
+                -1,
+                0
+            )) {
+            delete areYouSure;
+            return 0;
+        }
+        m_tabLists[6].AddTail(areYouSure);
+
+        CSBI_MenuItem* yes = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+        if (!yes->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_YES,
+                TAB_DIALOG,
+                SbGeom(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_YES",
+                -1,
+                0
+            )) {
+            delete yes;
+            return 0;
+        }
+        m_tabLists[6].AddTail(yes);
+        m_tabSprite13 = yes;
+
+        CSBI_MenuItem* no = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+        if (!no->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_NO,
+                TAB_DIALOG,
+                SbGeom(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_NO",
+                -1,
+                0
+            )) {
+            delete no;
+            return 0;
+        }
+        m_tabLists[6].AddTail(no);
+        m_tabSprite14 = no;
+        return 1;
+    }
+
+    CSBI_Image* dialog = new CSBI_Image;
+    if (!dialog->SetupImage(
+            this,
+            w,
+            SBICMD_DIALOG_FRAME,
+            TAB_DIALOG,
+            SbGeom(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
+            "GAME_STATUSBAR_TABZ_DIALOG",
+            -1,
+            0
+        )) {
+        delete dialog;
+        return 0;
+    }
+    m_tabLists[6].AddTail(dialog);
+
+    i32 reason = IDX(g_gameReg->m_cmdGrid->m_finishReasonFrame);
+
+    if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
+
+        CSBI_ImageSet* status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        if (!status->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_MISSION_STATUS,
+                TAB_DIALOG,
+                SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+                "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+                1,
+                0
+            )) {
+            delete status;
+            return 0;
+        }
+        m_tabLists[6].AddTail(status);
+
+        CSBI_ImageSet* rsn = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        if (!rsn->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_REASON,
+                TAB_DIALOG,
+                SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+                "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+                reason,
+                0
+            )) {
+            delete rsn;
+            return 0;
+        }
+        m_tabLists[6].AddTail(rsn);
+
+        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+            CSBI_MenuItem* next = new CSBI_MenuItem;
+            if (!next->SetupImage(
+                    this,
+                    w,
+                    SBICMD_DIALOG_PRIMARY,
+                    TAB_DIALOG,
+                    SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
+                    -1,
+                    0
+                )) {
+                delete next;
+                return 0;
+            }
+            m_tabLists[6].AddTail(next);
+            m_tabSprite11 = next;
+
+            CSBI_MenuItem* quit = new CSBI_MenuItem;
+            if (!quit->SetupImage(
+                    this,
+                    w,
+                    SBICMD_DIALOG_SECONDARY,
+                    TAB_DIALOG,
+                    SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                    -1,
+                    0
+                )) {
+                delete quit;
+                return 0;
+            }
+            m_tabLists[6].AddTail(quit);
+            m_tabSprite12 = quit;
+        } else {
+            CSBI_MenuItem* statz = new CSBI_MenuItem;
+            if (!statz->SetupImage(
+                    this,
+                    w,
+                    SBICMD_DIALOG_SECONDARY,
+                    TAB_DIALOG,
+                    SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                    -1,
+                    0
+                )) {
+                delete statz;
+                return 0;
+            }
+            m_tabLists[6].AddTail(statz);
+            m_tabSprite12 = statz;
+        }
+        return 1;
+    }
+
+    CSBI_ImageSet* status = new CSBI_ImageSet;
+    if (!status->SetupImage(
+            this,
+            w,
+            SBICMD_DIALOG_MISSION_STATUS,
+            TAB_DIALOG,
+            SbGeom(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+            "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+            2,
+            0
+        )) {
+        delete status;
+        return 0;
+    }
+    m_tabLists[6].AddTail(status);
+
+    CSBI_ImageSet* rsn = new CSBI_ImageSet;
+    if (!rsn->SetupImage(
+            this,
+            w,
+            SBICMD_DIALOG_REASON,
+            TAB_DIALOG,
+            SbGeom(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+            "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+            reason,
+            0
+        )) {
+        delete rsn;
+        return 0;
+    }
+    m_tabLists[6].AddTail(rsn);
+
+    if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+        CSBI_MenuItem* replay = new CSBI_MenuItem;
+        if (!replay->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_PRIMARY,
+                TAB_DIALOG,
+                SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
+                -1,
+                0
+            )) {
+            delete replay;
+            return 0;
+        }
+        m_tabLists[6].AddTail(replay);
+        m_tabSprite11 = replay;
+
+        CSBI_MenuItem* quit = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        if (!quit->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
+                SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                -1,
+                0
+            )) {
+            delete quit;
+            return 0;
+        }
+        m_tabLists[6].AddTail(quit);
+        m_tabSprite12 = quit;
+        return 1;
+    }
+
+    i32 count = 0;
+    for (i32 i = 0; i < 4; i++) {
+        if (g_gameReg->m_options[i].m_joined != 0 && g_gameReg->m_options[i].m_doneFlag == 0
+            && g_gameReg->m_options[i].m_clearedRound == 0) {
+            count++;
+        }
+    }
+
+    if (count >= 2) {
+        CSBI_MenuItem* observe = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        if (!observe->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_PRIMARY,
+                TAB_DIALOG,
+                SbGeom(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
+                -1,
+                0
+            )) {
+            delete observe;
+            return 0;
+        }
+        m_tabLists[6].AddTail(observe);
+        m_tabSprite11 = observe;
+        m_observerTabAvailable = 1;
+
+        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        if (!statz->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
+                SbGeom(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
+            return 0;
+        }
+        m_tabLists[6].AddTail(statz);
+        m_tabSprite12 = statz;
+    } else {
+        m_observerTabAvailable = 0;
+        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        if (!statz->SetupImage(
+                this,
+                w,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
+                SbGeom(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
+            return 0;
+        }
+        m_tabLists[6].AddTail(statz);
+        m_tabSprite12 = statz;
+    }
     return 1;
 }
 

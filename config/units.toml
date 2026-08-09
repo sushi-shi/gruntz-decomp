@@ -123,11 +123,6 @@ source = "src/Gruntz/BuildGruntzCrcInfo.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "statusbaritem"
-source = "src/Gruntz/StatusBarItem.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "sbi_menuitem"
 source = "src/Gruntz/SBI_MenuItem.cpp"
 flags = "cpp-rtti"
@@ -143,26 +138,6 @@ source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "sbi_tabzdialog_eh"
-source = "src/Gruntz/SBI_TabzDialogEh.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "sbi_sidetab_build"
-source = "src/Gruntz/SBI_SideTabBuild.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "warpstonefly"
-source = "src/Gruntz/WarpStoneFly.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "mgrsettings"
-source = "src/Gruntz/MgrSettings.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
 flags = "cpp-rtti"
@@ -170,11 +145,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "sbi_imagesetani"
 source = "src/Gruntz/SBI_ImageSetAni.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "sbi_statztabarrow_eh"
-source = "src/Gruntz/SBI_StatzTabArrowEh.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -842,11 +812,6 @@ flags = "cpp-rtti"
 unit = "cremusnode"
 source = "src/Image/ResolveNode.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "statusbarmgr"
-source = "src/Gruntz/StatusBarMgr.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "gameobjectfactory"
