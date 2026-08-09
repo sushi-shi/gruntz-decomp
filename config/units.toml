@@ -422,16 +422,6 @@ source = "src/Gruntz/CheatMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "raincloud"
-source = "src/Gruntz/RainCloud.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "ufo"
-source = "src/Gruntz/Ufo.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "worldsoundset"
 source = "src/Gruntz/WorldSoundSet.cpp"
 flags = "cpp-rtti"

@@ -2,12 +2,16 @@
 
 #include <Gruntz/PathHazard.h>
 
+#include <Bute/ButeMgr.h>
+#include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/LightFxMgr.h>
@@ -15,12 +19,16 @@
 #include <Gruntz/PathHazardActReg.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
+#include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/SpotLight.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/Ufo.h>
 #include <Image/CImage.h>
+#include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -39,6 +47,10 @@ RVA(0x000132f0, 0x6)
 LogicTypeId CRainCloud::GetTypeTag() {
     return LOGIC_RAINCLOUD;
 }
+
+RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
+RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
 
 // @early-stop
 // Regalloc colour only: retail keeps m_object in eax across the sortKey block.
@@ -217,6 +229,12 @@ i32 CPathHazard::Tick() {
     return 0;
 }
 
+RVA(0x000b4330, 0x8)
+i32 CUFO::Tick() {
+    CPathHazard::Tick();
+    return 0;
+}
+
 RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != 0) {
@@ -299,6 +317,38 @@ i32 CPathHazard::SiblingTick() {
     return 0;
 }
 
+RVA(0x000b4640, 0x104)
+i32 CRainCloud::HitTest(i32 a, i32 b) {
+    m_strikeArmed = 1;
+    m_strike.m_window =
+        static_cast<i64>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0));
+    m_strike.m_deadline = static_cast<i64>(g_frameTime);
+    g_gameReg->m_cmdGrid->CellDispatch(a, b, DEATH_ELECTROCUTE, -1);
+
+    CWwdGameObjectA* obj = m_object;
+    CGruntzMgr* reg = g_gameReg;
+    if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
+        CDDrawSubMgrLeafScan* host = reg->m_world->m_soundRegistry;
+        if (host->m_emitGate == 0) {
+            void* out_ob = 0;
+            host->m_cues.Lookup("LEVEL_CLOUDHAZARDKILL", out_ob);
+            LeafCue* out = static_cast<LeafCue*>(out_ob);
+            if (out != NULL) {
+                i32 enabled = g_sndEnabled;
+                i32 tag = g_sndCueTag;
+                if (enabled != 0) {
+                    u32 now = g_killCueClock;
+                    if (static_cast<u32>((now - out->m_lastPlayTime)) >= out->m_replayDelay) {
+                        out->m_lastPlayTime = now;
+                        out->m_sound->ConfigureItem(tag, 0, 0, 0);
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+
 RVA(0x000b47a0, 0x27)
 i32 CPathHazard::Arrive() {
     i32 next = m_wpIndex + 1;
@@ -345,6 +395,160 @@ i32 CPathHazard::BeginLeg() {
         m_roundBiasY = -0.5;
     } else {
         m_roundBiasY = 0.0;
+    }
+    return 1;
+}
+
+RVA(0x000b49b0, 0xa8)
+CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
+    CWwdGameObjectA* o = m_object;
+    CShadeTable* n = g_gameReg->m_logicPump->m_tables[5];
+    o->m_drawActive = 1;
+    o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+    o->m_drawFillArg = n;
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
+    m_object->m_area.left = 1;
+    m_object->m_area.right = 1;
+    m_object->m_area.top = 1;
+    m_object->m_area.bottom = 1;
+}
+
+// @early-stop
+RVA(0x000b4a90, 0x145)
+CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
+    CWwdGameObjectA* o = m_object;
+    i32 sx = o->m_screenX;
+    i32 sy = o->m_screenY;
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    m_wwdObject->ApplyLookupGeometry("LEVEL_UFO", 0);
+    for (i32 i = 0; i < 2; ++i) {
+        CWwdGameObjectA* sl =
+            g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
+        if (sl != NULL) {
+            sl->ApplyName("LEVEL_SPOTLIGHT");
+            AnimWorkerObj* sub = sl->m_animWorker;
+            sl->m_score = 1;
+            sl->m_direction = 0;
+            sl->m_smarts = 2;
+            sl->m_powerup = 0;
+            sl->m_points = i;
+            sl->m_damage = m_object->m_faceDirection;
+            sub->m_notify(sl);
+
+            (static_cast<CSpotLight*>(sl->m_animWorker->m_logic))->m_focus = m_object;
+        }
+    }
+    m_object->m_drawActive = 1;
+    m_object->m_drawFillCmd = SHADE_ALPHA_16;
+    m_object->m_fillFraction = 0x80;
+    m_object->m_area.left = 0;
+    m_object->m_area.right = 0;
+    m_object->m_area.top = 0;
+    m_object->m_area.bottom = 0;
+}
+
+RVA(0x000b4c40, 0x4b)
+i32 CUFO::SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId c, CGameObject* d) {
+    if (!CPathHazard::SerializeMove(ar, mode, c, d)) {
+        return 0;
+    }
+    if (mode == SERIAL_POSTLOAD) {
+        CWwdGameObjectA* o = m_object;
+        o->m_drawActive = 1;
+        // Two domains, one slot, and the SHAPE is byte-evidenced: retail stores
+        // the register holding `mode` (`mov [eax+0x50],edi`), not an immediate.
+        // SERIAL_POSTLOAD and SHADE_ALPHA_16 are both 8, and CUFO's ctor sets
+        // that same SHADE_ALPHA_16 / 0x80 pair on this object.
+        o->m_drawFillCmd = static_cast<ShadeMode>(mode);
+        o->m_fillFraction = 0x80;
+    }
+    return 1;
+}
+
+RVA(0x000b4cb0, 0x56)
+i32 CRainCloud::SerializeMove(CFileMemBase* stream, SerialMode tag, LogicTypeId c, CGameObject* d) {
+    if (!CPathHazard::SerializeMove(stream, tag, c, d)) {
+        return 0;
+    }
+    if (tag == SERIAL_POSTLOAD) {
+        CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
+        CWwdGameObjectA* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
+        o->m_drawFillArg = x;
+    }
+    return 1;
+}
+
+static inline void SerQuadPair(CFileMemBase* s, SerialMode tag, CHazardTimer* p) {
+    if (tag != SERIAL_SAVE) {
+        if (tag == SERIAL_LOAD) {
+            s->Read(&p->m_deadline, sizeof(p->m_deadline));
+            s->Read(&p->m_window, sizeof(p->m_window));
+        }
+    } else {
+        s->Write(&p->m_deadline, sizeof(p->m_deadline));
+        s->Write(&p->m_window, sizeof(p->m_window));
+    }
+}
+
+RVA(0x000b4d30, 0x287)
+i32 CPathHazard::SerializeMove(
+    CFileMemBase* stream,
+    SerialMode tag,
+    LogicTypeId c,
+    CGameObject* d
+) {
+    CFileMemBase* s = stream;
+    if (CUserLogic::SerializeMove(stream, tag, c, d) == 0) {
+        return 0;
+    }
+    if (Chain(static_cast<CFileMemBase*>(stream), tag, c, d) == 0) {
+        return 0;
+    }
+    SerQuadPair(s, tag, &m_leg);
+    SerQuadPair(s, tag, &m_strike);
+    if (tag != SERIAL_SAVE) {
+        if (tag == SERIAL_LOAD) {
+            s->Read(&m_speed, sizeof(m_speed));
+            s->Read(&m_posX, sizeof(m_posX));
+            s->Read(&m_posY, sizeof(m_posY));
+            s->Read(&m_unitX, sizeof(m_unitX));
+            s->Read(&m_unitY, sizeof(m_unitY));
+            s->Read(&m_roundBiasX, sizeof(m_roundBiasX));
+            s->Read(&m_roundBiasY, sizeof(m_roundBiasY));
+            CPathWaypoint* p = m_wp;
+            i32 n = 13;
+            do {
+                s->Read(p, sizeof(*p));
+                p += 1;
+            } while (--n != 0);
+            s->Read(&m_wpIndex, sizeof(m_wpIndex));
+            s->Read(&m_wpX, sizeof(m_wpX));
+            s->Read(&m_wpY, sizeof(m_wpY));
+            s->Read(&m_wpCount, sizeof(m_wpCount));
+            s->Read(&m_strikeArmed, sizeof(m_strikeArmed));
+        }
+    } else {
+        s->Write(&m_speed, sizeof(m_speed));
+        s->Write(&m_posX, sizeof(m_posX));
+        s->Write(&m_posY, sizeof(m_posY));
+        s->Write(&m_unitX, sizeof(m_unitX));
+        s->Write(&m_unitY, sizeof(m_unitY));
+        s->Write(&m_roundBiasX, sizeof(m_roundBiasX));
+        s->Write(&m_roundBiasY, sizeof(m_roundBiasY));
+        CPathWaypoint* p = m_wp;
+        i32 n = 13;
+        do {
+            s->Write(p, sizeof(*p));
+            p += 1;
+        } while (--n != 0);
+        s->Write(&m_wpIndex, sizeof(m_wpIndex));
+        s->Write(&m_wpX, sizeof(m_wpX));
+        s->Write(&m_wpY, sizeof(m_wpY));
+        s->Write(&m_wpCount, sizeof(m_wpCount));
+        s->Write(&m_strikeArmed, sizeof(m_strikeArmed));
     }
     return 1;
 }

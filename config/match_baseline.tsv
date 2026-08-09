@@ -254,14 +254,13 @@ netsessionmgr	29	23
 netsessionnode	3	3
 packetpool	1	1
 palettebmp	2	2
-pathhazard	13	10
+pathhazard	23	19
 play	93	67
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
 projectile	26	17
 queuedrainhost	1	1
-raincloud	5	5
 registryhelper	11	11
 rezbufferobject	4	2
 rezcoll	13	9
@@ -292,7 +291,7 @@ sbi_wellgoo	7	5
 scattersamples	2	2
 secretteleportertrigger	16	14
 serializesyncmarker	1	1
-serialobjectfactory	53	52
+serialobjectfactory	55	54
 sfselectdevice	1	0
 shadetablecache	26	16
 simpleanimation	8	7
@@ -333,7 +332,6 @@ triggermgrgrid	18	10
 triggermgrhittest	8	5
 trirecordserialize	1	1
 typekeycoll	37	30
-ufo	7	6
 uncompr	1	1
 userlogic	18	16
 videoconfig	16	13
@@ -3292,18 +3290,28 @@ packetpool	?AllocateGruntRecord@@YAPAXH@Z	100.0000	100.0000	2	fe5e59a089ab	0xbf5
 palettebmp	?Apply@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	1	a9bd58be1c62	0x1775f0	100.0000
 palettebmp	?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z	100.0000	100.0000	2	a05f787bb8a9	0x177480	100.0000
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	98.9474	98.9474	15	34c425835b1d	0xb35a0	98.9474
+pathhazard	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	8	fbda879ee100	0xb49b0	100.0000
+pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	9	e9bbbfdbc7ea	0xb4a90	84.8409
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	2	7e04ff5ea4fc	0x13280	100.0000
+pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:fb5599d27a2c	0x13340	100.0000
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:82a0bf443234	0x13250	100.0000
+pathhazard	??_GCRainCloud@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bc0c6b77f7ea	0x13310	100.0000
+pathhazard	??_GCUFO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d54c88aa6937	0x133d0	100.0000
 pathhazard	?Arrive@CPathHazard@@UAEHXZ	100.0000	100.0000	1	d95e49a4d78b	0xb47a0	100.0000
 pathhazard	?BeginLeg@CPathHazard@@UAEHXZ	100.0000	100.0000	3	409a7a92d3f6	0xb47e0	100.0000
 pathhazard	?FireActivation@CPathHazard@@UAEXH@Z	100.0000	100.0000	5	f44723183ae0	0xb3b60	100.0000
 pathhazard	?ForwardSiblingTick@CPathHazard@@QAEHXZ	100.0000	100.0000	2	9256458c1b34	0xb5080	100.0000
 pathhazard	?ForwardTick@CPathHazard@@QAEHXZ	100.0000	100.0000	2	a304183f803d	0xb5070	100.0000
 pathhazard	?GetTypeTag@CRainCloud@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	e4ec80f43ddd	0x132f0	100.0000
+pathhazard	?HitTest@CRainCloud@@UAEHHH@Z	100.0000	100.0000	8	54b9b9f19446	0xb4640	100.0000
 pathhazard	?RegisterPathHazardActions@@YAXXZ	100.0000	100.0000	2	3cb88b96e2f4	0xb3cc0	100.0000
-pathhazard	?SiblingTick@CPathHazard@@UAEHXZ	91.1719	91.1719	13	5837a659038b	0xb43f0	91.2109
+pathhazard	?SerializeMove@CPathHazard@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	a306f4662421	0xb4d30	100.0000
+pathhazard	?SerializeMove@CRainCloud@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	b0b7dd9405b5	0xb4cb0	100.0000
+pathhazard	?SerializeMove@CUFO@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	e5d59a6a48d0	0xb4c40	100.0000
+pathhazard	?SiblingTick@CPathHazard@@UAEHXZ	91.2109	91.2109	13	5837a659038b	0xb43f0	91.2109
 pathhazard	?Tick@CPathHazard@@UAEHXZ	97.5678	97.5678	23	cb4bd0853b8c	0xb4020	97.5678
 pathhazard	?Tick@CRainCloud@@UAEHXZ	100.0000	100.0000	5	09ac529e600d	0xb4350	100.0000
+pathhazard	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330	100.0000
 play	??0CSbiHlRow@@QAE@XZ	100.0000	100.0000	1	1004de8de59d	0xc86d0	100.0000
 play	??1CStatusBarMgr@@QAE@XZ	100.0000	100.0000	1	cpp:1f9e80fa6b20	0xc8980	100.0000
 play	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	3	7d67a59e08d2	0xc8640	100.0000
@@ -3444,11 +3452,6 @@ projectile	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@W4SerialMode@@W4Logic
 projectile	?SerializeMove@CProjectile@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	94.8191	94.8191	3	ee1d985b5271	0xe0d40	94.8191
 projectile	?SerializeMove@CTimeBomb@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	ef8d09867e68	0xe2080	100.0000
 queuedrainhost	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	4	cacd15498538	0x31250	100.0000
-raincloud	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	8	fbda879ee100	0xb49b0	100.0000
-raincloud	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:fb5599d27a2c	0x13340	100.0000
-raincloud	??_GCRainCloud@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bc0c6b77f7ea	0x13310	100.0000
-raincloud	?HitTest@CRainCloud@@UAEHHH@Z	100.0000	100.0000	8	54b9b9f19446	0xb4640	100.0000
-raincloud	?SerializeMove@CRainCloud@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	b0b7dd9405b5	0xb4cb0	100.0000
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	6	1b8d60dd8144	0x139330	100.0000
 registryhelper	?DeleteValue@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0000	1	97e6fbb5adea	0x139620	100.0000
 registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	8	31a30b782209	0x139650	100.0000
@@ -3799,6 +3802,8 @@ serialobjectfactory	?GetTypeTag@CRollingBall@@UAE?AW4LogicTypeId@@XZ	100.0000	10
 serialobjectfactory	?GetTypeTag@CSecretTeleporterTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:a761d1cccaee	0x109f0	100.0000
 serialobjectfactory	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:a761d1cccaee	0x12a20	100.0000
 serialobjectfactory	?GetTypeTag@CToyPeek@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:e5ec780e946b	0x11bf0	100.0000
+serialobjectfactory	?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:17ecf1f24258	0x133b0	100.0000
+serialobjectfactory	?HitTest@CPathHazard@@UAEHHH@Z	100.0000	100.0000	1	cpp:17ecf1f24258	0x13230	100.0000
 serialobjectfactory	?ParseSerial@@YAHPAVCGruntzMgr@@PAD@Z	100.0000	100.0000	6	642676e69426	0xd210	100.0000
 serialobjectfactory	?SerialObjectFactory@@YAHPAX0W4SerialMode@@W4LogicTypeId@@0@Z	99.4740	99.4740	3	2c1cade11bc5	0xd2a0	99.4992
 sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	90.5748	90.5748	16	f38e18e2df3f	0xf8970	90.6339
@@ -4354,13 +4359,6 @@ typekeycoll	_FirstDiffBit	98.6667	98.6667	2	4a157b5880de	0x16e480	100.0000
 typekeycoll	_LogicAttackFactory	100.0000	100.0000	1	971328b83139	0x16e4d0	100.0000
 typekeycoll	_LogicBumpFactory	100.0000	100.0000	1	868cea7a478c	0x16e4e0	100.0000
 typekeycoll	_LogicHitFactory	100.0000	100.0000	1	fbf0e78142fb	0x16e4c0	100.0000
-ufo	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	9	e9bbbfdbc7ea	0xb4a90	84.8409
-ufo	??_GCUFO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d54c88aa6937	0x133d0	100.0000
-ufo	?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:17ecf1f24258	0x133b0	100.0000
-ufo	?HitTest@CPathHazard@@UAEHHH@Z	100.0000	100.0000	1	cpp:17ecf1f24258	0x13230	100.0000
-ufo	?SerializeMove@CPathHazard@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	a306f4662421	0xb4d30	100.0000
-ufo	?SerializeMove@CUFO@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	e5d59a6a48d0	0xb4c40	100.0000
-ufo	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330	100.0000
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320	100.0000
 userlogic	?Activate@CUserLogic@@UAEXXZ	100.0000	100.0000	1	5f2d65f82cdd	0x88d0	100.0000
 userlogic	?AdvanceAnimation@CUserLogic@@UAEHXZ	100.0000	100.0000	1	8e760d6295bc	0x88f0	100.0000
