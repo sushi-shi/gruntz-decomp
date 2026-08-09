@@ -17,20 +17,16 @@ class CImage;
 
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-    // Out-of-line at 0x101fa0 (the base ctor is folded into its body).  Retail's
-    // deep chains all `call` it: CSBI_ImageSetAni 2/2, CSBI_WarlordHead 4/4,
-    // CSBI_StatzTabArrow 1/1, CSBI_WellGoo 1/1.
+    // Out-of-line at 0x101fa0; the base stores are folded into its body.
     CSBI_RectOnly();
-    // `new CSBI_RectOnly` runs the whole chain inline in retail (the three sites in
-    // BuildStatusBarTabs carry no ctor call at all), so this one seeds the base.
+    // Selected allocation sites inline the complete constructor chain.
     enum EInlineSelf {
         INLINE_SELF
     };
     CSBI_RectOnly(EInlineSelf) : CStatusBarItem(CStatusBarItem::NO_SEED) {
         m_kind = SBI_KIND_RECT_ONLY;
     }
-    // The CSBI_Image chain takes this one: every `new CSBI_Image` in retail's four
-    // status-bar builders is `call ??0CStatusBarItem` + the derived stores inline.
+    // Selected allocation sites stop inlining at CStatusBarItem.
     enum EBaseCall {
         BASE_CALL
     };
@@ -63,7 +59,14 @@ public:
         m_kind = SBI_KIND_IMAGE;
         m_frame = NULL;
     }
-    // The chains below CSBI_Image cut one level higher - they `call ??0CSBI_RectOnly`.
+    enum EInlineChain {
+        INLINE_CHAIN
+    };
+    CSBI_Image(EInlineChain) : CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF) {
+        m_kind = SBI_KIND_IMAGE;
+        m_frame = NULL;
+    }
+    // Selected allocation sites stop inlining at CSBI_RectOnly.
     enum ECallRectOnly {
         CALL_RECTONLY
     };

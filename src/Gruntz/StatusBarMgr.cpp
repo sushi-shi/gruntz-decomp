@@ -69,7 +69,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* bptr = &m_slots[0].m_value;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    CSBI_ImageSet* set = new CSBI_ImageSet;
+                    CSBI_ImageSet* set = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
                     r.left = bx + 0xe;
                     r.top = y - 0x32;
                     r.right = bx + 0x39;
@@ -282,7 +282,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[3].AddTail(it);
             m_notify3 = it;
 
-            it = new CSBI_ImageSet;
+            it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
             r.left = bx + 0x19;
             r.top = by + 0x11c;
             r.right = bx + 0x3c;
@@ -473,7 +473,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_machineDisplay = mach;
             m_tabLists[3].AddTail(mach);
 
-            it = new CSBI_Image;
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
             r.left = bx;
             r.top = by + 0x1a6;
             r.right = bx + 0x9f;
@@ -572,7 +572,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_MULTIPLAYER:
-            it = new CSBI_Image;
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -739,7 +739,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_STATZ:
-            it = new CSBI_Image;
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -833,7 +833,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_GAME:
-            it = new CSBI_Image;
+            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -855,7 +855,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[5].AddTail(it);
 
-            it = new CSBI_ImageSet;
+            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
             r.left = bx;
             r.top = by;
             r.right = bx + 0x9f;
@@ -878,7 +878,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[5].AddTail(it);
             if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
-                it = new CSBI_ImageSet;
+                it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
                 r.left = bx + 0x17;
                 r.top = by + 0xe;
                 r.right = bx + 0x52;
@@ -901,7 +901,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 m_tabLists[5].AddTail(it);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
-                    it = new CSBI_ImageSet;
+                    it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
                     r.left = bx + 0x4c;
                     r.top = by + 0xf;
                     r.right = bx + 0x87;
@@ -924,7 +924,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_tabLists[5].AddTail(it);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
-                        it = new CSBI_ImageSet;
+                        it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
                         r.left = bx + 0x1b;
                         r.top = by + 0x3b;
                         r.right = bx + 0x52;
@@ -947,7 +947,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         m_tabLists[5].AddTail(it);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
-                            it = new CSBI_ImageSet;
+                            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
                             r.left = bx + 0x4a;
                             r.top = by + 0x35;
                             r.right = bx + 0x89;

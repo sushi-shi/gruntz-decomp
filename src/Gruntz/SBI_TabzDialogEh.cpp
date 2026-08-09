@@ -63,7 +63,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(areYouSure);
 
-        CSBI_MenuItem* yes = new CSBI_MenuItem;
+        CSBI_MenuItem* yes = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
         if (!yes->SetupImage(
                 this,
                 w,
@@ -80,7 +80,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabLists[6].AddTail(yes);
         m_tabSprite13 = yes;
 
-        CSBI_MenuItem* no = new CSBI_MenuItem;
+        CSBI_MenuItem* no = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
         if (!no->SetupImage(
                 this,
                 w,
@@ -119,7 +119,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
 
-        CSBI_ImageSet* status = new CSBI_ImageSet;
+        CSBI_ImageSet* status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         if (!status->SetupImage(
                 this,
                 w,
@@ -135,7 +135,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(status);
 
-        CSBI_ImageSet* rsn = new CSBI_ImageSet;
+        CSBI_ImageSet* rsn = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         if (!rsn->SetupImage(
                 this,
                 w,
@@ -256,7 +256,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabLists[6].AddTail(replay);
         m_tabSprite11 = replay;
 
-        CSBI_MenuItem* quit = new CSBI_MenuItem;
+        CSBI_MenuItem* quit = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         if (!quit->SetupImage(
                 this,
                 w,
@@ -284,7 +284,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     if (count >= 2) {
-        CSBI_MenuItem* observe = new CSBI_MenuItem;
+        CSBI_MenuItem* observe = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         if (!observe->SetupImage(
                 this,
                 w,
@@ -302,7 +302,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabSprite11 = observe;
         m_observerTabAvailable = 1;
 
-        CSBI_MenuItem* statz = new CSBI_MenuItem;
+        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         if (!statz->SetupImage(
                 this,
                 w,
@@ -320,7 +320,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabSprite12 = statz;
     } else {
         m_observerTabAvailable = 0;
-        CSBI_MenuItem* statz = new CSBI_MenuItem;
+        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         if (!statz->SetupImage(
                 this,
                 w,

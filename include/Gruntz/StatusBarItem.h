@@ -18,12 +18,8 @@ class CDDrawSurfaceMgr;
 
 class CStatusBarItem {
 public:
-    // Two entities (docs/patterns/two-shapes-need-two-entities.md).  Retail carries
-    // ??0CStatusBarItem@@QAE@XZ as a standalone 23-byte COMDAT at 0x1005d0 AND
-    // expands the same four stores at other sites, so the source had an out-of-line
-    // body plus an inline sibling.  The four `sema xref 0x1005d0` callers are
-    // BuildStatusBarTabs, BuildGameMenu, BuildTabzDialog and LoadTabSprites, and in
-    // all four every `new CSBI_Image` (size 0x34) calls it.
+    // Retail has both the out-of-line COMDAT and inlined copies of these stores;
+    // status-bar allocation sites select the observed cut depth explicitly.
     CStatusBarItem();
     enum ENoSeed {
         NO_SEED

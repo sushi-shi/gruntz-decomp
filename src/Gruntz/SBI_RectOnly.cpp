@@ -1454,7 +1454,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
         if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
-            it = new CSBI_MenuItem;
+            it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
@@ -1476,7 +1476,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             }
             m_tabLists[5].AddTail(it);
         } else {
-            it = new CSBI_MenuItem;
+            it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
@@ -1500,7 +1500,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
         m_tabSprite5 = static_cast<CSBI_MenuItem*>(it);
 
-        it = new CSBI_MenuItem;
+        it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0x125;
         r.right = bx + 0x9f;
@@ -1601,7 +1601,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             it->m_enabled = 0;
         }
 
-        it = new CSBI_MenuItem;
+        it = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         r.left = bx;
         r.top = by + 0x19d;
         r.right = bx + 0x9f;
@@ -1624,7 +1624,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         m_tabLists[5].AddTail(it);
         m_tabSprite10 = static_cast<CSBI_MenuItem*>(it);
 
-        it = new CSBI_ImageSet;
+        it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
         r.left = bx + 0x22;
         r.top = by + 0x1be;
         r.right = bx + 0x7d;
@@ -1656,7 +1656,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
     }
 
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
-        it = new CSBI_ImageSet;
+        it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0xd7;
         r.right = bx + 0x9f;
@@ -1677,7 +1677,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
     } else {
-        it = new CSBI_ImageSet;
+        it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0xd7;
         r.right = bx + 0x9f;
