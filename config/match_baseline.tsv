@@ -3740,7 +3740,7 @@ secretteleportertrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	7	ce
 serializesyncmarker	?SerializeSyncMarker@@YAHPAVCFileMemBase@@HPBDH@Z	100.0000	100.0000	4	c3e2ebee5535	0x13610	100.0000
 serialobjectfactory	??0CGruntHealthSprite@@QAE@XZ	100.0000	100.0000	8	c101188e904e	0x11ef0	100.0000
 serialobjectfactory	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	b4f30b6337df	0x136d0	100.0000
-serialobjectfactory	??0CMovingLogic@@QAE@XZ	100.0000	100.0000	1	7e401cfb6c4c	0x13940	100.0000
+serialobjectfactory	??0CMovingLogic@@QAE@XZ	100.0000	100.0000	2	a9a6fbf9edc9	0x13940	100.0000
 serialobjectfactory	??0CPathHazard@@QAE@XZ	100.0000	100.0000	11	c5294a0cd9a8	0x13170	100.0000
 serialobjectfactory	??0CProjectile@@QAE@XZ	100.0000	100.0000	1	914addbe6169	0x126e0	100.0000
 serialobjectfactory	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	8	8b171792cfbe	0x11160	100.0000
