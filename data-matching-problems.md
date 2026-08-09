@@ -103,15 +103,46 @@ every pinned word on both sides through the retail image's own `.reloc` table an
 
 ---
 
+## 3b. A wrong REFERENT scores 100% — and this one is measured
+
+Following directly from §3: because the placeholder bytes agree, a region can be
+byte-perfect while every pointer in it aims somewhere else. `gruntz audit image_diff`
+now measures this on the linked image by resolving each address operand to **what it
+reaches**, and the answer is not zero:
+
+**35,625 of 36,786 operands (96.84%) reach the same referent in the same order. 610
+regions do not** — and every one of them scores **100% in a relocation-masked object
+diff**. Four from the worklist (`image_diff --referents N`):
+
+| region | retail reaches | we reach |
+| :-- | :-- | :-- |
+| `CGrunt::LoadPickupSprites` | `"GRUNTZ_PICKUPS_HEALTH1..3"` | `"..._REDBRICK"`, `"..._BLUEBRICK"`, `"..._GOLDBRICK"` |
+| `CStatusBarMgr::LoadTabSprites` | `CSBI_RectOnly::ctor` | `CStatusBarItem::ctor` |
+| `CGruntzMgr::Close` | `"Num Runs"`, `"Num Movies"` | `"Num_Runs"`, `"Num_Movies"` |
+| `CButeMgr::ParseAttributeFile` | `"duplicate symbol encountered"` | `"duplicate tag encountered"` |
+
+These are **behavioural defects with a perfect score**: wrong asset keys, a wrong
+constructor, wrong strings. This is the sharpest available answer to "if the data
+matches, why does the game misbehave" — and note the first row is the *same failure mode*
+as the colour case in §5: a named-asset lookup fetching the wrong thing.
+
 ## 4. The size/similarity confusion, one level up
 
 The README's **Link status** block reports per-section *sizes* of the linked candidate
 against retail. Two images can match on every section size and share almost no bytes.
 `.idata` and `.rsrc` show `+0` there, which means "same length", not "same bytes".
 
-A per-section byte-similarity figure — aligned and reloc-masked, because our `.text` is
-short and every relocated word differs by construction — is in progress. Until it lands,
-read that block as a size check only.
+That block now carries a **`retail bytes reproduced`** column beside the size delta,
+measured by `gruntz audit image_diff`: regions pair by **symbol** (never by file offset —
+our `.text` was 26 KB short, so a positional differ would call everything after the first
+delta different), the two streams are aligned, and address operands are masked by
+resolving each to its referent. Retail bytes we never paired count *against* the figure;
+bytes we emit that retail does not have never count *for* it.
+
+The honest counterpart is the **`not measurable`** column — 815,839 retail bytes for
+which no alignment exists (`.bss` zero fill, `.text$x` unwind funclets, `.xdata$x` EH
+blobs — none carry a symbol in *either* image). They stay in the denominator, so every
+percentage there is a **floor**, not a flatterer.
 
 ---
 
