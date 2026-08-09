@@ -884,6 +884,49 @@ base obj holds two that mask together. `_s_default_string_butemgr` was also 8 B 
 changed, so the base objs are bit-identical; `assert_relocs` and `data_relocs --gate` are
 unchanged (0 defect rows, 0 orphans).
 
+### 3e. Band-completion gap rows — a hole in a TU's band now COSTS (2026-08-10)
+
+§3d-ii's 100.00% is over a denominator **we chose**: a datum `src/` never models — or
+models too small, an `int` where retail has `int[10]` — is carved into neither object, so
+it enters neither side of the pair and the section scores 100.0 around the hole
+(`gruntz.audit.data_coverage`'s defect class, now inside the loop instead of beside it).
+
+`data_manifest.gap_rows()` closes the loop from RETAIL's side: every byte run strictly
+between two enrolled claims of **one** unit is carved into that unit's target object as a
+`$gap_<rva>` row with **no base counterpart**, so the unit's data section drops below
+100.0 until the datum is actually modelled. Evidence rules (fail-closed, sum asserted):
+
+* **Ownership by contribution contiguity, single-owner witnesses only.** An object's data
+  contribution is one contiguous block, so bytes between two claims of unit U belong to U —
+  but a folded COMDAT (`??_C@`/`??_7`/`??_R*`) enrolls once per owning unit and makes
+  "same unit on both sides" vacuous. Measured: without the single-owner filter the rule
+  hands gruntvoice the 85 KB MFC/CRT RTTI band at `0x1f5584`. Frontier gaps (next claim
+  is another unit, or unattributed library territory) are withheld: contiguity says
+  nothing about them.
+* **Only NONZERO payloads enroll** — cl's inter-symbol padding is zero, so a nonzero
+  retail byte cannot be padding. All-zero gaps (missing zero-init datum vs pad,
+  undecidable from the PE alone) are withheld, never carved.
+* **`GAP_CAP` 0x100** — every library band misattributed by adjacency is bigger, every
+  confirmed find smaller. Over-cap gaps are withheld BY NAME (`library_data.c`'s 13.5 KB
+  MFC band at `0x1eb070` is the standing one — the library-data enrolment campaign).
+* **`provisional-` provenance** — the delinker carves the bytes but the row never owns
+  the address, so no relocation anywhere can be re-spelled through a gap name.
+
+First run: **5 rows, 107 B**, and every one decodes to something real —
+`0x20ceab` creditsstate 0x45 B holds the `??_R0` type descriptor of
+`CArray<PLAYLISTINFOSTRUCT*>` (the `KNOWN_ORPHAN_UNITS` movieplayer class, §4);
+`0x1f0868` fadereffects is a `float 2.0` FP-pool entry (one of the 7 `$T` slots with no
+relocation-paired referrer, §3d-i); `0x213656` projectile is the pooled literal `"1"`;
+`0x212748` play and `0x20d164` fortconquered are unmodelled initialized ints (32, 33).
+
+A/B on one tree (gap rows off / on): `matched_functions` 3504, `fuzzy` 91.55447 and
+`matched_code` 475479 **bit-identical**; `matched_data` 725371/725783 → 722207/725895 —
+five units (`projectile` 52.6, `creditsstate` 68.8, `play` 28.4, `fortconquered` 0.0,
+`fadereffects` 3.6) go sub-100 and are the worklist. Withheld census: 1506 all-zero,
+1289 unowned, 827 outside initialized storage, 1 over cap. The drain move is always the
+same: model the real datum in the owner TU; the gap row then dissolves on the next
+manifest generation and the section returns to 100.0 with the byte in the denominator.
+
 ## 4. The reloc-TARGET audit (`gruntz.audit.data_relocs`, gated at `--normal`)
 
 Everything above measures whether the right BYTES are in the right place. This

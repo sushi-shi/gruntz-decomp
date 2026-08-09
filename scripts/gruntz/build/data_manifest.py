@@ -1460,6 +1460,116 @@ def ordinary_sections(rows, base_dir):
     return secs, placed
 
 
+#: A band gap longer than this is never auto-enrolled. Every library band that
+#: bare adjacency has misattributed so far is bigger (the dxguid GUID tables are
+#: 0x244, the MFC/CRT RTTI runs are KBs), and every confirmed missing-datum find
+#: is smaller. Over-cap gaps are withheld BY NAME, not dropped.
+GAP_CAP = 0x100
+
+
+def gap_rows(enrolled, secs, exe=EXE):
+    """Band-completion rows: retail bytes strictly between two claims of ONE unit.
+
+    THE DEFECT CLASS (docs/data-attribution.md §3e): we generate BOTH sides of the
+    data comparison, so a datum src/ never models - or models too small, an `int`
+    where retail has `int[10]` - enters neither side, and objdiff scores the
+    section 100.0 around the hole. These rows carve the hole's RETAIL bytes into
+    the owner's target object with no base-side counterpart, so the unit's data
+    section drops below 100 until the datum is actually modelled: the miss becomes
+    a visible, per-unit, ratchetable diff instead of silence.
+
+    Evidence rules (fail-closed, nothing guessed, the sum is asserted):
+      * OWNERSHIP by contribution contiguity: an object's data contribution is one
+        contiguous block, so bytes between two claims of unit U with no other
+        unit's claim between belong to U - but ONLY when both bounding witnesses
+        are SINGLE-OWNER names. A folded COMDAT (`??_C@`/`??_7`/`??_R*`) enrolls
+        once per owning unit, so "same unit on both sides" is vacuous for a
+        multi-owner name: measured, the unfiltered rule hands gruntvoice the
+        85 KB MFC/CRT RTTI band at 0x1f5584.
+      * only NONZERO payloads enroll: cl's inter-symbol padding is zero, so a
+        nonzero retail byte cannot be padding. An all-zero gap (missing zero-init
+        datum vs pad, undecidable from the PE alone) is withheld, never carved.
+      * length <= GAP_CAP, or withheld by name.
+      * `provisional-` provenance: the delinker carves the bytes but the row never
+        owns the address (`address_authoritative` gates `owner_and_addend_for_rva`),
+        so no relocation in any object can be re-spelled through a gap name -
+        function `exact` cannot move by construction.
+
+    Frontier gaps - before a unit's first claim or after its last, where the
+    neighbour is another unit or unattributed library territory - are NOT here:
+    contiguity says nothing about them. They stay `gruntz.audit.data_coverage`'s
+    census work.
+    """
+    from gruntz.audit.data_coverage import Retail
+
+    pe = read_pe(exe)
+    retail = Retail()
+
+    claims = [r for r in enrolled
+              if not str(r.get("provenance", "")).startswith("provisional-")]
+    sec_claims = [s for s in secs if s.get("rva") is not None]
+    owners = defaultdict(set)
+    for w in claims + sec_claims:
+        owners[w["name"]].add(w["object"])
+
+    starts, ends = defaultdict(list), defaultdict(list)
+    intervals = set()
+    for w in claims + sec_claims:
+        starts[w["rva"]].append(w)
+        ends[w["rva"] + w["size"]].append(w)
+        intervals.add((w["rva"], w["size"]))
+
+    merged = []
+    for a, sz in sorted(intervals):
+        b = a + sz
+        if merged and a <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], b)
+        else:
+            merged.append([a, b])
+
+    rows, withheld, considered = [], [], 0
+    for (_, b1), (a2, _) in zip(merged, merged[1:]):
+        considered += 1
+        n = a2 - b1
+        name = "$gap_%06x" % b1
+        cls1 = classify_pe_storage(pe, b1)["class"]
+        cls2 = classify_pe_storage(pe, a2 - 1)["class"]
+        if cls1 != cls2 or STORAGE.get(cls1) not in ("rdata", "data"):
+            withheld.append((b1, name, "band gap outside initialized storage "
+                             "(%s -> %s)" % (cls1, cls2)))
+            continue
+        strong_prev = {w["object"] for w in ends.get(b1, ())
+                       if len(owners[w["name"]]) == 1}
+        strong_next = {w["object"] for w in starts.get(a2, ())
+                       if len(owners[w["name"]]) == 1}
+        both = strong_prev & strong_next
+        if len(both) != 1:
+            withheld.append((b1, name, "band gap unowned (no single-unit "
+                             "single-owner witness pair, 0x%x B)" % n))
+            continue
+        unit = next(iter(both))
+        pay = retail.payload(b1, n)
+        if not any(pay):
+            withheld.append((b1, name, "band gap all-zero (pad vs zero datum "
+                             "undecidable; 0x%x B, unit %s)" % (n, unit)))
+            continue
+        if n > GAP_CAP:
+            withheld.append((b1, name, "band gap over cap (0x%x > 0x%x, unit %s)"
+                             % (n, GAP_CAP, unit)))
+            continue
+        kind = "pointer" if retail.relocs_in(b1, n) else "nonzero"
+        rows.append({"name": name, "object": unit, "rva": b1, "size": n,
+                     "storage": STORAGE[cls1],
+                     "provenance": "provisional-band-gap-" + kind})
+
+    assert len(rows) + len(withheld) == considered, \
+        "band-gap census dropped a gap silently"
+    for r in rows:                       # a gap row may never claim an enrolled byte
+        for a, b in merged:
+            assert r["rva"] >= b or r["rva"] + r["size"] <= a, (r, (a, b))
+    return rows, withheld
+
+
 def manifest_bytes(rows, refuted=None):
     """The --data-manifest. A row placed in a candidate section carries its
     (section_ordinal, section_offset); the rest keep the legacy `-` allocation
@@ -1519,6 +1629,12 @@ def main(argv=None):
     enrolled, withheld, overlaps = candidates()
     secs, sec_withheld = section_rows(enrolled)
     withheld += sec_withheld
+    gaps, gap_withheld = gap_rows(enrolled, secs)
+    enrolled += gaps
+    withheld += gap_withheld
+    print("[data-manifest] band-completion: %d gap row(s), %d B carved with no "
+          "base counterpart (the missing-data surface); %d gap(s) withheld"
+          % (len(gaps), sum(r["size"] for r in gaps), len(gap_withheld)))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     refuted = []
     args.output.write_bytes(manifest_bytes(enrolled, refuted))
