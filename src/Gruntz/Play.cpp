@@ -1068,6 +1068,19 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
+// 171 blocks vs retail's 176, and the shape of the shortfall is uniform: cl SHARES
+// tails retail duplicates and CSEs member loads retail re-reads.
+//   * the `atoi` / `EndParse` / `xor edi,edi` cleanup after the cmd-line parse is
+//     written once here and reached by a jmp from every arm; retail emits a private
+//     copy at 0xca4e0's predecessor and only jmps from B29 (base B29 is 8i where
+//     retail's is a single jmp);
+//   * every `if (x->m_field)` test that retail spells `mov reg,[m] / test reg,reg`
+//     (0xca442, 0xca4e5, ...) compiles here to `cmp dword ptr [m],<zero reg>` because
+//     cl keeps a zero live in ebx across the whole body - one instruction shorter at
+//     roughly a dozen sites;
+//   * the FinishLevel guard re-reads g_gameReg->m_frameGate and takes its ADDRESS
+//     (`mov ecx,[eax+0xc] / add eax,0xc / mov [eax],ecx` at 0xca2d9) where we reuse
+//     the value the outer test already loaded.
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;

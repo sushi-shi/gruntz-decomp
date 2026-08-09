@@ -30,9 +30,14 @@
 #include <Wwd/WwdFile.h>
 
 // @early-stop
-// cl tail-merges the four inlined CDDrawSubMgrLeafScan::PlayCue expansions onto one
-// shared LeafCue::PlayIfElapsed call; retail keeps three separate calls and inlines
-// the fourth (see docs/patterns/tail-merged-inline-helper-collapses-repeat-cues.md).
+// Counted 2026-08-09: 179 blocks vs retail's 197, and both sides make FOUR
+// CMapStringToPtr::Lookup calls but retail makes FOUR LeafCue::PlayIfElapsed calls
+// (0x76792 / 0x7699d / 0x76bf5 / 0x76e0c) where we make three - cl cross-jumps two of
+// the four inlined CDDrawSubMgrLeafScan::PlayCue expansions onto one shared call
+// (docs/patterns/tail-merged-inline-helper-collapses-repeat-cues.md).  All four sites
+// are the same `m_world->m_soundRegistry->PlayCue(TAG)` statement, so there is no
+// source shape that distinguishes them; the first true skeleton divergence is at B65,
+// where retail's 8-instruction loop-back block is a bare jmp here.
 RVA(0x00075e90, 0x1400)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 ownerHi,

@@ -214,10 +214,16 @@ i32 PumpIdleFrame() {
 }
 
 // @early-stop
-// arm order + default-arm shape are byte-proven; residue is one whole-function
-// regalloc swap - retail colours this=edi / stateId=ebp (it materializes the
-// stateId argument BEFORE this), and cl picks the other way round, which also
-// leaves the `obj` join variable in eax instead of coalescing it onto esi.
+// Two residues, and the first is NOT regalloc: retail EXPANDS the CCreditsState
+// constructor into the GAMESTATE_CREDITS arm (36 instructions at 0x8bfa2 - the CState
+// base ctor, two SetRect calls at 0x278e, the 0x5e9c64 vtable stamp and the field
+// zeroing) where cl declines it and emits a call to ??0CCreditsState@@QAE@XZ.  It is
+// already a header inline; this is the /Ob1 per-site budget
+// (docs/patterns/ob1-inline-budget-divergence.md), and it accounts for 33 of the
+// missing instructions on its own.  The rest is one whole-function regalloc swap -
+// retail colours this=edi / stateId=ebp (it materializes the stateId argument BEFORE
+// this) and keeps the `obj` join in esi, so every other `new` arm is exactly one
+// `mov eax,<reg>` longer here.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
