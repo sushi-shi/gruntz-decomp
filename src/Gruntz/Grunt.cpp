@@ -267,23 +267,11 @@ DATA(0x0020dfd0)
 static char s_FadeTransparency[] = "FadeTransparency";
 DATA(0x0020a9ec)
 static char s_Grunt[] = "Grunt";
-static char s_IdleDelay[] = "IdleDelay";
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
-static char s_CombatTimeout[] = "CombatTimeout";
-
-static char s_Spellz[] = "Spellz";
-static char s_FreezeDelay[] = "FreezeDelay";
-
-static char s_BOMBGRUNT[] = "BOMBGRUNT";
-static char s_RunningTimePerTile[] = "RunningTimePerTile";
-
 DATA(0x0020d9b4)
 static char s_Powerupz[] = "Powerupz";
 
 DATA(0x0020a454)
 static char s_codeA[] = "A";
-static char s_codeE[] = "E";
-static char s_codeI[] = "I";
 
 DATA(0x002455b0)
 i32 g_traitorMode;
@@ -845,7 +833,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeE) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
     if (eq) {
 
         m_value = m_wwdObject->m_animCursor.m_animation;
@@ -861,7 +849,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
     if (eq) {
         goto codeI;
     }
@@ -3901,7 +3889,7 @@ afterArrival:
                     }
                     slot++;
                 }
-                eq = (strcmp(*node, s_codeE) == 0);
+                eq = (strcmp(*node, "E") == 0);
             }
             if (!eq) {
                 CString* node = g_typeColl.ScratchResolve(m_objAux->m_actKey);
