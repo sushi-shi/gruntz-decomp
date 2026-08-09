@@ -10,6 +10,14 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 GAME = REPO / "config" / "retail" / "vtables_game.csv"
 LIBRARY = REPO / "config" / "retail" / "vtables_library.csv"
 
+# The deliberate holding unit for library DATA no cl output can re-emit (e.g.
+# CDialog's messageMap, type_info's vtable): the delinker carves the enrolled
+# definition there - which is what lets every reference bind by name - while
+# config/units.toml does not declare it, so objdiff never opens it and no
+# compared unit carries the unpairable payload. For GAME data that silence is
+# a defect (the movieplayer lesson below); for library data it is the point.
+LIBRARY_HOLDING_UNIT = "library_data"
+
 _PRIMARY_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B@$")
 _SECONDARY_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B([A-Za-z_]\w*)@@@$")
 
@@ -74,6 +82,8 @@ def validate(rows: list[dict]) -> list[str]:
             errors.append(f"invalid kind {row.get('kind')!r} for {row['name']}")
         unit = (row.get("unit") or "").strip()
         if unit:
+            if unit == LIBRARY_HOLDING_UNIT and row["path"] == LIBRARY:
+                continue
             if live is None:
                 from gruntz.core.manifest import unit_names
                 live = unit_names()

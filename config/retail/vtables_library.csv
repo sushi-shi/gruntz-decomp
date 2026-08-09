@@ -7,6 +7,15 @@
 # `<nearest preceding symbol> + addend` (measured 2026-08-09 on ??_7type_info@@6B@:
 # 435 ADDEND rows in the data-reloc sieve). So a table our objects only REFERENCE
 # pays for its name with a target-side-only definition in the unit named here.
+#
+# Most such rows name a REAL unit because cl re-emits MFC vtables as COMDATs in
+# any TU deriving from the class, so the enrolled definition pairs against a
+# base-side emission. The two data no cl output can ever re-emit (CDialog's
+# messageMap lives in NAFXCW dgcore.obj; type_info's vtable in LIBCMT
+# typinfo.obj) are routed to the deliberate `library_data` holding unit: it is
+# delinked - which is what binds every reference - but config/units.toml does
+# not declare it, so objdiff never opens it and no game unit carries the
+# unpairable payload. vtable_catalog.validate() sanctions exactly this name.
 name,rva,size,unit,note
 ??_7CObject@@6B@,0x1e8cb4,0x14,wwdspatialmgr,MFC/CRT (statically linked; not reconstructed)
 ??_7CGdiObject@@6B@,0x1e8cd4,0x14,multistartdlgroster,MFC/CRT (statically linked; not reconstructed)
@@ -15,7 +24,7 @@ name,rva,size,unit,note
 ??_7CMapStringToOb@@6B@,0x1eafd4,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CMapStringToPtr@@6B@,0x1eb014,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CPtrList@@6B@,0x1eb054,0x14,,MFC/CRT (statically linked; not reconstructed)
-?messageMap@CDialog@@1UAFX_MSGMAP@@B,0x1eb068,0x8,dialogs,"MFC AFX_MSGMAP {pBaseMessageMap=&CWnd::messageMap 0x1eb2e0, lpEntries=0x1eb070}; every CDialog-derived map chains to it - dialogs/battlezdlgcolors/customleveldlg/checkpointdlg/multihelpdlg/multistartdlg"
+?messageMap@CDialog@@1UAFX_MSGMAP@@B,0x1eb068,0x8,library_data,"MFC AFX_MSGMAP {pBaseMessageMap=&CWnd::messageMap 0x1eb2e0, lpEntries=0x1eb070}; every CDialog-derived map chains to it - dialogs/battlezdlgcolors/customleveldlg/checkpointdlg/multihelpdlg/multistartdlg"
 ??_7CDialog@@6B@,0x1eb174,0xd8,,MFC/CRT (statically linked; not reconstructed)
 ??_7CWnd@@6B@,0x1eb5c4,0xc0,,MFC/CRT (statically linked; not reconstructed)
 ??_7CTestCmdUI@@6B@,0x1eb6ac,0x10,,MFC/CRT (statically linked; not reconstructed)
@@ -82,7 +91,7 @@ name,rva,size,unit,note
 ??_7CCtrlView@@6B@,0x1ee2dc,0x110,,MFC/CRT (statically linked; not reconstructed)
 ??_7CDocument@@6B@,0x1ee484,0xb8,,MFC/CRT (statically linked; not reconstructed)
 ??_7CMirrorFile@@6B@,0x1ee54c,0x5c,,MFC/CRT (statically linked; not reconstructed)
-??_7type_info@@6B@,0x1ee5ac,0x4,zdarrayderived,MFC/CRT (statically linked; not reconstructed)
+??_7type_info@@6B@,0x1ee5ac,0x4,library_data,MFC/CRT (statically linked; not reconstructed)
 ??_7strstreambuf@@6B@,0x1f0344,0x2c,,MFC/CRT (statically linked; not reconstructed)
 ??_7istrstream@@6B@,0x1f0374,0x4,,MFC/CRT (statically linked; not reconstructed)
 ??_7ostrstream@@6B@,0x1f0384,0x4,,MFC/CRT (statically linked; not reconstructed)

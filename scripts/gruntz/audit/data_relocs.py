@@ -289,6 +289,7 @@ def orphan_payloads() -> list[tuple[str, str, str, str]]:
     vtables_game.csv row that started this: silently unscored, no gate.
     """
     from gruntz.core.manifest import unit_names
+    from gruntz.core.vtable_catalog import LIBRARY_HOLDING_UNIT
 
     if not DATA_MANIFEST.is_file():
         return []
@@ -301,6 +302,14 @@ def orphan_payloads() -> list[tuple[str, str, str, str]]:
                 if unit.endswith(suffix):
                     unit = unit[:-len(suffix)]
                     break
+            if unit == LIBRARY_HOLDING_UNIT:
+                # The DELIBERATE holding object for library data no cl output
+                # can re-emit (CDialog's messageMap, type_info's vtable): the
+                # carve is what binds every reference by name, and keeping it
+                # out of the compared set is the point, not a defect - a game
+                # unit hosting it showed the payload as a permanently
+                # unpairable target symbol. See vtable_catalog.
+                continue
             if unit not in live:
                 out.append((unit, row["rva"], row["storage"], row["name"]))
     return out
