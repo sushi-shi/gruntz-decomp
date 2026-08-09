@@ -1670,6 +1670,13 @@ i32 CGrunt::StepArrivalCommitB() {
 }
 
 // @early-stop
+// Two observed residues.  (1) Retail parks the constant 1 in edi across the whole
+// tail - both arms of the powered-up reset write `mov edi,1` (0x6572a, 0x65752)
+// and the PICKUP_BOMB compare, m_entranceActive and m_bombRunActive all read it;
+// cl spells each as an immediate, so its version of that block is 9 instructions
+// against retail's 11 and there is no separate merge block.  (2) Retail moves the
+// `rand() % 100 < 80` ELSE arm to the end of the function (0x6596f) and keeps the
+// THEN arm as the fall-through; cl lays them adjacent.
 RVA(0x00065630, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 poseIdx = 0;
@@ -1732,7 +1739,7 @@ i32 CGrunt::RunMoveConfig(i32 a, i32 b) {
         m_moveVariant = variant;
         if (variant == 0) {
             i32 n = (g_gameReg->m_gameMode == GAMEMODE_SINGLE) ? 3 : 6;
-            m_moveVariant = rand() % n + 1;
+            m_moveVariant = GetRandom(1, n);
         }
 
         i32 cueId = base + m_moveVariant - 1;
