@@ -55,7 +55,7 @@
 // (118 fns) came from the static library. It belongs to another compiland.
 
 DATA(0x001eff2c)
-float g_sndPanScale = 0.009999999776482582f;
+const float g_sndPanScale = 0.009999999776482582f;
 
 // The pinned half of the CLoadable two-entity split; the tagged inline sibling
 // lives in Gruntz/Loadable.h.

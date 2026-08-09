@@ -853,7 +853,7 @@ creditsstate	??1CFecFile@@QAE@XZ	100.0000	100.0000	1	cpp:9ac852bbc1fa	0x390a0	10
 creditsstate	??1CMoviePlayer@@QAE@XZ	100.0000	100.0000	1	cpp:9ac852bbc1fa	0x38fc0	100.0000
 creditsstate	??1CRgn@@UAE@XZ	100.0000	100.0000	1	cpp:f04f02469898	0x8c400	100.0000
 creditsstate	??_GCCreditsState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e889f4c276ac	0x8d5b0	100.0000
-creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	87.8261	87.8261	12	edba33b4e4af	0x396f0	87.8261
+creditsstate	?DrawScrollingCredits@CCreditsState@@QAEHXZ	86.0773	86.0773	13	aca56c193ae9	0x396f0	87.8261
 creditsstate	?EnterState@CCreditsState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	c1897443820a	0x39120	100.0000
 creditsstate	?FinishState@CCreditsState@@QAEHXZ	100.0000	100.0000	1	5b6722d9ab3b	0x39c40	100.0000
 creditsstate	?FlashColor@CCreditsState@@QAEHXZ	100.0000	100.0000	4	1b7c8be0b408	0x39d00	100.0000

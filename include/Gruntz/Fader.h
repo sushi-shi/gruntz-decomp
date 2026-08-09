@@ -50,8 +50,8 @@ extern const float g_sineHalfPi;
 extern const float g_sineOne;
 #include <io.h>
 
-extern float g_fxBias;
-extern float g_fxEps;
+extern const float g_fxBias;
+extern const float g_fxEps;
 
 void __cdecl operator delete(void* p);
 void ScatterSamples(i32* arr, i32, i32, i32);

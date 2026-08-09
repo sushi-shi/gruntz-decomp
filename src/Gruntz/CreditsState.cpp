@@ -54,8 +54,10 @@ DATA(0x001e96f0)
 static const double kScrollRate = 0.025;
 DATA(0x001e96f8)
 static const double kScreenH = 480.0;
+
+// g_frameDelta is in milliseconds; m_scrollStep is pixels per second.
 DATA(0x001e9700)
-double g_val_1e9700;
+static const double kMsToSeconds = 0.001;
 DATA(0x001e9708)
 static const double kStepScale = 1000.0;
 
@@ -336,7 +338,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         }
     }
 
-    m_scrollAccum = m_scrollAccum + static_cast<double>(g_frameDelta) * m_scrollStep * 0.001;
+    m_scrollAccum += static_cast<double>(g_frameDelta) * m_scrollStep * kMsToSeconds;
     m_drawRect = m_scrollRect;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
     m_drawRect.top -= scrolled;

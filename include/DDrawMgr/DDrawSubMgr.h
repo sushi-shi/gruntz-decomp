@@ -4,6 +4,6 @@
 #include <EmptyString.h>
 #include <Ints.h>
 
-extern float g_sndPanScale;
+extern const float g_sndPanScale;
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGR_H

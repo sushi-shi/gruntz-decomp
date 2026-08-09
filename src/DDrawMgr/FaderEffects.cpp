@@ -23,9 +23,9 @@
 #include <string.h>
 
 DATA(0x001f07ec)
-float g_fxBias = -50.0f;
+const float g_fxBias = -50.0f;
 DATA(0x001f07f4)
-float g_fxEps = 1.0f;
+const float g_fxEps = 1.0f;
 
 DATA(0x001f080c)
 const float g_faderHalfPi = 1.570795f;
