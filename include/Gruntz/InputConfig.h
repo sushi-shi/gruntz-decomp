@@ -11,7 +11,7 @@ GZ_ENUM_FORWARD(InputDeviceSel);
 
 class CInputConfig {
 public:
-    CString LoadInputDeviceConfig(i32 unused);
+    CString LoadInputDeviceConfig(i32 uppercase);
 
     char m_pad00[0x14];
     InputDeviceSel m_deviceId;

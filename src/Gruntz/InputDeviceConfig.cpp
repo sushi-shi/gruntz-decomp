@@ -9,7 +9,7 @@
 #include <MsgParam.h>
 
 RVA(0x000387c0, 0xd4)
-CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
+CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
     CString name("None");
     switch (m_deviceId) {
         case INPUTDEV_KEYBOARD:
@@ -27,6 +27,9 @@ CString CInputConfig::LoadInputDeviceConfig(i32 unused) {
         case INPUTDEV_JOYSTICK4:
             name = "Joystick 4";
             break;
+    }
+    if (uppercase != 0) {
+        name.MakeUpper();
     }
     return name;
 }
