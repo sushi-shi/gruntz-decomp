@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/ErrorStringId.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
 #include <Net/NetLobby.h>
