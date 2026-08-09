@@ -5,8 +5,8 @@
 This says what the REST is, because "about 40% covered" is only actionable once the
 remainder is partitioned into work and non-work:
 
-    unenrolled = game data we can pin              (a worklist)
-               + library data we can never pin     (a stated exclusion, per lib)
+    unenrolled = game-visible data                 (a worklist)
+               + library-private data              (a stated exclusion, per lib)
                + compiler-generated data           (cl emits it; we do not pin it)
                + padding
                + what we cannot classify           (stated, never folded into
@@ -26,14 +26,20 @@ EVERY VERDICT COMES FROM RETAIL OR THE TOOLCHAIN, NEVER FROM `src/`
               image, 972 of them in the unenrolled `.rdata` tail.
 `dxguid.lib`  a COM GUID is 16 bytes of ground truth. If retail's bytes equal a
 `UUID.LIB`    16-byte symbol payload in the SDK's GUID libraries, the datum IS
-              that GUID and it belongs to the library, no matter that the code
-              which LEAs it is ours. This is why the naming-function test alone
-              is not enough: `CDDrawMgr::Init` naming `IID_IDirectDraw2` would
-              otherwise make a dxguid table look like game data.
+              that GUID and belongs to that library. Ownership does not decide
+              eligibility, though: a GUID directly named by game code remains
+              in the coverage denominator; only library-private GUIDs are
+              excluded.
 payload       cl pads between contributions with ZERO, so an uncovered all-zero
               run that nothing names is padding, and an uncovered NON-zero run
               that nothing names is a real gap in our knowledge - reported as
               UNCLASSIFIED rather than absorbed.
+
+REACHABILITY OVERRIDES OWNERSHIP. A datum directly named by game/compiler code,
+or reached through a pointer stored in enrolled/game-visible data, remains in
+the reconstructable denominator even when its payload proves CRT/MFC/SDK
+ownership. Traversal stops at proven library functions: calling a CRT routine
+does not make every private CRT table game-visible.
 
 TRANSITIVE ATTRIBUTION. An RTTI base-class array is named only by its class
 hierarchy descriptor, which is named only by the complete object locator, which
@@ -45,16 +51,19 @@ USAGE
     python -m gruntz.audit.data_denominator             # the partition
     python -m gruntz.audit.data_denominator --worklist  # the game-data runs
     python -m gruntz.audit.data_denominator --tsv PATH  # every run, classified
+    python -m gruntz.audit.data_denominator --write     # refresh tracked partition
+    python -m gruntz.audit.data_denominator --check     # re-prove tracked partition
 """
 from __future__ import annotations
 
 import argparse
 import bisect
 import csv
+import io
 import os
 import struct
 import sys
-from collections import Counter, defaultdict
+from collections import Counter, defaultdict, deque
 from pathlib import Path
 
 from gruntz.core.data_universe import enrolled_runs, regions
@@ -65,15 +74,18 @@ EH_MAGIC = 0x19930520
 #: the SDK GUID archives, in the dev shell's toolchain
 GUID_LIBS = ("$DXSDK_DIR/Lib/dxguid.lib", "$MSVC_DIR/lib/UUID.LIB")
 
-GAME, LIB = "game data (worklist)", "library data"
+PARTITION = REPO / "config/retail/data-coverage-partition.tsv"
+
+VISIBLE = "game-visible unenrolled data"
+LIB = "library-private data"
 EH, EHPAD = "compiler: C++ EH tables", "compiler: EH-table padding"
 RTTI = "compiler: RTTI records"
 LITERAL = "compiler: pooled literal data"
-GUIDV = "library data (SDK GUID)"
+GUIDV = "library-private data (SDK GUID)"
 PAD = "padding / alignment (zero)"
-TGTUNK = "UNCLASSIFIED (target-referenced)"
 UNK = "UNCLASSIFIED (non-zero)"
-ORDER = [EH, RTTI, LITERAL, LIB, GUIDV, EHPAD, PAD, TGTUNK, UNK, GAME]
+ORDER = [VISIBLE, UNK, EH, RTTI, LITERAL, LIB, GUIDV, EHPAD, PAD]
+ELIGIBLE = {VISIBLE, UNK}
 
 # Proven retail contribution-group boundaries (docs/link-section-audit.md).
 MFC_LO, MFC_HI = 0x001EB068, 0x001EE5A4
@@ -227,6 +239,77 @@ def _complement(runs, lo, hi):
     return out
 
 
+def _contiguous(values):
+    """Maximal ``[lo, hi)`` runs from a set of byte RVAs."""
+    out = []
+    for value in sorted(values):
+        if out and value == out[-1][1]:
+            out[-1] = (out[-1][0], value + 1)
+        else:
+            out.append((value, value + 1))
+    return out
+
+
+def _span_covering(spans, starts, lo, hi):
+    """The span containing all of ``[lo, hi)``, or ``None``."""
+    i = bisect.bisect_right(starts, lo) - 1
+    if i < 0:
+        return None
+    span = spans[i]
+    return span if span[0] <= lo and hi <= span[1] else None
+
+
+def _merge_rows(rows):
+    """Merge adjacent rows carrying identical proof and eligibility."""
+    out = []
+    for row in sorted(rows):
+        if out and out[-1][1] == row[0] and out[-1][2:] == row[2:]:
+            out[-1] = (out[-1][0], row[1], *row[2:])
+        else:
+            out.append(row)
+    return out
+
+
+def propagate_reachability(direct_reasons, enrolled_roots, edges):
+    """Return ``(visible, reasons)`` for the game-side data graph.
+
+    ``edges`` contains data-to-data pointer edges only.  References originating
+    in library code are deliberately absent, which is the boundary that keeps a
+    call into CRT/MFC from pulling all of that library's private tables into the
+    coverage denominator.
+    """
+    why = defaultdict(Counter)
+    queue = deque()
+    visible = set()
+
+    def root(node, reason, count):
+        why[node][reason] += count
+        if node not in visible:
+            visible.add(node)
+            queue.append(node)
+
+    for node, reasons in direct_reasons.items():
+        for reason, count in reasons.items():
+            root(node, reason, count)
+    for node, count in enrolled_roots.items():
+        root(node, "pointer from enrolled data", count)
+
+    while queue:
+        source = queue.popleft()
+        for target, count in edges.get(source, {}).items():
+            if target in visible:
+                continue
+            root(target, "pointer from game-visible data", count)
+    return visible, why
+
+
+def coverage_verdict(attribution, is_visible):
+    """The coverage class for an ownership verdict and reachability result."""
+    if is_visible:
+        return VISIBLE, True
+    return attribution, attribution == UNK
+
+
 def partition():
     pe = PE()
     regs = regions(pe)
@@ -267,16 +350,42 @@ def partition():
             i += 1
         return out
 
-    # unenrolled runs, split at every address the image names (an object start)
-    nodes = []
+    # Start with the exact gaps.  Evidence-backed object extents (EH records and
+    # GUIDs) are inserted as boundaries BEFORE reachability is computed.  Without
+    # this, one reference to the first GUID in a packed table would incorrectly
+    # make every following private GUID game-visible.
+    gaps = []
     for key in ("rdata", "data"):
         lo0, hi0 = regs[key]
         for a, b in _complement(runs, lo0, hi0):
-            boundaries = (MFC_LO, MFC_HI, LIB_RDATA_HI, RTTI_LO, RTTI_HI)
-            pts = sorted(set([a] + named_in(a + 1, b)
-                             + [x for x in boundaries if a < x < b])) + [b]
-            for i in range(len(pts) - 1):
-                nodes.append([pts[i], pts[i + 1], "." + key])
+            gaps.append((a, b, "." + key))
+
+    eh_spans = _contiguous(owned_eh)
+    guid_spans = []
+    for a, b, _ in gaps:
+        r = a
+        while r + 16 <= b:
+            if r % 8 == 0:
+                g = guids.get(pe.data[pe.off(r):pe.off(r) + 16])
+                if g:
+                    guid_spans.append((r, r + 16, g[0], g[1]))
+                    r += 16
+                    continue
+            r += 1
+    guid_spans.sort()
+
+    evidence_bounds = sorted({x for a, b in eh_spans for x in (a, b)} |
+                             {x for a, b, _, _ in guid_spans for x in (a, b)})
+    fixed_bounds = (MFC_LO, MFC_HI, LIB_RDATA_HI, RTTI_LO, RTTI_HI)
+    nodes = []
+    for a, b, region in gaps:
+        j = bisect.bisect_right(evidence_bounds, a)
+        k = bisect.bisect_left(evidence_bounds, b)
+        pts = sorted(set([a] + named_in(a + 1, b)
+                         + evidence_bounds[j:k]
+                         + [x for x in fixed_bounds if a < x < b])) + [b]
+        for i in range(len(pts) - 1):
+            nodes.append([pts[i], pts[i + 1], region])
     node_lo = [n[0] for n in nodes]
 
     def node_at(rva):
@@ -289,138 +398,140 @@ def partition():
         i = bisect.bisect_right(enrolled_lo, rva) - 1
         return i >= 0 and runs[i][0] <= rva < runs[i][1]
 
-    # seed: a `.text` operand that names the run, classified by its function
-    label: dict[int, str] = {}
+    # Seed visibility from game/compiler code.  Library functions are a hard
+    # traversal boundary: their private implementation references establish
+    # ownership, not game visibility.
+    direct_reasons: dict[int, Counter] = defaultdict(Counter)
     libof: dict[int, Counter] = {}
     for i, (a, b, _) in enumerate(nodes):
-        cats, libs = Counter(), Counter()
+        libs = Counter()
         for t in [a] + named_in(a + 1, b):
             for s in by_target.get(t, ()):
                 if not (text_lo <= s < text_hi):
                     continue
                 f = fn_at(s)
-                cats[f["category"] if f else "text?"] += 1
-                if f and f["category"] == "library":
+                category = f["category"] if f else "text?"
+                if category in ("target", "compiler", "eh"):
+                    direct_reasons[i]["direct game/compiler code"] += 1
+                elif category == "library":
                     libs[f.get("lib") or "?"] += 1
-        if cats.get("target"):
-            # A game function naming a datum proves use, not ownership. DirectX
-            # GUIDs are a concrete counterexample, so keep this set unresolved
-            # until a type/owner oracle identifies it.
-            label[i] = TGTUNK
-        elif cats.get("library"):
-            label[i], libof[i] = LIB, libs
+        if libs:
+            libof[i] = libs
 
-    # propagate along data -> data pointers
-    for _ in range(16):
-        changed = 0
-        for i, (a, b, _) in enumerate(nodes):
-            if i in label:
-                continue
-            cats, libs = Counter(), Counter()
-            for t in [a] + named_in(a + 1, b):
-                for s in by_target.get(t, ()):
-                    if text_lo <= s < text_hi:
-                        continue
-                    j = node_at(s)
-                    if j is not None and j in label:
-                        cats[label[j]] += 1
-                        libs.update(libof.get(j, ()))
-                    elif enrolled(s):
-                        cats[TGTUNK] += 1
-            if cats.get(TGTUNK):
-                label[i] = TGTUNK
-                changed += 1
-            elif cats.get(LIB):
-                label[i], libof[i] = LIB, libs
-                changed += 1
-        if not changed:
-            break
+    # Build data-to-data edges, then traverse only from game-side roots.  An
+    # enrolled datum is a root because the source/delink manifests explicitly
+    # rebuild it.  Nothing propagates out of an un-enrolled library-private node.
+    enrolled_roots = Counter()
+    edges = defaultdict(Counter)
+    for i, (a, b, _) in enumerate(nodes):
+        for t in [a] + named_in(a + 1, b):
+            for s in by_target.get(t, ()):
+                if text_lo <= s < text_hi:
+                    continue
+                if enrolled(s):
+                    enrolled_roots[i] += 1
+                    continue
+                j = node_at(s)
+                if j is not None:
+                    edges[j][i] += 1
+    visible, why_visible = propagate_reachability(
+        direct_reasons, enrolled_roots, edges)
 
     def payload_nz(a, b):
         return sum(1 for r in range(a, b) if pe.data[pe.off(r)])
 
+    eh_starts = [a for a, _ in eh_spans]
+    guid_starts = [a for a, _, _, _ in guid_spans]
+
+    def ownership(i, a, b, region):
+        """(category, evidence, naming libraries) independent of reachability."""
+        eh = _span_covering(eh_spans, eh_starts, a, b)
+        if eh:
+            return EH, "parsed MSVC /GX table extent", None
+        guid = _span_covering(guid_spans, guid_starts, a, b)
+        if guid:
+            lib, name = guid[2], guid[3]
+            return GUIDV, f"{lib}:{name}", {lib: 1}
+        nz = payload_nz(a, b)
+        if RTTI_LO <= a < RTTI_HI:
+            return RTTI, "retail .rdata$r contribution group", None
+        if MFC_LO <= a < MFC_HI:
+            return LIB, "NAFXCW:MFC message-map/data block", {"NAFXCW": 1}
+        if MFC_HI <= a < LIB_RDATA_HI:
+            return (LIB, "retail library tail; archive member unresolved",
+                    {"unresolved static-library member": 1})
+        if region == ".data" and nz:
+            # The independent coverage/access sieve proved every residual
+            # initialized .data run lies between pooled ??_C@ literals. Its
+            # sole game-owned survivor, g_table_20fa78, is already enrolled.
+            return (LITERAL, "between retail pooled literals; no source pin", None)
+        if eh_lo <= a < eh_hi and nz == 0:
+            return EHPAD, "inside parsed EH-table envelope", None
+        if nz == 0:
+            return PAD, "zero bytes with no inbound game-visible reference", None
+        if libof.get(i):
+            libs = libof[i]
+            return LIB, ",".join(sorted(libs)), libs
+        return UNK, f"nz={nz}", None
+
     buckets: Counter = Counter()
     libbytes: Counter = Counter()
+    visible_libbytes: Counter = Counter()
+    visible_owners: Counter = Counter()
     guidnames: Counter = Counter()
     rows = []
 
-    def emit(a, b, region, verdict, note, libs=None):
+    def emit(a, b, region, verdict, eligible, attribution, evidence,
+             reachability="", libs=None):
         buckets[verdict] += b - a
-        rows.append((a, b, region, verdict, note))
+        rows.append((a, b, region, verdict,
+                     "eligible" if eligible else "excluded",
+                     attribution, evidence, reachability))
         if libs:
-            # Never fractionally spread a run across naming libraries: that
-            # manufactures precision. Preserve a joint provenance until archive
-            # member evidence can separate it.
-            libbytes["+".join(sorted(libs))] += b - a
+            key = "+".join(sorted(libs))
+            if eligible:
+                visible_libbytes[key] += b - a
+            else:
+                libbytes[key] += b - a
 
     for i, (a, b, region) in enumerate(nodes):
-        # Carve, in evidence order: EH tables (a parse), then SDK GUIDs (an exact
-        # 16-byte identity). Both can sit INSIDE a longer run - a dxguid table is
-        # 29 consecutive GUIDs with only its first entry named - so they are cut
-        # out of the run rather than tested against the whole of it.
-        cut: list[tuple[int, int, str, str]] = []
-        r = a
-        while r < b:
-            if r in owned_eh:
-                e = r
-                while e < b and e in owned_eh:
-                    e += 1
-                cut.append((r, e, EH, ""))
-                r = e
-                continue
-            if r % 8 == 0 and r + 16 <= b:
-                g = guids.get(pe.data[pe.off(r):pe.off(r) + 16])
-                if g:
-                    cut.append((r, r + 16, GUIDV, f"{g[0]}:{g[1]}"))
-                    guidnames[g[1]] += 1
-                    r += 16
-                    continue
-            r += 1
-        # the remainder, between the carve-outs, keeps the node's own verdict
-        pieces: list[tuple[int, int]] = []
-        cur = a
-        for lo, hi, _, _ in cut:
-            if lo > cur:
-                pieces.append((cur, lo))
-            cur = hi
-        if cur < b:
-            pieces.append((cur, b))
-        for lo, hi, verdict, note in cut:
-            emit(lo, hi, region, verdict, note,
-                 {note.split(":")[0]: 1} if verdict == GUIDV else None)
-        for lo, hi in pieces:
-            nz = payload_nz(lo, hi)
-            lab = label.get(i)
-            if RTTI_LO <= lo < RTTI_HI:
-                emit(lo, hi, region, RTTI, "retail .rdata$r contribution group")
-            elif MFC_LO <= lo < MFC_HI:
-                emit(lo, hi, region, LIB, "NAFXCW:MFC message-map/data block",
-                     {"NAFXCW": 1})
-            elif MFC_HI <= lo < LIB_RDATA_HI:
-                emit(lo, hi, region, LIB,
-                     "retail library tail; archive member unresolved",
-                     {"unresolved static-library member": 1})
-            elif region == ".data" and nz:
-                # The independent coverage/access sieve proved every residual
-                # initialized .data run lies between pooled ??_C@ literals. Its
-                # sole game-owned survivor, g_table_20fa78, is already enrolled.
-                emit(lo, hi, region, LITERAL,
-                     "between retail pooled literals; no source pin")
-            elif eh_lo <= lo < eh_hi and nz == 0:
-                emit(lo, hi, region, EHPAD, "")
-            elif nz == 0:
-                emit(lo, hi, region, PAD, "")
-            elif lab == TGTUNK:
-                emit(lo, hi, region, TGTUNK,
-                     f"nz={nz}; use does not prove ownership")
-            elif lab == LIB:
-                emit(lo, hi, region, LIB, ",".join(sorted(libof.get(i, {}))),
-                     libof.get(i) or {"?": 1})
-            else:
-                emit(lo, hi, region, UNK, f"nz={nz}")
-    return {"pe": pe, "regions": regs, "buckets": buckets, "libbytes": libbytes,
-            "rows": rows, "eh_kinds": eh_kinds, "guids": bool(guids),
+        base, evidence, libs = ownership(i, a, b, region)
+        if base == GUIDV:
+            guidnames[evidence.split(":", 1)[1]] += 1
+        verdict, eligible = coverage_verdict(base, i in visible)
+        if eligible and verdict == VISIBLE:
+            reasons = ", ".join(f"{k} ({v})" for k, v in
+                                sorted(why_visible[i].items()))
+            emit(a, b, region, verdict, True, base, evidence, reasons, libs)
+            visible_owners[base] += b - a
+        elif eligible:
+            # Unclassified bytes are deliberately eligible.  Uncertainty can
+            # never be converted into a score improvement.
+            emit(a, b, region, verdict, True, base, evidence)
+        else:
+            emit(a, b, region, verdict, False, base, evidence, libs=libs)
+
+    rows = _merge_rows(rows)
+    return {"pe": pe, "regions": regs, "buckets": buckets,
+            "libbytes": libbytes, "visible_libbytes": visible_libbytes,
+            "visible_owners": visible_owners, "rows": rows,
+            "eh_kinds": eh_kinds, "guids": bool(guids),
             "guidnames": guidnames}
+
+
+def render_tsv(rows) -> str:
+    """Canonical tracked partition text."""
+    out = io.StringIO(newline="")
+    w = csv.writer(out, delimiter="\t", lineterminator="\n")
+    # Keep the always-populated evidence column last.  A final empty
+    # reachability field would serialize as a trailing tab on every private row.
+    w.writerow(["rva", "end", "size", "section", "verdict", "coverage",
+                "attribution", "reachability", "evidence"])
+    for (a, b, region, verdict, eligibility, attribution, evidence,
+         reachability) in rows:
+        w.writerow([f"0x{a:08x}", f"0x{b:08x}", b - a, region, verdict,
+                    eligibility, attribution, reachability, evidence])
+    return out.getvalue()
 
 
 def main() -> int:
@@ -431,6 +542,11 @@ def main() -> int:
     ap.add_argument("--unclassified", action="store_true",
                     help="list the runs no oracle explained")
     ap.add_argument("--tsv", help="write every classified run to a TSV")
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument("--write", action="store_true",
+                      help=f"write the derived partition to {PARTITION}")
+    mode.add_argument("--check", action="store_true",
+                      help="fail unless the tracked partition reproduces exactly")
     ap.add_argument("--limit", type=int, default=40)
     args = ap.parse_args()
 
@@ -439,17 +555,25 @@ def main() -> int:
     init_retail = ((regs["rdata"][1] - regs["rdata"][0])
                    + (regs["data"][1] - regs["data"][0]))
     unenrolled = sum(buckets.values())
+    eligible_unenrolled = sum(buckets[k] for k in ELIGIBLE)
+    excluded = unenrolled - eligible_unenrolled
+    enrolled = init_retail - unenrolled
+    eligible_retail = enrolled + eligible_unenrolled
     print(f"retail initialized data      {init_retail:>9,} B "
           f"(.rdata {regs['rdata'][1]-regs['rdata'][0]:,} + "
           f".data {regs['data'][1]-regs['data'][0]:,})")
-    print(f"enrolled                     {init_retail-unenrolled:>9,} B  "
-          f"({100.0*(init_retail-unenrolled)/init_retail:.2f}%)")
+    print(f"enrolled                     {enrolled:>9,} B  "
+          f"({100.0*enrolled/init_retail:.2f}% gross coverage)")
     print(f"UNENROLLED                   {unenrolled:>9,} B  "
           f"({100.0*unenrolled/init_retail:.2f}%), partitioned:")
     for k in ORDER:
         if buckets.get(k):
             print(f"    {k:32} {buckets[k]:>9,} B  "
                   f"{100.0*buckets[k]/unenrolled:5.1f}% of unenrolled")
+    print(f"\nproven private/excluded      {excluded:>9,} B")
+    print(f"eligible retail denominator  {eligible_retail:>9,} B")
+    print(f"RECONSTRUCTABLE COVERAGE      {enrolled:>9,} / "
+          f"{eligible_retail:,} B  ({100.0*enrolled/eligible_retail:.2f}%)")
     print()
     ek = p["eh_kinds"]
     print(f"  EH tables: {ek.get('records', 0)} `/GX` FuncInfo records "
@@ -460,27 +584,49 @@ def main() -> int:
               "naming-function verdict.")
     else:
         print(f"  SDK GUIDs matched byte-for-byte: {sum(p['guidnames'].values())}")
-    print("\n  library attribution (bytes, split across the naming libraries):")
+    print("\n  excluded library-private attribution:")
     for k, v in p["libbytes"].most_common():
-        print(f"    {k:16} {v:>9,.0f} B")
+        print(f"    {k:32} {v:>9,.0f} B")
+    if p["visible_libbytes"]:
+        print("\n  game-visible library data (KEPT in coverage):")
+        for k, v in p["visible_libbytes"].most_common():
+            print(f"    {k:32} {v:>9,.0f} B")
 
     if args.worklist or args.unclassified:
-        want = GAME if args.worklist else UNK
-        rows = sorted((r for r in p["rows"] if r[3] == want),
+        want = ELIGIBLE if args.worklist else {UNK}
+        rows = sorted((r for r in p["rows"] if r[3] in want),
                       key=lambda r: -(r[1] - r[0]))
-        print(f"\n{want}: {len(rows)} runs, {sum(r[1]-r[0] for r in rows):,} B")
-        for a, b, region, _, note in rows[:args.limit]:
-            print(f"  {a:#010x}..{b:#010x} {b-a:>7,} B  {region:<7} {note}")
+        title = "eligible unenrolled worklist" if args.worklist else UNK
+        print(f"\n{title}: {len(rows)} runs, {sum(r[1]-r[0] for r in rows):,} B")
+        for a, b, region, verdict, _, attribution, evidence, reach in rows[:args.limit]:
+            proof = "; ".join(x for x in (attribution, evidence, reach) if x)
+            print(f"  {a:#010x}..{b:#010x} {b-a:>7,} B  {region:<7} "
+                  f"{verdict}: {proof}")
         if len(rows) > args.limit:
             print(f"  ... {len(rows)-args.limit} more (--limit)")
 
+    rendered = render_tsv(p["rows"])
     if args.tsv:
-        with open(args.tsv, "w", newline="") as f:
-            w = csv.writer(f, delimiter="\t")
-            w.writerow(["rva", "end", "size", "section", "verdict", "evidence"])
-            for a, b, region, verdict, note in sorted(p["rows"]):
-                w.writerow([f"0x{a:08x}", f"0x{b:08x}", b - a, region, verdict, note])
+        Path(args.tsv).write_text(rendered)
         print(f"\nwrote {args.tsv}")
+    if args.write or args.check:
+        if not p["guids"]:
+            print("cannot reproduce the tracked partition without the pinned SDK GUID "
+                  "archives", file=sys.stderr)
+            return 1
+        if args.write:
+            PARTITION.parent.mkdir(parents=True, exist_ok=True)
+            PARTITION.write_text(rendered)
+            print(f"\nwrote {PARTITION}")
+        else:
+            actual = PARTITION.read_text() if PARTITION.is_file() else ""
+            if actual != rendered:
+                print(f"data coverage partition is stale or missing: {PARTITION}\n"
+                      "refresh it with `python -m gruntz.audit.data_denominator "
+                      "--write`", file=sys.stderr)
+                return 1
+            print(f"\ndata coverage partition: {len(p['rows']):,} ranges reproduce "
+                  "exactly")
     return 0
 
 

@@ -11,16 +11,23 @@ therefore compatible with any amount of unenrolled data, and it read as
 `100.00% size-weighted across 723,491 B` while only about **40%** of retail's initialized
 data was enrolled.
 
-Two numbers, never one:
+Three numbers, never one:
 
-    coverage  of RETAIL's data bytes, how many does a claim cover?
-              denominator = the PE section table, which we did not write
+    gross coverage  of ALL RETAIL data bytes, how many does a claim cover?
+                    denominator = the PE section table, which we did not write
+    reconstructable coverage  enrolled / bytes not proven private and
+                    unreachable by the checked static-reachability partition
     fidelity  of the enrolled bytes, how many match?
               this is the old headline, and it is the *narrow* question
 
 and `.bss` is reported APART from initialized data. Zero-fill matching zero-fill
 is real but nearly free, and blending it into one headline is how "data is done"
 got believed: `.bss` alone is 76.8% of `matched_data`'s denominator.
+
+Ownership cannot exclude a reachable byte.  Library-owned data directly named by
+game/compiler code, or reached through pointers in enrolled/game-visible data,
+stays eligible.  Traversal stops at proven library functions, and unclassified
+bytes remain eligible so uncertainty cannot improve the score.
 
 THE THREE REGIONS, ALL FROM THE PE SECTION TABLE
 -------------------------------------------------
@@ -48,6 +55,7 @@ from gruntz.core.pe import PE, REPO
 
 CLAIMS = REPO / "build/gen/delink_data_manifest.tsv"
 SECTIONS = REPO / "build/gen/delink_data_section_manifest.tsv"
+PARTITION = REPO / "config/retail/data-coverage-partition.tsv"
 
 #: region key -> the README/report label
 LABELS = {
@@ -107,6 +115,74 @@ def enrolled_runs() -> list[tuple[int, int]]:
 
 def _clip(runs, lo, hi) -> int:
     return sum(min(b, hi) - max(a, lo) for a, b in runs if max(a, lo) < min(b, hi))
+
+
+def _merge_intervals(intervals):
+    """Canonical union of ``[lo, hi)`` intervals."""
+    out = []
+    for lo, hi in sorted(intervals):
+        if out and lo <= out[-1][1]:
+            out[-1] = (out[-1][0], max(out[-1][1], hi))
+        else:
+            out.append((lo, hi))
+    return out
+
+
+def _partition(regs, enrolled):
+    """Read the checked unenrolled-byte partition used by eligible coverage.
+
+    A stale or malformed artifact returns ``None``.  The build gate reports the
+    actionable diff; the scoreboard must never print a flattering figure from a
+    partition that no longer accounts for the current enrollment gaps exactly.
+    """
+    if not PARTITION.is_file():
+        return None
+    by_region = {"rdata": {"eligible_unenrolled": 0, "excluded": 0},
+                 "data": {"eligible_unenrolled": 0, "excluded": 0}}
+    categories: dict[str, int] = {}
+    intervals = {"rdata": [], "data": []}
+    try:
+        with PARTITION.open(newline="") as f:
+            for row in csv.DictReader(f, delimiter="\t"):
+                key = row["section"].lstrip(".")
+                if key not in by_region:
+                    return None
+                lo, hi, size = int(row["rva"], 16), int(row["end"], 16), int(row["size"])
+                if hi - lo != size or size <= 0:
+                    return None
+                rlo, rhi = regs[key]
+                if not (rlo <= lo < hi <= rhi):
+                    return None
+                intervals[key].append((lo, hi))
+                field = ("eligible_unenrolled" if row["coverage"] == "eligible"
+                         else "excluded" if row["coverage"] == "excluded" else None)
+                if field is None:
+                    return None
+                by_region[key][field] += size
+                verdict = row["verdict"]
+                categories[verdict] = categories.get(verdict, 0) + size
+    except (OSError, KeyError, ValueError):
+        return None
+    for key, (lo, hi) in regs.items():
+        if key == "bss":
+            continue
+        covered = _merge_intervals(
+            (max(a, lo), min(b, hi)) for a, b in enrolled
+            if max(a, lo) < min(b, hi))
+        expected = []
+        cursor = lo
+        for a, b in covered:
+            if cursor < a:
+                expected.append((cursor, a))
+            cursor = max(cursor, b)
+        if cursor < hi:
+            expected.append((cursor, hi))
+        # Partition rows may split one gap into many proof classes, but their
+        # union must be the exact current complement, not merely the same byte
+        # count.  This prevents a shifted stale artifact flattering the score.
+        if _merge_intervals(intervals[key]) != expected:
+            return None
+    return {"regions": by_region, "categories": categories}
 
 
 def measures(report_doc=None, pe: PE | None = None) -> dict:
@@ -176,6 +252,34 @@ def measures(report_doc=None, pe: PE | None = None) -> dict:
         "objdiff_weighted": iw,
         "fidelity": (100.0 * iw / ib) if ib else None,
     }
+    part = (_partition(regs, runs)
+            if init_enrolled is not None else None)
+    for key in ("rdata", "data"):
+        row = part["regions"][key] if part else None
+        excluded = row["excluded"] if row else None
+        eligible = out[key]["retail"] - excluded if row else None
+        out[key].update({
+            "excluded": excluded,
+            "eligible_retail": eligible,
+            "eligible_unenrolled": row["eligible_unenrolled"] if row else None,
+            "reconstructable_coverage": (
+                100.0 * out[key]["enrolled"] / eligible
+                if eligible and out[key]["enrolled"] is not None else None),
+        })
+    init_excluded = (sum(out[k]["excluded"] for k in ("rdata", "data"))
+                     if part else None)
+    init_eligible = init_retail - init_excluded if part else None
+    out["initialized"].update({
+        "excluded": init_excluded,
+        "eligible_retail": init_eligible,
+        "eligible_unenrolled": (
+            sum(out[k]["eligible_unenrolled"] for k in ("rdata", "data"))
+            if part else None),
+        "reconstructable_coverage": (
+            100.0 * init_enrolled / init_eligible
+            if init_eligible and init_enrolled is not None else None),
+    })
+    out["partition"] = part
     m = report_doc.get("measures", {})
     out["objdiff"] = {
         "matched_data": int(m.get("matched_data") or 0),

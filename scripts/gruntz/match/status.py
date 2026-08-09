@@ -201,10 +201,11 @@ def _data_line() -> list[str]:
     declared on the base side, and the byte enters neither. `matched_data` is
     structurally incapable of seeing it (`data-matching-problems.md` #1).
 
-    So two numbers, with different denominators, and both are printed:
+    So three numbers, with different denominators, and all are printed:
 
-      coverage  of RETAIL's data bytes (the PE section table - a denominator we did
-                not write), how many does a claim or a placed section cover?
+      gross coverage  of ALL RETAIL data bytes, how many are enrolled?
+      reconstructable coverage  after excluding only statically-proven private
+                library/compiler/padding bytes that game-side code/data cannot reach
       fidelity  of the ENROLLED bytes, how many are byte-equal? (the old headline)
 
     and `.bss` sits on its own row rather than inside the total: zero-fill matching
@@ -225,31 +226,66 @@ def _data_line() -> list[str]:
             return [f"**Data: coverage unknown** (no delink manifest) &middot; "
                     f"objdiff `matched_data` {od['matched_data']:,} B "
                     f"({od['matched_data_percent']:.2f}%).", ""]
-        rows = [
-            [lbl, f"{d[k]['retail']:,}", f"{d[k]['enrolled']:,}",
-             f"{d[k]['coverage']:.2f}%",
-             f"{d[k]['fidelity']:.2f}%" if d[k]["fidelity"] is not None else "—"]
-            for k, lbl in (("rdata", "`.rdata`"),
-                           ("data", "`.data` (initialized)"))]
-        rows.append(["**initialized total**", f"**{init['retail']:,}**",
-                     f"**{init['enrolled']:,}**", f"**{init['coverage']:.2f}%**",
-                     f"**{init['fidelity']:.2f}%**"])
-        rows.append(["`.bss` (zero fill)", f"{bss['retail']:,}",
-                     f"{bss['enrolled']:,}", f"{bss['coverage']:.2f}%",
+        have_partition = init.get("eligible_retail") is not None
+        rows = []
+        for k, lbl in (("rdata", "`.rdata`"),
+                       ("data", "`.data` (initialized)")):
+            row = d[k]
+            rows.append([
+                lbl, f"{row['retail']:,}",
+                f"{row['excluded']:,}" if have_partition else "—",
+                f"{row['eligible_retail']:,}" if have_partition else "—",
+                f"{row['enrolled']:,}",
+                f"{row['reconstructable_coverage']:.2f}%" if have_partition else "—",
+                f"{row['fidelity']:.2f}%" if row["fidelity"] is not None else "—",
+            ])
+        rows.append([
+            "**initialized total**", f"**{init['retail']:,}**",
+            f"**{init['excluded']:,}**" if have_partition else "—",
+            f"**{init['eligible_retail']:,}**" if have_partition else "—",
+            f"**{init['enrolled']:,}**",
+            f"**{init['reconstructable_coverage']:.2f}%**" if have_partition else "—",
+            f"**{init['fidelity']:.2f}%**",
+        ])
+        rows.append(["`.bss` (zero fill)", f"{bss['retail']:,}", "—",
+                     f"{bss['retail']:,}", f"{bss['enrolled']:,}",
+                     f"{bss['coverage']:.2f}%",
                      f"{bss['fidelity']:.2f}%" if bss["fidelity"] is not None else "—"])
+        if have_partition:
+            headline = (
+                f"**Data — reconstructable coverage "
+                f"{init['reconstructable_coverage']:.2f}% &middot; gross coverage "
+                f"{init['coverage']:.2f}% &middot; fidelity {init['fidelity']:.2f}%** "
+                f"(initialized data; `.bss` {bss['coverage']:.2f}% / "
+                f"{bss['fidelity']:.2f}% is reported apart).")
+            partition_note = (
+                f"The generated reachability partition proves "
+                f"{init['excluded']:,} B private and unreachable, leaving "
+                f"{init['eligible_retail']:,} eligible B. Its "
+                f"{init['eligible_unenrolled']:,} unenrolled B remain in the "
+                "denominator, including every unclassified byte. Library-owned "
+                "data directly reached from game/compiler code or through enrolled "
+                "data is eligible, never excluded.")
+        else:
+            headline = (
+                f"**Data — gross coverage {init['coverage']:.2f}% &middot; fidelity "
+                f"{init['fidelity']:.2f}%** (eligible coverage unknown: generated "
+                "partition absent or stale; `.bss` reported apart).")
+            partition_note = (
+                "Run `python -m gruntz.audit.data_denominator --write`, then verify "
+                "it with `--check`.")
         return [
-            f"**Data — coverage {init['coverage']:.2f}% &middot; fidelity "
-            f"{init['fidelity']:.2f}%** (initialized data; `.bss` "
-            f"{bss['coverage']:.2f}% / {bss['fidelity']:.2f}% is reported apart).",
+            headline,
             "",
-            *_md_table(["Data region", "retail B", "enrolled B", "coverage",
-                        "fidelity"], "lrrrr", rows),
+            *_md_table(["Data region", "retail B", "excluded B", "eligible B",
+                        "enrolled B", "coverage", "fidelity"], "lrrrrrr", rows),
             "",
-            "_**Coverage** = distinct retail bytes an enrolled `DATA()` claim or a "
-            "placed candidate section covers; the denominator is the PE section "
-            "table, not our claims. **Fidelity** = of those enrolled bytes, the "
-            "share objdiff scores byte-equal — the narrow question the old headline "
-            "answered. `.bss` is kept out of the total because zero-fill matching "
+            "_**Reconstructable coverage** = enrolled bytes divided by retail bytes "
+            "not proven private and unreachable. **Gross coverage** retains all "
+            "retail initialized bytes as its denominator. **Fidelity** = of enrolled "
+            "bytes, the share objdiff scores byte-equal — the narrow question the "
+            "old headline answered. " + partition_note + " `.bss` is kept out of "
+            "the initialized total because zero-fill matching "
             "zero-fill is nearly free. objdiff's own "
             f"`matched_data` is {od['matched_data']:,} / {od['total_data']:,} B "
             f"({od['matched_data_percent']:.2f}%, whole sections only): a PER-UNIT "

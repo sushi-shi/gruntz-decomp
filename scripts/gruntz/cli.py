@@ -216,13 +216,24 @@ def summarize(report: dict, full: bool = True, table: bool = False,
         d = measures(report)
         init, bss = d["initialized"], d["bss"]
         if init["retail"] and init["enrolled"] is not None:
-            print(f"  Data: coverage {init['coverage']:.2f}% "
-                  f"({init['enrolled']:,}/{init['retail']:,} B of retail's "
-                  f"initialized data enrolled), fidelity {init['fidelity']:.2f}% "
-                  f"of those; .bss {bss['coverage']:.2f}%/{bss['fidelity']:.2f}% "
-                  f"(zero fill, reported apart); objdiff matched_data "
-                  f"{_i(m.get('matched_data')):,} B "
-                  f"({m.get('matched_data_percent', 0.0):.2f}%, per-unit sums).")
+            eligible = init.get("eligible_retail")
+            if eligible is not None:
+                print(f"  Data: reconstructable coverage "
+                      f"{init['reconstructable_coverage']:.2f}% "
+                      f"({init['enrolled']:,}/{eligible:,} eligible initialized B); "
+                      f"gross coverage {init['coverage']:.2f}% of all "
+                      f"{init['retail']:,} retail B; fidelity {init['fidelity']:.2f}% "
+                      f"of enrolled; {init['excluded']:,} B proven private/excluded; "
+                      f".bss {bss['coverage']:.2f}%/{bss['fidelity']:.2f}% "
+                      f"(reported apart); objdiff matched_data "
+                      f"{_i(m.get('matched_data')):,} B "
+                      f"({m.get('matched_data_percent', 0.0):.2f}%, per-unit sums).")
+            else:
+                print(f"  Data: gross coverage {init['coverage']:.2f}% "
+                      f"({init['enrolled']:,}/{init['retail']:,} B); eligible "
+                      f"coverage unknown (partition absent/stale); fidelity "
+                      f"{init['fidelity']:.2f}%; .bss {bss['coverage']:.2f}%/"
+                      f"{bss['fidelity']:.2f}% (reported apart).")
     except Exception:                                    # never break the report tail
         pass
     print(f"  Report: {REPORT}")
@@ -520,6 +531,16 @@ def cmd_build(args) -> None:
           "data-mismodel gate violated - a declared data type is the wrong shape "
           "(count/width/aggregation); fix the declaration or accept it with evidence "
           "(python -m gruntz.audit.data_access_map --findings)", "normal")
+    # The initialized-data denominator is derived from retail relocations, the
+    # function ownership universe, exact SDK GUID payloads, and parsed compiler
+    # records.  Reachability overrides ownership: library data named by game code
+    # stays eligible, while traversal stops at proven library-function boundaries.
+    # The checked artifact makes every exclusion reviewable and prevents a stale
+    # partition from silently flattering reconstructable coverage.
+    _gate("gruntz.audit.data_denominator", ["--check"],
+          "data-denominator partition is stale or no longer reproducible - refresh "
+          "the generated artifact with `python -m gruntz.audit.data_denominator "
+          "--write` after reviewing reachability/ownership changes", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "

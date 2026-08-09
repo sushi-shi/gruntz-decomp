@@ -5,25 +5,31 @@ from __future__ import annotations
 import argparse
 import csv
 import subprocess
+import sys
 from pathlib import Path
 
+from gruntz.audit import link_line
 from gruntz.core.pe import REPO
 
 BASELINE = REPO / "config/retail/data-integrity-ratchet.tsv"
-CANDIDATE = REPO / "build/exe/GRUNTZ.candidate.EXE"
-CANDIDATE_MAP = REPO / "build/exe/GRUNTZ.candidate.map"
-BASE_OBJS = REPO / "build/objdiff/base"
+ORDER_LIST = REPO / "build/gen/data-integrity-link-order.txt"
+LINK = REPO / "scripts/gruntz/build/link.py"
 
 
 def _ensure_candidate() -> None:
-    inputs = list(BASE_OBJS.glob("*.obj"))
-    newest = max((p.stat().st_mtime_ns for p in inputs), default=0)
-    stale = (not CANDIDATE.is_file() or not CANDIDATE_MAP.is_file()
-             or CANDIDATE.stat().st_mtime_ns < newest
-             or CANDIDATE_MAP.stat().st_mtime_ns < newest)
-    if stale:
-        subprocess.run(["ninja", "build/exe/GRUNTZ.candidate.EXE"],
-                       cwd=REPO, check=True)
+    """Build the one candidate image whose referent ratchet measures.
+
+    Explicit link-order experiments share the candidate output path, so file
+    freshness cannot establish its provenance. Always relink from the checked,
+    generated retail order before counting referents; the ratchet then cannot
+    depend on whichever experiment happened to write the image last.
+    """
+    if link_line.check():
+        raise RuntimeError("retail link order no longer re-derives")
+    ORDER_LIST.parent.mkdir(parents=True, exist_ok=True)
+    ORDER_LIST.write_text(link_line.objlist_text())
+    subprocess.run([sys.executable, str(LINK), "--order", str(ORDER_LIST)],
+                   cwd=REPO, check=True)
 
 
 def _unclaimed_runs() -> int:

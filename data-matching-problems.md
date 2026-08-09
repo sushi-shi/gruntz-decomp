@@ -1,11 +1,18 @@
 # Data matching: what the 100% does NOT mean
 
 The old **`Data: 100.00%`** headline was arithmetically true and answered the wrong
-question. The replacement reports two denominators: **coverage 40.31%** means 109,385
-distinct addresses are enrolled out of the 271,360 initialized bytes stored in retail;
-**fidelity 99.97%** means the enrolled objdiff sections are almost entirely byte-equal.
-`.bss` is reported separately. A smaller headline is the successful result: bytes omitted
-from both sides can no longer hide outside the score.
+question. The replacement reports three distinct facts. **Gross coverage 40.31%** means
+109,385 distinct addresses are enrolled out of all 271,360 initialized bytes stored in
+retail. A generated static-reachability partition proves 159,235 B are private,
+unreachable library/compiler data or padding, so **reconstructable coverage is 97.56%**:
+109,385 / 112,125 eligible bytes. **Fidelity 99.97%** means the enrolled objdiff sections
+are almost entirely byte-equal. `.bss` is reported separately.
+
+Ownership never overrides reachability. Library-owned bytes directly named by game or
+compiler code, or reached through pointers in enrolled/game-visible data, remain eligible.
+Traversal stops at proven library-function boundaries, so calling an MFC/CRT routine does
+not pull all of that library's private tables into the denominator. Unclassified bytes also
+remain eligible; uncertainty can never improve the score.
 
 The earlier 167,787 / 271,360 (61.8%) estimate added per-object section sizes. A folded
 COMDAT defined by several objects was therefore counted several times. Coverage is an
@@ -53,9 +60,12 @@ that role and they are the data-side answer to `functions.tsv`:
 | :-- | :-- | :-- |
 | `gruntz audit data_access_map` | which bytes does retail's code actually read/write? | the `.reloc` table + disassembly at each site |
 | `gruntz audit data_coverage` | which bytes does no claim cover? | claim extents ∪ placed candidate sections |
+| `gruntz audit data_denominator` | which uncovered bytes are eligible versus private? | function ownership + static pointer reachability + compiler/SDK payload parsers |
 
-Their join is the definition of the defect: **uncovered ∧ touched = unmodelled data;
-uncovered ∧ untouched = padding.**
+Their join defines the actionable gap: **uncovered ∧ game-visible = unmodelled eligible
+data**. An untouched byte is excluded only when independent evidence proves private
+library/compiler ownership or padding. Untouched non-zero bytes with no such proof remain
+unclassified and eligible.
 
 `data_access_map --findings unclaimed` remains a separate, ratcheted access worklist.
 Those findings are outside fidelity until a real typed claim enrolls them.
@@ -65,22 +75,26 @@ The address-union partition is complete to an explicitly stated residue:
 | unenrolled class | bytes |
 | :-- | --: |
 | compiler C++ EH records | 53,164 |
-| compiler RTTI records | 13,569 |
-| compiler pooled literals | 41,013 |
-| static-library data | 23,950 |
-| SDK GUID libraries | 1,776 |
+| game-visible unenrolled data | 1,964 |
+| unclassified non-zero (eligible) | 776 |
+| compiler RTTI records | 13,145 |
+| compiler pooled literals | 40,681 |
+| private static-library data | 22,522 |
+| private SDK GUID data | 1,680 |
 | EH padding | 4,564 |
-| other zero padding/alignment | 23,599 |
-| target-referenced but ownership unresolved | 28 |
-| other unclassified non-zero | 312 |
+| other zero padding/alignment | 23,479 |
 | **total unenrolled** | **161,975** |
 
-The library attribution is NAFXCW 14,164 B, unresolved static-library members 9,786 B,
-dxguid.lib 1,696 B, and UUID.LIB 80 B. No fractional attribution is
-invented for a run named from more than one library. The independent access/coverage
-sieve found one game-owned initialized survivor, `g_table_20fa78` (64 B), and it was
-already enrolled; the remaining game-data worklist is therefore 0 B. The 340 B residue
-stays unclassified rather than being folded into “library”.
+The private-library attribution is NAFXCW 12,772 B, unresolved static-library members
+9,750 B, dxguid.lib 1,600 B, and UUID.LIB 80 B. Another 928 B of NAFXCW data, 96 B of
+dxguid data, and 36 B from unresolved static-library members are game-visible and are
+therefore **kept** in coverage despite their ownership. No fractional attribution is
+invented for a run named from more than one library. The eligible unenrolled worklist is
+2,740 B: 1,964 B statically reachable from game-side roots plus 776 B unclassified.
+
+`config/retail/data-coverage-partition.tsv` is generated, not hand-maintained.
+`python -m gruntz.audit.data_denominator --check` re-derives every range and is a normal
+build gate; `--write` refreshes it after a reviewed enrollment or reachability change.
 
 This lane also enrolled 1,099 B of closeable zlib initialized data: fourteen tables and
 copyright strings whose names, owning archive members, extents, and payloads are all

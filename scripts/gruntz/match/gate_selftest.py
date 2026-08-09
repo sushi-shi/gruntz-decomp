@@ -38,13 +38,14 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from gruntz.audit import data_integrity, image_diff, rename_member, tu_layout
+from gruntz.audit import data_denominator, data_integrity, image_diff, rename_member, tu_layout
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
 from gruntz.cleanliness import view_debt
 from gruntz.core import class_meta
 from gruntz.core import branches
+from gruntz.core import data_universe
 from gruntz.core import function_universe
 from gruntz.core import report
 from gruntz.core import library_labels
@@ -89,6 +90,70 @@ class DataIntegrityRatchetTests(unittest.TestCase):
         self.assertEqual(
             self._run({**baseline, "wrong_referent_regions": 6}, baseline), 1)
         self.assertEqual(self._run(dict(baseline), baseline), 0)
+
+    def test_referent_gate_links_the_checked_retail_order(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            order = Path(tmp) / "order.txt"
+            with (mock.patch.object(data_integrity, "ORDER_LIST", order),
+                  mock.patch.object(data_integrity.link_line, "check", return_value=0),
+                  mock.patch.object(data_integrity.link_line, "objlist_text",
+                                    return_value="# order\na\nb\n"),
+                  mock.patch.object(data_integrity.subprocess, "run") as run):
+                data_integrity._ensure_candidate()
+            self.assertEqual(order.read_text(), "# order\na\nb\n")
+            cmd = run.call_args.args[0]
+            self.assertEqual(cmd[-2:], ["--order", str(order)])
+            self.assertNotIn("ninja", cmd)
+
+
+class DataCoverageReachabilityTests(unittest.TestCase):
+    def test_library_boundary_stops_transitive_reachability(self):
+        direct = {0: {"direct game/compiler code": 1}}
+        enrolled = {4: 1}
+        edges = {
+            0: {1: 1},       # game-visible data follows its pointer
+            2: {3: 1},       # library-private source has no game-side root
+            4: {5: 1},       # enrolled data is an independent game-side root
+        }
+        visible, _ = data_denominator.propagate_reachability(
+            direct, enrolled, edges)
+        self.assertEqual(visible, {0, 1, 4, 5})
+
+    def test_reachability_overrides_library_ownership(self):
+        self.assertEqual(
+            data_denominator.coverage_verdict(data_denominator.GUIDV, True),
+            (data_denominator.VISIBLE, True))
+        self.assertEqual(
+            data_denominator.coverage_verdict(data_denominator.GUIDV, False),
+            (data_denominator.GUIDV, False))
+        self.assertEqual(
+            data_denominator.coverage_verdict(data_denominator.UNK, False),
+            (data_denominator.UNK, True))
+
+    def test_scoreboard_rejects_a_stale_partition(self):
+        header = ("rva\tend\tsize\tsection\tverdict\tcoverage\tattribution\t"
+                  "evidence\treachability\n")
+        rows = (
+            "0x0000006e\t0x00000074\t6\t.rdata\tprivate\texcluded\tprivate\t-\t\n"
+            "0x00000074\t0x00000078\t4\t.rdata\tunknown\teligible\tunknown\t-\t\n"
+            "0x000000d2\t0x000000d7\t5\t.data\tprivate\texcluded\tprivate\t-\t\n"
+            "0x000000d7\t0x000000dc\t5\t.data\tunknown\teligible\tunknown\t-\t\n")
+        regs = {"rdata": (100, 120), "data": (200, 220), "bss": (220, 240)}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "partition.tsv"
+            path.write_text(header + rows)
+            with mock.patch.object(data_universe, "PARTITION", path):
+                enrolled = [(100, 110), (200, 210)]
+                got = data_universe._partition(regs, enrolled)
+                self.assertEqual(got["regions"]["rdata"]["excluded"], 6)
+                # Same byte totals at shifted addresses are stale too; range
+                # identity matters, not just arithmetic coverage.
+                path.write_text(header + rows.replace(
+                    "0x0000006e\t0x00000074", "0x0000006d\t0x00000073"))
+                self.assertIsNone(data_universe._partition(regs, enrolled))
+                path.write_text(header + rows.splitlines(keepends=True)[0])
+                self.assertIsNone(
+                    data_universe._partition(regs, enrolled))
 
 
 class ScoreBankingProvenanceTests(unittest.TestCase):

@@ -502,6 +502,25 @@ Full-only non-libclang checks were 0.4–6.0s each.
 The two all-TU libclang scans (`enum_case_labels` and `bare_constants`) were roughly
 5–7 minutes each, and a stale `structs.json` layout regeneration adds about 4.5 minutes.
 
+The normal tier also re-proves
+`config/retail/data-coverage-partition.tsv` with
+`python -m gruntz.audit.data_denominator --check`. The artifact partitions every
+unenrolled initialized-data range into eligible or excluded bytes. Its roots are
+game/compiler code and enrolled data; static data-to-data pointers propagate
+visibility, while proven CRT/MFC/library functions are traversal boundaries.
+Consequently library ownership alone never removes a byte from coverage. Directly
+game-visible library data remains eligible, and every unclassified byte remains in
+the denominator. Refresh the generated artifact with `--write` only after reviewing
+the reachability/ownership delta; the scoreboard reports reconstructable coverage
+from the checked artifact and falls back to gross coverage when it is absent or stale.
+
+The full-tier linked-referent ratchet always rebuilds its candidate with the
+derived retail object list. `GRUNTZ.candidate.EXE` is also the output of explicit
+`gruntz link --order` experiments, so file freshness cannot prove which layout it
+contains. The gate generates `build/gen/data-integrity-link-order.txt` from the
+checked link-line model and passes it explicitly to the linker before counting
+wrong or ordering-only referents.
+
 **Build timing.** Every `gruntz build` records its wall-clock — printed as
 `[gruntz] build timing: total Ns (ninja Xs, gates Ys) [tier]` and appended to
 `build/gen/build_times.tsv` (gitignored, per-worktree; columns

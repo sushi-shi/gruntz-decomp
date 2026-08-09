@@ -372,6 +372,26 @@ def parse_order_tsv(path):
     return rows
 
 
+def objlist_text() -> str:
+    """Every current unit in the retail-derived arrival order.
+
+    COMDAT-owner units have no independent retail contribution, so insert them
+    at the RVA of the body their object supplied. Owners with no position remain
+    explicitly unordered at the tail. Keeping this as a reusable producer stops
+    consumers from passing the descriptive TSV itself to link.exe as though it
+    were a one-stem-per-line response file.
+    """
+    rows, owners, _diag = derive()
+    seq = [(r.start, r.unit) for r in rows]
+    seq += [(r.start, r.unit) for r in owners if r.start is not None]
+    seq.sort()
+    lines = ["# derived retail link order (comdat-owner units inserted at their "
+             "kept bodies' position)"]
+    lines += [unit for _start, unit in seq]
+    lines += [r.unit for r in owners if r.start is None]
+    return "\n".join(lines) + "\n"
+
+
 def check() -> int:
     """Set-tolerant, order-strict: a unit added/removed/renamed by partition work
     is a NOTICE (regen with --emit); an ORDER INVERSION or a class flip among
@@ -623,16 +643,9 @@ def main(argv=None):
               f"{len(owners)} comdat-owner rows)")
         return 0
     if args.objlist:
-        rows, owners, _diag = derive()
-        seq = [(r.start, r.unit) for r in rows]
-        seq += [(r.start, r.unit) for r in owners if r.start is not None]
-        seq.sort()
-        lines = ["# derived retail link order (comdat-owner units inserted at their "
-                 "kept bodies' position)"]
-        lines += [u for _, u in seq]
-        lines += [r.unit for r in owners if r.start is None]
-        Path(args.objlist).write_text("\n".join(lines) + "\n")
-        n = len(seq) + sum(1 for r in owners if r.start is None)
+        text = objlist_text()
+        Path(args.objlist).write_text(text)
+        n = len(text.splitlines()) - 1
         print(f"[link-line] wrote {args.objlist} ({n} objs)")
         return 0
     report()
