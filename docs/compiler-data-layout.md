@@ -1,79 +1,141 @@
 # MSVC 5.0 data layout: how cl orders globals in .data / .rdata / .bss
 
-Status: INVESTIGATION IN PROGRESS (lane/msvc-data-layout). Facts below are
-probe-proven against our exact toolchain (`CL.EXE` 11.00.7022 driver, `c1xx.dll`
-front end, `c2.exe` 11.00.7303 back end) with the real unit flags
-`/nologo /c /O2 /MT /GX /GR`. Probe corpus + capture scripts: session scratchpad
-(`probes/p*.cpp`), method reproducible from this doc.
+Reverse-engineered from the toolchain binaries (`c1xx.dll` front end,
+`c2.exe` back end) and validated by a blind predictive test: **41/41 exact**
+placements (offset + alignment + order) on a fresh TU of never-probed random
+names — 9 `.data` + 5 `.rdata` + 27 `.bss`, covering collisions, extern
+pinning, local/class statics, and every alignment branch. Probe flags were the
+real unit flags (`/nologo /c /O2 /MT /GX /GR`).
 
-## The architecture of the decision (proven)
+Checkable predictor + reverse tool: `python -m gruntz.audit.data_layout`
+(`predict` = declaration list -> section layouts; `infer` = observed slots ->
+name/decl-order constraints; `hash` = per-name h/check16/bucket).
 
-The front end (`c1xx.dll`) and back end (`c2.exe`) communicate through four temp
-files (`*ex` expressions, `*gl` global IL, `*in`, `*sy` symbol refs). Capturing
-them mid-compile (poll-copy the wine TEMP dir) shows:
+## Architecture: who decides what
 
-1. **Initialized data (`.data`, `.rdata`) records are written into the IL stream
-   at the point of the definition** — c2 emits section bytes as records arrive.
-   => **declaration order**, byte-for-byte. (Probes: 16 initialized ints come out
-   0x00..0x3c in declaration order; same for `extern const` in .rdata; same with
-   wildly mixed sizes/types.)
+`CL.EXE` runs `c1xx.dll` (front end) then `c2.exe` (back end, UTC "P2"); they
+meet in four temp files (`*ex`, `*gl`, `*in`, `*sy` — poll-copy the wine TEMP
+dir to capture them). The split of responsibilities:
 
-2. **Uninitialized data is deferred to an end-of-TU walk inside c1xx** — the
-   captured `gl` stream already lists the records in the final `.bss` layout
-   order; c2 just allocates offsets in arrival order. The walk order is a
-   function of the SYMBOL NAMES (hash-table walk), NOT of declaration order.
+1. **Initialized data**: the front end streams an initializer record per
+   definition, at the point of definition, into the `in` stream. c2 assigns
+   `.data`/`.rdata` offsets as those records arrive. **=> declaration order,
+   always.** (This is a mechanism, not a tendency.)
+2. **Uninitialized data**: no initializer record exists; the symbol is emitted
+   only by **c1xx's end-of-TU walk over the global scope's symbol hash
+   table**, and c2 assigns `.bss` offsets in record-arrival order. **=> hash
+   order, never declaration order.** The captured `gl` stream already lists
+   the records in the final `.bss` order.
+3. **C, not C++**: uninitialized C globals are tentative definitions and
+   become COFF COMMON symbols — no per-TU placement at all (linker decides).
+   Gruntz is C++, so its per-TU `.bss` blocks come from mechanism 2.
 
-3. **One unified walk** covers: extern uninitialized globals, file-`static`
-   uninitialized globals, and function-local `static` uninitialized objects
-   (under their plain source names — `s_cnt`, not the decorated
-   `_?s_cnt@?1??counter@...$S169`). All interleave in a single ordering.
-   (Probe p12/p13.)
+## The .bss walk, exactly (read from c1xx.dll, image base 0x10400000)
 
-4. **C vs C++**: compiled as C, uninitialized globals become COFF COMMON
-   symbols (sec 0) — no section placement at all in the object; the linker
-   allocates them. The COFF symbol-table order still shows the same name-walk
-   (reversed). Gruntz is C++, so per-TU `.bss` blocks come from mechanism 2.
+Identifier intern (lexeme table) — `FUN_1040e132`, hash inlined in the lexer
+(e.g. 0x1040edc2), by-cstring variant 0x10406608:
 
-## The name-walk (partially characterized, binary read pending)
+    h = 0
+    for c in identifier:  h = h*4 + (h >> 4) + c        # uint32
+    check16 = (h >> 16) ^ (h & 0xFFFF)                   # stored in name node
 
-Within families of same-length names differing in trailing characters, the
-bucket index behaves like `h = h*4 + c` over the characters (weight 4 per
-position): probe `int g_a00..g_a15` emits
-`00 01 02 03 10 04 11 05 12 06 13 07 14 08 15 09` — i.e. ascending `4*X+Y`
-with LIFO collision chains (`g_a10` collides with `g_a04` and, being declared
-later, is emitted first). A 400-name capture (`q_000..q_399`) confirms weight
-16/4/1 for three varying digit positions, with LIFO ties throughout.
+(The lexeme table itself is 2048 buckets `h & 0x7FF` with move-to-front
+chains; it only supplies `check16`.)
 
-- The hash input is the **undecorated identifier**: mixing `extern "C"` and C++
-  linkage, or varying the type (=> wildly different decorated names), does not
-  change the relative order.
-- A 28-name mixed-length probe REFUTES every simple
-  `h = h*m (+|^) c (mod M)` / rotate-xor family under an
-  ascending-bucket + LIFO-chain emission model (exhaustive fit over
-  m ∈ {2..65599}, M ∈ 2..65536, 16/32-bit wraps, both walk directions, both tie
-  policies). The real mechanism has more structure — being read out of
-  `c1xx.dll` (`symtable.cpp` / `toil.c`) now.
+Symbol-table insert — `FUN_1040b2b6` (vtable slot of the scope-table class;
+allocation of the bucket array in `FUN_1040b0d6`):
 
-## Alignment (probe evidence so far, rule still open)
+    bucket = check16 & table->mask        # global scope: mask = 0x3FF (1024)
+    sym->next = table->buckets[bucket]    # PREPEND (LIFO)
+    table->buckets[bucket] = sym
 
-- `.bss` and `.data` place every object at >= 4-byte alignment (two adjacent
-  `char` globals sit 4 apart in BOTH sections).
-- `double` => 8.
-- char arrays: size 5/8/16 got 8-aligned in one .bss probe; but `char[5]`,
-  `char[7]` got only 4-aligned in a .data adjacency probe, while `char[9]`,
-  `char[17]` got 8-aligned there; `char[12]` in .bss got 4. Neither
-  "8 iff size >= 8" (previous lane) nor "8 iff size > 4" survives all probes;
-  the real rule is type-shape-dependent and/or stateful and will be read from
-  the binary, not fitted.
-- The delinker's synthetic `8 iff size % 8 == 0` rule matches NONE of this and
-  is definitely wrong.
+End-of-TU walk — `FUN_10403ea6` (slot 9/10 of the two scope-table vtables at
+0x104C92C8 / 0x104C98DC; nested-scope lists via `FUN_10433ef4`; per-symbol gl
+record emit via `FUN_104039ee`):
 
-## Back-end facts (from reading c2.exe, UTC "P2" lineage)
+    for bucket in 0..mask:                      # ascending
+        for sym in chain head..tail:            # LIFO = reverse declaration
+            emit record  (kind 4 = data symbol; 0x10/0x11 descend nested)
 
-- `c2.exe` carries assert paths `E:\utc\src\P2\*.c` — it is the UTC back end
-  (`p2symtab.c`, `coff.c`, `coffemit.c`, `emit.c`, `reader.c`, `hash.c` = CSE
-  value-number hashing, not names).
-- Symbol records are read by ordinal from the IL (`reader.c` /
-  `p2symtab.c` FUN_004206b7); c2 does not re-order data symbols.
-- Segment-class -> COFF section mapping at 0x41edbc..0x41ee52: class 2 =>
-  `.data` (0xC0000040), 3 => `.rdata` (0x40000040), 4 => `.bss` (0xC0000080).
+So, per TU:
+
+- `.bss` order = sort by `(check16(name) & 0x3FF, reverse first-declaration)`.
+- **What name is hashed:** the plain identifier for file-scope symbols
+  (extern AND `static` — decoration/type never enters, proven by C/C++-linkage
+  and type-variation probes). For **function-local statics** and **class
+  statics** the front end interns the C++ **decorated** name and that is what
+  hashes: `?x@?1??fn@@YAHH@Z@4HA`, `?s_m@CFoo@@2HA` (no leading `_`, no
+  `$S<id>` suffix — those are appended later, in c2's `outdname`).
+- The chain slot is fixed at the **first declaration** (an early `extern int
+  x;` pins it; the later definition does not move it).
+- **Use order is irrelevant** — the symbol table has no move-to-front (probe:
+  referencing the earlier-declared member of a colliding pair does not swap
+  them).
+- Statics, externs, and (decorated) local/class statics interleave in ONE walk.
+
+## Alignment (c2 side, VC5-specific; probe-derived, 41/41 predictive)
+
+Per section, with a per-section **ratchet** that starts at 4 and evolves in
+emission order:
+
+    scalar double / __int64          -> align 8
+    every other scalar (char..int)   -> align 4    (chars occupy 4-byte slots)
+    array/aggregate, size > 8        -> align 8
+    array/aggregate, size < 4        -> align 4
+    array/aggregate, 4 <= size <= 8  -> current ratchet (8 if this section
+                                        already placed an 8-aligned object,
+                                        else 4)
+    the ratchet is per-section (.data, .rdata, .bss independent); no trailing
+    pad after the last object (section size ends exactly at the last byte).
+
+This explains the previously-contradictory observations (`char[5]` getting 8
+in one TU and 4 in another: a double or size>8 array earlier in the SAME
+section flips the ratchet). The delinker's synthetic "8 iff size % 8 == 0"
+matches none of this and should be replaced by the rule above.
+
+## VC5 vs VC6 (12.00.8964 SP5, homm2-buka toolchain)
+
+- **Order: identical.** Same hash, same 0x3FF walk, same LIFO ties on every
+  probe including the full blind TU. The c1xx symbol-table lineage is shared.
+- **Alignment: different.** VC6 packs naturally (`char` at +1, `short` at 2,
+  `char[5]` at 4, no ratchet quirk). Do not borrow VC6 packing intuitions for
+  the VC5 delinker.
+
+## What this means for the project
+
+1. **`.data`/`.rdata`: "ascending retail RVA = declaration order" is a LAW,**
+   not an empirical rule. Sorting `DATA()` pins ascending inside a TU's
+   `.data`/`.rdata` contribution recovers the original declaration order
+   exactly. Keep the convention.
+2. **`.bss`: declaration order is the WRONG model.** Retail `.bss` order
+   inside a TU is the hash walk over the ORIGINAL identifiers. Two
+   consequences:
+   - our recompiled `.bss` layout will generally differ from retail unless
+     our chosen names happen to walk in the same order — a per-TU `.bss`
+     offset mismatch against the delinked target is NOT evidence of a wrong
+     member set;
+   - the walk is a **name oracle**: a proposed original name for a `.bss`
+     slot must hash into the bucket window between its neighbours
+     (`data_layout infer`). With several known-original names in a TU this
+     both validates attributions and refutes invented names (e.g. the eight
+     `actionoptionsmenubar` `s_gruntDir*` names cannot all be original
+     file-scope identifiers in that order).
+3. **Delinker alignment**: replace `8 iff size % 8 == 0` with the VC5 rule
+   above (needs object kind scalar/double/aggregate + the per-section
+   ratchet; both recoverable from size + the section's earlier content).
+4. Function-local statics participate in the same `.bss` walk under their
+   decorated names — a TU's `.bss` is one interleaved pool, not
+   "globals first, then per-function statics".
+
+## Prediction record
+
+- Blind test (single fresh TU, names never used in any calibration probe):
+  **41/41 exact** — every symbol's section, offset, and implied alignment, in
+  all three sections, including a same-bucket collision pair (LIFO verified),
+  an extern-pinned chain slot, decorated local/class statics, and the
+  ratchet/no-ratchet `char[5]`/`char[7]` cases in all three sections.
+- VC6 cross-check: same orders on all probes (order model corroborated),
+  alignment deltas as expected from its natural packing.
+- Calibration corpora (fitted, then re-verified): 16-name digit probe, 400-name
+  IL-captured walk, 28-name mixed-length probe, 10-name mixed-size probe,
+  static/extern interleave, local-static ruler probe (22 bucket rulers).
