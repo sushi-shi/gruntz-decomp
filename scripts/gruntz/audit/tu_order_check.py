@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """tu_order_check.py - the linker-layout acceptance gate.
 
-MSVC emits one COMDAT per function and the linker lays each .obj (== one source
-file) down as ONE CONTIGUOUS .text run, functions in source order. So a faithful
-reconstruction must satisfy two invariants (verified by isle/reccmp and th06, the
-established MSVC matching decomps that build byte-identical the same way):
+link.exe 5.10 lays each .obj's .text contribution down as ONE CONTIGUOUS block,
+input sections in the obj's section-table order (== cl's emission order == file
+order), objs in link-line order, library members after all link-line objs in
+resolution order (mechanism read out of link.exe + probe-proven:
+docs/link-text-layout.md). So a faithful reconstruction must satisfy:
 
   INTRA-TU  within each .cpp, the RVA() functions appear in FILE ORDER that
             is strictly increasing in retail RVA, and their [rva, rva+size) spans
@@ -14,6 +15,17 @@ established MSVC matching decomps that build byte-identical the same way):
             span must not interleave another TU's span. Gaps between blocks are
             fine (unreconstructed code lives there); overlap/interleave is not -
             it means two .cpp files are really one .obj, or a body is misattributed.
+
+THE ONE LEGITIMATE EXCEPTION - kept-COMDAT exiles. A multi-defined COMDAT (a
+header-inline / compiler-adjacent member every including TU emits) is KEPT by the
+FIRST obj on the link line that defines it and discarded from the rest, so its
+retail address lies inside the KEEPER's contiguous block, not its class TU's.
+Our tree homes such bodies with their class (the class-homing convention), which
+is correct source structure the linker invariant cannot see. Those bodies are
+enumerated - each with evidence - in config/retail/kept-comdat-exiles.tsv,
+excluded from both checks, counted explicitly, and VERIFIED every run: a row
+whose rva is no longer pinned in its owner unit, or no longer lies within
+(+/-0x1800 seam slack of) its host unit's span, FAILS the audit.
 
 Header RVA() inlines are ignored (we glob *.cpp only). DATA() lives in a different
 section and is not checked here. src/Stub/ is the un-homed backlog: excluded by
@@ -39,6 +51,46 @@ from gruntz.audit.tu_layout import RVA_RE, SIG_RE, _parse_size, pooled
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
+
+# The kept-COMDAT exile ledger (see module docstring). rva -> (owner, host, name).
+EXILES_TSV = REPO / "config" / "retail" / "kept-comdat-exiles.tsv"
+# A kept COMDAT sits inside its host's run or at its seam: cl emits the deferred
+# inline copies at first-use points and at the TU tail, so the group may start
+# just past the host's last *pinned* fn (MenuPage: +0x2ee). Measured max, rounded.
+SEAM_SLACK = 0x1800
+
+
+def load_exiles():
+    """rva -> (owner_unit, host_unit, name). Empty dict if no ledger."""
+    out = {}
+    if EXILES_TSV.is_file():
+        for ln in EXILES_TSV.read_text().splitlines():
+            if not ln.strip() or ln.startswith("#"):
+                continue
+            f = ln.split("\t")
+            if len(f) >= 4:
+                out[int(f[0], 16)] = (f[1], f[2], f[3])
+    return out
+
+
+def verify_exiles(exiles, claimed, spans) -> list:
+    """The ledger is evidence, so it is re-proven every run. Returns violation
+    strings: a row whose rva is not pinned in owner_unit's .cpp (stale claim),
+    or whose rva lies outside host_unit's span +/- SEAM_SLACK (stale host)."""
+    bad = []
+    for rva, (owner, host, name) in sorted(exiles.items()):
+        got = claimed.get(rva)
+        if got is None:
+            bad.append(f"exile {rva:#010x} {name}: no RVA() pin found in src (owner {owner})")
+        elif got != owner:
+            bad.append(f"exile {rva:#010x} {name}: pinned in {got}, ledger says {owner}")
+        sp = spans.get(host)
+        if sp is None:
+            bad.append(f"exile {rva:#010x} {name}: host unit {host} has no span")
+        elif not (sp[0] - SEAM_SLACK <= rva < sp[1] + SEAM_SLACK):
+            bad.append(f"exile {rva:#010x} {name}: outside host {host} "
+                       f"[{sp[0]:#x}-{sp[1]:#x}] +/-{SEAM_SLACK:#x}")
+    return bad
 
 
 class Entry:
@@ -84,6 +136,22 @@ def load_in_file_order(src: Path, include_stub: bool, exclude_pools: bool):
         if seq:
             tus[tu] = seq
     return tus
+
+
+def split_exiles(tus, exiles):
+    """(tus_without_exile_bodies, claimed rva->tu map, n_dropped). Exiled bodies
+    are placement-wise part of their HOST's contribution, so neither the intra
+    file-order invariant nor the owner's span may include them."""
+    claimed = {e.rva: tu for tu, seq in tus.items() for e in seq}
+    if not exiles:
+        return tus, claimed, 0
+    clean, dropped = {}, 0
+    for tu, seq in tus.items():
+        keep = [e for e in seq if e.rva not in exiles]
+        dropped += len(seq) - len(keep)
+        if keep:
+            clean[tu] = keep
+    return clean, claimed, dropped
 
 
 def check_intra(tus):
@@ -179,11 +247,17 @@ def check_inter(tus):
 BASELINE = REPO / "config" / "cleanliness" / "tu-order-baseline.tsv"
 
 
-def _gate(intra, inter) -> int:
+def _gate(intra, inter, exile_bad=(), n_exiled=0) -> int:
     """Down-only ratchet vs the committed backlog. A TU whose intra-violation
     count RISES (or a brand-new offender TU, or a rise in the total interleave
     pair count) fails the build; improvements roll the baseline down. Floors
     are never raised by tooling - fixing the layout is the only way down."""
+    if exile_bad:
+        for b in exile_bad:
+            print(f"tu-order EXILE LEDGER STALE: {b}", file=sys.stderr)
+        print("kept-comdat-exiles.tsv rows are re-proven every run - fix or delete "
+              "the stale row, never widen the slack", file=sys.stderr)
+        return 2
     cur = {tu: len(v) for tu, v in intra.items()}
     pairs = len(inter)
     base_tu, base_pairs = {}, None
@@ -224,7 +298,8 @@ def _gate(intra, inter) -> int:
     if cur != base_tu or pairs < base_pairs:
         save()                             # down-only roll
     print(f"tu-order: no new wiring defects; backlog {len(cur)} TU(s) / "
-          f"{pairs} pair(s) (frozen in {BASELINE.name})")
+          f"{pairs} pair(s) (frozen in {BASELINE.name}); "
+          f"{n_exiled} kept-COMDAT exile bodies excluded ({EXILES_TSV.name}, verified)")
     return 0
 
 
@@ -251,9 +326,13 @@ def main():
     args = ap.parse_args()
 
     tus = load_in_file_order(SRC, args.include_stub, args.exclude_pools)
+    exiles = load_exiles()
+    tus_all = tus                                     # exiles still visible in --tu
+    tus, claimed, n_exiled = split_exiles(tus, exiles)
+    exile_bad = verify_exiles(exiles, claimed, tu_spans(tus))
 
     if args.gate:
-        return _gate(check_intra(tus), check_inter(tus))
+        return _gate(check_intra(tus), check_inter(tus), exile_bad, n_exiled)
 
     if args.outliers:
         out = tu_outliers(tus)
@@ -269,13 +348,17 @@ def main():
         return 0
 
     if args.tu:
-        seq = tus.get(args.tu)
+        seq = tus_all.get(args.tu)
         if not seq:
             print(f"no such TU: {args.tu}")
             return 2
         print(f"{args.tu}  ({len(seq)} functions, file order):")
         prev = None
         for e in seq:
+            if e.rva in exiles:
+                print(f"  L{e.line:<5} {e.rva:#08x} +{e.size:#06x} -> {e.end:#08x}  {e.name}"
+                      f"  [kept-COMDAT exile -> {exiles[e.rva][1]}]")
+                continue
             flag = "  <-- NOT ASCENDING" if prev and e.rva <= prev.rva else ""
             print(f"  L{e.line:<5} {e.rva:#08x} +{e.size:#06x} -> {e.end:#08x}  {e.name}{flag}")
             prev = e
@@ -286,7 +369,13 @@ def main():
 
     print(f"scanned {len(tus)} TUs, "
           f"{sum(len(s) for s in tus.values())} functions "
-          f"({'incl' if args.include_stub else 'excl'} src/Stub/)\n")
+          f"({'incl' if args.include_stub else 'excl'} src/Stub/); "
+          f"{n_exiled} kept-COMDAT exile bodies excluded ({EXILES_TSV.name})\n")
+    if exile_bad:
+        print("=== EXILE LEDGER (rows failing re-verification) ===")
+        for b in exile_bad:
+            print(f"  {b}")
+        print()
 
     if not args.inter_only:
         print(f"=== INTRA-TU (file order must be strictly ascending, no overlap) ===")
@@ -321,9 +410,10 @@ def main():
 
     nbad_tu = len(intra)
     npair = len(inter)
-    ok = (nbad_tu == 0 and npair == 0)
+    ok = (nbad_tu == 0 and npair == 0 and not exile_bad)
     print(f"GATE: {'PASS' if ok else 'FAIL'}  "
-          f"({nbad_tu} TUs with intra-order violations, {npair} interleaving TU-pairs)")
+          f"({nbad_tu} TUs with intra-order violations, {npair} interleaving TU-pairs, "
+          f"{len(exile_bad)} stale exile rows)")
     return 0 if ok else 1
 
 

@@ -729,10 +729,6 @@ unit = "gameinfostring"
 source = "src/Gruntz/GameInfoString.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "bitstreamblowfish"
-source = "src/Crypto/BitStreamBlowfish.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "spotlight"
@@ -912,10 +908,6 @@ unit = "startupprompt"
 source = "src/Gruntz/StartUpPrompt.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "statusbarupdaters"
-source = "src/Gruntz/StatusBarUpdaters.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "kitchenslime"
@@ -1389,10 +1381,6 @@ unit = "blowfish"
 source = "src/Crypto/Blowfish.cpp"
 flags = "cpp"
 
-[[unit]]
-unit = "butetailencode"
-source = "src/Crypto/ButeTailEncode.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "simpleanimation"
@@ -1611,10 +1599,6 @@ flags = "cpp-rtti"
 unit = "packetpool"
 source = "src/Net/PacketPool.cpp"
 flags = "cpp"
-[[unit]]
-unit = "titleappstart"
-source = "src/Gruntz/TitleAppStart.cpp"
-flags = "cpp-rtti"
 [[unit]]
 unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"

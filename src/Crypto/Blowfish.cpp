@@ -2,8 +2,12 @@
 
 #include <Crypto/Blowfish.h>
 
+#include <Bute/ButeMgr.h>
 #include <Crypto/BlowfishPi.h>
 #include <Ints.h>
+
+#include <iostream.h>
+#include <string.h>
 
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
@@ -24,6 +28,45 @@ RVA(0x0016f6c0, 0x12)
 void __stdcall Blowfish_InitKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
+
+RVA(0x0016f6e0, 0x76)
+void CButeTail::Encode(istream* src, ostream* dst) {
+    i32 last = 0;
+    while (!src->eof()) {
+        BlowfishBlock rec;
+
+        memset(rec.m_bytes, 0, 8);
+        src->read(rec.m_bytes, 8);
+        last = src->gcount();
+        Blowfish_encipher(&rec.m_w[0], &rec.m_w[1]);
+        dst->write(rec.m_bytes, 8);
+    }
+    dst->put(static_cast<unsigned char>(last));
+}
+
+RVA(0x0016f760, 0x82)
+void CButeTail::Decode(istream* in, ostream* out) {
+
+    BlowfishBlock blk[2];
+    bool first = true;
+    while (!in->eof()) {
+        in->read(blk[0].m_bytes, 8);
+        int sample = in->gcount();
+        if (sample == 1) {
+
+            sample = blk[0].m_lenByte;
+        }
+        if (!first) {
+            out->write(blk[1].m_bytes, sample);
+        } else {
+            first = false;
+        }
+        Blowfish_decipher(&blk[0].m_w[0], &blk[0].m_w[1]);
+        blk[1].m_w[0] = blk[0].m_w[0];
+        blk[1].m_w[1] = blk[0].m_w[1];
+    }
+}
+
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;

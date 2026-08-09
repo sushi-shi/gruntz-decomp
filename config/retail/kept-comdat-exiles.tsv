@@ -1,0 +1,93 @@
+# Kept-COMDAT exile bodies - the legitimate-interleave class of tu_order_check.
+#
+# Each row is a function body that our tree homes with its CLASS (an RVA() pin in
+# owner_unit's .cpp, per the class-homing convention), but whose RETAIL copy is a
+# multi-defined COMDAT (header-inline / compiler-adjacent member) that link.exe
+# 5.10 KEPT from the FIRST obj on the link line that defined it - so its retail
+# address lies inside host_unit's contiguous contribution, not the owner's.
+# Mechanism + probes: docs/link-text-layout.md. These bodies are EXCLUDED from
+# the tu_order_check contiguity spans and counted explicitly by the gate.
+#
+# A row is EVIDENCE-GATED: inline shape (trivial body / accessor / ctor / dtor /
+# ??_G-adjacent), placement at the host's run or seam (verified by the gate,
+# +/-0x1800 slack), and a host that plausibly includes the owner's header. A row
+# that stops verifying (owner pin moved, host span moved away) fails the audit -
+# fix or delete the row, never widen the slack.
+#
+# rva	owner_unit	host_unit	name	evidence
+# --- MenuPage.obj tail group: CMenuItem/CMenuItem2 inline members (worked example in docs/link-text-layout.md)
+0x00184610	MenuItem	MenuPage	CMenuItem::GetUpName	32B CString getter; in MenuPage tail group 0x1845b0-0x1848aa with unpinned GetName/GetLeftName/GetRightName siblings
+0x00184630	MenuItem	MenuPage	CMenuItem::GetDownName	32B CString getter; same group
+0x00184650	MenuItem	MenuPage	CMenuItem::Disable	10B setter; same group
+0x00184660	MenuItem	MenuPage	CMenuItem::OnInit	3B ret-0 stub; same group
+0x00184780	MenuItem	MenuPage	CMenuItem2::Disable	23B; same group
+0x001847a0	MenuItem	MenuPage	CMenuItem2::SetFrame	10B setter; same group
+0x001847b0	MenuItem	MenuPage	CMenuItem2::OnInit	6B stub; same group
+0x001847e0	MenuItem	MenuPage	CMenuItem2::~CMenuItem2	adjacent to unpinned ??_GCMenuItem2 0x1847c0; same group
+0x00184890	MenuItem	MenuPage	CMenuItem2::Reset	26B; same group (CMenuItem::Reset 0x184730 unpinned sibling)
+# --- GruntCombat.obj mid-run group 0x58b60-0x58f6c (proven realization group, docs/tu-partition-brief.md)
+0x00058b60	WwdGeometryApply	GruntCombat	CWwdGameObjectA::ApplyGeometryDirect	45B inline; inside GruntCombat's proven COMDAT group
+0x00058bc0	MotionState	GruntCombat	CMotionState::SetParams	161B inline init; same group
+0x00058ca0	MotionState	GruntCombat	CMotionState::SetZ	25B setter; same group
+0x00058cd0	MotionState	GruntCombat	CUserLogic::CUserLogic	??0CUserLogic emission proven GruntCombat's (brief: CreateGrunt constructs it)
+0x00058ee0	TriRecordSerialize	GruntCombat	CPairRecord::Serialize	92B record serialize; same group
+# --- Play-region obj pocket 0xd5da0-0xd5e3b: CImage/CWapObj tiny accessors
+0x000d5da0	CImageComdats	Play	CWapObj::IsReady	6B accessor; pocket inside the play-region contribution
+0x000d5dc0	CImageComdats	Play	CImage::IsLoaded	11B accessor; same pocket
+0x000d5de0	CImageComdats	Play	CImage::GetClassId	6B accessor; same pocket
+0x000d5e00	CImageComdats	Play	CImage::FlipHorizontal	3B stub; same pocket
+0x000d5e20	CImageComdats	Play	CImage::FlipBoth	27B; same pocket
+# --- MenuState.obj: kept ~CChatBox (MenuState constructs the menu chat box)
+0x000a0360	ChatBoxEh	MenuState	CChatBox::~CChatBox	100B dtor COMDAT inside MenuState's run
+# --- DDrawSurfacePair.obj emission points: AniRecord view dtors/accessors
+0x001657a0	AniRecord	DDrawSurfacePair	CAniRecordView::~CAniRecordView	102B dtor; woven at emission point inside the DDrawSurfacePair run
+0x00165d90	AniRecord	DDrawSurfacePair	CAniRecordBase2::IsLoaded	11B accessor; same run
+0x00165da0	AniRecord	DDrawSurfacePair	CAniRecordBase2::GetClassId	6B accessor; same run
+0x00165dd0	AniRecord	DDrawSurfacePair	CAniRecordBase2::~CAniRecordBase2	91B dtor; same run
+# --- gamelevel/levelplane seam group 0x161330-0x161558: CImageSet1/2/3 inline members
+#     (their real out-of-line objs sit at 0x166990-0x166ea8; 1-byte bodies prove header-inline)
+0x00161330	ImageSet1	LevelPlane	CImageSet1::FreePixels	1B ret; seam group before LevelPlane's first fn 0x1615a0
+0x00161340	ImageSet1	LevelPlane	CImageSet1::GetKind	6B; seam group
+0x00161370	ImageSet1	LevelPlane	CImageSet1::~CImageSet1	7B; seam group
+0x00161380	ImageSet1	LevelPlane	CImageSet1::GetCollisionAt	6B; seam group
+0x00161390	ImageSet1	LevelPlane	CImageSet1::ScanRunLeft	5B stub; seam group
+0x001613a0	ImageSet1	LevelPlane	CImageSet1::ScanRunLeftForValue	5B stub; seam group
+0x001613b0	ImageSet1	LevelPlane	CImageSet1::ScanUp	5B stub; seam group
+0x001613c0	ImageSet1	LevelPlane	CImageSet1::ScanUpForValue	5B stub; seam group
+0x001613d0	ImageSet1	LevelPlane	CImageSet1::ScanRight	7B stub; seam group
+0x001613e0	ImageSet1	LevelPlane	CImageSet1::ScanRightForValue	5B stub; seam group
+0x001613f0	ImageSet1	LevelPlane	CImageSet1::ScanDown	7B stub; seam group
+0x00161400	ImageSet1	LevelPlane	CImageSet1::ScanDownForValue	5B stub; seam group
+0x00161410	ImageSet1	LevelPlane	CImageSet1::GetStride	6B; seam group
+0x00161420	ImageSet2	LevelPlane	CImageSet2::FreePixels	1B ret; seam group
+0x00161430	ImageSet2	LevelPlane	CImageSet2::GetKind	6B; seam group
+0x00161460	ImageSet2	LevelPlane	CImageSet2::~CImageSet2	7B; seam group
+0x00161470	ImageSet2	LevelPlane	CImageSet2::GetCollisionAt	44B; seam group
+0x001614a0	ImageSet2	LevelPlane	CImageSet2::GetStride	6B; seam group
+0x00161500	ImageSet3	LevelPlane	CImageSet3::~CImageSet3	88B dtor; seam group
+# --- lone tiny inline ctors/helpers kept inside foreign runs
+0x00154a80	WwdFactoryObject	DDrawWorkerRegistry	CResolveNode::Unload	19B; at DDrawWorkerRegistry's head seam
+0x0015b2b0	WwdFactoryObject	WwdObjMgr	WwdRegion::WwdRegion	14B inline ctor; inside WwdObjMgr's run
+# --- battlezmapconfig(compconai) tail pocket 0x310f0-0x31314 (source comments already call it first-use placement)
+0x000310f0	ZVec	BattlezMapConfig	_zdvec::IndexToPtr	template member; pocket at the compconai obj's tail seam
+0x000311b0	FreeNodePool	BattlezMapConfig	FreeNodePool::Push	20B inline; same pocket
+0x000311e0	WwdFile	BattlezMapConfig	CDDrawWorkerHost::SnapToTileCenter	76B inline; same pocket
+0x0000a000	WwdFile	ActionOptionsMenuBar	CDDrawWorkerHost::WrapCoord	172B inline; first-use placement at ActionOptionsMenuBar's tail seam (sibling of SnapToTileCenter/GetTileHandle, all three scattered)
+0x000d53a0	WwdFile	Play	CDDrawWorkerHost::GetTileHandle	25B accessor; first-use placement inside the play-region contribution, at PlayPlaneScan's head seam
+0x00031250	QueueDrainHost	BattlezMapConfig	CDDrawChildGroup::Drain	51B inline; same pocket
+0x000312a0	ZVec	BattlezMapConfig	_zvec::IndexToPtr	template member; same pocket (src comment: @interleaver first-use placement)
+# --- NetMgr.obj tail band 0x179300-0x17967b: NetMgr-module record classes' inline members
+#     (woven among NetMgr's own pinned IsIpxProvider/IsTcpIpProvider inline group at 0x1794b0)
+0x00179300	InterfaceObject	NetMgr	InterfaceObject::GetName	32B CString getter; NetMgr tail band
+0x00179340	InterfaceObject	NetMgr	InterfaceObject::~InterfaceObject	72B dtor; same band
+0x001793b0	NetSessionNode	NetMgr	CNetPlayerListNode::~CNetPlayerListNode	70B dtor; same band
+0x00179420	NetSessionNode	NetMgr	CNetSessionNode::~CNetSessionNode	138B dtor; same band
+0x001795a0	NetSessionNode	NetMgr	CNetPlayerListNode::Init	219B; same band, between NetMgr's own inline emissions
+# --- FrontCandyAni.obj (the F-E-F sandwich TU): candy-class inline ctors kept mid-run
+0x000ac1d0	DoNothing	FrontCandyAni	CDoNothing::CDoNothing	421B inline ctor; inside FrontCandyAni's proven one-TU interval
+0x000ac3f0	BehindCandy	FrontCandyAni	CBehindCandy::CBehindCandy	433B inline ctor; same interval
+0x000ac620	EyeCandy	FrontCandyAni	CEyeCandy::CEyeCandy	463B inline ctor; same interval
+# --- GruntEntranceMove.obj tail seam 0x6b270-0x6b319: tiny foreign accessors
+0x0006b270	GruntEntranceArrival	GruntEntranceMove	CAniElement::AtChecked	27B accessor; tail seam group
+0x0006b2a0	GruntEntranceArrival	GruntEntranceMove	CDDrawSubMgrLeaf::LookupValue	35B accessor; same seam
+0x0006b2e0	GruntEntranceArrival	GruntEntranceMove	CWapX::Apply	57B; same seam

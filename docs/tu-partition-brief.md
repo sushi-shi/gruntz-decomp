@@ -3,6 +3,15 @@
 For the dedicated lane. Written by the DATA lane after the contribution-manifest
 attempt was measured and found blocked. Companion: `docs/data-attribution.md`.
 
+> **MECHANISM SETTLED (lane/band-interleave, 2026-08-09):** how link.exe 5.10
+> actually lays out `.text` is now read out of the linker binary itself and
+> probe-proven — `docs/link-text-layout.md`. The contiguity invariant SURVIVES;
+> the one legitimate exception (multi-defined COMDATs kept at the FIRST linking
+> obj) is modeled explicitly by `tu_order_check` via
+> `config/retail/kept-comdat-exiles.tsv` (per-body, host-verified, counted).
+> The 80 interleave pairs adjudicated: 47 legitimate exiles, 24 partition
+> defects (4 fixed), 9 undecided — ranked worklist in that doc.
+
 > **CORRECTION (matcher-6, 2026-07-17) — READ THIS FIRST. The premise below,
 > "ANY interleaving proves our TU partition != retail's compilands", is FALSE, and
 > the 12134-pair headline is ~98% an artifact of it.**

@@ -20,6 +20,7 @@
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
@@ -60,6 +61,22 @@ void CSplashState::ReleaseResources() {
     }
     m_world->m_soundRegistry->ClearMap();
     CState::ReleaseResources();
+}
+
+RVA(0x000f9880, 0x43)
+i32 CSplashState::EnterState(GameStateId) {
+    int(WINAPI * sc)(BOOL) = ShowCursor;
+    while (sc(0) >= 0) {
+    }
+    RunTitleSeq(static_cast<const char*>(CAssetRootStorage::s_value), 1, 1, 1, 0);
+    m_splashCountdownMs = 0xea60;
+    return 1;
+}
+
+RVA(0x000f98f0, 0x16)
+i32 CSplashState::LeaveState(GameStateId) {
+    m_world->m_drawTarget->ClearAllPages(0);
+    return 1;
 }
 
 RVA(0x000f9920, 0x108)
