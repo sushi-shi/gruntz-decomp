@@ -2,6 +2,7 @@
 
 #include <Dsndmgr/GruntzSoundZ.h>
 
+#include <Dsndmgr/SoundBankLoad.h>
 #include <Dsndmgr/VolumeScale.h>
 #include <Enums.h>
 
