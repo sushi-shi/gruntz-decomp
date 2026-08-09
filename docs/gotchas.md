@@ -124,11 +124,26 @@ change, and a search harness must treat it differently.
 
 ## Build / worktree state (pool worktrees carry stale build state across resets)
 
-- **`build/` stale after a unit was REMOVED from `units.toml`** → `vostok-delinker` fails
-  `delink_data_section_manifest.tsv: storage does not match candidate section` (on
-  `reghelpers.c`). ninja never GCs orphaned outputs. Fix (build/ is gitignored): delete
+- **`build/` stale after a unit was REMOVED from `units.toml`** → ninja never GCs orphaned
+  outputs, and the failure wears **three different masks**, so recognise the cause not the
+  message: `vostok-delinker` failing `delink_data_section_manifest.tsv: storage does not
+  match candidate section` (on `reghelpers.c`); the manifest re-enrolling a dead unit's
+  vtables from stale COFF; and normalize dying with a plain
+  `FileNotFoundError: build/objdiff/target/<stem>.c.obj` for a unit that is still live and
+  whose delinked obj **is** present in `build/delink/named/` (seen 2026-08-09 on
+  `debugprintf` after four units were merged away — 341 target objs against 369 delinked).
+  Fix (build/ is gitignored): delete
   `build/gen/labels/<stem>.{csv,functions.json,globals.json}` + `build/objdiff/{base,target,normalized}/<stem>.obj`
   for every `<stem>` NOT in `config/units.toml`, then `rm -f build/objdiff/.delink.stamp`, rebuild.
+  **`rm -f build/objdiff/.delink.stamp` alone fixes the third mask** and is the cheap first try.
+  Unit merges are now routine (the TU-partition worklist has ~20 more), so expect this.
+- **`build/gen/structs.json` is a cache NOTHING invalidates on a code change.** It is written
+  by `gruntz structs` and read by the data manifest, but no build edge depends on the parser
+  that produces it, so a worktree seeded before a parser fix keeps the pre-fix layouts
+  forever. A pool worktree carrying one predating `315661cba` silently re-broke
+  `logicdispatchinit`'s `s_table` sizing and **failed the data-reloc gate on unmodified
+  main** — an hour lost to a defect that was not in the tree. Every seeded worktree is
+  exposed. If a gate fails on a clean checkout, run `gruntz structs` before believing it.
 - **`build.ninja` stale after the include graph changed** — FIXED 2026-08-08; the note below
   is why you may still see it in an old tree. The `cl` edges DO carry per-header implicit deps
   (159 headers on `gamemode.obj`) and touching a listed header DOES rebuild — but the lists are
