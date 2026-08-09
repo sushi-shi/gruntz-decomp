@@ -10,14 +10,27 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x00213dff)
-char g_id0_613dff = 0;
-DATA(0x00213e00)
-char g_id1_613e00 = 0;
-DATA(0x00213e01)
-char g_id2_613e01 = 0;
-DATA(0x00213e02)
-char g_id3_613e02 = 0;
+// The Creative SoundFont router-select MIDI SysEx template: F0, manufacturer
+// 00 20 21 (Creative), 5F, four 7-bit payload bytes, F7. Retail keeps it
+// initialized in .data at 0x213df8; SFManager_SelectBestDevice pokes
+// SF_GetRouterID's value into the payload [7..10] as 7-bit chunks. Modeling
+// the four payload bytes as separate globals is impossible: cl 4-aligns
+// separate chars, while retail's are 1-aligned inside this nonzero block.
+DATA(0x00213df8)
+unsigned char g_routerSysEx[12] = {
+    0xf0,
+    0x00,
+    0x20,
+    0x21,
+    0x5f,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0xf7,
+};
 
 DATA(0x0024da80)
 u16 g_idx_64da80 = 0;
@@ -159,10 +172,10 @@ i32 SFManager_SelectBestDevice() {
     }
     g_sfDevice->SF_GetRouterID(g_sfDeviceId, &g_sfRouterId);
     DWORD v = g_sfRouterId;
-    g_id0_613dff = static_cast<char>((v & 0x7f));
-    g_id3_613e02 = static_cast<char>(((v >> 0x18) & 0x7f));
+    g_routerSysEx[7] = static_cast<unsigned char>((v & 0x7f));
+    g_routerSysEx[10] = static_cast<unsigned char>(((v >> 0x18) & 0x7f));
     g_sfReady = 1;
-    g_id1_613e00 = static_cast<char>(((v >> 8) & 0x7f));
-    g_id2_613e01 = static_cast<char>(((v >> 0x10) & 0x7f));
+    g_routerSysEx[8] = static_cast<unsigned char>(((v >> 8) & 0x7f));
+    g_routerSysEx[9] = static_cast<unsigned char>(((v >> 0x10) & 0x7f));
     return 1;
 }
