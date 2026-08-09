@@ -36,6 +36,14 @@
 #include <string.h>
 
 // @early-stop
+// 396 of retail's 397 blocks, 90/91 branches, 12/13 rets - and the single missing
+// exit is the powered-up reset at 0xf4705/0xf474d, which retail DUPLICATES into
+// both stamina arms while cl cross-jumps ours into one.  Retail also keeps the
+// re-tests our cl folds away: 0xf473d `cmp ecx,ebp` and 0xf4745 `cmp eax,ebp` are
+// m_poweredUp and m_neighborValid re-read out of the registers the OUTER guards at
+// 0xf469f/0xf46ad left behind, both provably redundant on that path.  The same
+// pair of decisions is what parks StepBrickLayerBehavior and ChargeStep.
+// Frame is 0x44 against retail's 0x40 (one surplus dword).
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::ScanNearestTarget() {
     i32 ownerHi = m_tileOwnerHi;
@@ -222,11 +230,11 @@ i32 CGrunt::ScanNearestTarget() {
                 goto L_scanDone;
             }
             {
-                Coord cc[2];
-                best->GetScreenPos(cc);
+                Coord cc;
+                best->GetScreenPos(&cc);
                 if (this->TileSwitch(
-                        cc[0].m_x >> TILE_SHIFT_PX,
-                        cc[0].m_y >> TILE_SHIFT_PX,
+                        cc.m_x >> TILE_SHIFT_PX,
+                        cc.m_y >> TILE_SHIFT_PX,
                         0,
                         m_arrivalFlags,
                         1,
