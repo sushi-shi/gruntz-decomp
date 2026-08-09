@@ -16,7 +16,10 @@
 #include <string.h>
 
 DATA(0x0021ab18)
-const char g_fmtPathJoin[] = "%s%s%s";
+// Retail has this at 0x21ab18, in `.data` (characteristics 0xc0000040,
+// WRITE set) - so it is not const; spelled const it went to our `.rdata`
+// and the storage mismatch withheld it from the manifest entirely.
+char g_fmtPathJoin[] = "%s%s%s";
 
 // @identity-TODO LookupValue@CDDrawSubMgrLeaf - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU

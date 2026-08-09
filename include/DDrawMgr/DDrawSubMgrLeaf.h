@@ -34,6 +34,6 @@ public:
 };
 SIZE(0x2c);
 
-extern const char g_fmtPathJoin[];
+extern char g_fmtPathJoin[];
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H

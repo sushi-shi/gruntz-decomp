@@ -66,6 +66,14 @@ VERDICTS
                phantom: string literals are reached by an operand inside a bigger
                claim, and `.bss` scratch may be reached off a neighbour.
 
+THE TWO PHANTOM DETECTORS ARE DIFFERENT AND BOTH ARE NEEDED. `--unaddressed`
+only sees ENROLLED claims - and a phantom, having no retail address, is exactly
+what never gets enrolled. Both phantoms found by this tool (`s_HELP`,
+`s_cheatWaWaWide`) were invisible to it and showed up in `--sections` instead, as
+an "unenrolled member" of a section that consequently fails the completeness
+proof and is never published. So `--sections` is the phantom worklist and
+`--unaddressed` is the dead-datum worklist.
+
 USAGE
 -----
     python -m gruntz.audit.data_coverage                  # summary + worklist
@@ -218,6 +226,17 @@ class Retail:
         HIGHLOW site is an address the image itself points at. `.text` sites are
         code operands; `.rdata`/`.data` sites are pointer table entries. Both
         count as "something names this address".
+
+        NAMED IS NOT ACCESSED, and the difference bites. A `/O2` pointer-walk loop
+        ends `cmp edi, <one-past-the-end>`, so the ARRAY'S END ADDRESS appears in
+        the relocation table exactly like a datum's would - measured here at
+        0x20b978 and 0x20b984, the two ends of gamemode's RECT tables, where no
+        object begins at all. So `addressed` means "the image names this address",
+        and a hit is a reason to look, never a proof that a datum lives there.
+        Distinguishing a sentinel from a load needs the OPCODE at the site, which
+        is the retail-side access map's job (build/gen/data_access_map.tsv);
+        `--refs` prints the site's leading bytes so the common `81 f9`/`3b`/`3d`
+        compare forms are recognisable without one.
         """
         if self._pointed is None:
             c = Counter()
@@ -731,7 +750,18 @@ def _refs(lo, n, retail):
     for site, target in sorted(hits, key=lambda t: t[0]):
         sec = retail.pe.sec_name(site)
         who, off = owner(site) if sec == ".text" else ("<%s>" % sec, 0)
-        print("  operand@0x%06x -> 0x%06x   %s+0x%x" % (site, target, who, off))
+        lead = ""
+        if sec == ".text":
+            o = retail.pe.off(site - 4)
+            if o is not None:
+                pre = retail.pe.data[o:o + 4].hex(" ")
+                lead = "  [%s |]" % pre
+                # `cmp r32, imm32` is 81 /7 or 3d - a loop-END sentinel, not a load
+                b = retail.pe.data[o:o + 4]
+                if 0x3d in b[-1:] or (b[-2:-1] == b"\x81" and (b[-1] & 0x38) == 0x38):
+                    lead += " cmp-imm32: likely a one-past-the-end SENTINEL"
+        print("  operand@0x%06x -> 0x%06x   %s+0x%x%s"
+              % (site, target, who, off, lead))
     return 0
 
 
