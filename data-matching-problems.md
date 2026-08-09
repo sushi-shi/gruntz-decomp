@@ -146,23 +146,19 @@ every pinned word on both sides through the retail image's own `.reloc` table an
 Following directly from §3: because the placeholder bytes agree, a region can be
 byte-perfect while every pointer in it aims somewhere else. `gruntz audit image_diff`
 now measures this on the linked image by resolving each address operand to **what it
-reaches**, and the answer is not zero:
+reaches**. The first pass reported 610 regions. Source corrections and six independently
+tested resolver/sequence corrections reduce the current result to **35,769 of 36,386
+decidable operands (98.30%) reaching the same referent, with 248 genuinely different
+regions and 40 ordering-only regions**. The 248 split into 216 symbol-proven, 29
+weak/content-only, and 3 string-literal regions.
 
-**35,625 of 36,786 operands (96.84%) reach the same referent in the same order. 610
-regions do not** — and every one of them scores **100% in a relocation-masked object
-diff**. Four from the worklist (`image_diff --referents N`):
-
-| region | retail reaches | we reach |
-| :-- | :-- | :-- |
-| `CGrunt::LoadPickupSprites` | `"GRUNTZ_PICKUPS_HEALTH1..3"` | `"..._REDBRICK"`, `"..._BLUEBRICK"`, `"..._GOLDBRICK"` |
-| `CStatusBarMgr::LoadTabSprites` | `CSBI_RectOnly::ctor` | `CStatusBarItem::ctor` |
-| `CGruntzMgr::Close` | `"Num Runs"`, `"Num Movies"` | `"Num_Runs"`, `"Num_Movies"` |
-| `CButeMgr::ParseAttributeFile` | `"duplicate symbol encountered"` | `"duplicate tag encountered"` |
-
-These are **behavioural defects with a perfect score**: wrong asset keys, a wrong
-constructor, wrong strings. This is the sharpest available answer to "if the data
-matches, why does the game misbehave" — and note the first row is the *same failure mode*
-as the colour case in §5: a named-asset lookup fetching the wrong thing.
+The original worklist exposed real perfect-score defects such as registry keys spelled
+with underscores, the wrong Bute diagnostic string, and constructor/container identity
+differences. It also exposed methodological false positives: relocated pool windows,
+IAT slots read as text, short/control-character literals, interior self-references, and
+undecidable operands splitting an otherwise equal sequence. Each class now has a negative
+self-test. The remaining 248 are a ratcheted structural worklist, not honestly reducible
+by substituting plausible strings or callees without per-site identity evidence.
 
 ## 4. The size/similarity confusion, one level up
 
@@ -186,19 +182,16 @@ percentage there is a **floor**, not a flatterer.
 
 ## 5. The open case: wrong colours at runtime
 
-Observed: **gruntz render blue instead of yellow at start-up.** Data scores 100%, so by the
-above that is not evidence against the data — it is a reminder of what the 100% covers.
+Observed: **gruntz render blue instead of yellow at start-up.** High fidelity is not
+evidence against a data/referent defect; it is a reminder of what fidelity covers.
 
-Candidate causes, ranked by how well each explains *a clean wrong colour* rather than a
-corrupted one. **None is confirmed**; the game is not run to obtain matching evidence
-(standing project rule), so each must be settled statically.
+The named-asset hypothesis is now statically cleared: `CGruntzMgr::SetGruntColor` reaches
+the same RED/GREEN/BLUE/PURPLE keys as retail, and `CGrunt::LoadPickupSprites` reaches the
+same complete decidable pickup-key multiset. The symptom therefore lies elsewhere; the
+game is not run to obtain matching evidence (standing project rule).
 
-1. **Colour-variant selection.** `CGruntzMgr::SetGruntColor` is not palette maths — it
-   looks up a *named sprite set* (`GAME_TREASURE_GECKOS_RED`, `..._BLUE`, `..._PURPLE`) in
-   `m_imageRegistry->m_10map` and copies the whole `CImage`. Blue instead of yellow is a
-   **different asset**, which is what a wrong key or wrong player index produces. A shade
-   table error would look like wrong shading, not a clean substitution. Ranked first for
-   that reason.
+1. **The player/colour index feeding the proven key lookup.** The key strings agree, but a
+   wrong index before the lookup could still select a coherent wrong variant.
 2. **The shade/palette subsystem**, which is the worst-matched area in the tree — **53
    colour-path functions below 100%**:
 
