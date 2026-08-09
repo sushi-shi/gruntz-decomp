@@ -970,7 +970,7 @@ ddrawsubmgr	??0CDrawSubWorker@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3
 ddrawsubmgr	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	2	7357153e300c	0x157850	100.0000
 ddrawsubmgr	??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	74323471982e	0x156cb0	100.0000
 ddrawsubmgr	??1CDDrawChildGroup@@UAE@XZ	100.0000	100.0000	3	7351aa3544b6	0x157630	100.0000
-ddrawsubmgr	??1CDDrawSubMgrLeaf@@UAE@XZ	100.0000	100.0000	5	eed78dc3ac06	0x1577e0	100.0000
+ddrawsubmgr	??1CDDrawSubMgrLeaf@@UAE@XZ	100.0000	100.0000	6	0bec921c1cca	0x1577e0	100.0000
 ddrawsubmgr	??1CDDrawSubMgrLeafScan@@UAE@XZ	100.0000	100.0000	4	eb956bafc317	0x157570	100.0000
 ddrawsubmgr	??1CDDrawSubMgrPages@@UAE@XZ	100.0000	100.0000	3	5a77cd07d527	0x1574d0	100.0000
 ddrawsubmgr	??1CDDrawSurfaceChildA@@UAE@XZ	100.0000	100.0000	2	12925e239815	0x1591b0	100.0000
@@ -2303,7 +2303,7 @@ gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	8	80ac12eeefd4	0x
 gruntzmgr	?ClearOptionsSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	10	c0c80a1181ae	0x92ec0	100.0000
 gruntzmgr	?ClearStateStack@CGruntzMgr@@QAEXXZ	100.0000	100.0000	9	ddda94d97a0d	0x90a50	100.0000
 gruntzmgr	?ClearWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	e05685e8792d	0x8f480	100.0000
-gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	91.8746	91.8746	30	6a7c0b49a4a4	0x855e0	91.8746
+gruntzmgr	?Close@CGruntzMgr@@UAEXXZ	91.6122	91.6122	31	7a946818a914	0x855e0	91.8746
 gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	7	7bb7ec42aa46	0x92e30	100.0000
 gruntzmgr	?DebugJumpLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	8cd33af5aa9f	0x8e780	100.0000
 gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	84.8361	84.8361	17	33f7f7403445	0x8f530	84.8361

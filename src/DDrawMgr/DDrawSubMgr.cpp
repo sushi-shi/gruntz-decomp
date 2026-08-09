@@ -436,8 +436,7 @@ RVA_COMPGEN(0x001577c0, 0x1e, ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z)
 
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-
-    FreeAll();
+    Unload();
 }
 
 RVA(0x00157850, 0x54)

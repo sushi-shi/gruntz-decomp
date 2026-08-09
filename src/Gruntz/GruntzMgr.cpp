@@ -2778,8 +2778,7 @@ void CGruntzMgr::Close() {
         m_cheatMgr = NULL;
     }
     if (m_sound) {
-        m_sound->Shutdown();
-        operator delete(m_sound);
+        delete m_sound;
         m_sound = NULL;
     }
     if (m_inputState) {
