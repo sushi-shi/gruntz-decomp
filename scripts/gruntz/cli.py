@@ -509,6 +509,13 @@ def cmd_build(args) -> None:
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
           "the %% gate cannot see it) (python -m gruntz.audit.self_recursion)", "normal")
+    # The .rsrc source gate: src/Gruntz/Gruntz.rc recompiles (rescomp IS the rc.exe
+    # the toolchain lacks) and every authorable payload must byte-match the retail
+    # image, as must the 18 carried ICON/CURSOR art blobs. This is what makes the
+    # resources SOURCE rather than carried bytes - see gruntz/build/rescomp.py.
+    _gate("gruntz.build.rescomp", ["check"],
+          ".rsrc source gate violated - src/Gruntz/Gruntz.rc no longer compiles to "
+          "retail's resource payloads (python -m gruntz.build.rescomp check)", "normal")
 
     # Normal measures only fast source-text cleanliness. The build/IR-derived semantic
     # baseline is deliberately reserved for the periodic full tier.

@@ -62,10 +62,12 @@ writes the Win32 `.RES` container itself, and `configure.py` wires it into
 
 * `.rsrc` vsize **123,260 = 123,260**, all **75/75** resources present, all 75 payloads
   **byte-identical**;
-* **123,253 of 123,392 raw bytes equal**. All 139 differing bytes lie inside exactly
-  **75 dwords**, and every one is an `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData` at an
-  identical section-relative site, differing by the section-placement delta (+0x9000).
-  **Zero unexplained bytes.**
+* every differing raw byte lies inside the **75**
+  `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData` dwords, each at an identical
+  section-relative site and shifted by exactly the section-placement delta. **Zero
+  unexplained bytes.** (The count of differing bytes moves with the delta as the
+  earlier sections grow — 139 at +0x9000, 140 at +0xC000 — the invariant is the
+  classification, re-provable any time with `rescomp verify`.)
 
 ### What is in it, and the authored-vs-copied line
 
@@ -90,16 +92,24 @@ dialog templates, string tables, the accelerator table, `VERSIONINFO`, the MFC
 `DLGINIT` blobs. *Copied* is the icon and cursor image bits and the group directories
 computed from them — art files we do not have.
 
-`rescomp rc` prints that text, and `rescomp rc --roundtrip` **proves the word**: all
-**57/57 authorable resources re-encode BYTE-IDENTICAL** from the decoded model
-(**89,230 of 89,230 B**) — 22 STRINGTABLEs, 31 DIALOG/DIALOGEX templates, the
-ACCELERATORS table, `VERSIONINFO`, and both `DLGINIT` streams. The readable form loses
-nothing, so a `.rc` could regenerate those bytes exactly.
+**The authorable 91.5% IS source now (2026-08-09): `src/Gruntz/Gruntz.rc`.** It is
+tracked, genuine rc.exe grammar — 22 STRINGTABLEs, 31 DIALOG/DIALOGEX templates, the
+ACCELERATORS table, `VERSIONINFO` (fully decoded to `FILEVERSION`/`VALUE` statements),
+and both `DLGINIT` raw-data streams — and `rescomp` (there is no `rc.exe`; rescomp is
+the compiler) parses it and encodes the payloads. The 57 authorable blobs are **deleted
+from the repo**; only the 18 art blobs remain in `config/retail/rsrc/data/`
+(`provenance` column: `copied`). Two standing proofs:
 
-**But today every row is SHIPPED as extracted retail bytes** (`config/retail/rsrc/`,
-`provenance` column on each manifest row). What the build emits is a **copy** — data
-provenance, **not a match claim**. Writing the `.rc` and compiling it here is what would
-make the 91.5% real source; the 8.5% of art can only ever be carried.
+* `rescomp rc --roundtrip` — retail payload → model → **`.rc` text → parse** → bytes:
+  **57/57 re-encode BYTE-IDENTICAL through the text** (**89,230 of 89,230 B**).
+* `rescomp check` — a normal-tier `gruntz build` gate: recompiles the tracked `.rc`
+  and byte-compares every payload (compiled + carried art) against the retail image,
+  statement order included. The source claim is re-proven on every gated build.
+
+The art 8.5% can only ever be carried — the game's shipped `Gruntz.REZ` was checked
+(2026-08-09) and contains no `.ico`/`.cur`/RT_ICON data at all; its `CURSOR`-named
+entries are in-game PID sprite frames, a different pixel format. The Windows shell art
+exists nowhere but the EXE itself.
 
 Two facts the codecs recovered on the way: the DIALOGEX item header is 24 bytes, not 28
 (`helpID`/`exStyle`/`style`/`x,y,cx,cy`/`id`), and MFC's `RT_DLGINIT` record header is

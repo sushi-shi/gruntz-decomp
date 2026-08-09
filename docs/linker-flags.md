@@ -218,24 +218,30 @@ the latter mis-assigns units that straddle the line (3242 thunks, worse).
   stamped in the PE header and influences default layout, so reproduce with the
   matching LINK.
 
-### Resources — the runnable candidate has NO `.rsrc` unless `--res` is passed
+### Resources — `.rsrc` is compiled from `src/Gruntz/Gruntz.rc`
 
-`link.py --res <file.RES>` appends the `.RES` to the response file; **`ninja candidate`
-does not pass it**, so the linked EXE has five sections (`.text .rdata .data .idata
-.reloc`) against retail's six. Check before blaming behaviour on code:
+The toolchain ships `cvtres.exe` but **no `rc.exe`**, so `gruntz.build.rescomp` is the
+resource compiler: it parses `src/Gruntz/Gruntz.rc` (real, tracked rc grammar — all 57
+authorable resources: STRINGTABLEs, DIALOG/DIALOGEX, ACCELERATORS, VERSIONINFO, MFC
+DLGINIT) plus the 18 carried ICON/CURSOR art blobs (`config/retail/rsrc/data/`, the only
+retail bytes left — art has no text form) and writes the Win32 `.RES` container itself.
+`configure.py` wires it as `build/gen/gruntz.res`, and `link.py --res` (which
+`ninja candidate` passes) hands it to `link.exe`, whose built-in cvtres emits the
+section.
 
-```
-$ python -c "import pefile" ...   # or just read the section table
-.text .rdata .data .idata .reloc          # candidate  — no .rsrc
-.text .rdata .data .idata .rsrc .reloc    # retail     — .rsrc 0x2c7000, 0x1e17c B
-```
+Two standing proofs, both against retail's own image:
 
-A resource-less image still links and runs, but every `LoadString`/`LoadIcon`/
-`LoadCursor`/`DialogBox` fails, so a runtime triage session that assumes resources are
-present will chase phantom defects. Verified 2026-08-09 on the EXE the user actually ran
-(`~/gruntz-wine/game/GRUNTZ.EXE`, md5 `17c14f31`): identical section table to
-`build/exe/GRUNTZ.candidate.EXE`, both without `.rsrc`, despite a `gruntz.res` having
-been prepared.
+- **`python -m gruntz.build.rescomp check`** — a normal-tier `gruntz build` gate:
+  recompiles the `.rc` and byte-compares every payload (compiled + carried) against
+  retail, statement order included.
+- **`python -m gruntz.build.rescomp verify`** — after `ninja candidate`: all 75/75
+  payloads byte-identical, section vsize 123,260 = retail's; the only differing raw
+  bytes in the whole section are the 75 `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData`
+  fields, each shifted by exactly the section-placement delta (candidate `.rsrc` sits
+  at a different RVA while `.text`+`.data` are still smaller than retail's).
+
+An earlier state of this section (pre 2026-08-09) noted the candidate carried no
+`.rsrc` at all; that is fixed — the runnable candidate has all six sections.
 
 ---
 
