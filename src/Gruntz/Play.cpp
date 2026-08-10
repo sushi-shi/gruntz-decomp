@@ -1477,6 +1477,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
+    self->m_mgr->m_tileGrid->Reset();
 
     {
         CDDrawWorkerHost* g5c = static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);

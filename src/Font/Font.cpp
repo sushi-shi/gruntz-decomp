@@ -408,7 +408,8 @@ void FontRenderer::DrawWrapped(
             text = "";
             if (rc.top + lineAdvance <= rc.bottom) {
                 if (hcenter) {
-                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+                    TextExtent le = MeasureText(line);
+                    i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
                     DrawLine(line, surf, cx, rc.top, z);
                 } else {
                     DrawLine(line, surf, rc.left, rc.top, z);
@@ -444,7 +445,8 @@ void FontRenderer::DrawWrapped(
                 x = headW + x;
             } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
-                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+                    TextExtent le = MeasureText(line);
+                    i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
                     DrawLine(line, surf, cx, rc.top, z);
                 } else {
                     DrawLine(line, surf, rc.left, rc.top, z);
@@ -467,7 +469,8 @@ void FontRenderer::DrawWrapped(
                     i32 chW = ce.width;
                     if (chW + x > rc.right) {
                         if (hcenter) {
-                            i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+                            TextExtent le = MeasureText(line);
+                            i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
                             DrawLine(line, surf, cx, rc.top, z);
                         } else {
                             DrawLine(line, surf, rc.left, rc.top, z);
@@ -485,7 +488,8 @@ void FontRenderer::DrawWrapped(
             }
             if (breakNL) {
                 if (hcenter) {
-                    i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+                    TextExtent le = MeasureText(line);
+                    i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
                     DrawLine(line, surf, cx, rc.top, z);
                 } else {
                     DrawLine(line, surf, rc.left, rc.top, z);
@@ -498,7 +502,8 @@ void FontRenderer::DrawWrapped(
     }
     if (rc.top + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
-            i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
+            TextExtent le = MeasureText(line);
+            i32 cx = rc.left + rc.Width() / 2 - le.width / 2;
             DrawLine(line, surf, cx, rc.top, z);
         } else {
             DrawLine(line, surf, rc.left, rc.top, z);

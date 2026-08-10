@@ -1716,7 +1716,7 @@ font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	10	b49c6df2be4a	0x179720	10
 font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	72.8796	72.8796	10	837ce4ada5a1	0x179e70	73.2940
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	4	1c99e425f732	0x179c30	100.0000
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	73.2701	73.2701	8	dd9cd321c6fe	0x17a460	73.5265
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	74.2923	74.2923	9	28d097c7f2fc	0x17a460	74.2923
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	7	e5971f41c2e7	0x1797b0	100.0000
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:ccfab244fd57	0x17b4f0	100.0000
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000
@@ -3334,7 +3334,7 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	94.8851	94.8851	12	db61038baf68	0xd0db0	94.8851
 play	?InputVirtual@CPlay@@UAEHXZ	99.9657	99.9657	1	b3c8fcfaa28d	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
-play	?LoadByMode@CPlay@@UAEHHH@Z	83.8447	83.8447	24	c3ba457e5009	0xca200	83.8795
+play	?LoadByMode@CPlay@@UAEHHH@Z	84.1842	84.1842	25	29b844f67aa4	0xca200	84.1842
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	76.6295	76.6295	2	2bc41ee15757	0xc7ec0	78.3187
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
