@@ -1,7 +1,14 @@
 // Retail's font TU compiled against the OUT-OF-LINE MFC accessors: DrawWrapped
-// `call`s ?Width@CRect@@QBEHXZ. <MfcNoInline.h> cannot reach here (Font.h pulls
-// <MfcWin.h> first), so the switch is set before any header is parsed.
-#define GRUNTZ_MFC_NO_INLINES 1
+// `call`s ?Width@CRect@@QBEHXZ, and <MfcNoInline.h> cannot reach here because
+// Font.h pulls <MfcWin.h> first. GRUNTZ_MFC_NO_INLINES (include/MfcWin.h) IS the
+// switch that gets there - and it is DISABLED here, deliberately: turning it on
+// makes cl emit `call ?Width@CRect@@QBEHXZ` and `call ??0CRect@@QAE@HHHH@Z`, and
+// NAFXCW.LIB EXPORTS NEITHER, so `ninja candidate` dies with LNK1120 (2
+// unresolved) and 9 other TUs report the CRect ctor as well. Measured twice, in
+// opposite directions, and the linker is the oracle. Retail's own 0x17b500 body
+// is therefore a COMDAT from retail's font compiland, not a library import - so
+// reproducing the call needs that body defined on OUR side too, not a header
+// switch. Until then the inline form stays and DrawWrapped keeps its residue.
 
 #include <rva.h>
 

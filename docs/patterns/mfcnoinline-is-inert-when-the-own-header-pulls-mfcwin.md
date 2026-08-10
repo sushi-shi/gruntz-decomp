@@ -1,5 +1,20 @@
 # `<MfcNoInline.h>` is INERT in any TU whose own header pulls `<MfcWin.h>`
 
+> **LINK-PROVEN LIMIT (added at integration).** The mechanism below is real -
+> `GRUNTZ_MFC_NO_INLINES` does reach where `<MfcNoInline.h>` cannot, and it does
+> make cl emit retail's `call ?Width@CRect@@QBEHXZ`. But **enabling it does not
+> link**: NAFXCW.LIB exports neither `?Width@CRect@@QBEHXZ` nor
+> `??0CRect@@QAE@HHHH@Z`, so `ninja candidate` fails with `LNK1120: 2 unresolved
+> externals`, with 9 further TUs reporting the CRect ctor. It was enabled in
+> `src/Font/Font.cpp` by the wave that discovered it and REVERTED at integration.
+> An earlier wave had already refuted the device on exactly this ground; that
+> refutation was correct. Note what this proves about retail: `0x17b500` is a
+> COMDAT from retail's OWN font compiland, not a library import - so reproducing
+> the out-of-line call needs that body defined on our side, not a header switch.
+> `gruntz build` does NOT link, so no gate below the full tier can catch this -
+> run `gruntz link` before believing an inline-linkage experiment.
+
+
 tags: cpp:include cpp:inline | asm:call | topic:codegen-idiom topic:wall
 symptoms: a target obj has an undefined `?Width@CRect@@QBEHXZ` / `?SetRect@CRect@@QAEXHHHH@Z`
 (or any other `afxwin1.inl` accessor) that the base obj does not; the TU already includes
