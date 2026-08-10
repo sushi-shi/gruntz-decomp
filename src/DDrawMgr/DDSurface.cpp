@@ -165,6 +165,11 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
+// @early-stop
+// REFERENT DEBT, not a codegen wall - the CODE bytes are byte-exact; the only rows
+// `sema disasm --diff` shows are the two jump-table base displacements (reloc-masked
+// on the base side) and the IID_IDirectDrawSurface3 referent at 0x001ef888 that the
+// delinker decomposes off ??_7CDDSurface@@6B@ (docs/referent-debt-ddrawmgr.tsv).
 RVA(0x0013e2e0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(void* a) {
     CDDrawPtrCollections* mgr = static_cast<CDDrawPtrCollections*>(a);
@@ -440,6 +445,13 @@ void CDDSurface::ReloadImageCache() {
     g_imageCache.SetSize(0, -1);
 }
 
+// @early-stop
+// REFERENT DEBT, not a codegen wall - the CODE bytes are byte-exact
+// (`sema disasm --diff` shows only `fs:0x0` vs the __except_list reloc). Two known
+// delinker-side classes in docs/referent-debt-ddrawmgr.tsv apply: the absolute
+// __except_list fixup leaves no .reloc entry to re-synthesize, and IID_IDirectDraw-
+// Surface3 at 0x001ef888 is an unenrolled dxguid datum the delinker decomposes off
+// ??_7CDDSurface@@6B@. Nothing in this TU can move it.
 RVA(0x0013e9a0, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     void* payload = 0;
@@ -713,9 +725,14 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
 }
 
 // @early-stop
-// Retail enters both row loops through the forward-jmp rotation (extra
-// preheader block) and keeps the clip pointer live where cl spills it; the
-// while(n-- > 0) respelling regresses, if+do-while is the closest shape.
+// The shade bank is now byte-exact: retail masks THEN unsigned-shifts
+// (`and 0xff / shr 3 / shl 0xb`), which only the `(u8)shade / 8 * 0x800` spelling
+// emits - `(shade & 0xff) / 8` is reassociated by cl into `sar 3 / and 0x1f`.
+// CONTROL-FLOW residue: retail enters both row loops through the forward-jmp
+// rotation, peeling one loop-carried reload into a 1-instruction header that base
+// folds into the preheader, and it keeps `rows` in esi at the guard where cl
+// memory-homes it and emits a redundant load/store pair. The while(n-- > 0)
+// respelling regresses; if+do-while is the closest shape.
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
@@ -773,7 +790,7 @@ i32 CDDSurface::ShadeBlt(
     i32 dstRowAdv = dstStride - dstW;
     i32 srcRowAdv = srcStride - srcW;
     u16* temp = new u16[dstW * 2];
-    i32 bank = (shade & 0xff) / 8 * 0x800;
+    i32 bank = static_cast<u8>(shade) / 8 * 0x800;
 
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
