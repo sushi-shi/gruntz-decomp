@@ -1815,17 +1815,16 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            u8* sc = g_scratch;
+            i32 sc = g_scratch - dst;
             while (count-- > 0) {
-                u32 idx = pal2[Load16(sc)];
+                u32 idx = pal2[Load16(dst + sc)];
+                dst += 2;
                 u32 hi = *src++;
                 hi >>= 4;
                 idx += hi << 12;
                 u16 v = pal1[idx];
-                Store16(dst, v);
-                Store16(dst + rowDelta / 2 * 2, v);
-                dst += 2;
-                sc += 2;
+                Store16(dst - 2, v);
+                Store16(dst - 2 + rowDelta / 2 * 2, v);
             }
             break;
         }
