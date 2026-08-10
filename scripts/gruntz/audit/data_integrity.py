@@ -28,7 +28,12 @@ def _ensure_candidate() -> None:
         raise RuntimeError("retail link order no longer re-derives")
     ORDER_LIST.parent.mkdir(parents=True, exist_ok=True)
     ORDER_LIST.write_text(link_line.objlist_text())
-    subprocess.run([sys.executable, str(LINK), "--order", str(ORDER_LIST)],
+    # The order artifact contains both command-line objects and the recovered
+    # library-member arrival order. Rebuild the engine archives before linking:
+    # passing every member directly duplicates data (notably dxguid GUIDs) and
+    # measures a link shape retail could not have produced.
+    subprocess.run([sys.executable, str(LINK), "--order", str(ORDER_LIST),
+                    "--engine-lib"],
                    cwd=REPO, check=True)
 
 

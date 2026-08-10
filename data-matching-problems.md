@@ -1,12 +1,12 @@
 # Data matching: what the 100% does NOT mean
 
 The old **`Data: 100.00%`** headline was arithmetically true and answered the wrong
-question. The replacement reports three distinct facts. **Gross coverage 40.31%** means
-109,385 distinct addresses are enrolled out of all 271,360 initialized bytes stored in
-retail. A generated static-reachability partition proves 159,235 B are private,
-unreachable library/compiler data or padding, so **reconstructable coverage is 97.56%**:
-109,385 / 112,125 eligible bytes. **Fidelity 99.97%** means the enrolled objdiff sections
-are almost entirely byte-equal. `.bss` is reported separately.
+question. The replacement reports three distinct facts. **Gross coverage 40.45%** means
+109,765 distinct addresses are enrolled out of all 271,360 initialized bytes stored in
+retail. A generated static-reachability partition proves 159,359 B are private,
+unreachable library/compiler data or padding, so **reconstructable coverage is 98.00%**:
+109,765 / 112,001 eligible bytes. **Fidelity 100.00%** (rounded) means the enrolled
+objdiff sections are almost entirely byte-equal. `.bss` is reported separately.
 
 Ownership never overrides reachability. Library-owned bytes directly named by game or
 compiler code, or reached through pointers in enrolled/game-visible data, remain eligible.
@@ -75,22 +75,22 @@ The address-union partition is complete to an explicitly stated residue:
 | unenrolled class | bytes |
 | :-- | --: |
 | compiler C++ EH records | 53,164 |
-| game-visible unenrolled data | 1,964 |
+| game-visible unenrolled data | 1,460 |
 | unclassified non-zero (eligible) | 776 |
-| compiler RTTI records | 13,145 |
+| compiler RTTI records | 13,223 |
 | compiler pooled literals | 40,681 |
 | private static-library data | 22,522 |
 | private SDK GUID data | 1,680 |
 | EH padding | 4,564 |
-| other zero padding/alignment | 23,479 |
-| **total unenrolled** | **161,975** |
+| other zero padding/alignment | 23,525 |
+| **total unenrolled** | **161,595** |
 
 The private-library attribution is NAFXCW 12,772 B, unresolved static-library members
 9,750 B, dxguid.lib 1,600 B, and UUID.LIB 80 B. Another 928 B of NAFXCW data, 96 B of
-dxguid data, and 36 B from unresolved static-library members are game-visible and are
+dxguid data, and 44 B from unresolved static-library members are game-visible and are
 therefore **kept** in coverage despite their ownership. No fractional attribution is
-invented for a run named from more than one library. The eligible unenrolled worklist is
-2,740 B: 1,964 B statically reachable from game-side roots plus 776 B unclassified.
+invented for a run named from more than one library. The eligible unenrolled worklist is 2,236 B: 1,460 B statically
+reachable from game-side roots plus 776 B unclassified.
 
 `config/retail/data-coverage-partition.tsv` is generated, not hand-maintained.
 `python -m gruntz.audit.data_denominator --check` re-derives every range and is a normal
@@ -160,11 +160,11 @@ every pinned word on both sides through the retail image's own `.reloc` table an
 Following directly from §3: because the placeholder bytes agree, a region can be
 byte-perfect while every pointer in it aims somewhere else. `gruntz audit image_diff`
 now measures this on the linked image by resolving each address operand to **what it
-reaches**. The first pass reported 610 regions. Source corrections and six independently
-tested resolver/sequence corrections reduce the current result to **35,769 of 36,386
-decidable operands (98.30%) reaching the same referent, with 248 genuinely different
-regions and 40 ordering-only regions**. The 248 split into 219 symbol-proven and 29
-weak/content-only regions; none is now literal-only.
+reaches**. The first pass reported 610 regions. Source corrections and independently
+tested resolver/sequence corrections reduce the current archive-ordered result to
+**36,215 of 36,687 decidable operands (98.71%) reaching the same referent, with 180
+genuinely different regions and 44 ordering-only regions**. The 180 split into 156
+symbol-proven and 24 weak/content-only regions; none is literal-only.
 
 The original worklist exposed real perfect-score defects such as registry keys spelled
 with underscores, the wrong Bute diagnostic string, and constructor/container identity
@@ -172,8 +172,10 @@ differences. It also exposed methodological false positives: relocated pool wind
 IAT slots read as text, short/control-character literals, interior self-references, and
 undecidable operands splitting an otherwise equal sequence. A seventh reporting defect
 let a later string downgrade symbol evidence; monotone precedence corrected the three
-supposed literal-only rows to symbol-proven structural rows. Each class now has a negative
-self-test. The remaining 248 are a ratcheted structural worklist, not honestly reducible
+supposed literal-only rows to symbol-proven structural rows. A further cutoff defect
+dropped valid calls moved past retail's byte extent in longer candidate bodies; it now
+admits only tail identities that fill an exact retail multiset deficit. Each class has a
+negative self-test. The remaining 180 are a ratcheted structural worklist, not honestly reducible
 by substituting plausible strings or callees without per-site identity evidence.
 
 ## 4. The size/similarity confusion, one level up

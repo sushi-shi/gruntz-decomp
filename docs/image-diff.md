@@ -152,8 +152,8 @@ Byte verdict over retail's 1,987,179:
 
 48.55% headline; **77.28%** within paired regions; **64.93%** of the measurable,
 non-filler part. 4,876 bodies pair in plain `.text` and 904 more in `.text$AFX_*`.
-Of the 36,386 decidable operands, **35,769 (98.30%) reach the same referent**;
-248 regions reach a genuinely different decidable referent. Another 40 reach the
+Of the 36,687 decidable operands, **36,215 (98.71%) reach the same referent**;
+180 regions reach a genuinely different decidable referent. Another 44 reach the
 same multiset in a different order and are reported separately.
 
 Three findings the size audit could not state:
@@ -281,8 +281,8 @@ undecidable operands and emits the case bodies in a different order.  Unknowns a
 now counted, then removed before identity/order comparison; ordering-only regions are
 counted separately by `--referents` and listed by `--ordering`.
 
-That sixth correction removes another 14 false-positive regions: the final static
-worklist is **248 genuine wrong-referent regions**, plus **40 ordering-only**.
+That sixth correction removed another 14 false-positive regions: at that snapshot the
+static worklist was **248 genuine wrong-referent regions**, plus **40 ordering-only**.
 A seventh reporting defect did not change that total but did change how it should be
 worked: lexical `min()` let a later string descriptor downgrade an already symbol-proven
 region. The three apparent string-literal rows were all mixed structural regions; with
@@ -302,6 +302,10 @@ referent cannot hide a missing call. On the same candidate snapshot this changed
 **220 wrong / 39 ordering-only** to **182 wrong / 44 ordering-only**: 38 regions left
 the wrong list, five were correctly retained as ordering-only, and the combined
 worklist lost 33 false positives.
+
+With the corrected audit, derived object order, and reconstructed static archives, the
+current ratcheted worklist is **180 wrong-referent regions** (156 symbol-proven, 24
+weak/content-only) plus **44 ordering-only regions**.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed

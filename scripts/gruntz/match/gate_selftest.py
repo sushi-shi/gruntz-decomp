@@ -102,7 +102,7 @@ class DataIntegrityRatchetTests(unittest.TestCase):
                 data_integrity._ensure_candidate()
             self.assertEqual(order.read_text(), "# order\na\nb\n")
             cmd = run.call_args.args[0]
-            self.assertEqual(cmd[-2:], ["--order", str(order)])
+            self.assertEqual(cmd[-3:], ["--order", str(order), "--engine-lib"])
             self.assertNotIn("ninja", cmd)
 
 
