@@ -114,22 +114,46 @@
       ];
 
       # objdiff-cli is built FROM SOURCE (the GUI below stays a prebuilt download)
-      # so that one scoring patch can apply. `.bss` has no bytes, so a BSS symbol's
-      # size is objdiff's whole comparison - but COFF encodes a symbol size only for
-      # a COMMON symbol, so `infer_symbol_sizes` synthesises one from the distance to
-      # the next symbol: the object PLUS its allocator's padding. Our two sides use
-      # different allocators (cl for the base, the delinker's aligned append for the
-      # target), so that span differs for reasons that are not the program. Census
-      # over the whole tree: 364 paired `.bss` symbols, 51 disagreements, every single
-      # delta 3/4/6 bytes - all sub-alignment padding, none a real size. The extent
-      # audit that DOES bite lives in `gruntz.build.data_manifest` (a reviewed extent
-      # must fit the span to its retail neighbour, or both rows are withheld).
+      # so that the two scoring patches below can apply.
+      #
+      # UPSTREAM-PENDING objdiff-bss-inferred-extent: `.bss` has no bytes, so a BSS
+      # symbol's size is objdiff's whole comparison - but COFF encodes a symbol size
+      # only for a COMMON symbol, so `infer_symbol_sizes` synthesises one from the
+      # distance to the next symbol: the object PLUS its allocator's padding. Our two
+      # sides use different allocators (cl for the base, the delinker's aligned append
+      # for the target), so that span differs for reasons that are not the program.
+      # Census over the whole tree: 364 paired `.bss` symbols, 51 disagreements, every
+      # single delta 3/4/6 bytes - all sub-alignment padding, none a real size. The
+      # extent audit that DOES bite lives in `gruntz.build.data_manifest` (a reviewed
+      # extent must fit the span to its retail neighbour, or both rows are withheld).
+      # Upstream cannot relax this globally: for a format that DOES state sizes the
+      # comparison is real. Drop the patch if objdiff stops comparing INFERRED sizes.
       # docs/patterns/bss-symbol-size-inference-hole.md.
+      #
+      # UPSTREAM-PENDING objdiff-score-reloc-addend: x86 COFF `DIR32` has no addend
+      # field - the addend sits in the instruction's displacement, which is exactly
+      # the operand the diff masks as "relocated". objdiff recovers it, and the `all`
+      # / `name_address` reloc modes do compare it, but `data_value` (what we use)
+      # short-circuits that clause and drops the addend along with the name. So
+      # `g_clut + 0x20000` vs `g_clut + 0x1fffe` scored IDENTICAL - the one operand
+      # class where a wrong constant is free, and it hid a live off-by-one across a
+      # 3 x 32768-entry LUT (commit 61d15c531). The patch compares the addend when
+      # both sides resolve to the SAME symbol and the reloc type's addend is a plain
+      # symbol offset (a new `Arch` predicate, default false; REL32 keeps its current
+      # behaviour since its stored value is site-relative). Upstream does not do it
+      # because `data_value` exists for projects with unreliable target symbol names,
+      # where the pointed-to VALUE is the trusted signal - nobody had noticed the
+      # addend is a third signal that survives unreliable names. Drop the patch once
+      # objdiff scores addends under `data_value` (or grows an addend knob).
+      # docs/patterns/reloc-addend-is-masked-diff-the-addends.md.
       objdiff-cli = nightly-rustPlatform.buildRustPackage {
         pname = "objdiff-cli";
         version = objdiffVersion;
         src = objdiff-src;
-        patches = [ ./nix/patches/objdiff-bss-inferred-extent.patch ];
+        patches = [
+          ./nix/patches/objdiff-bss-inferred-extent.patch
+          ./nix/patches/objdiff-score-reloc-addend.patch
+        ];
         cargoHash = "sha256-Z9vyUj35nrHuUoOYM54RLCn7CzcQ6k3A6FsDYKCVqVM=";
         cargoBuildFlags = [ "-p" "objdiff-cli" ];
         cargoTestFlags = [ "-p" "objdiff-core" "-p" "objdiff-cli" ];
