@@ -187,49 +187,40 @@ StreamVoice* SoundStream::CreateStreamBuffer(
     i32 hr;
     StreamVoice* voice = 0;
 
-    if (m_initialized == 0) {
-        return 0;
-    }
-    if (bytes == 0) {
-        return 0;
-    }
-    if (fmt == NULL) {
-        return 0;
-    }
-    if (fmt->wFormatTag != 1) {
-        return 0;
-    }
+    if (m_initialized != 0 && bytes != 0 && fmt != NULL && fmt->wFormatTag == 1) {
 
-    wf = *fmt;
+        wf = *fmt;
 
-    out = NULL;
+        out = NULL;
 
-    memset(&desc, 0, sizeof(DSBUFFERDESC));
-    desc.dwFlags = dsFlags;
-    WaveFormatPtr fmtPtr;
-    fmtPtr.m_rec = &wf;
-    desc.lpwfxFormat = fmtPtr.m_sdk;
+        memset(&desc, 0, sizeof(DSBUFFERDESC));
+        desc.dwFlags = dsFlags;
+        WaveFormatPtr fmtPtr;
+        fmtPtr.m_rec = &wf;
+        desc.lpwfxFormat = fmtPtr.m_sdk;
 
-    wf.cbSize = 0;
-    desc.dwSize = 0x14;
-    desc.dwBufferBytes = bytes;
+        wf.cbSize = 0;
+        desc.dwSize = 0x14;
+        desc.dwBufferBytes = bytes;
 
-    hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
-    if (hr) {
-        DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0x678, hr);
-        return 0;
+        hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+        if (hr) {
+            DirectSoundMgr::GetErrorString(DSNDMGSR_FILE, 0xe8, hr);
+            return 0;
+        }
+        if (out == NULL) {
+            return 0;
+        }
+
+        voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
+        m_voices.InsertHead(voice ? &voice->m_link : 0);
+        voice->m_rateBase = fmt->nAvgBytesPerSec;
+        voice->m_sampleRate = fmt->nAvgBytesPerSec;
+        voice->m_sampleCount = bytes;
+        voice->ComputeDuration();
+        return voice;
     }
-    if (out == NULL) {
-        return 0;
-    }
-
-    voice = new StreamVoice(out, this, stopWhenIdle, retireWhenIdle);
-    m_voices.InsertHead(voice ? &voice->m_link : 0);
-    voice->m_rateBase = fmt->nAvgBytesPerSec;
-    voice->m_sampleRate = fmt->nAvgBytesPerSec;
-    voice->m_sampleCount = bytes;
-    voice->ComputeDuration();
-    return voice;
+    return 0;
 }
 
 // @early-stop

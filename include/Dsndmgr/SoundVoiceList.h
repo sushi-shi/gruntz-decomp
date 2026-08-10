@@ -42,6 +42,9 @@ struct DSoundElem : public PureSoundElem {
 };
 SIZE(0x14);
 
+// The shared list head: retail carries exactly one copy of each operation below
+// (InsertHead 0x1390e0 .. Unlink 0x1391e0), reached from DirectSoundMgr,
+// SoundDevice, SoundStream, CSymParser, CHashBase and CWwdGrid.
 struct DSoundList {
     DSoundLink* m_head;
     DSoundLink* m_tail;
@@ -56,6 +59,26 @@ struct DSoundList {
     void InsertBefore(DSoundLink* before, DSoundLink* node);
     void Unlink(DSoundLink* node);
     void RemoveMatching(DirectSoundMgr* key, u32 tag);
+};
+SIZE(0x8);
+
+// Three typed list heads, each with its OWN destructor. cl emits one dtor COMDAT
+// per type, and retail carries THREE distinct empty (`ret`-only) ones - 0x135ba0,
+// 0x1364e0 and 0x1364f0 - reached from the unwind funclets of
+// ??0/??1DSoundCloneInst (this+0x58) and ??0/??1SoundDevice (this+0x4, this+0xc).
+// Three dtor COMDATs mean three classes; one type could only produce one.
+struct DSoundBufferList : public DSoundList {
+    ~DSoundBufferList() {}
+};
+SIZE(0x8);
+
+struct DSoundVoiceList : public DSoundList {
+    ~DSoundVoiceList() {}
+};
+SIZE(0x8);
+
+struct DSoundCloneList : public DSoundList {
+    ~DSoundCloneList() {}
 };
 SIZE(0x8);
 

@@ -37,7 +37,6 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/SoundState.h>
-#include <Gruntz/SplashParams.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <Gruntz/String.h>
 #include <Gruntz/WwdGameReg.h>

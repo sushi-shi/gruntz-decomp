@@ -91,6 +91,12 @@ void CMovingLogic::FinalizeStep(char*) {
     AdvanceMotion();
 }
 
+// The header-inline `~CMotionState() {}` (MotionState.h) emitted out of line: the
+// unwind funclets of ??0CProjectile (this-0x18 +0x38) and ??0CGrunt take its
+// address, so cl gives it a COMDAT. Retail keeps one 1-byte `ret` copy, isolated
+// by 0xcc linker fill on both sides, reached through the ILT thunk at 0x00003819.
+RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
+
 // @early-stop
 // residue: one instruction, the vptr stamp, which cl schedules after the first
 // m_wwdObject load instead of before it.

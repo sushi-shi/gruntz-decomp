@@ -33,7 +33,6 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundFxEmitter.h>
-#include <Gruntz/SplashParams.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>

@@ -22,7 +22,6 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundFxEmitter.h>
-#include <Gruntz/SplashParams.h>
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Rez/RezTypeTag.h>
@@ -366,14 +365,15 @@ i32 CState::InputVirtual() {
         return 0;
     }
     if (g_playActive == 0) {
-        SplashParams sp;
-        sp.text.LoadString(0x81a9);
+        CString text;
+        RECT rect;
+        text.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();
-        sp.rect.right = mode.cx;
-        sp.rect.bottom = mode.cy;
-        sp.rect.left = 0;
-        sp.rect.top = 0;
-        EngStr_DrawText(m_world, &sp.text, &sp.rect, 0x78, 1, 0xff, 0xff, 0, 1);
+        rect.right = mode.cx;
+        rect.bottom = mode.cy;
+        rect.left = 0;
+        rect.top = 0;
+        EngStr_DrawText(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
     while (ShowCursor(0) >= 0)
         ;

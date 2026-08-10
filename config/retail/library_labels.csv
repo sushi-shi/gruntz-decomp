@@ -99,7 +99,6 @@ rva,name,lib,confidence,source
 0x018630,__inc,LIBCMT,LOW,anchored
 0x018680,__inc,LIBCMT,LOW,anchored
 0x0186d0,__inc,LIBCMT,LOW,anchored
-0x0201f0,__inc,LIBCMT,LOW,anchored
 0x020210,__inc,LIBCMT,LOW,anchored
 0x020260,__inc,LIBCMT,LOW,anchored
 0x0202b0,__inc,LIBCMT,LOW,anchored
@@ -300,7 +299,6 @@ rva,name,lib,confidence,source
 0x047920,__inc,LIBCMT,LOW,anchored
 0x047970,__inc,LIBCMT,LOW,anchored
 0x0479c0,__inc,LIBCMT,LOW,anchored
-0x058ba0,__fpclear,LIBCMT,LOW,anchored
 0x058f60,__inc,LIBCMT,LOW,anchored
 0x058fb0,__inc,LIBCMT,LOW,anchored
 0x059000,__inc,LIBCMT,LOW,anchored
@@ -364,7 +362,6 @@ rva,name,lib,confidence,source
 0x082880,__inc,LIBCMT,LOW,anchored
 0x0828d0,__inc,LIBCMT,LOW,anchored
 0x082920,__inc,LIBCMT,LOW,anchored
-0x0832e0,__fpclear,LIBCMT,LOW,anchored
 0x0853d0,??3CObject@@SGXPAX@Z,NAFXCW,MED,manual-unmatched-library-audit
 0x094370,__inc,LIBCMT,LOW,anchored
 0x0943c0,__inc,LIBCMT,LOW,anchored

@@ -47,8 +47,8 @@ public:
     static i32 VolumeToAttenuation(i32 value);
     static void BuildVolumeTable();
 
-    DSoundList m_bufferList;
-    DSoundList m_voiceList;
+    DSoundBufferList m_bufferList;
+    DSoundVoiceList m_voiceList;
     IDirectSound* m_device;
 
     char m_reserved[0x78 - 0x18];

@@ -107,7 +107,7 @@ public:
     DirectSoundMgr* GetItem();
     i32 ConfigureItem(i32 vol, i32 pan, i32 freqPct, i32 loop);
 
-    DSoundList m_cloneList;
+    DSoundCloneList m_cloneList;
 };
 SIZE(0x60);
 

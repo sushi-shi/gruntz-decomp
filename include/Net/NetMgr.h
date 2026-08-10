@@ -281,12 +281,10 @@ struct CNetSession {
 
     void BuildGruntzCrcInfo();
 
-    void* operator new(size_t n) {
-        return ::operator new(static_cast<u32>(n));
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
+    // No class-level operator new/delete: retail's unwind funclet for the
+    // `new CNetSession()` in CMulti::CreateSession calls the GLOBAL
+    // ??3@YAXPAX@Z, which a class-level forwarder cannot produce - cl emits
+    // ??3CNetSession@@SAXPAX@Z and points the funclet at that instead.
 
     CNetSession() {
         ResetAll();

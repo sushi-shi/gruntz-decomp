@@ -57,9 +57,10 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
 }
 
 // @early-stop
-// Frame is 8 bytes short of retail (sub esp,0x134 vs 0x13c) and cl takes `this` in edi
-// where retail takes ebp, so every [esp+N] and the push order differ - see
-// docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
+// The destructible-scope COUNT now matches retail (26); their POSITIONS do not -
+// retail's last CString scope is constructed after the inlined ~CButeMgr member
+// expansion and ours before it, and the frame is 8 bytes wider than retail's. Read
+// the current shape from `eh_band --census`, not from this comment.
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     if (m_fontConfig->TypeChar(a, b) == 0) {
@@ -99,8 +100,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                     Blowfish_InitKey(static_cast<const char*>(key));
                     char* decoded = new char[length];
                     ostrstream* outputStream = new ostrstream(decoded, length, 2);
-                    CButeTail cryptTail;
-                    cryptTail.Decode(inputStream, outputStream);
+                    bute.m_crypt.Decode(inputStream, outputStream);
                     istrstream* parseStream = new istrstream(decoded, outputStream->pcount());
                     delete inputStream;
                     delete outputStream;
