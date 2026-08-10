@@ -1938,13 +1938,13 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002020b4	0x002020b8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x002020b8	0x00205e60	15784	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x00205e60	0x00208000	8608	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00208000	0x002098a0	6304	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00208000	0x002098a0	6304	.data	library-private data	excluded	library-private data		LIBCMT
 0x002098a0	0x002099a4	260	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x002099a4	0x00209cb8	788	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002099a4	0x00209cb8	788	.data	library-private data	excluded	library-private data		LIBCMT
 0x00209cb8	0x00209dbc	260	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00209dbc	0x00209fc4	520	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00209dbc	0x00209fc4	520	.data	library-private data	excluded	library-private data		LIBCMT
 0x00209fc4	0x0020a0c8	260	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0020a0c8	0x0020a2d0	520	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0020a0c8	0x0020a2d0	520	.data	library-private data	excluded	library-private data		LIBCMT
 0x0020a2d0	0x0020a3e0	272	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020a3f4	0x0020a3f8	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020a412	0x0020a418	6	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -2314,7 +2314,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0020c689	0x0020c68c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c698	0x0020c69c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c6b0	0x0020c6b8	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0020c6b8	0x0020c6f4	60	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	pointer from game-visible data (1)	between retail pooled literals; no source pin
+0x0020c6b8	0x0020c6d8	32	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	pointer from game-visible data (1)	reloc-bearing run between pooled literals; nz=17
+0x0020c6d8	0x0020c6f4	28	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	pointer from game-visible data (1)	reloc-bearing run between pooled literals; nz=15
 0x0020c72c	0x0020c738	12	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c73e	0x0020c740	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c749	0x0020c74c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3774,29 +3775,142 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002156d8	0x002156e0	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002156e0	0x002156ec	12	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x002156ec	0x002156f0	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x002156f0	0x00216468	3448	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002156f0	0x002156f4	4	.data	library-private data	excluded	library-private data		NAFXCW
+0x002156f4	0x002156f8	4	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=3
+0x002156f8	0x00215710	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215710	0x00215730	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215730	0x00215750	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
+0x00215750	0x00215768	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00215768	0x00215788	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215788	0x002157a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=15
+0x002157a0	0x002157c0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x002157c0	0x00215800	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215800	0x00215820	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215820	0x00215828	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00215828	0x00215840	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=12
+0x00215840	0x00215870	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x00215870	0x00215888	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00215888	0x002158a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=13
+0x002158a0	0x002158b0	16	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=7
+0x002158b0	0x002158c8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x002158c8	0x002158e8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x002158e8	0x00215910	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
+0x00215910	0x00215930	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215930	0x00215950	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215950	0x00215978	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
+0x00215978	0x00215998	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215998	0x002159c8	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x002159c8	0x002159e0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x002159e0	0x002159f8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x002159f8	0x00215a10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
+0x00215a10	0x00215a30	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215a30	0x00215a50	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
+0x00215a50	0x00215a70	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215a70	0x00215a98	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=32
+0x00215a98	0x00215ac0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
+0x00215ac0	0x00215ad8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215ad8	0x00215af8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215af8	0x00215b10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x00215b10	0x00215b50	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x00215b50	0x00215b70	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215b70	0x00215ba0	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x00215ba0	0x00215bc0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
+0x00215bc0	0x00215be0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215be0	0x00215c00	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
+0x00215c00	0x00215c40	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215c40	0x00215c58	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00215c58	0x00215c78	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x00215c78	0x00215c98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
+0x00215c98	0x00215cb8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215cb8	0x00215cd0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
+0x00215cd0	0x00215cf0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215cf0	0x00215d10	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
+0x00215d10	0x00215d30	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x00215d30	0x00215d48	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215d48	0x00215d64	28	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215d64	0x00215d68	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00215d68	0x00215d88	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00215d88	0x00215da8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215da8	0x00215dc0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x00215dc0	0x00215de0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215de0	0x00215df8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215df8	0x00215e10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00215e10	0x00215e28	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215e28	0x00215e40	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x00215e40	0x00215e58	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215e58	0x00215e78	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215e78	0x00215e98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215e98	0x00215ec0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
+0x00215ec0	0x00215ee0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215ee0	0x00215f08	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
+0x00215f08	0x00215f28	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
+0x00215f28	0x00215f48	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215f48	0x00215f78	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
+0x00215f78	0x00215f98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215f98	0x00215fb0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00215fb0	0x00215fd0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
+0x00215fd0	0x00215fe8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x00215fe8	0x00216028	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
+0x00216028	0x00216048	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
+0x00216048	0x00216068	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
+0x00216068	0x002160b0	72	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x002160b0	0x002160cc	28	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x002160cc	0x002160e0	20	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002160e0	0x00216100	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
+0x00216100	0x00216110	16	.data	library-private data	excluded	library-private data		LIBCMT
+0x00216110	0x00216120	16	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00216120	0x00216140	32	.data	library-private data	excluded	library-private data		LIBCMT
+0x00216140	0x00216238	248	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00216238	0x002162e8	176	.data	library-private data	excluded	library-private data		LIBCMT
+0x002162e8	0x00216450	360	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00216450	0x00216460	16	.data	library-private data	excluded	library-private data		LIBCMT
+0x00216460	0x00216464	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00216464	0x00216468	4	.data	library-private data	excluded	library-private data		LIBCMT
 0x00216468	0x0021646c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021646c	0x00216554	232	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021646c	0x00216554	232	.data	library-private data	excluded	library-private data		LIBCMT
 0x00216554	0x00216558	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00216558	0x00216998	1088	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00216558	0x00216598	64	.data	library-private data	excluded	library-private data		LIBCMT
+0x00216598	0x002166a8	272	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002166a8	0x002166b2	10	.data	library-private data	excluded	library-private data		LIBCMT
+0x002166b2	0x002168c4	530	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002168c4	0x00216998	212	.data	library-private data	excluded	library-private data		LIBCMT
 0x00216998	0x0021699c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021699c	0x002169a0	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x002169a0	0x002169a4	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002169a4	0x002169b8	20	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x002169b8	0x002169bc	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x002169bc	0x00218b58	8604	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002169bc	0x002169e0	36	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002169e0	0x002169f0	16	.data	library-private data	excluded	library-private data		LIBCMT
+0x002169f0	0x00218a00	8208	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218a00	0x00218a04	4	.data	library-private data	excluded	library-private data		LIBCMT
+0x00218a04	0x00218acc	200	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218acc	0x00218b58	140	.data	library-private data	excluded	library-private data		LIBCMT
 0x00218b58	0x00218b60	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00218b60	0x00218bfc	156	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218b60	0x00218bf0	144	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218bf0	0x00218bf8	8	.data	library-private data	excluded	library-private data		LIBCMT
+0x00218bf8	0x00218bfc	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00218bfc	0x00218c08	12	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00218c08	0x00218c0c	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00218c0c	0x00218c18	12	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00218c18	0x00218c4c	52	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00218c4c	0x00218c50	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00218c50	0x00218cf8	168	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218c50	0x00218c88	56	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218c88	0x00218c98	16	.data	library-private data	excluded	library-private data		LIBCMT
+0x00218c98	0x00218cf8	96	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00218cf8	0x00218f08	528	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00218f08	0x00219214	780	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218f08	0x00218f40	56	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00218f40	0x00219200	704	.data	library-private data	excluded	library-private data		LIBCMT
+0x00219200	0x00219214	20	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00219214	0x00219218	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00219218	0x002199bc	1956	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00219218	0x00219224	12	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00219224	0x00219228	4	.data	library-private data	excluded	library-private data		LIBCMT
+0x00219228	0x0021922c	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021922c	0x00219230	4	.data	library-private data	excluded	library-private data		LIBCMT
+0x00219230	0x0021923c	12	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021923c	0x002196bc	1152	.data	library-private data	excluded	library-private data		LIBCMT
+0x002196bc	0x002196c8	12	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002196c8	0x00219700	56	.data	library-private data	excluded	library-private data		LIBCMT
+0x00219700	0x002199bc	700	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00219a0d	0x00219a10	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00219a1e	0x00219a20	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00219a3b	0x00219a3c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3920,7 +4034,19 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0021aaf4	0x0021ab14	32	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x0021ab1f	0x0021ab20	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ab91	0x0021ab98	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021ab98	0x0021ad24	396	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021ab98	0x0021abb0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x0021abb0	0x0021abd0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x0021abd0	0x0021abe8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=12
+0x0021abe8	0x0021ac00	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x0021ac00	0x0021ac20	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x0021ac20	0x0021ac38	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x0021ac38	0x0021ac58	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x0021ac58	0x0021ac70	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x0021ac70	0x0021ac88	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x0021ac88	0x0021ac90	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021ac90	0x0021acc0	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x0021acc0	0x0021acd8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x0021acd8	0x0021ad24	76	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
 0x0021ad36	0x0021ad38	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad47	0x0021ad48	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad5b	0x0021ad5c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -4031,9 +4157,10 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00224fe5	0x00224fe8	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002250c6	0x002250c8	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00225109	0x0022510c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0022511f	0x00225130	17	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x00225130	0x0022513c	12	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
-0x0022513c	0x00225148	12	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (3)	between retail pooled literals; no source pin
+0x0022511f	0x00225130	17	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=12
+0x00225130	0x00225138	8	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (1)	reloc-bearing run between pooled literals; nz=6
+0x00225138	0x0022513c	4	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (1)	reloc-bearing run between pooled literals; nz=3
+0x0022513c	0x00225148	12	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (3)	reloc-bearing run between pooled literals; nz=9
 0x0022515d	0x00225160	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022516d	0x00225170	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022518f	0x00225190	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -4054,7 +4181,14 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022561e	0x00225620	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022563c	0x00225640	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00225684	0x00225688	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00225688	0x00225918	656	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00225688	0x002256a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x002256a0	0x002256b8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x002256b8	0x002256e0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x002256e0	0x00225742	98	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00225742	0x00225770	46	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00225770	0x002257fe	142	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x002257fe	0x00225900	258	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=192
+0x00225900	0x00225918	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
 0x00225918	0x0022591c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022591c	0x00229310	14836	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00229310	0x00229388	120	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -4889,7 +5023,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002534b4	0x00253551	157	.bss	library-private data	excluded	library-private data		LIBCMT
 0x00253551	0x00253658	263	.bss	library-private data	excluded	library-private data		LIBCMT,NAFXCW
 0x00253658	0x00253778	288	.bss	library-private data	excluded	library-private data		LIBCMT
-0x00253778	0x002537d8	96	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00253778	0x002537d8	96	.bss	library-private data	excluded	library-private data		pointer from library-private data (LIBCMT)
 0x002537d8	0x00253aa4	716	.bss	library-private data	excluded	library-private data		LIBCMT
 0x00253ab4	0x00253ab8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00253ab8
 0x00253c84	0x00253c88	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00253c88
@@ -4934,7 +5068,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002c127c	0x002c127d	1	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002c127e	0x002c1288	10	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002c128c	0x002c15e0	852	.bss	library-private data	excluded	library-private data		LIBCMT
-0x002c15e0	0x002c25e0	4096	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002c15e0	0x002c25e0	4096	.bss	library-private data	excluded	library-private data		pointer from library-private data (LIBCMT)
 0x002c25e0	0x002c2600	32	.bss	library-private data	excluded	library-private data		LIBCMT
 0x002c2600	0x002c2604	4	.bss	library-private data	excluded	library-private data		LIBCIMT,LIBCMT
 0x002c2604	0x002c278c	392	.bss	library-private data	excluded	library-private data		LIBCMT

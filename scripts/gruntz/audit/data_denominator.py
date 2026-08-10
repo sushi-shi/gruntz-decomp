@@ -472,19 +472,33 @@ def partition():
     def payload_nz(a, b):
         return sum(1 for r in range(a, b) if pe.data[pe.off(r)])
 
+    rsites = pe.reloc_sites
+
+    def relocs_in(a, b):
+        """True when a HIGHLOW site's 4-byte cell overlaps ``[a, b)``."""
+        i = bisect.bisect_left(rsites, a - 3)
+        return i < len(rsites) and rsites[i] < b
+
     eh_starts = [a for a, _ in eh_spans]
     guid_starts = [a for a, _, _, _ in guid_spans]
 
     aligns = claim_alignments()
+    lib_reached: dict[int, Counter] = {}   # filled by the pre-pass below
 
     def ownership(i, a, b, region):
         """(category, evidence, naming libraries) independent of reachability."""
         if region == ".bss":
             # Zero-fill: no payload oracle exists. Ownership comes from the
-            # referencing functions; slack from the next claim's alignment.
+            # referencing functions (direct, or through pointers stored in data
+            # already proven library-private - the CRT stdio buffers hang off
+            # `__iob` this way); slack from the next claim's alignment.
             if libof.get(i):
                 libs = libof[i]
                 return LIB, ",".join(sorted(libs)), libs
+            if i in lib_reached:
+                libs = lib_reached[i]
+                return (LIB, "pointer from library-private data ("
+                        + ",".join(sorted(libs)) + ")", libs)
             align = aligns.get(b, 0)
             if b - a < align:
                 return (PAD, f"slack below the 0x{align:x}-aligned claim "
@@ -509,6 +523,16 @@ def partition():
             # The independent coverage/access sieve proved every residual
             # initialized .data run lies between pooled ??_C@ literals. Its
             # sole game-owned survivor, g_table_20fa78, is already enrolled.
+            # A run CONTAINING RELOC SITES is the one disproof that needs no
+            # sieve: no FP/string pool carries a relocation, so such a run is
+            # a real pointer-bearing table and must be attributed, not
+            # absorbed into the literal exclusion.
+            if relocs_in(a, b):
+                if libof.get(i):
+                    libs = libof[i]
+                    return LIB, ",".join(sorted(libs)), libs
+                return (UNK, f"reloc-bearing run between pooled literals; "
+                        f"nz={nz}", None)
             return (LITERAL, "between retail pooled literals; no source pin", None)
         if eh_lo <= a < eh_hi and nz == 0:
             return EHPAD, "inside parsed EH-table envelope", None
@@ -518,6 +542,24 @@ def partition():
             libs = libof[i]
             return LIB, ",".join(sorted(libs)), libs
         return UNK, f"nz={nz}", None
+
+    # Library-side pointer propagation into `.bss`. A pointer WRITTEN INSIDE a
+    # node already proven library-private is that library's own reference, so
+    # the zero-fill it targets is library state unless something game-visible
+    # also reaches it (visibility always wins; propagation never enters a
+    # visible node). Initialized targets are NOT relabeled - their verdicts
+    # stay content-proven. `.bss` holds no bytes, so no edge can originate
+    # there and the propagation is single-hop by construction.
+    for j, (a, b, region) in enumerate(nodes):
+        if region == ".bss" or j in visible:
+            continue
+        base, _, libs = ownership(j, a, b, region)
+        if base not in (LIB, GUIDV) or not libs:
+            continue
+        for t in edges.get(j, {}):
+            if t in visible or t in lib_reached or nodes[t][2] != ".bss":
+                continue
+            lib_reached[t] = Counter(libs)
 
     buckets: Counter = Counter()
     libbytes: Counter = Counter()
