@@ -80,6 +80,9 @@ void CDDrawWorkerList::ClearWorkers() {
 }
 
 // @early-stop
+// one scheduling slot: retail computes `cmp m_id,1` BEFORE the geometry stores
+// (flags live across the flag-neutral movs), ours places it at the branch. A
+// comparison-valued local (`front = m_id == 1`) materializes and scores lower.
 RVA(0x00163c90, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
@@ -137,6 +140,13 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 }
 
 // @early-stop
+// the OVER-MERGE mirror (docs/patterns/over-merge-is-decided-before-layout.md):
+// retail keeps the null guard's return-0 as an INLINE fall-through arm (jne over
+// xor/pops/ret, src in edx) while the two size guards share one SUNK block; our
+// cl folds all three onto the sunk copy (je), which frees eax and rotates
+// src->eax / w->edx and hoists the m_surface store. Measured identical at 77.50:
+// && gate, || early guard, positive wrap, else arm, separate nested ifs,
+// zero-local arm; goto-fail is 56.74.
 RVA(0x00163db0, 0x64)
 i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 
@@ -146,20 +156,20 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     i32 w = src->m_width;
     ColorDepth bpp = src->m_bitDepth;
     i32 h = src->m_height;
-    if (w > 0 && h > 0) {
-        m_width = w;
-        m_srcRect[2] = w;
-        m_height = h;
-        m_bpp = bpp;
-        m_srcRect[0] = 0;
-        m_srcRect[1] = 0;
-        m_srcRect[3] = h;
-        m_id = 0x63;
-        m_surface = src;
-        m_ownsSurface = 0;
-        return 1;
+    if (w <= 0 || h <= 0) {
+        return 0;
     }
-    return 0;
+    m_width = w;
+    m_srcRect[2] = w;
+    m_height = h;
+    m_bpp = bpp;
+    m_srcRect[0] = 0;
+    m_srcRect[1] = 0;
+    m_srcRect[3] = h;
+    m_id = 0x63;
+    m_surface = src;
+    m_ownsSurface = 0;
+    return 1;
 }
 
 RVA(0x00163e20, 0x2d)
@@ -223,6 +233,11 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 }
 
 // @early-stop
+// block topology exact; residue is the memset-site schedule: retail hoists the
+// site-1 m_surface/m_bytesPerPixel loads ABOVE the bpp branch and orders the
+// two imul terms per site (site1 px*left first, site2 pitch*bottom first);
+// textual term order, a two-statement accumulator (cl refolds 2-term sums) and
+// 300 generated variants are all byte-identical at 84.58.
 RVA(0x00163f40, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
@@ -248,20 +263,20 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
     if (m_bpp == BPP_RGB_16) {
         i32 n = 2 * w;
-        i32 offTop = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->top;
+        i32 offTop = m_surface->m_pitch * rect->top + m_surface->m_bytesPerPixel * rect->left;
         if (n > 0) {
             memset(base + offTop, color, n);
         }
-        i32 offBot = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->bottom;
+        i32 offBot = m_surface->m_pitch * rect->bottom + m_surface->m_bytesPerPixel * rect->left;
         if (n > 0) {
             memset(base + offBot, color, n);
         }
     } else {
-        i32 offTop = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->top;
+        i32 offTop = m_surface->m_pitch * rect->top + m_surface->m_bytesPerPixel * rect->left;
         if (w > 0) {
             memset(base + offTop, color, w);
         }
-        i32 offBot = m_surface->m_bytesPerPixel * rect->left + m_surface->m_pitch * rect->bottom;
+        i32 offBot = m_surface->m_pitch * rect->bottom + m_surface->m_bytesPerPixel * rect->left;
         if (w > 0) {
             memset(base + offBot, color, w);
         }
@@ -294,6 +309,9 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 }
 
 // @early-stop
+// one register copy at the Unlock tail: retail re-uses esi (`mov esi,edi`) for
+// the m_surface deref, ours picks edx (and ecx/edx swap in the vtbl dispatch).
+// 200 generated variants and the fast permuter are flat; regalloc coin.
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
@@ -341,55 +359,60 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 }
 
 // @early-stop
+// same polarity/over-merge family as InitFromSurface 0x163db0: retail SINKS the
+// unchanged-path `return 1` past the whole body (B24) and keeps the two surface
+// null guards as INLINE fall-through arms; our cl inlines the return-1 after the
+// head compares and folds both null-guard return-0s onto the bpp-chain's shared
+// block. `if (changed) {body} return 1` and `if (==&&==&&==) return 1; body`
+// are byte-identical (measured).
 RVA(0x00164250, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
-    if (m_width != w || m_height != h || m_bpp != bpp) {
-        i32 sysmem;
-        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
-            DDSCAPS caps;
-            if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
-                sysmem = 0x800 & caps.dwCaps;
-            } else {
-                sysmem = 0;
-            }
-        }
-        OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
-        m_surface = NULL;
-        if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
-            CDDrawSurfaceMgr* mgr = OwnerMgr();
-            m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
-                static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
-                4
-            ));
-            if (m_surface == NULL) {
-                return 0;
-            }
-        }
-        if (m_id != 1) {
-            if (sysmem != 0) {
-                m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
-            } else {
-                m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
-            }
-            if (m_surface == NULL) {
-                return 0;
-            }
-        }
-        if (w > 0 && h > 0
-            && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24
-                || bpp == BPP_RGB_32)) {
-            m_srcRect[0] = 0;
-            m_srcRect[1] = 0;
-            m_width = w;
-            m_height = h;
-            m_bpp = bpp;
-            m_srcRect[2] = w;
-            m_srcRect[3] = h;
-            return 1;
-        }
-        return 0;
+    if (m_width == w && m_height == h && m_bpp == bpp) {
+        return 1;
     }
-    return 1;
+    i32 sysmem;
+    if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_OVERLAY) {
+        DDSCAPS caps;
+        if (0 == m_surface->m_ddSurface->GetCaps(&caps)) {
+            sysmem = 0x800 & caps.dwCaps;
+        } else {
+            sysmem = 0;
+        }
+    }
+    OwnerMgr()->m_ptrColl->RemoveItemA(m_surface);
+    m_surface = NULL;
+    if (static_cast<DDrawPageKind>(m_id) == DDRAW_PAGE_BACK) {
+        CDDrawSurfaceMgr* mgr = OwnerMgr();
+        m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
+            static_cast<void*>(mgr->m_drawTarget->m_frontPair->m_surface),
+            4
+        ));
+        if (m_surface == NULL) {
+            return 0;
+        }
+    }
+    if (m_id != 1) {
+        if (sysmem != 0) {
+            m_surface = OwnerMgr()->m_ptrColl->MakeAndAddB(w, h, bpp, 0, -1);
+        } else {
+            m_surface = OwnerMgr()->m_ptrColl->CreateKeyedSurface(w, h, bpp, 0, -1);
+        }
+        if (m_surface == NULL) {
+            return 0;
+        }
+    }
+    if (w > 0 && h > 0
+        && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || bpp == BPP_RGB_32)) {
+        m_srcRect[0] = 0;
+        m_srcRect[1] = 0;
+        m_width = w;
+        m_height = h;
+        m_bpp = bpp;
+        m_srcRect[2] = w;
+        m_srcRect[3] = h;
+        return 1;
+    }
+    return 0;
 }
 
 RVA(0x00164380, 0x98)
@@ -429,6 +452,11 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 }
 
 // @early-stop
+// one block placement: the shared CREATE_DEVICE (0xbb9) arm - reached by both
+// the switch fall-out and the err==NONE path - sits INLINE right after the five
+// jump-table arms in retail; our cl sinks the merged copy to the end of the
+// function. Duplicated arms, a deduplicated fall-through, and an explicit
+// `default:` arm all produce the same sunk layout (over-merge placement family).
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
@@ -497,15 +525,10 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
                     return 0;
                 }
             }
-            CDDrawSurfaceMgr* md = OwnerMgr();
-            if (md->m_lastError == WORLDERR_NONE) {
-                md->m_lastError = WORLDERR_CREATE_DEVICE;
-            }
-            return 0;
         }
-        CDDrawSurfaceMgr* m4 = OwnerMgr();
-        if (m4->m_lastError == WORLDERR_NONE) {
-            m4->m_lastError = WORLDERR_CREATE_DEVICE;
+        CDDrawSurfaceMgr* md = OwnerMgr();
+        if (md->m_lastError == WORLDERR_NONE) {
+            md->m_lastError = WORLDERR_CREATE_DEVICE;
         }
         return 0;
     }
@@ -587,6 +610,10 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 }
 
 // @early-stop
+// retail loads OwnerMgr() into eax right after the zero block, which keeps the
+// const 1 un-CSE'd (imm stores for m_flashInterval/m_drawFillCmd, late
+// `mov eax,1`); our cl loads the owner into edx after the screenY store and
+// CSEs the 1. An owner-local hoist compiles byte-identically; permuter flat.
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
@@ -673,14 +700,19 @@ CString CDDrawWorkerCache::FindKeyOfValue(CObject* target) {
 }
 
 // @early-stop
+// head register derivation: retail loads src into ebp, copies ebx, then
+// ADVANCES ebp (`mov ebx,ebp; add ebp,0x20`) and folds src->m_flags through
+// the cursor ([ebp-0x18]); ours derives the cursor with one lea from ebx.
+// Downstream ecx/edx/eax rotation follows. Cursor-init reorder and 250
+// generated variants are flat.
 RVA(0x00165460, 0x156)
 i32 CAniElement::Build(void* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
     m_total = 0;
+    const char* cursor = src->m_data;
     m_flags = src->m_flags | flags;
 
-    const char* cursor = src->m_data;
     if (src->m_namelen != 0) {
         m_name = new char[src->m_namelen + 2];
         u32 n;
@@ -914,13 +946,16 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
 }
 
 // @early-stop
+// same live-range-split wall as CDDrawWorkerRegistry::RemoveByKey 0x156ec0:
+// retail `mov edi,[out-slot]; test edi` vs our eax-staged load+copy; downstream
+// the w/map register roles rotate (ebx<->edi) and the guard's `xor eax,eax`
+// elides because the tested value sits in eax. One coin, three symptoms.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     CObject* val = 0;
-    CAniRecordBase2* w;
     m_map1.Lookup(key, val);
-
-    if ((w = static_cast<CAniRecordBase2*>(val)) == NULL) {
+    CAniRecordBase2* w = static_cast<CAniRecordBase2*>(val);
+    if (val == NULL) {
         return 0;
     }
     if (m_cachedWorker == w) {
@@ -1030,6 +1065,9 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 }
 
 // @early-stop
+// one scheduling slot: retail sinks the `obj = 0` store below BOTH Lookup arg
+// pushes, ours lands between them. Flat across receiver hoists (mgr/registry),
+// late-zero, p-decl-first, the fast permuter (250 iters) and the AST tree.
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
     CObject* obj = 0;

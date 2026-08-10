@@ -34,6 +34,11 @@ struct WwdDirtyRect {
         m_rect.left = COORD_UNSET;
         m_armed = -1;
     }
+
+    void Reset() {
+        m_rect.left = COORD_UNSET;
+        m_armed = -1;
+    }
     i32 m_lastX;
     i32 m_lastY;
     RECT m_rect;
@@ -71,8 +76,7 @@ public:
 
     virtual ~CResolveNode() OVERRIDE {
         m_screenX = COORD_UNSET;
-        m_dirty.m_rect.left = COORD_UNSET;
-        m_dirty.m_armed = -1;
+        m_dirty.Reset();
     }
 
     i32 m_plotDX;

@@ -125,12 +125,17 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
 }
 
 // @early-stop
+// retail loads the Lookup out-slot ONCE straight into edi (`mov edi,[esp+0xc]`)
+// and tests the copy; our cl live-range-splits it (`mov eax,[mem]; test eax;
+// mov edi,eax`). Flat across: test-w/test-val, assignment-in-condition,
+// register, w-in-body, w-decl-first, typed out-param via a union helper (that
+// one also re-loads + re-emits delete's null check), and the generated AST tree.
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
     m_10map.Lookup(key, val);
     CDDrawWorker* w = static_cast<CDDrawWorker*>(val);
-    if (w != NULL) {
+    if (val != NULL) {
         m_10map.RemoveKey(key);
         delete w;
     }
@@ -201,16 +206,7 @@ RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawWorkerA@@UAEPAXI@Z)
 RVA(0x001570d0, 0x39)
 CDDrawWorkerA::~CDDrawWorkerA() {
     m_pixelValue = 0;
-    volatile LONG* pHi = &m_dirty.m_rect.left;
-    volatile i32* pLo = &m_dirty.m_armed;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
-    m_screenX = COORD_UNSET;
-    m_id = -1;
-    m_flags = 0;
-    m_ownerCtx = NULL;
+    m_dirty.Reset();
 }
 
 RVA(0x00157110, 0x20)
@@ -267,16 +263,7 @@ RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawWorkerB@@UAEPAXI@Z)
 RVA(0x00157240, 0x3c)
 CDDrawWorkerB::~CDDrawWorkerB() {
     m_frameValue = 0;
-    volatile LONG* pHi = &m_dirty.m_rect.left;
-    volatile i32* pLo = &m_dirty.m_armed;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
-    *pHi = static_cast<LONG>(0x80000000);
-    *pLo = -1;
-    m_screenX = COORD_UNSET;
-    m_id = -1;
-    m_flags = 0;
-    m_ownerCtx = NULL;
+    m_dirty.Reset();
 }
 
 RVA(0x00157280, 0x30)
@@ -515,9 +502,11 @@ void CDDrawSubMgrLeafScan::Unload() {
 }
 
 // @early-stop
-// The CString local and the POSITION local hold each other's stack slots. All four
-// declaration orders were measured: two are byte-identical to this one and two are
-// strictly worse (they move the CString ctor ahead of GetStartPosition).
+// The CString local and the POSITION local hold each other's stack slots. Not
+// steered by: all decl orders, renames, guard shape, scope block, for/while,
+// uninit-decl + late assign, or TU-state islands (measured on the 0x152660 twin).
+// The exact sibling CDDrawWorkerMapSmall::RemoveByValue (0x165c40) gets the retail
+// layout from this same shape; the coin is allocator state outside the body text.
 RVA(0x00157b00, 0xb2)
 void CDDrawSubMgrLeafScan::RemoveByValue(LeafCue* p) {
     if (p == NULL) {
@@ -922,6 +911,12 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
 }
 
 // @early-stop
+// @early-stop
+// blocks B0-B18 byte-exact; retail keeps FOUR inline EH epilogue copies (two
+// 10i, two 9i rets) where our cl cross-jumps all exits onto one shared 8i
+// epilogue - the EH-epilogue cross-jump family from
+// docs/patterns/goto-fail-shares-one-exit-block.md (no source construct moves
+// it; same coin as CButeMgr::SetInt in the other direction).
 RVA(0x001588f0, 0x1c5)
 i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
@@ -1136,12 +1131,12 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
 }
 
 // @early-stop
-// @early-stop
-// retail shares ONE return block for the first two guards (an `||`) and keeps a
-// separate inline `xor eax,eax; pop esi; ret` for each of the other three. Writing
-// the `||` feeds cl's cross-jump magnet and collapses ALL five onto one tail
-// (88.21 -> 50.13), so the separate `if`s stay - see
-// docs/patterns/trailing-error-block-is-a-crossjump-magnet.md.
+// retail shares ONE return block for the first two guards and keeps a separate
+// inline `xor eax,eax; pop esi; ret` for each of the other three. `||` and the
+// mid-function `fail:` label (`goto L; if (b) goto ok; L:`) both enter the TOTAL
+// cross-jump regime (-> 50.13); with goto-fail our cl elides the second guard's
+// xor (IsLoaded's result sits in eax) and splits the pair - all seven xor levers
+// measured in docs/patterns/goto-fail-shares-one-exit-block.md.
 RVA(0x00158e40, 0x4c)
 i32 CDDrawSubMgrPages::TransEnter() {
     CDDrawSurfacePair* a;

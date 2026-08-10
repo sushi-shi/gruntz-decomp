@@ -19,6 +19,10 @@ class CDDrawSurfacePair;
 VTBL_ABSENT(CDDrawWorkerBase);
 class CDDrawWorkerBase : public CResolveNode {
 public:
+    virtual ~CDDrawWorkerBase() OVERRIDE {
+        m_dirty.Reset();
+    }
+
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
