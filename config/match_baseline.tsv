@@ -86,7 +86,7 @@ databuffer	8	8
 ddpagemgr	21	19
 ddpalette	23	23
 ddrawptrcollections	10	10
-ddrawshadeblit	12	4
+ddrawshadeblit	22	10
 ddrawsubmgr	120	113
 ddrawsubmgrleaf	12	9
 ddrawsubmgrrefresh	1	1
@@ -197,10 +197,8 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 iconloaders	2	2
-imageowned	9	6
 imagepolyclip	8	1
 imagepool	54	45
-imagerle16encode	1	0
 imageset1	14	13
 imageset2	14	13
 imageset3	3	3
@@ -299,7 +297,7 @@ secretteleportertrigger	16	14
 serializesyncmarker	1	1
 serialobjectfactory	53	52
 sfselectdevice	1	0
-shadetablecache	26	15
+shadetablecache	26	16
 simpleanimation	8	7
 singleanimation	8	7
 singleframemessage	8	7
@@ -820,7 +818,7 @@ cimage	?BlitShadeFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.
 cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.1972	97.1972	4	c1b31c2b5143	0x153ff0	97.2019
 cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8852	99.8852	4	36054ff4fda8	0x1544d0	99.9330
 cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8325	99.8325	3	be93d329f936	0x154270	99.8571
-cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	98.7000	98.7000	2	0db289b550b1	0x153180	98.7000
+cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	98.6286	98.6286	2	0db289b550b1	0x153180	98.7000
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	5	ef4f2298fab7	0x1532b0	100.0000
 cimage	?Create@CImage@@UAEHPADH@Z	100.0000	100.0000	3	00929ac52812	0x152e90	100.0000
 cimage	?CreateBlankSurface@CImage@@UAEHHHH@Z	100.0000	100.0000	2	2d0ef7676784	0x1530e0	100.0000
@@ -954,18 +952,28 @@ ddrawptrcollections	?LoadKeyed@CFileImageSurface@@UAEHPAXHHW4ColorDepth@@HH@Z	10
 ddrawptrcollections	?ResolveEx@CFileImageSurface@@UAEHPAX0W4FileImageFormat@@IHH@Z	100.0000	100.0000	1	beea55de0cff	0x148890	100.0000
 ddrawptrcollections	?Setup@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@HHH@Z	100.0000	100.0000	4	4e47bbe33d6f	0x148af0	100.0000
 ddrawptrcollections	?UpdateOverlay@CPoolItemA88@@UAEHPAXPAVCDDSurface@@0I0@Z	100.0000	100.0000	3	07b3a5f4a315	0x148ac0	100.0000
+ddrawshadeblit	??0CDDrawShadeBlit@@QAE@XZ	100.0000	100.0000	4	ea93fee22e13	0x148ce0	100.0000
 ddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUtagRECT@@PAVCDDSurface@@0HH@Z	100.0000	100.0000	6	03855fa323a4	0x1497f0	100.0000
 ddrawshadeblit	?BlitAt@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HHHH@Z	100.0000	100.0000	2	6b55637df03f	0x149780	100.0000
 ddrawshadeblit	?BlitCopyForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.8187	77.8187	4	043c73c54904	0x149950	77.8187
 ddrawshadeblit	?BlitCopyMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	84.5558	84.5558	7	d67f5add97d8	0x149d00	84.5558
-ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	68.8256	68.8256	10	13e5218e2132	0x14a200	68.8256
-ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	74.9417	74.9417	11	bb4033020ae6	0x14b770	74.9417
-ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	79.4030	79.4030	10	cde1a33be565	0x14c9f0	79.4030
+ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	68.5435	68.5435	10	13e5218e2132	0x14a200	68.8256
+ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	75.1330	75.1330	11	bb4033020ae6	0x14b770	75.1330
+ddrawshadeblit	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HE@Z	80.6493	80.6493	2	e595a0c7b53f	0x1490d0	80.6493
+ddrawshadeblit	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAX@Z	100.0000	100.0000	5	5c747d958af2	0x148f50	100.0000
+ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHH0@Z	97.8708	97.8708	10	2366066fc383	0x148d40	97.8708
+ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	79.3842	79.3842	10	cde1a33be565	0x14c9f0	79.4030
 ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	69.0884	69.0884	9	28871d98519d	0x14d950	72.3293
-ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.4391	72.4391	10	94b5f357b1f4	0x14d5e0	75.0769
-ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	72.2914	72.2914	9	ca778f11ec35	0x14cfc0	72.2914
+ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	74.5353	74.5353	10	94b5f357b1f4	0x14d5e0	75.0769
+ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	69.5054	69.5054	9	ca778f11ec35	0x14cfc0	72.2914
+ddrawshadeblit	?DecodeFrame@CDDrawShadeBlit@@QAEHVCString@@UCImageFrameRebuildDesc@@@Z	100.0000	100.0000	1	70cf2b8d2206	0x149250	100.0000
+ddrawshadeblit	?Decompress@CDDrawShadeBlit@@QAEHPAX@Z	100.0000	100.0000	5	b0bc5e855702	0x1494b0	100.0000
+ddrawshadeblit	?EncodeRle16@CDDrawShadeBlit@@QAEPAXPBE@Z	91.0068	91.0068	10	fa45f9cb78a6	0x1495d0	91.9592
+ddrawshadeblit	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@W4ColorDepth@@@Z	100.0000	100.0000	1	415f2da1d0b1	0x148fc0	100.0000
+ddrawshadeblit	?Rebuild@CDDrawShadeBlit@@QAEHVCString@@HH@Z	89.8816	89.8816	5	0f798c17ecb0	0x1493b0	89.8816
 ddrawshadeblit	?Select@CDDrawShadeBlit@@QAEXW4ShadeMode@@PAUCShadeTable@@@Z	100.0000	100.0000	1	61871bd5f4bd	0x14dd90	100.0000
 ddrawshadeblit	?SetShadeDescr@@YAXPAUCShadeTable@@W4ShadeMode@@@Z	100.0000	100.0000	1	028d6077c3e4	0x14dcf0	100.0000
+ddrawshadeblit	?Teardown@CDDrawShadeBlit@@QAEXXZ	100.0000	100.0000	3	7047e4950e75	0x148d10	100.0000
 ddrawsubmgr	??0CDrawSubWorker@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	7921022f317b	0x158f30	100.0000
 ddrawsubmgr	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	3	a46975b77414	0x157850	100.0000
 ddrawsubmgr	??0CLoadable@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	1	74323471982e	0x156cb0	100.0000
@@ -2530,15 +2538,6 @@ helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c
 helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000
 iconloaders	?BuildBootyPerfectAnimation@CBootyState@@QAEHXZ	100.0000	100.0000	5	282e958d99db	0x1c070	100.0000
 iconloaders	?BuildPowerupIconKeys@CMultiBootyState@@QAEXPAVCString@@H@Z	100.0000	100.0000	3	0832618fb172	0x1e720	100.0000
-imageowned	??0CDDrawShadeBlit@@QAE@XZ	100.0000	100.0000	4	ea93fee22e13	0x148ce0	100.0000
-imageowned	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HW4ColorDepth@@@Z	80.3881	80.3881	1	41b78a5e33d8	0x1490d0	80.3881
-imageowned	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAX@Z	100.0000	100.0000	5	5c747d958af2	0x148f50	100.0000
-imageowned	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHH0@Z	97.8708	97.8708	10	2366066fc383	0x148d40	97.8708
-imageowned	?DecodeFrame@CDDrawShadeBlit@@QAEHVCString@@UCImageFrameRebuildDesc@@@Z	100.0000	100.0000	1	70cf2b8d2206	0x149250	100.0000
-imageowned	?Decompress@CDDrawShadeBlit@@QAEHPAX@Z	100.0000	100.0000	5	b0bc5e855702	0x1494b0	100.0000
-imageowned	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@W4ColorDepth@@@Z	100.0000	100.0000	1	415f2da1d0b1	0x148fc0	100.0000
-imageowned	?Rebuild@CDDrawShadeBlit@@QAEHVCString@@HH@Z	89.8816	89.8816	5	0f798c17ecb0	0x1493b0	89.8816
-imageowned	?Teardown@CDDrawShadeBlit@@QAEXXZ	100.0000	100.0000	3	7047e4950e75	0x148d10	100.0000
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	68.3273	68.3273	3	a4bff2e37bc5	0x146fe0	68.3273
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3578	99.3578	6	3e9cc4a7c9c5	0x1461b0	99.3578
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	4	378c6ebd3241	0x145f60	79.4671
@@ -2601,7 +2600,6 @@ imagepool	?SaveBmp@CRezImage@@QAEHPBDPAX@Z	95.8696	95.8696	9	499fdc281171	0x176b
 imagepool	?SetHandles@CImagePool@@QAEHPAUHINSTANCE__@@PAUHWND__@@H@Z	100.0000	100.0000	2	1b985455bd00	0x174e90	100.0000
 imagepool	?SetPalette@CRezImage@@QAEXPAXH@Z	100.0000	100.0000	4	74dad85d809b	0x176ad0	100.0000
 imagepool	?Tune@CImagePaletteNode@@QAEXXZ	100.0000	100.0000	1	483430cc41a8	0x1770e0	100.0000
-imagerle16encode	?EncodeRle16@CDDrawShadeBlit@@QAEPAXPBE@Z	91.9592	91.9592	10	fa45f9cb78a6	0x1495d0	91.9592
 imageset1	??1CImageSet1@@UAE@XZ	100.0000	100.0000	1	f820f16f802a	0x161370	100.0000
 imageset1	?FreePixels@CImageSet1@@UAEXXZ	100.0000	100.0000	1	4d7be408829a	0x161330	100.0000
 imageset1	?GetCollisionAt@CImageSet1@@UAE?AW4TileCollisionKind@@HH@Z	100.0000	100.0000	1	1dadff6832c3	0x161380	100.0000
@@ -3796,22 +3794,22 @@ shadetablecache	??_GCShadeTableArray@@UAEPAXI@Z	100.0000	100.0000	1	cpp:098b15f0
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@VCString@@@Z	100.0000	100.0000	12	cb6cf16dd4d6	0x14f6c0	100.0000
 shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	100.0000	100.0000	11	b3b68a5ebcd8	0x14f8b0	100.0000
 shadetablecache	?AddTable@CShadeTableCache@@QAEPAUCShadeTable@@M@Z	92.2088	92.2088	11	d54ec0fb9dbf	0x14f080	92.2088
-shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	3b8138ce5d05	0x14f5b0	100.0000
-shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	86.7143	86.7143	5	2f9324d5e2c8	0x14fa60	86.9143
-shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	70.7619	70.7619	7	c4f30eca6248	0x14ed10	70.8730
+shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	99.7471	99.7471	3	3b8138ce5d05	0x14f5b0	100.0000
+shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	6	9f72f177963a	0x14fa60	100.0000
+shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	8	558d08e60d43	0x14ed10	100.0000
 shadetablecache	?FindByKey@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	77.9688	77.9688	1	352314a3deba	0x14fb40	77.9688
-shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@HHH@Z	70.8267	70.8267	5	e17ff6a48988	0x14fbf0	70.8267
+shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@HHH@Z	76.0533	76.0533	6	34478b0a3280	0x14fbf0	76.0533
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	100.0000	100.0000	5	4fa58350a1da	0x14fb80	100.0000
 shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	83.8247	83.8247	9	f85feeeb29f7	0x14df40	83.8247
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	5	07578596cabf	0x14ded0	100.0000
-shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	91.1200	91.1200	4	a7b1257d6a2c	0x14e9f0	91.1200
+shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	94.0743	94.0743	5	9b2056db1ab4	0x14e9f0	94.0743
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	92.8636	92.8636	13	3ab0ff9a1538	0x14eef0	92.8636
 shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	84.8486	84.8486	6	0e695c23d37b	0x14e540	84.8486
 shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	97.4468	97.4468	5	f13c118d1e4c	0x14e830	100.0000
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	82e0fd84636f	0x14ede0	100.0000
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	1	ab2228634a41	0x14dec0	100.0000
 shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	100.0000	100.0000	3	48a975031cf6	0x14ec00	100.0000
-shadetablecache	?RgbToHsv@@YAPAUColorHSV@@PAU1@I@Z	100.0000	100.0000	4	d8c4d90a6ee7	0x14fcc0	100.0000
+shadetablecache	?RgbToHsv@@YA?AUColorHSV@@I@Z	100.0000	100.0000	5	ee469f76043f	0x14fcc0	100.0000
 shadetablecache	?Serialize@CShadeTableArray@@UAEXAAVCArchive@@@Z	100.0000	100.0000	8	f17036bc2d6b	0x14fe90	100.0000
 shadetablecache	?SetSizeGrow@CShadeTableArray@@QAEXHH@Z	100.0000	100.0000	7	73aa64fb3661	0x150040	100.0000
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	78.7150	78.7150	11	cb7dd1d250b1	0x14f310	78.7874
