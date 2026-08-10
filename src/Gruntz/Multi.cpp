@@ -1594,10 +1594,11 @@ i32 CMulti::PollSession() {
     sender = 0;
     dispatched = 0;
 
-    for (;;) {
-        if (count <= 0) {
-            break;
-        }
+    // `hr == 0` is a LOOP CONDITION in retail, not a `break`: the top tests only
+    // `count > 0` and the back edge is `test edi,edi / je <top>` on the receive
+    // status, with the error arm falling into the same re-test.
+    i32 hr = 0;
+    while (hr == 0 && count > 0) {
         if (m_pollAbort) {
             break;
         }
@@ -1606,21 +1607,16 @@ i32 CMulti::PollSession() {
         i32 idTo = LocalPlayer()->m_id;
         IDirectPlay4Z* dp = Peer()->m_directPlay;
 
-        i32 hr = dp->Receive(&sender, &idTo, 1, g_recvBuffer, &size);
+        hr = dp->Receive(&sender, &idTo, 1, g_recvBuffer, &size);
 
         if (hr) {
             CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
-        }
-        if (hr) {
-            break;
-        }
-        count--;
-        if (sender != LocalPlayer()->m_id) {
-            DispatchRecvMsg(sender, g_recvBuffer, size);
-            dispatched++;
-        }
-        if (hr) {
-            break;
+        } else {
+            count--;
+            if (sender != LocalPlayer()->m_id) {
+                DispatchRecvMsg(sender, g_recvBuffer, size);
+                dispatched++;
+            }
         }
     }
     return dispatched;
