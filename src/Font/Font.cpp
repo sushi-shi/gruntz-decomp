@@ -1,3 +1,8 @@
+// Retail's font TU compiled against the OUT-OF-LINE MFC accessors: DrawWrapped
+// `call`s ?Width@CRect@@QBEHXZ. <MfcNoInline.h> cannot reach here (Font.h pulls
+// <MfcWin.h> first), so the switch is set before any header is parsed.
+#define GRUNTZ_MFC_NO_INLINES 1
+
 #include <rva.h>
 
 #include <Font/Font.h>

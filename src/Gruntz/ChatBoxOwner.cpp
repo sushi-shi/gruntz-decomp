@@ -108,8 +108,10 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 
                     bute.Init();
                     bute.m_tree.Reset();
-                    bute.m_tree48.Reset();
-                    bute.m_tree74.Reset();
+                    // Retail expands Reset() only for m_tree and CALLS the out-of-line
+                    // copy (0x212a0) for the other two.
+                    bute.m_tree48.ResetCopy();
+                    bute.m_tree74.ResetCopy();
                     bute.m_stream = parseStream;
                     parsed = true;
                     if (!bute.ParseGroup()) {

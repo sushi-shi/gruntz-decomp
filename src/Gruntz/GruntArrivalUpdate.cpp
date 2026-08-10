@@ -39,12 +39,14 @@
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
-    bool neI = (strcmp(name, "I") != 0);
-    if (neI) {
+    // POLARITY: retail's `sete cl` (0xf0184) leaves the body on the strcmp!=0 path -
+    // the arrival AI is SKIPPED for act "I". We had `!=`, which ran it only for "I".
+    // Same spelling as CBattlezMapConfig::ChooseIdleBehavior's four name gates.
+    bool eqI = (strcmp(name, "I") == 0);
+    if (eqI) {
         return 1;
     }
-    this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
-    this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+    this->m_defenderPx = this->m_lastTilePx;
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
     if (g != NULL) {
@@ -56,11 +58,15 @@ i32 CGrunt::UpdateArrival() {
     }
 
     if (this->m_poweredUp != 0) {
-        if (this->m_combatActive != 0) {
-            this->m_combatActive = 0;
+        // The gate pair is m_neighborValid (+0x21c) then m_combatActive (+0x218) -
+        // retail tests 0x21c and clears 0x21c (0xf01f8 / 0xf02c8). The two names were
+        // swapped here; the rest of the tree agrees with Grunt.h (store_offsets shows
+        // no other 0x218/0x21c divergence).
+        if (this->m_neighborValid != 0) {
+            this->m_neighborValid = 0;
             return 1;
         }
-        if (this->m_neighborValid != 0) {
+        if (this->m_combatActive != 0) {
             return 1;
         }
         if (this->m_stamina >= STAMINA_FULL) {
@@ -73,7 +79,7 @@ i32 CGrunt::UpdateArrival() {
             if (this->m_poweredUp == 0) {
                 return 1;
             }
-            if (this->m_combatActive != 0) {
+            if (this->m_neighborValid != 0) {
                 return 1;
             }
             this->m_entranceActive = 0;
@@ -89,7 +95,7 @@ i32 CGrunt::UpdateArrival() {
         if (this->m_poweredUp == 0) {
             return 1;
         }
-        if (this->m_combatActive != 0) {
+        if (this->m_neighborValid != 0) {
             return 1;
         }
         this->m_entranceActive = 0;
@@ -228,28 +234,29 @@ i32 CGrunt::UpdateArrival() {
             if (m_poweredUp != 0) {
                 CGrunt* slot =
                     m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
+                // The null test is the FIRST term of the &&-chain and is repeated after
+                // the block: retail jump-threads the leading `slot == NULL` straight to
+                // the SEEK store (0xf056c) and threads the in-block failures PAST the
+                // repeat (0xf03ce vs 0xf03d6). Hoisting it to its own early `break`
+                // loses the second copy.
+                if (slot != NULL && GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) != 0
+                    && slot->m_entranceCommitted != 0) {
+                    // 0x21c (m_neighborValid) is tested first here too - see above.
+                    if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
+                        break;
+                    }
+                    if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
+                        && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
+                        Coord cp = slot->m_lastTilePx;
+                        CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
+                        break;
+                    }
+                }
                 if (slot == NULL) {
                     m_defenderState = AISTATE_SEEK;
                     break;
                 }
-                if (GruntInRadius(slot->m_tileOwnerHi, slot->m_tileOwnerLo) == 0
-                    || slot->m_entranceCommitted == 0) {
-                    goto repath;
-                }
-                if (m_combatActive != 0 || m_neighborValid != 0 || m_stamina < STAMINA_FULL) {
-                    break;
-                }
-                if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) == 0
-                    || slot->m_object->m_screenX != slot->m_lastTilePx.m_x
-                    || slot->m_object->m_screenY != slot->m_lastTilePx.m_y) {
-                    goto repath;
-                }
-                {
-                    Coord cp = slot->m_lastTilePx;
-                    CommitNeighbor(slot->m_tileOwnerHi, slot->m_tileOwnerLo, cp.m_x, cp.m_y);
-                }
-                break;
-            repath:
                 m_defenderState = AISTATE_CHASE;
                 {
                     // Retail expands the bounds test here (0xf03f8) and CALLS it

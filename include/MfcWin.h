@@ -17,7 +17,14 @@
 // dependency explicit instead of ambient.
 #include <Mfc.h>
 
-#ifdef __clang__
+// GRUNTZ_MFC_NO_INLINES is the MSVC-side half of the same switch, for a TU whose
+// OWN header pulls this file: <MfcNoInline.h> cannot reach those units, because the
+// canonical include order parses the own header (and therefore <afxwin.h>) before
+// the platform preludes, so its #undef lands after the .inl is already in. Retail
+// proves the shape - `?Width@CRect@@QBEHXZ` and `?SetRect@CRect@@QAEXHHHH@Z` exist
+// out of line and are called (font, gruntzmgr). Only afxwin1.inl is suppressed;
+// afx.inl (CString &c.) is already parsed by <Mfc.h> above.
+#if defined(__clang__) || defined(GRUNTZ_MFC_NO_INLINES)
 #undef _AFX_ENABLE_INLINES
 #endif
 #include <afxwin.h>

@@ -17,19 +17,27 @@ RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_bounds.m_minX = rect.left;
-    m_bounds.m_minY = rect.top;
-    m_bounds.m_maxX = rect.right;
-    m_bounds.m_maxY = rect.bottom;
+    // One struct ASSIGNMENT, not four field stores: retail materialises &m_bounds once
+    // (`lea eax,[esi+0x28]; mov edx,eax`) and writes [edx+0/4/8/c].
+    WwdRect b;
+    b.m_minX = rect.left;
+    b.m_minY = rect.top;
+    b.m_maxX = rect.right;
+    b.m_maxY = rect.bottom;
+    m_bounds = b;
+    // Swap through a temp - retail's `mov edx,eax; mov eax,edi; mov edi,edx` triple,
+    // not a pair of re-assignments from the original fields.
     i32 lox = rect.left, hix = rect.right;
-    if (rect.right < rect.left) {
-        lox = rect.right;
-        hix = rect.left;
+    if (hix < lox) {
+        i32 t = lox;
+        lox = hix;
+        hix = t;
     }
     i32 loy = rect.top, hiy = rect.bottom;
-    if (rect.bottom < rect.top) {
-        loy = rect.bottom;
-        hiy = rect.top;
+    if (hiy < loy) {
+        i32 t = loy;
+        loy = hiy;
+        hiy = t;
     }
     m_width = hix - lox;
     m_height = hiy - loy;

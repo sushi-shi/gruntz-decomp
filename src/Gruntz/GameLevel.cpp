@@ -1153,7 +1153,7 @@ i32 CGameLevel::FreeMove(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) {
                 PROBE_TILE(this, cur, hiY - 1, r2);
                 if (r2 != TILEKIND_SOLID) {
                     TileCollisionKind r3;
-                    PROBE_TILE(this, cur, hiY - 1, r3);
+                    PROBE_TILE_VIA_HANDLE(this, cur, hiY - 1, r3);
                     if (r3 != TILEKIND_GROUND) {
                         return destY;
                     }

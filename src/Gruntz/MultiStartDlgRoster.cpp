@@ -681,11 +681,9 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                 ::SendMessageA(ready->m_hWnd, BM_SETCHECK, 0, 0);
             }
             CWnd* color = GetCtrlC(idx);
-            if (g_multiState->m_isHost && slot->m_liveGate && localColour == 0) {
-                color->EnableWindow(1);
-            } else {
-                color->EnableWindow(0);
-            }
+            // The &&-chain as the ARGUMENT, not an if/else round two calls: retail
+            // materialises the flag (mov edx,1 / jmp / xor edx,edx) and pushes it once.
+            color->EnableWindow(g_multiState->m_isHost && slot->m_liveGate && localColour == 0);
             SetListCurSel(idx, slot->m_liveGate ? slot->m_comboSel : 0);
             if (force == 0) {
                 if (this->GetSlotIndex() == idx) {
@@ -700,14 +698,22 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     force = 0;
                     GetCtrlB(idx)->SetWindowTextA(slot->GetName());
                 }
+                // The combo is fetched into a local FIRST at each of the three sites -
+                // retail calls GetCtrlE inside both arms and only then pushes the
+                // message args. Written inline the constants push first, which lets cl
+                // cross-jump the two arms onto ONE GetCtrlE call (retail has two).
                 if (slot->m_humanControlled) {
-                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, 4, 0);
+                    CWnd* cb = GetCtrlE(idx);
+                    ::SendMessageA(cb->m_hWnd, CB_SETCURSEL, 4, 0);
                 } else {
-                    ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, slot->m_configId + 1, 0);
+                    i32 sel = slot->m_configId;
+                    CWnd* cb = GetCtrlE(idx);
+                    ::SendMessageA(cb->m_hWnd, CB_SETCURSEL, sel + 1, 0);
                 }
             } else {
                 GetCtrlB(idx)->SetWindowTextA("");
-                ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, 0, 0);
+                CWnd* cb = GetCtrlE(idx);
+                ::SendMessageA(cb->m_hWnd, CB_SETCURSEL, 0, 0);
             }
             this->SyncChannelSlot(idx);
         }

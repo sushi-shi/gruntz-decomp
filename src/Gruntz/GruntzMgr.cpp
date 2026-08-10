@@ -2725,7 +2725,13 @@ void CGruntzMgr::Close() {
         }
         m_settings->SetValueDword("Resolution", IDX(res));
         m_settings->SetValueDword("Checkpoint Prompts", m_isCheckpointPrompts);
-        m_settings->SetValueDword("Enable HiColor", m_colorDepth == BPP_RGB_16 ? 1 : 0);
+        // if/else, not `?:` - retail branches (cmp/jne/push 1/jmp/push 0) and lets cl
+        // tail-merge the two calls; the ternary lowers to a branchless xor/sete/push.
+        if (m_colorDepth == BPP_RGB_16) {
+            m_settings->SetValueDword("Enable HiColor", 1);
+        } else {
+            m_settings->SetValueDword("Enable HiColor", 0);
+        }
         m_settings->SetValueDword("Enable TrueColor", 0);
     }
     ClearStateStack();

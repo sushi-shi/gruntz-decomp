@@ -53,6 +53,45 @@ static const i32 TILE_CLEAR = -1;
         }                                                                                          \
     } while (0)
 
+// Same probe, but the grid fetch goes through the out-of-line accessor instead of
+// expanding the two-level index in place.  Retail mixes the two spellings inside one
+// body: CGameLevel::FreeMove (0x15eb00) expands the index at its first two probes and
+// `call`s CDDrawWorkerHost::GetTileHandle at the third.  cl 5.0 cannot produce both
+// from one spelling - an inline GetTileHandle expands at every site and emits no
+// out-of-line copy at all, which is why both forms exist here.
+#define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
+    do {                                                                                           \
+        i32 py_ = (Y);                                                                             \
+        i32 px_ = (X);                                                                             \
+        if (px_ < 0) {                                                                             \
+            px_ = 0;                                                                               \
+        } else {                                                                                   \
+            if (px_ >= (LVL)->m_mainPlane->m_wrapW) {                                              \
+                px_ = (LVL)->m_mainPlane->m_wrapW - 1;                                             \
+            }                                                                                      \
+        }                                                                                          \
+        if (py_ < 0) {                                                                             \
+            py_ = 0;                                                                               \
+        } else {                                                                                   \
+            if (py_ >= (LVL)->m_mainPlane->m_wrapH) {                                              \
+                py_ = (LVL)->m_mainPlane->m_wrapH - 1;                                             \
+            }                                                                                      \
+        }                                                                                          \
+        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
+        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
+        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
+        i32 col_ = qx_;                                                                            \
+        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
+        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
+        i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
+        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
+            (RESULT) = TILEKIND_PASSABLE;                                                          \
+        } else {                                                                                   \
+            CTileImageSet* set_ = static_cast<CTileImageSet*>(m_imageSets[tile_ & 0xffff]);        \
+            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
+        }                                                                                          \
+    } while (0)
+
 #include <Gruntz/ImageSets.h>
 #include <Wap32/CoordUnset.h>
 
