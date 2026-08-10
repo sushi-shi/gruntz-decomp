@@ -200,3 +200,13 @@ So the test's discriminator is cheap and mechanical: **count the DISTINCT caller
 there is more than one, tabulate the call/expand choice by the constructed class.** One
 caller means the split is inside a single function and there is nothing to model. Several
 callers with a unanimous or near-unanimous per-class column means an entity is missing.
+
+Measured detail on the `CFileMemBase` row (2026-08-10): the budget depletes **mid-function**
+and **per caller size**. In one TU retail shows three regimes for the SAME inline dtor -
+`LoadRecordFile` (466 B) expands `~CFileMemBase` fully, `SnapshotChildren` (1285 B) calls
+`??1CFileMemBase` at 3 exits and shares a dtor tail for the rest, and `RestoreChildren`
+(1367 B) calls `??1CFileMemBase` at 11 exits AND falls back to calling the whole
+`??1CFileMem` COMDAT at its last 3. Our build expands everywhere. A 96-island `tu_state`
+sweep is flat, and an OOL-dtor probe (measured: Snapshot 63.3->72.5, but LoadRecordFile
+100->66.4, `??1CFileMem` 100->80.7, Restore 61.6->56.6) is refuted as a model by retail's
+own `??1CFileMem` body expanding the base dtor - the definition was header-visible.

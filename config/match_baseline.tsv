@@ -103,7 +103,7 @@ demo	8	6
 destructbutton	1	1
 dialogs	57	41
 dircellmethods	19	6
-directdrawmgr	68	44
+directdrawmgr	68	45
 directinputmgr2	45	35
 directsoundmgr	76	65
 donothing	7	4
@@ -911,7 +911,7 @@ ddpagemgr	?CreateVideoWindow@CMoviePlayer@@QAEHPAUDDModeInfo@@I@Z	99.9029	99.902
 ddpagemgr	?Frame@CMoviePlayer@@QAEHXZ	100.0000	100.0000	9	55ba4cb992f4	0x17caa0	100.0000
 ddpagemgr	?FreeAll@CMoviePlayer@@QAEHXZ	100.0000	100.0000	3	54fc84033ffe	0x17d6b0	100.0000
 ddpagemgr	?HandleError@CMoviePlayer@@QAEXXZ	100.0000	100.0000	5	cef7338c95eb	0x17cc80	100.0000
-ddpagemgr	?Init@CMoviePlayer@@QAEHPAUHWND__@@PAUDDModeInfo@@I@Z	98.1818	98.1818	8	708563b6d13f	0x17c040	98.2438
+ddpagemgr	?Init@CMoviePlayer@@QAEHPAUHWND__@@PAUDDModeInfo@@I@Z	99.9380	99.9380	9	58b8853cb9bb	0x17c040	99.9380
 ddpagemgr	?InitMode@CMoviePlayer@@QAEHPAUHWND__@@PAUIDirectDraw2@@PAUIDirectDrawSurface@@U_DDSURFACEDESC@@PAUIDirectSound@@@Z	100.0000	100.0000	3	220e12ee9946	0x17c3f0	100.0000
 ddpagemgr	?Open@CMoviePlayer@@QAEHPBDHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	1	baacf5822e07	0x17c6f0	100.0000
 ddpagemgr	?OpenHi@CMoviePlayer@@QAEHHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	2	9a8ed87f3e59	0x17c630	100.0000
@@ -1382,7 +1382,7 @@ directdrawmgr	??_GCPoolItemAE8@@UAEPAXI@Z	100.0000	100.0000	1	cpp:efb2cc1e4aee	0
 directdrawmgr	?AddItemA@CDDrawPtrCollections@@QAEXPAVCDDSurface@@@Z	100.0000	100.0000	1	063e773f1091	0x142100	100.0000
 directdrawmgr	?AddItemB@CDDrawPtrCollections@@QAEXPAUCDDPalette@@@Z	100.0000	100.0000	1	91ef022570de	0x142eb0	100.0000
 directdrawmgr	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	5	bcdc6f46bd74	0x142060	100.0000
-directdrawmgr	?Compare@CDDrawPtrCollections@@SGHPAX0@Z	100.0000	100.0000	2	c86b4c959cc2	0x1433d0	100.0000
+directdrawmgr	?Compare@CDDrawPtrCollections@@QAEHPAX0@Z	100.0000	100.0000	3	1567610ce2f3	0x1433d0	100.0000
 directdrawmgr	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	6	2ca7f220a4b9	0x143b20	100.0000
 directdrawmgr	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHW4ColorDepth@@HH@Z	100.0000	100.0000	1	326100840811	0x143c20	100.0000
 directdrawmgr	?Create24BitPaletteSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@H@Z	99.8676	99.8676	1	d58717340173	0x142b70	100.0000
@@ -1435,7 +1435,7 @@ directdrawmgr	?SetDisplayPaletteFrom@CDDrawPtrCollections@@QAEHPAUCDDPalette@@H@
 directdrawmgr	?SetDisplayPaletteFromRgb@CDDrawPtrCollections@@QAEPAUCDDPalette@@PAXH@Z	100.0000	100.0000	2	4a7e3281e366	0x143950	100.0000
 directdrawmgr	?SetDisplayPaletteFromTrailingRgb@CDDrawPtrCollections@@QAEPAUCDDPalette@@PAEHH@Z	100.0000	100.0000	2	64fd5da2abbe	0x1439f0	100.0000
 directdrawmgr	?SetSurfaceRestoreHandler@@YAXP6AHXZ@Z	100.0000	100.0000	1	32033e194295	0x1437e0	100.0000
-directdrawmgr	?SetupCaps@CDDrawPtrCollections@@QAEXXZ	92.6126	92.6126	5	bbf7820b2324	0x143240	92.6126
+directdrawmgr	?SetupCaps@CDDrawPtrCollections@@QAEXXZ	100.0000	100.0000	5	bbf7820b2324	0x143240	100.0000
 directdrawmgr	_DdEnumModesCallback@8	100.0000	100.0000	2	6bdf391e7085	0x143390	100.0000
 directinputmgr2	??1CDeviceConfigB@@UAE@XZ	99.6800	99.6800	3	7c9591ebbb80	0x1334f0	100.0000
 directinputmgr2	??1CDeviceConfigC@@UAE@XZ	99.6800	99.6800	4	66a78e348631	0x133460	100.0000
@@ -2811,7 +2811,7 @@ loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	248
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	31aae3635583	0x9e2d0	100.0000
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	99.0807	99.0807	10	e9830ed3117e	0x9e390	99.0807
 logicrecord	?CacheTargetId@AnimWorkerObj@@QAEHPAX@Z	100.0000	100.0000	4	180c350cde77	0x164920	100.0000
-logicrecord	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	94.9419	94.9419	2	1a966cbfaee6	0x164830	94.9419
+logicrecord	?Dispatch@AnimWorkerObj@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	99.3605	99.3605	3	2a426ff31100	0x164830	99.3605
 logicrecord	?Load@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	c9ff892dbdc5	0x164d80	100.0000
 logicrecord	?ResolveTarget@AnimWorkerObj@@QAEHPAX@Z	99.3333	99.3333	5	178b864c393b	0x1651b0	99.3333
 logicrecord	?Save@AnimWorkerObj@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	9f57af74fde1	0x164960	100.0000

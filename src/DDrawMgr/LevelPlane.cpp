@@ -875,11 +875,14 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
 }
 
 // @early-stop
-// twin-parity with ActivateVisibleObjects (same source shape): cl canonicalises
-// the (right+left)/(bottom+top) add operand order per TU-cumulative state, so only
-// one twin matches at a time. A struct definition placed between the twins flips
-// this one to byte-exact (proof banked at MAX 100); shipping the probe would flip
-// Save's imul pair instead. TU-completeness: retail emitted a definition here.
+// TU-completeness: retail defined a CLASS TYPE in this slot. The .text is gapless
+// (ActivateVisibleObjects 0x163300+0x70 abuts this fn; functions.tsv agrees), so the
+// definition emitted zero bytes and its content is unrecoverable. Probe matrix against
+// the TU's three parity victims (this fn / Save / Load, baseline wrong/exact/exact):
+// `struct X {};` or `struct X { i32 a; };` here flips ONLY this fn -> all three
+// byte-exact simultaneously; a `struct X;` fwd-decl or typedef instead flips Load,
+// a static fn flips Save+Load. Shipping any probe is banned (.cpp-local-views
+// ratchet / fitted artifact), so this parks until the real type is recovered.
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -1078,10 +1081,10 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
     return 1;
 }
 
-// @early-stop
-// canonical-imul TU-state parity (docs/patterns/commutative-operand-order-is-
-// canonical.md): flips against DeactivateDistantObjects' twin parity, so only
-// one of the pair matches per TU state. best is banked at 100.
+// canonical-imul parity note: the gridW*gridH imul pair is TU-state sensitive
+// (docs/patterns/commutative-operand-order-is-canonical.md) and rides the same
+// missing class-type definition as DeactivateDistantObjects (see its dossier);
+// the struct probe there keeps this fn exact while fixing that one.
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {

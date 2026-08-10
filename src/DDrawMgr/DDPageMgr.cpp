@@ -32,7 +32,6 @@ i32 g_val_2c4778;
 DATA(0x002c4780)
 i32 g_val_2c4780;
 
-// @early-stop
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
@@ -80,7 +79,8 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
     ComOutRef<IDirectDrawSurface> primOut;
     primOut.m_asTyped = &m_primary;
-    if (m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, primOut.m_asVoid) != 0) {
+    HRESULT hr = m_primaryRaw->QueryInterface(IID_IDirectDrawSurface3, primOut.m_asVoid);
+    if (hr != 0) {
         return 0;
     }
 

@@ -275,6 +275,15 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 // @early-stop
+// /Ob1 inline-budget wall (docs/patterns/ob1-inline-budget-divergence.md): retail
+// expands ~CFileMem at the exits but CALLS ??1CFileMemBase (0x1578b0, 3 sites)
+// where our build recursively expands the base dtor too (extra base-vptr re-stamp
+// and one extra EH state per exit, so the state numbering shifts site-onward).
+// The dtor WAS header-inline in retail's TU - its own ??1CFileMem COMDAT
+// (0x157980) and LoadRecordFile expand the same body - so the call/expand split
+// is the caller-size-dependent inliner decline, not visibility. 96 tu_state
+// islands flat; an OOL-dtor probe reached 72.5 here but is inauthentic and
+// regresses LoadRecordFile + ??1CFileMem (both 100), so the inline model stays.
 RVA(0x00156020, 0x505)
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
@@ -344,6 +353,11 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 }
 
 // @early-stop
+// Same /Ob1 wall as SnapshotChildren, one notch deeper: retail calls
+// ??1CFileMemBase (0x1578b0) at 11 exits AND the whole ??1CFileMem (0x157980)
+// at 3 more - the inline budget depleting mid-function. Our build inline-expands
+// both dtors at every exit, so every exit block is wider and the EH state
+// numbering diverges. Inline dtor model is proven (see SnapshotChildren).
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {
@@ -420,7 +434,6 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, SerialMode mode, LogicTypeId type
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-// @early-stop
 RVA(0x00156ad0, 0x1d2)
 i32 __stdcall
 LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i32 unused) {

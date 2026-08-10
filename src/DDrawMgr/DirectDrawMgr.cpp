@@ -766,7 +766,6 @@ CDDPalette* CDDrawPtrCollections::LoadTrailingRgbPalette(const char* path, i32 z
     return CreateRgbPalette(buf, z);
 }
 
-// @early-stop
 RVA(0x00143240, 0x143)
 void CDDrawPtrCollections::SetupCaps() {
     for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
@@ -811,7 +810,7 @@ i32 __stdcall DdEnumModesCallback(void* mode, i32 unused) {
 }
 
 RVA(0x001433d0, 0x4f)
-i32 __stdcall CDDrawPtrCollections::Compare(void* pa, void* pb) {
+i32 CDDrawPtrCollections::Compare(void* pa, void* pb) {
     DDSURFACEDESC* a = static_cast<DDSURFACEDESC*>(pa);
     DDSURFACEDESC* b = static_cast<DDSURFACEDESC*>(pb);
     if (a->dwWidth > b->dwWidth) {

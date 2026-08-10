@@ -70,7 +70,7 @@ public:
 
     void* CreatePoolItem(void* srcSurface, i32 caps);
 
-    static i32 __stdcall Compare(void* a, void* b);
+    i32 Compare(void* a, void* b);
 
     i32 FindIndex(i32 k0, i32 k1, ColorDepth colorDepth);
     i32 FindLast(u32 k0, u32 k1, i32 k2);

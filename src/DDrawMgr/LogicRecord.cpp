@@ -14,9 +14,13 @@
 #include <Utils/MapTyped.h>
 
 // @early-stop
-// Register-homing residue: the SerializeMove call transports param d in eax where
-// retail uses edx (and the out=0 store slot differs) - the swapped value is a
-// parameter, so no local spelling reaches it (front-end handle-state class).
+// Two coupled scratch-register swaps, both measured inert against a 3x5 spelling
+// matrix (res/out order x logic/obj/result locals): the POSTLOAD lookup chain is
+// coloured ecx/edx (retail edx/ecx; same MapLookupById family wall as
+// ResolveTarget below), and the SerializeMove call transports param d in eax
+// where retail uses edx (vtbl edx vs eax). res-before-out sank the out=0 store
+// into retail's slot; the rest is the coupled coloring. Tail rows past the last
+// ret are the delinker jump-table artifact.
 RVA(0x00164830, 0xec)
 i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, void* d) {
     if (a == NULL) {
@@ -43,8 +47,8 @@ i32 AnimWorkerObj::Dispatch(CFileMemBase* a, SerialMode mode, LogicTypeId c, voi
             break;
         case SERIAL_POSTLOAD:
             if (m_targetId) {
-                void* out = 0;
                 CMapPtrToPtr* res = &m_ownerCtx->m_childGroup->m_map48;
+                void* out = 0;
                 if (MapLookupById(*res, m_targetId, out)) {
                     m_target = static_cast<CGameObject*>(out);
                 }
@@ -232,11 +236,13 @@ i32 AnimWorkerObj::Load(CFileMemBase* ar) {
 }
 
 // @early-stop
-// Residue is the two scratch registers on the map chain and the out-param address
-// (retail edx/ecx, cl ecx/edx). This shape is the RIGHT trade: declaring `out` before
-// `res` DOES flip the registers to retail's, but it simultaneously lifts the `out = 0`
-// store above both argument pushes where retail sinks it below them - measured
-// 99.33 -> 86.67. The store position outweighs the register naming.
+// MapLookupById out-param family (same wall as CTriggerMgr::ScanGroup): the two
+// scratch registers and the `out = 0` store slot are COUPLED through one knob.
+// Precomputing any link of the chain (res/grp/mgr, any decl order, 6 spellings
+// measured) keeps the store sunk below the pushes but colours the chain ecx/edx
+// (retail edx/ecx); evaluating the chain in-call flips the registers to retail's
+// but lifts the store above the pushes. No spelling decouples them; islands and
+// depth-1 trees inert.
 RVA(0x001651b0, 0x5d)
 i32 AnimWorkerObj::ResolveTarget(void* a) {
     if (a == NULL) {

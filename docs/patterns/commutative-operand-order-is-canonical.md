@@ -66,7 +66,27 @@ operand pair alone: `ProbeColumn` and `ProbeHeadSoft` add the SAME two members
 `ProbeHeadSoft` has a third term. Swapping the source operands in all four `CGameLevel`
 probes was byte-identical.
 
-## How to use this
+## The flip is NOT binary existence - the definition's KIND matters (measured 2026-08-10)
+
+Probing the `LevelPlane.cpp` slot between `ActivateVisibleObjects` and
+`DeactivateDistantObjects` against THREE victims at once (Deactivate's add pairs, `Save`'s
+imul, `Load`'s imul; baseline D✗ S✓ L✓):
+
+| probe between the twins | D | S | L |
+|---|---|---|---|
+| none | ✗ | ✓ | ✓ |
+| `struct X;` (fwd-decl only) | ✗ | ✓ | ✗ |
+| `typedef i32 X;` | ✗ | ✓ | ✗ |
+| `static i32 f(i32 a){return a+1;}` | ✗ | ✗ | ✗ |
+| `struct X {};` | ✓ | ✓ | ✓ |
+| `struct X { i32 a; };` | ✓ | ✓ | ✓ |
+
+Only a CLASS-TYPE DEFINITION (member count irrelevant) lands all three simultaneously; a
+mere declaration, a typedef and a static function each advance the state differently, and
+each victim responds on its own phase. So when a TU has SEVERAL parity victims, the probe
+matrix constrains the KIND of the missing definition, not just its existence - here the
+evidence says retail defined a struct/class between the twins (zero bytes emitted, content
+unrecoverable; the .text is gapless, functions.tsv confirms 0x163300+0x70 abuts 0x163370).
 
 1. If the residue is an `imul`/`add` pair of member loads on ONE object, stop editing the
    body — it is canonical. Run the probe (a throwaway `static` definition placed before
