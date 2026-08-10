@@ -39,6 +39,17 @@ typedef enum DSoundDx5Magic {
 
 DATA(0x00253ab8)
 i32 g_volumeTable[VOLUME_PCT_MAX];
+// NOT a one-element table - a BACKWARD CURSOR into g_volumeTable's tail.
+// g_volumeTable[100] ends exactly here (0x253ab8 + 400 = 0x253c48), and
+// SetPanByIndex reads g_panTable[-idx] for idx in 0..100, i.e.
+// g_volumeTable[100 - idx] - the pan attenuation reuses the volume curve read
+// from the top down. The `[1]` is the anchor slot only (it aliases the
+// documented g_volumeTable[100] overrun, see VolumeScale.h); the storage read
+// is g_volumeTable's. Byte-correct as-is - both tables are .bss zero-fill, so a
+// too-small COUNT here is invisible to every byte comparison. Flagged as the
+// `undercount` class by gruntz.audit.data_access_map (the index proves length
+// >= 2 the extent does not carry); kept `[1]` because widening it to real
+// storage would double-reserve g_volumeTable's aliased slots.
 DATA(0x00253c48)
 i32 g_panTable[1];
 

@@ -232,6 +232,48 @@ because it is blind is indistinguishable from a sieve that returns 0 rows
 because the tree is clean.** The injections are `narrow`, `widen`, `float`,
 `swap`, `halve`, `stride`, `split` and `phantom`, one per detector.
 
+## The `undercount` class — a too-small array COUNT (`float[2]` for `float[10]`)
+
+The `stride` detector checks an indexed access's *element width* against the
+declared element; it never checks the *count*. So a claim declared with the
+right element but too FEW of them — `i32[1]` where retail iterates 101 — passes
+every width branch (`scale == elem`) and was invisible. `undercount` closes that:
+**a claim declared with exactly one element that retail reaches through a scaled
+index is under-declared**, because you do not index a single-element array with a
+variable — the index itself proves a length ≥ 2 the extent does not carry.
+
+The instance that motivated it is `?g_panTable@@3PAHA`, declared `i32[1]` at
+`0x253c48`. `DirectSoundMgr::SetPanByIndex` reads `g_panTable[-idx]` for idx
+0..100, i.e. it is a **backward cursor into `g_volumeTable`'s tail**
+(`g_volumeTable[100]` ends exactly at `0x253c48`, so `g_panTable[-k]` is
+`g_volumeTable[100-k]`). The `[1]` is byte-correct storage — both tables are
+`.bss` zero-fill and the read aliases `g_volumeTable` — so it is a pure semantic
+under-declaration, now carrying a source comment and this finding.
+
+**Why it went unseen for so long — three independent blinds, each worth stating
+because each hides a DIFFERENT variant of the class:**
+
+1. **`.bss` zero-fill is byte-neutral.** objdiff, `image_diff` and the
+   band-completion gap census all compare *bytes*; a too-small array in `.bss` is
+   zero on both sides, so it scores 100 and carves no gap. Only a too-small array
+   in **initialized** `.data`/`.rdata` leaves a nonzero tail — and *those* the gap
+   census does catch (it is why the five band-gap finds were all initialized).
+2. **An indexed access folds to offset 0.** `[reg*scale + base]` is recorded at
+   `target_rva = base`, `sym_off = 0`, `in_extent = 1`. The per-symbol overrun
+   check therefore sees the one access that PROVES array-ness as a legal read of
+   element [0]. Count evidence can only come from the *form* (it is indexed at
+   all), never from a reachable offset — which is why `undercount` keys off
+   `form='indexed'`, not off a past-the-end target.
+3. **Human review anchored on the neighbour.** `VolumeScale.h` already documented
+   the adjacent `g_volumeTable` overrun in detail and treated `0x253c48` only as
+   the *terminating address* of that loop — never asking what `g_panTable`'s own
+   `[1]` meant. A reviewed note on one datum is not a review of the next.
+
+The complement still matters: `undercount` fires only for declared count ≤ 1 (the
+sole case indexed evidence can settle). A `float[2]`-for-`float[10]` in `.data`
+surfaces instead as an `unclaimed` contiguous run past the array; in `.bss` with
+count ≥ 2 it remains genuinely unobservable until the accessor is disassembled.
+
 ## Evidence rules
 
 * **A content-derived address is self-confirming.** Matching a datum by its

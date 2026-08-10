@@ -28,6 +28,8 @@ DERIVED CATEGORIES (--build computes them; --findings reads them back)
   unaccessed     a claim nothing in the image references -> phantom candidate
   width          access width disagrees with the declared field -> wrong type
   stride         an index scale inside a claim disagrees with its element size
+  undercount     a claim declared with ONE element is INDEXED -> under-declared
+                 count (the `float[2]`-for-`float[10]` class; byte-invisible in .bss)
   adjacent       two claims reached through ONE base register -> one object
 
 CALIBRATION
@@ -368,7 +370,26 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
             continue
         dims, base = types.dims(c.type) if c.type else ([], "")
         elem = types.base_size(base) if c.type else None
+        count = 1
+        for d in dims:
+            count *= (d or 1)
         for sc, n in sorted(scales.items()):
+            # An index into a claim declared with ONE element is under-COUNTED,
+            # independently of whether the element WIDTH matches: you do not index
+            # a single-element array with a variable, so the index proves a length
+            # >= 2 the extent does not carry. This is the g_panTable class - `i32[1]`
+            # indexed [-100..0] as an alias into g_volumeTable's tail - which every
+            # width/stride branch below misses precisely because sc == elem, and
+            # which no byte tool can see when the storage is .bss zero-fill. The
+            # extent is what a too-small `float[2]`-for-`float[10]` leaves wrong.
+            if dims and count <= 1:
+                rows.append(("undercount", "high", c.rva, c.name, c.rva,
+                             f"indexed by *{sc} but declared with ONE element "
+                             f"({c.type}) - an index proves length >= 2, so the "
+                             f"COUNT is under-declared (byte-invisible in .bss)",
+                             f"type={c.type} elem={elem} sites={n}"))
+                st["undercount"] += 1
+                continue
             if elem is None:
                 rows.append(("stride", "med", c.rva, c.name, c.rva,
                              f"indexed by *{sc} but the claim's element type "
