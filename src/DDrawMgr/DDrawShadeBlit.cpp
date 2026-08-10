@@ -187,7 +187,7 @@ void CDDrawShadeBlit::BlitCopyForward(
                 break;
             }
             if (x < clip->left) {
-                i32 trans = 0;
+                i32 trans;
                 do {
                     if (m_rleData[pos] & 0x80) {
                         x += m_rleData[pos] - 0x80;
@@ -386,7 +386,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 x = m_width;
             }
         }
-    } else if (clip->right != m_width - 1) {
+    } else if (m_width - 1 != clip->right) {
         x = m_width;
 
         while (row < clip->bottom) {
@@ -460,9 +460,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
 }
 
 // @early-stop
-// the shade/copy row loops are transcribed; the residue is /O2 register
-// allocation and induction-variable choice inside the inlined row bodies.
-// blend-term set now matches retail (ten m_lutBank0 references each side).
+// The full-width doubleScanlines DST_BY_SRC_16/ALPHA arms and PAL_ALPHA now use
+// retail's one-scratch-cursor + bias shape (block skeleton realigned through
+// B95). Remaining: preheader LICM placement (8i vs 14-16i), the clip-edge twins
+// keep separate cursors in retail, and the second clip mode's spilled clip
+// pointer costs one landing-pad block.
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
@@ -548,53 +550,49 @@ void CDDrawShadeBlit::BlitShadedForward(
                                 u16* pal1 = m_palDescr->Lut16();
                                 u16* pal2 = g_blendDescr->Lut16();
                                 memcpy(g_scratch, d, count * 2);
-                                u8* sc = g_scratch;
+                                i32 sc = g_scratch - d;
                                 i32 rd = pitch / 2 * 2;
                                 while (count-- > 0) {
-                                    u32 idx = pal2[Load16(sc)];
+                                    u32 idx = pal2[Load16(d + sc)];
+                                    d += 2;
                                     u32 hi = *s++;
                                     hi >>= 4;
                                     idx += hi << 12;
                                     u16 v = pal1[idx];
-                                    Store16(d, v);
-                                    Store16(d + rd, v);
-                                    d += 2;
-                                    sc += 2;
+                                    Store16(d - 2, v);
+                                    Store16(d - 2 + rd, v);
                                 }
                                 break;
                             }
                             case SHADE_ALPHA_16: {
                                 memcpy(g_scratch, d, count * 2);
                                 u8* sc = g_scratch;
-                                u8* ss2 = s;
+                                i32 sb = s - g_scratch;
+                                i32 db = d - g_scratch;
                                 i32 rd = pitch / 2 * 2;
                                 if (m_blendVariant) {
                                     while (count-- > 0) {
                                         u32 dv = Load16(sc);
-                                        u32 a = Load16(ss2);
+                                        u32 a = Load16(sc + sb);
                                         i32 v = m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d += 2;
+                                        Store16(sc + db, v);
+                                        Store16(sc + db + rd, v);
                                         sc += 2;
-                                        ss2 += 2;
                                     }
                                 } else {
                                     while (count-- > 0) {
                                         u32 dv = Load16(sc);
-                                        u32 a = Load16(ss2);
+                                        u32 a = Load16(sc + sb);
                                         i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
                                                 | m_lutBank1
                                                     [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d += 2;
+                                        Store16(sc + db, v);
+                                        Store16(sc + db + rd, v);
                                         sc += 2;
-                                        ss2 += 2;
                                     }
                                 }
                                 break;
@@ -678,6 +676,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                             memcpy(g_scratch, d, count * 2);
                             if (m_blendVariant) {
                                 u8* sd = g_scratch;
+                                i32 db = d - g_scratch;
                                 while (count-- > 0) {
                                     u32 a = pal[*s++];
                                     u32 bb = Load16(sd);
@@ -685,20 +684,19 @@ void CDDrawShadeBlit::BlitShadedForward(
                                         m_lutBank1[((a >> 5) & 0x1f) + (((bb >> 5) & 0x1f) << 5)];
                                     r |= m_lutBank0[(a >> 0xa) + ((bb >> 5) & ~0x1f)];
                                     r |= m_lutBank2[(a & 0x1f) + ((bb & 0x1f) << 5)];
-                                    Store16(d, r);
-                                    d += 2;
+                                    Store16(sd + db, r);
                                     sd += 2;
                                 }
                             } else {
                                 u8* sd = g_scratch;
+                                i32 db = d - g_scratch;
                                 while (count-- > 0) {
                                     u32 a = pal[*s++];
                                     u32 bb = Load16(sd);
                                     u16 r = m_lutBank2[(a & 0x1f) + ((bb & 0x1f) << 5)];
                                     r |= m_lutBank1[((a >> 6) & 0x1f) + (((bb >> 6) & 0x1f) << 5)];
                                     r |= m_lutBank0[(a >> 0xb) + ((bb >> 6) & ~0x1f)];
-                                    Store16(d, r);
-                                    d += 2;
+                                    Store16(sd + db, r);
                                     sd += 2;
                                 }
                             }
@@ -757,7 +755,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                 break;
             }
             if (x < clip->left) {
-                i32 trans = 0;
+                i32 trans;
                 do {
                     u8 b = m_rleData[pos];
                     if (b & 0x80) {
@@ -1030,7 +1028,9 @@ void CDDrawShadeBlit::BlitShadedForward(
 // @early-stop
 // Call counts and branch counts now agree with retail (3 ConvertRowDouble,
 // 4 ConvertRowFlip, 91 branches); the residue is ~37 instructions of address
-// arithmetic retail recomputes per site and we hoist.
+// arithmetic retail recomputes per site and we hoist. The ds-ALPHA and
+// PAL_ALPHA arms now use retail's sc-anchored dst bias (d and sc both step -2,
+// so d - sc is constant).
 RVA(0x0014b770, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
@@ -1133,6 +1133,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
                                 u8* sc = &g_scratch[count * 2 - 2];
                                 u8* ss2 = s;
+                                i32 db = d - sc;
                                 if (m_blendVariant) {
                                     i32 rd = pitch / 2 * 2;
                                     while (count-- > 0) {
@@ -1142,9 +1143,8 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                                 | m_lutBank1
                                                     [((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
+                                        Store16(sc + db, v);
+                                        Store16(sc + db + rd, v);
                                         sc -= 2;
                                         ss2 += 2;
                                     }
@@ -1157,9 +1157,8 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                                 | m_lutBank1
                                                     [((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)]
                                                 | m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
+                                        Store16(sc + db, v);
+                                        Store16(sc + db + rd, v);
                                         sc -= 2;
                                         ss2 += 2;
                                     }
@@ -1243,6 +1242,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             u16* pal = m_palDescr->Lut16();
                             memcpy(g_scratch, d - count * 2 - 2, count * 2);
                             u8* sc = &g_scratch[count * 2 - 2];
+                            i32 db = d - sc;
                             if (m_blendVariant) {
                                 while (count-- > 0) {
                                     u32 a = pal[*s++];
@@ -1251,8 +1251,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                         m_lutBank1[((a >> 5) & 0x1f) + (((dv >> 5) & 0x1f) << 5)];
                                     r |= m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= m_lutBank0[(a >> 0xa) + ((dv >> 5) & ~0x1f)];
-                                    Store16(d, r);
-                                    d -= 2;
+                                    Store16(sc + db, r);
                                     sc -= 2;
                                 }
                             } else {
@@ -1263,8 +1262,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                         m_lutBank1[((a >> 6) & 0x1f) + (((dv >> 6) & 0x1f) << 5)];
                                     r |= m_lutBank2[(a & 0x1f) + ((dv & 0x1f) << 5)];
                                     r |= m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)];
-                                    Store16(d, r);
-                                    d -= 2;
+                                    Store16(sc + db, r);
                                     sc -= 2;
                                 }
                             }
@@ -1520,9 +1518,12 @@ void CDDrawShadeBlit::BlitShadedMirrored(
 }
 
 // @early-stop
-// retail strength-reduces the DST_BY_SRC_16 arm to ONE cursor with the scratch
-// pointer biased off it; cl keeps two and spills the trip count instead.
-// 128 AST variants (commutative/hoist/merge/inline) moved none of it.
+// DST_BY_SRC's pal-row temp (`u8* row = pal + (*sc++ << 8)`) recovered its
+// register trip count. Remaining: the ALPHA arms - retail anchors them on ONE
+// scratch cursor with dst/src expressed as biases and per-arm bank OR orders
+// (bank2/1/0 in one variant, bank0/1/2 in another); the faithful transcription
+// scores lower here because the slot assignment rotates, so the multi-cursor
+// spelling is kept. See BlitShadedForward, where the same transcription wins.
 RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     switch (m_drawType) {
@@ -1531,7 +1532,8 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
-                *dst++ = pal[(*sc++ << 8) + *src++];
+                u8* row = pal + (*sc++ << 8);
+                *dst++ = row[*src++];
             }
             break;
         }
@@ -1801,6 +1803,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
 }
 
 // @early-stop
+// As ConvertRowDouble: per-arm cursor-anchor and widen-idiom coins inside the
+// inlined double-scanline arms.
 RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {

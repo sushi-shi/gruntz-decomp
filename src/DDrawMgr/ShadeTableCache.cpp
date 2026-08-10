@@ -207,6 +207,9 @@ CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i3
 }
 
 // @early-stop
+// Whole-function coloring: retail keeps the new table in ebp with edi as the
+// zero scratch; cl swaps them and memory-homes the table pointer. Permuter
+// exhausted at this shape.
 RVA(0x0014e540, 0x2ea)
 CShadeTable*
 CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
@@ -287,6 +290,9 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 }
 
 // @early-stop
+// Commutative-sum coin: retail evaluates the pr (row) term of each channel's
+// weighted sum first, cl the pc term; swap/split/nesting spellings all
+// canonicalize to the same order.
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
@@ -348,6 +354,9 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
 }
 
 // @early-stop
+// Retail memory-homes the two u8 index locals (byte store + dword reload +
+// and 0xff, both loaded at entry); cl keeps ia in a register and rematerializes
+// the *b load after the first __ftol.
 RVA(0x0014ed10, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
@@ -359,8 +368,8 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     ));
     PALETTEENTRY* pb = &g_pal[ib];
     u8 lb = static_cast<u8>(static_cast<i32>(
-        (static_cast<float>(pb->peGreen) * g_lumaG + static_cast<float>(pb->peBlue) * g_lumaB
-         + static_cast<float>(pb->peRed) * g_lumaR)
+        (static_cast<float>(pb->peGreen) * g_lumaG
+         + (static_cast<float>(pb->peBlue) * g_lumaB + static_cast<float>(pb->peRed) * g_lumaR))
     ));
     if (lb > la) {
         return -1;
@@ -403,6 +412,9 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
 }
 
 // @early-stop
+// The sequenced accumulator recovered the arm-local epilogues and the pack
+// order; the residue is the widen idiom (cl `and 0xff`/32-bit `and 0xf` where
+// retail uses movzx cx,cl / and dl,0xf) and the loop counter's register.
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
@@ -423,23 +435,25 @@ CShadeTable* CShadeTableCache::GreyTable() {
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
         for (i32 v = 0; v < 0x10000; v++) {
-            *out++ = static_cast<u16>(
-                ((((static_cast<u8>((v >> 0xb)) << 4) + static_cast<u8>((v >> 6) & 0xf)) << 4)
-                 + static_cast<u8>((v >> 1) & 0xf))
-            );
+            i32 acc = static_cast<u8>((v >> 0xb)) << 4;
+            acc = (acc + static_cast<u8>((v >> 6) & 0xf)) << 4;
+            *out++ = static_cast<u16>((acc + static_cast<u8>((v >> 1) & 0xf)));
         }
     } else {
         for (i32 v = 0; v < 0x10000; v++) {
-            *out++ = static_cast<u16>(
-                ((((static_cast<u8>((v >> 0xc)) << 4) + static_cast<u8>((v >> 7) & 0xf)) << 4)
-                 + static_cast<u8>((v >> 1) & 0xf))
-            );
+            i32 acc = static_cast<u8>((v >> 0xc)) << 4;
+            acc = (acc + static_cast<u8>((v >> 7) & 0xf)) << 4;
+            *out++ = static_cast<u16>((acc + static_cast<u8>((v >> 1) & 0xf)));
         }
     }
     return t;
 }
 
 // @early-stop
+// cl hoists the invariant (float)v * scale product to the v-loop preheader and
+// keeps it on the x87 stack across the r/g/b nest (fstp at loop end); retail
+// recomputes the whole f = v*scale*inv255-negone per pixel. Six spellings of f
+// (inline-per-channel, split, pre-clamp) all CSE back to the hoist.
 RVA(0x0014f080, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
@@ -495,6 +509,9 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 }
 
 // @early-stop
+// Pack-order coin: retail evaluates the b-dependent blue term first, in source
+// order; cl schedules the loop-invariant r/g partial first and spills it (one
+// extra frame dword). Ten spellings incl. by-value helpers are byte-identical.
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
@@ -540,7 +557,6 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     return t;
 }
 
-// @early-stop
 RVA(0x0014f5b0, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
@@ -560,10 +576,12 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     u16* out = Pix16(t->m_data);
     PALETTEENTRY* p = pal;
     for (i32 i = 0x100; i != 0; i--) {
-        u16 v = static_cast<u16>(
-            ((static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp)
-             | (static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
-             | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown))))
+        u16 v =
+            static_cast<u16>((static_cast<u8>((p->peRed >> static_cast<u8>(g_rDown))) << g_rUp));
+        v = static_cast<u16>(
+            (v
+             | ((static_cast<u8>((p->peGreen >> static_cast<u8>(g_gDown))) << g_gUp)
+                | static_cast<u8>((p->peBlue >> static_cast<u8>(g_bDown)))))
         );
         *out++ = v;
         p++;
@@ -680,6 +698,8 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
 }
 
 // @early-stop
+// As CompareLuma: retail memory-homes both u8 index locals at entry (byte
+// store into the recycled param slots); cl keeps them in registers.
 RVA(0x0014fa60, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
@@ -699,6 +719,8 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 }
 
 // @early-stop
+// Retail re-reads m_arr.m_pData on the hit path (this stays in ecx); cl CSEs
+// the loop's cached base in edi and re-uses it for the return index.
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
@@ -733,6 +755,9 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 }
 
 // @early-stop
+// Retail enters the k loop through a forward jmp (rotation with entry jump)
+// and pushes all five saves up front; cl falls through and shrink-wraps the
+// edi push. Permuter exhausted.
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
     g &= 0xff;

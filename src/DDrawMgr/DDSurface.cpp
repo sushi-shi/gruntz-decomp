@@ -52,6 +52,17 @@ static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
     return p.m_words;
 }
 
+// The by-value u8 parameters are load-bearing (docs/patterns/
+// pixel-pack-is-a-byvalue-u8-helper.md): they pin the channel evaluation order
+// to r, g, b, and the plain i32 shift counts keep the single truncation at the
+// return.
+static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
+    return static_cast<u16>(
+        ((static_cast<u8>(r >> g_rDown) << g_rUp)
+         | ((static_cast<u8>(g >> g_gDown) << g_gUp) | static_cast<u8>(b >> g_bDown)))
+    );
+}
+
 static inline u16 Clut16(u32 byteOff) {
     Pix16Ptr p;
     p.m_bytes = g_clut + byteOff;
@@ -573,24 +584,28 @@ i32 CDDSurface::BlitDirect(void* src, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    u8* p = static_cast<u8*>(src);
+    // The void* parameter itself is the walking cursor (retail re-reads and
+    // advances its stack slot per arm; a local hoists and rotates the frame) -
+    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
-            u8* sp = p;
-            for (i32 i = this->m_bytesPerRow; i > 0; i--) {
+            u8* sp = static_cast<u8*>(src);
+            i32 i = this->m_bytesPerRow;
+            while (i-- > 0) {
                 *dst++ = *sp++;
             }
-            p += this->m_bytesPerRow;
+            src = static_cast<u8*>(src) + this->m_bytesPerRow;
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
-            u8* sp = p;
-            for (i32 i = this->m_bytesPerRow; i > 0; i--) {
+            u8* sp = static_cast<u8*>(src);
+            i32 i = this->m_bytesPerRow;
+            while (i-- > 0) {
                 *dst++ = *sp++;
             }
-            p += this->m_bytesPerRow;
+            src = static_cast<u8*>(src) + this->m_bytesPerRow;
         }
     }
     this->m_ddSurface->Unlock(0);
@@ -698,6 +713,9 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans)
 }
 
 // @early-stop
+// Retail enters both row loops through the forward-jmp rotation (extra
+// preheader block) and keeps the clip pointer live where cl spills it; the
+// while(n-- > 0) respelling regresses, if+do-while is the closest shape.
 RVA(0x0013f020, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
@@ -841,6 +859,10 @@ reject:
 }
 
 // @early-stop
+// cl sinks the pct*32/100 chain below the Lock call where retail keeps it in
+// source order before the call; statement-reorder permutation does not move
+// it. Known cross-function-state-sensitive schedule (see the ShadeRect
+// predecessor A/B note in the permute skill).
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {
@@ -923,6 +945,10 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 }
 
 // @early-stop
+// Addressing-mode split: retail keeps the raw index as the IV with &g_clut+bank
+// folded into each store's displacement (reloc); cl folds g_clut into the IV
+// and leaves the banks as immediates. Helper/subscript/pointer spellings all
+// canonicalize to the same code.
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
@@ -1085,10 +1111,10 @@ i32 CDDSurface::Blit(void* src, ColorDepth bitcount, void* palette, RasterRowOrd
 }
 
 // @early-stop
-// Two named residues: (1) cl head-merges the two arms' src/rowOrder loads above
-// the cmp where retail compares [esp+0x1c] in place and loads src per arm;
-// (2) the LUT loop's end-pointer reloc - ours g_lut16+0x400, the delinker names
-// that boundary address &g_rUp. Branch sequences AGREE.
+// The LUT-build pack's first-channel coin (red vs green first) flips with the
+// function's own content: the reinterpret_cast<u8*&> cursor spelling scored
+// byte-exact, the ratchet-mandated static_cast use-site spelling leaves the
+// two LUT loads swapped. All pack spellings tie under the current content.
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
     u8* pal = static_cast<u8*>(palv);
@@ -1097,30 +1123,29 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
     }
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        g_lut16[i] = static_cast<u16>(
-            (static_cast<u8>(pal[0] >> g_rDown) << g_rUp)
-            | (static_cast<u8>(pal[1] >> g_gDown) << g_gUp) | static_cast<u8>(pal[2] >> g_bDown)
-        );
-        pal += 4;
+        g_lut16[i] = PackPalEntry16(pal[i * 4], pal[i * 4 + 1], pal[i * 4 + 2]);
     }
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
+    // The void* parameter itself is the walking cursor (retail re-reads and
+    // advances its stack slot per arm; a local hoists and rotates the frame) -
+    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        u8* src = static_cast<u8*>(srcv);
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                *dst++ = g_lut16[*src++];
+                *dst++ = g_lut16[*static_cast<u8*>(srcv)];
+                srcv = static_cast<u8*>(srcv) + 1;
             }
         }
     } else {
-        u8* src = static_cast<u8*>(srcv);
         for (i32 row = 0; row < this->m_height; row++) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                *dst++ = g_lut16[*src++];
+                *dst++ = g_lut16[*static_cast<u8*>(srcv)];
+                srcv = static_cast<u8*>(srcv) + 1;
             }
         }
     }
@@ -1129,39 +1154,52 @@ i32 CDDSurface::Blit168(void* srcv, void* palv, RasterRowOrder rowOrder) {
 }
 
 // @early-stop
+// Whole-function coloring: cl picks ebp for `this` where retail picks edi; the
+// swap cascades (dst esi<->edi, acc bp<->si, arm2's col register vs memory).
+// Renames and depth-1 trees are inert on cl5's coloring here.
 RVA(0x0013fce0, 0x17f)
 i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(0));
     if (locked == NULL) {
         return 0;
     }
-    u8* src = static_cast<u8*>(srcv);
+    // The void* parameter itself is the walking cursor (retail re-reads and
+    // advances its stack slot per arm; a local hoists and rotates the frame) -
+    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 b = *src++;
-                u8 g = *src++;
-                u8 r = *src++;
-                *dst++ = static_cast<u16>(
-                    ((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp)
-                     | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp)
-                     | static_cast<u8>((static_cast<u8>(b) >> g_bDown)))
+                u8 b = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 g = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 r = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u16 v =
+                    static_cast<u16>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp));
+                v = static_cast<u16>(
+                    (v | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp))
                 );
+                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
             }
         }
     } else {
         for (i32 row = 0; row < this->m_height; row++) {
             u16* dst = Row16(locked, row, m_pitch);
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 b = *src++;
-                u8 g = *src++;
-                u8 r = *src++;
-                *dst++ = static_cast<u16>(
-                    ((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp)
-                     | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp)
-                     | static_cast<u8>((static_cast<u8>(b) >> g_bDown)))
+                u8 r = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 g = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 b = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u16 v =
+                    static_cast<u16>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp));
+                v = static_cast<u16>(
+                    (v | (static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp))
                 );
+                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
             }
         }
     }
@@ -1169,7 +1207,6 @@ i32 CDDSurface::Blit1624(void* srcv, RasterRowOrder rowOrder) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0013fe60, 0x11e)
 i32 CDDSurface::Blit248(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1180,12 +1217,15 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
-    u8* src = static_cast<u8*>(srcv);
+    // The void* parameter itself is the walking cursor (retail re-reads and
+    // advances its stack slot per arm; a local hoists and rotates the frame) -
+    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 idx = *src++;
+                u8 idx = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
                 *dst++ = pal[idx].peRed;
@@ -1195,7 +1235,8 @@ i32 CDDSurface::Blit248(void* srcv, void* palv, RasterRowOrder rowOrder) {
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 idx = *src++;
+                u8 idx = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
                 *dst++ = pal[idx].peRed;
@@ -1245,6 +1286,10 @@ i32 CDDSurface::Blit2416(void* srcv, RasterRowOrder rowOrder) {
 }
 
 // @early-stop
+// Slot-assignment order + coloring: retail homes this at [esp+0x10] and pal in
+// ebx where cl rotates the spill slots one position and keeps pal in ebp; the
+// k-loop widens each pal byte through a serially-reused eax where cl batches
+// two byte registers.
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1255,14 +1300,19 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
     if (locked == NULL) {
         return 0;
     }
+    // The void* parameter itself is the walking cursor (retail writes the
+    // advanced cursor back to the parameter slot each pixel) -
+    // docs/patterns/void-param-is-the-walking-cursor.md.
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        u8* src = static_cast<u8*>(srcv);
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *src++;
-                u8 s1 = *src++;
-                u8 s2 = *src++;
+                u8 s0 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s1 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s2 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
                 i32 best = 0;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
@@ -1270,9 +1320,11 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
+                    i32 d = e0 * e0;
                     i32 e1 = s1 - pal[k].peGreen;
+                    d += e1 * e1;
                     i32 e2 = s0 - pal[k].peBlue;
-                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    d += e2 * e2;
                     if (d < bestd) {
                         best = k;
                         bestd = d;
@@ -1286,13 +1338,15 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        u8* src = static_cast<u8*>(srcv);
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *src++;
-                u8 s1 = *src++;
-                u8 s2 = *src++;
+                u8 s0 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s1 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
+                u8 s2 = *static_cast<u8*>(srcv);
+                srcv = static_cast<u8*>(srcv) + 1;
                 i32 best = 0;
                 i32 d1 = s1 - pal[0].peGreen;
                 i32 d2 = s0 - pal[0].peBlue;
@@ -1300,9 +1354,11 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = s2 - pal[k].peRed;
+                    i32 d = e0 * e0;
                     i32 e1 = s1 - pal[k].peGreen;
+                    d += e1 * e1;
                     i32 e2 = s0 - pal[k].peBlue;
-                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    d += e2 * e2;
                     if (d < bestd) {
                         best = k;
                         bestd = d;
@@ -1321,6 +1377,9 @@ i32 CDDSurface::Blit824(void* srcv, void* palv, RasterRowOrder rowOrder) {
 }
 
 // @early-stop
+// As Blit824 (slot order + coloring); additionally retail copies srcv into the
+// dead palv slot as the cursor home and saves each widened channel to its own
+// slot right after its shift where cl defers the saves.
 RVA(0x00140420, 0x34f)
 i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
     PALETTEENTRY* pal = static_cast<PALETTEENTRY*>(palv);
@@ -1347,9 +1406,11 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = red - pal[k].peRed;
+                    i32 d = e0 * e0;
                     i32 e1 = green - pal[k].peGreen;
+                    d += e1 * e1;
                     i32 e2 = blue - pal[k].peBlue;
-                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    d += e2 * e2;
                     if (d < bestd) {
                         best = k;
                         bestd = d;
@@ -1377,9 +1438,11 @@ i32 CDDSurface::Blit816(void* srcv, void* palv, RasterRowOrder rowOrder) {
                 i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
                     i32 e0 = red - pal[k].peRed;
+                    i32 d = e0 * e0;
                     i32 e1 = green - pal[k].peGreen;
+                    d += e1 * e1;
                     i32 e2 = blue - pal[k].peBlue;
-                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    d += e2 * e2;
                     if (d < bestd) {
                         best = k;
                         bestd = d;
