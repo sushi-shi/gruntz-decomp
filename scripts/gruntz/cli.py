@@ -82,6 +82,8 @@ TARGET_DIR         = OBJDIFF_DIR / "target"
 REPORT             = OBJDIFF_DIR / "report.json"
 BUILD_TIMES        = REPO / "build" / "gen" / "build_times.tsv"  # per-invocation build wall-clock log (gitignored, per-worktree)
 GEN_NAMES          = REPO / "build" / "gen" / "symbol_names.csv"
+RES                = REPO / "build" / "gen" / "gruntz.res"   # rescomp output; the ONLY .res the candidate links
+
 def _ghidra_project_dir() -> Path:
     """Where the Ghidra DB lives - normally build/ghidra-named, but NEVER under a dot-path.
 
@@ -1030,15 +1032,29 @@ def cmd_link(args) -> None:
     ninja = tool("ninja")
     _start_wine_session()
     try:
-        run([ninja, "base"])                       # ensure base objs are current
-        cmd = [sys.executable, str(LINK)]
-        if args.order:
-            cmd += ["--order", args.order]
-        if args.res:
-            cmd += ["--res", args.res]
-        if args.opt_ref:
-            cmd += ["--opt-ref"]
-        run(cmd)
+        if args.order or args.opt_ref:
+            # LAYOUT EXPERIMENT: the ninja edge is fixed, so these have to drive
+            # link.py directly. The .res still goes on the line - a resource-less
+            # image is never something we want, experiment or not.
+            run([ninja, "base", str(RES)])
+            cmd = [sys.executable, str(LINK), "--res", args.res or str(RES)]
+            if args.order:
+                cmd += ["--order", args.order]
+            if args.opt_ref:
+                cmd += ["--opt-ref"]
+            run(cmd)
+        else:
+            # THE PLAIN PATH IS THE NINJA EDGE, NOT A SECOND IMPLEMENTATION.
+            # `gruntz link` and `ninja candidate` used to be parallel routes to
+            # link.py with DIFFERENT arguments: the edge always passed
+            # --res build/gen/gruntz.res, the CLI made it an optional flag that
+            # defaulted to nothing. So a plain `gruntz link` produced a binary with
+            # no .rsrc - no settings, multiplayer or save dialog, since every MFC
+            # dialog is created from a DIALOG resource - and, once link.py started
+            # dropping the previous image for determinism, it destroyed a good one
+            # to do it. Two paths that link the same tree must not disagree; there
+            # is now one path.
+            run([ninja, "candidate"])
     finally:
         _kill_wine_session()
     # Refresh the README's link-status block - but ONLY for a plain link. --order
@@ -1466,7 +1482,9 @@ def main() -> None:
                    ).set_defaults(func=cmd_status)
     lk = sub.add_parser("link", help="phase 2: link base objs -> candidate EXE + map")
     lk.add_argument("--order", help="file listing obj stems in link order to test")
-    lk.add_argument("--res", help="optional .RES for a runnable candidate image")
+    lk.add_argument("--res", help="override the .RES for a layout experiment "
+                    "(plain `gruntz link` goes through `ninja candidate`, which "
+                    "always links build/gen/gruntz.res)")
     lk.add_argument("--opt-ref", action="store_true",
                     help="let the linker strip/fold unreferenced COMDATs (default keeps all)")
     lk.add_argument("--analyze", action="store_true",
