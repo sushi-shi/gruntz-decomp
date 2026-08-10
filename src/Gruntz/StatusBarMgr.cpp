@@ -172,7 +172,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             it = new CSBI_WellGoo;
             r.left = bx + 0x6e;
             r.top = by + 0xf8;
-            r.right = bx + 0xef;
+            r.right = bx + 0x81;
             r.bottom = by + 0x1b3;
             if (!it->SetupImage(
                     this,
@@ -686,8 +686,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
             {
                 CSBI_WarlordHead** slot = m_warlordHead;
                 i32 pi = 0;
-                GruntzPlayer* p = g_gameReg->m_options;
                 do {
+                    // Indexed, not a walking pointer: retail's exit test is the
+                    // strength-reduced BYTE offset (`add eax,0x238; cmp eax,0x8e0;
+                    // jl`), which cl only produces from `m_options[pi]` - a
+                    // `p < m_options + 4` pointer guard reloads g_gameReg and
+                    // compares unsigned against a computed limit instead.
+                    GruntzPlayer* p = &g_gameReg->m_options[pi];
                     CShadeTable* sel;
                     if (p->m_joined != 0 && p->m_doneFlag == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_colorIndex), 0);
@@ -702,8 +707,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     (*slot)->ShowFrames(SHADE_PAL_16, sel);
                     slot++;
                     pi++;
-                    p++;
-                } while (p < g_gameReg->m_options + 4);
+                } while (pi < 4);
             }
 
             {
@@ -801,7 +805,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_tabLists[1].AddTail(arrow);
                     m_statObj[i] = arrow;
+                    // Both arms take the same `0` (retail pushes it BEFORE the
+                    // branch); only the entry point differs - a sampled stat gets
+                    // the alternate arrow art (0xea170), an unsampled one the
+                    // plain one (0xea0f0).  This arm was empty, so a sampled stat
+                    // toggle kept whatever direction the ctor left.
                     if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
+                        arrow->SetDirectionAlt(m_position, 0);
                     } else {
                         arrow->SetDirection(m_position, 0);
                     }
