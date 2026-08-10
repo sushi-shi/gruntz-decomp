@@ -1,12 +1,21 @@
 # Data matching: what the 100% does NOT mean
 
 The old **`Data: 100.00%`** headline was arithmetically true and answered the wrong
-question. The replacement reports three distinct facts. **Gross coverage 40.45%** means
-109,765 distinct addresses are enrolled out of all 271,360 initialized bytes stored in
-retail. A generated static-reachability partition proves 159,359 B are private,
-unreachable library/compiler data or padding, so **reconstructable coverage is 98.00%**:
-109,765 / 112,001 eligible bytes. **Fidelity 100.00%** (rounded) means the enrolled
-objdiff sections are almost entirely byte-equal. `.bss` is reported separately.
+question. The replacement reports three distinct facts. **Gross coverage 40.86%** means
+110,882 distinct addresses are enrolled out of all 271,360 initialized bytes stored in
+retail. A generated static-reachability partition proves 160,114 B are private,
+unreachable library/compiler data or padding, so **reconstructable coverage is 99.67%**:
+110,882 / 111,246 eligible bytes. **Fidelity 96.82%** means that share of the enrolled
+bytes is byte-equal. `.bss` is reported separately.
+
+Fidelity fell from a rounded 100.00% deliberately, twice, and both drops were the metric
+becoming honest rather than the tree getting worse: enabling `functionRelocDiffs=data_value`
+stopped masking wrong data referents, and the delinker fix in `delink(data): a data
+hypothesis must CONTAIN the rva` stopped an unbounded nearest-symbol guess from beating an
+exact PDB symbol (1,020 relocs across 185 objects had been decomposing past their symbol's
+end). Referents the delinker now resolves *correctly* are not all enrolled yet, so they
+read as unmatched — which is the true state, not a regression. Numbers here are a snapshot;
+`gruntz status` is the authority.
 
 Ownership never overrides reachability. Library-owned bytes directly named by game or
 compiler code, or reached through pointers in enrolled/game-visible data, remain eligible.
@@ -25,8 +34,20 @@ because a low score is a worklist and a wrong 100% is a closed question that is 
 
 The campaign found two concrete examples: `g_clut` was pinned two bytes low with every
 use biased by `+2`, and the image clip rectangle was spelled as an untyped integer array
-rather than the single `RECT` that retail's assignment code proves. Both have now been
-corrected.
+rather than the single `RECT` that retail's assignment code proves.
+
+**The `g_clut` correction was incomplete for months, and that is the sharpest lesson in
+this file.** Fixing the *pin* left the compensation alive in the *code*: the writer
+advanced its cursor before its three stores instead of after, so the whole 3 x 32768-entry
+LUT sat one entry high (and the last store ran two bytes past the array), while `ShadeRect`
+carried a matching `+2` that cancelled it on the read side. Writer and reader were
+self-consistent, the menu dim looked right, and the function sat at 96.86% with nothing
+pointing at it — because objdiff scored the wrong addend as free (§3c). It shipped as
+visible in-game corruption: every alpha blend read `table[i]` and got `v(i-1)`, so any
+zero colour channel wrapped into the previous row and blew out to near-full, wrecking every
+shadow and sprite outline. Fixed 2026-08-10; `BuildColorChannelTables` is now 100.00% EXACT
+with retail's addends byte-for-byte. **A compensated defect is not corrected until every
+compensation is gone — grep for the bias, do not trust the pin.**
 
 ---
 
@@ -178,6 +199,37 @@ admits only tail identities that fill an exact retail multiset deficit. Each cla
 negative self-test. The remaining 180 are a ratcheted structural worklist, not honestly reducible
 by substituting plausible strings or callees without per-site identity evidence.
 
+## 3c. A wrong ADDEND scored nothing at all — until objdiff was patched
+
+The narrowest and most expensive hole of the family, and the one that shipped §2's
+`g_clut` bug. objdiff pairs a relocated operand by **symbol**; for `IMAGE_REL_I386_DIR32`
+the addend is not in the relocation record at all — x86 COFF stores it **inline in the
+instruction's displacement field**, which is exactly the field the masked diff blanks
+*because* it is relocated. So `g_clut+0x20000` and `g_clut+0x1FFFE` scored **identical**.
+It was the one operand class where a wrong constant was free.
+
+Precisely: `FunctionRelocDiffs::{All,NameAddress}` *do* compare addends, and so does the
+undefined-symbol arm — only **`data_value`**, the mode `configure.py` sets, short-circuits
+that clause and drops the addend along with the name. A datum defined in-section on both
+sides lands in exactly that hole.
+
+Closed by a local patch (`nix/patches/objdiff-score-reloc-addend.patch`): absolute types
+only (`DIR32`/`DIR32NB` and the ELF/64-bit forms), every `REL32` form excluded because it
+is site-relative, and the same symbol required. Cost: 0.0007pp of fuzzy and **zero** exact
+functions — the exact *set* is unchanged, which follows by construction, since byte-identical
+code carries byte-identical addends. Proven by re-injecting the `g_clut` defect: unpatched
+scored it **100.0000% EXACT with bit-identical overall fuzzy**; patched, it drops and loses
+exactness.
+
+The patch is **necessary but not sufficient**: objdiff can only charge rows its opcode diff
+aligns, so a wrong addend inside a badly-unmatched body stays invisible to it.
+`python -m gruntz.audit.reloc_addends` covers that case by comparing per-symbol addend
+**multisets** (order-insensitive on purpose — the same offsets in a different order is
+operand-evaluation order, not a wrong constant; a naive positional compare reported 182 rows
+that were almost entirely artifact, including three false hits at 100.00%). Tree-wide it
+finds **four** genuine rows, the strongest being `FillPolygon` reading `ClipVtx.x` (a float)
+where retail reads `.fx` (fixed-point) — a wrong *field*, not a wrong table.
+
 ## 4. The size/similarity confusion, one level up
 
 The README's **Link status** block reports per-section *sizes* of the linked candidate
@@ -208,25 +260,41 @@ the same RED/GREEN/BLUE/PURPLE keys as retail, and `CGrunt::LoadPickupSprites` r
 same complete decidable pickup-key multiset. The symptom therefore lies elsewhere; the
 game is not run to obtain matching evidence (standing project rule).
 
+**Suspect 3 was right, and it was the answer.** The entry below read "the compensation is
+currently consistent, so it may cost nothing at runtime today — but this exact object has
+already produced one colour defect, and it is the one place in the colour path where the
+*model* is known to be wrong." It cost plenty: the writer's off-by-one described in §2 was
+still live, and it was corrupting every alpha blend in the game. Found and fixed
+2026-08-10, after a user reported in-game artifacts on terrain and sprites. **When a
+document says a known-wrong model "may cost nothing", that is a worklist item, not a
+reassurance.**
+
+Colour-path status now, for whoever picks this up next:
+
+| function | then | now |
+| :-- | --: | --: |
+| `BuildColorChannelTables` | 96.86% | **100.00% EXACT** (the defect) |
+| `CShadeTableCache::CompareLuma` | 70.00% | **100.00% EXACT** |
+| `CShadeTableCache::FlashTable` | 60.94% | 83.82% |
+| `CShadeTableCache::FindNearestColor` | 65.35% | 76.05% |
+| `CDDrawShadeBlit::BlitShadedMirrored` | 55.92% | 75.13% |
+| `CDDrawShadeBlit::BlitShadedForward` | 58.33% | 68.52% |
+
+The whole DDrawMgr colour pipeline has since been verified byte-faithful end to end — mask
+decode, the entire `CShadeTable` load/save family, `Select`/`SetShadeDescr`/`Blit` with
+correct bank addends, and the `shadetablecache` `.rdata` float pool byte-identical to
+retail. The residual per-pixel functions are register allocation, which cannot change a
+pixel.
+
+**Still open**, and outside that verified pipeline: a global red **tint** over an otherwise
+correctly-coloured frame, and a per-row **shear** (a sprite's upper rows displaced right of
+its lower rows — only a wrong row-advance produces that). Ranked suspects are the
+compositing pair's geometry (`CDDrawSurfacePair::InitFromSurface` 77.5%, `SetGeom` 78.5%,
+`CDDrawSubMgrPages::CreateChildren` 82.6%) and MapMgr's per-player palette install.
+Suspect 1 below is untouched and still stands.
+
 1. **The player/colour index feeding the proven key lookup.** The key strings agree, but a
    wrong index before the lookup could still select a coherent wrong variant.
-2. **The shade/palette subsystem**, which is the worst-matched area in the tree — **53
-   colour-path functions below 100%**:
-
-   | function | fuzzy |
-   | :-- | --: |
-   | `CDDrawShadeBlit::BlitShadedMirrored` | 55.92% |
-   | `CDDrawShadeBlit::BlitShadedForward` | 58.33% |
-   | `CShadeTableCache::FlashTable` | 60.94% |
-   | `CShadeTableCache::FindNearestColor` | 65.35% |
-   | `CShadeTableCache::CompareLuma` | 70.00% |
-   | `RgbToHsv` | 83.65% |
-
-   `FindNearestColor` maps a desired RGB onto a palette index; getting it wrong yields the
-   wrong entry, not a corrupted one.
-3. **The `g_clut` re-pin** (§2). The compensation is currently consistent, so it may cost
-   nothing at runtime today — but this exact object has already produced one colour defect,
-   and it is the one place in the colour path where the *model* is known to be wrong.
 
 ---
 
@@ -242,6 +310,15 @@ game is not run to obtain matching evidence (standing project rule).
   addends. c2's object-relative alignment does **not** have to divide an absolute retail
   RVA; applying that shortcut rejects 131 established source-backed controls.
 * Is the referent right? `gruntz audit data_relocs` and `python -m gruntz.audit.assert_relocs`.
+* Is the **addend** right? `python -m gruntz.audit.reloc_addends` (§3c). objdiff now charges
+  a wrong DIR32 addend, but only where its opcode diff aligns the row — this census covers
+  the rest.
+* Is the datum **written** where retail writes it? `python -m gruntz.audit.store_offsets`
+  diffs the ordered member-store destinations per function; an offset on one side only is
+  the signature of a wrong member. Its docstring lists six traps that produced phantom rows
+  before the tool was trustworthy — read them before believing a new detector of this shape.
+* Is a compensation hiding the defect? Grep for the bias, not just the pin (§2). A pin fix
+  that leaves `+N` in the users is not a fix.
 
 ## Related
 
