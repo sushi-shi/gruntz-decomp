@@ -70,6 +70,13 @@ i32 CSBI_MenuItem::Refresh(i32) {
 }
 
 // @early-stop
+// Residue is the flag register: retail zeroes eax before loading the frame and
+// ends each arm `test ecx,ecx; mov [esi+0x30],ecx; setne al`, where cl reuses eax
+// for the element load and has to build the result in cl.  Routing the frame
+// through a local (four spellings: plain `!= NULL`, an `if`, a pre-computed
+// `i32 ok`, and a re-read of the member) removes the one member reload retail
+// does not have but costs more than it saves - all four measure 65.09 against
+// this shape's 70.38.
 RVA(0x000e81e0, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     if (key == NULL) {

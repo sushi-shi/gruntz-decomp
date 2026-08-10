@@ -208,16 +208,22 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
+// The run's right edge in SURFACE coordinates: the clip rect is in glyph-run
+// space, so `x` moves its origin.  A function, not an expression, because that
+// is the term order retail evaluates.
+static inline LONG RunRightEdge(const CRect& rc, i32 x) {
+    return x - rc.left + rc.right;
+}
+
 // @early-stop
 // Branch sequences AGREE (32/32, one ret) since the non-blend row loop was written
 // `row < rc.bottom` like its blend twin. Residue is address-math hoisting in the
 // innermost blit loop: retail recomputes `glyphBuf + row * gm.width` from the two
 // stack slots on EVERY iteration (0x17a3bd..0x17a3c8) where cl hoists it into ebp
-// before the loop.
-static inline LONG H2AstInline005_0(const CRect& rc, i32 x) {
-    return x - rc.left + rc.right;
-}
-
+// before the loop.  The three colour-channel extractions were re-measured as a
+// matrix (`(u8)` cast / `& 0xff` / all-cast) and this spelling is the best of the
+// three, so the two `and reg,0xff` retail has and we do not are downstream of the
+// same hoisting, not of a missing mask.
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
@@ -236,7 +242,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    if (H2AstInline005_0(rc, x) > surf->m_width) {
+    if (RunRightEdge(rc, x) > surf->m_width) {
         rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
     }
     if (y - rc.top + rc.bottom > surf->m_height) {
