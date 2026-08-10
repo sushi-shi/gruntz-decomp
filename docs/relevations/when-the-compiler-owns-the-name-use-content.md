@@ -101,6 +101,70 @@ A claim that cannot find its bytes on our side is an error, not a silent skip.
 
 ---
 
+## How the two objects come to share a name
+
+objdiff pairs symbols **by name**. Our object calls the constant `$T36166`; the
+delinked retail object calls it something else entirely. Neither name is usable,
+so the normalizer **renames both sides to a name computed from the content** —
+and they collide deliberately.
+
+The name *is* the bytes:
+
+| kind | minted name | identity |
+| :-- | :-- | :-- |
+| f32 pool entry | `$anon_f32_<8 hex>` | the 32-bit value, little-endian |
+| f64 pool entry | `$anon_f64_<16 hex>` | the 64-bit value, little-endian |
+| pooled string | `$anon_str_<sha256>` | the NUL-terminated payload |
+| anything else | `$anon_data_<sha256>` | a structured record (below) |
+
+plus an `_<occurrence>` suffix so two identical payloads in one object stay
+distinct.
+
+Run it on `projectile.obj` and the two independently-produced objects agree
+exactly:
+
+```
+$ llvm-nm build/objdiff/normalized/base/projectile.obj   | grep '$anon'
+$ llvm-nm build/objdiff/normalized/target/projectile.c.obj | grep '$anon'
+
+  $anon_data_70f87a7cc3bbf7d0c06dcca4ce8e564f59550163e718822820e5740ddb7c5f77_0
+  $anon_f64_3fb999999999999a_0     $anon_f64_3fd999999999999a_0
+  $anon_f64_3fc999999999999a_0     $anon_f64_3fe3333333333333_0
+  $anon_f64_3fd3333333333333_0     $anon_f64_3fe6666666666666_0
+  $anon_f64_3fe999999999999a_0     $anon_f64_3feccccccccccccd_0
+```
+
+Both lists are identical — 9 symbols, same names. And the last one is the
+`DATA_COMPGEN` claim we started from: `0.9` is `0x3feccccccccccccd`, so
+`$anon_f64_3feccccccccccccd_0` is *the* pool entry at retail `0x001eaa98`. The
+`0.1 / 0.2 / 0.3 / 0.4 / 0.6 / 0.7 / 0.8` beside it are the sibling claims from
+the same four `if` statements.
+
+Before normalization our side of that list reads `$T36166 $T36170 $T36180
+$T36182 $T36205`. Afterwards those spellings do not exist in the object at all.
+
+### What goes into the digest, and what is deliberately left out
+
+The generic `$anon_data_` record is a structured document, not a raw hash —
+schema `gruntz-anon-symbol-v2`, carrying kind, storage class, span,
+meaningful size, the payload **with relocation sites masked**, and the
+relocation rows themselves. Masking matters: a relocated word's bytes are a
+placeholder the linker overwrites, so hashing them raw would make two identical
+objects disagree. The reloc *targets* participate in identity instead.
+
+Three payload rules exist because two allocators are involved and only one of
+them is ours:
+
+* **`.bss` hashes NOTHING** (`meaningful = b""`). An uninitialised allocation
+  states no bytes; its physical span is the object *plus* whatever hole-filling
+  its allocator chose — cl packs 4-byte ints into the gaps, the delinker appends
+  per definition. Neither quantity is part of the identity, so a BSS static is
+  keyed on name, storage and occurrence alone.
+* **`$E` text helpers strip trailing `0x90`** before hashing: base COMDATs and
+  packed delinked text have different alignment spans, and the body ends before
+  the padding.
+* **A string keeps only up to its NUL**, not its aligned span.
+
 ## The part that makes it work: mask the volatile name
 
 cl's pool symbols are numbered, and the numbers move. In `projectile.obj` today:
