@@ -1286,3 +1286,33 @@ Retail's GruntDirStatics declaration ORDER differs from ours (constant
 9-cell permutation, proven by the store-order rotation) — reordering the
 header would align the XCU walk's name pairing but shifts every `$S` counter
 in every including TU (sidecar churn); deliberately not done.
+
+### 5b. Band carving + the demo verdict (2026-08-10, late)
+
+**The whole band surface is carved** (`gap_rows` extended): all-zero
+initialized gaps at/above the next claim's stated alignment and `.bss` gaps
+between single-owner witnesses now become `provisional-band-gap-*` rows -
+668 rows / 24,267 B carved with no base counterpart. Coverage is untouched
+(the rows are excluded from `enrolled_runs` - pressure, not credit); FIDELITY
+now includes the missing-data surface: initialized 98.16, `.bss` 96.67, with
+115 units sub-100. That per-unit list is the gated modelling worklist; nothing
+can hide behind a 100.0 again.
+
+**Demo oracle verdict on the dead bands.** GruntDem.exe (same build session,
+different link) was probed via masked anchor search: all four anchors
+(ButeAttributezDlgProc, BroadcastChatLine, the netcmdslot pool init,
+FormatGameInfoString) resolved uniquely with ONE consistent data shift
+(-0x51f8), and the four big dead bands (dircellmethods 13.1 KB, multi
+4.9 KB, netcmdslot 2.5 KB, gameinfostring 7.8 KB) have **zero inbound
+references in the demo too**. They are dead in both links: debug/editor-era
+statics whose names exist only in the original source. Modelling them by
+name would be fabrication; their proven facts (extent, owner band, zero-fill)
+are carried by the gap rows. For the eventual bit-identical LINK, only
+correctly-sized allocations are needed - a link-phase decision.
+
+**g_emptyString was a fiction** (dissolved): vendored zutil.c's z_errmsg
+points at 0x2293f4, so that address is the pooled `??_C@_00A@?$AA@` fold
+survivor (132 refs image-wide); the named global src invented for it cited
+itself. The data-unprovable-tail rule now consults the claiming unit's own
+base obj to resolve the FileAlignment-tail ambiguity (cl put the symbol in
+.bss there, so retail's cl did too).
