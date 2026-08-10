@@ -74,6 +74,10 @@
 DATA(0x00244c54)
 i32 g_curPlayer = 0;
 
+// @early-stop
+// A whole-function ebx<->edi rotation: retail colours the CSE'd zero edi (materialized
+// AFTER `push edi`) and m_modeSize.cx ebx, cl does the reverse.  Instruction selection,
+// order and the branch sequence are identical.
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
@@ -210,10 +214,8 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     }
     ResetWidgets(1);
 
-    i32 w = g_gameReg->m_modeSize.cx;
-    volatile POINT pt;
-    pt.y = g_gameReg->m_modeSize.cy;
-    SetRect(&m_rect10, w - 0xa0, 0, w, SCREEN_H_PX);
+    tagSIZE screenSize = g_gameReg->m_modeSize;
+    SetRect(&m_rect10, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
@@ -862,11 +864,12 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
 }
 
 // @early-stop
-// The per-class half of the cut is modelled now (CStatusBarItem and CSBI_RectOnly are
-// each two entities, SBI_Image.h / StatusBarItem.h), which is what buys retail's /GX EH
-// frame here.  Residue: the fifth `new CSBI_MenuItem` runs the whole chain inline in
-// retail where the other four `call ??0CStatusBarItem` - a per-SITE budget choice with
-// no source spelling.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
+// 78.20 -> 95.98 by reading the SHARED band constants off retail's reloads (below).
+// The residue is the ctor inline cut: retail stamps the CStatusBarItem base fields
+// inline at the LAST `new CSBI_MenuItem` where the other four `call` the base ctor, so
+// its unwind-state count is four against our five (eh_band STATES) and it needs no
+// delete-on-throw state for that site.  Everything else pairs.
+// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -896,13 +899,17 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(dockLeft);
 
+    // Same vertical band as dockLeft: retail does not recompute the pair here, it
+    // RELOADS the two frame slots dockLeft's `by + 0xad` / `by + 0xb9` were CSE'd into
+    // (`mov eax,[esp+0x34]` / `[esp+0x3c]` at +0x138), so the two dock buttons sit side
+    // by side rather than stacked.
     CSBI_RectOnly* dockRight = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
     if (!dockRight->Setup(
             this,
             code,
             SBICMD_DOCK_RIGHT,
             TAB_CONTROLS,
-            SbGeom(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7),
+            SbGeom(bx + 0x8a, by + 0xad, bx + 0x96, by + 0xb9),
             0,
             -1
         )) {
@@ -930,13 +937,16 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabLists[0].AddTail(hide);
 
+    // The five tab buttons share ONE band, `by + 0x82 .. by + 0xad` - retail computes
+    // `by + 0x82` once here and reloads dockLeft's `by + 0xad` slot for the bottom, and
+    // `by + 0x99` appears in no immediate anywhere in the function (immediates sieve).
     CSBI_MenuItem* statzTab = new CSBI_MenuItem;
     if (!statzTab->SetupImage(
             this,
             code,
             SBICMD_TAB_STATZ,
             TAB_CONTROLS,
-            SbGeom(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
+            SbGeom(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
             "GAME_STATUSBAR_TABZ_STATZTAB",
             -1,
             0
@@ -955,7 +965,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_TAB_GRUNTZ,
             TAB_CONTROLS,
-            SbGeom(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
+            SbGeom(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
             "GAME_STATUSBAR_TABZ_GRUNTZTAB",
             -1,
             0
@@ -974,7 +984,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_TAB_RESOURCE,
             TAB_CONTROLS,
-            SbGeom(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
+            SbGeom(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
             "GAME_STATUSBAR_TABZ_RESOURCETAB",
             -1,
             0
@@ -993,7 +1003,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_TAB_MULTIPLAYER,
             TAB_CONTROLS,
-            SbGeom(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
+            SbGeom(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
             "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
             -1,
             0
@@ -1025,7 +1035,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             code,
             SBICMD_TAB_GAME,
             TAB_CONTROLS,
-            SbGeom(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
+            SbGeom(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
             "GAME_STATUSBAR_TABZ_GAMETAB",
             -1,
             0
@@ -1441,9 +1451,20 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
-// Same ctor inline-cut wall as BuildStatusBarTabs: retail calls ??0CSBI_RectOnly
-// @0x101fa0 at three `new` sites and ??0CStatusBarItem @0x1005d0 at a fourth, so it
-// carries a /GX EH frame we do not. docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
+// The ctor-tag mapping is CONFIRMED correct - walking retail's ten `new` sites in order
+// gives `call ??0CSBI_RectOnly` x3, `call ??0CStatusBarItem` x3, fully-inline x2,
+// `call ??0CSBI_RectOnly` x2, which is exactly the CALL_RECTONLY / <default> /
+// INLINE_CHAIN sequence written below.  What is left is the frame: `sub esp,0x20`
+// against retail's 0x18, and the object needs TWO of those slots where retail needs one
+// (we `mov [esp+0x18],eax` before the ctor call and copy to [esp+0x14] after; retail
+// stores once, so its EH temp IS `it`).  The EH state numbers are offset with it
+// (retail's first site is state 2, ours 0).
+// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
+// The two `return 1;` exits ARE distinct in retail (2 rets, one per branch): listing the
+// destruct button after the multiplayer disable so the tails cross-jump was measured and
+// LOSES (86.08 -> 83.56), and both mission-status arms really are written out (two
+// `push 0x1fb` sites on both sides), so the if/else is not a hoisted `? 1 : 2`.
+// The band constants are clean here (every `bx`/`by + N` appears in a retail lea/add).
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1894,6 +1915,10 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     return -1;
 }
 
+// @early-stop
+// One register: retail walks g_gameReg->m_world->m_soundRegistry through eax twice
+// (`mov edx,[g]; mov eax,[edx+0x30]; mov eax,[eax+0x28]`), cl spends a third register
+// on the intermediate.  Everything else is byte-identical.
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
@@ -2409,17 +2434,19 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     }
                     g[0].m_interval = g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
                     g[0].m_last = static_cast<u32>(g_frameTime);
-                    if (pB->m_counter > 0x2a) {
-                        SetHudRectA(
-                            1,
-                            MACHINE_SNOOZING,
-                            g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
-                        );
-                    } else {
-                        pB->m_interval =
-                            g_buteMgr.GetDwordDef("StatusBar", "LeftMachineLeverDelay", 0x64);
-                        pB->m_last = static_cast<u32>(g_frameTime);
-                    }
+                }
+                // Retail's `cmp eax,0x26 / jne 0x1063e8` skips ONLY the release block:
+                // the counter re-read and this if/else are common to both paths.
+                if (pB->m_counter > 0x2a) {
+                    SetHudRectA(
+                        1,
+                        MACHINE_SNOOZING,
+                        g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
+                    );
+                } else {
+                    pB->m_interval =
+                        g_buteMgr.GetDwordDef("StatusBar", "LeftMachineLeverDelay", 0x64);
+                    pB->m_last = static_cast<u32>(g_frameTime);
                 }
             }
             break;
@@ -2456,22 +2483,27 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     m_rezTick = 0;
 }
 
+// @early-stop
+// One scheduling swap: retail fills the `mov eax,[esp+0xc]` load-use slot with the
+// m_state store, cl here sinks that store past the `xor eax,eax`.  Store ORDER and
+// the i64 halves are already proven (all 24 statement orders swept; the i32-halves
+// spelling of m_last/m_interval swaps a second pair, so the members really are i64).
 RVA(0x001066f0, 0x3b)
 void CStatusBarMgr::SetHudRectA(i32 y0, SbiMachineState x0, i32 z) {
-    volatile CSbiHlRow& r = m_machineA;
-    r.m_counter = y0;
-    r.m_state = IDX(x0);
-    r.m_interval = static_cast<u32>(z);
-    r.m_last = g_frameTime;
+    m_machineA.m_counter = y0;
+    m_machineA.m_state = IDX(x0);
+    m_machineA.m_interval = static_cast<u32>(z);
+    m_machineA.m_last = g_frameTime;
 }
 
+// @early-stop
+// Same one-instruction scheduling swap as SetHudRectA.
 RVA(0x00106740, 0x3b)
 void CStatusBarMgr::SetHudRectB(i32 y0, SbiMachineState x0, i32 z) {
-    volatile CSbiHlRow& r = m_machineB;
-    r.m_counter = y0;
-    r.m_state = IDX(x0);
-    r.m_interval = static_cast<u32>(z);
-    r.m_last = g_frameTime;
+    m_machineB.m_counter = y0;
+    m_machineB.m_state = IDX(x0);
+    m_machineB.m_interval = static_cast<u32>(z);
+    m_machineB.m_last = g_frameTime;
 }
 
 RVA(0x00106790, 0x62)
@@ -2751,12 +2783,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             } else {
                 col = (item2 >= PICKUP_TOYZ_FIRST) ? 1 : 0;
             }
-            i32 row = 3;
-            CSbiHlRow* cell = &m_hlGrid[col * 4 + row];
-            while (cell->m_state == IDX(HLROW_IDLE_CYCLE)) {
-                row--;
-                cell--;
-                if (row < 0) {
+            i32 row;
+            CSbiHlRow* cell = &m_hlGrid[col * 4 + 3];
+            // The row guard is the LOOP CONDITION, not a trailing `if (row < 0) break;`:
+            // cl rotates `for (row = 3; row >= 0; ...)` into retail's `jne exit` / `jge
+            // top` pair, where a `while (state == IDLE)` head duplicates the state test
+            // at the bottom (the extra branch).
+            for (row = 3; row >= 0; row--, cell--) {
+                if (cell->m_state != IDX(HLROW_IDLE_CYCLE)) {
                     break;
                 }
             }
@@ -2792,10 +2826,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     CSBI_ImageSet* w = m_extraNotify0;
     if (w) {
         if (rectFlag) {
-            w->m_rect14.left = m_itemRect.left + m_rect10.left;
-            w->m_rect14.top = m_itemRect.top + m_rect10.top;
-            w->m_rect14.right = m_itemRect.right + m_rect10.left;
-            w->m_rect14.bottom = m_itemRect.bottom + m_rect10.top;
+            RECT rc;
+            i32 x = m_rect10.left;
+            i32 y = m_rect10.top;
+            rc.left = m_itemRect.left + x;
+            rc.top = m_itemRect.top + y;
+            rc.right = m_itemRect.right + x;
+            rc.bottom = m_itemRect.bottom + y;
+            w->m_rect14 = rc;
         }
         if (refreshFlag) {
             NotifyAllSlots();
@@ -2807,7 +2845,10 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 // Retail reserves the 16-byte home of the `RECT rc` local (`sub esp,0x10`) and spills
 // rc.left through it; cl scalar-replaces the whole struct for us and needs no frame.
 // A shared rc for both m_fallRect and m_rect14, `RECT rc = SbGeom(...)` and a
-// function-scope declaration were all measured and none allocate the home.
+// function-scope declaration were all measured and none allocate the home.  So was
+// building rc first and offsetting it IN PLACE (`m_fallRect = rc;` then `rc.left += x;`
+// ...), which is the shape retail's `mov [esp+0x10],ecx` spill looks like: 76.42, and
+// 67.15 / 71.07 for the field-by-field and x-then-y orderings of the same idea.
 RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
@@ -2893,6 +2934,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallRect.bottom = newHi;
             CSBI_ImageSet* w = m_extraNotify1;
             if (w) {
+                // Field-by-field, NOT a RECT temp: retail's frame here is one dword
+                // (`push ecx`), so there is no 16-byte rect on the stack to copy from.
                 i32 sx = m_rect10.left;
                 i32 sy = m_rect10.top;
                 w->m_rect14.left = m_fallRect.left + sx;
@@ -2902,8 +2945,11 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             }
             m_fallDelay = delay;
             m_fallLast = g_frameTime;
-            stepped = 1;
         }
+        // Retail's `mov ecx,1` at +0x1d5 is the JOIN of the timer test's taken and
+        // fall-through edges, so the flag is set whenever the item is active - not
+        // only when the step ran.  That is why it never needs a frame slot.
+        stepped = 1;
     }
 
     if (m_extraNotify1 != NULL && stepped) {
@@ -3124,12 +3170,14 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     m_machinePhase = BELT_IDLE;
     SetRect(&m_itemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_extraNotify0) {
+        RECT rc;
         i32 x = m_rect10.left;
         i32 y = m_rect10.top;
-        m_extraNotify0->m_rect14.left = m_itemRect.left + x;
-        m_extraNotify0->m_rect14.top = m_itemRect.top + y;
-        m_extraNotify0->m_rect14.right = m_itemRect.right + x;
-        m_extraNotify0->m_rect14.bottom = m_itemRect.bottom + y;
+        rc.left = m_itemRect.left + x;
+        rc.top = m_itemRect.top + y;
+        rc.right = m_itemRect.right + x;
+        rc.bottom = m_itemRect.bottom + y;
+        m_extraNotify0->m_rect14 = rc;
     }
     NotifyAllSlots();
     i32 c = m_rezTick;

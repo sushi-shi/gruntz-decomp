@@ -16,13 +16,17 @@
 #include <Image/ImageSet.h>
 
 // @early-stop
-// exit_merge_sieve calls this DUP-EXIT (rets 17 -> retail 13) and retail's arm
-// tails are `jmp <shared ret>`, but the goto-fail/break lever OVERSHOOTS here:
-// replacing all five arm-trailing `return 1;` with `break;` plus one tail return
-// takes rets to 14 and blocks 239 -> 233 against retail's 237, and scores
-// 76.12 -> 73.75. Retail sits between the two regimes; measured, not guessed.
-// (The 76.12 baseline is now 82.41 - the CStatusBarItem/CSBI_RectOnly entity split
-// gave the `new` sites retail's ctor calls; the DUP-EXIT signal is unchanged.)
+// 86.68 -> 91.63 once the framework image's top was read off retail's RELOAD rather
+// than invented (see the SBICMD_RESOURCE_MACHINE_FOREGROUND site).  What is left is the
+// FRAME, not the exits: retail reserves `sub esp,0x34`, we reserve 0x30, and the slot
+// order moves with it - both sides agree up to +0x1c (code +0x10, the loop `y` +0x14,
+// the i32* cursor +0x18, `i` +0x1c), then the prologue spills `by` to +0x20 in retail
+// and +0x28 in ours.  The 25 unwind funclets say it is NOT one uniform shift: eh_band's
+// census row is `mixed -0x8x6 +0x4x3 -0x1cx1`, so three object slots move three ways.
+// `--branches --diff` reports 102/102 and 13/13, so control flow is already right.
+// Measured and REJECTED as the missing local, both leaving the frame at 0x30: hoisting
+// the loops' `CSBI_ImageSet* set` to function scope, and giving any one loop its own
+// counter.  Both were byte-identical, so the extra dword is a SPILL, not a declaration.
 RVA(0x00102250, 0x1de4)
 RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x001047f0, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
@@ -475,7 +479,10 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
             it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
             r.left = bx;
-            r.top = by + 0x1a6;
+            // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
+            // TAB_RESOURCE image's `by + 0x135` was CSE'd into, and `by + 0x1a6` (what
+            // used to stand here) appears in no immediate anywhere in the function.
+            r.top = by + 0x135;
             r.right = bx + 0x9f;
             r.bottom = by + 0x1df;
             if (!it->SetupImage(
