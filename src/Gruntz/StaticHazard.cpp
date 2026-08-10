@@ -15,6 +15,7 @@
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LevelArea.h>
