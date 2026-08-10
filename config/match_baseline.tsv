@@ -2853,7 +2853,7 @@ mapmgr	?Allocate@CMapArrayB@@QAEHI@Z	87.6471	87.6471	8	d54d03028639	0x9e860	87.6
 mapmgr	?CellPop@CMapMgr@@QAEXPAUBrickzNode@@H@Z	99.5224	99.5224	5	0f2654a7a3d7	0x9f710	99.5224
 mapmgr	?CellPush@CMapMgr@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	4	e4eaeb530698	0x9f470	85.9070
 mapmgr	?Drain@CMapMgr@@QAEXXZ	100.0000	100.0000	4	12c4e1963388	0x9f590	100.0000
-mapmgr	?Expand@CMapMgr@@QAEHPAUBrickzNode@@HHHH@Z	78.8300	78.8300	4	61117c722db4	0x9f010	78.8300
+mapmgr	?Expand@CMapMgr@@QAEHPAUBrickzNode@@HHHH@Z	79.6403	79.6403	5	ab8a41cc051e	0x9f010	79.6403
 mapmgr	?Find@CMapMgr@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	3	52e962ec72f5	0x9f500	100.0000
 mapmgr	?FindCellNode@CMapMgr@@QAEPAUBrickzNode@@HH@Z	100.0000	100.0000	4	90ccf87b65c5	0x9f540	100.0000
 mapmgr	?Insert@CMapMgr@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	3	c5ef2478a338	0x9f370	100.0000
@@ -2862,7 +2862,7 @@ mapmgr	?PopFront@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	3	64bdc82b2c32	
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	10	ccb6e8fabf99	0x9ec30	100.0000
 mapmgr	?ResetCells@CMapMgr@@QAEXXZ	99.3077	99.3077	5	6f99bd1d245c	0x9f5d0	99.3846
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	1265cd29489a	0x9f840	100.0000
-mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	93.8144	93.8144	7	e0caf21d8b6d	0x9eca0	93.8144
+mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	94.0417	94.0417	8	3d3f93adcccc	0x9eca0	94.0417
 mapmgr	?SetVersionRect@@YAXXZ	100.0000	100.0000	4	c4adb43dc4fd	0x9fe10	100.0000
 mapmgr	?Unlink@CMapMgr@@QAEXPAUBrickzNode@@@Z	100.0000	100.0000	5	6e597f0a9a64	0x9f690	100.0000
 mapmgr	?Visit@CMapMgr@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	34b3b1e544f9	0x9f7f0	100.0000
@@ -3339,16 +3339,16 @@ play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	ea06ab3ca6ec	0xd7440	95.8064
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	91.8290	91.8290	2	e6ef3d3e5d4a	0xd8060	91.8290
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	2	842142fa3f32	0xd1710	100.0000
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.6750	98.6750	19	354981ba5aac	0xd12b0	98.7500
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	19	354981ba5aac	0xd12b0	98.7500
 play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	3	409f991bb413	0xd65d0	99.4069
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	8	05f7283351bb	0xcb740	100.0000
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	15	0254a5e3ef9e	0xd9050	100.0000
 play	?OnChar@CPlay@@UAEHHH@Z	100.0000	100.0000	2	7d01b9ff8290	0xcbaf0	100.0000
 play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	5	29b62be18a03	0xcb400	94.7917
-play	?OnKeyDown@CPlay@@UAEHHH@Z	90.5799	90.5744	3	3a8d22a42bf9	0xcbcc0	90.5799
+play	?OnKeyDown@CPlay@@UAEHHH@Z	90.4226	90.4226	4	a63101cd4bcf	0xcbcc0	90.5799
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	95.7038	95.7038	6	cf033a7d8845	0xce660	95.7038
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.3652	89.3652	6	6032b71c50b2	0xcdb10	89.3652
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.5287	89.5287	7	0bd1f0b5bd7a	0xcdb10	89.5287
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	3	3c757657d494	0xce530	100.0000
 play	?OnMouseMove@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	80a201da23b5	0x8c970	100.0000
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	8b4b0527c2b5	0xceab0	100.0000
@@ -3405,7 +3405,7 @@ playassetload	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	5	5bd2554f561b	0x
 playassetload	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	8	ec6c2f7bb630	0xdb7e0	100.0000
 playassetload	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	8	80c2370efbdb	0xdb6c0	100.0000
 playassetload	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	10	165a7192fc92	0xdc060	67.0648
-playercommandstep	?ExecCommand@CPlay@@QAEHEDDFFDE@Z	67.3355	67.3355	1	20384d094762	0xd1b60	67.3517
+playercommandstep	?ExecCommand@CPlay@@QAEHEDDFFDE@Z	69.7584	69.7584	2	41edbeaf32da	0xd1b60	69.7584
 playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	99.5915	99.5915	22	aefe16f1a1e5	0xd53d0	99.5915
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	99.7721	16	a7b738cb2e3f	0xdec60	99.7785
 projectile	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	88.2129	88.2129	14	1d0e6a7e4d14	0xe1b90	88.2194

@@ -2404,13 +2404,10 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        h->m_cmdSubMgr->BlitTileMarker(
-            1,
-            g_curPlayer,
-            static_cast<i16>(this->m_cursorX),
-            static_cast<i16>(this->m_cursorY),
-            0
-        );
+        // BlitTileMarker takes i32; retail emits no sign-extension anywhere in
+        // OnKeyDown.  The i16 casts made cl re-read the members as signed WORDs
+        // (`movsx eax,word ptr [esi+0x154]`), clipping the cursor position.
+        h->m_cmdSubMgr->BlitTileMarker(1, g_curPlayer, mx, my, 0);
         return 1;
     }
 
@@ -2850,7 +2847,10 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
             {
                 RECT* gr = &m_guts->m_rect10;
                 if (CGameLevel::PointInRect(gr, xr, y)) {
-                    if (m_guts->SetFallRect(xr, y, static_cast<char>(m_cursorFrame))) {
+                    // No narrowing: retail loads the WHOLE dword (`mov eax,[esi+0x2f4]`),
+                    // and SetFallRect takes an i32.  Casting to char clipped the held
+                    // cursor item to its low signed byte before the status bar saw it.
+                    if (m_guts->SetFallRect(xr, y, m_cursorFrame)) {
                         m_dragInhibit2 = 0;
                         SetCursorFrame(0);
                         return 1;
@@ -2908,7 +2908,7 @@ i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
 
         waypoint_cancel:
             m_dragInhibit2 = 0;
-            m_guts->EnterHlRow(0, static_cast<char>(m_cursorFrame));
+            m_guts->EnterHlRow(0, m_cursorFrame);
             SetCursorFrame(0);
             return 1;
         }

@@ -157,7 +157,13 @@ i32 CPlay::ExecCommand(
             CGrunt* g =
                 mgr->m_cmdGrid
                     ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
-            if (g == NULL || g->m_entranceCommitted == 0) {
+            // Gate on m_tileClaimed (+0x420), NOT m_entranceCommitted (+0x1fc): retail
+            // reads the SAME slot it is about to clear five instructions later, i.e.
+            // "if this grunt is not guarding, do nothing".  Gating on the always-set
+            // committed flag ran the whole guard teardown - m_arrivalState = AI_NONE,
+            // the 0xe7fbfbfd flag mask and SetEntrancePos(1,1) - on any grunt, so a
+            // stray GUARD_END cancelled whatever that grunt was actually doing.
+            if (g == NULL || g->m_tileClaimed == 0) {
                 return 1;
             }
             g->m_arrivalRerollLo = 0;
@@ -173,8 +179,8 @@ i32 CPlay::ExecCommand(
 
         case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(targetIndex);
-            gruntIndex = static_cast<u8>(gruntIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -204,7 +210,7 @@ i32 CPlay::ExecCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gruntIndex, px, py);
+            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -219,7 +225,7 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, px, py, 2);
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2);
             if (res != 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
@@ -236,8 +242,8 @@ i32 CPlay::ExecCommand(
 
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(targetIndex);
-            gruntIndex = static_cast<u8>(gruntIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0) {
                 return 0;
             }
@@ -261,7 +267,7 @@ i32 CPlay::ExecCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(row, col, sx, sy);
-            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gruntIndex, sx, sy);
+            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -278,7 +284,7 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, sx, sy, 2);
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2);
             if (res != 0) {
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
@@ -297,8 +303,8 @@ i32 CPlay::ExecCommand(
 
         case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(targetIndex);
-            gruntIndex = static_cast<u8>(gruntIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -327,7 +333,7 @@ i32 CPlay::ExecCommand(
             } else {
                 g->m_arrivalActive = 0;
             }
-            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gruntIndex, px, py);
+            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -342,7 +348,7 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, px, py, 3);
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3);
             if (res != 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
@@ -359,8 +365,8 @@ i32 CPlay::ExecCommand(
 
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(targetIndex);
-            gruntIndex = static_cast<u8>(gruntIndex);
-            CGrunt* g = mgr->m_cmdGrid->m_grid[gruntIndex + player * 0xf];
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
             if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
                 return 0;
             }
@@ -384,7 +390,7 @@ i32 CPlay::ExecCommand(
             i32 sx = g2->m_object->m_screenX;
             i32 sy = g2->m_object->m_screenY;
             g->SetArrivalTarget(row, col, sx, sy);
-            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gruntIndex, sx, sy);
+            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 0;
@@ -401,7 +407,7 @@ i32 CPlay::ExecCommand(
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
                 return 1;
             }
-            res = m_mgr->m_cmdGrid->ClearCell(player, gruntIndex, sx, sy, 3);
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3);
             if (res != 0) {
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
@@ -423,8 +429,8 @@ i32 CPlay::ExecCommand(
             if (player == static_cast<u32>(g_curPlayer)) {
                 m_playerCommandPending = 0;
             }
-            gruntIndex = static_cast<u8>(gruntIndex);
-            i32 idx = gruntIndex + player * 0xf;
+            u32 gi = static_cast<u8>(gruntIndex);
+            i32 idx = gi + player * 0xf;
             CGrunt* g = mgr->m_cmdGrid->m_grid[idx];
             if (g != NULL && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
@@ -447,7 +453,7 @@ i32 CPlay::ExecCommand(
             }
             if (r != 0) {
                 if (player == static_cast<u32>(g_curPlayer)) {
-                    m_mgr->m_cmdGrid->ResetCell(player, gruntIndex, 0, 0);
+                    m_mgr->m_cmdGrid->ResetCell(player, gi, 0, 0);
                 }
                 sel = 1;
             }

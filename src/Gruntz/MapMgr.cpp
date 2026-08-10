@@ -239,10 +239,18 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     m_goal.m_y = y2;
     m_start.m_y = y1;
 
+    // Retail 0x9ed7d nulls the SEED, not the free list: `mov ecx,[esi+0x30]` /
+    // `mov eax,[ecx+0x14]` / `cmp eax,edx` / `jne` -> `xor ecx,ecx` (seed = NULL).
+    // The free-list head is only rewritten on the taken path (0x9ed8b).  That keeps
+    // the pool's last node as a permanent SENTINEL - the same invariant Expand
+    // (0x9f2b6) and CellPush (0x9f48d) enforce.  Nulling m_freeList instead left
+    // `seed` non-NULL, so the `seed == NULL` bail became dead: Search ran on the
+    // sentinel while m_colA.m_freeList was NULL, and the next Expand / Drain /
+    // ResetCells dereferenced that NULL head.
     BrickzNode* seed = m_colA.m_freeList;
     BrickzNode* slot = seed->m_openNext;
     if (slot == NULL) {
-        m_colA.m_freeList = NULL;
+        seed = NULL;
     } else {
         m_colA.m_freeList = slot;
         slot->m_openPrev = NULL;
@@ -394,16 +402,19 @@ relax:
             return 1;
         }
     }
+    // Two separate guards, not one nested block: retail tests `closed` at 0x9f1ed
+    // (`test edi,edi / je 0x9f223`), again after the cost compare falls through
+    // (0x9f215), so the CellPop(closed, 1) arm carries its OWN null test.
+    if (closed != NULL && ng < closed->m_gCost) {
+        CellPop(closed, 0);
+        closed->m_parent = node;
+        closed->m_gCost = ng;
+        closed->m_fCost = closed->m_hCost + ng;
+        Insert(closed);
+        ncell->m_count++;
+        return 1;
+    }
     if (closed != NULL) {
-        if (ng < closed->m_gCost) {
-            CellPop(closed, 0);
-            closed->m_parent = node;
-            closed->m_gCost = ng;
-            closed->m_fCost = closed->m_hCost + ng;
-            Insert(closed);
-            ncell->m_count++;
-            return 1;
-        }
         CellPop(closed, 1);
     }
     if (open != NULL) {
