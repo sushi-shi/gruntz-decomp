@@ -348,8 +348,14 @@ fail:
 }
 
 // @early-stop
-// spill/colouring residue across the row loop (the sin/ftol windows recolour the
-// scratch set); blocks and callees align. Permuter sweep inert.
+// Structure fixed: the else-arm copy sites carry no `if (bpp > 0)` of their own
+// (retail has one test per site, cl would not fold two), they index off srcRow/
+// dstRow so cl sinks the address arithmetic into the loop preheader the way retail
+// does, the y-loop's span copy is `while (span-- > 0)` (retail's dec/lea trip-count
+// dance), and its memset destination is computed above the guard. Branch sequence
+// now 40/40. Residue: our frame carries one extra dword because cl spills `delta`
+// across the __ftol pair where retail keeps it in a register, and the taken arm of
+// `whole < want` pops the x87 `whole` immediately where retail carries it.
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
     if (frame == 0) {
@@ -426,12 +432,8 @@ void CFaderSine::RenderFrame(i32 frame) {
                         m_arr1[row] = 0;
                     }
                     i32 pick = m_arr3[m_arr1[row]];
-                    if (bpp > 0) {
-                        u8* p = srcRow + pick * bpp;
-                        u8* q = dstRow + pick * bpp;
-                        for (i32 j = 0; j < bpp; j++) {
-                            p[j] = q[j];
-                        }
+                    for (i32 j = 0; j < bpp; j++) {
+                        srcRow[pick * bpp + j] = dstRow[pick * bpp + j];
                     }
                     n--;
                 }
@@ -439,12 +441,8 @@ void CFaderSine::RenderFrame(i32 frame) {
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
                     i32 pick = GetRandom(0, m_elemCount - 1);
-                    if (bpp > 0) {
-                        u8* p = srcRow + pick * bpp;
-                        u8* q = dstRow + pick * bpp;
-                        for (i32 j = 0; j < bpp; j++) {
-                            p[j] = q[j];
-                        }
+                    for (i32 j = 0; j < bpp; j++) {
+                        srcRow[pick * bpp + j] = dstRow[pick * bpp + j];
                     }
                     n--;
                 }
@@ -458,16 +456,17 @@ void CFaderSine::RenderFrame(i32 frame) {
         i32 done = m_scaledMag - y + m_frameCount - 1;
         if (done >= 0 && done < m_frameCount) {
             if (m_boxParam != 0) {
+                u8* clrRow = m_srcBits + m_srcBox->m_pitch * done;
                 i32 span = bpp * m_elemCount;
                 if (span > 0) {
-                    memset(m_srcBits + m_srcBox->m_pitch * done, 0, span);
+                    memset(clrRow, 0, span);
                 }
             } else {
                 u8* dst = m_dstBits + m_dstBox->m_pitch * done;
                 u8* src = m_srcBits + m_srcBox->m_pitch * done;
                 i32 span = bpp * m_elemCount;
-                for (i32 j = 0; j < span; j++) {
-                    src[j] = dst[j];
+                while (span-- > 0) {
+                    *src++ = *dst++;
                 }
             }
         }
@@ -581,11 +580,21 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::SubFree() {}
 
-#define FADER_CLAMPW(v, w) (((v) < 0 ? 0 : (v)) >= (w) ? (w) : ((v) < 0 ? 0 : (v)))
+// A min(max(v, 0), w) clamp written as nested macros - the double expansion of v
+// is retail's (both arms recompute the branchless max0), and the `<` order puts
+// the max0 arm first in memory, which is retail's block layout.
+#define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
+#define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
 
 // @early-stop
-// scheduling/colouring residue in the dual span-walk loops; topology matches.
-// Permuter sweep inert.
+// Three source bugs fixed: the width clamp is min(max0(v),w) - the `<` order puts
+// the max0 arm first, where the old `>=` spelling inverted both jcc polarities
+// (branch diff rows #9/#48); each memset destination is computed UNCONDITIONALLY
+// above its `n > 0` guard, as retail does at all three sites; the two span copies
+// are `while (n-- > 0) { *dst++ = *src++; }` (retail's two-pointer walk with the
+// dec/lea trip-count dance). Branch sequences now agree. Residue: the
+// m_spanStarts/m_spanEnds row-pointer CSE picks the second array as its base where
+// retail picks the first, and one join block is split in retail.
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
@@ -628,14 +637,16 @@ void CFaderLight::RenderFrame(i32 frame) {
                     left = m_surfWidth;
                 }
                 i32 oldStart = m_spanStarts[row];
+                u8* clrL = m_srcBits + m_surface->m_pitch * row + oldStart * bpp;
                 i32 n1 = (left - oldStart) * bpp;
                 if (n1 > 0) {
-                    memset(m_srcBits + m_surface->m_pitch * row + oldStart * bpp, 0, n1);
+                    memset(clrL, 0, n1);
                 }
                 i32 oldEnd = m_spanEnds[row];
+                u8* clrR = m_srcBits + m_surface->m_pitch * row + right * bpp;
                 i32 n2 = (oldEnd - right) * bpp;
                 if (n2 > 0) {
-                    memset(m_srcBits + m_surface->m_pitch * row + right * bpp, 0, n2);
+                    memset(clrR, 0, n2);
                 }
                 u8* bits = m_srcBits;
                 if (m_spanCount > 0) {
@@ -784,9 +795,10 @@ void CFaderLight::RenderFrame(i32 frame) {
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
             } else {
+                u8* clrRow = m_srcBits + m_surface->m_pitch * row;
                 i32 w = m_surfWidth;
                 if (w > 0) {
-                    memset(m_srcBits + m_surface->m_pitch * row, 0, w);
+                    memset(clrRow, 0, w);
                 }
             }
             row++;
@@ -815,19 +827,18 @@ void CFaderLight::RenderFrame(i32 frame) {
                 if (left >= m_surfWidth) {
                     left = m_surfWidth;
                 }
-                i32 j;
                 i32 n1 = (m_spanStarts[row] - left) * bpp;
                 u8* src = m_dstBits + m_dstSurface->m_pitch * row + left * bpp;
                 u8* dst = m_srcBits + m_surface->m_pitch * row + left * bpp;
-                for (j = 0; j < n1; j++) {
-                    dst[j] = src[j];
+                while (n1-- > 0) {
+                    *dst++ = *src++;
                 }
                 i32 oldEnd = m_spanEnds[row];
                 i32 n2 = (right - oldEnd) * bpp;
                 src = m_dstBits + m_dstSurface->m_pitch * row + oldEnd * bpp;
                 dst = m_srcBits + m_surface->m_pitch * row + oldEnd * bpp;
-                for (j = 0; j < n2; j++) {
-                    dst[j] = src[j];
+                while (n2-- > 0) {
+                    *dst++ = *src++;
                 }
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
@@ -1075,9 +1086,14 @@ CFaderShape::~CFaderShape() {
 // Exit regime fixed: retail's shared `return 0` is SUNK past the success return
 // (the ||/total regime), so the guards are structured returns with the mode-range
 // pair as `||` - not `goto fail`, which parks the block mid-body after the last
-// goto. Residue: the six dimension guards compare via a member reload (3i) where
-// retail compares the still-live store-forwarded registers (2i), plus spill
-// colouring around the acos/shade-ramp loops.
+// goto. The shade-table arm assigns m_flag BEFORE m_table, which is what lets cl
+// cross-jump it onto the _access arm's `mov [this+0x1c],eax; jne` pair the way
+// retail does. The six dimension guards are stated in retail's compare order
+// (height/width per surface) but cl canonicalises them - all six return 0, so it
+// reorders them freely. Residue: retail claims a callee-saved register for
+// `&m_cache` across the three cache calls where cl claims it for the zero
+// constant, so every `cmp reg,0` here reads `cmp mem,ebp` on our side; an explicit
+// pointer local does not move it.
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
@@ -1116,26 +1132,26 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     m_rowCount = m_surfA->m_height;
     m_span = m_surfA->m_width;
-    m_spanB = m_surfB->m_width;
     m_rowCountB = m_surfB->m_height;
-    m_spanC = m_surfC->m_width;
+    m_spanB = m_surfB->m_width;
     m_rowCountC = m_surfC->m_height;
-    if (m_span != m_spanB) {
-        return 0;
-    }
+    m_spanC = m_surfC->m_width;
     if (m_rowCount != m_rowCountB) {
         return 0;
     }
-    if (m_span != m_spanC) {
+    if (m_span != m_spanB) {
         return 0;
     }
     if (m_rowCount != m_rowCountC) {
         return 0;
     }
-    if (m_spanC != m_spanB) {
+    if (m_span != m_spanC) {
         return 0;
     }
-    if (m_rowCountB != m_rowCountC) {
+    if (m_rowCountC != m_rowCountB) {
+        return 0;
+    }
+    if (m_spanC != m_spanB) {
         return 0;
     }
 
@@ -1172,8 +1188,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     if (m_useLut != 0) {
         if (pInit->m_shadeTable) {
-            m_table = pInit->m_shadeTable;
             m_flag = 0;
+            m_table = pInit->m_shadeTable;
         } else if (_access(pInit->m_shadeTablePath, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_shadeTablePath);
             if (m_table == NULL) {
@@ -1213,15 +1229,12 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 }
 
 // @early-stop
-// arms and args all match retail 1:1; the residue is cl's cross-switch TAIL-MERGE
-// pattern: retail keeps 4/3/4/3 call sites (sharing only switch-2 REVERSE's call
-// tail with FORWARD, args pushed separately) where cl merges down to 3/2/4/3
-// (2 relocs short of retail's 19). Case reorder to retail's memory order
-// (SPLIT/REV/FWD) scores lower; the seam >>1 respelling refutes the shift theory.
-// The min-pitch block now loads m_surfA->m_pitch first through a local (retail's
-// order, single spill at the join); retail also pre-materialises FADER_SWEEP_
-// REVERSE into ebp for the four SPLIT-arm restores - ours stores the immediate,
-// the same unpromoted-constant coin as ??0CFxModeT2.
+// The old "cross-switch tail-merge" reading was a mislabelled source bug: retail
+// RE-TESTS m_stripCopy instead of taking an else arm (the RenderTile calls can
+// store to it), and the min clamp is a ternary, not an if-assign. Both are fixed.
+// Residue is two instructions in the Unlock tail: retail chains the surface deref
+// through one register (`mov eax,[esi+0x38]; mov eax,[eax+8]`) where cl stages it
+// in edx first, and picks edx/ecx for the two vtable loads in the opposite order.
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_surfA->Lock(0));
@@ -1232,18 +1245,16 @@ void CFaderShape::RenderFrame(i32 frame) {
     }
     m_gatherBase = gather;
 
-    u32 seam = 0;
     i32 stride = m_halfWidth * 2;
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
+    u32 seam = 0;
     if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != 0) {
         seam = m_span / 2;
     }
     if (m_stripCopy == 0 && frame == 0) {
         i32 pitchA = m_surfA->m_pitch;
-        i32 n = m_surfB->m_pitch;
-        if (pitchA < n) {
-            n = pitchA;
-        }
+        i32 pitchB = m_surfB->m_pitch;
+        i32 n = (pitchA < pitchB) ? pitchA : pitchB;
         i32 row = 0;
         while (row < m_rowCount) {
             u8* src = m_straightBase + m_rowOfsB[row];
@@ -1290,7 +1301,11 @@ void CFaderShape::RenderFrame(i32 frame) {
                     break;
             }
         }
-    } else {
+    }
+    // Retail re-tests the member here rather than taking an `else` arm: the
+    // RenderTile/RenderWarpTile calls above can store to it, so cl reloads and
+    // emits the second `cmp [this+..],0; jne <join>` that an else would not have.
+    if (m_stripCopy == 0) {
         if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
             switch (m_mode) {
                 case FADER_SWEEP_FORWARD:

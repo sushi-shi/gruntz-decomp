@@ -18,15 +18,14 @@ typedef struct HWND__* HWND;
 
 #pragma pack(push, 1)
 struct CSnapshotHeader {
-    i32 m_reserved;
     i32 m_version;
     i32 m_month;
-    i32 m_dayThenYear;
+    i32 m_day;
+    i32 m_year;
     char m_name[0x110 - 0x10];
     u32 m_childCount;
     u32 m_objIdCounter;
-    i32 m_activeCount;
-    char m_pad11c[0x120 - 0x11c];
+    char m_reserved118[0x120 - 0x118];
 };
 SIZE(0x120);
 #pragma pack(pop)
@@ -71,6 +70,14 @@ public:
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
+    // Two entities (docs/patterns/two-shapes-need-two-entities.md): retail's
+    // out-of-line 0x156a90 body is what CDDrawChildGroup::LoadObjects calls, while
+    // SnapshotChildren/RestoreChildren EXPAND the same logic - their first callback
+    // site keeps the un-folded `lea eax,&S; test eax,eax` archive guard that only an
+    // inline expansion leaves behind (a source-level `&S == NULL` folds away).
+    i32 InvokeCallbackInline(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
+        return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
+    }
     i32 InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload);
 
     i32 SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId);

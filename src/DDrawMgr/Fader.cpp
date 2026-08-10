@@ -227,12 +227,13 @@ RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
 // @early-stop
-// arm layout, loop rotation, cell geometry, the negated step slots and the POD
-// elem temp are all transcribed from retail (frame now 0x9c, callee set exact).
-// Residue: cl seats `this` in esi where retail picks ebp (claimed between the
-// ebp and esi pushes), leaving retail one fewer loop register, so retail carries
-// x/bx/rowD2/halfW in frame slots across the inner loop while cl keeps them in
-// registers (-12 B). Whole-function rotation; permuter and islands inert.
+// The inlined CRezBufferObject::SetSize body was missing MFC's shrink arm
+// (`else if (m_nSize > nNewSize) DestructElements(...)`, POD so only the dead
+// count store survives) and spelled the growth clamp as an assign-then-fix
+// instead of retail's if/else; both are fixed and the branch sequence now agrees
+// 19/19. Residue: cl seats `this` in esi where retail picks ebp (claimed between
+// the ebp and esi pushes), leaving retail one fewer loop register, so retail
+// carries x/bx/rowD2/halfW in frame slots across the inner loop.
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
@@ -340,6 +341,13 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                 } else if (newSize <= mesh->m_nMaxSize) {
                     if (newSize > idx) {
                         memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(RezElem40));
+                    } else if (idx > newSize) {
+                        // The shrink arm's element-destruction walk: RezElem40 is POD, so
+                        // the loop dies and only retail's dead count store survives.
+                        RezElem40* gone = &mesh->m_pData[newSize];
+                        i32 nGone = idx - newSize;
+                        for (; nGone--; gone++) {
+                        }
                     }
                     mesh->m_nSize = newSize;
                 } else {
@@ -352,9 +360,10 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
                             grow = 0x400;
                         }
                     }
-                    i32 newMax = mesh->m_nMaxSize + grow;
-
-                    if (newSize >= newMax) {
+                    i32 newMax;
+                    if (newSize < mesh->m_nMaxSize + grow) {
+                        newMax = mesh->m_nMaxSize + grow;
+                    } else {
                         newMax = newSize;
                     }
                     RezElem40* nd =

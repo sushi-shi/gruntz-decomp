@@ -233,11 +233,12 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 }
 
 // @early-stop
-// block topology exact; residue is the memset-site schedule: retail hoists the
-// site-1 m_surface/m_bytesPerPixel loads ABOVE the bpp branch and orders the
-// two imul terms per site (site1 px*left first, site2 pitch*bottom first);
-// textual term order, a two-statement accumulator (cl refolds 2-term sums) and
-// 300 generated variants are all byte-identical at 84.58.
+// The site-1 offset is now the FIRST statement of each bpp arm, which is what makes
+// cl hoist the common surface load above the branch the way retail does (the `n =
+// 2 * w` doubling has to follow it, not precede it). Term order inside the sum is
+// still inert - cl canonicalises a 2-term sum, re-confirmed here. Residue: cl
+// hoists m_pitch out of the arms where retail hoists m_bytesPerPixel, and the
+// frame slot for the row count lands at 0x1c instead of 0x14.
 RVA(0x00163f40, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
@@ -262,8 +263,8 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     i32 w = rect->right - rect->left + 1;
 
     if (m_bpp == BPP_RGB_16) {
-        i32 n = 2 * w;
         i32 offTop = m_surface->m_pitch * rect->top + m_surface->m_bytesPerPixel * rect->left;
+        i32 n = 2 * w;
         if (n > 0) {
             memset(base + offTop, color, n);
         }

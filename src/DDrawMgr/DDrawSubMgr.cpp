@@ -911,7 +911,6 @@ i32 LeafCue::TriggerBlit(i32 pos, i32 center, i32 range1, i32 range2) {
 }
 
 // @early-stop
-// @early-stop
 // blocks B0-B18 byte-exact; retail keeps FOUR inline EH epilogue copies (two
 // 10i, two 9i rets) where our cl cross-jumps all exits onto one shared 8i
 // epilogue - the EH-epilogue cross-jump family from

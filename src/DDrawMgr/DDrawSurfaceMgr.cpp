@@ -275,15 +275,17 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 // @early-stop
-// /Ob1 inline-budget wall (docs/patterns/ob1-inline-budget-divergence.md): retail
-// expands ~CFileMem at the exits but CALLS ??1CFileMemBase (0x1578b0, 3 sites)
-// where our build recursively expands the base dtor too (extra base-vptr re-stamp
-// and one extra EH state per exit, so the state numbering shifts site-onward).
-// The dtor WAS header-inline in retail's TU - its own ??1CFileMem COMDAT
-// (0x157980) and LoadRecordFile expand the same body - so the call/expand split
-// is the caller-size-dependent inliner decline, not visibility. 96 tu_state
-// islands flat; an OOL-dtor probe reached 72.5 here but is inauthentic and
-// regresses LoadRecordFile + ??1CFileMem (both 100), so the inline model stays.
+// /Ob1 inline-budget cut POSITION (docs/patterns/ob1-inline-budget-divergence.md).
+// Retail declines ~CFileMemBase at EVERY cleanup site here: each failure exit is
+// `vptr; call [??_7CFileMem+0xc]; mov BYTE state` and cross-jumps to one shared
+// `lea ecx,&m_file; call ??1CFile; call ??1CFileMemBase; xor eax,eax` tail. Our cl
+// still expands the base dtor at the first four exits, so those carry an extra
+// base-vptr stamp + EH state, the later exits lose the cross-jump, and the budget
+// it spent early makes the last two exits decline ??1CFileMem itself. The dtor is
+// header-inline on both sides (retail's own ??1CFileMem COMDAT expands it), so the
+// cut is a caller-IL-size decision, not visibility: retail's pre-inline body was
+// larger than ours. Everything above the first exit is byte-identical; a 200-round
+// permuter pass over the body is inert.
 RVA(0x00156020, 0x505)
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
@@ -301,26 +303,27 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
         return 0;
     }
 
-    CTime now = CTime::GetCurrentTime();
     CSnapshotHeader header;
     memset(&header, 0, sizeof(header));
+
+    CTime now = CTime::GetCurrentTime();
     header.m_version = 1;
     header.m_month = now.GetLocalTm(0)->tm_mon + 1;
-    header.m_dayThenYear = now.GetLocalTm(0)->tm_mday;
-    header.m_dayThenYear = now.GetLocalTm(0)->tm_year + 0x76c;
+    header.m_day = now.GetLocalTm(0)->tm_mday;
+    header.m_year = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header.m_name, name);
     i32 probe = m_childGroup->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
-    header.m_activeCount = probe;
+    header.m_childCount = probe;
     S.Write(&header, sizeof(header));
 
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_SNAPSHOT_BEGIN, LOGIC_NONE, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachProbe(&S, typeId) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_PRESAVE, LOGIC_NONE, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRESAVE, typeId) == 0) {
@@ -329,7 +332,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_level->EditDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_SAVE, LOGIC_NONE, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachSerialize(&S, typeId) == 0) {
@@ -338,7 +341,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
     if (m_level->EditDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_POSTSAVE, LOGIC_NONE, 0) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTSAVE, typeId) == 0) {
@@ -353,11 +356,10 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 }
 
 // @early-stop
-// Same /Ob1 wall as SnapshotChildren, one notch deeper: retail calls
-// ??1CFileMemBase (0x1578b0) at 11 exits AND the whole ??1CFileMem (0x157980)
-// at 3 more - the inline budget depleting mid-function. Our build inline-expands
-// both dtors at every exit, so every exit block is wider and the EH state
-// numbering diverges. Inline dtor model is proven (see SnapshotChildren).
+// Residue is the first three cleanup sites only: retail calls ??1CFileMemBase there
+// too, our cl still expands it and cross-jumps those three onto a shared tail. Every
+// later exit, the trailing ??1CFileMem calls and the epilogue are byte-identical.
+// Same caller-IL-size cut as SnapshotChildren.
 RVA(0x00156530, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {
@@ -377,9 +379,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     CSnapshotHeader header;
     S.Read(&header, sizeof(header));
 
-    void* headerArg = &header;
-
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_RESTORE_BEGIN, typeId, headerArg) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_RESTORE_BEGIN, typeId, &header) == 0) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
@@ -387,7 +387,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_PRELOAD, typeId, headerArg) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_PRELOAD, typeId) == 0) {
@@ -396,7 +396,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_level->EditDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_LOAD, typeId, headerArg) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header) == 0) {
         return 0;
     }
     if (m_childGroup->Deserialize(&S, header.m_childCount, typeId) == 0) {
@@ -405,7 +405,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     if (m_level->EditDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0) == 0) {
         return 0;
     }
-    if (m_callback == NULL || m_callback(this, &S, SERIAL_POSTLOAD, typeId, headerArg) == 0) {
+    if (InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header) == 0) {
         return 0;
     }
     if (m_childGroup->ForEachDispatch(&S, SERIAL_POSTLOAD, typeId) == 0) {
@@ -421,7 +421,6 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
 }
 
 RVA(0x00156a90, 0x3a)
-
 i32 CDDrawSurfaceMgr::InvokeCallback(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
     if (!ar) {
         return 0;
