@@ -473,12 +473,8 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
-// `sema disasm --diff --lite` reduces to two rows, both downstream of register
-// allocation: retail keeps three copies of the post-notify restore where cl keeps two
-// (the PRESAVE/SAVE pair is byte-identical on BOTH sides, so the merge decision is not
-// byte-driven), and the POSTLOAD lookup-failure store is `mov [esi+0x98],eax` against
-// cl's `edi`, which is what lets cl fold it into the node==0 store. Everything else -
-// jump table span, arm bodies, act keys, the neg/sbb/neg tail - agrees.
+// cl and retail cross-jump a DIFFERENT pair of the four post-notify blocks, which moves
+// the shared tail and cascades: docs/patterns/cross-jump-grouping-floors-objdiff.md.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == NULL) {
