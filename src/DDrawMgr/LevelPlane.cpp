@@ -380,6 +380,9 @@ void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
 }
 
 // @early-stop
+// Register/schedule residue only: retail computes the first product after the
+// callee-save pushes (edi) where cl hoists it above them (edx), and the halving
+// loop counts in esi vs our edi. No reloc or branch divergence.
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
     m_wrapW = m_gridW * tileW;

@@ -502,6 +502,9 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
 }
 
 // @early-stop
+// Rotated-loop shape: retail enters the row loop through a forward jmp into the
+// middle (skeleton B5 `jmp B7`) with the back-edge below - a loop-rotation
+// restructure, not regalloc. Rebuild with the entry-jump idiom before permuting.
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
     if (m_height <= 1) {

@@ -219,6 +219,9 @@ RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
 // @early-stop
+// Control-flow restructure needed: skeleton diverges from B8 (base `4i jcc` vs
+// target `7i jmp`; base B11 7i vs target 23i) - block bodies sit in different
+// arms, not a regalloc residue. Transcribe the retail arm layout first.
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
