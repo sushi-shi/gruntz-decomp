@@ -42,7 +42,9 @@
 // keeps it in ebp, so the frame is wider and every [esp+N] shifts.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
-    if (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0) {
+    // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).
+    bool isI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+    if (isI) {
         return 1;
     }
     CMapMgr* grid = g_gameReg->m_tileGrid;

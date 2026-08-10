@@ -886,10 +886,11 @@ i32 CInGameIcon::SerializeMove(
             ar->Read(&id, sizeof(id));
             void* found = 0;
             CWwdGameObjectA* sprite = 0;
-            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0
-                && found != NULL
-                && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF) {
-                sprite = static_cast<CWwdGameObjectA*>(found);
+            if (MapLookupById(m_animWorker->m_ownerCtx->m_childGroup->m_map48, id, found) != 0) {
+                sprite = (found != NULL
+                          && static_cast<CGameObject*>(found)->GetClassId() == CLASSID_SERIALREF)
+                             ? static_cast<CWwdGameObjectA*>(found)
+                             : 0;
             }
             m_glitterSprite = sprite;
             if (sprite != NULL) {

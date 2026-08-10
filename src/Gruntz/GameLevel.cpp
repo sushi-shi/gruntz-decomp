@@ -101,7 +101,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         cursor += 0xa0;
     }
 
-    if (hdr->tileDescriptionsOffset != 0) {
+    // `> 0` on the unsigned field, not `!= 0`: retail's guard is `cmp off,0 / jbe`.
+    if (hdr->tileDescriptionsOffset > 0) {
 
         WwdTileDescTable* rec = // Byte-forced view of packed WWD storage.
             reinterpret_cast<WwdTileDescTable*>(block + hdr->tileDescriptionsOffset);

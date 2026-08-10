@@ -2147,48 +2147,48 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             unit->m_defenderState = AISTATE_SEEK;
         }
         i32 sA = scratchA.m_flags;
-        if (sA & 0x8000) {
-            if (prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
-                m_triggerMgr->ApplyTriggerA(
-                    unit->m_tileOwnerHi,
-                    unit->m_tileOwnerLo,
-                    cx * 0x20 + 0x10,
-                    cy * 0x20 + 0x10
-                );
-                unit->m_defenderState = AISTATE_SEEK;
-                if (unit->CoordCount() != 0) {
-                    CoordNode* n = unit->CoordHead();
+        if ((sA & 0x8000) && prim == PICKUP_BRICK && unit->m_battleState == BZTASK_CARRY_BRICK) {
+            m_triggerMgr->ApplyTriggerA(
+                unit->m_tileOwnerHi,
+                unit->m_tileOwnerLo,
+                cx * 0x20 + 0x10,
+                cy * 0x20 + 0x10
+            );
+            unit->m_defenderState = AISTATE_SEEK;
+            if (unit->CoordCount() != 0) {
+                CoordNode* n = unit->CoordHead();
+                while (n != NULL) {
+                    CoordNode* cur = n;
+                    n = n->m_next;
+                    if (cur->m_coord != NULL) {
+                        g_coordPool.Push(cur->m_coord);
+                    }
+                }
+                coordList->RemoveAll();
+            }
+            return 0;
+        }
+        // Retail re-tests `sA & 0x8000` here (the CSE'd `and` is re-`test`ed at
+        // 0x29fbb), so the two guards are separate statements, not one nesting.
+        if ((sA & 0x8000) && PathCrossesMarkedTile(unit) == 0
+            && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
+            CoordNode* head = unit->CoordHead();
+            if (head != NULL) {
+                CoordNode* n = head->m_next;
+                if (n != NULL) {
                     while (n != NULL) {
                         CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != NULL) {
-                            g_coordPool.Push(cur->m_coord);
+                            CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
+                            fn->m_next = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = fn;
+                            CoordPos cp;
+                            cp.m_node = cur;
+                            coordList->RemoveAt(cp.m_pos);
                         }
                     }
-                    coordList->RemoveAll();
-                }
-                return 0;
-            }
-            if (PathCrossesMarkedTile(unit) == 0
-                && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
-                CoordNode* head = unit->CoordHead();
-                if (head != NULL) {
-                    CoordNode* n = head->m_next;
-                    if (n != NULL) {
-                        while (n != NULL) {
-                            CoordNode* cur = n;
-                            n = n->m_next;
-                            if (cur->m_coord != NULL) {
-                                CoordPoolNode* fn = g_coordPool.NodeOf(cur->m_coord);
-                                fn->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = fn;
-                                CoordPos cp;
-                                cp.m_node = cur;
-                                coordList->RemoveAt(cp.m_pos);
-                            }
-                        }
-                        return 1;
-                    }
+                    return 1;
                 }
             }
         }
@@ -4374,10 +4374,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                                 cand->m_defenderState = AISTATE_SEEK;
                                 unit->m_defenderState = AISTATE_RETREAT;
                             }
-                            list.RemoveAll();
                             return 1;
                         }
-                        list.RemoveAll();
                         return 0;
                     }
                 }

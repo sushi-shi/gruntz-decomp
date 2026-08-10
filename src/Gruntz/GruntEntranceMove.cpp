@@ -140,8 +140,6 @@ const double g_wingzBias = -0.5;
 DATA(0x0020cca8)
 static char s_Spellz[] = "Spellz";
 
-void CGrunt::ApplyMoveKind(i32 v) {}
-
 // @early-stop
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
@@ -747,9 +745,9 @@ i32 CGrunt::UpdateEntranceAnim() {
         m_entranceStamped = 1;
         i32 v = m_moveVariant;
         if (v != 0) {
-            ApplyMoveKind(v);
+            LoadGruntAbilityTuning(v);
         } else {
-            ApplyMoveKind(m_moveKind);
+            LoadGruntAbilityTuning(m_moveKind);
         }
         return 0;
     }

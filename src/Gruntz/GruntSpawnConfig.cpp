@@ -196,7 +196,10 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         stream->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = m_voices[chosen];
-    return voice->Setup(gate->m_objectId, stream, priority, 0) != 0;
+    if (voice->Setup(gate->m_objectId, stream, priority, 0) == 0) {
+        return 0;
+    }
+    return 1;
 }
 
 // @early-stop
@@ -290,7 +293,10 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
     if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
-        return m_voices[chosen]->Setup(id, stream, priority, 0) != 0;
+        if (m_voices[chosen]->Setup(id, stream, priority, 0) == 0) {
+            return 0;
+        }
+        return 1;
     }
     return 0;
 }
@@ -380,7 +386,10 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     i32 vol = m_voiceVolume;
     stream->m_feeder.Pause();
     if (stream->SetSource(src) != 0 && stream->Configure(vol, 0, 0, 0) != 0) {
-        return m_voices[chosen]->Setup(objId, stream, priority, 1) != 0;
+        if (m_voices[chosen]->Setup(objId, stream, priority, 1) == 0) {
+            return 0;
+        }
+        return 1;
     }
     return 0;
 }

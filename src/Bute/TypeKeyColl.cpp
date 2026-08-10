@@ -196,10 +196,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         if (static_cast<u32>(v) > static_cast<u32>(maxv)) {
             maxv = v;
         }
-        while (*p != 0) {
-            if (isdigit(*p)) {
-                break;
-            }
+        while (*p != 0 && !isdigit(*p)) {
             if (sawSep && *p != ' ') {
                 goto badchar;
             }

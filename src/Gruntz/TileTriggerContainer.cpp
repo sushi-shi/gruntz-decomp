@@ -631,7 +631,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             if (TransferFlag74(s) == 0) {
                 return 0;
             }
-            return 1;
+            break;
         }
         case SERIAL_LOAD: {
             RemoveAll();
@@ -674,7 +674,7 @@ i32 CTileTriggerContainer::Serialize(CFileMemBase* s, SerialMode op, LogicTypeId
             if (LoadFlag74(s) == 0) {
                 return 0;
             }
-            return 1;
+            break;
         }
     }
 

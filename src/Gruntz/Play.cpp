@@ -5507,11 +5507,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&v, sizeof(v));
 
     CGameObject* oe = 0;
-    MapLookup(res->m_childGroup->m_map48, gridObj, oe);
-    CWwdGameObjectA* sink;
-    if (oe == NULL) {
-        sink = NULL;
-    } else {
+    CWwdGameObjectA* sink = NULL;
+    if (MapLookup(res->m_childGroup->m_map48, gridObj, oe) && oe != NULL) {
 
         sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
     }

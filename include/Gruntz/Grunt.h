@@ -772,7 +772,6 @@ public:
 
     void EnsureStruckSlot(const char* key);
     i32 UpdateEntranceAnim();
-    void ApplyMoveKind(i32 v);
     i32 Save(CFileMemBase* ar);
 
     i32 LoadStateRecord(CFileMemBase* ar);

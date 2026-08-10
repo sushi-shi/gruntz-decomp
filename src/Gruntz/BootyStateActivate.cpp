@@ -431,15 +431,15 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         return 0;
     }
 
-    for (i32 i = 1; i <= 8; i++) {
-        m_sprintSprites[i - 1] =
+    for (i32 i = 0; i < 8; i++) {
+        m_sprintSprites[i] =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
-        if (m_sprintSprites[i - 1] == NULL) {
+        if (m_sprintSprites[i] == NULL) {
             return 0;
         }
 
         CString dir;
-        switch (static_cast<GruntDirection>(i)) {
+        switch (static_cast<GruntDirection>(i + 1)) {
             case DIR_NORTH:
                 dir = "NORTH";
                 break;
@@ -466,16 +466,16 @@ i32 CBootyState::BuildGruntSprintAnimation() {
                 break;
         }
 
-        m_sprintSprites[i - 1]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
-        m_sprintSprites[i - 1]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
-        m_sprintSprites[i - 1]->m_drawActive = 1;
-        m_sprintSprites[i - 1]->m_drawFillCmd = SHADE_PAL_16;
-        m_sprintSprites[i - 1]->m_drawFillArg = h;
+        m_sprintSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
+        m_sprintSprites[i]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
+        m_sprintSprites[i]->m_drawActive = 1;
+        m_sprintSprites[i]->m_drawFillCmd = SHADE_PAL_16;
+        m_sprintSprites[i]->m_drawFillArg = h;
 
         i32 outX, outY;
-        GenMenuRandPos(static_cast<GruntDirection>(i), &outX, &outY);
-        m_sprintSprites[i - 1]->m_screenX = outX;
-        m_sprintSprites[i - 1]->m_screenY = outY;
+        GenMenuRandPos(static_cast<GruntDirection>(i + 1), &outX, &outY);
+        m_sprintSprites[i]->m_screenX = outX;
+        m_sprintSprites[i]->m_screenY = outY;
     }
     return 1;
 }
@@ -1530,7 +1530,7 @@ void CMultiBootyState::DrawBattleStats() {
         }
     }
 
-    for (c = 0; c <= IDX(BATTLEROW_LAST); c++) {
+    for (c = 0; c < IDX(BATTLEROW_COUNT); c++) {
         BattleStatRow row = static_cast<BattleStatRow>(c);
         switch (row) {
             case BATTLEROW_FORTZ:

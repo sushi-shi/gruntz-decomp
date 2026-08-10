@@ -1137,11 +1137,12 @@ bool CButeMgr::SkipToTag() {
         if (!Parse()) {
             return false;
         }
-        ButeToken t = static_cast<ButeToken>(m_tokType);
-        if (t == BUTETOK_TAG_OPEN || t == BUTETOK_END) {
+        // Retail compares the 16-bit member (`cmpw`); widening it into an i32
+        // enum local made every test a 32-bit `cmpl`.
+        if (m_tokType == BUTETOK_TAG_OPEN || m_tokType == BUTETOK_END) {
             return true;
         }
-        if (t != BUTETOK_NAME) {
+        if (m_tokType != BUTETOK_NAME) {
             return false;
         }
     }
@@ -1271,14 +1272,15 @@ bool CButeMgr::ParseGroup() {
     if (!Parse()) {
         return false;
     }
-    ButeToken t = static_cast<ButeToken>(m_tokType);
-    if (t == BUTETOK_END) {
+    // Retail compares the 16-bit member (`cmpw`); an i32 enum local made every
+    // test a 32-bit `cmpl`.
+    if (m_tokType == BUTETOK_END) {
         return true;
     }
-    if (t != BUTETOK_TAG_OPEN) {
+    if (m_tokType != BUTETOK_TAG_OPEN) {
         return false;
     }
-    while (t != BUTETOK_END) {
+    while (m_tokType != BUTETOK_END) {
         if (!ParseTagLine()) {
             return false;
         }
@@ -1292,19 +1294,17 @@ bool CButeMgr::ParseGroup() {
         if (!Parse()) {
             return false;
         }
-        t = static_cast<ButeToken>(m_tokType);
-        if (t == BUTETOK_END) {
+        if (m_tokType == BUTETOK_END) {
             return true;
         }
-        if (t != BUTETOK_TAG_OPEN) {
-            if (t != BUTETOK_NAME) {
+        if (m_tokType != BUTETOK_TAG_OPEN) {
+            if (m_tokType != BUTETOK_NAME) {
                 return false;
             }
             if (!SkipToTag()) {
                 return false;
             }
         }
-        t = static_cast<ButeToken>(m_tokType);
     }
     return true;
 }

@@ -22,10 +22,8 @@ GZ_ENUM_BEGIN(BattleStatRow)
     BATTLEROW_TOYZ = 4,
     BATTLEROW_POWERUPZ = 5,
     BATTLEROW_CURSEZ = 6,
-    // The build loop walks the rows with `c <= this`, so the bound is spelled
-    // inclusively the way retail spells it rather than against whichever row is
-    // last.
-    BATTLEROW_LAST = BATTLEROW_CURSEZ,
+    // Retail's build loop is `cmp c,7 / jl` (0x1ed30 +0x38a), i.e. `c < COUNT` -
+    // not the inclusive `c <= CURSEZ` this header used to claim.
     BATTLEROW_COUNT = 7
 GZ_ENUM_END(BattleStatRow)
 

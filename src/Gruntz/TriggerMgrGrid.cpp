@@ -1238,6 +1238,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     CString* typeRec;
     CString* slot;
     i32 grown;
+    bool isG;
+    bool isL;
+    bool isP;
+    bool isI2;
     CGrunt* cell = m_grid[col * TM_GRID_COLS + row];
     if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
@@ -1291,7 +1295,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         }
 
         char* name = *g_typeColl.GetNameRecord(cell->m_objAux->m_actKey);
-        if (strcmp(name, "I") == 0) {
+        bool isI = (strcmp(name, "I") == 0);
+        if (isI) {
             LoadTileArrivalFx(
                 col,
                 row,
@@ -1318,9 +1323,18 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
 
-    if (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "G") == 0
-        || strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "L") == 0
-        || strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "P") == 0) {
+    // Retail holds each strcmp result in a `bool` before testing it (`sete cl /
+    // test cl,cl`), five times over this function.
+    isG = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "G") == 0);
+    if (isG) {
+        return 0;
+    }
+    isL = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "L") == 0);
+    if (isL) {
+        return 0;
+    }
+    isP = (strcmp(*g_typeColl.GetNameRecord(hit->m_objAux->m_actKey), "P") == 0);
+    if (isP) {
         return 0;
     }
 
@@ -1349,7 +1363,8 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             slot++;
         } while (--grown != 0);
     }
-    if (strcmp(*typeRec, "I") == 0) {
+    isI2 = (strcmp(*typeRec, "I") == 0);
+    if (isI2) {
         LoadTileArrivalFx(
             col,
             row,

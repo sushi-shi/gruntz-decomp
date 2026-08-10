@@ -212,8 +212,8 @@ inflight: {
         nbpos = cur->GetTilePos();
         i32 dx = nbpos.m_x - x5;
         i32 dy = nbpos.m_y - y5;
-        i32 adx = dx < 0 ? -dx : dx;
-        i32 ady = dy < 0 ? -dy : dy;
+        i32 adx = abs(dx);
+        i32 ady = abs(dy);
         i32 dist = static_cast<i32>(sqrt(static_cast<double>((adx * adx + ady * ady))));
         if (dist > m_assignedTargetMaxDistance) {
             if (g->CoordCount() != 0) {
