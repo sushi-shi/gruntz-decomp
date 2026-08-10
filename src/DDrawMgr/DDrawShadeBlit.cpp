@@ -243,16 +243,17 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
             }
             m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
-            RecordBytes<PidHeader> blob;
-            blob.m_rec = src;
+            // The embedded palette sits directly after the RLE payload, so it
+            // starts at pixels[m_rleLen] - retail forms `pid + m_rleLen` once
+            // and indexes +0x20/+0x1e/+0x1f off it.
             i32 i = 0;
             i32 d = 0;
             do {
                 d++;
-                m_palette[d - 1].peRed = (blob.m_bytes + m_rleLen)[i + 0x20];
+                m_palette[d - 1].peRed = src->pixels[m_rleLen + i];
                 i += 3;
-                m_palette[d - 1].peGreen = (blob.m_bytes + m_rleLen)[i + 0x1e];
-                m_palette[d - 1].peBlue = (blob.m_bytes + m_rleLen)[i + 0x1f];
+                m_palette[d - 1].peGreen = src->pixels[m_rleLen + i - 2];
+                m_palette[d - 1].peBlue = src->pixels[m_rleLen + i - 1];
             } while (i < 0x300);
         }
     }
@@ -264,7 +265,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
     }
     m_rleData = new u8[m_rleLen];
 
-    memcpy(m_rleData, src + 1, m_rleLen);
+    memcpy(m_rleData, src->pixels, m_rleLen);
 
     if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
         void* remapped = EncodeRle16(m_rleData);

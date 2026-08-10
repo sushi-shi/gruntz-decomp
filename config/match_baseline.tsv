@@ -957,9 +957,9 @@ ddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUtagRECT@@PAVCDDSurface@@0HH@Z	100.0
 ddrawshadeblit	?BlitAt@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HHHH@Z	100.0000	100.0000	2	6b55637df03f	0x149780	100.0000
 ddrawshadeblit	?BlitCopyForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.8187	77.8187	4	043c73c54904	0x149950	77.8187
 ddrawshadeblit	?BlitCopyMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	79.4828	79.4828	8	aa2097dc36e2	0x149d00	84.5558
-ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	68.5211	68.5211	11	bad0e2c09bec	0x14a200	68.8256
+ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	68.9661	68.9661	11	bad0e2c09bec	0x14a200	68.9661
 ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	75.1330	75.1330	11	bb4033020ae6	0x14b770	75.1330
-ddrawshadeblit	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HE@Z	80.6493	80.6493	2	e595a0c7b53f	0x1490d0	80.6493
+ddrawshadeblit	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HE@Z	80.6119	80.6119	3	b0a5202254b2	0x1490d0	80.6493
 ddrawshadeblit	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAX@Z	100.0000	100.0000	5	5c747d958af2	0x148f50	100.0000
 ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAXHHHH0@Z	97.8708	97.8708	10	2366066fc383	0x148d40	97.8708
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	79.3842	79.3842	10	cde1a33be565	0x14c9f0	79.4030
