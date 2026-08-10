@@ -19,6 +19,7 @@ Entry requirements — a revelation is not a tip:
 | [funclet-is-a-type-oracle.md](funclet-is-a-type-oracle.md) | a `/GX` unwind funclet's jump target names a member's or base's **type** | compiler noise to be masked |
 | [call-count-is-a-defect-oracle.md](call-count-is-a-defect-oracle.md) | a callee retail has and we don't — **absence**, which no percentage measures | a low score to grind later |
 | [byte-exact-can-still-crash.md](byte-exact-can-still-crash.md) | a 100%-exact function fed garbage by its callers' **argument protocol** | proof the function was correct |
+| [eh-band-is-where-a-declined-inline-shows.md](eh-band-is-where-a-declined-inline-shows.md) | an unwind-state **count** short — a body retail expanded and our compiler declined | a mid-% constructor to park |
 
 Plus one index, not a revelation:
 [**data-matching-checklist.md**](data-matching-checklist.md) — the terse whole-checklist for

@@ -16,7 +16,7 @@ getting it wrong.
    column keeps every percentage a floor.
 5. **A wrong model that scores 100% is worse than a low score.** A low score is a worklist.
 
-## The six ways a datum lies
+## The seven ways a datum lies
 
 | # | failure | how it hides | where |
 | :-- | :-- | :-- | :-- |
@@ -26,6 +26,7 @@ getting it wrong.
 | 4 | **wrong addend** | `sym+K` — stored INLINE in the masked displacement | §3c |
 | 5 | **wrong field read/written** | same instruction, different offset | `store_offsets` |
 | 6 | **wrong TYPE** | destruction path only | `funclet-is-a-type-oracle.md` |
+| 7 | **absent entirely** | a body retail expanded and we call; no percentage measures absence | `eh-band-is-where-a-declined-inline-shows.md` |
 
 **A compensated defect is not corrected until every compensation is gone.** Grep for the
 bias, do not trust the pin. (`g_clut` shipped a rendering bug for months this way.)
