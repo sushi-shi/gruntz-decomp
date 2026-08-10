@@ -1844,7 +1844,7 @@ gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	6	aa989a985074	0
 gamelevel	?LoadFromSource@CGameLevel@@UAEHPAUCParseSource@@@Z	100.0000	100.0000	5	51774f72971b	0x15d630	100.0000
 gamelevel	?LoadName@CGameLevel@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	2	7c8af13578f3	0x161110	100.0000
 gamelevel	?LoadSourceWithCoords@CGameLevel@@UAEHPAUCParseSource@@PAUtagRECT@@@Z	100.0000	100.0000	3	9194ad66e60b	0x15ceb0	100.0000
-gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	82.4141	82.4141	17	f69e15c95534	0x15d280	82.4141
+gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	84.2511	84.2511	18	aaf78c6171ab	0x15d280	84.2511
 gamelevel	?LoadWwdWithCoords@CGameLevel@@UAEHPAUWwdHeader@@PAUtagRECT@@@Z	100.0000	100.0000	3	fd6bf702ab2a	0x15cf70	100.0000
 gamelevel	?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind@@HH@Z	100.0000	100.0000	1	55800cb01fba	0x82600	100.0000
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	7	985fbc7515cc	0x160ee0	100.0000
@@ -3334,9 +3334,9 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	94.8851	94.8851	12	db61038baf68	0xd0db0	94.8851
 play	?InputVirtual@CPlay@@UAEHXZ	99.9657	99.9657	1	b3c8fcfaa28d	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
-play	?LoadByMode@CPlay@@UAEHHH@Z	84.1842	84.1842	25	29b844f67aa4	0xca200	84.1842
+play	?LoadByMode@CPlay@@UAEHHH@Z	87.4484	87.4484	26	6a5b2c2cb4da	0xca200	87.4484
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
-play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	76.6295	76.6295	2	2bc41ee15757	0xc7ec0	78.3187
+play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	78.3005	78.3005	3	74f0a6b5bd4c	0xc7ec0	78.3187
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	ea06ab3ca6ec	0xd7440	95.8064
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	91.8290	91.8290	2	e6ef3d3e5d4a	0xd8060	91.8290

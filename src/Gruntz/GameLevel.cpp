@@ -90,19 +90,15 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     i32 result = 0;
 
     char* cursor = block + hdr->planesOffset;
-    u32 i = 0;
 
-    if (hdr->numPlanes > 0) {
-        do {
-            // Byte-forced view of packed WWD storage.
+    for (u32 i = 0; i < hdr->numPlanes; ++i) {
+        // Byte-forced view of packed WWD storage.
 
-            if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_planeCtx)
-                == NULL) {
-                goto fail;
-            }
-            ++i;
-            cursor += 0xa0;
-        } while (i < hdr->numPlanes);
+        if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_planeCtx)
+            == NULL) {
+            goto fail;
+        }
+        cursor += 0xa0;
     }
 
     if (hdr->tileDescriptionsOffset != 0) {

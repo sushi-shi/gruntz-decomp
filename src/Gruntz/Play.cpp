@@ -327,9 +327,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        if (ShowCursor(0) >= 0) {
-            while (ShowCursor(0) >= 0) {
-            }
+        while (ShowCursor(0) >= 0) {
         }
         m_initialFramePending = 1;
         m_notifyLatch = 0;
@@ -1068,25 +1066,16 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
-// 171 blocks vs retail's 176, and the shape of the shortfall is uniform: cl SHARES
-// tails retail duplicates and CSEs member loads retail re-reads.
-//   * the `atoi` / `EndParse` / `xor edi,edi` cleanup after the cmd-line parse is
-//     written once here and reached by a jmp from every arm; retail emits a private
-//     copy at 0xca4e0's predecessor and only jmps from B29 (base B29 is 8i where
-//     retail's is a single jmp);
-//   * every `if (x->m_field)` test that retail spells `mov reg,[m] / test reg,reg`
-//     (0xca442, 0xca4e5, ...) compiles here to `cmp dword ptr [m],<zero reg>` because
-//     cl keeps a zero live in ebx across the whole body - one instruction shorter at
-//     roughly a dozen sites;
-//   * the FinishLevel guard re-reads g_gameReg->m_frameGate and takes its ADDRESS
-//     (`mov ecx,[eax+0xc] / add eax,0xc / mov [eax],ecx` at 0xca2d9) where we reuse
-//     the value the outer test already loaded.
+// The call sequence is now retail's exactly (161 vs 161, same order, same callees) and
+// the block count matches; residue is register/scheduling plus two conditional branches
+// retail has and we do not, in the ScanShuffleQuads / SyncOptionsState window (B129-B134).
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
     void* set;
     i32 reload = 0;
+    i32 diff = 0;
 
     char nameBuf[0x20];
     i32 initScratch[0x25];
@@ -1351,7 +1340,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         i32 cached = g_lastLevelNum;
         i32 eq = g_pAreaMgr->IsSameWorld(cached);
         reload = (eq == 0) ? 1 : 0;
-        i32 diff = (level != g_lastLevelNum) ? 1 : 0;
+        diff = (level != g_lastLevelNum) ? 1 : 0;
         if (g_pAreaMgr == NULL) {
             return 0;
         }
@@ -1379,12 +1368,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (modeFlag != 0 && (g_gameReg)->m_gameMode == GAMEMODE_SINGLE) {
+    if (diff != 0 && (g_gameReg)->m_gameMode == GAMEMODE_SINGLE) {
         BuildWarlordNameTable(savedThis);
     }
     BuildHelpReveal(0);
     RegisterInputBindings();
-    if (!LoadLevelImages(1)) {
+    if (!LoadLevelImages(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1392,7 +1381,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!LoadGameImages(1)) {
+    if (!LoadGameImages(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1405,7 +1394,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     RegisterInputBindings();
-    if (!LoadLevelSounds(1)) {
+    if (!LoadLevelSounds(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1413,7 +1402,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!LoadGameSounds(1)) {
+    if (!LoadGameSounds(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1434,7 +1423,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!LoadLevelAnims(1)) {
+    if (!LoadLevelAnims(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1442,7 +1431,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
-    if (!LoadGameAnims(1)) {
+    if (!LoadGameAnims(reload)) {
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -1458,6 +1447,9 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
+    if (!BuildWorldLevelPath(reload)) {
+        goto fail0;
+    }
     BuildHelpReveal(0);
     if (savedThis != NULL) {
         (savedThis)->AckJoinFailure();
@@ -1518,20 +1510,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CString warp;
         i32 same = 0;
         if (warp.LoadString(IDS_TRAINING_WORLD_NAME)) {
-            char* a = const_cast<char*>(static_cast<const char*>(gameReg->GetWorldFileName()));
-            char* b = const_cast<char*>(static_cast<const char*>(warp));
-            i32 eq = 1;
-            while (*a == *b) {
-                if (*b == 0) {
-                    break;
-                }
-                a += 1;
-                b += 1;
-            }
-            if (*b != *a) {
-                eq = 0;
-            }
-            same = eq;
+            same = strcmp(
+                       static_cast<const char*>(gameReg->GetWorldFileName()),
+                       static_cast<const char*>(warp)
+                   )
+                   == 0;
         }
         if (same) {
             ScanShuffleQuads();
@@ -1555,127 +1538,126 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             i32 v = g_buteMgr.GetInt("WarpStone", static_cast<const char*>(key));
             bm->m_byteArr.SetAtGrow(bm->m_byteArr.GetSize(), static_cast<u8>(v));
         }
-    }
-    self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
+        self->m_guts->LoadMultiplayerBattlezConfig(self->m_levelIndex);
 
-    set = self->m_world->m_childGroup->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
-    self->m_scrollSink = static_cast<CWwdGameObjectA*>(set);
-    if (set != NULL) {
-        self->m_world->m_childGroup->TickKillCues(0);
-        if (savedThis == NULL) {
+        set = self->m_world->m_childGroup
+                  ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
+        self->m_scrollSink = static_cast<CWwdGameObjectA*>(set);
+        if (set != NULL) {
+            self->m_world->m_childGroup->TickKillCues(0);
+            if (savedThis == NULL) {
 
-            CStatusBarMgr* tiles = self->m_guts;
-            i32 id = (tiles->m_position == STATUSBAR_DOCK_RIGHT) ? 0x1a9 : 0x249;
-            if (!self->m_frameMarker->LoadTimerSprite(id, 0x1ca)) {
-                CTimer* spr = self->m_frameMarker;
-                if (spr != NULL) {
-                    spr->Reset();
-                    ::operator delete(spr);
-                    self->m_frameMarker = NULL;
+                CStatusBarMgr* tiles = self->m_guts;
+                i32 id = (tiles->m_position == STATUSBAR_DOCK_RIGHT) ? 0x1a9 : 0x249;
+                if (!self->m_frameMarker->LoadTimerSprite(id, 0x1ca)) {
+                    CTimer* spr = self->m_frameMarker;
+                    if (spr != NULL) {
+                        spr->Reset();
+                        ::operator delete(spr);
+                        self->m_frameMarker = NULL;
+                    }
                 }
             }
-        }
-        {
-            // The load chain is NOT the multiplayer alternative to the timer
-            // sprite - it runs for every level. As an `else` it never executed
-            // in single player (savedThis is only set when modeFlag is), so the
-            // level got no warlord sprites, no tile scan, no ValidateLevelTiles
-            // (hence an empty switch registry and error 1100) and no gruntz.
-            if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
-                && ValidateLevelTiles() && AddLevelGruntz()) {
-                self->m_world->m_childGroup->TickKillCues(0);
-                self->m_guts->StartChipMachineCycle();
-                (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
-                while (ShowCursor(0) >= 0)
-                    ;
-                self->m_mgr->RefreshGameClock();
-                if (self->m_world->m_level->m_mainPlane != NULL) {
-                    (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-                        ->GetSize();
+            {
+                // The load chain is NOT the multiplayer alternative to the timer
+                // sprite - it runs for every level. As an `else` it never executed
+                // in single player (savedThis is only set when modeFlag is), so the
+                // level got no warlord sprites, no tile scan, no ValidateLevelTiles
+                // (hence an empty switch registry and error 1100) and no gruntz.
+                if (LoadWarlordSprites(savedThis, initScratch) && ScanBuildTiles()
+                    && ValidateLevelTiles() && AddLevelGruntz()) {
+                    self->m_world->m_childGroup->TickKillCues(0);
+                    self->m_guts->StartChipMachineCycle();
+                    (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
+                    while (ShowCursor(0) >= 0)
+                        ;
+                    self->m_mgr->RefreshGameClock();
+                    if (self->m_world->m_level->m_mainPlane != NULL) {
+                        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
+                            ->GetSize();
+                    }
+                    if (self->m_world->m_level->m_mainPlane != NULL) {
+                        (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
+                            ->ActivateVisibleObjects();
+                    }
+                    BuildHelpReveal(0);
+                    if (savedThis != NULL) {
+                        (savedThis)->AckJoinFailure();
+                    }
+                    RegisterInputBindings();
+                    if (BuildMusicCategoryTable(reload)) {
+                        goto okContinue;
+                    }
                 }
-                if (self->m_world->m_level->m_mainPlane != NULL) {
-                    (static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane))
-                        ->ActivateVisibleObjects();
-                }
-                BuildHelpReveal(0);
-                if (savedThis != NULL) {
-                    (savedThis)->AckJoinFailure();
-                }
-                RegisterInputBindings();
-                if (BuildMusicCategoryTable(reload)) {
-                    goto okContinue;
-                }
+                return 0;
             }
-            goto fail1;
         }
-    }
 
-okContinue:
-    BuildHelpReveal(0);
-    if (savedThis != NULL) {
-        (savedThis)->AckJoinFailure();
-    }
-    RegisterInputBindings();
-    BuildHelpReveal(1);
-    ActiveWait(0x64);
-    if (savedThis != NULL) {
-        (savedThis)->AckJoinFailure();
-    }
+    okContinue:
+        BuildHelpReveal(0);
+        if (savedThis != NULL) {
+            (savedThis)->AckJoinFailure();
+        }
+        RegisterInputBindings();
+        BuildHelpReveal(1);
+        ActiveWait(0x64);
+        if (savedThis != NULL) {
+            (savedThis)->AckJoinFailure();
+        }
 
-    gameReg = g_gameReg;
-    if (gameReg->m_loadingSaveGame == 0) {
-        CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontPair->m_surface;
-        mapHost->ShadeRect(0x32, 0);
         gameReg = g_gameReg;
-    }
-
-    if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == 0) {
-        CString scr;
-        self->m_inGame = 1;
-        self->m_hudSuppressed = 0;
-        RECT rect;
-        rect.left = 0;
-        rect.top = 0;
-        rect.right = SCREEN_W_PX;
-        rect.bottom = SCREEN_H_PX;
-        if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
-            EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+        if (gameReg->m_loadingSaveGame == 0) {
+            CDDSurface* mapHost = self->m_world->m_drawTarget->m_frontPair->m_surface;
+            mapHost->ShadeRect(0x32, 0);
+            gameReg = g_gameReg;
         }
-    } else {
-        self->m_hudSuppressed = 1;
+
+        if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == 0) {
+            CString scr;
+            self->m_inGame = 1;
+            self->m_hudSuppressed = 0;
+            RECT rect;
+            rect.left = 0;
+            rect.top = 0;
+            rect.right = SCREEN_W_PX;
+            rect.bottom = SCREEN_H_PX;
+            if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
+                EngStr_DrawText(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
+            }
+        } else {
+            self->m_hudSuppressed = 1;
+        }
+
+        self->m_scrollEdgeLock = 0;
+        self->m_overlayDrag = 0;
+        self->m_paused = 0;
+        self->m_playerCommandPending = 0;
+        self->m_winLoseBanner = 0;
+        self->m_cueInterval = 0x1f4;
+        self->m_cueIntervalHi = 0;
+        self->m_cueTimerLo = g_frameTime;
+        self->m_cueTimerHi = 0;
+        self->m_cueToggle = 1;
+        self->m_cueText = g_emptyString;
+        self->m_lastCueId = 0;
+        self->m_region0Gate = 0;
+        self->m_region1Gate = 0;
+        self->m_region2Gate = 0;
+        self->m_region3Gate = 0;
+        self->m_snapshotActive = 0;
+        self->m_focusPlayerIndex = 3;
+        self->m_renderDisabled = 1;
+        g_playActive = 0;
+        ResetViewport();
+        if ((g_gameReg)->m_gameMode == GAMEMODE_MULTIPLAYER) {
+            g_playActive = 1;
+            self->m_renderDisabled = 0;
+            self->m_mgr->CheckSavedMode();
+            self->m_mgr->m_chatLog->FreeNodes();
+        }
+        return 1;
     }
 
-    self->m_scrollEdgeLock = 0;
-    self->m_overlayDrag = 0;
-    self->m_paused = 0;
-    self->m_playerCommandPending = 0;
-    self->m_winLoseBanner = 0;
-    self->m_cueInterval = 0x1f4;
-    self->m_cueIntervalHi = 0;
-    self->m_cueTimerLo = g_frameTime;
-    self->m_cueTimerHi = 0;
-    self->m_cueToggle = 1;
-    self->m_cueText = g_emptyString;
-    self->m_lastCueId = 0;
-    self->m_region0Gate = 0;
-    self->m_region1Gate = 0;
-    self->m_region2Gate = 0;
-    self->m_region3Gate = 0;
-    self->m_snapshotActive = 0;
-    self->m_focusPlayerIndex = 3;
-    self->m_renderDisabled = 1;
-    g_playActive = 0;
-    ResetViewport();
-    if ((g_gameReg)->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        g_playActive = 1;
-        self->m_renderDisabled = 0;
-        self->m_mgr->CheckSavedMode();
-        self->m_mgr->m_chatLog->FreeNodes();
-    }
-    return 1;
-
-fail1:
-    return 0;
 fail0:
     return 0;
 }
