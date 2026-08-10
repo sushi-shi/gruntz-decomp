@@ -70,6 +70,7 @@ import os
 import shutil
 import signal
 import subprocess
+import struct
 import sys
 import tempfile
 from pathlib import Path
@@ -159,6 +160,24 @@ def ensure_import_libs() -> list:
         sys.path.insert(0, str(REPO / "scripts"))
     from gruntz.build.import_lib import ensure_all
     return ensure_all()
+
+
+def _has_rsrc(exe: Path) -> bool:
+    """True when the PE carries a .rsrc section.
+
+    Read straight out of the section table - no external tool, so the check costs
+    nothing and cannot be skipped because a helper is missing.
+    """
+    try:
+        data = exe.read_bytes()
+        pe = struct.unpack_from("<I", data, 0x3c)[0]
+        n_sections = struct.unpack_from("<H", data, pe + 6)[0]
+        opt_size = struct.unpack_from("<H", data, pe + 20)[0]
+        first = pe + 24 + opt_size
+        return any(data[first + i * 40:first + i * 40 + 8].rstrip(b"\0") == b".rsrc"
+                   for i in range(n_sections))
+    except Exception:
+        return False
 
 
 def unresolved(output: str) -> set:
@@ -411,6 +430,30 @@ def main() -> None:
     output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
     logf = out.parent / (out.stem + ".link.log")
     logf.write_text(output)
+
+    # /INCREMENTAL:YES patches the PREVIOUS image instead of rebuilding it, and an
+    # incremental pass does NOT re-bind the .res - so a relink over a valid .EXE+.ilk
+    # silently emits a binary with NO .rsrc. That is not cosmetic: every MFC dialog
+    # (settings, multiplayer battle select, save-game) is created from a DIALOG
+    # resource, so a resource-less build has no working dialogs at all, and it looked
+    # exactly like a reconstruction bug for a whole session. Incremental stays ON
+    # (retail IS an incremental link - the E9 thunk band, the padded IAT - and the
+    # layout campaign needs it), so instead: verify, then self-heal by dropping the
+    # .ilk and doing the one full link that binds the resources.
+    if args.res and out.exists() and not _has_rsrc(out):
+        print("[link] .rsrc MISSING after an incremental link - dropping .ilk and "
+              "relinking in full (see the /INCREMENTAL note in link.py)")
+        for stale in (out, out.with_suffix(".ilk")):
+            try:
+                stale.unlink()
+            except FileNotFoundError:
+                pass
+        output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
+        logf.write_text(output)
+        if out.exists() and not _has_rsrc(out):
+            sys.stderr.write(f"[link] FATAL: {out} still has no .rsrc after a full "
+                             f"link, though --res {args.res} was supplied\n")
+            sys.exit(1)
 
     if not out.exists():
         sys.stderr.write(f"[link] FAILED to produce {out} (log: {logf})\n")
