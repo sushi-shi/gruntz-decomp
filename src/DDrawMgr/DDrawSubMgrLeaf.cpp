@@ -15,12 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x0021ab18)
-// Retail has this at 0x21ab18, in `.data` (characteristics 0xc0000040,
-// WRITE set) - so it is not const; spelled const it went to our `.rdata`
-// and the storage mismatch withheld it from the manifest entirely.
-char g_fmtPathJoin[] = "%s%s%s";
-
 // @identity-TODO LookupValue@CDDrawSubMgrLeaf - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (12 fns) came from the static library. It belongs to another compiland.
@@ -137,7 +131,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
     CSymTab* node = static_cast<CSymTab*>(tree->FirstSub());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(buf, g_fmtPathJoin, prefix, suffix, node->m_name);
+            sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
         } else {
             strcpy(buf, node->m_name);
         }
@@ -152,7 +146,7 @@ i32 CDDrawSubMgrLeaf::ScanTree(CSymTab* tree, const char* prefix, const char* su
             while (fn != NULL) {
                 if (fn->GetEntryTag() == REZ_TAG_ANI) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
+                        sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
                     } else {
                         strcpy(buf, fn->m_name);
                     }

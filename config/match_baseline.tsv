@@ -88,7 +88,7 @@ ddpalette	23	20
 ddrawptrcollections	10	10
 ddrawshadeblit	12	4
 ddrawsubmgr	120	93
-ddrawsubmgrleaf	12	3
+ddrawsubmgrleaf	12	4
 ddrawsubmgrrefresh	1	1
 ddrawsurfacemgr	22	16
 ddrawsurfacepair	43	27
@@ -1096,7 +1096,7 @@ ddrawsubmgrleaf	?IsReady@CDDrawSubMgrLeaf@@UAEHXZ	100.0000	100.0000	1	21312d5676
 ddrawsubmgrleaf	?KeyOfValue@CDDrawSubMgrLeaf@@QAE?AVCString@@PAVCObject@@@Z	99.8857	99.8857	6	d65bca508ba6	0x152d30	100.0000
 ddrawsubmgrleaf	?RemoveKeysEqual@CDDrawSubMgrLeaf@@QAEHPBD0@Z	99.8974	99.8974	9	b062bda7de13	0x1527d0	100.0000
 ddrawsubmgrleaf	?RemoveValue@CDDrawSubMgrLeaf@@QAEXPAVCAniElement@@@Z	99.7091	99.7091	4	c75c3df1517e	0x152660	99.8545
-ddrawsubmgrleaf	?ScanTree@CDDrawSubMgrLeaf@@QAEHPAVCSymTab@@PBD1@Z	99.9306	99.9306	5	a0854b6f25db	0x152ad0	100.0000
+ddrawsubmgrleaf	?ScanTree@CDDrawSubMgrLeaf@@QAEHPAVCSymTab@@PBD1@Z	100.0000	100.0000	6	d5dc532868ca	0x152ad0	100.0000
 ddrawsubmgrleaf	?Unload@CDDrawSubMgrLeaf@@UAEXXZ	100.0000	100.0000	3	69e4504eb161	0x152650	100.0000
 ddrawsubmgrrefresh	?RefreshAsset@CDDrawSubMgrLeafScan@@QAEHPBD@Z	100.0000	100.0000	1	aab458df7aa4	0x114120	100.0000
 ddrawsurfacemgr	??0CDDrawSurfaceMgr@@QAE@XZ	100.0000	100.0000	7	c8c5d0f436ad	0x155840	100.0000
@@ -1978,7 +1978,7 @@ grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAU
 grunt	?PlaySound@CGrunt@@QAEXHUGruntDirectionCell@@@Z	66.9320	66.9320	6	67f3df928b4d	0x4ac10	66.9745
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	11	57b475ef71e3	0x48400	100.0000
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	14	9b4d75bbfd29	0x4d060	100.0000
-grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	33.3569	33.3569	9	4f7aa93f7cd2	0x4b370	33.4511
+grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	33.1567	33.1567	9	4f7aa93f7cd2	0x4b370	33.4511
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	67.7026	67.7026	33	e2653daab383	0x4c170	67.8148
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66.7500
 grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9712	79.9712	8	e6d01193a9b1	0x5d210	79.9994
@@ -2036,7 +2036,7 @@ gruntentrancearrival	?LookupValue@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z	100.000
 gruntentrancearrival	?RearmAttackAnim2@CGrunt@@QAEHXZ	95.7843	95.7843	10	ebaa5a6f0a71	0x61bc0	95.7843
 gruntentrancearrival	?RearmAttackAnim@CGrunt@@QAEHHH@Z	88.7423	88.7423	18	4ad5b0fc7a82	0x61940	88.7423
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000
-gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	96.2475	96.2475	3	6ba6a28b5afc	0x62b70	96.2475
+gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	90.8515	90.8515	3	6ba6a28b5afc	0x62b70	96.2475
 gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	83.0846	83.0846	29	04b64924da47	0x62e10	83.1118
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	95.7000	95.7000	9	4a9245f6ffe1	0x616e0	95.7000
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	90.5392	90.5392	5	1dcf7ce2cf54	0x633e0	90.5392
