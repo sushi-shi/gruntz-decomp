@@ -295,11 +295,12 @@ RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // @early-stop
-// m_dstBox member re-read reproduced (if/else member stores, no alias local).
-// Residue: cl reads m_width before m_height (retail height-first, spilling the
-// width through eax), and the inlined GetRandom's `inc edi` hoists above the
-// `and 0x7fff` where retail keeps it beside the idiv. Reorders tried both ways;
-// size already equal.
+// The width/height hunk is fixed: retail assigns m_elemCount from m_width FIRST
+// ([eax+0x1c] -> [this+0x50]) then height; the source now spells that order.
+// Residue: retail loads the desc param into edx BETWEEN the prologue pushes and
+// keeps it there (ours claims ecx after `mov ebx,ecx`), swapping ecx/edx at every
+// desc deref; plus the inlined GetRandom's `inc` sits beside the idiv in retail
+// where ours hoists it above the `and 0x7fff`. 180 forest cells flat on both.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     CFxModeT3* cfg = static_cast<CFxModeT3*>(desc);
@@ -324,8 +325,8 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     if (!m_dstBox) {
         m_boxParam = 1;
     }
-    w = m_srcBox->m_height;
     m_elemCount = m_srcBox->m_width;
+    w = m_srcBox->m_height;
     m_frameCount = w;
     p = cfg->m_intensityPercent;
 
@@ -481,10 +482,6 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
 }
 
-// @early-stop
-// canonical 2-term member add (m_4c + m_54) emitted in the opposite load order;
-// spelling-inert. A struct definition placed before it flips to byte-exact
-// (proof banked at MAX 100); the probe is TU state, not source.
 RVA(0x00180400, 0xa)
 i32 CFaderSine::GetFrameCount() {
     return m_scaledMag + m_frameCount;
@@ -502,9 +499,12 @@ CFaderLight::~CFaderLight() {
 }
 
 // @early-stop
-// 29/29 blocks. Residue: retail re-materialises the palette pointer through eax
-// before the null test and stores m_flag = 1 as an immediate rather than sharing
-// the return value's register.
+// Two hunks fixed: the guard tests the MEMBER m_palette (retail's `mov eax,edx`
+// is store-forwarding of the just-stored member, not the local), and m_surfWidth/
+// m_surfHeight are assigned member-first with the RECT fields copied from them.
+// Residue: retail hoists `lea &rect` above the centre loads before PtInRect,
+// stores m_flag = 1 as an immediate instead of sharing the return value's
+// register, and hoists the m_palette load above the HueRampTable arg pushes.
 RVA(0x001804a0, 0x182)
 i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     CFxModeT2* d = static_cast<CFxModeT2*>(desc);
@@ -526,7 +526,7 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
     m_palette = pal;
     i32 cnt = d->m_spanCount;
     m_spanCount = cnt;
-    if (cnt > 0 && d->m_shadeTable == NULL && pal == NULL) {
+    if (cnt > 0 && d->m_shadeTable == NULL && m_palette == NULL) {
         return 0;
     }
     if (m_surface == NULL) {
@@ -536,10 +536,10 @@ i32 CFaderLight::ApplyInit(CFxModeDesc* desc) {
         return 0;
     }
     RECT rect;
-    rect.right = m_surface->m_width;
-    m_surfWidth = rect.right;
-    rect.bottom = m_surface->m_height;
-    m_surfHeight = rect.bottom;
+    m_surfWidth = m_surface->m_width;
+    rect.right = m_surfWidth;
+    m_surfHeight = m_surface->m_height;
+    rect.bottom = m_surfHeight;
     rect.left = 0;
     rect.top = 0;
     POINT pt;
@@ -1072,10 +1072,12 @@ CFaderShape::~CFaderShape() {
 }
 
 // @early-stop
-// The two signed/unsigned twins are fixed: retail carries the fader mode as an
-// UNSIGNED word, so its range guards are `jbe`/`jae` (both m_mode fields are now
-// GZ_ENUM_STORAGE(FaderMode, u32)). The rest is register/spill colouring plus one
-// inlined-vs-shared fail epilogue.
+// Exit regime fixed: retail's shared `return 0` is SUNK past the success return
+// (the ||/total regime), so the guards are structured returns with the mode-range
+// pair as `||` - not `goto fail`, which parks the block mid-body after the last
+// goto. Residue: the six dimension guards compare via a member reload (3i) where
+// retail compares the still-live store-forwarded registers (2i), plus spill
+// colouring around the acos/shade-ramp loops.
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     CFxModeT1* pInit = static_cast<CFxModeT1*>(desc);
@@ -1083,7 +1085,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     i32 mx;
     m_previousFrame = 0;
     if (pInit == NULL) {
-        goto fail;
+        return 0;
     }
 
     if (pInit->m_targetSurface == NULL) {
@@ -1097,10 +1099,10 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         m_surfB = pInit->m_sourceSurface;
     }
     if (m_surfA == NULL) {
-        goto fail;
+        return 0;
     }
     if (m_surfB == NULL) {
-        goto fail;
+        return 0;
     }
     if (pInit->m_warpSourceSurface == NULL) {
         m_surfC = m_surfB;
@@ -1109,7 +1111,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
 
     if (!m_cache.Init()) {
-        goto fail;
+        return 0;
     }
 
     m_rowCount = m_surfA->m_height;
@@ -1119,29 +1121,26 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_spanC = m_surfC->m_width;
     m_rowCountC = m_surfC->m_height;
     if (m_span != m_spanB) {
-        goto fail;
+        return 0;
     }
     if (m_rowCount != m_rowCountB) {
-        goto fail;
+        return 0;
     }
     if (m_span != m_spanC) {
-        goto fail;
+        return 0;
     }
     if (m_rowCount != m_rowCountC) {
-        goto fail;
+        return 0;
     }
     if (m_spanC != m_spanB) {
-        goto fail;
+        return 0;
     }
     if (m_rowCountB != m_rowCountC) {
-        goto fail;
+        return 0;
     }
 
-    if (pInit->m_mode <= FADER_INVALID) {
-        goto fail;
-    }
-    if (pInit->m_mode >= FADER_COUNT) {
-        goto fail;
+    if (pInit->m_mode <= FADER_INVALID || pInit->m_mode >= FADER_COUNT) {
+        return 0;
     }
     m_mode = pInit->m_mode;
     m_stripCopy = pInit->m_stripCopy;
@@ -1151,7 +1150,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         if (m_span < static_cast<i32>(
                 (static_cast<double>(m_halfWidth) * DATA_COMPGEN(0x001f08a8, fp_1f08a8, 3.14159))
             )) {
-            goto fail;
+            return 0;
         }
     }
 
@@ -1211,16 +1210,18 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     }
     m_lineBuf = new u8[m_surfA->m_bytesPerPixel * mx];
     return 1;
-fail:
-    return 0;
 }
 
 // @early-stop
 // arms and args all match retail 1:1; the residue is cl's cross-switch TAIL-MERGE
 // pattern: retail keeps 4/3/4/3 call sites (sharing only switch-2 REVERSE's call
-// tail with FORWARD, args pushed separately) where cl merges down to 3/2/4/3.
-// Case reorder to retail's memory order (SPLIT/REV/FWD) scores lower; the seam
-// >>1 respelling refutes the shift theory (2 relocs short of retail's 19).
+// tail with FORWARD, args pushed separately) where cl merges down to 3/2/4/3
+// (2 relocs short of retail's 19). Case reorder to retail's memory order
+// (SPLIT/REV/FWD) scores lower; the seam >>1 respelling refutes the shift theory.
+// The min-pitch block now loads m_surfA->m_pitch first through a local (retail's
+// order, single spill at the join); retail also pre-materialises FADER_SWEEP_
+// REVERSE into ebp for the four SPLIT-arm restores - ours stores the immediate,
+// the same unpromoted-constant coin as ??0CFxModeT2.
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_surfA->Lock(0));
@@ -1238,9 +1239,10 @@ void CFaderShape::RenderFrame(i32 frame) {
         seam = m_span / 2;
     }
     if (m_stripCopy == 0 && frame == 0) {
+        i32 pitchA = m_surfA->m_pitch;
         i32 n = m_surfB->m_pitch;
-        if (m_surfA->m_pitch < n) {
-            n = m_surfA->m_pitch;
+        if (pitchA < n) {
+            n = pitchA;
         }
         i32 row = 0;
         while (row < m_rowCount) {
@@ -1332,13 +1334,17 @@ void CFaderShape::RenderFrame(i32 frame) {
 }
 
 // @early-stop
-// two compounding mechanisms, both resistant: (1) cl allocates the callee-saved
-// pair inversely (m_mode cached in edi across the two __ftol calls, arc spilled;
-// retail keeps arc in edi and RE-READS m_mode per condition group), and (2) the
-// row loop is rotated - entry `jmp` over the 2-insn back-edge block where retail
-// falls into a 22-insn head jumped to by the tail. colBase spellings (named vs
-// inline temps, fn-scope arcSpan) and 350 permuter iters are inert; the fidiv vs
-// fild+fdivp head selection follows from arcSpan/tail sharing one frame slot.
+// Both old walls are broken: `u32 arcSpan` (its qword staging writes retail's dead
+// hi-zero at the pair slot) flips arc into edi with m_mode re-read per group, and
+// the natural per-statement loop spellings kill the row-loop rotation (immediate
+// `mov [row],0`, fallthrough 22-insn head). Residue: (1) retail folds the u32
+// divisor into `fidiv` dword while emitting the staging stores - our cl emits the
+// correct fild qword + fdivp (+1 insn/arm; keep/paren/cast spellings measured
+// identical); (2) retail sinks each memset else-arm past the ret while ours lays
+// it inline (arm order already retail's); (3) slot-index shift - retail spills
+// row and halfWidth separately where ours reuses one slot (frame 0x20 vs 0x24) -
+// plus the reg-role swaps downstream of it. 920 forest cells + 9-cell divisor
+// matrix exhausted on the residue.
 RVA(0x00181e50, 0x7b9)
 
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
@@ -1352,7 +1358,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 colBase;
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
-        i32 arcSpan = arc - m_halfWidth;
+        u32 arcSpan = arc - m_halfWidth;
         i32 tail = m_span - col - stride;
         colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
     } else {
@@ -1360,7 +1366,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     }
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0)) {
-        i32 arcSpan = arc - m_halfWidth;
+        u32 arcSpan = arc - m_halfWidth;
         colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
     }
 
@@ -1401,20 +1407,16 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                         }
                     } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
                         i32 i = 0;
-                        i32 t = colBase;
                         if (colBase > 0) {
                             do {
-                                i32 o = i * 2;
-                                m_lineBuf[o] = ssrc[o];
-                                m_lineBuf[o + 1] = ssrc[o + 1];
+                                m_lineBuf[i * 2] = ssrc[i * 2];
+                                m_lineBuf[i * 2 + 1] = ssrc[i * 2 + 1];
                                 i++;
                             } while (i < colBase);
                         }
-                        while (t < stride) {
-                            i32 e = t + 1;
-                            m_lineBuf[e * 2 - 2] = gsrc[m_warpTable[t] * 2];
-                            m_lineBuf[e * 2 - 1] = gsrc[m_warpTable[t] * 2 + 1];
-                            t = e;
+                        for (i32 t = colBase; t < stride; t++) {
+                            m_lineBuf[t * 2] = gsrc[m_warpTable[t] * 2];
+                            m_lineBuf[t * 2 + 1] = gsrc[m_warpTable[t] * 2 + 1];
                         }
                     } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
                         if (colBase > 0) {
@@ -1445,29 +1447,19 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 i32 cnt = bpp * stride;
                 u8* dp = dstLine;
                 i32 n = cnt;
-                if (cnt > 0) {
-                    do {
-                        *dp = *sp;
-                        sp++;
-                        n--;
-                        dp++;
-                    } while (n != 0);
+                while (n-- > 0) {
+                    *dp++ = *sp++;
                 }
-                if (m_stripCopy == 0) {
-                    if (bpp * stripWidth > 0) {
-                        memset(dstLine + cnt, 0, bpp * stripWidth);
-                    }
-                } else {
+                if (m_stripCopy != 0) {
                     i32 c2 = bpp * stripWidth;
                     dstLine -= c2;
                     u8* s2 = (col - stripWidth) * bpp + m_rowOfsB[row] + m_straightBase;
-                    if (c2 > 0) {
-                        do {
-                            *dstLine = *s2;
-                            dstLine++;
-                            s2++;
-                            c2--;
-                        } while (c2 != 0);
+                    while (c2-- > 0) {
+                        *dstLine++ = *s2++;
+                    }
+                } else {
+                    if (bpp * stripWidth > 0) {
+                        memset(dstLine + cnt, 0, bpp * stripWidth);
                     }
                 }
                 row++;
@@ -1485,15 +1477,13 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             if (m_useLut != 0) {
                 u8* lut = m_table->m_data;
                 i32 i = 0;
-                i32 e;
                 if (colBase > 0) {
                     do {
-                        e = i + 1;
                         m_lineBuf[i] =
                             lut[static_cast<u32>(m_shadeRamp[i])
                                 + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
-                        i = e;
-                    } while (e < colBase);
+                        i++;
+                    } while (i < colBase);
                 }
                 for (i32 t = colBase; t < stride; t++) {
                     m_lineBuf[t] = ssrc[t];
@@ -1501,13 +1491,11 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             } else {
                 if (bpp == PIXEL8_BYTES_PER_PIXEL) {
                     i32 i = 0;
-                    i32 e;
                     if (colBase > 0) {
                         do {
-                            e = i + 1;
                             m_lineBuf[i] = gsrc[m_warpTable[i]];
-                            i = e;
-                        } while (e < colBase);
+                            i++;
+                        } while (i < colBase);
                     }
                     for (i32 t = colBase; t < stride; t++) {
                         m_lineBuf[t] = ssrc[t];
@@ -1516,16 +1504,14 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
-                            i32 o = i * 4;
+                            m_lineBuf[i * 2] = gsrc[m_warpTable[i] * 2];
+                            m_lineBuf[i * 2 + 1] = gsrc[m_warpTable[i] * 2 + 1];
                             i++;
-                            m_lineBuf[i * 2 - 2] = gsrc[m_warpTable[o / 4] * 2];
-                            m_lineBuf[i * 2 - 1] = gsrc[m_warpTable[i - 1] * 2 + 1];
                         } while (i < colBase);
                     }
                     for (i32 t = colBase; t < stride; t++) {
-                        i32 o = t * 2;
-                        m_lineBuf[o] = ssrc[o];
-                        m_lineBuf[o + 1] = ssrc[o + 1];
+                        m_lineBuf[t * 2] = ssrc[t * 2];
+                        m_lineBuf[t * 2 + 1] = ssrc[t * 2 + 1];
                     }
                 } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
                     i32 k = 0;
@@ -1558,29 +1544,19 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             i32 cnt = bpp * stride;
             u8* dp = dstLine;
             i32 n = cnt;
-            if (cnt > 0) {
-                do {
-                    *dp = *sp;
-                    sp++;
-                    n--;
-                    dp++;
-                } while (n != 0);
+            while (n-- > 0) {
+                *dp++ = *sp++;
             }
-            if (m_stripCopy == 0) {
-                if (bpp * stripWidth > 0) {
-                    memset(dstLine - bpp * stripWidth, 0, bpp * stripWidth);
-                }
-            } else {
+            if (m_stripCopy != 0) {
                 i32 c2 = bpp * stripWidth;
                 u8* s2 = (col + stride) * bpp + m_rowOfsB[row] + m_straightBase;
                 dstLine += cnt;
-                if (c2 > 0) {
-                    do {
-                        *dstLine = *s2;
-                        dstLine++;
-                        s2++;
-                        c2--;
-                    } while (c2 != 0);
+                while (c2-- > 0) {
+                    *dstLine++ = *s2++;
+                }
+            } else {
+                if (bpp * stripWidth > 0) {
+                    memset(dstLine - bpp * stripWidth, 0, bpp * stripWidth);
                 }
             }
             row++;
