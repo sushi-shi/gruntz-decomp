@@ -638,12 +638,14 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            // Only a 4-plane level has an object layer, and it is plane count-2:
-            // any other size leaves idx == count, which the bounds check rejects.
+            // The object layer is the TOP plane, except on a 4-plane level where
+            // it is the one below it. `cmp 4 / jne +1 / dec / dec` is the shared
+            // tail cl folds the two arms into.
             i32 idx = view->m_planes.GetSize();
-            if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
-                idx -= 2;
+            if (view->m_planes.GetSize() == LEVEL_EXTENDED_PLANE_COUNT) {
+                idx--;
             }
+            idx--;
             i32 count = view->m_planes.GetSize();
             CDDrawWorkerHost* layer =
                 (idx < 0 || idx >= count) ? 0 : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
@@ -1519,10 +1521,11 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     if (r == NULL) {
         return 0;
     }
-    i32 loX = r->left + offX;
-    i32 hiX = r->right + offX;
-    i32 loY = r->top + offY;
-    i32 hiY = r->bottom + offY;
+    RECT box;
+    box.left = r->left + offX;
+    box.right = r->right + offX;
+    box.top = r->top + offY;
+    box.bottom = r->bottom + offY;
     i32 count = 0;
     CObList& chain = m_world->m_childGroup->m_list;
     POSITION pos = chain.GetHeadPosition();
@@ -1530,9 +1533,9 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
         CGameObject* obj = static_cast<CGameObject*>(chain.GetNext(pos));
         if (obj->m_objectType & mask) {
             i32 ox = obj->m_screenX;
-            if (ox >= loX && ox <= hiX) {
+            if (ox >= box.left && ox <= box.right) {
                 i32 oy = obj->m_screenY;
-                if (oy >= loY && oy <= hiY) {
+                if (oy >= box.top && oy <= box.bottom) {
                     count++;
                     if (cb(obj, user) == 0) {
                         return count;
@@ -2167,10 +2170,16 @@ void CGruntzMgr::RecomputeViewScale() {
         return;
     }
     CGameLevel* view = m_world->m_level;
-    float fw = static_cast<float>((view->m_planeCtx.right - view->m_planeCtx.left + 1));
-    float fh = static_cast<float>((view->m_planeCtx.bottom - view->m_planeCtx.top + 1));
+    // Retail addresses the extent through a RECT pointer (`lea eax,[esi+0x10]`, then
+    // (0)/(4)/(8)/(0xc) off it) and converts each span to float only at its first use -
+    // `fsts` keeps the float in st(0) for the multiply instead of `fstps`+reload.
+    LevelCoordRect* ext = &view->m_planeCtx;
+    i32 iw = ext->right - ext->left + 1;
+    i32 ih = ext->bottom - ext->top + 1;
+    float fw = static_cast<float>(iw);
 
     view->m_rectA.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2bc, fp_1ea2bc, 1.4f)));
+    float fh = static_cast<float>(ih);
     view->m_rectA.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
@@ -2568,8 +2577,9 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unuse
         inPlay = 1;
     }
     if (inPlay && forceTransition == 0) {
-        m_curState->LeaveState(m_curState->Update());
-        if (static_cast<CPlay*>(m_curState)->LoadByMode(areaArg, unused) == 0) {
+        CState* st = m_curState;
+        m_curState->LeaveState(st->Update());
+        if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
         m_curState->EnterState(m_curState->Update());

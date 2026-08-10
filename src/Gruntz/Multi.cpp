@@ -1748,8 +1748,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         case NETMSG_PLAYER_LEFT:
             OnPlayerLeft(sender);
             ResetPlayerCommands(sender);
-            g_playerLeftFlag = 1;
-            break;
+            return g_playerLeftFlag = 1;
 
         case NETMSG_REQUEST_CHANNELS:
             if (m_isHost == 0) {
@@ -1847,8 +1846,8 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 
         case NETMSG_STAT_VALUE: {
             i32 stamp = msg->m_value;
-            u32 now = timeGetTime();
-            i32 delta = now - stamp;
+            i32 delta = timeGetTime();
+            delta -= stamp;
             GruntzPlayer* player = static_cast<GruntzPlayer*>((g_gameReg)->FindOptionsSlot(sender));
             if (player == NULL) {
                 return 1;

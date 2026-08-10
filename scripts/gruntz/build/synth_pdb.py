@@ -64,6 +64,10 @@ SEG_RDATA = 2
 SEG_DATA = 3
 SEG_IDATA = 4
 
+# End of retail's leading incremental-link thunk (ILT) band: every entry below it
+# is a 5-byte `E9 rel32` forwarder the linker interposed in front of a real body.
+ILT_BAND_END = 0x7C20
+
 
 def read_sections(exe_path):
     """Read .text/.rdata/.data/.idata RVA bounds (virtual size) from the PE.
@@ -549,7 +553,7 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
     for row in read_retail_functions(_Path(functions_path)):
         rva = row["rva"]
         size = row["size"]
-        if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, 0x7C20):
+        if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, ILT_BAND_END):
             continue
         off = text_raw + rva - text_rva
         if not text_raw <= off <= text_raw + text_raw_size - 5:
@@ -565,7 +569,7 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
     # GameObjectFactory creator table references `_CreateGrunt` through its ILT
     # slot. Same target-in-names_map guard; a stray E9 byte inside another
     # instruction cannot hit a curated entry RVA.
-    lo, hi = max(TEXT_BASE, text_rva), min(0x7C20, text_rva + text_raw_size - 5)
+    lo, hi = max(TEXT_BASE, text_rva), min(ILT_BAND_END, text_rva + text_raw_size - 5)
     for rva in range(lo, hi):
         if rva in aliases or rva in names_map:
             continue
@@ -968,6 +972,7 @@ def main():
     # Curated src rows always win; the unit stays empty, so this only RENAMES -
     # library code is still partitioned into the linker bucket, never into a TU.
     nlib, library_rvas = 0, set()
+    deferred_thunks = {}
     for row in library_active_rows(REPO / "config/retail/library_labels.csv"):
         raw = (row.get("rva") or "").strip()
         name = (row.get("name") or "").strip()
@@ -978,6 +983,15 @@ def main():
         except ValueError:
             continue
         if rva in names_map or rva in overlay:
+            continue
+        # An ILT-band forwarding thunk is a LINKER artifact, not a body: retail's
+        # incremental link routed `call <body>` through it, while our base object
+        # calls the body directly. Naming the slot after itself makes objdiff (which
+        # pairs relocations BY NAME) score every such call site as a mismatch. Defer
+        # the carve-out label so read_ilt_thunk_names can inherit the BODY's name;
+        # the label is re-applied below only if the thunk forwards somewhere uncurated.
+        if (row.get("lib") or "").strip().upper() == "MSVC-THUNK" and rva < ILT_BAND_END:
+            deferred_thunks[rva] = name
             continue
         names_map[rva] = (name, "", 0)
         library_rvas.add(rva)
@@ -1007,6 +1021,15 @@ def main():
     if thunk_names:
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"
               % len(thunk_names), file=sys.stderr)
+    for rva, name in sorted(deferred_thunks.items()):
+        if rva in thunk_names:
+            continue
+        names_map[rva] = (name, "", 0)
+        library_rvas.add(rva)
+    nfold = sum(1 for rva in deferred_thunks if rva in thunk_names)
+    if nfold:
+        print("[synth_pdb] %d carved ILT thunk label(s) superseded by the forwarded "
+              "body name" % nfold, file=sys.stderr)
     funcs = read_functions(args.functions, names_map, thunk_names, library_rvas,
                            drop_spans=band_spans)
     rdata_syms, data_syms = read_data_symbols(args.exe)
