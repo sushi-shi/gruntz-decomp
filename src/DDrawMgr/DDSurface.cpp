@@ -25,6 +25,16 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
+// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). Sweeping a
+// throwaway file-scope declaration above the first definition - N = 1..16 graded
+// prototypes, and one each of fwd-decl / typedef / empty class / class with a
+// member / class with inline member bodies / static function with a body /
+// file-scope float / string literal - moves only ShadeBlt (-0.42, always down)
+// and ShadeRect (-0.26 at most N, +2.08 at N = 13..15). Blit168, Blit1624,
+// Blit816, Blit824, FlipVertical and BuildColorChannelTables are dead flat to the
+// entire axis, so their residue is intra-function and no amount of TU state
+// reaches it. Do not re-run the sweep on this file.
+
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253ca0)
@@ -526,8 +536,17 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
 
 // @early-stop
 // Rotated-loop shape: retail enters the row loop through a forward jmp into the
-// middle (skeleton B5 `jmp B7`) with the back-edge below - a loop-rotation
-// restructure, not regalloc. Rebuild with the entry-jump idiom before permuting.
+// middle (skeleton B5 `jmp B7`) with the back-edge below. The one-instruction
+// block the entry jump skips is `mov edi,[esp+0x14]` - reloading `buf` at the
+// LATCH, which the first iteration does not need because edi still holds Lock's
+// return. That is downstream of a register split, not a source restructure:
+// retail homes `buf` in a frame slot and keeps `this` in ebx for the whole body,
+// cl keeps `buf` in ebp and is then forced to clobber ebx with m_pitch and
+// re-home `this`, so its latch restores five values where retail restores two.
+// It also strength-reduces `height - i - 1` into a decrementing slot where
+// retail re-derives it from the height and i slots each iteration. All twelve
+// combinations of the botRow spelling x local-vs-member height/width x a hoisted
+// pitch local are measured inert or worse (member forms lose 3 and 10 points).
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
@@ -962,10 +981,15 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 }
 
 // @early-stop
-// Addressing-mode split: retail keeps the raw index as the IV with &g_clut+bank
-// folded into each store's displacement (reloc); cl folds g_clut into the IV
-// and leaves the banks as immediates. Helper/subscript/pointer spellings all
-// canonicalize to the same code.
+// Re-measured: the base obj emits the same 456 bytes as retail, the same three
+// shifts (0xa immediate, 5 immediate, bShift in cl) and the same three
+// `mov word ptr [esi+disp],r16` stores WITH the g_clut DIR32 reloc on each
+// displacement - the `[esi+0x20000]` vs `[esi+<addr>]` rows in `--diff` are the
+// documented reloc-typing display artifact, not a byte difference. The whole
+// residue is intra-block scheduling: retail issues the bShift shift between the
+// first and second stores and sinks its store past the counter decrement, cl
+// issues it after both. Four store-order/named-temp spellings per arm (8 cells)
+// are inert or worse.
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN

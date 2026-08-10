@@ -273,76 +273,74 @@
 254	imagepolyclip	0x00145e00	0x00147384	lib	Image	8	position	
 255	ddpalette	0x00147390	0x001487bf	lib	DDrawMgr	23	position	
 256	ddrawptrcollections	0x00148840	0x00148cd8	lib	DDrawMgr	10	position	
-257	imageowned	0x00148ce0	0x001495ca	lib	Image	9	position	
-258	imagerle16encode	0x001495d0	0x00149776	lib	Image	1	position	
-259	ddrawshadeblit	0x00149780	0x0014de30	lib	DDrawMgr	12	position	
-260	shadetablecache	0x0014de30	0x00150176	lib	DDrawMgr	24	position	
-261	databuffer	0x00150180	0x001504cc	lib	DDrawMgr	8	position	
-262	wwdgameobject	0x001504d0	0x00152636	lib	Wwd	44	position	
-263	ddrawsubmgrleaf	0x00152640	0x00152e83	lib	DDrawMgr	11	position	
-264	cimage	0x00152e90	0x001549c5	lib	Image	20	position	
-265	cremusnode	0x00154a00	0x00154a26	lib	Image	2	position	
-266	ddrawworkerregistry	0x00154aa0	0x00155833	lib	DDrawMgr	24	position	
-267	ddrawsurfacemgr	0x00155840	0x00156ca2	lib	DDrawMgr	13	position	
-268	ddrawsubmgr	0x00156cb0	0x001591d8	lib	DDrawMgr	101	position	
-269	wwdobjmgr	0x001591e0	0x0015b340	lib	Wwd	51	position	
-270	wwdfactoryobject	0x0015b340	0x0015ccc8	lib	Wwd	39	position	
-271	gamelevel	0x0015ccd0	0x00161322	lib	Gruntz	69	position	
-272	imageset3g	0x001614b0	0x0016712d	lib	Gruntz	11	position	interleaves:ddrawsurfacepair+ddrawworkerhost+imageset1+imageset2+imageset3+levelplane+logicrecord+wwdgameobjectrender
-273	levelplane	0x001615a0	0x00163a00	lib	DDrawMgr	22	position	interleaves:imageset3g
-274	ddrawworkerhost	0x00163a90	0x00163bbd	lib	DDrawMgr	4	position	interleaves:imageset3g
-275	ddrawsurfacepair	0x00163bc0	0x001660e3	lib	DDrawMgr	43	position	interleaves:imageset3g+logicrecord
-276	logicrecord	0x00164830	0x0016520d	lib	DDrawMgr	5	position	interleaves:ddrawsurfacepair+imageset3g
-277	wwdgameobjectrender	0x001660f0	0x00166984	lib	Wwd	15	position	interleaves:imageset3g
-278	imageset2	0x00166990	0x00166d36	lib	Gruntz	9	position	interleaves:imageset3g
-279	imageset1	0x00166d40	0x00166d64	lib	Gruntz	1	position	interleaves:imageset3g
-280	imageset3	0x00166e00	0x00166ea8	lib	Image	2	position	interleaves:imageset3g
-281	gamelevelmove	0x00167130	0x00168276	lib	Wwd	13	position	
-282	wwdspatialmgr	0x001682f0	0x00168be5	lib	Wwd	13	position	
-283	anirecord	0x00168c60	0x00168ff4	lib	DDrawMgr	9	position	
-284	movinglogic	0x0016cdd0	0x0016f67a	lib	Gruntz	5	position	interleaves:motionstatestep+typekeycoll
-285	typekeycoll	0x0016d190	0x0016ea11	lib	Bute	31	position,xcu:1486	interleaves:movinglogic
-286	motionstatestep	0x0016ecd0	0x0016f491	lib	Gruntz	3	position	interleaves:movinglogic
-287	butetail	0x0016f680	0x0016f6b1	lib	Bute	2	position	
-288	blowfish	0x0016f6c0	0x00170204	lib	Crypto	6	position	
-289	butemgr	0x00170210	0x00174ca4	lib	Bute	47	position	
-290	butenode	0x00174d00	0x00174e6c	lib	Bute	4	position	
-291	imagepool	0x00174e90	0x00177476	lib	Image	54	position	
-292	palettebmp	0x00177480	0x00177652	lib	Image	2	position	
-293	netmgrerror	0x00177670	0x001780a1	lib	Net	2	position	
-294	netmgr	0x001780b0	0x001796ff	lib	Net	45	position	
-295	font	0x00179700	0x0017b4e6	lib	Font	20	position	
-296	feccrypt	0x0017b510	0x0017c03d	lib	Crypto	11	position	
-297	ddpagemgr	0x0017c040	0x0017d8a8	lib	DDrawMgr	21	position	interleaves:moviepaletteupload+surfacepalette
-298	moviepaletteupload	0x0017ca10	0x0017ca59	lib	Image	1	position	interleaves:ddpagemgr
-299	surfacepalette	0x0017ca60	0x0017ca95	lib	Image	1	position	interleaves:ddpagemgr
-300	fadermgr	0x0017d8f0	0x0017e428	lib	DDrawMgr	9	position	
-301	fader	0x0017e450	0x0017f126	lib	DDrawMgr	21	position	
-302	rezbufferobject	0x0017f130	0x0017f523	lib	Rez	4	position	
-303	fadereffects	0x0017f530	0x00182935	lib	DDrawMgr	32	position	
-304	scattersamples	0x00182940	0x00182aae	lib	Gruntz	2	position	
-305	chatbox	0x00182ab0	0x00183246	lib	Gruntz	28	position	
-306	menupage	0x001832d0	0x001845a2	lib	Gruntz	31	position	
-307	rezcoll	0x001848b0	0x00184b5d	lib	Rez	12	position	
-308	debugprintf	0x00184ba0	0x001851d3	lib	Rez	14	position,xcu:1493	
-309	rezlist	0x001851e0	0x00185315	lib	Rez	5	position	
-310	uncompr	0x00185320	0x00185320	lib	vendor	1	position	extent-fallback
-311	wapuncompress	0x001853b0	0x00185456	lib	Wap32	1	position	
-312	menuitem	0x00185460	0x00185a0e	lib	Gruntz	20	position	
-313	inflate	0x00185a10	0x001860a0	lib	vendor	7	position	extent-fallback
-314	deflate	0x00186180	0x00187170	lib	vendor	15	position	extent-fallback
-315	infblock	0x00187490	0x00188290	lib	vendor	5	position	extent-fallback
-316	adler32	0x001882d0	0x001882d0	lib	vendor	1	position	extent-fallback
-317	zutil	0x00188410	0x00188430	lib	vendor	2	position	extent-fallback
-318	trees	0x00188440	0x0018a290	lib	vendor	21	position	extent-fallback
-319	inftrees	0x0018a330	0x0018aab0	lib	vendor	6	position	extent-fallback
-320	infcodes	0x0018aaf0	0x0018b2e0	lib	vendor	3	position	extent-fallback
-321	infutil	0x0018b300	0x0018b300	lib	vendor	1	position	extent-fallback
-322	inffast	0x0018b440	0x0018b440	lib	vendor	1	position	extent-fallback
-323	wwdgrid	0x001915c0	0x00191d11	lib	Wwd	11	position	
-324	bitarraystream	0x00193080	0x0019333a	lib	Utils	2	position	
-325	butetree	0x00193340	0x0019363f	lib	Bute	2	position	
-326	bitarray	0x00193640	0x001937b3	lib	Utils	3	position	
+257	ddrawshadeblit	0x00148ce0	0x0014de30	lib	DDrawMgr	22	position	
+258	shadetablecache	0x0014de30	0x00150176	lib	DDrawMgr	24	position	
+259	databuffer	0x00150180	0x001504cc	lib	DDrawMgr	8	position	
+260	wwdgameobject	0x001504d0	0x00152636	lib	Wwd	44	position	
+261	ddrawsubmgrleaf	0x00152640	0x00152e83	lib	DDrawMgr	11	position	
+262	cimage	0x00152e90	0x001549c5	lib	Image	20	position	
+263	cremusnode	0x00154a00	0x00154a26	lib	Image	2	position	
+264	ddrawworkerregistry	0x00154aa0	0x00155833	lib	DDrawMgr	24	position	
+265	ddrawsurfacemgr	0x00155840	0x00156ca2	lib	DDrawMgr	13	position	
+266	ddrawsubmgr	0x00156cb0	0x001591d8	lib	DDrawMgr	101	position	
+267	wwdobjmgr	0x001591e0	0x0015b340	lib	Wwd	51	position	
+268	wwdfactoryobject	0x0015b340	0x0015ccc8	lib	Wwd	39	position	
+269	gamelevel	0x0015ccd0	0x00161322	lib	Gruntz	69	position	
+270	imageset3g	0x001614b0	0x0016712d	lib	Gruntz	11	position	interleaves:ddrawsurfacepair+ddrawworkerhost+imageset1+imageset2+imageset3+levelplane+logicrecord+wwdgameobjectrender
+271	levelplane	0x001615a0	0x00163a00	lib	DDrawMgr	22	position	interleaves:imageset3g
+272	ddrawworkerhost	0x00163a90	0x00163bbd	lib	DDrawMgr	4	position	interleaves:imageset3g
+273	ddrawsurfacepair	0x00163bc0	0x001660e3	lib	DDrawMgr	43	position	interleaves:imageset3g+logicrecord
+274	logicrecord	0x00164830	0x0016520d	lib	DDrawMgr	5	position	interleaves:ddrawsurfacepair+imageset3g
+275	wwdgameobjectrender	0x001660f0	0x00166984	lib	Wwd	15	position	interleaves:imageset3g
+276	imageset2	0x00166990	0x00166d36	lib	Gruntz	9	position	interleaves:imageset3g
+277	imageset1	0x00166d40	0x00166d64	lib	Gruntz	1	position	interleaves:imageset3g
+278	imageset3	0x00166e00	0x00166ea8	lib	Image	2	position	interleaves:imageset3g
+279	gamelevelmove	0x00167130	0x00168276	lib	Wwd	13	position	
+280	wwdspatialmgr	0x001682f0	0x00168be5	lib	Wwd	13	position	
+281	anirecord	0x00168c60	0x00168ff4	lib	DDrawMgr	9	position	
+282	movinglogic	0x0016cdd0	0x0016f67a	lib	Gruntz	5	position	interleaves:motionstatestep+typekeycoll
+283	typekeycoll	0x0016d190	0x0016ea11	lib	Bute	31	position,xcu:1486	interleaves:movinglogic
+284	motionstatestep	0x0016ecd0	0x0016f491	lib	Gruntz	3	position	interleaves:movinglogic
+285	butetail	0x0016f680	0x0016f6b1	lib	Bute	2	position	
+286	blowfish	0x0016f6c0	0x00170204	lib	Crypto	6	position	
+287	butemgr	0x00170210	0x00174ca4	lib	Bute	47	position	
+288	butenode	0x00174d00	0x00174e6c	lib	Bute	4	position	
+289	imagepool	0x00174e90	0x00177476	lib	Image	54	position	
+290	palettebmp	0x00177480	0x00177652	lib	Image	2	position	
+291	netmgrerror	0x00177670	0x001780a1	lib	Net	2	position	
+292	netmgr	0x001780b0	0x001796ff	lib	Net	45	position	
+293	font	0x00179700	0x0017b4e6	lib	Font	20	position	
+294	feccrypt	0x0017b510	0x0017c03d	lib	Crypto	11	position	
+295	ddpagemgr	0x0017c040	0x0017d8a8	lib	DDrawMgr	21	position	interleaves:moviepaletteupload+surfacepalette
+296	moviepaletteupload	0x0017ca10	0x0017ca59	lib	Image	1	position	interleaves:ddpagemgr
+297	surfacepalette	0x0017ca60	0x0017ca95	lib	Image	1	position	interleaves:ddpagemgr
+298	fadermgr	0x0017d8f0	0x0017e428	lib	DDrawMgr	9	position	
+299	fader	0x0017e450	0x0017f126	lib	DDrawMgr	21	position	
+300	rezbufferobject	0x0017f130	0x0017f523	lib	Rez	4	position	
+301	fadereffects	0x0017f530	0x00182935	lib	DDrawMgr	32	position	
+302	scattersamples	0x00182940	0x00182aae	lib	Gruntz	2	position	
+303	chatbox	0x00182ab0	0x00183246	lib	Gruntz	28	position	
+304	menupage	0x001832d0	0x001845a2	lib	Gruntz	31	position	
+305	rezcoll	0x001848b0	0x00184b5d	lib	Rez	12	position	
+306	debugprintf	0x00184ba0	0x001851d3	lib	Rez	14	position,xcu:1493	
+307	rezlist	0x001851e0	0x00185315	lib	Rez	5	position	
+308	uncompr	0x00185320	0x00185320	lib	vendor	1	position	extent-fallback
+309	wapuncompress	0x001853b0	0x00185456	lib	Wap32	1	position	
+310	menuitem	0x00185460	0x00185a0e	lib	Gruntz	20	position	
+311	inflate	0x00185a10	0x001860a0	lib	vendor	7	position	extent-fallback
+312	deflate	0x00186180	0x00187170	lib	vendor	15	position	extent-fallback
+313	infblock	0x00187490	0x00188290	lib	vendor	5	position	extent-fallback
+314	adler32	0x001882d0	0x001882d0	lib	vendor	1	position	extent-fallback
+315	zutil	0x00188410	0x00188430	lib	vendor	2	position	extent-fallback
+316	trees	0x00188440	0x0018a290	lib	vendor	21	position	extent-fallback
+317	inftrees	0x0018a330	0x0018aab0	lib	vendor	6	position	extent-fallback
+318	infcodes	0x0018aaf0	0x0018b2e0	lib	vendor	3	position	extent-fallback
+319	infutil	0x0018b300	0x0018b300	lib	vendor	1	position	extent-fallback
+320	inffast	0x0018b440	0x0018b440	lib	vendor	1	position	extent-fallback
+321	wwdgrid	0x001915c0	0x00191d11	lib	Wwd	11	position	
+322	bitarraystream	0x00193080	0x0019333a	lib	Utils	2	position	
+323	butetree	0x00193340	0x0019363f	lib	Bute	2	position	
+324	bitarray	0x00193640	0x001937b3	lib	Utils	3	position	
 -	wwdfile	0x0000a000	0x000d53b9	comdat-owner	Wwd	3	exile-ledger	kept in actionoptionsmenubar+battlezmapconfig+play
 -	zvec	0x000310f0	0x00031314	comdat-owner	Wap32	2	exile-ledger	kept in battlezmapconfig
 -	freenodepool	0x000311b0	0x000311c4	comdat-owner	Gruntz	1	exile-ledger	kept in battlezmapconfig

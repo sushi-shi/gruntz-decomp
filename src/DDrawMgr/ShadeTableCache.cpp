@@ -16,6 +16,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). Sweeping a
+// throwaway file-scope declaration above the first definition - N = 1..16 graded
+// prototypes, and one each of fwd-decl / typedef / empty class / class with a
+// member / class with inline member bodies / static function with a body /
+// file-scope float / string literal - moves exactly ONE of this unit's functions
+// (CompareLuma, by 0.03) and, at N = 4, GammaTable. Every other function here is
+// dead flat to the whole axis. So this unit's residue is intra-function, not TU
+// composition - which is where the CompareLuma/CompareHue/FindNearestColor/
+// GammaTable body fixes came from. Do not re-run the sweep on this file.
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -97,7 +106,10 @@ void CShadeTableCache::FreeNodes() {
 // where retail emits the two products and a `faddp`. Commutative respellings (operand
 // order inside the product, addend order) are canonical here and byte-identical - the
 // factorisation is not reachable by reassociating the source. The j-loop, whose addends
-// have different leading operands, is byte-aligned.
+// have different leading operands, is byte-aligned. Re-measured: all 12 factor orders of
+// the second product (x endPct / g_p01 / uu, both addend orders) are byte-identical, and
+// five named-float-temp forms (two temps + a sum, one sum temp, a hoisted c, a hoisted
+// scale) all score 3-12 points WORSE - the temps defeat the ternary's own CSE instead.
 RVA(0x0014df40, 0x5f4)
 CShadeTable*
 CShadeTableCache::FlashTable(PALETTEENTRY* pal, i32 nA, i32 nB, i32 startPct, i32 endPct) {
@@ -316,9 +328,12 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 }
 
 // @early-stop
-// Commutative-sum coin: retail evaluates the pr (row) term of each channel's
-// weighted sum first, cl the pc term; swap/split/nesting spellings all
-// canonicalize to the same order.
+// The `PALETTEENTRY* pr/pc` element-address locals are gone (docs/patterns/
+// element-address-local-hides-the-memory-homed-index.md) - subscripting pal[i]
+// and pal[j] at every field read is what retail does, and keeping either local
+// scores between the extremes (pr only / pc only / neither, measured). The
+// residue is the commutative-sum coin: retail evaluates each channel's row term
+// first, cl the column term, and swap/split/nesting spellings all canonicalize.
 RVA(0x0014e9f0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
@@ -336,12 +351,11 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     u8* data = t->m_data;
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        PALETTEENTRY* pr = &pal[i];
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
-            PALETTEENTRY* pc = &pal[j];
-            u8 r = static_cast<u8>((pc->peRed * wCol / 100 + pr->peRed * wRow / 100) / div);
-            u8 g = static_cast<u8>((pc->peGreen * wCol / 100 + pr->peGreen * wRow / 100) / div);
-            u8 b = static_cast<u8>((pc->peBlue * wCol / 100 + pr->peBlue * wRow / 100) / div);
+            u8 r = static_cast<u8>((pal[j].peRed * wCol / 100 + pal[i].peRed * wRow / 100) / div);
+            u8 g =
+                static_cast<u8>((pal[j].peGreen * wCol / 100 + pal[i].peGreen * wRow / 100) / div);
+            u8 b = static_cast<u8>((pal[j].peBlue * wCol / 100 + pal[i].peBlue * wRow / 100) / div);
             data[i * 0x100 + j] = static_cast<u8>(FindNearestColor(pal, r, g, b));
         }
     }
@@ -379,23 +393,19 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     return t;
 }
 
-// @early-stop
-// Retail memory-homes the two u8 index locals (byte store + dword reload +
-// and 0xff, both loaded at entry); cl keeps ia in a register and rematerializes
-// the *b load after the first __ftol.
 RVA(0x0014ed10, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
-    PALETTEENTRY* pa = &g_pal[ia];
     u8 la = static_cast<u8>(static_cast<i32>(
-        (static_cast<float>(pa->peBlue) * g_lumaB + static_cast<float>(pa->peGreen) * g_lumaG
-         + static_cast<float>(pa->peRed) * g_lumaR)
+        (static_cast<float>(g_pal[ia].peBlue) * g_lumaB
+         + static_cast<float>(g_pal[ia].peGreen) * g_lumaG
+         + static_cast<float>(g_pal[ia].peRed) * g_lumaR)
     ));
-    PALETTEENTRY* pb = &g_pal[ib];
     u8 lb = static_cast<u8>(static_cast<i32>(
-        (static_cast<float>(pb->peGreen) * g_lumaG
-         + (static_cast<float>(pb->peBlue) * g_lumaB + static_cast<float>(pb->peRed) * g_lumaR))
+        (static_cast<float>(g_pal[ib].peBlue) * g_lumaB
+         + static_cast<float>(g_pal[ib].peGreen) * g_lumaG
+         + static_cast<float>(g_pal[ib].peRed) * g_lumaR)
     ));
     if (lb > la) {
         return -1;
@@ -438,9 +448,16 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
 }
 
 // @early-stop
-// The sequenced accumulator recovered the arm-local epilogues and the pack
-// order; the residue is the widen idiom (cl `and 0xff`/32-bit `and 0xf` where
-// retail uses movzx cx,cl / and dl,0xf) and the loop counter's register.
+// Both arms' block skeletons and the arm-local epilogues match; the residue is
+// the widen idiom - retail widens all three nibble terms with `movzx cx,cl`
+// (u8 -> u16 in a byte register) where cl masks two of them 32-bit
+// (`and edx,0xff` / `and eax,0xf`) and only the store-side term gets movzx.
+// Every u16-typed spelling of the accumulator or the terms DOES emit the three
+// movzx, but costs a fourth register (an extra ebx save) that retail does not
+// have, so it scores 80-84 against 92.9 here; retail's loop lives in
+// eax/ecx/edx/esi only. Applying the u16 shape to ONE arm scores 93.6, but
+// retail's two arms are byte-identical, so an asymmetric source is fabricated
+// and was rejected.
 RVA(0x0014eef0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
@@ -536,8 +553,13 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 
 // @early-stop
 // Pack-order coin: retail evaluates the b-dependent blue term first, in source
-// order; cl schedules the loop-invariant r/g partial first and spills it (one
-// extra frame dword). Ten spellings incl. by-value helpers are byte-identical.
+// order, and re-derives the whole three-channel pack inside the b loop; cl
+// reassociates the loop-invariant r|g pair, hoists it into the g loop and spills
+// it (one extra frame dword, `sub esp,0x40` vs retail's 0x3c), which also splits
+// the innermost loop into a rotated 1+35 pair where retail has a plain 33i
+// self-loop. Ten by-value/helper spellings plus all 18 order x grouping forms of
+// the `|` chain (flat, left-paren, right-paren, two- and three-statement splits)
+// are byte-identical: the reassociation is cl's LICM, not the source's shape.
 RVA(0x0014f310, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
@@ -723,18 +745,13 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     return t;
 }
 
-// @early-stop
-// As CompareLuma: retail memory-homes both u8 index locals at entry (byte
-// store into the recycled param slots); cl keeps them in registers.
 RVA(0x0014fa60, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
-    ColorHSV ha, hb, tmp;
-    PALETTEENTRY* pa = &g_pal[ia];
-    ha = *RgbToHsv(&tmp, (pa->peBlue << 0x10) | (pa->peGreen << 8) | pa->peRed);
-    PALETTEENTRY* pb = &g_pal[ib];
-    hb = *RgbToHsv(&tmp, (pb->peBlue << 0x10) | (pb->peGreen << 8) | pb->peRed);
+    ColorHSV ha, hb;
+    ha = RgbToHsv((g_pal[ia].peBlue << 0x10) | (g_pal[ia].peGreen << 8) | g_pal[ia].peRed);
+    hb = RgbToHsv((g_pal[ib].peBlue << 0x10) | (g_pal[ib].peGreen << 8) | g_pal[ib].peRed);
     if (ha.h < hb.h) {
         return -1;
     }
@@ -746,7 +763,10 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 
 // @early-stop
 // Retail re-reads m_arr.m_pData on the hit path (this stays in ecx); cl CSEs
-// the loop's cached base in edi and re-uses it for the return index.
+// the loop's cached base in edi and re-uses it for the return index, spending
+// `mov ecx,edi` in the preheader instead. Seven loop shapes (cursor pointer,
+// cursor+increment-in-the-for, hoisted size, per-element local, while form) are
+// measured inert or worse; the CSE is cl's, not the source's.
 RVA(0x0014fb40, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
@@ -781,24 +801,26 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 }
 
 // @early-stop
-// Retail enters the k loop through a forward jmp (rotation with entry jump)
-// and pushes all five saves up front; cl falls through and shrink-wraps the
-// edi push. Permuter exhausted.
+// Block skeleton, instruction counts and byte size (203) are now exact; residue
+// is the frame-slot pool assignment - retail homes `bb` in b's own parameter
+// home, `rr` in pal's home and gives `best` a fresh local (the `push ecx`),
+// cl rotates the same three values one position. Local declaration order,
+// mask/delta interleave and the term orders are all measured inert on it.
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
-    g &= 0xff;
-    b &= 0xff;
-    r &= 0xff;
-    i32 dg = g - pal->peGreen;
-    i32 db = b - pal->peBlue;
-    i32 dr = r - pal->peRed;
+    i32 gg = g & 0xff;
+    i32 bb = b & 0xff;
+    i32 rr = r & 0xff;
+    i32 dg = gg - pal->peGreen;
+    i32 db = bb - pal->peBlue;
+    i32 dr = rr - pal->peRed;
     i32 bestDist = dg * dg + db * db + dr * dr;
     i32 best = 0;
     for (i32 i = 1; i < PALETTE_ENTRY_COUNT; i++) {
-        i32 dr2 = r - pal[i].peRed;
-        i32 dg2 = g - pal[i].peGreen;
-        i32 db2 = b - pal[i].peBlue;
-        i32 d = dg2 * dg2 + dr2 * dr2 + db2 * db2;
+        i32 dr2 = rr - pal[i].peRed;
+        i32 dg2 = gg - pal[i].peGreen;
+        i32 db2 = bb - pal[i].peBlue;
+        i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
         if (d < bestDist) {
             bestDist = d;
             best = i;
@@ -808,7 +830,7 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, 
 }
 
 RVA(0x0014fcc0, 0x16d)
-ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
+ColorHSV RgbToHsv(u32 color) {
     ColorHSV hsv;
     float v =
         static_cast<float>(HSV_MAX(HSV_MAX(GetRValue(color), GetGValue(color)), GetBValue(color)));
@@ -840,8 +862,7 @@ ColorHSV* RgbToHsv(ColorHSV* out, u32 color) {
         }
         hsv.h = h;
     }
-    *out = hsv;
-    return out;
+    return hsv;
 }
 
 RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)

@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 339  functions: 4542
+# units: 337  functions: 4542
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -66,7 +66,7 @@ databuffer	8
 ddpagemgr	21
 ddpalette	23
 ddrawptrcollections	10
-ddrawshadeblit	12
+ddrawshadeblit	22
 ddrawsubmgr	125
 ddrawsubmgrleaf	12
 ddrawsubmgrrefresh	1
@@ -177,10 +177,8 @@ hash	10
 heapdiag	8
 helpstate	33
 iconloaders	2
-imageowned	9
 imagepolyclip	8
 imagepool	54
-imagerle16encode	1
 imageset1	14
 imageset2	14
 imageset3	3

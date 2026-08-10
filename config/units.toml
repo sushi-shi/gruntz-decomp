@@ -545,11 +545,6 @@ source = "src/Image/CImage.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "imageowned"
-source = "src/Image/ImageOwned.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "fileimage"
 source = "src/Image/FileImage.cpp"
 flags = "cpp"
@@ -1544,10 +1539,6 @@ flags = "cpp"
 unit = "grunttubeanim"
 source = "src/Gruntz/GruntTubeAnim.cpp"
 flags = "cpp-rtti"
-[[unit]]
-unit = "imagerle16encode"
-source = "src/Image/ImageRle16Encode.cpp"
-flags = "cpp"
 [[unit]]
 unit = "gruntmovestep"
 source = "src/Gruntz/GruntMoveStep.cpp"

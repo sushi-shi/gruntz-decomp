@@ -35,7 +35,7 @@ public:
     i32 LoadFromFile(CString name, ColorDepth fmt);
 
     i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette);
-    i32 Build(PidHeader* src, i32 size, ColorDepth fmt);
+    i32 Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt);
 
     void* EncodeRle16(const u8* src);
     void Teardown();

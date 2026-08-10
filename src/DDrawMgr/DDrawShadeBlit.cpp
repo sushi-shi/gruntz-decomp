@@ -2,13 +2,38 @@
 
 #include <DDrawMgr/DDrawShadeBlit.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Enums.h>
+#include <Ints.h>
+#include <Io/FileStream.h>
 #include <Pix16.h>
+#include <Rez/RezMgr.h>
 
 #include <ddraw.h>
 #include <string.h>
 
+// The whole CDDrawShadeBlit compiland: 0x148ce0..0x14de04, one gapless .text run
+// of 21 CDDrawShadeBlit methods with no foreign body inside it and no method of
+// the class outside it. It used to be split three ways - src/Image/ImageOwned.cpp
+// (0x148ce0..0x1495ca) and src/Image/ImageRle16Encode.cpp (0x1495d0..0x149776)
+// were holding TUs invented by an earlier wave, not a retail partition; their
+// "Image" library assignment in config/retail/link-order.tsv was derived from the
+// src/ directory they sat in, so it was circular. Merging them back restores the
+// preceding compiler state the blit half is compiled under.
+//
+// TU-STATE FINGERPRINT (diagnostic; probes are never shipped). A throwaway
+// declaration above the first definition moves BlitShaded{Forward,Mirrored},
+// ConvertRow{,Flip,Double,DoubleFwd} by up to +/-3 points and leaves BlitAt,
+// Blit, BlitCopy{Forward,Mirrored} and the whole ImageOwned half untouched; the
+// window is aperiodic over N = 1..16 and never reaches 100, and the kind of the
+// probe (fwd-decl / typedef / empty class / class with members / static function
+// with a body / file-scope float / string literal / class with inline members)
+// only selects which subset moves. So the blit half's residue is genuinely
+// TU-composition-sensitive, but it is not one missing declaration.
 DATA(0x002bed08)
 u8 g_scratch[1280];
 
@@ -36,6 +61,402 @@ static inline u16 Load16(const u8* p) {
     Pix16CPtr c;
     c.m_bytes = p;
     return *c.m_words;
+}
+
+RVA(0x00148ce0, 0x2f)
+CDDrawShadeBlit::CDDrawShadeBlit() {
+    m_rleData = NULL;
+    m_rleLen = 0;
+    m_palDescr = NULL;
+    m_drawType = SHADE_COPY;
+    m_light = 0x80;
+    m_doubleScanlines = 0;
+    m_palette = NULL;
+    m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+    m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
+    m_colorKey = -1;
+}
+
+RVA(0x00148d10, 0x25)
+void CDDrawShadeBlit::Teardown() {
+    if (m_rleData) {
+        delete[] m_rleData;
+    }
+    if (m_palette) {
+        delete[] m_palette;
+    }
+}
+
+// @early-stop
+RVA(0x00148d40, 0x202)
+i32 CDDrawShadeBlit::BuildRle(
+    void* pixels,
+    i32 width,
+    i32 height,
+    i32 stride,
+    i32 keyVal,
+    void* palette
+) {
+    u8* src = static_cast<u8*>(pixels);
+    if (src == NULL) {
+        return 0;
+    }
+    m_colorKey = keyVal;
+    if (stride == -1) {
+        stride = width;
+    }
+    m_width = width;
+    m_height = height;
+
+    CByteArray ba;
+    ba.SetSize(0x3e8, 0);
+
+    i32 row = 0;
+    if (m_height > 0) {
+        do {
+            i32 i = 0;
+            i32 runStart = 0;
+            if (m_width > 0) {
+                do {
+                    if (static_cast<i32>(src[i]) != keyVal) {
+
+                        while (i < m_width && (i - runStart) < 0x7e
+                               && static_cast<i32>(src[i]) != keyVal) {
+                            i++;
+                        }
+                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>((i - runStart)));
+                        for (i32 j = runStart; j < i; j++) {
+                            ba.SetAtGrow(ba.GetSize(), src[j]);
+                        }
+                        runStart = i;
+                    } else {
+
+                        while (i < m_width && (i - runStart) < 0x7e
+                               && static_cast<i32>(src[i]) == keyVal) {
+                            i++;
+                        }
+                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>(((i - runStart) | 0x80)));
+                        runStart = i;
+                    }
+                } while (i < m_width);
+            }
+            row++;
+            src += stride;
+        } while (row < m_height);
+    }
+
+    if (m_rleData != NULL) {
+        delete[] m_rleData;
+    }
+    m_rleLen = ba.GetSize();
+    m_rleData = new u8[ba.GetSize()];
+    i32 n = m_rleLen;
+    for (i32 k = 0; k < n; k++) {
+        m_rleData[k] = ba.GetData()[k];
+    }
+
+    if (palette != NULL) {
+        if (m_palette != NULL) {
+            delete[] m_palette;
+        }
+        m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+        memcpy(m_palette, palette, 0x400);
+    }
+    return 1;
+}
+
+RVA(0x00148f50, 0x61)
+i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette) {
+    if (surf == NULL) {
+        return 0;
+    }
+    m_colorKey = keyVal;
+    void* bits = surf->Lock(0);
+    if (bits == NULL) {
+        return 0;
+    }
+    i32 r = BuildRle(bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
+    surf->m_ddSurface->Unlock(0);
+    return r;
+}
+
+RVA(0x00148fc0, 0x104)
+i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
+    CFile file;
+    if (!file.Open(name, 0x8000, 0)) {
+        return 0;
+    }
+    RecordBytes<PidHeader> fileData;
+    fileData.m_bytes = new u8[file.GetLength()];
+    file.Read(fileData.m_bytes, file.GetLength());
+    i32 r = Build(fileData.m_rec, file.GetLength(), fmt);
+    file.Close();
+    delete[] fileData.m_bytes;
+    return r;
+}
+
+// @early-stop
+// The depth parameter is BYTE-wide (docs/patterns/
+// byte-wide-compare-of-a-parameter-means-a-narrow-parameter.md): retail reads its
+// home with `mov cl,BYTE PTR [esp+0x1c]` and compares `cmp cl,0x10` / `cmp cl,0x8`,
+// which cl 5.0 never derives from an enum's value range. Residue: the embedded-
+// palette copy loop, where retail re-loads m_rleLen and m_palette in front of EACH
+// of the three channel stores and cl reloads them once per iteration.
+RVA(0x001490d0, 0x173)
+i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt) {
+    PidFlags flags = src->flags;
+
+    if ((HAS(flags, PID_SRC_8BPP_SHADE)) || (HAS(flags, PID_SRC_8BPP))) {
+        if (fmt == BPP_RGB_16) {
+            m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+            m_dstBpp = PIXEL16_BYTES_PER_PIXEL;
+        } else {
+            m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+            m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
+        }
+    } else if (fmt == BPP_RGB_16) {
+        m_srcBpp = PIXEL16_BYTES_PER_PIXEL;
+        m_dstBpp = PIXEL16_BYTES_PER_PIXEL;
+    } else {
+        m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
+        m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
+    }
+
+    if (HAS(src->flags, PID_FILL_IS_WORD)) {
+        m_colorKey = static_cast<u8>(src->fill);
+    } else {
+        m_colorKey = -1;
+    }
+
+    i32 stride = size - 0x20;
+    m_rleLen = stride;
+    if (fmt != BPP_PALETTED_8 && fmt != BPP_RGB_16) {
+        return 0;
+    }
+
+    if (HAS(src->flags, PID_EMBEDDED_PALETTE)) {
+        stride -= PALETTE_RGB_BYTE_COUNT;
+        m_rleLen = stride;
+        if (fmt == BPP_RGB_16) {
+            if (m_palette != NULL) {
+                delete[] m_palette;
+            }
+            m_palette = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
+
+            RecordBytes<PidHeader> blob;
+            blob.m_rec = src;
+            i32 i = 0;
+            i32 d = 0;
+            do {
+                d++;
+                m_palette[d - 1].peRed = (blob.m_bytes + m_rleLen)[i + 0x20];
+                i += 3;
+                m_palette[d - 1].peGreen = (blob.m_bytes + m_rleLen)[i + 0x1e];
+                m_palette[d - 1].peBlue = (blob.m_bytes + m_rleLen)[i + 0x1f];
+            } while (i < 0x300);
+        }
+    }
+
+    m_width = src->width;
+    m_height = src->height;
+    if (m_rleData != NULL) {
+        delete[] m_rleData;
+    }
+    m_rleData = new u8[m_rleLen];
+
+    memcpy(m_rleData, src + 1, m_rleLen);
+
+    if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
+        void* remapped = EncodeRle16(m_rleData);
+        delete[] m_rleData;
+        m_rleData = static_cast<u8*>(remapped);
+        delete[] m_palette;
+        m_palette = NULL;
+    }
+    return 1;
+}
+
+RVA(0x00149250, 0x158)
+i32 CDDrawShadeBlit::DecodeFrame(CString name, CImageFrameRebuildDesc desc) {
+    if (m_srcBpp != 1) {
+        return 0;
+    }
+
+    CFile file;
+    if (file.Open(name, 0x9001, 0) == 0) {
+        return 0;
+    }
+    file.Write(&desc, sizeof(desc));
+    file.Write(m_rleData, m_rleLen);
+    if (desc.f1 & 0x80) {
+        if (m_palette == NULL) {
+            return 0;
+        }
+        for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+            file.Write(&m_palette[i].peRed, sizeof(m_palette[i].peRed));
+            file.Write(&m_palette[i].peGreen, sizeof(m_palette[i].peGreen));
+            file.Write(&m_palette[i].peBlue, sizeof(m_palette[i].peBlue));
+        }
+    }
+    file.Close();
+    return 1;
+}
+
+// @early-stop
+// Two coupled coloring choices: retail keeps `flags` in the callee-saved esi and
+// m_palette in eax (so the ORs are 32-bit `or esi,0x100` / `or esi,0x80` and the
+// desc.f1 store lands before the argument copy), cl swaps them, uses the byte
+// halves of eax (`or ah,0x1` / `or al,0x80`) and sinks `desc.f1 = flags` INTO the
+// copied argument block. Five spellings (a m_palette local, u32 flags, a returned
+// temp, the two palette tests merged, an early desc.f1) are all byte-identical.
+RVA(0x001493b0, 0xfd)
+
+i32 CDDrawShadeBlit::Rebuild(CString name, i32 offsetX, i32 offsetY) {
+    if (m_srcBpp != 1) {
+        return 0;
+    }
+    CImageFrameRebuildDesc desc;
+    i32 flags = 0x3d;
+    if (m_palette != NULL) {
+        flags = 0xbd;
+    }
+    desc.f0 = 0;
+    desc.f2 = m_width;
+    desc.f4 = offsetX;
+    desc.f3 = m_height;
+    desc.f5 = offsetY;
+    desc.f6 = 0;
+    desc.f7 = 0;
+    if (m_colorKey != -1) {
+        flags |= 0x100;
+        desc.f6 = static_cast<u8>(m_colorKey);
+    }
+    if (m_palette != NULL) {
+        flags |= 0x80;
+    }
+    desc.f1 = flags;
+    return DecodeFrame(name, desc);
+}
+
+RVA(0x001494b0, 0x11a)
+i32 CDDrawShadeBlit::Decompress(void* dest) {
+    if (m_srcBpp != 1) {
+        return 0;
+    }
+    if (dest == NULL) {
+        return 0;
+    }
+    i32 fill = m_colorKey;
+    if (fill == -1) {
+        fill = 0;
+    }
+    i32 x = 0;
+    i32 cursor = 0;
+    for (i32 y = 0; y < m_height;) {
+        if (m_rleData[cursor] & 0x80) {
+            memset(static_cast<u8*>(dest) + y * m_width + x, fill, m_rleData[cursor] - 0x80);
+            x += m_rleData[cursor] - 0x80;
+            cursor += 1;
+        } else {
+            memcpy(
+                static_cast<u8*>(dest) + y * m_width + x,
+                m_rleData + cursor + 1,
+                m_rleData[cursor]
+            );
+            x += m_rleData[cursor];
+            cursor += m_rleData[cursor] + 1;
+        }
+        if (x >= m_width) {
+            y++;
+            x = 0;
+        }
+    }
+    return 1;
+}
+
+// @early-stop
+// 147/147 instructions on retail's frame (0x20c); the residue is one register
+// coloring flip - cl gives srcidx edi and k esi where retail has them the other
+// way round - plus `add ecx,2` for the two `outidx++` retail splits into two `inc`s
+// (spelling them apart costs more than it saves).
+RVA(0x001495d0, 0x1a6)
+void* CDDrawShadeBlit::EncodeRle16(const u8* src) {
+    u16 table[256];
+    {
+        const PALETTEENTRY* pal = m_palette;
+        u16* t = table;
+        for (i32 i = 0x100; i != 0; i--) {
+            *t++ = static_cast<u16>(
+                ((static_cast<u16>(static_cast<u8>(pal->peGreen) >> g_gDown) << g_gUp)
+                 | (static_cast<u16>(static_cast<u8>(pal->peRed) >> g_rDown) << g_rUp)
+                 | static_cast<u16>(static_cast<u8>(pal->peBlue) >> g_bDown))
+            );
+            pal++;
+        }
+    }
+
+    m_rleLen = 0;
+    {
+        i32 x = 0, row = 0, idx = 0;
+        if (m_height > 0) {
+            i32 w1 = m_width - 1;
+            do {
+                if (src[idx] & 0x80) {
+                    m_rleLen++;
+                    idx++;
+                    x += static_cast<i32>(m_rleData[idx - 1]) - 0x80;
+                } else {
+                    m_rleLen++;
+                    m_rleLen += static_cast<i32>(src[idx]) * 2;
+                    x += static_cast<i32>(m_rleData[idx]);
+                    idx += static_cast<i32>(m_rleData[idx]) + 1;
+                }
+                if (x >= w1) {
+                    row++;
+                    x = 0;
+                }
+            } while (row < m_height);
+        }
+    }
+
+    u8* out = new u8[m_rleLen];
+    {
+        i32 outidx = 0, srcidx = 0;
+        i32 x2 = 0, row2 = 0;
+        if (m_height > 0) {
+            do {
+                u8 tk = src[srcidx];
+                out[outidx] = tk;
+                if (tk & 0x80) {
+                    outidx++;
+                    x2 += static_cast<i32>(m_rleData[srcidx]) - 0x80;
+                    srcidx++;
+                } else {
+                    // Re-read the run length rather than naming it: a local is live
+                    // across the loop and costs a spill slot retail does not have.
+                    outidx++;
+                    if (src[srcidx] > 0) {
+                        const u8* run = src + srcidx + 1;
+                        i32 k = 0;
+                        do {
+                            u16 px = table[run[k]];
+                            out[outidx] = static_cast<u8>(px);
+                            out[outidx + 1] = static_cast<u8>((px >> 8));
+                            outidx += 2;
+                            k++;
+                        } while (k < src[srcidx]);
+                    }
+                    x2 += static_cast<i32>(m_rleData[srcidx]);
+                    srcidx += static_cast<i32>(m_rleData[srcidx]) + 1;
+                }
+                if (x2 >= m_width - 1) {
+                    row2++;
+                    x2 = 0;
+                }
+            } while (row2 < m_height);
+        }
+    }
+    return out;
 }
 
 RVA(0x00149780, 0x69)

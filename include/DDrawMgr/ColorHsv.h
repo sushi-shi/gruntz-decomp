@@ -12,6 +12,6 @@ struct ColorHSV {
 };
 SIZE_UNKNOWN();
 
-ColorHSV* RgbToHsv(ColorHSV* out, u32 color);
+ColorHSV RgbToHsv(u32 color);
 
 #endif // GRUNTZ_DDRAWMGR_COLORHSV_H
