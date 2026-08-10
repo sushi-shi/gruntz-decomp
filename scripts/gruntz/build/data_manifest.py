@@ -599,6 +599,24 @@ def rtti_rows(exe=EXE, base_dir=None):
         if p is not None:
             primary["??_7%s@@6B@" % name] = p[0]
 
+    # The same template-specialization bridge vtable_rows() carries: the registry
+    # keys off the ??_R0 name decoded on `@`, which for `?$CArray@PAU...` spells a
+    # symbol no object defines, so a template vtable never reaches `primary` by
+    # name and its WHOLE RTTI graph stayed unwalked (the ??_R0 at 0x20ceb0 was the
+    # band-gap find that exposed it). The catalog bridges name->rva; the rva must
+    # still BE a base-0 vtable the registry located, so nothing rests on the
+    # catalog's word alone.
+    known = set(primary.values())
+    try:
+        from gruntz.core import vtable_catalog  # noqa: E402
+        catalog = vtable_catalog.game_rows() + vtable_catalog.library_rows()
+    except Exception:
+        catalog = []
+    for row in catalog:
+        if row["rva"] in known and row.get("kind") != "secondary" \
+                and vtable_catalog.secondary_classes(row["name"]) is None:
+            primary.setdefault(row["name"], row["rva"])
+
     located, withheld = {}, []          # name -> rva
 
     def place(name, rva):

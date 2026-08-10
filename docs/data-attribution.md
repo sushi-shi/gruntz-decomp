@@ -520,6 +520,18 @@ under `home = src-RVA_COMPGEN`. The one real model defect left is `CDDrawWorkerA
 now clean, confirming its `__purecall` fix. The last COL site is
 `??_7?$zDArray@P8CUserLogic@@AEHXZ@@6B@`, which has no primary-vtable slot map.
 
+**Template specializations bridged (2026-08-10).** `rtti_rows()` built its class list
+from the registry alone, and a template vtable's registry key decodes the `??_R0` name
+on `@` into a symbol no object defines (`?$CArray@PAU…` → `PAU1::…::?$CArray`), so a
+template class's ENTIRE RTTI graph went unwalked — `vtable_rows()` had the
+`vtables_game.csv` name→rva bridge, the walk did not. Bridged (the rva must still be a
+registry-located base-0 vtable), `CArray<PLAYLISTINFOSTRUCT*>`'s graph
+(COL `0x1f4320` → R3 `0x1f4308` → R1 `0x1f42d8` → R0 `0x20ceb0`, previously unclaimed
+`.data`) enrolls for its three emitters. Known cost: the walked
+`??_R1A@?0A@A@zErrHandling@@8` makes gametext/chatboxowner's combined `.rdata$r`
+comparable, and their base-side `??_R4zPTree@@6BzErrHandling@@@` — a secondary/MI
+record the enrolment still withholds — now honestly costs 24 B each until the MI pass.
+
 ### 3b-iii. `DATA_COMPGEN(rva, name, value)` — reviewed compiler-generated data (wired)
 
 Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic

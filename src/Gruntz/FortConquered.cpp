@@ -53,10 +53,11 @@ i32 CExitTrigger::AdvanceAnim() {
             if (loser != NULL) {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
-                        loser->GetName() + " was conquered by " + winner->GetName() + "!"
-                    ),
-                    0,
-                    0x11
+                        loser->GetName() + " was conquered by " + winner->GetName()
+                            + DATA_COMPGEN(0x0020d168, exclaimStr, "!")
+                        ),
+                        0,
+                        0x11
                 );
                 loser->m_clearedRound = 1;
             }

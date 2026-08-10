@@ -3417,7 +3417,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (g_debugDisplayFlags & 0x80) {
         CString t = FormatElapsedTime(g_frameTime);
-        t += " ";
+        t += DATA_COMPGEN(0x00212754, spaceStr, " ");
         strcat(buf, t);
         t += " ";
     }

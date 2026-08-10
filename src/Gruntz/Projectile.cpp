@@ -200,7 +200,9 @@ i32 CProjectile::LoadProjectileSprites(
 
     void* out;
     out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "1", out);
+    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+        key + DATA_COMPGEN(0x00213658, spriteKeyOne, "1"), out
+        );
     m_frames[0] = static_cast<CAniElement*>(out);
     if (m_frames[0] == NULL) {
         return 0;
