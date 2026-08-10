@@ -111,7 +111,7 @@ void CUserLogic::FinalizeStep(char*) {
     }
     (this->*m_deferredCallback)();
     m_deferredCallback = 0;
-    m_gatedActKey = 0x3e9;
+    m_gatedActKey = IDX(ACT_NONE);
 }
 
 // @early-stop

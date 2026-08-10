@@ -170,7 +170,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vAmbient = m_settings->GetValueDword("Ambient", m_isAmbientEnabled);
     i32 vInterlaced = m_settings->GetValueDword("Interlaced", m_isInterlaced);
     i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
-    m_isHighDetail = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
+    // Read and dropped: retail's only store to m_isHighDetail (+0x10c) in this
+    // function is the one down with the rest of the batch, so this second probe
+    // lands in a register, not the member.
+    i32 vHigh2 = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
     i32 vEasy = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
     i32 resolutionRaw = m_settings->GetValueDword("Resolution", IDX(RES_640X480));
     m_isEasyMode = resolutionRaw;

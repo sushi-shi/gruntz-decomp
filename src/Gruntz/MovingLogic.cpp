@@ -118,7 +118,7 @@ i32 CUserLogic::SerializeMove(
             m_objAux = (pObj)->m_animWorker;
             m_deferredCallback = 0;
             m_gatedCallback = 0;
-            m_gatedActKey = 0x3e9;
+            m_gatedActKey = IDX(ACT_NONE);
 
             break;
         }

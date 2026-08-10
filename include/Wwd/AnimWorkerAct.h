@@ -27,6 +27,12 @@ GZ_ENUM_BEGIN_SPLIT(AnimWorkerAct, u32)
     ACT_UNINITIALISED = 0,
     // The logic exists and is running; the arm is empty everywhere.
     ACT_LIVE = 0x3e8,
+    // One past ACT_LIVE, and no worker ever holds it: the disarmed value of
+    // CUserLogic::m_gatedActKey, which is only ever compared against
+    // m_objAux->ActKey().  Storing it means the gated callback can never fire.
+    // Written by all 58 logic ctors, by both FinalizeStep overloads and by the
+    // CMovingLogic load path; retail has no other use of the value.
+    ACT_NONE = 0x3e9,
     // Both sites that raise it are the same three lines in different files -
     // CGameObject::Notify and CWwdObjMgr's collision pass each subtract the
     // hitter's m_damage from m_health and raise this when the result reaches

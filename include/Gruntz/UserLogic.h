@@ -90,8 +90,6 @@ public:
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj);
 
-    void AttachToObject(CGameObject* obj);
-
     void LoadGruntTuningConstants(i32);
 
     typedef i32 (CUserLogic::*ActCallback)();
@@ -124,30 +122,36 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 }
 
 // The one textual copy of the ctor body.  Both CUserLogic ctor entities expand it.
-inline void CUserLogic::AttachToObject(CGameObject* obj) {
-    m_logicObject = obj;
-    m_object = static_cast<CWwdGameObjectA*>(obj);
-    m_objAux = obj->m_animWorker;
-    {
-        zBitVec tmp("", 0);
-        m_link.m_str = tmp;
-    }
-    RegisterLogicTypesOnce();
-    m_object->AddLogicHit("LogicHit");
-    m_object->AddLogicAttack("LogicAttack");
-    m_object->AddLogicBump("LogicBump");
-    m_deferredCallback = 0;
-    m_gatedCallback = 0;
-    m_gatedActKey = 0x3e9;
+//
+// A MACRO, not an inline member: MSVC 5 has no __forceinline and its inline budget
+// declines the body in the two largest derived ctors - CWarlord (0x750 B) and
+// CInGameIcon (0x15f0 B) - where retail expands it verbatim, leaving a
+// `call ?AttachToObject@CUserLogic@@` at ctor+0x48 in both.  A textual macro is the
+// period device for a block that must expand at every site
+// (docs/patterns/inline-expanded-twice-costs-a-register.md).
+#define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
+    m_logicObject = (obj);                                                                         \
+    m_object = static_cast<CWwdGameObjectA*>(obj);                                                 \
+    m_objAux = (obj)->m_animWorker;                                                                \
+    {                                                                                              \
+        zBitVec tmp("", 0);                                                                        \
+        m_link.m_str = tmp;                                                                        \
+    }                                                                                              \
+    RegisterLogicTypesOnce();                                                                      \
+    m_object->AddLogicHit("LogicHit");                                                             \
+    m_object->AddLogicAttack("LogicAttack");                                                       \
+    m_object->AddLogicBump("LogicBump");                                                           \
+    m_deferredCallback = 0;                                                                        \
+    m_gatedCallback = 0;                                                                           \
+    m_gatedActKey = IDX(ACT_NONE);                                                                 \
     m_reserved2c = 2;
-}
 
 // Inline in the shared header: retail expands this whole body into ~57 derived
 // logic constructors (they show the two vptr stamps, the m_link zBitVec assign and
 // the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
 // CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
 inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
-    AttachToObject(obj);
+    USERLOGIC_ATTACH_TO_OBJECT(obj);
 }
 
 class CWapX {

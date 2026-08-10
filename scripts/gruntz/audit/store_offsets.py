@@ -41,7 +41,7 @@ METHOD
   defect signature.  Only if the multisets agree is the ORDER compared - a pure
   permutation is scheduling noise and is reported separately and never chased.
 
-FIVE THINGS THAT MUST BE RIGHT, each of which produced phantom rows until fixed
+SIX THINGS THAT MUST BE RIGHT, each of which produced phantom rows until fixed
   1. TOKENISATION.  llvm-objdump's byte column is a fixed width; a 10-byte
      encoding fills it exactly and leaves no space before the tab.  A
      whitespace regex then eats the mnemonic - and `c7 86 <disp32> <imm32>`,
@@ -63,6 +63,14 @@ FIVE THINGS THAT MUST BE RIGHT, each of which produced phantom rows until fixed
   5. PARAMETER SLOTS ARE SEEDED FROM `ret N`, never a fixed guess.  Seeding ten
      of them made a spill slot in a 2-argument function read as `p4` and
      reported a phantom +0/+4 slip in zPTree::Insert.
+  6. `add reg, imm` / `sub reg, imm` ADVANCES A ROOT, it does not destroy one.
+     cl walks a member array either as `lea edi,[esi+N]` re-derived per step or
+     by advancing the cursor in place, and it picks a different spelling on the
+     two sides of the same loop.  Killing the root on `add` made retail's
+     CGruntSpawnConfig::ClearSprites (`add ecx,0x8`) look like it stored nothing
+     at all while ours (`lea eax,[ecx+8]`) stored two fields - a whole-function
+     phantom.  Both spawn-config rows disappeared when `add`/`sub` of a constant
+     started shifting the displacement instead.
 
 COVERAGE (2026-08-10, 341 units)
   4327 function pairs; 2728 make no rooted member store at all (accessors, CRT,
@@ -75,13 +83,13 @@ COVERAGE (2026-08-10, 341 units)
   tool under-reports rather than inventing.
 
 USAGE
-  python3 build/store_offset_audit.py                  # ranked worklist
-  python3 build/store_offset_audit.py --unit grunt     # one unit
-  python3 build/store_offset_audit.py --fn '??0CGrunt' # one function, detailed
-  python3 build/store_offset_audit.py --all-roots      # include unrooted stores
-  python3 build/store_offset_audit.py --reorder        # scheduling-noise list
-  python3 build/store_offset_audit.py --tsv out.tsv    # machine readable
-  python3 build/store_offset_audit.py --coverage       # what it could not read
+  python -m gruntz.audit.store_offsets                  # ranked worklist
+  python -m gruntz.audit.store_offsets --unit grunt     # one unit
+  python -m gruntz.audit.store_offsets --fn '??0CGrunt' # one function, detailed
+  python -m gruntz.audit.store_offsets --all-roots      # include unrooted stores
+  python -m gruntz.audit.store_offsets --reorder        # scheduling-noise list
+  python -m gruntz.audit.store_offsets --tsv out.tsv    # machine readable
+  python -m gruntz.audit.store_offsets --coverage       # what it could not read
 
 ADJUDICATION (what a one-sided offset turned out to be, 2026-08-10 wave)
   (a) MEMBER SLIP / MISSING INIT - retail stores there, we do not (or we store
@@ -294,6 +302,19 @@ class Tracker:
                         self.slot[k] = v
                     else:
                         self.slot.pop(k, None)
+            return
+
+        # --- cursor advance: `add edi,0x4` / `sub esi,0x10` KEEPS the rooting ---
+        # cl walks a member array either as `lea edi,[esi+N]` + `[edi+k]` or by
+        # advancing the base register in place.  The two spellings are the same
+        # pointer, so an `add`/`sub` of a constant re-roots rather than kills -
+        # without this the two sides of one loop read as disjoint offset sets.
+        if mnem in ("add", "sub") and dst in GPR:
+            v = self.reg.get(dst)
+            if v is not None and re.fullmatch(r"-?(0x[0-9a-fA-F]+|\d+)", src or ""):
+                self.reg[dst] = (v[0], v[1] + (int(src, 0) if mnem == "add" else -int(src, 0)))
+                return
+            self.kill(dst)
             return
 
         # --- reload / derive --------------------------------------------------

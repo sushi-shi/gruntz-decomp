@@ -51,8 +51,16 @@ before you spend a build.
 
 ## Not this
 
-Do NOT reach for the macro when a single-expansion caller regresses — that is a different bug
-(usually the block's own statement shape, see
+Do NOT reach for the macro when a single-expansion caller regresses — that is *usually* a different
+bug (the block's own statement shape, see
 [act-registrar-counter-cse-and-freeloop](act-registrar-counter-cse-and-freeloop.md)). The
 signature here is specifically that the split is by EXPANSION COUNT: all the once-callers fine,
 all the twice-callers broken, in one build.
+
+**"Once-callers are safe" is not a law, though.** Measured 2026-08-10 on `CUserLogic`: peeling the
+three trailing stores of the attach block into an `inline void ClearActGate()` and calling it once
+from the ctor took `CGuardPoint`/`CWayPoint` 99.67 -> 31.09, `CLevelTime` 99.67 -> 35.13 and
+`CLightFx` 96.46 -> 22.50 — four callers, one expansion each. So a single-expansion regression means
+"look at the shape first", not "the macro cannot be the answer". See
+[inline-depth-two-declines-in-the-largest-caller](inline-depth-two-declines-in-the-largest-caller.md),
+where the macro was also what fixed the depth problem the split could not touch.

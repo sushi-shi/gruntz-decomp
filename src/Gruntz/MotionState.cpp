@@ -51,5 +51,5 @@ void CMotionState::SetZ(double z) {
 // CUserLogic(obj, INLINE_BASE) everywhere else.
 RVA(0x00058cd0, 0x195)
 CUserLogic::CUserLogic(CGameObject* obj) {
-    AttachToObject(obj);
+    USERLOGIC_ATTACH_TO_OBJECT(obj);
 }
