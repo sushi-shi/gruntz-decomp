@@ -406,7 +406,7 @@ CGrunt::CGrunt(void* owner)
     m_arrivalActive = 0;
     m_coordToggle = 0;
     m_wingzEnabled = 0;
-    m_tileClaimed = 0;
+    m_struckSlotSound = NULL;
     m_struckVoiceSound = NULL;
     m_reachRect.top = -1;
     m_reachRect.right = 1;

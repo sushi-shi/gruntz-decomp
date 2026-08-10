@@ -795,7 +795,8 @@ i32 CPlay::Render() {
     }
 
     StepInputA();
-    if (m_world->m_drawTarget->m_backPair == NULL) {
+    CDDrawSurfacePair* back = m_world->m_drawTarget->m_backPair;
+    if (back == NULL) {
         return 0;
     }
     {
@@ -806,24 +807,6 @@ i32 CPlay::Render() {
             stream->TickSubManagers(t);
         }
         if (m_paused != 0) {
-
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->PruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-            m_guts->LoadMainStatusBarSprite();
-            if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
-                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);
-            }
-            m_frameMarker->Draw(
-                static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
-                1
-            );
-        } else {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
@@ -836,12 +819,9 @@ i32 CPlay::Render() {
                     m_world->m_drawTarget->m_overlayPair
                 );
                 m_guts->LoadMainStatusBarSprite();
-                m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(0x32, 0);
+                back->m_surface->ShadeRect(0x32, 0);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, 0);
-                m_frameMarker->Draw(
-                    static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
-                    1
-                );
+                m_frameMarker->Draw(back, 1);
             }
             if (m_ambientInitDone == 0) {
                 if (static_cast<i64>(g_frameTime) - m_ambientTimer64.m_v
@@ -864,9 +844,24 @@ i32 CPlay::Render() {
                     m_ambientInitDone = 1;
                 }
             }
+        } else {
+
+            m_world->m_level->VisitVisible(
+                m_world->m_drawTarget->m_backPair,
+                m_world->m_childGroup
+            );
+            m_world->m_workerList->PruneWorkers(
+                m_world->m_drawTarget->m_backPair,
+                m_world->m_drawTarget->m_overlayPair
+            );
+            m_guts->LoadMainStatusBarSprite();
+            if (m_guts->m_toggleActive == 0 && m_guts->m_toggleHandle == 0) {
+                PlayCueAt(0x812c, 0x78, 0, 0xff, 0xff, 0, 1, 0);
+            }
+            m_frameMarker->Draw(back, 1);
         }
         StepGridWalk(static_cast<i32>(g_frameDelta));
-        DrawCursorSaveUnder(0);
+        DrawCursorSaveUnder(back);
         m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
     }
     return 1;
