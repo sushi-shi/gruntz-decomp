@@ -32,6 +32,7 @@
 #include <Gruntz/GruntCombatDirection.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -146,9 +147,6 @@ const u8 g_hitTable[23][23] = {
     {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
 };
 
-// zero-init; filled at runtime by the (unreconstructed) fn in gap 0x58f3c-0x59230
-DATA(0x00244970)
-i32 g_dirVec[9][4];
 DATA(0x00244aa0)
 GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, DIR_EAST);
 DATA(0x00244ab0)
@@ -181,11 +179,11 @@ static char s_CombatTimeout[] = "CombatTimeout";
         cue = out;                                                                                 \
     } while (0)
 
-#define SETDIR(k, nx, ny)                                                                          \
+// The knockback cell is the direction the ATTACKER lies in, i.e. the opposite of
+// the pixel delta the same site applies: pushed west => faces east.
+#define SETDIR(cell, nx, ny)                                                                       \
     do {                                                                                           \
-        this->m_entranceCell.row = AT(g_dirVec, k)[0];                                             \
-        this->m_entranceCell.column = AT(g_dirVec, k)[1];                                          \
-        this->m_entranceCell.direction = static_cast<GruntDirection>(AT(g_dirVec, k)[2]);          \
+        this->m_entranceCell = (cell);                                                             \
         newX = (nx);                                                                               \
         newY = (ny);                                                                               \
     } while (0)
@@ -1144,16 +1142,10 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 // @early-stop
-// 201 of retail's 215 blocks; the whole deficit is the Wingz-knockback switch.
-// Retail gives every arm its own 12-13 instruction block that ends `jmp 0x5a6d6`
-// (0x5a30a, 0x5a33f, 0x5a375, 0x5a3af, 0x5a3e8, 0x5a42a, 0x5a468, 0x5a4a5) with the
-// post-switch apply block as their common continuation.  cl instead lets ONE arm
-// (base +0xb67, the g_dirVec[1] copy) fall straight through into the apply block
-// and parks the rest at the end jumping BACK into it (base +0x11c3 `jmp` to the
-// apply block's second instruction), so every arm's displacement and the whole
-// tail are misaligned.  Spelling the arms with an explicit `goto L_apply` cannot
-// move it: cl hoists a forward goto's target, which places the apply block exactly
-// where it already is (measured on BeginAttack and PlaceAt in this same batch).
+// Residue is block placement in the knockback chain: retail gives every arm its own
+// block ending in a forward `jmp` to the shared apply block, cl lets one arm fall
+// through and parks the rest after it jumping back in.  A `goto L_apply` cannot move
+// it - cl hoists a forward goto's target onto the block it already occupies.
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1438,66 +1430,50 @@ i32 CGrunt::LoadGruntCombatAnimations(
         switch (static_cast<WingzKnockbackChoice>(rand() % 8 - 1)) {
             case WINGZ_KNOCKBACK_NORTHEAST:
                 SETDIR(
-                    GRUNT_DIR_VECTOR_NORTHEAST,
+                    s_gruntDirSouthWest,
                     this->m_lastTilePx.m_x + 0x20,
                     this->m_lastTilePx.m_y - 0x20
                 );
                 break;
             case WINGZ_KNOCKBACK_EAST:
-                SETDIR(
-                    GRUNT_DIR_VECTOR_EAST,
-                    this->m_lastTilePx.m_x + 0x20,
-                    this->m_lastTilePx.m_y
-                );
+                SETDIR(s_gruntDirWest, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y);
                 break;
             case WINGZ_KNOCKBACK_SOUTHEAST:
                 SETDIR(
-                    GRUNT_DIR_VECTOR_SOUTHEAST,
+                    s_gruntDirNorthWest,
                     this->m_lastTilePx.m_x + 0x20,
                     this->m_lastTilePx.m_y + 0x20
                 );
                 break;
             case WINGZ_KNOCKBACK_SOUTH:
-                SETDIR(
-                    GRUNT_DIR_VECTOR_SOUTH,
-                    this->m_lastTilePx.m_x,
-                    this->m_lastTilePx.m_y + 0x20
-                );
+                SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
                 break;
             case WINGZ_KNOCKBACK_SOUTHWEST:
                 SETDIR(
-                    GRUNT_DIR_VECTOR_SOUTHWEST,
+                    s_gruntDirNorthEast,
                     this->m_lastTilePx.m_x - 0x20,
                     this->m_lastTilePx.m_y + 0x20
                 );
                 break;
             case WINGZ_KNOCKBACK_WEST:
-                SETDIR(
-                    GRUNT_DIR_VECTOR_WEST,
-                    this->m_lastTilePx.m_x - 0x20,
-                    this->m_lastTilePx.m_y
-                );
+                SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
                 break;
             case WINGZ_KNOCKBACK_NORTHWEST:
                 SETDIR(
-                    GRUNT_DIR_VECTOR_NORTHWEST,
+                    s_gruntDirSouthEast,
                     this->m_lastTilePx.m_x - 0x20,
                     this->m_lastTilePx.m_y - 0x20
                 );
                 break;
             default:
-                SETDIR(
-                    GRUNT_DIR_VECTOR_NORTH,
-                    this->m_lastTilePx.m_x,
-                    this->m_lastTilePx.m_y - 0x20
-                );
+                SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
                 break;
         }
     } else if (dx == 0) {
         if (srcPxY > this->m_object->m_screenY) {
-            SETDIR(2, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
+            SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
         } else if (srcPxY < this->m_object->m_screenY) {
-            SETDIR(1, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
+            SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
         } else {
             goto L_moveDone;
         }
@@ -1505,31 +1481,47 @@ i32 CGrunt::LoadGruntCombatAnimations(
         float slope = static_cast<float>(dy) / dx;
         if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
             if (srcPxY > this->m_object->m_screenY) {
-                SETDIR(2, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
+                SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
             } else {
-                SETDIR(1, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
+                SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
             }
         } else if (slope > g_slopeHalf || slope < g_slopeNegHalf) {
             if (slope > g_slopeHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
-                    SETDIR(6, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y - 0x20);
+                    SETDIR(
+                        s_gruntDirSouthEast,
+                        this->m_lastTilePx.m_x - 0x20,
+                        this->m_lastTilePx.m_y - 0x20
+                    );
                 } else {
-                    SETDIR(5, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y + 0x20);
+                    SETDIR(
+                        s_gruntDirNorthWest,
+                        this->m_lastTilePx.m_x + 0x20,
+                        this->m_lastTilePx.m_y + 0x20
+                    );
                 }
             } else if (slope < g_slopeNegHalf) {
                 if (srcPxX > this->m_object->m_screenX) {
-                    SETDIR(4, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y + 0x20);
+                    SETDIR(
+                        s_gruntDirNorthEast,
+                        this->m_lastTilePx.m_x - 0x20,
+                        this->m_lastTilePx.m_y + 0x20
+                    );
                 } else {
-                    SETDIR(8, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y - 0x20);
+                    SETDIR(
+                        s_gruntDirSouthWest,
+                        this->m_lastTilePx.m_x + 0x20,
+                        this->m_lastTilePx.m_y - 0x20
+                    );
                 }
             } else {
                 goto L_moveDone;
             }
         } else {
             if (srcPxX > this->m_object->m_screenX) {
-                SETDIR(0, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
+                SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
             } else {
-                SETDIR(3, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y);
+                SETDIR(s_gruntDirWest, this->m_lastTilePx.m_x + 0x20, this->m_lastTilePx.m_y);
             }
         }
     }

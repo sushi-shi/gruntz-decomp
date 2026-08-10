@@ -3,20 +3,6 @@
 
 #include <Enums.h>
 
-// Row selectors in g_dirVec, named from the pixel delta paired with each row at
-// every SETDIR call site.
-GZ_ENUM_BEGIN(GruntDirVectorIndex)
-    GRUNT_DIR_VECTOR_WEST = 0,
-    GRUNT_DIR_VECTOR_SOUTH = 1,
-    GRUNT_DIR_VECTOR_NORTH = 2,
-    GRUNT_DIR_VECTOR_EAST = 3,
-    GRUNT_DIR_VECTOR_SOUTHWEST = 4,
-    GRUNT_DIR_VECTOR_SOUTHEAST = 5,
-    GRUNT_DIR_VECTOR_NORTHWEST = 6,
-    GRUNT_DIR_VECTOR_CENTER = 7,
-    GRUNT_DIR_VECTOR_NORTHEAST = 8
-GZ_ENUM_END(GruntDirVectorIndex)
-
 GZ_ENUM_BEGIN(WingzKnockbackChoice)
     WINGZ_KNOCKBACK_NORTHEAST = 0,
     WINGZ_KNOCKBACK_EAST = 1,

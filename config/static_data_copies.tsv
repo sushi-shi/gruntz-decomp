@@ -285,6 +285,15 @@
 0x244578	?s_gruntDirCenter_244578@@3UGruntDirectionCell@@A	secretteleportertrigger	0xc	data
 0x244588	?s_gruntDirSouthWest_244588@@3UGruntDirectionCell@@A	secretteleportertrigger	0xc	data
 0x2445bc	_?$S35@?BA@??NotifyFortUnderAttack@CWarlord@@QAEHXZ@4EA$S	warlord	0x1	data
+0x244970	_s_gruntDirEast$S	gruntcombat	0xc	data
+0x244980	_s_gruntDirNorth$S	gruntcombat	0xc	data
+0x244990	_s_gruntDirSouth$S	gruntcombat	0xc	data
+0x2449a0	_s_gruntDirWest$S	gruntcombat	0xc	data
+0x2449b0	_s_gruntDirNorthEast$S	gruntcombat	0xc	data
+0x2449c0	_s_gruntDirNorthWest$S	gruntcombat	0xc	data
+0x2449d0	_s_gruntDirSouthEast$S	gruntcombat	0xc	data
+0x2449e0	_s_gruntDirCenter$S	gruntcombat	0xc	data
+0x2449f0	_s_gruntDirSouthWest$S	gruntcombat	0xc	data
 0x244c18	?s_gruntDirEast_244c18@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
 0x244c28	?s_gruntDirNorth_244c28@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
 0x244c38	?s_gruntDirSouth_244c38@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
@@ -798,10 +807,11 @@
 # Four banks are deliberately NOT here, each with a reason:
 #   0x2448c8  already claimed - ?g_gruntMoveDir*@@3UGruntDirectionCell@@A (gruntsteps)
 #   0x244aa0  already claimed - ?g_gruntDir*@@3UGruntDirectionCell@@A (gruntcombat)
-#   0x244970  claimed by _g_dirVec, an i32[9][4] in GruntCombat.cpp that models
-#             these nine cells as ONE array. Retail never indexes it: all 45
-#             reads and 27 writes are `direct` absolute addresses, so the
-#             storage is nine separate cells. Blocked on retyping g_dirVec.
+#   (0x244970 was the fourth: it is now the gruntcombat block below. It had
+#   been claimed by _g_dirVec, an i32[9][4] that modelled these nine cells as
+#   ONE array; retail never indexes it - all 45 reads and 27 writes are direct
+#   absolute addresses - and the array had NO initializer, so every knockback
+#   cell read {0,0,DIR_CENTER} at runtime.)
 #   0x249818  its NE..SW half (0x24a458) falls inside ?g_netCmdSendMsg's
 #             declared 0x850 extent. g_netCmdSendMsg is at 0x24a058 and retail
 #             constructs direction cells at +0x400, so 0x850 over-claims;

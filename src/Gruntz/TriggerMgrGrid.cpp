@@ -1234,7 +1234,6 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     i32 bx;
     i32 by;
     CGrunt* hit;
-    PickupType kind;
     i32 moveKind;
     CString* typeRec;
     CString* slot;
@@ -1325,8 +1324,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
         return 0;
     }
 
-    kind = cell->m_vehiclePickupType;
-    moveKind = kind == PICKUP_SCROLL ? cell->m_moveKind : 0;
+    moveKind = 0;
+    if (cell->m_vehiclePickupType == PICKUP_SCROLL) {
+        moveKind = cell->m_moveKind;
+    }
     cell->PlayMoveSound(bx, by);
     cell->m_neighborValid = 0;
     if (cell->m_poweredUp != 0) {
@@ -1358,7 +1359,7 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
             WWDDRAW_NO_ANIMATION
         );
     }
-    if (hit->LoadGruntTypeTable(kind, 1, moveKind, 0) != 0) {
+    if (hit->LoadGruntTypeTable(cell->m_vehiclePickupType, 1, moveKind, 0) != 0) {
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
         if (hit->m_tileOwnerHi != col) {

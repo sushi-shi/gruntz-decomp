@@ -4,7 +4,6 @@
 #include <Gruntz/ActReg.h>
 #include <Ints.h>
 
-extern "C" i32 g_dirVec[9][4];
 extern "C" const u8 g_hitTable[23][23];
 extern "C" const float g_quarterScale;
 extern "C" const float g_slopeTwo;

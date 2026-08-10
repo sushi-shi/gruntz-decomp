@@ -4522,7 +4522,15 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00244934	0x00244938	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244938
 0x00244944	0x00244948	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244948
 0x00244954	0x00244970	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00244a00	0x00244aa0	160	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024497c	0x00244980	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244980
+0x0024498c	0x00244990	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244990
+0x0024499c	0x002449a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449a0
+0x002449ac	0x002449b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449b0
+0x002449bc	0x002449c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449c0
+0x002449cc	0x002449d0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449d0
+0x002449dc	0x002449e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449e0
+0x002449ec	0x002449f0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449f0
+0x002449fc	0x00244aa0	164	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00244aac	0x00244ab0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ab0
 0x00244abc	0x00244ac0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ac0
 0x00244acc	0x00244ad0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ad0
