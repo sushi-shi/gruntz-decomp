@@ -36,8 +36,6 @@
 #include <new>
 #include <stdlib.h>
 
-DATA(0x0020d28c)
-static const char s_GRUNTZ_[] = "GRUNTZ_";
 DATA(0x0020d218)
 static char s__PANIC[] = "_PANIC";
 DATA(0x0020d220)
@@ -66,17 +64,7 @@ DATA(0x0020d36c)
 static char s__IDLE[] = "_IDLE";
 DATA(0x0020d374)
 static char s__BATTLECRY[] = "_BATTLECRY";
-DATA(0x0020d2c0)
-static const char s_WARLORDZ_NAPOLEAN[] = "WARLORDZ_NAPOLEAN";
-DATA(0x0020d2ac)
-static const char s_WARLORDZ_PATTON[] = "WARLORDZ_PATTON";
-DATA(0x0020d298)
-static const char s_WARLORDZ_VIKING[] = "WARLORDZ_VIKING";
-DATA(0x0020d1bc)
-static const char s_keyB[] = "B";
 static const char s_keyC[] = "C";
-DATA(0x0020d2ec)
-static const char s_keyE[] = "E";
 static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
@@ -126,7 +114,7 @@ typedef enum WarlordBattleTag {
     {                                                                                              \
         void* h = 0;                                                                               \
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(                              \
-            s_GRUNTZ_ + m_warlordName + (suffix),                                                  \
+            "GRUNTZ_" + m_warlordName + (suffix),                                                  \
             h                                                                                      \
         );                                                                                         \
         /* Lookup exposes void*& at this API boundary; */                                          \
@@ -175,15 +163,15 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
             m_ownerTag = WARLORD_TAG_KING;
             break;
         case WARLORDZ_NAPOLEAN:
-            m_warlordName = s_WARLORDZ_NAPOLEAN;
+            m_warlordName = "WARLORDZ_NAPOLEAN";
             m_ownerTag = WARLORD_TAG_NAPOLEAN;
             break;
         case WARLORDZ_PATTON:
-            m_warlordName = s_WARLORDZ_PATTON;
+            m_warlordName = "WARLORDZ_PATTON";
             m_ownerTag = WARLORD_TAG_PATTON;
             break;
         case WARLORDZ_VIKING:
-            m_warlordName = s_WARLORDZ_VIKING;
+            m_warlordName = "WARLORDZ_VIKING";
             m_ownerTag = WARLORD_TAG_VIKING;
             break;
         default:
@@ -692,13 +680,13 @@ i32 CWarlord::ResolveMovingAnimation() {
         return 0;
     }
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__MOVING);
+    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__MOVING);
 
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_keyB);
+    m_objAux->m_actKey = ActFindId("B");
 
     m_cooldownWindow = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownStamp = static_cast<u32>(g_frameTime);
@@ -740,7 +728,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_animPanic);
 
-            m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__PANIC);
+            m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
 
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeD);
@@ -773,7 +761,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_animDeath);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__DEATH);
+    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__DEATH);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_keyC);
@@ -802,10 +790,10 @@ i32 CWarlord::RaiseBattleAlert() {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(anim);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__JOY);
+    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_keyE);
+    m_objAux->m_actKey = ActFindId("E");
     return 1;
 }
 
@@ -840,7 +828,7 @@ i32 CWarlord::ResolveIdleAnimation() {
         desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
     i32 frame = elem->m_param;
 
-    m_wwdObject->ApplyLookupSprite(s_GRUNTZ_ + m_warlordName + s__IDLE, frame);
+    m_wwdObject->ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_keyA);
@@ -872,7 +860,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(anim);
 
-    m_wwdObject->ApplyName(s_GRUNTZ_ + m_warlordName + s__BATTLECRY);
+    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId(s_keyF);

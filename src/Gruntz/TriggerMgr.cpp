@@ -62,12 +62,6 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
-DATA(0x0020a5dc)
-static const char s_LightFx[] = "LightFx";
-DATA(0x0020dd20)
-static const char s_GAME_FLASH[] = "GAME_FLASH";
-DATA(0x0020dd08)
-static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
 static char s_Grunt[] = "Grunt";
 static char s_CombatTimeout[] = "CombatTimeout";
 
@@ -1786,13 +1780,13 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                                     gx,
                                     gy,
                                     SORTKEY_OVERLAY,
-                                    s_LightFx,
+                                    "LightFx",
                                     0x40003
                                 );
                                 done = 1;
                                 spr->m_animWorker->m_notify(spr);
                                 (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
-                                    ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 3, 1);
+                                    ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
                             }
                         } while (done == 0);
                         break;
@@ -1811,10 +1805,10 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         g->m_combatClockHi = 0;
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, s_LightFx, 0x40003);
+                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
                         spr->m_animWorker->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
-                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
+                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
                         break;
                     }
                     case CUE_GIVE_TOY: {
@@ -1829,10 +1823,10 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         g->LoadGruntTypeTable(toy, 1, 0, 0);
                         CGameObject* spr =
                             g_gameReg->m_world->m_childGroup
-                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, s_LightFx, 0x40003);
+                                ->CreateSprite(0, gx, gy, SORTKEY_OVERLAY, "LightFx", 0x40003);
                         spr->m_animWorker->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
-                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
+                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
                         break;
                     }
                     case CUE_FREEZE: {
@@ -1846,12 +1840,12 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                             h->m_screenX,
                             h->m_screenY,
                             SORTKEY_OVERLAY,
-                            s_LightFx,
+                            "LightFx",
                             0x40003
                         );
                         spr->m_animWorker->m_notify(spr);
                         (static_cast<CLightFx*>(spr->m_animWorker->m_logic))
-                            ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
+                            ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
                         break;
                     }
                 }

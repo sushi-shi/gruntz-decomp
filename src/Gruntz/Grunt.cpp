@@ -109,24 +109,6 @@ const double s_fpZero = 0.0;
 // one register per value that the retail schedule shows.
 
 // @early-stop
-
-DATA(0x0020a930)
-static const char s_GruntHealthSprite[] = "GruntHealthSprite";
-DATA(0x0020a904)
-static const char s_GruntToySprite[] = "GruntToySprite";
-DATA(0x0020a918)
-static const char s_GruntStaminaSprite[] = "GruntStaminaSprite";
-DATA(0x0020a8ec)
-static const char s_GruntToyTimeSprite[] = "GruntToyTimeSprite";
-DATA(0x0020a8d0)
-static const char s_GruntWingzTimeSprite[] = "GruntWingzTimeSprite";
-DATA(0x0020a8b8)
-static const char s_GruntPowerupSprite[] = "GruntPowerupSprite";
-DATA(0x0020a948)
-static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
-
-static const char s_GRUNTZ_[] = "GRUNTZ_";
-
 DATA(0x0020cc98)
 static char s_codeL[] = "L";
 
@@ -277,8 +259,6 @@ static char s_codeA[] = "A";
 DATA(0x002455b0)
 i32 g_traitorMode;
 
-DATA(0x0020bb64)
-static const char s_pose_WALK[] = "_WALK";
 static const char s_pose_IDLE1[] = "_IDLE1";
 static const char s_pose_IDLE2[] = "_IDLE2";
 static const char s_pose_IDLE3[] = "_IDLE3";
@@ -308,9 +288,6 @@ CGruntCellRec::CGruntCellRec() {}
 
 RVA(0x0000f430, 0x10)
 CGruntCellRec::~CGruntCellRec() {}
-
-DATA(0x0020d404)
-static const char s_NORMALGRUNT[] = "NORMALGRUNT";
 
 // @early-stop
 // Residual is register assignment: retail parks `owner` in ebp and CSEs the constant 7
@@ -412,7 +389,7 @@ CGrunt::CGrunt(void* owner)
     m_brickPickupType = PICKUP_NONE;
     m_gruntKind = GRUNT_NORMAL;
     m_toolId = PICKUP_NONE;
-    m_animSetName = s_NORMALGRUNT;
+    m_animSetName = "NORMALGRUNT";
     m_neighborCell.m_y = -1;
     m_entranceCommitted = 1;
     m_healthSprite = NULL;
@@ -566,65 +543,65 @@ static const char s_d48_DEATH[] = "_DEATH";
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        m_cells[0].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_WALK;
-        m_cells[1].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[2].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_WALK;
-        m_cells[3].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_WALK;
-        m_cells[4].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[5].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_WALK;
-        m_cells[6].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_WALK;
-        m_cells[7].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_WALK;
-        m_cells[8].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_WALK;
-        m_cells[0].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_STRUCK;
-        m_cells[1].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[2].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_STRUCK;
-        m_cells[3].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_STRUCK;
-        m_cells[4].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[5].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_STRUCK;
-        m_cells[6].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_STRUCK;
-        m_cells[7].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_STRUCK;
-        m_cells[8].StruckName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_STRUCK;
-        m_cells[0].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ATTACK;
-        m_cells[1].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[2].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ATTACK;
-        m_cells[3].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ATTACK;
-        m_cells[4].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[5].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ATTACK;
-        m_cells[6].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ATTACK;
-        m_cells[7].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ATTACK;
-        m_cells[8].AttackName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ATTACK;
-        m_cells[0].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_IDLE;
-        m_cells[1].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[2].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_IDLE;
-        m_cells[3].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_IDLE;
-        m_cells[4].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[5].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_IDLE;
-        m_cells[6].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_IDLE;
-        m_cells[7].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_IDLE;
-        m_cells[8].IdleName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_IDLE;
-        m_cells[0].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST_ITEM;
-        m_cells[1].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[2].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST_ITEM;
-        m_cells[3].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST_ITEM;
-        m_cells[4].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[5].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST_ITEM;
-        m_cells[6].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST_ITEM;
-        m_cells[7].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH_ITEM;
-        m_cells[8].ItemName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST_ITEM;
-        m_deathFrameSetName = s_GRUNTZ_ + m_animSetName + s_d48_DEATH;
+        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_WALK;
+        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_WALK;
+        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_WALK;
+        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_WALK;
+        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_WALK;
+        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_WALK;
+        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_WALK;
+        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_WALK;
+        m_cells[0].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_STRUCK;
+        m_cells[1].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[2].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_STRUCK;
+        m_cells[3].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_STRUCK;
+        m_cells[4].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_STRUCK;
+        m_cells[5].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_STRUCK;
+        m_cells[6].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_STRUCK;
+        m_cells[7].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_STRUCK;
+        m_cells[8].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_STRUCK;
+        m_cells[0].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_ATTACK;
+        m_cells[1].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[2].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_ATTACK;
+        m_cells[3].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_ATTACK;
+        m_cells[4].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ATTACK;
+        m_cells[5].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_ATTACK;
+        m_cells[6].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_ATTACK;
+        m_cells[7].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_ATTACK;
+        m_cells[8].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_ATTACK;
+        m_cells[0].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_IDLE;
+        m_cells[1].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[2].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_IDLE;
+        m_cells[3].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_IDLE;
+        m_cells[4].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_IDLE;
+        m_cells[5].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_IDLE;
+        m_cells[6].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_IDLE;
+        m_cells[7].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_IDLE;
+        m_cells[8].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_IDLE;
+        m_cells[0].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_ITEM;
+        m_cells[1].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[2].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_ITEM;
+        m_cells[3].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_ITEM;
+        m_cells[4].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ITEM;
+        m_cells[5].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_ITEM;
+        m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_ITEM;
+        m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_ITEM;
+        m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_ITEM;
+        m_deathFrameSetName = "GRUNTZ_" + m_animSetName + s_d48_DEATH;
     } else if (dirOnly != 0) {
-        m_cells[0].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHWEST;
-        m_cells[1].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        m_cells[2].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTHEAST;
-        m_cells[3].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_WEST;
-        m_cells[4].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_NORTH;
-        m_cells[5].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_EAST;
-        m_cells[6].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHWEST;
-        m_cells[7].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTH;
-        m_cells[8].WalkName() = s_GRUNTZ_ + m_animSetName + s_d48_SOUTHEAST;
-        m_frameSetName = s_GRUNTZ_ + m_animSetName + s_d48_BREAK;
+        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST;
+        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH;
+        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST;
+        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_WEST;
+        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH;
+        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_EAST;
+        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST;
+        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH;
+        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST;
+        m_frameSetName = "GRUNTZ_" + m_animSetName + s_d48_BREAK;
     } else {
-        m_frameSetName = s_GRUNTZ_ + m_animSetName;
+        m_frameSetName = "GRUNTZ_" + m_animSetName;
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), kind);
     CWwdGameObjectA* h = m_object;
@@ -638,7 +615,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
 RVA(0x00049c60, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
-        LOAD_POSE(m_poseWalk, s_pose_WALK);
+        LOAD_POSE(m_poseWalk, "_WALK");
         LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK1), s_pose_ATTACK1);
         LOAD_POSE(AT(m_poseAttack, GRUNT_ATTACK2), s_pose_ATTACK2);
         LOAD_POSE(m_poseAttackIdle, s_pose_ATTACKIDLE);
@@ -656,7 +633,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     }
 
     if (toyOnly != 0) {
-        LOAD_POSE(m_poseWalk, s_pose_WALK);
+        LOAD_POSE(m_poseWalk, "_WALK");
     } else {
         LOAD_POSE(AT(m_poseToy, GRUNT_TOY1), s_pose_TOY1);
 
@@ -1863,7 +1840,7 @@ i32 CGrunt::CreateHealthSprite() {
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
         SORTKEY_GRUNT_HUD,
-        s_GruntHealthSprite,
+        "GruntHealthSprite",
         0x40003
     );
     m_healthSprite->m_animWorker->m_notify(m_healthSprite);
@@ -1893,7 +1870,7 @@ i32 CGrunt::CreateToySprite() {
         m_object->m_screenX,
         m_object->m_screenY - 0x19,
         SORTKEY_GRUNT_HUD,
-        s_GruntToySprite,
+        "GruntToySprite",
         0x40003
     );
     m_toySprite->m_animWorker->m_notify(m_toySprite);
@@ -1920,7 +1897,7 @@ i32 CGrunt::CreateStaminaSprite() {
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
         SORTKEY_GRUNT_HUD,
-        s_GruntStaminaSprite,
+        "GruntStaminaSprite",
         0x40003
     );
     m_staminaSprite->m_animWorker->m_notify(m_staminaSprite);
@@ -1956,7 +1933,7 @@ i32 CGrunt::CreateToyTimeSprite() {
         m_object->m_screenX,
         m_object->m_screenY - 0x20,
         SORTKEY_GRUNT_HUD,
-        s_GruntToyTimeSprite,
+        "GruntToyTimeSprite",
         0x40003
     );
     m_toyTimeSprite->m_animWorker->m_notify(m_toyTimeSprite);
@@ -1988,7 +1965,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         m_object->m_screenX,
         m_object->m_screenY - 0x26,
         SORTKEY_GRUNT_HUD,
-        s_GruntWingzTimeSprite,
+        "GruntWingzTimeSprite",
         0x40003
     );
     m_wingzTimeSprite->m_animWorker->m_notify(m_wingzTimeSprite);
@@ -2016,7 +1993,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
         m_object->m_screenX,
         m_object->m_screenY,
         0x15,
-        s_GruntPowerupSprite,
+        "GruntPowerupSprite",
         0x40003
     );
     m_powerupSprite->m_animWorker->m_notify(m_powerupSprite);
@@ -2045,7 +2022,7 @@ i32 CGrunt::CreateSelectedSprite() {
         m_object->m_screenX,
         m_object->m_screenY,
         0x14,
-        s_GruntSelectedSprite,
+        "GruntSelectedSprite",
         0x40003
     );
     m_selectedSprite->m_animWorker->m_notify(m_selectedSprite);
@@ -2278,7 +2255,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     }
     switch (kind) {
         case PICKUP_NONE: {
-            m_animSetName = s_NORMALGRUNT;
+            m_animSetName = "NORMALGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
@@ -3240,7 +3217,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_reachRect = MakeRect(-1, -1, 1, 1);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             fresh = 0;
-            m_animSetName = s_NORMALGRUNT;
+            m_animSetName = "NORMALGRUNT";
             break;
         }
     }

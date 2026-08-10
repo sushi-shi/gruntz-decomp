@@ -73,14 +73,6 @@ static char s_CombatTimeout[] = "CombatTimeout";
 
 DATA(0x0020dbf8)
 static char s_ToyTiles[] = "ToyTiles";
-DATA(0x0020da6c)
-static const char s_BABYWALKERGRUNT[] = "BABYWALKERGRUNT";
-DATA(0x0020da48)
-static const char s_BIGWHEELGRUNT[] = "BIGWHEELGRUNT";
-DATA(0x0020da38)
-static const char s_GOKARTGRUNT[] = "GOKARTGRUNT";
-DATA(0x0020d9fc)
-static const char s_POGOSTICKGRUNT[] = "POGOSTICKGRUNT";
 
 static inline i32 TileFlags(const char* rec) {
 
@@ -632,16 +624,16 @@ i32 CGrunt::StepCompassMove() {
         // The bias is LOAD-BEARING: switching on the domain directly and using
         switch (m_entranceReason) {
             case PICKUP_BABYWALKER:
-                str = s_BABYWALKERGRUNT;
+                str = "BABYWALKERGRUNT";
                 break;
             case PICKUP_BIGWHEEL:
-                str = s_BIGWHEELGRUNT;
+                str = "BIGWHEELGRUNT";
                 break;
             case PICKUP_GOKART:
-                str = s_GOKARTGRUNT;
+                str = "GOKARTGRUNT";
                 break;
             case PICKUP_POGOSTICK:
-                str = s_POGOSTICKGRUNT;
+                str = "POGOSTICKGRUNT";
                 break;
             default:
                 break;

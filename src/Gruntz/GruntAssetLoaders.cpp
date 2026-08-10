@@ -57,8 +57,6 @@ DATA(0x0020e140)
 static char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
 DATA(0x0020e158)
 static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
-DATA(0x0020bd28)
-static const char s_dEXITZ[] = "GRUNTZ_EXITZ";
 static const char s_dExitKeyB[] = "B";
 DATA(0x0020bcf4)
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
@@ -364,7 +362,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_poseDeath = static_cast<CAniElement*>(out_ob);
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->m_animCursor.Setup(m_poseDeath);
-            m_wwdObject->ApplyLookupSprite(s_dEXITZ, DEATH_FRAME());
+            m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_dExitKeyB);
             goto tail;
