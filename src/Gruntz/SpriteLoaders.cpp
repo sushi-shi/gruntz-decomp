@@ -47,7 +47,7 @@ CTimer* CTimer::Init() {
 }
 
 RVA(0x0009bb00, 0x119)
-i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
+i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
     CObject* spr_ob = 0;
     g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_TIMER", spr_ob);
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
@@ -87,8 +87,8 @@ i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
         return 0;
     }
 
-    m_baseX = a;
-    m_baseY = b;
+    m_baseX = originX;
+    m_baseY = originY;
     m_active = 1;
     m_running = 0;
     return 1;

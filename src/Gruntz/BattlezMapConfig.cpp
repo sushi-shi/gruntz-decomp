@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/BattlezIntervalMs.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/BattlezTask.h>
 #include <Gruntz/BrickTileId.h>
@@ -86,7 +87,7 @@ static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
 // @early-stop
 RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
-    : m_scratch78(0), m_scratch7c(0), m_scratch80(0), m_scratch84(0) {
+    : m_routeClockLo(0), m_routeClockHi(0), m_routeWindowLo(0), m_routeWindowHi(0) {
     m_ownerId = 0;
     m_reserved01c = 1;
     m_reserved020 = 0x40;
@@ -296,10 +297,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 id, i32 diff) {
     m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
     m_wingzPct = m_welderzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
-    m_scratch78 = 0;
-    m_scratch80 = 0;
-    m_scratch7c = 0;
-    m_scratch84 = 0;
+    m_routeClockLo = 0;
+    m_routeWindowLo = 0;
+    m_routeClockHi = 0;
+    m_routeWindowHi = 0;
     return 1;
 }
 
@@ -4156,11 +4157,17 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
             }
-            m_routeClock.m_v = 0;
-            m_scratch80 = 0x1388;
-            m_scratch84 = 0;
-            m_scratch78 = g_frameTime;
-            m_scratch7c = 0;
+            // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
+            // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
+            // clock) - and we emitted only six.  The zero pass has to go through the
+            // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
+            // dead against the 0x1388 that follows and drops it, and the re-arm has
+            // to stay two i32 halves for the same reason.
+            m_routeTimers[0].m_v = 0;
+            m_routeTimers[1].m_v = 0;
+            m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
+            m_routeWindowHi = 0;
+            m_routeClock.m_v = g_frameTime;
         }
     }
 

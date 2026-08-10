@@ -1,0 +1,16 @@
+#ifndef GRUNTZ_GRUNTZ_PLAYINTERVALMS_H
+#define GRUNTZ_GRUNTZ_PLAYINTERVALMS_H
+
+#include <Enums.h>
+
+// Millisecond periods the play loop arms against g_frameTime.
+GZ_ENUM_CONST_BEGIN(PlayIntervalMs)
+    CUE_INTERVAL_MS = 0x1f4,
+    BOOTY_INTERVAL_MS = 0x2710,
+    REGION_INTERVAL_MS = 0x7530,
+    FIXED_SUBSTEP_MS = 0x12,
+    AMBIENT_INTRO_INTERVAL_MS = 0x1f40,
+    MS_PER_SECOND = 0x3e8
+GZ_ENUM_CONST_END(PlayIntervalMs)
+
+#endif // GRUNTZ_GRUNTZ_PLAYINTERVALMS_H

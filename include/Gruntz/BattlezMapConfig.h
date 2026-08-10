@@ -132,10 +132,10 @@ public:
             Clock64 m_routeWindow;
         };
         struct {
-            i32 m_scratch78;
-            i32 m_scratch7c;
-            i32 m_scratch80;
-            i32 m_scratch84;
+            i32 m_routeClockLo;
+            i32 m_routeClockHi;
+            i32 m_routeWindowLo;
+            i32 m_routeWindowHi;
         };
     };
     i32 m_reserved088;

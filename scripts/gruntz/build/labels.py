@@ -238,6 +238,38 @@ def func_labels_from_ir(ir):
     return [(d["rva"], sym, d.get("size")) for sym, d in rows.items()]
 
 
+def loc_file(loc):
+    """The file clang's JSON printer last NAMED for this location, or None.
+
+    clang omits `file` whenever it equals the previously PRINTED one, so the
+    reader has to track it exactly the way the printer does. A location inside a
+    MACRO EXPANSION has no top-level `file` at all - it carries `spellingLoc`
+    (where the macro is written, a header) and `expansionLoc` (where it was USED,
+    the .cpp) - and the printer emits the expansion last, so the expansion file is
+    what every following node's omitted `file` refers to.
+
+    Reading only the top-level key was silent data loss: put ANY macro-expanded
+    declaration above a TU's globals - e.g. a `GZ_ENUM_CONST_BEGIN(...)` bag,
+    which expands to a bare `enum {` - and the main-file transition arrives inside
+    an `expansionLoc`, the in-main flag never flips, and the whole TU's DATA()
+    globals and function parameter names vanish. Measured on
+    src/Gruntz/BattlezMapConfig.cpp: 6 globals and 61 param names dropped, the
+    six `?g_*@@3..` rows fell out of symbol_names.csv and the delink data
+    manifest, and the only symptom was six `MISS ... no VarDecl below DATA()`
+    lines that do not fail a build.
+    """
+    if not isinstance(loc, dict):
+        return None
+    for key in ("file", "expansionLoc", "spellingLoc"):
+        v = loc.get(key)
+        if key == "file":
+            if v is not None:
+                return v
+        elif isinstance(v, dict) and v.get("file") is not None:
+            return v["file"]
+    return None
+
+
 # --- DATA via AST (extern annotations are dropped from IR) ------------------
 def collect_vars(ast, main_file):
     """[(mangledName, offset, qualType)] for global VARIABLE decls in main_file.
@@ -256,8 +288,9 @@ def collect_vars(ast, main_file):
 
     def update_file(node):
         for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
-            if isinstance(loc, dict) and loc.get("file") is not None:
-                state["in_main"] = os.path.realpath(loc["file"]) == main_real
+            f = loc_file(loc)
+            if f is not None:
+                state["in_main"] = os.path.realpath(f) == main_real
 
     def visit(node):
         if isinstance(node, dict):
@@ -772,8 +805,9 @@ def param_names_from_ast(ast, main_file):
 
     def update_file(node):
         for loc in (node.get("loc"), (node.get("range") or {}).get("begin")):
-            if isinstance(loc, dict) and loc.get("file") is not None:
-                state["in_main"] = os.path.realpath(loc["file"]) == main_real
+            f = loc_file(loc)
+            if f is not None:
+                state["in_main"] = os.path.realpath(f) == main_real
 
     def visit(node):
         if not isinstance(node, dict):

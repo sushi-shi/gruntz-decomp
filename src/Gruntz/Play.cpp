@@ -64,6 +64,8 @@
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
+#include <Gruntz/PlayHudLayoutPx.h>
+#include <Gruntz/PlayIntervalMs.h>
 #include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
@@ -112,15 +114,6 @@
 #include <string.h>
 
 class CImage;
-
-GZ_ENUM_CONST_BEGIN(PlayIntervalMs)
-    CUE_INTERVAL_MS = 0x1f4,
-    BOOTY_INTERVAL_MS = 0x2710,
-    REGION_INTERVAL_MS = 0x7530,
-    FIXED_SUBSTEP_MS = 0x12,
-    AMBIENT_INTRO_INTERVAL_MS = 0x1f40,
-    MS_PER_SECOND = 0x3e8
-GZ_ENUM_CONST_END(PlayIntervalMs)
 
 GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_POINTER = 0,
@@ -1542,8 +1535,15 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (savedThis == NULL) {
 
                 CStatusBarMgr* tiles = self->m_guts;
-                i32 id = (tiles->m_position == STATUSBAR_DOCK_RIGHT) ? 0x1a9 : 0x249;
-                if (!self->m_frameMarker->LoadTimerSprite(id, 0x1ca)) {
+                // Retail branches here (`mov eax,0x1a9 / cmp [ecx],ebx / je / mov
+                // eax,0x249` at 0xcacfd); we take cl's branchless select
+                // (`neg / sbb / and 0xa0 / add 0x1a9`), and an if/else spelling does
+                // not steer it back.  The 0xa0 in that select IS the status-bar width
+                // the two origins differ by, which is what named them.
+                i32 originX = (tiles->m_position == STATUSBAR_DOCK_RIGHT)
+                                  ? TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX
+                                  : TIMER_ORIGIN_X_PX;
+                if (!self->m_frameMarker->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
                     CTimer* spr = self->m_frameMarker;
                     if (spr != NULL) {
                         spr->Reset();
@@ -5670,9 +5670,9 @@ i32 CPlay::ResetViewport() {
     i32 bottom = mode.cy;
     RECT r;
     if (state == STATUSBAR_DOCK_LEFT) {
-        SetRect(&r, 0xa0, 0, right - 1, bottom - 1);
+        SetRect(&r, STATUSBAR_WIDTH_PX, 0, right - 1, bottom - 1);
     } else if (state == STATUSBAR_DOCK_RIGHT) {
-        SetRect(&r, 0, 0, right - 0xa1, bottom - 1);
+        SetRect(&r, 0, 0, right - (STATUSBAR_WIDTH_PX + 1), bottom - 1);
     } else {
         SetRect(&r, 0, 0, right - 1, bottom - 1);
     }
@@ -5749,7 +5749,8 @@ i32 CPlay::ClampViewport2(i32 stride) {
     limit.cx = w->m_modeSize.cx;
     limit.cy = w->m_modeSize.cy;
 
-    if (r.right - r.left < (guts->m_position == STATUSBAR_HIDDEN ? limit.cx : limit.cx - 0xa0)) {
+    if (r.right - r.left
+        < (guts->m_position == STATUSBAR_HIDDEN ? limit.cx : limit.cx - STATUSBAR_WIDTH_PX)) {
         r.left -= stride;
         r.right += stride;
         if (r.left < 0) {
