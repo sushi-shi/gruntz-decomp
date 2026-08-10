@@ -42,6 +42,22 @@ enum Cmd {
         /// Destination file.
         out: PathBuf,
     },
+    /// Write EVERY resource to a directory tree mirroring the archive.
+    ///
+    /// `AREA2\IMAGEZ\TREE2\FRAME001` of type PID becomes
+    /// `<out>/AREA2/IMAGEZ/TREE2/FRAME001.PID`. The 4CC is appended as the
+    /// extension because the archive stores type and name separately, and two
+    /// resources in one directory may share a name across types.
+    Unpack {
+        /// Destination directory. Created if missing.
+        out: PathBuf,
+        /// Only unpack this 4CC (e.g. `PCX`, `WAV`, `WWD`). Repeatable.
+        #[arg(long = "type", value_name = "4CC")]
+        types: Vec<String>,
+        /// List what would be written without writing anything.
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
 fn main() -> ExitCode {
@@ -117,6 +133,61 @@ fn main() -> ExitCode {
                     return ExitCode::FAILURE;
                 }
             }
+        }
+        Cmd::Unpack {
+            out,
+            types,
+            dry_run,
+        } => {
+            let want: Vec<String> = types.iter().map(|t| t.to_ascii_uppercase()).collect();
+            let mut written = 0usize;
+            let mut bytes_out = 0u64;
+            let mut skipped = 0usize;
+            for r in rez.resources().flatten() {
+                let kind = r.kind.to_string();
+                if !want.is_empty() && !want.contains(&kind) {
+                    skipped += 1;
+                    continue;
+                }
+                // The archive separates the name from the 4CC, and two
+                // resources in one directory can share a name across types, so
+                // the type becomes the extension rather than being dropped.
+                let mut dst = out.clone();
+                for d in r.dirs.as_slice() {
+                    dst.push(d);
+                }
+                let leaf = if kind.is_empty() {
+                    r.name.to_string()
+                } else {
+                    format!("{}.{kind}", r.name)
+                };
+                dst.push(leaf);
+                if dry_run {
+                    println!("{:>9}  {}", r.size, dst.display());
+                } else {
+                    if let Some(parent) = dst.parent() {
+                        if let Err(e) = std::fs::create_dir_all(parent) {
+                            eprintln!("rezls: {}: {e}", parent.display());
+                            return ExitCode::FAILURE;
+                        }
+                    }
+                    if let Err(e) = std::fs::write(&dst, r.data(rez.bytes())) {
+                        eprintln!("rezls: {}: {e}", dst.display());
+                        return ExitCode::FAILURE;
+                    }
+                }
+                written += 1;
+                bytes_out += u64::from(r.size);
+            }
+            eprintln!(
+                "[rezls] {} {written} resource(s), {bytes_out} bytes{}",
+                if dry_run { "would write" } else { "wrote" },
+                if skipped > 0 {
+                    format!(" ({skipped} skipped by --type)")
+                } else {
+                    String::new()
+                }
+            );
         }
     }
     ExitCode::SUCCESS
