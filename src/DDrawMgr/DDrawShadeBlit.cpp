@@ -1518,16 +1518,14 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            u8* sc = g_scratch;
-            u8* sw = dst;
+            i32 sc = g_scratch - dst;
             while (count-- > 0) {
-                u32 idx = pal2[Load16(sc)];
+                u32 idx = pal2[Load16(dst + sc)];
+                dst += 2;
                 u32 hi = *src++;
                 hi >>= 4;
                 idx += hi << 12;
-                Store16(sw, pal1[idx]);
-                sc += 2;
-                sw += 2;
+                Store16(dst - 2, pal1[idx]);
             }
             break;
         }
