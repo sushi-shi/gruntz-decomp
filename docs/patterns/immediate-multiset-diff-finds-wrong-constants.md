@@ -1,4 +1,26 @@
-# A wrong literal CONSTANT is invisible to every other sieve — diff the immediates
+# A wrong literal CONSTANT costs ~one instruction — too little to find by score, so diff the immediates
+
+> **Measured correction (2026-08-10).** An earlier draft of this file, and the
+> commit that landed the `WWD_OBJECT_TYPE_GRUNT` fix, claimed a wrong literal is
+> "invisible to every score" because objdiff "masks large immediates". **That is
+> wrong, and it was checked rather than argued.** objdiff masks *relocated*
+> operands, whose displacement is a placeholder; a bare immediate carries no
+> relocation and IS compared. Controlled A/B on `??0CGrunt@@QAE@PAX@Z` with
+> `WWD_OBJECT_TYPE_GRUNT` at the wrong `0x100000` and the right `0x1000`, same
+> objects, same build:
+>
+> | constant | fuzzy |
+> |---|--:|
+> | `0x100000` (wrong) | 90.3911% |
+> | `0x1000` (correct) | 90.3936% |
+>
+> So the true statement is **arithmetic, not structural**: one wrong immediate is
+> charged as one instruction's arg mismatch — here **0.0025 pp** in a 90% function,
+> and it would be under 0.1 pp in even a tiny one. It is far below the noise floor
+> of ordinary work, no gate thresholds on it, and it is indistinguishable from
+> regalloc churn. The score cannot *find* it; that is why the census exists. The
+> practical conclusion is unchanged, but state it correctly: **negligible, not
+> invisible.**
 
 **Tags:** cpp:global cpp:switch | asm:cmp asm:and asm:imul | topic:tooling topic:correctness topic:mis-model
 
@@ -20,7 +42,7 @@ covers *non-relocated literals*:
 
 | sieve | sees |
 |---|---|
-| `gruntz sema disasm --diff` | instructions — but it **MASKS large immediates** as `<addr>`, so a `/9`-vs-`/30` divisor shows only as a downstream `sar` |
+| `gruntz sema disasm --diff` | instructions — it **displays** large immediates as `<addr>`, so a `/9`-vs-`/30` divisor is hard to READ off the diff even though objdiff scores it |
 | `--branches --diff` | conditional-branch mnemonics and targets |
 | `gruntz.audit.store_offsets` | *where* we store, never *what* |
 | [reloc-addend](reloc-addend-is-masked-diff-the-addends.md) | only operands that carry a relocation (`g_tbl + K`) |
