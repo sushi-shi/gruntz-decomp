@@ -610,6 +610,10 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
         "$schema": "https://raw.githubusercontent.com/encounter/objdiff/main/config.schema.json",
         "build_base": False,
         "build_target": False,
+        # DATA-level reloc scoring: a DIR32 into defined data must also match the
+        # pointed-to VALUE, so a wrong referent (right bytes, wrong datum) scores
+        # as a diff instead of being masked. Names still never score.
+        "options": {"functionRelocDiffs": "data_value"},
         "watch_patterns": ["*.obj"],
         "units": units,
     }
