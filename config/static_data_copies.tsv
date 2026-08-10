@@ -125,6 +125,8 @@
 0x229e68	?s_gruntDirSouthEast_229e68@@3UGruntDirectionCell@@A	customleveldlg	0xc	data
 0x229e78	?s_gruntDirCenter_229e78@@3UGruntDirectionCell@@A	customleveldlg	0xc	data
 0x229e88	?s_gruntDirSouthWest_229e88@@3UGruntDirectionCell@@A	customleveldlg	0xc	data
+0x229e94	_?$S155@?4??DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z@4EA$S	customleveldlg	0x1	data
+0x229f18	_?$S116@?BD@??BuildBootyWalkingGruntz@CBootyState@@QAEHXZ@4EA$S	bootywalkanim	0x1	data
 0x22b2e0	?s_gruntDirEast_22b2e0@@3UGruntDirectionCell@@A	chatboxowner	0xc	data
 0x22b2f0	?s_gruntDirNorth_22b2f0@@3UGruntDirectionCell@@A	chatboxowner	0xc	data
 0x22b300	?s_gruntDirSouth_22b300@@3UGruntDirectionCell@@A	chatboxowner	0xc	data
@@ -282,6 +284,7 @@
 0x244568	?s_gruntDirSouthEast_244568@@3UGruntDirectionCell@@A	secretteleportertrigger	0xc	data
 0x244578	?s_gruntDirCenter_244578@@3UGruntDirectionCell@@A	secretteleportertrigger	0xc	data
 0x244588	?s_gruntDirSouthWest_244588@@3UGruntDirectionCell@@A	secretteleportertrigger	0xc	data
+0x2445bc	_?$S35@?BA@??NotifyFortUnderAttack@CWarlord@@QAEHXZ@4EA$S	warlord	0x1	data
 0x244c18	?s_gruntDirEast_244c18@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
 0x244c28	?s_gruntDirNorth_244c28@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
 0x244c38	?s_gruntDirSouth_244c38@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
@@ -769,6 +772,8 @@
 0x2467b8	?s_gruntDirCenter_2467b8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467c8	?s_gruntDirSouthWest_2467c8@@3UGruntDirectionCell@@A	multi	0xc	data
 # CButeMgr getter-local statics (guards + static return slots), ButeMgr.cpp
+0x2bf29c	_?$S30@?1??RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z@4EA$S	cimage	0x1	data
+0x2bf314	_?$S28@?1??RenderFrame@CImage@@QAEXPAVCDDrawSurfacePair@@HHH@Z@4EA$S	cimage	0x1	data
 0x2bf388	_?$S@?1??TickKillCues@CDDrawChildGroup@@UAEXH@Z@4EA$S	wwdobjmgr	0x1	data
 0x2bf67c	_?$S@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S	butemgr	0x1	data
 0x2bf680	_?$S@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4EA$S	butemgr	0x1	data

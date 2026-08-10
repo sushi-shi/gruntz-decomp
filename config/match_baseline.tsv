@@ -72,7 +72,7 @@ chatbox_eh	1	0
 chatboxowner	12	7
 cheatmgr	7	2
 checkpointdlg	6	5
-cimage	20	11
+cimage	20	10
 cimagecomdats	9	7
 cmdscrollapply	3	2
 creditsstate	20	14
@@ -665,10 +665,10 @@ bootystateactivate	?Render@CBootyState@@UAEHXZ	98.5022	98.5022	4	511ead789e24	0x
 bootystateactivate	?Render@CMultiBootyState@@UAEHXZ	99.9448	99.9448	15	8f806c57ab60	0x1f480	100.0000
 bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	8663882ce876	0x1ce10	100.0000
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000
-bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9658	99.9658	2	2d17ef0ad520	0x1c9d0	100.0000
+bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9444	99.9444	2	2d17ef0ad520	0x1c9d0	100.0000
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	99.9750	99.9750	2	659ee76e9f5b	0x18f00	100.0000
 bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	90.0224	90.0149	3	4f59c36c76ec	0x196c0	90.0224
-bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7171	92.7171	8	3515c259b2f9	0x1b450	92.8158
+bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7829	92.7829	8	3515c259b2f9	0x1b450	92.8158
 bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.2108	95.2108	15	d289681b2cfa	0x1b690	95.2481
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	99.9438	99.9438	22	621add35a117	0xf9160	100.0000
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	2	4337332bae5e	0x853f0	100.0000
@@ -814,12 +814,12 @@ checkpointdlg	?DoDataExchange@CCheckpointDlg@@UAEXPAVCDataExchange@@@Z	100.0000	
 checkpointdlg	?GetMessageMap@CCheckpointDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	4	27713149344a	0x23570	100.0000
 checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	97.8571	97.8571	4	86d2827fcb93	0x23590	97.8571
 cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.9801	97.9751	5	efe6282073e0	0x153d90	98.6169
-cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.6377	98.6377	5	467120518147	0x153b20	98.7440
+cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.6908	98.6908	5	467120518147	0x153b20	98.7440
 cimage	?BlitNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.6332	98.6332	4	587cf438f72a	0x1538c0	98.7588
 cimage	?BlitShadeFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8899	99.8899	4	3b6fe25b9c51	0x154750	99.9426
 cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.1972	97.1972	4	c1b31c2b5143	0x153ff0	97.2019
-cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.9330	99.9330	4	36054ff4fda8	0x1544d0	99.9330
-cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8571	99.8571	3	be93d329f936	0x154270	99.8571
+cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8277	99.8277	4	36054ff4fda8	0x1544d0	99.9330
+cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.8571	99.8522	3	be93d329f936	0x154270	99.8571
 cimage	?BuildShadeBlitter@CImage@@QAEHPAUPidHeader@@I@Z	98.5571	98.5571	2	0db289b550b1	0x153180	98.7000
 cimage	?CopyFrom@CImage@@QAEHPAV1@@Z	100.0000	100.0000	5	ef4f2298fab7	0x1532b0	100.0000
 cimage	?Create@CImage@@UAEHPADH@Z	100.0000	100.0000	3	00929ac52812	0x152e90	100.0000
@@ -828,8 +828,8 @@ cimage	?FlipVertical@CImage@@UAEXPAX@Z	100.0000	100.0000	1	731b477656ae	0x153370
 cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	7	6207ef7b40e9	0x153260	100.0000
 cimage	?LoadDispatch@CImage@@UAEHPAUPidHeader@@W4FileImageFormat@@IH@Z	100.0000	100.0000	1	4e9a05959502	0x152fb0	100.0000
 cimage	?Reload@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	7	8333b18543f7	0x153380	100.0000
-cimage	?RenderFrame@CImage@@QAEXPAVCDDrawSurfacePair@@HHH@Z	100.0000	100.0000	3	7fce5141738d	0x153790	100.0000
-cimage	?RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z	100.0000	100.0000	5	73306389b188	0x153810	100.0000
+cimage	?RenderFrame@CImage@@QAEXPAVCDDrawSurfacePair@@HHH@Z	100.0000	100.0000	4	be5b01687e1f	0x153790	100.0000
+cimage	?RenderFrameClipped@CImage@@QAEXPAVCDDrawSurfacePair@@HHPAUtagRECT@@H@Z	99.6809	99.6809	6	76d9970f4e2f	0x153810	100.0000
 cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.0533	99.0533	5	24fa8c2b315a	0x153470	99.0533
 cimage	?Resolve@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	8	d3b912869d36	0x152f20	100.0000
 cimage	?SetOrigin@CImage@@QAEHPAUPidHeader@@W4FileImageFormat@@@Z	100.0000	100.0000	1	7c87be00e77d	0x153330	100.0000
@@ -4394,7 +4394,7 @@ warlord	?FireActivation@CWarlord@@UAEXH@Z	100.0000	100.0000	6	dc15f81fd717	0x446
 warlord	?GetTypeTag@CWarlord@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:9db7af409c04	0x107a0	100.0000
 warlord	?LoadAttributes2@CWarlord@@QAEHXZ	100.0000	100.0000	24	82c750904c6b	0x44d10	100.0000
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	21	24cba32ef01c	0x44c00	100.0000
-warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	97.0874	97.0874	6	7293679b73af	0x45270	97.1912
+warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	97.1421	97.1421	6	7293679b73af	0x45270	97.1912
 warlord	?RaiseBattleAlert@CWarlord@@QAEHXZ	95.0000	95.0000	7	3bb148137808	0x457b0	95.0947
 warlord	?RearmMoving2@CWarlord@@QAEHXZ	100.0000	100.0000	9	1a8c1fe71e4f	0x44f30	100.0000
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	12	1a59dedeaed5	0x44bb0	100.0000

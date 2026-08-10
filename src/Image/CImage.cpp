@@ -34,10 +34,6 @@ i32 g_resourceInstallActive = 0;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
-DATA(0x002bf228)
-i32 g_val_2bf228;
-DATA(0x002bf29c)
-u8 g_val_2bf29c[8];
 DATA(0x002bf314)
 u8 g_val_2bf314[1];
 
@@ -466,6 +462,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
+    DATA(0x002bf2a0)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         this->RenderImage(&clip, target);
@@ -480,6 +477,7 @@ void CImage::RenderFrameClipped(
     RECT* clipRect,
     i32 flags
 ) {
+    DATA(0x002bf228)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != NULL) {

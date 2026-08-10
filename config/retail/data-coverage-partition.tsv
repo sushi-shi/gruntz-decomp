@@ -4298,8 +4298,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00229ed4	0x00229ed8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229ed8
 0x00229ee4	0x00229ee8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229ee8
 0x00229ef4	0x00229ef8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229ef8
-0x00229f18	0x00229f20	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (3)	no oracle names this zero-fill run
-0x00229f20	0x00229f30	16	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00229f19	0x00229f30	23	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0022ae34	0x0022ae50	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0022ae54	0x0022aef0	156	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0022aef0	0x0022aef4	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (1)	no oracle names this zero-fill run
@@ -4493,7 +4492,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00244574	0x00244578	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244578
 0x00244584	0x00244588	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244588
 0x00244594	0x00244598	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244598
-0x002445bc	0x002445c0	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x002445c0
+0x002445bd	0x002445c0	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002445c0
 0x002445e4	0x002445e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002445e8
 0x0024460c	0x00244610	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244610
 0x00244634	0x00244638	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244638
@@ -5279,8 +5278,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002bed04	0x002bed06	2	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bed06	0x002bed07	1	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (12)	no oracle names this zero-fill run
 0x002bed07	0x002bed08	1	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (10)	slack below the 0x8-aligned claim at 0x002bed08
-0x002bf22c	0x002bf28c	96	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002bf2a4	0x002bf314	112	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002bf228	0x002bf28c	100	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (3)	no oracle names this zero-fill run
+0x002bf28c	0x002bf29c	16	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (1)	no oracle names this zero-fill run
+0x002bf29d	0x002bf2a0	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf2a0
 0x002bf315	0x002bf318	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf318
 0x002bf384	0x002bf388	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bf389	0x002bf390	7	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf390

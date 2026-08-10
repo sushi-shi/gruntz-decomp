@@ -23,9 +23,6 @@ const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
     ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected){0, 0, 0, 0, AfxSig_end, 0},
 };
 
-DATA(0x00229e94)
-u8 g_val_229e94;
-
 // @early-stop
 RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
