@@ -4656,8 +4656,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024beb4	0x0024bed8	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024befc	0x0024bf00	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bf00
 0x0024bf24	0x0024c01c	248	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024c01c	0x0024c020	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (4)	slack below the 0x8-aligned claim at 0x0024c020
-0x0024c22c	0x0024c230	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x0024c230
+0x0024c01d	0x0024c020	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c020
+0x0024c22d	0x0024c230	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c230
 0x0024c23c	0x0024c240	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c240
 0x0024c24c	0x0024c250	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c250
 0x0024c25c	0x0024c260	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c260

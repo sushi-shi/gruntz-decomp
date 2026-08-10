@@ -356,6 +356,8 @@
 0x24bd80	?s_gruntDirSouthEast_24bd80@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
 0x24bd90	?s_gruntDirCenter_24bd90@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
 0x24bda0	?s_gruntDirSouthWest_24bda0@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24c01c	_?$S55@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S41135	play	0x1	data
+0x24c22c	_?$S56@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S42076	play	0x1	data
 0x24c548	?s_gruntDirEast_24c548@@3UGruntDirectionCell@@A	playassetload	0xc	data
 0x24c558	?s_gruntDirNorth_24c558@@3UGruntDirectionCell@@A	playassetload	0xc	data
 0x24c568	?s_gruntDirSouth_24c568@@3UGruntDirectionCell@@A	playassetload	0xc	data
