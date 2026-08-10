@@ -688,6 +688,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 }
 
 // @early-stop
+// Register coloring: retail keeps topX in edi across the three ftol calls and
+// lets `cur` die into its frame slot; cl holds `cur` in ebx and spills topX.
 RVA(0x00146fe0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     i32 minYi = 0x1001;
@@ -697,12 +699,13 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     if (count > 0) {
         i32 n = count;
         do {
-            if (static_cast<i32>(cur->y) != static_cast<i32>(prev->y)) {
+            i32 prevYi = static_cast<i32>(prev->y);
+            i32 curYi = static_cast<i32>(cur->y);
+            if (prevYi != curYi) {
                 ClipVtx* top = prev;
+                ClipVtx* bottom = cur;
                 ClipVtx* table;
-                ClipVtx* bottom;
                 if (prev->y < cur->y) {
-                    bottom = cur;
                     table = g_rasterEdgeL;
                 } else {
                     top = cur;
@@ -738,14 +741,14 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
             cur++;
         } while (--n != 0);
     }
+    ClipVtx* pDesc = &g_rasterEdgeL[minYi];
+    ClipVtx* pAsc = &g_rasterEdgeR[minYi];
     i32 stride = surf->m_pitch;
     u8* bits = static_cast<u8*>(surf->Lock(0));
     u8* rowPtr = bits + stride * minYi;
     g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
-        ClipVtx* pDesc = &g_rasterEdgeL[minYi];
-        ClipVtx* pAsc = &g_rasterEdgeR[minYi];
         do {
             i32 xB = pAsc->fx >> 0xe;
             i32 xA = pDesc->fx >> 0xe;

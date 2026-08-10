@@ -642,9 +642,10 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 if (occupantId != 0) {
                     void* out = 0;
                     CMapPtrToPtr* map = &g_gameReg->m_world->m_childGroup->m_map48;
-                    CGameObject* occupant = MapLookupById(*map, occupantId, out)
-                                                ? static_cast<CGameObject*>(out)
-                                                : NULL;
+                    CGameObject* occupant = NULL;
+                    if (MapLookupById(*map, occupantId, out) != 0) {
+                        occupant = static_cast<CGameObject*>(out);
+                    }
                     if (occupant != NULL) {
                         CUserLogic* logic = occupant->m_animWorker->m_logic;
                         if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
@@ -1384,7 +1385,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             void* cell = 0;
             if (key != 0) {
                 void* found = 0;
-                void* looked = MapLookupById(*map, key, found) ? found : 0;
+                void* looked = 0;
+                if (MapLookupById(*map, key, found) != 0) {
+                    looked = found;
+                }
                 if (looked == NULL) {
                     return 0;
                 }
@@ -1449,7 +1453,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, sizeof(key));
         if (key != 0) {
             void* found = 0;
-            void* looked = MapLookupById(*map, key, found) ? found : 0;
+            void* looked = 0;
+            if (MapLookupById(*map, key, found) != 0) {
+                looked = found;
+            }
             void* obj = (looked != NULL
                          && (static_cast<CGameObject*>(looked))->GetClassId() == CLASSID_SERIALREF)
                             ? looked
@@ -1466,7 +1473,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         ar->Read(&key, sizeof(key));
         if (key != 0) {
             void* found = 0;
-            void* looked = MapLookupById(*map, key, found) ? found : 0;
+            void* looked = 0;
+            if (MapLookupById(*map, key, found) != 0) {
+                looked = found;
+            }
             if (looked == NULL) {
                 return 0;
             }
@@ -1491,7 +1501,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             return 0;
         }
         void* found = 0;
-        void* looked = MapLookupById(*map, key, found) ? found : 0;
+        void* looked = 0;
+        if (MapLookupById(*map, key, found) != 0) {
+            looked = found;
+        }
         if (looked == NULL) {
             return 0;
         }

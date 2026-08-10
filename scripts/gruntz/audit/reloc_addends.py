@@ -6,12 +6,35 @@ the base obj against the delinked target obj. Order-insensitive on purpose: two
 references to the same symbol at the same two offsets in a different order is an
 operand-evaluation-order difference, not a wrong constant.
 
-  ADDEND   - same symbol, same reference COUNT, different offsets. The real find:
-             the source indexes a different element of that datum than retail.
+  ADDEND   - the reference resolves to a DIFFERENT retail address than retail's.
+             The real find: the source indexes a different element of that datum.
   SELFREF  - same shape but the symbol is the function itself, i.e. a switch jump
              table inside .text. Derivative of an unmatched body, not independent.
+  NAMING   - NOT a defect: every differing addend resolves to the same absolute
+             retail address on both sides, under a different symbol NAME.
+
+WHY `NAMING` EXISTS, and why the raw addend comparison cannot stand alone.  A
+symbol reference is `name + addend`, and the two sides do not agree on how to
+split an address into those two halves.  A ONE-PAST-THE-END loop sentinel is the
+common case: cl emits `cmp edi, <DIR32 arr> + sizeof(arr)`, while the delinker
+attributes the same absolute address to whatever symbol STARTS there - the next
+datum, at addend 0.  Measured 2026-08-10 on the four-row census: TWO of the four
+rows were this, i.e. the naive per-symbol comparison had a 50% false-positive
+rate.  `?DoDataExchange@CBattlezDlg@@` was the pure case - base
+`cmp edi, g_battlezLastMaxGruntz+0x10` and retail `81 ff 10 9d 62 00` are the
+SAME FOUR BYTES after relocation; only the name on the reloc differs.
+
+So every reference is resolved to an absolute RVA (`build/gen/symbol_names.csv`
+for named symbols, the embedded address for the delinker's `DAT_<hex>`/`$gap_`
+placeholders) and the two sides are compared on ADDRESSES.  Names that resolve on
+neither side (string constants `??_C@`, `__imp__*` thunks, the normalizer's
+`$Sdata_bss_*` renames) keep the by-name comparison, and an address that resolves
+on only ONE side is left classified as a defect - the pass never invents a
+pairing, so it can only ever REMOVE a false positive, never hide a real one.
 """
+import csv
 import json
+import re
 import struct
 from collections import Counter
 from pathlib import Path
@@ -22,6 +45,11 @@ BASE = REPO / "build/objdiff/normalized/base"
 TGT = REPO / "build/objdiff/normalized/target"
 COFF_TYPE = {0x06: "DIR32", 0x07: "DIR32NB", 0x14: "REL32"}
 SIG = {"DIR32", "DIR32NB"}
+
+# The delinker's placeholder names carry their own RVA; `$gap_` is the data-manifest
+# filler.  Anchored and length-bounded so a real symbol can never match by accident.
+HEX_NAME = re.compile(r"^(?:DAT|FUN|SUB|LAB|PTR|UNK)_0*([0-9a-fA-F]{4,8})$")
+GAP_NAME = re.compile(r"^\$gap_([0-9a-fA-F]{4,8})$")
 
 
 class Coff:
@@ -110,6 +138,41 @@ class Coff:
         return {k: v[0] for k, v in out.items() if len(v) == 1}
 
 
+def load_symbol_rvas():
+    """name -> retail RVA, from the build's own generated symbol map."""
+    path = REPO / "build/gen/symbol_names.csv"
+    out = {}
+    if not path.exists():
+        return out
+    with path.open() as f:
+        for row in csv.DictReader(f):
+            out.setdefault(row["name"], int(row["rva"], 16))
+    return out
+
+
+NAME_RVA = load_symbol_rvas()
+
+
+def sym_rva(name):
+    """Absolute retail RVA a reloc's SYMBOL denotes, or None if unknowable."""
+    if name in NAME_RVA:
+        return NAME_RVA[name]
+    m = HEX_NAME.match(name) or GAP_NAME.match(name)
+    return int(m.group(1), 16) if m else None
+
+
+def resolved_addresses(grp):
+    """Multiset of absolute RVAs a function's DIR32 relocs point at (resolvable only)."""
+    out = Counter()
+    for name, addends in grp.items():
+        base = sym_rva(name)
+        if base is None:
+            continue
+        for addend, n in addends.items():
+            out[base + addend] += n
+    return out
+
+
 rep = json.loads((REPO / "build/objdiff/report.json").read_text())
 pct = {(u["name"], f["name"]): f.get("fuzzy_match_percent", 0.0)
        for u in rep["units"] for f in u.get("functions", [])}
@@ -125,27 +188,52 @@ for bp in sorted(BASE.glob("*.obj")):
         tg = t.get(fn)
         if tg is None:
             continue
+        # Addresses one side reaches and the other does not - the only evidence
+        # that a differing addend is a real divergence rather than a re-naming.
+        b_addr, t_addr = resolved_addresses(bg), resolved_addresses(tg)
+        b_only_addr, t_only_addr = b_addr - t_addr, t_addr - b_addr
         for sym in sorted(set(bg) | set(tg)):
             bc, tc = bg.get(sym, Counter()), tg.get(sym, Counter())
             if bc == tc or sum(bc.values()) != sum(tc.values()):
                 continue
+            base_add, tgt_add = sorted((bc - tc).elements()), sorted((tc - bc).elements())
+            anchor = sym_rva(sym)
+            if anchor is None:
+                real_b, real_t = base_add, tgt_add          # unresolvable: stay by-name
+            else:
+                real_b = [a for a in base_add if b_only_addr[anchor + a]]
+                real_t = [a for a in tgt_add if t_only_addr[anchor + a]]
+            if not real_b and not real_t:
+                cls = "NAMING"
+            elif sym == fn:
+                cls = "SELFREF"
+            else:
+                cls = "ADDEND"
             rows.append(dict(
-                cls="SELFREF" if sym == fn else "ADDEND",
-                pct=pct.get((unit, fn), 0.0), unit=unit, fn=fn, sym=sym,
-                base=sorted((bc - tc).elements()), target=sorted((tc - bc).elements()),
+                cls=cls, pct=pct.get((unit, fn), 0.0), unit=unit, fn=fn, sym=sym,
+                base=base_add, target=tgt_add, real_base=real_b, real_target=real_t,
                 refs=sum(bc.values())))
 
-rows.sort(key=lambda r: (r["cls"], -r["pct"]))
+rows.sort(key=lambda r: ({"ADDEND": 0, "SELFREF": 1, "NAMING": 2}[r["cls"]], -r["pct"]))
 out = REPO / "build/reloc-addend-worklist.tsv"
 with out.open("w") as f:
-    f.write("class\tfuzzy_pct\tunit\tfunction\tsymbol\trefs\tbase_addends\ttarget_addends\n")
+    f.write("class\tfuzzy_pct\tunit\tfunction\tsymbol\trefs\tbase_addends\ttarget_addends\t"
+            "unpaired_base\tunpaired_target\n")
     for r in rows:
         f.write(f"{r['cls']}\t{r['pct']:.2f}\t{r['unit']}\t{r['fn']}\t{r['sym']}\t"
                 f"{r['refs']}\t{','.join(hex(x) for x in r['base'])}\t"
-                f"{','.join(hex(x) for x in r['target'])}\n")
-print(f"{len(rows)} row(s) -> {out}")
+                f"{','.join(hex(x) for x in r['target'])}\t"
+                f"{','.join(hex(x) for x in r['real_base'])}\t"
+                f"{','.join(hex(x) for x in r['real_target'])}\n")
+tally = Counter(r["cls"] for r in rows)
+print(f"{len(rows)} row(s) -> {out}   " + "  ".join(f"{k}={v}" for k, v in sorted(tally.items())))
 for r in rows:
     print(f"{r['cls']:8s} {r['pct']:7.2f}  {r['unit']:22s} {r['fn'][:56]:56s}")
     print(f"                  {r['sym'][:66]}")
     print(f"                  base {[hex(x) for x in r['base']]} -> retail "
           f"{[hex(x) for x in r['target']]}  ({r['refs']} ref(s))")
+    if r["cls"] == "NAMING":
+        print("                  same absolute address on both sides - renaming, not a defect")
+    elif len(r["real_base"]) != len(r["base"]) or len(r["real_target"]) != len(r["target"]):
+        print(f"                  unpaired (real): base {[hex(x) for x in r['real_base']]} -> "
+              f"retail {[hex(x) for x in r['real_target']]}")
