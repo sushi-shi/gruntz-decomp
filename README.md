@@ -22,7 +22,7 @@ _**Reconstructable coverage** = enrolled bytes divided by retail bytes not prove
 
 _Totals are vs the whole engine = every in-`.text` reconstruction-target function; the generated/library categories tabled below (compiler EH funclets, private lifecycle/cleanup helpers, CRT/MFC library, jump thunks) are excluded from the denominator. Any unclaimed reconstruction targets appear in an `(unmatched)` row. `Fuzzy` = code-weighted partial credit (how close); `Fuzzy Max` = the same with every function at its best-ever fuzzy% - a gap above `Fuzzy` is entropy churn since the last `update`._
 
-_Started units alone: 3,449/4,327 fns exact, 92.88% fuzzy over 1,134,118 of 1,114,364 engine code bytes._
+_Started units alone: 3,449/4,327 fns exact, 92.89% fuzzy over 1,134,118 of 1,114,364 engine code bytes._
 
 | Module       | Units |       Functions exact |  Fuzzy | Fuzzy Max |
 | :----------- | ----: | --------------------: | -----: | --------: |
@@ -39,7 +39,7 @@ _Started units alone: 3,449/4,327 fns exact, 92.88% fuzzy over 1,134,118 of 1,11
 | `Wap32`      |     7 |       54 / 57 (94.7%) |  99.7% |     99.7% |
 | `Io`         |     4 |       36 / 38 (94.7%) |  99.0% |     99.0% |
 | `Utils`      |     7 |       20 / 25 (80.0%) |  98.8% |     98.8% |
-| `Font`       |     1 |       17 / 21 (81.0%) |  86.3% |     86.9% |
+| `Font`       |     1 |       17 / 21 (81.0%) |  86.9% |     86.9% |
 | `Crypto`     |     2 |       13 / 17 (76.5%) |  89.0% |     89.0% |
 
 _Excluded from the % above — generated/library code, not independent reconstruction targets:_
@@ -79,7 +79,7 @@ _`.rsrc` is byte-exact: all 150 differing bytes are `OffsetToData` fields shifte
 
 _Read `docs/image-diff.md` for the per-section attribution (the size delta broken into named buckets that must sum to it) and `docs/link-section-audit.md` for the `.text`/`.rdata` region census._
 
-_Candidate `2dcb1e9b9944`, linked 2026-08-10 18:21. Regenerate: `ninja candidate`._
+_Candidate `c19160a4ba78`, linked 2026-08-10 18:23. Regenerate: `ninja candidate`._
 <!-- link-score:end -->
 
 
