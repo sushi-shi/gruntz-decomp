@@ -9,7 +9,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SpriteRefTable.h>
-// @early-stop
 #include <Io/GameSave.h>
 
 RVA(0x000e2df0, 0x3f0)

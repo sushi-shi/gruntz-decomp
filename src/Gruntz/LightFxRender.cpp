@@ -287,20 +287,18 @@ RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
 
-    Pix16Ptr top;
-    top.m_chars =
-        (static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
-         + r->top * m_surface->m_pitch);
-    u16* tp = top.m_words;
+    u16* tp = Pix16(
+        static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
+        + r->top * m_surface->m_pitch
+    );
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
 
-    Pix16Ptr bot;
-    bot.m_chars =
-        (static_cast<char*>(base) + r->bottom * m_surface->m_pitch
-         + r->left * m_surface->m_bytesPerPixel);
-    u16* bp = bot.m_words;
+    u16* bp = Pix16(
+        static_cast<char*>(base) + r->bottom * m_surface->m_pitch
+        + r->left * m_surface->m_bytesPerPixel
+    );
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }

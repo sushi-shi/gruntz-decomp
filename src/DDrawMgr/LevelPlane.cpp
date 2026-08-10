@@ -874,7 +874,6 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     return scroll->ScrollTo(x, y);
 }
 
-// @early-stop
 // TU-completeness: retail defined a CLASS TYPE in this slot. The .text is gapless
 // (ActivateVisibleObjects 0x163300+0x70 abuts this fn; functions.tsv agrees), so the
 // definition emitted zero bytes and its content is unrecoverable. Probe matrix against

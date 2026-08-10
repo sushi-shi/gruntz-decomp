@@ -94,3 +94,34 @@ unrecoverable; the .text is gapless, functions.tsv confirms 0x163300+0x70 abuts 
 2. A confirmed parity flip is a TU-COMPLETENESS finding, not a matching finding: report
    the TU as missing a preceding definition and let the partition work supply the real one.
 3. Never ship the probe.
+
+## The trigger can be EQUAL ARGUMENT VALUES, and then only some call sites flip
+
+`CLightFxRender::BuildRockyRoadzPalette` 0x0a3dc0 compiles to **exactly retail's 2143 bytes
+(0x85f)** and 645 instructions, of which **18 differ** - and every one of them is the
+`mov ecx,<shift global>` operand of the R and G terms inside the same inlined helper:
+
+```cpp
+static inline u16 Pack(i32 r, i32 g, i32 b) {
+    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp)
+                            | (b >> g_bDown));
+}
+```
+
+| call site | emitted term order |
+|---|---|
+| `Pack(0x4f,0x14,0x01)`, `Pack(0xff,0xd9,0x13)`, `Pack(0x78,0x78,0x5f)`, … | R, G, B - identical to retail |
+| `Pack(0,0,0)`, `Pack(0x20,0x20,0x20)`, `Pack(0x64,0x64,0x64)`, `Pack(0xd7,0xd7,0xd7)` | **G, R, B** - retail has R, G, B |
+
+Only the GREYS flip, i.e. only where all three arguments are the same constant, so the
+canonicalisation keys on the operand VALUES and not on the expression shape. Note
+`Pack(0x78,0x78,0x5f)` does NOT flip although `r == g`: it takes all three being equal.
+
+Seven spellings of `Pack` were byte-identical or worse and none reordered the greys: named
+per-channel temps, right-association of the `|` chain, an `|=` accumulator, `u32`
+parameters, and casting after the shifts. The TU-state lever DOES reach it - the eight
+`CLightFxRender` palette builders move 95.79-97.65 -> 98.86-99.50 under a mixed
+declaration-kind probe (see
+[`tu-state-probe-family-decides-reachability.md`](tu-state-probe-family-decides-reachability.md)),
+which is why the "five palette builders were codegen-neutral" row above is about the
+single-`static`-definition probe only, not about the mechanism.
