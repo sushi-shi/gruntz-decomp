@@ -926,7 +926,11 @@ def fp_pool_rows(exe=EXE, base_dir=None, symbols=SYMBOLS):
                 continue
             want = pe.data[at:at + size]
             for member in stranded:
-                if pool[member][3] == size and pool[member][2] == want:
+                # The pin states the LITERAL's size (4 for a float), the obj
+                # member its padded slot extent (8 when the next constant is
+                # 8-aligned); accept the prefix match - the bytes are still
+                # verified and the enrolled extent stays the obj's.
+                if pool[member][3] >= size and pool[member][2][:size] == want:
                     pairs[rva].append(member)
         claims = Counter(m for ms in pairs.values() for m in ms)
         for rva, ms in sorted(pairs.items()):
@@ -1143,6 +1147,17 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     # the delinker's own adjacent-pair check skips it.
     rows, aliases = ([r for r in rows if r["name"] not in alias_of],
                      [r for r in rows if r["name"] in alias_of])
+    # One FP-pool slot, two channels: the labels `$T<rva>` pin states the
+    # LITERAL's size (4 for a float) while the reloc/bridge fp-pool row states
+    # the obj member's padded slot extent (8 before an 8-aligned neighbour).
+    # Same name + same rva + the pin nested inside the pool extent is one
+    # claim, not an overlap - keep the pool row, whose bytes were verified
+    # against the member payload.
+    pool_ext = {(r["rva"], r["name"]): r["size"] for r in rows
+                if "fp-pool" in (r.get("provenance") or "")}
+    rows = [r for r in rows
+            if "fp-pool" in (r.get("provenance") or "")
+            or r["size"] >= pool_ext.get((r["rva"], r["name"]), 0)]
     rows.sort(key=lambda x: (x["rva"], x["size"], x["name"]))
     extents = []                       # [{rva, size, name, copies: [row, ...]}]
     for r in rows:

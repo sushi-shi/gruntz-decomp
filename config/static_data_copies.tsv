@@ -41,6 +41,7 @@
 # masked by canonicalize_data_symbols.STATIC_ORDINAL, so only the name AROUND
 # them is load-bearing; the numbers below are the ones cl emitted when the rows
 # were written and are documentation, not a claim.
+0x1f0868	$T2033768	fadereffects	0x8	data
 0x2293f8	?s_gruntDirEast_2293f8@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x2293f8	_s_gruntDirSouth$S31792	actionoptionsmenubar	0xc	data
 0x229408	?s_gruntDirNorth_229408@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
