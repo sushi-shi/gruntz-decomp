@@ -54,6 +54,34 @@ read as: *retail address `0x001eaa98` holds the constant `0.9`; call it
 `fp_1eaa98`.* The name is ours, for reports — it never has to match anything cl
 emitted, because cl's name is unusable.
 
+### The `name` argument is NOT the symbol name
+
+`fp_1eaa98` never reaches any object file. The emitted symbol is minted from the
+address alone — `labels.py` line 759 is literally:
+
+```python
+name = "$T%d" % rva
+```
+
+so `DATA_COMPGEN(0x001eaa98, …)` lands in `symbol_names.csv` as
+
+```
+0x1eaa98,$T2009752,projectile,0x8,data          # 0x1eaa98 == 2009752
+```
+
+a cl-shaped pool name the delinker uses to carve the datum — and which
+`VOLATILE_T` (`^\$T[0-9]+$`) then erases on the way to `$anon_f64_…`, exactly as
+it erases our own `$T36166`. Both sides converge because both sides are thrown
+away.
+
+So what is the third argument for? It is the **semantic** name: the
+human-readable identity of the claim, used in reports and audits. It is gated,
+not decorative — a claim is rejected when the name is not a valid identifier, or
+when the same name is reused for a second address. That uniqueness rule is the
+useful part: it makes two claims on different addresses impossible to confuse,
+and it is the only place a *meaning* is recorded at all, since the emitted name
+is pure coordinate and the pairing is pure content.
+
 **The value's SPELLING is the allocation's type**, and that is load-bearing:
 
 | written | means | payload |
