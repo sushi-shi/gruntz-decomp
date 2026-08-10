@@ -1166,3 +1166,53 @@ game code past a claim's end — per-item modeling with `sema disasm`).
 `?TickKillCues@CDDrawChildGroup` constructs two static OBJECTS at
 `0x2bf390`/`0x2bf3a8` (ctor at VA `0x5b55e9`-ish thunk) that src currently
 models as loose `g_val_*` ints — a shape defect, not a coverage one.
+
+### 5a. Coverage campaign results (2026-08-10, data-coverage-close)
+
+Scoreboard: **initialized 99.59%** (.rdata 99.24 / .data 99.70) — **.bss 92.32%**
+reconstructable, fidelity 100.00 everywhere, all gates green, no function
+regressions (one −0.02 current-% dip blessed, MAX held).
+
+**Closed** (the drain, in landing order): the .bss partition + library-pointer
+propagation + alignment slack; reloc-bearing runs un-blanketed from the literal
+exclusion; typedef-linkage records into structs.json (SFMAN globals enrolled);
+the two CPlay guard pins; `gruntz.audit.init_funclets` — the XCU walk — plus the
+ctor-immediate decode oracle that named every GruntDirectionCell copy
+(22 TUs gained `<Gruntz/GruntDirStatics.h>` retail provably compiled, ~200 cells
+enrolled/renamed, five direction-misnamed aliases corrected); the library-gap
+rule (MFC funclet blobs → the static CWnd/CMemoryException objects excluded);
+RTTI/EH records recognised by CONTENT (TypeDescriptor vptr anchor + ≤4-cell
+chains — .data ??_R0s and .xdata$x throw records, initialized UNCLASSIFIED
+4,137 → 21 B); the CDialog/CWnd/CCmdTarget message-map chain and six
+game-named SDK GUIDs enrolled via `vtables_library.csv` → `library_data`.
+
+**Parked, with reasons** (the residue and why static evidence is exhausted):
+
+* `.bss` UNCLASSIFIED ~46.8 KB — zero-init buffers/dead statics NOTHING
+  references: the multi bands (4.9 KB after g_chatPacket; 2×1,012 B after the
+  g_chanStat42x packets — retail pushes sizeof=0xc, so NOT struct tails),
+  netcmdslot pools, gameinfostring 7.8 KB, the dircellmethods editor band
+  (13.1 KB + 3.4 KB). No reloc reaches them, no funclet constructs them, no
+  imm addresses them. Next evidence source: GruntDem.exe (the demo sibling may
+  reference the same statics from live code).
+* Cell sets whose owner is a spanless comdat TU (0x229318: gamewnd/gameapp
+  ambiguous), bootystateactivate's partial set (4 cells hide under other
+  claims — remodel, not rows), the 0x245278 five (the 0x2452xx region's
+  existing attributions are suspect), 0x24bfe0 four (play vs droppedobject),
+  and the 0x2293f8 East cell (straddles the .data raw-size boundary; the
+  delinker's storage rule correctly refuses it).
+* Initialized ~460 B: the CRuntimeClass/vtable triplets at 0x1eafc0 (need
+  per-record literal names from NAFXCW), the game-thrown EH island
+  0x1e949c/0x1f40d0/0x20c6b8 (zPtrColl-family ThrowInfo/TypeDescriptors —
+  the .xdata$x pairing campaign's shape), four unpinned pooled literals
+  ("Software", "GAME_BADSELECT", the CRC push-constant, z_errmsg tail), and
+  0x20b978 (a one-past-end LIMIT address, never dereferenced).
+* `?TickKillCues@CDDrawChildGroup` constructs TWO `static CObArray` objects
+  (ctor `??0CObArray@@QAE@XZ` proven) at 0x2bf390/0x2bf3a8 with guard byte
+  0x2bf388; src models them as loose `g_val_*` ints. A precise matcher task -
+  identity is solved.
+
+Retail's GruntDirStatics declaration ORDER differs from ours (constant
+9-cell permutation, proven by the store-order rotation) — reordering the
+header would align the XCU walk's name pairing but shifts every `$S` counter
+in every including TU (sidecar churn); deliberately not done.
