@@ -2,6 +2,7 @@
 
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/Projectile.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/TimeBomb.h>

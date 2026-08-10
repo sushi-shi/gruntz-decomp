@@ -3,6 +3,7 @@
 #include <Enums.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Ints.h>

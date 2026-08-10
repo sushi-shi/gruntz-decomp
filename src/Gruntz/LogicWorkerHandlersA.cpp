@@ -10,6 +10,7 @@
 #include <Gruntz/FrontCandy.h>
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GuardPoint.h>
 #include <Gruntz/MenuSparkle.h>
 #include <Gruntz/SimpleAnimation.h>
