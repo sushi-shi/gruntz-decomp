@@ -113,6 +113,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
 // Branch sequences AGREE. The residue is one frame dword: retail re-reads clip->top
 // through the parameter home at the loop bottom, cl hoists it into a spill slot, so
 // the frame is 0xc against retail's 0x8 and every [esp+N] shifts.
+// Measured: arm structure (full / left / right clamp, mode test once, rotated
+// while) matches retail block-for-block; while(1)+break scores WORSE (77.0).
+// The cache-vs-reread choice is not reachable from the loop form.
 RVA(0x00149950, 0x3a1)
 void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
@@ -1662,15 +1665,14 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             u16* pal2 = g_blendDescr->Lut16();
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u8* sc = &g_scratch[count * 2 - 2];
-            u8* sw = dst;
             while (count-- > 0) {
                 u32 idx = pal2[Load16(sc)];
+                dst -= 2;
+                sc -= 2;
                 u32 hi = *src++;
                 hi >>= 4;
                 idx += hi << 12;
-                Store16(sw, pal1[idx]);
-                sc -= 2;
-                sw -= 2;
+                Store16(dst + 2, pal1[idx]);
             }
             break;
         }
