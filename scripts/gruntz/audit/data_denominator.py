@@ -443,6 +443,20 @@ def partition():
                     continue
                 f = fn_at(s)
                 category = f["category"] if f else "text?"
+                if category == "text?":
+                    # Un-inventoried .text: the $E initializer funclets live in
+                    # inventory GAPS. A gap flanked by library functions on BOTH
+                    # sides is library code (the MFC funclets constructing the
+                    # static CWnd/CMemoryException objects live exactly there);
+                    # a gap with a game-side neighbour stays unattributed.
+                    k = bisect.bisect_right(fstarts, s) - 1
+                    prev_f = frows[k] if k >= 0 else None
+                    next_f = frows[k + 1] if k + 1 < len(frows) else None
+                    if (prev_f and next_f
+                            and prev_f["category"] == "library"
+                            and next_f["category"] == "library"):
+                        category = "library"
+                        f = prev_f
                 if category in ("target", "compiler", "eh"):
                     direct_reasons[i]["direct game/compiler code"] += 1
                 elif category == "library":

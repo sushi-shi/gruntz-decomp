@@ -161,11 +161,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001eafac	0x001eafbc	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001eafbc	0x001eafc0	4	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eafc0	0x001eafd4	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=17
-0x001eafd4	0x001eafe8	20	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eafe8	0x001eb000	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=8
+0x001eafd4	0x001eb000	44	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eb000	0x001eb014	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=18
-0x001eb014	0x001eb028	20	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eb028	0x001eb040	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
+0x001eb014	0x001eb040	44	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eb040	0x001eb054	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=11
 0x001eb054	0x001eb068	20	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eb070	0x001eb148	216	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW:MFC message-map/data block
@@ -3777,7 +3775,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002156ec	0x002156f0	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002156f0	0x002156f4	4	.data	library-private data	excluded	library-private data		NAFXCW
 0x002156f4	0x002156f8	4	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=3
-0x002156f8	0x00215710	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x002156f8	0x00215710	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215710	0x00215730	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
 0x00215730	0x00215750	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
 0x00215750	0x00215768	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
@@ -3808,7 +3806,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00215a50	0x00215a70	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
 0x00215a70	0x00215a98	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=32
 0x00215a98	0x00215ac0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
-0x00215ac0	0x00215ad8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215ac0	0x00215ad8	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215ad8	0x00215af8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
 0x00215af8	0x00215b10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
 0x00215b10	0x00215b50	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
@@ -3826,18 +3824,18 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00215cd0	0x00215cf0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
 0x00215cf0	0x00215d10	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
 0x00215d10	0x00215d30	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
-0x00215d30	0x00215d48	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215d30	0x00215d48	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215d48	0x00215d64	28	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
 0x00215d64	0x00215d68	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00215d68	0x00215d88	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
 0x00215d88	0x00215da8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
 0x00215da8	0x00215dc0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
 0x00215dc0	0x00215de0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x00215de0	0x00215df8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215de0	0x00215df8	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215df8	0x00215e10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215e10	0x00215e28	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215e10	0x00215e28	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215e28	0x00215e40	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x00215e40	0x00215e58	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x00215e40	0x00215e58	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215e58	0x00215e78	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
 0x00215e78	0x00215e98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
 0x00215e98	0x00215ec0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
@@ -4182,12 +4180,12 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022563c	0x00225640	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00225684	0x00225688	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00225688	0x002256a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x002256a0	0x002256b8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=10
+0x002256a0	0x002256b8	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x002256b8	0x002256e0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
 0x002256e0	0x00225742	98	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x00225742	0x00225770	46	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00225742	0x00225770	46	.data	library-private data	excluded	library-private data		LIBCMT
 0x00225770	0x002257fe	142	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x002257fe	0x00225900	258	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=192
+0x002257fe	0x00225900	258	.data	library-private data	excluded	library-private data		LIBCMT
 0x00225900	0x00225918	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
 0x00225918	0x0022591c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022591c	0x00229310	14836	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
@@ -5229,22 +5227,28 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002515e4	0x00251600	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00251600	0x00251608	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (8)	no oracle names this zero-fill run
 0x0025161c	0x0025162c	16	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0025162c	0x00251630	4	.bss	library-private data	excluded	library-private data		NAFXCW
-0x00251630	0x00251638	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00251638	0x00252e40	6152	.bss	library-private data	excluded	library-private data		NAFXCW
+0x0025162c	0x00252e40	6164	.bss	library-private data	excluded	library-private data		NAFXCW
 0x00252e40	0x00252e80	64	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
 0x00252e80	0x00252f3c	188	.bss	library-private data	excluded	library-private data		NAFXCW
 0x00252f3c	0x00252f40	4	.bss	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW
-0x00252f40	0x00253070	304	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00252f40	0x00252fd8	152	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
+0x00252fd8	0x00253070	152	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
 0x00253070	0x00253074	4	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
-0x00253074	0x00253078	4	.bss	library-private data	excluded	library-private data		NAFXCW
-0x00253078	0x00253080	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00253080	0x0025308c	12	.bss	library-private data	excluded	library-private data		NAFXCW
-0x0025308c	0x00253098	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00253098	0x00253204	364	.bss	library-private data	excluded	library-private data		NAFXCW
-0x00253204	0x00253208	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00253208	0x002534b4	684	.bss	library-private data	excluded	library-private data		NAFXCW
-0x002534b4	0x00253551	157	.bss	library-private data	excluded	library-private data		LIBCMT
+0x00253074	0x00253080	12	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00253080	0x00253084	4	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
+0x00253084	0x00253098	20	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00253098	0x00253130	152	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
+0x00253130	0x002531c8	152	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
+0x002531c8	0x00253208	64	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00253208	0x0025320c	4	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
+0x0025320c	0x00253210	4	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00253210	0x00253214	4	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
+0x00253214	0x00253494	640	.bss	library-private data	excluded	library-private data		NAFXCW
+0x00253494	0x002534a0	12	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
+0x002534a0	0x002534b4	20	.bss	library-private data	excluded	library-private data		NAFXCW
+0x002534b4	0x002534f8	68	.bss	library-private data	excluded	library-private data		LIBCMT
+0x002534f8	0x00253504	12	.bss	library-private data	excluded	library-private data		LIBCMT,NAFXCW
+0x00253504	0x00253551	77	.bss	library-private data	excluded	library-private data		LIBCMT
 0x00253551	0x00253658	263	.bss	library-private data	excluded	library-private data		LIBCMT,NAFXCW
 0x00253658	0x00253778	288	.bss	library-private data	excluded	library-private data		LIBCMT
 0x00253778	0x002537d8	96	.bss	library-private data	excluded	library-private data		pointer from library-private data (LIBCMT)
@@ -5269,7 +5273,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002bf39c	0x002bf3a8	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bf3a8	0x002bf3ac	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (3)	no oracle names this zero-fill run
 0x002bf3b4	0x002bf3bc	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002bf3c8	0x002bf400	56	.bss	library-private data	excluded	library-private data		LIBCMT
+0x002bf3c8	0x002bf400	56	.bss	library-private data	excluded	library-private data		LIBCIMT,LIBCMT
 0x002bf404	0x002bf408	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf408
 0x002bf420	0x002bf428	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bf42c	0x002bf430	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf430
@@ -5289,7 +5293,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002bf8e7	0x002bf8e8	1	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (1)	slack below the 0x8-aligned claim at 0x002bf8e8
 0x002bfa5c	0x002bfa60	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bfa60
 0x002c01d4	0x002c01d8	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002c127c	0x002c127d	1	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002c127c	0x002c127d	1	.bss	library-private data	excluded	library-private data		NAFXCW
 0x002c127e	0x002c1288	10	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002c128c	0x002c15e0	852	.bss	library-private data	excluded	library-private data		LIBCMT
 0x002c15e0	0x002c25e0	4096	.bss	library-private data	excluded	library-private data		pointer from library-private data (LIBCMT)
