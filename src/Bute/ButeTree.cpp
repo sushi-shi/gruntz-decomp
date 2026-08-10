@@ -34,6 +34,10 @@ void zPTree::Walk(
 }
 
 // @early-stop
+// Residue is register allocation: retail spills `sbit` to the frame and reloads
+// it twice per descent iteration, where cl keeps it in a register and so folds
+// the loop preheader into the head block.  Both descent loops, the error tails
+// and the insert arms agree.
 RVA(0x001933b0, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 path[32];
@@ -53,30 +57,29 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 sbit = nbits + 7;
     i32 dir;
     i32* p = path;
-    if (m_root != NULL) {
+    while (m_descentCursor != NULL) {
         dir = sbit;
-        for (;;) {
-            CButeTreeNode* node = m_descentCursor;
-            if (node->m_bit > sbit) {
-                m_candidateLeaf = m_descentCursor;
-                break;
-            }
-            i32 b = node->m_bit;
-            dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
-            *p++ = dir;
-            CButeTreeNode* child = dir ? node->m_child[1] : node->m_child[0];
-            m_candidateLeaf = child;
-            if (child == NULL) {
-                break;
-            }
-            if (child->m_bit <= m_descentCursor->m_bit) {
-                if (strcmp(key, child->m_key) == 0) {
-                    return child->m_value;
-                }
-                break;
-            }
-            m_descentCursor = child;
+        CButeTreeNode* node = m_descentCursor;
+        if (node->m_bit > sbit) {
+            m_candidateLeaf = m_descentCursor;
+            break;
         }
+        i32 b = node->m_bit;
+        dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
+        *p++ = dir;
+        CButeTreeNode** slot = dir ? &node->m_child[1] : &node->m_child[0];
+        CButeTreeNode* child = *slot;
+        m_candidateLeaf = child;
+        if (child == NULL) {
+            break;
+        }
+        if (child->m_bit <= m_descentCursor->m_bit) {
+            if (strcmp(key, child->m_key) == 0) {
+                return child->m_value;
+            }
+            break;
+        }
+        m_descentCursor = child;
     }
 
     i32 critbit;
@@ -112,14 +115,14 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
                     do {
                         i32 d = *pp++;
                         m_descentCursor = m_candidateLeaf;
-                        m_candidateLeaf =
-                            d ? m_candidateLeaf->m_child[1] : m_candidateLeaf->m_child[0];
+                        CButeTreeNode** down =
+                            d ? &m_candidateLeaf->m_child[1] : &m_candidateLeaf->m_child[0];
+                        m_candidateLeaf = *down;
                     } while (m_candidateLeaf->m_bit <= critbit);
                 }
                 if (m_descentCursor == NULL) {
                     m_root = nn;
                 } else {
-
                     CButeTreeNode** s = &m_descentCursor->m_child[0];
                     if (pp[-1]) {
                         s = &m_descentCursor->m_child[1];

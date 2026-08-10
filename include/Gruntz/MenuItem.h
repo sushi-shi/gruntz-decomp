@@ -101,6 +101,14 @@ inline CMenuItem::~CMenuItem() {
 // AddItem2 0x1836f0) and, its inline budget spent, emits a real
 // `call ?Reset@CMenuItem@@UAEXXZ` in the fourth (AddSubItem2 0x183850).
 // The out-of-line COMDAT is pinned in MenuItem.cpp, which emits the vtable.
+//
+// The split is the ONLY thing between AddSubItem2 and a byte match, and both
+// arms were measured: moving this body into MenuItem.cpp (so no site can
+// expand it) takes AddSubItem2 to 100.00 EXACT and the other three to
+// 60.8/60.3/66.5.  So all four bodies are correct and the residue is cl's
+// per-TU /Ob expansion quota, which our compiland's cost does not land on -
+// N dead statements added here (0..16) moved no site.  `inline` stays,
+// because an out-of-line-only Reset cannot produce retail's three expansions.
 inline void CMenuItem::Reset() {
     m_host = NULL;
     m_template = NULL;

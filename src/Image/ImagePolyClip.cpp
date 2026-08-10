@@ -782,10 +782,10 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 }
 
 // @early-stop
-// cl CSEs `(double)dx` / `(double)dy` between the atan2 and the two fabs and
-// spills both as qwords across `fpatan` (hence the extra `sub esp,0x10`);
-// retail simply re-`fild`s the two int slots.  Block skeleton and both loops
-// agree.
+// Residue is x87 stack scheduling in the quad-store block: retail loads
+// `halfWidth` and the two `g_c10` constants up front, after `fcos`, where cl
+// hoists the `fild` ahead of `fsqrt`.  Frame, both loops and the whole block
+// skeleton agree.
 RVA(0x001471d0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
@@ -803,38 +803,48 @@ i32 ProjectWallQuad(
     // FIRST-loaded operand as the numerator, and it loads dx first.  g_c24 is
     // -pi, so `ang - g_c24` is the angle turned half a revolution - it belongs
     // to the angle, NOT to the length under the sqrt.
+    //
+    // fabs takes the FLOAT conversion, not the double one: retail `fild`s each
+    // int slot a second time for the magnitudes, which only happens when the
+    // conversion is a different expression from the atan2 argument.  With
+    // `(double)` on both, cl CSEs them and spills two qwords across `fpatan`,
+    // costing a `sub esp,0x10` frame retail does not have.
     double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
-    float adx = static_cast<float>(fabs(static_cast<double>(dx)));
-    float ady = static_cast<float>(fabs(static_cast<double>(dy)));
+    float adx = static_cast<float>(fabs(static_cast<float>(dx)));
+    float ady = static_cast<float>(fabs(static_cast<float>(dy)));
     float turn = static_cast<float>(ang - g_c24);
-    float len = static_cast<float>(sqrt(adx * adx + ady * ady));
+    float len = static_cast<float>(sqrt(ady * ady + adx * adx));
     double s = sin(turn);
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
 
     // The quad in wall-local space, wound: (-hw/2, len) (hw/2, len) (hw/2, 0)
-    // (-hw/2, 0).  Retail reads vertex 0's x back to build vertex 1's.
+    // (-hw/2, 0).  The two x's are LOCALS: retail keeps each in a float stack
+    // temp and copies it into the second vertex as a 4-byte integer move
+    // (`mov ecx,[esp+0x18]; mov [g],ecx`), which re-reading g_rasterVtxB[0].x
+    // cannot produce.  The rotate/translate loops index the array directly -
+    // a `ClipVtx* v = &g_rasterVtxB[i]` cursor costs an extra `lea` per
+    // iteration and moves the induction base off retail's +4 bias.
+    float xLeft = -(hw * g_c20);
+    float xRight = xLeft + hw;
+    g_rasterVtxB[0].x = xLeft;
     g_rasterVtxB[0].y = len;
-    g_rasterVtxB[0].x = -(hw * g_c20);
+    g_rasterVtxB[1].x = xRight;
     g_rasterVtxB[1].y = len;
-    g_rasterVtxB[1].x = g_rasterVtxB[0].x + hw;
+    g_rasterVtxB[2].x = xRight;
     g_rasterVtxB[2].y = g_c10;
-    g_rasterVtxB[2].x = g_rasterVtxB[1].x;
+    g_rasterVtxB[3].x = xLeft;
     g_rasterVtxB[3].y = g_c10;
-    g_rasterVtxB[3].x = g_rasterVtxB[0].x;
 
-    ClipVtx* v;
     for (i32 i = 0; i < 4; i++) {
-        v = &g_rasterVtxB[i];
-        float bx = v->x;
-        float by = -v->y;
-        v->x = static_cast<float>((by * s - bx * c));
-        v->y = static_cast<float>((bx * s + by * c));
+        float bx = g_rasterVtxB[i].x;
+        float by = -g_rasterVtxB[i].y;
+        g_rasterVtxB[i].x = static_cast<float>((by * s - bx * c));
+        g_rasterVtxB[i].y = static_cast<float>((bx * s + by * c));
     }
     for (i32 j = 0; j < 4; j++) {
-        v = &g_rasterVtxB[j];
-        v->x = static_cast<float>(x0) + v->x;
-        v->y = static_cast<float>(y0) + v->y;
+        g_rasterVtxB[j].x = static_cast<float>(x0) + g_rasterVtxB[j].x;
+        g_rasterVtxB[j].y = static_cast<float>(y0) + g_rasterVtxB[j].y;
     }
 
     if (ImagePolyClipRect(g_rasterVtxB, 4, clip.left, clip.top, clip.right, clip.bottom) != 0) {

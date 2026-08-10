@@ -2,7 +2,7 @@
 
 #include <Crypto/Blowfish.h>
 
-#include <Bute/ButeMgr.h>
+#include <Bute/ButeTail.h>
 #include <Crypto/BlowfishPi.h>
 #include <Ints.h>
 
@@ -94,14 +94,6 @@ void Blowfish_encipher(u32* xl, u32* xr) {
     *xr = l;
     *xl = r;
 }
-
-// <string.h> declares the memcpy InitializeBlowfish calls, and its POSITION is
-// load-bearing: cl 5.0 picks a function's register scheme from a TU-cumulative
-// declaration counter, and retail's two ciphers sit on opposite sides of one
-// threshold. Declared here, encipher and decipher both go byte-exact; hoisted above
-// encipher, encipher falls to 60.41
-// (docs/patterns/string-h-intrinsics-reallocate-the-tu.md).
-#include <string.h>
 
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
