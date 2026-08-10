@@ -992,7 +992,7 @@ i32 CInGameText::Update() {
             }
             p++;
         }
-        bool eq = (strcmp(*node, s_codeK) == 0);
+        bool eq = (strcmp(*node, "K") == 0);
         if (eq) {
             return 0;
         }

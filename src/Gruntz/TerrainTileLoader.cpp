@@ -399,7 +399,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                             0,
                                             fxX,
                                             fxY,
-                                            1000000,
+                                            900000,
                                             "ToyPeek",
                                             0x40003
                                         );

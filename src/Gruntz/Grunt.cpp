@@ -240,22 +240,12 @@ DATA(0x0020d900)
 static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 DATA(0x0020d974)
 static char s_ConversionTime[] = "ConversionTime";
-DATA(0x0020df98)
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
 DATA(0x0020dfac)
 static char s_AccelerateFlash[] = "AccelerateFlash";
 DATA(0x0020dfc0)
 static char s_SafeFlashTime[] = "SafeFlashTime";
 DATA(0x0020dfd0)
 static char s_FadeTransparency[] = "FadeTransparency";
-DATA(0x0020a9ec)
-static char s_Grunt[] = "Grunt";
-DATA(0x0020d9b4)
-static char s_Powerupz[] = "Powerupz";
-
-DATA(0x0020a454)
-static char s_codeA[] = "A";
-
 DATA(0x002455b0)
 i32 g_traitorMode;
 
@@ -803,11 +793,11 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     if (!ne) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") == 0);
     if (eq) {
         goto idle;
     }
@@ -965,6 +955,10 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 // Same source at both sites here, so a re-spelling cannot separate them; it needs
 // a different SHAPE. Branch/block topology is otherwise reconstructed: 177/173
 // blocks, 131/130 branches, 1/1 ret.
+// The callee SET is complete - the `insn_seq --multiset` rows (RemoveHead 3/4,
+// g_coordPool 18/21) are the same cross-jump: all four `g_coordPool.NodeOf(
+// list.RemoveHead())` groups are present in source and cl merges two of them.
+// g_gameReg 10/7 is the mirror - cl re-loads the global where retail holds it.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -2207,7 +2201,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != 0) {
             goto fail;
         }
-        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), s_codeA) != 0);
+        eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "A") != 0);
         if (eq) {
             eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), s_codeD) != 0);
             if (eq) {
@@ -2841,6 +2835,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 ConsiderArrival(0);
             }
             fresh = 1;
+            defer = 1;
             break;
         }
         case PICKUP_JACKINTHEBOX: {
@@ -2885,7 +2880,6 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 ConsiderArrival(0);
             }
             fresh = 1;
-            defer = 1;
             break;
         }
         case PICKUP_POGOSTICK: {
@@ -2979,7 +2973,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_HEALTH1: {
-            i32 h = g_buteMgr.GetIntDef(s_Powerupz, "Health1", 0x19) + m_health;
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health1", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -2987,7 +2981,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_HEALTH2: {
-            i32 h = g_buteMgr.GetIntDef(s_Powerupz, "Health2", 0x19) + m_health;
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health2", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -2995,7 +2989,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_HEALTH3: {
-            i32 h = g_buteMgr.GetIntDef(s_Powerupz, "Health3", 0x19) + m_health;
+            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health3", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -3020,7 +3014,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            m_convertTimeLo = g_buteMgr.GetDwordDef(s_Powerupz, s_ConversionTime, 0x1f4);
+            m_convertTimeLo = g_buteMgr.GetDwordDef("Powerupz", s_ConversionTime, 0x1f4);
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -3047,7 +3041,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_passableMask = 0;
             m_gruntKind = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef(s_Powerupz, "DeathTouchTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3061,12 +3055,12 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
-            i32 t = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
+            i32 t = g_buteMgr.GetIntDef("Powerupz", s_GruntGhostTransparencyOn, 0xe0);
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
             m_object->m_fillFraction = t;
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef(s_Powerupz, "GhostTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3082,7 +3076,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_INVULNERABLE;
             if (m_powerupDuration == 0) {
                 m_powerupDuration =
-                    g_buteMgr.GetDwordDef(s_Powerupz, "InvulnerabilityTime", 0x4e20);
+                    g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3098,7 +3092,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_REACTIVEARMOR;
             CreatePowerupSprite(3);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef(s_Powerupz, "ReactiveArmorTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3114,7 +3108,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_ROIDZ;
             CreatePowerupSprite(1);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef(s_Powerupz, "RoidzTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3130,7 +3124,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_SUPERSPEED;
             CreatePowerupSprite(2);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef(s_Powerupz, "SuperSpeedTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3205,8 +3199,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (play->m_frameMarker == NULL) {
                 return 1;
             }
-            i32 mins = g_buteMgr.GetIntDef(s_Powerupz, "StopwatchMinutes", 1);
-            i32 secs = g_buteMgr.GetIntDef(s_Powerupz, "StopwatchSeconds", 0);
+            i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
+            i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
             if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 secs += secs;
                 mins += mins;
@@ -3309,22 +3303,21 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                    i32 col = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-                    i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-                    TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
-                    if (tk == TILEKIND_CHECKPOINT) {
-                        UpdateArrival(col, row);
-                    } else if (tk == TILEKIND_CHECKPOINT_UP) {
-                        if (m_object->m_screenX == m_lastTilePx.m_x
-                            && m_object->m_screenY == m_lastTilePx.m_y) {
-                            m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                            m_tileMgr
-                                ->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                        }
-                    }
                 }
             }
         }
+        i32 col = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 row = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[row][col].m_typeCode;
+        if (tk == TILEKIND_CHECKPOINT || tk == TILEKIND_CHECKPOINT_UP) {
+            if (m_object->m_screenX == m_lastTilePx.m_x
+                && m_object->m_screenY == m_lastTilePx.m_y) {
+                m_tileMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+            }
+        }
+    } else {
+        UpdateArrival(defer, 1);
     }
     if (m_arrived != 0) {
         if (m_tileOwnerHi == g_curPlayer) {
@@ -3340,6 +3333,11 @@ fail:
 }
 
 // @early-stop
+// The `0x10000 x7` mask_immediates row is NOT a value defect: retail materialises the
+// same 0x10000 in edi and spells all seven sprite releases `or ecx,edi` (0x5def0,
+// 0x5dfc2, 0x5e482, 0x5e4a2, 0x5e60f, 0x5e627, 0x5e643) where cl gives us the immediate
+// form. Store multiset and offsets are equal to retail's; only their ORDER differs
+// (retail sinks the combat-timeout else-arm to 0x5e58f, past the kind dispatch).
 RVA(0x0005d210, 0x1554)
 void CGrunt::XferName(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
@@ -3348,9 +3346,9 @@ void CGrunt::XferName(char*) {
     m_dwell += g_frameDelta;
 
     if (m_entranceDropActive != 0) {
-        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeA) != 0);
+        bool differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") != 0);
         if (differs) {
-            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) != 0);
+            differs = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") != 0);
             if (differs) {
                 goto dropExpire;
             }
@@ -3371,19 +3369,19 @@ void CGrunt::XferName(char*) {
                 obj->m_drawActive = 1;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
-                i32 fade = g_buteMgr.GetIntDef(s_Grunt, s_FadeTransparency, 0xc0);
+                i32 fade = g_buteMgr.GetIntDef("Grunt", s_FadeTransparency, 0xc0);
                 CWwdGameObjectA* o2 = m_object;
                 o2->m_drawActive = 1;
                 o2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
                 o2->m_fillFraction = fade;
             }
-            i32 flash = g_buteMgr.GetIntDef(s_Grunt, s_SafeFlashTime, 0x32);
-            if (g_buteMgr.GetIntDef(s_Grunt, s_AccelerateFlash, 0) == 1) {
+            i32 flash = g_buteMgr.GetIntDef("Grunt", s_SafeFlashTime, 0x32);
+            if (g_buteMgr.GetIntDef("Grunt", s_AccelerateFlash, 0) == 1) {
                 i64 el = static_cast<i64>(g_frameTime) - m_entranceClock64;
                 u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
 
                 double span =
-                    static_cast<double>(g_buteMgr.GetDwordDef(s_Grunt, s_EntranceSafeTime, 0x1388));
+                    static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
                 flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, fp_1e9a40, 750.0));
             }
@@ -3884,7 +3882,7 @@ afterArrival:
                     }
                     slot++;
                 }
-                eq = (strcmp(*node, s_codeA) == 0);
+                eq = (strcmp(*node, "A") == 0);
             }
             if (eq) {
                 if (m_poweredUp != 0 && m_neighborValid == 0) {
@@ -3939,7 +3937,7 @@ kindDispatch:
                 return;
             }
             m_convertTimeLo =
-                static_cast<i32>(g_buteMgr.GetDwordDef(s_Powerupz, s_ConversionTime, 0x1f4));
+                static_cast<i32>(g_buteMgr.GetDwordDef("Powerupz", s_ConversionTime, 0x1f4));
             m_convertTimeHi = 0;
             m_convertClockLo = static_cast<i32>(g_frameTime);
             m_convertClockHi = 0;
@@ -3969,7 +3967,7 @@ kindDispatch:
                 i64 rem = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
                 u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
                 double topaque = static_cast<double>(
-                    g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0x100)
+                    g_buteMgr.GetIntDef("Powerupz", s_GruntGhostTransparencyOn, 0x100)
                 );
                 i32 frac = static_cast<i32>(
                     topaque * static_cast<double>(remMs)
@@ -4086,7 +4084,7 @@ void CGrunt::FinalizeStep(char* name) {
             }
         }
     }
-    bool eqO = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    bool eqO = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
     if (eqO) {
 
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
@@ -4149,7 +4147,7 @@ void CGrunt::FinalizeStep(char* name) {
 
     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool eqPos = (strcmp(*rec, s_codeS) == 0);
+    bool eqPos = (strcmp(*rec, "S") == 0);
     if (eqPos) {
         if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
             return;

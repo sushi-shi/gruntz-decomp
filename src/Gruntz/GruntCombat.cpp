@@ -1132,7 +1132,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
                 recO = g_typeColl.Elem(keyO);
             }
             ActNameConstructGrownSlots();
-            bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), s_codeO) != 0);
+            bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), "O") != 0);
             if (neO) {
                 ResetGeometry();
             }
@@ -1146,6 +1146,13 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 // block ending in a forward `jmp` to the shared apply block, cl lets one arm fall
 // through and parks the rest after it jumping back in.  A `goto L_apply` cannot move
 // it - cl hoists a forward goto's target onto the block it already occupies.
+// The SETDIR set itself is VERIFIED against retail and needs no further chasing: the
+// 15 `lea <r>,[esi+0x43c]` sites at 0x5a31d..0x5a6b0 carry cells SW,W,NW,NE,E,S,S,N,
+// E,W,SE,NW,NE,S,N, which is this source's arm-to-cell mapping exactly (WINGZ NE->SW
+// (x+20,y-20), E->W, SE->NW, SW->NE, W->E, NW->SE, default->S; dx==0 S/N; |slope|>2
+// S/N; >0.5 SE/NW; <-0.5 NE/SW; else E/W). The one `store_offsets` RETAIL-ONLY row on
+// 0x43c/0x440/0x444 is the third s_gruntDirSouth site: all three exist here, cl merges
+// two of them, retail merges none.
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1893,15 +1900,15 @@ void RegisterGruntActions() {
     REGISTER_KEY_644AF0(s_codeH, &CGrunt::StepArrivalCommitA);
     REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);
     REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
-    REGISTER_KEY_644AF0(s_codeK, &CGrunt::LoadEntranceConfig);
+    REGISTER_KEY_644AF0("K", &CGrunt::LoadEntranceConfig);
     REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
     REGISTER_KEY_644AF0(s_codeM, &CGrunt::RearmEntranceDrop);
     REGISTER_KEY_644AF0(s_codeN, &CGrunt::StepEntranceRelatchB);
-    REGISTER_KEY_644AF0(s_codeO, &CGrunt::StepArrivalCommitB);
+    REGISTER_KEY_644AF0("O", &CGrunt::StepArrivalCommitB);
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
     REGISTER_KEY_644AF0_TYPED("R", &CGrunt::LoadGruntDecayConfig2);
-    REGISTER_KEY_644AF0_DERIVED(s_codeS, &CGrunt::FinishEntranceMove);
+    REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)

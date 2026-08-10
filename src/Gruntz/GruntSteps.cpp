@@ -957,7 +957,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
         if (!eq) {
             eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
             if (!eq) {
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
                 if (eq) {
 
                     SnapToLastTile(1);

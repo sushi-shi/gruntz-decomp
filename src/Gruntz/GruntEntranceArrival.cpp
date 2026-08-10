@@ -1397,7 +1397,7 @@ i32 CGrunt::StepCombatReaction(
     if (eq) {
         goto reject;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
     if (eq) {
         SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -1527,7 +1527,7 @@ tail:
     {
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        ne = (strcmp(*rec, s_codeO) != 0);
+        ne = (strcmp(*rec, "O") != 0);
         if (ne) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeH);

@@ -831,7 +831,7 @@ i32 CGrunt::StepArrivalCommit() {
         || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0))) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
     if (eq) {
         SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -881,6 +881,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (redo) {
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId(s_codeD);
+            SetupTubeAnim(m_coordToggle);
         }
         goto finalize;
     }
@@ -1267,7 +1268,7 @@ i32 CGrunt::FinishActiveAction() {
         || (eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0))) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
     if (eq) {
         SnapToLastTile(1);
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_y, m_lastTilePx.m_x);
@@ -1320,7 +1321,7 @@ i32 CGrunt::FinishActiveAction() {
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") == 0);
     if (!eq || m_entranceArmed == 0) {
         goto retZero;
     }
