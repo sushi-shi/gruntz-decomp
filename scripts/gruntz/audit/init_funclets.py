@@ -221,7 +221,7 @@ def walk(pe: PE | None = None, quiet=False):
     known = known_rvas()
     rel_sorted = pe.reloc_sites
 
-    claim_iv, claim_starts = [], set()
+    claim_iv, claim_starts, claim_owner = [], set(), {}
     man = REPO / "build/gen/delink_data_manifest.tsv"
     if man.is_file():
         with man.open() as f:
@@ -229,6 +229,7 @@ def walk(pe: PE | None = None, quiet=False):
                 a, sz = int(r["rva"], 16), int(r["size"], 16)
                 claim_iv.append((a, a + sz))
                 claim_starts.add(a)
+                claim_owner[a] = r["object"].removesuffix(".c")
     claim_iv.sort()
     claim_lo = [a for a, _b in claim_iv]
 
@@ -237,8 +238,13 @@ def walk(pe: PE | None = None, quiet=False):
         return i >= 0 and claim_iv[i][0] <= rva < claim_iv[i][1]
 
     def unit_at(rva):
-        i = bisect.bisect_right(starts, rva) - 1
-        return spans[i][0] if i >= 0 and rva < spans[i][2] else None
+        # cl 5.0 emits the funclet COMDATs BEFORE the functions (proven from
+        # the base objs' own section order, worldsoundset.obj: funclets in
+        # sections 4-38, functions 40-136), and the linker preserves object
+        # section order - so a funclet belongs to the unit whose FIRST
+        # inventoried function follows it.
+        i = bisect.bisect_right(starts, rva)
+        return spans[i][0] if i < len(spans) else None
 
     # group consecutive retail entries by attributed unit
     groups = []
@@ -250,7 +256,7 @@ def walk(pe: PE | None = None, quiet=False):
             groups.append([u, [target]])
 
     stats = defaultdict(int)
-    candidates, mismatched_units = [], []
+    candidates, mismatched_units, misowned = [], [], []
 
     def funclet_end(i, t):
         """A funclet ends at the next table target, the next INVENTORIED
@@ -334,6 +340,9 @@ def walk(pe: PE | None = None, quiet=False):
                                   "interior to an existing claim")
                         break
                     stats["claim-start bindings verified"] += 1
+                    if claim_owner.get(addr) != u:
+                        stats["claim OWNER disagrees with funclet"] += 1
+                        misowned.append((addr, sname, claim_owner.get(addr), u))
             if not unit_ok:
                 break
         if unit_ok:
@@ -351,7 +360,8 @@ def walk(pe: PE | None = None, quiet=False):
         size, secname = ext_cache[u].get(sname, (0, "?"))
         sized.append((addr, sname, u, size, secname))
     return {"table": table, "groups": groups, "stats": stats,
-            "candidates": sized, "mismatched": mismatched_units}
+            "candidates": sized, "mismatched": mismatched_units,
+            "misowned": misowned}
 
 
 def main():
@@ -366,6 +376,10 @@ def main():
           f"{len(r['groups'])} unit groups")
     for k, v in sorted(r["stats"].items()):
         print(f"  {k:34} {v}")
+    if r["misowned"]:
+        print("\nclaim-owner disagreements (sidecar unit vs funclet proof):")
+        for a, n, old, new in r["misowned"]:
+            print(f"  0x{a:06x} {n[:52]:52} {old} -> {new}")
     if r["mismatched"]:
         print("\nunpaired units (base funclets vs retail):")
         for u, nb, nr in r["mismatched"]:

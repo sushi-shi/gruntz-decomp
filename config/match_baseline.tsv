@@ -879,7 +879,7 @@ cursorsnapsprite	?FireActivation@CCursorSnapSprite@@UAEXH@Z	100.0000	100.0000	4	
 cursorsnapsprite	?SerializeMove@CCursorSnapSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab14ae26e211	0x11880	100.0000
 cursorsnapsprite	_CreateCursorSnapSprite	99.9048	99.9048	3	4678e3ac7fc5	0x3a200	100.0000
 customleveldlg	??1CWaitCursorScope@@QAE@XZ	100.0000	100.0000	6	e8fe84e03cdf	0x18430	100.0000
-customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	94.2050	94.1118	6	53d739e763e3	0x180e0	94.3168
+customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	94.2050	94.2050	6	53d739e763e3	0x180e0	94.3168
 customleveldlg	?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	9c7d3dae79a9	0x183d0	100.0000
 customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	3	cd692d8dfbbd	0x183f0	100.0000
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	99.8646	99.8646	2	fec5c196466c	0x3b940	100.0000
