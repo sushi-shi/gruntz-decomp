@@ -25,6 +25,10 @@
 // helper is modelled yet. Until it is, the ctor loses its two trailing
 // instructions and the dtor tail-jumps. The previous source forced both with
 // `char* volatile`, which is a codegen steer rather than a model, and is removed.
+// Both rows therefore carry hist=100 over best=82.75/20.00, and that headroom is
+// NOT restorable by reverting: `volatile` forbids eliding the load and store, so
+// the 100 was scored against a program retail's source did not describe. It has
+// to be re-earned by the escaping-cursor helper, not by putting the steer back.
 template<> RVA(0x00008710, 0x2b)
 zDArray<CActHandler>::zDArray(i32 lo, i32 hi)
     : _zdvec(sizeof(CActHandler), lo, hi, ZVecNoScratch()) {}
