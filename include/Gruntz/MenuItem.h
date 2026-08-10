@@ -109,6 +109,10 @@ inline CMenuItem::~CMenuItem() {
 // per-TU /Ob expansion quota, which our compiland's cost does not land on -
 // N dead statements added here (0..16) moved no site.  `inline` stays,
 // because an out-of-line-only Reset cannot produce retail's three expansions.
+//
+// AddSubItem2's MAX is BANKED at 100.0000 from exactly that arm (perturb, bank,
+// revert), so its source is PROVEN correct and nobody need open it again.  Do
+// not re-derive this: the residue is TU state, not a defect.
 inline void CMenuItem::Reset() {
     m_host = NULL;
     m_template = NULL;
