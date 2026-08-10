@@ -3510,7 +3510,7 @@ rezlist	?Remove@CObjList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	2	10845859091
 rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	3	9a3c544be802	0x8b740	100.0000
 rezsync	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500	100.0000
 rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	3	e8e1d5dbacf5	0x853d0	100.0000
-rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	82.9640	82.9640	22	003ed9ca897a	0x83450	83.6067
+rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	83.1702	83.1702	23	26f3eb2edaed	0x83450	83.6067
 rockbreakeffectupdate	?Update@CExplosion@@QAEHXZ	98.4848	98.4848	3	f387d711db83	0x476b0	98.4848
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	77.0069	77.0069	20	0ad545a63021	0xaf820	77.9038
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	2	83acba8c2baa	0x12f80	100.0000

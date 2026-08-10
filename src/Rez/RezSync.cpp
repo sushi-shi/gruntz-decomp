@@ -170,13 +170,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vAmbient = m_settings->GetValueDword("Ambient", m_isAmbientEnabled);
     i32 vInterlaced = m_settings->GetValueDword("Interlaced", m_isInterlaced);
     i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
-    // Read and dropped: retail's only store to m_isHighDetail (+0x10c) in this
-    // function is the one down with the rest of the batch, so this second probe
-    // lands in a register, not the member.
     i32 vHigh2 = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
-    i32 vEasy = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
+    // Every probe above defaults from - and is written back to - its OWN member;
+    // "Easy Mode" is the one retail applies immediately (0x0837e5
+    // `mov [ebp+0x118],eax`, scheduled between the Resolution call's two pushes),
+    // while the other seven are held in locals until after subsystem init.
+    // "Resolution" is consumed only by the m_savedModeSize ladder below - retail
+    // stores its result to no member at all.
+    m_isEasyMode = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
     i32 resolutionRaw = m_settings->GetValueDword("Resolution", IDX(RES_640X480));
-    m_isEasyMode = resolutionRaw;
     Resolution resolution = static_cast<Resolution>(resolutionRaw);
     if (resolution == RES_1024X768) {
         m_savedModeSize.cx = DISPLAY_WIDTH_1024;
@@ -589,7 +591,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isAmbientEnabled = vAmbient;
     m_isInterlaced = vInterlaced;
     m_isHighDetail = vHigh1;
-    m_isEffectsEnabled = vEasy;
+    m_isEffectsEnabled = vHigh2;
     if (!m_world->m_soundRegistry->HasKeyEqual("GAME")) {
         void* sz = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (!sz) {
