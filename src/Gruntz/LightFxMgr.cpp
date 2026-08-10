@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Image/ImageSet.h>
 

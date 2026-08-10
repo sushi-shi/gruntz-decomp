@@ -21,6 +21,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>

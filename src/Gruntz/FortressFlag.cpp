@@ -12,6 +12,7 @@
 #include <Gruntz/Explosion.h>
 #include <Gruntz/GameObjectFactory.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>

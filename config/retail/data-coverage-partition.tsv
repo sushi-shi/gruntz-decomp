@@ -4481,8 +4481,18 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002446ac	0x002446b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002446b0
 0x002446d4	0x002446d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002446d8
 0x002446fc	0x00244700	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00244700
-0x00244724	0x002447f8	212	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024481c	0x00244870	84	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00244724	0x002447b4	144	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002447b4	0x002447b8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447b8
+0x002447c4	0x002447c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447c8
+0x002447d4	0x002447d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447d8
+0x002447e4	0x002447e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447e8
+0x002447f4	0x002447f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447f8
+0x0024481c	0x00244820	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244820
+0x0024482c	0x00244830	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244830
+0x0024483c	0x00244840	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244840
+0x0024484c	0x00244850	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244850
+0x0024485c	0x00244860	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244860
+0x0024486c	0x00244870	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244870
 0x00244894	0x002448c8	52	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002448d4	0x002448d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002448d8
 0x002448e4	0x002448e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002448e8
@@ -4570,8 +4580,17 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245814	0x00245818	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245818
 0x00245824	0x00245828	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245828
 0x00245834	0x00245838	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245838
-0x00245844	0x002458b0	108	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002458d4	0x00245928	84	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245844	0x00245870	44	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024587c	0x00245880	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245880
+0x0024588c	0x00245890	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245890
+0x0024589c	0x002458a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458a0
+0x002458ac	0x002458b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458b0
+0x002458d4	0x002458d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458d8
+0x002458e4	0x002458e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458e8
+0x002458f4	0x002458f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458f8
+0x00245904	0x00245908	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245908
+0x00245914	0x00245918	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245918
+0x00245924	0x00245928	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245928
 0x0024594c	0x00245950	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245950
 0x00245974	0x002459b0	60	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002459d8	0x002459e0	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
@@ -4583,8 +4602,26 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245a3c	0x00245a40	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a40
 0x00245a4c	0x00245a50	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a50
 0x00245a5c	0x00245a60	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a60
-0x00245a6c	0x00245ad0	100	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00245af4	0x00245c18	292	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245a6c	0x00245a90	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245a9c	0x00245aa0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245aa0
+0x00245aac	0x00245ab0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ab0
+0x00245abc	0x00245ac0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ac0
+0x00245acc	0x00245ad0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ad0
+0x00245af4	0x00245af8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245af8
+0x00245b04	0x00245b08	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b08
+0x00245b14	0x00245b18	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b18
+0x00245b24	0x00245b28	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b28
+0x00245b34	0x00245b38	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b38
+0x00245b44	0x00245b70	44	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245b7c	0x00245b80	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b80
+0x00245b8c	0x00245b90	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245b90
+0x00245b9c	0x00245ba0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ba0
+0x00245bac	0x00245bb0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245bb0
+0x00245bbc	0x00245bc0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245bc0
+0x00245bcc	0x00245bd0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245bd0
+0x00245bdc	0x00245be0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245be0
+0x00245bec	0x00245bf0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245bf0
+0x00245bfc	0x00245c18	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00245c24	0x00245c28	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245c28
 0x00245c34	0x00245c38	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245c38
 0x00245c44	0x00245c48	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245c48
@@ -4638,9 +4675,19 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024605c	0x00246060	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246060
 0x00246084	0x00246088	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246088
 0x002460ac	0x002460b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002460b0
-0x002460d4	0x00246188	180	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002460d4	0x0024613c	104	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024613c	0x00246140	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246140
+0x0024614c	0x00246158	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00246164	0x00246168	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246168
+0x00246174	0x00246178	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246178
+0x00246184	0x00246188	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246188
 0x002461ac	0x002461b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002461b0
-0x002461d4	0x00246228	84	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002461d4	0x002461d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002461d8
+0x002461e4	0x002461e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002461e8
+0x002461f4	0x002461f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002461f8
+0x00246204	0x00246208	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246208
+0x00246214	0x00246218	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246218
+0x00246224	0x00246228	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246228
 0x0024624c	0x00246250	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246250
 0x00246274	0x00246338	196	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00246344	0x00246348	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246348
@@ -4677,7 +4724,11 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00249744	0x00249748	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249748
 0x00249754	0x00249758	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249758
 0x00249764	0x00249768	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249768
-0x00249774	0x00249858	228	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00249774	0x00249818	164	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00249824	0x00249828	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249828
+0x00249834	0x00249838	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249838
+0x00249844	0x00249848	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249848
+0x00249854	0x00249858	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249858
 0x0024acc4	0x0024b660	2460	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024b66c	0x0024b670	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024b670
 0x0024b67c	0x0024b680	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024b680
@@ -4697,8 +4748,17 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024bd8c	0x0024bd90	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bd90
 0x0024bd9c	0x0024bda0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bda0
 0x0024bdac	0x0024bdb0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bdb0
-0x0024bdd0	0x0024be90	192	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024beb4	0x0024bed8	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024bdd0	0x0024be20	80	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024be2c	0x0024be30	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be30
+0x0024be3c	0x0024be40	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be40
+0x0024be4c	0x0024be50	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be50
+0x0024be5c	0x0024be60	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be60
+0x0024be6c	0x0024be70	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be70
+0x0024be7c	0x0024be80	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be80
+0x0024be8c	0x0024be90	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be90
+0x0024beb4	0x0024beb8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024beb8
+0x0024bec4	0x0024bec8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bec8
+0x0024bed4	0x0024bed8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bed8
 0x0024befc	0x0024bf00	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bf00
 0x0024bf24	0x0024c01c	248	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024c01d	0x0024c020	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c020
@@ -5010,8 +5070,15 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e0a6	0x0024e0a8	2	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x4-aligned claim at 0x0024e0a8
 0x0024e0b4	0x0024e0b8	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024e0bc	0x0024e0c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e0c0
-0x0024e218	0x0024e25c	68	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e260	0x0024e2d0	112	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e218	0x0024e220	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e22c	0x0024e230	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e230
+0x0024e23c	0x0024e240	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e240
+0x0024e24c	0x0024e250	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e250
+0x0024e26c	0x0024e270	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e270
+0x0024e27c	0x0024e280	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e280
+0x0024e28c	0x0024e290	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e290
+0x0024e29c	0x0024e2a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e2a0
+0x0024e2ac	0x0024e2d0	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024e2dc	0x0024e2e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e2e0
 0x0024e2ec	0x0024e2f0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e2f0
 0x0024e2fc	0x0024e300	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e300
@@ -5021,7 +5088,16 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e33c	0x0024e340	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e340
 0x0024e34c	0x0024e350	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e350
 0x0024e364	0x0024e3d0	108	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e3f4	0x0024e518	292	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e3f4	0x0024e470	124	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e47c	0x0024e480	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e480
+0x0024e48c	0x0024e490	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e490
+0x0024e49c	0x0024e4a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4a0
+0x0024e4ac	0x0024e4b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4b0
+0x0024e4bc	0x0024e4c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4c0
+0x0024e4cc	0x0024e4d0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4d0
+0x0024e4dc	0x0024e4e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4e0
+0x0024e4ec	0x0024e4f0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e4f0
+0x0024e4fc	0x0024e518	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024e524	0x0024e528	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e528
 0x0024e534	0x0024e538	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e538
 0x0024e544	0x0024e548	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e548
@@ -5032,13 +5108,44 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e594	0x0024e598	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e598
 0x0024e5a4	0x0024e670	204	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024e694	0x0024e6a0	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e6c4	0x0024e720	92	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e744	0x0024e798	84	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e6c4	0x0024e6d0	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e6dc	0x0024e6f0	20	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e6fc	0x0024e700	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e700
+0x0024e70c	0x0024e710	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e710
+0x0024e71c	0x0024e720	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e720
+0x0024e744	0x0024e748	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e748
+0x0024e754	0x0024e758	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e758
+0x0024e764	0x0024e768	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e768
+0x0024e774	0x0024e778	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e778
+0x0024e784	0x0024e788	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e788
+0x0024e794	0x0024e798	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e798
 0x0024e7bc	0x0024e7c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e7c0
 0x0024e7e4	0x0024e7e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e7e8
 0x0024e80c	0x0024e810	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e810
-0x0024e834	0x0024e978	324	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e99c	0x0024ea58	188	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e834	0x0024e888	84	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e894	0x0024e898	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e898
+0x0024e8a4	0x0024e8a8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8a8
+0x0024e8b4	0x0024e8b8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8b8
+0x0024e8c4	0x0024e8c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8c8
+0x0024e8d4	0x0024e8d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8d8
+0x0024e8e4	0x0024e8e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8e8
+0x0024e8f4	0x0024e8f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8f8
+0x0024e904	0x0024e908	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e908
+0x0024e914	0x0024e938	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e944	0x0024e948	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e948
+0x0024e954	0x0024e958	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e958
+0x0024e964	0x0024e968	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e968
+0x0024e974	0x0024e978	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e978
+0x0024e99c	0x0024e9a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e9a0
+0x0024e9ac	0x0024e9b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e9b0
+0x0024e9bc	0x0024e9c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e9c0
+0x0024e9cc	0x0024e9d0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e9d0
+0x0024e9dc	0x0024e9e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e9e0
+0x0024e9ec	0x0024ea18	44	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024ea24	0x0024ea28	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea28
+0x0024ea34	0x0024ea38	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea38
+0x0024ea44	0x0024ea48	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea48
+0x0024ea54	0x0024ea58	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea58
 0x0024ea6c	0x0024ea70	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea70
 0x0024ea7c	0x0024ea80	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea80
 0x0024ea8c	0x0024ea90	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024ea90
@@ -5066,9 +5173,27 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002513f4	0x002513f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002513f8
 0x00251404	0x00251408	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251408
 0x00251414	0x00251418	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251418
-0x00251424	0x002514d8	180	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00251424	0x00251448	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00251454	0x00251458	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251458
+0x00251464	0x00251468	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251468
+0x00251474	0x00251478	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251478
+0x00251484	0x00251488	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251488
+0x00251494	0x00251498	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251498
+0x002514a4	0x002514a8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002514a8
+0x002514b4	0x002514b8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002514b8
+0x002514c4	0x002514c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002514c8
+0x002514d4	0x002514d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002514d8
 0x002514fc	0x00251500	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251500
-0x00251524	0x00251600	220	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00251524	0x00251558	52	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00251564	0x00251568	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251568
+0x00251574	0x00251578	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251578
+0x00251584	0x00251588	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251588
+0x00251594	0x00251598	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251598
+0x002515a4	0x002515a8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002515a8
+0x002515b4	0x002515b8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002515b8
+0x002515c4	0x002515c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002515c8
+0x002515d4	0x002515d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002515d8
+0x002515e4	0x00251600	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00251600	0x00251608	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (8)	no oracle names this zero-fill run
 0x0025161c	0x0025162c	16	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0025162c	0x00251630	4	.bss	library-private data	excluded	library-private data		NAFXCW

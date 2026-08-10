@@ -6,6 +6,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>

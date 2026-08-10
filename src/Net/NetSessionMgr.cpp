@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>

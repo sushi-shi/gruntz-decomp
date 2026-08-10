@@ -12,6 +12,7 @@
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>

@@ -9,6 +9,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObjTypeRegistrars.h>

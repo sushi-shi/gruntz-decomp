@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/ToyPeek.h>

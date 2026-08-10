@@ -16,6 +16,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntVoiceActReg.h>
 #include <Gruntz/GruntzMgr.h>

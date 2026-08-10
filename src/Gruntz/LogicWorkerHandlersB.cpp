@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/PathHazard.h>
 #include <Gruntz/RainCloud.h>
