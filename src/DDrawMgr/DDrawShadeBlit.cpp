@@ -989,21 +989,29 @@ void CDDrawShadeBlit::BlitShadedForward(
                 x += b - 0x80;
                 pos++;
             } else {
-                i32 vis;
                 if (x + static_cast<i32>(b) < clip->right) {
-                    vis = b;
-                } else {
-                    i32 v = clip->right - x;
-                    vis = v < 0 ? 0 : v;
-                }
-                u8* dd = base + x * m_dstBpp;
-                u8* ss = &m_rleData[pos + 1];
-                if (m_doubleScanlines) {
-                    if ((dst->top + row) % 2) {
-                        ConvertRowDoubleFwd(dd, ss, vis, pitch);
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            ConvertRowDoubleFwd(base + x * m_dstBpp, &m_rleData[pos + 1], b, pitch);
+                        }
+                    } else {
+                        ConvertRow(base + x * m_dstBpp, &m_rleData[pos + 1], b);
                     }
                 } else {
-                    ConvertRow(dd, ss, vis);
+                    if (m_doubleScanlines) {
+                        if ((dst->top + row) % 2) {
+                            i32 v = clip->right - x;
+                            ConvertRowDoubleFwd(
+                                base + x * m_dstBpp,
+                                &m_rleData[pos + 1],
+                                v < 0 ? 0 : v,
+                                pitch
+                            );
+                        }
+                    } else {
+                        i32 v = clip->right - x;
+                        ConvertRow(base + x * m_dstBpp, &m_rleData[pos + 1], v < 0 ? 0 : v);
+                    }
                 }
                 x += b;
                 pos += static_cast<i32>(b) * m_srcBpp + 1;
