@@ -786,18 +786,33 @@ def cmd_build(args) -> None:
 
 
 def cmd_labels(args) -> None:
-    """Regenerate build/gen/symbol_names.csv from src @address + base objs."""
-    nm = tool("llvm-nm")
-    clang = _clang()
-    tu_obj = []
-    for u in units():
-        tu_obj += ["--tu", u["source"], "--obj", f"build/objdiff/base/{u['unit']}.obj"]
-    compdb = REPO / "build" / "clangd" / "compile_commands.json"
-    cmd = [sys.executable, str(BUILD / "labels.py"),
-           "--clang", clang, "--nm", nm, *tu_obj, "--out", str(GEN_NAMES)]
-    if compdb.is_file():
-        cmd += ["--compdb", str(compdb)]
-    run(cmd)
+    """Regenerate the labels step by running its ninja edges - not a second implementation.
+
+    `gruntz labels` used to invoke labels.py ONCE over every TU with `--out
+    symbol_names.csv` and nothing else. The ninja graph runs `gen_labels_one` PER
+    UNIT (csv + .functions.json + .globals.json fragments) and then `merge_labels`,
+    which emits symbol_names.csv AND functions.json AND globals.json together. So
+    the CLI route overwrote the pipeline's HINGE file - the delink re-fires on
+    symbol_names.csv - while leaving functions.json/globals.json stale, i.e. the
+    per-RVA signatures and declared global types that feed the Ghidra enrichment
+    (and, through functions.json, `harvest_locals`) silently described a different
+    symbol set than the delink did.
+
+    Same defect and same fix as `gruntz link` (56a022d30): two paths that produce the
+    same artifact must not disagree, so the second implementation is removed rather
+    than taught the missing flags. The graph is the single source of truth for how
+    labels are generated; labels.py keeps its direct flags for one-off experiments.
+    """
+    run([sys.executable, str(CONFIGURE)])   # a moved/deleted header would wedge the manifest
+    ninja = tool("ninja")
+    _start_wine_session()                   # gen_labels_one needs the base objs -> `cl` under wine
+    try:
+        # Name all three merge outputs, not just the hinge: if the merge is ever split
+        # into separate edges, this still demands the whole consistent set.
+        run([ninja, "build/gen/symbol_names.csv",
+             "build/gen/functions.json", "build/gen/globals.json"])
+    finally:
+        _kill_wine_session()
 
 
 def cmd_structs(args) -> None:
@@ -1453,7 +1468,8 @@ def main() -> None:
                    help="extra ninja args after `--` (e.g. -j8).")
     b.set_defaults(func=cmd_build)
 
-    sub.add_parser("labels", help="regenerate symbol_names.csv from src @address"
+    sub.add_parser("labels", help="run the labels edges: symbol_names.csv + "
+                                  "functions.json + globals.json (via ninja)"
                    ).set_defaults(func=cmd_labels)
 
     s = sub.add_parser("structs", help="regenerate structs.json + enums.json")
