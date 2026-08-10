@@ -664,6 +664,27 @@ def _decidable(seq):
     return [x for x in seq if x != UNDECIDABLE]
 
 
+def _reconcile_candidate_tail(rseq, cseq, tail):
+    """Admit only candidate-tail referents missing from retail's multiset.
+
+    Candidate symbol extents run to the next public and can therefore include
+    compiler tables after the retail carve.  Those candidate-only tail operands
+    have never been part of the referent metric.  A real call site can also move
+    beyond retail's byte length when our body is longer, though; discarding it
+    fabricates a missing referent.  Pull from the tail only while retail still
+    has a deficit for that same identity.  A wrong or surplus tail referent
+    cannot satisfy the deficit and remains outside the established scope.
+    """
+    need = Counter(rseq)
+    have = Counter(cseq)
+    out = list(cseq)
+    for desc in tail:
+        if have[desc] < need[desc]:
+            out.append(desc)
+            have[desc] += 1
+    return out
+
+
 def _seq_divergences(rseq, cseq, sm=None):
     """Non-equal segments of two referent sequences, in sequence order.
 
@@ -790,10 +811,16 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     # still have a perfect referent sequence (correct code, different
     # scheduling), and it can be byte-identical in the parts that align while
     # calling the WRONG function - only this test separates the two.
-    # Only over the length retail carved: cl parks a switch jump table in
-    # .text right after the body, so our "up to the next public" extent can
-    # carry operands retail's carve never included.  Extra tail content is
-    # reported as size (`cand_extra`), not as a wrong referent.
+    # Retail's complete carve is the identity denominator.  Candidate bytes
+    # beyond that length are normally only an unmeasured size tail: our public
+    # extent can swallow compiler tables that retail's carve excludes.  But a
+    # genuine call site can move into that tail when our body is longer.  The
+    # decisive counterexample was BlitShadedMirrored: both complete bodies have
+    # 3 ConvertRowDouble and 4 ConvertRowFlip calls, while the old min(rn, cn)
+    # cutoff hid one candidate pair and promoted an ordering-only region to a
+    # false wrong-referent result.  Reconcile only tail identities needed to
+    # fill a retail multiset deficit; surplus or wrong tail operands stay out of
+    # the established metric scope.
     # An operand naming its OWN region at an interior offset is a switch jump
     # table (or a computed-goto label).  Its referent is "this function" on both
     # sides and the offset is pure codegen, so it carries no identity evidence -
@@ -802,10 +829,13 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     # is a real referent and stays.
     lim = min(rn, cn)
     interior = (name + "+") if name else None
-    rraw = [d for d in (_desc(R, rlo, rb, sl) for sl in rsl if sl[0] + 4 <= lim)
+    rraw = [d for d in (_desc(R, rlo, rb, sl) for sl in rsl if sl[0] + 4 <= rn)
             if not (interior and d.startswith(interior))]
     craw = [d for d in (_desc(C, clo, cb, sl) for sl in csl if sl[0] + 4 <= lim)
             if not (interior and d.startswith(interior))]
+    ctail = [d for d in (_desc(C, clo, cb, sl) for sl in csl
+                         if lim < sl[0] + 4 <= cn)
+             if not (interior and d.startswith(interior))]
     # UNKNOWN IS NOT A REFERENT.  Keeping `<?>` in the sequence let one side's
     # extra unnamed operand split an otherwise identical decidable sequence and
     # manufactured a "different referent" row.  LoadPickupSprites was the
@@ -816,6 +846,7 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     cmp_.ref_undec += sum(1 for x in rraw if x == UNDECIDABLE)
     rseq = _decidable(rraw)
     cseq = _decidable(craw)
+    cseq = _reconcile_candidate_tail(rseq, cseq, _decidable(ctail))
     cmp_.ref_total += len(rseq)
     if not rseq and not cseq:
         return

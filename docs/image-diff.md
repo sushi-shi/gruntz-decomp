@@ -235,7 +235,7 @@ The registry-key underscores and the ButeMgr message are byte-level source bugs;
 `CSBI_RectOnly` and `_zvec` rows are modelling divergences (wrong class constructed,
 different container API).
 
-### Four asymmetries that were NOT defects
+### Resolved asymmetries that were NOT defects
 
 A wrong-referent row is only worth a reader's time if a *correct* candidate could
 have produced a matching one. Four readings could not, and each manufactured rows in
@@ -289,6 +289,20 @@ region. The three apparent string-literal rows were all mixed structural regions
 monotone evidence precedence the honest triage is **219 symbol**, **29 weak/content-only**,
 and **0 literal-only**. A negative control keeps a later plausible string from erasing
 stronger identity evidence.
+
+An eighth asymmetry was the candidate-side byte cutoff. Retail has a complete carved
+extent, while a candidate public runs to the next public and can be longer. Comparing
+operands only through `min(retail_size, candidate_size)` therefore discarded real call
+sites that merely moved later in a longer reconstruction. `BlitShadedMirrored` is the
+decisive control: its 4,637-byte retail body and 4,844-byte candidate body both contain
+exactly three `ConvertRowDouble` calls and four `ConvertRowFlip` calls, but one candidate
+pair lay beyond the old cutoff. The audit now admits a candidate-tail referent only when
+that exact identity fills a deficit in retail's multiset. A wrong or surplus tail
+referent cannot hide a missing call. On the same candidate snapshot this changed
+**220 wrong / 39 ordering-only** to **182 wrong / 44 ordering-only**: 38 regions left
+the wrong list, five were correctly retained as ordering-only, and the combined
+worklist lost 33 false positives.
+
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
 yellow-to-blue startup symptom is therefore not explained by a wrong named-asset
@@ -339,6 +353,8 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] two swapped relocated dwords -> ONE ordering-only region
     [PASS] ...and NOT a wrong-referent region (the multiset is intact)
     [PASS] ...and the ordering worklist attributes it to the right region
+    [PASS] a correct referent moved past retail's byte extent is retained
+    [PASS] a wrong candidate-tail referent cannot fill that deficit
     [PASS] .rsrc: every differing byte is a classified placement shift
     [PASS] every section counts its UNMEASURABLE bytes in the DENOMINATOR
 
@@ -363,9 +379,11 @@ the constant under test, and the check would pass by agreeing with itself.
   in the other direction.
 * **Retail extents come from `config/retail/functions.tsv`**, i.e. from a carve, not
   from ground truth. A mis-carved boundary shortens what gets compared.
-* **The referent sequence is compared only over the length retail carved**, because
-  cl parks a switch jump table in `.text` right after the body and our "up to the
-  next public" extent can carry operands retail's carve never included.
+* **The retail sequence uses the complete retail carve.** Candidate operands through
+  the common byte extent are compared directly. Beyond it, only exact identities
+  needed to fill a retail multiset deficit are admitted; this retains calls displaced
+  by a longer candidate body without treating compiler tables after a public as new
+  referents.
 * **The `weak` resolution class** (8 bytes at an unnamed data target) can in
   principle collide — two distinct pool constants with the same leading 8 bytes. An
   all-zero window is not evidence at all and is demoted to UNDECIDABLE, as is a

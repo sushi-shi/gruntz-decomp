@@ -221,6 +221,19 @@ class OrderingWorklistTests(unittest.TestCase):
     def test_equal_sequences_yield_no_segments(self):
         self.assertEqual(image_diff._seq_divergences(["A", "B"], ["A", "B"]), [])
 
+    def test_candidate_tail_only_fills_retail_identity_deficits(self):
+        self.assertEqual(
+            image_diff._reconcile_candidate_tail(
+                ["A", "B", "A"], ["A"], ["X", "B", "A", "A"]),
+            ["A", "B", "A"],
+        )
+
+    def test_wrong_candidate_tail_cannot_hide_a_missing_referent(self):
+        self.assertEqual(
+            image_diff._reconcile_candidate_tail(["A", "B"], ["A"], ["X"]),
+            ["A"],
+        )
+
 
 class ViewDebtLibraryShadowTests(unittest.TestCase):
     def _run(self, definition):
