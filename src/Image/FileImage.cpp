@@ -369,7 +369,13 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
 
     CFile file;
     if (flag != 0) {
-        if (file.Open(static_cast<char*>(pal), 0x2001, 0) == 0) {
+        // The name is `path`, NOT `pal`: retail reloads the FIRST argument in both
+        // arms (`mov eax,[esp+0x78]` at 0x14471d and `mov edx,[esp+0x78]` at
+        // 0x1448b6, each 4 bytes above the `push 0` it just made, i.e. the slot the
+        // NULL guard above already read).  The one caller that reaches this arm is
+        // SaveScreenshot, which passes pal = 0, so opening `pal` could never write a
+        // save-game preview and CSaveGame::Save failed after a COMPLETE snapshot.
+        if (file.Open(static_cast<char*>(path), 0x2001, 0) == 0) {
             this->m_ddSurface->Unlock(0);
             delete[] line;
             return 0;
@@ -377,7 +383,7 @@ i32 CDDSurface::SaveRle16(void* path, void* pal, i32 flag) {
         // modeNoTruncate: only the append open repositions to the end.
         file.Seek(0, 2);
     } else {
-        if (file.Open(static_cast<char*>(pal), 0x1001, 0) == 0) {
+        if (file.Open(static_cast<char*>(path), 0x1001, 0) == 0) {
             this->m_ddSurface->Unlock(0);
             delete[] line;
             return 0;

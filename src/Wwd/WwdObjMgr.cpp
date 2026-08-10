@@ -1121,6 +1121,24 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
         CGameObject* createdObj;
         switch (desc.m_classId) {
+            // Arm order is retail's, not the classId order: cl lays switch arms out
+            // in SOURCE order and retail's first arm is the CreateDeferredObject one
+            // (0x15adf0 calls 0x159440 with four pushes and no `val != NULL` guard),
+            // with the two six-argument arms behind it.
+            case CLASSID_WWDOBJF: {
+                CObject* val = NULL;
+                OwnerMgr()->m_workerCache->m_workers.Lookup(
+                    static_cast<const char*>(desc.m_workerName),
+                    val
+                );
+                createdObj = CreateDeferredObject(
+                    desc.m_id,
+                    desc.m_sortKey,
+                    static_cast<AnimWorkerObj*>(val),
+                    0
+                );
+                break;
+            }
             case CLASSID_WWDOBJA: {
                 CObject* val = NULL;
                 OwnerMgr()->m_workerCache->m_workers.Lookup(
@@ -1139,20 +1157,6 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 } else {
                     createdObj = NULL;
                 }
-                break;
-            }
-            case CLASSID_WWDOBJF: {
-                CObject* val = NULL;
-                OwnerMgr()->m_workerCache->m_workers.Lookup(
-                    static_cast<const char*>(desc.m_workerName),
-                    val
-                );
-                createdObj = CreateDeferredObject(
-                    desc.m_id,
-                    desc.m_sortKey,
-                    static_cast<AnimWorkerObj*>(val),
-                    0
-                );
                 break;
             }
             case CLASSID_WWDOBJB: {

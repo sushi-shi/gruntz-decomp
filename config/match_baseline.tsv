@@ -1713,7 +1713,7 @@ fileimage	?RunDecode1@CDDSurface@@QAEHPAX0HH@Z	100.0000	100.0000	4	8b350afbf871	
 fileimage	?RunDecode3@CDDSurface@@QAEHPAX0HH@Z	100.0000	100.0000	4	12e643629929	0x1453f0	100.0000
 fileimage	?SaveBmp@CDDSurface@@QAEHPBDPAXH@Z	99.3263	99.3263	9	1285f2d4f5b8	0x1443b0	99.3263
 fileimage	?SaveDispatch@CDDSurface@@QAEHPADPAXH@Z	100.0000	100.0000	3	40dd118e4b0b	0x144350	100.0000
-fileimage	?SaveRle16@CDDSurface@@QAEHPAX0H@Z	91.8199	91.8199	7	85fcd09c8e5b	0x144640	91.8863
+fileimage	?SaveRle16@CDDSurface@@QAEHPAX0H@Z	91.8957	91.8957	8	092f64976af9	0x144640	91.8957
 fileimage	?SaveTga@CDDSurface@@QAEHPBDPAXH@Z	86.6546	86.6546	8	b0ef6d8859bf	0x144900	86.6546
 filestream	?CloseFileIOGlobal@@YAXXZ	100.0000	100.0000	1	c07846052c87	0xbd430	100.0000
 filestream	?OpenGruntzLog@CFileLog@@QAEXXZ	100.0000	100.0000	1	5a2e5a9ab3f9	0xbd450	100.0000
@@ -4661,7 +4661,7 @@ wwdobjmgr	?ForEachSerialize@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4LogicTypeId
 wwdobjmgr	?InsertSorted@CDDrawChildGroup@@QAEXPAUCGameObject@@H@Z	100.0000	100.0000	4	d303731389a8	0x159e40	100.0000
 wwdobjmgr	?InvalidateChildShadows@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	2	2fd5f729183a	0x159d90	100.0000
 wwdobjmgr	?IsKindUnique@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	6	278c5a6e91b6	0x15aa20	100.0000
-wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	74.5000	74.5000	4	8d2c8b1cc2bf	0x15ad30	75.2857
+wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	76.7262	76.7262	5	d0a754a03745	0x15ad30	76.7262
 wwdobjmgr	?PruneList@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	5	661ae2747ef2	0x15aa90	100.0000
 wwdobjmgr	?PruneOrphans@CDDrawChildGroup@@QAEHXZ	93.7541	93.7541	5	bc238fd9d1b8	0x15b1d0	93.7541
 wwdobjmgr	?ReinsertUnflagged@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	3	72f292b08208	0x159e10	100.0000
