@@ -11,22 +11,12 @@
 // burns esi/edi and reshapes the whole function's register allocation.
 #pragma pack(push, 1)
 struct WaveFormatX {
-    union {
-        u32 m_formatWord;
-        struct {
-            u16 wFormatTag;
-            u16 nChannels;
-        };
-    };
+    u16 wFormatTag;
+    u16 nChannels;
     u32 nSamplesPerSec;
     u32 nAvgBytesPerSec;
-    union {
-        u32 m_blockWord;
-        struct {
-            u16 nBlockAlign;
-            u16 wBitsPerSample;
-        };
-    };
+    u16 nBlockAlign;
+    u16 wBitsPerSample;
     u16 cbSize;
 };
 #pragma pack(pop)
