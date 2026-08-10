@@ -509,6 +509,17 @@ def cmd_build(args) -> None:
           "data-reloc gate violated - a .data/.rdata word points somewhere retail's "
           "does not, or an enrolled datum is carved into an object objdiff never "
           "opens (python -m gruntz.audit.data_relocs)", "normal")
+    # The DATA-MISMODEL gate: retail's own access widths and index strides say when a
+    # declared type is the wrong SHAPE - a wrong element COUNT (indexed [1], or an
+    # array a walker over-runs), a wrong element WIDTH, or two claims that are one
+    # object. Those change bytes directly, or shift .bss/.data once the symbol size
+    # the compiler emits is wrong - and objdiff's next-symbol .bss size inference can
+    # MASK the shift, so this is the only reporter for the g_panTable class. Proves
+    # itself by injecting nine defects (--selftest).
+    _gate("gruntz.audit.data_access_map", ["--gate"],
+          "data-mismodel gate violated - a declared data type is the wrong shape "
+          "(count/width/aggregation); fix the declaration or accept it with evidence "
+          "(python -m gruntz.audit.data_access_map --findings)", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "

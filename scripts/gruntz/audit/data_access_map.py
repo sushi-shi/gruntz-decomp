@@ -62,6 +62,26 @@ TOUCH = ("direct", "indexed", "derived-disp")
 # forms that merely reference the object without reading/writing it here
 REFER = ("lea", "imm", "indcall", "iat")
 
+# --gate FATALs on any NEW finding in a category that implies a real data
+# MISMODEL - a wrong count, a wrong element width, or two claims that are one
+# object - because those change bytes (directly, or in .bss/.data placement once
+# the symbol size the compiler emits is wrong). The evidence-thin categories
+# (`unclaimed` unmodelled-data worklist, `unaccessed` phantom candidates, `stride`
+# whose element type does not even resolve) are NOT gated: they are triaged
+# campaigns, not build-breakers. Each accepted row below is a MEASURED, documented
+# non-defect; a row leaves the set only when its evidence is disproven.
+GATED_CATEGORIES = ("undercount", "shortfall", "width", "adjacent")
+
+# (category, sym_rva) accepted despite firing. The ONLY standing one:
+#   0x253c48 undercount ?g_panTable@@3PAHA - declared i32[1], indexed [-100..0] as
+#   a BACKWARD cursor into g_volumeTable's tail. PROVEN byte-neutral: the next
+#   retail symbol _g_ssLogEnabled is 4 bytes on, so retail reserved a 4-byte slot
+#   too (declared == inter-symbol gap). It is a semantic under-declaration with no
+#   byte consequence, documented in DirectSoundMgr.cpp and docs/data-access-map.md.
+ACCEPTED_MISMODELS = frozenset({
+    ("undercount", 0x253c48),
+})
+
 
 # --- section match %, for the calibration control set -------------------------
 def section_pct():
@@ -504,6 +524,35 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
 
 
 # --- build --------------------------------------------------------------------
+def do_gate(args):
+    """FATAL on any NEW data-MISMODEL finding (see GATED_CATEGORIES). Rebuilds
+    from retail + the current claims so it can never pass on a stale map."""
+    ctx = get_context()
+    types = Types(STRUCTS)
+    accesses, cells, stats = sweep(ctx)
+    claims = attach_pct(build_claims(types, ctx.pe))
+    findings, _ = derive_findings(ctx, types, accesses, cells, claims)
+    gated = [r for r in findings if r[0] in GATED_CATEGORIES]
+    new = [r for r in gated if (r[0], r[2]) not in ACCEPTED_MISMODELS]
+    stale = ACCEPTED_MISMODELS - {(r[0], r[2]) for r in gated}
+    for cat, rva in sorted(stale):
+        print(f"[data-access-map] STALE accept: {cat} 0x{rva:x} no longer fires "
+              f"- remove it from ACCEPTED_MISMODELS")
+    if new:
+        print(f"[data-access-map] GATE FAILED - {len(new)} new data mismodel(s):")
+        for cat, sev, rva, name, addr, detail, ev in new:
+            print(f"  [{cat}] 0x{rva:x} {name}\n      {detail}")
+        print("  A wrong COUNT/width/aggregation changes bytes (or .bss/.data "
+              "placement). Fix the declaration, or - if proven byte-neutral like "
+              "g_panTable - add it to ACCEPTED_MISMODELS with the evidence.")
+        return 1
+    accepted = len(ACCEPTED_MISMODELS) - len(stale)
+    print(f"[data-access-map] gate OK - 0 new data mismodels "
+          f"({accepted} documented exception(s), {len(GATED_CATEGORIES)} "
+          f"categories gated)")
+    return 1 if stale else 0
+
+
 def do_build(args):
     ctx = get_context()
     types = Types(STRUCTS)
@@ -1074,11 +1123,16 @@ def main(argv=None):
                          "(the completeness lane's input)")
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="FATAL on any new data-mismodel finding "
+                         "(undercount/shortfall/width/adjacent)")
     ap.add_argument("--limit", type=int, default=40)
     ap.add_argument("--sqlite", type=Path, default=SQLITE)
     ap.add_argument("--tsv", type=Path, default=TSV)
     args = ap.parse_args(argv)
 
+    if args.gate:
+        return do_gate(args)
     if args.calibrate:
         return do_calibrate(args)
     if args.selftest:

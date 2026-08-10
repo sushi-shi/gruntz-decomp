@@ -303,6 +303,26 @@ too small AND reached only through a scaled index (which folds to offset 0, so n
 past-the-end target is ever recorded) is caught by neither detector. It needs the
 accessor disassembled — the reason `data_access` keeps a per-function view.
 
+## The gate — `--gate` (wired, `--normal` tier)
+
+Detection without enforcement is a report nobody re-runs. `python -m
+gruntz.audit.data_access_map --gate` rebuilds the map from retail + the current
+claims and FATALs on any finding in a category that implies a real MISMODEL —
+`undercount`, `shortfall`, `width`, `adjacent` — that is not in
+`ACCEPTED_MISMODELS`. Those four change bytes, directly or by shifting `.bss` /
+`.data` once the compiler emits the wrong symbol size (which objdiff's
+next-symbol size inference can mask — so this is the *only* reporter for the
+`g_panTable` class). The evidence-thin categories (`unclaimed`, `unaccessed`, the
+type-unresolved `stride` rows) are triage campaigns, not build-breakers, and are
+NOT gated.
+
+One row is accepted today, with its proof in the set: `g_panTable` `undercount`,
+byte-neutral because declared size equals the retail inter-symbol gap. A new
+mismodel fails the build until it is either fixed at the declaration or accepted
+with the same standard of evidence. The gate proves itself non-vacuously (drop
+the accept-set and it FATALs on `g_panTable`) and `--selftest` plants nine
+defects — one per detector — so a green run is a clean tree, not a blind sieve.
+
 ## Evidence rules
 
 * **A content-derived address is self-confirming.** Matching a datum by its
