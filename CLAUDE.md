@@ -22,6 +22,10 @@ nix shells + the `gruntz` wrapper). Nothing importable lives outside the package
 See **`docs/build-system.md`** (the build, the `gruntz` CLI, and how `src/` became
 the single source of truth) and **`docs/gotchas.md`** (measurement/build/matching
 traps + the mislabeled-bug audit playbook + which cleanliness tooling is live).
+**`docs/relevations/`** holds the findings that changed how we LOOK — a signal the
+project had been masking, with the worked example and the measured before/after that
+turned it into an oracle (e.g. a `/GX` unwind funclet names a member's TYPE, which is
+how three fabricated classes were dissolved).
 
 ## Tools come from Nix
 
