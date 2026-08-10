@@ -16,6 +16,10 @@ path = "src/bin/fntdump.rs"
 name = "butez"
 path = "src/bin/butez.rs"
 
+[[bin]]
+name = "pid2png"
+path = "src/bin/pid2png.rs"
+
 [dependencies]
 gruntz-rez = { workspace = true }
 gruntz-codec = { workspace = true }
