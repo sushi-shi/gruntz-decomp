@@ -385,8 +385,8 @@
 0x24bff0	?s_gruntDirNorth_24bff0@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
 0x24c000	?s_gruntDirSouth_24c000@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
 0x24c010	?s_gruntDirWest_24c010@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
-0x24c01c	_?$S55@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S41135	play	0x1	data
-0x24c22c	_?$S56@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S42076	play	0x1	data
+0x24c01c	_?$S@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S	play	0x1	data
+0x24c22c	_?$S@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S	play	0x1	data
 0x24c438	?s_gruntDirNorthEast_24c438@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
 0x24c448	?s_gruntDirNorthWest_24c448@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
 0x24c458	?s_gruntDirSouthEast_24c458@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
@@ -410,10 +410,10 @@
 0x24c670	?s_gruntDirSouthEast_24c670@@3UGruntDirectionCell@@A	levelpreview	0xc	data
 0x24c680	?s_gruntDirCenter_24c680@@3UGruntDirectionCell@@A	levelpreview	0xc	data
 0x24c690	?s_gruntDirSouthWest_24c690@@3UGruntDirectionCell@@A	levelpreview	0xc	data
-0x24c7d8	_s_gruntDirSouth$S26822	savegamedialogs	0xc	data
-0x24c7e8	_s_gruntDirEast$S26805	savegamedialogs	0xc	data
-0x24c7f8	_s_gruntDirNorthEast$S26834	savegamedialogs	0xc	data
-0x24c808	_s_gruntDirSouthEast$S26846	savegamedialogs	0xc	data
+0x24c7d8	_s_gruntDirSouth$S	savegamedialogs	0xc	data
+0x24c7e8	_s_gruntDirEast$S	savegamedialogs	0xc	data
+0x24c7f8	_s_gruntDirNorthEast$S	savegamedialogs	0xc	data
+0x24c808	_s_gruntDirSouthEast$S	savegamedialogs	0xc	data
 0x24c890	?s_gruntDirEast_24c890@@3UGruntDirectionCell@@A	savegame	0xc	data
 0x24c8a0	?s_gruntDirNorth_24c8a0@@3UGruntDirectionCell@@A	savegame	0xc	data
 0x24c8b0	?s_gruntDirSouth_24c8b0@@3UGruntDirectionCell@@A	savegame	0xc	data
@@ -769,17 +769,17 @@
 0x2467b8	?s_gruntDirCenter_2467b8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467c8	?s_gruntDirSouthWest_2467c8@@3UGruntDirectionCell@@A	multi	0xc	data
 # CButeMgr getter-local statics (guards + static return slots), ButeMgr.cpp
-0x2bf388	_?$S28@?1??TickKillCues@CDDrawChildGroup@@UAEXH@Z@4EA$S29657	wwdobjmgr	0x1	data
-0x2bf67c	_?$S49@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S20347	butemgr	0x1	data
-0x2bf680	_?$S53@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4EA$S20507	butemgr	0x1	data
-0x2bf684	_?$S51@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4EA$S20427	butemgr	0x1	data
-0x2bf688	_?$S47@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4EA$S20267	butemgr	0x1	data
-0x2bf690	_?s_default@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4U3@A$S20345	butemgr	0x8	data
-0x2bf698	_?s_empty@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4VCString@@A$S20173	butemgr	0x4	data
-0x2bf6a0	_?s_default@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4U3@A$S20425	butemgr	0x18	data
-0x2bf6b8	_?$S45@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4EA$S20175	butemgr	0x1	data
-0x2bf6c0	_?s_default@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4U3@A$S20505	butemgr	0x10	data
-0x2bf6d0	_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265	butemgr	0x10	data
+0x2bf388	_?$S@?1??TickKillCues@CDDrawChildGroup@@UAEXH@Z@4EA$S	wwdobjmgr	0x1	data
+0x2bf67c	_?$S@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf680	_?$S@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf684	_?$S@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf688	_?$S@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf690	_?s_default@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4U3@A$S	butemgr	0x8	data
+0x2bf698	_?s_empty@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4VCString@@A$S	butemgr	0x4	data
+0x2bf6a0	_?s_default@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4U3@A$S	butemgr	0x18	data
+0x2bf6b8	_?$S@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf6c0	_?s_default@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4U3@A$S	butemgr	0x10	data
+0x2bf6d0	_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S	butemgr	0x10	data
 #
 # 2026-08-09, lane/unmodelled-data: the 25 blocks the data-access sieve still
 # reported as `unclaimed`. Each cell's IDENTITY is read off its own `$E`

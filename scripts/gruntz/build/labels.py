@@ -1144,6 +1144,58 @@ def msvc5_data_symbol(candidate, obj_syms):
     return None
 
 
+#: A reviewed sidecar row that means to BE cl's own spelling is written in the
+#: CANONICAL, ordinal-free form (`..._?$S@?1??Fn@@...@4EA$S`) and resolved to
+#: cl's current spelling at merge time. Rows that are deliberate ALIASES (the
+#: `?s_gruntDirEast_<rva>@@3U...` decorated cells - N copies at N rvas need N
+#: distinct names) carry no `$S` at all and are left untouched.
+_VERBATIM_CL_NAME = re.compile(r"^_.*\$S[0-9]*$")
+
+
+def _repair_static_ordinal(name, unit, cache):
+    """Resolve a canonical sidecar row to cl's CURRENT `$S<n>` spelling.
+
+    NO CHECKED-IN FILE MAY CARRY A `$S<n>` ORDINAL. It is a per-object CodeView
+    counter that renumbers on ANY symbol churn in the TU, so a row pinned as
+    `...@4EA$S41135` silently stops naming anything the moment an unrelated edit
+    shifts the counter to 41134 - and nothing notices, because the objdiff
+    normalizer content-addresses these names by STRIPPING the ordinal, so the
+    stale row and the real symbol still pair and the section stays 100.0 while
+    the manifest names a symbol that does not exist. Measured: 6 of the 8
+    verbatim rows in the sidecar had rotted exactly that way.
+
+    So the sidecar states the ordinal-free name and the build re-derives the
+    rest, authority-checked exactly as `msvc5_data_symbol` does it: a substitute
+    is accepted only when the ordinal-stripped name matches EXACTLY ONE symbol
+    in that unit's base obj. A row matching none is left as written and
+    reported - it names a datum cl no longer emits, which is a real modelling
+    question, not something to paper over.
+
+    (Emitting the canonical form all the way into `symbol_names.csv` is NOT
+    equivalent and is deliberately not done: the delinker needs one name to
+    resolve to one extent image-wide, and stripping collides `_kMsToSeconds$S`
+    across creditsstate and fader, which hold distinct statics at distinct rvas.)
+    """
+    if not _VERBATIM_CL_NAME.match(name):
+        return name
+    if unit not in cache:
+        obj = REPO / "build/objdiff/base" / ("%s.obj" % unit)
+        cache[unit] = nm_all_symbols(str(obj)) if obj.is_file() else set()
+    syms = cache[unit]
+    if not syms or name in syms:
+        return name
+    strip = lambda s: re.sub(r"\$S[0-9]+", "$S", s)      # noqa: E731
+    want = strip(name)
+    hits = [s for s in syms if strip(s) == want]
+    if len(hits) == 1:
+        log("static-copy pin re-pointed to cl's current ordinal: %s -> %s [%s]"
+            % (name, hits[0], unit))
+        return hits[0]
+    log("WARN static-copy pin names no symbol in %s.obj: %s (%d ordinal-stripped "
+        "match(es))" % (unit, name, len(hits)))
+    return name
+
+
 def units_from_toml(path):
     """source-path (repo-relative) -> unit stem."""
     import tomllib
@@ -1484,10 +1536,12 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     # include/Gruntz/GruntDirStatics.h).
     copies = REPO / "config/static_data_copies.tsv"
     if copies.exists():
+        obj_cache = {}
         for ln in copies.read_text().splitlines():
             if not ln.strip() or ln.lstrip().startswith("#"):
                 continue
             rva_s, name, unit, size_s, kind = ln.split("\t")
+            name = _repair_static_ordinal(name, unit, obj_cache)
             rows.append((int(rva_s, 16), name, unit, int(size_s, 16), kind))
     rc = check_labels_manifest(rows)
     if rc != 0:
