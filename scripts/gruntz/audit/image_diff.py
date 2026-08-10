@@ -260,7 +260,28 @@ class Side:
         z = probe.find(b"\0")
         if z > 0 and all(b in TEXT_BYTES for b in probe[:z]):
             return ("str", bytes(probe[:z]))
+        # An address can name the terminating NUL itself.  MSVC emits this for
+        # the final byte load while materialising a local char array.  Treating
+        # it as an 8-byte raw object compares the unrelated datum placed after
+        # the literal; RegistryHelper::Open's `"Software"` terminator was the
+        # decisive false positive.  A contiguous printable prefix proves that
+        # the byte is only the terminator; one zero byte carries no identity,
+        # so return a one-byte raw window and let `resolve()` mark it unknown.
+        if z == 0 and _is_string_terminator(self.pe.data, o, smax):
+            return ("raw", b"\0")
         return ("raw", bytes(probe[:n]))
+
+
+def _is_string_terminator(data, off, limit=256):
+    if off <= 0 or off >= len(data) or data[off] != 0:
+        return False
+    lo = max(0, off - limit)
+    p = off - 1
+    if data[p] not in TEXT_BYTES:
+        return False
+    while p >= lo and data[p] in TEXT_BYTES:
+        p -= 1
+    return p < lo or data[p] == 0
 
 
 def build_retail():
@@ -664,6 +685,69 @@ def _decidable(seq):
     return [x for x in seq if x != UNDECIDABLE]
 
 
+def _align_undecidable(rseq, cseq):
+    """Remove only operands whose cross-image counterpart is unknowable.
+
+    An operand can be named on one side while the corresponding target has no
+    pairable public name on the other.  Dropping `<?>` independently leaves the
+    named operand behind and manufactures a wrong-referent row.  Align the raw
+    streams first, treating `<?>` as a wildcard, then discard both sides of
+    that one slot.  Known-vs-known differences and known operands aligned to a
+    gap remain in the streams and therefore remain actionable.
+
+    The dynamic program strongly prefers exact known anchors, then wildcard
+    pairs, then known mismatches, and gaps last.  Referent streams are small;
+    doing this per paired region is cheap compared with decoding the image.
+    The third return value counts retail operands that became undecidable.
+    """
+    n, m = len(rseq), len(cseq)
+    score = [[0] * (m + 1) for _ in range(n + 1)]
+    step = [[None] * (m + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        score[i][0] = score[i - 1][0] - 1
+        step[i][0] = "r"
+    for j in range(1, m + 1):
+        score[0][j] = score[0][j - 1] - 1
+        step[0][j] = "c"
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            a, b = rseq[i - 1], cseq[j - 1]
+            pair = 5 if a == b and a != UNDECIDABLE else \
+                1 if UNDECIDABLE in (a, b) else 0
+            choices = ((score[i - 1][j - 1] + pair, "p"),
+                       (score[i - 1][j] - 1, "r"),
+                       (score[i][j - 1] - 1, "c"))
+            score[i][j], step[i][j] = max(choices, key=lambda x: x[0])
+
+    aligned = []
+    i, j = n, m
+    while i or j:
+        s = step[i][j]
+        if s == "p":
+            aligned.append((rseq[i - 1], cseq[j - 1]))
+            i -= 1
+            j -= 1
+        elif s == "r":
+            aligned.append((rseq[i - 1], None))
+            i -= 1
+        else:
+            aligned.append((None, cseq[j - 1]))
+            j -= 1
+    aligned.reverse()
+
+    rout, cout, rundec = [], [], 0
+    for a, b in aligned:
+        if a == UNDECIDABLE or b == UNDECIDABLE:
+            if a is not None:
+                rundec += 1
+            continue
+        if a is not None:
+            rout.append(a)
+        if b is not None:
+            cout.append(b)
+    return rout, cout, rundec
+
+
 def _reconcile_candidate_tail(rseq, cseq, tail):
     """Admit only candidate-tail referents missing from retail's multiset.
 
@@ -843,9 +927,8 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     # but two additional undecidable retail operands turned its source-order-only
     # difference into ten alleged wrong assets.  Count unknowns, then remove them
     # before making any identity or ordering claim.
-    cmp_.ref_undec += sum(1 for x in rraw if x == UNDECIDABLE)
-    rseq = _decidable(rraw)
-    cseq = _decidable(craw)
+    rseq, cseq, rundec = _align_undecidable(rraw, craw)
+    cmp_.ref_undec += rundec
     cseq = _reconcile_candidate_tail(rseq, cseq, _decidable(ctail))
     cmp_.ref_total += len(rseq)
     if not rseq and not cseq:
@@ -1738,10 +1821,19 @@ def selftest():
     m2 = sum(l for _i, _j, l in align(a, bytes(c)))
     check("aligner: a 7-byte overwrite costs exactly 7",
           m2 == len(a) - 7, "matched %d of %d" % (m2, len(a)))
+    term = b"\0Software\0NEXT"
+    check("a string terminator is isolated from its next neighbour",
+          _is_string_terminator(term, 9)
+          and not _is_string_terminator(b"\0\0NEXT", 1),
+          "terminator classifier")
 
     orig = CAND
     R, C, base = analyse()
     tb = base[0]
+    open_name = "?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z"
+    open_bad = [x for r in base for x in r.cmp.ref_bad if x[0] == open_name]
+    check("RegistryHelper::Open compares the Software terminator, not its neighbour",
+          not open_bad, "%d false row(s)" % len(open_bad))
 
     # --- 1. the size arithmetic closes, per section -------------------------
     for r in base:
@@ -1803,7 +1895,19 @@ def selftest():
     a = ["A", UNDECIDABLE, "B"]
     b = ["A", "B"]
     check("an undecidable operand cannot manufacture a wrong referent",
-          _decidable(a) == _decidable(b), "sequence split")
+          _align_undecidable(a, b)[:2] == (["A", "B"], ["A", "B"]),
+          "sequence split")
+    a2 = ["A", "B", "C"]
+    b2 = ["A", UNDECIDABLE, "C"]
+    ra2, ca2, ru2 = _align_undecidable(a2, b2)
+    check("a one-sided symbol opposite UNKNOWN is not called wrong",
+          (ra2, ca2, ru2) == (["A", "C"], ["A", "C"], 1),
+          "%r / %r / %d" % (ra2, ca2, ru2))
+    a3 = ["A", "B", "C"]
+    b3 = ["A", "X", "C"]
+    check("a known-vs-known referent difference survives normalization",
+          _align_undecidable(a3, b3)[:2] == (a3, b3),
+          "known difference suppressed")
 
     # --- 3b. the resolver's ASYMMETRY traps --------------------------------
     # Each of these four made a correct operand read as a wrong referent, and

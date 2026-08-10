@@ -244,7 +244,7 @@ public:
         i32 unusedC,
         i32 unusedD,
         i32 unusedE,
-        const char* val,
+        const CString& val,
         i32 unusedG
     );
     i32 CountReadyOptionsSlots(i32 anyState);

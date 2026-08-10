@@ -2024,7 +2024,7 @@ i32 CGruntzMgr::DebugJumpLevel() {
 }
 
 RVA(0x00092d50, 0x3c)
-i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const char* val, i32) {
+i32 CGruntzMgr::LoadOptionsSlotName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
     if (CheckPlayState()) {
         if (m_options[slot].m_liveGate == 0) {
             m_options[slot].m_name = val;
