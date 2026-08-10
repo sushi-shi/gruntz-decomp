@@ -251,10 +251,12 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
         s = scale;
     }
     m_scale = s;
-    m_dstRect.left = cx - surf->m_width * s / 2;
-    m_dstRect.top = cy - surf->m_height * s / 2;
-    m_dstRect.right = surf->m_width * s + m_dstRect.left;
-    m_dstRect.bottom = surf->m_height * s + m_dstRect.top;
+    i32 dl = cx - surf->m_width * s / 2;
+    i32 dt = cy - surf->m_height * s / 2;
+    m_dstRect.left = dl;
+    m_dstRect.top = dt;
+    m_dstRect.right = surf->m_width * s + dl;
+    m_dstRect.bottom = surf->m_height * s + dt;
     if (ctx->m_surface->BltEx(&m_dstRect.left, surf, 0, 0x1000000, 0) != 0) {
         return 0;
     }
@@ -308,13 +310,17 @@ void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 ro = r->top * m_surface->m_pitch + r->right * m_surface->m_bytesPerPixel;
     i32 step = m_surface->m_pitch;
 
-    char* lp = static_cast<char*>(base) + lo;
-    char* rp = static_cast<char*>(base) + ro;
-    for (i32 v = 0; v < h; v++) {
-        *Pix16(lp) = static_cast<u16>(color);
-        *Pix16(rp) = static_cast<u16>(color);
-        lp += step;
-        rp += step;
+    if (h > 0) {
+        char* lp = static_cast<char*>(base) + lo;
+        char* rp = static_cast<char*>(base) + ro;
+        i32 v = h;
+        while (v != 0) {
+            *Pix16(lp) = static_cast<u16>(color);
+            *Pix16(rp) = static_cast<u16>(color);
+            lp += step;
+            rp += step;
+            v--;
+        }
     }
 }
 

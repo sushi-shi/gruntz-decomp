@@ -810,12 +810,12 @@ RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, i32 r, i32 g, i32 b) {
     i32 gg = g & 0xff;
     i32 bb = b & 0xff;
+    i32 best = 0;
     i32 rr = r & 0xff;
     i32 dg = gg - pal->peGreen;
     i32 db = bb - pal->peBlue;
     i32 dr = rr - pal->peRed;
     i32 bestDist = dg * dg + db * db + dr * dr;
-    i32 best = 0;
     for (i32 i = 1; i < PALETTE_ENTRY_COUNT; i++) {
         i32 dr2 = rr - pal[i].peRed;
         i32 dg2 = gg - pal[i].peGreen;

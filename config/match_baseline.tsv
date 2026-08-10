@@ -258,7 +258,7 @@ netsessionnode	3	3
 packetpool	1	1
 palettebmp	2	2
 pathhazard	13	10
-play	93	61
+play	93	62
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
@@ -2797,10 +2797,10 @@ lightfxrender	?BuildShape@CLightFxRender@@QAEHW4LevelArea@@@Z	100.0000	100.0000	
 lightfxrender	?BuildSpacePalette@CLightFxRender@@QAEHXZ	98.6762	98.6762	1	11ed3a6c6e15	0xa8900	99.0831
 lightfxrender	?BuildTropiczPalette@CLightFxRender@@QAEHXZ	97.6489	97.6489	1	6b90209fe9dd	0xa5310	99.4984
 lightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	100.0000	100.0000	5	0d204db221f6	0xa9660	100.0000
-lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	68.6218	68.6218	6	4742ef61d0af	0xa3820	68.6218
+lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	66.4615	66.4615	7	ab22d1208298	0xa3820	68.6218
 lightfxrender	?ContinueMinimapPan@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	2	9f2e251594dc	0xa95d0	100.0000
 lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	100.0000	5	4ad103e0e1e6	0xa3b50	100.0000
-lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAUtagRECT@@PAXH@Z	67.6437	67.6437	5	ee7e0bab92ce	0xa3a20	67.6437
+lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAUtagRECT@@PAXH@Z	72.0690	72.0690	6	1e9f61c10960	0xa3a20	72.0690
 lightfxrender	?EndMinimapPan@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	1	02833a6cf2bb	0xa9500	100.0000
 lightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	2	dab55b822081	0xa4840	100.0000
 lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	4	d45170de347d	0xa33a0	100.0000
@@ -3359,7 +3359,7 @@ play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	8b4b0527c2b5	0xceab0	
 play	?OnRButtonDown@CPlay@@UAEHHHH@Z	89.9850	89.9850	5	5180a5df30c3	0xceae0	89.9850
 play	?OnRButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	9036fe806539	0xcee30	100.0000
 play	?PauseGame@CPlay@@UAEHXZ	100.0000	100.0000	1	633260355a11	0xcee90	100.0000
-play	?PlayCueAt@CPlay@@QAEXHHHHHHHPAUtagRECT@@@Z	99.9301	99.9301	3	98fbe574ad9b	0xd1890	100.0000
+play	?PlayCueAt@CPlay@@QAEXHHHHHHHPAUtagRECT@@@Z	100.0000	100.0000	4	5e90e1748766	0xd1890	100.0000
 play	?PostActionCue@CPlay@@QAEHH@Z	100.0000	100.0000	3	53d5fd78fa7d	0xd7220	100.0000
 play	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	6	791e12c2be2f	0xda440	100.0000
 play	?PostSetup@CPlay@@UAEXPAX@Z	100.0000	100.0000	3	6cbcb5d1685a	0xd00a0	100.0000
@@ -3803,7 +3803,7 @@ shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEEN
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	6	9f72f177963a	0x14fa60	100.0000
 shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	8	558d08e60d43	0x14ed10	100.0000
 shadetablecache	?FindByKey@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	77.9688	77.9688	1	352314a3deba	0x14fb40	77.9688
-shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@HHH@Z	76.0533	76.0533	6	34478b0a3280	0x14fbf0	76.0533
+shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@HHH@Z	77.5600	77.5600	7	c8d549aec4f9	0x14fbf0	77.5600
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	100.0000	100.0000	5	4fa58350a1da	0x14fb80	100.0000
 shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	83.8247	83.8247	9	f85feeeb29f7	0x14df40	83.8247
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	5	07578596cabf	0x14ded0	100.0000

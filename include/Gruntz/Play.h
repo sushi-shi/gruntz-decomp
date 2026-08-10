@@ -139,8 +139,16 @@ public:
 
     i32 StepInputA();
 
-    void
-    PlayCueAt(i32 cueId, i32 fontSel, i32 toBackPage, i32 r, i32 g, i32 b, i32 flag, RECT* rectSrc);
+    void PlayCueAt(
+        i32 cueId,
+        i32 fontSel,
+        i32 toFrontPage,
+        i32 r,
+        i32 g,
+        i32 b,
+        i32 flag,
+        RECT* rectSrc
+    );
 
     i32 PostActionCue(i32 cueId);
 

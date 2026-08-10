@@ -4386,7 +4386,7 @@ RVA(0x000d1890, 0x1ba)
 void CPlay::PlayCueAt(
     i32 cueId,
     i32 fontSel,
-    i32 toBackPage,
+    i32 toFrontPage,
     i32 r,
     i32 g,
     i32 b,
@@ -4419,10 +4419,15 @@ void CPlay::PlayCueAt(
         SetRect(&rect, left, top, right, bottom);
     }
 
-    if (toBackPage != 0) {
-        ShowHudMessageAlt(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
-    } else {
+    // Retail 0xd19c6 `je 0xd1a09`: the NON-zero arm is the FRONT/primary renderer
+    // (thunk 0x1c5d -> EngStr_DrawText 0x115440) and the zero arm is the BACK page
+    // (thunk 0x31d9 -> ShowHudMessageAlt 0x115520). Every in-game caller passes 0,
+    // so the cue text belongs on the back page - drawing it on the primary lets the
+    // frame's own Flip swap it away, which is the level-start text blink.
+    if (toFrontPage != 0) {
         EngStr_DrawText(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
+    } else {
+        ShowHudMessageAlt(m_world, &m_cueText, &rect, fontSel, 1, r, g, b, flag);
     }
 }
 
