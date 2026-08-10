@@ -183,6 +183,10 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     baselines and enforces the hard ratchet gate; `gruntz status`/
     `report` are pure READS - same scoreboard vs the committed baselines,
     ratchet violations print as warnings, nothing is written."""
+    # The carved EH funclets are scored but are not reconstruction targets, and the
+    # denominator this scoreboard divides by never had them (gruntz.core.report).
+    from gruntz.core.report import split_eh_band
+    band = split_eh_band(report)
     m = report.get("measures", {})
     named = {u["unit"] for u in units() if (TARGET_DIR / f"{u['unit']}.c.obj").exists()}
     print()
@@ -207,6 +211,11 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     print(f"  Overall: {mf}/{tf} functions exact ({_pct(mf, tf):.1f}%), "
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
+    if band:
+        exact = sum(1 for _u, _n, _s, pct in band if pct >= 99.995)
+        code = sum(size for _u, _n, size, _p in band)
+        print(f"  EH funclets (carved band, excluded above): {exact}/{len(band)} exact, "
+              f"{code:,} B - `python -m gruntz.audit.eh_band`.")
     # COVERAGE and FIDELITY, never one blended number. `matched_data` only ever
     # answered "of what we enrolled, how much matches" - it read 100% while 60% of
     # retail's initialized data was not enrolled at all, because an unpinned datum
@@ -503,6 +512,15 @@ def cmd_build(args) -> None:
           "compgen-data ratchet violated - a compiler-generated COMMON is unpinned, "
           "or a pin is mis-spelled/stale/unbacked by the base objs "
           "(python -m gruntz.audit.compgen_data)", "normal")
+    # The carved /GX EH funclet band: every derived record must be a DEFINED symbol in
+    # its owner's target object and no funclet push may still resolve to an undefined
+    # `FUN_<rva>`. Both were true image-wide the day this landed, and a regression there
+    # is silent - objdiff scores an unresolved reference the same as a matched one.
+    _gate("gruntz.audit.eh_band", ["--check"],
+          "eh-band: a carved EH funclet record is missing from its owner's target obj, "
+          "or a funclet push still resolves to an UNDEFINED FUN_<rva> - the delinked "
+          "object set no longer closes over EH (python -m gruntz.audit.eh_band)",
+          "normal")
     _gate("gruntz.audit.data_tu_order", ["--ratchet"],
           "data-tu-order ratchet violated - a DATA def lands inside another TU's "
           "same-storage band (python -m gruntz.audit.data_tu_order)", "normal")

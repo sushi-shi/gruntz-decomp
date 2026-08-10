@@ -267,6 +267,77 @@ class ViewDebtLibraryShadowTests(unittest.TestCase):
         self.assertEqual(self._run("class CRect;\n"), 0)
 
 
+class EhBandScoreboardTests(unittest.TestCase):
+    """`split_eh_band` must leave the reconstruction-target scoreboard bit-identical.
+
+    The carved EH funclets are scored but are NOT reconstruction targets: the function
+    universe classes the whole band `eh` and the README divides by a denominator that
+    never had them. Leaving them in objdiff's aggregate put 3,034 symbols in the
+    NUMERATOR alone - the headline read `5,137 / 4,314 functions exact`. The removal is
+    arithmetic over the per-function rows (objdiff's measures are exact sums over them),
+    so it is checkable, and a drifting formula would silently move every published score.
+    """
+
+    def _doc(self):
+        return {
+            "measures": {"total_functions": 3, "matched_functions": 2,
+                         "total_code": "300", "matched_code": "200",
+                         "fuzzy_match_percent": (100.0 * 100 + 100.0 * 100 + 50.0 * 100) / 300},
+            "units": [{"name": "u",
+                       "measures": {"total_functions": 3, "matched_functions": 2,
+                                    "total_code": "300", "matched_code": "200",
+                                    "fuzzy_match_percent": 250.0 / 3},
+                       "functions": [
+                           {"name": "?Real@@QAEHXZ", "size": "100",
+                            "fuzzy_match_percent": 100.0},
+                           {"name": "__ehunwind$?Real@@QAEHXZ$0", "size": "100",
+                            "fuzzy_match_percent": 100.0},
+                           {"name": "__ehreg$?Real@@QAEHXZ", "size": "100",
+                            "fuzzy_match_percent": 50.0},
+                       ]}],
+        }
+
+    def test_band_rows_leave_the_target_scoreboard_untouched(self):
+        doc = self._doc()
+        removed = report.split_eh_band(doc)
+
+        self.assertEqual([row[1] for row in removed],
+                         ["__ehunwind$?Real@@QAEHXZ$0", "__ehreg$?Real@@QAEHXZ"])
+        for measures in (doc["measures"], doc["units"][0]["measures"]):
+            self.assertEqual(measures["total_functions"], 1)
+            self.assertEqual(measures["matched_functions"], 1)
+            self.assertEqual(measures["total_code"], "100")
+            self.assertEqual(measures["matched_code"], "100")
+            self.assertAlmostEqual(measures["fuzzy_match_percent"], 100.0)
+        self.assertEqual([row["name"] for row in doc["units"][0]["functions"]],
+                         ["?Real@@QAEHXZ"])
+
+    def test_a_real_symbol_is_never_mistaken_for_a_band_symbol(self):
+        self.assertTrue(report.is_eh_band("__ehreg$?Foo@@QAEHXZ"))
+        self.assertTrue(report.is_eh_band("__ehunwind$?Foo@@QAEHXZ$3"))
+        self.assertFalse(report.is_eh_band("?Foo@@QAEHXZ"))
+        self.assertFalse(report.is_eh_band("___CxxFrameHandler"))
+        self.assertFalse(report.is_eh_band("?__ehreg$Nested@@QAEHXZ"))
+
+    def test_band_symbol_names_agree_with_the_carve(self):
+        from gruntz.build import eh_band
+        self.assertTrue(report.is_eh_band(eh_band.registration_symbol("?Foo@@QAEHXZ")))
+        self.assertTrue(report.is_eh_band(eh_band.unwind_symbol("?Foo@@QAEHXZ", 0)))
+        self.assertTrue(eh_band.is_band_symbol(eh_band.unwind_symbol("?Foo@@QAEHXZ", 7)))
+
+    def test_a_group_carves_one_record_per_funclet_plus_the_stub(self):
+        from gruntz.build import eh_band
+        group = eh_band.Group(owner_rva=0x1000, owner="?Foo@@QAEHXZ", unit="u",
+                              funclets=(0x1D7D20, 0x1D7D28, 0x1D7D33), stub=0x1D7D3B)
+        self.assertEqual(
+            eh_band.records([group]),
+            [(0x1D7D20, "__ehunwind$?Foo@@QAEHXZ$0", "u", 8),
+             (0x1D7D28, "__ehunwind$?Foo@@QAEHXZ$1", "u", 11),
+             (0x1D7D33, "__ehunwind$?Foo@@QAEHXZ$2", "u", 8),
+             (0x1D7D3B, "__ehreg$?Foo@@QAEHXZ", "u", 10)])
+        self.assertEqual((group.start, group.end), (0x1D7D20, 0x1D7D45))
+
+
 class ResidualQueueTests(unittest.TestCase):
     def test_campaign_starts_at_residual_weighted_middle(self):
         report_data = {"units": [{"name": "unit", "functions": [

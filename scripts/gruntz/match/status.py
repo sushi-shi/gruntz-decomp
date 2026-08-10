@@ -454,6 +454,11 @@ def load_report(path: Path):
     if not path.is_file():
         sys.exit(f"no report: {path}\n  build it first: gruntz build")
     rep = json.loads(path.read_text())
+    # The carved EH funclets are scored but are not reconstruction targets - the
+    # function universe classifies them `eh` and excludes the category from the
+    # denominator, so they must leave the numerator too (gruntz.core.report).
+    from gruntz.core.report import split_eh_band
+    split_eh_band(rep)
     funcs: dict[tuple[str, str], float] = {}
     umeas: dict[str, dict] = {}
     for u in rep.get("units", []):

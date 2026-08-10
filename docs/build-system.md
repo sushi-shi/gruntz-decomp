@@ -550,6 +550,55 @@ digest then retains different address bytes and cannot establish identity.
 These helpers remain unlabelled and are recorded only in
 `config/retail/compiler-generated-functions.tsv`.
 
+### The EH funclet band (`gruntz.build.eh_band`)
+
+cl 5.0 compiles every `/GX` function that owns a destructible object into two
+pieces: the body, and a small EXECUTE COMDAT (`.text$x`) holding that function's
+**unwind funclets** (`mov ecx,[ebp-X] ; jmp <dtor>`, one per unwind state) followed
+by its **registration stub** (`mov eax,<FuncInfo> ; jmp __CxxFrameHandler`), which
+the prologue pushes to build its `EXCEPTION_REGISTRATION`. The retail linker packed
+every one of those COMDATs into one contiguous band at the end of `.text`
+(RVA `0x1d7d00`..`0x1e3b55`).
+
+No unit's contribution covered that band, so each prologue's `push` decomposed as an
+**undefined `FUN_005exxxx` plus a nonzero addend**: the delinked object set did not
+close over EH (a relink would fail on the unresolved externals) and objdiff could
+only name-match the reference — the funclet bytes were never compared.
+
+`scripts/gruntz/build/eh_band.py` derives each group from **retail data alone**: it
+scans a claimed function's body for a `push imm32` landing on a `b8 …/e9 …` stub,
+reads the `FuncInfo` that stub loads (magic `0x19930520`) and walks its unwind map
+(and try-block map) for the funclet addresses. `synth_pdb.py` adds one record per
+funclet plus one for the stub to the PDB, attributed to the OWNING unit, and
+supersedes the inventory's finer per-funclet `eh` rows inside each group so the
+delinker never sees overlapping records. Naming mirrors cl's own labels — anything
+coarser is truncated at the base's next `$L` label and compares against the wrong
+extent:
+
+    __ehunwind$<owner>$<n>   the n-th unwind funclet, n in ADDRESS order (== state order)
+    __ehreg$<owner>          the registration stub
+
+`canonicalize_data_symbols.py` renames the base's compiler-numbered `$L<n>` labels to
+the same names (the owner is the function containing the `push`, identical on both
+sides), so the two sides co-name without either reading the other.
+
+Result: 750 groups / 2284 unwind funclets / 30,672 B carved, **zero** funclet pushes
+left on an undefined `FUN_`, every push decomposing as `__ehreg$<owner>+0`, and the
+funclet bytes genuinely compared. `python -m gruntz.audit.eh_band` reports the
+inventory, re-proves closure and the carve, and classes each group
+(`unwind-identical` / `unwind-content-differs` / `unwind-count-differs`) — the last
+two are real reconstruction defects the masked comparison used to hide.
+
+These symbols are **scored but excluded from the reconstruction-target scoreboard**
+(`gruntz.core.report.split_eh_band`): the function universe classifies the whole band
+`eh` and the README's denominator never had them, so leaving them in objdiff's
+aggregate would put them in the numerator alone. `gruntz status` prints their state on
+its own line.
+
+Still open: the stub's `mov eax,<FuncInfo>` names an unenrolled `.rdata` blob, so every
+`__ehreg$` sits at 97.5% with byte-identical code — the `.xdata$x` half of the EH debt
+(`docs/referent-debt-ddrawmgr.tsv`, class `c`).
+
 ## Pairing (objdiff)
 
 `build/objdiff/objdiff.json` (written by `configure.py:emit_objdiff`) pairs, per unit:

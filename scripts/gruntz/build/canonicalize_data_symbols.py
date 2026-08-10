@@ -31,6 +31,7 @@ inflate a false match.
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import hashlib
 import io
@@ -42,6 +43,13 @@ import tempfile
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
+try:
+    from gruntz.build import eh_band
+except ImportError:  # path-invoked from scripts/gruntz/build (normalize_objs.py)
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import eh_band
 
 
 SYMBOL_SIZE = 18
@@ -98,6 +106,7 @@ RELOCATION_WIDTHS = {
 DIR32 = 0x0006
 FUNCTION_TYPE = 0x0020
 EXTERNAL_STORAGE = 2
+LABEL_STORAGE = 6
 WEAK_EXTERNAL_STORAGE = 105
 
 
@@ -177,15 +186,16 @@ class CanonicalizedObject:
     rows: tuple[CanonicalRow, ...]
 
 
-# SEH bookkeeping both sides spell differently and no source edit can align
-# (docs/referent-debt-ddrawmgr.tsv classes b1/b2). The canonical comparison
-# form: every EH-registration funclet push targets ONE shared name at addend 0,
-# and the base's DIR32 to the absolute CRT `__except_list` (value 0, no .reloc
-# entry survives linking, so the delinked target has a bare fs:[0] operand) is
-# REMOVED rather than retyped - objdiff refuses IMAGE_REL_I386_ABSOLUTE.
-EH_FUNCLET_NAME = "_gzehreg"  # exactly 8 chars: fits the inline COFF name field
+# SEH bookkeeping the two sides spell differently (docs/referent-debt-ddrawmgr.tsv
+# classes b1/b2). Both funclet symbols are renamed to the OWNER-derived names the
+# EH band carve uses (`__ehreg$<owner>` / `__ehunwind$<owner>`, gruntz.build.eh_band),
+# so the reference is compared against a named span rather than a shared placeholder;
+# and the base's DIR32 to the absolute CRT `__except_list` (value 0, no .reloc entry
+# survives linking, so the delinked target has a bare fs:[0] operand) is REMOVED
+# rather than retyped - objdiff refuses IMAGE_REL_I386_ABSOLUTE.
 _EH_TARGET_FUNCLET = re.compile(r"^FUN_[0-9a-f]{8}$")
 PUSH_IMM32 = 0x68
+DUP_PREFIX = "$dup$"
 
 
 class CoffObject:
@@ -901,32 +911,102 @@ def _assert_only_canonical_changes(
                 "jump-table relocation resolved-target postcondition failed")
 
 
-def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[CanonicalRow, ...]]:
-    """Canonicalize SEH bookkeeping relocs on a (already-normalized) comparison copy.
+def _eh_funclet_owners(coff: CoffObject) -> dict[int, str]:
+    """{symbol index -> canonical EH band name} for one side's funclet symbols.
 
-    Two per-side spellings of the SAME machinery, unalignable from source:
-      * base (cl): the per-function EH registration thunk lives in its own small
-        EXECUTE section holding only class-6 `$L` labels; the prologue pushes the
-        thunk label. target (delinked retail): the linker packed those thunks into
-        a far band the delinker did not carve, so the push resolves to an
-        UNDEFINED `FUN_<rva>` external plus a nonzero addend into it.
-        Both become `push EH_FUNCLET_NAME+0` (symbol renamed, target-side stored
-        addend zeroed).
-      * base references the absolute CRT `__except_list` (value 0) with a DIR32
-        the linked image cannot carry (.reloc has no entry for absolute fixups),
-        so the target's fs:[0] operand has no relocation at all. The base-side
-        relocation is REMOVED (objdiff rejects a retype to ABSOLUTE).
+    Both sides spell the SAME machinery differently and no source edit aligns them:
+      * base (cl): the function's EH funclets live in their own small EXECUTE
+        COMDAT labelled only with class-6 `$L` symbols - one per unwind funclet
+        plus one on the registration stub - and the prologue pushes the stub's
+        label. Each label is renamed to the band name for its position.
+      * target (delinked retail): gruntz.build.eh_band already carved those spans
+        under those names, so nothing is renamed there. A group the carve did NOT
+        reach still resolves to an UNDEFINED `FUN_<rva>` plus a nonzero addend; its
+        stub symbol gets the same owner-derived name (and the stored addend is
+        zeroed in `_canonicalize_eh_relocations`) so the reference still co-names.
+
+    The owner is the function containing the `push`, which is the same mangled name
+    on both sides, and the funclet index is its position in ADDRESS order, which is
+    unwind-state order on both sides - so the two sides land on the same symbol
+    names without either knowing anything about the other.
+    """
+    functions: dict[int, list[tuple[int, str]]] = {}
+    for symbol in coff.symbols.values():
+        if symbol.section <= 0 or symbol.storage_class != EXTERNAL_STORAGE:
+            continue
+        if coff.sections[symbol.section - 1].characteristics & MEM_EXECUTE:
+            functions.setdefault(symbol.section, []).append((symbol.value, symbol.name))
+    for entries in functions.values():
+        entries.sort()
+
+    def owner_of(section: int, site: int) -> str | None:
+        entries = functions.get(section)
+        if not entries:
+            return None
+        index = bisect.bisect_right(entries, (site + 1, "")) - 1
+        return entries[index][1] if index >= 0 else None
+
+    labels: dict[int, list[Symbol]] = {}
+    for symbol in coff.symbols.values():
+        if (symbol.section > 0 and symbol.storage_class == LABEL_STORAGE and
+                symbol.name.startswith("$L") and
+                coff.sections[symbol.section - 1].characteristics & MEM_EXECUTE):
+            labels.setdefault(symbol.section, []).append(symbol)
+    for entries in labels.values():
+        entries.sort(key=lambda s: (s.value, s.index))
+
+    out: dict[int, str] = {}
+    for relocation in coff.relocations:
+        if relocation.typ != DIR32:
+            continue
+        site_section = coff.sections[relocation.section - 1]
+        if not site_section.characteristics & MEM_EXECUTE:
+            continue
+        operand = site_section.raw_offset + relocation.site
+        if _byte_at(coff.data, operand - 1) != PUSH_IMM32:
+            continue
+        target = coff.symbols[relocation.symbol_index]
+        base_side = (target.section > 0 and target.storage_class == LABEL_STORAGE and
+                     target.name.startswith("$L") and
+                     target.section != relocation.section and
+                     coff.sections[target.section - 1].characteristics & MEM_EXECUTE)
+        target_side = target.section == 0 and _EH_TARGET_FUNCLET.match(target.name)
+        if not (base_side or target_side):
+            continue
+        owner = owner_of(relocation.section, relocation.site)
+        if owner is None:
+            continue
+        out.setdefault(target.index, eh_band.registration_symbol(owner))
+        if base_side:
+            index = 0
+            for symbol in labels[target.section]:
+                if symbol.value >= target.value:
+                    break
+                out.setdefault(symbol.index, eh_band.unwind_symbol(owner, index))
+                index += 1
+    return out
+
+
+def _byte_at(data: bytes, offset: int) -> int:
+    return data[offset] if 0 <= offset < len(data) else -1
+
+
+def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[CanonicalRow, ...]]:
+    """Drop the base's absolute `__except_list` relocs; zero uncarved funclet addends.
+
+    The base references the absolute CRT `__except_list` (value 0) with a DIR32 the
+    linked image cannot carry (.reloc has no entry for absolute fixups), so the
+    target's `fs:[0]` operand has no relocation at all. The base-side relocation is
+    REMOVED rather than retyped - objdiff rejects IMAGE_REL_I386_ABSOLUTE.
+
+    A funclet push that `gruntz.build.eh_band` did not carve still points into an
+    UNDEFINED `FUN_<rva>` at a nonzero addend; the stored addend is zeroed so it
+    co-names with the base's `push <label>+0` (the rename itself is done in
+    `_eh_funclet_owners`, through the shared symbol-rename path).
     """
     coff = CoffObject(payload)
     data = bytearray(payload)
 
-    sections_with_extern_fn = {
-        s.section for s in coff.symbols.values()
-        if (s.section > 0 and s.typ == FUNCTION_TYPE and
-            s.storage_class == EXTERNAL_STORAGE)
-    }
-
-    renamed: dict[int, str] = {}
     zeroed_sites: list[int] = []
     dropped: set[int] = set()
     for relocation in coff.relocations:
@@ -939,28 +1019,16 @@ def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[Canonical
         if target.section == 0 and target.name == "__except_list":
             dropped.add(relocation.offset)
             continue
-        if (target.section > 0 and target.storage_class == 6 and
-                target.name.startswith("$L") and
-                target.section != relocation.section and
-                coff.sections[target.section - 1].characteristics & MEM_EXECUTE and
-                target.section not in sections_with_extern_fn):
-            renamed.setdefault(target.index, target.name)
-            continue
-        if target.section == 0 and _EH_TARGET_FUNCLET.match(target.name):
+        if target.section == 0 and eh_band.is_band_symbol(
+                target.name.removeprefix(DUP_PREFIX)):
             operand = site_section.raw_offset + relocation.site
             stored = struct.unpack_from("<I", payload, operand)[0]
             if stored != 0 and payload[operand - 1] == PUSH_IMM32:
-                renamed.setdefault(target.index, target.name)
                 zeroed_sites.append(operand)
 
-    if not (renamed or dropped):
+    if not (zeroed_sites or dropped):
         return payload, ()
 
-    encoded = EH_FUNCLET_NAME.encode("ascii")
-    assert len(encoded) == 8
-    for index in renamed:
-        offset = coff.symbols[index].offset
-        data[offset:offset + 8] = encoded
     for operand in zeroed_sites:
         struct.pack_into("<I", data, operand, 0)
     if dropped:
@@ -987,15 +1055,13 @@ def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[Canonical
                 "<H", data, section.header_offset + 32, n_reloc - dropped_here)
 
     result = bytes(data)
-    _assert_only_eh_changes(coff, payload, result, renamed, zeroed_sites, dropped)
+    _assert_only_eh_changes(coff, payload, result, zeroed_sites, dropped)
     rows = []
-    for index, original_name in sorted(renamed.items()):
-        symbol = coff.symbols[index]
+    if zeroed_sites:
         rows.append(CanonicalRow(
-            original_name, EH_FUNCLET_NAME, "eh",
-            "text" if symbol.section > 0 else "undefined",
-            symbol.section, symbol.value, 0, 0, 0, "-",
-            "eh-funclet-registration-push", ""))
+            "eh-funclet-push", "eh-funclet-push", "eh", "text",
+            0, 0, 0, 0, len(zeroed_sites), "-",
+            "uncarved-funclet-addend-zeroed", ""))
     if dropped:
         rows.append(CanonicalRow(
             "__except_list", "__except_list", "eh", "undefined",
@@ -1005,7 +1071,7 @@ def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[Canonical
 
 
 def _assert_only_eh_changes(original: CoffObject, before: bytes, after: bytes,
-                            renamed: dict, zeroed_sites: list, dropped: set) -> None:
+                            zeroed_sites: list, dropped: set) -> None:
     reparsed = CoffObject(after)
     if len(reparsed.relocations) != len(original.relocations) - len(dropped):
         raise RuntimeError("EH canonicalization dropped the wrong reloc count")
@@ -1014,9 +1080,9 @@ def _assert_only_eh_changes(original: CoffObject, before: bytes, after: bytes,
         if (old.section, old.site, old.typ, old.symbol_index) != (
                 new.section, new.site, new.typ, new.symbol_index):
             raise RuntimeError("EH canonicalization disturbed a surviving reloc")
-    for index in renamed:
-        if reparsed.symbols[index].name != EH_FUNCLET_NAME:
-            raise RuntimeError("EH funclet rename did not land")
+    for index, symbol in original.symbols.items():
+        if reparsed.symbols[index].name != symbol.name:
+            raise RuntimeError("EH canonicalization renamed a symbol")
     zeroed = set(zeroed_sites)
     for section_old, section_new in zip(original.sections, reparsed.sections):
         if not section_old.raw_offset:
@@ -1342,6 +1408,19 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         rows.append(CanonicalRow(
             name, name, "common", "bss", 0, offset, size, 0, 0, "-",
             "materialized-common-into-bss", ""))
+
+    # EH funclet symbols -> the owner-derived names the band carve uses, so a
+    # `push <registration stub>` is compared against a NAMED span on both sides.
+    for index, canonical in _eh_funclet_owners(coff).items():
+        if index in renames:
+            continue
+        renames[index] = canonical
+        symbol = coff.symbols[index]
+        rows.append(CanonicalRow(
+            symbol.name, canonical, "eh",
+            "text" if symbol.section > 0 else "undefined",
+            symbol.section, symbol.value, 0, 0, 0, "-",
+            "eh-funclet-owner-derived-name", ""))
 
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(

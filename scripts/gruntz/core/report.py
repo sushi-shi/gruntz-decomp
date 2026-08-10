@@ -28,6 +28,72 @@ def fn_fuzzy(fn):
     return float(fn.get("fuzzy_match_percent") or 0.0)
 
 
+# The compiler EH funclets `gruntz.build.eh_band` carves out of retail's packed
+# band. They ARE scored (that is the point of carving them), but they are NOT
+# reconstruction targets: the README's function universe classifies every one of
+# them `eh` and excludes the whole category from the denominator. Leaving them in
+# objdiff's aggregate would count them in the numerator against a denominator that
+# never had them - the headline read `5,137 / 4,314` before this filter existed.
+EH_BAND_PREFIXES = ("__ehreg$", "__ehunwind$")
+EXACT = 99.995
+
+
+def is_eh_band(name):
+    return name.startswith(EH_BAND_PREFIXES)
+
+
+def split_eh_band(doc):
+    """Strip the EH band rows from `doc` (in place) and return them.
+
+    objdiff's measures are exact sums over the per-function rows - `total_code` is
+    the size sum, `matched_code` the size sum of the rows at 100%, `matched_functions`
+    their count, and `fuzzy_match_percent` their size-weighted mean - so removing a
+    known subset is arithmetic, not re-estimation.  Returns
+    `[(unit, name, size, pct)]` for the removed rows.
+    """
+    removed = []
+    for unit in doc.get("units", []):
+        rows = unit.get("functions")
+        if not rows:
+            continue
+        band = [row for row in rows if is_eh_band(row["name"])]
+        if not band:
+            continue
+        unit["functions"] = [row for row in rows if not is_eh_band(row["name"])]
+        _subtract(unit.setdefault("measures", {}), band)
+        removed.extend((unit.get("name", ""), row["name"], int(row.get("size") or 0),
+                        fn_fuzzy(row)) for row in band)
+    if removed:
+        _subtract(doc.setdefault("measures", {}),
+                  [{"size": size, "fuzzy_match_percent": pct}
+                   for _unit, _name, size, pct in removed])
+    return removed
+
+
+def _subtract(measures, rows):
+    """Remove `rows`' contribution from one objdiff `measures` block."""
+    total_code = int(measures.get("total_code") or 0)
+    weighted = float(measures.get("fuzzy_match_percent") or 0.0) * total_code
+    for row in rows:
+        size = int(row.get("size") or 0)
+        pct = fn_fuzzy(row)
+        total_code -= size
+        weighted -= size * pct
+        measures["total_functions"] = int(measures.get("total_functions") or 0) - 1
+        if pct >= EXACT:
+            measures["matched_functions"] = int(measures.get("matched_functions") or 0) - 1
+            measures["matched_code"] = int(measures.get("matched_code") or 0) - size
+    measures["total_code"] = str(total_code)
+    measures["matched_code"] = str(int(measures.get("matched_code") or 0))
+    measures["fuzzy_match_percent"] = (weighted / total_code) if total_code else 0.0
+    measures["matched_code_percent"] = (
+        100.0 * int(measures["matched_code"]) / total_code if total_code else 0.0)
+    total_functions = int(measures.get("total_functions") or 0)
+    measures["matched_functions_percent"] = (
+        100.0 * int(measures.get("matched_functions") or 0) / total_functions
+        if total_functions else 0.0)
+
+
 def data_measures(doc=None):
     """Size-weighted `.data`/`.rdata`/`.bss` match, plus the all-or-nothing figure.
 

@@ -36,6 +36,7 @@ import bisect
 import csv
 from pathlib import Path as _Path
 
+from gruntz.build import eh_band
 from gruntz.core.library_labels import active_rows as library_active_rows
 from gruntz.core.retail_functions import read as read_retail_functions
 
@@ -377,11 +378,17 @@ def read_names_map(path):
     return overlay
 
 
-def read_functions(path, names_map=None, thunk_names=None, library_rvas=()):
+def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
+                   drop_spans=()):
     """Yield (rva, size, name) for .text functions with size > 0.
 
     If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
     RVA, its curated name overrides the generic retail placeholder.
+
+    ``drop_spans`` are half-open [lo, hi) RVA ranges the inventory carves finer
+    than we want to emit - the EH funclet band, whose per-funclet `eh` rows are
+    superseded by one `__ehunwind$<owner>` record per group (gruntz.build.eh_band).
+    Emitting both would hand the delinker overlapping records.
 
     Source sizes may grow an admitted code-only boundary to include an inline
     jump table that belongs to the function's original /Gy COMDAT.
@@ -392,8 +399,16 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=()):
     names_map = names_map or {}
     library_rvas = set(library_rvas)
     thunk_names = thunk_names or {}
+    spans = sorted(drop_spans)
+    span_lo = [lo for lo, _hi in spans]
     out = []
     seen = set()
+    dropped = 0
+
+    def superseded(rva):
+        index = bisect.bisect_right(span_lo, rva) - 1
+        return index >= 0 and rva < spans[index][1]
+
     for row in read_retail_functions(_Path(path)):
         rva = row["rva"]
         size = row["size"]
@@ -401,6 +416,9 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=()):
         if size <= 0:
             continue
         if not (TEXT_BASE <= rva < TEXT_END):
+            continue
+        if superseded(rva):
+            dropped += 1
             continue
         if rva in names_map:
             name = names_map[rva][0]
@@ -433,6 +451,10 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=()):
             name = thunk_names[rva]
         out.append((rva, size, name))
         seen.add(rva)
+
+    if dropped:
+        print("[synth_pdb] superseded %d inventory row(s) inside the EH funclet band"
+              % dropped, file=sys.stderr)
 
     # A band thunk absent from the inventory still needs a record so its callers'
     # relocations resolve to the curated name; every ILT entry is exactly the
@@ -925,6 +947,18 @@ def main():
     # func rows drive function records (old 3-tuple shape); data rows name the
     # global-variable DATA symbols a matched global is referenced through.
     names_map = {rva: t[:3] for rva, t in overlay.items() if t[3] != "data"}
+    # EH FUNCLET BAND: retail packed every /GX function's `.text$x` COMDAT into
+    # one band at the end of .text that no unit carved, so each prologue's
+    # `push OFFSET <registration stub>` decomposed as an UNDEFINED FUN_<rva> plus
+    # an addend. Carve each group into its OWNER's object as the two symbols cl
+    # itself labels, derived from the retail FuncInfo tables (gruntz.build.eh_band).
+    band = eh_band.groups(_Path(args.exe), names_map)
+    band_spans = [(group.start, group.end) for group in band]
+    for rva, name, unit, size in eh_band.records(band):
+        names_map.setdefault(rva, (name, unit, size))
+    print("[synth_pdb] EH funclet band: %d group(s), %d B, over %d owning unit(s)"
+          % (len(band), sum(g.end - g.start for g in band),
+             len({g.unit for g in band})), file=sys.stderr)
     # LIBRARY NAMES: Ghidra exports CRT/MFC functions under short demangled
     # labels ("ifstream", "seekg", "operator_new"), but our compiled base objs
     # reference the real DECORATED symbols (??0ifstream@@QAE@PBDHH@Z, ...).
@@ -962,7 +996,8 @@ def main():
     if thunk_names:
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"
               % len(thunk_names), file=sys.stderr)
-    funcs = read_functions(args.functions, names_map, thunk_names, library_rvas)
+    funcs = read_functions(args.functions, names_map, thunk_names, library_rvas,
+                           drop_spans=band_spans)
     rdata_syms, data_syms = read_data_symbols(args.exe)
     if data_names:
         ndat = apply_named_data(rdata_syms, data_syms, data_names)
