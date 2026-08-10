@@ -82,8 +82,8 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
 // @early-stop
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
-    i32 prev = 0;
     i32 frame = 0;
+    i32 prev = 0;
     i32 count = GetFrameCount();
     if (count < 1) {
         return;
@@ -93,10 +93,10 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     Wait(lead);
     i32 loops = 0;
     DWORD startTick = GetTickCount();
-    float fStart = static_cast<float>(startTick);
-    float fDur = static_cast<float>(dur);
-    float fCount = static_cast<float>(count);
     if (count >= 0) {
+        float fStart = static_cast<float>(startTick);
+        float fDur = static_cast<float>(dur);
+        float fCount = static_cast<float>(count);
         do {
             frame =
                 static_cast<i32>(((static_cast<float>(GetTickCount()) - fStart) / fDur * fCount));
@@ -160,12 +160,12 @@ CFxModeT1::CFxModeT1() {
 // @early-stop
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
+    m_centerX = SCREEN_HALF_W_PX;
     m_type = FXMODE_LIGHT;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_clearMode = 1;
     m_spanCount = 0;
-    m_centerX = SCREEN_HALF_W_PX;
     m_centerY = SCREEN_HALF_H_PX;
     m_shadeTable = NULL;
 }
