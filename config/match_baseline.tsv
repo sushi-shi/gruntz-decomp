@@ -387,7 +387,7 @@ actionoptionsmenubar	?HitHover@CActionOptionsMenuBar@@QAE?AW4ActionOptionHit@@HH
 actionoptionsmenubar	?Init@CActionOptionsMenuBar@@QAEHW4ActionOptionButtonState@@0HHHH@Z	95.1321	95.1321	1	a4156038a2f9	0x9220	95.1321
 actionoptionsmenubar	?LoadAssets@CActionOptionsMenuBar@@QAEHXZ	84.8723	84.8723	21	53b229396cb0	0x90e0	84.8723
 actionoptionsmenubar	?Refresh@CActionOptionsMenuBar@@QAEHXZ	100.0000	100.0000	15	4d53010c2064	0x9330	100.0000
-actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	82.3238	82.3238	18	48a1f28a6397	0x94c0	82.3238
+actionoptionsmenubar	?Render@CActionOptionsMenuBar@@QAEHXZ	82.3143	82.3143	19	4ab98e598033	0x94c0	82.3238
 actionoptionsmenubar	?Serialize@CActionOptionsMenuBar@@QAEHPAVCFileMemBase@@@Z	95.8667	95.8667	8	ff1c2cbab247	0x9810	95.8667
 adler32	_adler32	100.0000	100.0000	1	7d212c481a3f	0x1882d0	100.0000
 advancedoptions	?AdvancedOptionsDialogProc@@YGHPAUHWND__@@IIJ@Z	99.9383	99.9383	21	0eca6a73d25a	0xafb0	100.0000
@@ -2011,7 +2011,7 @@ gruntcombat	?EntranceTileOffset@CGrunt@@QAEPAHPAH@Z	97.8947	97.8947	4	e443526bbb
 gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	5	a061cb7ee370	0x5b6f0	100.0000
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	db4b142e76c3	0x5bcd0	100.0000
 gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	20	83a95519c385	0x57100	100.0000
-gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	50.4343	50.4305	6	51eb834ec951	0x597a0	50.4343
+gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	65.7715	65.7715	7	9a8902328a1e	0x597a0	65.7715
 gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	4	ebf8d96b3719	0x5b7e0	100.0000
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.3929	90.3929	17	41990a925613	0x588f0	90.3929
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	86.8499	86.8499	21	30968a2ca889	0x57db0	87.3647
@@ -4248,7 +4248,7 @@ triggermgr	?LoadGruntResurrectTuning@CTriggerMgr@@QAEHHHH@Z	87.9890	87.9890	10	2
 triggermgr	?LoadPowerupIconSprites@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	1	4d12c1fbe1e3	0x7c620	100.0000
 triggermgr	?LoadToyBoxIcon@CTriggerMgr@@QAEHHHHW4PickupType@@H@Z	100.0000	100.0000	1	53818ef4adde	0x7a3f0	100.0000
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	10	0d57524b96a3	0x7d1d0	100.0000
-triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	85.8922	85.8922	23	43a728654961	0x79fb0	87.1471
+triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	85.8922	85.8922	24	d98b03175904	0x79fb0	87.1471
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00	100.0000
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30	100.0000
 triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	71.8305	71.8305	33	8b307bc342b3	0x78a50	71.8870
@@ -4266,7 +4266,7 @@ triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	99.1927	99.1927	18	1d
 triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	99.1379	99.1379	8	7814ca8db28b	0x788d0	100.0000
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	13	ae8bd1b981df	0x7d2a0	100.0000
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	bb198cd45dc6	0x7a5e0	100.0000
-triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	80.3125	80.3125	23	2cd551287da3	0x7c110	80.3125
+triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	84.6953	84.6953	24	1c5c0c5742c7	0x7c110	84.6953
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	19	2621a4d1bd22	0x7a180	100.0000
 triggermgr	?SpawnTileFx@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	17	60958ceb3d12	0x79ea0	100.0000
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	12	20bf88b4fc7d	0x7be10	100.0000
@@ -4275,7 +4275,7 @@ triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	99.7297	99.7297	24	60539caa5da3	0x
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	91.1863	91.1863	29	2839e5f469f6	0x7b1b0	91.1863
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	93.6448	93.6448	9	1a948e914359	0x6d300	98.7466
 triggermgrgrid	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	81.7187	81.7187	10	2704b24a2c1a	0x6dae0	81.7714
-triggermgrgrid	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	76.8596	76.8596	14	34544609acef	0x6e120	76.8812
+triggermgrgrid	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	77.3067	77.3067	15	99d055cf7c3e	0x6e120	77.3067
 triggermgrgrid	?CellDispatch@CTriggerMgr@@QAEHHHW4GruntDeathType@@H@Z	100.0000	100.0000	1	595adc14ee69	0x6bcb0	100.0000
 triggermgrgrid	?CellHitTest@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	80.7093	80.7093	4	285158934c10	0x6bea0	80.7093
 triggermgrgrid	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	2	4e3a1ac5a98d	0x6b680	100.0000
