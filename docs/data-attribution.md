@@ -927,6 +927,33 @@ five units (`projectile` 52.6, `creditsstate` 68.8, `play` 28.4, `fortconquered`
 same: model the real datum in the owner TU; the gap row then dissolves on the next
 manifest generation and the section returns to 100.0 with the byte in the denominator.
 
+**Drain of the first five (same day).** Four dissolved, each by a different lever:
+
+* Three were **short pooled literals that content-inference must withhold** (a 1–2 byte
+  payload matches dozens of retail addresses): `" "` at `0x212754` (`t += " "` in
+  `CPlay::DrawDebugStatsFull`), `"!"` at `0x20d168` (the `"… was conquered by …" + "!"`
+  chat line in FortConquered.cpp), `"1"` at `0x213658` (`key + "1"` in
+  `CProjectile::LoadProjectileSprites`). Each took a `DATA_COMPGEN` wrap at its use
+  site — reading the retail bytes named the datum: `21 00` is `"!"`, not an int 33.
+* The creditsstate `??_R0` was a **missing catalog bridge in `rtti_rows()`**:
+  `vtable_rows()` bridges a template specialization (`?$CArray@PAU…`) through
+  `vtables_game.csv` because the registry key decodes its RTTI name into a symbol no
+  object defines, but `rtti_rows()` never got the same bridge, so the class's ENTIRE
+  RTTI graph (COL `0x1f4320` → R3 `0x1f4308` → R1 `0x1f42d8` → R0 `0x20ceb0`) went
+  unwalked. Bridged (rva still has to be a registry-located base-0 vtable), the graph
+  enrolls for its three emitters and the gap dissolves.
+* `fadereffects`' `2.0f` at `0x1f0868` **stays open by design**: retail's `.reloc`
+  proves NOTHING references it (a c1xx-allocated pool slot whose use folded), so any
+  source spelling would be a guess. It is coupled to the sub-100 sine-fader bodies
+  (`CFaderSine::RenderFrame` 79.4, `RenderWarpTile` 60.5) and should fall out of their
+  reconstruction; the standing gap row keeps it visible.
+
+Enrolling the walked `??_R1A@?0A@A@zErrHandling@@8` also exposed a KNOWN deferral:
+`gametext`/`chatboxowner` (−24 B each) additionally emit `??_R4zPTree@@6BzErrHandling@@@`,
+a secondary/MI RTTI record the enrolment machinery still withholds — the target-side R1
+made the combined `.rdata$r` comparable and the deferred MI record now costs. That is
+the MI-RTTI "later pass" surfacing, not a regression of these units' modeling.
+
 ## 4. The reloc-TARGET audit (`gruntz.audit.data_relocs`, gated at `--normal`)
 
 Everything above measures whether the right BYTES are in the right place. This
