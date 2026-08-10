@@ -25,6 +25,17 @@ name,rva,size,unit,note
 ??_7CMapStringToPtr@@6B@,0x1eb014,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CPtrList@@6B@,0x1eb054,0x14,,MFC/CRT (statically linked; not reconstructed)
 ?messageMap@CDialog@@1UAFX_MSGMAP@@B,0x1eb068,0x8,library_data,"MFC AFX_MSGMAP {pBaseMessageMap=&CWnd::messageMap 0x1eb2e0, lpEntries=0x1eb070}; every CDialog-derived map chains to it - dialogs/battlezdlgcolors/customleveldlg/checkpointdlg/multihelpdlg/multistartdlg"
+?_messageEntries@CDialog@@0PBUAFX_MSGMAP_ENTRY@@B,0x1eb070,0xd8,library_data,"CDialog map entries: 9 x 24-B AFX_MSGMAP_ENTRY, ends 0x1eb148 (NAFXCW dgcore.obj)"
+?messageMap@CWnd@@1UAFX_MSGMAP@@B,0x1eb2e0,0x8,library_data,"CWnd AFX_MSGMAP {pBase=&CCmdTarget::messageMap 0x1eb6c8, lpEntries=0x1eb2e8}"
+?_messageEntries@CWnd@@0PBUAFX_MSGMAP_ENTRY@@B,0x1eb2e8,0x2a0,library_data,"CWnd map entries: 28 x 24-B AFX_MSGMAP_ENTRY, ends 0x1eb588 (NAFXCW wincore.obj)"
+?messageMap@CCmdTarget@@1UAFX_MSGMAP@@B,0x1eb6c8,0x8,library_data,"root AFX_MSGMAP {pBase=0, lpEntries=0x1eb6d0}"
+?_messageEntries@CCmdTarget@@0PBUAFX_MSGMAP_ENTRY@@B,0x1eb6d0,0x18,library_data,"CCmdTarget sentinel entry (NAFXCW cmdtarg.obj)"
+_IID_IDirectInputDevice2A,0x1ef458,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_GUID_SysMouse,0x1ef538,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_GUID_SysKeyboard,0x1ef548,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDraw2,0x1ef848,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDrawSurface3,0x1ef888,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectPlay4A,0x1f0588,0x10,library_data,"dxguid.lib GUID named directly by game code"
 ??_7CDialog@@6B@,0x1eb174,0xd8,,MFC/CRT (statically linked; not reconstructed)
 ??_7CWnd@@6B@,0x1eb5c4,0xc0,,MFC/CRT (statically linked; not reconstructed)
 ??_7CTestCmdUI@@6B@,0x1eb6ac,0x10,,MFC/CRT (statically linked; not reconstructed)

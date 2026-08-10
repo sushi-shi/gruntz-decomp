@@ -83,7 +83,7 @@ cursorsnapsprite	6	3
 customleveldlg	4	3
 customworlddialog	10	5
 databuffer	8	5
-ddpagemgr	21	17
+ddpagemgr	21	18
 ddpalette	23	20
 ddrawptrcollections	10	10
 ddrawshadeblit	12	4
@@ -95,7 +95,7 @@ ddrawsurfacepair	43	27
 ddrawsurfacepairblt	1	1
 ddrawworkerhost	5	4
 ddrawworkerregistry	26	14
-ddsurface	57	46
+ddsurface	57	47
 debugprintf	14	12
 debugtiming	2	2
 deflate	15	13
@@ -104,7 +104,7 @@ destructbutton	1	1
 dialogs	57	41
 dircellmethods	19	6
 directdrawmgr	68	44
-directinputmgr2	45	35
+directinputmgr2	45	37
 directsoundmgr	76	65
 donothing	7	4
 droppedobject	26	16
@@ -213,7 +213,7 @@ inftrees	6	6
 infutil	1	1
 ingameicon	25	14
 ingameworkerhandlers	3	0
-inputdevice	14	13
+inputdevice	14	14
 inputdeviceconfig	2	0
 interfaceobject	3	2
 keyedlist	3	1
@@ -252,7 +252,7 @@ multistartdlgroster	39	23
 namerecord	4	4
 netcmdslot	18	13
 netlobbydialogs	20	18
-netmgr	47	38
+netmgr	47	39
 netmgrerror	2	1
 netsession	1	1
 netsessionmgr	29	24
@@ -903,7 +903,7 @@ databuffer	?Set@CShadeTable@@QAEHIH@Z	100.0000	100.0000	4	00ea49d02124	0x1501a0	
 ddpagemgr	?AddToPlaylist@CMoviePlayer@@QAEHPBDHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@HH@Z	100.0000	100.0000	1	7418bc9c5e6a	0x17d3a0	100.0000
 ddpagemgr	?Advance@CMoviePlayer@@QAEHPAUIDirectDrawSurface@@H@Z	100.0000	100.0000	1	fff7a61c9121	0x17c8e0	100.0000
 ddpagemgr	?BlitRegion@CMoviePlayer@@QAEHHHHH@Z	100.0000	100.0000	2	2922a4bbcf23	0x17cdf0	100.0000
-ddpagemgr	?CheckGrid@CMoviePlayer@@QAEHXZ	99.9153	99.9153	1	1304665e023a	0x17cbe0	100.0000
+ddpagemgr	?CheckGrid@CMoviePlayer@@QAEHXZ	100.0000	100.0000	1	1304665e023a	0x17cbe0	100.0000
 ddpagemgr	?CheckMode16@CMoviePlayer@@QAEHXZ	100.0000	100.0000	5	1c76a9fc6f26	0x17d2b0	100.0000
 ddpagemgr	?CloseSmacker@CMoviePlayer@@QAEHXZ	100.0000	100.0000	5	6384ec033e93	0x17c9b0	100.0000
 ddpagemgr	?Configure@CMoviePlayer@@QAEHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	99.9246	99.9246	1	518c099d9694	0x17cfc0	99.9246
@@ -911,7 +911,7 @@ ddpagemgr	?CreateVideoWindow@CMoviePlayer@@QAEHPAUDDModeInfo@@I@Z	99.9029	99.902
 ddpagemgr	?Frame@CMoviePlayer@@QAEHXZ	100.0000	100.0000	9	55ba4cb992f4	0x17caa0	100.0000
 ddpagemgr	?FreeAll@CMoviePlayer@@QAEHXZ	100.0000	100.0000	3	54fc84033ffe	0x17d6b0	100.0000
 ddpagemgr	?HandleError@CMoviePlayer@@QAEXXZ	100.0000	100.0000	5	cef7338c95eb	0x17cc80	100.0000
-ddpagemgr	?Init@CMoviePlayer@@QAEHPAUHWND__@@PAUDDModeInfo@@I@Z	98.1818	98.1818	8	708563b6d13f	0x17c040	98.2438
+ddpagemgr	?Init@CMoviePlayer@@QAEHPAUHWND__@@PAUDDModeInfo@@I@Z	98.2231	98.2231	8	708563b6d13f	0x17c040	98.2438
 ddpagemgr	?InitMode@CMoviePlayer@@QAEHPAUHWND__@@PAUIDirectDraw2@@PAUIDirectDrawSurface@@U_DDSURFACEDESC@@PAUIDirectSound@@@Z	100.0000	100.0000	3	220e12ee9946	0x17c3f0	100.0000
 ddpagemgr	?Open@CMoviePlayer@@QAEHPBDHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	1	baacf5822e07	0x17c6f0	100.0000
 ddpagemgr	?OpenHi@CMoviePlayer@@QAEHHW4MovieLayout@@HPAUtagPOINT@@PAUtagRECT@@@Z	100.0000	100.0000	2	9a8ed87f3e59	0x17c630	100.0000
@@ -1206,7 +1206,7 @@ ddsurface	?Blit816@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	72.9074	72.9074	3	b8
 ddsurface	?Blit824@CDDSurface@@QAEHPAX0W4RasterRowOrder@@@Z	69.8301	69.8301	4	1a96f228796c	0x140110	69.8301
 ddsurface	?Blit@CDDSurface@@QAEHPAXW4ColorDepth@@0W4RasterRowOrder@@@Z	100.0000	100.0000	1	412824fdbdee	0x13faa0	100.0000
 ddsurface	?BlitDirect@CDDSurface@@QAEHPAXW4RasterRowOrder@@@Z	100.0000	100.0000	3	849c981b510c	0x13ece0	100.0000
-ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAX@Z	99.9735	99.9735	4	8b15ef4d67be	0x13e2e0	100.0000
+ddsurface	?BlitIntoDesc@CDDSurface@@UAEHPAX@Z	100.0000	100.0000	4	8b15ef4d67be	0x13e2e0	100.0000
 ddsurface	?BlitSurf@CDDSurface@@UAEHPAXHHW4ColorDepth@@H@Z	100.0000	100.0000	1	cf80dfcc4f43	0x13e0d0	100.0000
 ddsurface	?Blt@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	4	9ab9172f188d	0x13ee60	100.0000
 ddsurface	?BltEx@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	6	0cb97f87bdb6	0x13eef0	100.0000
@@ -1218,7 +1218,7 @@ ddsurface	?DecodeRun24@CDDSurface@@QAEHPAX@Z	100.0000	100.0000	4	81208cb3cbc5	0x
 ddsurface	?DecodeRun8@CDDSurface@@QAEHPAX@Z	100.0000	100.0000	4	072c05d41654	0x140aa0	100.0000
 ddsurface	?DecodeThunk@CDDSurface@@QAEXHHHHHFUtagRECT@@@Z	100.0000	100.0000	2	e7a697e83680	0x141280	100.0000
 ddsurface	?DumpSurfaceInfo@CDDSurface@@QAEXH@Z	100.0000	100.0000	6	24e2fb47adcd	0x140770	100.0000
-ddsurface	?EnumSurfacesCallback@@YGJPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PAX@Z	99.8000	99.8000	3	0732af95a270	0x13e9a0	100.0000
+ddsurface	?EnumSurfacesCallback@@YGJPAUIDirectDrawSurface@@PAU_DDSURFACEDESC@@PAX@Z	99.8769	99.8769	3	0732af95a270	0x13e9a0	100.0000
 ddsurface	?Fill@CDDSurface@@QAEHI@Z	100.0000	100.0000	6	57c5f5b459f9	0x13e760	100.0000
 ddsurface	?FillPalette@CDDSurface@@QAEXI@Z	100.0000	100.0000	3	b26b741f16fe	0x13eb40	100.0000
 ddsurface	?Flip@CDDSurface@@QAEHPAV1@@Z	100.0000	100.0000	5	66977e351536	0x13e850	100.0000
@@ -1390,7 +1390,7 @@ directdrawmgr	?CreateBlit47Surface@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHHHH
 directdrawmgr	?CreateBlit47SurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	99.8594	99.8594	1	5f7d2896b435	0x142da0	100.0000
 directdrawmgr	?CreateBlit7Surface@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHH@Z	99.8676	99.8676	1	e56c20fc3c6e	0x142730	100.0000
 directdrawmgr	?CreateBlit7SurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	99.8594	99.8594	1	e429f5931781	0x142880	100.0000
-directdrawmgr	?CreateDevice@CDDrawPtrCollections@@QAEHPAX0HHW4ColorDepth@@I@Z	99.9412	99.9412	1	fa086e1ff008	0x141dc0	100.0000
+directdrawmgr	?CreateDevice@CDDrawPtrCollections@@QAEHPAX0HHW4ColorDepth@@I@Z	99.9706	99.9706	1	fa086e1ff008	0x141dc0	100.0000
 directdrawmgr	?CreateDirectDrawVia@@YGHPAXHHP6APAUIDirectDraw2@@0HH@Z@Z	100.0000	100.0000	5	f86c1d1cb125	0x143880	100.0000
 directdrawmgr	?CreateFileSurfaceFromDesc@CDDrawPtrCollections@@QAEPAVCDDSurface@@PBU_DDSURFACEDESC@@@Z	99.8594	99.8594	1	c6347f5eb6a9	0x1424a0	100.0000
 directdrawmgr	?CreateKeyedSurface@CDDrawPtrCollections@@QAEPAVCDDSurface@@HHW4ColorDepth@@HH@Z	99.8750	99.8750	1	a34d7787aade	0x1423c0	100.0000
@@ -1460,8 +1460,8 @@ directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	
 directinputmgr2	?FillFrom@CFixedPtrArray32@@QAEHPAPAVCInputDevBase@@HH@Z	100.0000	100.0000	4	369e79309d31	0x134be0	100.0000
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	8	d45ec042124b	0x1331a0	100.0000
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHH@Z	99.9898	99.9898	7	0222744df191	0x133590	100.0000
-directinputmgr2	?InitA@DirectInputMgr2@@QAEHI@Z	99.9206	99.9206	8	c3073ce696d9	0x132e20	100.0000
-directinputmgr2	?InitB@DirectInputMgr2@@QAEHI@Z	99.9057	99.9057	7	6ae25d045af7	0x132ee0	100.0000
+directinputmgr2	?InitA@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	8	c3073ce696d9	0x132e20	100.0000
+directinputmgr2	?InitB@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	7	6ae25d045af7	0x132ee0	100.0000
 directinputmgr2	?IsReady@CDeviceConfigB@@QAEHXZ	100.0000	100.0000	2	38ce26cc7037	0x1343a0	100.0000
 directinputmgr2	?IsValid@CInputDevRoot@@UAEHXZ	100.0000	100.0000	2	92a10957e4ed	0x1332b0	100.0000
 directinputmgr2	?Poll@CDeviceConfigB@@UAEHXZ	100.0000	100.0000	2	4d8a524a196a	0x1343b0	100.0000
@@ -2696,7 +2696,7 @@ ingameworkerhandlers	_CreateInGameIcon	99.9048	99.9048	5	3285b1e53b29	0x95750	10
 ingameworkerhandlers	_CreateInGameText	99.9048	99.9048	5	300fc4e07ce2	0x95890	100.0000
 ingameworkerhandlers	_CreateToyPeek	99.9048	99.9048	5	70ca4c2e3679	0x959d0	100.0000
 inputdevice	?Acquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	1	0d647b8855d0	0x134fb0	100.0000
-inputdevice	?Create@CInputDevRoot@@UAEHPAUIDirectInputA@@PBXPAUHWND__@@@Z	99.9242	99.9242	4	d841f788ff5a	0x134cb0	100.0000
+inputdevice	?Create@CInputDevRoot@@UAEHPAUIDirectInputA@@PBXPAUHWND__@@@Z	100.0000	100.0000	4	d841f788ff5a	0x134cb0	100.0000
 inputdevice	?Escape@CInputDevRoot@@QAEHPAX@Z	100.0000	100.0000	3	df5ed401d8b6	0x135000	100.0000
 inputdevice	?GetCapabilities@CInputDevRoot@@QAEPAUDIDEVCAPS@@XZ	100.0000	100.0000	2	e48bcf64ea59	0x134e30	100.0000
 inputdevice	?GetDeviceInfo@CInputDevRoot@@QAEPAUDIDEVICEINSTANCEA@@XZ	100.0000	100.0000	2	423b1e790216	0x134df0	100.0000
@@ -3222,8 +3222,8 @@ netmgr	?FindPlayerById@CNetMgr@@QAEPAVCNetSessionNode@@H@Z	100.0000	100.0000	3	1
 netmgr	?FreeStrings@CNetPlayerListNode@@QAEXXZ	100.0000	100.0000	2	c9acb5e33d52	0x179680	100.0000
 netmgr	?GetGroupInfo@CNetMgr@@QAEHPAVCNetSessionNode@@PAXH@Z	100.0000	100.0000	1	13aad5a212dc	0x179190	100.0000
 netmgr	?GetPlayerData@CNetMgr@@QAEPAXH@Z	100.0000	100.0000	8	2f225e590ed0	0x178eb0	100.0000
-netmgr	?Init@CNetMgr@@QAEHPAXTNetGuid@@@Z	99.9296	99.9296	3	d61aea8e0ed7	0x178170	100.0000
-netmgr	?InitFromProvider@CNetMgr@@QAEHPAUInterfaceObject@@U_GUID@@@Z	99.8667	99.8667	5	b017661e96fc	0x1780b0	100.0000
+netmgr	?Init@CNetMgr@@QAEHPAXTNetGuid@@@Z	100.0000	100.0000	3	d61aea8e0ed7	0x178170	100.0000
+netmgr	?InitFromProvider@CNetMgr@@QAEHPAUInterfaceObject@@U_GUID@@@Z	99.9333	99.9333	5	b017661e96fc	0x1780b0	100.0000
 netmgr	?InitSession@CNetSessionNode@@QAEHHPBD0H@Z	100.0000	100.0000	7	e8e98916a011	0x1796c0	100.0000
 netmgr	?IsIpxProvider@InterfaceObject@@QAEHXZ	100.0000	100.0000	1	ad9fca34f611	0x1794b0	100.0000
 netmgr	?IsModemProvider@InterfaceObject@@QAEHXZ	100.0000	100.0000	1	def458c9ed23	0x179510	100.0000

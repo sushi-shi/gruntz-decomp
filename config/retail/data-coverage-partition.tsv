@@ -166,18 +166,14 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001eb014	0x001eb040	44	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eb040	0x001eb054	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb054	0x001eb068	20	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eb070	0x001eb148	216	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW:MFC message-map/data block
 0x001eb148	0x001eb168	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb168	0x001eb174	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb174	0x001eb2e0	364	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
-0x001eb2e0	0x001eb2e8	8	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW:MFC message-map/data block
-0x001eb2e8	0x001eb588	672	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW:MFC message-map/data block
 0x001eb588	0x001eb5a8	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb5a8	0x001eb5c4	28	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb5c4	0x001eb69c	216	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb69c	0x001eb6ac	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb6ac	0x001eb6c8	28	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
-0x001eb6c8	0x001eb6e8	32	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW:MFC message-map/data block
 0x001eb6e8	0x001eb758	112	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb758	0x001eb768	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IDispatch
 0x001eb768	0x001eb7c0	88	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
@@ -282,7 +278,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ef428	0x001ef438	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectInput2W
 0x001ef438	0x001ef448	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectInputDeviceA
 0x001ef448	0x001ef458	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectInputDeviceW
-0x001ef458	0x001ef468	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (1)	dxguid.lib:_IID_IDirectInputDevice2A
 0x001ef468	0x001ef478	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectInputDevice2W
 0x001ef478	0x001ef488	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectInputEffect
 0x001ef488	0x001ef498	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_XAxis
@@ -296,8 +291,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ef508	0x001ef518	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_Key
 0x001ef518	0x001ef528	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_POV
 0x001ef528	0x001ef538	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_Unknown
-0x001ef538	0x001ef548	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (1)	dxguid.lib:_GUID_SysMouse
-0x001ef548	0x001ef558	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (1)	dxguid.lib:_GUID_SysKeyboard
 0x001ef558	0x001ef568	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_Joystick
 0x001ef568	0x001ef578	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_ConstantForce
 0x001ef578	0x001ef588	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_GUID_RampForce
@@ -320,11 +313,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ef818	0x001ef828	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_CLSID_DirectDraw
 0x001ef828	0x001ef838	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_CLSID_DirectDrawClipper
 0x001ef838	0x001ef848	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDraw
-0x001ef848	0x001ef858	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (2)	dxguid.lib:_IID_IDirectDraw2
 0x001ef858	0x001ef868	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDraw4
 0x001ef868	0x001ef878	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface
 0x001ef878	0x001ef888	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface2
-0x001ef888	0x001ef898	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (4)	dxguid.lib:_IID_IDirectDrawSurface3
 0x001ef898	0x001ef8a8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface4
 0x001ef8a8	0x001ef8b8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawPalette
 0x001ef8b8	0x001ef8c8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawClipper
@@ -410,7 +401,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f0558	0x001f0568	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectPlay3
 0x001f0568	0x001f0578	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectPlay3A
 0x001f0578	0x001f0588	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectPlay4
-0x001f0588	0x001f0598	16	.rdata	game-visible unenrolled data	eligible	library-private data (SDK GUID)	direct game/compiler code (2)	dxguid.lib:_IID_IDirectPlay4A
 0x001f0598	0x001f05a8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_CLSID_DirectPlay
 0x001f05a8	0x001f05b8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_DPSPGUID_IPX
 0x001f05b8	0x001f05c8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_DPSPGUID_TCPIP
@@ -5264,7 +5254,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0025162c	0x00252e40	6164	.bss	library-private data	excluded	library-private data		NAFXCW
 0x00252e40	0x00252e80	64	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
 0x00252e80	0x00252f3c	188	.bss	library-private data	excluded	library-private data		NAFXCW
-0x00252f3c	0x00252f40	4	.bss	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW
+0x00252f3c	0x00252f40	4	.bss	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW
 0x00252f40	0x00252fd8	152	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
 0x00252fd8	0x00253070	152	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
 0x00253070	0x00253074	4	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
