@@ -137,7 +137,8 @@ class DataCoverageReachabilityTests(unittest.TestCase):
             "0x0000006e\t0x00000074\t6\t.rdata\tprivate\texcluded\tprivate\t-\t\n"
             "0x00000074\t0x00000078\t4\t.rdata\tunknown\teligible\tunknown\t-\t\n"
             "0x000000d2\t0x000000d7\t5\t.data\tprivate\texcluded\tprivate\t-\t\n"
-            "0x000000d7\t0x000000dc\t5\t.data\tunknown\teligible\tunknown\t-\t\n")
+            "0x000000d7\t0x000000dc\t5\t.data\tunknown\teligible\tunknown\t-\t\n"
+            "0x000000dc\t0x000000f0\t20\t.bss\tunknown\teligible\tunknown\t-\t\n")
         regs = {"rdata": (100, 120), "data": (200, 220), "bss": (220, 240)}
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "partition.tsv"
@@ -146,6 +147,8 @@ class DataCoverageReachabilityTests(unittest.TestCase):
                 enrolled = [(100, 110), (200, 210)]
                 got = data_universe._partition(regs, enrolled)
                 self.assertEqual(got["regions"]["rdata"]["excluded"], 6)
+                self.assertEqual(
+                    got["regions"]["bss"]["eligible_unenrolled"], 20)
                 # Same byte totals at shifted addresses are stale too; range
                 # identity matters, not just arithmetic coverage.
                 path.write_text(header + rows.replace(

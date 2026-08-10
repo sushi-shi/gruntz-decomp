@@ -138,9 +138,10 @@ def _partition(regs, enrolled):
     if not PARTITION.is_file():
         return None
     by_region = {"rdata": {"eligible_unenrolled": 0, "excluded": 0},
-                 "data": {"eligible_unenrolled": 0, "excluded": 0}}
+                 "data": {"eligible_unenrolled": 0, "excluded": 0},
+                 "bss": {"eligible_unenrolled": 0, "excluded": 0}}
     categories: dict[str, int] = {}
-    intervals = {"rdata": [], "data": []}
+    intervals = {"rdata": [], "data": [], "bss": []}
     try:
         with PARTITION.open(newline="") as f:
             for row in csv.DictReader(f, delimiter="\t"):
@@ -164,8 +165,6 @@ def _partition(regs, enrolled):
     except (OSError, KeyError, ValueError):
         return None
     for key, (lo, hi) in regs.items():
-        if key == "bss":
-            continue
         covered = _merge_intervals(
             (max(a, lo), min(b, hi)) for a, b in enrolled
             if max(a, lo) < min(b, hi))
@@ -254,7 +253,7 @@ def measures(report_doc=None, pe: PE | None = None) -> dict:
     }
     part = (_partition(regs, runs)
             if init_enrolled is not None else None)
-    for key in ("rdata", "data"):
+    for key in ("rdata", "data", "bss"):
         row = part["regions"][key] if part else None
         excluded = row["excluded"] if row else None
         eligible = out[key]["retail"] - excluded if row else None

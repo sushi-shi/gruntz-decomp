@@ -35,6 +35,15 @@ payload       cl pads between contributions with ZERO, so an uncovered all-zero
               that nothing names is a real gap in our knowledge - reported as
               UNCLASSIFIED rather than absorbed.
 
+`.bss` is partitioned with the SAME reachability machinery but different
+ownership oracles: its bytes are loader zero-fill, so payload proves nothing
+and the verdict rests entirely on (a) who references the run - the `.reloc`
+HIGHLOW table names every absolute-address operand and the containing
+function's game/library classification is evidence - and (b) alignment: a
+hole strictly smaller than the ALIGNMENT the delink manifest states for the
+claim starting at the hole's end exists BECAUSE of that alignment, and is
+slack. Everything else in `.bss` stays eligible (UNCLASSIFIED), fail-closed.
+
 REACHABILITY OVERRIDES OWNERSHIP. A datum directly named by game/compiler code,
 or reached through a pointer stored in enrolled/game-visible data, remains in
 the reconstructable denominator even when its payload proves CRT/MFC/SDK
@@ -66,7 +75,7 @@ import sys
 from collections import Counter, defaultdict, deque
 from pathlib import Path
 
-from gruntz.core.data_universe import enrolled_runs, regions
+from gruntz.core.data_universe import CLAIMS, enrolled_runs, regions
 from gruntz.core.function_universe import classify as classify_functions
 from gruntz.core.pe import PE, REPO
 
@@ -84,8 +93,9 @@ LITERAL = "compiler: pooled literal data"
 GUIDV = "library-private data (SDK GUID)"
 PAD = "padding / alignment (zero)"
 UNK = "UNCLASSIFIED (non-zero)"
-ORDER = [VISIBLE, UNK, EH, RTTI, LITERAL, LIB, GUIDV, EHPAD, PAD]
-ELIGIBLE = {VISIBLE, UNK}
+UNKB = "UNCLASSIFIED (.bss)"
+ORDER = [VISIBLE, UNK, UNKB, EH, RTTI, LITERAL, LIB, GUIDV, EHPAD, PAD]
+ELIGIBLE = {VISIBLE, UNK, UNKB}
 
 # Proven retail contribution-group boundaries (docs/link-section-audit.md).
 MFC_LO, MFC_HI = 0x001EB068, 0x001EE5A4
@@ -307,7 +317,27 @@ def coverage_verdict(attribution, is_visible):
     """The coverage class for an ownership verdict and reachability result."""
     if is_visible:
         return VISIBLE, True
-    return attribution, attribution == UNK
+    return attribution, attribution in (UNK, UNKB)
+
+
+def claim_alignments() -> dict[int, int]:
+    """`{claim rva: stated alignment}` from the delink data manifest.
+
+    The manifest's alignment column is c2's own placement rule
+    (`data_layout.obj_align`), so a `.bss` hole strictly smaller than the
+    alignment of the claim STARTING at its end is proven slack: the hole
+    exists because that claim had to move up.
+    """
+    out: dict[int, int] = {}
+    if not CLAIMS.is_file():
+        return out
+    with CLAIMS.open() as f:
+        for r in csv.DictReader(f, delimiter="\t"):
+            try:
+                out[int(r["rva"], 16)] = int(r["alignment"], 0)
+            except (KeyError, ValueError):
+                continue
+    return out
 
 
 def partition():
@@ -355,14 +385,16 @@ def partition():
     # this, one reference to the first GUID in a packed table would incorrectly
     # make every following private GUID game-visible.
     gaps = []
-    for key in ("rdata", "data"):
+    for key in ("rdata", "data", "bss"):
         lo0, hi0 = regs[key]
         for a, b in _complement(runs, lo0, hi0):
             gaps.append((a, b, "." + key))
 
     eh_spans = _contiguous(owned_eh)
     guid_spans = []
-    for a, b, _ in gaps:
+    for a, b, region in gaps:
+        if region == ".bss":               # loader zero-fill: no payload to scan
+            continue
         r = a
         while r + 16 <= b:
             if r % 8 == 0:
@@ -443,8 +475,21 @@ def partition():
     eh_starts = [a for a, _ in eh_spans]
     guid_starts = [a for a, _, _, _ in guid_spans]
 
+    aligns = claim_alignments()
+
     def ownership(i, a, b, region):
         """(category, evidence, naming libraries) independent of reachability."""
+        if region == ".bss":
+            # Zero-fill: no payload oracle exists. Ownership comes from the
+            # referencing functions; slack from the next claim's alignment.
+            if libof.get(i):
+                libs = libof[i]
+                return LIB, ",".join(sorted(libs)), libs
+            align = aligns.get(b, 0)
+            if b - a < align:
+                return (PAD, f"slack below the 0x{align:x}-aligned claim "
+                        f"at 0x{b:08x}", None)
+            return UNKB, "no oracle names this zero-fill run", None
         eh = _span_covering(eh_spans, eh_starts, a, b)
         if eh:
             return EH, "parsed MSVC /GX table extent", None
@@ -551,30 +596,35 @@ def main() -> int:
     args = ap.parse_args()
 
     p = partition()
-    regs, buckets = p["regions"], p["buckets"]
-    init_retail = ((regs["rdata"][1] - regs["rdata"][0])
-                   + (regs["data"][1] - regs["data"][0]))
-    unenrolled = sum(buckets.values())
-    eligible_unenrolled = sum(buckets[k] for k in ELIGIBLE)
-    excluded = unenrolled - eligible_unenrolled
-    enrolled = init_retail - unenrolled
-    eligible_retail = enrolled + eligible_unenrolled
-    print(f"retail initialized data      {init_retail:>9,} B "
-          f"(.rdata {regs['rdata'][1]-regs['rdata'][0]:,} + "
-          f".data {regs['data'][1]-regs['data'][0]:,})")
-    print(f"enrolled                     {enrolled:>9,} B  "
-          f"({100.0*enrolled/init_retail:.2f}% gross coverage)")
-    print(f"UNENROLLED                   {unenrolled:>9,} B  "
-          f"({100.0*unenrolled/init_retail:.2f}%), partitioned:")
-    for k in ORDER:
-        if buckets.get(k):
-            print(f"    {k:32} {buckets[k]:>9,} B  "
-                  f"{100.0*buckets[k]/unenrolled:5.1f}% of unenrolled")
-    print(f"\nproven private/excluded      {excluded:>9,} B")
-    print(f"eligible retail denominator  {eligible_retail:>9,} B")
-    print(f"RECONSTRUCTABLE COVERAGE      {enrolled:>9,} / "
-          f"{eligible_retail:,} B  ({100.0*enrolled/eligible_retail:.2f}%)")
-    print()
+    regs = p["regions"]
+    per_scope = {"initialized data": Counter(), ".bss (zero fill)": Counter()}
+    for a, b, region, verdict, *_ in p["rows"]:
+        scope = ".bss (zero fill)" if region == ".bss" else "initialized data"
+        per_scope[scope][verdict] += b - a
+    for scope, keys in (("initialized data", ("rdata", "data")),
+                        (".bss (zero fill)", ("bss",))):
+        buckets = per_scope[scope]
+        retail = sum(regs[k][1] - regs[k][0] for k in keys)
+        unenrolled = sum(buckets.values())
+        eligible_unenrolled = sum(buckets[k] for k in ELIGIBLE if k in buckets)
+        excluded = unenrolled - eligible_unenrolled
+        enrolled = retail - unenrolled
+        eligible_retail = enrolled + eligible_unenrolled
+        parts = " + ".join(f".{k} {regs[k][1]-regs[k][0]:,}" for k in keys)
+        print(f"retail {scope:21} {retail:>9,} B  ({parts})")
+        print(f"enrolled                     {enrolled:>9,} B  "
+              f"({100.0*enrolled/retail:.2f}% gross coverage)")
+        print(f"UNENROLLED                   {unenrolled:>9,} B  "
+              f"({100.0*unenrolled/retail:.2f}%), partitioned:")
+        for k in ORDER:
+            if buckets.get(k):
+                print(f"    {k:32} {buckets[k]:>9,} B  "
+                      f"{100.0*buckets[k]/unenrolled:5.1f}% of unenrolled")
+        print(f"proven private/excluded      {excluded:>9,} B")
+        print(f"eligible retail denominator  {eligible_retail:>9,} B")
+        print(f"RECONSTRUCTABLE COVERAGE      {enrolled:>9,} / "
+              f"{eligible_retail:,} B  ({100.0*enrolled/eligible_retail:.2f}%)")
+        print()
     ek = p["eh_kinds"]
     print(f"  EH tables: {ek.get('records', 0)} `/GX` FuncInfo records "
           + ", ".join(f"{k} {v:,} B" for k, v in ek.items() if k != "records"))
@@ -593,10 +643,11 @@ def main() -> int:
             print(f"    {k:32} {v:>9,.0f} B")
 
     if args.worklist or args.unclassified:
-        want = ELIGIBLE if args.worklist else {UNK}
+        want = ELIGIBLE if args.worklist else {UNK, UNKB}
         rows = sorted((r for r in p["rows"] if r[3] in want),
                       key=lambda r: -(r[1] - r[0]))
-        title = "eligible unenrolled worklist" if args.worklist else UNK
+        title = ("eligible unenrolled worklist" if args.worklist
+                 else "UNCLASSIFIED")
         print(f"\n{title}: {len(rows)} runs, {sum(r[1]-r[0] for r in rows):,} B")
         for a, b, region, verdict, _, attribution, evidence, reach in rows[:args.limit]:
             proof = "; ".join(x for x in (attribution, evidence, reach) if x)

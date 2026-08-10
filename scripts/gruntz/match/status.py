@@ -247,16 +247,23 @@ def _data_line() -> list[str]:
             f"**{init['reconstructable_coverage']:.2f}%**" if have_partition else "—",
             f"**{init['fidelity']:.2f}%**",
         ])
-        rows.append(["`.bss` (zero fill)", f"{bss['retail']:,}", "—",
-                     f"{bss['retail']:,}", f"{bss['enrolled']:,}",
-                     f"{bss['coverage']:.2f}%",
-                     f"{bss['fidelity']:.2f}%" if bss["fidelity"] is not None else "—"])
+        bss_part = have_partition and bss.get("eligible_retail") is not None
+        rows.append([
+            "`.bss` (zero fill)", f"{bss['retail']:,}",
+            f"{bss['excluded']:,}" if bss_part else "—",
+            f"{bss['eligible_retail']:,}" if bss_part else f"{bss['retail']:,}",
+            f"{bss['enrolled']:,}",
+            f"{bss['reconstructable_coverage']:.2f}%" if bss_part
+            else f"{bss['coverage']:.2f}%",
+            f"{bss['fidelity']:.2f}%" if bss["fidelity"] is not None else "—"])
         if have_partition:
+            bss_cov = (bss["reconstructable_coverage"] if bss_part
+                       else bss["coverage"])
             headline = (
                 f"**Data — reconstructable coverage "
                 f"{init['reconstructable_coverage']:.2f}% &middot; gross coverage "
                 f"{init['coverage']:.2f}% &middot; fidelity {init['fidelity']:.2f}%** "
-                f"(initialized data; `.bss` {bss['coverage']:.2f}% / "
+                f"(initialized data; `.bss` {bss_cov:.2f}% / "
                 f"{bss['fidelity']:.2f}% is reported apart).")
             partition_note = (
                 f"The generated reachability partition proves "
@@ -265,7 +272,10 @@ def _data_line() -> list[str]:
                 f"{init['eligible_unenrolled']:,} unenrolled B remain in the "
                 "denominator, including every unclassified byte. Library-owned "
                 "data directly reached from game/compiler code or through enrolled "
-                "data is eligible, never excluded.")
+                "data is eligible, never excluded."
+                + (f" `.bss` is partitioned the same way: {bss['excluded']:,} B "
+                   "excluded (zero-fill referenced only by proven library code, "
+                   "plus sub-alignment slack)." if bss_part else ""))
         else:
             headline = (
                 f"**Data — gross coverage {init['coverage']:.2f}% &middot; fidelity "
