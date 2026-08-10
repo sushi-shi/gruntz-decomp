@@ -493,6 +493,47 @@ def partition():
         i = bisect.bisect_left(rsites, a - 3)
         return i < len(rsites) and rsites[i] < b
 
+    #: `??_7type_info@@6B@` - the vptr every `??_R0` TypeDescriptor carries.
+    TYPEINFO_VTBL = 0x001EE5AC
+
+    def is_typedesc(rva):
+        """A TypeDescriptor at `rva`: type_info vptr, spare 0, a mangled
+        `.`-tag (`.?AV...` for classes, `.PAX` etc. for EH catch types)."""
+        o = pe.off(rva)
+        if o is None or rva not in reloc_set:
+            return False
+        return (struct.unpack_from("<I", pe.data, o)[0] - pe.image_base
+                == TYPEINFO_VTBL
+                and pe.data[o + 8:o + 9] == b"."
+                and 32 < pe.data[o + 9] < 127)
+
+    reloc_set = set(rsites)
+
+    def rtti_content(a, b, depth=0):
+        """RTTI/EH-type records recognised by SHAPE outside the proven bands.
+
+        cl scatters `??_R0` TypeDescriptors into `.data`, per-TU `??_R1..3`
+        descriptors into `.rdata$r`, and the throw-type machinery
+        (`_CatchableType` / `_CatchableTypeArray` / `_ThrowInfo`) into
+        `.xdata$x`; the band constants cover only the biggest contribution
+        group. A run that IS a TypeDescriptor, or that reaches one through
+        one or two relocated cells, is such a record wherever it lives.
+        """
+        if is_typedesc(a):
+            return "TypeDescriptor by content (type_info vptr + mangled tag)"
+        i = bisect.bisect_left(rsites, a)
+        if i < len(rsites) and rsites[i] < b:
+            t = struct.unpack_from("<I", pe.data, pe.off(rsites[i]))[0] - pe.image_base
+            if is_typedesc(t):
+                return "RTTI/EH descriptor by content (cell -> TypeDescriptor)"
+            # The record graph is shallow: COL -> CHD -> base-class array ->
+            # ??_R1 -> TypeDescriptor is the longest path, every hop within
+            # the record's first 0x10 bytes.
+            if depth < 4 and pe.off(t) is not None \
+                    and rtti_content(t, t + 0x10, depth + 1):
+                return "RTTI/EH record by content (cell chain -> TypeDescriptor)"
+        return None
+
     eh_starts = [a for a, _ in eh_spans]
     guid_starts = [a for a, _, _, _ in guid_spans]
 
@@ -528,6 +569,9 @@ def partition():
         nz = payload_nz(a, b)
         if RTTI_LO <= a < RTTI_HI:
             return RTTI, "retail .rdata$r contribution group", None
+        rtti = rtti_content(a, b)
+        if rtti:
+            return RTTI, rtti, None
         if MFC_LO <= a < MFC_HI:
             return LIB, "NAFXCW:MFC message-map/data block", {"NAFXCW": 1}
         if MFC_HI <= a < LIB_RDATA_HI:

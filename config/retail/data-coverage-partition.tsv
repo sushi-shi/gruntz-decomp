@@ -84,7 +84,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001e8ed0	0x001e8ee0	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e8fbc	0x001e8fe8	44	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e93ad	0x001e93b0	3	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x001e93d0	0x001e949c	204	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=3
+0x001e93d0	0x001e949c	204	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001e949c	0x001e94ac	16	.rdata	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (9)	nz=6
 0x001e94ac	0x001e94b8	12	.rdata	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (9)	nz=3
 0x001e94f0	0x001e9500	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -160,27 +160,115 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001eaf64	0x001eaf68	4	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001eafac	0x001eafbc	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001eafbc	0x001eafc0	4	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eafc0	0x001eafd4	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=17
+0x001eafc0	0x001eafd4	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eafd4	0x001eb000	44	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eb000	0x001eb014	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=18
+0x001eb000	0x001eb014	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb014	0x001eb040	44	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x001eb040	0x001eb054	20	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=11
+0x001eb040	0x001eb054	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001eb054	0x001eb068	20	.rdata	library-private data	excluded	library-private data		NAFXCW
 0x001eb070	0x001eb148	216	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW:MFC message-map/data block
-0x001eb148	0x001eb2e0	408	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb148	0x001eb168	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb168	0x001eb174	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eb174	0x001eb2e0	364	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb2e0	0x001eb2e8	8	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from enrolled data (1)	NAFXCW:MFC message-map/data block
 0x001eb2e8	0x001eb588	672	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW:MFC message-map/data block
-0x001eb588	0x001eb6c8	320	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb588	0x001eb5a8	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb5a8	0x001eb5c4	28	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eb5c4	0x001eb69c	216	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb69c	0x001eb6ac	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eb6ac	0x001eb6c8	28	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb6c8	0x001eb6e8	32	.rdata	game-visible unenrolled data	eligible	library-private data	pointer from game-visible data (1)	NAFXCW:MFC message-map/data block
 0x001eb6e8	0x001eb758	112	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001eb758	0x001eb768	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IDispatch
-0x001eb768	0x001ed0f8	6544	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb768	0x001eb7c0	88	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eb7c0	0x001eb7d4	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eb7d4	0x001eba18	580	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eba18	0x001eba34	28	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eba34	0x001ebd54	800	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ebd54	0x001ebd64	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ebd64	0x001ebe24	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ebe24	0x001ebe34	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ebe34	0x001ebef8	196	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ebef8	0x001ebf04	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ebf04	0x001ebfdc	216	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ebfdc	0x001ebfec	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ebfec	0x001ec0bc	208	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec0bc	0x001ec0cc	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec0cc	0x001ec18c	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec18c	0x001ec19c	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec19c	0x001ec288	236	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec288	0x001ec29c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec29c	0x001ec2c8	44	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec2c8	0x001ec2dc	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec2dc	0x001ec5d4	760	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec5d4	0x001ec5ec	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec5ec	0x001ec6d8	236	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec6d8	0x001ec6ec	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec6ec	0x001ec7ac	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec7ac	0x001ec7c4	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec7c4	0x001ec888	196	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec888	0x001ec89c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec89c	0x001ec960	196	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ec960	0x001ec974	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ec974	0x001eca34	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eca34	0x001eca4c	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eca4c	0x001ecb0c	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ecb0c	0x001ecb24	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ecb24	0x001ecbe4	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ecbe4	0x001ecbfc	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ecbfc	0x001eccbc	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eccbc	0x001ecccc	16	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ecccc	0x001ecd90	196	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ecd90	0x001ecda4	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ecda4	0x001ece64	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ece64	0x001ece7c	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ece7c	0x001ecf40	196	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ecf40	0x001ecf54	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ecf54	0x001ed0f8	420	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ed0f8	0x001ed108	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IClassFactory
 0x001ed108	0x001ed118	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IPersistFile
-0x001ed118	0x001ed968	2128	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed118	0x001ed138	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed138	0x001ed1bc	132	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed1bc	0x001ed250	148	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed250	0x001ed264	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed264	0x001ed278	20	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed278	0x001ed28c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed28c	0x001ed348	188	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed348	0x001ed36c	36	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed36c	0x001ed374	8	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed374	0x001ed41c	168	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed41c	0x001ed480	100	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed480	0x001ed494	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed494	0x001ed4a8	20	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed4a8	0x001ed4dc	52	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed4dc	0x001ed500	36	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed500	0x001ed518	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed518	0x001ed574	92	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed574	0x001ed5a4	48	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed5a4	0x001ed608	100	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed608	0x001ed61c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed61c	0x001ed6b0	148	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed6b0	0x001ed6ec	60	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed6ec	0x001ed700	20	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed700	0x001ed740	64	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed740	0x001ed834	244	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed834	0x001ed854	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed854	0x001ed968	276	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ed968	0x001ed978	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IUnknown
 0x001ed978	0x001ed988	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IStream
-0x001ed988	0x001ee5a4	3100	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed988	0x001ed98c	4	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ed98c	0x001eda08	124	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eda08	0x001eda24	28	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eda24	0x001eda40	28	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001eda40	0x001eda54	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001eda54	0x001edef8	1188	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001edef8	0x001edf0c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001edf0c	0x001ee1ac	672	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ee1ac	0x001ee1c4	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ee1c4	0x001ee470	684	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ee470	0x001ee484	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001ee484	0x001ee544	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ee544	0x001ee5a4	96	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001ee5a4	0x001ee5ac	8	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001ee5b0	0x001ee624	116	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001ee624	0x001ee644	32	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
@@ -287,9 +375,28 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f014c	0x001f0150	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f02bc	0x001f02c0	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f02d4	0x001f02d8	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
-0x001f0340	0x001f03e0	160	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0340	0x001f0344	4	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f0344	0x001f0378	52	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0378	0x001f0384	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f0384	0x001f0388	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0388	0x001f0394	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f0394	0x001f03b0	28	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03b0	0x001f03bc	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f03bc	0x001f03c8	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03c8	0x001f03d4	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f03d4	0x001f03e0	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03e0	0x001f03e4	4	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (8)	retail library tail; archive member unresolved
-0x001f03e4	0x001f04b0	204	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03e4	0x001f03f4	16	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03f4	0x001f03fc	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f03fc	0x001f0460	100	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0460	0x001f046c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f046c	0x001f0470	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0470	0x001f047c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f047c	0x001f0480	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0480	0x001f048c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f048c	0x001f0490	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0490	0x001f049c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f049c	0x001f04b0	20	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f04c0	0x001f04c8	8	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f04dc	0x001f04e4	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
 0x001f04ec	0x001f04f0	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
@@ -343,9 +450,15 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f0884	0x001f0888	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f08a4	0x001f08a8	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f08b0	0x001f08b8	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
-0x001f0934	0x001f0ab0	380	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0934	0x001f0950	28	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0950	0x001f0964	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f0964	0x001f09d4	112	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f09d4	0x001f09ec	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f09ec	0x001f0ab0	196	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0ab0	0x001f0ab8	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (3)	retail library tail; archive member unresolved
-0x001f0ab8	0x001f1f20	5224	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0ab8	0x001f0ac8	16	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f0ac8	0x001f0ad4	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x001f0ad4	0x001f1f20	5196	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f1f38	0x001f1f40	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f1f58	0x001f1f60	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f1f71	0x001f1f78	7	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
@@ -1897,21 +2010,17 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00200440	0x0020056c	300	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x0020056c	0x00200570	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x00200570	0x002007d8	616	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x002007d8	0x00200878	160	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x00200878	0x00200890	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=16
-0x00200890	0x002008a0	16	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x002008a0	0x002008c0	32	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x002008c0	0x002008d8	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=16
-0x002008d8	0x002008e8	16	.rdata	library-private data	excluded	library-private data		NAFXCW
+0x002007d8	0x00200878	160	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x00200878	0x002008a0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x002008a0	0x002008c0	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x002008c0	0x002008e8	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x002008e8	0x0020118c	2212	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x0020118c	0x00201190	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x00201190	0x00201540	944	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00201540	0x00201560	32	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x00201560	0x00201578	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=16
-0x00201578	0x00201588	16	.rdata	library-private data	excluded	library-private data		NAFXCW
-0x00201588	0x002015a8	32	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x002015a8	0x002015c0	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=16
-0x002015c0	0x002015d0	16	.rdata	library-private data	excluded	library-private data		NAFXCW
+0x00201540	0x00201560	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x00201560	0x00201588	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x00201588	0x002015a8	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x002015a8	0x002015d0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x002015d0	0x00201674	164	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x00201674	0x00201678	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x00201678	0x002017bc	324	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
@@ -1925,13 +2034,11 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00201a80	0x00201ad4	84	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x00201ad4	0x00201ad8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x00201ad8	0x00201b78	160	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00201b78	0x00201b98	32	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x00201b98	0x00201bb0	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=13
-0x00201bb0	0x00201bc0	16	.rdata	library-private data	excluded	library-private data		NAFXCW
+0x00201b78	0x00201b98	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x00201b98	0x00201bc0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x00201bc0	0x00201c28	104	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00201c28	0x00201c48	32	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=9
-0x00201c48	0x00201c60	24	.rdata	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		nz=13
-0x00201c60	0x00201c70	16	.rdata	library-private data	excluded	library-private data		NAFXCW
+0x00201c28	0x00201c48	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
+0x00201c48	0x00201c70	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x00201c70	0x002020b4	1092	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x002020b4	0x002020b8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x002020b8	0x00205e60	15784	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
@@ -2312,8 +2419,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0020c689	0x0020c68c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c698	0x0020c69c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c6b0	0x0020c6b8	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0020c6b8	0x0020c6d8	32	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	pointer from game-visible data (1)	reloc-bearing run between pooled literals; nz=17
-0x0020c6d8	0x0020c6f4	28	.data	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	pointer from game-visible data (1)	reloc-bearing run between pooled literals; nz=15
+0x0020c6b8	0x0020c6f4	60	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
 0x0020c72c	0x0020c738	12	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c73e	0x0020c740	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c749	0x0020c74c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3776,85 +3882,23 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002156f0	0x002156f4	4	.data	library-private data	excluded	library-private data		NAFXCW
 0x002156f4	0x002156f8	4	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=3
 0x002156f8	0x00215710	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215710	0x00215730	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215730	0x00215750	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
-0x00215750	0x00215768	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215768	0x00215788	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x00215788	0x002157a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=15
-0x002157a0	0x002157c0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x002157c0	0x00215800	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215800	0x00215820	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215710	0x00215820	272	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215820	0x00215828	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x00215828	0x00215840	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=12
-0x00215840	0x00215870	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x00215870	0x00215888	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215888	0x002158a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=13
-0x002158a0	0x002158b0	16	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=7
-0x002158b0	0x002158c8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x002158c8	0x002158e8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x002158e8	0x00215910	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
-0x00215910	0x00215930	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x00215930	0x00215950	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x00215950	0x00215978	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
-0x00215978	0x00215998	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215998	0x002159c8	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x002159c8	0x002159e0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x002159e0	0x002159f8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x002159f8	0x00215a10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
-0x00215a10	0x00215a30	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x00215a30	0x00215a50	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
-0x00215a50	0x00215a70	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x00215a70	0x00215a98	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=32
-0x00215a98	0x00215ac0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
+0x00215828	0x00215ac0	664	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215ac0	0x00215ad8	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215ad8	0x00215af8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215af8	0x00215b10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x00215b10	0x00215b50	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
-0x00215b50	0x00215b70	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215b70	0x00215ba0	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x00215ba0	0x00215bc0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
-0x00215bc0	0x00215be0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215be0	0x00215c00	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
-0x00215c00	0x00215c40	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215c40	0x00215c58	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215c58	0x00215c78	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
-0x00215c78	0x00215c98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
-0x00215c98	0x00215cb8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x00215cb8	0x00215cd0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
-0x00215cd0	0x00215cf0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215cf0	0x00215d10	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
-0x00215d10	0x00215d30	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x00215ad8	0x00215d30	600	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215d30	0x00215d48	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215d48	0x00215d64	28	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
+0x00215d48	0x00215d64	28	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215d64	0x00215d68	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x00215d68	0x00215d88	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00215d88	0x00215da8	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x00215da8	0x00215dc0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x00215dc0	0x00215de0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
+0x00215d68	0x00215de0	120	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215de0	0x00215df8	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215df8	0x00215e10	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215e10	0x00215e28	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215e28	0x00215e40	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x00215df8	0x00215e10	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215e10	0x00215e28	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
+0x00215e28	0x00215e40	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215e40	0x00215e58	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215e58	0x00215e78	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215e78	0x00215e98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x00215e98	0x00215ec0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
-0x00215ec0	0x00215ee0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=25
-0x00215ee0	0x00215f08	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=31
-0x00215f08	0x00215f28	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
-0x00215f28	0x00215f48	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215f48	0x00215f78	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=14
-0x00215f78	0x00215f98	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
-0x00215f98	0x00215fb0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x00215fb0	0x00215fd0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
-0x00215fd0	0x00215fe8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x00215fe8	0x00216028	64	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=23
-0x00216028	0x00216048	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=26
-0x00216048	0x00216068	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=24
-0x00216068	0x002160b0	72	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x002160b0	0x002160cc	28	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=20
+0x00215e58	0x002160cc	628	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x002160cc	0x002160e0	20	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x002160e0	0x00216100	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=22
+0x002160e0	0x00216100	32	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00216100	0x00216110	16	.data	library-private data	excluded	library-private data		LIBCMT
 0x00216110	0x00216120	16	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00216120	0x00216140	32	.data	library-private data	excluded	library-private data		LIBCMT
@@ -4032,19 +4076,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0021aaf4	0x0021ab14	32	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x0021ab1f	0x0021ab20	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ab91	0x0021ab98	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021ab98	0x0021abb0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
-0x0021abb0	0x0021abd0	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
-0x0021abd0	0x0021abe8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=12
-0x0021abe8	0x0021ac00	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x0021ac00	0x0021ac20	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x0021ac20	0x0021ac38	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x0021ac38	0x0021ac58	32	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=19
-0x0021ac58	0x0021ac70	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x0021ac70	0x0021ac88	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=18
+0x0021ab98	0x0021ac88	240	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x0021ac88	0x0021ac90	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x0021ac90	0x0021acc0	48	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
-0x0021acc0	0x0021acd8	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
-0x0021acd8	0x0021ad24	76	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=27
+0x0021ac90	0x0021ad24	148	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x0021ad36	0x0021ad38	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad47	0x0021ad48	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad5b	0x0021ad5c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -4179,14 +4213,14 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022561e	0x00225620	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022563c	0x00225640	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00225684	0x00225688	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00225688	0x002256a0	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=17
+0x00225688	0x002256a0	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x002256a0	0x002256b8	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x002256b8	0x002256e0	40	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=21
+0x002256b8	0x002256e0	40	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x002256e0	0x00225742	98	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00225742	0x00225770	46	.data	library-private data	excluded	library-private data		LIBCMT
 0x00225770	0x002257fe	142	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x002257fe	0x00225900	258	.data	library-private data	excluded	library-private data		LIBCMT
-0x00225900	0x00225918	24	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=16
+0x00225900	0x00225918	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00225918	0x0022591c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022591c	0x00229310	14836	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00229310	0x00229388	120	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
