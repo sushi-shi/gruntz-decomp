@@ -2112,6 +2112,15 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 // a call - i.e. one shape per entity, no per-class split to model.  Declaring
 // ~CMoviePlayer out of line in CreditsState.cpp (its 0xa5 COMDAT stays 100.00 either
 // way) does remove our expansion but scores 74.88 -> 70.54; reverted.
+//
+// QUANTIFIED 2026-08-11 against the reverse-engineered inliner rule (see
+// docs/patterns/inline-budget-emits-ool-comdat.md, worked example): the CArray ctor
+// has cb in [63,66] (charged, not free), this caller has SEVEN candidate sites under
+// /Ob0, and the nested budget at that site is `caller_budget / sites-remaining`.
+// Adding six throwaway FREE candidate sites AFTER `CMoviePlayer player;` flips it to
+// retail's `call` and it stays flipped - so the gap is ~6 missing inline call sites
+// in this body's tail, not a spelling and not statement mass (padding 20/60
+// statements never moved the decision, it only inflated the body).
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {

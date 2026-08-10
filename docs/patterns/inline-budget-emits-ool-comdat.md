@@ -39,14 +39,64 @@ Two boundaries matter and both are measured:
 - **The budget is per CALLER, not per TU.** 32 separate one-site callers in one
   compiland: every site inlined, no COMDAT. So you cannot buy the COMDAT by
   adding call sites in *other* functions.
-- **Caller SIZE alone does nothing.** 2 sites at the end of a caller padded with
-  0 → 200 non-inlinable statements (86 → 3779 instructions): both sites inlined
-  at every size. Only *other inline expansions* consume the budget.
+- ~~**Caller SIZE alone does nothing.**~~ **RETRACTED 2026-08-11 — the caller's
+  own size is the budget's PRIMARY input.** The original experiment (2 sites at
+  the end of a caller padded 0 → 200 statements, both inlined at every size) was
+  SATURATED: with only two sites nothing was being rejected at pad=0, so no
+  amount of extra budget could change the outcome. Re-run at a configuration
+  that actually rejects (callee S=8, N=12 sites), the coupling is flatly
+  visible:
+
+  | caller pad statements | 0 | 5 | 10 | 20 | **40** | **80** | 160 |
+  |---|--:|--:|--:|--:|--:|--:|--:|
+  | sites expanded (of 12) | 9 | 9 | 9 | 9 | **10** | **12** | 12 |
+
+  The plateau at 9 is the 1000 floor; it breaks at ~36-40 caller statements,
+  which is where `2 x cb(caller)` first exceeds 1000. See § "The rule".
 
 `/O2` is `/Ob1` here: cl 5.0 does **not** auto-inline a function that is not
 marked `inline`, at any definition position (before, after, or interleaved with
 its callers — all three measured, all emit 2/2 calls). So a plain out-of-line
 member never gives you the inline half.
+
+## The rule (ported from the homm3 VC6 back-end RE, re-validated on cl 5.0)
+
+The sibling homm3 project reverse-engineered this decision out of its pinned
+back end (C2.DLL 12.00.8447) and published it as a model spec + address ledger
++ executable predictor: `homm3-decomp/docs/vc6/inliner.md`, `predict()` in
+`homm3-decomp/scripts/homm3/vc6/inline_model.py`
+(`--predict --spec sites.json`, `--measure-cb`, `--selftest`). **Do not
+re-derive it. Feed it.**
+
+```
+budget  = clamp(2 * cb(caller), 1000, 35000)      # cb = the FRONT END's size
+running = cb(caller)                              #      estimate of the caller
+for each candidate site, in tuple order, n counting DOWN:
+    reject if budget < cb(callee) and cb(callee) > 0x28     # cb<=0x28 is FREE
+    reject if running > 35000
+    accept: if cb > 0x28: budget -= cb ; running += cb
+            recurse into the callee's body with budget / (sites REMAINING)
+```
+
+Consequences that decide real cases: the spend is **sequential and positional**
+(the last sites lose); nested budgets shrink as `budget / sites-remaining` at
+every level, so "depth-2 stops" are that division and not a depth limit; and a
+callee with `cb <= 0x28` is inlined regardless of budget or site count.
+
+**cl 5.0 (C2 11.00) shares the rule AND the cost function.** 25-site harness,
+PAD=0 (budget pinned at the 1000 floor), statements `gA[i] = gA[i+1] + row;`,
+`tools/inline-budget/gen_harness.py`:
+
+| callee statements S | 1-2 | 3 | 4 | 6 | 8 | 12 | 13 | 14 | 15 |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| expanded (of 25), cl 5.0 | 25 | 20 | 16 | 11 | 9 | 6 | 5 | **5** | **5** |
+| expanded (of 25), VC6 | 25 | 20 | 16 | 11 | 9 | 6 | 5 | **0** | **0** |
+
+Identical for S = 1..13 - so `floor(1000/cb) = expanded` titrates `cb` the same
+way on our compiler, and homm3's measured brackets transfer verbatim. **The one
+divergence is the save-gate cliff:** VC6 stops saving the callee body at S=14
+and every site becomes a call; cl 5.0 has no such cliff in this range and keeps
+expanding 5. Treat homm3's §4 cliff as VC6-only.
 
 ## Calibrating a REAL caller: what charges the budget, and in what order
 
@@ -113,6 +163,40 @@ The legitimate ways to get the COMDAT without touching the callers are the
 If none applies, the honest state is that the caller is still under-inlined
 relative to retail — that is a reconstruction gap in the caller, not a missing
 device.
+
+## Worked example: `CGruntzMgr::ChangeState` 0x8fab0 - the divisor, not the mass
+
+Retail `call`s `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` inside the
+inlined `CMoviePlayer::CMoviePlayer`; we expand it. Diagnosed end-to-end with
+the rule, three measurements, no guessing:
+
+1. **`cb` of the callee.** A stand-in with the same shape (vptr stamp + 4 zero
+   stores) at 25 sites, PAD=0: 15 expanded ⇒ `floor(1000/cb) = 15` ⇒
+   **cb in [63, 66]**. Above 0x28, so it is charged - not a free callee.
+2. **The candidate set of the caller,** enumerated with `/Ob0`: `??0CMoviePlayer`
+   x1, `??1CMoviePlayer` x2, `Teardown` x2, `??BCString` x2 = **7 sites**. The
+   construction is near the TOP, so the sites *after* it are what divide.
+3. **The lever.** Adding throwaway *free* (`cb <= 0x28`) candidate sites, which
+   raise the divisor without spending budget:
+
+   | probe sites added AFTER the construction | 0 | **6** | 10 | 14 | 20 |
+   |---|--:|--:|--:|--:|--:|
+   | `??0?$CArray<PLAYLISTINFOSTRUCT*>` emitted as a CALL | no | **yes** | yes | yes | yes |
+
+   Six extra sites flip it to retail's shape and it never flips back. Adding
+   the same probes *ahead* of the construction does nothing (they lower its
+   divisor, not raise it) - which is exactly the model's `budget /
+   sites-REMAINING`, and is the trap to avoid when probing.
+4. **What is NOT the lever:** caller statement mass. Padding `ChangeState` with
+   20 and 60 statements never moved the decision, it only inflated the body
+   (74.84 -> 30.01 -> 0.00 fuzzy).
+
+Verdict, and it is a measurement rather than a wall: **our `ChangeState` is
+missing roughly six inline call sites that retail's had after the
+`CMoviePlayer` construction** - more `CString` conversions / `CMoviePlayer`
+calls / scoped objects between the construction and the return. Finish the
+caller and the CArray call follows; no spelling of the callee, no pragma and
+no caller padding can substitute, and each was measured.
 
 ## Evidence
 
