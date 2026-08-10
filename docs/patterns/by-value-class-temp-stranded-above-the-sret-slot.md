@@ -17,6 +17,20 @@ cl hoists that next call's trailing pushes ABOVE the struct-returning call — s
 already-constructed temp two slots too high. The callee then reads the hoisted int as its class
 parameter and the outer call receives its arguments shifted by one.
 
+**This is a cl defect, established by DIFFERENTIAL COMPILATION, not by reading one listing.**
+One source, one callee (`TE Meas(CString)`), five flag sets: `/Od /GX`, `/O2 /Ob0 /GX` and
+`/O2` *without* `/GX` all place the temp directly above the sret push; `/O2 /GX` and `/O1 /GX`
+place it two slots higher. A callee's argument layout cannot depend on the caller's optimization
+flags, so the two `/GX`-optimized cells are the wrong ones. Retail agrees with the correct
+cells: `MeasureText` reads its `CString` at `entry_esp+8` and does `ret 8`, and retail's own
+`DrawWrapped` sites push the sret pointer immediately after the copy-ctor.
+
+Trigger, isolated by three more cells (all `/O2 /GX`): an inner callee returning `int` instead
+of a struct is CORRECT (needs the hidden sret push); a by-value POD instead of a class is
+CORRECT (needs a ctor-materialized temp); constants instead of `rc.top`/`z` as the outer call's
+trailing args is still BROKEN (not about which values are hoisted). `/GX` is required — the
+non-EH build hoists the same pushes *before* the reserve, which is harmless.
+
 ```cpp
 // MISCOMPILES - Measure() receives rc.top, not `line`:
 i32 cx = rc.left + rc.Width() / 2 - MeasureText(line).width / 2;
@@ -50,9 +64,14 @@ push  ecx                       ; sret
 call  ?MeasureText@...
 ```
 
-STEERABLE, and a hard correctness bug — not a scoring artifact. Reproduced standalone with
-cl 5.0 `/O2 /MT /GX`: the one-liner form miscompiles, `TE m = Measure(line);` and an
-out-of-line `Width()` both emit the correct sequence. The tree-wide screen is mechanical —
+STEERABLE, and a hard correctness bug — not a scoring artifact. NOTE the one-liner is probably
+what the devs WROTE: retail is safe only because its `CRect::Width` is out of line
+(`0x17b500`), which puts a call inside the expression and blocks the hoist — `/O2 /Ob0`
+reproduces exactly that. We inline `Width` instead. REFUTED as the fix: switching the TU to
+no-inline MFC (`_AFX_ENABLE_INLINES` off before `afxwin.h`) does NOT link — NAFXCW.LIB exports
+no `?Width@CRect@@QBEHXZ`, so retail's `0x17b500` is a COMDAT from retail's own font TU, i.e.
+retail had the same inline body available and cl chose to call it there. Why it chose
+differently is UNRESOLVED and is the remaining `DrawWrapped` headroom. The tree-wide screen is mechanical —
 disassemble the linked candidate, find every `mov ecx,esp` followed within a few instructions
 by a `call`, and flag any site with >= 2 `push` before the consuming call (the only legitimate
 multi-push case is a callee whose class parameter is its LAST declared parameter, e.g.
