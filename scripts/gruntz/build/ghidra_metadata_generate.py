@@ -83,6 +83,62 @@ _BUILTIN_RE = re.compile(r"^(__|_GUID$|type_info$)")
 _LAYOUT_RECORD = re.compile(r"^(?:class|struct|union)\s+(\S.*)$")
 # A local/anonymous record has no spellable name to look a size up by.
 _UNNAMEABLE_RE = re.compile(r"\((anonymous|unnamed|lambda)")
+# ... unless it is `typedef struct {...} NAME`: C++ adopts the FIRST typedef
+# declarator as the record's name for linkage, and every clang printer except
+# the record-layout dump spells the type that way (the SFMAN.H SDK structs are
+# this shape). The dump gives the record's source location instead, so the
+# linkage name is recovered from the source text at that location.
+_UNNAMED_AT_RE = re.compile(
+    r"^\((?:unnamed|anonymous)(?:\s+\w+)?\s+at\s+(.+):(\d+):(\d+)\)$")
+_LINKAGE_SRC_CACHE: dict = {}
+
+
+def linkage_typedef_name(spelling):
+    """`(unnamed at file:line:col)` -> the typedef-for-linkage name, or None.
+
+    The location points at the record keyword of `typedef struct {...} NAME`.
+    Only that exact shape is accepted: the keyword must be preceded by
+    `typedef` (otherwise the identifier after `}` is a VARIABLE, not a type)
+    and the brace block must close cleanly. Anything else returns None and the
+    record stays skipped, exactly as before.
+    """
+    m = _UNNAMED_AT_RE.match(spelling)
+    if not m:
+        return None
+    path, line, col = m.group(1), int(m.group(2)), int(m.group(3))
+    if path not in _LINKAGE_SRC_CACHE:
+        try:
+            _LINKAGE_SRC_CACHE[path] = Path(path).read_text(errors="replace")
+        except OSError:
+            _LINKAGE_SRC_CACHE[path] = None
+    text = _LINKAGE_SRC_CACHE[path]
+    if text is None:
+        return None
+    lines = text.splitlines(keepends=True)
+    if line > len(lines):
+        return None
+    off = sum(len(x) for x in lines[:line - 1]) + (col - 1)
+    if not re.match(r"(?:struct|union|class)\b", text[off:off + 8]):
+        return None
+    if not re.search(r"\btypedef\s*$", text[:off]):
+        return None
+    i = text.find("{", off)
+    if i < 0:
+        return None
+    depth, n = 0, len(text)
+    while i < n:                     # bounded brace matcher; comments/strings
+        c = text[i]                  # in these SDK headers never nest braces
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
+            if depth == 0:
+                break
+        i += 1
+    if i >= n:
+        return None
+    tail = re.match(r"\s*([A-Za-z_]\w*)", text[i + 1:])
+    return tail.group(1) if tail else None
 
 
 def log(msg):
@@ -143,8 +199,11 @@ def parse_record_layouts(text):
         # None only until it is seen), so the name may run to end-of-line.
         if cur_name is None:
             hm = _LAYOUT_RECORD.match(decl)
-            if hm and not _UNNAMEABLE_RE.search(hm.group(1)):
-                cur_name = hm.group(1).strip()
+            if hm:
+                name = hm.group(1).strip()
+                if _UNNAMEABLE_RE.search(name):
+                    name = linkage_typedef_name(name)
+                cur_name = name
             continue
         if _LAYOUT_NONFIELD.search(decl):
             continue              # base subobject / vptr: flatten its fields in

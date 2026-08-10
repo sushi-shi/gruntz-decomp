@@ -305,6 +305,14 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
         for ac in per[c.rva]:
             if ac.form not in TOUCH or not ac.width:
                 continue
+            if ac.mnemonic.split()[-1].rstrip("bwd") in (
+                    "stos", "movs", "scas", "cmps", "lods"):
+                # A string op's operand width is the BLOCK GRANULARITY of an
+                # inlined memset/memcpy/memcmp, not a field width: cl zeroes
+                # g_sfCaps with `rep stosd` + `stosw` (0x66 B), which is not a
+                # 4-byte access to the WORD m_SizeOf at +0x0.
+                st["width-skip-string-op"] += 1
+                continue
             off = ac.target_rva - c.rva
             acc_at[off].append(ac)
             seen[off][0][ac.width] += 1
