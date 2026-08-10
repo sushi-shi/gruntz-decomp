@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <EmptyString.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -326,7 +325,7 @@ namespace NetLobby {
             if (edit) {
                 if (GetWindowTextA(edit, buf, 0x64) > 0) {
                     g_curMulti->BroadcastChatLine(buf, 1, 1, GetDlgItem(hWnd, 0x4b6));
-                    SetWindowTextA(edit, g_emptyString);
+                    SetWindowTextA(edit, "");
                 }
             }
         }

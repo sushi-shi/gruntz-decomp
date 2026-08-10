@@ -5,7 +5,6 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CustomMapSelection.h>

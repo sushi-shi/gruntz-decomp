@@ -143,7 +143,7 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
         strcpy(dst, g_sepSlash);
     } else {
         char* scratch = new char[size];
-        strcpy(dst, g_emptyString);
+        strcpy(dst, "");
         CSymTab* node = m_owner;
         while (node != NULL) {
             strcpy(scratch, dst);
@@ -930,7 +930,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         CSymTab* node = new CSymTab(
             this,
             0,
-            g_emptyString,
+            "",
             0,
             0,
             this->MakeTimestamp(),
@@ -961,7 +961,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         CSymTab* node = new CSymTab(
             this,
             0,
-            g_emptyString,
+            "",
             0,
             0,
             this->MakeTimestamp(),
@@ -1002,7 +1002,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
     CSymTab* node = new CSymTab(
         this,
         0,
-        g_emptyString,
+        "",
         m_rootDataOffset,
         m_rootDataSize,
         m_rootDirTime,

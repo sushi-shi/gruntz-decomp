@@ -2,7 +2,6 @@
 
 #include <Utils/RegistryHelper.h>
 
-#include <EmptyString.h>
 #include <MsgParam.h>
 
 #include <string.h>
@@ -239,7 +238,7 @@ namespace Utils {
                    hKey,
                    szSubKey,
                    0,
-                   g_emptyString,
+                   "",
                    0,
                    KEY_ALL_ACCESS,
                    0,

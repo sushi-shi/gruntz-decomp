@@ -1324,20 +1324,20 @@ void RefreshPlayerRow(HWND hDlg, HWND hList) {}
 RVA(0x000b8b10, 0x175)
 CNetPlayerListNode* CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
-    buf[0] = g_emptyString[0];
+    buf[0] = ""[0];
     memset(&buf[1], 0, 0xff);
     MakeButeSectionKey(buf, "NAME", m_groupName);
     AppendInt(buf, "CMDDELAY", m_commandDelay);
     AppendInt(buf, "RESEND", m_drainReload);
     AppendInt(buf, "LEVEL", ResyncLParam());
 
-    CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(4, buf, 0, g_emptyString);
+    CNetPlayerListNode* enumResult = g_groupEnumMgr->EnumGroupsInto(4, buf, 0, "");
     if (enumResult == NULL) {
         g_connectRptMgr->ReportNetError(0);
         return 0;
     }
 
-    CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Host"), g_emptyString, 0);
+    CNetSessionNode* node = Peer()->CreatePlayer(const_cast<char*>("Host"), "", 0);
     m_localPlayer = node;
     if (node == NULL) {
         ReportNetError(0);
@@ -1365,8 +1365,7 @@ i32 CMulti::OnJoinConfirm(void* hDlg) {
         return 0;
     }
 
-    m_localPlayer =
-        Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), g_emptyString, 0);
+    m_localPlayer = Peer()->EnumPlayersCb(sel, static_cast<const char*>(GetString5a0()), "", 0);
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -3002,11 +3001,9 @@ i32 CMulti::SetupTcpIpConfig() {
     ch0->m_name = GetString5a0();
     ch0->m_colorIndex = TINT_ORANGE;
 
-    m_localPlayer = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(ch0->GetName())),
-        g_emptyString,
-        0
-    ));
+    m_localPlayer = static_cast<CNetSessionNode*>(
+        Peer()->CreatePlayer(const_cast<char*>(static_cast<const char*>(ch0->GetName())), "", 0)
+    );
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
         return 0;
@@ -3025,11 +3022,9 @@ i32 CMulti::SetupTcpIpConfig() {
 RVA(0x000bc750, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
-        m_localPlayer = static_cast<CNetSessionNode*>(Peer()->CreatePlayer(
-            const_cast<char*>(static_cast<const char*>(GetString5a0())),
-            g_emptyString,
-            0
-        ));
+        m_localPlayer = static_cast<CNetSessionNode*>(
+            Peer()->CreatePlayer(const_cast<char*>(static_cast<const char*>(GetString5a0())), "", 0)
+        );
     }
     if (LocalPlayer() == NULL) {
         ReportNetError(0);
@@ -3080,11 +3075,8 @@ i32 CMulti::OpenHostChannel(
     m_drainReload = resend;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_localPlayer = Peer()->CreatePlayer(
-        const_cast<char*>(static_cast<const char*>(GetString5a0())),
-        g_emptyString,
-        0
-    );
+    m_localPlayer =
+        Peer()->CreatePlayer(const_cast<char*>(static_cast<const char*>(GetString5a0())), "", 0);
     if (m_localPlayer == NULL) {
         ReportNetError(0);
         return 0;

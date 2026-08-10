@@ -6,7 +6,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Rez/FrameClock.h>
@@ -237,7 +236,7 @@ i32 CFontConfig::TypeChar(i32 ch, i32 flag) {
             m_inputActive = 1;
             m_scrollOffset = 0;
             m_inputScrollTotal = 0;
-            m_inputText = static_cast<const char*>(g_emptyString);
+            m_inputText = static_cast<const char*>("");
         } else {
             if (m_inputText.GetLength() == 0) {
                 return 0;

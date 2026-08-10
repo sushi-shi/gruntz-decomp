@@ -33,7 +33,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     if (g_bootyCheatBuilt == 0) {
         CString bootyCheatz("BootyCheatz");
-        CString empty(g_emptyString);
+        CString empty("");
         CString grp;
         CString text;
         CString desc;

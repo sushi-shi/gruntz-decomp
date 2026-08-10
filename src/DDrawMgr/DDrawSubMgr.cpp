@@ -119,7 +119,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
     void* result = parser->GetRoot()->FindSub(key);
 
     if (result != NULL) {
-        return InstallTree(result, g_emptyString, "_");
+        return InstallTree(result, "", "_");
     }
     return 0;
 }

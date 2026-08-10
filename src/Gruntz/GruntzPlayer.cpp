@@ -21,7 +21,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -131,7 +130,7 @@ GruntzPlayer::GruntzPlayer() {
     m_liveGate = 0;
     m_joined = 0;
     m_humanControlled = 1;
-    m_name = g_emptyString;
+    m_name = "";
     m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;
@@ -149,7 +148,7 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_liveGate = 0;
     m_joined = 0;
     m_humanControlled = 1;
-    m_name = g_emptyString;
+    m_name = "";
 
     m_colorIndex = static_cast<ColorTint>(index);
     m_configId = 0;
@@ -169,7 +168,7 @@ void GruntzPlayer::Clear() {
     m_slotKey = -2;
     m_liveGate = 0;
     m_humanControlled = 1;
-    m_name = g_emptyString;
+    m_name = "";
     m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;
@@ -186,7 +185,7 @@ i32 GruntzPlayer::Reset() {
     m_slotKey = -2;
     m_liveGate = 0;
     m_humanControlled = 1;
-    m_name = g_emptyString;
+    m_name = "";
     m_colorIndex = TINT_ORANGE;
     m_configId = 0;
     m_focusX = 0;

@@ -91,3 +91,4 @@ rva,name,unit,size,kind
 0x2c1270,_fixed_bd$S542,inftrees,0x4,data
 0x2c1274,_fixed_bl$S541,inftrees,0x4,data
 0x2c1278,_fixed_built$S539,inftrees,0x4,data
+0x225120,_z_errmsg,zutil,0x28,data

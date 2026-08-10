@@ -8,7 +8,6 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
-#include <EmptyString.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderMode.h>
 #include <Gruntz/FaderSubtypes.h>

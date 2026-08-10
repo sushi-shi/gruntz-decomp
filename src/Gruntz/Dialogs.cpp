@@ -7,7 +7,6 @@
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CustomMapSelection.h>
@@ -129,7 +128,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
         comboChild->SendMessageA(EM_SETREADONLY, 1, 0);
-        comboChild->SetWindowTextA(g_emptyString);
+        comboChild->SetWindowTextA("");
 
         CWnd* combo = GetDlgItem(0x4ff);
         CSymTab* worlds = static_cast<CSymTab*>(m_slots->m_symParser->ResolvePath("GAME_BATTLEZ"));
@@ -273,7 +272,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (customMap != CUSTOM_MAP_UNINITIALIZED) {
             char mapName[0x100];
             DWORD size = sizeof(mapName);
-            reg->GetValueString("LastMap", mapName, &size, g_emptyString);
+            reg->GetValueString("LastMap", mapName, &size, "");
             m_customNameFlag = IDX(customMap);
             if (customMap != CUSTOM_MAP_STANDARD) {
                 sprintf(key, "custom\\%s", mapName);
@@ -377,7 +376,7 @@ i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 
         MsgParam text;
         text.m_lparam = lParam;
-        if (strcmp(g_emptyString, text.m_str) == 0) {
+        if (strcmp("", text.m_str) == 0) {
             return 0;
         }
     }

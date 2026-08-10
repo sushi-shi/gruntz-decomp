@@ -2,7 +2,6 @@
 
 #include <Mfc.h>
 
-#include <EmptyString.h>
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>

@@ -21,7 +21,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -1638,7 +1637,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_cueTimerLo = g_frameTime;
         self->m_cueTimerHi = 0;
         self->m_cueToggle = 1;
-        self->m_cueText = g_emptyString;
+        self->m_cueText = "";
         self->m_lastCueId = 0;
         self->m_region0Gate = 0;
         self->m_region1Gate = 0;
@@ -1808,7 +1807,7 @@ i32 CPlay::InputVirtual() {
     if (!h) {
         return 0;
     }
-    if (m_world->m_imageRegistry->LoadNamespace(h, g_emptyString, "_") == -1) {
+    if (m_world->m_imageRegistry->LoadNamespace(h, "", "_") == -1) {
         return 0;
     }
 
@@ -5973,7 +5972,7 @@ i32 CPlay::DrawLevelInfoText() {
             s0.LoadString(IDS_AREA8_TITLE);
             break;
         default:
-            s0 = g_emptyString;
+            s0 = "";
     }
 
     GameModeId mode = g_gameReg->m_gameMode;
@@ -5997,7 +5996,7 @@ i32 CPlay::DrawLevelInfoText() {
                         s1.LoadString(IDS_TRAINING_STAGE4);
                         break;
                     default:
-                        s1 = g_emptyString;
+                        s1 = "";
                 }
             } else {
                 s1.Format("Stage %d", ((stage - 1) % QUESTLEVEL_PER_AREA) + 1);
@@ -6100,7 +6099,7 @@ i32 CPlay::DrawLevelInfoText() {
                     s2.LoadString(IDS_LEVEL_TITLE_AREA8_STAGE4);
                     break;
                 default:
-                    s2.Format(g_emptyString);
+                    s2.Format("");
                     break;
                 case QUESTLEVEL_TRAINING_STAGE1:
                     s2.LoadString(IDS_LEVEL_TITLE_TRAINING_STAGE1);
@@ -6132,9 +6131,9 @@ i32 CPlay::DrawLevelInfoText() {
             s1.LoadString(IDS_MULTIPLAYER_LEVEL);
         }
     } else {
-        s0.Format(g_emptyString);
-        s2.Format(g_emptyString);
-        s1.Format(g_emptyString);
+        s0.Format("");
+        s2.Format("");
+        s1.Format("");
     }
 
     if ((g_gameReg)->GetWorldFileName().GetLength() != 0) {

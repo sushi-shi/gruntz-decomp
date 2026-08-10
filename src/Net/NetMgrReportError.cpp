@@ -2,7 +2,6 @@
 
 #include <Net/NetMgrReportError.h>
 
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Net/NetMgr.h>
 
@@ -26,9 +25,6 @@ DATA(0x002bf700)
 char g_szCode[0x40];
 DATA(0x002bf740)
 char g_szMsg[0x100];
-
-DATA(0x002293f4)
-char g_emptyString[] = "";
 
 RVA(0x00177670, 0x27)
 void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 unknownOption) {
@@ -56,7 +52,7 @@ void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
 
     strcpy(g_szMsg, "Unknown Error Message");
     sprintf(g_szCode, "Unknown Error Code");
-    strcpy(szLine, g_emptyString);
+    strcpy(szLine, "");
 
     switch (hr) {
         case DPERR_UNSUPPORTED:

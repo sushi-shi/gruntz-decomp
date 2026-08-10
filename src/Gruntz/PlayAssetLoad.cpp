@@ -19,7 +19,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AreaMgr.h>
@@ -136,16 +135,16 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     }
 
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-        ->RemoveKeysEqual("ACTION", g_emptyString);
+        ->RemoveKeysEqual("ACTION", "");
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
-        ->RemoveKeysEqual("BACK", g_emptyString);
+        ->RemoveKeysEqual("BACK", "");
     g_resourceInstallActive = 0;
 
     void* tiles = (self->m_levelBank)->ResolvePath("TILEZ");
     if (!tiles) {
         return 0;
     }
-    self->m_world->m_imageRegistry->InstallTree(tiles, g_emptyString, "_");
+    self->m_world->m_imageRegistry->InstallTree(tiles, "", "_");
     return 1;
 }
 

@@ -984,6 +984,8 @@ def _candidate_member_storage(base_dir=None):
             continue
         for sec in c.section_table:
             storage = ORDINARY_STORAGE.get(sec["name"])
+            if storage is None and sec["name"] == ".bss":
+                storage = "bss"        # the tail oracle needs bss members too
             if storage is None:
                 continue
             for _off, name, _scl in c.section_members(sec["index"]):
@@ -995,6 +997,7 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     """Enrollable rows + the withheld ones, with a reason for each."""
     pe = read_pe(exe)
     rows, withheld = [], []
+    tail_oracle = _candidate_member_storage()
     with Path(symbols).open(newline="") as f:
         for r in csv.DictReader(l for l in f if not l.lstrip().startswith("#")):
             if (r.get("kind") or "") != "data":
@@ -1008,6 +1011,19 @@ def candidates(symbols=SYMBOLS, exe=EXE):
             size = int(size_s, 16)
             start = classify_pe_storage(pe, rva)["class"]
             end = classify_pe_storage(pe, rva + size - 1)["class"]
+            oracle = (tail_oracle.get(("%s.c" % unit, name))
+                      if "data-unprovable-tail" in (start, end) else None)
+            if oracle in ("data", "bss"):
+                # The PE alone cannot split FileAlignment slack from real
+                # content at the .data raw-size edge - but the claiming unit's
+                # own base obj can: cl compiled the same declaration, so where
+                # IT put the symbol is where retail's cl did. g_emptyString
+                # (132 inbound relocs) is cl's FIRST .bss symbol, living
+                # inside the file-backed FileAlignment tail.
+                fixed = "data-initialized" if oracle == "data" \
+                    else "data-loader-zero-tail"
+                start = fixed if start == "data-unprovable-tail" else start
+                end = fixed if end == "data-unprovable-tail" else end
             if start not in STORAGE:
                 withheld.append((rva, name, "storage %s is not enrollable" % start))
                 continue

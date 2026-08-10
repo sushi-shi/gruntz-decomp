@@ -2,7 +2,6 @@
 
 #include <Mfc.h>
 
-#include <EmptyString.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
@@ -16,7 +15,7 @@
 RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];
-    szLine[0] = g_emptyString[0];
+    szLine[0] = ""[0];
     memset(szLine + 1, 0, sizeof(szLine) - 1);
 
     CString info("crc info for all gruntz:\n------------------------\n");

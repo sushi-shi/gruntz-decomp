@@ -17,7 +17,6 @@
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/GruntzSoundZ.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/CheatMgr.h>
@@ -431,7 +430,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_saveSink = new CSaveGame;
-    if (!m_saveSink->SaveGameFile(g_emptyString)) {
+    if (!m_saveSink->SaveGameFile("")) {
         if (m_saveSink) {
             delete m_saveSink;
             m_saveSink = NULL;

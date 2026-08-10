@@ -222,7 +222,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     }
     i32 fc = slot->m_pathHi;
     i32 f8 = slot->m_pathLo;
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
+    const char* name = (fc == 0 && f8 == 0) ? "" : slot->m_levelName;
     i32 r = g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
     if (r == 0) {
         g_gameReg->EnterModalUI(
@@ -248,7 +248,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     }
     i32 fc = slot->m_pathHi;
     i32 f8 = slot->m_pathLo;
-    const char* name = (fc == 0 && f8 == 0) ? g_emptyString : slot->m_levelName;
+    const char* name = (fc == 0 && f8 == 0) ? "" : slot->m_levelName;
 
     return g_gameReg->BuildLevelRezPath(fc == 0, fc, f8, slot->m_levelId, CString(name));
 }

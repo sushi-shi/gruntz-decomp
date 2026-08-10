@@ -1,6 +1,5 @@
 #include <rva.h>
 
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/Dialogs.h>
@@ -562,7 +561,7 @@ void CMultiStartDlg::OnCustomWorld() {
         m_customWorldFlag = 1;
         g_multiState->m_customLevel = 1;
         g_multiState->m_customLevelName = static_cast<LPCTSTR>(dlg.m_customName);
-        g_multiState->m_builtInLevelName = g_emptyString;
+        g_multiState->m_builtInLevelName = "";
         g_multiState->SaveConfig(0);
     }
 }
@@ -580,7 +579,7 @@ void CMultiStartDlg::CommitWorldHost() {
                     m_customWorldFlag = 0;
                 }
                 g_multiState->m_customLevel = 0;
-                g_multiState->m_customLevelName = g_emptyString;
+                g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = static_cast<LPCTSTR>(name);
                 g_multiState->SaveConfig(0);
             }
@@ -601,7 +600,7 @@ void CMultiStartDlg::OnChatSend() {
     if (b.GetLength() != 0) {
         a += b;
         AppendChatLine(const_cast<char*>(static_cast<const char*>(a)));
-        input->SetWindowTextA(g_emptyString);
+        input->SetWindowTextA("");
         g_multiState->BroadcastChatLine(const_cast<char*>(static_cast<const char*>(a)), 0, 0, 0);
     }
 }
@@ -707,7 +706,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
                     ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, slot->m_configId + 1, 0);
                 }
             } else {
-                GetCtrlB(idx)->SetWindowTextA(g_emptyString);
+                GetCtrlB(idx)->SetWindowTextA("");
                 ::SendMessageA(GetCtrlE(idx)->m_hWnd, CB_SETCURSEL, 0, 0);
             }
             this->SyncChannelSlot(idx);

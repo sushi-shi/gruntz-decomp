@@ -2,7 +2,6 @@
 
 #include <Wap32/GameApp.h>
 
-#include <EmptyString.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Wap32.h>

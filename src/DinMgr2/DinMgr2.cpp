@@ -1,7 +1,6 @@
 #include <rva.h>
 
 #include <DinMgr2/DirectInputMgr2.h>
-#include <EmptyString.h>
 #include <Gruntz/FixedPtrArray32.h>
 #include <Pix16.h>
 
@@ -342,7 +341,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
-    strcpy(szLine, g_emptyString);
+    strcpy(szLine, "");
 
     switch (hr) {
         case static_cast<i32>(DIERR_UNSUPPORTED):

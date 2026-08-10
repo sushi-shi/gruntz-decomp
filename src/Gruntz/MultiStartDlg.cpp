@@ -151,7 +151,7 @@ i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 
         MsgParam text;
         text.m_lparam = lParam;
-        if (strcmp(g_emptyString, text.m_str) == 0) {
+        if (strcmp("", text.m_str) == 0) {
             return 0;
         }
     }
@@ -331,7 +331,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         if (g_multiState->m_isHost != 0 && customFlag != CUSTOM_MAP_UNINITIALIZED) {
             char mapName[0x100];
             DWORD size = 0x100;
-            reg->GetValueString("LastMultiMap", mapName, &size, g_emptyString);
+            reg->GetValueString("LastMultiMap", mapName, &size, "");
             m_customWorldFlag = IDX(customFlag);
             if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
@@ -346,7 +346,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     child->SetWindowTextA(mapName);
                     g_multiState->m_customLevel = 1;
                     g_multiState->m_customLevelName = mapName;
-                    g_multiState->m_builtInLevelName = g_emptyString;
+                    g_multiState->m_builtInLevelName = "";
                     fclose(f);
                 }
             } else {
@@ -356,7 +356,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 }
                 child->SetWindowTextA(mapName);
                 g_multiState->m_customLevel = 0;
-                g_multiState->m_customLevelName = g_emptyString;
+                g_multiState->m_customLevelName = "";
                 g_multiState->m_builtInLevelName = mapName;
             }
         }

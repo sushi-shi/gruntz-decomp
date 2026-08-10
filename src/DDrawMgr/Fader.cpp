@@ -8,7 +8,6 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
-#include <EmptyString.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderMode.h>
 #include <Gruntz/FaderSubtypes.h>
@@ -153,7 +152,7 @@ CFxModeT1::CFxModeT1() {
     m_stripCopy = 1;
     m_useLut = 0;
     m_shadeTable = NULL;
-    m_shadeTablePath = g_emptyString;
+    m_shadeTablePath = "";
     m_palette = NULL;
 }
 

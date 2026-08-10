@@ -7,7 +7,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DinMgr2/DirectInputMgr2.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/ErrorStringId.h>
@@ -99,7 +98,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     page->BlitPage(page->m_backPair);
 
     i32 r = GetRandomNumber();
-    const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
+    const char* pick = (r % 2) ? s_dat60b5bc : "";
 
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);

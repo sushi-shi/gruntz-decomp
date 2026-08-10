@@ -8,7 +8,6 @@
 #include <Bute/ButeValue.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/BlowfishApi.h>
-#include <EmptyString.h>
 #include <Wap32/CoordUnset.h>
 
 #include <float.h>
@@ -788,8 +787,8 @@ void CButeMgr::Init() {
     m_lineNo = 0;
     m_countLine = 1;
     m_parseFailed = 0;
-    m_tagName = g_emptyString;
-    m_str104 = g_emptyString;
+    m_tagName = "";
+    m_str104 = "";
 }
 
 RVA(0x00170370, 0x1)

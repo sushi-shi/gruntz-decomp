@@ -129,7 +129,7 @@ inline void CUserLogic::AttachToObject(CGameObject* obj) {
     m_object = static_cast<CWwdGameObjectA*>(obj);
     m_objAux = obj->m_animWorker;
     {
-        zBitVec tmp(g_emptyString, 0);
+        zBitVec tmp("", 0);
         m_link.m_str = tmp;
     }
     RegisterLogicTypesOnce();

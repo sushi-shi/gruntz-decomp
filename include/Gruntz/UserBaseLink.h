@@ -3,7 +3,6 @@
 
 #include <rva.h>
 
-#include <EmptyString.h>
 #include <Wap32/zBitVec.h>
 
 struct CUserBaseLink {

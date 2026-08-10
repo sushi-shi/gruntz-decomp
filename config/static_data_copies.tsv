@@ -42,8 +42,9 @@
 # them is load-bearing; the numbers below are the ones cl emitted when the rows
 # were written and are documentation, not a claim.
 0x1f0868	$T2033768	fadereffects	0x8	data
+0x2293f4	??_C@_00A@?$AA@	zutil	0x1	data
+0x2293f4	??_C@_00A@?$AA@	netmgrerror	0x1	data
 0x2293f8	?s_gruntDirEast_2293f8@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
-0x2293f8	_s_gruntDirSouth$S31792	actionoptionsmenubar	0xc	data
 0x229408	?s_gruntDirNorth_229408@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229418	?s_gruntDirSouth_229418@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
 0x229428	?s_gruntDirWest_229428@@3UGruntDirectionCell@@A	actionoptionsmenubar	0xc	data
@@ -254,10 +255,6 @@
 0x22bf48	?s_gruntDirSouthEast_22bf48@@3UGruntDirectionCell@@A	creditsstate	0xc	data
 0x22bf58	?s_gruntDirCenter_22bf58@@3UGruntDirectionCell@@A	creditsstate	0xc	data
 0x22bf68	?s_gruntDirSouthWest_22bf68@@3UGruntDirectionCell@@A	creditsstate	0xc	data
-0x22bfd0	_s_gruntDirSouth$S33418	customworlddialog	0xc	data
-0x22bfe0	_s_gruntDirEast$S33401	customworlddialog	0xc	data
-0x22bff0	_s_gruntDirNorthEast$S33430	customworlddialog	0xc	data
-0x22c000	_s_gruntDirSouthEast$S33442	customworlddialog	0xc	data
 0x22c300	?s_gruntDirEast_22c300@@3UGruntDirectionCell@@A	demo	0xc	data
 0x22c310	?s_gruntDirNorth_22c310@@3UGruntDirectionCell@@A	demo	0xc	data
 0x22c320	?s_gruntDirSouth_22c320@@3UGruntDirectionCell@@A	demo	0xc	data
@@ -384,13 +381,17 @@
 0x24bd80	?s_gruntDirSouthEast_24bd80@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
 0x24bd90	?s_gruntDirCenter_24bd90@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
 0x24bda0	?s_gruntDirSouthWest_24bda0@@3UGruntDirectionCell@@A	multistartdlg	0xc	data
+0x24bfe0	?s_gruntDirEast_24bfe0@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
+0x24bff0	?s_gruntDirNorth_24bff0@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
+0x24c000	?s_gruntDirSouth_24c000@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
+0x24c010	?s_gruntDirWest_24c010@@3UGruntDirectionCell@@A	playercommandstep	0xc	data
 0x24c01c	_?$S55@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S41135	play	0x1	data
 0x24c22c	_?$S56@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S42076	play	0x1	data
-0x24c438	_s_gruntDirNorth$S34829	gruntzplayer	0xc	data
-0x24c448	_s_gruntDirCenter$S34865	gruntzplayer	0xc	data
-0x24c458	_s_gruntDirWest$S34841	gruntzplayer	0xc	data
-0x24c468	_s_gruntDirSouthWest$S34871	gruntzplayer	0xc	data
-0x24c478	_s_gruntDirNorthWest$S34853	gruntzplayer	0xc	data
+0x24c438	?s_gruntDirNorthEast_24c438@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
+0x24c448	?s_gruntDirNorthWest_24c448@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
+0x24c458	?s_gruntDirSouthEast_24c458@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
+0x24c468	?s_gruntDirCenter_24c468@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
+0x24c478	?s_gruntDirSouthWest_24c478@@3UGruntDirectionCell@@A	gruntzplayer	0xc	data
 0x24c548	?s_gruntDirEast_24c548@@3UGruntDirectionCell@@A	playassetload	0xc	data
 0x24c558	?s_gruntDirNorth_24c558@@3UGruntDirectionCell@@A	playassetload	0xc	data
 0x24c568	?s_gruntDirSouth_24c568@@3UGruntDirectionCell@@A	playassetload	0xc	data
@@ -732,11 +733,11 @@
 0x22bd98	?s_gruntDirSouthEast_22bd98@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bda8	?s_gruntDirCenter_22bda8@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bdb8	?s_gruntDirSouthWest_22bdb8@@3UGruntDirectionCell@@A	videoconfig	0xc	data
-0x22c210	_s_gruntDirNorth$S33412	customworlddialog	0xc	data
-0x22c220	_s_gruntDirCenter$S33448	customworlddialog	0xc	data
-0x22c230	_s_gruntDirWest$S33424	customworlddialog	0xc	data
-0x22c240	_s_gruntDirSouthWest$S33454	customworlddialog	0xc	data
-0x22c250	_s_gruntDirNorthWest$S33436	customworlddialog	0xc	data
+0x22c210	?s_gruntDirNorthEast_22c210@@3UGruntDirectionCell@@A	customworlddialog	0xc	data
+0x22c220	?s_gruntDirNorthWest_22c220@@3UGruntDirectionCell@@A	customworlddialog	0xc	data
+0x22c230	?s_gruntDirSouthEast_22c230@@3UGruntDirectionCell@@A	customworlddialog	0xc	data
+0x22c240	?s_gruntDirCenter_22c240@@3UGruntDirectionCell@@A	customworlddialog	0xc	data
+0x22c250	?s_gruntDirSouthWest_22c250@@3UGruntDirectionCell@@A	customworlddialog	0xc	data
 0x244fa0	?s_gruntDirNorthEast_244fa0@@3UGruntDirectionCell@@A	gruntzapp	0xc	data
 0x244fb0	?s_gruntDirNorthWest_244fb0@@3UGruntDirectionCell@@A	gruntzapp	0xc	data
 0x244fc0	?s_gruntDirSouthEast_244fc0@@3UGruntDirectionCell@@A	gruntzapp	0xc	data
@@ -827,15 +828,6 @@
 0x244840	?s_gruntDirSouthEast_244840@@3UGruntDirectionCell@@A	fortressflag	0xc	data
 0x244850	?s_gruntDirCenter_244850@@3UGruntDirectionCell@@A	fortressflag	0xc	data
 0x244860	?s_gruntDirSouthWest_244860@@3UGruntDirectionCell@@A	fortressflag	0xc	data
-0x244c18	?s_gruntDirEast_244c18@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c28	?s_gruntDirNorth_244c28@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c38	?s_gruntDirSouth_244c38@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c48	?s_gruntDirWest_244c48@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c58	?s_gruntDirNorthEast_244c58@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c68	?s_gruntDirNorthWest_244c68@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c78	?s_gruntDirSouthEast_244c78@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c88	?s_gruntDirCenter_244c88@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
-0x244c98	?s_gruntDirSouthWest_244c98@@3UGruntDirectionCell@@A	triggermgrhittest	0xc	data
 0x244ce8	?s_gruntDirEast_244ce8@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	0xc	data
 0x244d00	?s_gruntDirNorth_244d00@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	0xc	data
 0x244d10	?s_gruntDirSouth_244d10@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	0xc	data

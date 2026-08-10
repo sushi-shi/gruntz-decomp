@@ -12,7 +12,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
-#include <EmptyString.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>

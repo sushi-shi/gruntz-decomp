@@ -3,7 +3,6 @@
 #include <Gruntz/CheatMgr.h>
 
 #include <Bute/ButeMgr.h>
-#include <EmptyString.h>
 #include <Gruntz/GruntzCommandId.h>
 
 #include <stddef.h>
@@ -145,7 +144,7 @@ void CCheatMgr::RegisterCheats() {
 // @early-stop
 RVA(0x00022e60, 0x1be)
 void CCheatMgr::LoadCheatConfig() {
-    CString defStr(static_cast<const char*>(g_emptyString));
+    CString defStr(static_cast<const char*>(""));
     CString group;
     SYSTEMTIME now;
     GetLocalTime(&now);

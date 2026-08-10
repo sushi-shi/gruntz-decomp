@@ -6,7 +6,6 @@
 #include <Bute/Hash.h>
 #include <Bute/ObjListBase.h>
 #include <Bute/SymTab.h>
-#include <EmptyString.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezList.h>

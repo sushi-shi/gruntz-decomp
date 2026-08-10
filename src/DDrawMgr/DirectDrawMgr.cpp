@@ -10,7 +10,6 @@
 #include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Dsndmgr/SoundBankLoad.h>
-#include <EmptyString.h>
 #include <Image/Image.h>
 #include <Io/FileStream.h>
 
@@ -68,7 +67,7 @@ void CDDrawPtrCollections::GetErrorString(char* file, i32 line, i32 hr) {
 
     strcpy(szMsg, "Unknown Error Message");
     sprintf(szCode, "Unknown Error Code");
-    strcpy(szLine, g_emptyString);
+    strcpy(szLine, "");
 
     switch (hr) {
         case static_cast<i32>(DDERR_UNSUPPORTED):

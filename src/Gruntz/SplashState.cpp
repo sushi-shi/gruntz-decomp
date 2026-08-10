@@ -49,7 +49,7 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 c) {
 
     void* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), g_emptyString, "_");
+        m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(soundz), "", "_");
     }
     return 1;
 }
