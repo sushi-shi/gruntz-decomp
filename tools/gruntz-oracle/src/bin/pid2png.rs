@@ -18,12 +18,12 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::Parser;
-use gruntz_codec::{pal, pid};
+use gruntz_codec::{pal, pcx, pid};
 
 #[derive(Parser)]
 #[command(
     name = "pid2png",
-    about = "Render Gruntz .PID sprites as indexed PNG",
+    about = "Render Gruntz .PID sprites and .PCX screens as PNG",
     long_about = "Decodes PID sprites and writes indexed PNGs.\n\n\
                   A PID holds palette INDICES, so colours come from elsewhere: \
                   a sprite with flags & 0x80 carries its own 768-byte VGA \
@@ -33,7 +33,7 @@ use gruntz_codec::{pal, pid};
                   toolz (see GRUNTZ/PALETTEZ/*.PAL)."
 )]
 struct Cli {
-    /// `.PID` files, or directories to walk when --recursive is given.
+    /// `.PID` sprites or `.PCX` screens, or directories to walk with --recursive.
     #[arg(required = true)]
     inputs: Vec<PathBuf>,
     /// Destination directory. Input tree structure is preserved below it.
@@ -42,12 +42,20 @@ struct Cli {
     /// A 768-byte `.PAL`. Overrides a sprite's embedded palette when both exist.
     #[arg(long)]
     palette: Option<PathBuf>,
-    /// Walk directories for *.PID.
+    /// Walk directories for *.PID and *.PCX.
     #[arg(long, short)]
     recursive: bool,
     /// Mark the header's fill index fully transparent.
+    ///
+    /// On an indexed PNG this is a `tRNS` chunk, which is correct but which
+    /// plenty of viewers and thumbnailers quietly ignore. Pair with --rgba if
+    /// the background still shows up as the fill colour.
     #[arg(long)]
     transparent: bool,
+    /// Write true-colour RGBA instead of an indexed PNG. Four times the bytes,
+    /// but every viewer honours the alpha.
+    #[arg(long)]
+    rgba: bool,
     /// Use the CRezImage decoder's row-overrun rule (spill) instead of
     /// CDDSurface::RunDecode1's (carry). They differ only on malformed streams.
     #[arg(long)]
@@ -69,11 +77,80 @@ fn collect(path: &Path, recursive: bool, into: &mut Vec<PathBuf>) -> std::io::Re
         }
     } else if path
         .extension()
-        .is_some_and(|e| e.eq_ignore_ascii_case("PID"))
+        .is_some_and(|e| e.eq_ignore_ascii_case("PID") || e.eq_ignore_ascii_case("PCX"))
     {
         into.push(path.to_path_buf());
     }
     Ok(())
+}
+
+fn is_pcx(p: &Path) -> bool {
+    p.extension().is_some_and(|e| e.eq_ignore_ascii_case("PCX"))
+}
+
+/// The full-screen images (`SCREENZ`) — title cards, area maps, credits, help.
+/// Retail accepts 8 bits per pixel with either 1 plane (paletted, palette at
+/// EOF-769) or 3 (one R, one G and one B plane per scanline).
+fn render_pcx(
+    bytes: &[u8],
+    dst: &Path,
+    override_pal: Option<&[u8]>,
+    dry_run: bool,
+) -> Result<(), String> {
+    let img = pcx::split(bytes).map_err(|e| e.to_string())?;
+    let w = img.header.width() as usize;
+    let h = img.header.height() as usize;
+    if dry_run {
+        println!("{w:>5}x{h:<5} {}", dst.display());
+        return Ok(());
+    }
+
+    let mut pixels = vec![0u8; img.pixel_len()];
+    let mut scratch = vec![0u8; img.scratch_len()];
+    img.decode_into(&mut pixels, &mut scratch)
+        .map_err(|e| e.to_string())?;
+    let row_bytes = img.dims.width();
+
+    if let Some(parent) = dst.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let file = File::create(dst).map_err(|e| e.to_string())?;
+    let mut enc = png::Encoder::new(BufWriter::new(file), w as u32, h as u32);
+    enc.set_depth(png::BitDepth::Eight);
+
+    if img.planes == 3 {
+        // `decode_into` has ALREADY de-planarised: it writes interleaved
+        // triples in retail's own byte order (0x176144 puts plane 0 in byte 2),
+        // which is B,G,R. Only the channel order is left to undo.
+        enc.set_color(png::ColorType::Rgb);
+        let mut out = Vec::with_capacity(w * h * 3);
+        for y in 0..h {
+            let row = &pixels[y * row_bytes..(y + 1) * row_bytes];
+            for x in 0..w {
+                out.push(row[3 * x + 2]);
+                out.push(row[3 * x + 1]);
+                out.push(row[3 * x]);
+            }
+        }
+        let mut writer = enc.write_header().map_err(|e| e.to_string())?;
+        return writer.write_image_data(&out).map_err(|e| e.to_string());
+    }
+
+    let palette = override_pal
+        .or(img.palette)
+        .ok_or("no palette: 1-plane PCX with no trailing palette, pass --palette")?;
+    if palette.len() != pal::BYTE_LEN {
+        return Err(format!("palette is {} bytes, expected 768", palette.len()));
+    }
+    enc.set_color(png::ColorType::Indexed);
+    enc.set_palette(palette.to_vec());
+    let mut writer = enc.write_header().map_err(|e| e.to_string())?;
+    // Rows may be padded to an even byte count; hand PNG exactly `w` per row.
+    let mut out = Vec::with_capacity(w * h);
+    for y in 0..h {
+        out.extend_from_slice(&pixels[y * row_bytes..y * row_bytes + w]);
+    }
+    writer.write_image_data(&out).map_err(|e| e.to_string())
 }
 
 /// Where a rendered sprite lands: the input's path relative to the root it was
@@ -90,10 +167,14 @@ fn render(
     dst: &Path,
     override_pal: Option<&[u8]>,
     transparent: bool,
+    rgba: bool,
     overrun: pid::RowOverrun,
     dry_run: bool,
 ) -> Result<(), String> {
     let bytes = std::fs::read(file).map_err(|e| e.to_string())?;
+    if is_pcx(file) {
+        return render_pcx(&bytes, dst, override_pal, dry_run);
+    }
     let sprite = pid::split(&bytes).map_err(|e| e.to_string())?;
     let dims = sprite.header.dims().map_err(|e| e.to_string())?;
 
@@ -140,13 +221,32 @@ fn render(
         dims.width() as u32,
         dims.height() as u32,
     );
-    enc.set_color(png::ColorType::Indexed);
     enc.set_depth(png::BitDepth::Eight);
+    let fill = sprite.header.fill_byte() as usize;
+
+    if rgba {
+        // Resolve the palette ourselves so the alpha is in the pixels. Costs
+        // 4x the bytes and is immune to a viewer that ignores tRNS.
+        enc.set_color(png::ColorType::Rgba);
+        let mut out = Vec::with_capacity(pixels.len() * 4);
+        for &i in &pixels {
+            let e = i as usize * 3;
+            out.extend_from_slice(&palette[e..e + 3]);
+            out.push(if transparent && i as usize == fill {
+                0
+            } else {
+                0xff
+            });
+        }
+        let mut writer = enc.write_header().map_err(|e| e.to_string())?;
+        return writer.write_image_data(&out).map_err(|e| e.to_string());
+    }
+
+    enc.set_color(png::ColorType::Indexed);
     enc.set_palette(palette.to_vec());
     if transparent {
         // tRNS is a prefix of the palette: every index up to the fill stays
         // opaque, the fill itself becomes fully transparent.
-        let fill = sprite.header.fill_byte() as usize;
         let mut trns = vec![0xffu8; fill + 1];
         trns[fill] = 0;
         enc.set_trns(trns);
@@ -206,6 +306,7 @@ fn main() -> ExitCode {
                 &dst,
                 override_pal.as_deref(),
                 cli.transparent,
+                cli.rgba,
                 overrun,
                 cli.dry_run,
             ) {
