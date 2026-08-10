@@ -79,7 +79,7 @@ _`.rsrc` is byte-exact: all 150 differing bytes are `OffsetToData` fields shifte
 
 _Read `docs/image-diff.md` for the per-section attribution (the size delta broken into named buckets that must sum to it) and `docs/link-section-audit.md` for the `.text`/`.rdata` region census._
 
-_Candidate `1a0d91644471`, linked 2026-08-10 17:07. Regenerate: `ninja candidate`._
+_Candidate `11f8d2b306d9`, linked 2026-08-10 17:16. Regenerate: `ninja candidate`._
 <!-- link-score:end -->
 
 

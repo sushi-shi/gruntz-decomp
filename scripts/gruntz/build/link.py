@@ -427,33 +427,38 @@ def main() -> None:
     rsp = out.parent / (out.stem + ".objs.rsp")
     rsp.write_text("\n".join(rsp_lines) + "\n")
 
+    # EVERY LINK IS A FRESH LINK. `/INCREMENTAL:YES` stays on because retail IS an
+    # incremental link (the E9 thunk band at the top of .text, the padded IAT, the
+    # separate .idata) and reproducing that layout is the point - but a FIRST
+    # incremental link produces those artifacts just as well as a patched one. What
+    # we must not keep is the PATCHING behaviour: with a live .ilk, link.exe edits
+    # the previous image instead of building one, and an incremental pass does NOT
+    # re-bind the .res - so a rebuild silently emitted a binary with NO .rsrc at all
+    # (no settings, multiplayer or save dialog, since every MFC dialog is created
+    # from a DIALOG resource). It presented as a reconstruction defect and cost a
+    # full session round.
+    #
+    # The general rule, not the resource special case: a link whose output depends
+    # on what happened to be left on disk is NOT REPRODUCIBLE, and reproducibility
+    # is the whole premise of a byte-matching project - the same objects must give
+    # the same bytes, in any order, on any machine. Linking is seconds; determinism
+    # is not negotiable. So drop the prior image and its incremental database first.
+    for stale in (out, out.with_suffix(".ilk")):
+        try:
+            stale.unlink()
+        except FileNotFoundError:
+            pass
+
     output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
     logf = out.parent / (out.stem + ".link.log")
     logf.write_text(output)
 
-    # /INCREMENTAL:YES patches the PREVIOUS image instead of rebuilding it, and an
-    # incremental pass does NOT re-bind the .res - so a relink over a valid .EXE+.ilk
-    # silently emits a binary with NO .rsrc. That is not cosmetic: every MFC dialog
-    # (settings, multiplayer battle select, save-game) is created from a DIALOG
-    # resource, so a resource-less build has no working dialogs at all, and it looked
-    # exactly like a reconstruction bug for a whole session. Incremental stays ON
-    # (retail IS an incremental link - the E9 thunk band, the padded IAT - and the
-    # layout campaign needs it), so instead: verify, then self-heal by dropping the
-    # .ilk and doing the one full link that binds the resources.
     if args.res and out.exists() and not _has_rsrc(out):
-        print("[link] .rsrc MISSING after an incremental link - dropping .ilk and "
-              "relinking in full (see the /INCREMENTAL note in link.py)")
-        for stale in (out, out.with_suffix(".ilk")):
-            try:
-                stale.unlink()
-            except FileNotFoundError:
-                pass
-        output, rc = run_wine(["wine", str(link), f"@{winepath_w(rsp)}"], out.parent, out)
-        logf.write_text(output)
-        if out.exists() and not _has_rsrc(out):
-            sys.stderr.write(f"[link] FATAL: {out} still has no .rsrc after a full "
-                             f"link, though --res {args.res} was supplied\n")
-            sys.exit(1)
+        sys.stderr.write(
+            f"[link] FATAL: {out} has no .rsrc although --res {args.res} was on the "
+            f"link line. Every MFC dialog is created from a DIALOG resource, so this "
+            f"binary has no working settings/multiplayer/save screens.\n")
+        sys.exit(1)
 
     if not out.exists():
         sys.stderr.write(f"[link] FAILED to produce {out} (log: {logf})\n")
