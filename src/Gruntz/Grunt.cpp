@@ -1761,8 +1761,13 @@ label_4cb4b:
         bd2->m_rows[tgtTileY][tgtTileX].m_flags |= 0x20000000;
         bd2->m_rows[tgtTileY][tgtTileX].m_occupantId = (m_tileOwnerHi << 8) | m_tileOwnerLo;
 
-        m_lastTilePx.m_x = rec.row;
-        m_lastTilePx.m_y = rec.column;
+        // Retail 0x4cc52: `mov eax,[esp+0x3c]` / `mov ecx,[esp+0x40]` with esp 8 below
+        // the frame base (the two `push`es of the 1.0 double at 0x4cbea/0x4cbf2), i.e.
+        // frame slots 0x34/0x38 - the SAME slots read at 0x4cbca/0x4cbdc and shifted by
+        // TILE_SHIFT_PX to index m_rows just above, so they are tgtPxX/tgtPxY.  `rec`
+        // lives at 0x3c..0x44 (the by-value GruntDirectionCell pushed to PlaySound).
+        m_lastTilePx.m_x = tgtPxX;
+        m_lastTilePx.m_y = tgtPxY;
         ComputeFacing(1.0);
     }
     m_arrivalPending = 1;
@@ -4387,13 +4392,16 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CGruntCellRec* cell = &m_cells[3 * m_entranceCell.row + m_entranceCell.column];
-    double dirX = cell->m_motion.m_direction.x;
-    double dirY = cell->m_motion.m_direction.y;
+    // Four separate EntranceCell() calls, as in FinalizeStep: retail re-copies the
+    // 12-byte m_entranceCell to the frame and recomputes 3*row+column before EACH of
+    // the four m_cells reads (0x5fcfd/0x5fd25/0x5fd8f/0x5fdba), which is what the
+    // by-value accessor lowers to.
+    double dirX = EntranceCell()->m_motion.m_direction.x;
+    double dirY = EntranceCell()->m_motion.m_direction.y;
     m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
-    i32 x = static_cast<i32>(cell->m_motion.m_step.x + m_movePosX);
-    i32 y = static_cast<i32>(cell->m_motion.m_step.y + m_movePosY);
+    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.x + m_movePosX);
+    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.y + m_movePosY);
     if ((dirX > s_fpZero && x > m_lastTilePx.m_x) || (dirX < s_fpZero && x < m_lastTilePx.m_x)) {
         x = m_lastTilePx.m_x;
     }

@@ -217,16 +217,19 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
     m_maskB = maskB;
     m_maskA = maskA;
     i32 flags = m_rows[y2][x2].m_flags;
-    if ((maskA & flags) != 0 && (maskC & flags) != 0) {
+    // Retail 0x9ed26: `test ecx,eax` (maskA & flags) `je` continue, then
+    // `mov ecx,[esp+0x30]` (maskC) `test ecx,eax` `je 0x9eedc` -> return 0.  The
+    // SECOND test bails when maskC does NOT hit, i.e. the goal is blocked by maskA
+    // and the passable-override does not clear it - the same polarity CMapMgr::Expand
+    // uses at 0x9f0a2 for a neighbour.
+    if ((maskA & flags) != 0 && (maskC & flags) == 0) {
         return 0;
     }
 
-    if (m_cellCount != 0) {
-        u32 i = 0;
-        do {
-            m_cellPool[i].m_count = 0;
-            i++;
-        } while (i < m_cellCount);
+    // Retail rotates a `for` (`cmp ecx,edx` against the zeroed i, `jbe`), not a
+    // `!= 0` guard over a do-while (which lowers to `test`/`jne`).
+    for (u32 i = 0; i < m_cellCount; i++) {
+        m_cellPool[i].m_count = 0;
     }
     if (x1 == x2 && y1 == y2) {
         return 1;
@@ -287,7 +290,9 @@ i32 CMapMgr::Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 m
 
 reached:
     BrickzNode* p = node;
-    do {
+    // `while`, not `do-while`: retail guards the loop with its own entry test
+    // (block B25 at the `reached:` label carries a jcc past the body).
+    while (p != NULL) {
         CoordPoolNode* rec = g_coordPool.m_freeHead;
         Coord* slot = 0;
         if (rec->m_next != NULL) {
@@ -299,7 +304,7 @@ reached:
 
         static_cast<CPtrList*>(list)->AddHead(slot);
         p = p->m_parent;
-    } while (p != NULL);
+    }
     if (m_stepCb != NULL) {
         m_stepCb();
     }
@@ -603,13 +608,14 @@ RVA(0x0009f710, 0xa7)
 void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = node->m_cellLink;
-    if (slot->m_cellPrev != NULL) {
-        if (slot->m_cellNext != NULL) {
-            slot->m_cellPrev->m_cellNext = slot->m_cellNext;
-            slot->m_cellNext->m_cellPrev = slot->m_cellPrev;
-        }
-    } else if (slot->m_cellNext == NULL) {
+    // The same three-arm `&&` chain CMapMgr::Unlink uses, but with the arms in retail's
+    // emission order: the FIRST body retail lays down is `*head = NULL` (0x9f73e), then
+    // the two-sided unlink (0x9f74e), then the head-advance (0x9f761).
+    if (slot->m_cellPrev == NULL && slot->m_cellNext == NULL) {
         *head = NULL;
+    } else if (slot->m_cellPrev != NULL && slot->m_cellNext != NULL) {
+        slot->m_cellPrev->m_cellNext = slot->m_cellNext;
+        slot->m_cellNext->m_cellPrev = slot->m_cellPrev;
     } else if (slot->m_cellPrev == NULL) {
         BrickzCellNode* next = slot->m_cellNext;
         if (next != NULL) {

@@ -1957,7 +1957,7 @@ grunt	??0CGruntCellRec@@QAE@XZ	100.0000	100.0000	1	245e9b5fd7eb	0xf400	100.0000
 grunt	??1CGrunt@@UAE@XZ	99.8864	99.8864	4	9b85b982c89a	0xf2f0	100.0000
 grunt	??1CGruntCellRec@@QAE@XZ	99.1667	99.1667	1	e59cc6f4dade	0xf430	100.0000
 grunt	??_GCGrunt@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8a9711ebbd20	0xf2c0	100.0000
-grunt	?AdvanceMotion@CGrunt@@UAEXXZ	78.9452	78.9452	7	514cdee7a8b9	0x5f310	79.8196
+grunt	?AdvanceMotion@CGrunt@@UAEXXZ	85.1300	85.1300	8	f15544a392ae	0x5f310	85.1300
 grunt	?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	98.1910	98.1910	2	a5bf5c385f06	0x4a780	98.1910
 grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	6	76b923343844	0x4b240	100.0000
 grunt	?CommitArrival@CGrunt@@QAEHXZ	99.3269	99.3269	12	8e2e1dfa2727	0x4b130	99.3269
@@ -1979,7 +1979,7 @@ grunt	?PlaySound@CGrunt@@QAEXHUGruntDirectionCell@@@Z	66.9320	66.9320	6	67f3df92
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	11	57b475ef71e3	0x48400	100.0000
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	14	9b4d75bbfd29	0x4d060	100.0000
 grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	33.3651	33.3651	9	4f7aa93f7cd2	0x4b370	33.4511
-grunt	?StepGruntMovement@CGrunt@@QAEHXZ	67.7026	67.7026	33	e2653daab383	0x4c170	67.8148
+grunt	?StepGruntMovement@CGrunt@@QAEHXZ	68.6599	68.6599	34	dad4ff82c2ce	0x4c170	68.6599
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66.7500
 grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9712	79.9712	8	e6d01193a9b1	0x5d210	79.9994
 gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0	86.5443
@@ -2852,7 +2852,7 @@ mapmgr	??1CMapMgr@@QAE@XZ	99.5652	99.5652	5	ccf3239f9de7	0x9e9e0	100.0000
 mapmgr	?AllocGrid@CMapMgr@@QAEHHHP6AXXZ@Z	87.9856	87.9856	5	1de7f05435de	0x9ea60	87.9856
 mapmgr	?Allocate@CMapArrayA@@QAEHI@Z	87.5200	87.5200	8	e4cb12505968	0x9e740	87.5200
 mapmgr	?Allocate@CMapArrayB@@QAEHI@Z	87.6471	87.6471	8	d54d03028639	0x9e860	87.6471
-mapmgr	?CellPop@CMapMgr@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	4	fe0a5ad4c6da	0x9f710	80.3284
+mapmgr	?CellPop@CMapMgr@@QAEXPAUBrickzNode@@H@Z	99.5224	99.5224	5	0f2654a7a3d7	0x9f710	99.5224
 mapmgr	?CellPush@CMapMgr@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	4	e4eaeb530698	0x9f470	85.9070
 mapmgr	?Drain@CMapMgr@@QAEXXZ	100.0000	100.0000	4	12c4e1963388	0x9f590	100.0000
 mapmgr	?Expand@CMapMgr@@QAEHPAUBrickzNode@@HHHH@Z	78.8300	78.8300	4	61117c722db4	0x9f010	78.8300
@@ -2864,7 +2864,7 @@ mapmgr	?PopFront@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	3	64bdc82b2c32	
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	10	ccb6e8fabf99	0x9ec30	100.0000
 mapmgr	?ResetCells@CMapMgr@@QAEXXZ	99.3077	99.3077	5	6f99bd1d245c	0x9f5d0	99.3846
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	1265cd29489a	0x9f840	100.0000
-mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	91.0871	91.0871	6	dfaa7722d5bd	0x9eca0	91.1326
+mapmgr	?Search@CMapMgr@@UAEHHHHHPAXHHH@Z	93.8144	93.8144	7	e0caf21d8b6d	0x9eca0	93.8144
 mapmgr	?SetVersionRect@@YAXXZ	100.0000	100.0000	4	c4adb43dc4fd	0x9fe10	100.0000
 mapmgr	?Unlink@CMapMgr@@QAEXPAUBrickzNode@@@Z	100.0000	100.0000	5	6e597f0a9a64	0x9f690	100.0000
 mapmgr	?Visit@CMapMgr@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	34b3b1e544f9	0x9f7f0	100.0000
@@ -4241,7 +4241,7 @@ triggermgr	?DestroyAllAnims@CTriggerMgr@@QAEXXZ	98.7857	98.7857	20	16402189082c	
 triggermgr	?DestroyGroup@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	6	504504ae813d	0x798d0	100.0000
 triggermgr	?EnqueueGroupCells@CTriggerMgr@@QAEHXZ	100.0000	100.0000	19	f4601f04cb5d	0x7d6e0	100.0000
 triggermgr	?FindNearestInRow@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	7	5d5951626b97	0x77f80	89.5263
-triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	85.5285	85.5285	12	4bc7bda531dc	0x78060	85.5285
+triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	13	8f07229cfe45	0x78060	90.2439
 triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	80.0213	80.0213	16	2d8dea57708d	0x7abc0	80.0213
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	12	30a510c97236	0x78960	100.0000
 triggermgr	?LoadExplosionSprites@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	7	ac1a40273130	0x7b330	100.0000

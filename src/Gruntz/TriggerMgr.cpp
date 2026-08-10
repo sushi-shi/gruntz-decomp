@@ -103,9 +103,13 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
     vp = &view->m_mainPlane->m_viewRect;
     r.right += vp->left - view->m_planeCtx.left;
     r.bottom += vp->top - view->m_planeCtx.top;
-    for (i32 i = 0; i < 4; i++) {
-        for (i32 j = 0; j < 15; j++) {
-            CGrunt* g = m_grid[j];
+    // Retail walks ONE pointer across the whole 4x15 grid: `lea eax,[ebp+0x1c]`
+    // (&m_grid[0]) outside, `mov ebx,eax` at the outer head, `add ebx,4` per inner
+    // step and `mov eax,ebx` at the outer tail - so the row base carries forward and
+    // the cell is m_grid[i * TM_GRID_COLS + j], not m_grid[j].
+    for (i32 i = 0; i < TM_GRID_ROWS; i++) {
+        for (i32 j = 0; j < TM_GRID_COLS; j++) {
+            CGrunt* g = m_grid[i * TM_GRID_COLS + j];
             if (g) {
                 CGameObject* pos = g->m_object;
                 i32 cx = pos->m_screenX;
