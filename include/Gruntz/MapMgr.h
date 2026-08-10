@@ -18,11 +18,16 @@ struct tagRECT;
 
 class CFileMemBase;
 
+// The retail destructor is the 5-byte `jmp` at 0x9e720 that CMapMgr's unwind
+// funclets call; the body at 0x9e7e0 is a separate member CMapMgr::Reset calls
+// DIRECTLY, so it is not the destructor. Its retail name is unrecoverable - it
+// releases the storage and re-zeroes the head, hence Free.
 class CMapArrayA {
 public:
     CMapArrayA();
     ~CMapArrayA();
     i32 Allocate(u32 count);
+    void Free();
 
     BrickzNode* m_freeList;
     BrickzNode* m_storage;
@@ -35,6 +40,7 @@ public:
     CMapArrayB();
     ~CMapArrayB();
     i32 Allocate(u32 count);
+    void Free();
 
     BrickzCellNode* m_storage;
     BrickzCellNode* m_freeList;

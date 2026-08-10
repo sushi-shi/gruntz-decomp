@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 337  functions: 4550
+# units: 337  functions: 4554
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -213,7 +213,7 @@ logicworkerhandlersa	16
 logicworkerhandlersb	6
 mainmenubuilder	2
 maplogic	1
-mapmgr	25
+mapmgr	27
 menuitem	33
 menupage	34
 menusparkle	8
@@ -301,7 +301,7 @@ statusbarspriteacts	9
 statusbartabbuilders	7
 streamrecordloaders	2
 surfacepalette	1
-symtab	69
+symtab	72
 terraintileloader	1
 tilelogicpump	71
 tilescan	1

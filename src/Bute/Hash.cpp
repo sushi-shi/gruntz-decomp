@@ -10,11 +10,11 @@
 
 RVA(0x0013c230, 0xf)
 u32 CParseSlotHashNode::Hash() {
-    return static_cast<CHash*>(m_owner)->HashStr(m_parseSource->m_name);
+    return static_cast<CHashC*>(m_owner)->HashStr(m_parseSource->m_name);
 }
 
 RVA(0x0013c240, 0x29)
-u32 CHash::HashStr(const char* s) {
+u32 CHashC::HashStr(const char* s) {
     if (!s) {
         return 0;
     }
@@ -27,7 +27,7 @@ u32 CHash::HashStr(const char* s) {
 }
 
 RVA(0x0013c270, 0xca)
-void* CHash::Walk(const char* name, i32 ci) {
+void* CHashC::Walk(const char* name, i32 ci) {
     if (!name) {
         return 0;
     }
@@ -54,16 +54,16 @@ void* CHash::Walk(const char* name, i32 ci) {
 
 RVA(0x0013c340, 0xf)
 u32 CSymRecNode::Hash() {
-    return static_cast<CHash*>(m_owner)->HashInt(m_symRec->m_key);
+    return static_cast<CHashD*>(m_owner)->HashInt(m_symRec->m_key);
 }
 
 RVA(0x0013c350, 0xd)
-u32 CHash::HashInt(u32 key) {
+u32 CHashD::HashInt(u32 key) {
     return key % m_count;
 }
 
 RVA(0x0013c360, 0x47)
-void* CHash::FindInt(u32 key) {
+void* CHashD::FindInt(u32 key) {
     CHashElement* e = Lookup(HashInt(key));
     while (e) {
         if (static_cast<u32>(e->m_symRec->m_key) == key) {

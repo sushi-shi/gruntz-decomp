@@ -22,6 +22,11 @@ CMapArrayA::CMapArrayA() {
     m_count = 0;
 }
 
+RVA(0x0009e720, 0x5)
+CMapArrayA::~CMapArrayA() {
+    Free();
+}
+
 // @early-stop
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
@@ -51,7 +56,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 }
 
 RVA(0x0009e7e0, 0x29)
-CMapArrayA::~CMapArrayA() {
+void CMapArrayA::Free() {
     if (m_storage) {
         delete[] m_storage;
     }
@@ -65,6 +70,11 @@ CMapArrayB::CMapArrayB() {
     m_storage = NULL;
     m_freeList = NULL;
     m_count = 0;
+}
+
+RVA(0x0009e840, 0x5)
+CMapArrayB::~CMapArrayB() {
+    Free();
 }
 
 // @early-stop
@@ -97,7 +107,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 }
 
 RVA(0x0009e900, 0x28)
-CMapArrayB::~CMapArrayB() {
+void CMapArrayB::Free() {
     if (m_storage) {
         delete[] m_storage;
     }

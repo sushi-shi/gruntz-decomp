@@ -321,6 +321,10 @@ CSymRec::~CSymRec() {
     m_symNode.m_symRec = NULL;
 }
 
+// ~CSymRec is the first function to unwind m_valTable (this+0x24), so cl emits
+// that member's inline destructor here - a second, distinct `jmp RemoveAll`.
+RVA_COMPGEN(0x00139dd0, 0x5, ??1CHashC@@QAE@XZ)
+
 // @early-stop
 RVA(0x00139de0, 0xd4)
 CSymTab::CSymTab(
@@ -349,7 +353,10 @@ CSymTab::CSymTab(
     m_node20.m_symTab = this;
 }
 
+// The CSymTab ctor unwinds m_subTabs (this+0x38) then m_symbols (this+0x40), and
+// cl emits both members' inline destructors behind it, in that order.
 RVA_COMPGEN(0x00139ec0, 0x5, ??1CHashB@@QAE@XZ)
+RVA_COMPGEN(0x00139ed0, 0x5, ??1CHashD@@QAE@XZ)
 
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
@@ -839,6 +846,9 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) : m_hash(1) {
     }
     ParseBuffer(buf, a2, a3);
 }
+
+// CSymParser::m_nodes (this+0x88) - an empty inline destructor, so a lone `c3`.
+RVA_COMPGEN(0x0013abb0, 0x1, ??1CSlotNodeList@@QAE@XZ)
 
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {

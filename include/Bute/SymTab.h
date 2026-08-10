@@ -49,7 +49,7 @@ public:
     i32 m_key;
     CSymRecNode m_symNode;
     CHash m_keyTable;
-    CHash m_valTable;
+    CHashC m_valTable;
     CSymTab* m_scope;
 };
 SIZE(0x30);
@@ -123,7 +123,7 @@ public:
 
     CSymTabNode m_node20;
     CHashB m_subTabs;
-    CHash m_symbols;
+    CHashD m_symbols;
     char* m_mappedBuf;
 };
 SIZE(0x4c);

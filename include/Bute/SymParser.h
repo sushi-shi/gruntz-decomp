@@ -29,6 +29,15 @@ struct CSlotNode : public DSoundLink {
 };
 SIZE(0xc);
 
+// CSymParser::m_nodes (this+0x88). Its own empty destructor COMDAT - the lone
+// `c3` at 0x13abb0, fenced by nop fill on both sides and reached from the unwind
+// funclets of ??0CSymParser(void*,i32,i32) and ~CSymParser - so it is a distinct
+// class from DSoundList, whose own `~DSoundList()` lives elsewhere.
+struct CSlotNodeList : public DSoundList {
+    ~CSlotNodeList() {}
+};
+SIZE(0x8);
+
 #pragma pack(push, 1)
 GZ_ENUM_CONST_BEGIN(SymTabFileMagic)
     SYMTAB_MAGIC_CR = '\r',
@@ -130,8 +139,8 @@ public:
     i32 m_keyBucketCount;
     i32 m_subTabBucketCount;
     i32 m_symbolBucketCount;
-    CHash m_hash;
-    DSoundList m_nodes;
+    CHashC m_hash;
+    CSlotNodeList m_nodes;
     i32 m_parseSlotBlockCount;
 };
 SIZE(0x94);
