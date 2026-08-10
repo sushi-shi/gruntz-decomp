@@ -82,16 +82,16 @@ CRollingBall::CRollingBall(CGameObject* obj)
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
             o->m_direction = IDX(CARDINAL_EAST);
-            m_stepDirY = 0;
             m_stepDirX = 1;
+            m_stepDirY = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
             o->m_direction = IDX(CARDINAL_SOUTH);
-            m_stepDirY = 1;
             m_stepDirX = 0;
+            m_stepDirY = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
             o->m_direction = IDX(CARDINAL_WEST);
-            m_stepDirY = 0;
             m_stepDirX = -1;
+            m_stepDirY = 0;
         }
     }
 
@@ -105,8 +105,10 @@ CRollingBall::CRollingBall(CGameObject* obj)
     }
     m_explodeWindow = static_cast<u32>(o->m_points);
     m_explodeStart = static_cast<u32>(g_frameTime);
-    m_target.m_y = snapY;
+    // Both halves really do take the Y snap - retail loads the one spill slot
+    // twice (`mov [esi+0x78],edx` / `mov [esi+0x7c],ebp`, both = [esp+0x10]).
     m_target.m_x = snapY;
+    m_target.m_y = snapY;
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));

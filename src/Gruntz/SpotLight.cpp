@@ -58,8 +58,13 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 cx = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    // Both converted coordinates stay live in x87 registers: retail `fst`s
+    // m_center.y / m_position.x (keeping them on the stack), copies the y one
+    // with `fld st(1)` for m_position.y, and reuses st(2)/st(3) for the m_offset
+    // subtraction.  Re-reading the members instead costs the two-dword copy.
     m_center.x = static_cast<double>(ax);
-    m_center.y = static_cast<double>(cx);
+    double cy = static_cast<double>(cx);
+    m_center.y = cy;
     i32 nx;
     if (m_object->m_smarts == 0) {
         nx = ax - 0x20;
@@ -68,15 +73,16 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     }
     m_object->m_screenX = nx;
     m_object->m_screenY = cx;
-    m_position.x = static_cast<double>(nx);
-    m_position.y = m_center.y;
+    double px = static_cast<double>(nx);
+    m_position.x = px;
+    m_position.y = cy;
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_ACTOR) {
         o->m_sortKey = SORTKEY_ACTOR;
         o->m_flags |= 0x20000;
     }
-    m_offset.x = m_center.x - m_position.x;
-    m_offset.y = m_center.y - m_position.y;
+    m_offset.x = m_center.x - px;
+    m_offset.y = m_center.y - cy;
 
     u32 v;
     if (m_object->m_damage == 0) {

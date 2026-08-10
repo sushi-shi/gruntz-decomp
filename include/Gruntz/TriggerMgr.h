@@ -312,14 +312,33 @@ public:
     i32 m_pendingFxKind;
     char _pad2ac[0x4];
 
-    i32 m_gooTimerBaseLo;
-    i32 m_gooTimerBaseHi;
-    i32 m_gooIntervalLo;
-    i32 m_gooIntervalHi;
-    i32 m_resourceTimerBaseLo;
-    i32 m_resourceTimerBaseHi;
-    i32 m_resourceIntervalLo;
-    i32 m_resourceIntervalHi;
+    // Four 64-bit timers.  LoadTeleporterGooConfig compares them with a real
+    // sub/sbb/cmp/cmp pair and writes BOTH halves on every rearm - so they are
+    // i64, not the low words alone.
+    union {
+        i64 m_gooTimerBase;
+        struct {
+            i32 m_gooTimerBaseLo, m_gooTimerBaseHi;
+        };
+    };
+    union {
+        i64 m_gooInterval;
+        struct {
+            i32 m_gooIntervalLo, m_gooIntervalHi;
+        };
+    };
+    union {
+        i64 m_resourceTimerBase;
+        struct {
+            i32 m_resourceTimerBaseLo, m_resourceTimerBaseHi;
+        };
+    };
+    union {
+        i64 m_resourceInterval;
+        struct {
+            i32 m_resourceIntervalLo, m_resourceIntervalHi;
+        };
+    };
     CPtrList m_selLists[10];
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;
