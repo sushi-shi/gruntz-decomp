@@ -899,6 +899,10 @@ reject:
 // source order before the call; statement-reorder permutation does not move
 // it. Known cross-function-state-sensitive schedule (see the ShadeRect
 // predecessor A/B note in the permute skill).
+// The three g_clut base offsets are 0x10000 / 0 / 0x20000, matching retail's
+// DIR32 addends. They used to carry a +2 that cancelled the (wrong) +2 in
+// BuildColorChannelTables; both are gone. Each lookup is (pct, channel, 0),
+// i.e. a straight channel * pct / 32 dim.
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > 100) {
@@ -944,8 +948,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 u32 green = hi & 0x1f;
                 u32 red = hi & 0xffffffe0;
                 *srcPix++ = static_cast<u16>(
-                    (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
-                     | Clut16(0x20002 + off + red * 2))
+                    (Clut16(0x10000 + off + (blue << 6)) | Clut16(off + (green << 6))
+                     | Clut16(0x20000 + off + red * 2))
                 );
             }
             srcPix += stride;
@@ -963,8 +967,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 u32 green = hi & 0x1f;
                 u32 red = hi & 0xffffffe0;
                 *srcPix++ = static_cast<u16>(
-                    (Clut16(0x10002 + off + (blue << 6)) | Clut16(0x2 + off + (green << 6))
-                     | Clut16(0x20002 + off + red * 2))
+                    (Clut16(0x10000 + off + (blue << 6)) | Clut16(off + (green << 6))
+                     | Clut16(0x20000 + off + red * 2))
                 );
             }
             srcPix += stride;
@@ -980,16 +984,15 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-// @early-stop
-// Re-measured: the base obj emits the same 456 bytes as retail, the same three
-// shifts (0xa immediate, 5 immediate, bShift in cl) and the same three
-// `mov word ptr [esi+disp],r16` stores WITH the g_clut DIR32 reloc on each
-// displacement - the `[esi+0x20000]` vs `[esi+<addr>]` rows in `--diff` are the
-// documented reloc-typing display artifact, not a byte difference. The whole
-// residue is intra-block scheduling: retail issues the bShift shift between the
-// first and second stores and sinks its store past the counter decrement, cl
-// issues it after both. Four store-order/named-temp spellings per arm (8 cells)
-// are inert or worse.
+// g_clut is the 3 x 32768-entry alpha-blend LUT: index (alpha:5, dst:5, src:5)
+// -> (alpha*dst + (32-alpha)*src) / 32, pre-shifted per channel into region
+// 0x00000 green (<<5), 0x10000 blue (<<g_bUp), 0x20000 red (<<0xa).
+// `base += 2` belongs AFTER the three stores, not before: retail's stores carry
+// the g_clut DIR32 with addends -2 / 0xfffe / 0x1fffe against an esi cl has
+// already advanced, so the first entry of each region lands at index 0. With the
+// increment first, every entry sat one slot high and the last red store ran two
+// bytes past g_clut into g_lut16[0]. objdiff masks the DIR32 displacement, so
+// that scored clean.
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
@@ -1006,11 +1009,11 @@ void BuildColorChannelTables() {
                 i32 varD = 0;
                 i32 k = 0x20;
                 do {
-                    base += 2;
                     i32 sum = varD / 32 + bDiv;
                     ClutStore16(0x20000 + base, static_cast<u16>((sum << 0xa)));
                     ClutStore16(base, static_cast<u16>((sum << 5)));
                     ClutStore16(0x10000 + base, static_cast<u16>((sum << bShift)));
+                    base += 2;
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;
@@ -1029,11 +1032,11 @@ void BuildColorChannelTables() {
                 i32 varD = 0;
                 i32 k = 0x20;
                 do {
-                    base += 2;
                     i32 sum = varD / 32 + bDiv;
                     ClutStore16(0x20000 + base, static_cast<u16>((sum << g_rUp)));
                     ClutStore16(base, static_cast<u16>(((sum << g_gUp) << 1)));
                     ClutStore16(0x10000 + base, static_cast<u16>((sum << g_bUp)));
+                    base += 2;
                     varD += stepA;
                 } while (--k != 0);
                 varB += a;

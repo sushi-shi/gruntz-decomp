@@ -680,9 +680,11 @@ void CDDrawShadeBlit::BlitCopyForward(
 // REGISTER-HOMING wall, same family as BlitCopyForward. Retail keeps the pitch in
 // ebp across the Lock call where cl spills it (frame 0xc against retail's 0x8), and
 // the top-skip loop diverges from its first block: base splits the loop head into a
-// 1-instruction reload plus the test where retail tests in one block. One branch is
-// still unaccounted for (56 vs 55): retail threads the `x < 0` edge of the
-// clip->right arm straight into the row-advance block.
+// 1-instruction reload plus the test where retail tests in one block.
+// The branch counts now agree (55/55): the third arm has NO `pos >= m_rleLen`
+// break - retail's arm-3 loop head is only the `clip->right == m_width - 1` exit
+// and the `row < clip->bottom` test, and it relies on the `x >= m_width` row
+// advance to terminate. The extra break was ours.
 RVA(0x00149d00, 0x4f8)
 void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
@@ -814,9 +816,6 @@ void CDDrawShadeBlit::BlitCopyMirrored(
         x = m_width;
 
         while (row < clip->bottom) {
-            if (pos >= m_rleLen) {
-                break;
-            }
             if (x > clip->right) {
                 i32 trans = 0;
                 do {
@@ -897,6 +896,10 @@ void CDDrawShadeBlit::BlitCopyMirrored(
 // into a SECOND induction variable where retail keeps one cursor and rebuilds the
 // address from a reloaded bias (`lea eax,[edx+edi]`), and arm 1 memory-homes x/pos
 // where retail keeps them in esi/ebp.
+// The arm chain is three EXPLICIT conditions, not an if/else-if/else: retail
+// re-tests `clip->right != m_width - 1` at the head of arm 3 (`cmp eax,ecx; je
+// <exit>` before the row and rleLen guards) because it cannot prove the memory
+// did not change across arm 1. Spelling arm 3 as a bare `else` loses that branch.
 RVA(0x0014a200, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
@@ -1412,7 +1415,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                 x = 0;
             }
         }
-    } else {
+    } else if (clip->right != m_width - 1) {
 
         while (row <= clip->bottom) {
             if (pos >= m_rleLen) {
