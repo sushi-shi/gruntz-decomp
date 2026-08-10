@@ -98,6 +98,10 @@ def enrolled_runs() -> list[tuple[int, int]]:
     """
     ext = set()
     for r in _rows(CLAIMS):
+        if str(r.get("provenance", "")).startswith("provisional-band-gap"):
+            # A band-gap row carves retail bytes so the MISS costs in objdiff;
+            # it models nothing, so it may not count as coverage.
+            continue
         ext.add((int(r["rva"], 16), int(r["size"], 16)))
     for r in _rows(SECTIONS):
         if r.get("rva", "-") == "-":       # non-affine: claims no retail range

@@ -1496,6 +1496,9 @@ def ordinary_sections(rows, base_dir):
 #: 0x244, the MFC/CRT RTTI runs are KBs), and every confirmed missing-datum find
 #: is smaller. Over-cap gaps are withheld BY NAME, not dropped.
 GAP_CAP = 0x100
+#: `.bss` bands run larger (whole unmodelled buffer families); the census names
+#: anything bigger rather than carving it silently.
+GAP_CAP_BSS = 0x4000
 
 
 def gap_rows(enrolled, secs, exe=EXE):
@@ -1565,8 +1568,8 @@ def gap_rows(enrolled, secs, exe=EXE):
         name = "$gap_%06x" % b1
         cls1 = classify_pe_storage(pe, b1)["class"]
         cls2 = classify_pe_storage(pe, a2 - 1)["class"]
-        if cls1 != cls2 or STORAGE.get(cls1) not in ("rdata", "data"):
-            withheld.append((b1, name, "band gap outside initialized storage "
+        if cls1 != cls2 or STORAGE.get(cls1) not in ("rdata", "data", "bss"):
+            withheld.append((b1, name, "band gap outside enrollable storage "
                              "(%s -> %s)" % (cls1, cls2)))
             continue
         strong_prev = {w["object"] for w in ends.get(b1, ())
@@ -1579,16 +1582,34 @@ def gap_rows(enrolled, secs, exe=EXE):
                              "single-owner witness pair, 0x%x B)" % n))
             continue
         unit = next(iter(both))
-        pay = retail.payload(b1, n)
-        if not any(pay):
-            withheld.append((b1, name, "band gap all-zero (pad vs zero datum "
-                             "undecidable; 0x%x B, unit %s)" % (n, unit)))
+        is_bss = STORAGE[cls1] == "bss"
+        pay = b"" if is_bss else retail.payload(b1, n)
+        next_align = max((w.get("alignment")
+                          or _alignment(w["rva"], w["size"],
+                                        w.get("storage", "data"))[0]
+                          for w in starts.get(a2, ())), default=0)
+        if not is_bss and not any(pay):
+            # Zero fill in INITIALIZED storage: a hole strictly smaller than
+            # the next claim's stated alignment exists BECAUSE of that
+            # alignment and is slack; a bigger all-zero hole is a real
+            # zero-valued datum src never modelled - carve it (the same rule
+            # the coverage partition applies).
+            if n < max(next_align, 4):
+                withheld.append((b1, name, "band gap below the next claim's "
+                                 "alignment (slack; 0x%x B, unit %s)" % (n, unit)))
+                continue
+        if is_bss and n < max(next_align, 4):
+            withheld.append((b1, name, "band gap below the next claim's "
+                             "alignment (slack; 0x%x B, unit %s)" % (n, unit)))
             continue
-        if n > GAP_CAP:
+        cap = GAP_CAP_BSS if is_bss else GAP_CAP
+        if n > cap:
             withheld.append((b1, name, "band gap over cap (0x%x > 0x%x, unit %s)"
-                             % (n, GAP_CAP, unit)))
+                             % (n, cap, unit)))
             continue
-        kind = "pointer" if retail.relocs_in(b1, n) else "nonzero"
+        kind = ("bss" if is_bss
+                else "pointer" if retail.relocs_in(b1, n)
+                else "nonzero" if any(pay) else "zero")
         rows.append({"name": name, "object": unit, "rva": b1, "size": n,
                      "storage": STORAGE[cls1],
                      "provenance": "provisional-band-gap-" + kind})
