@@ -177,6 +177,17 @@ class CanonicalizedObject:
     rows: tuple[CanonicalRow, ...]
 
 
+# SEH bookkeeping both sides spell differently and no source edit can align
+# (docs/referent-debt-ddrawmgr.tsv classes b1/b2). The canonical comparison
+# form: every EH-registration funclet push targets ONE shared name at addend 0,
+# and the base's DIR32 to the absolute CRT `__except_list` (value 0, no .reloc
+# entry survives linking, so the delinked target has a bare fs:[0] operand) is
+# REMOVED rather than retyped - objdiff refuses IMAGE_REL_I386_ABSOLUTE.
+EH_FUNCLET_NAME = "_gzehreg"  # exactly 8 chars: fits the inline COFF name field
+_EH_TARGET_FUNCLET = re.compile(r"^FUN_[0-9a-f]{8}$")
+PUSH_IMM32 = 0x68
+
+
 class CoffObject:
     def __init__(self, payload: bytes):
         self.data = bytes(payload)
@@ -890,6 +901,143 @@ def _assert_only_canonical_changes(
                 "jump-table relocation resolved-target postcondition failed")
 
 
+def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[CanonicalRow, ...]]:
+    """Canonicalize SEH bookkeeping relocs on a (already-normalized) comparison copy.
+
+    Two per-side spellings of the SAME machinery, unalignable from source:
+      * base (cl): the per-function EH registration thunk lives in its own small
+        EXECUTE section holding only class-6 `$L` labels; the prologue pushes the
+        thunk label. target (delinked retail): the linker packed those thunks into
+        a far band the delinker did not carve, so the push resolves to an
+        UNDEFINED `FUN_<rva>` external plus a nonzero addend into it.
+        Both become `push EH_FUNCLET_NAME+0` (symbol renamed, target-side stored
+        addend zeroed).
+      * base references the absolute CRT `__except_list` (value 0) with a DIR32
+        the linked image cannot carry (.reloc has no entry for absolute fixups),
+        so the target's fs:[0] operand has no relocation at all. The base-side
+        relocation is REMOVED (objdiff rejects a retype to ABSOLUTE).
+    """
+    coff = CoffObject(payload)
+    data = bytearray(payload)
+
+    sections_with_extern_fn = {
+        s.section for s in coff.symbols.values()
+        if (s.section > 0 and s.typ == FUNCTION_TYPE and
+            s.storage_class == EXTERNAL_STORAGE)
+    }
+
+    renamed: dict[int, str] = {}
+    zeroed_sites: list[int] = []
+    dropped: set[int] = set()
+    for relocation in coff.relocations:
+        if relocation.typ != DIR32:
+            continue
+        site_section = coff.sections[relocation.section - 1]
+        if not site_section.characteristics & MEM_EXECUTE:
+            continue
+        target = coff.symbols[relocation.symbol_index]
+        if target.section == 0 and target.name == "__except_list":
+            dropped.add(relocation.offset)
+            continue
+        if (target.section > 0 and target.storage_class == 6 and
+                target.name.startswith("$L") and
+                target.section != relocation.section and
+                coff.sections[target.section - 1].characteristics & MEM_EXECUTE and
+                target.section not in sections_with_extern_fn):
+            renamed.setdefault(target.index, target.name)
+            continue
+        if target.section == 0 and _EH_TARGET_FUNCLET.match(target.name):
+            operand = site_section.raw_offset + relocation.site
+            stored = struct.unpack_from("<I", payload, operand)[0]
+            if stored != 0 and payload[operand - 1] == PUSH_IMM32:
+                renamed.setdefault(target.index, target.name)
+                zeroed_sites.append(operand)
+
+    if not (renamed or dropped):
+        return payload, ()
+
+    encoded = EH_FUNCLET_NAME.encode("ascii")
+    assert len(encoded) == 8
+    for index in renamed:
+        offset = coff.symbols[index].offset
+        data[offset:offset + 8] = encoded
+    for operand in zeroed_sites:
+        struct.pack_into("<I", data, operand, 0)
+    if dropped:
+        for offset in sorted(dropped, reverse=True):
+            del data[offset:offset + 10]
+
+        def shifted(pointer: int) -> int:
+            return pointer - 10 * sum(1 for o in dropped if o < pointer)
+
+        symbol_pointer = struct.unpack_from("<I", payload, 8)[0]
+        struct.pack_into("<I", data, 8, shifted(symbol_pointer))
+        for section in coff.sections:
+            raw_ptr, reloc_ptr = struct.unpack_from(
+                "<II", payload, section.header_offset + 20)
+            n_reloc = struct.unpack_from(
+                "<H", payload, section.header_offset + 32)[0]
+            dropped_here = sum(
+                1 for o in dropped if reloc_ptr <= o < reloc_ptr + n_reloc * 10)
+            struct.pack_into(
+                "<II", data, section.header_offset + 20,
+                shifted(raw_ptr) if raw_ptr else 0,
+                shifted(reloc_ptr) if reloc_ptr else 0)
+            struct.pack_into(
+                "<H", data, section.header_offset + 32, n_reloc - dropped_here)
+
+    result = bytes(data)
+    _assert_only_eh_changes(coff, payload, result, renamed, zeroed_sites, dropped)
+    rows = []
+    for index, original_name in sorted(renamed.items()):
+        symbol = coff.symbols[index]
+        rows.append(CanonicalRow(
+            original_name, EH_FUNCLET_NAME, "eh",
+            "text" if symbol.section > 0 else "undefined",
+            symbol.section, symbol.value, 0, 0, 0, "-",
+            "eh-funclet-registration-push", ""))
+    if dropped:
+        rows.append(CanonicalRow(
+            "__except_list", "__except_list", "eh", "undefined",
+            0, 0, 0, 0, len(dropped), "-",
+            "absolute-fixup-dropped-no-reloc-survives-linking", ""))
+    return result, tuple(rows)
+
+
+def _assert_only_eh_changes(original: CoffObject, before: bytes, after: bytes,
+                            renamed: dict, zeroed_sites: list, dropped: set) -> None:
+    reparsed = CoffObject(after)
+    if len(reparsed.relocations) != len(original.relocations) - len(dropped):
+        raise RuntimeError("EH canonicalization dropped the wrong reloc count")
+    survivors = [r for r in original.relocations if r.offset not in dropped]
+    for old, new in zip(survivors, reparsed.relocations):
+        if (old.section, old.site, old.typ, old.symbol_index) != (
+                new.section, new.site, new.typ, new.symbol_index):
+            raise RuntimeError("EH canonicalization disturbed a surviving reloc")
+    for index in renamed:
+        if reparsed.symbols[index].name != EH_FUNCLET_NAME:
+            raise RuntimeError("EH funclet rename did not land")
+    zeroed = set(zeroed_sites)
+    for section_old, section_new in zip(original.sections, reparsed.sections):
+        if not section_old.raw_offset:
+            continue  # uninitialized section: no on-disk payload to compare
+        raw_old = before[section_old.raw_offset:
+                         section_old.raw_offset + section_old.raw_size]
+        raw_new = after[section_new.raw_offset:
+                        section_new.raw_offset + section_new.raw_size]
+        if raw_old == raw_new:
+            continue
+        masked_old, masked_new = bytearray(raw_old), bytearray(raw_new)
+        for operand in zeroed:
+            relative = operand - section_old.raw_offset
+            if 0 <= relative < section_old.raw_size:
+                masked_old[relative:relative + 4] = bytes(4)
+                masked_new[relative:relative + 4] = bytes(4)
+        if masked_old != masked_new:
+            raise RuntimeError(
+                "EH canonicalization changed section bytes outside push operands")
+
+
 def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
     """Return a normalized comparison copy and its readable rename records."""
     payload, materialized = materialize_commons(payload)
@@ -1210,6 +1358,8 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         normalized = bytes(data)
     _assert_only_canonical_changes(
         coff, normalized, renames, jump_table_rewrites, dup_retargets)
+    normalized, eh_rows = _canonicalize_eh_relocations(normalized)
+    rows.extend(eh_rows)
     return CanonicalizedObject(normalized, tuple(rows))
 
 
