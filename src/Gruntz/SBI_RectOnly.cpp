@@ -3051,8 +3051,8 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
     m_ptrPool.SetSize(0, -1);
-    m_reserved2b0 = 0;
-    m_reserved2b8 = 0;
+    m_reserved2b0.m_last = 0;
+    m_reserved2b0.m_interval = 0;
     m_hlBusy = 0;
     if (m_retabNotify) {
         ::operator delete(m_retabNotify);
@@ -3329,8 +3329,8 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
         outer--;
     } while (outer != 0);
 
-    SyncClockPair(s, op, &m_reserved2a0);
-    SyncClockPair(s, op, &m_reserved2b0);
+    SyncClockPair(s, op, &m_reserved2a0.m_last);
+    SyncClockPair(s, op, &m_reserved2b0.m_last);
     if (op == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }

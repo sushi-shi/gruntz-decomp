@@ -61,6 +61,32 @@ struct CSbiSlot {
 };
 SIZE(0x18);
 
+// A 64-bit timestamp paired with its 64-bit interval - the unit `SyncClockPair`
+// serializes and the shape CSbiHlRow carries in its own tail. Its constructor writes
+// lastLo, intervalLo, lastHi, intervalHi, which is retail's +0/+8/+4/+0xc store order.
+struct SbiClockPair {
+    SbiClockPair() {
+        m_lastLo = 0;
+        m_intervalLo = 0;
+        m_lastHi = 0;
+        m_intervalHi = 0;
+    }
+
+    union {
+        i64 m_last;
+        struct {
+            i32 m_lastLo, m_lastHi;
+        };
+    };
+    union {
+        i64 m_interval;
+        struct {
+            i32 m_intervalLo, m_intervalHi;
+        };
+    };
+};
+SIZE(0x10);
+
 struct CSbiHlRow {
     // Inline: retail's out-of-line copy has NO rel32 caller at all - it exists only
     // because cl 5.0 hands its ADDRESS to `??_H` (`vector constructor iterator`) for
@@ -279,10 +305,8 @@ public:
     i32 m_gauge;
     i32 m_gaugeTarget;
 
-    i64 m_reserved2a0;
-    i64 m_reserved2a8;
-    i64 m_reserved2b0;
-    i64 m_reserved2b8;
+    SbiClockPair m_reserved2a0;
+    SbiClockPair m_reserved2b0;
 
     CSbiHlRow m_groupSlots[3];
     CSBI_ImageSet* m_groupNotify[3];
@@ -347,19 +371,16 @@ SIZE(0x630);
 SIZE_UNKNOWN();
 
 inline CStatusBarMgr::CStatusBarMgr() {
-
-    m_reserved2a0 = 0;
-    m_reserved2a8 = 0;
-    m_reserved2b0 = 0;
-    m_reserved2b8 = 0;
-    m_machineB.m_lastLo = 0;
-    m_machineB.m_lastHi = 0;
-    m_machineB.m_intervalLo = 0;
-    m_machineB.m_intervalHi = 0;
-    m_machineA.m_lastLo = 0;
-    m_machineA.m_lastHi = 0;
-    m_machineA.m_intervalLo = 0;
-    m_machineA.m_intervalHi = 0;
+    // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
+    // where retail's stores are - between the m_slots[5] and m_groupSlots[3] ctor loops
+    // and between m_groupNotify and m_machineDisplay. Writing them again here only
+    // produced the same stores in the wrong PLACE and the wrong ORDER.
+    //
+    // m_beltLast/m_fallLast/m_destructWarnLast are the SAME 16-byte clock pair, and
+    // retail zeroes them in the same +0/+8/+4/+0xc order - but typing all three as
+    // SbiClockPair too spends CStatusBarMgr's /Ob1 inline budget: cl then CALLS
+    // ??0CSbiHlRow for m_hlGrid[12] and ??0SbiClockPair for the pair at 0x560 where
+    // retail expands both (measured: multi 98.08 -> 97.69, play 112 -> 106 exact).
     m_beltLast = 0;
     m_beltInterval = 0;
     m_fallLast = 0;
