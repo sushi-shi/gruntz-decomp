@@ -595,9 +595,30 @@ These symbols are **scored but excluded from the reconstruction-target scoreboar
 aggregate would put them in the numerator alone. `gruntz status` prints their state on
 its own line.
 
-Still open: the stub's `mov eax,<FuncInfo>` names an unenrolled `.rdata` blob, so every
-`__ehreg$` sits at 97.5% with byte-identical code — the `.xdata$x` half of the EH debt
-(`docs/referent-debt-ddrawmgr.tsv`, class `c`).
+The stub's `mov eax,<FuncInfo>` still reads 97.5% on all 750 with byte-identical
+code, but the reason is now one level deeper, and getting there needed a DELINKER
+fix rather than a manifest workaround
+(`nix/patches/vostok-data-hypothesis-must-contain.patch`).
+`data_manifest::hypothesis_owner_and_addend_for_rva` ranked enrolled definitions by
+`(!contains, distance, …)` but returned the best one even when NOTHING contained the
+rva, with an unbounded addend — and both callers consult it BEFORE the
+`--recover-data-relocs-from-pdb` fallback, so the guess beat the exact-address PDB
+symbol. Measured: **1,020 of 21,730** enrolled-symbol data relocations decomposed past
+their symbol's end, across 185 objects — `??_R4CGruntVoice@@6B@ + 0x10800` into a 0x14 B
+RTTI locator (all 750 stubs), `_inflate_mask + 0x3db4` into 0x44 B (164 sites), and
+negative addends where the nearest enrolled datum sits AFTER the target. Requiring
+containment takes that to **0**, and the stub now names `DAT_<va>` at addend 0 — the
+FuncInfo exactly.
+
+What is left is the FuncInfo's EXTENT, and it is the `.xdata$x` half
+(`docs/referent-debt-ddrawmgr.tsv`, class `c`): the delinker sizes a PDB data symbol
+to its next neighbour and gets **4 B** — just the `0x19930520` magic — where cl emits
+`32 + 8*maxState`. Until the FuncInfo is enrolled in `delink_data_manifest.tsv` with
+that provable extent, the two sides must NOT be co-named: renaming both to
+`__ehfuncinfo$<owner>` was tried and `gruntz.audit.data_relocs` correctly failed it
+750 times, because our 40-byte blob carries a `pUnwindMap` relocation at +8 that a
+4-byte truncation cannot have. Co-naming a truncation is a claim the bytes do not
+support; the enrollment comes first.
 
 ## Pairing (objdiff)
 

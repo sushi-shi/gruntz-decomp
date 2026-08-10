@@ -193,9 +193,10 @@ def main() -> int:
             + "   (unwind funclets only)")
         if stubs_off:
             print(f"[eh-band]            {stubs_off}/{len(band)} registration stub(s) "
-                  "below 100%: the CODE matches, but their `mov eax,<FuncInfo>` names "
-                  "an UNENROLLED .rdata blob - the `.xdata$x` half of the EH debt, "
-                  "still open (see the module docstring of gruntz.build.eh_band)")
+                  "below 100%: the CODE matches and `mov eax,<FuncInfo>` now resolves "
+                  "to the exact datum; what is left is that datum's EXTENT - the "
+                  "delinker sizes a PDB symbol to its neighbour and gets 4 B where cl "
+                  "emits 32 + 8*maxState. Enrolling it is the `.xdata$x` half, open.")
     else:
         rows = [(group, "no-report", []) for group in band]
 

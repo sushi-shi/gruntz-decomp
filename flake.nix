@@ -81,12 +81,25 @@
         # per-symbol COMDAT. A COMDAT holds exactly cl's one symbol, so the
         # appended definition (plus its alignment gap) is content the base object
         # does not have. Only an ordinary section may be the fallback.
+        # Data hypothesis must CONTAIN the rva: `hypothesis_owner_and_addend_for_rva`
+        # ranks enrolled definitions by `(!contains, distance, ...)` but returns the
+        # best one even when NOTHING contains the rva, with an addend that is
+        # unbounded in both directions - and both callers consult it BEFORE the
+        # `--recover-data-relocs-from-pdb` fallback, so that guess beats an
+        # exact-address PDB symbol. Measured: 1,020 of 21,730 enrolled-symbol data
+        # relocations decomposed past their symbol's end, over 185 objects -
+        # `??_R4CGruntVoice@@6B@ + 0x10800` into a 0x14 B RTTI locator (750 sites:
+        # every /GX registration stub's `mov eax,<FuncInfo>`), `_inflate_mask +
+        # 0x3db4` into 0x44 B (164), and negative addends where the nearest enrolled
+        # datum sits AFTER the target. Not enrolling an rva is what the PDB fallback
+        # is for. docs/build-system.md § "The EH funclet band".
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
           ./nix/patches/vostok-comdat-leader-nonzero-offset.patch
           ./nix/patches/vostok-grouped-section-names.patch
           ./nix/patches/vostok-legacy-data-not-into-comdat.patch
+          ./nix/patches/vostok-data-hypothesis-must-contain.patch
         ];
       };
 

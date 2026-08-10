@@ -196,6 +196,7 @@ class CanonicalizedObject:
 _EH_TARGET_FUNCLET = re.compile(r"^FUN_[0-9a-f]{8}$")
 PUSH_IMM32 = 0x68
 DUP_PREFIX = "$dup$"
+ANON_DATA_PREFIX = "$anon_data_"
 
 
 class CoffObject:
@@ -1271,7 +1272,7 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 base_name = f"$anon_str_{identity}"
             else:
                 identity = record_digest
-                base_name = f"$anon_data_{identity}"
+                base_name = f"{ANON_DATA_PREFIX}{identity}"
             prefix = family[1]
             if family[0] == "named":
                 base_name = f"{prefix}{kind}_{definition.storage}_{identity}"
@@ -1488,7 +1489,7 @@ def corpus_summary(roots: list[Path]) -> dict:
                     counts["kind:f64"] += 1
                 elif row.canonical_name.startswith("$anon_str_"):
                     counts["kind:string"] += 1
-                elif row.canonical_name.startswith("$anon_data_"):
+                elif row.canonical_name.startswith(ANON_DATA_PREFIX):
                     counts["kind:data"] += 1
                 elif row.canonical_name == row.original_name:
                     counts["kind:skipped"] += 1
