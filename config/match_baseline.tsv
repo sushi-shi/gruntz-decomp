@@ -111,8 +111,8 @@ droppedobject	26	23
 engstrrendertext	1	0
 exittrigger	4	2
 eyecandy	4	3
-fader	25	20
-fadereffects	37	24
+fader	25	22
+fadereffects	37	25
 fadermgr	12	12
 feccrypt	11	8
 fileimage	19	11
@@ -220,7 +220,7 @@ keyedlist	3	3
 kitchenslime	8	5
 latencylist	5	5
 leafcueplay	1	1
-levelplane	24	14
+levelplane	24	13
 levelpreview	10	9
 levelrezpath	1	0
 leveltilevalidation	3	1
@@ -1604,7 +1604,7 @@ fader	??0CFader@@QAE@XZ	100.0000	100.0000	3	4f31cf8344a3	0x17e450	100.0000
 fader	??0CFaderMesh@@QAE@XZ	100.0000	100.0000	2	40ce1cc3f8e5	0x17e940	100.0000
 fader	??0CFxModeDesc@@QAE@XZ	100.0000	100.0000	2	553bb627b736	0x17e7b0	100.0000
 fader	??0CFxModeT1@@QAE@XZ	100.0000	100.0000	3	d0fe532b5e77	0x17e7c0	100.0000
-fader	??0CFxModeT2@@QAE@XZ	70.9412	70.9412	4	f7ce4a4e2336	0x17e840	70.9412
+fader	??0CFxModeT2@@QAE@XZ	71.0000	71.0000	5	7a55fa95110c	0x17e840	71.0000
 fader	??0CFxModeT3@@QAE@XZ	100.0000	100.0000	3	8ef8218dcc37	0x17e880	100.0000
 fader	??0CFxModeT4@@QAE@XZ	100.0000	100.0000	3	c0b246164c35	0x17e8b0	100.0000
 fader	??0CFxModeT5@@QAE@XZ	100.0000	100.0000	3	8b34d2c62736	0x17e8e0	100.0000
@@ -1615,13 +1615,13 @@ fader	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	1	510ef74d34da	0x17f330	100.
 fader	??_GCFader@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e480	100.0000
 fader	??_GCFaderMesh@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17e970	100.0000
 fader	??_GCRezBufferObject@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17f310	100.0000
-fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	69.2304	69.2304	14	de8a104cd3e8	0x17ea00	69.7873
+fader	?ApplyInit@CFaderMesh@@QAEHPAVCFxModeDesc@@@Z	80.7089	80.7089	15	1e5d55e4d9e1	0x17ea00	80.7089
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790	100.0000
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0	100.0000
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120	100.0000
 fader	?RenderFrame@CFaderMesh@@UAEXH@Z	90.8793	90.8793	8	8946c4473eab	0x17ef00	90.8793
-fader	?RunFade@CFader@@QAEXIHH@Z	96.6038	96.6038	11	870930b74115	0x17e620	96.6038
-fader	?RunFadeStepped@CFader@@QAEXHHH@Z	95.5000	95.5000	8	9d2f214dd096	0x17e540	95.5000
+fader	?RunFade@CFader@@QAEXIHH@Z	100.0000	100.0000	12	6302465404a5	0x17e620	100.0000
+fader	?RunFadeStepped@CFader@@QAEXHHH@Z	100.0000	100.0000	9	62750419f529	0x17e540	100.0000
 fader	?Set2c@CFader@@QAEXPAVCDDrawPtrCollections@@@Z	100.0000	100.0000	1	d7ac21aff78e	0x17e780	100.0000
 fader	?SetTimers@CFader@@QAEXPAVCDDSurface@@0@Z	100.0000	100.0000	1	f3421a662dfc	0x17e760	100.0000
 fader	?Wait@CFader@@QAEXH@Z	100.0000	100.0000	2	6ac51d13d68b	0x17e510	100.0000
@@ -1643,8 +1643,8 @@ fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8d54a5310376	0x17
 fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFxModeDesc@@@Z	100.0000	100.0000	7	ba9fd6b0e73f	0x17f5e0	100.0000
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFxModeDesc@@@Z	96.1197	96.1197	8	3560d595bb62	0x1804a0	96.1197
 fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFxModeDesc@@@Z	91.6023	91.6023	9	0a9d9cff5239	0x17fa40	91.6023
-fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	83.1024	83.1024	12	61bff123cd0b	0x1817e0	83.1024
-fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	96.5000	96.5000	6	d344b571dcbe	0x17fe00	96.5000
+fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFxModeDesc@@@Z	83.3386	83.3386	13	9f0e3347eed2	0x1817e0	83.3386
+fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFxModeDesc@@@Z	97.2941	97.2941	7	1c015e682591	0x17fe00	97.2941
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	471a472ee35d	0x181660	100.0000
 fadereffects	?EndFade@CFaderLight@@UAEXXZ	100.0000	100.0000	4	da061837edfb	0x1816a0	100.0000
 fadereffects	?FreeBuffer@CFaderRadial@@QAEXXZ	100.0000	100.0000	5	c38e6181c51b	0x17fc40	100.0000
@@ -1652,7 +1652,7 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	2	6339f7edae6e	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	2	1a8ec269bb48	0x1814f0	100.0000
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	3	11cf80538388	0x182900	100.0000
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	99.5000	99.5000	1	96216f38b8bc	0x180400	100.0000
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	1	96216f38b8bc	0x180400	100.0000
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	97.9257	97.9257	2	b8429a8e25ea	0x180fb0	98.8538
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.0654	90.0654	3	f39c044ffd10	0x17f660	90.0654
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	84.1354	84.1354	5	87b88082f560	0x180640	84.1354
@@ -1660,7 +1660,7 @@ fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	8	1bf4ecf4e429	0
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	78.9601	78.9601	4	fdf1bf49d974	0x181b00	79.1288
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	79.3985	79.3985	5	f8c792890931	0x17ff30	79.3985
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	5	0aa0f545213f	0x182610	99.9831
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	60.5154	60.5073	8	d06b3d634d41	0x181e50	60.5154
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	60.5154	60.5154	8	d06b3d634d41	0x181e50	60.5154
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	4	98e20e0705d5	0x17d8f0	100.0000
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:83fdeb88f0de	0x17e240	100.0000
@@ -2746,10 +2746,10 @@ levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	4	433149a38dee	0x16
 levelplane	?Read@CDDrawWorkerHost@@UAEHPBUWwdPlaneHeader@@PBDPAUtagRECT@@@Z	96.7206	96.7206	3	58df80b5774c	0x161640	96.7206
 levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBUPlaneObjectRecord@@@Z	95.0877	95.0877	4	68bb390acb67	0x162af0	95.0877
 levelplane	?RebuildPlanes@CDDrawWorkerHost@@QAEHPBDH@Z	96.6667	96.6667	4	24d8abd177a1	0x1628f0	96.6667
-levelplane	?RecomputePlaneCoords@CDDrawWorkerHost@@QAEXXZ	97.0640	97.0640	6	43399c913269	0x161c90	97.0640
+levelplane	?RecomputePlaneCoords@CDDrawWorkerHost@@QAEXXZ	98.3721	98.3721	7	1a1ddef9d873	0x161c90	98.3721
 levelplane	?RegisterNamed@CDDrawWorkerHost@@QAEXDPBD@Z	90.4762	90.4762	6	3dfc9b2170fa	0x161c50	90.4762
 levelplane	?ResolveColorKey@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	11	905a891ac872	0x163670	100.0000
-levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	ab160211ca7d	0x163780	100.0000
+levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	99.9833	99.9833	5	ab160211ca7d	0x163780	100.0000
 levelplane	?SerializeDispatch@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	fdd17d64825e	0x163710	100.0000
 levelplane	?SetTileSize@CDDrawWorkerHost@@QAEXHH@Z	88.3846	88.3846	1	080526ee1270	0x161f00	88.3846
 levelplane	?SetTileSizeFromImageSet@CDDrawWorkerHost@@QAEXPAVCDDrawWorker@@@Z	100.0000	100.0000	3	fe0fbecdcb29	0x161fa0	100.0000
@@ -3446,8 +3446,8 @@ registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100
 registryhelper	?SetValueBinary@RegistryHelper@Utils@@QAEHPADPAXI@Z	100.0000	100.0000	4	91a4cde8c251	0x139410	100.0000
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	11	f4b41ca299f9	0x139460	100.0000
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPBD0@Z	100.0000	100.0000	4	1e6988173918	0x1393b0	100.0000
-rezbufferobject	??0RezElem40@@QAE@XZ	100.0000	100.0000	1	90f191d5092e	0x17f300	100.0000
-rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	97.3898	97.3898	2	e95ab73cd939	0x17f130	97.3898
+rezbufferobject	?InitRezElem@@YIPAURezElem40@@PAU1@@Z	100.0000	100.0000	2	47eca8580a36	0x17f300	100.0000
+rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	98.8418	98.8418	3	8835569d1e48	0x17f130	98.8418
 rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	5	d4e046adc2d7	0x17f390	96.0414
 rezbufferobject	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	82bc3969e03d	0x17f500	100.0000
 rezcoll	??0CHash@@QAE@XZ	100.0000	100.0000	2	dd28fb00d741	0x184950	100.0000

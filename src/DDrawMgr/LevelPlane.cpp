@@ -172,6 +172,9 @@ i32 CDDrawWorkerHost::Read(
 }
 
 // @early-stop
+// scheduler placement of the tileGrid new[]'s `shl edx,2; push edx`: retail slots
+// the pair between m_scaleX's fmul and fstp, cl after m_scaleY's fmul. Count-local
+// hoists, dim order, statement order and islands all inert; size already equal.
 RVA(0x001619f0, 0x1f7)
 i32 CDDrawWorkerHost::InitGeometry(
     i32 w,
@@ -266,6 +269,9 @@ void CDDrawWorkerHost::Unload() {
 }
 
 // @early-stop
+// one insn: cl schedules the `val = NULL` zero store between the two Lookup arg
+// pushes, retail after both. init-at-decl, mgr-hoist, ref-cast spellings and the
+// permuter are inert on the placement.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val;
@@ -274,6 +280,12 @@ void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     m_frameSets.SetAtGrow(index, val);
 }
 
+// @early-stop
+// scratch-register rotation from the head: cl caches m_flags in ecx (freed by
+// `mov esi,ecx`) where retail picks edx, so wrapX/wrapY color ebx/ebp instead of
+// retail's ebp/ebx and the wrapY `and` is destructive (`and ecx,8; mov ebp,ecx`)
+// vs retail's cache-preserving `mov ebx,edx; and ebx,8`. Islands, decl orders,
+// renames and member-read spellings all inert on the rotation.
 RVA(0x00161c90, 0x1e4)
 void CDDrawWorkerHost::RecomputePlaneCoords() {
     CDDrawWorkerHost* p = this;
@@ -324,16 +336,14 @@ void CDDrawWorkerHost::RecomputePlaneCoords() {
         }
     }
 
-    i32 ix = static_cast<i32>(p->m_scaledX);
-    p->m_snappedX = ix;
+    p->m_snappedX = static_cast<i32>(p->m_scaledX);
     i32 iy = static_cast<i32>(p->m_scaledY);
     p->m_snappedY = iy;
 
-    i32 ox = ix - p->m_anchorX;
-    p->m_viewRect.left = ox;
-    if (ox < 0) {
+    p->m_viewRect.left = p->m_snappedX - p->m_anchorX;
+    if (p->m_viewRect.left < 0) {
         if (wrapX) {
-            p->m_viewRect.left = p->m_wrapW + ox;
+            p->m_viewRect.left = p->m_wrapW + p->m_viewRect.left;
         } else {
             p->m_viewRect.left = 0;
         }
@@ -432,6 +442,9 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     } while (0)
 
 // @early-stop
+// 105/105 blocks align; eight setup/DRAW_CELL blocks carry 1-5 extra insns of
+// slot/colouring drift (cl packs the scroll-window setup tighter than retail).
+// Pure register/slot residue spread across the whole frame.
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & 2) != 0) {
@@ -561,6 +574,12 @@ i32 CDDrawWorkerHost::Prune() {
 }
 
 // @early-stop
+// at the first delete site retail CALLS ??1CWwdGridIter (0x163a10) for the m_iter
+// sub-object where cl inlines the ??_7CObject stamp; at the second (Init-fail) site
+// BOTH inline the stamp, so the body was header-visible and the call form is an
+// inliner-internal choice. Out-of-lining the dtor breaks site2 and the CObject
+// vtable ownership (wwdspatialmgr, vtables_library.csv); a FreeScroll() wrapper
+// regresses further.
 RVA(0x001628f0, 0x1fc)
 i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (base == NULL) {
@@ -617,6 +636,12 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
+// cl tail-merges our three identical early-exit arms (xy-range, empty-logic,
+// tmpl-null) into ONE `delete obj; return used` block; retail kept TWO copies
+// (0x162dc3 shared by the logic pair via jump-threading, 0x163281 for xy) whose
+// schedules differ only in the vtbl-load slot. Guarded-lookup restructures drop
+// 110 B (arm dedup goes further) and ptrdiff/delete-first respellings are inert
+// or worse; the downstream reg rotation follows from the merge.
 RVA(0x00162af0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
@@ -824,10 +849,6 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
 }
 
-// @early-stop
-// same source shape as DeactivateDistantObjects (which is EXACT); the two
-// `add` operand materializations invert here - TU-cumulative optimizer state,
-// inert to every operand-order and local-hoist spelling tried.
 RVA(0x00163300, 0x70)
 i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -853,6 +874,12 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     return scroll->ScrollTo(x, y);
 }
 
+// @early-stop
+// twin-parity with ActivateVisibleObjects (same source shape): cl canonicalises
+// the (right+left)/(bottom+top) add operand order per TU-cumulative state, so only
+// one twin matches at a time. A struct definition placed between the twins flips
+// this one to byte-exact (proof banked at MAX 100); shipping the probe would flip
+// Save's imul pair instead. TU-completeness: retail emitted a definition here.
 RVA(0x00163370, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_scroll;
@@ -936,6 +963,10 @@ void CDDrawWorkerHost::InitScrollRects() {
 }
 
 // @early-stop
+// the tile load `mov r,[eax+edx*4]` lands in eax (cl reuses the freed m_tileGrid
+// base) where retail picks ecx and keeps the handle live, deriving setIdx/tile
+// via `mov eax,ecx` copies (+3 B). handle/tile decl spellings, u32/u16 casts,
+// CSE re-reads, splits and the greedy permuter are all inert on the choice.
 RVA(0x00163510, 0x156)
 i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) {
@@ -1048,9 +1079,9 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* s, SerialMode kind, LogicT
 }
 
 // @early-stop
-// Same canonical-imul TU-state parity as CDDrawWorker::GetMemoryUsage - a probe
-// definition placed before it takes the diff to nothing.
-// docs/patterns/commutative-operand-order-is-canonical.md
+// canonical-imul TU-state parity (docs/patterns/commutative-operand-order-is-
+// canonical.md): flips against DeactivateDistantObjects' twin parity, so only
+// one of the pair matches per TU state. best is banked at 100.
 RVA(0x00163780, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {

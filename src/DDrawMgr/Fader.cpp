@@ -48,7 +48,6 @@ void CFader::Wait(i32 delay) {
     }
 }
 
-// @early-stop
 RVA(0x0017e540, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();
@@ -74,12 +73,12 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
         loops++;
     }
     float fLoops = static_cast<float>(loops);
-    DWORD elapsed = GetTickCount() - startTick;
-    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * kMsToSeconds)));
+    m_measuredFps = static_cast<i32>(
+        (fLoops / (static_cast<float>(GetTickCount() - startTick) * kMsToSeconds))
+    );
     EndFade();
 }
 
-// @early-stop
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 frame = 0;
@@ -115,8 +114,9 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
         loops++;
     }
     float fLoops = static_cast<float>(loops);
-    DWORD elapsed = GetTickCount() - startTick;
-    m_measuredFps = static_cast<i32>((fLoops / (static_cast<float>(elapsed) * kMsToSeconds)));
+    m_measuredFps = static_cast<i32>(
+        (fLoops / (static_cast<float>(GetTickCount() - startTick) * kMsToSeconds))
+    );
     EndFade();
 }
 
@@ -158,12 +158,16 @@ CFxModeT1::CFxModeT1() {
 }
 
 // @early-stop
+// retail pre-materialises 0x140/0xf0/0 into eax/edx/ecx and stores members in
+// pure source order; cl folds both constants into immediate stores and groups
+// the zero stores. Statement orders, an inline SetCenter(320,240) helper and
+// every island family leave the shape unchanged.
 RVA(0x0017e840, 0x37)
 CFxModeT2::CFxModeT2() {
     m_centerX = SCREEN_HALF_W_PX;
     m_type = FXMODE_LIGHT;
-    m_targetSurface = NULL;
     m_sourceSurface = NULL;
+    m_targetSurface = NULL;
     m_clearMode = 1;
     m_spanCount = 0;
     m_centerY = SCREEN_HALF_H_PX;
@@ -219,9 +223,12 @@ RVA(0x0017e990, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
 // @early-stop
-// Control-flow restructure needed: skeleton diverges from B8 (base `4i jcc` vs
-// target `7i jmp`; base B11 7i vs target 23i) - block bodies sit in different
-// arms, not a regalloc residue. Transcribe the retail arm layout first.
+// arm layout, loop rotation, cell geometry, the negated step slots and the POD
+// elem temp are all transcribed from retail (frame now 0x9c, callee set exact).
+// Residue: cl seats `this` in esi where retail picks ebp (claimed between the
+// ebp and esi pushes), leaving retail one fewer loop register, so retail carries
+// x/bx/rowD2/halfW in frame slots across the inner loop while cl keeps them in
+// registers (-12 B). Whole-function rotation; permuter and islands inert.
 RVA(0x0017ea00, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
 
@@ -250,106 +257,122 @@ i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     CRezBufferObject* mesh = &m_meshBuf;
     mesh->SetSize(0, -1);
 
-    i32 halfH = m_dstSurface->m_width / 2;
-    i32 halfW = m_dstSurface->m_height / 2;
-    i32 dx = m_bltSrc->m_width / m_cols;
-    i32 dy = m_bltSrc->m_height / m_rows;
-    float radius = static_cast<float>(sqrt(static_cast<double>((dx * dx + dy * dy))));
+    i32 halfW = m_dstSurface->m_width / 2;
+    i32 halfH = m_dstSurface->m_height / 2;
+    i32 cellW = m_bltSrc->m_width / m_cols;
+    i32 cellH = m_bltSrc->m_height / m_rows;
+    float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
     if (m_rows <= 0) {
         return 1;
     }
 
-    for (i32 row = 0; row < m_rows; row++) {
-        i32 cellW2 = halfW * halfW;
-        i32 cellD = halfW * halfW + halfH * halfH;
-        float cellR = sqrt(static_cast<double>(cellD)) + radius - g_fxBias;
-        for (i32 col = 0; col < m_cols; col++) {
-            i32 d2 = halfH * halfH + cellW2;
-            double v = sqrt(static_cast<double>(d2));
-            float normX, normY;
-            if (v > g_fxEps) {
-                normY = static_cast<float>((row - halfH) / v);
-                normX = static_cast<float>((col - halfW) / v);
-            } else {
-                normY = 0.0f;
-                normX = 1.0f;
-            }
-
-            RECT pt48;
-            pt48.left = 0;
-            pt48.top = 0;
-            pt48.right = dx;
-            pt48.bottom = dy;
-            OffsetRect(&pt48, row, col);
-            i32 ox = static_cast<i32>((cellR * normX));
-            i32 oy = static_cast<i32>((cellR * normY));
-            OffsetRect(&pt48, oy, ox);
-
-            RECT pt64;
-            pt64.left = 0;
-            pt64.top = 0;
-            pt64.right = d2;
-            pt64.bottom = dy;
-            OffsetRect(&pt64, row, col);
-
-            RezElem40 elem;
-            if (m_recOrderFlag) {
-                elem.m_startRect = pt64;
-                elem.m_endRect = pt48;
-            } else {
-                elem.m_startRect = pt48;
-                elem.m_endRect = pt64;
-            }
+    RezElem40 elem;
+    i32 y = 0;
+    i32 ay = halfH;
+    i32 negH = -cellH;
+    i32 r = 0;
+    do {
+        if (m_cols > 0) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
+            i32 rowD2 = ay * ay;
+            float cellR = static_cast<float>(
+                sqrt(static_cast<double>(halfH * halfH + halfW * halfW)) + radius - g_fxBias
+            );
+            i32 x = 0;
+            i32 bx = halfW;
+            i32 negW = -cellW;
+            i32 i = 0;
+            do {
+                RECT pt48;
+                pt48.left = 0;
+                pt48.top = 0;
+                pt48.right = cellW;
+                pt48.bottom = cellH;
+                i32 d2 = bx * bx + rowD2;
+                double v = sqrt(static_cast<double>(d2));
+                float u, w;
+                if (v > g_fxEps) {
+                    u = static_cast<float>((x - halfW) / v);
+                    w = static_cast<float>((y - halfH) / v);
+                } else {
+                    u = 0.0f;
+                    w = 1.0f;
+                }
+                OffsetRect(&pt48, x, y);
+                OffsetRect(&pt48, static_cast<i32>((cellR * u)), static_cast<i32>((cellR * w)));
 
-            i32 idx = mesh->m_nSize;
-            i32 newSize = idx + 1;
-            // Reserve raw capacity: unused serialized mesh slots are zero-filled explicitly.
-            if (newSize == 0) {
-                if (mesh->m_pData) {
-                    delete[] mesh->m_pData;
-                    mesh->m_pData = NULL;
+                RECT pt64;
+                pt64.left = 0;
+                pt64.top = 0;
+                pt64.right = d2;
+                pt64.bottom = cellH;
+                OffsetRect(&pt64, x, y);
+
+                if (m_recOrderFlag) {
+                    elem.m_startRect = pt64;
+                    elem.m_endRect = pt48;
+                } else {
+                    elem.m_startRect = pt48;
+                    elem.m_endRect = pt64;
                 }
-                mesh->m_nMaxSize = 0;
-                mesh->m_nSize = 0;
-            } else if (mesh->m_pData == NULL) {
-                mesh->m_pData =
-                    static_cast<RezElem40*>(::operator new(newSize * sizeof(RezElem40)));
-                memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
-                mesh->m_nMaxSize = newSize;
-                mesh->m_nSize = newSize;
-            } else if (newSize <= mesh->m_nMaxSize) {
-                if (newSize > idx) {
-                    memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(RezElem40));
-                }
-                mesh->m_nSize = newSize;
-            } else {
-                i32 grow = mesh->m_nGrowBy;
-                if (grow == 0) {
-                    grow = idx / 8;
-                    if (grow < 4) {
-                        grow = 4;
-                    } else if (grow > 0x400) {
-                        grow = 0x400;
+
+                i32 idx = mesh->m_nSize;
+                i32 newSize = idx + 1;
+                // Reserve raw capacity: unused serialized mesh slots are zero-filled explicitly.
+                if (newSize == 0) {
+                    if (mesh->m_pData) {
+                        delete[] mesh->m_pData;
+                        mesh->m_pData = NULL;
                     }
-                }
-                i32 newMax = mesh->m_nMaxSize + grow;
+                    mesh->m_nMaxSize = 0;
+                    mesh->m_nSize = 0;
+                } else if (mesh->m_pData == NULL) {
+                    mesh->m_pData =
+                        static_cast<RezElem40*>(::operator new(newSize * sizeof(RezElem40)));
+                    memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
+                    mesh->m_nMaxSize = newSize;
+                    mesh->m_nSize = newSize;
+                } else if (newSize <= mesh->m_nMaxSize) {
+                    if (newSize > idx) {
+                        memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(RezElem40));
+                    }
+                    mesh->m_nSize = newSize;
+                } else {
+                    i32 grow = mesh->m_nGrowBy;
+                    if (grow == 0) {
+                        grow = idx / 8;
+                        if (grow < 4) {
+                            grow = 4;
+                        } else if (grow > 0x400) {
+                            grow = 0x400;
+                        }
+                    }
+                    i32 newMax = mesh->m_nMaxSize + grow;
 
-                if (newSize >= newMax) {
-                    newMax = newSize;
+                    if (newSize >= newMax) {
+                        newMax = newSize;
+                    }
+                    RezElem40* nd =
+                        static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
+                    memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
+                    memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
+                    delete[] mesh->m_pData;
+                    mesh->m_pData = nd;
+                    mesh->m_nSize = newSize;
+                    mesh->m_nMaxSize = newMax;
                 }
-                RezElem40* nd = static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
-                memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
-                memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
-                delete[] mesh->m_pData;
-                mesh->m_pData = nd;
-                mesh->m_nSize = newSize;
-                mesh->m_nMaxSize = newMax;
-            }
-            memcpy(&mesh->m_pData[idx], &elem, sizeof(RezElem40));
+                mesh->m_pData[idx] = elem;
+
+                x += cellW;
+                bx += negW;
+                i++;
+            } while (i < m_cols);
         }
-    }
+        y += cellH;
+        ay += negH;
+        r++;
+    } while (r < m_rows);
     return 1;
 }
 

@@ -6,13 +6,16 @@
 #include <stddef.h>
 
 struct RezElem40 {
-    RezElem40();
     RECT m_startRect;
     RECT m_endRect;
     i32 m_reserved20;
     float m_scale;
 };
 SIZE(0x28);
+
+// Retail's per-element construction helper (0x17f300): a bare `mov eax,ecx; ret`
+// __fastcall identity called from CRezBufferObject::Serialize's construct loop.
+RezElem40* __fastcall InitRezElem(RezElem40* p);
 
 struct CRezBufferObject : public CObject {
     RezElem40* m_pData;

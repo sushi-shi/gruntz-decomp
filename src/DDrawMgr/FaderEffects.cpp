@@ -250,6 +250,8 @@ void CFaderRadial::FreeBuffer() {
 }
 
 // @early-stop
+// register colouring around the Lock/Clear call cluster and the per-cell loop;
+// structure and callee set match. Greedy permuter and islands inert.
 RVA(0x0017fc60, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     u8* scratch = new u8[m_dstSurface->m_width];
@@ -293,10 +295,11 @@ RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // @early-stop
-// Block structure and both surface-pair shapes agree. The residue is register
-// colouring: retail lets the m_dstBox value die and RELOADS the member for the
-// `if (!m_dstBox)` guard, and its inlined GetRandom keeps the `inc` next to the
-// `idiv`; cl keeps the alias in a register and hoists the `inc`.
+// m_dstBox member re-read reproduced (if/else member stores, no alias local).
+// Residue: cl reads m_width before m_height (retail height-first, spilling the
+// width through eax), and the inlined GetRandom's `inc edi` hoists above the
+// `and 0x7fff` where retail keeps it beside the idiv. Reorders tried both ways;
+// size already equal.
 RVA(0x0017fe00, 0x12d)
 i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     CFxModeT3* cfg = static_cast<CFxModeT3*>(desc);
@@ -310,19 +313,19 @@ i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     } else {
         m_srcBox = cfg->m_targetSurface;
     }
-    CDDSurface* alt = cfg->m_sourceSurface;
-    if (!alt) {
-        alt = m_timerB;
+    if (cfg->m_sourceSurface == NULL) {
+        m_dstBox = m_timerB;
+    } else {
+        m_dstBox = cfg->m_sourceSurface;
     }
-    m_dstBox = alt;
     if (!m_srcBox) {
         goto fail;
     }
     if (!m_dstBox) {
         m_boxParam = 1;
     }
-    m_elemCount = m_srcBox->m_width;
     w = m_srcBox->m_height;
+    m_elemCount = m_srcBox->m_width;
     m_frameCount = w;
     p = cfg->m_intensityPercent;
 
@@ -344,6 +347,8 @@ fail:
 }
 
 // @early-stop
+// spill/colouring residue across the row loop (the sin/ftol windows recolour the
+// scratch set); blocks and callees align. Permuter sweep inert.
 RVA(0x0017ff30, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
     if (frame == 0) {
@@ -476,6 +481,10 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
 }
 
+// @early-stop
+// canonical 2-term member add (m_4c + m_54) emitted in the opposite load order;
+// spelling-inert. A struct definition placed before it flips to byte-exact
+// (proof banked at MAX 100); the probe is TU state, not source.
 RVA(0x00180400, 0xa)
 i32 CFaderSine::GetFrameCount() {
     return m_scaledMag + m_frameCount;
@@ -575,6 +584,8 @@ void CFaderLight::SubFree() {}
 #define FADER_CLAMPW(v, w) (((v) < 0 ? 0 : (v)) >= (w) ? (w) : ((v) < 0 ? 0 : (v)))
 
 // @early-stop
+// scheduling/colouring residue in the dual span-walk loops; topology matches.
+// Permuter sweep inert.
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
@@ -838,6 +849,10 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
+// two frame-slot pairings (0x14/0x18) plus the row-pointer add-chain association
+// (retail accumulates srcBits+row+srcCol left-to-right, cl reassociates product-
+// first); groupings/splits are canonicalised. A preceding class-with-inline-
+// methods island lifts it (proof banked at MAX); shape correct.
 RVA(0x00180fb0, 0x534)
 
 void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
@@ -1097,8 +1112,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         goto fail;
     }
 
-    m_span = m_surfA->m_width;
     m_rowCount = m_surfA->m_height;
+    m_span = m_surfA->m_width;
     m_spanB = m_surfB->m_width;
     m_rowCountB = m_surfB->m_height;
     m_spanC = m_surfC->m_width;
@@ -1118,7 +1133,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     if (m_spanC != m_spanB) {
         goto fail;
     }
-    if (m_rowCountC != m_rowCountB) {
+    if (m_rowCountB != m_rowCountC) {
         goto fail;
     }
 
@@ -1158,8 +1173,8 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
 
     if (m_useLut != 0) {
         if (pInit->m_shadeTable) {
-            m_flag = 0;
             m_table = pInit->m_shadeTable;
+            m_flag = 0;
         } else if (_access(pInit->m_shadeTablePath, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_shadeTablePath);
             if (m_table == NULL) {
@@ -1201,6 +1216,11 @@ fail:
 }
 
 // @early-stop
+// arms and args all match retail 1:1; the residue is cl's cross-switch TAIL-MERGE
+// pattern: retail keeps 4/3/4/3 call sites (sharing only switch-2 REVERSE's call
+// tail with FORWARD, args pushed separately) where cl merges down to 3/2/4/3.
+// Case reorder to retail's memory order (SPLIT/REV/FWD) scores lower; the seam
+// >>1 respelling refutes the shift theory (2 relocs short of retail's 19).
 RVA(0x00181b00, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_surfA->Lock(0));
@@ -1312,6 +1332,13 @@ void CFaderShape::RenderFrame(i32 frame) {
 }
 
 // @early-stop
+// two compounding mechanisms, both resistant: (1) cl allocates the callee-saved
+// pair inversely (m_mode cached in edi across the two __ftol calls, arc spilled;
+// retail keeps arc in edi and RE-READS m_mode per condition group), and (2) the
+// row loop is rotated - entry `jmp` over the 2-insn back-edge block where retail
+// falls into a 22-insn head jumped to by the tail. colBase spellings (named vs
+// inline temps, fn-scope arcSpan) and 350 permuter iters are inert; the fidiv vs
+// fild+fdivp head selection follows from arcSpan/tail sharing one frame slot.
 RVA(0x00181e50, 0x7b9)
 
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
@@ -1562,6 +1589,10 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 }
 
 // @early-stop
+// two frame slots swapped: rowBytes and the spilled rowSrcA get esp+0x34/0x30
+// where retail assigns 0x30/0x34; six operand bytes total. Decl order/position,
+// renames, hoists, sum-inlining and every island family are inert - an
+// intra-function slot-coloring choice.
 RVA(0x00182610, 0x2eb)
 
 void CFaderShape::RenderTile(i32 col, i32 stripWidth) {

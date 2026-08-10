@@ -18,11 +18,15 @@
 static inline void ConstructRezElems(RezElem40* p, i32 n) {
     memset(p, 0, n * sizeof(RezElem40));
     for (; n--; p++) {
-        ::new (p) RezElem40;
+        InitRezElem(p);
     }
 }
 
 // @early-stop
+// retail guards the per-element InitRezElem loop with a hoisted `test esi,esi`
+// (placement-new's null check, 4 B); every source guard placement tried lands 2 B
+// long and reshuffles the join. Remaining rows are that check plus the duplicated
+// Write/Read epilogue retail keeps per IsStoring arm.
 RVA(0x0017f130, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
     // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
@@ -74,8 +78,8 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nMaxSize = newMax;
         }
     }
-    RezElem40* data = m_pData;
     i32 cnt = m_nSize;
+    RezElem40* data = m_pData;
     if (ar.IsStoring()) {
         ar.Write(data, cnt * sizeof(RezElem40));
     } else {
@@ -83,13 +87,17 @@ void CRezBufferObject::Serialize(CArchive& ar) {
     }
 }
 RVA(0x0017f300, 0x3)
-RezElem40::RezElem40() {}
+RezElem40* __fastcall InitRezElem(RezElem40* p) {
+    return p;
+}
 
 // ??1CRezBufferObject / ??_GCRezBufferObject are pinned in Fader.cpp: the dtor is
 // inline-in-header, so cl emits both COMDATs in the TU that expands the ctor
 // (fader, via CFaderMesh::m_meshBuf) and none here.
 
 // @early-stop
+// pure edi<->esi zero-register rotation through all four growth arms; the
+// structure and both allocation paths match byte-shape exactly.
 RVA(0x0017f390, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     // Reserve raw capacity: MFC-style growth constructs only newly materialized elements.
