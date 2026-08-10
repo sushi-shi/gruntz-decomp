@@ -78,3 +78,16 @@ rva,name,unit,size,kind
 0x225488,_cpdist$S421,inftrees,0x78,data
 0x225500,_cpdext$S422,inftrees,0x78,data
 0x225640,_inflate_mask,infutil,0x44,data
+0x2bf8e8,_length_code$S444,trees,0x100,data
+0x2bf9e8,_base_length$S445,trees,0x74,data
+0x2bfa60,_dist_code$S443,trees,0x200,data
+0x2bfc60,_static_ltree$S441,trees,0x480,data
+0x2c00e0,_static_dtree$S442,trees,0x78,data
+0x2c0158,_base_dist$S446,trees,0x78,data
+0x2c01d0,_?static_init_done@?1??tr_static_init@@9@9$S502,trees,0x4,data
+0x2c01d8,_fixed_td$S544,inftrees,0x4,data
+0x2c01dc,_fixed_tl$S543,inftrees,0x4,data
+0x2c01e0,_fixed_mem$S540,inftrees,0x1090,data
+0x2c1270,_fixed_bd$S542,inftrees,0x4,data
+0x2c1274,_fixed_bl$S541,inftrees,0x4,data
+0x2c1278,_fixed_built$S539,inftrees,0x4,data

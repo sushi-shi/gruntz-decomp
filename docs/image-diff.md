@@ -21,6 +21,7 @@ halves, and the tool refuses to print either without the other:
     python -m gruntz.audit.image_diff                    # the report
     python -m gruntz.audit.image_diff --section .text --detail 20
     python -m gruntz.audit.image_diff --referents 30     # the wrong-referent worklist
+    python -m gruntz.audit.image_diff --ordering 20      # the ordering-only worklist
     python -m gruntz.audit.image_diff --selftest         # plant defects, find them
     python -m gruntz.audit.image_diff --tsv f.tsv --json f.json
 
@@ -278,7 +279,7 @@ reached different assets.  `CGrunt::LoadPickupSprites` is the counterexample: bo
 images reach the same complete pickup-key multiset, while retail has two additional
 undecidable operands and emits the case bodies in a different order.  Unknowns are
 now counted, then removed before identity/order comparison; ordering-only regions are
-reported separately by `--referents`.
+counted separately by `--referents` and listed by `--ordering`.
 
 That sixth correction removes another 14 false-positive regions: the final static
 worklist is **248 genuine wrong-referent regions**, plus **40 ordering-only**.
@@ -293,6 +294,29 @@ retail, and the pickup loader reaches the same decidable key multiset. The obser
 yellow-to-blue startup symptom is therefore not explained by a wrong named-asset
 referent in this path; its remaining cause is elsewhere (for example the player/color
 index or palette path), and static evidence does not justify guessing one.
+
+## The ordering-only worklist
+
+`--ordering N` prints the regions the wrong-referent worklist deliberately excludes:
+paired bodies that reach retail's exact decidable referent **multiset in a different
+order**. Nothing here points at the wrong thing — the multiset test has already
+proven every referent correct — so the defect is *sequence*: statement order,
+evaluation order or emitted-branch layout in the source, and the fix is a reorder,
+never a retarget.
+
+Regions are ranked easiest-first by **displaced operand slots** — sequence positions
+outside the retail/candidate common subsequence. A referent that only *moved*
+appears twice (deleted where retail has it, inserted where we emit it), so 2
+displaced slots is ONE referent out of place, usually a two-statement swap in the
+source. The listing opens with that histogram, and the grouped tally is asserted
+against the section counters — a truncated listing is not a worklist. The dominant
+current shape is a game-object constructor whose asset-key literal sits one
+statement away from where retail evaluates it.
+
+Both counts are ratcheted together by `gruntz.audit.data_integrity`
+(`config/retail/data-integrity-ratchet.tsv`, full tier): neither the wrong-referent
+count nor the ordering-only count can silently increase, and a genuine lower count
+must be banked with `--write`.
 
 ## Selftest
 
@@ -312,6 +336,9 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] a literal carrying \n resolves to its TEXT
     [PASS] no wrong-referent row is an interior SELF-reference (a jump table)
     [PASS] an undecidable operand cannot manufacture a wrong referent
+    [PASS] two swapped relocated dwords -> ONE ordering-only region
+    [PASS] ...and NOT a wrong-referent region (the multiset is intact)
+    [PASS] ...and the ordering worklist attributes it to the right region
     [PASS] .rsrc: every differing byte is a classified placement shift
     [PASS] every section counts its UNMEASURABLE bytes in the DENOMINATOR
 

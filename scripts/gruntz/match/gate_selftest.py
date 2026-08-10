@@ -147,6 +147,16 @@ class ReferentEvidenceTriageTests(unittest.TestCase):
             "weak / content only")
 
 
+class OrderingWorklistTests(unittest.TestCase):
+    def test_a_moved_referent_reads_as_two_one_sided_segments(self):
+        rows = image_diff._seq_divergences(["A", "B", "C"], ["B", "C", "A"])
+        self.assertEqual(sum(len(rr) + len(cc) for rr, cc in rows), 2)
+        self.assertTrue(all(not rr or not cc for rr, cc in rows))
+
+    def test_equal_sequences_yield_no_segments(self):
+        self.assertEqual(image_diff._seq_divergences(["A", "B"], ["A", "B"]), [])
+
+
 class ViewDebtLibraryShadowTests(unittest.TestCase):
     def _run(self, definition):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,3 +1,5 @@
+#define INITGUID
+
 #include <rva.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>

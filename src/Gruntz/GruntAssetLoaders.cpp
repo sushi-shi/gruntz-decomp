@@ -396,7 +396,7 @@ pathA:
     m_wwdObject->ApplyName(static_cast<const char*>(m_deathFrameSetName));
     {
         CGruntzMgr* g = g_gameReg;
-        if (CGameLevel::PointInRect(
+        if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_viewRect,
                 m_object->m_screenX,
                 m_object->m_screenY

@@ -3119,3 +3119,10 @@ rva,name,lib,confidence,source
 0x1d3236,?GetRuntimeClass@CGdiObject@@UBEPAUCRuntimeClass@@XZ,NAFXCW,HIGH,vtable-slot-oracle
 0x1d3242,?GetRuntimeClass@CBrush@@UBEPAUCRuntimeClass@@XZ,NAFXCW,HIGH,vtable-slot-oracle
 0x1d325a,?GetRuntimeClass@CRgn@@UBEPAUCRuntimeClass@@XZ,NAFXCW,HIGH,vtable-slot-oracle
+0x1ef838,_IID_IDirectDraw,DXGUID,HIGH,guid-bytes
+0x1ef848,_IID_IDirectDraw2,DXGUID,HIGH,guid-bytes
+0x1ef858,_IID_IDirectDraw4,DXGUID,HIGH,guid-bytes
+0x1ef868,_IID_IDirectDrawSurface,DXGUID,HIGH,guid-bytes
+0x1ef878,_IID_IDirectDrawSurface2,DXGUID,HIGH,guid-bytes
+0x1ef888,_IID_IDirectDrawSurface3,DXGUID,HIGH,guid-bytes
+0x1ef898,_IID_IDirectDrawSurface4,DXGUID,HIGH,guid-bytes

@@ -454,6 +454,7 @@ class Cmp:
         self.ref_pairs_reordered = 0
         self.ref_pairs_bad = 0
         self.ref_bad = []        # [(region, [retail refs], [candidate refs])]
+        self.ref_reordered = []  # same shape, for the ordering-only pairs
         self.classes = Counter()
         self.worst = []          # [(unmatched, name, retail_len)] for --detail
 
@@ -663,6 +664,28 @@ def _decidable(seq):
     return [x for x in seq if x != UNDECIDABLE]
 
 
+def _seq_divergences(rseq, cseq, sm=None):
+    """Non-equal segments of two referent sequences, in sequence order.
+
+    Each row is (retail segment, candidate segment).  A referent that only
+    MOVED appears twice, once per position - deleted where retail has it,
+    inserted where we emit it - so a single transposition reads as two
+    one-sided rows and 2 displaced slots in total.
+    """
+    if sm is None:
+        import difflib
+        sm = difflib.SequenceMatcher(None, rseq, cseq, autojunk=False)
+    out = []
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        rr = rseq[i1:i2]
+        cc = cseq[j1:j2]
+        if rr or cc:
+            out.append((rr, cc))
+    return out
+
+
 def _token(side, va, zlib):
     desc, how = resolve(side, va)
     return (_hash(desc, zlib), how)
@@ -806,17 +829,13 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
         for b in sm.get_matching_blocks():
             same += b.size
         cmp_.ref_ok += same
+        rows = [(name, rr, cc) for rr, cc in _seq_divergences(rseq, cseq, sm)]
         if sorted(rseq) == sorted(cseq):
             cmp_.ref_pairs_reordered += 1
+            cmp_.ref_reordered += rows
         else:
             cmp_.ref_pairs_bad += 1
-            for tag, i1, i2, j1, j2 in sm.get_opcodes():
-                if tag == "equal":
-                    continue
-                rr = rseq[i1:i2]
-                cc = cseq[j1:j2]
-                if rr or cc:
-                    cmp_.ref_bad.append((name, rr, cc))
+            cmp_.ref_bad += rows
 
 
 def _desc(side, lo, buf, slot):
@@ -1780,6 +1799,33 @@ def selftest():
     check("no wrong-referent row is an interior SELF-reference (a jump table)",
           self_rows == 0, "%d row(s)" % self_rows)
 
+    # --- 3d. two swapped operands are ORDERING-ONLY, not wrong referents ----
+    # The multiset is intact by construction, so a differ that pushes this
+    # into the wrong-referent worklist is double-counting order as identity.
+    site2 = _pick_swap_site(R, C)
+    if site2 is None:
+        check("found two distinct named operands to swap", False)
+        return 1
+    fo1, fo2, snm = site2
+    buf = bytearray(orig.read_bytes())
+    buf[fo1:fo1 + 4], buf[fo2:fo2 + 4] = buf[fo2:fo2 + 4], buf[fo1:fo1 + 4]
+    f3 = tmp / "swap.EXE"
+    f3.write_bytes(bytes(buf))
+    CAND = f3
+    _, _, mut3 = analyse()
+    CAND = orig
+    dr = mut3[0].cmp.ref_pairs_reordered - tb.cmp.ref_pairs_reordered
+    db2 = mut3[0].cmp.ref_pairs_bad - tb.cmp.ref_pairs_bad
+    check("two swapped relocated dwords -> ONE ordering-only region",
+          dr == 1, "%+d region(s), in %s" % (dr, snm[:40]))
+    check("...and NOT a wrong-referent region (the multiset is intact)",
+          db2 == 0, "%+d wrong-referent region(s)" % db2)
+    named3 = [x for x in mut3[0].cmp.ref_reordered if x[0] == snm]
+    was3 = [x for x in tb.cmp.ref_reordered if x[0] == snm]
+    check("...and the ordering worklist attributes it to the right region",
+          bool(named3) and not was3,
+          "%d row(s) for the victim, baseline %d" % (len(named3), len(was3)))
+
     # --- 4. placement shift is classified, not counted ----------------------
     rr = next((r for r in base if r.name == ".rsrc"), None)
     if rr:
@@ -1906,6 +1952,35 @@ def _pick_reloc_pair(R, C):
     return None
 
 
+def _pick_swap_site(R, C):
+    """TWO relocated dwords inside a currently-perfect body that name DIFFERENT
+    referents - swapping them keeps the multiset intact, so the differ must
+    read it as ORDERING, never as a wrong referent."""
+    for rspan, cspan, nm in _plain_text_pairs(R, C):
+        c = Cmp()
+        region_diff(R, C, rspan, cspan, c, True, nm)
+        if c.differ or c.slot_bad or c.slot_unres or c.ref_pairs_bad \
+                or c.ref_pairs_reordered:
+            continue
+        n = min(rspan[1] - rspan[0], cspan[1] - cspan[0])
+        co = C.pe.off(cspan[0])
+        sites = []
+        for off, kind, _t, res in slots_of(C, cspan[0],
+                                           C.pe.data[co:co + n], True):
+            if kind != "reloc" or res != "symbol":
+                continue
+            va = struct.unpack_from("<I", C.pe.data, co + off)[0]
+            d = resolve(C, va)[0]
+            if d.startswith(nm + "+"):
+                continue
+            sites.append((off, d))
+        for i, (o1, d1) in enumerate(sites):
+            for o2, d2 in sites[i + 1:]:
+                if d1 != d2:
+                    return co + o1, co + o2, nm
+    return None
+
+
 def _referent_evidence(divs):
     """Strongest evidence carried by any descriptor in a region's divergences.
 
@@ -1952,7 +2027,7 @@ def _referent_worklist(reps, top):
         print("    %-22s %4d region(s)" % (k, v))
     reordered = sum(r.cmp.ref_pairs_reordered for r in reps)
     print("  ordering-only (same decidable referent multiset): %d region(s)"
-          % reordered)
+          " - `--ordering N` lists them" % reordered)
 
     for (sec, nm), divs in sorted(rows.items(), key=lambda kv: -len(kv[1]))[:top]:
         print("\n  %s  %s   (%d divergence%s)"
@@ -1960,6 +2035,46 @@ def _referent_worklist(reps, top):
         for rr, cc in divs[:4]:
             print("      retail    %s" % (", ".join(rr[:4])[:96] or "(nothing)"))
             print("      us        %s" % (", ".join(cc[:4])[:96] or "(nothing)"))
+    return 0
+
+
+def _ordering_worklist(reps, top):
+    """The ordering-only worklist: paired regions that reach retail's exact
+    decidable referent multiset in a DIFFERENT ORDER.
+
+    Nothing here points at the wrong thing - the multiset test has already
+    proven every referent correct - so the defect is SEQUENCE: statement order,
+    evaluation order or emitted-branch layout in the source.  Ranked
+    easiest-first by displaced operand slots: 2 is ONE referent out of place,
+    usually a two-statement swap in the source.
+    """
+    rows = defaultdict(list)
+    for r in reps:
+        for nm, rr, cc in r.cmp.ref_reordered:
+            rows[(r.name, nm)].append((rr, cc))
+    total = sum(r.cmp.ref_pairs_reordered for r in reps)
+    # pair_by_name refuses ambiguous names, so (section, region) is unique and
+    # the grouped listing must be COMPLETE - a truncated one is not a worklist.
+    assert len(rows) == total, (len(rows), total)
+    print("=== ordering-only worklist ===")
+    print("  %d paired region(s) reach the same decidable referents in another "
+          "order." % total)
+    print("  Each segment: where RETAIL's sequence has it, then where OURS does;")
+    print("  a one-sided segment is a referent that only MOVED.")
+    displaced = {k: sum(len(rr) + len(cc) for rr, cc in v)
+                 for k, v in rows.items()}
+    hist = Counter(min(d, 5) for d in displaced.values())
+    print("  by displaced operand slots (2 = one referent out of place):")
+    for d in sorted(hist):
+        print("    %-4s %4d region(s)" % ("5+" if d == 5 else d, hist[d]))
+    for key in sorted(rows, key=lambda k: (displaced[k], k))[:top]:
+        sec, nm = key
+        print("\n  %s  %s   (%d displaced slot%s)"
+              % (sec, nm[:64], displaced[key],
+                 "" if displaced[key] == 1 else "s"))
+        for rr, cc in rows[key][:6]:
+            print("      retail    %s" % (", ".join(rr[:4])[:96] or "(in place)"))
+            print("      us        %s" % (", ".join(cc[:4])[:96] or "(in place)"))
     return 0
 
 
@@ -1975,6 +2090,10 @@ def main(argv=None):
     ap.add_argument("--referents", type=int, default=0, metavar="N",
                     help="print only the wrong-referent worklist (N regions): the "
                          "paired bodies that reach something ELSE than retail does")
+    ap.add_argument("--ordering", type=int, default=0, metavar="N",
+                    help="print only the ordering-only worklist (N regions): the "
+                         "paired bodies that reach retail's exact referents in a "
+                         "DIFFERENT ORDER")
     ap.add_argument("--selftest", action="store_true",
                     help="plant known defects and require the differ to find them")
     a = ap.parse_args(argv)
@@ -1995,6 +2114,8 @@ def main(argv=None):
     keep = [r for r in reps if not a.section or r.name in a.section]
     if a.referents:
         return _referent_worklist(keep, a.referents)
+    if a.ordering:
+        return _ordering_worklist(keep, a.ordering)
     print(summary(R, C, reps))
     for r in keep:
         print(fmt(r, a.detail))
@@ -2034,6 +2155,7 @@ def main(argv=None):
                                    referents=r.cmp.ref_total,
                                    referents_ok=r.cmp.ref_ok,
                                    referent_divergent_regions=r.cmp.ref_pairs_bad,
+                                   referent_reordered_regions=r.cmp.ref_pairs_reordered,
                                    differing=r.cmp.differ,
                                    cand_extra=r.cmp.cand_extra,
                                    unmeasured=r.unmeasured_r,

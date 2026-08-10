@@ -98,14 +98,8 @@ struct BrickzCell {
 };
 SIZE_UNKNOWN();
 
-// The bounds-checked cell-flag read.  cl expands it at every tile test - 22
-// functions across 12 units in retail - and out-of-bounds reads back as flag bit 0,
-// which every BRICKZ mask treats as blocked.  Declared in MapMgr.h; defined here
-// because the body needs BrickzCell complete and Brickz.h is what completes it.
-// Its one out-of-line emission in retail is the COMDAT at 0x00075a40, which cl
-// left in TriggerMgrHitTest.cpp when its inline budget ran out inside
-// TmDeflectStep - 75 of that function's 96 candidate tests call it rather than
-// expand it. No other unit emits a copy.
+// Bounds-checked cell-flag read; out-of-bounds cells carry the blocking bit 0.
+// TmDeflectStep is the only caller of the retail out-of-line COMDAT.
 RVA(0x00075a40, 0x34)
 inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {

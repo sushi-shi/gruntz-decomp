@@ -22,24 +22,21 @@ struct Coord;
 
 void Str_Free(void* node);
 
-// "is this cell's flag word compatible with the caller's route masks" - the
-// gate TmDeflectStep runs on every candidate cell. Inline; retail's only
-// out-of-line emission is the COMDAT at 0x00075a90 in TriggerMgrHitTest.cpp,
-// and TmDeflectStep is its only caller.
+// Test whether a cell's flags admit the caller's route masks. TmDeflectStep is
+// the only retail caller and the reason the out-of-line COMDAT exists.
 RVA(0x00075a90, 0x27)
 inline i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
     i32 m = b & a;
     if (m & BRICKZ_CELL_OCCUPIED) {
         return 0;
     }
-    if (m != 0 && (c & a) == 0) {
+    if (m && !(c & a)) {
         return 0;
     }
     return 1;
 }
 
-// The eight-way step deflector. Defined in TriggerMgrHitTest.cpp; see the block
-// comment there. Unreferenced in retail.
+// The eight-way step deflector. Unreferenced in retail.
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
     i32 goalX,
