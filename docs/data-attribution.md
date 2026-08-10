@@ -1111,3 +1111,58 @@ and `?g_levelMsgIconPos@@3PAHA` (0x20b8b8) are both that, and the flat spelling 
 load-bearing for the first: retail's walk relocates `base+4` and `base+0x24`, i.e.
 it starts at the second `int`, which a `Coord*` loop cannot produce. Retyping
 either to a pair struct would be aggregation without a stride witness.
+
+## 5. The coverage partition covers `.bss` (2026-08-10, data-coverage-close)
+
+`gruntz.audit.data_denominator` partitions the loader zero-fill region with the
+same fail-closed machinery as initialized data, under `.bss`-specific oracles —
+payload proves nothing in zero fill, so a verdict rests on:
+
+* **who references the run** — every absolute-address operand is a `.reloc`
+  HIGHLOW site; the containing function's game/library classification
+  (`library_labels.csv`) is the attribution. Referenced only by proven library
+  code ⇒ `library-private data`, excluded.
+* **library pointer propagation** — a pointer WRITTEN INSIDE a node already
+  proven library-private claims the `.bss` it targets (single-hop by
+  construction: `.bss` holds no bytes, so no edge can originate there). The CRT
+  stdio buffer family (4 KB at `0x2c15e0`, reached only through the `__iob`
+  table run at `0x218c88`) is excluded on this evidence. Game visibility always
+  wins; propagation never enters a visible node.
+* **alignment slack** — a hole strictly smaller than the delink manifest's
+  stated alignment (`data_layout.obj_align`, c2's own rule) for the claim
+  starting at the hole's end exists BECAUSE of that alignment.
+* everything else is `UNCLASSIFIED (.bss)` and stays ELIGIBLE — fail-closed,
+  uncertainty can never improve the score.
+
+Two initialized-side refinements landed with it:
+
+* **a `.data` run containing reloc sites cannot be a pooled literal** (no
+  FP/string pool carries a relocation). 11.0 KB re-proven library-private,
+  3.4 KB pulled back INTO the eligible denominator — the literal blanket had
+  been over-excluding. Initialized reconstructable 98.00 → 95.15 (honest drop).
+* **typedef-for-linkage records reach `structs.json`**: clang's record-layout
+  dump spells `typedef struct {...} NAME` as `(unnamed at file:line:col)`, so
+  such records never got sizes and their globals were withheld sizeless.
+  `parse_record_layouts` recovers the linkage name from the source at that
+  location (only the exact typedef shape; else skipped as before). +58 records;
+  the three `vendor/sfman-1.01` globals enrolled on the spot, with retail's own
+  `mov WORD [g_sfCaps], 0x66` confirming the `#pragma pack(2)` layout.
+
+The `.cpp`-local static-init guard family (`_?$S<n>@?N??<fn>@4EA$S<id>`, a named
+STATIC cl 5.0 emits with no source spelling) was censused across every base obj:
+11 guards, 9 already enrolled, the two `CPlay` ones pinned via
+`config/static_data_copies.tsv` (the butemgr-band precedent).
+
+Scoreboard after: initialized 95.15% / `.bss` 91.72% reconstructable, fidelity
+100.00 both. The eligible-unenrolled remainder (the worklist, largest first):
+`dircellmethods` editor-buffer band (13.1 KB + 3.4 KB), `gameinfostring`
+(7.8 KB), `multi` (4.9 KB after `g_chatPacket` + 2×1,012 B after the
+`g_chanStat42x` packets — retail pushes `sizeof=0xc`, so those are NOT struct
+tails but unreferenced siblings), `netcmdslot` pools (2.5 KB + 1.1 KB),
+NetLobby (1.3 KB + 2.3 KB), the `CActRegPool<T>::s_table` inter-band runs
+(~2 KB, initialized by un-inventoried `$E` funclets), and the 46
+`unclaimed/high` access-map findings (each: bytes accessed by name-attributed
+game code past a claim's end — per-item modeling with `sema disasm`).
+`?TickKillCues@CDDrawChildGroup` constructs two static OBJECTS at
+`0x2bf390`/`0x2bf3a8` (ctor at VA `0x5b55e9`-ish thunk) that src currently
+models as loose `g_val_*` ints — a shape defect, not a coverage one.
