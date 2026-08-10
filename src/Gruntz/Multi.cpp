@@ -131,6 +131,12 @@ CNetMgr* g_groupEnumMgr;
 DATA(0x00248cf8)
 CMulti* g_connectRptMgr;
 
+// cl's CPtrList default-constructor closure: emitted as a COMDAT by every TU that
+// default-constructs a CPtrList array element (multi, play, rezsync). Retail kept one
+// copy at 0x85460 and routes `push OFFSET <closure>` through ILT thunk 0x3774; without
+// the pin the delinker spells that address as `?GetMaxAckLatency@CMulti@@QAEIXZ+5`.
+RVA_COMPGEN(0x00085460, 0x8, ??_FCPtrList@@QAEXXZ)
+
 RVA(0x0008d270, 0x124)
 CMulti::~CMulti() {
     CMulti::ReleaseResources();
