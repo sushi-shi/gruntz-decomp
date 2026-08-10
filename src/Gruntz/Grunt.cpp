@@ -962,6 +962,19 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 // complete - the `insn_seq --multiset` rows (RemoveHead 3/4, g_coordPool 18/21)
 // are that same merge, and g_gameReg 10/7 is its mirror (cl re-loads the global
 // where retail holds it in a register).
+//
+// JUDGE THIS FUNCTION WITH `--blocks --diff`, NOT WITH THE REPORTED PERCENT.
+// objdiff's diff is a LINEAR alignment; with the region rotation above it has no
+// global anchor, so its number is bistable - one operand flip anywhere in the
+// body swings it between 0.00 and ~33 while the emitted basic blocks do not
+// change at all.  A 0.00 here does NOT mean the body is wrong.  (Do not "fix" it
+// with a Yoda condition: `0 != (lastFlags & 0x80)` does raise the reported score,
+// but it makes cl emit `test al,al` where retail has `test al,0x80` at 0x4b585 -
+// further from retail, not closer.  Measured both ways.)
+// What the blocks say: the probe-count gate below carries retail's polarity
+// (0x4b681 `jg` jumps AWAY to the free-everything walk and FALLS INTO the splice
+// arm), and that puts twelve consecutive blocks at retail's B48..B59 shape
+// exactly - 11i,3i,5i,4i,2i,2i,3i,8i,1i,3i,1i,10i - which they were not before.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -1077,14 +1090,10 @@ i32 CGrunt::StepArrivalDrop(
                     maskC
                 ) != 0
                 && probe.GetCount() != 0) {
-                if (probe.GetCount() > cnt + 3) {
-                    pos = probe.GetHeadPosition();
-                    while (pos != NULL) {
-                        pooled = g_coordPool.NodeOf(probe.GetNext(pos));
-                        pooled->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = pooled;
-                    }
-                } else {
+                // Retail falls through into the splice arm and jumps away on
+                // `jg` (0x4b681), so the SHORT-path count is the `if` and the
+                // free-everything walk is the `else`.
+                if (probe.GetCount() <= cnt + 3) {
                     pooled = g_coordPool.NodeOf(probe.RemoveHead());
                     pooled->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = pooled;
@@ -1104,6 +1113,13 @@ i32 CGrunt::StepArrivalDrop(
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
                         m_coordList.AddTail(probe.GetNext(pos));
+                    }
+                } else {
+                    pos = probe.GetHeadPosition();
+                    while (pos != NULL) {
+                        pooled = g_coordPool.NodeOf(probe.GetNext(pos));
+                        pooled->m_next = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = pooled;
                     }
                 }
                 probe.RemoveAll();
@@ -3809,7 +3825,8 @@ afterTile:
 
 afterArrival:
     if (m_toyTime > 0) {
-        i64 left = m_toyDuration - static_cast<i64>(g_frameTime) + m_toyClock;
+        i64 remA = m_toyDuration - static_cast<i64>(g_frameTime);
+        i64 left = remA + m_toyClock;
         m_toyTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
                 / static_cast<double>(static_cast<u32>(m_toyDurationLo)) * g_wingzScale
@@ -4256,11 +4273,11 @@ void CGrunt::AdvanceMotion() {
                     if (m_arrivalActive != 0) {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                        if (other == NULL) {
-                            result = 0;
-                        } else {
-                            i32 x = (other->m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                            i32 y = (other->m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        if (other != NULL) {
+                            i32 otherPxX = other->m_object->m_screenX;
+                            i32 otherPxY = other->m_object->m_screenY;
+                            i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                            i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
@@ -4269,25 +4286,32 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            i32 targetX;
-                            i32 targetY;
-                            if (RectContains(x, y) == 0) {
-                                if (RectContains(other->m_lastTilePx.m_x, other->m_lastTilePx.m_y)
-                                    == 0) {
-                                    targetX = m_arrivalTargetPx.m_x;
-                                    targetY = m_arrivalTargetPx.m_y;
-                                } else {
-                                    SnapToLastTile(0);
-                                    targetX = other->m_lastTilePx.m_x;
-                                    targetY = other->m_lastTilePx.m_y;
-                                }
+                            // 0x5f7ca reads the UNMASKED screen pair back out of its
+                            // homes ([esp+0x10]/[esp+0x14], written at 0x5f74a before
+                            // the `and`), and 0x5f939 runs `mov ecx,ebx` - the snap is
+                            // on `other`, not on this.
+                            i32 targetX = other->m_lastTilePx.m_x;
+                            i32 targetY = other->m_lastTilePx.m_y;
+                            if (RectContains(x, y) != 0) {
+                                targetX = otherPxX;
+                                targetY = otherPxY;
+                            } else if (RectContains(
+                                           other->m_lastTilePx.m_x,
+                                           other->m_lastTilePx.m_y
+                                       )
+                                       != 0) {
+                                other->SnapToLastTile(0);
+                                targetX = other->m_lastTilePx.m_x;
+                                targetY = other->m_lastTilePx.m_y;
                             } else {
-                                targetX = x;
-                                targetY = y;
+                                targetX = m_arrivalTargetPx.m_x;
+                                targetY = m_arrivalTargetPx.m_y;
                             }
                             result =
                                 m_tileMgr
                                     ->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
+                        } else {
+                            result = 0;
                         }
                     } else {
                         result = m_tileMgr->ApplyTriggerA(
@@ -4298,21 +4322,14 @@ void CGrunt::AdvanceMotion() {
                         );
                     }
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (m_arrivalActive == 0) {
-                        result = m_tileMgr->ApplyTriggerB(
-                            m_tileOwnerHi,
-                            m_tileOwnerLo,
-                            m_arrivalTargetPx.m_x,
-                            m_arrivalTargetPx.m_y
-                        );
-                    } else {
+                    if (m_arrivalActive != 0) {
                         CGrunt* other =
                             m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
-                        if (other == NULL) {
-                            result = 0;
-                        } else {
-                            i32 x = (other->m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                            i32 y = (other->m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        if (other != NULL) {
+                            i32 otherPxX = other->m_object->m_screenX;
+                            i32 otherPxY = other->m_object->m_screenY;
+                            i32 x = (otherPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                            i32 y = (otherPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
                             if (m_defenderPx.m_x != x || m_defenderPx.m_y != y) {
                                 m_defenderPx.m_x = x;
                                 m_defenderPx.m_y = y;
@@ -4321,37 +4338,44 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            i32 targetX;
-                            i32 targetY;
-                            if (RectContainsGated(x, y) == 0) {
-                                if (RectContainsGated(
-                                        other->m_lastTilePx.m_x,
-                                        other->m_lastTilePx.m_y
-                                    )
-                                    == 0) {
-                                    targetX = m_arrivalTargetPx.m_x;
-                                    targetY = m_arrivalTargetPx.m_y;
-                                } else {
-                                    SnapToLastTile(0);
-                                    targetX = other->m_lastTilePx.m_x;
-                                    targetY = other->m_lastTilePx.m_y;
-                                }
+                            i32 targetX = other->m_lastTilePx.m_x;
+                            i32 targetY = other->m_lastTilePx.m_y;
+                            if (RectContainsGated(x, y) != 0) {
+                                targetX = otherPxX;
+                                targetY = otherPxY;
+                            } else if (RectContainsGated(
+                                           other->m_lastTilePx.m_x,
+                                           other->m_lastTilePx.m_y
+                                       )
+                                       != 0) {
+                                other->SnapToLastTile(0);
+                                targetX = other->m_lastTilePx.m_x;
+                                targetY = other->m_lastTilePx.m_y;
                             } else {
-                                targetX = x;
-                                targetY = y;
+                                targetX = m_arrivalTargetPx.m_x;
+                                targetY = m_arrivalTargetPx.m_y;
                             }
                             result =
                                 m_tileMgr
                                     ->ApplyTriggerB(m_tileOwnerHi, m_tileOwnerLo, targetX, targetY);
+                        } else {
+                            result = 0;
                         }
+                    } else {
+                        result = m_tileMgr->ApplyTriggerB(
+                            m_tileOwnerHi,
+                            m_tileOwnerLo,
+                            m_arrivalTargetPx.m_x,
+                            m_arrivalTargetPx.m_y
+                        );
                     }
                 }
 
-                if (result == 1) {
-                    SetEntrancePos(1, 1);
-                    return;
-                }
-                if (result == 0) {
+                if (result == 0 || result == 1) {
+                    if (result == 1) {
+                        SetEntrancePos(1, 1);
+                        return;
+                    }
                     m_arrivalPhase = 0;
                 }
             }

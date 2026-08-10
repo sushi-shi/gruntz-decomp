@@ -1968,7 +1968,7 @@ grunt	??0CGruntCellRec@@QAE@XZ	100.0000	100.0000	1	245e9b5fd7eb	0xf400	100.0000
 grunt	??1CGrunt@@UAE@XZ	100.0000	100.0000	4	9b85b982c89a	0xf2f0	100.0000
 grunt	??1CGruntCellRec@@QAE@XZ	100.0000	100.0000	1	e59cc6f4dade	0xf430	100.0000
 grunt	??_GCGrunt@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8a9711ebbd20	0xf2c0	100.0000
-grunt	?AdvanceMotion@CGrunt@@UAEXXZ	85.1300	85.1300	8	f15544a392ae	0x5f310	85.1300
+grunt	?AdvanceMotion@CGrunt@@UAEXXZ	91.0859	91.0859	9	ca31dedd1488	0x5f310	91.0859
 grunt	?Classify@MotionEntity@@QAEPAUGruntDirectionCell@@PAU1@D@Z	98.1910	98.1910	2	a5bf5c385f06	0x4a780	98.1910
 grunt	?ClearAllSprites@CGrunt@@QAEXXZ	100.0000	100.0000	6	76b923343844	0x4b240	100.0000
 grunt	?CommitArrival@CGrunt@@QAEHXZ	99.3269	99.3269	12	8e2e1dfa2727	0x4b130	99.3269
@@ -1989,10 +1989,10 @@ grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAU
 grunt	?PlaySound@CGrunt@@QAEXHUGruntDirectionCell@@@Z	66.9462	66.9462	7	017ee3c91882	0x4ac10	66.9745
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	11	57b475ef71e3	0x48400	100.0000
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	14	9b4d75bbfd29	0x4d060	100.0000
-grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	33.3651	33.3651	9	4f7aa93f7cd2	0x4b370	33.4511
+grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	10	25a7e362e734	0x4b370	33.4511
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	68.6599	68.6599	34	dad4ff82c2ce	0x4c170	68.8642
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66.7500
-grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9953	79.9953	9	c6fb6d4ec63e	0x5d210	79.9994
+grunt	?XferName@CGrunt@@UAEXPAD@Z	86.8280	86.8280	10	6d9025fbbfec	0x5d210	86.8280
 gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0	86.5443
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670	95.2908
 gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	85.8715	85.8715	27	c246cf3d7920	0xf0130	85.8715
@@ -2014,10 +2014,10 @@ gruntcombat	?EntranceTileOffset@CGrunt@@QAEPAHPAH@Z	97.8947	97.8947	4	e443526bbb
 gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	5	a061cb7ee370	0x5b6f0	100.0000
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	db4b142e76c3	0x5bcd0	100.0000
 gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	20	83a95519c385	0x57100	100.0000
-gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	65.7563	65.7563	7	9a8902328a1e	0x597a0	65.9431
+gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	70.3645	70.3645	8	c09fae816dfe	0x597a0	70.3645
 gruntcombat	?Lookup@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	4	ebf8d96b3719	0x5b7e0	100.0000
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.3929	90.3929	17	41990a925613	0x588f0	90.3929
-gruntcombat	?PathScan@CGrunt@@QAEHXZ	86.8499	86.8499	21	30968a2ca889	0x57db0	87.3647
+gruntcombat	?PathScan@CGrunt@@QAEHXZ	88.9860	88.9860	22	82eeeee9c1d9	0x57db0	88.9860
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	eef01da589dd	0x57d10	100.0000
 gruntcombat	?RegisterGruntActions@@YAXXZ	99.4210	99.4210	4	440600c465b6	0x5be30	99.4414
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	7	4884bd7f7b9e	0x57800	100.0000

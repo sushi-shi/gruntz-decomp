@@ -181,11 +181,14 @@ static char s_CombatTimeout[] = "CombatTimeout";
 
 // The knockback cell is the direction the ATTACKER lies in, i.e. the opposite of
 // the pixel delta the same site applies: pushed west => faces east.
+// newX/newY come FIRST so the cell copy is each arm's TAIL: retail's arms are not
+// cross-jumped (0x5a304, 0x5a33f, ... each end `mov [<lea 0x43c>+8],r; jmp 0x5a6d6`),
+// which only holds while the arm's last instructions are the per-arm cell stores.
 #define SETDIR(cell, nx, ny)                                                                       \
     do {                                                                                           \
-        this->m_entranceCell = (cell);                                                             \
-        newX = (nx);                                                                               \
         newY = (ny);                                                                               \
+        newX = (nx);                                                                               \
+        this->m_entranceCell = (cell);                                                             \
     } while (0)
 
 // @early-stop
@@ -895,60 +898,71 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
 
-                    if (s.GetCount() == 0) {
-                        grid->Clip(0);
-                        return 0;
-                    }
-                    void* elem = s.RemoveHead();
-                    if (elem != NULL) {
-                        FREELIST_PUSH(elem);
-                    }
-                    if (s.GetCount() == 0) {
-                        grid->Clip(0);
-                        return 0;
-                    }
-
-                    if (CoordCount() != 0) {
-                        POSITION pos = m_coordList.GetHeadPosition();
-                        if (pos != NULL) {
-                            do {
-                                void* d = static_cast<CGruntCoordList*>(coordz)->NextData(pos);
-                                if (d != NULL) {
-                                    g_coordPool.Push(d);
-                                }
-                            } while (pos != NULL);
+                    // Retail parks ONE `Clip(0); ~CPtrList; return 0` at 0x58686, AFTER the
+                    // success `mov eax,1` at 0x5867c, and both count gates (0x584a5, 0x584d3)
+                    // `je` forward into it.  Nested positive gates put it there.
+                    if (s.GetCount() != 0) {
+                        void* elem = s.RemoveHead();
+                        if (elem != NULL) {
+                            FREELIST_PUSH(elem);
                         }
-                        coordz->RemoveAll();
-                    }
-
-                    POSITION p = s.GetHeadPosition();
-                    if (p != NULL) {
-                        do {
-                            coordz->AddTail(s.GetNext(p));
-                        } while (p != NULL);
-                    }
-                    s.RemoveAll();
-
-                    if (grid->SearchEdge(cc, rr, tcol, trow, &s, 1, m_arrivalFlags, m_passableMask)
-                        != 0) {
                         if (s.GetCount() != 0) {
-                            void* e2 = s.RemoveHead();
-                            if (e2 != NULL) {
-                                FREELIST_PUSH(e2);
-                            }
-                            if (s.GetCount() != 0) {
-                                POSITION q = s.GetHeadPosition();
-                                if (q != NULL) {
+
+                            if (CoordCount() != 0) {
+                                POSITION pos = m_coordList.GetHeadPosition();
+                                if (pos != NULL) {
                                     do {
-                                        coordz->AddTail(s.GetNext(q));
-                                    } while (q != NULL);
+                                        void* d =
+                                            static_cast<CGruntCoordList*>(coordz)->NextData(pos);
+                                        if (d != NULL) {
+                                            g_coordPool.Push(d);
+                                        }
+                                    } while (pos != NULL);
                                 }
-                                s.RemoveAll();
+                                coordz->RemoveAll();
                             }
+
+                            POSITION p = s.GetHeadPosition();
+                            if (p != NULL) {
+                                do {
+                                    coordz->AddTail(s.GetNext(p));
+                                } while (p != NULL);
+                            }
+                            s.RemoveAll();
+
+                            if (grid->SearchEdge(
+                                    cc,
+                                    rr,
+                                    tcol,
+                                    trow,
+                                    &s,
+                                    1,
+                                    m_arrivalFlags,
+                                    m_passableMask
+                                )
+                                != 0) {
+                                if (s.GetCount() != 0) {
+                                    void* e2 = s.RemoveHead();
+                                    if (e2 != NULL) {
+                                        FREELIST_PUSH(e2);
+                                    }
+                                    if (s.GetCount() != 0) {
+                                        POSITION q = s.GetHeadPosition();
+                                        if (q != NULL) {
+                                            do {
+                                                coordz->AddTail(s.GetNext(q));
+                                            } while (q != NULL);
+                                        }
+                                        s.RemoveAll();
+                                    }
+                                }
+                            }
+                            SCAN_BOUNDS(grid);
+                            return 1;
                         }
                     }
-                    SCAN_BOUNDS(grid);
-                    return 1;
+                    grid->Clip(0);
+                    return 0;
                 }
             }
         }
@@ -1142,17 +1156,18 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 // @early-stop
-// Residue is block placement in the knockback chain: retail gives every arm its own
-// block ending in a forward `jmp` to the shared apply block, cl lets one arm fall
-// through and parks the rest after it jumping back in.  A `goto L_apply` cannot move
-// it - cl hoists a forward goto's target onto the block it already occupies.
-// The SETDIR set itself is VERIFIED against retail and needs no further chasing: the
-// 15 `lea <r>,[esi+0x43c]` sites at 0x5a31d..0x5a6b0 carry cells SW,W,NW,NE,E,S,S,N,
-// E,W,SE,NW,NE,S,N, which is this source's arm-to-cell mapping exactly (WINGZ NE->SW
-// (x+20,y-20), E->W, SE->NW, SW->NE, W->E, NW->SE, default->S; dx==0 S/N; |slope|>2
-// S/N; >0.5 SE/NW; <-0.5 NE/SW; else E/W). The one `store_offsets` RETAIL-ONLY row on
-// 0x43c/0x440/0x444 is the third s_gruntDirSouth site: all three exist here, cl merges
-// two of them, retail merges none.
+// The knockback chain now has retail's shape (skeleton blocks B0..B129 and the apply
+// block B161 align).  Residue is the STACK FRAME: retail is `sub esp,0xb0`, this is
+// `sub esp,0xac` - one 4-byte local short - so every parameter reference is displaced
+// by 4 (`[esp+0xdc]` here vs `[esp+0xe0]` retail) and the 41 `LeafCue* out` homes get a
+// different slot each (ours 0x10,14,18,1c,24,28,2c,34..b8; retail 0x10,14,1c,20,24,2c,
+// 30..b8).  The missing local is homed but never stored, like retail's newY at
+// [esp+0x18] (read only at 0x5a6d2, the undefined-direction path).  Secondary: at each
+// `out` site retail schedules the `out = 0` store AFTER both argument pushes
+// (`push ecx; push key; mov ecx,[edx+0x28]; mov [esp+..],ebx`), cl puts it first.
+// The SETDIR set itself is VERIFIED against retail: the 15 `lea <r>,[esi+0x43c]` sites
+// at 0x5a31d..0x5a6b0 carry cells SW,W,NW,NE,E,S,S,N,E,W,SE,NW,NE,S,N, which is this
+// source's arm-to-cell mapping exactly.
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1481,9 +1496,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
             SETDIR(s_gruntDirSouth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y - 0x20);
         } else if (srcPxY < this->m_object->m_screenY) {
             SETDIR(s_gruntDirNorth, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y + 0x20);
-        } else {
-            goto L_moveDone;
         }
+        // No else: retail falls into the move block with newX/newY still undefined
+        // (0x5a49f `jge 0x5a6d2`; 0x5a6d2 is a lone `mov ebx,[esp+0x18]` - newY's home
+        // slot - falling into the move block at 0x5a6d6).  A skip would branch past it.
     } else {
         float slope = static_cast<float>(dy) / dx;
         if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
@@ -1521,9 +1537,8 @@ i32 CGrunt::LoadGruntCombatAnimations(
                         this->m_lastTilePx.m_y - 0x20
                     );
                 }
-            } else {
-                goto L_moveDone;
             }
+            // No else - same fall-through as the dx==0 arm (0x5a62e `je 0x5a6d2`).
         } else {
             if (srcPxX > this->m_object->m_screenX) {
                 SETDIR(s_gruntDirEast, this->m_lastTilePx.m_x - 0x20, this->m_lastTilePx.m_y);
@@ -1616,11 +1631,12 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_lastTilePx.m_y = newY;
         this->m_prevAnimSetNode = this->m_objAux->m_actKey;
         this->m_objAux->m_actKey = ActFindId("O");
-        double ddx = static_cast<double>(newX) - this->m_object->m_screenX;
-        double ddy = static_cast<double>(newY) - this->m_object->m_screenY;
+        // Retail re-reads the member pair it has just written (0x5aa2e
+        // `fild [esi+0x17c]` / 0x5aa3c `fild [esi+0x180]`), not the locals.
+        double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
+        double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
-        u32 kb = g_buteMgr.GetDwordDef("Grunt", s_knockKey, 200);
-        m_moveSpeed = dist / static_cast<double>(kb);
+        m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_knockKey, 200));
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
@@ -1642,7 +1658,6 @@ i32 CGrunt::LoadGruntCombatAnimations(
         this->m_arrivalPending = 0;
     }
 
-L_moveDone:
     return 1;
 }
 
