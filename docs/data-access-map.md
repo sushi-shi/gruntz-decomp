@@ -246,33 +246,62 @@ The instance that motivated it is `?g_panTable@@3PAHA`, declared `i32[1]` at
 `0x253c48`. `DirectSoundMgr::SetPanByIndex` reads `g_panTable[-idx]` for idx
 0..100, i.e. it is a **backward cursor into `g_volumeTable`'s tail**
 (`g_volumeTable[100]` ends exactly at `0x253c48`, so `g_panTable[-k]` is
-`g_volumeTable[100-k]`). The `[1]` is byte-correct storage — both tables are
-`.bss` zero-fill and the read aliases `g_volumeTable` — so it is a pure semantic
-under-declaration, now carrying a source comment and this finding.
+`g_volumeTable[100-k]`). This one is genuinely byte-correct: the next retail
+symbol is `_g_ssLogEnabled` at `0x253c4c`, **4 bytes on**, so retail's own cl
+reserved a 4-byte `.bss` slot here — declared size *equals* the retail
+inter-symbol gap. It is the exceptional case, not the rule.
 
-**Why it went unseen for so long — three independent blinds, each worth stating
-because each hides a DIFFERENT variant of the class:**
+**A too-small `.bss` array is NOT generally byte-neutral.** When the array has
+its own forward storage, under-declaring its COUNT makes cl emit a smaller `.bss`
+COMDAT/COMMON and places every subsequent symbol earlier — the emitted COFF and
+the linked `.bss` both differ. It only *reads* neutral through two specific
+masks, and the fix in each case is different:
 
-1. **`.bss` zero-fill is byte-neutral.** objdiff, `image_diff` and the
-   band-completion gap census all compare *bytes*; a too-small array in `.bss` is
-   zero on both sides, so it scores 100 and carves no gap. Only a too-small array
-   in **initialized** `.data`/`.rdata` leaves a nonzero tail — and *those* the gap
-   census does catch (it is why the five band-gap finds were all initialized).
+1. **objdiff infers `.bss` size from the next symbol.** `obj/read.rs` sets a bss
+   symbol's size to the next symbol's offset, and the size-inference patch
+   compares sizes only when a side states one. So as long as the symbol SET and
+   ORDER agree, a wrong declared size is invisible *to objdiff* — but the linked
+   image is not. The oracle that does bite is **declared extent vs the retail
+   inter-symbol gap**: `g_panTable`'s is 4 == 4 (neutral); a genuine truncation
+   has gap ≫ declared, and `build_claims` already records that direction as
+   `declared-overlap`. The reverse (declared < gap with the tail ACCESSED) is a
+   real under-reservation.
 2. **An indexed access folds to offset 0.** `[reg*scale + base]` is recorded at
-   `target_rva = base`, `sym_off = 0`, `in_extent = 1`. The per-symbol overrun
-   check therefore sees the one access that PROVES array-ness as a legal read of
-   element [0]. Count evidence can only come from the *form* (it is indexed at
-   all), never from a reachable offset — which is why `undercount` keys off
-   `form='indexed'`, not off a past-the-end target.
-3. **Human review anchored on the neighbour.** `VolumeScale.h` already documented
-   the adjacent `g_volumeTable` overrun in detail and treated `0x253c48` only as
-   the *terminating address* of that loop — never asking what `g_panTable`'s own
-   `[1]` meant. A reviewed note on one datum is not a review of the next.
+   `target_rva = base`, `sym_off = 0`, `in_extent = 1`, so the per-symbol overrun
+   check sees the one access that PROVES array-ness as a legal read of element
+   [0]. Count evidence can therefore only come from the *form* (indexed at all),
+   which is why `undercount` keys off `form='indexed'`, not a past-the-end target.
+3. **The note on the neighbour was mistaken for a review of the datum.**
+   `VolumeScale.h` (an earlier *agent* pass, not a human review) documented the
+   adjacent `g_volumeTable` overrun in detail and treated `0x253c48` only as that
+   loop's *terminating address* — it never asked what `g_panTable`'s own `[1]`
+   meant. A reviewed note on one datum is not a review of the next.
 
-The complement still matters: `undercount` fires only for declared count ≤ 1 (the
-sole case indexed evidence can settle). A `float[2]`-for-`float[10]` in `.data`
-surfaces instead as an `unclaimed` contiguous run past the array; in `.bss` with
-count ≥ 2 it remains genuinely unobservable until the accessor is disassembled.
+## The `shortfall` class — the same defect with COUNT ≥ 2
+
+`undercount` fires only for declared count ≤ 1, the sole case an indexed access
+(which folds to offset 0) can settle. For an array declared with **2 or more**
+elements that retail walks one or more elements too far, the evidence is a
+**direct same-width access immediately past the declared end, by a function that
+also accesses the array body** — the same loop over-running. `shortfall` reports
+exactly that: `prev` is an array, the tail run starts at `prev.end`, the run's
+width equals the element size, the section matches, and the tail's accessing
+functions intersect the body's. Every one of those clauses is load-bearing —
+dropping the last two turns two correct arrays (`g_levelMsgStrings[8]`,
+`g_ratings[344]`, whose neighbours are a separate byte flag and a `<gap>`-only
+global) into phantom shortfalls.
+
+**Unlike `undercount`, a `shortfall` is never byte-neutral.** cl emits the array
+symbol one or more elements short, so the linked `.bss`/`.data`/`.rdata` and the
+emitted COFF both shift from that symbol onward. The tree is clean of them today
+(0 findings), which the `--selftest` `shrink` injection proves is a *clean* zero
+and not a blind one: it cuts an array a single function walks down to one element
+and requires the finding back.
+
+The residual blind spot, stated honestly: an array declared count ≥ 2 that is
+too small AND reached only through a scaled index (which folds to offset 0, so no
+past-the-end target is ever recorded) is caught by neither detector. It needs the
+accessor disassembled — the reason `data_access` keeps a per-function view.
 
 ## Evidence rules
 

@@ -29,7 +29,9 @@ DERIVED CATEGORIES (--build computes them; --findings reads them back)
   width          access width disagrees with the declared field -> wrong type
   stride         an index scale inside a claim disagrees with its element size
   undercount     a claim declared with ONE element is INDEXED -> under-declared
-                 count (the `float[2]`-for-`float[10]` class; byte-invisible in .bss)
+                 count (aliasing case; byte-neutral only when gap == declared)
+  shortfall      an array COUNT >= 2 whose own walker over-runs the declared end
+                 -> too-small forward storage; SHIFTS its section (not neutral)
   adjacent       two claims reached through ONE base register -> one object
 
 CALIBRATION
@@ -139,6 +141,8 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
 
     Every suppression below is a MEASURED false-positive class, named so the
     next reader can re-argue it; nothing is filtered because it was noisy."""
+    from gruntz.core.symbols import owner
+    db = ctx.symbols
     pe = ctx.pe
     starts = [c.rva for c in claims]
     by_rva = {c.rva: c for c in claims}
@@ -183,12 +187,49 @@ def derive_findings(ctx, types, accesses, cells, claims, quiet=True):
     for r in runs:
         kind = _run_kind(pe, ctx, r, in_idata)
         st[f"unclaimed-{kind}"] += 1
-        if kind != "data":
-            continue
         k = bisect.bisect_right(starts, r["start"]) - 1
         prev = claims[k] if k >= 0 else None
         widths = Counter(a.width for a in r["acc"] if a.width)
         wrote = any("w" in a.rw for a in r["acc"])
+
+        # SHORTFALL runs for EVERY section, before the data-only gate below: a
+        # too-small array in `.rdata`/`.bss` shifts its own section just as one in
+        # `.data` does. The run continues an ARRAY claim - same element width,
+        # starting exactly at its end - which is a too-small array COUNT with its
+        # own forward storage (the `float[2]`-for-`float[10]` in the direction the
+        # `undercount` index test cannot reach). Unlike `undercount` (byte-neutral
+        # only when the storage aliases, as g_panTable does) this WILL shift every
+        # symbol after it: cl emits a smaller symbol and the linked image / emitted
+        # COFF both diverge. A separate neighbour global is excluded by the
+        # element-width + array-type + exact-adjacency + accessor-overlap quad.
+        if prev is not None and r["start"] == prev.end:
+            pdims, pbase = types.dims(prev.type) if prev.type else ([], "")
+            pelem = types.base_size(pbase) if prev.type else None
+            run_w = max(widths) if widths else None
+            # The tail must be touched by a function that ALSO accesses the array
+            # body - the same loop running one element too far. Without this a
+            # separate same-width global right after the array (a byte flag,
+            # another unit's global) reads as a phantom shortfall. Both first-draft
+            # hits (g_levelMsgStrings[8], g_ratings[344]) were exactly that.
+            prev_fns = {owner(a.insn_rva, db.fstarts, db.fsize)
+                        for a in per.get(prev.rva, ())}
+            tail_fns = {owner(a.insn_rva, db.fstarts, db.fsize) for a in r["acc"]}
+            if (pdims and pelem is not None and run_w == pelem
+                    and pe.sec_name(r["start"]) == prev.section
+                    and (prev_fns & tail_fns - {None})):
+                extra = (r["end"] - r["start"] + pelem - 1) // pelem
+                rows.append(("shortfall", "high" if wrote else "med",
+                             prev.rva, prev.name, r["start"],
+                             f"declared {prev.type} but retail accesses ~{extra} "
+                             f"more element(s) of the SAME {pelem} B width "
+                             f"immediately past its end - the COUNT is too small "
+                             f"and this SHIFTS {prev.section} (not byte-neutral)",
+                             f"tail={r['end'] - r['start']} B same-width sites, "
+                             f"declared_end=0x{prev.end:x}"))
+                st["shortfall"] += 1
+
+        if kind != "data":
+            continue
         rows.append(("unclaimed", "high" if wrote else "med",
                      prev.rva if prev else 0, prev.name if prev else "",
                      r["start"],
@@ -947,6 +988,42 @@ def do_selftest(args):
             clone(c, rva=c.rva + 4, name=c.name + "$SPLIT",
                   extent=c.extent - 4, extent_src="INJECTED",
                   fields=types.flatten("i32"))]))
+    # shrink: an ARRAY a SINGLE function walks, cut to its first element, so the
+    # same function's own tail accesses become a shortfall (a too-small COUNT with
+    # forward storage - NOT byte-neutral, unlike the aliasing g_panTable case).
+    from gruntz.core.symbols import owner as _owner
+    db = ctx.symbols
+    arr_fn = defaultdict(lambda: defaultdict(set))
+    for a in accesses:
+        if a.form not in TOUCH or not a.width:
+            continue
+        k = bisect.bisect_right(starts, a.target_rva) - 1
+        if k < 0 or a.target_rva >= base[k].end:
+            continue
+        c = base[k]
+        dims, bs = types.dims(c.type) if c.type else ([], "")
+        el = types.base_size(bs) if c.type else None
+        if not dims or el != a.width:
+            continue
+        f = _owner(a.insn_rva, db.fstarts, db.fsize)
+        if f:
+            arr_fn[c.rva][f].add(a.target_rva - c.rva)
+    shrink = None
+    for c in base:
+        el = types.base_size(types.dims(c.type)[1]) if c.type else None
+        if not el:
+            continue
+        for offs in arr_fn.get(c.rva, {}).values():
+            if 0 in offs and max(offs) >= el and max(offs) + el <= c.extent:
+                shrink = c
+                break
+        if shrink:
+            break
+    if shrink:
+        plans.append(("shrink", "shortfall", shrink,
+                      lambda c: [clone(c, extent=types.base_size(
+                          types.dims(c.type)[1]), extent_src="INJECTED")]))
+
     dead = _dead_space(ctx.pe, base, accesses, cells)
     if dead is not None:
         plans.append(("phantom", "unaccessed", None, None))

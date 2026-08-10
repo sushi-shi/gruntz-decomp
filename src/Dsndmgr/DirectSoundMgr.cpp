@@ -45,11 +45,14 @@ i32 g_volumeTable[VOLUME_PCT_MAX];
 // g_volumeTable[100 - idx] - the pan attenuation reuses the volume curve read
 // from the top down. The `[1]` is the anchor slot only (it aliases the
 // documented g_volumeTable[100] overrun, see VolumeScale.h); the storage read
-// is g_volumeTable's. Byte-correct as-is - both tables are .bss zero-fill, so a
-// too-small COUNT here is invisible to every byte comparison. Flagged as the
-// `undercount` class by gruntz.audit.data_access_map (the index proves length
-// >= 2 the extent does not carry); kept `[1]` because widening it to real
-// storage would double-reserve g_volumeTable's aliased slots.
+// is g_volumeTable's. `[1]` is the CORRECT reserved size, PROVEN not assumed:
+// the next retail symbol is _g_ssLogEnabled at 0x253c4c, exactly 4 bytes on, so
+// retail's own cl emitted a 4-byte .bss slot here too. Widening it would
+// double-reserve g_volumeTable's aliased slots AND overlap _g_ssLogEnabled.
+// This is the ONE undercount case that is genuinely byte-neutral (a too-small
+// .bss array with its OWN forward storage is NOT neutral - it shifts every
+// symbol after it). Flagged as the `undercount` class by
+// gruntz.audit.data_access_map, kept as-is with this alias documented.
 DATA(0x00253c48)
 i32 g_panTable[1];
 
