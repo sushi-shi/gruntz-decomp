@@ -275,7 +275,9 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
+    DATA(0x002bf390)
     static CObArray killQueue;
+    DATA(0x002bf3a8)
     static CObArray sortQueue;
     killQueue.SetSize(0, -1);
     sortQueue.SetSize(0, -1);
@@ -593,17 +595,6 @@ DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
 DATA(0x0020bdc4)
 static char s_dbgNoCaps[] = "???";
-
-DATA(0x002bf388)
-u8 g_val_2bf388;
-DATA(0x002bf394)
-i32 g_val_2bf394;
-DATA(0x002bf398)
-i32 g_val_2bf398;
-DATA(0x002bf3ac)
-i32 g_val_2bf3ac;
-DATA(0x002bf3b0)
-i32 g_val_2bf3b0;
 
 // @early-stop
 RVA(0x0015a210, 0x432)

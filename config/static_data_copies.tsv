@@ -769,6 +769,7 @@
 0x2467b8	?s_gruntDirCenter_2467b8@@3UGruntDirectionCell@@A	multi	0xc	data
 0x2467c8	?s_gruntDirSouthWest_2467c8@@3UGruntDirectionCell@@A	multi	0xc	data
 # CButeMgr getter-local statics (guards + static return slots), ButeMgr.cpp
+0x2bf388	_?$S28@?1??TickKillCues@CDDrawChildGroup@@UAEXH@Z@4EA$S29657	wwdobjmgr	0x1	data
 0x2bf67c	_?$S49@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4EA$S20347	butemgr	0x1	data
 0x2bf680	_?$S53@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4EA$S20507	butemgr	0x1	data
 0x2bf684	_?$S51@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4EA$S20427	butemgr	0x1	data
