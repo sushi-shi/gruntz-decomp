@@ -18,6 +18,5 @@ union BlowfishBlock {
 void Blowfish_encipher(u32* xl, u32* xr);
 void Blowfish_decipher(u32* xl, u32* xr);
 i16 InitializeBlowfish(const char* key, i16 keybytes);
-void __stdcall Blowfish_InitKey(const char* key);
 
 #endif // GRUNTZ_UTILS_BLOWFISH_H

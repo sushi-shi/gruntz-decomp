@@ -41,7 +41,11 @@ This reports what that carve produced and re-proves it:
                                       helper, repeated across every TU that uses it.
                  `--census --top N` histograms `ours -> retail` over the differing
                  funclets, which is what turns 147 scattered rows into three
-                 families of one wrong symbol each.
+                 families of one wrong symbol each. It then does the same for the
+                 `frame-offset` rows, printing the `retail - ours` displacement
+                 histogram per group: a group with ONE delta is a pure frame-SIZE
+                 difference (find the surplus or missing local and the whole group
+                 lands at once), a group with several needs its locals re-ordered.
 
 Usage:
   python -m gruntz.audit.eh_band              # the report
@@ -437,6 +441,35 @@ def main() -> int:
                 print(f"[eh-band]   {count:4d}  {mine}")
                 print(f"[eh-band]         -> {retail}")
                 print(f"[eh-band]            e.g. {examples[(mine, retail)]}")
+        # A `frame-offset` group destroys the right things in the right order, so
+        # every one of its funclets is ONE frame-layout fix away. The `retail - ours`
+        # displacement histogram says how far, and a group with a single delta is a
+        # pure frame-SIZE difference: find the surplus/missing local and the whole
+        # group lands at once. A group with several deltas needs the individual
+        # locals re-ordered, not just re-sized.
+        shifts = []
+        for verdict, group, ours, theirs in shapes:
+            if verdict != "frame-offset":
+                continue
+            deltas = Counter()
+            for mine, retail in zip(ours, theirs):
+                for a, b in zip(mine[1], retail[1]):
+                    if a != b:
+                        deltas[b - a] += 1
+            if deltas:
+                shifts.append((sum(deltas.values()), group, deltas))
+        if shifts:
+            shifts.sort(key=lambda row: -row[0])
+            print("[eh-band]            frame-offset groups (right teardown, wrong "
+                  "local layout), retail - ours:")
+            for count, group, deltas in shifts[:args.top]:
+                if len(deltas) == 1:
+                    how = f"UNIFORM {list(deltas)[0]:+#x} - one frame-SIZE fix"
+                else:
+                    how = "mixed " + " ".join(
+                        f"{delta:+#x}x{n}" for delta, n in deltas.most_common())
+                print(f"[eh-band]   {count:4d}  {group.unit}:{group.owner}")
+                print(f"[eh-band]         {how}")
 
     # The build's gate runner echoes only the LAST line, so the verdict goes last.
     if failures:

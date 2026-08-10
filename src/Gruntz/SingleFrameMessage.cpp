@@ -38,11 +38,13 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_wwdObject->m_id);
-    RECT bounds;
-    RECT r;
-    CopyRect(&r, g_gameReg->GetRect(&bounds));
-    m_object->m_screenX = r.left + (r.right - r.left) / 2;
-    m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
+    {
+        RECT r;
+        RECT bounds;
+        CopyRect(&r, g_gameReg->GetRect(&bounds));
+        m_object->m_screenX = r.left + (r.right - r.left) / 2;
+        m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
+    }
 }
 
 // @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across

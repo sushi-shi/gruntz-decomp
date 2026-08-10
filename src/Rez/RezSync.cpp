@@ -522,7 +522,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             char* esz = stream->BeginParse();
             i32 eszLen = stream->m_length;
             istrstream* rdr = new istrstream(esz, eszLen);
-            Blowfish_InitKey("1212C");
+            g_buteMgr.m_crypt.InitKey("1212C");
             char* decoded = new char[eszLen];
             ostrstream* snk = new ostrstream(decoded, eszLen, 2);
             g_buteMgr.m_crypt.Decode(rdr, snk);

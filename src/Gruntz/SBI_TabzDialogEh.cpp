@@ -34,16 +34,20 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     CDDrawSurfaceMgr* w = m_world;
-    const LevelCoordRect& lr = w->m_level->m_planeCtx;
-    RECT src;
-    src.left = lr.left;
-    src.top = lr.top;
-    src.right = lr.right;
-    src.bottom = lr.bottom;
-    RECT dst;
-    CopyRect(&dst, &src);
-    i32 cx = dst.left + (dst.right - dst.left) / 2;
-    i32 cy = dst.top + (dst.bottom - dst.top) / 2;
+    i32 cx;
+    i32 cy;
+    {
+        const LevelCoordRect& lr = w->m_level->m_planeCtx;
+        RECT src;
+        src.left = lr.left;
+        src.top = lr.top;
+        src.right = lr.right;
+        src.bottom = lr.bottom;
+        RECT dst;
+        CopyRect(&dst, &src);
+        cx = dst.left + (dst.right - dst.left) / 2;
+        cy = dst.top + (dst.bottom - dst.top) / 2;
+    }
 
     if (m_toggleHandle != 0) {
 

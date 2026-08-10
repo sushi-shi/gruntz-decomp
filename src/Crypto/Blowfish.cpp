@@ -25,7 +25,7 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
       + g_bfS[3][(R) & 0xff]))
 
 RVA(0x0016f6c0, 0x12)
-void __stdcall Blowfish_InitKey(const char* key) {
+void CButeTail::InitKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
 
