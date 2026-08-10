@@ -36,6 +36,15 @@
 #include <string.h>
 
 // @early-stop
+// Residue is the second copy of the powered-up reset tail: retail emits the
+// stamina>=FULL arm (0xf0238, members RE-read because FindGridNeighbor sits in
+// front of it) and the stamina<FULL arm (0xf0288, the cached ecx/eax) as two
+// full `m_entranceActive/m_combatActive/m_neighborValid/m_poweredUp = 0` blocks
+// with their own epilogues; cl proves the second arm's two guards redundant
+// against the enclosing `poweredUp != 0` gate, drops them and cross-jumps what
+// is left onto the first block.  Reading the two members into locals at the top
+// of the gate (which is what retail's `mov ecx,[esi+0x220]` / `mov eax,
+// [esi+0x21c]` are) recovers most of it, but not the fold.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -57,29 +66,44 @@ i32 CGrunt::UpdateArrival() {
         }
     }
 
-    if (this->m_poweredUp != 0) {
+    i32 poweredUp = this->m_poweredUp;
+    if (poweredUp != 0) {
         // The gate pair is m_neighborValid (+0x21c) then m_combatActive (+0x218) -
         // retail tests 0x21c and clears 0x21c (0xf01f8 / 0xf02c8). The two names were
         // swapped here; the rest of the tree agrees with Grunt.h (store_offsets shows
         // no other 0x218/0x21c divergence).
-        if (this->m_neighborValid != 0) {
-            this->m_neighborValid = 0;
-            return 1;
-        }
-        if (this->m_combatActive != 0) {
-            return 1;
-        }
-        if (this->m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
+        i32 neighborValid = this->m_neighborValid;
+        if (neighborValid == 0) {
+            if (this->m_combatActive != 0) {
                 return 1;
             }
-            if (atTarget && g == NULL) {
+            if (this->m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && g == NULL) {
+                    return 1;
+                }
+                if (this->m_poweredUp == 0) {
+                    return 1;
+                }
+                if (this->m_neighborValid != 0) {
+                    return 1;
+                }
+                this->m_entranceActive = 0;
+                this->m_combatActive = 0;
+                this->m_neighborValid = 0;
+                this->m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
-            if (this->m_poweredUp == 0) {
+            if (atTarget) {
                 return 1;
             }
-            if (this->m_neighborValid != 0) {
+            if (poweredUp == 0) {
+                return 1;
+            }
+            if (neighborValid != 0) {
                 return 1;
             }
             this->m_entranceActive = 0;
@@ -89,27 +113,14 @@ i32 CGrunt::UpdateArrival() {
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (atTarget) {
-            return 1;
-        }
-        if (this->m_poweredUp == 0) {
-            return 1;
-        }
-        if (this->m_neighborValid != 0) {
-            return 1;
-        }
-        this->m_entranceActive = 0;
-        this->m_combatActive = 0;
         this->m_neighborValid = 0;
-        this->m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
     switch (this->m_defenderState) {
         case AISTATE_SEEK:
             if (g != NULL) {
-                if (this->m_stamina > 99) {
+                if (this->m_stamina >= STAMINA_FULL) {
                     i32 x = g->m_object->m_screenX;
                     if (x == g->m_lastTilePx.m_x && g->m_object->m_screenY == g->m_lastTilePx.m_y
                         && RectContains(x, g->m_object->m_screenY) != 0) {
@@ -135,13 +146,14 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalCell.m_x = g->m_tileOwnerHi;
                             this->m_arrivalCell.m_y = g->m_tileOwnerLo;
                             this->m_defenderState = AISTATE_CHASE;
+                            CGruntzMgr* reg = g_gameReg;
                             i32 r = CGameLevel::PointInBounds(
-                                &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                &reg->m_world->m_level->m_mainPlane->m_viewRect,
                                 this->m_object->m_screenX,
                                 this->m_object->m_screenY
                             );
                             if (r != 0) {
-                                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                                reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -214,7 +226,7 @@ i32 CGrunt::UpdateArrival() {
                         0,
                         0x20
                     );
-                    if (this->m_poweredUp == 0 && this->m_stamina > 99
+                    if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && slot->m_object->m_screenX == slot->m_lastTilePx.m_x
                         && slot->m_object->m_screenY == slot->m_lastTilePx.m_y) {
@@ -262,11 +274,12 @@ i32 CGrunt::UpdateArrival() {
                     // Retail expands the bounds test here (0xf03f8) and CALLS it
                     // from the AISTATE_SEEK arm above (0xf06a0), so this arm takes
                     // the inline PointInRect sibling.
-                    const RECT& view = g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    CGruntzMgr* reg = g_gameReg;
+                    const RECT& view = reg->m_world->m_level->m_mainPlane->m_viewRect;
                     i32 px = m_object->m_screenX;
                     i32 py = m_object->m_screenY;
                     if (CGameLevel::PointInRect(&view, px, py)) {
-                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                        reg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
                     }
                 }
                 break;

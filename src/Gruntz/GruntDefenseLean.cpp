@@ -36,6 +36,15 @@
 #include <string.h>
 
 // @early-stop
+// The two `goto c2_occcheck` / `goto c2_miss` guard chains were the bulk of the
+// residue - cl HOISTS a forward goto's target onto the block right after the last
+// goto, so both landed inline where retail sinks them past the success return
+// (docs/patterns/goto-continuation-label-is-not-a-shared-exit.md).  Positive gates
+// took the arm from 63.44 to 74.71.  What is left is the fold family: retail keeps
+// the SECOND `occ == NULL` test at the c2_occcheck entry (0xf8433) and the CHASE
+// arm's leading one, which cl proves dead against the first null check, and it
+// re-loads occ->m_lastTilePx in the CommitNeighbor blocks (22i/12i against our
+// 16i/10i) where cl CSEs them with the compares above.
 RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
@@ -55,47 +64,38 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if (occ == NULL) {
                 goto seek;
             }
-            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) == 0) {
-                goto c2_occcheck;
-            }
-            if (occ->m_entranceCommitted == 0) {
-                goto c2_occcheck;
-            }
-            if (m_combatActive != 0) {
+            if (GruntInRadius(occ->m_tileOwnerHi, occ->m_tileOwnerLo) != 0
+                && occ->m_entranceCommitted != 0) {
+                if (m_combatActive != 0) {
+                    return 1;
+                }
+                if (m_stamina < STAMINA_FULL) {
+                    return 1;
+                }
+                if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                    && occ->m_object->m_screenX == occ->m_lastTilePx.m_x
+                    && occ->m_object->m_screenY == occ->m_lastTilePx.m_y) {
+                    CommitNeighbor(
+                        occ->m_tileOwnerHi,
+                        occ->m_tileOwnerLo,
+                        occ->m_lastTilePx.m_x,
+                        occ->m_lastTilePx.m_y
+                    );
+                    return 1;
+                }
+                {
+                    CWwdGameObjectA* h = m_object;
+                    i32 vx = h->m_screenX;
+                    i32 vy = h->m_screenY;
+                    const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    if (CGameLevel::PointInRect(rect, vx, vy)) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
+                    }
+                }
+                m_defenderState = AISTATE_CHASE;
+                m_dwell = DWELL_REPATH_MS;
                 return 1;
             }
-            if (m_stamina < STAMINA_FULL) {
-                return 1;
-            }
-            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
-                goto c2_miss;
-            }
-            if (occ->m_object->m_screenX != occ->m_lastTilePx.m_x) {
-                goto c2_miss;
-            }
-            if (occ->m_object->m_screenY != occ->m_lastTilePx.m_y) {
-                goto c2_miss;
-            }
-            CommitNeighbor(
-                occ->m_tileOwnerHi,
-                occ->m_tileOwnerLo,
-                occ->m_lastTilePx.m_x,
-                occ->m_lastTilePx.m_y
-            );
-            return 1;
-        c2_miss: {
-            CWwdGameObjectA* h = m_object;
-            i32 vx = h->m_screenX;
-            i32 vy = h->m_screenY;
-            const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-            if (CGameLevel::PointInRect(rect, vx, vy)) {
-                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x366, -1, 0, -1, -1);
-            }
-        }
-            m_defenderState = AISTATE_CHASE;
-            m_dwell = DWELL_REPATH_MS;
-            return 1;
-        c2_occcheck:
             if (occ == NULL) {
                 goto seek;
             }

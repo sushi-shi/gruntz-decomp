@@ -502,19 +502,22 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 }
 
 // @early-stop
-// The whole body is present (base 3284 B vs retail 3356 B) but the register
-// budget is spent the other way round: retail spills `result` and `this` to
-// the frame and keeps x/y in ebx/ebp AND moveX/moveY in esi/edi, so every
-// direction arm writes both (`mov esi,ebx / lea edi,[ebp-0x20]`) plus three
-// inline voice stores - 10 instructions for a cardinal arm, 11 for a diagonal.
-// cl instead keeps x or y only in the frame, re-loads it inside the arm and
-// adjusts one register in place, then cross-jumps the last voice store out;
-// 8 and 9.  Its cross-jumper also keeps the LATER of the two identical N/E/S/W
-// bodies (the outer switch's arrow arms) where retail keeps the earlier one
-// inside ARROW_CURRENT, so our four cardinals land after the diagonals -
-// moving the arrow cases ahead of ARROW_CURRENT in source does not flip that
-// (56.79 -> 56.93) and is not what retail's arm layout shows.
-// 400 AST variants moved none of it.
+// The whole body is present but the register budget is spent the other way
+// round: retail spills `result` and `this` to the frame and keeps x/y in
+// ebx/ebp AND moveX/moveY in esi/edi.  The ARROW arms are the byte proof that
+// the two pairs are distinct there - retail's DIR_NORTH arm is
+// `add ebp,0xffffffe0 / mov esi,ebx / mov edi,ebp` (x,y adjusted IN PLACE and
+// then copied), which is why the arms below adjust x/y rather than spelling
+// `moveX = x + 0x20`.  The TOY arms keep the other shape - retail spells them
+// `lea esi,[ebx-0x20] / lea edi,[ebp-0x20]`, x/y untouched.  cl still folds our
+// `y -= 0x20; moveY = y;` back into one `lea` because y is dead on that path,
+// so the arms stay a instruction short of retail's.
+// Hoisting the pair copy out of the arms to a single `moveX = x; moveY = y;`
+// after the switch is much worse; so is dropping the moveX/moveY initialisers
+// and giving each switch an explicit default.  400 AST variants moved none of
+// it.  The `0x2000` mask rows in the immediates sieve are NOT a defect: cl
+// spells the same test `test ah,0x20` where retail materialises 0x2000 in a
+// register.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -536,68 +539,84 @@ i32 CGrunt::StepCompassMove() {
             case TILEKIND_ARROW_CURRENT:
                 switch (m_entranceCell.direction) {
                     case DIR_NORTH:
+                        y -= 0x20;
                         moveX = x;
-                        moveY = y - 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirNorth;
                         break;
                     case DIR_EAST:
-                        moveX = x + 0x20;
+                        x += 0x20;
+                        moveX = x;
                         moveY = y;
                         voice = g_gruntMoveDirEast;
                         break;
                     case DIR_SOUTH:
+                        y += 0x20;
                         moveX = x;
-                        moveY = y + 0x20;
+                        moveY = y;
                         voice = g_gruntMoveDirSouth;
                         break;
                     case DIR_WEST:
-                        moveX = x - 0x20;
+                        x -= 0x20;
+                        moveX = x;
                         moveY = y;
                         voice = g_gruntMoveDirWest;
                         break;
                     case DIR_NORTHEAST:
-                        moveX = x + 0x20;
-                        moveY = y - 0x20;
+                        x += 0x20;
+                        y -= 0x20;
+                        moveX = x;
+                        moveY = y;
                         voice = g_gruntMoveDirNorthEast;
                         break;
                     case DIR_SOUTHEAST:
-                        moveX = x + 0x20;
-                        moveY = y + 0x20;
+                        x += 0x20;
+                        y += 0x20;
+                        moveX = x;
+                        moveY = y;
                         voice = g_gruntMoveDirSouthEast;
                         break;
                     case DIR_SOUTHWEST:
-                        moveX = x - 0x20;
-                        moveY = y + 0x20;
+                        x -= 0x20;
+                        y += 0x20;
+                        moveX = x;
+                        moveY = y;
                         voice = g_gruntMoveDirSouthWest;
                         break;
                     case DIR_NORTHWEST:
-                        moveX = x - 0x20;
-                        moveY = y - 0x20;
+                        x -= 0x20;
+                        y -= 0x20;
+                        moveX = x;
+                        moveY = y;
                         voice = g_gruntMoveDirNorthWest;
                         break;
                 }
                 break;
             case TILEKIND_ARROW_UP_A:
             case TILEKIND_ARROW_UP_B:
+                y -= 0x20;
                 moveX = x;
-                moveY = y - 0x20;
+                moveY = y;
                 voice = g_gruntMoveDirNorth;
                 break;
             case TILEKIND_ARROW_RIGHT_A:
             case TILEKIND_ARROW_RIGHT_B:
-                moveX = x + 0x20;
+                x += 0x20;
+                moveX = x;
                 moveY = y;
                 voice = g_gruntMoveDirEast;
                 break;
             case TILEKIND_ARROW_DOWN_A:
             case TILEKIND_ARROW_DOWN_B:
+                y += 0x20;
                 moveX = x;
-                moveY = y + 0x20;
+                moveY = y;
                 voice = g_gruntMoveDirSouth;
                 break;
             case TILEKIND_ARROW_LEFT_A:
             case TILEKIND_ARROW_LEFT_B:
-                moveX = x - 0x20;
+                x -= 0x20;
+                moveX = x;
                 moveY = y;
                 voice = g_gruntMoveDirWest;
                 break;

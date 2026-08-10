@@ -71,18 +71,31 @@ i32 CGrunt::StepDiggerBehavior() {
     m_defenderPx.m_y = m_lastTilePx.m_y;
 
     if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
-            m_neighborValid = 0;
-            return 1;
-        }
-        if (m_combatActive != 0) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
+        if (m_neighborValid == 0) {
+            if (m_combatActive != 0) {
                 return 1;
             }
-            if (atTarget && g == NULL) {
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && g == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+                if (m_neighborValid != 0) {
+                    return 1;
+                }
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
+                return 1;
+            }
+            if (atTarget) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -98,20 +111,7 @@ i32 CGrunt::StepDiggerBehavior() {
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (atTarget) {
-            return 1;
-        }
-        if (m_poweredUp == 0) {
-            return 1;
-        }
-        if (m_neighborValid != 0) {
-            return 1;
-        }
-        m_entranceActive = 0;
-        m_combatActive = 0;
         m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 

@@ -1992,12 +1992,12 @@ grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66
 grunt	?XferName@CGrunt@@UAEXPAD@Z	79.9953	79.9953	9	c6fb6d4ec63e	0x5d210	79.9994
 gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0	86.5443
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670	95.2908
-gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	62.4437	62.4437	26	2e6103e33b8c	0xf0130	70.4190
+gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	85.8715	85.8715	27	c246cf3d7920	0xf0130	85.8715
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	90.6763	90.6763	9	f87b268e6274	0x60150	90.6963
 gruntbehaviorleaf	?LoadGruntDecayConfig2@CGrunt@@QAEHXZ	81.3049	81.3049	6	42d287426c04	0x61570	81.3658
 gruntbehaviorleaf	?LoadGruntDecayConfig@CGrunt@@QAEHXZ	90.8344	90.8344	5	3e0e258b98e3	0x612a0	90.8344
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	59.0364	59.0364	9	4e8c0fd8e413	0xecc90	59.0591
-gruntchargestep	?ChargeStep@CGrunt@@QAEHXZ	78.7333	78.7333	5	54f00ed434b4	0xef6b0	78.7333
+gruntchargestep	?ChargeStep@CGrunt@@QAEHXZ	82.0323	82.0323	6	bb52f0f3caae	0xef6b0	82.0323
 gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	6	ec4eb4bdafdb	0x5caa0	100.0000
 gruntcombat	?ArrivalRecycle@CGrunt@@QAEHHHHHH@Z	94.8034	94.8034	16	f0d65df95aa2	0x59230	94.8461
 gruntcombat	?BeginAttack@CGrunt@@QAEHHH@Z	97.7604	97.7604	14	9cbc1df4ebaa	0x5b570	97.8125
@@ -2032,9 +2032,9 @@ gruntcreationpoint	?SerializeMove@CGruntCreationPoint@@UAEHPAVCFileMemBase@@W4Se
 gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	82e6a13b8a6d	0x56eb0	100.0000
 gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	6aa69d4e50cb	0x56da0	100.0000
 gruntdefensealt	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	78.9546	78.9546	17	54fe3e0e16a8	0xf1c70	78.9546
-gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	63.4379	63.4379	21	358dd4057c36	0xf8240	63.4718
+gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	74.7088	74.7088	22	f87e5880e259	0xf8240	74.7088
 gruntdefensestep	?StepArrivalDefense@CGrunt@@QAEHXZ	83.0854	83.0854	21	9a9fa9633194	0xf2b20	83.0854
-gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	60.3894	60.3894	8	d670c7d63dd3	0xf36a0	60.3894
+gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	62.6123	62.6123	9	61571d96cd8a	0xf36a0	62.6123
 gruntentrancearrival	?Apply@CWapX@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	2	42b4c6794352	0x6b2e0	100.0000
 gruntentrancearrival	?AtChecked@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	ea69a14a5515	0x6b270	100.0000
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	20	215b427b5812	0x641b0	100.0000
@@ -2164,7 +2164,7 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	11	a9490b6291
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	91822eacedeb	0x53b80	100.0000
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	6	49bf4fc7f565	0x52ed0	100.0000
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	6	bf3f90a0203c	0x517b0	100.0000
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	56.6221	56.6221	21	ffdf07476c4c	0x51c00	57.4502
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	56.6221	56.6221	22	649c22d94a65	0x51c00	57.4502
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	92.9641	92.9641	7	49f06019c980	0x52fb0	92.9888
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.5742	81.5742	8	82302a150093	0x32ce0	83.2773
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	97.8000	97.8000	9	67cbce4f0644	0x7f350	97.8000

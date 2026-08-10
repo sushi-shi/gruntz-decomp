@@ -946,19 +946,22 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 }
 
 // @early-stop
-// Residue is a CROSS-JUMP, observed: cl merges the `if (CoordCount()) pop head`
-// at dropHead with the byte-identical one at reProbe, so dropHead ends `jcc/jmp`
-// into the reProbe copy and the whole pathGate chain is dragged behind the nudge
-// region. Retail keeps both copies because it scheduled them differently
+// The dominant residue is a REGION ROTATION, not the cross-jump: cl emits
+// prologue / nudge / bresenham / reProbe / pathGate where retail emits
+// prologue / pathGate / nudge / bresenham / reProbe, so every branch
+// displacement in both halves is re-encoded.  The cause is the two backward
+// `goto pathGate` sites - see
+// docs/patterns/backward-goto-sinks-its-target-region.md, which records the
+// probe (both gotos removed => retail's order, 33.37 -> 66.15) and the three
+// restructurings that do NOT move it.
+// The second residue is the cross-jump the rotation drags with it: cl merges
+// the `if (CoordCount()) pop head` at dropHead with the byte-identical one at
+// reProbe.  Retail keeps both copies because it scheduled them differently
 // (0x4b4e3 `mov edx,ds:0x645544; sub eax,ecx` vs 0x4bde4 `sub eax,ecx;
-// mov ecx,ds:0x645544`) - different encoded bytes, so its cross-jumper declined.
-// Same source at both sites here, so a re-spelling cannot separate them; it needs
-// a different SHAPE. Branch/block topology is otherwise reconstructed: 177/173
-// blocks, 131/130 branches, 1/1 ret.
-// The callee SET is complete - the `insn_seq --multiset` rows (RemoveHead 3/4,
-// g_coordPool 18/21) are the same cross-jump: all four `g_coordPool.NodeOf(
-// list.RemoveHead())` groups are present in source and cl merges two of them.
-// g_gameReg 10/7 is the mirror - cl re-loads the global where retail holds it.
+// mov ecx,ds:0x645544`), so its cross-jumper declined.  The callee SET is
+// complete - the `insn_seq --multiset` rows (RemoveHead 3/4, g_coordPool 18/21)
+// are that same merge, and g_gameReg 10/7 is its mirror (cl re-loads the global
+// where retail holds it in a register).
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
