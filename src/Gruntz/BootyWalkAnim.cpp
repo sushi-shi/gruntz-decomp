@@ -52,6 +52,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         if (m_visSprites[i] == NULL) {
             return 0;
         }
+        DATA(0x0022af0c)
         static CString buf;
         const char* prefix =
             (i < (g_gameReg->m_scoreHud->m_count - 1) % 4 + 1) ? "GAME_INGAMEICONZ_" : "BOOTY_DIM";

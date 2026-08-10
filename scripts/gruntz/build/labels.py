@@ -1128,8 +1128,15 @@ def msvc5_data_symbol(candidate, obj_syms):
             return hits[0]
     m = LOCAL_STATIC_SCOPE_RE.match(candidate)
     if m:
+        # MSVC encodes the scope ordinal in its usual number form: 1..10 as the
+        # single digits `0`..`9`, anything larger as hex digits spelled A..P and
+        # terminated by `@`. A static nested deep in a function therefore reads
+        # `?BD@??Fn@@...` (0x13 = 19), not `?19??` - wildcarding only the decimal
+        # form silently missed every such datum (measured: BuildBootyWalkingGruntz'
+        # `buf` at ?BD@, NotifyFortUnderAttack's `s_alert` at ?BA@).
         local = re.compile(
-            r"^_?%s\?[0-9]+%s(\$S[0-9]+)?$" % (re.escape(m.group(1)), re.escape(m.group(2)))
+            r"^_?%s\?(?:[0-9]|[A-P]+@)%s(\$S[0-9]+)?$"
+            % (re.escape(m.group(1)), re.escape(m.group(2)))
         )
         hits = [s for s in obj_syms if local.match(s)]
         if len(hits) == 1:

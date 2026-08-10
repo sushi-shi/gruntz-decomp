@@ -630,7 +630,7 @@ boomerang	??1CBoomerang@@UAE@XZ	100.0000	100.0000	1	cpp:a35f2a7c5ac0	0x12a00	100
 boomerang	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:096e761cd109	0x129d0	100.0000
 boomerang	?LoadProjectileSprites@CBoomerang@@UAEHW4PickupType@@HHHHHH@Z	73.2439	73.2439	1	a2871a7caacf	0xe0690	73.2439
 boomerang	?SerializeMove@CBoomerang@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	1940f596d55d	0xe15d0	100.0000
-bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.5076	92.5076	5	f3c182846d09	0x18830	92.5568
+bootycheatstate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.4886	92.4886	5	f3c182846d09	0x18830	92.5568
 bootystateactivate	??1CBootyState@@UAE@XZ	99.6191	99.6191	1	7390c8dc8b7b	0x8d440	100.0000
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	99.6191	99.6191	1	23ab1228bab4	0x8d510	100.0000
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d410	100.0000
@@ -668,7 +668,7 @@ bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9658	99.9658	2	2d17ef0ad520	0x1c9d0	100.0000
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	99.9750	99.9750	2	659ee76e9f5b	0x18f00	100.0000
 bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	90.0224	90.0149	3	4f59c36c76ec	0x196c0	90.0224
-bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.6184	92.6184	7	d340d1758bdc	0x1b450	92.8158
+bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7171	92.7171	8	3515c259b2f9	0x1b450	92.8158
 bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.2108	95.2108	15	d289681b2cfa	0x1b690	95.2481
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	99.9438	99.9438	22	621add35a117	0xf9160	100.0000
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	2	4337332bae5e	0x853f0	100.0000
@@ -879,7 +879,7 @@ cursorsnapsprite	?FireActivation@CCursorSnapSprite@@UAEXH@Z	100.0000	100.0000	4	
 cursorsnapsprite	?SerializeMove@CCursorSnapSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab14ae26e211	0x11880	100.0000
 cursorsnapsprite	_CreateCursorSnapSprite	99.9048	99.9048	3	4678e3ac7fc5	0x3a200	100.0000
 customleveldlg	??1CWaitCursorScope@@QAE@XZ	100.0000	100.0000	6	e8fe84e03cdf	0x18430	100.0000
-customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	94.2050	94.2050	6	53d739e763e3	0x180e0	94.3168
+customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	94.2050	94.2050	7	6b3804c1d094	0x180e0	94.3168
 customleveldlg	?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	9c7d3dae79a9	0x183d0	100.0000
 customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	3	cd692d8dfbbd	0x183f0	100.0000
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	99.8646	99.8646	2	fec5c196466c	0x3b940	100.0000
@@ -4394,7 +4394,7 @@ warlord	?FireActivation@CWarlord@@UAEXH@Z	100.0000	100.0000	6	dc15f81fd717	0x446
 warlord	?GetTypeTag@CWarlord@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:9db7af409c04	0x107a0	100.0000
 warlord	?LoadAttributes2@CWarlord@@QAEHXZ	100.0000	100.0000	24	82c750904c6b	0x44d10	100.0000
 warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	21	24cba32ef01c	0x44c00	100.0000
-warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	97.0328	97.0328	5	b496dcb728b7	0x45270	97.1912
+warlord	?NotifyFortUnderAttack@CWarlord@@QAEHXZ	97.0874	97.0874	6	7293679b73af	0x45270	97.1912
 warlord	?RaiseBattleAlert@CWarlord@@QAEHXZ	95.0000	95.0000	7	3bb148137808	0x457b0	95.0947
 warlord	?RearmMoving2@CWarlord@@QAEHXZ	100.0000	100.0000	9	1a8c1fe71e4f	0x44f30	100.0000
 warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	12	1a59dedeaed5	0x44bb0	100.0000

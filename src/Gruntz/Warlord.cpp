@@ -709,6 +709,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 if (static_cast<i64>(g_frameTime) - m_timer2Stamp >= m_timer2Window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
+                    DATA(0x002446fc)
                     static CString s_alert("ALERT - Your Fort is under attack!");
                     g_gameReg->m_chatLog->AddItem(
                         static_cast<LPCTSTR>(
