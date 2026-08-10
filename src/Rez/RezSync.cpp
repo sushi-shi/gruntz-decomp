@@ -638,11 +638,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-RVA(0x000853d0, 0x10)
-void __stdcall RezFreeStdcall(void* a) {
-    ::operator delete(a);
-}
-
 RVA(0x00085500, 0x23)
 CString CGruntzMgr::GetRezPath() {
     return m_strRezPath;

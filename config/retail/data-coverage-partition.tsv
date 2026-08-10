@@ -989,999 +989,504 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f5551	0x001f5558	7	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f5568	0x001f5570	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f5584	0x001f7ad0	9548	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
-0x001f7ad0	0x001f7af8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7af8	0x001f7b00	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7b00	0x001f7b48	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7b48	0x001f7b50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7b50	0x001f7b78	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7b78	0x001f7b80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7b80	0x001f7ba8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7ba8	0x001f7bb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7bb0	0x001f7ea0	752	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7ea0	0x001f7ef0	80	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7ef0	0x001f7f58	104	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7f58	0x001f7f68	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7f68	0x001f7f90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7f90	0x001f7f98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7f98	0x001f7fc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7fc0	0x001f7fc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7fc8	0x001f7ff0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f7ff0	0x001f7ff8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f7ff8	0x001f8020	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8020	0x001f8028	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8028	0x001f8050	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8050	0x001f8058	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8058	0x001f8080	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8080	0x001f8088	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8088	0x001f80b0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f80b0	0x001f80b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f80b8	0x001f80e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f80e0	0x001f80e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f80e8	0x001f8110	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8110	0x001f8118	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8118	0x001f8140	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8140	0x001f8148	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8148	0x001f8170	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8170	0x001f8178	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8178	0x001f81a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f81a0	0x001f81a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f81a8	0x001f81d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f81d0	0x001f81d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f81d8	0x001f8200	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8200	0x001f8208	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8208	0x001f8230	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8230	0x001f8238	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8238	0x001f8260	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8260	0x001f8268	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8268	0x001f8290	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8290	0x001f8298	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8298	0x001f82d0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f82d0	0x001f82d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f82d8	0x001f8300	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8300	0x001f8308	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8308	0x001f8330	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8330	0x001f8338	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8338	0x001f8360	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8360	0x001f8368	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8368	0x001f8390	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8390	0x001f8398	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8398	0x001f83c0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f83c0	0x001f83c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f83c8	0x001f83f0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f83f0	0x001f83f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f83f8	0x001f8420	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8420	0x001f8428	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8428	0x001f8450	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8450	0x001f8458	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8458	0x001f8480	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8480	0x001f8488	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8488	0x001f84b0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f84b0	0x001f84b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f84b8	0x001f84e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f84e0	0x001f84e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f84e8	0x001f8510	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8510	0x001f8518	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8518	0x001f8540	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8540	0x001f8548	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8548	0x001f8570	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8570	0x001f8578	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8578	0x001f85a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f85a0	0x001f85a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f85a8	0x001f85d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f85d0	0x001f85d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f85d8	0x001f8600	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8600	0x001f8608	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8608	0x001f8630	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8630	0x001f8638	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8638	0x001f8660	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8660	0x001f8668	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8668	0x001f8690	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8690	0x001f8698	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8698	0x001f86c0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f86c0	0x001f86c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f86c8	0x001f86f0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f86f0	0x001f86f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f86f8	0x001f8720	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8720	0x001f8728	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8728	0x001f8750	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8750	0x001f8758	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8758	0x001f8780	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8780	0x001f8788	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8788	0x001f87b0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f87b0	0x001f87b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f87b8	0x001f87e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f87e0	0x001f87e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f87e8	0x001f8810	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8810	0x001f8818	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8818	0x001f8840	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8840	0x001f8848	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8848	0x001f8870	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8870	0x001f8878	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8878	0x001f88a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f88a0	0x001f88a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f88a8	0x001f88d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f88d0	0x001f88d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f88d8	0x001f8900	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8900	0x001f8908	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8908	0x001f8930	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8930	0x001f8938	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8938	0x001f8960	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8960	0x001f8968	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8968	0x001f8990	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8990	0x001f8998	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8998	0x001f89d0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f89d0	0x001f89d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f89d8	0x001f8a00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8a00	0x001f8a08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8a08	0x001f8a30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8a30	0x001f8a38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8a38	0x001f8a60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8a60	0x001f8a68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8a68	0x001f8a90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8a90	0x001f8a98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8a98	0x001f8ac0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8ac0	0x001f8ac8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8ac8	0x001f8af0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8af0	0x001f8af8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8af8	0x001f8b20	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8b20	0x001f8b28	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8b28	0x001f8b50	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8b50	0x001f8b58	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8b58	0x001f8b80	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8b80	0x001f8b88	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8b88	0x001f8bb0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8bb0	0x001f8bb8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8bb8	0x001f8be0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8be0	0x001f8be8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8be8	0x001f8c10	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8c10	0x001f8c18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8c18	0x001f8c40	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8c40	0x001f8c48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8c48	0x001f8c70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8c70	0x001f8c78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8c78	0x001f8ca0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8ca0	0x001f8ca8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8ca8	0x001f8cd0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8cd0	0x001f8cd8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8cd8	0x001f8d00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8d00	0x001f8d08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8d08	0x001f8d30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8d30	0x001f8d38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8d38	0x001f8d60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8d60	0x001f8d68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8d68	0x001f8d90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8d90	0x001f8d98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8d98	0x001f8dc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8dc0	0x001f8dc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8dc8	0x001f8df0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8df0	0x001f8df8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8df8	0x001f8e38	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8e38	0x001f8e40	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8e40	0x001f8e78	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8e78	0x001f8e80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8e80	0x001f8ea8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8ea8	0x001f8eb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8eb0	0x001f8ed8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8ed8	0x001f8ee0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8ee0	0x001f8f18	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8f18	0x001f8f20	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8f20	0x001f8f48	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8f48	0x001f8f50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8f50	0x001f8f78	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8f78	0x001f8f80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8f80	0x001f8fa8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8fa8	0x001f8fb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8fb0	0x001f8fd8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f8fd8	0x001f8fe0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f8fe0	0x001f9018	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9018	0x001f9020	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9020	0x001f9048	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9048	0x001f9050	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9050	0x001f9078	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9078	0x001f9080	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9080	0x001f90a8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f90a8	0x001f90b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f90b0	0x001f90e8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f90e8	0x001f90f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f90f0	0x001f9118	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9118	0x001f9120	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9120	0x001f9160	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9160	0x001f9168	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9168	0x001f91b0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f91b0	0x001f91b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f91b8	0x001f9208	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9208	0x001f9210	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9210	0x001f9248	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9248	0x001f9250	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9250	0x001f9288	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9288	0x001f9290	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9290	0x001f92d0	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f92d0	0x001f92d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f92d8	0x001f9310	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9310	0x001f9318	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9318	0x001f9360	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9360	0x001f9368	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9368	0x001f9398	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9398	0x001f93a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f93a0	0x001f9400	96	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9400	0x001f9410	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9410	0x001f9440	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9440	0x001f9448	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9448	0x001f9470	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9470	0x001f9478	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9478	0x001f94b0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f94b0	0x001f94b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f94b8	0x001f94e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f94e0	0x001f94e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f94e8	0x001f9510	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9510	0x001f9518	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9518	0x001f9608	240	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9608	0x001f9620	24	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9620	0x001f9650	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9650	0x001f9658	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9658	0x001f96e0	136	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f96e0	0x001f96f0	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f96f0	0x001f9720	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9720	0x001f9728	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9728	0x001f9750	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9750	0x001f9758	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9758	0x001f9780	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9780	0x001f9788	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9788	0x001f97c0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f97c0	0x001f97c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f97c8	0x001f97f0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f97f0	0x001f97f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f97f8	0x001f9820	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9820	0x001f9828	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9828	0x001f9850	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9850	0x001f9858	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9858	0x001f9880	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9880	0x001f9888	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9888	0x001f98b8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f98b8	0x001f98c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f98c0	0x001f98e8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f98e8	0x001f98f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f98f0	0x001f9928	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9928	0x001f9930	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9930	0x001f9970	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9970	0x001f9978	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9978	0x001f99a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f99a0	0x001f99a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f99a8	0x001f99d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f99d0	0x001f99d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f99d8	0x001f9a10	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9a10	0x001f9a18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9a18	0x001f9a40	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9a40	0x001f9a48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9a48	0x001f9a70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9a70	0x001f9a78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9a78	0x001f9aa0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9aa0	0x001f9aa8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9aa8	0x001f9ad0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9ad0	0x001f9ad8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9ad8	0x001f9b00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9b00	0x001f9b08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9b08	0x001f9b40	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9b40	0x001f9b48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9b48	0x001f9b70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9b70	0x001f9b78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9b78	0x001f9ba8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9ba8	0x001f9bb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9bb0	0x001f9bd8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9bd8	0x001f9be0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9be0	0x001f9c28	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9c28	0x001f9c30	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9c30	0x001f9c60	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9c60	0x001f9c68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9c68	0x001f9c90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9c90	0x001f9c98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9c98	0x001f9cc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9cc0	0x001f9cc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9cc8	0x001f9cf0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9cf0	0x001f9cf8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9cf8	0x001f9d40	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9d40	0x001f9d48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9d48	0x001f9d70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9d70	0x001f9d78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9d78	0x001f9da0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9da0	0x001f9da8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9da8	0x001f9de0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9de0	0x001f9de8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9de8	0x001f9e20	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9e20	0x001f9e28	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9e28	0x001f9e50	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9e50	0x001f9e58	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9e58	0x001f9e88	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9e88	0x001f9e90	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9e90	0x001f9ec0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9ec0	0x001f9ec8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9ec8	0x001f9ef8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9ef8	0x001f9f00	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9f00	0x001f9f28	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9f28	0x001f9f30	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9f30	0x001f9f58	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9f58	0x001f9f60	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9f60	0x001f9f88	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9f88	0x001f9f90	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9f90	0x001f9fb8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9fb8	0x001f9fc0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9fc0	0x001f9fe8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f9fe8	0x001f9ff0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f9ff0	0x001fa018	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa018	0x001fa020	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa020	0x001fa048	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa048	0x001fa050	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa050	0x001fa078	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa078	0x001fa080	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa080	0x001fa0a8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa0a8	0x001fa0b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa0b0	0x001fa0d8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa0d8	0x001fa0e0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa0e0	0x001fa128	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa128	0x001fa130	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa130	0x001fa178	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa178	0x001fa180	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa180	0x001fa1c8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa1c8	0x001fa1d0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa1d0	0x001fa218	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa218	0x001fa220	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa220	0x001fa268	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa268	0x001fa270	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa270	0x001fa2b8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa2b8	0x001fa2c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa2c0	0x001fa308	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa308	0x001fa310	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa310	0x001fa358	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa358	0x001fa360	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa360	0x001fa3a8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa3a8	0x001fa3b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa3b0	0x001fa4b0	256	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa4b0	0x001fa4d0	32	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa4d0	0x001fa500	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa500	0x001fa508	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa508	0x001fa538	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa538	0x001fa540	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa540	0x001fa570	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa570	0x001fa578	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa578	0x001fa5a8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa5a8	0x001fa5b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa5b0	0x001fa5e0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa5e0	0x001fa5e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa5e8	0x001fa618	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa618	0x001fa620	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa620	0x001fa668	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa668	0x001fa670	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa670	0x001fa698	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa698	0x001fa6a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa6a0	0x001fa6c8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa6c8	0x001fa6d0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa6d0	0x001fa718	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa718	0x001fa720	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa720	0x001fa768	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa768	0x001fa770	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa770	0x001fa7e0	112	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fa7e0	0x001fa7f0	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fa7f0	0x001fab98	936	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fab98	0x001fabf8	96	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fabf8	0x001fad38	320	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fad38	0x001fad58	32	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fad58	0x001fad80	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fad80	0x001fad88	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fad88	0x001fadb0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fadb0	0x001fadb8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fadb8	0x001fade8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fade8	0x001fadf0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fadf0	0x001fae30	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fae30	0x001fae38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fae38	0x001fae68	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fae68	0x001fae70	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fae70	0x001faea8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faea8	0x001faeb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001faeb0	0x001faed8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faed8	0x001faee0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001faee0	0x001faf08	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faf08	0x001faf10	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001faf10	0x001faf38	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faf38	0x001faf40	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001faf40	0x001faf68	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faf68	0x001faf70	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001faf70	0x001faff0	128	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001faff0	0x001fb000	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb000	0x001fb058	88	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb058	0x001fb060	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb060	0x001fb088	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb088	0x001fb090	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb090	0x001fb0b8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb0b8	0x001fb0c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb0c0	0x001fb0e8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb0e8	0x001fb0f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb0f0	0x001fb118	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb118	0x001fb120	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb120	0x001fb148	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb148	0x001fb150	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb150	0x001fb178	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb178	0x001fb180	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb180	0x001fb1b0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb1b0	0x001fb1b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb1b8	0x001fb1e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb1e0	0x001fb1e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb1e8	0x001fb210	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb210	0x001fb218	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb218	0x001fb240	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb240	0x001fb248	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb248	0x001fb270	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb270	0x001fb278	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb278	0x001fb2a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb2a0	0x001fb2a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb2a8	0x001fb2d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb2d0	0x001fb2d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb2d8	0x001fb300	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb300	0x001fb308	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb308	0x001fb350	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb350	0x001fb358	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb358	0x001fb3a0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb3a0	0x001fb3a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb3a8	0x001fb3f0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb3f0	0x001fb3f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb3f8	0x001fb420	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb420	0x001fb428	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb428	0x001fb450	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb450	0x001fb458	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb458	0x001fb480	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb480	0x001fb488	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb488	0x001fb4d0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb4d0	0x001fb4d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb4d8	0x001fb500	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb500	0x001fb508	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb508	0x001fb530	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb530	0x001fb538	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb538	0x001fb560	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb560	0x001fb568	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb568	0x001fb5b0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb5b0	0x001fb5b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb5b8	0x001fb5f0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb5f0	0x001fb5f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb5f8	0x001fb648	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb648	0x001fb650	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb650	0x001fb7c0	368	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb7c0	0x001fb7e8	40	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb7e8	0x001fb818	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb818	0x001fb820	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb820	0x001fb850	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb850	0x001fb858	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb858	0x001fb898	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb898	0x001fb8a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb8a0	0x001fb8d0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb8d0	0x001fb8d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb8d8	0x001fb900	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb900	0x001fb908	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb908	0x001fb930	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb930	0x001fb938	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb938	0x001fb960	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb960	0x001fb968	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb968	0x001fb998	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb998	0x001fb9a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb9a0	0x001fb9d0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fb9d0	0x001fb9d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fb9d8	0x001fba00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fba00	0x001fba08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fba08	0x001fba30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fba30	0x001fba38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fba38	0x001fbb18	224	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbb18	0x001fbb30	24	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbb30	0x001fbb58	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbb58	0x001fbb60	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbb60	0x001fbbb0	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbbb0	0x001fbbb8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbbb8	0x001fbc00	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbc00	0x001fbc08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbc08	0x001fbc30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbc30	0x001fbc38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbc38	0x001fbc60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbc60	0x001fbc68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbc68	0x001fbc90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbc90	0x001fbc98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbc98	0x001fbcc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbcc0	0x001fbcc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbcc8	0x001fbd20	88	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbd20	0x001fbd28	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbd28	0x001fbdb0	136	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbdb0	0x001fbdc0	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbdc0	0x001fbde8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbde8	0x001fbdf0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbdf0	0x001fbe18	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbe18	0x001fbe20	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbe20	0x001fbe60	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbe60	0x001fbe68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbe68	0x001fbe90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbe90	0x001fbe98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbe98	0x001fbec0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbec0	0x001fbec8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbec8	0x001fbf40	120	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbf40	0x001fbf50	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbf50	0x001fbf78	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbf78	0x001fbf80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbf80	0x001fbfb8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbfb8	0x001fbfc0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbfc0	0x001fbfe8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fbfe8	0x001fbff0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fbff0	0x001fc030	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc030	0x001fc038	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc038	0x001fc080	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc080	0x001fc088	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc088	0x001fc0b0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc0b0	0x001fc0b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc0b8	0x001fc0e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc0e0	0x001fc0e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc0e8	0x001fc110	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc110	0x001fc118	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc118	0x001fc168	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc168	0x001fc170	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc170	0x001fc198	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc198	0x001fc1a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc1a0	0x001fc1d0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc1d0	0x001fc1d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc1d8	0x001fc218	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc218	0x001fc220	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc220	0x001fc248	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc248	0x001fc250	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc250	0x001fc278	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc278	0x001fc280	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc280	0x001fc2a8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc2a8	0x001fc2b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc2b0	0x001fc2d8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc2d8	0x001fc2e0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc2e0	0x001fc340	96	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc340	0x001fc350	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc350	0x001fc398	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc398	0x001fc3a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc3a0	0x001fc3e8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc3e8	0x001fc3f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc3f0	0x001fc420	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc420	0x001fc428	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc428	0x001fc450	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc450	0x001fc458	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc458	0x001fc488	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc488	0x001fc490	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc490	0x001fc4c0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc4c0	0x001fc4c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc4c8	0x001fc508	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc508	0x001fc510	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc510	0x001fc540	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc540	0x001fc548	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc548	0x001fc588	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc588	0x001fc590	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc590	0x001fc5d0	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc5d0	0x001fc5d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc5d8	0x001fc600	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc600	0x001fc608	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc608	0x001fc640	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc640	0x001fc648	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc648	0x001fc670	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc670	0x001fc678	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc678	0x001fc6b0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc6b0	0x001fc6b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc6b8	0x001fc6e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc6e0	0x001fc6e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc6e8	0x001fc718	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc718	0x001fc720	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc720	0x001fc760	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc760	0x001fc768	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc768	0x001fc7a0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc7a0	0x001fc7a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc7a8	0x001fc7d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fc7d0	0x001fc7d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fc7d8	0x001fcb78	928	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcb78	0x001fcbd8	96	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcbd8	0x001fcc00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcc00	0x001fcc08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcc08	0x001fcc30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcc30	0x001fcc38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcc38	0x001fcc60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcc60	0x001fcc68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcc68	0x001fcc90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcc90	0x001fcc98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcc98	0x001fccc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fccc0	0x001fccc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fccc8	0x001fccf0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fccf0	0x001fccf8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fccf8	0x001fcd20	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcd20	0x001fcd28	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcd28	0x001fcd50	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcd50	0x001fcd58	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcd58	0x001fcd80	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcd80	0x001fcd88	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcd88	0x001fcdb0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcdb0	0x001fcdb8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcdb8	0x001fcde0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcde0	0x001fcde8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcde8	0x001fce10	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fce10	0x001fce18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fce18	0x001fce40	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fce40	0x001fce48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fce48	0x001fce70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fce70	0x001fce78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fce78	0x001fcea0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcea0	0x001fcea8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcea8	0x001fcef0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcef0	0x001fcef8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcef8	0x001fcf40	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcf40	0x001fcf48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcf48	0x001fcf90	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcf90	0x001fcf98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcf98	0x001fcfe0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fcfe0	0x001fcfe8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fcfe8	0x001fd030	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd030	0x001fd038	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd038	0x001fd080	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd080	0x001fd088	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd088	0x001fd0d0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd0d0	0x001fd0d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd0d8	0x001fd120	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd120	0x001fd128	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd128	0x001fd170	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd170	0x001fd178	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd178	0x001fd1c0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd1c0	0x001fd1c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd1c8	0x001fd210	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd210	0x001fd218	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd218	0x001fd250	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd250	0x001fd258	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd258	0x001fd290	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd290	0x001fd298	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd298	0x001fd2e0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd2e0	0x001fd2e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd2e8	0x001fd310	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd310	0x001fd318	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd318	0x001fd340	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd340	0x001fd348	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd348	0x001fd370	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd370	0x001fd378	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd378	0x001fd3a0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd3a0	0x001fd3a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd3a8	0x001fd3d0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd3d0	0x001fd3d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd3d8	0x001fd400	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd400	0x001fd408	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd408	0x001fd458	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd458	0x001fd460	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd460	0x001fd490	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd490	0x001fd498	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd498	0x001fd4e0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd4e0	0x001fd4e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd4e8	0x001fd510	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd510	0x001fd518	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd518	0x001fd568	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd568	0x001fd570	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd570	0x001fd5b8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd5b8	0x001fd5c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd5c0	0x001fd5e8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd5e8	0x001fd5f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd5f0	0x001fd618	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd618	0x001fd620	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd620	0x001fd6d8	184	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd6d8	0x001fd6f0	24	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd6f0	0x001fd730	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd730	0x001fd738	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd738	0x001fd760	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd760	0x001fd768	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd768	0x001fd790	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd790	0x001fd798	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd798	0x001fd7c0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd7c0	0x001fd7c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd7c8	0x001fd7f0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd7f0	0x001fd7f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd7f8	0x001fd820	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd820	0x001fd828	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd828	0x001fd850	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd850	0x001fd858	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd858	0x001fd890	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd890	0x001fd898	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd898	0x001fd8d8	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd8d8	0x001fd8e0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd8e0	0x001fd918	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd918	0x001fd920	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd920	0x001fd978	88	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd978	0x001fd980	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd980	0x001fd9b0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd9b0	0x001fd9b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd9b8	0x001fd9e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fd9e0	0x001fd9e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fd9e8	0x001fda10	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fda10	0x001fda18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fda18	0x001fda48	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fda48	0x001fda50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fda50	0x001fda80	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fda80	0x001fda88	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fda88	0x001fdac0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdac0	0x001fdac8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdac8	0x001fdaf0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdaf0	0x001fdaf8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdaf8	0x001fdb20	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdb20	0x001fdb28	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdb28	0x001fdb58	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdb58	0x001fdb60	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdb60	0x001fdb88	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdb88	0x001fdb90	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdb90	0x001fdbb8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdbb8	0x001fdbc0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdbc0	0x001fdc10	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdc10	0x001fdc18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdc18	0x001fdc40	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdc40	0x001fdc48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdc48	0x001fdc70	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdc70	0x001fdc78	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdc78	0x001fdca8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdca8	0x001fdcb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdcb0	0x001fdce0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdce0	0x001fdce8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdce8	0x001fdd10	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdd10	0x001fdd18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdd18	0x001fdd40	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdd40	0x001fdd48	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdd48	0x001fdd78	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdd78	0x001fdd80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdd80	0x001fdda8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdda8	0x001fddb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fddb0	0x001fdde8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdde8	0x001fddf0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fddf0	0x001fde18	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fde18	0x001fde20	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fde20	0x001fde50	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fde50	0x001fde58	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fde58	0x001fde90	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fde90	0x001fde98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fde98	0x001fded0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fded0	0x001fded8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fded8	0x001fdf00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdf00	0x001fdf08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdf08	0x001fdf30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdf30	0x001fdf38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdf38	0x001fdf60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdf60	0x001fdf68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdf68	0x001fdf90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdf90	0x001fdf98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdf98	0x001fdfd0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fdfd0	0x001fdfd8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fdfd8	0x001fe000	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe000	0x001fe008	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe008	0x001fe038	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe038	0x001fe040	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe040	0x001fe068	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe068	0x001fe070	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe070	0x001fe098	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe098	0x001fe0a0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe0a0	0x001fe0d0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe0d0	0x001fe0d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe0d8	0x001fe100	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe100	0x001fe108	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe108	0x001fe130	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe130	0x001fe138	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe138	0x001fe160	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe160	0x001fe168	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe168	0x001fe190	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe190	0x001fe198	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe198	0x001fe1e8	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe1e8	0x001fe1f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe1f0	0x001fe238	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe238	0x001fe240	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe240	0x001fe288	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe288	0x001fe290	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe290	0x001fe2f8	104	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe2f8	0x001fe308	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe308	0x001fe348	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe348	0x001fe350	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe350	0x001fe380	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe380	0x001fe388	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe388	0x001fe3b0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe3b0	0x001fe3b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe3b8	0x001fe3e0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe3e0	0x001fe3e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe3e8	0x001fe430	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe430	0x001fe438	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe438	0x001fe460	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe460	0x001fe468	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe468	0x001fe490	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe490	0x001fe498	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe498	0x001fe4d0	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe4d0	0x001fe4d8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe4d8	0x001fe500	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe500	0x001fe508	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe508	0x001fe530	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe530	0x001fe538	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe538	0x001fe610	216	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe610	0x001fe628	24	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe628	0x001fe658	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe658	0x001fe660	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe660	0x001fe688	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe688	0x001fe690	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe690	0x001fe6c8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe6c8	0x001fe6d0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe6d0	0x001fe6f8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe6f8	0x001fe700	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe700	0x001fe728	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe728	0x001fe730	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe730	0x001fe758	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe758	0x001fe760	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe760	0x001fe7a8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe7a8	0x001fe7b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe7b0	0x001fe7e8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe7e8	0x001fe7f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe7f0	0x001fe818	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe818	0x001fe820	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe820	0x001fe848	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe848	0x001fe850	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe850	0x001fe878	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe878	0x001fe880	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe880	0x001fe8b0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe8b0	0x001fe8b8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe8b8	0x001fe8e8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe8e8	0x001fe8f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe8f0	0x001fe920	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe920	0x001fe928	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe928	0x001fe988	96	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe988	0x001fe998	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe998	0x001fe9c0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fe9c0	0x001fe9c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fe9c8	0x001fea68	160	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fea68	0x001fea78	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fea78	0x001feaa0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feaa0	0x001feaa8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feaa8	0x001fead0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fead0	0x001fead8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fead8	0x001feb00	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feb00	0x001feb08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feb08	0x001feb30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feb30	0x001feb38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feb38	0x001feb60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feb60	0x001feb68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feb68	0x001feba8	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feba8	0x001febb0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001febb0	0x001febf0	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001febf0	0x001febf8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001febf8	0x001fec70	120	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fec70	0x001fec80	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fec80	0x001fecc8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fecc8	0x001fecd0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fecd0	0x001fed10	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fed10	0x001fed18	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fed18	0x001fed48	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fed48	0x001fed50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fed50	0x001fed90	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fed90	0x001fed98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fed98	0x001fedc0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fedc0	0x001fedc8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fedc8	0x001fedf8	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fedf8	0x001fee00	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fee00	0x001fee28	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fee28	0x001fee30	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fee30	0x001fee58	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fee58	0x001fee60	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fee60	0x001fee88	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fee88	0x001fee90	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fee90	0x001feeb8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feeb8	0x001feec0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feec0	0x001feee8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001feee8	0x001feef0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001feef0	0x001fef18	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fef18	0x001fef20	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fef20	0x001fef68	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fef68	0x001fef70	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fef70	0x001fefb0	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fefb0	0x001fefb8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fefb8	0x001fefe0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001fefe0	0x001fefe8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001fefe8	0x001ff020	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff020	0x001ff028	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff028	0x001ff058	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff058	0x001ff060	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff060	0x001ff0c0	96	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff0c0	0x001ff0d0	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff0d0	0x001ff108	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff108	0x001ff110	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff110	0x001ff1f8	232	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff1f8	0x001ff210	24	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff210	0x001ff250	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff250	0x001ff258	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff258	0x001ff2a0	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff2a0	0x001ff2a8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff2a8	0x001ff2e8	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff2e8	0x001ff2f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff2f0	0x001ff318	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff318	0x001ff320	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff320	0x001ff358	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff358	0x001ff360	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff360	0x001ff388	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff388	0x001ff390	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff390	0x001ff3b8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff3b8	0x001ff3c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff3c0	0x001ff3e8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff3e8	0x001ff3f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff3f0	0x001ff418	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff418	0x001ff420	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff420	0x001ff4a0	128	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff4a0	0x001ff4b0	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff4b0	0x001ff4d8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff4d8	0x001ff4e0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff4e0	0x001ff528	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff528	0x001ff530	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff530	0x001ff558	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff558	0x001ff560	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff560	0x001ff588	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff588	0x001ff590	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff590	0x001ff5b8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff5b8	0x001ff5c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff5c0	0x001ff5e8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff5e8	0x001ff5f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff5f0	0x001ff618	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff618	0x001ff620	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff620	0x001ff648	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff648	0x001ff650	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff650	0x001ff678	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff678	0x001ff680	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff680	0x001ff6a8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff6a8	0x001ff6b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff6b0	0x001ff6d8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff6d8	0x001ff6e0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff6e0	0x001ff728	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff728	0x001ff730	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff730	0x001ff778	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff778	0x001ff780	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff780	0x001ff7c8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff7c8	0x001ff7d0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff7d0	0x001ff818	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff818	0x001ff820	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff820	0x001ff868	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff868	0x001ff870	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff870	0x001ff8a8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff8a8	0x001ff8b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff8b0	0x001ff8e0	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff8e0	0x001ff8e8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff8e8	0x001ff910	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff910	0x001ff918	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff918	0x001ff960	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff960	0x001ff968	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff968	0x001ff9b8	80	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ff9b8	0x001ff9c0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ff9c0	0x001ffa00	64	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffa00	0x001ffa08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffa08	0x001ffa30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffa30	0x001ffa38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffa38	0x001ffa60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffa60	0x001ffa68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffa68	0x001ffa90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffa90	0x001ffa98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffa98	0x001ffac0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffac0	0x001ffac8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffac8	0x001ffb58	144	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffb58	0x001ffb68	16	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffb68	0x001ffb98	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffb98	0x001ffba0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffba0	0x001ffbc8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffbc8	0x001ffbd0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffbd0	0x001ffbf8	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffbf8	0x001ffc00	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffc00	0x001ffc48	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffc48	0x001ffc50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffc50	0x001ffc78	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffc78	0x001ffc80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffc80	0x001ffcc8	72	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffcc8	0x001ffcd0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffcd0	0x001ffd00	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffd00	0x001ffd08	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffd08	0x001ffd30	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffd30	0x001ffd38	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffd38	0x001ffd60	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffd60	0x001ffd68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffd68	0x001ffd90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffd90	0x001ffd98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffd98	0x001ffdf0	88	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffdf0	0x001ffdf8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffdf8	0x001ffe28	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffe28	0x001ffe30	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffe30	0x001ffe60	48	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffe60	0x001ffe68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffe68	0x001ffe90	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001ffe90	0x001ffe98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001ffe98	0x002001ac	788	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x002001ac	0x002001b0	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
@@ -2029,7 +1534,10 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00201c48	0x00201c70	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x00201c70	0x002020b4	1092	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x002020b4	0x002020b8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x002020b8	0x00205e60	15784	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002020b8	0x00202358	672	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00204670	0x00204c68	1528	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00205cc8	0x00205d70	168	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00205d98	0x00205e60	200	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x00205e60	0x00208000	8608	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00208000	0x002098a0	6304	.data	library-private data	excluded	library-private data		LIBCMT
 0x002098a0	0x002099a4	260	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference

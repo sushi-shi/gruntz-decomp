@@ -365,6 +365,7 @@ rva,name,lib,confidence,source
 0x0828d0,__inc,LIBCMT,LOW,anchored
 0x082920,__inc,LIBCMT,LOW,anchored
 0x0832e0,__fpclear,LIBCMT,LOW,anchored
+0x0853d0,??3CObject@@SGXPAX@Z,NAFXCW,MED,manual-unmatched-library-audit
 0x094370,__inc,LIBCMT,LOW,anchored
 0x0943c0,__inc,LIBCMT,LOW,anchored
 0x094410,__inc,LIBCMT,LOW,anchored
@@ -1159,8 +1160,8 @@ rva,name,lib,confidence,source
 0x11f520,__cfltcvt_init,LIBCMT,HIGH,anchored
 0x11f570,__ftol,LIBCMT,HIGH,anchored
 0x11f5a0,??_L@YGXPAXIHP6EX0@Z1@Z,LIBCMT,MED,manual-unmatched-library-audit
-0x11f640,??_M@YGXPAXIHP6EX0@Z@Z,LIBCMT,LOW,anchored
-0x11f640,?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z,LIBCMT,HIGH,reloc-alias
+0x11f640,??_M@YGXPAXIHP6EX0@Z@Z,LIBCMT,MED,manual-unmatched-library-audit
+0x11f640,?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z,LIBCMT,LOW,reloc-alias
 0x11f6f0,?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z,LIBCMT,MED,manual-unmatched-library-audit
 0x11f780,_fclose,LIBCMT,HIGH,anchored
 0x11f7c0,__fclose_lk,LIBCMT,HIGH,anchored

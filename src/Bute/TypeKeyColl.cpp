@@ -5,7 +5,6 @@
 #include <Bute/PTreeNode.h>
 #include <Bute/ButeStore.h>
 #include <Wap32/zBitVec.h>
-#include <Gruntz/UserBaseLink.h>
 #include <rva.h>
 #include <AddrWord.h>
 #include <ctype.h>
@@ -282,16 +281,14 @@ badchar: {
 }
 }
 
-inline zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
+RVA(0x0016d710, 0x76)
+zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
     }
 }
-
-RVA(0x0016d710, 0x76)
-CUserBaseLink::CUserBaseLink() {}
 
 RVA(0x0016d790, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {

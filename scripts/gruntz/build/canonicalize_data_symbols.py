@@ -40,7 +40,7 @@ import os
 import re
 import struct
 import tempfile
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -195,6 +195,9 @@ class CanonicalizedObject:
 # rather than retyped - objdiff refuses IMAGE_REL_I386_ABSOLUTE.
 _EH_TARGET_FUNCLET = re.compile(r"^FUN_[0-9a-f]{8}$")
 PUSH_IMM32 = 0x68
+MOV_EAX_IMM32 = 0xB8
+#: `_s_FuncInfo::pUnwindMap` - the word that names the record's own unwind map.
+FUNCINFO_UNWIND_MAP = 8
 DUP_PREFIX = "$dup$"
 ANON_DATA_PREFIX = "$anon_data_"
 
@@ -912,7 +915,9 @@ def _assert_only_canonical_changes(
                 "jump-table relocation resolved-target postcondition failed")
 
 
-def _eh_funclet_owners(coff: CoffObject) -> dict[int, str]:
+def _eh_funclet_owners(
+        coff: CoffObject,
+        stubs: list[tuple[str, "Symbol"]] | None = None) -> dict[int, str]:
     """{symbol index -> canonical EH band name} for one side's funclet symbols.
 
     Both sides spell the SAME machinery differently and no source edit aligns them:
@@ -930,6 +935,9 @@ def _eh_funclet_owners(coff: CoffObject) -> dict[int, str]:
     on both sides, and the funclet index is its position in ADDRESS order, which is
     unwind-state order on both sides - so the two sides land on the same symbol
     names without either knowing anything about the other.
+
+    `stubs`, when given, collects `(owner, stub label)` for every BASE-side group -
+    the entry point `_eh_funcinfo_owners` needs to walk on to the `.xdata$x` tables.
     """
     functions: dict[int, list[tuple[int, str]]] = {}
     for symbol in coff.symbols.values():
@@ -956,6 +964,8 @@ def _eh_funclet_owners(coff: CoffObject) -> dict[int, str]:
     for entries in labels.values():
         entries.sort(key=lambda s: (s.value, s.index))
 
+    if stubs is None:
+        stubs = []
     out: dict[int, str] = {}
     for relocation in coff.relocations:
         if relocation.typ != DIR32:
@@ -985,11 +995,109 @@ def _eh_funclet_owners(coff: CoffObject) -> dict[int, str]:
                     break
                 out.setdefault(symbol.index, eh_band.unwind_symbol(owner, index))
                 index += 1
+            stubs.append((owner, target))
+    return out
+
+
+def _eh_funcinfo_owners(coff: CoffObject) -> dict[int, str]:
+    """{symbol index -> canonical `.xdata$x` name} for cl's own EH state tables.
+
+    The companion of `_eh_funclet_owners` for the DATUM the registration stub
+    loads. cl labels the `_s_FuncInfo` record and the unwind map that follows it
+    `$T<n>` - TU-local ordinals nothing can reproduce - and the delinked target
+    carries the owner-derived names `gruntz.build.eh_band` gives them, so this
+    renames the base's two labels to the same thing.
+
+    Both are located STRUCTURALLY, never by name: the stub's `mov eax,imm32` is at
+    `stub + 0` and its operand's relocation at `stub + 1` names the record; the
+    record's `pUnwindMap` word is at `record + 8` and its relocation names the map.
+    Anything that does not have that exact shape is left alone.
+    """
+    stubs: list[tuple[str, Symbol]] = []
+    _eh_funclet_owners(coff, stubs)
+    if not stubs:
+        return {}
+    by_site = {(relocation.section, relocation.site): relocation
+               for relocation in coff.relocations if relocation.typ == DIR32}
+
+    def datum_at(section: int, site: int) -> Symbol | None:
+        relocation = by_site.get((section, site))
+        if relocation is None:
+            return None
+        symbol = coff.symbols[relocation.symbol_index]
+        if symbol.section <= 0:
+            return None
+        if coff.sections[symbol.section - 1].characteristics & MEM_EXECUTE:
+            return None
+        return symbol
+
+    out: dict[int, str] = {}
+    for owner, stub in stubs:
+        section = coff.sections[stub.section - 1]
+        if _byte_at(coff.data, section.raw_offset + stub.value) != MOV_EAX_IMM32:
+            continue
+        record = datum_at(stub.section, stub.value + 1)
+        if record is None:
+            continue
+        out.setdefault(record.index, eh_band.funcinfo_symbol(owner))
+        unwind_map = datum_at(record.section, record.value + FUNCINFO_UNWIND_MAP)
+        if unwind_map is not None and unwind_map.index != record.index:
+            out.setdefault(unwind_map.index, eh_band.unwindmap_symbol(owner))
     return out
 
 
 def _byte_at(data: bytes, offset: int) -> int:
     return data[offset] if 0 <= offset < len(data) else -1
+
+
+#: cl's grouped EH sections and the section the LINKER folds each into. `$x` is an
+#: ordering key, not part of the section's identity (the same reading the delinker's
+#: own data-section manifest applies to `.rdata$r`), and retail's image proves the
+#: destination: it has no `.xdata` at all and every `FuncInfo` sits in `.rdata`.
+_EH_SECTION_GROUP = {".text$x": ".text", ".xdata$x": ".rdata"}
+
+
+def _canonicalize_eh_section_names(payload: bytes) -> tuple[bytes, tuple[CanonicalRow, ...]]:
+    """Fold cl's `.text$x` / `.xdata$x` onto the section the linker put them in.
+
+    THIS IS WHAT MADE THE WHOLE BAND UNSCORABLE, and it is invisible in a byte
+    diff. objdiff runs here with `functionRelocDiffs = data_value`, whose
+    relocation comparison is
+
+        section_name_eq(left, right) && <the referenced bytes are equal>
+
+    - the target symbol's NAME is deliberately not consulted. cl emits a /GX
+    function's funclets into a `.text$x` COMDAT and its EH state tables into
+    `.xdata$x`; the delinked target has neither name, because retail's linker
+    folded them into `.text` and `.rdata` and that is what the delinker rebuilds.
+    So `section_name_eq` was false for EVERY one of them, and the mismatch was not
+    the funclets' - it landed on the OWNER, whose prologue `push OFFSET <stub>` is
+    a relocation into `.text$x`. 750 /GX functions each carried one guaranteed
+    mismatching instruction that had nothing to do with their code.
+
+    Renaming the base's grouped sections to the group states exactly what the
+    linker did, and it is the only side that can move: the target genuinely has one
+    `.text` and one `.rdata`. Nothing but the 8-byte name field is touched - size,
+    characteristics, COMDAT selection, payload, symbols and relocations all stay.
+    """
+    section_count = struct.unpack_from("<H", payload, 2)[0]
+    first_section = 20 + struct.unpack_from("<H", payload, 16)[0]
+    data = bytearray(payload)
+    renamed = Counter()
+    for index in range(section_count):
+        offset = first_section + index * 40
+        name = payload[offset:offset + 8].split(b"\0", 1)[0].decode("latin-1")
+        group = _EH_SECTION_GROUP.get(name)
+        if group is None:
+            continue
+        data[offset:offset + 8] = group.encode("latin-1").ljust(8, b"\0")
+        renamed[(name, group)] += 1
+    if not renamed:
+        return payload, ()
+    return bytes(data), tuple(
+        CanonicalRow(name, group, "eh", "section", 0, 0, 0, 0, count, "-",
+                     "eh-grouped-section-folded-into-linker-destination", "")
+        for (name, group), count in sorted(renamed.items()))
 
 
 def _canonicalize_eh_relocations(payload: bytes) -> tuple[bytes, tuple[CanonicalRow, ...]]:
@@ -1423,6 +1531,27 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
             symbol.section, symbol.value, 0, 0, 0, "-",
             "eh-funclet-owner-derived-name", ""))
 
+    # ... and the `.xdata$x` tables the registration stub loads. These OVERRIDE the
+    # content-addressed `$anon_data_<digest>` name the pass above gave cl's `$T<n>`
+    # labels: an anon digest pairs two anonymous definitions, and the delinked side
+    # is not anonymous - it carries the owner-derived name, so the digest could
+    # never pair with it. The override is applied after every digest is computed,
+    # so no other symbol's identity moves.
+    eh_data = _eh_funcinfo_owners(coff)
+    if eh_data:
+        superseded = {(coff.symbols[index].name, coff.symbols[index].section,
+                       coff.symbols[index].value) for index in eh_data}
+        rows = [row for row in rows
+                if (row.original_name, row.section_ordinal, row.section_offset)
+                not in superseded]
+        for index, canonical in eh_data.items():
+            renames[index] = canonical
+            symbol = coff.symbols[index]
+            rows.append(CanonicalRow(
+                symbol.name, canonical, "eh", "rdata",
+                symbol.section, symbol.value, 0, 0, 0, "-",
+                "eh-funcinfo-owner-derived-name", ""))
+
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
         coff, normalized)
@@ -1440,6 +1569,8 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         coff, normalized, renames, jump_table_rewrites, dup_retargets)
     normalized, eh_rows = _canonicalize_eh_relocations(normalized)
     rows.extend(eh_rows)
+    normalized, eh_section_rows = _canonicalize_eh_section_names(normalized)
+    rows.extend(eh_section_rows)
     return CanonicalizedObject(normalized, tuple(rows))
 
 

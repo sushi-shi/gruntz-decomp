@@ -340,7 +340,7 @@ SerialObjectFactory(void* ctx, void* ar, SerialMode mode, LogicTypeId typeId, vo
 // The pinned halves of the four ctor pairs declared in UserLogic.h,
 // GruntHealthSprite.h, PathHazard.h and MovingLogic.h.  Each body EXPANDS its
 // CUserLogic base - it stamps ??_7CUserBase and carries the single
-// `call ??0CUserBaseLink` - and the classes derived from it `call` the body, while
+// `call ??0zBitVec` - and the classes derived from it `call` the body, while
 // the class's own `new` arm above expands the tagged inline sibling.
 RVA_COMPGEN(0x00011160, 0x4b, ??0CTileTrigger@@QAE@XZ)
 CTileTrigger::CTileTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}

@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 337  functions: 4542
+# units: 337  functions: 4543
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -251,7 +251,7 @@ rezcoll	13
 rezfile	36
 rezlist	5
 rezmgr	1
-rezsync	3
+rezsync	2
 rockbreakeffectupdate	1
 rollingball	8
 savefrontbuffershot	2
@@ -331,13 +331,13 @@ winmain	1
 worldsoundset	36
 wormhole	29
 wormholeacts	2
-wwdfactoryobject	56
+wwdfactoryobject	57
 wwdfile	3
 wwdgameobject	45
 wwdgameobjectrender	17
 wwdgeometryapply	1
 wwdgrid	15
-wwdobjmgr	56
+wwdobjmgr	57
 wwdspatialmgr	14
 zdarrayderived	3
 zutil	2

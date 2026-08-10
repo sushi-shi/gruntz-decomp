@@ -74,6 +74,7 @@
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/WaitCursorScope.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
@@ -1693,7 +1694,7 @@ i32 CGruntzMgr::ResetWorldState() {
     while (show(1) < 0) {
     }
 
-    CWaitCursor waitCursor;
+    CWaitCursorScope waitCursor;
 
     if (m_colorDepth == BPP_PALETTED_8) {
         if (LoadWorldMode(BPP_RGB_16) == 0) {

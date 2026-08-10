@@ -24,7 +24,7 @@ public:
         return LOGIC_PROJECTILE;
     }
     // Two entities, same tag types.  The out-of-line 0x126e0 expands the whole
-    // CMovingLogic chain (one `call ??0CUserBaseLink` + the CPtrList member) and
+    // CMovingLogic chain (one `call ??0zBitVec` + the CPtrList member) and
     // CBoomerang `call`s it; the inline sibling leaves the base a
     // `call ??0CMovingLogic`, which is what `new CProjectile` expands.
     CProjectile();

@@ -78,6 +78,14 @@ pointer arrays) -- compiler-generated metadata neither side pins and the delinke
 never carves, outside a referent audit's scope and reported separately rather than
 folded into the denominator.
 
+The `.xdata$x` half of that is now ENROLLED (`gruntz.build.eh_band` names each
+`FuncInfo` and its unwind map after the function that owns them), so those words do
+pair. They stay out of scope all the same, and are reported on their own line: what
+an EXTRA/MISSING word in an unwind map states is that OUR function constructs a
+different number of destructible objects than retail's, which is a code-shape
+defect `gruntz.audit.eh_band` owns and reports per function - not a claim about a
+referent we chose, which is the only thing this sieve is entitled to gate on.
+
 A datum only ONE side defines is an attribution gap, not a reloc defect, and
 `--unpaired` is its own report. `deflate`'s `_configuration_table` -- 10 DIR32s
 into `_deflate_*` -- exists only in our object because retail's copy was never
@@ -112,6 +120,7 @@ from pathlib import Path
 # the ILT thunk chase, for the same reason.
 from gruntz.audit.assert_relocs import load_symbols, resolve, resolve_thunk
 from gruntz.audit.global_refs import DIR32, REPO, _coff, canon
+from gruntz.build import eh_band
 from gruntz.core.manifest import live_objs
 from gruntz.core.pe import IMAGEBASE, PE
 from gruntz.core.report import data_measures
@@ -412,12 +421,12 @@ def clean_units() -> set[str]:
 
 
 def scan(unit_filter=None, norm=None):
-    """([Row], [unpaired], [unresolved], stats, dropped) over every live unit."""
+    """([Row], [unpaired], [unresolved], stats, dropped, [eh Row]) per live unit."""
     norm = Path(norm or NORM)
     clean = clean_units()
     sym, data, _dups = load_symbols()
     pe = PE()
-    rows, unpaired, unresolved = [], [], []
+    rows, unpaired, unresolved, eh_state = [], [], [], []
     dropped: collections.Counter = collections.Counter()
     stats: collections.Counter = collections.Counter()
 
@@ -530,11 +539,21 @@ def scan(unit_filter=None, norm=None):
                         continue
                 else:
                     verdict = "EXTRA" if br else "MISSING"
-                rows.append(Row(unit, nm, off, verdict, "paired",
-                                _ref(*br, ba) if br else None,
-                                _ref(*tr, ta) if tr else None,
-                                unit in clean))
-    return rows, unpaired, unresolved, stats, dropped
+                row = Row(unit, nm, off, verdict, "paired",
+                          _ref(*br, ba) if br else None,
+                          _ref(*tr, ta) if tr else None,
+                          unit in clean)
+                # THE /GX EH STATE TABLES ARE OUT OF THIS AUDIT'S SCOPE, as its own
+                # coverage note has always said - they are compiler-generated
+                # metadata about the OWNER's scopes, not a referent we chose. Now
+                # that `gruntz.build.eh_band` enrolls them they PAIR, so a divergence
+                # would arrive here as an EXTRA/MISSING word; but what it states is
+                # that our function builds a different number of destructible objects
+                # than retail's, which is a code-shape defect `gruntz.audit.eh_band`
+                # owns and reports per function. Route it there instead of gating the
+                # tree on it here, where it would say nothing about a referent.
+                (eh_state if eh_band.is_band_data_symbol(nm) else rows).append(row)
+    return rows, unpaired, unresolved, stats, dropped, eh_state
 
 
 # --------------------------------------------------------------------------- data %
@@ -571,7 +590,7 @@ def selftest(unit="boomerang") -> int:
             if tgt.is_file():
                 shutil.copy2(tgt, lab / "target" / tgt.name)
             _inject(lab / "base" / f"{unit}.obj", mode)
-            rows, _up, _ur, _st, _dr = scan(unit, norm=lab)
+            rows, _up, _ur, _st, _dr, _eh = scan(unit, norm=lab)
             got = [r.verdict for r in rows]
             ok = want in got
             print(f"  {mode:<9} expect {want:<8} got {got or ['(nothing)']}"
@@ -699,7 +718,7 @@ def main(argv=None) -> int:
               "  (all-or-nothing per section)")
         return 0
 
-    rows, unpaired, unresolved, stats, dropped = scan(args.unit)
+    rows, unpaired, unresolved, stats, dropped, eh_state = scan(args.unit)
     fp = [r for r in rows if r.clean]
     orphans = orphan_payloads()
     new_orphans = [o for o in orphans if o[0] not in KNOWN_ORPHAN_UNITS]
@@ -718,6 +737,13 @@ def main(argv=None) -> int:
           f"(FALSE POSITIVES): {len(fp)}")
     by = collections.Counter(r.verdict for r in rows)
     print("verdicts: " + (", ".join(f"{k}={v}" for k, v in sorted(by.items())) or "-"))
+    if eh_state:
+        owners = sorted({r.datum.split("$", 1)[1] for r in eh_state})
+        print(f"/GX EH state tables (out of scope here - a different unwind-state "
+              f"COUNT is a code-shape defect `python -m gruntz.audit.eh_band` owns): "
+              f"{len(eh_state)} word(s) over {len(owners)} function(s)")
+        for owner in owners:
+            print(f"    {owner}")
     print(f"enrolled data carved into an object objdiff never opens: {len(orphans)} "
           f"({len(new_orphans)} new); live units objdiff does not compare at all: "
           f"{len(empty)} ({len(new_empty)} new) -- --orphans")

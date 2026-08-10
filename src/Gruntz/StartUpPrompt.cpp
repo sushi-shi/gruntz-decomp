@@ -7,6 +7,7 @@
 
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HeapDiag.h>
+#include <Gruntz/WaitCursorScope.h>
 #include <Utils/WinAPICdRom.h>
 
 #include <string.h>
@@ -52,7 +53,7 @@ int StartUpPrompt(HWND hWnd) {
                 return 0;
             }
             {
-                CWaitCursor wait;
+                CWaitCursorScope wait;
                 if (IsGruntzCDInAnyDrive()) {
                     break;
                 }

@@ -33,7 +33,7 @@ public:
 
 public:
     // Two entities, same tag type.  The out-of-line 0x13940 EXPANDS both its
-    // CUserLogic base (??_7CUserBase stamp + the single `call ??0CUserBaseLink`) and
+    // CUserLogic base (??_7CUserBase stamp + the single `call ??0zBitVec`) and
     // its CMotionState member; CProjectile `call`s it.  The inline sibling leaves
     // both a `call`, which is what CGrunt's construction shows in retail's
     // SerialObjectFactory: `call ??0CUserLogic`, `call ??0CMotionState`, then the
@@ -42,7 +42,7 @@ public:
     CMovingLogic(CUserLogic::EInlineBase);
     // The same body as the out-of-line 0x13940, as an inline sibling: retail's
     // ??0CProjectile (0x126e0) expands the whole chain down to the single
-    // `call ??0CUserBaseLink`.
+    // `call ??0zBitVec`.
     CMovingLogic(CMotionState::EInlineBase);
 
     CMovingLogic(CGameObject* owner);

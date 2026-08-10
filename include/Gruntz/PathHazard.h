@@ -33,7 +33,7 @@ public:
 
 public:
     // Two entities, same tag type.  The out-of-line 0x13170 EXPANDS its CUserLogic
-    // base (??_7CUserBase stamp + `call ??0CUserBaseLink`) and CRainCloud / CUFO
+    // base (??_7CUserBase stamp + `call ??0zBitVec`) and CRainCloud / CUFO
     // `call` it; the inline sibling, whose base stays a `call`, is what
     // `new CPathHazard` expands.
     CPathHazard();

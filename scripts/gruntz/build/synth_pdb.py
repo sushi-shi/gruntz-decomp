@@ -992,6 +992,17 @@ def main():
     for rva, (name, _unit, _size) in names_map.items():
         if not (TEXT_BASE <= rva < TEXT_END):
             data_names.setdefault(rva, name)
+    # The `.xdata$x` half of the same band. The registration stub's
+    # `mov eax,<FuncInfo>` addresses a blob no unit enrolls, so the delinked
+    # reference decomposed onto whatever `??_R4`/`DAT_` label happened to precede
+    # it; naming the record and its unwind map after the OWNER makes both sides
+    # spell the datum the same way (gruntz.build.eh_band.data_records).
+    neh = 0
+    for rva, name, _unit, _size in eh_band.data_records(band):
+        if data_names.setdefault(rva, name) == name:
+            neh += 1
+    print("[synth_pdb] EH funcinfo: named %d `.xdata$x` datum(s)" % neh,
+          file=sys.stderr)
     thunk_names = read_ilt_thunk_names(args.exe, args.functions, names_map)
     if thunk_names:
         print("[synth_pdb] propagated %d curated body name(s) to ILT forwarding thunks"

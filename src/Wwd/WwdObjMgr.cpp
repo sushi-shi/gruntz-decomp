@@ -1326,6 +1326,13 @@ WwdDirtyRect::WwdDirtyRect() {
     m_armed = -1;
 }
 
+// The header's `~WwdDirtyRect() {}` COMDAT, and where retail put it. cl inlines
+// the empty body away at every call site (retail's ~CGameObject has no call to
+// it) but must still give it an ADDRESS, because the /GX unwind funclet for the
+// member at +0xb8 jumps there. Without the pin that funclet's target is an
+// unnamed byte and the reference cannot be compared at all.
+RVA_COMPGEN(0x0015b290, 0x10, ??1WwdDirtyRect@@QAE@XZ)
+
 RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = NULL;

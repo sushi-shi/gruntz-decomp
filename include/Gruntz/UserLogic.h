@@ -10,9 +10,9 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/UserBaseLink.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/TileGeometry.h>
+#include <Wap32/zBitVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 struct CGameObject;
@@ -100,7 +100,7 @@ public:
     CWwdGameObjectA* m_object;
 
     AnimWorkerObj* m_objAux;
-    CUserBaseLink m_link;
+    zBitVec m_actBits;
     i32 m_gatedActKey;
     i32 m_reserved2c;
 
@@ -135,7 +135,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     m_objAux = (obj)->m_animWorker;                                                                \
     {                                                                                              \
         zBitVec tmp("", 0);                                                                        \
-        m_link.m_str = tmp;                                                                        \
+        m_actBits = tmp;                                                                           \
     }                                                                                              \
     RegisterLogicTypesOnce();                                                                      \
     m_object->AddLogicHit("LogicHit");                                                             \
@@ -147,7 +147,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     m_reserved2c = 2;
 
 // Inline in the shared header: retail expands this whole body into ~57 derived
-// logic constructors (they show the two vptr stamps, the m_link zBitVec assign and
+// logic constructors (they show the two vptr stamps, the m_actBits zBitVec assign and
 // the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
 // CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
 inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
@@ -185,7 +185,7 @@ public:
 
 public:
     // Two entities, same tag type.  The out-of-line one at 0x11160 EXPANDS its
-    // CUserLogic base (it stamps ??_7CUserBase and `call`s ??0CUserBaseLink);
+    // CUserLogic base (it stamps ??_7CUserBase and `call`s ??0zBitVec);
     // CTileSecretTrigger and CGiantRock reach it.
     CTileTrigger();
     // The inline sibling, whose CUserLogic base stays a `call`: `new CTileTrigger`

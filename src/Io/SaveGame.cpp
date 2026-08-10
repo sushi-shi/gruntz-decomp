@@ -16,6 +16,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SaveSlotCtrlId.h>
+#include <Gruntz/WaitCursorScope.h>
 #include <Image/Image.h>
 #include <Image/ImagePool.h>
 #include <Image/RezDecodeKind.h>
@@ -99,7 +100,7 @@ i32 CSaveGame::Load() {
 
 RVA(0x000e4ea0, 0x18c)
 i32 CSaveGame::Save(char* path, i32 msgId) {
-    CWaitCursor wait;
+    CWaitCursorScope wait;
     CFile file;
     if (!file.Open(m_name, CFile::modeCreate, 0)) {
         return 0;

@@ -40,13 +40,11 @@ public:
     CSymRec(i32 key, CSymTab* owner, i32 c, i32 d);
     CSymRec(i32 key, CSymTab* owner, i32 c);
 
+    // No class-level operator new/delete: retail's unwind funclet for
+    // `new CSymRec` calls the GLOBAL ??3@YAXPAX@Z, which a class-level
+    // forwarder cannot produce (cl emits ??3CSymRec@@SAXPAX@Z and the
+    // funclet calls that).
     ~CSymRec();
-    void* operator new(u32 n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
 
     i32 m_key;
     CSymRecNode m_symNode;
@@ -73,13 +71,6 @@ public:
     );
 
     ~CSymTab();
-
-    void* operator new(u32 n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
 
     CSymTab* CreateSub(const char* name);
 

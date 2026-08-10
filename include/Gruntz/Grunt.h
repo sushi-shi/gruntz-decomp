@@ -24,7 +24,6 @@
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/String.h>
-#include <Gruntz/UserBaseLink.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>

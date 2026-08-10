@@ -94,6 +94,9 @@ void CResolveNode::Unload() {
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
+// The header's `~WwdRegion() {}` COMDAT - inlined away at every call site,
+// but the unwind funclet for the member at +0x9c jumps to this address.
+RVA_COMPGEN(0x0015b4e0, 0x10, ??1WwdRegion@@QAE@XZ)
 RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
 RVA(0x0015b650, 0x4d)

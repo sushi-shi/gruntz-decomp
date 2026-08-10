@@ -107,7 +107,7 @@ i32 CUserLogic::SerializeMove(
             char* buf = new char[len];
             arc->Read(buf, len);
             istrstream accum(buf, len);
-            accum >> m_link.m_str;
+            accum >> m_actBits;
             delete[] buf;
             arc->Read(&m_gatedActKey, sizeof(m_gatedActKey));
             arc->Read(&m_reserved2c, sizeof(m_reserved2c));
@@ -126,7 +126,7 @@ i32 CUserLogic::SerializeMove(
 
             char buf[0x100];
             ostrstream accum(buf, 0x100);
-            accum << m_link.m_str;
+            accum << m_actBits;
             i32 len = accum.pcount();
             arc->Write(&len, sizeof(len));
             arc->Write(accum.str(), len);

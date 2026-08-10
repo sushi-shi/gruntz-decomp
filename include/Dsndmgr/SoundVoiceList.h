@@ -25,14 +25,14 @@ template<class T> inline T* elemOf(DSoundLink* link) {
 struct PureSoundElem {
     virtual i32 Tick(i32 now) = 0;
     virtual i32 Stop() = 0;
-    void operator delete(void* p);
 
+    // No class-level `operator delete`: retail's unwind funclet for a
+    // `new`-cleanup on this class calls the GLOBAL ??3@YAXPAX@Z, and a
+    // class-level forwarder cannot produce that - cl emits
+    // ??3PureSoundElem@@SAXPAX@Z and has the funclet call that instead.
     ~PureSoundElem() {}
 };
 SIZE(0x4);
-inline void PureSoundElem::operator delete(void* p) {
-    ::operator delete(p);
-}
 
 struct DSoundElem : public PureSoundElem {
 

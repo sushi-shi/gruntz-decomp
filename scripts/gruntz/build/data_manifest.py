@@ -336,6 +336,61 @@ def compgen_rows(exe=EXE, table=None):
     return rows, withheld
 
 
+def ehfuncinfo_rows(exe=EXE, symbols=SYMBOLS):
+    """The `.xdata$x` blob of every carved /GX EH group -> per-owner rows.
+
+    THE CODE HALF OF THIS BAND WAS ALREADY CARVED and the funclet bytes compare;
+    what did not was the datum the registration stub loads. `mov eax,<FuncInfo>`
+    addresses a `_s_FuncInfo` record no unit enrolls, so the delinker had no
+    definition to bind and resolved the reference onto the nearest preceding named
+    datum plus an addend (`??_R4CGruntVoice@@6B@+0x87a8`), where cl's own object
+    names it `$T<n>`. Every one of the 750 registration stubs therefore sat at
+    97.5% with byte-identical code and one differently-spelled operand.
+
+    THE EXTENT IS READ OUT OF THE RECORD, NEVER ASSUMED. `gruntz.build.eh_band`
+    enrolls a group only when its `pUnwindMap` word points at `funcinfo + 32` -
+    which is what proves the record's length - and its try-block and ip-to-state
+    maps are empty, which is what proves the unwind map is the record's whole
+    tail. The map's own length is `8 * maxState`, stated by the record.
+
+    Two rows per group: the record and its map. Splitting them is not cosmetic -
+    the record's `pUnwindMap` word RELOCATES to the map, so a single 40-byte row
+    would make that a self-reference with an addend on our side against a
+    separately-labelled `$T<n>` on cl's, and the reference would still not co-name.
+    """
+    import sys as _sys
+    _sys.path.insert(0, str(REPO / "scripts"))
+    from gruntz.build import eh_band  # noqa: E402
+
+    exe = Path(exe)
+    if not exe.is_file() or not Path(symbols).is_file():
+        return [], []
+    names = {}
+    with Path(symbols).open(newline="") as f:
+        for r in csv.DictReader(l for l in f if not l.lstrip().startswith("#")):
+            if (r.get("kind") or "func") != "func":
+                continue
+            size = (r.get("size") or "").strip()
+            names[int(r["rva"], 16)] = (r["name"].strip(), (r.get("unit") or "").strip(),
+                                        int(size, 16) if size else 0)
+    band = eh_band.groups(exe, names)
+    pe = read_pe(exe)
+    rows, withheld = [], []
+    for group in band:
+        if not group.funcinfo_size:
+            withheld.append((group.funcinfo, eh_band.funcinfo_symbol(group.owner),
+                             "FuncInfo record does not prove its own extent"))
+    for rva, name, unit, size in eh_band.data_records(band):
+        start = classify_pe_storage(pe, rva)["class"]
+        end = classify_pe_storage(pe, rva + size - 1)["class"]
+        if start not in STORAGE or start != end:
+            withheld.append((rva, name, "EH funcinfo storage %s not enrollable" % start))
+            continue
+        rows.append({"name": name, "object": "%s.c" % unit, "rva": rva, "size": size,
+                     "storage": STORAGE[start], "provenance": "retail-EH-funcinfo"})
+    return rows, withheld
+
+
 def retail_col_head(pe, vtable_rva):
     """4 if retail's COMDAT for this vtable opens with an `??_R4` COL pointer, else 0.
 
@@ -1054,6 +1109,12 @@ def candidates(symbols=SYMBOLS, exe=EXE):
     compgen, compgen_withheld = compgen_rows(exe=exe)
     rows += compgen
     withheld += compgen_withheld
+
+    # The `.xdata$x` half of the carved /GX EH band - the record each registration
+    # stub loads, plus its unwind map, both with an extent the record itself states.
+    ehfi, ehfi_withheld = ehfuncinfo_rows(exe=exe, symbols=symbols)
+    rows += ehfi
+    withheld += ehfi_withheld
 
     # cl's `$T` FP pool - the one member of an ordinary section that no source pin
     # can reach, addressed out of retail's own relocation table. A slot some OTHER
