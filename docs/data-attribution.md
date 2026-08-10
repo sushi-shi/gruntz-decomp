@@ -1316,3 +1316,42 @@ survivor (132 refs image-wide); the named global src invented for it cited
 itself. The data-unprovable-tail rule now consults the claiming unit's own
 base obj to resolve the FileAlignment-tail ambiguity (cl put the symbol in
 .bss there, so retail's cl did too).
+
+### 5c. TickKillCues fixed; the static-object detector (2026-08-10)
+
+**`?TickKillCues@CDDrawChildGroup` is FIXED, not specified.** src carried five
+dead `g_val_<hex>` placeholders (zero uses) whose addresses are the innards of
+the two function-local `static CObArray` the function already declared:
+0x2bf394/0x2bf3ac are each array's `m_pData`, 0x2bf398/0x2bf3b0 its `m_nSize`,
+0x2bf388 the shared init guard. Retail proves the shape (`mov ecx,<addr>;
+call ??0CObArray@@QAE@XZ` at both sites) and the extents agree on both sides:
+cl allocates 0x18 per `CObArray` in `.bss` (sizeof 0x14 rounded to 8), exactly
+retail's 0x2bf390 -> 0x2bf3a8 spacing. Placeholders deleted, `DATA()` pins on
+the statics, guard pinned under cl's verbatim `_?$S28@...` spelling.
+**TickKillCues 100.0; wwdobjmgr `.bss` 38.6 -> 100.0** - the band-gap rows that
+had been carving the unmodelled interior are gone, which is the surface doing
+exactly its job.
+
+**The generalizable detector** (worth re-running after any modelling wave):
+scan `.text` for `mov ecx,<static data addr>` followed within ~24 B by a
+`call ??0<Class>`, then compare each construction site against the manifest.
+56 static constructions found; the informative outcomes are
+
+* **UNCLAIMED at an object start** -> a real missing pin. Three `static CString`
+  objects surfaced this way (s_custom 0x229e44, buf 0x22af0c, s_alert
+  0x2446fc), each previously a parked "unclaimed/high 4 B" access-map row.
+* **interior of an existing claim** -> benign when the claim is an ARRAY
+  (`g_levelMsgStrings`/`g_areaNames`/`g_gruntNames` construct elements at
+  interior offsets); a defect only when the claim is a scalar, which is how
+  TickKillCues read.
+* library-owned constructions (static `CWnd` family, `AFX_CLASSINIT`) stay
+  unclaimed by design - the library-gap rule excludes them.
+
+**Tool defect it exposed:** `labels.msvc5_data_symbol` wildcarded only DECIMAL
+scope ordinals, but MSVC spells an ordinal >10 as hex digits A..P terminated
+by `@` (`?BD@??Fn@@...` = 0x13 = 19). Every function-local static nested deep
+in a function silently MISSed and stayed unnamed. Fixed to accept both forms.
+
+**Not a defect:** the 20 dead `g_val_<hex>` placeholders elsewhere in src are
+all real retail-referenced data (5-15 access sites each, mostly Win32 handles
+around IAT calls) - naming debt for the rename-last phase, not mis-models.
