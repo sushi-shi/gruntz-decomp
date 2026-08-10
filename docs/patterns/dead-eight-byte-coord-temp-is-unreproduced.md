@@ -16,6 +16,10 @@ same two values also stay live in registers and every use reads them from there.
 | `CTriggerMgr::NotifyCell` | 0x79fb0 | `mov [esp+0x10],edx` / `mov [esp+0x14],edx` |
 | `CTriggerMgr::ToggleRegionA` | 0x7d450 | `mov [esp+0x20],ecx` / `mov [esp+0x28],edx` |
 | `CGrunt::ResolveArrivalNeighbor` | 0xf26f0 | `mov [esp+0x8],eax` / `mov [esp+0x1c],edx` |
+| `CTriggerMgr::TriggerCell` | 0x7b1b0 | `mov [esp+0x28],ecx` / `mov [esp+0x30],edx` |
+| `CTriggerMgr::ApplyTriggerA` | 0x6dae0 | `mov [esp+0x20],ecx` / `mov [esp+0x1c],eax` |
+| `CTriggerMgr::ApplyTriggerB` | 0x6e120 | `mov [esp+0x24],ecx` / `mov [esp+0x20],edx` |
+| `CTriggerMgr::ClearCell` | 0x6e800 | `mov [esp+0x10],edx` / `mov [esp+0x18],edx` (m_moveTile, not m_lastTilePx) |
 
 In all three the slots are `[S-8]` and `[S-4]` (S = esp at entry), i.e. exactly the
 `sub esp,0x8` area, and in all three they hold `x` then `y` out of `m_lastTilePx` - which
@@ -103,6 +107,40 @@ source-construct hunt. They are otherwise block-exact; the residue is one callee
 register and every `[esp+N]`. If a variants run flips the allocation, it flips all of it
 at once.
 
-`ToggleRegionA` is parked at 79.13 (from 75.40) and `NotifyCell` at 85.89 (MAX 87.15).
+`NotifyCell` is parked at 85.89 (MAX 87.15).
+
+## 2026-08-10 additions
+
+**Two more probe families died** (they are not in the 38 above): a by-value inline
+accessor `CGrunt::LastTilePx()` added to `Grunt.h` for exactly this purpose, and an
+explicit `Coord() {}` default constructor on `Coord` itself (tried live in `NotifyCell`).
+cl elided the local in both, and the `Coord()` cell does now build - the C2362 that
+blocked the copy-ctor cell does not apply to a default ctor - so that avenue is closed on
+evidence rather than on a build error.
+
+**The TU-declaration-count axis is dead for the whole unit, not just per function.** A
+16-cell sweep of throwaway prototypes above `TriggerMgr.cpp`'s first include moved
+**none** of the unit's 21 sub-100 functions (only `PlaceObjectFull` wobbled 72.27/72.33
+on parity). The same sweep on `TriggerMgrHitTest.cpp` left `TmDeflectStep` 0x6f2f0 flat at
+99.4577 across 13 cells.
+
+**But the ARGUMENT-EVALUATION ORDER around one of these sites is reachable, and it is
+worth more than the two dead stores.** `ToggleRegionA` 0x7d450 went **79.13 -> 86.98** by
+spelling the ResetGroup call's coordinate source as a two-argument `Coord::Set` instead of
+a struct copy:
+
+```cpp
+// 79.13 - a struct copy loads m_x then m_y, retail loads m_y first
+Coord pt = cell->m_lastTilePx;
+// 86.98 - Set(x, y) evaluates right-to-left, which is retail's load order
+Coord pt;
+pt.Set(cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
+```
+
+The 8-byte frame and its two stores are still missing; everything else in the call setup
+now matches. So the rule stands - the stores are allocator residue - but **check the
+member LOAD ORDER before parking one of these**: `m_y` ahead of `m_x` means a two-argument
+call, not an aggregate copy. The same rewrite in `TriggerCell` 0x7b1b0 fixed the load
+order but scored 91.19 -> 89.73 and was reverted, so adjudicate per site.
 
 related: [shrink-wrapped-prologue-needs-one-tail-return.md](shrink-wrapped-prologue-needs-one-tail-return.md)

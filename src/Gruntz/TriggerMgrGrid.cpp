@@ -134,13 +134,13 @@ i32 CTriggerMgr::PlaceObject(
         if (m_grid[base] != NULL) {
 
             CGrunt** cells = &m_grid[row * TM_GRID_COLS];
-            do {
-                if (col >= TM_GRID_COLS) {
-                    goto fail;
-                }
+            while (col < TM_GRID_COLS) {
                 cells++;
                 col++;
-            } while (*cells != NULL);
+                if (*cells == NULL) {
+                    break;
+                }
+            }
         }
         if (col >= TM_GRID_COLS) {
             goto fail;
@@ -224,14 +224,13 @@ i32 CTriggerMgr::PlaceObject(
             kindId = kindDefault;
         }
 
-        GruntzPlayer* slot = &g_gameReg->m_options[row];
-        if (m_rowCount[row] >= slot->m_comboSel) {
+        if (m_rowCount[row] >= g_gameReg->m_options[row].m_comboSel) {
             goto fail;
         }
-        if (slot->m_liveGate != 0
+        if (g_gameReg->m_options[row].m_liveGate != 0
             || (row != g_curPlayer
                 && kindId == IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex))) {
-            kindId = IDX(slot->m_colorIndex);
+            kindId = IDX(g_gameReg->m_options[row].m_colorIndex);
         }
         if (row == g_curPlayer && aiType != 0) {
             aiType = 0;
@@ -368,18 +367,17 @@ CGrunt* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 
 // @early-stop
 RVA(0x0006bea0, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
-    i32 row, last;
+    i32 last;
     if (startRow == TM_GRID_ROW_ALL) {
-        row = 0;
+        startRow = 0;
         last = 3;
     } else {
         last = startRow;
-        row = startRow;
     }
 
-    if (row <= last) {
+    if (startRow <= last) {
         do {
-            CGrunt** cell = &m_grid[row * TM_GRID_COLS];
+            CGrunt** cell = &m_grid[startRow * TM_GRID_COLS];
             for (i32 col = 0; col < TM_GRID_COLS; col++) {
                 CGrunt* g = cell[col];
                 if (g != NULL && g->m_entranceCommitted != 0) {
@@ -387,20 +385,22 @@ CGrunt* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 s
                     if (o->m_layer != NULL) {
                         i32 x0 = o->m_screenX - 15;
                         i32 y0 = o->m_screenY - 15;
-                        if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
+                        i32 x1 = x0 + 30;
+                        i32 y1 = y0 + 30;
+                        if (px < x1 && px >= x0 && py < y1 && py >= y0) {
                             if (outRow != NULL) {
-                                *outRow = row;
+                                *outRow = startRow;
                             }
                             if (outCol != NULL) {
                                 *outCol = col;
                             }
-                            return m_grid[row * TM_GRID_COLS + col];
+                            return m_grid[startRow * TM_GRID_COLS + col];
                         }
                     }
                 }
             }
-            row++;
-        } while (row <= last);
+            startRow++;
+        } while (startRow <= last);
     }
     return 0;
 }
@@ -1355,13 +1355,11 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
     typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
     slot = g_typeColl.Slots();
     grown = g_typeColl.m_grown;
-    if (grown != 0) {
-        do {
-            if (slot != NULL) {
-                slot->CString::CString();
-            }
-            slot++;
-        } while (--grown != 0);
+    while (grown--) {
+        if (slot != NULL) {
+            slot->CString::CString();
+        }
+        slot++;
     }
     isI2 = (strcmp(*typeRec, "I") == 0);
     if (isI2) {
@@ -1379,10 +1377,10 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 worldX, i32 worldY) {
 
         if (hit->m_tileOwnerHi != col) {
             CGameObject* obj = cell->m_object;
-            CDDrawWorkerHost* plane = g_gameReg->m_world->m_level->m_mainPlane;
-            if (obj->m_screenX >= plane->m_viewRect.left && obj->m_screenX < plane->m_viewRect.right
-                && obj->m_screenY >= plane->m_viewRect.top
-                && obj->m_screenY < plane->m_viewRect.bottom) {
+            i32 sy = obj->m_screenY;
+            i32 sx = obj->m_screenX;
+            RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+            if (sx < vr->right && sx >= vr->left && sy < vr->bottom && sy >= vr->top) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(cell, 0x38e, -1, 0, -1, -1);
             }
         }
@@ -1422,13 +1420,11 @@ i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 worldX, i32 worldY, i32 arrival
     CString* typeRec = g_typeColl.ScratchResolve(cell->m_objAux->m_actKey);
     CString* p = g_typeColl.Slots();
     i32 n = g_typeColl.m_grown;
-    if (n != 0) {
-        do {
-            if (p != NULL) {
-                p->CString::CString();
-            }
-            p++;
-        } while (--n != 0);
+    while (n--) {
+        if (p != NULL) {
+            p->CString::CString();
+        }
+        p++;
     }
     bool isI = (strcmp(*typeRec, "I") == 0);
     if (isI) {

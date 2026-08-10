@@ -20,8 +20,23 @@
 // Test the four neighbours at +/-45 and +/-90 degrees from dir. Diagonal steps
 // additionally require both orthogonal cells to carry the route bit. The two
 // unused parameters are not read.
-// @early-stop: complete control flow; remaining differences are instruction
-// scheduling at the final inlined cell lookup and after later helper calls.
+// @early-stop
+// The control flow is PROVEN exact: `--branches --diff` reports 556 branches and
+// 96 rets on both sides with every symbolic target agreeing. The residue is 43
+// instructions out of 6511, in three families, all confined to the last third of
+// the body (asm 4191-6386, source lines 1457-2147) while the same source
+// spellings earlier in the function are byte-identical:
+//   A (9 sites) `mov edi,[esp+0x2d8]` before vs after the `mov edx,[eax]` of the
+//     Coord copy at `*pCell = *stepN.Set(...)`
+//   B (9 sites) the `mov ecx,[g_gameReg]` for the sideX CellFlagsAt scheduled
+//     before vs after the first argument's `mov eax,[esp+0x1c]`
+//   C (2 sites) the same swap on `[esp+0x2c4]`
+// All nine family-B sites are the SECOND sideY/sideX block of a case arm; the
+// first block of every arm matches, so the difference is register pressure in
+// that region, not the spelling. Two levers were measured and are dead: a
+// 13-cell TU-declaration-count sweep is flat at 99.4577, and rewriting all 96
+// out-param copies field-wise (`pCell->m_x = c->m_x`) takes the diff from 23 to
+// 30 hunks.
 RVA(0x0006f2f0, 0x5227)
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
@@ -2193,9 +2208,9 @@ GruntDirectionCell __stdcall TmDeflectStep(
 // @early-stop
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
-    CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 ix = x >> TILE_SHIFT_PX;
     i32 iy = y >> TILE_SHIFT_PX;
+    CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
     if (ix >= plane->m_width || iy >= plane->m_height) {
         attr = -1;
@@ -2214,13 +2229,14 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 
     if (exact == 0) {
         CGameObject* o = cell->m_object;
-        i32 ylo = y - 7;
-        i32 yhi = y + 7;
-        i32 xlo = x - 7;
-        i32 xhi = x + 7;
+        RECT box;
+        box.top = y - 7;
+        box.bottom = y + 7;
+        box.left = x - 7;
+        box.right = x + 7;
         i32 ox = o->m_screenX - 7;
         i32 oy = o->m_screenY - 7;
-        if (xlo > ox + 14 || xhi < ox || ylo > oy + 14 || yhi < oy) {
+        if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
             return 0;
         }
         *outRow = row;
@@ -2263,10 +2279,10 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                     continue;
                 }
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-                if (static_cast<u32>(y) >= static_cast<u32>(grid->m_height)) {
+                if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->m_height)) {
                     continue;
                 }
+                CMapMgr* grid = g_gameReg->m_tileGrid;
                 i32 val;
                 if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
                     && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
