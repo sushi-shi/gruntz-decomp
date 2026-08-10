@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
@@ -12,13 +12,13 @@ class CDDrawSurfaceMgr;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
 
-struct CAniRecordBase2 : public CLoadable {
+struct CAniRecordBase2 : public CWapObj {
     CDDPalette* m_buf;
 
     CAniRecordBase2() {}
 
     CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner)
-        : CLoadable(owner, field04, 0, CLoadable::NO_SEED) {
+        : CWapObj(owner, field04, 0, CWapObj::NO_SEED) {
         m_buf = NULL;
     }
 

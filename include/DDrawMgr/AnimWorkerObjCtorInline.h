@@ -9,7 +9,7 @@
 // 0x15b300 in WwdObjMgr.cpp).  Same split as CResolveNode's: expanded inside
 // CGameObject's out-of-line ctor (0x15b390), a `call` in the three creators.
 inline AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CLoadable(owner, id, stateFlags, CLoadable::NO_SEED) {
+    : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
     ResetWorkerFields();
 }
 

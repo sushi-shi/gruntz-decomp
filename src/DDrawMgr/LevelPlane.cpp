@@ -16,7 +16,6 @@
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -26,6 +25,7 @@
 #include <Io/FileMem.h>
 #include <PlacementNew.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
 
 #include <stdio.h>
@@ -33,7 +33,7 @@
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
-    : CLoadable(mapData, field04, flags, CLoadable::NO_SEED) {
+    : CWapObj(mapData, field04, flags, CWapObj::NO_SEED) {
 
     m_tileGrid = NULL;
     m_colOffsets = NULL;

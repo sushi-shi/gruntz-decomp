@@ -64,6 +64,40 @@ made `cimagecomdats` emit `??1CWapObj@@UAE@XZ` at 22 bytes, **100.00 EXACT**,
 with `??1CImage` unchanged byte-for-byte. `cimagecomdats` 8 -> 9 labelled
 functions; `compgen_pins` 376 pins / 0 unemitted; the `(unmatched)` row is gone.
 
+## The whole intermediate class was the defect (2026-08-10)
+
+The 2026-08-08 fix moved the *body*; it left the intermediate `CLoadable` standing, so
+`eh_band --census` still read **31 groups** of `??1CLoadable@@UAE@XZ` (ours) against
+`??1CWapObj@@UAE@XZ` (retail) - one for every derived class in `include/DDrawMgr/**`.
+The census count is the tell: a body-placement mistake shows up once, a class that does
+not exist shows up once per subclass.
+
+Three readings converge on ONE class where we modelled two:
+
+* **the deleting destructor.** `??_GCLoadable@@UAEPAXI@Z` (0x155720) is `push esi / mov
+  esi,ecx / call 0x429b` and 0x429b is a five-byte ILT `jmp 0xd5d70`. A `??_G` calls its
+  OWN class's destructor, so the class at that vtable HAS no teardown between it and
+  0xd5d70 - it *is* 0xd5d70's class. (Its own vptr store is dead-eliminated by the three
+  field stores that follow.)
+* **the vtable.** `??_7CLoadable@@6B@` at 0x1efc30 is `0x24` = **9 slots**: CObject's five
+  plus `IsLoaded / IsReady / Unload / GetClassId`. That is exactly the union of what we
+  had split across an abstract `CWapObj` (IsLoaded, IsReady) and a concrete `CLoadable`
+  (Unload, GetClassId) - and slot 6 already resolved to `?IsReady@CWapObj@@UAEHXZ`, i.e.
+  the "two" classes were already sharing one vtable.
+* **RTTI.** `.?AVCWapObj@@` is present and `.?AVCLoadable@@` is not, and `CImage`'s base
+  array is `CImage -> CWapObj -> CObject`. `CImage`'s slot 7 (which we had named
+  `FreeAll`) is the same slot as `CLoadable::Unload`, which is only possible if one class
+  declares it.
+
+Merging `CLoadable` into `CWapObj` (delete `include/Gruntz/Loadable.h`, move
+`LoadableClassId` + `Unload` + `GetClassId` + the ctors onto `CWapObj`, rename
+`CImage::FreeAll` -> `CImage::Unload OVERRIDE`, rebind `??_7CLoadable@@6B@` ->
+`??_7CWapObj@@6B@`) took the funclet band **2706 -> 2737 exact** in one build, census
+`different-targets` 54 -> 29 and `identical` 86.4% -> 89.7%, with every renamed pin still
+100.00 and `vtable_hierarchy --audit` / `vtable_owner --audit` / `class_sizes` clean.
+`VTBL_ABSENT(CWapObj)` was removed - the class does have a `??_7`, we had just hung it on
+the wrong name.
+
 variants: [eh-funclet-band-owns-the-inline-dtor-comdat.md](eh-funclet-band-owns-the-inline-dtor-comdat.md),
 [shared-inline-transcribed-once-per-call-site.md](shared-inline-transcribed-once-per-call-site.md),
 [inline-budget-emits-ool-comdat.md](inline-budget-emits-ool-comdat.md)

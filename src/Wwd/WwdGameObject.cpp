@@ -20,7 +20,6 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
@@ -35,6 +34,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdGameObjectFamily.h>
 

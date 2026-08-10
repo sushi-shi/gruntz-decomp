@@ -17,12 +17,12 @@
 #include <Dsndmgr/SoundStream.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/Object.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/WwdObjMgr.h>
 
 #include <string.h>

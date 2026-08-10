@@ -3,43 +3,112 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/Object.h>
 
 #include <stddef.h>
 
-VTBL_ABSENT(CWapObj);
+GZ_ENUM_BEGIN(LoadableClassId)
+    CLASSID_NONE = 0,
+    CLASSID_SUBWORKER = 1,
+    CLASSID_SURFACECHILDA = 2,
+    CLASSID_SURFACEPAIR = 3,
+    CLASSID_WWDOBJA = 5,
+    CLASSID_WWDOBJC = 6,
+    CLASSID_ANIMWORKER = 9,
+    CLASSID_WWDOBJF = 0x16,
+    CLASSID_WWDOBJB = 0x1b,
+    CLASSID_WORKERNODE = 8,
+    CLASSID_WORKERPIXEL = 11,
+    CLASSID_IMAGE = 10,
+    CLASSID_WORKER = 14,
+
+    CLASSID_SUBMGRPAGES = 0xf,
+    CLASSID_CHILDGROUP = 0x10,
+    CLASSID_WORKERLIST = 0x11,
+    CLASSID_WORKERREGISTRY = 0x12,
+    CLASSID_WORKERCACHE = 0x13,
+    CLASSID_WORKERMAPSMALL = 0x14,
+    CLASSID_ANIRECORDBASE2 = 0x15,
+    CLASSID_GAMELEVEL = 0x19,
+    CLASSID_WORKERHOST = 0x1a,
+
+    CLASSID_SERIALREF = 5,
+
+    CLASSID_WWDOBJ_C = 6,
+    CLASSID_WWDOBJ_F = 0x16,
+    CLASSID_WWDOBJ_B = 0x1b,
+
+    CLASSID_CALLBACKOBJ = 0x1c
+GZ_ENUM_END(LoadableClassId)
+
 class CDDrawSurfaceMgr;
 
+// ONE class, not two.  `??_7CLoadable@@6B@` was our name for the vtable at
+// 0x1efc30, whose nine slots are CObject's five plus IsLoaded / IsReady /
+// Unload / GetClassId - i.e. exactly the union of what we had split across an
+// abstract "CWapObj" and a concrete "CLoadable".  Three independent readings
+// agree there is no class between them:
+//   * `??_GCLoadable@@UAEPAXI@Z` (0x155720) calls 0xd5d70 DIRECTLY as its own
+//     destructor - no intermediate teardown exists to call.
+//   * 0xd5d70 is also what retail's `??1CImage` unwind funclet calls, and
+//     CImage's RTTI base array is CImage -> CWapObj -> CObject.
+//   * the 31 `??1CLoadable -> ??1CWapObj` rows in `eh_band --census`: retail
+//     destroys every derived base sub-object as CWapObj.
+// RTTI names it CWapObj (`.?AVCWapObj@@` is present, `.?AVCLoadable@@` is not),
+// so CWapObj is the surviving name and 0x1efc30 is `??_7CWapObj@@6B@`.
 class CWapObj : public CObject {
 public:
-    // Pure: no retail vtable binds a CWapObj::IsLoaded body. Every one of the 22
-    // classes reaching this slot supplies its own (vtable_hierarchy --csv slot 5).
-    virtual i32 IsLoaded() = 0;
-
+    // Slots 5..8 of 0x1efc30, in vtable order.
+    virtual i32 IsLoaded();
     virtual i32 IsReady();
+    virtual void Unload();
+    virtual LoadableClassId GetClassId();
 
     i32 m_id;
     i32 m_flags;
-    class CDDrawSurfaceMgr* m_ownerCtx;
+    CDDrawSurfaceMgr* m_ownerCtx;
 
-    // 0xd5d70: CImage's base-subobject destructor. Retail's ??1CImage EH funclet
-    // CALLS it, and CImage's RTTI base array is CImage -> CWapObj -> CObject, so
-    // the three-field reset belongs to CWapObj, not to a class between them.
+    // 0xd5d70. Retail's ??1CImage EH funclet CALLS it and ??_GCLoadable (=
+    // ??_GCWapObj) tail-calls it, so the three-field reset is this class's own.
     virtual ~CWapObj() OVERRIDE {
         m_id = -1;
         m_flags = 0;
         m_ownerCtx = NULL;
     }
 
-    CWapObj() {}
+    CWapObj() {
+        m_ownerCtx = NULL;
+    }
 
-    CWapObj(i32 id, class CDDrawSurfaceMgr* owner) {
+    // Two entities for the two shapes retail shows (docs/patterns/
+    // two-shapes-need-two-entities.md).  `sema xref 0x156cb0` lists exactly four
+    // retail `call` sites - CDDrawSurfaceMgr::Init, CDDrawSubMgrPages::
+    // CreateChildren, CDDrawChildGroup::CreateContainerObject and
+    // CDDrawWorkerHost::ReadPlaneObjects - while every other derived ctor
+    // expands the three stores.  The pinned body (0x156cb0, DDrawSubMgr.cpp)
+    // serves the callers; the tagged sibling serves the expansions.  The tag
+    // must stay on the SIBLING: on the pinned body it would turn `ret 0xc`
+    // into `ret 0x10`.
+    CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+
+    enum ENoSeed {
+        NO_SEED
+    };
+    CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08, ENoSeed) {
+        m_id = field04;
+        m_flags = field08;
+        m_ownerCtx = owner;
+    }
+
+    CWapObj(i32 id, CDDrawSurfaceMgr* owner) {
         m_id = id;
         m_flags = 0;
         m_ownerCtx = owner;
     }
-    class CDDrawSurfaceMgr* OwnerMgr() const {
+
+    CDDrawSurfaceMgr* OwnerMgr() const {
         return m_ownerCtx;
     }
 };

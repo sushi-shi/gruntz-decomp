@@ -7,13 +7,13 @@
 #include <Bute/SymTab.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/StateId.h>
 #include <Gruntz/String.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <PlacementNew.h>
+#include <Wap32/WapObj.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -331,17 +331,17 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
 }
 
 RVA(0x00155700, 0x16)
-i32 CLoadable::IsLoaded() {
+i32 CWapObj::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
     }
     return 0;
 }
 
-RVA_COMPGEN(0x00155720, 0x1e, ??_GCLoadable@@UAEPAXI@Z)
+RVA_COMPGEN(0x00155720, 0x1e, ??_GCWapObj@@UAEPAXI@Z)
 
 RVA(0x00155740, 0x1)
-void CLoadable::Unload() {}
+void CWapObj::Unload() {}
 
 RVA(0x00155750, 0x16)
 i32 CDDrawWorker::IsLoaded() {

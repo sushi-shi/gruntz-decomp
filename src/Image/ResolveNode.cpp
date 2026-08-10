@@ -1,8 +1,8 @@
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
@@ -15,7 +15,7 @@ CResolveNode::CResolveNode() : m_dirty(WwdDirtyRect::INLINE_SEED) {
 }
 
 RVA(0x00154a00, 0x3)
-LoadableClassId CLoadable::GetClassId() {
+LoadableClassId CWapObj::GetClassId() {
     return CLASSID_NONE;
 }
 RVA(0x00154a10, 0x16)

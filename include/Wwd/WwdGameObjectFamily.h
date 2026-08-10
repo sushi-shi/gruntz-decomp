@@ -9,13 +9,13 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/WwdObjMgr.h>
 
 GZ_ENUM_FORWARD(MoveMode);
@@ -210,11 +210,11 @@ public:
           m_animCursor(owner, id, stateFlags, CAniAdvanceCursor::INLINE_CURSOR) {
         ResetSpriteFields();
     }
-    // Same, except the cursor's own CLoadable base is expanded too - the one site
+    // Same, except the cursor's own CWapObj base is expanded too - the one site
     // that shows it is CWwdGameObject::CreateObject.
-    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, CLoadable::ENoSeed)
+    CWwdGameObjectA(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags, CWapObj::ENoSeed)
         : CGameObject(owner, id, stateFlags),
-          m_animCursor(owner, id, stateFlags, CLoadable::NO_SEED) {
+          m_animCursor(owner, id, stateFlags, CWapObj::NO_SEED) {
         ResetSpriteFields();
     }
     // Expands the base ctor: CDDrawChildGroup::CreateSpriteObject takes this one.

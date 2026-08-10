@@ -172,7 +172,7 @@ name,rva,size,kind,unit,note
 ??_7CAniElement@@6B@,0x1efba8,0x14,primary,,
 ??_7CResolveNode@@6B@,0x1efbc0,0x28,primary,,
 ??_7CDDrawWorker@@6B@,0x1efbe8,0x44,primary,,
-??_7CLoadable@@6B@,0x1efc30,0x24,primary,,
+??_7CWapObj@@6B@,0x1efc30,0x24,primary,,
 ??_7CDDrawSurfaceMgr@@6B@,0x1efc58,0x20,primary,,
 ??_7CDDrawSubMgrLeaf@@6B@,0x1efc78,0x24,primary,,
 ??_7CDDrawSubMgrLeafScan@@6B@,0x1efca0,0x24,primary,,

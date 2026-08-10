@@ -28,7 +28,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>

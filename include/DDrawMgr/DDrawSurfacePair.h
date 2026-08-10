@@ -5,8 +5,8 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Enums.h>
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 

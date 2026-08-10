@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 

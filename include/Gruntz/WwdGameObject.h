@@ -7,11 +7,11 @@
 
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 class CDDrawSurfaceMgr;
 

@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/AnimWorkerAct.h>
 
 #include <stddef.h>
@@ -21,7 +21,7 @@ typedef i32(__cdecl* GameObjNotifyFn)(CGameObject* obj);
 
 class CDDrawSurfaceMgr;
 
-struct AnimWorkerObj : public CLoadable {
+struct AnimWorkerObj : public CWapObj {
 
     virtual ~AnimWorkerObj() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
@@ -37,7 +37,7 @@ struct AnimWorkerObj : public CLoadable {
     // the opt-in inline view of the same body for the one TU that expands it.
     AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags);
 
-    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0, CLoadable::NO_SEED) {
+    AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         ResetWorkerFields();
     }
 

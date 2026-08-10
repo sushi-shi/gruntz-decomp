@@ -6,7 +6,6 @@
 #include <Mfc.h>
 
 #include <Enums.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -113,7 +112,7 @@ GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
     LEVEL_EXTENDED_PLANE_COUNT = 4
 GZ_ENUM_CONST_END(LevelPlaneLayout)
 
-class CGameLevel : public CLoadable {
+class CGameLevel : public CWapObj {
 public:
     i32 IsValidWwd(const char* name, void* headerBuf);
 

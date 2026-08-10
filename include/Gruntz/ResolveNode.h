@@ -4,10 +4,10 @@
 #include <rva.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
@@ -48,7 +48,7 @@ struct WwdDirtyRect {
 };
 SIZE(0x24);
 
-class CResolveNode : public CLoadable {
+class CResolveNode : public CWapObj {
 public:
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;

@@ -5,9 +5,9 @@
 
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/Loadable.h>
 #include <Image/CImage.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 struct PidHeader;
 class CImage;
@@ -16,9 +16,9 @@ class CSymTab;
 struct CParseSource;
 class CDDrawSurfaceMgr;
 
-class CDDrawWorker : public CLoadable {
+class CDDrawWorker : public CWapObj {
 public:
-    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CLoadable(owner, id, 0, CLoadable::NO_SEED) {
+    CDDrawWorker(CDDrawSurfaceMgr* owner, i32 id) : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         m_minIndex = 99999;
         m_maxIndex = 0;
     }

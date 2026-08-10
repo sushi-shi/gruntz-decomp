@@ -3,15 +3,15 @@
 
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
 class DSoundCloneInst;
 struct CParseSource;
 
-struct LeafCue : public CLoadable {
+struct LeafCue : public CWapObj {
 
     RVA(0x00158650, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
@@ -38,7 +38,7 @@ struct LeafCue : public CLoadable {
 };
 SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle)
-    : CLoadable(handle, count, 0, CLoadable::NO_SEED) {
+    : CWapObj(handle, count, 0, CWapObj::NO_SEED) {
     m_sound = NULL;
     m_replayDelay = 0;
     m_lastPlayTime = 0;

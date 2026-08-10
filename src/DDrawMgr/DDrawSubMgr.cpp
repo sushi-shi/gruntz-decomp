@@ -31,7 +31,6 @@
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
@@ -57,10 +56,10 @@
 DATA(0x001eff2c)
 const float g_sndPanScale = 0.009999999776482582f;
 
-// The pinned half of the CLoadable two-entity split; the tagged inline sibling
-// lives in Gruntz/Loadable.h.
+// The pinned half of the CWapObj two-entity split; the tagged inline sibling
+// lives in Wap32/WapObj.h.
 RVA(0x00156cb0, 0x20)
-CLoadable::CLoadable(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
+CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
     m_id = field04;
     m_flags = field08;
     m_ownerCtx = owner;
@@ -1205,7 +1204,7 @@ i32 CDDrawSubMgrPages::TransExit() {
 
 RVA(0x00158f30, 0x27)
 CDrawSubWorker::CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
-    : CLoadable(owner, id, flags, CLoadable::NO_SEED) {
+    : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
     m_width = 0;
 }
 RVA(0x00158f60, 0x1d)

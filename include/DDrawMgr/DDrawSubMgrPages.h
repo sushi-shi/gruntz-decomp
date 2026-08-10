@@ -5,7 +5,6 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -21,9 +20,9 @@ GZ_ENUM_BEGIN(DDrawPageKind)
     DDRAW_PAGE_OVERLAY = 2
 GZ_ENUM_END(DDrawPageKind)
 
-class CDDrawSubMgrPages : public CLoadable {
+class CDDrawSubMgrPages : public CWapObj {
 public:
-    CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
+    CDDrawSubMgrPages(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_frontPair = NULL;
         m_backPair = NULL;
         m_overlayPair = NULL;
@@ -59,7 +58,7 @@ public:
 };
 SIZE(0x1c);
 
-class CDrawSubWorker : public CLoadable {
+class CDrawSubWorker : public CWapObj {
 public:
     CDrawSubWorker(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
@@ -68,7 +67,7 @@ protected:
         INLINE_CTOR
     };
     CDrawSubWorker(InlineCtorTag, CDDrawSurfaceMgr* owner, i32 id, i32 flags)
-        : CLoadable(owner, id, flags) {
+        : CWapObj(owner, id, flags) {
         m_width = 0;
     }
 

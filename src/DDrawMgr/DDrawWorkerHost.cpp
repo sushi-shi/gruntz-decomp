@@ -4,7 +4,7 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/Loadable.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
 
 RVA(0x00163a90, 0x17)

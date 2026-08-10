@@ -16,7 +16,6 @@
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/ObList.h>
 #include <Gruntz/ResolveNode.h>
@@ -29,6 +28,7 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdFactoryObject.h>
 #include <Wwd/WwdFile.h>
@@ -1344,7 +1344,7 @@ WwdGridNode::WwdGridNode() {
 // them (WwdFactoryObject.cpp, inside 0x15b390) takes the *CtorInline.h views instead.
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08, CLoadable::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
+    : CWapObj(owner, field04, field08, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
@@ -1353,6 +1353,6 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
 
 RVA(0x0015b300, 0x40)
 AnimWorkerObj::AnimWorkerObj(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CLoadable(owner, id, stateFlags, CLoadable::NO_SEED) {
+    : CWapObj(owner, id, stateFlags, CWapObj::NO_SEED) {
     ResetWorkerFields();
 }

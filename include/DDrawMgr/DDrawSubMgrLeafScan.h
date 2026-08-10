@@ -6,17 +6,17 @@
 #include <Mfc.h>
 
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/SoundState.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 struct SoundStream;
 class CSymTab;
 struct CParseSource;
 
-class CDDrawSubMgrLeafScan : public CLoadable {
+class CDDrawSubMgrLeafScan : public CWapObj {
 public:
-    CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {
+    CDDrawSubMgrLeafScan(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {
         m_soundStream = NULL;
         m_replayDelay = 0;
     }

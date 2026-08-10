@@ -4,16 +4,16 @@
 #include <rva.h>
 
 #include <DDrawMgr/AniRecordBase2.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Gruntz/ParseSource.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
-class CDDrawWorkerMapSmall : public CLoadable {
+class CDDrawWorkerMapSmall : public CWapObj {
 public:
-    CDDrawWorkerMapSmall(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
+    CDDrawWorkerMapSmall(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_cachedWorker = NULL;
     }
     virtual i32 IsLoaded() OVERRIDE;

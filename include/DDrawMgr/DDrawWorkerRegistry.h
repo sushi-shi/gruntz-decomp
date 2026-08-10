@@ -6,9 +6,9 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/DDSurface.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/StateId.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 class CDDrawWorker;
 class CDDrawWorker;
@@ -17,9 +17,9 @@ class CImage;
 struct PidHeader;
 class CSymTab;
 
-class CDDrawWorkerRegistry : public CLoadable {
+class CDDrawWorkerRegistry : public CWapObj {
 public:
-    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {}
+    CDDrawWorkerRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
 
     virtual ~CDDrawWorkerRegistry() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;

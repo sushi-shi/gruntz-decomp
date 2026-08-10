@@ -4,7 +4,6 @@
 #include <rva.h>
 
 #include <DDrawMgr/DDSurface.h>
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -47,8 +46,8 @@ public:
 
     virtual i32 IsLoaded() OVERRIDE;
 
-    virtual void FreeAll();
-    virtual LoadableClassId GetClassId();
+    virtual void Unload() OVERRIDE;
+    virtual LoadableClassId GetClassId() OVERRIDE;
 
     virtual i32 CreateBlankSurface(i32 width, i32 height, i32 keyed);
     virtual i32 LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed);
@@ -87,7 +86,7 @@ public:
 SIZE(0x34);
 
 inline CImage::~CImage() {
-    FreeAll();
+    Unload();
 }
 
 struct _DDBLTFX;

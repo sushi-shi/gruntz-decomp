@@ -6,10 +6,10 @@
 #include <Mfc.h>
 
 #include <Enums.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 struct AnimWorkerObj;
 
@@ -21,9 +21,9 @@ class CWwdGameObject;
 class CWwdGameObjectC;
 class CWwdGameObjectF;
 
-class CDDrawChildGroup : public CLoadable {
+class CDDrawChildGroup : public CWapObj {
 public:
-    CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {
+    CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
         m_scanCursor = NULL;
     }

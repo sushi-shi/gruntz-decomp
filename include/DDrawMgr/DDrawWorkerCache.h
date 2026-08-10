@@ -4,17 +4,17 @@
 #include <rva.h>
 
 #include <DDrawMgr/AnimWorkerObj.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/MapStringToOb.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
 class CDDrawWorker;
 
-class CDDrawWorkerCache : public CLoadable {
+class CDDrawWorkerCache : public CWapObj {
 public:
-    CDDrawWorkerCache(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {}
+    CDDrawWorkerCache(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
     virtual ~CDDrawWorkerCache() OVERRIDE;
 
     RVA(0x001576d0, 0x16)

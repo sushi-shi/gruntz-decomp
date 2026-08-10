@@ -17,7 +17,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/ResolveNodeCtorInline.h>
 #include <Gruntz/SerialArchive.h>
@@ -29,6 +28,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Wap32/CoordUnset.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/AnimWorkerAct.h>
 #include <Wwd/WwdAnimStepMode.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -125,7 +125,7 @@ RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 
 RVA(0x0015b730, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CLoadable(owner, field04, field08, CLoadable::NO_SEED) {
+    : CWapObj(owner, field04, field08, CWapObj::NO_SEED) {
     m_boundObject = NULL;
     m_animation = NULL;
     m_element = NULL;

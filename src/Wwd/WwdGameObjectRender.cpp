@@ -166,7 +166,7 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     AnimWorkerObj* tmpl,
     int stateFlags
 ) {
-    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CLoadable::NO_SEED);
+    CWwdGameObjectA* result = new CWwdGameObjectA(OwnerMgr(), id, stateFlags, CWapObj::NO_SEED);
     if (result == NULL) {
         return 0;
     }

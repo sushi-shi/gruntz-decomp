@@ -210,7 +210,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
 }
 
 RVA(0x00153260, 0x41)
-void CImage::FreeAll() {
+void CImage::Unload() {
     m_width = 0;
     m_height = 0;
     if (m_surface != NULL) {
@@ -286,7 +286,7 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
     }
     surf = m_surface;
     if (surf->m_ddSurface->Restore() != 0) {
-        this->FreeAll();
+        this->Unload();
         return this->Resolve(src, arg);
     }
 

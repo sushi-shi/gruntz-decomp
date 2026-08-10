@@ -5,15 +5,15 @@
 
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerNode.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ObList.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 class CDDrawWorker;
 
-class CDDrawWorkerList : public CLoadable {
+class CDDrawWorkerList : public CWapObj {
 public:
-    CDDrawWorkerList(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0) {}
+    CDDrawWorkerList(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {}
 
     virtual ~CDDrawWorkerList() OVERRIDE;
 

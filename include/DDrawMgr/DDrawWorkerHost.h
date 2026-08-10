@@ -5,10 +5,10 @@
 
 #include <DDrawMgr/DDrawWorker.h>
 #include <Enums.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <ddraw.h>
 
@@ -27,7 +27,7 @@ class CFileMemBase;
 struct PlaneObjectRecord;
 struct WwdPlaneHeader;
 
-class CDDrawWorkerHost : public CLoadable {
+class CDDrawWorkerHost : public CWapObj {
 public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags);
     virtual ~CDDrawWorkerHost() OVERRIDE;

@@ -3,10 +3,10 @@
 
 #include <rva.h>
 
-#include <Gruntz/Loadable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 #include <stddef.h>
 
@@ -19,7 +19,7 @@ GZ_ENUM_CONST_BEGIN(AniAdvanceValue)
     ANI_SCALE_ONE_BITS = 0x3f800000
 GZ_ENUM_CONST_END(AniAdvanceValue)
 
-class CAniAdvanceCursor : public CLoadable {
+class CAniAdvanceCursor : public CWapObj {
 public:
     // Tag type: picks the expanded sibling of the out-of-line 0x15b730 ctor.
     // Retail calls 0x15b730 from exactly one site (CreateSpriteObject, whose
@@ -32,17 +32,17 @@ public:
 
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
     CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineCursor)
-        : CLoadable(owner, field04, field08) {
+        : CWapObj(owner, field04, field08) {
         m_boundObject = NULL;
         m_animation = NULL;
         m_element = NULL;
     }
-    // The third shape: body inline AND CLoadable's three stores inline, so the tag
-    // is CLoadable's own.  CWwdGameObject::CreateObject (0x166640) writes
+    // The third shape: body inline AND CWapObj's three stores inline, so the tag
+    // is CWapObj's own.  CWwdGameObject::CreateObject (0x166640) writes
     // id/flags/owner straight to [esi+0x1a4/0x1a8/0x1ac] with no `call 0x156cb0`,
     // where the two other users of the same CWwdGameObjectA ctor keep the call.
-    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, CLoadable::ENoSeed)
-        : CLoadable(owner, field04, field08, CLoadable::NO_SEED) {
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, CWapObj::ENoSeed)
+        : CWapObj(owner, field04, field08, CWapObj::NO_SEED) {
         m_boundObject = NULL;
         m_animation = NULL;
         m_element = NULL;

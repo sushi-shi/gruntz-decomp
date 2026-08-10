@@ -15,10 +15,10 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <Enums.h>
 #include <Gruntz/AniRecordView.h>
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
 #include <Pix16.h>
 #include <Wap32/Object.h>
+#include <Wap32/WapObj.h>
 
 #include <string.h>
 

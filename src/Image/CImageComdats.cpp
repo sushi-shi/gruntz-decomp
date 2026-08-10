@@ -10,7 +10,6 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/Loadable.h>
 #include <Gruntz/ParseSource.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
@@ -18,6 +17,7 @@
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
+#include <Wap32/WapObj.h>
 #include <Wwd/WwdFile.h>
 
 #include <ddraw.h>

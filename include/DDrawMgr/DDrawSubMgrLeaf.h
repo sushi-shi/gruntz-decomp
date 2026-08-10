@@ -5,14 +5,14 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/Loadable.h>
 #include <Ints.h>
+#include <Wap32/WapObj.h>
 
 class CAniElement;
 
-class CDDrawSubMgrLeaf : public CLoadable {
+class CDDrawSubMgrLeaf : public CWapObj {
 public:
-    CDDrawSubMgrLeaf(CDDrawSurfaceMgr* owner) : CLoadable(owner, 0, 0, CLoadable::NO_SEED) {}
+    CDDrawSubMgrLeaf(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
 
     virtual i32 IsLoaded() OVERRIDE;
     virtual i32 IsReady() OVERRIDE;

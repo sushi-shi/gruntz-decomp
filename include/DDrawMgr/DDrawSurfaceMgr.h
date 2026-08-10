@@ -30,7 +30,7 @@ struct CSnapshotHeader {
 SIZE(0x120);
 #pragma pack(pop)
 
-class CLoadable;
+class CWapObj;
 class CDDrawSubMgrPages;
 class CDDrawWorkerList;
 class CDDrawChildGroup;
