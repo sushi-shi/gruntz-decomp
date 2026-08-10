@@ -1039,7 +1039,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
 // them there). docs/patterns/dead-eight-byte-coord-temp-is-unreproduced.md
 RVA(0x00079fb0, 0x169)
 void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
-    i32 idx = col * TM_GRID_COLS + row;
+    i32 idx = row * TM_GRID_COLS + col;
     CGrunt* cell = m_grid[idx];
     if (cell == NULL) {
         return;
@@ -1059,12 +1059,12 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     tg->m_rows[rowIdx][cellCol].m_flagBytes[3] &= 0xdf;
     tg->m_rows[rowIdx][cellCol].m_occupantId = -1;
     m_grid[idx] = NULL;
-    m_rowCount[col] -= 1;
+    m_rowCount[row] -= 1;
 
     PickupType k;
     if (z != 0) {
         m_cellFlag[idx] = 1;
-        m_gruntzExitedByPlayer[col] += 1;
+        m_gruntzExitedByPlayer[row] += 1;
         k = cell->m_entranceReason;
         if (k > PICKUP_EQUIPPABLE_LAST) {
             k = cell->m_toolId;
@@ -1086,7 +1086,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         if (k == PICKUP_WARPSTONE) {
             this->ResetSpawnState();
         }
-        m_gruntzLostByPlayer[col] += 1;
+        m_gruntzLostByPlayer[row] += 1;
     }
     cell->m_cellRemovalNotified = 1;
 }
@@ -1972,10 +1972,10 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 
 // @early-stop
 RVA(0x0007c110, 0x166)
-i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
-    CGrunt* src = m_grid[col * TM_GRID_COLS + a1c];
+i32 CTriggerMgr::SpawnGrunt(i32 srcRow, i32 srcCol, i32 dstRow, i32 moveIcon) {
+    CGrunt* src = m_grid[srcRow * TM_GRID_COLS + srcCol];
     i32 free = 0;
-    CGrunt** p = &m_grid[row * TM_GRID_COLS];
+    CGrunt** p = &m_grid[dstRow * TM_GRID_COLS];
     while (*p != NULL) {
         if (free >= 15) {
             break;
@@ -1994,7 +1994,7 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
         k = src->m_toolId;
     }
     PickupType vis = src->m_vehiclePickupType;
-    this->CellDispatch(col, row, DEATH_DROP, a18);
+    this->CellDispatch(srcRow, srcCol, DEATH_DROP, dstRow);
     CDDrawChildGroup* fac = m_world->m_childGroup;
     CWwdGameObjectA* sprite = fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == NULL) {
@@ -2004,13 +2004,27 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
 
     CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
 
-    if (logic->Place(this, row, free, vis, k, 0, AI_NONE, 0, 0, 0, 0, GRUNT_ENTRANCE_NONE) == 0) {
+    if (logic->Place(
+            this,
+            dstRow,
+            free,
+            static_cast<PickupType>(moveIcon),
+            k,
+            vis,
+            AI_NONE,
+            0,
+            0,
+            0,
+            0,
+            GRUNT_ENTRANCE_NONE
+        )
+        == 0) {
         logic->m_wwdObject->m_flags |= 0x10000;
         return 0;
     }
-    m_grid[row * TM_GRID_COLS + free] = logic;
-    m_rowCount[row] += 1;
-    m_cellFlag[(row * TM_GRID_COLS + free)] = 0;
+    m_grid[dstRow * TM_GRID_COLS + free] = logic;
+    m_rowCount[dstRow] += 1;
+    m_cellFlag[(dstRow * TM_GRID_COLS + free)] = 0;
     return 1;
 }
 

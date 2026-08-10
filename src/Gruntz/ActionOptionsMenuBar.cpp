@@ -193,15 +193,15 @@ i32 CActionOptionsMenuBar::Render() {
 
     RECT r = g_gameReg->m_world->m_level->m_planeCtx;
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
-    m_frame->RenderFrameClipped(ctx, sy, sx, &r, 0);
+    m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
 
     if (m_buttonFrame[0]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
-        m_buttonFrame[0]->RenderFrameClipped(ctx, sy - 0xc, sx + 2, &r, 0);
+        m_buttonFrame[0]->RenderFrameClipped(ctx, sx - 0xc, sy + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
         r = g_gameReg->m_world->m_level->m_planeCtx;
-        m_buttonFrame[1]->RenderFrameClipped(ctx, sy + 0x10, sx + 2, &r, 0);
+        m_buttonFrame[1]->RenderFrameClipped(ctx, sx + 0x10, sy + 2, &r, 0);
     }
     return 1;
 }
