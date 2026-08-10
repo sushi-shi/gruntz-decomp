@@ -100,6 +100,32 @@ Two of the four then closed on a plain source-shape fix
 **Map the window ONCE per TU, on one function. If it is flat there, do not re-run it on
 that TU's other functions - spend the budget on the disassembly instead.**
 
+## Refuted on the two biggest game TUs: `multi` and `gruntzmgr` (2026-08-10)
+
+`src/Gruntz/Multi.cpp` (3.3 kloc, ~200 project includes) and `src/Gruntz/GruntzMgr.cpp`
+(3.3 kloc) are **completely flat**. Measured with the block placed immediately after
+`#include <rva.h>` and both TUs perturbed together, scoring EVERY function in both units:
+
+| carrier | N | per-function scores |
+|---|---|---|
+| free-function prototypes `int gz_probe_NN(int);` | 1, 2, 8 | byte-identical to N=0 |
+| a class with N inline member bodies | 8 | byte-identical to N=0 |
+| a class with N inline member bodies | **100** | byte-identical to N=0 |
+
+Not one of the 40 sub-100 functions across the two units moved by a single instruction,
+and the unit fuzzy stayed at 96.851 / 97.828 to five digits. The base objs were verified
+fresh each time (mtime + `Overall:` unchanged is not proof; the obj was re-checked).
+
+So the window is not merely function-specific, it is **TU-specific**: a compiland that
+already parses several thousand file-scope declarations does not respond to tens or
+hundreds more. In a TU that size the residue you can still see - a `this`/zero register
+rotated between `ebx`/`edi`/`ebp`, two independent stores swapped - is NOT reachable by
+this lever, and the "bank the MAX under a perturbation, then revert" play is unavailable.
+Spend the budget on the disassembly instead: in the same session, reading the diffs
+turned up six real source bugs in those two TUs (an inverted resource-id pairing, a
+missing local RECT, a loop condition spelled as a `break`, a re-read member that should
+be a cached local).
+
 related: [string-h-intrinsics-reallocate-the-tu.md](string-h-intrinsics-reallocate-the-tu.md),
 [commutative-operand-order-is-canonical.md](commutative-operand-order-is-canonical.md),
 [dead-eight-byte-coord-temp-is-unreproduced.md](dead-eight-byte-coord-temp-is-unreproduced.md)

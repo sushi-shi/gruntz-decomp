@@ -223,16 +223,21 @@ i32 PumpIdleFrame() {
 }
 
 // @early-stop
-// Two residues, and the first is NOT regalloc: retail EXPANDS the CCreditsState
-// constructor into the GAMESTATE_CREDITS arm (36 instructions at 0x8bfa2 - the CState
-// base ctor, two SetRect calls at 0x278e, the 0x5e9c64 vtable stamp and the field
-// zeroing) where cl declines it and emits a call to ??0CCreditsState@@QAE@XZ.  It is
-// already a header inline; this is the /Ob1 per-site budget
-// (docs/patterns/ob1-inline-budget-divergence.md), and it accounts for 33 of the
-// missing instructions on its own.  The rest is one whole-function regalloc swap -
-// retail colours this=edi / stateId=ebp (it materializes the stateId argument BEFORE
-// this) and keeps the `obj` join in esi, so every other `new` arm is exactly one
-// `mov eax,<reg>` longer here.
+// The prologue is byte-identical (this=edi, stateId=ebp, 0=ebx) - the earlier note
+// claiming a whole-function regalloc swap was wrong. Two residues remain:
+//   * retail EXPANDS the CCreditsState constructor into the GAMESTATE_CREDITS arm
+//     (the CState base ctor, two SetRect calls, the vtable stamp and the field
+//     zeroing) where cl declines it and calls ??0CCreditsState@@QAE@XZ - the /Ob1
+//     per-site budget (docs/patterns/inline-budget-emits-ool-comdat.md), i.e. an
+//     under-inlined CALLER, for which that pattern records no legitimate device.
+//   * the `obj` join lives in eax here and in esi in retail, so each of the nine
+//     `new` arms carries an extra `mov eax,esi` AND an extra
+//     `mov dword ptr [esp+0x1c],-1` EH-state reset (90 B).
+// Moving `obj = NULL` out of the declaration into the switch's default arm DOES
+// remove retail's absent `xor eax,eax` ahead of the jump-table dispatch, but the
+// join stays in eax and the arms keep the state reset: 86.43 -> 84.84. Reverted.
+// The zero-store interleave inside the inlined CPlay ctor (+0/+8/+4/+0xc) is the
+// member-class model documented on CPlay::CPlay in include/Gruntz/Play.h.
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
@@ -633,6 +638,11 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
 }
 
 // @early-stop
+// Retail folds the two arms into `cmp eax,4 / jne +1 / dec / dec`, i.e. neither arm
+// is a constant-foldable `count - N`. cl constant-propagates count==4 into whichever
+// arm it guards, so `idx -= 2` (95.77, and WRONG - it left idx == count for every
+// other plane count, which the bounds check then rejected), `idx = count - 2` (89.62)
+// and `idx--` (84.49 comparing idx, 89.74 comparing count) all become `mov eax,<k>`.
 RVA(0x0008efe0, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
@@ -1122,7 +1132,6 @@ void CGruntzMgr::Post(i32 code) {
     }
 }
 
-// @early-stop
 RVA(0x00090ac0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
@@ -1329,6 +1338,10 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 }
 
 // @early-stop
+// One byte: the switch normalises to `sub eax,2` where retail has `cmp eax,2`. The
+// arm order and the `mov eax,[eax+0x14]` load both match, and every if/else spelling
+// scores worse - `if (== )` reverses the arms (97.22) and folds the load into
+// `cmp dword ptr [eax+0x14],2`, `if (!=)` over a named local likewise (98.00).
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {

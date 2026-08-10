@@ -1570,11 +1570,13 @@ i32 CMulti::SendStatValue(i32 id, NetMsgId statId, i32 value, i32 flag) {
 }
 
 // @early-stop
-// Retail keeps TWO tests cl folds away: the second `LocalPlayer() == NULL` and the
-// loop-top `count <= 0`. The operand-swap lever of
-// docs/patterns/redundant-test-elimination-is-syntactic.md reaches neither -
-// swapping the loop test (87.34 -> 84.82), the pre-loop test (84.82) and Yoda-
-// spelling the pointer compare (no change) were all measured.
+// The loop shape is now retail's (`hr == 0` as a loop condition, the success path as
+// the else of the ReportError arm). What is left is the second `LocalPlayer() == NULL`
+// test, which retail keeps and cl folds away: retail re-compares the SAME already-null-
+// checked ecx (`cmp ecx,edi / jne / xor ebx,ebx / jmp`), which makes `count` a phi and
+// forces the extra `cmp ebx,edi` before the early return. The operand-swap lever of
+// docs/patterns/redundant-test-elimination-is-syntactic.md does not reach it - swapping
+// the loop test, the pre-loop test and Yoda-spelling the pointer compare were measured.
 RVA(0x000b95f0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == NULL) {
