@@ -54,13 +54,13 @@ boomerang	5	3
 bootycheatstate	1	0
 bootystateactivate	37	23
 bootywalkanim	2	0
-bracketvalue	1	0
+bracketvalue	1	1
 brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buildgruntzcrcinfo	1	0
 buteglobals	2	2
-butemgr	63	47
+butemgr	63	50
 butenode	5	4
 butestoreclear	1	1
 butetail	2	2
@@ -124,7 +124,7 @@ fortconquered	1	0
 fortressflag	23	20
 freenodepool	1	1
 frontcandyani	18	15
-fxmodedesc	1	0
+fxmodedesc	1	1
 gameapp	23	21
 gameappcomdats	3	3
 gameassetnamespaces	1	0
@@ -615,7 +615,7 @@ behindcandyani	?SerializeMove@CBehindCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode
 bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	3	c5a8596ef6dd	0x1936e0	90.8000
 bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	3	1ea7b32d0bbf	0x193680	100.0000
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640	100.0000
-bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	99.8396	99.8396	2	f5f97c03b581	0x193140	100.0000
+bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	99.9465	99.9465	2	f5f97c03b581	0x193140	100.0000
 bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	91.4789	91.4789	4	f1a1c772f750	0x193080	91.4789
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	4	6e574434e8a9	0x16fc70	100.0000
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	60.3505	60.3505	2	d92c7ec3c73c	0x16f7f0	100.0000
@@ -668,7 +668,7 @@ bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000
 bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	90.0224	90.0149	3	4f59c36c76ec	0x196c0	90.0224
 bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7829	92.7829	8	3515c259b2f9	0x1b450	92.8158
 bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.2388	95.2388	15	d289681b2cfa	0x1b690	95.2481
-bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	99.9438	99.9438	22	621add35a117	0xf9160	100.0000
+bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	22	621add35a117	0xf9160	100.0000
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	2	4337332bae5e	0x853f0	100.0000
 brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	100.0000	3	8c0b48d24e73	0x82250	100.0000
 brickz	?SearchEdge@CMapMgr@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	4	ff9dff6dee33	0x81e10	82.5373
@@ -692,7 +692,7 @@ butemgr	??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z	100.0000	100.0000	1	c
 butemgr	??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z	100.0000	100.0000	1	800cd9b4aac7	0x173c60	100.0000
 butemgr	??1CButeValue@@QAE@XZ	100.0000	100.0000	4	922d558faefb	0x172160	100.0000
 butemgr	??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z	100.0000	100.0000	1	cpp:beb120e85979	0x171550	100.0000
-butemgr	??_Diostream@@QAEXXZ	99.3750	99.3750	1	cpp:5f94480813f4	0x171a40	100.0000
+butemgr	??_Dstrstream@@QAEXXZ	100.0000	100.0000	1	cpp:5f94480813f4	0x171a40	100.0000
 butemgr	??_GCBSecStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:aaa82cf76038	0x174d30	100.0000
 butemgr	??_GCString@@QAEPAXI@Z	100.0000	100.0000	1	cpp:e906d85c2971	0x173700	100.0000
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	4	64ae3c2de9a2	0x1703e0	100.0000
@@ -712,20 +712,20 @@ butemgr	?GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z	100.0000	100.0000	3	73
 butemgr	?GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0PAU2@@Z	100.0000	100.0000	3	7323a1cbbfbe	0x174770	100.0000
 butemgr	?GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z	100.0000	100.0000	3	d15435de7d52	0x173770	100.0000
 butemgr	?GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0PAU2@@Z	100.0000	100.0000	3	d15435de7d52	0x173720	100.0000
-butemgr	?GetString@CButeMgr@@QAEPADPBD0@Z	100.0000	100.0000	7	dd739896d03e	0x1731d0	100.0000
+butemgr	?GetString@CButeMgr@@QAEPAVCString@@PBD0@Z	100.0000	100.0000	8	b52211c5ae29	0x1731d0	100.0000
 butemgr	?GetStringDef@CButeMgr@@QAEPAVCString@@PBD0PAV2@@Z	100.0000	100.0000	5	a21ae0056d0e	0x173180	100.0000
 butemgr	?GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z	100.0000	100.0000	3	17e50d605f96	0x174240	100.0000
 butemgr	?GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0PAU2@@Z	100.0000	100.0000	3	17e50d605f96	0x1741f0	100.0000
 butemgr	?Init@CButeMgr@@QAEXXZ	100.0000	100.0000	5	2ea8a965860f	0x170330	100.0000
 butemgr	?NextChar@CButeMgr@@QAEXXZ	88.6667	88.6667	7	5b62daf4fca0	0x170390	88.6667
-butemgr	?Parse@CButeMgr@@QAE_NXZ	98.1208	98.1208	13	912cdb814c29	0x1704c0	98.1208
-butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	76.4919	76.4919	23	222340fb8209	0x170750	76.5391
+butemgr	?Parse@CButeMgr@@QAE_NXZ	100.0000	100.0000	14	3e3271616d5b	0x1704c0	100.0000
+butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	89.2156	89.2156	24	c2180bab6b25	0x170750	89.2156
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	100.0000	100.0000	10	b4a58a6b4b52	0x171580	100.0000
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	14	f25151331eea	0x1711b0	100.0000
 butemgr	?PeekState2@CButeMgr@@QAEFFD@Z	100.0000	100.0000	5	28c9f0692d87	0x170430	100.0000
 butemgr	?PeekState@CButeMgr@@QAEFFD@Z	100.0000	100.0000	7	879cc63c44f3	0x170400	100.0000
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	4	9e4b72ca60f9	0x1706c0	100.0000
-butemgr	?Save@CButeMgr@@QAE_NXZ	93.2645	93.2645	4	933aebc02fc5	0x171640	93.3913
+butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	4	933aebc02fc5	0x171640	93.3913
 butemgr	?ScanState@CButeMgr@@QAEXFD@Z	100.0000	100.0000	6	9f129ac52f58	0x170460	100.0000
 butemgr	?ScanToken@CButeMgr@@QAE_NW4ButeToken@@@Z	100.0000	100.0000	1	f8dd61db5b85	0x170710	100.0000
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	94.9915	94.9915	3	7a241ee0252a	0x172ce0	94.9915
@@ -741,8 +741,8 @@ butemgr	?SetVector@CButeMgr@@QAEXPBD0PAUButeDoubleVector@@@Z	90.7936	90.7936	4	0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	100.0000	100.0000	6	e145723a4aa1	0x171160	100.0000
 butemgr	?Term@CButeMgr@@QAEXXZ	100.0000	100.0000	1	d077592af88f	0x170370	100.0000
 butemgr	?flush@@YAAAVostream@@AAV1@@Z	100.0000	100.0000	1	cpp:beb120e85979	0x171570	100.0000
-butemgr	_ButeGroup_Apply	86.9511	86.9511	2	d69c6c4874c9	0x1712b0	86.9783
-butemgr	_ButeTag_Apply	99.8387	99.8387	2	1b4a79ac1c9f	0x1714e0	100.0000
+butemgr	_ButeGroup_Apply	87.7283	87.7283	3	c5ff2fb6d112	0x1712b0	87.7283
+butemgr	_ButeTag_Apply	100.0000	100.0000	3	f2aafa84f097	0x1714e0	100.0000
 butenode	??0CButeNode@@QAE@H@Z	100.0000	100.0000	2	c6f073f152f3	0x174d00	100.0000
 butenode	??1CButeNode@@UAE@XZ	100.0000	100.0000	1	a083b63ba5ec	0x174d70	100.0000
 butenode	??_GCButeNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:feeb3405e026	0x174d50	100.0000
@@ -1799,7 +1799,7 @@ frontcandyani	?RegisterActs@CFrontCandyAni@@SAXXZ	100.0000	100.0000	11	812e28864
 frontcandyani	?SerializeMove@CEyeCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	a8797b93825b	0xff20	100.0000
 frontcandyani	?SerializeMove@CFrontCandy@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	38909ecff453	0xfa60	100.0000
 frontcandyani	?SerializeMove@CFrontCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	1883fe9e5e2a	0xfdf0	100.0000
-fxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	99.9515	99.9515	2	0208b4d9f3e0	0xf9280	100.0000
+fxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	2	0208b4d9f3e0	0xf9280	100.0000
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	10	d031ff4218cd	0x13d590	100.0000
 gameapp	??0CGameMgr@@QAE@XZ	100.0000	100.0000	2	1369947c86e0	0x13dd10	100.0000
 gameapp	?Close@CGameMgr@@UAEXXZ	100.0000	100.0000	2	6a2daeae078b	0x13ddb0	100.0000
@@ -4344,7 +4344,7 @@ typekeycoll	?ProjTypeXfer@@YAHPAVCUserLogic@@@Z	100.0000	100.0000	4	540f2bf0a670
 typekeycoll	?Set@CVariantSlot@@QAEXPAX0H@Z	100.0000	100.0000	3	5812d1c47fff	0x16d850	100.0000
 typekeycoll	?SetSize@zBitVec@@QAEHH@Z	100.0000	100.0000	6	3c82c9c689ba	0x16e100	100.0000
 typekeycoll	?TmErrorHandler@@YAXPADH@Z	100.0000	100.0000	6	5c80ae3c88de	0x16e220	100.0000
-typekeycoll	_FirstDiffBit	98.6667	98.6667	1	2b62c6cedb7b	0x16e480	100.0000
+typekeycoll	_FirstDiffBit	98.6667	98.6667	2	4a157b5880de	0x16e480	100.0000
 typekeycoll	_LogicAttackFactory	100.0000	100.0000	1	971328b83139	0x16e4d0	100.0000
 typekeycoll	_LogicBumpFactory	100.0000	100.0000	1	868cea7a478c	0x16e4e0	100.0000
 typekeycoll	_LogicHitFactory	100.0000	100.0000	1	fbf0e78142fb	0x16e4c0	100.0000
