@@ -29,6 +29,9 @@ never a source defect:
   * self-references - our base takes a reloc against a `$L` arm, the delinked target
     against the function symbol itself, so every jump table shows up as N spurious
     self-referents.
+  * `$S<serial>` FUNCTION-LOCAL STATICS, folded onto their target name by stem - cl
+    spells one `_s_gruntDirEast$S22213`, the delinker `?s_gruntDirEast_244c18@@3U...`,
+    and neither name can ever meet the other (see `static_alias_map`).
 
 KNOWN FALSE POSITIVE (1): the delinker packs an unclaimed neighbour into the
 preceding symbol, so a referent that appears ONLY on the target side, ONCE, in a
@@ -160,6 +163,44 @@ def code_extents(obj: Path) -> dict:
     return out
 
 
+STATIC_S_RE = re.compile(r"^_?(?P<stem>[A-Za-z_][A-Za-z0-9_]*)\$S\d+$")
+MANGLED_DATA_RE = re.compile(r"^\?(?P<stem>[A-Za-z_][A-Za-z0-9_]*?)"
+                             r"(?:_[0-9a-f]{4,8})?@@3")
+
+
+def static_alias_map(base_names, target_names) -> dict:
+    """{base `$S` name -> the target name for the SAME datum}, matched by stem.
+
+    A FUNCTION-LOCAL STATIC IS SPELLED DIFFERENTLY ON THE TWO SIDES AND CAN NEVER
+    PAIR BY NAME. cl decorates it with a per-TU serial - `_s_gruntDirEast$S22213` -
+    while the delinker names it from `symbol_names.csv`, i.e. from its C++ mangling
+    plus an RVA disambiguator: `?s_gruntDirEast_244c18@@3UGruntDirectionCell@@A`.
+    The serial is assigned by declaration order in the TU, so it is not even stable
+    across our own edits. Left alone, every such datum produces TWO rows - the whole
+    base count against 0 and the whole target count against 0 - which is a naming
+    artifact, not a referent defect. objdiff does not see it either: normalize
+    content-addresses `$S` statics and pairs them at 100%.
+
+    Folding by stem keeps a REAL count difference visible (it just reports under the
+    target's name) while the split disappears. `triggermgrhittest` was nine such
+    pairs; `bootystateactivate` shows the other case - both sides already agree on
+    the `$S` spelling, so nothing is folded and its rows stand.
+    """
+    by_stem = {}
+    for n in target_names:
+        m = MANGLED_DATA_RE.match(n) or STATIC_S_RE.match(n)
+        if m:
+            by_stem.setdefault(m.group("stem"), n)
+    out = {}
+    for n in base_names:
+        m = STATIC_S_RE.match(n)
+        if m and n not in target_names:
+            tgt = by_stem.get(m.group("stem"))
+            if tgt is not None:
+                out[n] = tgt
+    return out
+
+
 def audit(unit: str) -> list:
     base = REPO / "build/objdiff/base" / (unit + ".obj")
     target = REPO / "build/objdiff/target" / (unit + ".c.obj")
@@ -167,13 +208,15 @@ def audit(unit: str) -> list:
         return []
     b, t = referents(base), referents(target)
     eb, et = code_extents(base), code_extents(target)
+    alias = static_alias_map({x for v in b.values() for x in v},
+                             {x for v in t.values() for x in v})
     findings = []
     for fn in sorted(b):
         if fn not in t:
             continue
         def keep(n):
             return not (n.startswith(NOISE) or n == fn)
-        cb = collections.Counter(x for x in b[fn] if keep(x))
+        cb = collections.Counter(alias.get(x, x) for x in b[fn] if keep(x))
         ct = collections.Counter(x for x in t[fn] if keep(x))
         rows = [(k, cb.get(k, 0), ct.get(k, 0)) for k in sorted(set(cb) | set(ct))
                 if cb.get(k, 0) != ct.get(k, 0)]
