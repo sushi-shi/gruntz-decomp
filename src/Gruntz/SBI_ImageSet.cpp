@@ -82,12 +82,13 @@ i32 CSBI_ImageSet::Refresh(i32) {
     return 1;
 }
 
+// @early-stop
 RVA(0x000e7440, 0x5e)
 i32 CSBI_ImageSet::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
-        CDDrawWorker* tbl = m_frameSet;
         i32 idx = m_frameIndex;
+        CDDrawWorker* tbl = m_frameSet;
         CImage* cel;
         if (idx >= tbl->m_minIndex && idx <= tbl->m_maxIndex) {
             cel = static_cast<CImage*>(tbl->m_items.GetAt(idx));

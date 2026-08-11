@@ -3556,7 +3556,7 @@ sbi_image	?SerializeFields@CSBI_Image@@UAEHPAVCFileMemBase@@W4SerialMode@@W4Logi
 sbi_image	?SetupImage@CSBI_Image@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	100.0000	100.0000	2	d826137557be	0xe6c80	100.0000
 sbi_imageset	?Notify@CSBI_ImageSet@@UAEXH@Z	100.0000	100.0000	2	54281bc5aa46	0xe74c0	100.0000
 sbi_imageset	?Refresh@CSBI_ImageSet@@UAEHH@Z	100.0000	100.0000	1	07d01bc2ec75	0xe7420	100.0000
-sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	86.7368	86.7368	8	9624ce00d918	0xe7440	98.8947
+sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421	9	21bbbd1672f1	0xe7440	100.0000
 sbi_imageset	?Reset@CSBI_ImageSet@@UAEXXZ	100.0000	100.0000	3	303e3bd3468f	0xe7400	100.0000
 sbi_imageset	?SerializeFields@CSBI_ImageSet@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	9987eaa779a6	0xe74f0	100.0000
 sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	74.6308	74.6308	2	03ca9c348c69	0xe72f0	74.6308

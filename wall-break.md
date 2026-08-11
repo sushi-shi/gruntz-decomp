@@ -123,3 +123,23 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: both ciphers are 100.00% byte-exact, and the complete `blowfish` unit
   is 6/6 exact. This recovers a historical exact state lost during the compiland
   merge and validates the load-bearing include-position pattern end to end.
+
+## 2026-08-11 — `CSBI_ImageSet::Render`
+
+- Unit/RVA: `sbi_imageset`, `0x000e7440`.
+- Before: 86.7368%. The CFG, 94-byte extent, and both relocations already
+  agreed, but the frame-table lookup and render-call halves used opposite
+  register schedules.
+- Source lever: declare the frame index before the frame-set pointer. This is
+  not cosmetic: it makes the complete lookup half instruction-exact and raises
+  the ordinary build to 87.8421%.
+- Classification: reachable VC5 declaration-state wall. On the corrected
+  source, mixed trials 22, 33, 51, and 56 each produce a fully exact 94-byte
+  function; the same trials stop at 98.8947% with the old local order. An
+  isolated 110-trial family sweep shows that typedef/member/extern/static-data/
+  prototype state moves the schedule while enum/struct/class/function state is
+  flat.
+- Verdict: the semantic local-order correction is retained, the synthetic
+  probe declarations are not. The audited 100% state is banked as MAX for
+  source hash `21bbbd1672f1`; ordinary codegen remains 87.8421% and is marked
+  `@early-stop` until an authentic declaration window is recovered.
