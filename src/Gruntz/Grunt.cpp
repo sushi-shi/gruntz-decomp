@@ -873,9 +873,9 @@ i32 CGrunt::CommitArrival() {
         m_arrivalRerollWindowLo = 0;
         m_arrivalRerollHi = 0;
         m_arrivalRerollWindowHi = 0;
+        m_arrivalFlags &= 0xe7fbfbfd;
         m_tileClaimed = 0;
         m_arrivalState = AI_NONE;
-        m_arrivalFlags &= 0xe7fbfbfd;
         SetEntrancePos(1, 1);
     }
     CreateSelectedSprite();
@@ -1357,8 +1357,13 @@ reProbe:
 
 // @early-stop
 // The two `goto 0x4c68b` sites are now nested guards, which puts base and retail on
-// 187/187 blocks with the whole 0x4c446..0x4c5de span aligned; the first true skeleton
-// divergence is B73 (68.66 -> 69.29).
+// 187/187 blocks with the whole 0x4c446..0x4c5de span aligned.
+// First skeleton divergence: `label_dropRet0` has a single predecessor, so cl
+// inverts its guard and HOISTS the block to +0x77; retail keeps it at the source
+// position, 0x4cd35, and reaches it with a forward `je`. Wrapping the body in a
+// positive `CoordCount() != 0` gate instead puts the tail at the end but then cl
+// merges the battlez exit into it (3 SetEntrancePos sites, 185 blocks) - refuted,
+// one build.
 // Residue is `rec`'s HOME. cl gives it one (3 slots); retail's cl split the live range
 // into two homes ({-,0x2c,0x30} with word0 permanently in edi, and {0x3c,0x40,0x44}),
 // so retail's frame is 0x38 against our 0x30. That split is what lets retail's sixteen
@@ -1759,8 +1764,12 @@ label_4c92b: {
 }
 
 label_4cb2a:
+    // Retail spells this arm out (0x4cb2a PlaySound, 0x4cb36 push 1/push 1,
+    // 0x4cb3c SetEntrancePos, xor eax,eax/ret) instead of jumping to the shared
+    // dropRet0 tail - four SetEntrancePos call sites, not three.
     PlaySound(0x3e8, rec);
-    goto label_dropRet0;
+    SetEntrancePos(1, 1);
+    return 0;
 
 label_4cb4b:
     m_reserved210 = 0;
@@ -4081,11 +4090,9 @@ kindDispatch:
 }
 
 // @early-stop
-// Branch mnemonics agree 55/55, rets 2/2; one target differs (#23, the eqO
-// early-out at base +0x177) - retail sends it to its own block at 0x5efc1 where
-// cl cross-jumps it into the shared epilogue.  The rest is register naming:
-// retail loads the object into edx/ecx where cl picks eax/ecx, so every operand
-// in the two clamp blocks reads one register over.
+// Control flow now agrees (55/55 branches, 2/2 rets, every target). Residue is
+// register naming: retail loads the object into edx/ecx where cl picks eax/ecx,
+// so every operand in the clamp blocks reads one register over.
 RVA(0x0005ecd0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
@@ -4112,11 +4119,12 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     bool eqO = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
-    if (eqO) {
-
-        if (m_object->m_screenX == m_lastTilePx.m_x && m_object->m_screenY == m_lastTilePx.m_y) {
-            return;
-        }
+    // Retail 0x5ee48 sends the already-at-tile case to 0x5efc1 - the ScratchResolve
+    // block below - not to a `ret`, so the guard is part of the arm's condition and
+    // the arm is SKIPPED (falls into the "S" handling), it does not return.
+    if (eqO
+        && (m_object->m_screenX != m_lastTilePx.m_x
+            || m_object->m_screenY != m_lastTilePx.m_y)) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
         switch (row) {
@@ -4206,7 +4214,11 @@ void CGrunt::FinalizeStep(char* name) {
 }
 
 // @early-stop
-
+// Control flow agrees (119/119 branches, 5/5 rets, every target). Residue is a
+// frame-slot redistribution in the two mirrored spans at 0x5f772..0x5f804 and
+// 0x5f8xx: retail keeps 14i where cl emits 12i and gives the following arms 2i
+// fewer, i.e. it reloads the pair from the frame at the join where cl reloads it
+// per arm. The instruction multiset is otherwise equal.
 RVA(0x0005f310, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
@@ -4431,10 +4443,21 @@ void CGrunt::AdvanceMotion() {
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
     i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.x + m_movePosX);
     i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.y + m_movePosY);
-    if ((dirX > s_fpZero && x > m_lastTilePx.m_x) || (dirX < s_fpZero && x < m_lastTilePx.m_x)) {
+    // Retail 0x5fde1/0x5fde3 pops the compared double INSIDE the positive arm and
+    // leaves it by `jle`, i.e. the two directions are an if / else-if, not one `||`
+    // - the same spelling FinalizeStep already carries at 0x5ef30.
+    if (dirX > s_fpZero) {
+        if (x > m_lastTilePx.m_x) {
+            x = m_lastTilePx.m_x;
+        }
+    } else if (dirX < s_fpZero && x < m_lastTilePx.m_x) {
         x = m_lastTilePx.m_x;
     }
-    if ((dirY > s_fpZero && y > m_lastTilePx.m_y) || (dirY < s_fpZero && y < m_lastTilePx.m_y)) {
+    if (dirY > s_fpZero) {
+        if (y > m_lastTilePx.m_y) {
+            y = m_lastTilePx.m_y;
+        }
+    } else if (dirY < s_fpZero && y < m_lastTilePx.m_y) {
         y = m_lastTilePx.m_y;
     }
     m_object->m_screenX = x;
