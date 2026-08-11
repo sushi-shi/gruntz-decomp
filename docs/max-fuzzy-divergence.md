@@ -14,6 +14,21 @@ do differently.
 
 Tool: `python -m gruntz.audit.max_divergence [--history]`.
 
+The history cache also retains every per-function source fingerprint that actually
+earned a peak. `--history --same-source-only` separates code that merely resembles
+an old implementation from code whose exact current fingerprint already reached
+that score. `--history --restore-same-source` may re-bank those proofs, but only
+when the proof was recorded after `a2fb422e0` fixed stale generated header
+dependencies. Older same-fingerprint peaks remain visible as
+`[pre-dependency-fix]`; they are not restored automatically because the object may
+have been compiled against headers that no clean build would use today.
+
+Measured at `f9dd558e5`, 29 lost exact rows had a fingerprint that had itself
+earned 100%. Twenty-six proofs post-dated the dependency fix and were restored.
+Three were deliberately withheld: `CHashBase::Insert`,
+`CDDrawChildGroup::SumWeighted`, and `CImage::BlitShadeFlipH` had only
+pre-fix proofs.
+
 ---
 
 ## 1. Two instruments, and why they disagree by 4x
