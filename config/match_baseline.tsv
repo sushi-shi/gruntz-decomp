@@ -2354,7 +2354,7 @@ gruntzmgr	?JumpLevelDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	2d70b11a
 gruntzmgr	?LaunchPortal@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	1	9d5b16c053e8	0x907c0	100.0000
 gruntzmgr	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	1	e1a0cfb9f196	0x90550	100.0000
 gruntzmgr	?LaunchProcessInDir@CGruntzMgr@@QAEHPAD0@Z	100.0000	100.0000	1	2b5d6003a7da	0x90860	100.0000
-gruntzmgr	?LaunchWebBrowser@@YGHPAD@Z	100.0000	100.0000	7	56313efc2342	0x8f120	100.0000
+gruntzmgr	?LaunchWebBrowser@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	8	135437293617	0x8f120	100.0000
 gruntzmgr	?LeaveState@CState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	fa9c930e6b93	0x8c530	100.0000
 gruntzmgr	?LoadMonologoSprite@CGruntzMgr@@QAEHXZ	100.0000	100.0000	17	76f0f0770dd8	0x90d10	100.0000
 gruntzmgr	?LoadOptionsSlotName@CGruntzMgr@@QAEHHHHHHABVCString@@H@Z	100.0000	100.0000	10	888bc01d5ef4	0x92d50	100.0000
@@ -2429,7 +2429,7 @@ gruntzmgr	?UpdateScoreHud@CGruntzMgr@@QAEXXZ	100.0000	100.0000	16	aed096bb0eee	0
 gruntzmgr	?WarpCheat@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	86c76237e395	0x8eaf0	100.0000
 gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	12	49cfcb7d284c	0x8e4e0	100.0000
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	100.0000	100.0000	7	253129545170	0x8dc20	100.0000
-gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	97.3853	97.3844	5	91835303da44	0x862f0	97.3853
+gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHW4GruntzCommandId@@H@Z	98.6552	98.6552	6	c7b45c3f0393	0x862f0	98.6552
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	100.0000	100.0000	6	2cd531b229f5	0xda790	100.0000
 gruntzplayer	??1PlayerLatency@@QAE@XZ	100.0000	100.0000	1	cpp:8e5f144eebf9	0x832e0	100.0000
 gruntzplayer	?ChannelSlots_FindFree@@YAHXZ	99.5000	99.5000	3	697b7fda646b	0xdb280	100.0000
@@ -4304,7 +4304,7 @@ triggermgrgrid	?SetLevel@CTriggerMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	100.0000	100.0
 triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.4317	92.4317	12	49cc646d6643	0x6c130	92.4317
 triggermgrhittest	?CellFlagsAt@CMapMgr@@QAEHHH@Z	100.0000	100.0000	4	75638e03bcb1	0x75a40	100.0000
 triggermgrhittest	?EntrancePx@CGrunt@@QAE?AUCoord@@XZ	100.0000	100.0000	2	30805a33f775	0x759e0	100.0000
-triggermgrhittest	?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@HHPAUtagRECT@@PAH10@Z	80.6797	80.6797	12	4e079453a7b6	0x75c60	80.6797
+triggermgrhittest	?FindGruntAt@CTriggerMgr@@QAEPAVCGrunt@@HHPAUtagRECT@@PAH10@Z	94.0392	94.0392	13	7971bafdddac	0x75c60	94.0392
 triggermgrhittest	?GetTileGrid@CGruntzMgr@@QAEPAVCGruntzMapMgr@@XZ	100.0000	100.0000	1	cpp:ca2ff04963cd	0x75ad0	100.0000
 triggermgrhittest	?HitTestCell@CTriggerMgr@@QAEPAVCGrunt@@HHPAH0H@Z	94.1584	94.1584	4	e7aa0f4ee740	0x75af0	94.1584
 triggermgrhittest	?Set@Coord@@QAEPAU1@HH@Z	100.0000	100.0000	1	e37eda8b9d5f	0x75a10	100.0000
