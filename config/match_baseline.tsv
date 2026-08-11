@@ -646,7 +646,7 @@ bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	1	4b0c3bc
 bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	15	ec46121b8892	0x1f6f0	100.0000
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	b381d5aeb9ef	0x18e40	79.2955
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	640347c1c8a1	0x1e660	79.2955
-bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	83.1896	83.1896	7	22ea990f8334	0x1d440	83.1896
+bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	82.5094	82.5094	8	a0054fd46cdf	0x1d440	83.1896
 bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	76.5227	76.5227	4	e454ce255a42	0x19b90	76.5227
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420	100.0000
 bootystateactivate	?OnKeyDown@CMultiBootyState@@UAEHHH@Z	100.0000	100.0000	1	c834612aa5cc	0x1f920	100.0000
