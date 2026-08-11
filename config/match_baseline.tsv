@@ -258,7 +258,7 @@ netsessionnode	3	3
 packetpool	1	1
 palettebmp	2	2
 pathhazard	13	10
-play	93	66
+play	93	67
 playassetload	18	17
 playercommandstep	1	0
 playplanescan	1	0
@@ -3022,7 +3022,7 @@ multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	6	89e7a60e5975	0xb7fe0	100.0
 multi	?LeaveState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	84114b393e8a	0xb63f0	100.0000
 multi	?LoadByMode@CMulti@@UAEHHH@Z	100.0000	100.0000	6	630a2af380c0	0xb6580	100.0000
 multi	?LoadConfig@CMulti@@QAEHPAX@Z	100.0000	100.0000	5	315e27546751	0xbce80	100.0000
-multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	91.9304	91.9304	5	17d60d149055	0xb5460	91.9304
+multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	93.9426	93.9426	5	17d60d149055	0xb5460	93.9426
 multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	16	1c8b0fbd22b4	0xba620	100.0000
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	bf84314f1a8c	0xb8020	100.0000
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	136388e6ff2a	0xb7b10	100.0000
@@ -3313,19 +3313,19 @@ play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	10	7dad6f84d12f	0xd72c0	1
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	6	bf1877601d3d	0xda3b0	100.0000
 play	?ClampViewport2@CPlay@@QAEHH@Z	91.2653	91.2653	16	3da228a05b00	0xd8ed0	91.2653
 play	?ClampViewport@CPlay@@QAEHH@Z	100.0000	100.0000	13	c386e9d809e4	0xd8dc0	100.0000
-play	?ClearPlacedObjects@CPlay@@QAEHXZ	80.5167	80.5167	14	a9d18d247fa3	0xda030	80.5167
+play	?ClearPlacedObjects@CPlay@@QAEHXZ	80.9833	80.9833	15	59ff9ab789aa	0xda030	80.9833
 play	?CompleteLevel@CPlay@@UAEHXZ	100.0000	100.0000	2	3db82f9133d1	0xcfbd0	100.0000
 play	?CountObjectsByCategory@CPlay@@UAEHH@Z	100.0000	100.0000	7	3b158ed23ee8	0xd0050	100.0000
 play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	2	7f935445c424	0xcee10	100.0000
 play	?DrawCursorSaveUnder@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9632	99.9632	5	5825fb7ec91d	0xd0b30	99.9877
 play	?DrawCustomLevelBanner@CPlay@@QAEXXZ	100.0000	100.0000	3	12e57d0274aa	0xcfc90	100.0000
 play	?DrawDebugStats@CPlay@@QAEXXZ	100.0000	100.0000	1	eeac46722c86	0xcf770	100.0000
-play	?DrawDebugStatsFull@CPlay@@QAEXXZ	94.7182	94.7182	4	7e086d8ce1a8	0xcf0a0	94.7182
+play	?DrawDebugStatsFull@CPlay@@QAEXXZ	99.9979	99.9979	5	d8bf181243bc	0xcf0a0	99.9979
 play	?DrawLevelInfoText@CPlay@@QAEHXZ	100.0000	100.0000	7	b410455115c9	0xd95f0	100.0000
 play	?DrawMessageFrame@CPlay@@QAEXHH@Z	95.6452	95.6452	2	f67afa97059c	0xd1650	95.6452
 play	?DrawStateMessage@CPlay@@UAEHXZ	95.1807	95.1807	1	8d6080505cd9	0xcfef0	95.1807
 play	?DrawWorldFrame@CPlay@@UAEXXZ	100.0000	100.0000	12	c873327b2162	0xc9c20	100.0000
-play	?DrawWorldFrames@CPlay@@UAEHXZ	93.4314	93.4314	13	5805aa309805	0xc9cc0	93.4314
+play	?DrawWorldFrames@CPlay@@UAEHXZ	99.3137	99.3137	14	4644fd658897	0xc9cc0	99.3137
 play	?DrawWorldPresent@CPlay@@QAEHXZ	100.0000	100.0000	13	42c3c89d6436	0xcefc0	100.0000
 play	?EnterMode@CPlay@@QAEHW4GameStateId@@@Z	100.0000	100.0000	1	5cf80aa589ee	0xd6fa0	100.0000
 play	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	7	eb7fe0e2ab0f	0xd6440	100.0000
@@ -3336,15 +3336,15 @@ play	?ForwardReady@CPlay@@QAEHXZ	100.0000	100.0000	2	a609e028be41	0xcee70	100.00
 play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	11	fa0c77dfc76e	0xcb480	100.0000
 play	?GetAmbientId@CPlay@@QAEHXZ	100.0000	100.0000	4	67743eddace9	0xda200	100.0000
 play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
-play	?HandleDragMove@CPlay@@UAEHHHH@Z	94.8851	94.8851	12	db61038baf68	0xd0db0	94.8851
+play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	97.4138	13	5555576e8e12	0xd0db0	97.4138
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	2	28eda2de534e	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
-play	?LoadByMode@CPlay@@UAEHHH@Z	87.4532	87.4532	27	2269e7e3dae3	0xca200	87.4532
+play	?LoadByMode@CPlay@@UAEHHH@Z	91.3356	91.3356	28	6291a717a5dc	0xca200	91.3356
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
-play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	79.9870	79.9870	3	74f0a6b5bd4c	0xc7ec0	79.9870
+play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4870	84.4870	4	ddc8ed9d4a71	0xc7ec0	84.4870
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	ea06ab3ca6ec	0xd7440	95.8064
-play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	90.1957	90.1957	3	0414000d735c	0xd8060	91.8290
+play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	4	872fd37d6e7f	0xd8060	97.1069
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	2	842142fa3f32	0xd1710	100.0000
 play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	19	354981ba5aac	0xd12b0	98.7500
 play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	3	409f991bb413	0xd65d0	99.4069
@@ -3352,9 +3352,9 @@ play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	8	05f7283351bb	0xcb740	100.000
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	15	0254a5e3ef9e	0xd9050	100.0000
 play	?OnChar@CPlay@@UAEHHH@Z	100.0000	100.0000	2	7d01b9ff8290	0xcbaf0	100.0000
 play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	5	29b62be18a03	0xcb400	94.7917
-play	?OnKeyDown@CPlay@@UAEHHH@Z	90.4226	90.4226	4	a63101cd4bcf	0xcbcc0	90.5799
+play	?OnKeyDown@CPlay@@UAEHHH@Z	90.2807	90.2807	5	11cedbbb875a	0xcbcc0	90.5799
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000
-play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	95.7038	93.0801	6	cf033a7d8845	0xce660	95.7038
+play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	96.1533	96.1533	7	28246244404e	0xce660	96.1533
 play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.5287	89.5287	7	0bd1f0b5bd7a	0xcdb10	89.5287
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	3	3c757657d494	0xce530	100.0000
 play	?OnMouseMove@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	80a201da23b5	0x8c970	100.0000
@@ -3374,7 +3374,7 @@ play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	7	e59427dc97a3	0xd8960	100.000
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	6	993b54aa05a0	0xd9160	100.0000
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	7	e61042ec7712	0xd6560	100.0000
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	8	634f0a2f3808	0xc8700	100.0000
-play	?Render@CPlay@@UAEHXZ	96.3044	96.3021	35	869a0b699449	0xc8cf0	96.3044
+play	?Render@CPlay@@UAEHXZ	96.3980	96.3980	36	b0b2f92045b3	0xc8cf0	96.3980
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	12	c9815d61e053	0xd5f00	100.0000
 play	?ResetPlayState@CPlay@@QAEHXZ	96.6250	96.6250	18	ad8f00da114e	0xd60b0	96.6250
 play	?ResetViewport@CPlay@@QAEHXZ	100.0000	100.0000	15	6bf1cca8b714	0xd8c60	100.0000
