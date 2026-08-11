@@ -1450,10 +1450,6 @@ unit = "grunttubeanim"
 source = "src/Gruntz/GruntTubeAnim.cpp"
 flags = "cpp-rtti"
 [[unit]]
-unit = "imagerle16encode"
-source = "src/Image/ImageRle16Encode.cpp"
-flags = "cpp"
-[[unit]]
 unit = "gruntstatestep"
 source = "src/Gruntz/GruntStateStep.cpp"
 flags = "cpp-rtti"
