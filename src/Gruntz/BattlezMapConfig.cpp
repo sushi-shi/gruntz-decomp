@@ -661,13 +661,12 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
 }
 
 // @early-stop
-// Retail makes SIX more ??0CRect@@QAE@HHHH@Z calls than we do.  Four of them are
-// the rowHitA / rowHitB / colHitA / colHitB blocks below, which are
-// statement-identical (same reroll stores, same clip, same `return 1`) and get
-// cross-jumped into one; giving each block's locals distinct NAMES does not
-// split them - they are already block-scoped, so the IL statement lists are
-// identical either way.  ~90% of this function's reloc diff is pooled
-// single-character-string naming noise and is NOT a defect.
+// Branch sequence, ret count and the whole referent multiset AGREE (460/460
+// branches, 8/8 rets, 15/15 ??0CRect@@QAE@HHHH@Z calls, reloc_multiset clean),
+// and the labelled blocks come out in retail's order.  What is left is /O2
+// register colouring at scale: retail carries `this` in ecx across the outer
+// loop and reloads it in the latch, we reload it at the loop head, and retail's
+// frame is one dword larger.
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
