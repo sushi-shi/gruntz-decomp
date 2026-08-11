@@ -25,18 +25,22 @@ But the binary NAMES THE CLASSES ITSELF, and it does so unambiguously:
 So:  vtable -> slot0 -> `mov eax,imm32; ret` -> CRuntimeClass -> [0] -> "CObArray".
 The class states its own name.  Nothing is inferred, nothing is fabricated.
 
-Recovery chain (all four steps read GRUNTZ.EXE and nothing else)
+Recovery chain (all five steps read GRUNTZ.EXE and nothing else)
 ---------------------------------------------------------------
   1. RUNTIME CLASSES  scan .text for the 6-byte `B8 imm32 C3` shape; keep the ones
                       whose imm32 points at a CRuntimeClass (field 0 -> a C
                       identifier string).                       -> 65 in GRUNTZ.EXE
-  2. VTABLES          any data DWORD equal to a GetRuntimeClass body address is a
+  2. FACTORIES        CRuntimeClass.m_pfnCreateObject (+0x0c) names the exact
+                      CreateObject body for every DECLARE_DYNCREATE/SERIAL class.
+                      This is stronger than a byte signature: the class record
+                      points at its own factory.                 -> factory -> class
+  3. VTABLES          any data DWORD equal to a GetRuntimeClass body address is a
                       vtable's slot 0.                          -> vtable -> class
-  3. ANCHORS          a .text function whose body contains a DIR32 base-reloc to a
+  4. ANCHORS          a .text function whose body contains a DIR32 base-reloc to a
                       class's vtable or CRuntimeClass IS that class's code (the
                       ctor/dtor stamp the vptr; Serialize/CreateObject take the
                       CRuntimeClass).  DIRECT, per-function evidence.
-  4. BANDS            NAFXCW gives each container its own .obj (array_o.obj,
+  5. BANDS            NAFXCW gives each container its own .obj (array_o.obj,
                       array_p.obj, list_o.obj, ...), and the linker lays an .obj's
                       code out contiguously - so a class's non-anchor methods
                       (SetSize/GetAt/InsertAt...) sit BETWEEN its anchors.  A band
@@ -197,6 +201,8 @@ class MfcMap:
         self.rtclass = {}      # CRuntimeClass rva        -> name
         self.crt_of = {}       # name                     -> CRuntimeClass rva
         self.base_of = {}      # name                     -> base class name (m_pBaseClass)
+        self.factories = {}    # CreateObject body rva    -> runtime-class name
+        self.factory_of = {}   # runtime-class name       -> CreateObject body rva
         self.vtables = {}      # vtable rva               -> runtime-class name
         self.vt_of = {}        # name                     -> [vtable rva]
         self.anchors = {}      # function rva             -> {(kind, name, target)}
@@ -235,6 +241,24 @@ class MfcMap:
             b = img.u32(crt + 0x10)
             if b:
                 self.base_of[nm] = self.rtclass.get(b - IMAGEBASE)
+            # Static-MFC CRuntimeClass layout:
+            #   +0x0c CRuntimeClass::m_pfnCreateObject
+            # The record is the class's own declaration, so this pointer is a
+            # direct identity oracle for byte-identical container factories.
+            pfn = img.u32(crt + 0x0C)
+            if pfn and IMAGEBASE <= pfn < IMAGEBASE + 0x400000:
+                rva = pfn - IMAGEBASE
+                if img.is_text(rva):
+                    # A shared factory would make the identity ambiguous.  Do
+                    # not silently let the last record win if one ever appears.
+                    old = self.factories.get(rva)
+                    if rva in self.factories and old != nm:
+                        self.factories[rva] = None
+                        if old:
+                            self.factory_of.pop(old, None)
+                    else:
+                        self.factories[rva] = nm
+                        self.factory_of[nm] = rva
 
     def ancestors(self, name):
         out, seen = set(), name
@@ -391,6 +415,14 @@ class MfcMap:
             crt, cls = self.grc[rva]
             ev.append("`mov eax,0x%08x; ret` == %s::GetRuntimeClass" % (crt + IMAGEBASE, cls))
             ev.append("CRuntimeClass 0x%06x -> \"%s\"" % (crt, cls))
+            return cls, ev
+
+        # a CreateObject body named by CRuntimeClass::m_pfnCreateObject?
+        if rva in self.factories and self.factories[rva]:
+            cls = self.factories[rva]
+            crt = self.crt_of[cls]
+            ev.append("CRuntimeClass 0x%06x -> \"%s\"" % (crt, cls))
+            ev.append("CRuntimeClass.m_pfnCreateObject -> 0x%06x" % rva)
             return cls, ev
 
         # an anchor function - DIRECT evidence
@@ -787,6 +819,20 @@ def relabel(mm, write):
             continue
         rva = int(r[0], 16)
         name, lib, conf, src = r[1], r[2], r[3], r[4]
+        # A CRuntimeClass record directly names its CreateObject body.  Apply
+        # that proof before the weaker contiguous-band inference; FID had
+        # mislabeled CMapStringToOb/CDWordArray factories as their byte-identical
+        # CObList/CByteArray siblings.
+        factory_cls = mm.factories.get(rva)
+        if lib == "NAFXCW" and factory_cls and name.startswith("?CreateObject@"):
+            cls = mangled_class(name)
+            if cls != factory_cls:
+                new = name.replace("@%s@@" % cls, "@%s@@" % factory_cls, 1)
+                if new != name:
+                    fixed.append((rva, name, new, factory_cls, "factory"))
+                    out.append([r[0], new, lib, "CRUNTIME", "runtime-factory"])
+                    continue
+
         b = mm.band_of(rva)
         if lib != "NAFXCW" or not b or b[2] not in FOLD_PRONE:
             out.append(r)
@@ -864,9 +910,10 @@ def show_map(mm):
     print("=== 1. CRuntimeClass objects (the class names, straight out of the binary) ===")
     for crt in sorted(mm.rtclass):
         nm = mm.rtclass[crt]
-        print("  classC @0x%06x  %-24s objsize=0x%-4x schema=%-6d base=%s"
+        factory = mm.factory_of.get(nm)
+        print("  classC @0x%06x  %-24s objsize=0x%-4x schema=%-6d base=%-20s factory=%s"
               % (crt, '"%s"' % nm, img.u32(crt + 4) or 0, img.u32(crt + 8) or 0,
-                 mm.base_of.get(nm) or "-"))
+                 mm.base_of.get(nm) or "-", "0x%06x" % factory if factory else "-"))
     print("\n=== 2. vtables (slot0 -> GetRuntimeClass -> CRuntimeClass) ===")
     for n in sorted(mm.vt_of):
         vs = mm.vt_of[n]

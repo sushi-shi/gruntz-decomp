@@ -1060,15 +1060,25 @@ def pair_by_name(R, C, rlo, rhi, clo, chi):
     """
     rreg = [(a, e, n) for a, e, n in R.syms if rlo <= a < rhi]
     creg = [(a, e, n) for a, e, n in C.syms if clo <= a < chi]
-    cby = defaultdict(list)
+    rby = defaultdict(set)
+    for a, _e, n in rreg:
+        for nm in R.aka[a] | {n}:
+            rby[nm].add(a)
+    cby = defaultdict(set)
     for a, e, n in creg:
-        for nm in C.aka[a]:
-            cby[nm].append(a)
+        for nm in C.aka[a] | {n}:
+            cby[nm].add(a)
     cspan = {a: (a, e) for a, e, n in creg}
     used, pairs, notes = set(), [], Counter()
     for a, e, n in rreg:
         cands = set()
         for nm in R.aka[a] | {n}:
+            # A repeated retail FID name is just as ambiguous as a repeated
+            # candidate symbol.  The old one-sided check paired our single
+            # CWinApp scalar dtor with whichever of dozens of retail lookalikes
+            # happened to occur first, manufacturing a wrong-referent row.
+            if rby[nm] != {a}:
+                continue
             cands.update(cby.get(nm, ()))
         cands = {x for x in cands if x in cspan}
         if not cands:
@@ -2012,6 +2022,20 @@ def selftest():
     check("a genuinely absent identity remains wrong",
           _referent_relation(["A", "B"], ["A", "C"]) == "wrong",
           "identity difference suppressed")
+
+    # Region pairing itself must be symmetric.  FID can assign one byte-shape
+    # name to many retail library bodies; choosing the first one is fitting,
+    # not evidence, even when the candidate has exactly one such symbol.
+    class _PairSide:
+        pass
+    pr, pc = _PairSide(), _PairSide()
+    pr.syms = [(1, 2, "dup"), (3, 4, "dup")]
+    pr.aka = defaultdict(set)
+    pc.syms = [(11, 12, "dup")]
+    pc.aka = defaultdict(set)
+    pp = pair_by_name(pr, pc, 0, 10, 10, 20)[0]
+    check("a duplicate retail name cannot claim one candidate region",
+          not pp, "%d fabricated pair(s)" % len(pp))
 
     # --- 3b. the resolver's ASYMMETRY traps --------------------------------
     # Each of these four made a correct operand read as a wrong referent, and

@@ -341,9 +341,10 @@ separately.  They are no longer called wrong-target evidence.  On the authoritat
 candidate this partitions the 72-region bucket into **34 genuinely different
 identities** and **38 multiplicity-only regions**.
 
-With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **33 wrong-referent regions** (23 symbol-proven, 10
-weak/content-only), **39 ordering-only regions**, and **39 multiplicity-only regions**.
+At that stage, with the corrected audit, derived object order, and reconstructed
+static archives, the authoritative worklist was **33 wrong-referent regions** (23
+symbol-proven, 10 weak/content-only), **39 ordering-only regions**, and **39
+multiplicity-only regions**.
 
 A twelfth resolver defect treated printable bytes as stronger than a paired data
 symbol.  That mislabeled `g_levelMsgRectsB[0].top` (integer value 92) as the string
@@ -371,6 +372,24 @@ identities: retail `0x1b2a0f` calls `_mbsrchr` and is
 `ReverseFind('\\')`.  Reconstructing that call takes the authoritative wrong-identity
 count **35 -> 33**.  Objdiff cannot reflect this fix because it masks the call target;
 the linked-referent gate is the acceptance evidence.
+
+A thirteenth false-positive class was **asymmetric region pairing**.  The pairing
+contract rejects a symbol name that occurs more than once on either image, because
+choosing one copy would fit the answer.  The implementation enforced that only on the
+candidate side.  Repeated retail FID labels such as `??_GCWinApp` therefore claimed
+our single real function with whichever unrelated byte-identical retail body appeared
+first.  Pairing now builds the retail name-to-address set too and admits a name only
+when it identifies exactly one region on both sides.  A duplicate-retail/single-
+candidate negative control is in `--selftest`.
+
+The audit also now reads `CRuntimeClass.m_pfnCreateObject` at `+0x0c`: the class's own
+runtime record points directly to its factory, proving identities FID cannot
+distinguish.  It corrected six catalog rows (including `CMapStringToOb` and
+`CDWordArray`; four were latent).  Static wrapper/callee evidence corrected
+`0x12d1b0` from `__lseek` to `__write`, and vtable slots corrected the `CDialog` and
+`_AFX_CTL3D_STATE` scalar destructors.  Together with symmetric pairing, this reduces
+the current authoritative worklist **33 -> 25**: **15 symbol-proven**, **10
+weak/content-only**, **39 ordering-only**, and **39 multiplicity-only** regions.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
@@ -421,6 +440,7 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] unknowns cannot turn a proven referent permutation into an identity defect
     [PASS] a repeated use-count difference is multiplicity, not wrong identity
     [PASS] a genuinely absent identity remains wrong
+    [PASS] a duplicate retail name cannot claim one candidate region
     [PASS] a paired RECT field outranks coincidental one-byte string content
     [PASS] two swapped relocated dwords -> ONE ordering-only region
     [PASS] ...and NOT a wrong-referent region (the multiset is intact)

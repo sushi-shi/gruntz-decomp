@@ -491,7 +491,7 @@ rva,name,lib,confidence,source
 0x12d070,__lock_fhandle,LIBCMT,HIGH,anchored
 0x12d0e0,__unlock_fhandle,LIBCMT,HIGH,anchored
 0x12d110,__commit,LIBCMT,HIGH,anchored
-0x12d1b0,__lseek,LIBCMT,AMBIG,anchored
+0x12d1b0,__write,LIBCMT,HIGH,cruntime-callee
 0x12d230,__write_lk,LIBCMT,HIGH,anchored
 0x12d440,__open,LIBCMT,AMBIG,offstart-ghidra-missed
 0x12d460,__sopen,LIBCMT,HIGH,anchored
@@ -1052,7 +1052,7 @@ rva,name,lib,confidence,source
 0x1ba3c1,?PreTranslateMessage@CDialog@@UAEHPAUtagMSG@@@Z,NAFXCW,HIGH,anchored
 0x1ba45a,?OnCmdMsg@CDialog@@UAEHIHPAXPAUAFX_CMDHANDLERINFO@@@Z,NAFXCW,AMBIG,anchored
 0x1ba4df,??0CDialog@@QAE@XZ,NAFXCW,HIGH,anchored
-0x1ba501,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
+0x1ba501,??_GCDialog@@UAEPAXI@Z,NAFXCW,HIGH,vtable-slot
 0x1ba51d,??1CDialog@@UAE@XZ,NAFXCW,AMBIG,anchored
 0x1ba55b,?Create@CDialog@@QAEHPBDPAVCWnd@@@Z,NAFXCW,HIGH,anchored
 0x1ba5bd,?CreateIndirect@CDialog@@IAEHPAXPAVCWnd@@PAUHINSTANCE__@@@Z,NAFXCW,HIGH,anchored
@@ -1744,13 +1744,13 @@ rva,name,lib,confidence,source
 0x1d130b,?BringToTop@CFrameWnd@@IAEXH@Z,NAFXCW,HIGH,anchored
 0x1d133a,?GetDockingFrame@CControlBar@@QBEPAVCFrameWnd@@XZ,NAFXCW,HIGH,anchored
 0x1d134b,?IsFloating@CControlBar@@QBEHXZ,NAFXCW,HIGH,anchored
-0x1d2f35,?CreateObject@CObList@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d2f35,?CreateObject@CMapStringToOb@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d2f84,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
 0x1d2fb1,?CreateObject@CWnd@@SGPAVCObject@@XZ,NAFXCW,HIGH,anchored
 0x1d2fe9,?CreateObject@?$CThreadLocal@V_AFX_THREAD_STATE@@@@SGPAVCNoTrackObject@@XZ,NAFXCW,HIGH,anchored
 0x1d301d,?CreateObject@?$CProcessLocal@V_AFX_WIN_STATE@@@@SGPAVCNoTrackObject@@XZ,NAFXCW,AMBIG,anchored
 0x1d304e,?CreateObject@?$CProcessLocal@V_AFX_CTL3D_STATE@@@@SGPAVCNoTrackObject@@XZ,NAFXCW,HIGH,anchored
-0x1d3063,??_G_AFX_THREAD_STATE@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
+0x1d3063,??_G_AFX_CTL3D_STATE@@UAEPAXI@Z,NAFXCW,HIGH,vtable-slot
 0x1d307e,?_AfxLoadDotBitmap@@YGXXZ,NAFXCW,HIGH,anchored
 0x1d3172,_$E350,NAFXCW,AMBIG,anchored
 0x1d31aa,_$E355,NAFXCW,AMBIG,anchored
@@ -1771,7 +1771,7 @@ rva,name,lib,confidence,source
 0x1d36a3,?CreateObject@?$CThreadLocal@VAFX_MODULE_THREAD_STATE@@@@SGPAVCNoTrackObject@@XZ,NAFXCW,HIGH,anchored
 0x1d36d7,?CreateObject@?$CProcessLocal@V_AFX_BASE_MODULE_STATE@@@@SGPAVCNoTrackObject@@XZ,NAFXCW,HIGH,anchored
 0x1d3719,??_G_AFX_THREAD_STATE@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
-0x1d3739,?CreateObject@CByteArray@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d3739,?CreateObject@CDWordArray@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d3786,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
 0x1d37ef,?CreateObject@CImageList@@SGPAVCObject@@XZ,NAFXCW,HIGH,anchored
 0x1d3839,?CreateObject@CByteArray@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
@@ -1795,11 +1795,11 @@ rva,name,lib,confidence,source
 0x1d3eff,?AfxWinInit@@YGHPAUHINSTANCE__@@0PADH@Z,NAFXCW,HIGH,anchored
 0x1d3f62,?SetCurrentHandles@CWinApp@@QAEXXZ,NAFXCW,HIGH,anchored
 0x1d407f,?AfxGetFileName@@YGIPBDPADI@Z,NAFXCW,HIGH,anchored
-0x1d40d5,?CreateObject@CByteArray@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d40d5,?CreateObject@CObArray@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d4122,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
 0x1d413d,?CreateObject@CObList@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
 0x1d418c,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
-0x1d41a7,?CreateObject@CObList@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d41a7,?CreateObject@CStringList@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d41f6,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
 0x1d4227,_$E350,NAFXCW,AMBIG,anchored
 0x1d425f,_$E355,NAFXCW,AMBIG,anchored
@@ -1835,7 +1835,7 @@ rva,name,lib,confidence,source
 0x1d4c2c,?AfxEnableWin40Compatibility@@YGXXZ,NAFXCW,HIGH,anchored
 0x1d4c5c,?AfxEnableWin31Compatibility@@YGXXZ,NAFXCW,HIGH,anchored
 0x1d4c7e,??0AUX_DATA@@QAE@XZ,NAFXCW,HIGH,anchored
-0x1d4d19,?CreateObject@CGdiObject@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d4d19,?CreateObject@CMenu@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d4d39,?AfxCriticalInit@@YGHXZ,NAFXCW,HIGH,anchored
 0x1d4d87,?AfxCriticalTerm@@YGXXZ,NAFXCW,HIGH,offstart-ghidra-missed
 0x1d4dd5,?AfxLockGlobals@@YGXH@Z,NAFXCW,HIGH,anchored
@@ -1848,7 +1848,7 @@ rva,name,lib,confidence,source
 0x1d5029,?GetProfileStringA@CWinApp@@QAE?AVCString@@PBD00@Z,NAFXCW,HIGH,anchored
 0x1d513b,?GetProfileBinary@CWinApp@@QAEHPBD0PAPAEPAI@Z,NAFXCW,HIGH,anchored
 0x1d5256,?CreateObject@CFrameWnd@@SGPAVCObject@@XZ,NAFXCW,HIGH,anchored
-0x1d52b5,?CreateObject@CByteArray@@SGPAVCObject@@XZ,NAFXCW,AMBIG,anchored
+0x1d52b5,?CreateObject@CStringArray@@SGPAVCObject@@XZ,NAFXCW,CRUNTIME,runtime-factory
 0x1d5302,??5@YGAAVCArchive@@AAV0@AAPAVCByteArray@@@Z,NAFXCW,AMBIG,offstart-ghidra-missed
 0x1d6c17,??1_AFX_WIN_STATE@@UAE@XZ,NAFXCW,HIGH,anchored
 0x1d6c4e,?AfxPostQuitMessage@@YGXH@Z,NAFXCW,HIGH,anchored
