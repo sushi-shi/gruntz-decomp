@@ -3288,7 +3288,7 @@ netsessionmgr	?ResetSync@CNetSession@@QAEXXZ	84.7260	84.7260	7	3898b45fddeb	0xbf
 netsessionmgr	?SendAll@CNetSession@@QAEHXZ	100.0000	100.0000	6	428336c87d1a	0xbfb40	100.0000
 netsessionmgr	?SendBatch@CNetSession@@QAEHXZ	100.0000	100.0000	3	d5cf8c62362e	0xbfd40	100.0000
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	3	c908e81ff168	0xbfc70	97.6316
-netsessionmgr	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.1579	84.1579	6	3ff41ccb471b	0xbfeb0	84.2105
+netsessionmgr	?SendOne@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	84.1579	84.0000	6	3ff41ccb471b	0xbfeb0	84.2105
 netsessionmgr	?Tick@CNetSession@@QAEHXZ	86.0323	86.0323	7	eabb5da5e93a	0xbf9e0	86.0323
 netsessionmgr	?Verify@CNetSession@@QAEHH@Z	89.5349	89.5349	6	b2b21951de05	0xc0290	100.0000
 netsessionmgr	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	6	b2b21951de05	0xc04f0	100.0000
@@ -3323,7 +3323,7 @@ play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	10	7dad6f84d12f	0xd72c0	1
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	6	bf1877601d3d	0xda3b0	100.0000
 play	?ClampViewport2@CPlay@@QAEHH@Z	91.2653	91.2653	16	3da228a05b00	0xd8ed0	91.2653
 play	?ClampViewport@CPlay@@QAEHH@Z	100.0000	100.0000	13	c386e9d809e4	0xd8dc0	100.0000
-play	?ClearPlacedObjects@CPlay@@QAEHXZ	80.9833	80.9833	15	59ff9ab789aa	0xda030	80.9833
+play	?ClearPlacedObjects@CPlay@@QAEHXZ	96.8333	96.8333	16	3526bf1dd965	0xda030	96.8333
 play	?CompleteLevel@CPlay@@UAEHXZ	100.0000	100.0000	2	3db82f9133d1	0xcfbd0	100.0000
 play	?CountObjectsByCategory@CPlay@@UAEHH@Z	100.0000	100.0000	7	3b158ed23ee8	0xd0050	100.0000
 play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	2	7f935445c424	0xcee10	100.0000
@@ -3349,7 +3349,7 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950	100.0000
 play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	97.4138	13	5555576e8e12	0xd0db0	97.4138
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	2	28eda2de534e	0xcb800	100.0000
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
-play	?LoadByMode@CPlay@@UAEHHH@Z	91.3356	91.3356	28	6291a717a5dc	0xca200	91.3356
+play	?LoadByMode@CPlay@@UAEHHH@Z	94.5728	94.5728	29	5cc9c10d9adb	0xca200	94.5728
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
 play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4870	84.3057	4	ddc8ed9d4a71	0xc7ec0	84.4870
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
@@ -3365,7 +3365,7 @@ play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	5	29b62be18a03	0xcb400	94.7917
 play	?OnKeyDown@CPlay@@UAEHHH@Z	90.2807	90.2807	5	11cedbbb875a	0xcbcc0	90.5799
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	96.1533	96.1533	7	28246244404e	0xce660	96.1533
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.5287	89.5287	7	0bd1f0b5bd7a	0xcdb10	89.5287
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	90.0206	90.0206	8	7a430f95ae6e	0xcdb10	90.0206
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	3	3c757657d494	0xce530	100.0000
 play	?OnMouseMove@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	80a201da23b5	0x8c970	100.0000
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	8b4b0527c2b5	0xceab0	100.0000
