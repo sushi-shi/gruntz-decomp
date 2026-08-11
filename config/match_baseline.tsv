@@ -3688,7 +3688,7 @@ sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	87.8102	87.8102	1
 sbi_rectonly	?UpdateDestructButtonStatusBar@CStatusBarMgr@@QAEXXZ	94.6667	94.6667	7	02b45079bcf4	0x10b320	94.6667
 sbi_rectonly	?UpdateFallingItemStatusBar@CStatusBarMgr@@QAEHHHH@Z	86.0182	86.0182	7	3492590b5552	0x107590	86.0182
 sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	13	fea1a73cd78f	0x105310	99.7895
-sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	96.2609	96.2609	13	b13b6911a611	0x105990	96.2609
+sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	96.2609	96.2609	14	18b66b5e6e4c	0x105990	96.2609
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	e603d89d88d1	0x106660	100.0000
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	3	3c45136c5388	0x107a10	100.0000
 sbi_rectonly	?UpdateStatusBarTabHighlight@CStatusBarMgr@@QAEHHHH@Z	95.0488	95.0488	17	a288553b24c4	0xfe910	95.0488
