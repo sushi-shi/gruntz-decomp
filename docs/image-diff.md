@@ -342,8 +342,17 @@ candidate this partitions the 72-region bucket into **34 genuinely different
 identities** and **38 multiplicity-only regions**.
 
 With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **34 wrong-referent regions** (24 symbol-proven, 10
+current authoritative worklist is **36 wrong-referent regions** (26 symbol-proven, 10
 weak/content-only), **39 ordering-only regions**, and **38 multiplicity-only regions**.
+
+A twelfth resolver defect treated printable bytes as stronger than a paired data
+symbol.  That mislabeled `g_levelMsgRectsB[0].top` (integer value 92) as the string
+`"\\"` and `g_sndCueTag` (100) as `"d"`.  Paired non-literal symbols now win over
+content sniffing; compiler `??_C@` literals still compare by text.  This correction
+also exposed two previously hidden CRT identity differences: retail's
+`___lc_lctostr` and `___init_numeric` reach named `g_dot`, while our link reaches a
+pooled `"."` literal.  The honest wrong-region count therefore rises **34 -> 36**.
+The selftest uses the `RECT` field as a negative control.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
@@ -394,6 +403,7 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] unknowns cannot turn a proven referent permutation into an identity defect
     [PASS] a repeated use-count difference is multiplicity, not wrong identity
     [PASS] a genuinely absent identity remains wrong
+    [PASS] a paired RECT field outranks coincidental one-byte string content
     [PASS] two swapped relocated dwords -> ONE ordering-only region
     [PASS] ...and NOT a wrong-referent region (the multiset is intact)
     [PASS] ...and the ordering worklist attributes it to the right region

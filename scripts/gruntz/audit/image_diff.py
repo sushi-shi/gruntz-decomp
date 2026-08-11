@@ -658,7 +658,14 @@ def resolve(side, va, weak_n=8):
                      name both images know, the reference is UNDECIDABLE:
                      fingerprinting a function by its first bytes would match
                      every `push ebp; mov ebp,esp` in the binary.
-      3. a string  - the TEXT, at ANY length.  Retail's manifest names literals
+      3. a paired non-literal symbol - the name.  ONLY a name both images know
+                     can decide a mismatch; one-sided names prove nothing.
+                     This must beat content sniffing: a RECT field containing
+                     92 is the paired aggregate's `.top`, not the one-character
+                     string `"\\"` merely because its little-endian bytes look
+                     printable.  Compiler `??_C@` literal symbols continue to
+                     compare by text so pooling/name asymmetry cannot matter.
+      4. a string  - the TEXT, at ANY length.  Retail's manifest names literals
                      `??_C@_0M@NCPH@LogicAttack?$AA@` and our .map does not
                      publish them at all, so comparing text is both symmetric
                      and stronger than comparing either name.  The old 4-char
@@ -668,8 +675,6 @@ def resolve(side, va, weak_n=8):
                      referent.  A RELOCATED word is never text - `6b 38 5d 00`
                      is the address 0x5d386b, not the string "k8]" - so the
                      relocation table, not the length, is what guards this.
-      4. a paired symbol - the name.  ONLY a name both images know can decide a
-                     mismatch; one-sided names prove nothing.
       5. other data - the instruction's proven read width at the target (a pool
                      constant), or 8 bytes when unknown; marked weak. UNLESS
                      those bytes are themselves RELOCATED: a window over stored
@@ -690,6 +695,13 @@ def resolve(side, va, weak_n=8):
     # one: the slot holds the hint/name RVA until the loader overwrites it, it
     # carries no base relocation, and `36 55 2c 00` reads as the string "6U,".
     if named and nm.startswith("__imp_"):
+        return (nm, "symbol")
+    # A cross-image paired name is stronger evidence than a byte-pattern
+    # heuristic.  In particular, integer fields of typed aggregates frequently
+    # begin with a printable byte followed by NULs.  Content-first resolution
+    # misnamed g_levelMsgRectsB.top (92) as `"\\"` and g_sndCueTag (100) as
+    # `"d"`, erasing the typed identity carried by correct relocations.
+    if named and not nm.split("+")[0].startswith("??_C@"):
         return (nm, "symbol")
     c = side.content(va, n=weak_n)
     if c is not None and c[0] == "str" and not side.relocated_window(va, len(c[1]), 0):
@@ -1902,6 +1914,15 @@ def selftest():
     open_bad = [x for r in base for x in r.cmp.ref_bad if x[0] == open_name]
     check("RegistryHelper::Open compares the Software terminator, not its neighbour",
           not open_bad, "%d false row(s)" % len(open_bad))
+    rect_name = "?g_levelMsgRectsB@@3PAUtagRECT@@A"
+    rect_bad = []
+    for side in (R, C):
+        for rva in side.names.get(rect_name, ()):
+            desc, how = resolve(side, rva + side.base + 4)
+            if (desc, how) != (rect_name + "+0x4", "symbol"):
+                rect_bad.append((side.tag, desc, how))
+    check("a paired RECT field outranks coincidental one-byte string content",
+          len(rect_bad) == 0, "%r" % rect_bad)
 
     # --- 1. the size arithmetic closes, per section -------------------------
     for r in base:
