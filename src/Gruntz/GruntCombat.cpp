@@ -181,13 +181,13 @@ static char s_CombatTimeout[] = "CombatTimeout";
 
 // The knockback cell is the direction the ATTACKER lies in, i.e. the opposite of
 // the pixel delta the same site applies: pushed west => faces east.
-// newX/newY come FIRST so the cell copy is each arm's TAIL: retail's arms are not
+// newPos comes FIRST so the cell copy is each arm's TAIL: retail's arms are not
 // cross-jumped (0x5a304, 0x5a33f, ... each end `mov [<lea 0x43c>+8],r; jmp 0x5a6d6`),
 // which only holds while the arm's last instructions are the per-arm cell stores.
 #define SETDIR(cell, nx, ny)                                                                       \
     do {                                                                                           \
-        newY = (ny);                                                                               \
-        newX = (nx);                                                                               \
+        newPos.m_y = (ny);                                                                         \
+        newPos.m_x = (nx);                                                                         \
         this->m_entranceCell = (cell);                                                             \
     } while (0)
 
@@ -1110,9 +1110,15 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 
     // Three `_zdvec::IndexToPtr` sites: cl left the inner `_zvec::IndexToPtr`
     // out of line at the first and expanded it at the other two.
-    char* nm0 = *g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
+    // The SLOT is what survives the grown-slot construction, not the buffer it
+    // currently points at: retail parks the record pointer in ebx across
+    // ActNameConstructGrownSlots and only then loads `[ebx]` (0x5941fe `mov
+    // ebx,eax` / 0x59420 `mov eax,[ebx]`).  Dereferencing before the call reads
+    // a pointer the reconstruction can replace - and it is also what the two
+    // sibling sites below already do.
+    char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool neH = (strcmp(nm0, s_codeH) != 0);
+    bool neH = (strcmp(*rec0, s_codeH) != 0);
     if (neH) {
         i32 keyF = m_objAux->m_actKey;
         g_typeColl.m_grown = 0;
@@ -1156,18 +1162,28 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
 }
 
 // @early-stop
-// The knockback chain now has retail's shape (skeleton blocks B0..B129 and the apply
-// block B161 align).  Residue is the STACK FRAME: retail is `sub esp,0xb0`, this is
-// `sub esp,0xac` - one 4-byte local short - so every parameter reference is displaced
-// by 4 (`[esp+0xdc]` here vs `[esp+0xe0]` retail) and the 41 `LeafCue* out` homes get a
-// different slot each (ours 0x10,14,18,1c,24,28,2c,34..b8; retail 0x10,14,1c,20,24,2c,
-// 30..b8).  The missing local is homed but never stored, like retail's newY at
-// [esp+0x18] (read only at 0x5a6d2, the undefined-direction path).  Secondary: at each
-// `out` site retail schedules the `out = 0` store AFTER both argument pushes
-// (`push ecx; push key; mov ecx,[edx+0x28]; mov [esp+..],ebx`), cl puts it first.
+// The knockback chain and the diagonal-blocked probe now both have retail's shape.
+// Residue is the STACK FRAME: retail is `sub esp,0xb0`, this is `sub esp,0xac`, so every
+// esp-relative reference is displaced by 4.  Both sides give the 41 `LeafCue* out` a slot
+// each up to 0xb8; retail then needs ONE more (oyt at [esp+0xbc]) where cl colours oyt
+// onto a low out-home.  It is a colouring outcome, not a missing declaration: the two
+// words of `newPos` prove it - retail homes them apart and ADJACENT ([esp+0x14], stored
+// in every SETDIR arm, and [esp+0x18], never stored and read only at 0x5a6d2, the
+// undefined-direction path), while cl keeps both in registers (ebp/edi) and coalesces
+// their one dead home, which is why our 0x5a6d2 twin loads the SAME slot twice.  Making
+// them one Coord does not force the split either (frame stays 0xac, arms stay 11i);
+// what it buys is the whole-object `m_lastTilePx = newPos` at 0x5a9ee, where retail
+// takes m_x from its home and m_y from ebx in one go (73.25 -> 73.78; the same Coord
+// with the two fields assigned separately scores 73.25 again).
+// Secondary: at each `out` site retail schedules the `out = 0` store AFTER both argument
+// pushes (`push ecx; push key; mov ecx,[edx+0x28]; mov [esp+X+8],ebx`), cl puts it before
+// the first push; measured NEUTRAL against the `void*`-out spelling of MapLookup.
+// Also unmoved: the four quadrant arms test `& 0x2000` as `mov r,[mem]; test rh,0x20`
+// where retail pins the mask (`mov ebp,0x2000`) and tests `[mem],ebp` once per probe.
 // The SETDIR set itself is VERIFIED against retail: the 15 `lea <r>,[esi+0x43c]` sites
 // at 0x5a31d..0x5a6b0 carry cells SW,W,NW,NE,E,S,S,N,E,W,SE,NW,NE,S,N, which is this
-// source's arm-to-cell mapping exactly.
+// source's arm-to-cell mapping exactly.  SETDIR's newY-then-newX order is measured: the
+// newX-first spelling that matches retail's emitted order scores 0.8 lower.
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1440,14 +1456,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
             p++;
         } while (--n != 0);
     }
-    if (strcmp(*typeRec, "O") == 0) {
+    bool isCodeO = (strcmp(*typeRec, "O") == 0);
+    if (isCodeO) {
         return 1;
     }
 
     i32 dy = srcPxY - this->m_object->m_screenY;
     i32 dx = srcPxX - this->m_object->m_screenX;
-    i32 newX;
-    i32 newY;
+    Coord newPos;
     if (attackKind == PICKUP_WINGZ) {
         switch (static_cast<WingzKnockbackChoice>(rand() % 8 - 1)) {
             case WINGZ_KNOCKBACK_NORTHEAST:
@@ -1551,12 +1567,13 @@ i32 CGrunt::LoadGruntCombatAnimations(
     {
         i32 flags = this->m_arrivalFlags | 0x20000000;
         CMapMgr* grid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
-        i32 nyt = newY >> TILE_SHIFT_PX;
-        i32 nxt = newX >> TILE_SHIFT_PX;
+        i32 nyt = newPos.m_y >> TILE_SHIFT_PX;
+        i32 nxt = newPos.m_x >> TILE_SHIFT_PX;
         i32 oxt = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oyt = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (!(oxt == nxt && oyt == nyt)) {
-            if (static_cast<u32>(nxt) >= static_cast<u32>(grid->m_width)) {
+            i32 w = grid->m_width;
+            if (static_cast<u32>(nxt) >= static_cast<u32>(w)) {
                 return 1;
             }
             if (static_cast<u32>(nyt) >= static_cast<u32>(grid->m_height)) {
@@ -1574,30 +1591,30 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 dxt = nxt - oxt;
             i32 dyt = nyt - oyt;
             if (dxt != 0 && dyt != 0) {
-                i32 w = grid->m_width;
-                if (dxt > 0) {
-                    if (dyt > 0) {
-                        if (((ocell + 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
-                            || ((cell - 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
-                            return 1;
-                        }
-                    } else {
-                        if (((ocell + 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
-                            || ((cell - 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
-                            return 1;
-                        }
+                // The four quadrant probes are FLAT `else if`s, not a nested
+                // dxt/dyt tree: retail re-tests both deltas per arm and threads
+                // each failing arm straight onto the next arm's jcc (the shared
+                // flags at 0x5a7f2 / 0x5a84e / 0x5a8a4), and the arm ORDER is
+                // (+,+) (-,+) (+,-) (-,-), which a nested tree cannot produce.
+                if (dxt > 0 && dyt > 0) {
+                    if (((ocell + 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
+                        || ((cell - 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
+                        return 1;
                     }
-                } else {
-                    if (dyt > 0) {
-                        if (((ocell - 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
-                            || ((cell + 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
-                            return 1;
-                        }
-                    } else {
-                        if (((ocell - 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
-                            || ((cell + 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
-                            return 1;
-                        }
+                } else if (dxt < 0 && dyt > 0) {
+                    if (((ocell - 1)->m_flags & 0x2000) || ((ocell + w)->m_flags & 0x2000)
+                        || ((cell + 1)->m_flags & 0x2000) || ((cell - w)->m_flags & 0x2000)) {
+                        return 1;
+                    }
+                } else if (dxt > 0 && dyt < 0) {
+                    if (((ocell + 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
+                        || ((cell - 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
+                        return 1;
+                    }
+                } else if (dxt < 0 && dyt < 0) {
+                    if (((ocell - 1)->m_flags & 0x2000) || ((ocell - w)->m_flags & 0x2000)
+                        || ((cell + 1)->m_flags & 0x2000) || ((cell + w)->m_flags & 0x2000)) {
+                        return 1;
                     }
                 }
             }
@@ -1627,8 +1644,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             m_coordList.AddHead(node);
         }
 
-        this->m_lastTilePx.m_x = newX;
-        this->m_lastTilePx.m_y = newY;
+        this->m_lastTilePx = newPos;
         this->m_prevAnimSetNode = this->m_objAux->m_actKey;
         this->m_objAux->m_actKey = ActFindId("O");
         // Retail re-reads the member pair it has just written (0x5aa2e

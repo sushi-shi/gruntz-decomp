@@ -25,6 +25,24 @@ if (nudged) goto pathGate;      // backward in retail, forward in ours
 goto pathGate;                  // same
 ```
 
+**The `goto` is only half of it: the other half is a /GX EH scope inside the target
+region, and that half is decisive.** `StepArrivalDrop`'s region A contains a
+`CPtrList probe(10)` - a destructible local, so a `__ehunwind` state range. Two
+independent layout-only probes flip cl back to retail's order while leaving both
+gotos in place: (a) delete the probe block, (b) keep every statement but give the
+list a HEAP home (`CPtrList* p = new CPtrList(10)`) so no local is destructible.
+Restore the stack local and A sinks again. So the rule is: *a backward `goto` into a
+region that owns an EH state range sinks that region*; a backward `goto` into a plain
+region does not have to. This does NOT yet give a legal fix - retail has the SAME
+scope, the same size (state 0 at 0x4b651 through state -1 at 0x4b73f, 0xee bytes;
+ours 0x962..0xa50, also 0xee), with its own `je 0x4b74e` jumping the whole scope - so
+some third difference decides it. Refuted as that difference, one build each:
+spelling the battlez arm `if (state == BATTLEZ) reinit = 0; else { CPtrList
+probe(10); ... }` instead of `goto commitEntrance`; and hoisting the declaration to
+FUNCTION scope so that no `goto` crosses a scope boundary at all. Neither moves the
+ctor out of the sunk region, so it is not the scope's POSITION and not the crossing
+- the mere presence of a destructible local in the function is enough to trigger it.
+
 Measured on `CGrunt::StepArrivalDrop` @0x4b370: with both gotos present cl emits
 prologue/B/C/D/A and scores 33.37%; with both replaced by a plain `return` (semantically wrong,
 probe only) it emits prologue/A/B/C/D — retail's order — and scores 66.15%. Removing only ONE

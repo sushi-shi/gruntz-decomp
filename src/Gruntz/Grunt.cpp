@@ -346,9 +346,7 @@ CGrunt::CGrunt(void* owner)
       m_arrivalVoiceWindowLo(0),
       m_arrivalVoiceClockHi(0),
       m_arrivalVoiceWindowHi(0) {
-    m_entranceCell.row = g_gruntMoveDirSouth.row;
-    m_entranceCell.column = g_gruntMoveDirSouth.column;
-    m_entranceCell.direction = g_gruntMoveDirSouth.direction;
+    m_entranceCell = g_gruntMoveDirSouth;
     m_startingItemId = m_object->m_powerup;
     m_recordedFrameTick = g_frameTicks;
     m_object->m_moveMode = MOVE_GROUNDED;
@@ -383,7 +381,6 @@ CGrunt::CGrunt(void* owner)
     m_neighborCell.m_y = -1;
     m_entranceCommitted = 1;
     m_healthSprite = NULL;
-    m_reachRect.left = -1;
     m_staminaSprite = NULL;
     m_toyTimeSprite = NULL;
     m_wingzTimeSprite = NULL;
@@ -398,21 +395,28 @@ CGrunt::CGrunt(void* owner)
     m_wingzEnabled = 0;
     m_struckSlotSound = NULL;
     m_struckVoiceSound = NULL;
-    m_reachRect.top = -1;
-    m_reachRect.right = 1;
-    m_reachRect.bottom = 1;
-    m_reachExclusionRect.left = 0;
-    m_reachExclusionRect.top = 0;
-    m_reachExclusionRect.right = 0;
-    m_reachExclusionRect.bottom = 0;
-    m_toyRectA.left = 0;
-    m_toyRectA.top = 0;
-    m_toyRectA.right = 0;
-    m_toyRectA.bottom = 0;
-    m_toyRectB.left = 0;
-    m_toyRectB.top = 0;
-    m_toyRectB.right = 0;
-    m_toyRectB.bottom = 0;
+    // Retail assigns each of the four rects as a WHOLE object: the values sit in
+    // eax/ecx/edx/edi and go out through one `lea ebx,[esi+0x2a0]` base, first
+    // store direct and the other three at [ebx+4/8/c] (0x47cd6..0x47d20). That is
+    // a struct copy from a source whose fields cl has already folded to constants,
+    // i.e. a plain RECT local - not `CRect(0,0,0,0)`, which materialises a real
+    // temp and calls the ctor (measured 85.82 against 92.39 here), and not the
+    // sixteen field-by-field stores this used to be, which cl schedules in among
+    // its neighbours and spells with the 6-byte `[esi+0x2xx]` form throughout.
+    RECT reach;
+    reach.left = -1;
+    reach.top = -1;
+    reach.right = 1;
+    reach.bottom = 1;
+    m_reachRect = reach;
+    RECT zero;
+    zero.left = 0;
+    zero.top = 0;
+    zero.right = 0;
+    zero.bottom = 0;
+    m_reachExclusionRect = zero;
+    m_toyRectA = zero;
+    m_toyRectB = zero;
 
     m_toyClockLo = 0;
     m_toyDurationLo = 0;
@@ -773,9 +777,16 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 }
 
 // @early-stop
-// Block layout: retail keeps the seven inline strcmp probes contiguous and puts
-// the idle/walk bodies after them; cl inverts the 4th probe's branch and lays the
-// idle body out as its fallthrough, interleaving bodies with probes.
+// Block skeleton is now identical to retail (70/70, every edge `==`).  The
+// residue is a register PERMUTATION at six of the seven act probes: retail
+// takes the m_objAux temp in edx, sets ecx to &g_typeColl BEFORE the argument
+// load, and pushes from eax; cl takes the temp in eax, leaves the argument in
+// ecx and therefore has to reload ecx with the receiver after the push.  The
+// first probe (s_codeF) colours retail's way on both sides, so it is an
+// allocator preference and not a shape difference - same instruction count,
+// same operands, same size.  The three `m_value = ...; Setup(...)` sites carry
+// the same ecx/edx swap plus a store scheduled before rather than after the
+// receiver `lea`.
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     static_cast<void>(range);
@@ -790,70 +801,61 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     }
     bool ne;
     ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
-    if (!ne) {
-        goto walk;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
-    if (eq) {
-        goto idle;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") == 0);
-    if (eq) {
-        goto idle;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
-    if (eq) {
+    if (ne) {
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
+        if (!eq) {
+            eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "K") == 0);
+            if (!eq) {
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
+                if (eq) {
+
+                    m_value = m_wwdObject->m_animCursor.m_animation;
+                    m_wwdObject->m_animCursor.Setup(m_poseAttackIdle);
+                    {
+                        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
+                        CAniRecordView* elem =
+                            desc->m_records.GetSize() > 0
+                                ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                : 0;
+                        i32 frame = elem->m_param;
+                        const char* nm = EntranceCell()->AttackName().GetBuffer(0);
+                        m_wwdObject->ApplyLookupSprite(nm, frame);
+                    }
+                    goto store;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
+                if (!eq) {
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) == 0);
+                    if (!eq) {
+                        goto walk;
+                    }
+                }
+
+                m_entranceCell = rec;
+                m_value = m_wwdObject->m_animCursor.m_animation;
+                m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE2));
+                ResetEntranceAnimation(1, 0, 0);
+                return;
+            }
+        }
 
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseAttackIdle);
+        m_wwdObject->ApplyGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* elem = desc->m_records.GetSize() > 0
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                        : 0;
             i32 frame = elem->m_param;
-            const char* nm = EntranceCell()->AttackName().GetBuffer(0);
+            i32 row = rec.row;
+            i32 column = rec.column;
+            i32 index = 3 * row + column;
+
+            const char* nm = m_cells[index].IdleName().GetBuffer(0);
             m_wwdObject->ApplyLookupSprite(nm, frame);
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
-    if (eq) {
-        goto codeI;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) == 0);
-    if (!eq) {
-        goto walk;
-    }
-
-codeI:
-
-    m_entranceCell.row = rec.row;
-    m_entranceCell.column = rec.column;
-    m_entranceCell.direction = rec.direction;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE2));
-    ResetEntranceAnimation(1, 0, 0);
-    return;
-
-idle:
-
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
-    {
-        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-        CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                   : 0;
-        i32 frame = elem->m_param;
-        i32 row = rec.row;
-        i32 column = rec.column;
-        i32 index = 3 * row + column;
-
-        const char* nm = m_cells[index].IdleName().GetBuffer(0);
-        m_wwdObject->ApplyLookupSprite(nm, frame);
-    }
-    goto store;
 
 walk:
 
@@ -869,9 +871,7 @@ walk:
     }
 
 store:
-    m_entranceCell.row = rec.row;
-    m_entranceCell.column = rec.column;
-    m_entranceCell.direction = rec.direction;
+    m_entranceCell = rec;
 }
 
 // @early-stop
@@ -949,11 +949,26 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 // The dominant residue is a REGION ROTATION, not the cross-jump: cl emits
 // prologue / nudge / bresenham / reProbe / pathGate where retail emits
 // prologue / pathGate / nudge / bresenham / reProbe, so every branch
-// displacement in both halves is re-encoded.  The cause is the two backward
-// `goto pathGate` sites - see
-// docs/patterns/backward-goto-sinks-its-target-region.md, which records the
-// probe (both gotos removed => retail's order, 33.37 -> 66.15) and the three
-// restructurings that do NOT move it.
+// displacement in both halves is re-encoded.  The two backward `goto pathGate`
+// sites are ONE half of the trigger; the other half is the /GX EH scope of the
+// `CPtrList probe(10)` below, and it is the half that is actually decisive.
+// Two independent probes (both semantically wrong, layout-only): delete the whole
+// probe block, or keep the block and give the list a HEAP home so the local is no
+// longer destructible - EITHER ONE puts region A back at the top with the late
+// sites reaching it by backward `jmp`, i.e. retail's order.  With the stack local
+// restored, cl sinks A again.  Retail HAS that same EH scope, byte-for-byte the
+// same size (state 0 at 0x4b651 through state -1 at 0x4b73f = 0xee bytes, ours
+// 0x962..0xa50 = 0xee), reached by the same gotos over it (retail's own `je
+// 0x4b74e` jumps the whole scope), so the source shape is not what differs.
+// REFUTED as the suppressor, one build each: writing the battlez arm as
+// `if (state == BATTLEZ) reinit = 0; else { CPtrList probe(10); ... }` instead of
+// `goto commitEntrance` (ctor still at 0x934 of 0xb30, sunk); and hoisting the
+// declaration to FUNCTION scope so no goto crosses a scope boundary at all (the
+// probe SearchEdge stays at 0xa1a, sunk).  So it is not the scope's position and
+// not the crossing - the mere PRESENCE of a destructible local is enough.
+// Also see docs/patterns/backward-goto-sinks-its-target-region.md, which records
+// the earlier probe (both gotos removed => retail's order, 33.37 -> 66.15) and the
+// three restructurings that do NOT move it.
 // The second residue is the cross-jump the rotation drags with it: cl merges
 // the `if (CoordCount()) pop head` at dropHead with the byte-identical one at
 // reProbe.  Retail keeps both copies because it scheduled them differently
@@ -1356,11 +1371,19 @@ reProbe:
 }
 
 // @early-stop
-// cl gives `rec` one home (3 slots); retail's cl split its live range into two
-// (5 slots: word0 stays in edi, word1/word2 spilled per range), so the frame is
-// 0x38 against our 0x30. Every other local matches one-for-one. Two source
-// records instead of one reproduces the second home but costs 6 slots (0x3c),
-// so the split is the allocator's, not a missing declaration.
+// The two `goto 0x4c68b` sites are now nested guards, which puts base and retail on
+// 187/187 blocks with the whole 0x4c446..0x4c5de span aligned; the first true skeleton
+// divergence is B73 (68.66 -> 69.29).
+// Residue is `rec`'s HOME. cl gives it one (3 slots); retail's cl split the live range
+// into two homes ({-,0x2c,0x30} with word0 permanently in edi, and {0x3c,0x40,0x44}),
+// so retail's frame is 0x38 against our 0x30. That split is what lets retail's sixteen
+// direction arms leave the cell in eax/ecx/edx and sink the stores to the join (arms of
+// 4i and 5i where ours are 6i, i.e. 24 instructions); we spill two of the three words
+// inside every arm. Two source records instead of one reproduces the second home but
+// costs 6 slots (0x3c), so it is not a missing declaration.
+// Second residue, same cause: retail loads `flagHead` and `m_passableMask` into
+// registers before their `test` (0x4c3c5 / 0x4c3eb) where cl uses the memory operand
+// form - but retail re-reads [esi+0x24c] at its other two sites, so neither is a local.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1462,10 +1485,12 @@ i32 CGrunt::StepGruntMovement() {
             }
         }
     }
-    if (m_entranceActive != 0) {
-        goto label_4c68b;
-    }
-    {
+    // The two `goto 0x4c68b` sites made that body cl 5.0's fall-through for its LAST
+    // predecessor (0x323 in the base, with the gate inverted to `je`); retail reaches
+    // it with two forward `jne 0x4c68b` and keeps it at its source position.  Nesting
+    // the guards gives the body one join instead of two predecessors - see
+    // docs/patterns/goto-chain-of-distinct-bodies-is-a-nested-if.md.
+    if (m_entranceActive == 0) {
         i32 lastFlag;
         i32 ltx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 lty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
@@ -1475,93 +1500,92 @@ i32 CGrunt::StepGruntMovement() {
         } else {
             lastFlag = 1;
         }
-        if (lastFlag & 0x80) {
-            goto label_4c68b;
+        if (!(lastFlag & 0x80)) {
+            if (m_arrivalState == AI_BATTLEZ_PATH) {
+                goto label_4cb2a;
+            }
+            if (CoordCount() == 0) {
+                goto label_4cb2a;
+            }
+            {
+                i32 mask = m_arrivalFlags & flagHead;
+                if (mask & 0x20000000) {
+                    goto label_4cb2a;
+                }
+                if (mask != 0 && !(flagHead & m_passableMask)) {
+                    goto label_4cb2a;
+                }
+            }
+            if (!(flagHead & 0x20000000)) {
+                goto label_4c6e4;
+            }
+            {
+                void* node = 0;
+                CoordPoolNode* head = g_coordPool.m_freeHead;
+                if (head->m_next != NULL) {
+                    node = &head->m_coord;
+                    g_coordPool.m_freeHead = head->m_next;
+                }
+                (static_cast<i32*>(node))[0] = tgtTileX;
+                (static_cast<i32*>(node))[1] = tgtTileY;
+                m_coordList.AddHead(node);
+            }
+            if (PathScan() == 0) {
+                PlaySound(0x3e8, rec);
+                SetEntrancePos(1, 0);
+                return 0;
+            }
+
+            if (CoordCount() == 0) {
+                goto label_4cb2a;
+            }
+            {
+                Coord* co = CoordHead()->m_coord;
+                i32 cx = co->m_x;
+                i32 cy = co->m_y;
+                tgtPxX = (cx << TILE_SHIFT_PX) + TILE_HALF_PX;
+                tgtPxY = (cy << TILE_SHIFT_PX) + TILE_HALF_PX;
+                i32 gx = m_object->m_screenX >> TILE_SHIFT_PX;
+                i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
+                if (cx > gx) {
+                    if (cy > gy) {
+                        rec = g_gruntMoveDirSouthEast;
+                    } else if (cy == gy) {
+                        rec = g_gruntMoveDirEast;
+                    } else {
+                        rec = g_gruntMoveDirNorthEast;
+                    }
+                } else if (cx < gx) {
+                    if (cy > gy) {
+                        rec = g_gruntMoveDirSouthWest;
+                    } else if (cy == gy) {
+                        rec = g_gruntMoveDirWest;
+                    } else {
+                        rec = g_gruntMoveDirNorthWest;
+                    }
+                } else {
+                    if (cy < gy) {
+                        rec = g_gruntMoveDirNorth;
+                    } else {
+                        rec = g_gruntMoveDirSouth;
+                    }
+                }
+                CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
+                if (bd->m_rowInts[cy][cx * 7] & 0x20000000) {
+                    PlaySound(0x3e8, rec);
+                    SetEntrancePos(1, 0);
+                    return 0;
+                }
+                Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
+                CoordPoolNode* p = g_coordPool.NodeOf(co2);
+                p->m_next = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
+                goto label_4c6e4;
+            }
         }
-    }
-    if (m_arrivalState == AI_BATTLEZ_PATH) {
-        goto label_4cb2a;
-    }
-    if (CoordCount() == 0) {
-        goto label_4cb2a;
-    }
-    {
-        i32 mask = m_arrivalFlags & flagHead;
-        if (mask & 0x20000000) {
-            goto label_4cb2a;
-        }
-        if (mask != 0 && !(flagHead & m_passableMask)) {
-            goto label_4cb2a;
-        }
-    }
-    if (!(flagHead & 0x20000000)) {
-        goto label_4c6e4;
-    }
-    {
-        void* node = 0;
-        CoordPoolNode* head = g_coordPool.m_freeHead;
-        if (head->m_next != NULL) {
-            node = &head->m_coord;
-            g_coordPool.m_freeHead = head->m_next;
-        }
-        (static_cast<i32*>(node))[0] = tgtTileX;
-        (static_cast<i32*>(node))[1] = tgtTileY;
-        m_coordList.AddHead(node);
-    }
-    if (PathScan() == 0) {
-        PlaySound(0x3e8, rec);
-        SetEntrancePos(1, 0);
-        return 0;
     }
 
-    if (CoordCount() == 0) {
-        goto label_4cb2a;
-    }
-    {
-        Coord* co = CoordHead()->m_coord;
-        i32 cx = co->m_x;
-        i32 cy = co->m_y;
-        tgtPxX = (cx << TILE_SHIFT_PX) + TILE_HALF_PX;
-        tgtPxY = (cy << TILE_SHIFT_PX) + TILE_HALF_PX;
-        i32 gx = m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
-        if (cx > gx) {
-            if (cy > gy) {
-                rec = g_gruntMoveDirSouthEast;
-            } else if (cy == gy) {
-                rec = g_gruntMoveDirEast;
-            } else {
-                rec = g_gruntMoveDirNorthEast;
-            }
-        } else if (cx < gx) {
-            if (cy > gy) {
-                rec = g_gruntMoveDirSouthWest;
-            } else if (cy == gy) {
-                rec = g_gruntMoveDirWest;
-            } else {
-                rec = g_gruntMoveDirNorthWest;
-            }
-        } else {
-            if (cy < gy) {
-                rec = g_gruntMoveDirNorth;
-            } else {
-                rec = g_gruntMoveDirSouth;
-            }
-        }
-        CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
-        if (bd->m_rowInts[cy][cx * 7] & 0x20000000) {
-            PlaySound(0x3e8, rec);
-            SetEntrancePos(1, 0);
-            return 0;
-        }
-        Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
-        CoordPoolNode* p = g_coordPool.NodeOf(co2);
-        p->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = p;
-        goto label_4c6e4;
-    }
-
-label_4c68b:
+    // 0x4c68b - reached only by falling out of the two guards above.
     if ((flagHead & 0x20000000) && !(flagHead & 0x80)) {
         i32 owner;
         if (static_cast<u32>(tgtTileX) < static_cast<u32>(bd->m_width)
@@ -1759,8 +1783,7 @@ label_4cb4b:
     m_coordRetryCount = 0;
     PlaySound(0x3e8, rec);
     {
-        m_commitPx.m_x = m_lastTilePx.m_x;
-        m_commitPx.m_y = m_lastTilePx.m_y;
+        m_commitPx = m_lastTilePx;
         i32 lastTileX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 lastTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         CGruntzMapMgr* bdl = g_gameReg->m_tileGrid;
@@ -1825,8 +1848,7 @@ label_ret1:
 RVA(0x0004d060, 0x98)
 void CGrunt::SetEntrancePos(i32 a, i32 b) {
     m_reserved210 = 0;
-    m_entrancePx.m_x = m_lastTilePx.m_x;
-    m_entrancePx.m_y = m_lastTilePx.m_y;
+    m_entrancePx = m_lastTilePx;
     if (a) {
         m_arrivalPhase = 0;
         m_arrivalActive = 0;
@@ -2178,13 +2200,11 @@ i32 CGrunt::Place(
     // to a Post Guard when the level gives it none.
     switch (kind) {
         case AI_POSTGUARD:
-            m_defenderPx.m_x = m_lastTilePx.m_x;
-            m_defenderPx.m_y = m_lastTilePx.m_y;
+            m_defenderPx = m_lastTilePx;
             break;
         case AI_OBJECTGUARD:
             if (a9 == 0 && a10 == 0) {
-                m_defenderPx.m_x = m_lastTilePx.m_x;
-                m_defenderPx.m_y = m_lastTilePx.m_y;
+                m_defenderPx = m_lastTilePx;
                 m_arrivalState = AI_POSTGUARD;
             } else {
                 i32 px = (a9 << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -2196,8 +2216,7 @@ i32 CGrunt::Place(
             break;
         case AI_DEFENDER:
         case AI_BOMBER:
-            m_defenderPx.m_x = m_lastTilePx.m_x;
-            m_defenderPx.m_y = m_lastTilePx.m_y;
+            m_defenderPx = m_lastTilePx;
             break;
     }
     return 1;
@@ -4290,19 +4309,20 @@ void CGrunt::AdvanceMotion() {
                             // homes ([esp+0x10]/[esp+0x14], written at 0x5f74a before
                             // the `and`), and 0x5f939 runs `mov ecx,ebx` - the snap is
                             // on `other`, not on this.
-                            i32 targetX = other->m_lastTilePx.m_x;
-                            i32 targetY = other->m_lastTilePx.m_y;
+                            i32 lastX = other->m_lastTilePx.m_x;
+                            i32 lastY = other->m_lastTilePx.m_y;
+                            i32 targetX = lastX;
+                            i32 targetY = lastY;
                             if (RectContains(x, y) != 0) {
                                 targetX = otherPxX;
                                 targetY = otherPxY;
-                            } else if (RectContains(
-                                           other->m_lastTilePx.m_x,
-                                           other->m_lastTilePx.m_y
-                                       )
-                                       != 0) {
+                            } else if (RectContains(lastX, lastY) != 0) {
+                                // 0x5f7f2 `mov eax,edi / mov ecx,ebp` - retail
+                                // carries the PRE-snap pair into ApplyTriggerA;
+                                // it never re-reads m_lastTilePx after the snap,
+                                // and 0x5f7dc pushes the same two registers into
+                                // this very probe.
                                 other->SnapToLastTile(0);
-                                targetX = other->m_lastTilePx.m_x;
-                                targetY = other->m_lastTilePx.m_y;
                             } else {
                                 targetX = m_arrivalTargetPx.m_x;
                                 targetY = m_arrivalTargetPx.m_y;
@@ -4338,19 +4358,15 @@ void CGrunt::AdvanceMotion() {
                                 }
                             }
 
-                            i32 targetX = other->m_lastTilePx.m_x;
-                            i32 targetY = other->m_lastTilePx.m_y;
+                            i32 lastX = other->m_lastTilePx.m_x;
+                            i32 lastY = other->m_lastTilePx.m_y;
+                            i32 targetX = lastX;
+                            i32 targetY = lastY;
                             if (RectContainsGated(x, y) != 0) {
                                 targetX = otherPxX;
                                 targetY = otherPxY;
-                            } else if (RectContainsGated(
-                                           other->m_lastTilePx.m_x,
-                                           other->m_lastTilePx.m_y
-                                       )
-                                       != 0) {
+                            } else if (RectContainsGated(lastX, lastY) != 0) {
                                 other->SnapToLastTile(0);
-                                targetX = other->m_lastTilePx.m_x;
-                                targetY = other->m_lastTilePx.m_y;
                             } else {
                                 targetX = m_arrivalTargetPx.m_x;
                                 targetY = m_arrivalTargetPx.m_y;
