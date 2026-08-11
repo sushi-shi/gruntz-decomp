@@ -22,6 +22,7 @@ halves, and the tool refuses to print either without the other:
     python -m gruntz.audit.image_diff --section .text --detail 20
     python -m gruntz.audit.image_diff --referents 30     # the wrong-referent worklist
     python -m gruntz.audit.image_diff --ordering 20      # the ordering-only worklist
+    python -m gruntz.audit.image_diff --multiplicity 20  # same identities, different counts
     python -m gruntz.audit.image_diff --selftest         # plant defects, find them
     python -m gruntz.audit.image_diff --tsv f.tsv --json f.json
 
@@ -328,9 +329,21 @@ permutation is a negative control in `--selftest`.  On the authoritative candida
 moves the wrong count **77 -> 72** and exposes six ordering-only bodies (**33 -> 39**):
 five were misclassified as wrong and one had been over-suppressed entirely.
 
+An eleventh classification defect blended **referent multiplicity** into identity.
+VC5 can merge several source arms onto one call site or factor repeated global loads;
+the reverse spelling can emit more operands while every one still names an identity
+present on the other side.  `CGrunt::LoadGruntTypeTable` is the compact control:
+retail shares three health cases across two `GetIntDef("Powerupz", ...)` call sites,
+while our build shares all three across one.  `CShadeTableCache::FlashTable` similarly
+factors repeated `g_p01` loads.  Call/load count can matter, so these regions are not
+discarded: `--multiplicity N` lists them and the integrity gate ratchets them
+separately.  They are no longer called wrong-target evidence.  On the authoritative
+candidate this partitions the 72-region bucket into **34 genuinely different
+identities** and **38 multiplicity-only regions**.
+
 With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **72 wrong-referent regions** (62 symbol-proven, 10
-weak/content-only) plus **39 ordering-only regions**.
+current authoritative worklist is **34 wrong-referent regions** (24 symbol-proven, 10
+weak/content-only), **39 ordering-only regions**, and **38 multiplicity-only regions**.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
@@ -356,10 +369,9 @@ against the section counters — a truncated listing is not a worklist. The domi
 current shape is a game-object constructor whose asset-key literal sits one
 statement away from where retail evaluates it.
 
-Both counts are ratcheted together by `gruntz.audit.data_integrity`
-(`config/retail/data-integrity-ratchet.tsv`, full tier): neither the wrong-referent
-count nor the ordering-only count can silently increase, and a genuine lower count
-must be banked with `--write`.
+All three counts are ratcheted together by `gruntz.audit.data_integrity`
+(`config/retail/data-integrity-ratchet.tsv`, full tier): none can silently increase,
+and a genuine lower count must be banked with `--write`.
 
 ## Selftest
 
@@ -380,6 +392,8 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] no wrong-referent row is an interior SELF-reference (a jump table)
     [PASS] an undecidable operand cannot manufacture a wrong referent
     [PASS] unknowns cannot turn a proven referent permutation into an identity defect
+    [PASS] a repeated use-count difference is multiplicity, not wrong identity
+    [PASS] a genuinely absent identity remains wrong
     [PASS] two swapped relocated dwords -> ONE ordering-only region
     [PASS] ...and NOT a wrong-referent region (the multiset is intact)
     [PASS] ...and the ordering worklist attributes it to the right region

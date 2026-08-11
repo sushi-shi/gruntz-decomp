@@ -473,9 +473,11 @@ class Cmp:
         self.ref_ok = 0          # ... reaching the same referent, same order
         self.ref_pairs_clean = 0
         self.ref_pairs_reordered = 0
+        self.ref_pairs_multiplicity = 0
         self.ref_pairs_bad = 0
         self.ref_bad = []        # [(region, [retail refs], [candidate refs])]
         self.ref_reordered = []  # same shape, for the ordering-only pairs
+        self.ref_multiplicity = []  # same identities, different occurrence counts
         self.classes = Counter()
         self.worst = []          # [(unmatched, name, retail_len)] for --detail
 
@@ -835,6 +837,22 @@ def _seq_divergences(rseq, cseq, sm=None):
     return out
 
 
+def _referent_relation(rseq, cseq):
+    """Identity/order verdict for two complete decidable referent sequences."""
+    if rseq == cseq:
+        return "clean"
+    if Counter(rseq) == Counter(cseq):
+        return "ordering"
+    # Repeating a referent a different number of times is a code-shape fact,
+    # not evidence that either operand names the WRONG object.  VC5 routinely
+    # changes this through tail merging and algebraic factoring.  Keep it as a
+    # separately gated worklist: call/load multiplicity can still matter, but
+    # it must not be described as an identity substitution.
+    if set(rseq) == set(cseq):
+        return "multiplicity"
+    return "wrong"
+
+
 def _token(side, va, zlib, weak_n):
     desc, how = resolve(side, va, weak_n)
     return (_hash(desc, zlib), how)
@@ -977,7 +995,8 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
     cmp_.ref_total += len(rseq)
     if not rseq and not cseq:
         return
-    if rseq == cseq:
+    relation = _referent_relation(rseq, cseq)
+    if relation == "clean":
         cmp_.ref_ok += len(rseq)
         cmp_.ref_pairs_clean += 1
     else:
@@ -988,9 +1007,12 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
             same += b.size
         cmp_.ref_ok += same
         rows = [(name, rr, cc) for rr, cc in _seq_divergences(rseq, cseq, sm)]
-        if sorted(rseq) == sorted(cseq):
+        if relation == "ordering":
             cmp_.ref_pairs_reordered += 1
             cmp_.ref_reordered += rows
+        elif relation == "multiplicity":
+            cmp_.ref_pairs_multiplicity += 1
+            cmp_.ref_multiplicity += rows
         else:
             cmp_.ref_pairs_bad += 1
             cmp_.ref_bad += rows
@@ -1747,6 +1769,8 @@ def fmt(rep, detail=0):
                  % "{:,}".format(cm.ref_pairs_clean))
         L.append("    ... same referents, different ORDER       %8s"
                  % "{:,}".format(cm.ref_pairs_reordered))
+        L.append("    ... same identities, different COUNT      %8s"
+                 % "{:,}".format(cm.ref_pairs_multiplicity))
         L.append("    ... genuinely different referents         %8s  <-- the "
                  "wrong-referent worklist" % "{:,}".format(cm.ref_pairs_bad))
     if cm.classes:
@@ -1961,6 +1985,12 @@ def selftest():
     check("unknowns cannot turn a proven referent permutation into an identity defect",
           Counter(ra4) == Counter(ca4) == Counter(("A", "B", "C")),
           "%r / %r" % (ra4, ca4))
+    check("a repeated use-count difference is multiplicity, not wrong identity",
+          _referent_relation(["A", "A", "B"], ["A", "B"]) == "multiplicity",
+          "multiplicity misclassified")
+    check("a genuinely absent identity remains wrong",
+          _referent_relation(["A", "B"], ["A", "C"]) == "wrong",
+          "identity difference suppressed")
 
     # --- 3b. the resolver's ASYMMETRY traps --------------------------------
     # Each of these four made a correct operand read as a wrong referent, and
@@ -2101,7 +2131,7 @@ def _pick_clean_pair(R, C):
         c = Cmp()
         region_diff(R, C, rspan, cspan, c, True, nm)
         if c.differ == 0 and c.slot_bad == 0 and c.slot_unres == 0 \
-                and c.ref_pairs_bad == 0:
+                and c.ref_pairs_bad == 0 and c.ref_pairs_multiplicity == 0:
             return rspan, cspan, nm
     return None
 
@@ -2135,7 +2165,8 @@ def _pick_reloc_pair(R, C):
     for rspan, cspan, nm in _plain_text_pairs(R, C):
         c = Cmp()
         region_diff(R, C, rspan, cspan, c, True, nm)
-        if c.differ or c.slot_bad or c.slot_unres or c.ref_pairs_bad:
+        if c.differ or c.slot_bad or c.slot_unres or c.ref_pairs_bad \
+                or c.ref_pairs_multiplicity:
             continue
         n = min(rspan[1] - rspan[0], cspan[1] - cspan[0])
         for off, kind, _t, res, _width in slots_of(C, cspan[0],
@@ -2158,7 +2189,7 @@ def _pick_swap_site(R, C):
         c = Cmp()
         region_diff(R, C, rspan, cspan, c, True, nm)
         if c.differ or c.slot_bad or c.slot_unres or c.ref_pairs_bad \
-                or c.ref_pairs_reordered:
+                or c.ref_pairs_reordered or c.ref_pairs_multiplicity:
             continue
         n = min(rspan[1] - rspan[0], cspan[1] - cspan[0])
         co = C.pe.off(cspan[0])
@@ -2226,6 +2257,9 @@ def _referent_worklist(reps, top):
     reordered = sum(r.cmp.ref_pairs_reordered for r in reps)
     print("  ordering-only (same decidable referent multiset): %d region(s)"
           " - `--ordering N` lists them" % reordered)
+    multiplicity = sum(r.cmp.ref_pairs_multiplicity for r in reps)
+    print("  multiplicity-only (same identities, different counts): %d region(s)"
+          " - `--multiplicity N` lists them" % multiplicity)
 
     for (sec, nm), divs in sorted(rows.items(), key=lambda kv: -len(kv[1]))[:top]:
         print("\n  %s  %s   (%d divergence%s)"
@@ -2276,6 +2310,27 @@ def _ordering_worklist(reps, top):
     return 0
 
 
+def _multiplicity_worklist(reps, top):
+    """Bodies reaching the same identities with different occurrence counts."""
+    rows = defaultdict(list)
+    for r in reps:
+        for nm, rr, cc in r.cmp.ref_multiplicity:
+            rows[(r.name, nm)].append((rr, cc))
+    total = sum(r.cmp.ref_pairs_multiplicity for r in reps)
+    assert len(rows) == total, (len(rows), total)
+    print("=== multiplicity-only referent worklist ===")
+    print("  %d paired region(s) reach the same referent identities a different "
+          "number of times." % total)
+    print("  This is code-shape/call-count evidence, not a wrong-target claim.")
+    for (sec, nm), divs in sorted(rows.items(), key=lambda kv: -len(kv[1]))[:top]:
+        print("\n  %s  %s   (%d divergence%s)"
+              % (sec, nm[:64], len(divs), "" if len(divs) == 1 else "s"))
+        for rr, cc in divs[:4]:
+            print("      retail    %s" % (", ".join(rr[:4])[:96] or "(nothing)"))
+            print("      us        %s" % (", ".join(cc[:4])[:96] or "(nothing)"))
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -2292,6 +2347,10 @@ def main(argv=None):
                     help="print only the ordering-only worklist (N regions): the "
                          "paired bodies that reach retail's exact referents in a "
                          "DIFFERENT ORDER")
+    ap.add_argument("--multiplicity", type=int, default=0, metavar="N",
+                    help="print only the multiplicity worklist (N regions): the "
+                         "paired bodies that reach the same identities a different "
+                         "number of times")
     ap.add_argument("--selftest", action="store_true",
                     help="plant known defects and require the differ to find them")
     a = ap.parse_args(argv)
@@ -2314,6 +2373,8 @@ def main(argv=None):
         return _referent_worklist(keep, a.referents)
     if a.ordering:
         return _ordering_worklist(keep, a.ordering)
+    if a.multiplicity:
+        return _multiplicity_worklist(keep, a.multiplicity)
     print(summary(R, C, reps))
     for r in keep:
         print(fmt(r, a.detail))
@@ -2354,6 +2415,8 @@ def main(argv=None):
                                    referents_ok=r.cmp.ref_ok,
                                    referent_divergent_regions=r.cmp.ref_pairs_bad,
                                    referent_reordered_regions=r.cmp.ref_pairs_reordered,
+                                   referent_multiplicity_regions=
+                                       r.cmp.ref_pairs_multiplicity,
                                    differing=r.cmp.differ,
                                    cand_extra=r.cmp.cand_extra,
                                    unmeasured=r.unmeasured_r,

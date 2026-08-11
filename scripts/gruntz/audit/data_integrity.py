@@ -14,15 +14,17 @@ from gruntz.core.pe import REPO
 BASELINE = REPO / "config/retail/data-integrity-ratchet.tsv"
 ORDER_LIST = REPO / "build/gen/data-integrity-link-order.txt"
 LINK = REPO / "scripts/gruntz/build/link.py"
+INTEGRITY_CAND = REPO / "build/exe/GRUNTZ.integrity.EXE"
+INTEGRITY_MAP = REPO / "build/exe/GRUNTZ.integrity.map"
 
 
 def _ensure_candidate() -> None:
     """Build the one candidate image whose referent ratchet measures.
 
-    Explicit link-order experiments share the candidate output path, so file
-    freshness cannot establish its provenance. Always relink from the checked,
-    generated retail order before counting referents; the ratchet then cannot
-    depend on whichever experiment happened to write the image last.
+    Always relink from the checked, generated retail order before counting
+    referents.  Use a dedicated output: writing the experiment over the
+    canonical candidate makes Ninja accept the wrong provenance as fresh and
+    can refresh README from a resource-less archive link.
     """
     if link_line.check():
         raise RuntimeError("retail link order no longer re-derives")
@@ -32,7 +34,8 @@ def _ensure_candidate() -> None:
     # library-member arrival order. Rebuild the engine archives before linking:
     # passing every member directly duplicates data (notably dxguid GUIDs) and
     # measures a link shape retail could not have produced.
-    subprocess.run([sys.executable, str(LINK), "--order", str(ORDER_LIST),
+    subprocess.run([sys.executable, str(LINK), "--out", str(INTEGRITY_CAND),
+                    "--map", str(INTEGRITY_MAP), "--order", str(ORDER_LIST),
                     "--engine-lib"],
                    cwd=REPO, check=True)
 
@@ -53,14 +56,21 @@ def _unclaimed_runs() -> int:
 
 
 def measures() -> dict[str, int]:
-    from gruntz.audit.image_diff import analyse
+    from gruntz.audit import image_diff
 
     _ensure_candidate()
-    _retail, _candidate, reports = analyse()
+    old_cand, old_map = image_diff.CAND, image_diff.CMAP
+    try:
+        image_diff.CAND, image_diff.CMAP = INTEGRITY_CAND, INTEGRITY_MAP
+        _retail, _candidate, reports = image_diff.analyse()
+    finally:
+        image_diff.CAND, image_diff.CMAP = old_cand, old_map
     return {
         "unclaimed_runs": _unclaimed_runs(),
         "wrong_referent_regions": sum(r.cmp.ref_pairs_bad for r in reports),
         "ordering_only_regions": sum(r.cmp.ref_pairs_reordered for r in reports),
+        "multiplicity_only_regions":
+            sum(r.cmp.ref_pairs_multiplicity for r in reports),
     }
 
 
@@ -78,7 +88,7 @@ def _write(values: dict[str, int], notes: dict[str, str]) -> None:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")
         w.writerow(("metric", "maximum", "note"))
         for key in ("unclaimed_runs", "wrong_referent_regions",
-                    "ordering_only_regions"):
+                    "ordering_only_regions", "multiplicity_only_regions"):
             w.writerow((key, values[key], notes.get(key, "")))
 
 

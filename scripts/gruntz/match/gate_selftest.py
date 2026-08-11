@@ -85,7 +85,7 @@ class DataIntegrityRatchetTests(unittest.TestCase):
 
     def test_increase_and_unbanked_improvement_both_fail(self):
         baseline = {"unclaimed_runs": 5, "wrong_referent_regions": 7,
-                    "ordering_only_regions": 2}
+                    "ordering_only_regions": 2, "multiplicity_only_regions": 3}
         self.assertEqual(self._run({**baseline, "unclaimed_runs": 6}, baseline), 1)
         self.assertEqual(
             self._run({**baseline, "wrong_referent_regions": 6}, baseline), 1)
@@ -94,7 +94,11 @@ class DataIntegrityRatchetTests(unittest.TestCase):
     def test_referent_gate_links_the_checked_retail_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             order = Path(tmp) / "order.txt"
+            cand = Path(tmp) / "integrity.exe"
+            mapfile = Path(tmp) / "integrity.map"
             with (mock.patch.object(data_integrity, "ORDER_LIST", order),
+                  mock.patch.object(data_integrity, "INTEGRITY_CAND", cand),
+                  mock.patch.object(data_integrity, "INTEGRITY_MAP", mapfile),
                   mock.patch.object(data_integrity.link_line, "check", return_value=0),
                   mock.patch.object(data_integrity.link_line, "objlist_text",
                                     return_value="# order\na\nb\n"),
@@ -103,6 +107,8 @@ class DataIntegrityRatchetTests(unittest.TestCase):
             self.assertEqual(order.read_text(), "# order\na\nb\n")
             cmd = run.call_args.args[0]
             self.assertEqual(cmd[-3:], ["--order", str(order), "--engine-lib"])
+            self.assertIn(str(cand), cmd)
+            self.assertIn(str(mapfile), cmd)
             self.assertNotIn("ninja", cmd)
 
 

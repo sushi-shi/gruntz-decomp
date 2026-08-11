@@ -514,15 +514,16 @@ the denominator. Refresh the generated artifact with `--write` only after review
 the reachability/ownership delta; the scoreboard reports reconstructable coverage
 from the checked artifact and falls back to gross coverage when it is absent or stale.
 
-The full-tier linked-referent ratchet always rebuilds its candidate with the
-derived retail object list. `GRUNTZ.candidate.EXE` is also the output of explicit
-`gruntz link --order` experiments, so file freshness cannot prove which layout it
-contains. The gate generates `build/gen/data-integrity-link-order.txt` from the
-checked link-line model, rebuilds the engine archives, and passes both explicitly
-to the linker before counting wrong or ordering-only referents. The archive step
-is required: putting recovered library members directly on the command line can
-duplicate definitions also supplied by an SDK archive (the dxguid GUIDs are the
-negative control) and creates a link shape retail could not have produced.
+The full-tier linked-referent ratchet always rebuilds a dedicated
+`GRUNTZ.integrity.EXE` with the derived retail object list. It must not overwrite
+`GRUNTZ.candidate.EXE`: doing so makes Ninja accept an experimental layout as a fresh
+canonical candidate and can refresh README from the resource-less archive link. The
+gate generates `build/gen/data-integrity-link-order.txt` from the checked link-line
+model, rebuilds the engine archives, and passes both explicitly to the linker before
+counting wrong, ordering-only, and multiplicity-only referents. The archive step is
+required: putting recovered library members directly on the command line can duplicate
+definitions also supplied by an SDK archive (the dxguid GUIDs are the negative control)
+and creates a link shape retail could not have produced.
 
 **Build timing.** Every `gruntz build` records its wall-clock — printed as
 `[gruntz] build timing: total Ns (ninja Xs, gates Ys) [tier]` and appended to
