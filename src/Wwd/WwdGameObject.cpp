@@ -63,7 +63,7 @@ void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
             f = static_cast<CImage*>(spr->m_items.GetAt(frame));
         } else {
-            f = 0;
+            f = NULL;
         }
         m_frameIndex = frame;
         m_layer = f;

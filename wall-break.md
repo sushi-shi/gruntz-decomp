@@ -164,3 +164,22 @@ compiler decision, and a real VC5 build must confirm the fix.
   were flat; the same measured residue already occurs at three other complex-
   receiver `CMapStringToOb::Lookup` sites. The structural correction is retained
   and the bounded scheduling residue is marked `@early-stop`.
+
+## 2026-08-11 — `zDArray<CActHandler>::~zDArray`
+
+- Unit/RVA: `zdarrayderived`, `0x00008750`.
+- Before: 20.00%. An empty derived destructor only stamped its vtable and
+  tail-jumped to `_zvec::~_zvec`; retail also homed `m_base` in a four-byte
+  frame and therefore called the base destructor.
+- Classification: control-flow source shape followed by VC5 dead-loop
+  elimination. The template element is a pointer-to-member function, so its
+  pseudo-destruction is trivial, but retail retains the initializer of the
+  deleted loop's pointer control variable.
+- Source lever: express the real element walk as a pointer-controlled `for`
+  loop from `AsElem(m_base)` through the last allocated element. A 10-form VC5
+  matrix showed that counter-controlled loops retain `m_lo`, count-controlled
+  loops vanish, and only this pointer-controlled form retains `m_base`.
+- Verdict: 100.00% exact. The paired placement-construction loop also restores
+  the constructor's `m_alloc` home, raising it from 82.75% to 92.1875% without
+  `volatile`; its remaining eax/edx scheduling rotation is marked
+  `@early-stop`.

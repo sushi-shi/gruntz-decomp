@@ -337,7 +337,7 @@ wwdgeometryapply	1	1
 wwdgrid	16	12
 wwdobjmgr	57	45
 wwdspatialmgr	14	12
-zdarrayderived	3	1
+zdarrayderived	3	2
 zutil	2	2
 zvec	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva	hist_pct
@@ -4544,7 +4544,7 @@ wwdgameobject	?AddLogicAttack@CGameObject@@QAEXPAD@Z	89.4737	89.4737	5	9aa71c5de
 wwdgameobject	?AddLogicBump@CGameObject@@QAEXPAD@Z	89.4737	89.4737	5	4c737145b735	0x151110	89.4737
 wwdgameobject	?AddLogicHit@CGameObject@@QAEXPAD@Z	89.4737	89.4737	5	21a8a3b0109d	0x150f50	89.4737
 wwdgameobject	?ApplyLookupGeometry@CWwdGameObjectA@@QAEHPBDH@Z	93.9394	93.9394	4	3ebb1cb3512e	0x1505b0	93.9394
-wwdgameobject	?ApplyLookupSprite@CWwdGameObjectA@@QAEXPBDH@Z	94.2857	94.2857	5	903ebd1eb139	0x1504d0	94.2857
+wwdgameobject	?ApplyLookupSprite@CWwdGameObjectA@@QAEXPBDH@Z	94.2857	94.2857	6	0ae07fe95b53	0x1504d0	94.2857
 wwdgameobject	?ApplyName@CWwdGameObjectA@@QAEXPBD@Z	89.4118	89.4118	5	8064f6e46a8d	0x150540	89.4118
 wwdgameobject	?BltDirty@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	7	7b16635103b8	0x150660	100.0000
 wwdgameobject	?BltDirtyEx@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@00@Z	73.7702	73.7702	2	9d38061dc622	0x1506b0	73.7702
@@ -4685,8 +4685,8 @@ wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	5	b3de2ddc960
 wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	86.8795	86.8795	5	849e15e607fe	0x168500	86.8795
 wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	2	bd086eb88ff6	0x1688f0	100.0000
 wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	93.8523	93.8523	6	698133ada408	0x168340	93.8523
-zdarrayderived	??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z	82.7500	82.7500	1	cpp:28f078ff2ef0	0x8710	100.0000
-zdarrayderived	??1?$zDArray@P8CUserLogic@@AEHXZ@@UAE@XZ	20.0000	20.0000	1	cpp:28f078ff2ef0	0x8750	100.0000
+zdarrayderived	??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z	92.1875	92.1875	1	cpp:28f078ff2ef0	0x8710	100.0000
+zdarrayderived	??1?$zDArray@P8CUserLogic@@AEHXZ@@UAE@XZ	100.0000	100.0000	1	cpp:28f078ff2ef0	0x8750	100.0000
 zdarrayderived	??_G?$zDArray@P8CUserLogic@@AEHXZ@@UAEPAXI@Z	100.0000	100.0000	1	cpp:28f078ff2ef0	0x8780	100.0000
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410	100.0000
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430	100.0000
