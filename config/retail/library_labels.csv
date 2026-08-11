@@ -2113,7 +2113,7 @@ rva,name,lib,confidence,source
 0x1f03e0,?openprot@filebuf@@2HB,LIBCIMT,HIGH,link-dup-oracle
 0x029ac0,??0CRect@@QAE@HHHH@Z,NAFXCW,HIGH,mfc-4.2-header-inline
 0x08c380,?SetRect@CRect@@QAEXHHHH@Z,NAFXCW,HIGH,mfc-4.2-header-inline
-0x0220f0,??1CGdiObject@@UAE@XZ,NAFXCW,LOW,identity-unresolved-duplicate-of-0x16460
+0x0220f0,??1CGdiObject@@UAE@XZ,NAFXCW,MED,manual-unmatched-library-audit
 0x17b500,?Width@CRect@@QBEHXZ,NAFXCW,HIGH,mfc-4.2-header-inline
 0x1bab7e,?PreInitDialog@CDialog@@MAEXXZ,NAFXCW,HIGH,vtable-slot-oracle
 0x1bac5b,?OnSetFont@CDialog@@UAEXPAVCFont@@@Z,NAFXCW,HIGH,vtable-slot-oracle
