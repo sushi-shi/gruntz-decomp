@@ -4,7 +4,7 @@
 # read from HEAD (git), not from this file, so regenerating it cannot lower
 # it. Acknowledge a deliberate drop by NAMING the units:
 #   GRUNTZ_LABELS_ACK=<unit>[,<unit>...]   (a blanket '1' is rejected)
-# units: 337  functions: 4555
+# units: 337  functions: 4566
 actionarea	15
 actionoptionsmenubar	12
 adler32	1
@@ -12,7 +12,7 @@ advancedoptions	5
 anicycle	8
 aniplayer	4
 anirecord	16
-areamgr	57
+areamgr	58
 arrayserialize	4
 attract	16
 attractstate	32
@@ -49,7 +49,7 @@ bzkinddispatch	1
 chainforward	2
 chatbox	29
 chatbox_eh	1
-chatboxowner	12
+chatboxowner	13
 cheatmgr	7
 checkpointdlg	6
 cimage	20
@@ -78,17 +78,17 @@ ddrawworkerregistry	26
 ddsurface	57
 debugprintf	14
 debugtiming	2
-deflate	15
+deflate	17
 demo	8
 destructbutton	1
-dialogs	57
+dialogs	62
 dircellmethods	19
 directdrawmgr	68
 directinputmgr2	45
 directsoundmgr	79
 donothing	9
 droppedobject	29
-engstrrendertext	1
+engstrrendertext	2
 exittrigger	5
 eyecandy	5
 fader	25
@@ -336,7 +336,7 @@ wwdfile	3
 wwdgameobject	45
 wwdgameobjectrender	17
 wwdgeometryapply	1
-wwdgrid	15
+wwdgrid	16
 wwdobjmgr	57
 wwdspatialmgr	14
 zdarrayderived	3

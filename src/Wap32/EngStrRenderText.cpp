@@ -61,3 +61,10 @@ i32 EngStr_RenderText(
     g_textObj.DrawWrapped(*str, drawSurface, *rc, 1, flag, 0);
     return 1;
 }
+
+// The CRect this TU's `DrawWrapped(..., *rc, ...)` by-value argument builds, and
+// the COMDAT this TU wins. FLIRT called it `??4CRect@@QAEXABUtagRECT@@@Z`, but
+// MFC's `operator=` returns void while these 21 bytes end `mov eax,esi` - they
+// return `this`, so it is the converting CONSTRUCTOR. Byte-identical (modulo the
+// __imp__CopyRect reloc) to engstrrendertext.obj's own COMDAT.
+RVA_COMPGEN(0x00115b30, 0x15, ??0CRect@@QAE@ABUtagRECT@@@Z)

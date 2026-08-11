@@ -275,6 +275,14 @@ public:
         return m_modeSize;
     }
 
+    // Retail reaches m_cheatMgr through this accessor, not the member: cl emits it
+    // out of line as the 4-byte COMDAT `mov eax,[ecx+0x44]; ret` (0x20f20, won by
+    // chatboxowner) and CChatBoxOwner::ProcessCheatInput calls it through the ILT
+    // thunk 0x167c. One call site in the whole game.
+    CCheatMgr* CheatMgr() {
+        return m_cheatMgr;
+    }
+
     CState* m_curState;
     CDDrawSurfaceMgr* m_world;
 

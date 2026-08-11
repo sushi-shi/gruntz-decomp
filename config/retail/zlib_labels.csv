@@ -9,7 +9,9 @@ rva,name,unit,size,kind
 0x1860a0,_inflateSync,inflate,,func
 0x186180,_deflateInit_,deflate,,func
 0x1861b0,_deflateInit2_,deflate,,func
+0x1863d0,_deflateSetDictionary,deflate,,func
 0x1864d0,_deflateReset,deflate,,func
+0x186550,_deflateParams,deflate,,func
 0x186620,_deflate,deflate,,func
 0x1868e0,_putShortMSB,deflate,,func
 0x186910,_flush_pending,deflate,,func

@@ -272,5 +272,10 @@ WwdRegion* CWwdGridIter::GetNext() {
     }
 }
 
+// The ctor+dtor pair the vector-ctor iterator is handed at Setup's `new
+// BucketHead[]` (retail pushes 0x191d00 then 0x191d10); FLIRT had claimed the
+// ctor as LIBCMT `??0DNameNode@@IAE@XZ`, byte-identical though it is to cl's
+// own `??0BucketHead@@QAE@XZ` COMDAT here.
+RVA_COMPGEN(0x00191d00, 0x10, ??0BucketHead@@QAE@XZ)
 RVA(0x00191d10, 0x1)
 BucketHead::~BucketHead() {}

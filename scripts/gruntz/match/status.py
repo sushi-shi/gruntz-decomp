@@ -102,6 +102,21 @@ DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 FUNCS_CSV = REPO / "config" / "retail" / "functions.tsv"
 FID_CSV = REPO / "config" / "retail" / "library_labels.csv"
 
+
+_LIBRARY_CARVED: set[int] | None = None
+
+
+def library_carved() -> set[int]:
+    """RVAs that active library_labels rows carve out of the match denominator."""
+    global _LIBRARY_CARVED
+    if _LIBRARY_CARVED is None:
+        try:
+            from gruntz.core.library_labels import active_rvas
+            _LIBRARY_CARVED = active_rvas(FID_CSV)
+        except Exception:
+            _LIBRARY_CARVED = set()
+    return _LIBRARY_CARVED
+
 README = REPO / "README.md"
 RM_START = "<!-- match-score:start -->"
 RM_END = "<!-- match-score:end -->"
@@ -730,8 +745,14 @@ def cmd_update(args) -> int:
     # high-water row so a later natural emitter resumes from the same MAX rather
     # than silently forgetting proven matching work.  Do not retain a stale row
     # when its RVA is currently claimed: that is a rename/move ambiguity handled
-    # above (or deliberately left fresh when the old RVA was non-unique).
+    # above (or deliberately left fresh when the old RVA was non-unique).  A
+    # RECLASSIFIED body counts as claimed too - when a function is proven to be
+    # CRT/MFC and deleted from src, its rva is carved by library_labels and no
+    # later natural emitter can resume the row, so retaining it only pins a
+    # phantom (`?RezFreeStdcall@@YGXPAX@Z` at 0x853d0, dissolved onto
+    # `??3CObject@@SGXPAX@Z` in c6c4ade23).
     current_addrs = {addr for addr in rvas.values() if addr is not None}
+    current_addrs |= library_carved()
     for key, old in base_funcs.items():
         if key in cur or key in migrated_old_keys:
             continue
@@ -874,7 +895,13 @@ def classify(cur, base_funcs, fp, cur_rvas=frozenset(), rvas=None):
         addr = prev.get("addr")
         # vanished: a rename (rva still occupied ANYWHERE) or a real source edit ->
         # REMOVED; otherwise a genuine loss of a previously-matched function (LOST).
-        renamed = addr is not None and addr in here
+        # RECLASSIFIED counts as REMOVED too: when a body is proven to be CRT/MFC and
+        # deleted from src, its rva leaves `here` and it would otherwise be reported
+        # LOST for ever, with no source anywhere that a later lane could restore.
+        # `?RezFreeStdcall@@YGXPAX@Z` is the worked example - 56 of 56 callers named it
+        # `??3CObject@@SGXPAX@Z`, so it was deleted (c6c4ade23) and 0x853d0 carved as
+        # library. That is a completed dissolution, not a loss.
+        renamed = addr is not None and (addr in here or addr in library_carved())
         yield ("REMOVED" if (renamed or real_edit(prev["fp"], fp(*key))) else "LOST",
                unit, fn, None, prev["best"])
 

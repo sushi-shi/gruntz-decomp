@@ -18,6 +18,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/ParseSource.h>
 #include <MsgParam.h>
+#include <Net/NetLobby.h>
 #include <Utils/RegistryHelper.h>
 
 #include <stdio.h>
@@ -98,6 +99,15 @@ CBattlezDlg::CBattlezDlg(CGruntzMgr* mgr, CWnd* pParent) : CDialog(0xc0, pParent
     m_customNameFlag = 0;
 }
 
+// The five MFC inline bodies cl emits as COMDATs here, and that this TU wins:
+// `ret 4` / `ret` / `ret 4`, then EnableWindow(m_hWnd, FALSE/TRUE). Each is
+// byte-identical to dialogs.obj's own COMDAT and sits inside this unit's band,
+// so they are cl's output, not NAFXCW's.
+RVA_COMPGEN(0x00014bc0, 0x3, ?Serialize@CObject@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x00014be0, 0x1, ?AssertValid@CObject@@UBEXXZ)
+RVA_COMPGEN(0x00014c00, 0x3, ?Dump@CObject@@UBEXAAVCDumpContext@@@Z)
+RVA_COMPGEN(0x00014c20, 0xd, ?BeginModalState@CWnd@@UAEXXZ)
+RVA_COMPGEN(0x00014c40, 0xd, ?EndModalState@CWnd@@UAEXXZ)
 RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
 RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
@@ -173,7 +183,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetWindowLongA(comboChild->m_hWnd, GWL_WNDPROC, proc.m_long);
 
         GetDlgItem(0x512)->SetWindowTextA("Battlez Setup");
-        g_sharedFlag = GetSafeHwnd();
+        NetLobby::g_curDlg = GetSafeHwnd();
 
         for (i = 0; i < 4; i++) {
             if (i != 0) {
@@ -362,7 +372,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             sprintf(key, "LastColour%d", i);
             reg->SetValueDword(key, IDX(g_gameReg->m_options[i].m_colorIndex));
         }
-        g_sharedFlag = NULL;
+        NetLobby::g_curDlg = NULL;
     }
     FlashCtrlD();
 }
@@ -589,16 +599,18 @@ void CBattlezDlg::FlashCtrlD() {
         stc(m_hWnd, &rc.TopLeft());
         stc(m_hWnd, &rc.BottomRight());
         CBrush scratch;
-        i32 color;
+        // Two Attach sites, not one hoisted `color`: retail pushes the argument
+        // INSIDE each arm and cross-jumps only the shared `call CreateSolidBrush`
+        // (`push eax / jmp` against `push 0x808080`). Hoisting the colour into a
+        // local is what parks 0 in ebx and costs ScreenToClient its register.
         if (it->IsWindowEnabled()) {
             GetRandomNumber();
             GetRandomNumber();
             i32 v = (GetRandomNumber() % 0xff) & 0xff;
-            color = (v << 8 | v) << 8 | v;
+            scratch.Attach(CreateSolidBrush((v << 8 | v) << 8 | v));
         } else {
-            color = 0x808080;
+            scratch.Attach(CreateSolidBrush(0x808080));
         }
-        scratch.Attach(CreateSolidBrush(color));
         rc.left += 2;
         rc.top += 2;
         rc.right -= 2;

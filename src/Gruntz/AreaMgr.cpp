@@ -214,6 +214,11 @@ void CSpawnList::DeleteAllEntries() {
     m_list.RemoveAll();
 }
 
+// cl folds the implicit `~CSpawnEntry` (one CString member at offset 0) into a
+// bare tail-call COMDAT; retail's copy is the 5-byte `jmp ??1CString` at 0x9a4a0,
+// reached through the ILT thunk 0x22b6 that DeleteAllEntries calls.
+RVA_COMPGEN(0x0009a4a0, 0x5, ??1CSpawnEntry@@QAE@XZ)
+
 RVA(0x0009a4c0, 0x3e)
 i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     if (entry == NULL) {

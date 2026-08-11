@@ -173,7 +173,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                 }
             }
         } else {
-            g_gameReg->m_cheatMgr->CheckCode(m_fontConfig->GetInputText());
+            g_gameReg->CheatMgr()->CheckCode(m_fontConfig->GetInputText());
         }
     }
     m_fontConfig->EndInput();
@@ -184,6 +184,10 @@ RVA(0x00020ef0, 0x20)
 CString CFontConfig::GetInputText() {
     return m_inputText;
 }
+
+// The inline accessor ProcessCheatInput above reaches m_cheatMgr through; this TU
+// wins the COMDAT, so retail's copy is the 4-byte `mov eax,[ecx+0x44]; ret` here.
+RVA_COMPGEN(0x00020f20, 0x4, ?CheatMgr@CGruntzMgr@@QAEPAVCCheatMgr@@XZ)
 
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {

@@ -2175,6 +2175,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             m_itemRect.left + 0xc,
                             m_itemRect.top + 0xc
                         );
+                        StartChipMachineCycle();
                     }
                 }
                 break;
