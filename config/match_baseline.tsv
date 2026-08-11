@@ -190,7 +190,7 @@ hash	10	10
 heapdiag	8	7
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	54	44
+imagepool	54	45
 imageset1	14	13
 imageset2	14	13
 imageset3	3	3
@@ -2562,7 +2562,7 @@ imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000
 imagepool	?DecodePcxData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	93.8165	93.8165	4	9f6323773dfe	0x176000	93.8608
 imagepool	?DecodePidData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	81.4772	81.4772	4	9ba2316792a6	0x176440	81.4772
 imagepool	?DecodeRidData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	100.0000	4	6e149932acae	0x1762c0	100.0000
-imagepool	?DispatchDecode@CRezImage@@QAEHPAXW4RezDecodeKind@@PAUHDC__@@H@Z	99.7674	99.7674	1	4cf76cf23d64	0x175a00	99.7674
+imagepool	?DispatchDecode@CRezImage@@QAEHPAXW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	2	be8daee90c2e	0x175a00	100.0000
 imagepool	?DisplayUsesPalette@@YAHXZ	100.0000	100.0000	1	ae302fdbc24b	0x1770a0	100.0000
 imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	3354fc240078	0x175ce0	100.0000
 imagepool	?EnsureSurface@CImagePool@@QAEHPAVCRezImage@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	bca4e8b0514d	0x175710	100.0000

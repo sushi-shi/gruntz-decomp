@@ -379,17 +379,13 @@ i32 CRezImage::DecodeBlit(void* src, HDC dc, i32 width, i32 height, ColorDepth b
     return 1;
 }
 
-// @early-stop
-// Scoring artifact, not a source defect: the switch's case bodies compile into a
-// SECOND symbol next to the jump table, so objdiff pairs only the dispatch prologue
-// against retail's whole function (delinker jump-table dup-symbol undercount).
 RVA(0x00175a00, 0x90)
 i32 CRezImage::DispatchDecode(void* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     switch (kind) {
-        case DECODE_BMP:
-            return DecodeBmpData(buf, dc, ctrl);
         case DECODE_PCX:
             return DecodePcxData(buf, dc, ctrl);
+        case DECODE_BMP:
+            return DecodeBmpData(buf, dc, ctrl);
         case DECODE_RID:
             return DecodeRidData(buf, dc, ctrl);
         case DECODE_PID:
