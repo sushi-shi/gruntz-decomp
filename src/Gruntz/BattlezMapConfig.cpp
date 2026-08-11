@@ -3904,19 +3904,19 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     {
         CGameObject* lvl = unit->m_object;
         bottom = lvl->m_screenY >> TILE_SHIFT_PX;
+        // Same seed-the-last-probe idiom as RouteToNearbyEnemy: retail stores
+        // probe 1's unused half into g2's slot before g2 is probed.
         Coord g0;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g0));
-        g0.m_x >>= TILE_SHIFT_PX;
-        g0.m_y >>= TILE_SHIFT_PX;
-        right = g0.m_x;
         Coord g1;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g1));
-        g1.m_x >>= TILE_SHIFT_PX;
-        g1.m_y >>= TILE_SHIFT_PX;
-        top = g1.m_y;
         Coord g2;
-        (static_cast<CUserLogic*>(unit))->GetScreenPos((&g2));
-        left = g2.m_x >> TILE_SHIFT_PX;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g0);
+        g2.m_y = g0.m_y;
+        right = g0.m_x;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g1);
+        g2.m_x = g1.m_x;
+        top = g1.m_y;
+        (static_cast<CUserLogic*>(unit))->GetScreenTile(&g2);
+        left = g2.m_x;
     }
     // The +-8 belongs to the RECT, not to the probes: retail's `add r,8` /
     // `add r,-8` pairs sit immediately before the CRect ctor call, not next to
@@ -4031,16 +4031,22 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     i32 top;
     i32 left;
     {
+        // Each probe seeds cD's other axis before cD is itself probed: retail
+        // stores the unused half of probes 1..3 into the slot probe 4 later
+        // overwrites (the same idiom GruntPhaseStep spells).
         Coord cA;
-        unit->GetScreenTile(&cA);
-        bottom = cA.m_y;
         Coord cB;
-        unit->GetScreenTile(&cB);
-        right = cB.m_x;
         Coord cC;
-        unit->GetScreenTile(&cC);
-        top = cC.m_y;
         Coord cD;
+        unit->GetScreenTile(&cA);
+        cD.m_x = cA.m_x;
+        bottom = cA.m_y;
+        unit->GetScreenTile(&cB);
+        cD.m_y = cB.m_y;
+        right = cB.m_x;
+        unit->GetScreenTile(&cC);
+        cD.m_x = cC.m_x;
+        top = cC.m_y;
         unit->GetScreenTile(&cD);
         left = cD.m_x;
     }
