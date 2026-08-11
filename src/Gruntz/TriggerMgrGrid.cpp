@@ -1104,7 +1104,7 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 worldX, i32 worldY) {
         if (cell->CanShowStamina() == 0) {
             return 0;
         }
-        cell->RunMoveConfig(argTileX, argTileY);
+        cell->RunMoveConfig(cellTileX, cellTileY);
         return 1;
     }
     PickupType kDiag = cell->m_entranceReason;
