@@ -149,28 +149,28 @@ void CCheatMgr::LoadCheatConfig() {
     SYSTEMTIME now;
     GetLocalTime(&now);
 
-    i32 i = 1;
-    if (g_buteMgr.GetIntDef("Cheatz", "NumCheatz", 0) >= 1) {
-        do {
-            group.Format("Cheat%i", i);
-            const char* grp = static_cast<const char*>(group);
-            i32 expMonth = g_buteMgr.GetIntDef(grp, "ExpMonth", 0);
-            i32 expYear = g_buteMgr.GetIntDef(static_cast<const char*>(group), "ExpYear", 0);
-            if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
-                if (g_buteMgr.Exists(static_cast<const char*>(group), "Text")) {
-                    if (g_buteMgr.GetIntDef(static_cast<const char*>(group), "NonCheat", 0) == 1) {
-                        const char* code = static_cast<const char*>(*g_buteMgr
-                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr));
-                        AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 1);
-                    } else {
-                        const char* code = static_cast<const char*>(*g_buteMgr
-                                               .GetStringDef(static_cast<const char*>(group), "Text", &defStr));
-                        AddCheat(code, g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b), 0);
-                    }
+    for (i32 i = 1; i <= g_buteMgr.GetIntDef("Cheatz", "NumCheatz", 0); i++) {
+        group.Format("Cheat%i", i);
+        const char* grp = static_cast<const char*>(group);
+        i32 expMonth = g_buteMgr.GetIntDef(grp, "ExpMonth", 0);
+        i32 expYear = g_buteMgr.GetIntDef(static_cast<const char*>(group), "ExpYear", 0);
+        if (expMonth == 0 || expYear == 0 || expYear > now.wYear || expMonth > now.wMonth) {
+            if (g_buteMgr.Exists(static_cast<const char*>(group), "Text")) {
+                if (g_buteMgr.GetIntDef(static_cast<const char*>(group), "NonCheat", 0) == 1) {
+                    const char* code = static_cast<const char*>(*g_buteMgr.GetStringDef(
+                        static_cast<const char*>(group), "Text", &defStr));
+                    i32 value =
+                        g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b);
+                    AddCheat(code, value, 1);
+                } else {
+                    const char* code = static_cast<const char*>(*g_buteMgr.GetStringDef(
+                        static_cast<const char*>(group), "Text", &defStr));
+                    AddCheat(code,
+                             g_buteMgr.GetIntDef(static_cast<const char*>(group), "Value", 0x807b),
+                             0);
                 }
             }
-            i++;
-        } while (i <= g_buteMgr.GetIntDef("Cheatz", "NumCheatz", 0));
+        }
     }
 }
 

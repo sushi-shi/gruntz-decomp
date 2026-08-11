@@ -787,7 +787,7 @@ cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	19	a76b58e28f8f	0x22be
 cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	96.9595	96.9595	21	f209544af5b8	0x23090	96.9595
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	18	0b4c1fae165d	0x22b00	100.0000
 cheatmgr	?Init@CCheatMgr@@QAEHPAUHWND__@@@Z	100.0000	100.0000	2	8494f3bea25c	0x22ad0	100.0000
-cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	19	1642be166c0e	0x22e60	91.5726
+cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	98.1048	98.1048	20	f452e09f1813	0x22e60	98.1048
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	16	343214117414	0x22c80	100.0000
 checkpointdlg	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	410f9276b580	0x234a0	100.0000
 checkpointdlg	??1CCheckpointDlg@@UAE@XZ	100.0000	100.0000	1	cpp:b5a9ac7b38ee	0x23500	100.0000
@@ -2954,8 +2954,8 @@ motionstate	??0CUserLogic@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	3	22d8db5e69
 motionstate	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	5	e913180f273b	0x58bc0	100.0000
 motionstate	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	2	c8629b50b90a	0x58ca0	100.0000
 movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	2	1ab3aa8ae735	0x16ea90	98.5455
-movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	93.7500	93.7500	3	49e74161db6a	0x16f3c0	100.0000
-movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	93.7500	93.7500	3	e4aabdcdbdd1	0x16f430	100.0000
+movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	93.7500	93.7500	4	9060f10cf27b	0x16f3c0	100.0000
+movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	93.7500	93.7500	4	0dc4f8151309	0x16f430	100.0000
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab2c6eff9722	0x16f4a0	100.0000
 movinglogic	?Step@CMotionState@@QAEXN@Z	82.9390	81.2783	2	b587e5ea5cdd	0x16ecd0	82.9390
 multi	??0CNetCmdSlot@@QAE@XZ	100.0000	100.0000	5	10c9ad0d19e7	0xbbec0	100.0000
