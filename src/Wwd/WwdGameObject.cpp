@@ -48,24 +48,25 @@ i32 g_logicTypesRegistered;
 // @identity-TODO ApplyGeometryDirect@CWwdGameObjectA - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (44 fns) came from the static library. It belongs to another compiland.
+// @early-stop
+// one scheduling slot: retail sinks the `sprOb = 0` store below both Lookup
+// argument pushes. The post-call body is exact; 96 mixed TU states and 35
+// local variants were byte-identical at this remaining slot.
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
-    CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
     OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
-    spr = static_cast<CDDrawWorker*>(sprOb);
+    CDDrawWorker* spr = static_cast<CDDrawWorker*>(sprOb);
     m_frameSet = spr;
     if (spr) {
+        CImage* f;
         if (frame >= spr->m_minIndex && frame <= spr->m_maxIndex) {
-
-            CImage* f = static_cast<CImage*>(spr->m_items.GetAt(frame));
-            m_frameIndex = frame;
-            m_layer = f;
+            f = static_cast<CImage*>(spr->m_items.GetAt(frame));
         } else {
-            CImage* f = 0;
-            m_frameIndex = frame;
-            m_layer = f;
+            f = 0;
         }
+        m_frameIndex = frame;
+        m_layer = f;
     }
 }
 

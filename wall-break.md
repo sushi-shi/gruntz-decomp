@@ -143,3 +143,24 @@ compiler decision, and a real VC5 build must confirm the fix.
   probe declarations are not. The audited 100% state is banked as MAX for
   source hash `21bbbd1672f1`; ordinary codegen remains 87.8421% and is marked
   `@early-stop` until an authentic declaration window is recovered.
+
+## 2026-08-11 — `CWwdGameObjectA::ApplyLookupSprite`
+
+- Unit/RVA: `wwdgameobject`, `0x001504d0`.
+- Before: 87.2857%. The lookup result and frame index were assigned separately
+  in both range-test arms, shortening the selected frame's lifetime and
+  rotating every post-`Lookup` register assignment.
+- Classification: source-level pseudo lifetime followed by one bounded
+  scheduling slot. The retail success and failure arms converge before storing
+  `m_frameIndex` and `m_layer`, proving one shared `CImage*` result local.
+- Source lever: declare that result once across both arms, assign it in the
+  range test, and perform the two member stores after the join. Declare the
+  typed worker only after the MFC out-parameter lookup so it has the same live
+  range as retail.
+- Result: 94.2857%. The complete post-call body, six-block CFG, three symbolic
+  branch targets, two returns, and the ordered relocation all agree. The sole
+  residue is `sprOb = 0` scheduled between the two `Lookup` argument pushes
+  instead of after both. A 35-variant local matrix and 96 mixed TU-state trials
+  were flat; the same measured residue already occurs at three other complex-
+  receiver `CMapStringToOb::Lookup` sites. The structural correction is retained
+  and the bounded scheduling residue is marked `@early-stop`.
