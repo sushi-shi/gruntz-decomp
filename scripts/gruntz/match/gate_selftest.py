@@ -38,7 +38,8 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from gruntz.audit import data_denominator, data_integrity, image_diff, rename_member, tu_layout
+from gruntz.audit import aggregate_copies, data_denominator, data_integrity, image_diff
+from gruntz.audit import rename_member, tu_layout
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
@@ -59,6 +60,13 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class AggregateCopyAuditTests(unittest.TestCase):
+    def test_plain_movsb_from_inline_data_is_not_an_aggregate_copy(self):
+        self.assertIsNone(aggregate_copies.REP_MOVS.match("movsb"))
+        self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsb"))
+        self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsl"))
 
 
 class DataManifestAlignmentControls(unittest.TestCase):

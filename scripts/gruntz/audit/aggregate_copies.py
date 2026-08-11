@@ -16,10 +16,12 @@ the loop head was `RezElem40 rec = m_meshBuf.m_pData[i];`, where the reconstruct
 pointer walk. Modelling it - plus the RECTs the record contains, as struct copies rather
 than brace-init from eight scalars - took that function 35.95 -> 90.88.
 
-WHY THE COUNT IS THE RIGHT SIGNAL, and its one trap: match the MNEMONIC exactly. An
+WHY THE COUNT IS THE RIGHT SIGNAL, and its two traps: match the MNEMONIC exactly. An
 early cut of this sieve tested `"movs" in mnemonic` and matched `movswl`/`movsbl`
 sign-extension loads, which have nothing to do with aggregates - it reported 13 hits, 12
-of them noise. `rep movs[bwl]` only.
+of them noise.  The REP prefix is also mandatory: function contributions can carry inline
+switch tables, and `0xa4` in `CGruntzMgr::HandleCommand`'s table linearly decodes as a
+plain `movsb`.  It is data, not a one-byte aggregate copy. `rep movs[bwl]` only.
 
     python -m gruntz.audit.aggregate_copies              # whole tree
     python -m gruntz.audit.aggregate_copies --unit fader
@@ -36,7 +38,7 @@ from gruntz.core.branches import decode, obj_paths
 REPO = Path(__file__).resolve().parents[3]
 REPORT = REPO / "build" / "objdiff" / "report.json"
 # The whole-aggregate copy, and nothing else. `movswl`/`movsbl` are sign-extends.
-REP_MOVS = re.compile(r"^(?:rep\s+)?movs[bwl]?$")
+REP_MOVS = re.compile(r"^rep\s+movs[bwl]?$")
 
 
 def scan(unit_filter=None):
