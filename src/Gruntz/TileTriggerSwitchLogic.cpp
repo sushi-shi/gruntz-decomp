@@ -230,14 +230,14 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     CGruntzMgr* r;
     CDDrawSubMgrLeafScan* set;
     switch (type) {
-        // The retail byte index table starts at 15 (0x0f) and its slot 0 is an
-        // arm distinct from the default: four empty cases that widen the dense
-        // range to 102 entries.
+        // The retail byte index table starts at 15 (0x0f). The explicit goto
+        // keeps all four empty cases on slot 0; break folds the last three into
+        // the default slot 7.
         case TILEKIND_ARROW_UP_B:
         case TILEKIND_ARROW_DOWN_B:
         case TILEKIND_ARROW_LEFT_B:
         case TILEKIND_ARROW_RIGHT_B:
-            break;
+            goto done;
         case TILEKIND_CHECKPOINTPYRAMID_DOWN:
         case TILEKIND_CHECKPOINTPYRAMID_UP:
         case TILEKIND_WHITEPYRAMID_DOWN:
@@ -317,6 +317,8 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             }
             return;
     }
+done:
+    return;
 }
 
 // @early-stop

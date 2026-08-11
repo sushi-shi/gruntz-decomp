@@ -34,6 +34,13 @@ produced byte-identical output:
 - `this->m_activeNode = 0;`
 - a `CParserObjList*` local for the whole list / for the head reads only
 
+`CGruntPuddle::Place` 0x40c30 is the same scheduler decision after a larger
+source defect is removed. Correcting its post-lookup guard from `placeIndex` to
+the retail-proven `color` parameter took 73.54% to 93.56% and made the size,
+calls, and seven relocations agree. The remaining block has retail's two stores
+before `mov ecx,[esi+0x38]`, while cl moves that independent receiver load first;
+a receiver local, 60 mixed TU states, and 33 AST variants were all byte-identical.
+
 ## Distinguish from
 
 If the two instructions touch registers that differ as well, it is not this — go

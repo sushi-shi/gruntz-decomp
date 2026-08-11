@@ -20,9 +20,9 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     // One struct ASSIGNMENT, not four field stores: retail materialises &m_bounds once
     // (`lea eax,[esi+0x28]; mov edx,eax`) and writes [edx+0/4/8/c].
     WwdRect b;
-    b.m_minX = rect.left;
     b.m_minY = rect.top;
     b.m_maxX = rect.right;
+    b.m_minX = rect.left;
     b.m_maxY = rect.bottom;
     m_bounds = b;
     // Swap through a temp - retail's `mov edx,eax; mov eax,edi; mov edi,edx` triple,
@@ -50,11 +50,11 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_cellCount = m_rows * m_cols;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
-    if (!arr) {
-        return 0;
+    if (arr != NULL) {
+        m_allocated = 1;
+        return 1;
     }
-    m_allocated = 1;
-    return 1;
+    return 0;
 }
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 

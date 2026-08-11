@@ -305,7 +305,7 @@ symtab	72	60
 terraintileloader	1	0
 tilelogicpump	71	66
 tilescan	1	0
-tileswitchlogic	49	34
+tileswitchlogic	49	35
 tiletriggercontainer	27	21
 timesplit	2	2
 timestring	1	1
@@ -1869,7 +1869,7 @@ gamelevel	?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z	100.0000	100.0000	2	984
 gamelevel	?ProbeColumn@CGameLevel@@QAE?AW4TileCollisionKind@@PAUCGameObject@@H@Z	100.0000	100.0000	1	8f0661447f93	0x160980	100.0000
 gamelevel	?ProbeFeetKind@CGameLevel@@QAE?AW4TileCollisionKind@@PAUCGameObject@@H@Z	100.0000	100.0000	1	c4503678f151	0x1608c0	100.0000
 gamelevel	?ProbeFootBlocked@CGameLevel@@AAEHPAUCGameObject@@H@Z	100.0000	100.0000	6	f45e8ed203b4	0x160210	100.0000
-gamelevel	?ProbeFootSoft@CGameLevel@@AAEHPAUCGameObject@@H@Z	99.9863	99.9863	6	a7b2facaa76c	0x160080	99.9863
+gamelevel	?ProbeFootSoft@CGameLevel@@AAEHPAUCGameObject@@H@Z	100.0000	99.9863	6	a7b2facaa76c	0x160080	100.0000
 gamelevel	?ProbeHeadSoft@CGameLevel@@QAEHPAUCGameObject@@H@Z	100.0000	99.9770	4	613cedf2f37f	0x160450	100.0000
 gamelevel	?ProbeSpanHard@CGameLevel@@QAEHPAUCGameObject@@HH@Z	100.0000	100.0000	4	27896903d2cc	0x15f470	100.0000
 gamelevel	?ProbeStepEdge@CGameLevel@@AAEHHH@Z	100.0000	100.0000	3	56c4656f3b4c	0x15fc30	100.0000
@@ -4144,7 +4144,7 @@ tileswitchlogic	?Deserialize@CTileTriggerLogic@@QAEHPAVCFileMemBase@@@Z	100.0000
 tileswitchlogic	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	4	1b59ab2e7198	0x114040	100.0000
 tileswitchlogic	?DeserializeMatrix@CGiantRockLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	9e70de5f19a0	0x113e70	100.0000
 tileswitchlogic	?FindIndexByKey@CTileTriggerLogic@@QAEHH@Z	100.0000	100.0000	2	8d828e280e7c	0x110820	100.0000
-tileswitchlogic	?LoadBridgeMove@CTileTriggerLogic@@QAEXW4TileCollisionKind@@@Z	99.9887	99.9887	3	2e13ba948fa1	0x110860	99.9887
+tileswitchlogic	?LoadBridgeMove@CTileTriggerLogic@@QAEXW4TileCollisionKind@@@Z	100.0000	100.0000	4	00d3d4f9bc05	0x110860	100.0000
 tileswitchlogic	?LoadState@CTileTriggerSwitchLogic@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	5ca28ea96805	0x1139a0	100.0000
 tileswitchlogic	?MorphByTool@CTileActionEvent@@QAEHW4PickupType@@W4PlayerSlot@@@Z	98.6645	98.6645	1	ab054e5559ab	0x113420	98.6645
 tileswitchlogic	?Process@CTileActionEvent@@QAEHPAVCGrunt@@@Z	97.9808	97.9808	5	e1046ddcf5d8	0x112ee0	97.9808
@@ -4470,7 +4470,7 @@ wormhole	?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp
 wormhole	?GetTypeTag@CWormhole@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:5662aace4169	0x10930	100.0000
 wormhole	?Idle@CGruntPuddle@@QAEHXZ	100.0000	100.0000	1	5142c21f04e7	0x40c10	100.0000
 wormhole	?LoadColors@CTeleporter@@QAEXXZ	100.0000	100.0000	4	1120ad0c9f78	0x411f0	100.0000
-wormhole	?Place@CGruntPuddle@@QAEHHHHH@Z	73.5400	73.5400	10	a2e9e189c66f	0x40c30	73.5400
+wormhole	?Place@CGruntPuddle@@QAEHHHHH@Z	93.5600	93.5600	11	21a8b87404f1	0x40c30	93.5600
 wormhole	?ReapplyConfig@CTeleporter@@QAEHXZ	100.0000	100.0000	4	b237024676c8	0x412c0	100.0000
 wormhole	?RegisterLogic@@YAXXZ	100.0000	100.0000	10	604926e230e8	0x408b0	100.0000
 wormhole	?RegisterWormholeLogic@@YAXXZ	100.0000	100.0000	12	dfa3bd130a93	0x401b0	100.0000
@@ -4611,8 +4611,8 @@ wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	90.6463	90.6463	3	3ed1130f630
 wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	2	efcb9660df28	0x191b10	95.5000
 wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	3	c24edc1b943f	0x1918c0	99.9250
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	6	84bdcc32917f	0x191890	100.0000
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	4	2e5b55650477	0x191770	100.0000
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	80.8718	80.8718	4	2e5b55650477	0x1915c0	80.8718
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	5	69847c643f54	0x191770	100.0000
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	82.7949	82.7949	5	69847c643f54	0x1915c0	82.7949
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	ac8c5c9f0e52	0x191ad0	100.0000
 wwdobjmgr	??0AnimWorkerObj@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	5e8744ec88de	0x15b300	100.0000
 wwdobjmgr	??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	5f3b8752f172	0x15b2c0	100.0000

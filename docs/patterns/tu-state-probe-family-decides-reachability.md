@@ -41,3 +41,12 @@ builders, `HsvShiftTable`, `SubTable` and `CDDrawWorkerHost::Draw` all read as i
 under a uniform prototype run and every one of them moved 2-13 points under the mixed one;
 `CSpriteRef::Build` and `CShadeTableCache::AlphaTable` reached 100.00 and were parked as
 proven correct. The probes are diagnostics: bank the MAX, then delete them.
+
+`CGameLevel::ProbeFootSoft` provides a stronger calibration at the last few bytes. Its
+99.9863 residue was only the order of two independent member loads feeding one addition;
+its CFG, size, and zero-relocation multiset already agreed. Three local expression and
+statement forms compiled byte-identically, but **44 of 60** mixed TU states emitted the
+391-byte retail function exactly. Trial 1 was retained as a historical 100.00 MAX for the
+unchanged source hash `a7b2facaa76c`, then the declarations were discarded. Thus an
+almost-exact, relocation-free two-load rotation can still be a C1 handle-state wall, and
+a small local spelling matrix does not refute that classification.

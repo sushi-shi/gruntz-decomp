@@ -218,8 +218,8 @@ i32 CGruntPuddle::Idle() {
     return 0;
 }
 
+// @early-stop
 RVA(0x00040c30, 0xb3)
-
 i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     CWwdGameObjectA* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
@@ -235,7 +235,7 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("B");
-    if (placeIndex == 0) {
+    if (color == 0) {
         m_placed = 1;
         m_pending = 0;
         m_value = m_wwdObject->m_animCursor.m_animation;

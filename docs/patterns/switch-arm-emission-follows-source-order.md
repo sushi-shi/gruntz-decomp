@@ -44,6 +44,22 @@ tests as separate `else if` arms with the body duplicated. `CPlay::LoadWarlordSp
 @0xd65d0: splitting `d == PICKUP_TOYBOX || d == PICKUP_MEGAPHONE` into two arms (two sites)
 took it 95.26 → 99.41.
 
+## Corollary: an empty case run may need an explicit shared exit
+
+Several adjacent case labels followed by `break;` do not necessarily remain one
+IR arm when that break and the default path reach the same machine-code exit. cl5
+can keep only the first case on the explicit arm and fold the remaining empty
+labels into the default arm. The executable instructions and every jump-table
+target then agree, but the byte index table exposes the lost source identity.
+
+`CTileTriggerLogic::LoadBridgeMove` @0x110860 was otherwise exact. Its candidate
+index table began `00 07 07 07`, assigning cases 15–18 as one explicit arm plus
+three default-arm entries; retail began `00 00 00 00`. Replacing the grouped
+`break;` with `goto done;` and spelling the shared final `return;` made all four
+labels retain slot 0 and took **99.9887 → 100 EXACT**. This is not a semantic
+change and it is not a register wall: the three one-byte index entries were the
+entire objdiff residue.
+
 ## The table also settles WHICH BODY belongs to which case (a live-bug finder)
 
 Reading it only for the ORDER leaves half its value on the table. The entry at slot
