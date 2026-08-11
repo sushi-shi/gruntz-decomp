@@ -194,8 +194,8 @@ void CMapMgr::Reset() {
         delete[] m_rows;
     }
 
-    m_colA.~CMapArrayA();
-    m_colB.~CMapArrayB();
+    m_colA.Free();
+    m_colB.Free();
 
     m_cellPool = NULL;
     m_rows = NULL;

@@ -74,13 +74,13 @@ _2 of 6 sections are at exact size parity: `.idata`, `.rsrc`._
 
 _**Size parity is not a byte match.** `retail bytes reproduced` is measured by `python -m gruntz.audit.image_diff`, which pairs regions by SYMBOL (never by file offset - our `.text` is 26 KB short, so a positional differ would call everything after the first delta different) and masks address operands by resolving each to its REFERENT, the way objdiff scores a function. Retail bytes we never paired count against the figure; bytes we emit that retail does not have never count for it. `not measurable` is retail bytes no honest alignment exists for - `.bss` zero fill, the `.text$x` unwind funclets and the `.xdata$x` EH blobs, none of which carry a symbol in either image - and they stay in the denominator, so each figure is a floor._
 
-_Independently of where the bytes landed, **36,545 of 36,778 address operands (99.37%) in paired regions reach the same referent in the same order**. That is the measure a byte diff cannot give and per-object objdiff masks away: it is what catches a wrong string literal or a call to the wrong function._
+_Independently of where the bytes landed, **36,547 of 36,778 address operands (99.37%) in paired regions reach the same referent in the same order**. That is the measure a byte diff cannot give and per-object objdiff masks away: it is what catches a wrong string literal or a call to the wrong function._
 
 _`.rsrc` is byte-exact: all 150 differing bytes are `OffsetToData` fields shifted by the section placement delta, zero unexplained._
 
 _Read `docs/image-diff.md` for the per-section attribution (the size delta broken into named buckets that must sum to it) and `docs/link-section-audit.md` for the `.text`/`.rdata` region census._
 
-_Candidate `c0f8b06b938e`, linked 2026-08-11 07:42. Regenerate: `ninja candidate`._
+_Candidate `9a653b162171`, linked 2026-08-11 07:53. Regenerate: `ninja candidate`._
 <!-- link-score:end -->
 
 
