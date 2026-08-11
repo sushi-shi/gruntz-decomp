@@ -2680,7 +2680,7 @@ ingameicon	?RegisterIconActions@@YAXXZ	100.0000	100.0000	11	48bcade44a85	0x979e0
 ingameicon	?RegisterIconState@@YAXXZ	100.0000	100.0000	11	0a011fe80102	0x97f40	100.0000
 ingameicon	?RegisterTextLogic@@YAXXZ	100.0000	100.0000	9	ae1a88d85c0c	0x995c0	100.0000
 ingameicon	?Reposition@CInGameIcon@@QAEHXZ	97.4286	97.4286	15	35d8fdd649b3	0x98a90	97.4286
-ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	90.6975	90.6975	4	db782c3c3aad	0x98c90	90.7994
+ingameicon	?SerializeMove@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	90.7994	90.7994	5	570d6f20e5ca	0x98c90	90.7994
 ingameicon	?SerializeMove@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	f88d43eb5ae4	0x99a30	100.0000
 ingameicon	?SerializeMove@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	2	aff4d5def44e	0x983e0	100.0000
 ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	6	a2c2241b4926	0x99b10	100.0000
