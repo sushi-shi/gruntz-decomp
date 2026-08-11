@@ -25,3 +25,13 @@ def run_rename(args) -> None:
     if args.dry_run:
         argv.append("--dry-run")
     sys.exit(call_main("gruntz.core.clangd_query", argv))
+
+
+if __name__ == "__main__":
+    # These modules are `gruntz sema <cmd>` implementations: the CLI owns argparse
+    # and calls run(args), so `python -m` would import-and-exit silently (rc 0, no
+    # output) and read as "identical"/"no findings". Fail loudly instead.
+    import sys
+    sys.exit("%s is a `gruntz sema` implementation, not a standalone entry point - "
+             "run `gruntz sema %s ...` (or `gruntz sema -` for a batch on stdin)."
+             % (__name__, __name__.rsplit(".", 1)[-1]))

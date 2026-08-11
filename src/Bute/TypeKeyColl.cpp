@@ -791,6 +791,12 @@ void* CVariantSlot::Add(void* key, void* val) {
     return old;
 }
 
+// @early-stop
+// The two parameters land in the opposite registers: retail's xor accumulates into
+// the register holding `*a` (eax), ours into `*b`.  `^` is commutative so cl picks
+// freely and the whole body is otherwise byte-identical - only which of the two
+// `movsx` results reaches eax first differs, and it decides the entry loads and the
+// `inc` order with it.
 RVA(0x0016e480, 0x3e)
 i32 FirstDiffBit(const char* a, const char* b) {
     i32 n = 0;
@@ -799,8 +805,7 @@ i32 FirstDiffBit(const char* a, const char* b) {
         ++a;
         ++b;
     }
-    i32 x = *a;
-    x ^= *b;
+    i32 x = *a ^ *b;
     i32 c = 0;
     while (!(x & 1)) {
         x >>= 1;

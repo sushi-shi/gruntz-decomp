@@ -789,9 +789,9 @@
 0x2bf684	_?$S@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4EA$S	butemgr	0x1	data
 0x2bf688	_?$S@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4EA$S	butemgr	0x1	data
 0x2bf690	_?s_default@?1??GetPoint@CButeMgr@@QAEPAUButeIntPoint@@PBD0@Z@4U3@A$S	butemgr	0x8	data
-0x2bf698	_?s_empty@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4VCString@@A$S	butemgr	0x4	data
+0x2bf698	_?s_empty@?1??GetString@CButeMgr@@QAEPAVCString@@PBD0@Z@4V3@A$S	butemgr	0x4	data
 0x2bf6a0	_?s_default@?1??GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0@Z@4U3@A$S	butemgr	0x18	data
-0x2bf6b8	_?$S@?1??GetString@CButeMgr@@QAEPADPBD0@Z@4EA$S	butemgr	0x1	data
+0x2bf6b8	_?$S@?1??GetString@CButeMgr@@QAEPAVCString@@PBD0@Z@4EA$S	butemgr	0x1	data
 0x2bf6c0	_?s_default@?1??GetRange@CButeMgr@@QAEPAUButeDoubleRange@@PBD0@Z@4U3@A$S	butemgr	0x10	data
 0x2bf6d0	_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S	butemgr	0x10	data
 #

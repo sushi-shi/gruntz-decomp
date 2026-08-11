@@ -3180,7 +3180,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00213ec2	0x00213ec8	6	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213ed6	0x00213ed8	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213ee7	0x00213eec	5	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00213eee	0x00213ef0	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x00213eec	0x00213ef0	4	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (5)	between retail pooled literals; no source pin
 0x00213ef5	0x00213ef8	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213efa	0x00213efc	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213efe	0x00213f00	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference

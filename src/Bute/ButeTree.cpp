@@ -34,10 +34,17 @@ void zPTree::Walk(
 }
 
 // @early-stop
-// Residue is register allocation: retail spills `sbit` to the frame and reloads
-// it twice per descent iteration, where cl keeps it in a register and so folds
-// the loop preheader into the head block.  Both descent loops, the error tails
-// and the insert arms agree.
+// Register allocation, and a 120-cell hand matrix says so: `sbit_decl` x
+// `slot_select` x `loop_form` x `key_local` (const/order/for(;;)/explicit-break/
+// pointer-increment/if-else/index/hoisted strlen) is DEAD FLAT - every legal
+// spelling scores the identical 68.719150%, and the two that changed the child
+// select to `++slot` or `m_child[dir]` score LOWER.  The mechanism: retail spends a
+// callee-saved register on `key` (esi survives the inline strlen because cl copies
+// it to edi for the `repnz scas`) and therefore SPILLS `sbit` to [esp+0x14],
+// reloading it twice per descent iteration and emitting a separate loop preheader;
+// our cl loads `key` straight into edi, loses it to the scas, and keeps `sbit` in a
+// register, folding the preheader into the head block.  That one coloring decision
+// is the whole 4-block / 1-branch skeleton delta (48 vs 52 blocks, 25 vs 26 jcc).
 RVA(0x001933b0, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 path[32];

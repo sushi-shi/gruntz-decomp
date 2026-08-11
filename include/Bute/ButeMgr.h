@@ -39,7 +39,7 @@ public:
     double GetDoubleDef(const char* tag, const char* key, double def);
     double GetDouble(const char* tag, const char* key);
     CString* GetStringDef(const char* tag, const char* key, CString* def);
-    char* GetString(const char* tag, const char* key);
+    CString* GetString(const char* tag, const char* key);
 
     struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
     struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);

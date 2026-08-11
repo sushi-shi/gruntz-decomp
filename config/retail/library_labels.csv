@@ -1564,7 +1564,7 @@ rva,name,lib,confidence,source
 0x1697e0,msc_iostream_ostream_ctor_1697e0,LIBCMT,MED,manual-unmatched-library-audit
 0x1699a0,msc_iostream_ostream_dtor_1699a0,LIBCMT,MED,manual-unmatched-library-audit
 0x1699e0,msc_iostream_iostream_ctor_1699e0,LIBCMT,MED,manual-unmatched-library-audit
-0x169bc0,msc_iostream_iostream_dtor_169bc0,LIBCMT,MED,manual-unmatched-library-audit
+0x169bc0,??_Diostream@@QAEXXZ,LIBCIMT,HIGH,manual-unmatched-library-audit
 0x169d10,msc_iostream_ios_ctor_169d10,LIBCMT,MED,manual-unmatched-library-audit
 0x1697c0,msc_ios_vbase_ctor_thunk_1697c0,LIBCMT,MED,manual-unmatched-library-audit
 0x1699c0,msc_ios_vbase_ctor_thunk_1699c0,LIBCMT,MED,manual-unmatched-library-audit
@@ -2981,7 +2981,7 @@ rva,name,lib,confidence,source
 0x1ca249,Funclet_1ca249,MSVC-EH,HIGH,asm-carveout
 0x1bade1,Thunk_1bade1,MSVC-THUNK,HIGH,asm-carveout
 0x1d3330,Thunk_1d3330,MSVC-THUNK,HIGH,asm-carveout
-0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout
+0x169be0,??1strstream@@UAE@XZ,LIBCIMT,HIGH,manual-unmatched-library-audit
 0x169be0,??1iostream@@UAE@XZ,LIBCIMT,HIGH,vbase-adjust-0x14
 0x1915a8,_DirectSoundCreate@12,MSVC-THUNK,HIGH,dsound-import-thunk
 0x1d4a18,FreeLibHost_Dtor,GAME-ASM,HIGH,asm-carveout
@@ -3022,8 +3022,8 @@ rva,name,lib,confidence,source
 0x1d4bc1,ComAtexit_5d4bcd,MSVC-THUNK,HIGH,asm-carveout
 0x16c9c0,msc_lock_init_16c9c0,LIBCIMT,HIGH,manual-stub-reclass
 0x16c9d0,msc_lock_term_16c9d0,LIBCIMT,HIGH,manual-stub-reclass
-0x16c9e0,msc_lock_enter_16c9e0,LIBCIMT,HIGH,manual-stub-reclass
-0x16c9f0,msc_lock_leave_16c9f0,LIBCIMT,HIGH,manual-stub-reclass
+0x16c9e0,__mtlock,LIBCIMT,HIGH,manual-stub-reclass
+0x16c9f0,__mtunlock,LIBCIMT,HIGH,manual-stub-reclass
 0x1b9b82,??3@YAXPAX@Z,NAFXCW,MED,derecon-waveO
 0x1b9b8d,Get_1b9b8d,NAFXCW,LOW,derecon-waveO
 0x1d4722,??1CNoTrackObject@@UAE@XZ,NAFXCW,MED,derecon-waveO

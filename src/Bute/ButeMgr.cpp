@@ -2,7 +2,6 @@
 
 #include <Bute/ButeMgr.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeLexAction.h>
 #include <Bute/ButeToken.h>
 #include <Bute/ButeValue.h>
@@ -16,10 +15,6 @@
 #include <stdlib.h>
 #include <strstrea.h>
 
-DATA(0x00213eec)
-static char s_strRBrack[] = "]";
-DATA(0x00213efc)
-static char s_strLBrack[] = "[";
 DATA(0x0021cf40)
 i16 g_charClass[256] = {
     49, 48, 48, 48, 48, 48, 48, 48, 48, 15, 12, 48, 48, 13, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
@@ -839,19 +834,22 @@ void CButeMgr::ScanState(i16 state, char c) {
 // @early-stop
 RVA(0x001704c0, 0x200)
 bool CButeMgr::Parse() {
-    const i32 kLexStartState = 0x11;
-    i32 kind = kLexStartState;
+    // `kind` is 16-bit: retail copies PeekState2's result with a plain `mov edi,eax`
+    // (cl's cheap 2-byte 16-bit copy - the upper half is dead because every consumer
+    // reads `WORD PTR [esp+4]`), where an `i32` forces a real `movsx edi,ax`.
+    const i16 kLexStartState = 0x11;
+    i16 kind = kLexStartState;
     g_tokenLen = 0;
 
     for (;;) {
-        GZ_ENUM_RETURN(ButeLexAction, i16) cls = PeekState(static_cast<i16>(kind), m_curChar);
+        GZ_ENUM_RETURN(ButeLexAction, i16) cls = PeekState(kind, m_curChar);
         switch (cls) {
             case LEXACT_ERROR:
                 ReportError(s_fmtBadSymbol, m_lineNo);
                 return false;
 
             case LEXACT_TAKE:
-                kind = PeekState2(static_cast<i16>(kind), m_curChar);
+                kind = PeekState2(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -860,7 +858,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case LEXACT_SKIP:
-                kind = PeekState2(static_cast<i16>(kind), m_curChar);
+                kind = PeekState2(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
@@ -868,7 +866,7 @@ bool CButeMgr::Parse() {
                 break;
 
             case LEXACT_ACCEPT_TAKE:
-                ScanState(static_cast<i16>(kind), m_curChar);
+                ScanState(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
@@ -881,7 +879,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case LEXACT_ACCEPT_SKIP:
-                ScanState(static_cast<i16>(kind), m_curChar);
+                ScanState(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
                     (*m_pText) << static_cast<unsigned char>(m_curChar);
                 }
@@ -893,7 +891,7 @@ bool CButeMgr::Parse() {
                 return true;
 
             case LEXACT_ACCEPT_PUSHBACK:
-                ScanState(static_cast<i16>(kind), m_curChar);
+                ScanState(kind, m_curChar);
                 if (m_tokType == BUTETOK_NONE) {
                     Parse();
                 }
@@ -932,11 +930,15 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
 }
 
 // @early-stop
-// Every arm now falls through on the !m_writeMode side, as retail does, and the
-// register pinning matches (ebp=this, esi=&m_token, edi=&m_str104).  Residue: our
-// frame is 4 bytes larger (sub esp,0x58 vs 0x54) and cl's cross-jumper tail-merges
-// the inlined `new <scalar>` of the INT/DWORD/FLOAT arms - which share one union
-// slot - into a single block, where retail keeps one copy per arm.
+// Residue, re-derived: (a) cl's cross-jumper tail-merges the inlined `new <scalar>`
+// of the INT/DWORD/FLOAT arms - which share one union slot - into a single block,
+// where retail keeps one copy per arm (4 `zPTree::Insert` referents vs retail's 5);
+// (b) the BUTETOK_DOUBLE write arm parks its FP result in a frame slot retail also
+// uses for the BUTETOK_VECTOR struct copy - naming the double reproduces the spill
+// but costs more than it buys, and block-scoping every arm's scratch local (the
+// only spelling that lets cl overlap them) cost 12 EXACT functions across the TU;
+// (c) the `new CButeValue(BUTE_STRING, m_token)` CString temporary is re-`lea`d
+// where retail reuses the ctor's `eax`.
 RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
 
@@ -995,8 +997,8 @@ bool ButeMgr::ParseAttributeFile() {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, vd));
                 }
             } else {
-                (*m_pText) << s_strDword;
-                (*m_pText) << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
+                (*m_pText) << s_strDword
+                           << static_cast<unsigned long>(GetDword(m_tagName, m_str104));
             }
             break;
         }
@@ -1010,7 +1012,9 @@ bool ButeMgr::ParseAttributeFile() {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
                 }
             } else {
-                ((*m_pText) << s_strFloat) << static_cast<double>(GetFloat(m_tagName, m_str104));
+                // float, not a hand-widened double: retail's `mov [eax+4],1` is
+                // x_floatused = 1 from ostream's inline operator<<(float).
+                ((*m_pText) << s_strFloat) << GetFloat(m_tagName, m_str104);
             }
             break;
         }
@@ -1021,8 +1025,7 @@ bool ButeMgr::ParseAttributeFile() {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
                 }
             } else {
-                (*m_pText) << static_cast<double>(GetFloat(m_tagName, m_str104));
-                (*m_pText) << s_strFloatSuffix;
+                (*m_pText) << GetFloat(m_tagName, m_str104) << s_strFloatSuffix;
             }
             break;
         }
@@ -1033,7 +1036,7 @@ bool ButeMgr::ParseAttributeFile() {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, dv));
                 }
             } else {
-                (*m_pText) << static_cast<double>(GetDouble(m_tagName, m_str104));
+                (*m_pText) << GetDouble(m_tagName, m_str104);
             }
             break;
         }
@@ -1045,11 +1048,9 @@ bool ButeMgr::ParseAttributeFile() {
                 }
             } else {
                 ButeIntRect* r = GetRect(m_tagName, m_str104);
-                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->c);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->d);
-                (*m_pText) << s_strClose;
+                (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
+                           << static_cast<long>(r->b) << s_strComma << static_cast<long>(r->c)
+                           << s_strComma << static_cast<long>(r->d) << s_strClose;
             }
             break;
         }
@@ -1061,9 +1062,8 @@ bool ButeMgr::ParseAttributeFile() {
                 }
             } else {
                 ButeIntPoint* r = GetPoint(m_tagName, m_str104);
-                ((*m_pText) << s_strOpen) << static_cast<long>(r->a);
-                ((*m_pText) << s_strComma) << static_cast<long>(r->b);
-                (*m_pText) << s_strClose;
+                (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
+                           << static_cast<long>(r->b) << s_strClose;
             }
             break;
         }
@@ -1077,14 +1077,8 @@ bool ButeMgr::ParseAttributeFile() {
                     );
                 }
             } else {
-                ButeDoubleVector* r = GetVector(m_tagName, m_str104);
-                double dx = r->x;
-                double dy = r->y;
-                double dz = r->z;
-                ((*m_pText) << s_strLt) << static_cast<double>(dx);
-                ((*m_pText) << s_strComma) << static_cast<double>(dy);
-                ((*m_pText) << s_strComma) << static_cast<double>(dz);
-                (*m_pText) << s_strGt;
+                ButeDoubleVector v = *GetVector(m_tagName, m_str104);
+                (*m_pText) << s_strLt << v.x << s_strComma << v.y << s_strComma << v.z << s_strGt;
             }
             break;
         }
@@ -1096,11 +1090,7 @@ bool ButeMgr::ParseAttributeFile() {
                 }
             } else {
                 ButeDoubleRange* r = GetRange(m_tagName, m_str104);
-                double dx = r->x;
-                double dy = r->y;
-                ((*m_pText) << s_strLBrack) << static_cast<double>(dx);
-                ((*m_pText) << s_strComma) << static_cast<double>(dy);
-                (*m_pText) << s_strRBrack;
+                (*m_pText) << "[" << r->x << s_strComma << r->y << "]";
             }
             break;
         }
@@ -1110,10 +1100,9 @@ bool ButeMgr::ParseAttributeFile() {
                     m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, m_token));
                 }
             } else {
-                CString tmp(GetString(m_tagName, m_str104));
-                (*m_pText) << static_cast<unsigned char>('"');
-                (*m_pText) << tmp.GetBuffer(0);
-                (*m_pText) << static_cast<unsigned char>('"');
+                CString tmp(*GetString(m_tagName, m_str104));
+                (*m_pText) << static_cast<unsigned char>('"') << tmp.GetBuffer(0)
+                           << static_cast<unsigned char>('"');
             }
             break;
         }
@@ -1173,6 +1162,13 @@ bool CButeMgr::ParseTagLine() {
 }
 
 // @early-stop
+// Retail spends a fourth callee-saved register on `value` (push/pop edi, every arm
+// reading `[edi+4]`), which shifts every esp displacement by 4; our cl keeps it in
+// eax.  It needs edi because the BUTE_RECT chain outputs '(' BEFORE loading the
+// rect pointer - so `value` is live across a call - while our cl hoists the load
+// above the first `operator<<`.  A 24-cell matrix over the RECT and STRING arm
+// spellings (pointer local / reference local / inline cast, and dropping the
+// `value` local entirely) is flat at 87.48: no legal spelling defers that load.
 RVA(0x001712b0, 0x228)
 void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
@@ -1188,15 +1184,20 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             output << s_strDword << *static_cast<DWORD*>(value->pValue);
             break;
 
+        // Retail emits this arm's body BEFORE BUTE_DOUBLE's (cl lays arm bodies out
+        // in source order; the jump table at 0x1714b4 still routes 2 -> the double
+        // body at 0x17134c and 3 -> this one at 0x17131c), and the `mov [eax+4],1`
+        // at 0x17133a is `x_floatused = 1` from ostream's INLINE operator<<(float)
+        // - so the value goes in as a float, not a hand-widened double.
+        case BUTE_FLOAT: {
+            float scalar = *static_cast<float*>(value->pValue);
+            output << s_strFloat << scalar;
+            break;
+        }
+
         case BUTE_DOUBLE:
             output << *static_cast<double*>(value->pValue);
             break;
-
-        case BUTE_FLOAT: {
-            float scalar = *static_cast<float*>(value->pValue);
-            output << s_strFloat << static_cast<double>(scalar);
-            break;
-        }
 
         case BUTE_STRING: {
             CString& text = *static_cast<CString*>(value->pValue);
@@ -1205,13 +1206,14 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             break;
         }
 
+        // One chained expression: retail feeds each operator<< the PREVIOUS call's
+        // return (`mov ecx,eax` at 0x1713ac and 0x1713df), where three separate
+        // statements would reload the stream (`mov ecx,esi`) at each one.
         case BUTE_RECT: {
-            output << static_cast<unsigned char>('(');
             ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
-            output << static_cast<long>(ref->a) << s_strComma << static_cast<long>(ref->b)
-                   << s_strComma << static_cast<long>(ref->c) << s_strComma
-                   << static_cast<long>(ref->d);
-            output << static_cast<unsigned char>(')');
+            output << static_cast<unsigned char>('(') << static_cast<long>(ref->a) << s_strComma
+                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
+                   << s_strComma << static_cast<long>(ref->d) << static_cast<unsigned char>(')');
             break;
         }
 
@@ -1235,7 +1237,7 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
             ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
             double x = ref->x;
             double y = ref->y;
-            output << s_strLBrack << x << s_strComma << y << s_strRBrack;
+            output << "[" << x << s_strComma << y << "]";
             break;
         }
     }
@@ -1246,7 +1248,7 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     output << endl;
     output << endl;
-    output << s_strLBrack << key << s_strRBrack;
+    output << "[" << key << "]";
     static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, 0);
 }
 
@@ -1255,16 +1257,6 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
 // out-of-line COMDATs, in this TU, between ButeTag_Apply and ParseGroup.
 RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
 RVA_COMPGEN(0x00171570, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
-
-// Emit device for ??_Diostream@0x171a40 - the last remaining reason: with the
-// corrected strstrea.h, Save's teardown and symbols are retail-true, but our cl
-// still emits the state-1 funclet as an inline ??1iostream+??1ios pair where
-// retail tail-jmps the ??_D helper, so nothing materializes the COMDAT.
-// Re-test on any Save/cl-behavior movement.
-void EmitIostreamVbaseDtor(streambuf* b) {
-    iostream s(b);
-    s.flush();
-}
 
 RVA(0x00171580, 0xba)
 bool CButeMgr::ParseGroup() {
@@ -1372,7 +1364,12 @@ bool CButeMgr::Save() {
     return true;
 }
 
-RVA_COMPGEN(0x00171a40, 0x14, ??_Diostream@@QAEXXZ)
+// The vbase destructor for Save's stack `strstream source`, not iostream's:
+// 0x171a40 calls 0x169be0 then 0x169d70 (`??1ios`), and 0x169be0 stamps
+// ??_7strstream@@6B@ (0x1f0394) into the ios vbase before tail-jmping the shared
+// ~iostream body at 0x16c950 - i.e. 0x169be0 IS ??1strstream.  The real
+// ??_Diostream is the library COMDAT at 0x169bc0 (it calls 0x16c950 + ??1ios).
+RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)
 bool CButeMgr::Exists(const char* tag, const char* key) {
@@ -1751,7 +1748,7 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 
 RVA(0x001731d0, 0xb6)
 
-char* CButeMgr::GetString(const char* tag, const char* key) {
+CString* CButeMgr::GetString(const char* tag, const char* key) {
     // Retail 0x2bf698; its guard byte (cl's `?$S45..@4EA`, no source
     // spelling) is 0x2bf6b8 and stays unenrolled like Play's s_ambientCoin guard.
     DATA(0x002bf698)
@@ -1762,7 +1759,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((static_cast<CButeNode*>(grp))->Find(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
-                return static_cast<char*>(rec->pValue);
+                return static_cast<CString*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         } else {
@@ -1772,9 +1769,7 @@ char* CButeMgr::GetString(const char* tag, const char* key) {
         ReportError(s_fmtInvalidTag, tag);
     }
 
-    AddrWord<CString> empty;
-    empty.m_addr = &s_empty;
-    return empty.m_bytes;
+    return &s_empty;
 }
 
 // @early-stop
