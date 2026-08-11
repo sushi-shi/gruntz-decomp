@@ -58,7 +58,7 @@ off, u32, sec, is_exec, cstr = _pe.off, _pe.u32, _pe.sec_name, _pe.is_exec, _pe.
 def chase_thunk(rva):
     """Follow an ILT jmp-thunk (`E9 rel32`) to the body it jumps to; None if `rva`
     is not such a thunk. C++ vtable slots point at these one-instruction thunks in
-    the incremental-link band (rva < 0x7c20), not at the method bodies - so a slot's
+    the incremental-link band (rva < 0x7950, pe.ILT_HI), not at the method bodies - so a slot's
     real name/definition is found at chase_thunk(slot_rva), not slot_rva itself."""
     w = u32(rva)
     if w is None or (w & 0xFF) != 0xE9:
@@ -201,7 +201,7 @@ def confidence(v):
 
 def iter_slots(v):
     """Yield (slot_index, slot_rva, raw_target_rva, body_rva) for vtable dict `v`.
-    C++ slots point at ILT jmp-thunks (rva < 0x7c20), so body_rva chases the thunk to
+    C++ slots point at ILT jmp-thunks (rva < 0x7950, pe.ILT_HI), so body_rva chases the thunk to
     the real method; raw_target_rva is the unchased slot value."""
     for k in range(v['size']):
         sr = v['start'] + k * 4

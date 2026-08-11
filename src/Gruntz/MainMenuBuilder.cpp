@@ -184,6 +184,13 @@ static char s_CREDITZ[] = "CREDITZ";
 DATA(0x00211744)
 static char s_TRAINING[] = "TRAINING";
 
+// A `$E` dynamic initializer, not a called function: the `.CRT$XC` table holds
+// 0x000a1170 (the 5-byte jmp cell 0x20 ahead of this body) and nothing calls
+// either address - link-order.tsv records mainmenubuilder's `xcu:789`. The
+// construct is `CRect g_menuTextRect(5, 453, 635, 478);`; the `RECT g_menuTextRect
+// = {0};` above is the same object spelled without its ctor, which is why the
+// initializer has to be written out by hand.
+// docs/patterns/crt-xc-table-is-the-static-initializer-census.md
 RVA(0x000a1190, 0x29)
 void SetMenuTextRect() {
     g_menuTextRect.left = 5;
@@ -193,8 +200,11 @@ void SetMenuTextRect() {
 }
 
 // @identity-TODO BuildMainMenuTree - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (1 fns) came from the static library. It belongs to another compiland.
+// thunk, so it was compiled into a LINK-LINE OBJECT. The oracle's other half is
+// WITHDRAWN: "the rest of this TU (1 fns) came from the static library" was read
+// off SetMenuTextRect having no thunk, but that is a `$E` initializer, which is
+// never called and so never gets one. The two functions are not in conflict and
+// nothing here says BuildMainMenuTree belongs elsewhere.
 
 RVA(0x000a11d0, 0x180d)
 i32 BuildMainMenuTree(CChatBox* menu, i32) {

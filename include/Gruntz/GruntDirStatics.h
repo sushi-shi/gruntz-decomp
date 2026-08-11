@@ -1,6 +1,10 @@
 // GruntDirStatics.h - the per-TU static direction-cell family. Retail emits
-// these nine cells + their $E initializers into every TU that saw this header
-// (66 copies; the extern g_gruntDir* set in GruntCombat.cpp is separate).
+// these nine cells + their $E initializers into every TU that saw this header.
+// The .CRT$XC census counts exactly 106 runs of exactly 9, and exactly 106 .cpp
+// files include this header, so the two sides are closed against each other
+// (docs/patterns/crt-xc-table-is-the-static-initializer-census.md). Two of the
+// 106 are modelled as named globals rather than manifest rows: g_gruntMoveDir*
+// in GruntSteps.cpp and g_gruntDir* in GruntCombat.cpp.
 // Copies are dead data - only their dynamic initializers ever touch them.
 // Pins: config/static_data_copies.tsv (DATA() in a header is ignored).
 #ifndef SRC_GRUNTZ_GRUNTDIRSTATICS_H

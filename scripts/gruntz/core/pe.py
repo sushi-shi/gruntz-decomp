@@ -18,7 +18,14 @@ IMAGEBASE = 0x400000
 # The incremental-link (ILT) jmp-thunk band: the leading jump table the retail linker
 # emits (a run of 5-byte `E9 rel32` forwarders). Real callers `call <ILT entry>`; the
 # entry `jmp`s to the body - pass-through, not code.
-ILT_LO, ILT_HI = 0x1000, 0x7c20
+# MEASURED: the contiguous E9-at-stride-5 run is 0x001005..0x0044a8 - exactly 2695
+# entries, which is the count vostok-delinker reports for the table. 0x0044a8..0x007950
+# is 13,480 bytes of 0xCC linker reserve (not one non-0xCC byte). The first REAL content
+# is at 0x007950: nine 0x50-byte `.CRT$XC` initializer cells (one TU's GruntDirStatics
+# family, docs/patterns/crt-xc-table-is-the-static-initializer-census.md). HI is the end
+# of the reserve, NOT 0x7c20 - that older value swallowed those nine cells, so
+# `thunks_to`/`is_thunk` called nine real functions ILT pass-throughs.
+ILT_LO, ILT_HI = 0x1000, 0x7950
 
 
 def load():

@@ -733,9 +733,18 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// @identity-TODO SetVersionRect - thunk oracle: retail gave this NO incremental
-// thunk, so it came from the static LIBRARY, while the rest of this TU
-// (24 fns) was a link-line object. It belongs to another compiland.
+// The thunk oracle does not apply here and the old "no incremental thunk, so it
+// came from the static LIBRARY" note is WITHDRAWN. This is a `$E` dynamic
+// initializer: its address is taken by the `.CRT$XC` table (slot for 0x0009fdf0,
+// the 5-byte jmp cell 0x20 ahead of this body) and nothing ever CALLS it, so it
+// can have no ILT-band entry whatever compiland it came from. link-order.tsv
+// agrees - mapmgr spans 0x0009e700..0x0009fe39 and carries `xcu:777`.
+// The construct is `CRect g_versionRect(5, 453, 635, 478);` at file scope; cl
+// gives an MFC CRect ctor no constant folding, hence the initializer. That means
+// the definition belongs in THIS TU, not the `tagRECT g_versionRect;` in
+// MenuState.cpp (the only reader, CMenuState::Render 0x000a0750, is a plain
+// extern use). Reuniting them needs an RVA_COMPGEN pin for the `??__E`, so it is
+// a separate change. docs/patterns/crt-xc-table-is-the-static-initializer-census.md
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
     g_versionRect.left = 5;

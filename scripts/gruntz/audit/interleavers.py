@@ -17,9 +17,8 @@ import csv
 import os
 import struct
 
+from gruntz.core.pe import ILT_HI          # one band definition, never a local copy
 from gruntz.core.symbols import SYMCSV
-
-ILT_HI = 0x7c20
 
 
 def _load_exe():

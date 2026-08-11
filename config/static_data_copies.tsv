@@ -28,6 +28,20 @@
 # (brickzload -> gruntzmgr), 0x24c3b0 (play -> gruntzplayer), 0x24c548
 # (play -> playassetload).
 #
+# THE COMPLETENESS ORACLE IS THE `.CRT$XC` TABLE, NOT THE .bss LAYOUT (2026-08-11).
+# Decoding the three-dword stores of every `_initterm` XC entry (0x208000..0x2098a0,
+# bounds from `_cinit` 0x121e00) yields EXACTLY 106 initializer runs of EXACTLY 9
+# cells, with each run's nine XC slots CONTIGUOUS - and exactly 106 .cpp files
+# include GruntDirStatics.h, so the two sides close. Two runs are modelled as named
+# globals with their own DATA() pins instead of rows here (GruntSteps.cpp
+# g_gruntMoveDir* 0x2448c8.., GruntCombat.cpp g_gruntDir* 0x244aa0..), leaving 104
+# runs = 936 rows. The census found 15 missing: bootycheatstate, gruntzmgr and
+# netsessionmgr each had only their four CARDINAL cells because the linker split
+# those blocks across two .bss regions (0x229eb8+0x229f20+0x22aed0, 0x245168+0x245278,
+# 0x249818+0x24a458), and a gap-based read of .bss cannot see the far fragment. Group
+# by INITIALIZER RUN, never by address proximity.
+# docs/patterns/crt-xc-table-is-the-static-initializer-census.md
+#
 # A NON-INLINE FUNCTION'S LOCAL STATIC IS SPELLED BY cl, SO STATE cl's SPELLING
 # (the butemgr band, 0x2bf67c-0x2bf6e0). These are not per-TU copies at all -
 # `CButeMgr::GetRect`'s `static ButeIntRect s_default;` and its 1-byte guard are
@@ -719,6 +733,11 @@
 0x229ec8	?s_gruntDirNorth_229ec8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
 0x229ed8	?s_gruntDirSouth_229ed8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
 0x229ee8	?s_gruntDirWest_229ee8@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x229f20	?s_gruntDirNorthEast_229f20@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x22aed0	?s_gruntDirNorthWest_22aed0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x22aee0	?s_gruntDirSouthEast_22aee0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x22aef0	?s_gruntDirCenter_22aef0@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
+0x22af00	?s_gruntDirSouthWest_22af00@@3UGruntDirectionCell@@A	bootycheatstate	0xc	data
 0x22bd28	?s_gruntDirEast_22bd28@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bd38	?s_gruntDirNorth_22bd38@@3UGruntDirectionCell@@A	videoconfig	0xc	data
 0x22bd48	?s_gruntDirSouth_22bd48@@3UGruntDirectionCell@@A	videoconfig	0xc	data
@@ -727,6 +746,11 @@
 0x245178	?s_gruntDirNorth_245178@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
 0x245188	?s_gruntDirSouth_245188@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
 0x245198	?s_gruntDirWest_245198@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
+0x245278	?s_gruntDirNorthEast_245278@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
+0x245288	?s_gruntDirNorthWest_245288@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
+0x245298	?s_gruntDirSouthEast_245298@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
+0x2452b0	?s_gruntDirCenter_2452b0@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
+0x2452c0	?s_gruntDirSouthWest_2452c0@@3UGruntDirectionCell@@A	gruntzmgr	0xc	data
 0x24b660	?s_gruntDirEast_24b660@@3UGruntDirectionCell@@A	netcmdslot	0xc	data
 0x24b670	?s_gruntDirNorth_24b670@@3UGruntDirectionCell@@A	netcmdslot	0xc	data
 0x24b680	?s_gruntDirSouth_24b680@@3UGruntDirectionCell@@A	netcmdslot	0xc	data
@@ -919,6 +943,11 @@
 0x249828	?s_gruntDirNorth_249828@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
 0x249838	?s_gruntDirSouth_249838@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
 0x249848	?s_gruntDirWest_249848@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
+0x24a458	?s_gruntDirNorthEast_24a458@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
+0x24a468	?s_gruntDirNorthWest_24a468@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
+0x24a478	?s_gruntDirSouthEast_24a478@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
+0x24a488	?s_gruntDirCenter_24a488@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
+0x24a498	?s_gruntDirSouthWest_24a498@@3UGruntDirectionCell@@A	netsessionmgr	0xc	data
 0x24be20	?s_gruntDirEast_24be20@@3UGruntDirectionCell@@A	droppedobject	0xc	data
 0x24be30	?s_gruntDirNorth_24be30@@3UGruntDirectionCell@@A	droppedobject	0xc	data
 0x24be40	?s_gruntDirSouth_24be40@@3UGruntDirectionCell@@A	droppedobject	0xc	data
