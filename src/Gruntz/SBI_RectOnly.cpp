@@ -75,9 +75,9 @@ DATA(0x00244c54)
 i32 g_curPlayer = 0;
 
 // @early-stop
-// A whole-function ebx<->edi rotation: retail colours the CSE'd zero edi (materialized
-// AFTER `push edi`) and m_modeSize.cx ebx, cl does the reverse.  Instruction selection,
-// order and the branch sequence are identical.
+// The three cumulative runs are settled (retail restarts the running total at [3],
+// [7] and [17]).  What is left is the rotating temp register of the accumulate chain:
+// retail cycles edx/ebp/ecx where cl cycles ebp/ecx/edx, one phase out of step.
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
@@ -104,11 +104,11 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
     m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
     m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
-    m_battlezPct[3] = m_battlezPct[2] + g_buteMgr.GetInt("Multiplayer", "RedBrick");
+    m_battlezPct[3] = g_buteMgr.GetInt("Multiplayer", "RedBrick");
     m_battlezPct[4] = m_battlezPct[3] + g_buteMgr.GetInt("Multiplayer", "BlueBrick");
     m_battlezPct[5] = m_battlezPct[4] + g_buteMgr.GetInt("Multiplayer", "GoldBrick");
     m_battlezPct[6] = m_battlezPct[5] + g_buteMgr.GetInt("Multiplayer", "BlackBrick");
-    m_battlezPct[7] = m_battlezPct[6] + g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
+    m_battlezPct[7] = g_buteMgr.GetInt("Multiplayer", "BabyWalkerz");
     m_battlezPct[8] = m_battlezPct[7] + g_buteMgr.GetInt("Multiplayer", "BeachBallz");
     m_battlezPct[9] = m_battlezPct[8] + g_buteMgr.GetInt("Multiplayer", "BigWheelz");
     m_battlezPct[10] = m_battlezPct[9] + g_buteMgr.GetInt("Multiplayer", "GoKartz");
@@ -118,7 +118,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[14] = m_battlezPct[13] + g_buteMgr.GetInt("Multiplayer", "Scrollz");
     m_battlezPct[15] = m_battlezPct[14] + g_buteMgr.GetInt("Multiplayer", "SqueakToyz");
     m_battlezPct[16] = m_battlezPct[15] + g_buteMgr.GetInt("Multiplayer", "Yoyoz");
-    m_battlezPct[17] = m_battlezPct[16] + g_buteMgr.GetInt("Multiplayer", "Bombz");
+    m_battlezPct[17] = g_buteMgr.GetInt("Multiplayer", "Bombz");
     m_battlezPct[18] = m_battlezPct[17] + g_buteMgr.GetInt("Multiplayer", "Boomerangz");
     m_battlezPct[19] = m_battlezPct[18] + g_buteMgr.GetInt("Multiplayer", "Brickz");
     m_battlezPct[20] = m_battlezPct[19] + g_buteMgr.GetInt("Multiplayer", "Clubz");
@@ -251,7 +251,6 @@ i32 CStatusBarMgr::RefreshState() {
     return DockStatusBarRight();
 }
 
-// @early-stop
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != STATUSBAR_HIDDEN) {
@@ -345,13 +344,16 @@ static __inline void HiCueTimed() {
     if (host->m_emitGate == 0) {
         void* found = 0;
         host->m_cues.Lookup("GAME_TABHIGHLIGHT1", found);
-        if (found && g_sndEnabled != 0) {
+        if (found) {
+            i32 gate = g_sndEnabled;
             i32 item = g_sndCueTag;
-            LeafCue* p = static_cast<LeafCue*>(found);
-            if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                >= static_cast<u32>(p->m_replayDelay)) {
-                p->m_lastPlayTime = g_killCueClock;
-                p->m_sound->ConfigureItem(item, 0, 0, 0);
+            if (gate != 0) {
+                LeafCue* p = static_cast<LeafCue*>(found);
+                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                    >= static_cast<u32>(p->m_replayDelay)) {
+                    p->m_lastPlayTime = g_killCueClock;
+                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                }
             }
         }
     }
@@ -393,10 +395,9 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 }
 
 // @early-stop
-// All five jump tables and both LUTs now match; the residue is constant/register
-// choice (retail materializes `1` as an immediate where cl hoists it into ebx) and
-// cl cross-jumping the two identical DIALOG_SECONDARY/DIALOG_YES else-arms that
-// retail keeps apart because their `je`/`jne` encodings differ (near vs short).
+// Cross-jumping: retail shares one more PostMessageA tail than cl does, because it
+// schedules the `g_gameReg->m_gameWnd` load AFTER the two argument pushes and cl
+// hoists it above them, so cl's shareable suffix starts one instruction later.
 RVA(0x000fe910, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CStatusBarItem* w = HitTestRects(a2, a3);
@@ -466,9 +467,8 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 case SBICMD_QUIT:
                     HiCueLookup();
                     if (g_gameReg->m_frameGate != 0) {
-                        i32 flipped = g_gameReg->m_frameGate ^ 1;
-                        g_gameReg->m_frameGate = flipped;
-                        g_gameReg->FinishLevel(flipped, 1);
+                        g_gameReg->m_frameGate ^= 1;
+                        g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->EnterOverlayDrag(1);
                     return 1;
@@ -758,7 +758,6 @@ i32 CStatusBarMgr::ClickToggle(i32 btn, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
@@ -863,13 +862,6 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
-// 78.20 -> 95.98 by reading the SHARED band constants off retail's reloads (below).
-// The residue is the ctor inline cut: retail stamps the CStatusBarItem base fields
-// inline at the LAST `new CSBI_MenuItem` where the other four `call` the base ctor, so
-// its unwind-state count is four against our five (eh_band STATES) and it needs no
-// delete-on-throw state for that site.  Everything else pairs.
-// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -1029,7 +1021,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         multiTab->SetSubtype();
     }
 
-    CSBI_MenuItem* gameTab = new CSBI_MenuItem;
+    CSBI_MenuItem* gameTab = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
     if (!gameTab->SetupImage(
             this,
             code,
@@ -1451,37 +1443,28 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
-// The ctor-tag mapping is CONFIRMED correct - walking retail's ten `new` sites in order
-// gives `call ??0CSBI_RectOnly` x3, `call ??0CStatusBarItem` x3, fully-inline x2,
-// `call ??0CSBI_RectOnly` x2, which is exactly the CALL_RECTONLY / <default> /
-// INLINE_CHAIN sequence written below.  What is left is the frame: `sub esp,0x20`
-// against retail's 0x18, and the object needs TWO of those slots where retail needs one
-// (we `mov [esp+0x18],eax` before the ctor call and copy to [esp+0x14] after; retail
-// stores once, so its EH temp IS `it`).  The EH state numbers are offset with it
-// (retail's first site is state 2, ours 0).
+// Retail's EH state indices start at 2: it numbers the two mission-status `new` sites
+// 0 and 1, i.e. LEXICALLY FIRST, while laying that branch out LAST.  Hoisting the
+// branch to the top of the source gets the numbering but flips the layout with it, so
+// the two cannot be satisfied together from a plain if/else.  The residue is those
+// eight state immediates plus the one frame dword cl still spends on a separate $T.
 // docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
-// The two `return 1;` exits ARE distinct in retail (2 rets, one per branch): listing the
-// destruct button after the multiplayer disable so the tails cross-jump was measured and
-// LOSES (86.08 -> 83.56), and both mission-status arms really are written out (two
-// `push 0x1fb` sites on both sides), so the if/else is not a hoisted `? 1 : 2`.
-// The band constants are clean here (every `bx`/`by + N` appears in a retail lea/add).
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
-    CSBI_Image* it;
     RECT r;
 
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
         if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
-            it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+            CSBI_MenuItem* resume = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
             r.bottom = by + 0xec;
-            if (!it->SetupImage(
+            if (!resume->SetupImage(
                     this,
                     code,
                     SBICMD_PAUSE,
@@ -1491,19 +1474,20 @@ i32 CStatusBarMgr::BuildGameMenu() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
+                if (resume) {
+                    delete resume;
                 }
                 return 0;
             }
-            m_tabLists[5].AddTail(it);
+            m_tabLists[5].AddTail(resume);
+            m_tabSprite5 = resume;
         } else {
-            it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+            CSBI_MenuItem* pause = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
             r.left = bx;
             r.top = by + 0xd5;
             r.right = bx + 0x9f;
             r.bottom = by + 0xec;
-            if (!it->SetupImage(
+            if (!pause->SetupImage(
                     this,
                     code,
                     SBICMD_PAUSE,
@@ -1513,21 +1497,21 @@ i32 CStatusBarMgr::BuildGameMenu() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
+                if (pause) {
+                    delete pause;
                 }
                 return 0;
             }
-            m_tabLists[5].AddTail(it);
+            m_tabLists[5].AddTail(pause);
+            m_tabSprite5 = pause;
         }
-        m_tabSprite5 = static_cast<CSBI_MenuItem*>(it);
 
-        it = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+        CSBI_MenuItem* load = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0x125;
         r.right = bx + 0x9f;
         r.bottom = by + 0x13c;
-        if (!it->SetupImage(
+        if (!load->SetupImage(
                 this,
                 code,
                 SBICMD_LOAD_GAME,
@@ -1537,23 +1521,23 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (load) {
+                delete load;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_tabSprite6 = static_cast<CSBI_MenuItem*>(it);
+        m_tabLists[5].AddTail(load);
+        m_tabSprite6 = load;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            it->m_enabled = 0;
+            load->m_enabled = 0;
         }
 
-        it = new CSBI_MenuItem;
+        CSBI_MenuItem* save = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0xfd;
         r.right = bx + 0x9f;
         r.bottom = by + 0x114;
-        if (!it->SetupImage(
+        if (!save->SetupImage(
                 this,
                 code,
                 SBICMD_SAVE_GAME,
@@ -1563,23 +1547,23 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (save) {
+                delete save;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_tabSprite7 = static_cast<CSBI_MenuItem*>(it);
+        m_tabLists[5].AddTail(save);
+        m_tabSprite7 = save;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            it->m_enabled = 0;
+            save->m_enabled = 0;
         }
 
-        it = new CSBI_MenuItem;
+        CSBI_MenuItem* settings = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x14d;
         r.right = bx + 0x9f;
         r.bottom = by + 0x164;
-        if (!it->SetupImage(
+        if (!settings->SetupImage(
                 this,
                 code,
                 SBICMD_SETTINGS,
@@ -1589,20 +1573,20 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (settings) {
+                delete settings;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_tabSprite8 = static_cast<CSBI_MenuItem*>(it);
+        m_tabLists[5].AddTail(settings);
+        m_tabSprite8 = settings;
 
-        it = new CSBI_MenuItem;
+        CSBI_MenuItem* help = new CSBI_MenuItem;
         r.left = bx;
         r.top = by + 0x175;
         r.right = bx + 0x9f;
         r.bottom = by + 0x18c;
-        if (!it->SetupImage(
+        if (!help->SetupImage(
                 this,
                 code,
                 SBICMD_BOOTY_STATE,
@@ -1612,23 +1596,23 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (help) {
+                delete help;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_tabSprite9 = static_cast<CSBI_MenuItem*>(it);
+        m_tabLists[5].AddTail(help);
+        m_tabSprite9 = help;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            it->m_enabled = 0;
+            help->m_enabled = 0;
         }
 
-        it = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        CSBI_MenuItem* quit = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
         r.left = bx;
         r.top = by + 0x19d;
         r.right = bx + 0x9f;
         r.bottom = by + 0x1b4;
-        if (!it->SetupImage(
+        if (!quit->SetupImage(
                 this,
                 code,
                 SBICMD_QUIT,
@@ -1638,20 +1622,20 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (quit) {
+                delete quit;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_tabSprite10 = static_cast<CSBI_MenuItem*>(it);
+        m_tabLists[5].AddTail(quit);
+        m_tabSprite10 = quit;
 
-        it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
+        CSBI_ImageSet* destruct = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
         r.left = bx + 0x22;
         r.top = by + 0x1be;
         r.right = bx + 0x7d;
         r.bottom = by + 0x1d6;
-        if (!it->SetupImage(
+        if (!destruct->SetupImage(
                 this,
                 code,
                 SBICMD_DESTRUCT,
@@ -1661,15 +1645,15 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 IDX(m_modeState),
                 0
             )) {
-            if (it) {
-                delete it;
+            if (destruct) {
+                delete destruct;
             }
             return 0;
         }
-        m_tabLists[5].AddTail(it);
-        m_modeNotify = static_cast<CSBI_ImageSet*>(it);
+        m_tabLists[5].AddTail(destruct);
+        m_modeNotify = destruct;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-            it->m_enabled = 0;
+            destruct->m_enabled = 0;
             m_modeState = DESTRUCT_FRAME_DISABLED;
             m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
             m_modeNotify->Notify(IDX(DESTRUCT_FRAME_DISABLED));
@@ -1677,13 +1661,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
         return 1;
     }
 
+    CSBI_ImageSet* status;
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
-        it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0xd7;
         r.right = bx + 0x9f;
         r.bottom = by + 0x118;
-        if (!it->SetupImage(
+        if (!status->SetupImage(
                 this,
                 code,
                 SBICMD_MISSION_STATUS,
@@ -1693,18 +1678,18 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 1,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (status) {
+                delete status;
             }
             return 0;
         }
     } else {
-        it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
         r.left = bx;
         r.top = by + 0xd7;
         r.right = bx + 0x9f;
         r.bottom = by + 0x118;
-        if (!it->SetupImage(
+        if (!status->SetupImage(
                 this,
                 code,
                 SBICMD_MISSION_STATUS,
@@ -1714,13 +1699,13 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 2,
                 0
             )) {
-            if (it) {
-                delete it;
+            if (status) {
+                delete status;
             }
             return 0;
         }
     }
-    m_tabLists[5].AddTail(it);
+    m_tabLists[5].AddTail(status);
     return 1;
 }
 
@@ -1915,10 +1900,6 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     return -1;
 }
 
-// @early-stop
-// One register: retail walks g_gameReg->m_world->m_soundRegistry through eax twice
-// (`mov edx,[g]; mov eax,[edx+0x30]; mov eax,[eax+0x28]`), cl spends a third register
-// on the intermediate.  Everything else is byte-identical.
 RVA(0x00105310, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
@@ -2149,27 +2130,28 @@ void CStatusBarMgr::Reset() {
 }
 
 // @early-stop
+// The loop cursor now matches (indexed form, docs/patterns/loop-cursor-bias-names-the-
+// index-form.md).  Residue is the RAMP_UP_LOW arm's store schedule: retail sinks the
+// counter store one slot into the GetDwordDef argument pushes.
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
-    i32 count = 3;
-    CSBI_ImageSet** notify = m_groupNotify;
-    CSbiHlRow* ph = m_groupSlots;
-    do {
-        SbiHlRowState state = static_cast<SbiHlRowState>(ph->m_state);
+    for (i32 i = 0; i < 3; i++) {
+        SbiHlRowState state = static_cast<SbiHlRowState>(m_groupSlots[i].m_state);
         switch (state) {
             case HLROW_IDLE_CYCLE:
-                if (++ph->m_counter > 9) {
-                    ph->m_counter = 1;
+                if (++m_groupSlots[i].m_counter > 9) {
+                    m_groupSlots[i].m_counter = 1;
                 }
                 break;
             case HLROW_RAMP_UP_LOW:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
-                    if (++ph->m_counter >= 0x12) {
-                        ph->m_counter = 0x12;
-                        ph->m_state = IDX(HLROW_HOLD_LOW);
-                        ph->m_interval =
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
+                    if (++m_groupSlots[i].m_counter >= 0x12) {
+                        m_groupSlots[i].m_counter = 0x12;
+                        m_groupSlots[i].m_state = IDX(HLROW_HOLD_LOW);
+                        m_groupSlots[i].m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
-                        ph->m_last = static_cast<u32>(g_frameTime);
+                        m_groupSlots[i].m_last = static_cast<u32>(g_frameTime);
                         UpdateFallingItemStatusBar(
                             m_extraNotifyArg0,
                             m_itemRect.left + 0xc,
@@ -2180,21 +2162,23 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_DOWN_LOW:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
-                    if (--ph->m_counter < 0xa) {
-                        ph->m_state = IDX(HLROW_OFF);
-                        ph->m_counter = 1;
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
+                    if (--m_groupSlots[i].m_counter < 0xa) {
+                        m_groupSlots[i].m_state = IDX(HLROW_OFF);
+                        m_groupSlots[i].m_counter = 1;
                     }
                 }
                 break;
             case HLROW_RAMP_UP_HIGH:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
-                    if (++ph->m_counter >= 0x18) {
-                        ph->m_counter = 0x18;
-                        ph->m_state = IDX(HLROW_HOLD_HIGH);
-                        ph->m_interval =
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
+                    if (++m_groupSlots[i].m_counter >= 0x18) {
+                        m_groupSlots[i].m_counter = 0x18;
+                        m_groupSlots[i].m_state = IDX(HLROW_HOLD_HIGH);
+                        m_groupSlots[i].m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
-                        ph->m_last = static_cast<u32>(g_frameTime);
+                        m_groupSlots[i].m_last = static_cast<u32>(g_frameTime);
                         m_machinePhase = BELT_FALLING_OFF;
                         m_beltInterval =
                             g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
@@ -2203,65 +2187,76 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_DOWN_HIGH:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
-                    if (--ph->m_counter < 0x13) {
-                        ph->m_state = IDX(HLROW_OFF);
-                        ph->m_counter = 1;
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
+                    if (--m_groupSlots[i].m_counter < 0x13) {
+                        m_groupSlots[i].m_state = IDX(HLROW_OFF);
+                        m_groupSlots[i].m_counter = 1;
                     }
                 }
                 break;
             case HLROW_HOLD_HIGH:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_cues.Lookup("GAME_REZBELTRETURN", found);
-                            if (found && g_sndEnabled != 0) {
+                            if (found) {
+                                i32 gate = g_sndEnabled;
                                 i32 item = g_sndCueTag;
-                                LeafCue* p = static_cast<LeafCue*>(found);
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                if (gate != 0) {
+                                    LeafCue* p = static_cast<LeafCue*>(found);
+                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                        >= static_cast<u32>(p->m_replayDelay)) {
+                                        p->m_lastPlayTime = g_killCueClock;
+                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    }
                                 }
                             }
                         }
                     }
-                    ph->m_state = IDX(HLROW_RAMP_DOWN_HIGH);
+                    m_groupSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
-                if (static_cast<i64>(g_frameTime) - ph->m_last >= ph->m_interval) {
+                if (static_cast<i64>(g_frameTime) - m_groupSlots[i].m_last
+                    >= m_groupSlots[i].m_interval) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_cues.Lookup("GAME_REZBELTBACKUP", found);
-                            if (found && g_sndEnabled != 0) {
+                            if (found) {
+                                i32 gate = g_sndEnabled;
                                 i32 item = g_sndCueTag;
-                                LeafCue* p = static_cast<LeafCue*>(found);
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                if (gate != 0) {
+                                    LeafCue* p = static_cast<LeafCue*>(found);
+                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                        >= static_cast<u32>(p->m_replayDelay)) {
+                                        p->m_lastPlayTime = g_killCueClock;
+                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    }
                                 }
                             }
                         }
                     }
-                    ph->m_state = IDX(HLROW_RAMP_DOWN_LOW);
+                    m_groupSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
                 break;
         }
-        if (*notify) {
-            (*notify)->Notify(ph->m_counter);
+        if (m_groupNotify[i]) {
+            m_groupNotify[i]->Notify(m_groupSlots[i].m_counter);
         }
-        notify++;
-        ph++;
-    } while (--count);
+    }
 }
 
 // @early-stop
+// `lea edi,[esi+ecx*8+0x2c0]` against retail's `lea edi,[esi+ecx*8]` plus a 0x2c0
+// displacement on each store - same instruction count, the member offset just lands
+// in the other operand.  Spelling the writes `m_groupSlots[col]` moves it and costs
+// far more elsewhere (98.97 -> 91.22): the whole function's ebx/ebp assignment flips.
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* pA = &m_machineB;
@@ -2324,11 +2319,9 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         MACHINE_RIGHT_RUNNING,
                         g_buteMgr.GetDwordDef("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
-                    CSbiHlRow* s = m_groupSlots;
                     for (i32 i = 0; i < 3; i++) {
-                        s->m_state = IDX(HLROW_IDLE_CYCLE);
-                        s->m_value = 1;
-                        s++;
+                        m_groupSlots[i].m_state = IDX(HLROW_IDLE_CYCLE);
+                        m_groupSlots[i].m_value = 1;
                     }
                     m_machinePhase = BELT_IN_MACHINE;
                     m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
@@ -2338,13 +2331,16 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         if (host->m_emitGate == 0) {
                             void* found = 0;
                             host->m_cues.Lookup("GAME_REZMACHINE", found);
-                            if (found && g_sndEnabled != 0) {
+                            if (found) {
+                                i32 gate = g_sndEnabled;
                                 i32 item = g_sndCueTag;
-                                LeafCue* p = static_cast<LeafCue*>(found);
-                                if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                    >= static_cast<u32>(p->m_replayDelay)) {
-                                    p->m_lastPlayTime = g_killCueClock;
-                                    p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                if (gate != 0) {
+                                    LeafCue* p = static_cast<LeafCue*>(found);
+                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                        >= static_cast<u32>(p->m_replayDelay)) {
+                                        p->m_lastPlayTime = g_killCueClock;
+                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    }
                                 }
                             }
                         }
@@ -2375,6 +2371,8 @@ void CStatusBarMgr::LoadRezMachineConfig() {
             if (static_cast<i64>(g_frameTime) - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
                     CSbiHlRow* g = m_groupSlots;
+                    i32 found = 0;
+                    i32 r = 3;
                     i32 col;
                     PickupType which = static_cast<PickupType>(m_extraNotifyArg0);
                     if (which >= PICKUP_BRICKZ_FIRST) {
@@ -2382,8 +2380,6 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         col = (which >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                     }
-                    i32 found = 0;
-                    i32 r = 3;
                     while (found == 0) {
                         if (r < 0) {
                             break;
@@ -2402,13 +2398,16 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
                                 host->m_cues.Lookup("GAME_REZBELTRETRACT", fnd);
-                                if (fnd && g_sndEnabled != 0) {
+                                if (fnd) {
+                                    i32 gate = g_sndEnabled;
                                     i32 item = g_sndCueTag;
-                                    LeafCue* p = static_cast<LeafCue*>(fnd);
-                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                        >= static_cast<u32>(p->m_replayDelay)) {
-                                        p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    if (gate != 0) {
+                                        LeafCue* p = static_cast<LeafCue*>(fnd);
+                                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                            >= static_cast<u32>(p->m_replayDelay)) {
+                                            p->m_lastPlayTime = g_killCueClock;
+                                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                        }
                                     }
                                 }
                             }
@@ -2421,20 +2420,24 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                             if (host->m_emitGate == 0) {
                                 void* fnd = 0;
                                 host->m_cues.Lookup("GAME_REZBELTDROP", fnd);
-                                if (fnd && g_sndEnabled != 0) {
+                                if (fnd) {
+                                    i32 gate = g_sndEnabled;
                                     i32 item = g_sndCueTag;
-                                    LeafCue* p = static_cast<LeafCue*>(fnd);
-                                    if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
-                                        >= static_cast<u32>(p->m_replayDelay)) {
-                                        p->m_lastPlayTime = g_killCueClock;
-                                        p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                    if (gate != 0) {
+                                        LeafCue* p = static_cast<LeafCue*>(fnd);
+                                        if (g_killCueClock - static_cast<u32>(p->m_lastPlayTime)
+                                            >= static_cast<u32>(p->m_replayDelay)) {
+                                            p->m_lastPlayTime = g_killCueClock;
+                                            p->m_sound->ConfigureItem(item, 0, 0, 0);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    g[0].m_interval = g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
-                    g[0].m_last = static_cast<u32>(g_frameTime);
+                    g[col].m_interval =
+                        g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltDelay", 0x64);
+                    g[col].m_last = static_cast<u32>(g_frameTime);
                 }
                 // Retail's `cmp eax,0x26 / jne 0x1063e8` skips ONLY the release block:
                 // the counter re-read and this if/else are common to both paths.
@@ -2640,10 +2643,13 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 }
 
 // @early-stop
+// Frame 0xc against retail's 0x10.  Retail spills `col` and the cue `item` into a
+// fourth dword where cl keeps both in registers; the flag slots then sit at the other
+// end of the block.  Pure pressure - the two flags' declaration order does not move it.
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
-    i32 refreshFlag = 0;
     i32 rectFlag = 0;
+    i32 refreshFlag = 0;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
@@ -3425,9 +3431,6 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     return 1;
 }
 
-// @early-stop
-// The do-while counter's stack slot (0x18 vs retail's 0x10). Declaring it beside
-// tmp, before tmp, or before nb are all byte-identical - the slot is not decl-order.
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {

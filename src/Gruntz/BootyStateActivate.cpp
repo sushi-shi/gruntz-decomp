@@ -66,17 +66,27 @@ const i32 g_bootyLetterCoords[32] = {
 
 DATA(0x001e9068)
 const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
+// Eight SEPARATE arrays, not one 8x4 table: retail addresses every row with an
+// absolute `[i*8 + &row]`, which is only forced when the rows are distinct symbols
+// (the inter-row distance is then a link-time value, so cl cannot fold the twelve
+// row accesses of LoadGameAssetNamespaces onto one cursor the way it does for a
+// single 2-D object). One row per sprite kind, which is also what the code reads.
 DATA(0x001e9078)
-const Coord g_multiBootyGeom[8][4] = {
-    {{190, 437}, {306, 437}, {422, 437}, {538, 437}},
-    {{190, 394}, {306, 394}, {422, 394}, {538, 394}},
-    {{190, 351}, {306, 351}, {422, 351}, {538, 351}},
-    {{190, 308}, {306, 308}, {422, 308}, {538, 308}},
-    {{190, 265}, {306, 265}, {422, 265}, {538, 265}},
-    {{190, 222}, {306, 222}, {422, 222}, {538, 222}},
-    {{218, 180}, {334, 180}, {450, 180}, {566, 180}},
-    {{218, 138}, {334, 138}, {450, 138}, {566, 138}},
-};
+const Coord g_bootyMiscPos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
+DATA(0x001e9098)
+const Coord g_bootyPowerupPos[4] = {{190, 394}, {306, 394}, {422, 394}, {538, 394}};
+DATA(0x001e90b8)
+const Coord g_bootyToyPos[4] = {{190, 351}, {306, 351}, {422, 351}, {538, 351}};
+DATA(0x001e90d8)
+const Coord g_bootyWeaponPos[4] = {{190, 308}, {306, 308}, {422, 308}, {538, 308}};
+DATA(0x001e90f8)
+const Coord g_bootyGruntPos[4] = {{190, 265}, {306, 265}, {422, 265}, {538, 265}};
+DATA(0x001e9118)
+const Coord g_bootyPuddlePos[4] = {{190, 222}, {306, 222}, {422, 222}, {538, 222}};
+DATA(0x001e9138)
+const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}};
+DATA(0x001e9158)
+const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
 // Retail put these eight arrays at 0x1e9178..0x1e93a8, inside `.rdata` - whose
 // section characteristics are 0x40000040, READ with no WRITE bit. Read-only
 // storage is only reachable for a `const` object, so retail declared them const;
@@ -165,13 +175,12 @@ CString g_levelMsgStrings[8] = {
 
 DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[24];
-char g_secretMsgA[0x20];
-char g_secretMsgB[0x80];
-
+// 24 * sizeof(SecretMsgRow) = 0xf00, so these two land at 0x22ae30 / 0x22ae50 - the
+// addresses ShowSecretBonusMessage's two CString ctors take.
 DATA(0x0022ae30)
-i32 g_val_22ae30;
+char g_secretMsgA[0x20];
 DATA(0x0022ae50)
-i32 g_val_22ae50;
+char g_secretMsgB[0x80];
 
 // @early-stop
 
@@ -218,6 +227,9 @@ i32 CBootyState::EnterState(GameStateId) {
 }
 
 // @early-stop
+// cl folds `&found->m_sound` into a register and reads `[edi]`; retail keeps `found`
+// itself and reloads `[esi+0x10]` at each of the four uses.  Dropping the `found` local
+// and casting the out-param at every site is worse (79.30 -> 77.27).
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId) {
     void* obj = 0;
@@ -317,7 +329,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
 }
 
 // @early-stop
-
+// Retail hoists ~SPRITE_STATE_HIDDEN (-2) into ebp for the whole function and reaches
+// the flag with `mov/or/mov` where cl has a free al and emits `or al,1`.
 RVA(0x00019540, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGruntzMgr* reg = g_gameReg;
@@ -337,7 +350,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
             return 0;
         }
         a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
-        a->m_stateFlags |= SPRITE_STATE_HIDDEN;
+        slot[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
     for (i32 k = 0; k <= m_letterIdx; k++) {
         slot[k]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -354,23 +367,22 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 }
 
 // @early-stop
+// The cursor placement is fixed by the indexed form.  Residue is the FP stack: retail
+// finishes `ang` before loading the coordinate, and it converts (step+5) with `fild`
+// where cl folds the two double constants and reaches it with `fimul`.
 RVA(0x000196c0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
-        const i32* tbl = g_bootyLetterCoords + 1;
-        CWwdGameObjectA** ap = m_trailSprites;
         for (i32 i = 0; i <= m_letterIdx; i++) {
-            CWwdGameObjectA* e = *ap;
-            e->m_screenX = tbl[-1];
-            e = *ap;
-            e->m_screenY = tbl[0];
-            e = *ap;
+            CWwdGameObjectA* e = m_trailSprites[i];
+            e->m_screenX = g_bootyLetterCoords[i * 2];
+            e = m_trailSprites[i];
+            e->m_screenY = g_bootyLetterCoords[i * 2 + 1];
+            e = m_trailSprites[i];
             if (e->m_sortKey != 1) {
                 e->m_sortKey = 1;
                 e->m_flags |= 0x20000;
             }
-            ap++;
-            tbl += 2;
         }
         m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx * 2];
         m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx * 2 + 1];
@@ -468,9 +480,12 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 
         m_sprintSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_" + dir + "_WALK");
         m_sprintSprites[i]->ApplyLookupGeometry("GAME_GRUNTSPRINT", 0);
-        m_sprintSprites[i]->m_drawActive = 1;
-        m_sprintSprites[i]->m_drawFillCmd = SHADE_PAL_16;
-        m_sprintSprites[i]->m_drawFillArg = h;
+        {
+            CWwdGameObjectA* o = m_sprintSprites[i];
+            o->m_drawActive = 1;
+            o->m_drawFillCmd = SHADE_PAL_16;
+            o->m_drawFillArg = h;
+        }
 
         i32 outX, outY;
         GenMenuRandPos(static_cast<GruntDirection>(i + 1), &outX, &outY);
@@ -481,6 +496,9 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 }
 
 // @early-stop
+// `add reg,-4` where retail emits `sub reg,4`; `y - 4`, `y -= 4` and the store-through
+// form all canonicalise to `add`.  That also blocks the two arm suffixes retail shares
+// (EAST is NORTHEAST minus its `sub edx,4`, WEST is NORTHWEST minus its).
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
@@ -504,36 +522,48 @@ void CBootyState::MoveLettersByDir() {
         } else {
             switch (static_cast<DirectionRingIndex>(i)) {
                 case DIRECTION_RING_NORTH:
-                    e->m_screenX = x;
-                    (*p)->m_screenY = y - 4;
+                    y -= 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_NORTHEAST:
-                    e->m_screenX = x + 4;
-                    (*p)->m_screenY = y - 4;
+                    y -= 4;
+                    x += 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_EAST:
-                    e->m_screenX = x + 4;
+                    x += 4;
+                    (*p)->m_screenX = x;
                     (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTHEAST:
-                    e->m_screenX = x + 4;
-                    (*p)->m_screenY = y + 4;
+                    y += 4;
+                    x += 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTH:
-                    e->m_screenX = x;
-                    (*p)->m_screenY = y + 4;
+                    y += 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTHWEST:
-                    e->m_screenX = x - 4;
-                    (*p)->m_screenY = y + 4;
+                    y += 4;
+                    x -= 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_WEST:
-                    e->m_screenX = x - 4;
+                    x -= 4;
+                    (*p)->m_screenX = x;
                     (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_NORTHWEST:
-                    e->m_screenX = x - 4;
-                    (*p)->m_screenY = y - 4;
+                    y -= 4;
+                    x -= 4;
+                    (*p)->m_screenX = x;
+                    (*p)->m_screenY = y;
                     break;
             }
         }
@@ -902,6 +932,8 @@ i32 CBootyState::OnPaint() {
 }
 
 // @early-stop
+// One scheduling slot in the m_initOnce dispatch; both shape bugs (the separate second
+// `if`, and `<` not `!=` on the letter-coords walk) are settled.
 RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     BootySeqPhase state = m_activation;
@@ -954,14 +986,13 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         }
                     }
                 }
-                // Retail's two relocations here are 0x1e8fec and 0x1e900c - the
-                // `g_bootyLetterCoords + 1` cursor and its end after four pairs -
-                // the same walk StepGlitterAnim does over the same table.
+                // The bound is a SIGNED int compare (`jl`), so the loop counts the table
+                // index, not the pointer: cl strength-reduces `&g_bootyLetterCoords[k]`
+                // into retail's cursor at +1 and its end at +9, keeping the signedness.
                 CWwdGameObjectA** ap = m_trailSprites;
-                for (const i32* tbl = g_bootyLetterCoords + 1; tbl != g_bootyLetterCoords + 9;
-                     tbl += 2) {
-                    (*ap)->m_screenX = tbl[-1];
-                    (*ap)->m_screenY = tbl[0];
+                for (i32 k = 1; k < 9; k += 2) {
+                    (*ap)->m_screenX = g_bootyLetterCoords[k - 1];
+                    (*ap)->m_screenY = g_bootyLetterCoords[k];
                     (*ap)->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     ap++;
                 }
@@ -979,8 +1010,9 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                 ShowLevelCompleteMessage();
                 return 1;
             }
-        } else if (rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
-                   && state == BOOTYSEQ_PERFECT_BONUS) {
+        }
+        if (m_initOnce != 0 && rec->m_allDone != 0 && rec->m_count < IDX(QUESTLEVEL_LAST)
+            && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((rec)->GroupAllScored()) {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
@@ -1035,6 +1067,10 @@ i32 CBootyState::OnKeyDown(i32, i32) {
 }
 
 // @early-stop
+// Structure is settled: 74/74 blocks, the same nine induction variables, and the same
+// referent multiset.  Retail spills `tint`, `best`, `bestIdx` and the tally cursor
+// where cl enregisters them - it burns ebx on the constant 1 and keeps `this` in ebp,
+// cl does the opposite - so retail's frame is 0x14 wider and the registers rotate.
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -1244,23 +1280,23 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
 
-        m_puddleSprites[i]->m_screenX = g_multiBootyGeom[5][i].m_x;
-        m_puddleSprites[i]->m_screenY = g_multiBootyGeom[5][i].m_y;
+        m_puddleSprites[i]->m_screenX = g_bootyPuddlePos[i].m_x;
+        m_puddleSprites[i]->m_screenY = g_bootyPuddlePos[i].m_y;
         m_puddleSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_gruntSprites[i]->m_screenX = g_multiBootyGeom[4][i].m_x;
-        m_gruntSprites[i]->m_screenY = g_multiBootyGeom[4][i].m_y;
+        m_gruntSprites[i]->m_screenX = g_bootyGruntPos[i].m_x;
+        m_gruntSprites[i]->m_screenY = g_bootyGruntPos[i].m_y;
         m_gruntSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_weaponIcons[i]->m_screenX = g_multiBootyGeom[3][i].m_x;
-        m_weaponIcons[i]->m_screenY = g_multiBootyGeom[3][i].m_y;
+        m_weaponIcons[i]->m_screenX = g_bootyWeaponPos[i].m_x;
+        m_weaponIcons[i]->m_screenY = g_bootyWeaponPos[i].m_y;
         m_weaponIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_toyIcons[i]->m_screenX = g_multiBootyGeom[2][i].m_x;
-        m_toyIcons[i]->m_screenY = g_multiBootyGeom[2][i].m_y;
+        m_toyIcons[i]->m_screenX = g_bootyToyPos[i].m_x;
+        m_toyIcons[i]->m_screenY = g_bootyToyPos[i].m_y;
         m_toyIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_powerupIcons[i]->m_screenX = g_multiBootyGeom[1][i].m_x;
-        m_powerupIcons[i]->m_screenY = g_multiBootyGeom[1][i].m_y;
+        m_powerupIcons[i]->m_screenX = g_bootyPowerupPos[i].m_x;
+        m_powerupIcons[i]->m_screenY = g_bootyPowerupPos[i].m_y;
         m_powerupIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_miscIcons[i]->m_screenX = g_multiBootyGeom[0][i].m_x;
-        m_miscIcons[i]->m_screenY = g_multiBootyGeom[0][i].m_y;
+        m_miscIcons[i]->m_screenX = g_bootyMiscPos[i].m_x;
+        m_miscIcons[i]->m_screenY = g_bootyMiscPos[i].m_y;
         m_miscIcons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
@@ -1305,8 +1341,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-        m_tabSprites[t]->m_screenX = g_multiBootyGeom[7][t].m_x;
-        m_tabSprites[t]->m_screenY = g_multiBootyGeom[7][t].m_y;
+        m_tabSprites[t]->m_screenX = g_bootyTabPos[t].m_x;
+        m_tabSprites[t]->m_screenY = g_bootyTabPos[t].m_y;
         {
 
             i32 frame = (pl->m_joined != 0) ? 1 : 2;
@@ -1401,8 +1437,8 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                     spread[2][1] = 0;
                     spread[2][2] = 2;
                     m_flagSprites[c]->m_screenX =
-                        (spread[held - 1][placed] << 4) + g_multiBootyGeom[6][w].m_x;
-                    m_flagSprites[c]->m_screenY = g_multiBootyGeom[6][w].m_y;
+                        (spread[held - 1][placed] << 4) + g_bootyFlagPos[w].m_x;
+                    m_flagSprites[c]->m_screenY = g_bootyFlagPos[w].m_y;
                     m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     placed++;
                 }
@@ -1453,6 +1489,7 @@ i32 CMultiBootyState::EnterState(GameStateId) {
 }
 
 // @early-stop
+// Same shape as CBootyState::LeaveState: cl CSEs `&found->m_sound`, retail reloads.
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId) {
     void* obj = 0;
@@ -1469,17 +1506,15 @@ i32 CMultiBootyState::LeaveState(GameStateId) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001ecf0, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
-    GruntzPlayer* p = g_gameReg->m_options;
     i32 i = 0;
     while (i < 4) {
+        GruntzPlayer* p = &g_gameReg->m_options[i];
         if (p->m_joined != 0 && p->m_clearedRound == 0) {
             return p->m_playerIndex;
         }
         i++;
-        p++;
     }
     return 0;
 }

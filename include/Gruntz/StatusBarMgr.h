@@ -370,33 +370,36 @@ SIZE(0x630);
 
 SIZE_UNKNOWN();
 
-// CONTESTED, unresolved against the CURRENT layout: an independent lane read retail
-// as emitting each zero-store pair at its DECLARATION position in the member-ctor
-// sequence - ahead of `??_H(m_groupSlots,0x18,3)` (0xc8046), ahead of
-// `??0CPtrArray(m_ptrPool)` (0xc80cb), and straight after it (0xc8106) - which would
-// make these mem-initializers rather than body statements. That reading was written
-// against the OLD four-i64 spelling of the 0x2a0/0x2b0 band and no longer compiles
-// now that the band is two 16-byte clock objects, so it has never been A/B'd against
-// this layout. Re-test it here before trusting either form; do not cite the address
-// evidence as settled.
-inline CStatusBarMgr::CStatusBarMgr() {
+// SETTLED (re-read against the current layout, in the ctor's only expansion,
+// CPlay::LoadGameAssetNamespaces 0xc7ec0). The zero-store quadruples ARE at their
+// members' declaration positions, interleaved into the neighbouring member-ctor call
+// setup, so they are mem-init-run stores and not body statements:
+//   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
+//            `??_H(m_groupSlots, 0x18, 3)`
+//   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_hlGrid,0x18,12)`
+//   0xc80cb  m_beltLast+Interval and m_fallLast+Delay, BEFORE `??0CPtrArray(m_ptrPool)`
+//   0xc8106  m_destructWarnLast+Delay, straight AFTER it
+// Body assignments land after every member ctor instead - measured, all six sat past
+// `??0CPtrArray` at base+0x218. Mem-initializers put them back where retail has them
+// at no cost (CMulti::LoadGameAssetNamespaces 91.88 -> 94.30).
+//
+// The store ORDER (+0/+8/+4/+0xc, i.e. lastLo/intervalLo/lastHi/intervalHi) says these
+// three pairs are SbiClockPair OBJECTS, like the four above them - but typing them is
+// still blocked, and now for a measured reason: it pushes CStatusBarMgr past cl's /Ob1
+// inline budget, so cl emits three `call ??0SbiClockPair` where retail expands all
+// three inline (CPlay::LoadGameAssetNamespaces 84.49 -> 79.86, re-measured against this
+// layout). The open question is therefore the BUDGET, not the shape.
+inline CStatusBarMgr::CStatusBarMgr()
+    : m_beltLast(0),
+      m_beltInterval(0),
+      m_fallLast(0),
+      m_fallDelay(0),
+      m_destructWarnLast(0),
+      m_destructWarnDelay(0) {
     // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
     // where retail's stores are - between the m_slots[5] and m_groupSlots[3] ctor loops
     // and between m_groupNotify and m_machineDisplay. Writing them again here only
     // produced the same stores in the wrong PLACE and the wrong ORDER.
-    //
-    // m_beltLast/m_fallLast/m_destructWarnLast are the SAME 16-byte clock pair, and
-    // retail zeroes them in the same +0/+8/+4/+0xc order - but typing all three as
-    // SbiClockPair too spends CStatusBarMgr's /Ob1 inline budget: cl then CALLS
-    // ??0CSbiHlRow for m_hlGrid[12] and ??0SbiClockPair for the pair at 0x560 where
-    // retail expands both (measured: multi 98.08 -> 97.69, play 112 -> 106 exact).
-    m_beltLast = 0;
-    m_beltInterval = 0;
-    m_fallLast = 0;
-    m_fallDelay = 0;
-    m_destructWarnLast = 0;
-    m_destructWarnDelay = 0;
-
     m_tabSprite0 = NULL;
     m_tabSprite1 = NULL;
     m_tabSprite2 = NULL;

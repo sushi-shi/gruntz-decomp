@@ -44,3 +44,24 @@ pointer form of the same rule — retail parks the record POINTER in ebx across
 `ActNameConstructGrownSlots` (`mov ebx,eax`) and only then loads `[ebx]`, so
 `char** rec0 = ...GetNameRecordRaw(key); ...; strcmp(*rec0, s_codeH)` is the source and
 `char* nm0 = *...` reads a buffer pointer the reconstruction can replace (94.80 -> 94.95).
+
+**The mirror reading is just as mechanical, and it decides array-element statements.**
+When retail RE-LOADS `arr[i]` after a call, the source did not carry a local across it -
+it spelled the array element again; when retail loads it ONCE for a run of consecutive
+stores, the source did carry a local. Both directions cost real points on the same file:
+
+```cpp
+// retail reloads slot[i] after ApplyLookupSprite (`mov eax,[ebx]` where the cursor
+// already advanced), so the last statement is the ARRAY ELEMENT, not the local `a`:
+a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", i + 2);
+slot[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;      // 86.23 -> 91.42
+
+// retail loads [esi] ONCE and stores three fields off it, so these three are a LOCAL:
+{ CWwdGameObjectA* o = m_sprintSprites[i];
+  o->m_drawActive = 1; o->m_drawFillCmd = SHADE_PAL_16; o->m_drawFillArg = h; }
+                                                    // 94.31 -> 98.40
+```
+
+`CBootyState::BuildWarpStoneGlitterAnimation` @0x19540 and
+`CBootyState::BuildGruntSprintAnimation` @0x19920. Read WHICH SIDE reloads before
+deciding; the two spellings differ by one `mov` per statement and by nothing else.

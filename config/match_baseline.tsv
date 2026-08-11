@@ -52,7 +52,7 @@ bitarraystream	2	1
 blowfish	6	5
 boomerang	5	3
 bootycheatstate	1	0
-bootystateactivate	37	23
+bootystateactivate	37	24
 bootywalkanim	2	0
 bracketvalue	1	1
 brickz	4	2
@@ -634,9 +634,9 @@ bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d4
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000
 bootystateactivate	??_GCBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d410	100.0000
 bootystateactivate	??_GCMultiBootyState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5d0de79e436	0x8d4e0	100.0000
-bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	69.2810	69.2810	3	2690dc74557a	0x1ce60	70.0514
-bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	94.3129	94.3129	2	f6cd33bccf20	0x19920	94.3129
-bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	86.2255	86.2255	8	7bee789e8064	0x19540	86.2255
+bootystateactivate	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	98.4743	98.4743	4	1e8afaee9d27	0x1ce60	98.4743
+bootystateactivate	?BuildGruntSprintAnimation@CBootyState@@QAEHXZ	98.4014	98.4014	3	dd75246be14e	0x19920	98.4014
+bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	91.4216	91.4216	9	7b9f1c97c67a	0x19540	91.4216
 bootystateactivate	?CheckPerfectBonus@CBootyState@@QAEHXZ	100.0000	100.0000	10	7d5b29b7b301	0x1c0f0	100.0000
 bootystateactivate	?DrawBattleStats@CMultiBootyState@@QAEXXZ	94.4493	94.4493	10	ce1f30fee1d5	0x1ed30	94.7604
 bootystateactivate	?EnterState@CBootyState@@UAEHW4GameStateId@@@Z	94.7973	94.7973	1	3df2e63713e1	0x18d30	94.7973
@@ -646,8 +646,8 @@ bootystateactivate	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	1	4b0c3bc
 bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	15	ec46121b8892	0x1f6f0	100.0000
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	b381d5aeb9ef	0x18e40	79.2955
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	79.2955	79.2955	2	640347c1c8a1	0x1e660	79.2955
-bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	81.3167	81.3115	6	9c3f80481da9	0x1d440	81.3167
-bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	76.2386	76.2386	3	b8fbcdafaf14	0x19b90	76.2386
+bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	83.1896	83.1896	7	22ea990f8334	0x1d440	83.1896
+bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	76.5227	76.5227	4	e454ce255a42	0x19b90	76.5227
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420	100.0000
 bootystateactivate	?OnKeyDown@CMultiBootyState@@UAEHHH@Z	100.0000	100.0000	1	c834612aa5cc	0x1f920	100.0000
 bootystateactivate	?OnLButtonDown@CBootyState@@UAEHHHH@Z	100.0000	100.0000	1	645c1d534fe5	0x1d3e0	100.0000
@@ -657,7 +657,7 @@ bootystateactivate	?OnPaint@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	1b06891
 bootystateactivate	?OnRButtonDown@CBootyState@@UAEHHHH@Z	100.0000	100.0000	1	b9baf1574455	0x1d400	100.0000
 bootystateactivate	?OnRButtonDown@CMultiBootyState@@UAEHHHH@Z	100.0000	100.0000	1	10f0031c43e4	0x1f900	100.0000
 bootystateactivate	?PostCommandIfKey@CMultiBootyState@@QAEHXZ	100.0000	100.0000	4	627ab8595227	0x1f8a0	100.0000
-bootystateactivate	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	73.6875	73.6875	3	254148781399	0x1ecf0	73.6875
+bootystateactivate	?QueryGruntSlots@CMultiBootyState@@QAEHXZ	100.0000	100.0000	4	3da52e38f6de	0x1ecf0	100.0000
 bootystateactivate	?ReleaseResources@CBootyState@@UAEXXZ	98.4375	98.4375	10	64afb671eaef	0x18c90	98.4375
 bootystateactivate	?ReleaseResources@CMultiBootyState@@UAEXXZ	100.0000	100.0000	10	e959f3b7f171	0x1e520	100.0000
 bootystateactivate	?Render@CBootyState@@UAEHXZ	98.5261	98.5261	4	511ead789e24	0x1c210	98.5283
@@ -666,7 +666,7 @@ bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	86638
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000
 bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9786	99.9786	2	2d17ef0ad520	0x1c9d0	100.0000
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	2	659ee76e9f5b	0x18f00	100.0000
-bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	90.0224	90.0149	3	4f59c36c76ec	0x196c0	90.0224
+bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	93.6418	93.6418	4	5afbba3ef19d	0x196c0	93.6418
 bootywalkanim	?BuildBootyWalkingGruntz@CBootyState@@QAEHXZ	92.7829	92.7829	8	3515c259b2f9	0x1b450	92.8158
 bootywalkanim	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.2388	95.2388	15	d289681b2cfa	0x1b690	95.2481
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	22	621add35a117	0xf9160	100.0000
@@ -3032,7 +3032,7 @@ multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	6	89e7a60e5975	0xb7fe0	100.0
 multi	?LeaveState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	84114b393e8a	0xb63f0	100.0000
 multi	?LoadByMode@CMulti@@UAEHHH@Z	100.0000	100.0000	6	630a2af380c0	0xb6580	100.0000
 multi	?LoadConfig@CMulti@@QAEHPAX@Z	100.0000	100.0000	5	315e27546751	0xbce80	100.0000
-multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	93.9426	93.9426	5	17d60d149055	0xb5460	93.9426
+multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	94.2991	94.2991	5	17d60d149055	0xb5460	94.2991
 multi	?LoadMenuSelectSprite@CMulti@@QAEHPAX@Z	100.0000	100.0000	16	1c8b0fbd22b4	0xba620	100.0000
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	bf84314f1a8c	0xb8020	100.0000
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	136388e6ff2a	0xb7b10	100.0000
@@ -3351,7 +3351,7 @@ play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	2	28eda2de534e	0xcb800	100.00
 play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	3	3048f73bbac8	0xc8b80	100.0000
 play	?LoadByMode@CPlay@@UAEHHH@Z	91.3356	91.3356	28	6291a717a5dc	0xca200	91.3356
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	01c678e648ee	0xd0120	99.0221
-play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4870	84.4870	4	ddc8ed9d4a71	0xc7ec0	84.4870
+play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	84.4870	84.3057	4	ddc8ed9d4a71	0xc7ec0	84.4870
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	047049be0181	0xcffe0	100.0000
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	95.8064	95.8064	1	ea06ab3ca6ec	0xd7440	95.8064
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	4	872fd37d6e7f	0xd8060	97.1069
@@ -3611,10 +3611,10 @@ sbi_rectonly	?AdvanceGauge@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	66462a58aa
 sbi_rectonly	?AdvanceTab@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	3	11f890141506	0x10b4f0	100.0000
 sbi_rectonly	?AnySlotActive@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	a2374f91cba2	0x105710	100.0000
 sbi_rectonly	?ArmSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	2	0a34a099b032	0x105560	100.0000
-sbi_rectonly	?BuildGameMenu@CStatusBarMgr@@QAEHXZ	86.0775	86.0775	2	ca906d14824c	0x101580	86.0898
+sbi_rectonly	?BuildGameMenu@CStatusBarMgr@@QAEHXZ	87.5106	87.5106	3	8c81425a1166	0x101580	87.5106
 sbi_rectonly	?BuildGameTabPauseButton@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	fe1a473f460c	0x102200	100.0000
 sbi_rectonly	?BuildGameTabResumeButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	5	98b600e129f1	0x102180	100.0000
-sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	95.9831	95.9831	19	bf21fa18b3cc	0xffde0	95.9831
+sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	99.7246	99.7246	20	e311da4ae486	0xffde0	99.7246
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	3021ffd8aa4d	0x1069c0	100.0000
 sbi_rectonly	?ClearStat@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	8	2613a353614c	0x104f90	100.0000
 sbi_rectonly	?ClearTabGroup@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	8	ca2fa348d131	0x100b00	100.0000
@@ -3643,13 +3643,13 @@ sbi_rectonly	?HlClickGroup2@CStatusBarMgr@@QAEHW4StatusBarHighlightRow@@@Z	100.0
 sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAXHHW4WarpStoneFragment@@@Z	91.3286	91.3286	3	55013df51458	0x109bd0	91.3286
 sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	42f4020f7719	0x106900	100.0000
 sbi_rectonly	?InsertPtr@CStatusBarMgr@@QAEHHH@Z	83.2075	83.2075	7	13b70d6861ec	0x108410	83.2075
-sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	93.6625	93.6625	8	749881a93f0f	0xfdc00	93.6625
-sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	93.3177	93.3177	16	5b5eb50ab24d	0x106bb0	93.3177
+sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	99.1300	99.1300	9	cd4599ace49a	0xfdc00	99.1300
+sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	93.3218	93.3218	17	afc687372826	0x106bb0	93.3218
 sbi_rectonly	?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z	99.8165	99.8165	11	e34004733cb3	0xffb20	99.8165
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	89.1309	89.1309	9	5601e2155998	0x1055b0	89.1309
 sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.6140	11	dc6326cea168	0xfe6b0	99.8246
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	98.0579	98.0579	10	3e22c19cc22e	0x107ae0	98.0579
-sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	88.4034	88.4034	15	52caf61fbec1	0x105e40	88.4034
+sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	98.9682	98.9682	16	342a4524cc77	0x105e40	98.9682
 sbi_rectonly	?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	9	a3b2c3ac727a	0x104e60	100.0000
 sbi_rectonly	?NotifyAllSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	4	c471095bb5f2	0x106a00	100.0000
 sbi_rectonly	?OnPointerMove@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	c309f776922b	0x100530	100.0000
@@ -3688,10 +3688,10 @@ sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	87.8102	87.8102	1
 sbi_rectonly	?UpdateDestructButtonStatusBar@CStatusBarMgr@@QAEXXZ	94.6667	94.6667	7	02b45079bcf4	0x10b320	94.6667
 sbi_rectonly	?UpdateFallingItemStatusBar@CStatusBarMgr@@QAEHHHH@Z	86.0182	86.0182	7	3492590b5552	0x107590	86.0182
 sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	13	fea1a73cd78f	0x105310	99.7895
-sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	88.6993	88.6993	12	02f8c396a027	0x105990	88.6993
+sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	96.2609	96.2609	13	b13b6911a611	0x105990	96.2609
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	e603d89d88d1	0x106660	100.0000
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	3	3c45136c5388	0x107a10	100.0000
-sbi_rectonly	?UpdateStatusBarTabHighlight@CStatusBarMgr@@QAEHHHH@Z	93.4222	93.4222	16	bd231ad7f7bd	0xfe910	93.4527
+sbi_rectonly	?UpdateStatusBarTabHighlight@CStatusBarMgr@@QAEHHHH@Z	95.0488	95.0488	17	a288553b24c4	0xfe910	95.0488
 sbi_rectonlybase	?Refresh@CSBI_RectOnly@@UAEHH@Z	100.0000	100.0000	1	09a4412d68bc	0xe8780	100.0000
 sbi_rectonlybase	?Reset@CSBI_RectOnly@@UAEXXZ	100.0000	100.0000	1	e5dedd6092ab	0xe8760	100.0000
 sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDH@Z	100.0000	100.0000	2	a3fbf9ace1cd	0xe86e0	100.0000
