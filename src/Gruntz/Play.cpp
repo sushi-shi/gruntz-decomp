@@ -3446,6 +3446,7 @@ i32 CPlay::DrawWorldPresent() {
     return 1;
 }
 
+// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000cf0a0, 0x567)
@@ -3464,13 +3465,13 @@ void CPlay::DrawDebugStatsFull() {
 
     CDDrawChildGroup* group = m_world->m_childGroup;
     if (group->m_flags & 0x10000) {
-        strcat(buf, " rcMove ");
+        strcat(buf, " rcHit ");
     }
     if (group->m_flags & 0x20000) {
         strcat(buf, " rcAttack ");
     }
     if (group->m_flags & 0x40000) {
-        strcat(buf, " rcHit ");
+        strcat(buf, " rcMove ");
     }
     if (group->m_flags & 0x100000) {
         strcat(buf, " ptOrg ");
@@ -3521,7 +3522,7 @@ void CPlay::DrawDebugStatsFull() {
     SetBkColor(hdc, 0);
     PostSetup(hdc);
 
-    // Whole-struct copy: retail still writes `lr.top` to its own slot (0xcf3d3
+    // Whole-struct copy: retail still writes `lr.top` to its own slot (0xcf4bd
     // `mov [esp+0x30],edx`) even though nothing reads it, which field-by-field
     // assignment does not survive - cl dead-stores the unread field.
     {

@@ -3312,7 +3312,7 @@ play	?DeactivateDistantObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	2
 play	?DrawCursorSaveUnder@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9632	99.9632	5	5825fb7ec91d	0xd0b30	99.9877
 play	?DrawCustomLevelBanner@CPlay@@QAEXXZ	100.0000	100.0000	3	12e57d0274aa	0xcfc90	100.0000
 play	?DrawDebugStats@CPlay@@QAEXXZ	100.0000	100.0000	1	eeac46722c86	0xcf770	100.0000
-play	?DrawDebugStatsFull@CPlay@@QAEXXZ	99.9979	99.9979	5	d8bf181243bc	0xcf0a0	99.9979
+play	?DrawDebugStatsFull@CPlay@@QAEXXZ	99.9979	99.9979	6	817c80159eb8	0xcf0a0	99.9979
 play	?DrawLevelInfoText@CPlay@@QAEHXZ	100.0000	100.0000	7	b410455115c9	0xd95f0	100.0000
 play	?DrawMessageFrame@CPlay@@QAEXHH@Z	95.6452	95.6452	2	f67afa97059c	0xd1650	95.6452
 play	?DrawStateMessage@CPlay@@UAEHXZ	95.1807	95.1807	1	8d6080505cd9	0xcfef0	95.1807

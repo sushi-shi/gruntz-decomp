@@ -49,12 +49,24 @@ Measured on `play`, three functions, all `LevelCoordRect`/`RECT` bounds tests:
 
 | function | before | after |
 |---|---|---|
-| `CPlay::DrawDebugStatsFull` 0xcf0a0 | 94.72 | **100.00 EXACT** |
+| `CPlay::DrawDebugStatsFull` 0xcf0a0 | 94.72 | **99.998** |
 | `CPlay::OnLButtonDblClk` 0xce660 | 95.70 | 98.65 |
 | `CPlay::OnKeyDown` 0xcbcc0 | 90.42 | **85.95 - REJECTED** |
 
 DrawDebugStatsFull needed the copy *and* a block scope around the pair, which let cl
-overlay the 16 bytes and took `sub esp,0x2a8 -> 0x298`, retail's exactly.
+overlay the 16 bytes and took `sub esp,0x2a8 -> 0x298`, retail's frame size. It did
+not become byte-exact: the historical report rounded 99.998% to 100.00 and the old
+claim mistook that display value for exactness.
+
+The remaining raw difference is one dead spill destination. Retail writes the unused
+`lr.top` to `[esp+0x30]`, reusing `scratch[8]`; the reconstruction writes it to
+`[esp+0x20]`, the slot `dr.top` immediately overwrites. Calls, 41-block CFG, 21-branch
+sequence, 479-instruction count, frame size, and the non-EH ordered relocation stream
+all agree. Ten reviewed RECT declaration/copy/scope shapes, all eight meaningful
+orders/groupings of the three character arrays, and 57 successfully compiled
+parser-visible TU-state probes did not move the residue. This is a bounded cl 5
+stack-slot pool choice, not evidence against the whole-struct source shape. Do not
+grind it by inventing a live use of the dead field.
 
 ## When it does NOT - check the instruction COUNT first
 

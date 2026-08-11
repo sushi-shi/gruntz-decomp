@@ -53,7 +53,7 @@ from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, data_manifest, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import residual_queue, status
-from gruntz.permute import permute_sweep
+from gruntz.permute import permute_sweep, tu_state_noise
 from gruntz.match import verify_unique_names as vun
 
 
@@ -67,6 +67,84 @@ class AggregateCopyAuditTests(unittest.TestCase):
         self.assertIsNone(aggregate_copies.REP_MOVS.match("movsb"))
         self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsb"))
         self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsl"))
+
+
+class TuStateNoiseControls(unittest.TestCase):
+    @staticmethod
+    def _reloc_metrics(stream):
+        return {"reloc_stream_complete": True, "reloc_stream": stream}
+
+    def test_exact_closure_folds_only_producer_specific_eh_relocations(self):
+        candidate = self._reloc_metrics([
+            "00000002:0006:__except_list:00000000",
+            "00000009:0006:$L123:00000000",
+            "00000020:0014:?Call@@YAXXZ:00000000",
+        ])
+        retail = self._reloc_metrics([
+            "00000009:0006:__ehreg$?Fn@@YAXXZ:00000000",
+            "00000020:0014:?Call@@YAXXZ:00000000",
+        ])
+        self.assertEqual(
+            tu_state_noise.exact_closure_rejections(100.0, 32, 32, candidate, retail),
+            [],
+        )
+
+    def test_exact_closure_rejects_a_real_referent_difference(self):
+        candidate = self._reloc_metrics(["00000020:0014:?Wrong@@YAXXZ:00000000"])
+        retail = self._reloc_metrics(["00000020:0014:?Right@@YAXXZ:00000000"])
+        self.assertIn(
+            "ordered relocation offsets/types/identities/addends differ from retail",
+            tu_state_noise.exact_closure_rejections(100.0, 32, 32, candidate, retail),
+        )
+
+    def test_current_source_hash_uses_supported_fingerprinter_api(self):
+        fingerprint = mock.Mock(return_value="range-hash")
+        with mock.patch.object(
+            status,
+            "fingerprinter",
+            return_value=(fingerprint, mock.Mock(), set()),
+        ):
+            self.assertEqual(tu_state_noise.current_source_hash("u", "?Fn@@YAXXZ"), "range-hash")
+        fingerprint.assert_called_once_with("u", "?Fn@@YAXXZ")
+
+    def test_record_exact_updates_best_and_historical_max_in_current_schema(self):
+        original = (
+            "# baseline\n"
+            "u\t?Fn@@YAXXZ\t99.5000\t99.2500\t7\trange-hash\t0x1000\t99.7500\n"
+            "u\t?Other@@YAXXZ\t80.0000\t79.0000\t3\tother-hash\t0x1100\t81.0000\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "match_baseline.tsv"
+            path.write_text(original)
+            result = tu_state_noise.record_target_max(
+                path, "u", "?Fn@@YAXXZ", "range-hash", 100.0
+            )
+            lines = path.read_text().splitlines()
+        self.assertTrue(result["updated"])
+        self.assertEqual(
+            lines[1],
+            "u\t?Fn@@YAXXZ\t100.0000\t99.2500\t7\trange-hash\t0x1000\t100.0000",
+        )
+        self.assertEqual(lines[2], original.splitlines()[2])
+
+    def test_record_exact_rejects_stale_source_hash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "match_baseline.tsv"
+            path.write_text(
+                "u\t?Fn@@YAXXZ\t99.5000\t99.2500\t7\told-hash\t0x1000\t99.7500\n"
+            )
+            with self.assertRaisesRegex(tu_state_noise.BaselineUpdateError, "source hash mismatch"):
+                tu_state_noise.record_target_max(path, "u", "?Fn@@YAXXZ", "new-hash", 100.0)
+
+    def test_curated_includes_are_gruntz_or_toolchain_headers(self):
+        self.assertFalse(any("BASE/" in header for header in tu_state_noise.CURATED_INCLUDES))
+
+    def test_include_guard_searches_the_active_pinned_toolchain(self):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ, {"MSVC_DIR": str(Path(tmp) / "msvc")}
+        ):
+            roots = tu_state_noise.include_search_roots(Path(tmp) / "repo")
+        self.assertIn(Path(tmp) / "msvc" / "include", roots)
 
 
 class DataManifestAlignmentControls(unittest.TestCase):
