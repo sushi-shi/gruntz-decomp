@@ -579,7 +579,7 @@ def _anchor_runs(a, b, k):
 
 # --------------------------------------------------------------- masked slots
 def slots_of(side, lo, buf, code):
-    """[(offset, kind, token, resolved)] - the address operands in one region.
+    """[(offset, kind, token, resolved, target_width)] - address operands.
 
     `token` is a 4-byte stand-in that depends only on WHAT the operand names, so
     the same referent at two different addresses tokenises identically and the
@@ -594,7 +594,8 @@ def slots_of(side, lo, buf, code):
     while i < n - 3:
         if (lo + i) in side.reloc:
             v = struct.unpack_from("<I", buf, i)[0]
-            out.append((i, "reloc") + _token(side, v, zlib))
+            width = _target_window_width(buf, i, code)
+            out.append((i, "reloc") + _token(side, v, zlib, width) + (width,))
             i += 4
             continue
         if code and i + 5 <= n and buf[i] in (0xE8, 0xE9):
@@ -604,17 +605,47 @@ def slots_of(side, lo, buf, code):
             # intra-body branch keeps its displacement, which is already
             # position-independent and compares on its own.
             if kind == "sym" and "+" not in nm:
-                out.append((i + 1, "rel32") + _token(side, t + side.base, zlib))
+                out.append((i + 1, "rel32")
+                           + _token(side, t + side.base, zlib, 8) + (8,))
                 i += 5
                 continue
         i += 1
     return out
 
 
+def _target_window_width(buf, off, code):
+    """Bytes of an unnamed target that the containing instruction can read.
+
+    The raw-content fallback is identity evidence only for bytes the operand
+    actually consumes.  In particular, `fmul DWORD PTR ds:addr` reads one
+    four-byte float: fingerprinting eight bytes drags in the next pooled
+    literal and manufactures a wrong referent when pool order differs.
+
+    This decoder is intentionally narrow.  Unrecognised instructions retain
+    the conservative historical eight-byte window; the direct x87 real-memory
+    forms below have an unambiguous width in the opcode itself.
+    """
+    if not code or off < 2:
+        return 8
+    opcode, modrm = buf[off - 2], buf[off - 1]
+    if modrm & 0xC7 != 0x05:  # not a direct disp32 memory operand
+        return 8
+    reg = (modrm >> 3) & 7
+    if opcode == 0xD8:       # m32real arithmetic
+        return 4
+    if opcode == 0xDC:       # m64real arithmetic
+        return 8
+    if opcode == 0xD9 and reg in (0, 2, 3):  # fld/fst/fstp m32real
+        return 4
+    if opcode == 0xDD and reg in (0, 2, 3):  # fld/fst/fstp m64real
+        return 8
+    return 8
+
+
 UNDECIDABLE = "<?>"
 
 
-def resolve(side, va):
+def resolve(side, va, weak_n=8):
     """(descriptor, how) - WHAT this operand names, computed from ONE image.
 
     The precedence exists because the two images do not have the same symbol
@@ -637,9 +668,10 @@ def resolve(side, va):
                      relocation table, not the length, is what guards this.
       4. a paired symbol - the name.  ONLY a name both images know can decide a
                      mismatch; one-sided names prove nothing.
-      5. other data - the 8 bytes at the target (a pool constant), marked weak.
-                     UNLESS those bytes are themselves RELOCATED: a window over
-                     stored addresses is a placement fact and must differ.
+      5. other data - the instruction's proven read width at the target (a pool
+                     constant), or 8 bytes when unknown; marked weak. UNLESS
+                     those bytes are themselves RELOCATED: a window over stored
+                     addresses is a placement fact and must differ.
       6. no file bytes (.bss) -> UNDECIDABLE.
 
     UNDECIDABLE is a real answer.  It is counted, never silently folded into
@@ -657,7 +689,7 @@ def resolve(side, va):
     # carries no base relocation, and `36 55 2c 00` reads as the string "6U,".
     if named and nm.startswith("__imp_"):
         return (nm, "symbol")
-    c = side.content(va)
+    c = side.content(va, n=weak_n)
     if c is not None and c[0] == "str" and not side.relocated_window(va, len(c[1]), 0):
         return (_text(c[1]), "string")
     if named:
@@ -791,8 +823,8 @@ def _seq_divergences(rseq, cseq, sm=None):
     return out
 
 
-def _token(side, va, zlib):
-    desc, how = resolve(side, va)
+def _token(side, va, zlib, weak_n):
+    desc, how = resolve(side, va, weak_n)
     return (_hash(desc, zlib), how)
 
 
@@ -841,7 +873,7 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
 
     slot_bytes = 0
     unmatched_here = 0
-    for off, kind, _tok, res in rsl:
+    for off, kind, _tok, res, _width in rsl:
         if off + 4 > rn:
             continue
         slot_bytes += 4
@@ -878,7 +910,7 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
 
     # --- the byte verdict, before anything can return --------------------
     plain_matched = matched - sum(
-        4 for off, _k, _t, _r in rsl
+        4 for off, _k, _t, _r, _w in rsl
         if off + 4 <= rn and all(cover[off + t] for t in range(4)))
     plain_diff = rn - slot_bytes - plain_matched
     cmp_.compared += rn
@@ -954,20 +986,20 @@ def region_diff(R, C, rspan, cspan, cmp_, code, name="", clamp=False):
 
 def _desc(side, lo, buf, slot):
     """The printable referent of one address operand - the sequence test's unit."""
-    off, kind, _tok, _res = slot
+    off, kind, _tok, _res, width = slot
     if off + 4 > len(buf):
         return UNDECIDABLE
     if kind == "reloc":
         va = struct.unpack_from("<I", buf, off)[0]
     else:
         va = lo + off + 4 + struct.unpack_from("<i", buf, off)[0] + side.base
-    return resolve(side, va)[0]
+    return resolve(side, va, width)[0]
 
 
 def _apply(buf, slots):
     out = bytearray(buf)
     n = len(out)
-    for off, _kind, tok, _res in slots:
+    for off, _kind, tok, _res, _width in slots:
         if off + 4 <= n:
             out[off:off + 4] = tok
     return bytes(out)
@@ -1926,6 +1958,16 @@ def selftest():
         n = sum(1 for t, _ in bad if t == want)
         check(label, n == 0, "%d target(s) still mis-resolved" % n)
 
+    check("an x87 DWORD operand fingerprints only the four bytes it reads",
+          _target_window_width(b"\xd8\x0d\x00\x00\x00\x00", 2, True) == 4,
+          "DWORD width not recovered")
+    check("an x87 QWORD operand retains an eight-byte fingerprint",
+          _target_window_width(b"\xdc\x0d\x00\x00\x00\x00", 2, True) == 8,
+          "QWORD width narrowed")
+    check("unknown operand forms retain the conservative eight-byte window",
+          _target_window_width(b"\x8b\x05\x00\x00\x00\x00", 2, True) == 8,
+          "unknown form guessed")
+
     # --- 3c. an interior self-reference never reaches the worklist ---------
     # A switch jump table names its OWN function at a codegen-dependent offset,
     # and retail's carve routinely ends before its table while ours does not.
@@ -2052,7 +2094,7 @@ def _safe_offset(R, C, pair):
     rsl = slots_of(R, ra, R.pe.data[ro:ro + n], True)
     csl = slots_of(C, ca, C.pe.data[co:co + n], True)
     busy = set()
-    for off, _k, _t, _r in rsl + csl:
+    for off, _k, _t, _r, _w in rsl + csl:
         busy.update(range(off - 1, off + 5))
     for i in range(16, n - 16):
         if all((i + t) not in busy for t in range(7)):
@@ -2075,7 +2117,7 @@ def _pick_reloc_pair(R, C):
         if c.differ or c.slot_bad or c.slot_unres or c.ref_pairs_bad:
             continue
         n = min(rspan[1] - rspan[0], cspan[1] - cspan[0])
-        for off, kind, _t, res in slots_of(C, cspan[0],
+        for off, kind, _t, res, _width in slots_of(C, cspan[0],
                                            C.pe.data[C.pe.off(cspan[0]):
                                                      C.pe.off(cspan[0]) + n], True):
             if kind != "reloc" or res != "symbol":
@@ -2100,12 +2142,12 @@ def _pick_swap_site(R, C):
         n = min(rspan[1] - rspan[0], cspan[1] - cspan[0])
         co = C.pe.off(cspan[0])
         sites = []
-        for off, kind, _t, res in slots_of(C, cspan[0],
+        for off, kind, _t, res, width in slots_of(C, cspan[0],
                                            C.pe.data[co:co + n], True):
             if kind != "reloc" or res != "symbol":
                 continue
             va = struct.unpack_from("<I", C.pe.data, co + off)[0]
-            d = resolve(C, va)[0]
+            d = resolve(C, va, width)[0]
             if d.startswith(nm + "+"):
                 continue
             sites.append((off, d))

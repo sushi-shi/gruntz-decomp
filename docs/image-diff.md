@@ -69,7 +69,9 @@ symbol coverage, and an asymmetry must never be reported as a difference:
    `??_C@_0M@NCPH@LogicAttack?$AA@`; our `.map` does not publish them at all.
    Comparing the text is both symmetric and stronger than comparing either name.
 4. **a paired data symbol** → the name.
-5. **other data** → the 8 bytes at the target (a pool constant), marked *weak*.
+5. **other data** → the bytes the containing instruction reads when that width is
+   unambiguous (currently direct x87 32/64-bit real operands), otherwise the
+   conservative 8 bytes at the target; marked *weak*.
 6. **no file bytes** (`.bss`) → **UNDECIDABLE**.
 
 An incremental-link thunk is followed, not compared: retail reaches a static-library
@@ -219,7 +221,7 @@ very different amounts to act on:
 |---|---|---|
 | `symbol` | both images name the referent and the names differ | an identity defect: prove the right callee/ctor/global by xref before changing anything |
 | `string literal` | the TEXT at the two targets differs | decisive, and usually a one-line fix — but read retail's bytes, never guess (`"Num Runs"` vs `"Num_Runs"` is exactly what a plausible guess gets backwards) |
-| `weak / content only` | at least one side is only an 8-byte window over an unnamed target | real, but **not proof**; do not spend symbol-class effort on it |
+| `weak / content only` | at least one side is only a width-bounded byte window over an unnamed target | real, but **not proof**; do not spend symbol-class effort on it |
 
 A sample, each a real defect that scores 100% in a relocation-masked object diff:
 
@@ -303,9 +305,19 @@ referent cannot hide a missing call. On the same candidate snapshot this changed
 the wrong list, five were correctly retained as ordering-only, and the combined
 worklist lost 33 false positives.
 
+A ninth false-positive class was a **pool window wider than the load**.
+`UpdateMgrScroll` has two `fmul DWORD PTR` operands that both reach the retail
+`-0.05f` value. The old eight-byte raw fallback also compared the unrelated next
+pooled literal (`00000000` vs `9a999999`), manufacturing two divergences in one
+region. The resolver now recovers the direct x87 real-memory width from the opcode:
+four bytes for m32real and eight for m64real, retaining eight for unknown forms.
+The negative controls prove all three cases. On the ordinary linked candidate this
+removes **1 false-positive region**; the authoritative retail-order/real-archive
+candidate already placed the neighbouring constants alike, so its ratchet stays flat.
+
 With the corrected audit, derived object order, and reconstructed static archives, the
-current ratcheted worklist is **180 wrong-referent regions** (156 symbol-proven, 24
-weak/content-only) plus **44 ordering-only regions**.
+current authoritative worklist is **77 wrong-referent regions** (67 symbol-proven, 10
+weak/content-only) plus **33 ordering-only regions**.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
