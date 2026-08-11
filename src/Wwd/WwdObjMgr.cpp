@@ -593,8 +593,6 @@ DATA(0x0021ab2c)
 static char s_dbgVid[] = "VID";
 DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
-DATA(0x0020bdc4)
-static char s_dbgNoCaps[] = "???";
 
 // @early-stop
 RVA(0x0015a210, 0x432)
@@ -762,7 +760,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                         if (sys != 0) {
                             drawHost->DrawLabel(&rc, s_dbgSys);
                         } else {
-                            drawHost->DrawLabel(&rc, s_dbgNoCaps);
+                            drawHost->DrawLabel(&rc, "???");
                         }
                     }
                 }

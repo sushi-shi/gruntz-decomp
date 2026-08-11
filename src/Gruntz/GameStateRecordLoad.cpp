@@ -19,9 +19,6 @@
 
 #include <string.h>
 
-static const char s_Powerupz[] = "Powerupz";
-static const char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
-
 #define SERIALREF(field)                                                                           \
     do {                                                                                           \
         ++g_serialCounter;                                                                         \
@@ -281,7 +278,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdGameObjectA* cb2 = m_object;
-        i32 v = g_buteMgr.GetIntDef(s_Powerupz, s_GruntGhostTransparencyOn, 0xe0);
+        i32 v = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
         cb2->m_drawActive = 1;
         cb2->m_drawFillCmd = SHADE_PAL_ALPHA_16;
         cb2->m_fillFraction = v;

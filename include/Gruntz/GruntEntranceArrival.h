@@ -3,8 +3,6 @@
 
 #include <rva.h>
 
-extern char s_codeS[];
-
 static void GruntScratchTeardown();
 
 #endif // GRUNTZ_GRUNTZ_GRUNTENTRANCEARRIVAL_H

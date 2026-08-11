@@ -22,8 +22,6 @@
 #include <stddef.h>
 
 static const char s_gameBadSelect[] = "GAME_BADSELECT";
-static const char s_grunt[] = "Grunt";
-static const char s_playerDefenderRadius[] = "PlayerDefenderRadius";
 
 // @early-stop
 RVA(0x000d1b60, 0xc90)
@@ -133,7 +131,7 @@ i32 CPlay::ExecCommand(
                             break;
                         default:
                             g->m_defenderRadius =
-                                g_buteMgr.GetIntDef(s_grunt, s_playerDefenderRadius, 3) + 1;
+                                g_buteMgr.GetIntDef("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
                     g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalCell.m_x = -1;

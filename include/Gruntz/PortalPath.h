@@ -3,6 +3,4 @@
 
 #include <Ints.h>
 
-extern char g_nameFmt[];
-
 #endif // GRUNTZ_GRUNTZ_PORTALPATH_H

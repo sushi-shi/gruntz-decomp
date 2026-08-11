@@ -65,10 +65,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x0020d2e8)
-char s_codeF[] = "F";
-DATA(0x0020d7fc)
-char s_codeH[] = "H";
 DATA(0x0020dc64)
 static char s_RollingBallzTime[] = "RollingBallzTime";
 DATA(0x0020dc78)
@@ -168,9 +164,6 @@ GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST)
 
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
-DATA(0x0020df84)
-static char s_CombatTimeout[] = "CombatTimeout";
 
 #define LK(key)                                                                                    \
     do {                                                                                           \
@@ -1118,7 +1111,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // sibling sites below already do.
     char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool neH = (strcmp(*rec0, s_codeH) != 0);
+    bool neH = (strcmp(*rec0, DATA_COMPGEN(0x0020d7fc, animKeyH, "H")) != 0);
     if (neH) {
         i32 keyF = m_objAux->m_actKey;
         g_typeColl.m_grown = 0;
@@ -1134,7 +1127,8 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             recF = g_typeColl.Elem(keyF);
         }
         ActNameConstructGrownSlots();
-        bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), s_codeF) != 0);
+        bool neF =
+            (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, animKeyF, "F")) != 0);
         if (neF) {
             i32 keyO = m_objAux->m_actKey;
             g_typeColl.m_grown = 0;
@@ -1704,7 +1698,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     CreateHealthSprite();
-    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
+    m_combatTimeoutLo = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
     m_combatTimeoutHi = 0;
     m_combatClockLo = static_cast<i32>(g_frameTime);
     m_combatClockHi = 0;
@@ -1716,7 +1710,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
     if (eq) {
         return 0;
     }
@@ -1745,7 +1739,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             WWDDRAW_NO_ANIMATION
         );
     } else {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeN) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
         if (eq) {
             i32 lastX = m_lastTilePx.m_x;
             i32 lastY = m_lastTilePx.m_y;
@@ -1761,7 +1755,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             SnapToLastTile(1);
             if (redo) {
                 m_prevAnimSetNode = m_objAux->m_actKey;
-                m_objAux->m_actKey = ActFindId(s_codeD);
+                m_objAux->m_actKey = ActFindId("D");
                 SetupTubeAnim(m_coordToggle);
             }
         }
@@ -1774,7 +1768,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     m_poweredUp = 1;
     nb->CreateHealthSprite();
     nb->m_combatTimeoutLo =
-        static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
+        static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
     nb->m_combatTimeoutHi = 0;
     nb->m_combatClockLo = static_cast<i32>(g_frameTime);
     nb->m_combatClockHi = 0;
@@ -1804,7 +1798,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
 
         CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        bool eq = (strcmp(*rec, s_codeF) == 0);
+        bool eq = (strcmp(*rec, "F") == 0);
         if (!eq) {
             if (m_stamina >= STAMINA_FULL) {
 
@@ -1814,7 +1808,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
                 CreateHealthSprite();
 
                 m_combatTimeoutLo =
-                    static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", s_CombatTimeout, 0x1388));
+                    static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
                 m_combatTimeoutHi = 0;
                 m_combatClockLo = static_cast<i32>(g_frameTime);
                 m_combatClockHi = 0;
@@ -1924,20 +1918,20 @@ void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
     REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
     REGISTER_KEY_644AF0("C", &CGrunt::LoadGruntDecayConfig);
-    REGISTER_KEY_644AF0(s_codeD, &CGrunt::StepArrivalReroll);
+    REGISTER_KEY_644AF0("D", &CGrunt::StepArrivalReroll);
     REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
-    REGISTER_KEY_644AF0(s_codeF, &CGrunt::StepAttackAction);
+    REGISTER_KEY_644AF0("F", &CGrunt::StepAttackAction);
     REGISTER_KEY_644AF0("G", &CGrunt::StepEntranceRelatchA);
-    REGISTER_KEY_644AF0(s_codeH, &CGrunt::StepArrivalCommitA);
+    REGISTER_KEY_644AF0("H", &CGrunt::StepArrivalCommitA);
     REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);
     REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
     REGISTER_KEY_644AF0("K", &CGrunt::LoadEntranceConfig);
     REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_KEY_644AF0(s_codeM, &CGrunt::RearmEntranceDrop);
-    REGISTER_KEY_644AF0(s_codeN, &CGrunt::StepEntranceRelatchB);
+    REGISTER_KEY_644AF0("M", &CGrunt::RearmEntranceDrop);
+    REGISTER_KEY_644AF0("N", &CGrunt::StepEntranceRelatchB);
     REGISTER_KEY_644AF0("O", &CGrunt::StepArrivalCommitB);
     REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_KEY_644AF0(s_codeQ, &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_KEY_644AF0("Q", &CGrunt::LoadFreezeSpellAssets);
     REGISTER_KEY_644AF0_TYPED("R", &CGrunt::LoadGruntDecayConfig2);
     REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
 }

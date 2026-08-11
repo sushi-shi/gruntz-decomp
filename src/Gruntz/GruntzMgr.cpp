@@ -118,9 +118,6 @@ static char s_fecLoName[] = "GruntzLo.FEC";
 DATA(0x00211024)
 static char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
-DATA(0x0020c5b8)
-char g_nameFmt[] = "%s";
-
 DATA(0x002452d8)
 char g_msgScratch[256];
 

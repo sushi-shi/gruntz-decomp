@@ -25,16 +25,12 @@
 #include <new>
 #include <string.h>
 
-DATA(0x0020cc90)
-static char s_dAnimKeyC[] = "C";
 DATA(0x0020dfe4)
 static char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
 DATA(0x0020dffc)
 static char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
 DATA(0x0020e018)
 static char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
-DATA(0x0020e034)
-static char s_DEATHZ_MELT[] = "GRUNTZ_DEATHZ_MELT";
 DATA(0x0020e04c)
 static char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
 DATA(0x0020e06c)
@@ -47,8 +43,6 @@ DATA(0x0020e0bc)
 static char s_DEATHZ_QUICKFALL[] = "GRUNTZ_DEATHZ_QUICKFALL";
 DATA(0x0020e0d8)
 static char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
-DATA(0x0020e0f0)
-static char s_DEATHZ_FREEZE[] = "GRUNTZ_DEATHZ_FREEZE";
 DATA(0x0020e10c)
 static char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
 DATA(0x0020e128)
@@ -57,7 +51,6 @@ DATA(0x0020e140)
 static char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
 DATA(0x0020e158)
 static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
-static const char s_dExitKeyB[] = "B";
 DATA(0x0020bcf4)
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
@@ -134,7 +127,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_dAnimKeyC);
+    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020cc90, animKeyC, "C"));
 
     m_wwdObject->m_flags |= 1;
     {
@@ -199,7 +192,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             );
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FREEZE, DEATH_FRAME());
+            m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
 
@@ -320,11 +313,14 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         case DEATH_MELT: {
             SnapToLastTile(1);
             void* out_ob = 0;
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(s_DEATHZ_MELT, out_ob);
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+                "GRUNTZ_DEATHZ_MELT",
+                out_ob
+            );
             m_poseDeath = static_cast<CAniElement*>(out_ob);
             m_value = m_wwdObject->m_animCursor.m_animation;
             m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_MELT, DEATH_FRAME());
+            m_wwdObject->ApplyLookupSprite("GRUNTZ_DEATHZ_MELT", DEATH_FRAME());
             DEATH_CUE(0x359);
             goto finalize;
         }
@@ -364,7 +360,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             m_wwdObject->m_animCursor.Setup(m_poseDeath);
             m_wwdObject->ApplyLookupSprite("GRUNTZ_EXITZ", DEATH_FRAME());
             m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId(s_dExitKeyB);
+            m_objAux->m_actKey = ActFindId("B");
             goto tail;
         }
 

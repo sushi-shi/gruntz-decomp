@@ -1069,7 +1069,5 @@ void CInGameIcon::SetupSprite(const char* category) {
     }
     m_cue = static_cast<LeafCue*>(found);
 }
-DATA(0x0020d7f8)
-char s_codeK[] = "K";
 
 // @early-stop

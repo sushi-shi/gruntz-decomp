@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <MsgParam.h>
 #include <Utils/RegistryHelper.h>
 
@@ -17,7 +18,6 @@ typedef enum AdvancedOptionsDlgId {
 
 DATA(0x002295d8)
 static Utils::RegistryHelper g_registryHelper;
-static HINSTANCE g_hInstance;
 
 RVA(0x0000b110, 0x32)
 void SaveOption(
@@ -79,7 +79,7 @@ INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wPara
             LoadOptions(hWnd, &g_registryHelper);
 
             {
-                HICON hIcon = LoadIconA(g_hInstance, "GRUNTZ");
+                HICON hIcon = LoadIconA(g_appResHandle, "GRUNTZ");
                 if (hIcon) {
                     MsgParam icon;
                     icon.m_icon = hIcon;

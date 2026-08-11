@@ -47,7 +47,7 @@ i32 CGrunt::SetupTubeAnim(i32 isWater) {
     ActNameConstructGrownSlots();
 
     bool eq;
-    eq = (strcmp(*node, s_codeD) == 0);
+    eq = (strcmp(*node, "D") == 0);
     if (eq) {
         GruntDirectionCell cell = m_entranceCell;
         i32 col = cell.column + cell.row * 2;

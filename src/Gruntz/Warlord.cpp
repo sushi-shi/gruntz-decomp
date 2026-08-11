@@ -40,8 +40,6 @@ DATA(0x0020d218)
 static char s__PANIC[] = "_PANIC";
 DATA(0x0020d220)
 static char s__MOVING[] = "_MOVING";
-DATA(0x0020d22c)
-static char s__DEATH[] = "_DEATH";
 DATA(0x0020d234)
 static char s__JOY[] = "_JOY";
 DATA(0x0020d23c)
@@ -50,23 +48,12 @@ DATA(0x0020d24c)
 static char s__BATTLECRY2[] = "_BATTLECRY2";
 DATA(0x0020d25c)
 static char s__BATTLECRY1[] = "_BATTLECRY1";
-DATA(0x0020d26c)
-static char s__IDLE4[] = "_IDLE4";
-DATA(0x0020d274)
-static char s__IDLE3[] = "_IDLE3";
-DATA(0x0020d27c)
-static char s__IDLE2[] = "_IDLE2";
-DATA(0x0020d284)
-static char s__IDLE1[] = "_IDLE1";
 DATA(0x0020d2d8)
 static char s_WARLORDZ_KING[] = "WARLORDZ_KING";
 DATA(0x0020d36c)
 static char s__IDLE[] = "_IDLE";
 DATA(0x0020d374)
 static char s__BATTLECRY[] = "_BATTLECRY";
-static const char s_keyC[] = "C";
-static const char s_keyA[] = "A";
-static const char s_keyF[] = "F";
 
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
@@ -182,15 +169,15 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, 0);
 
-    WARLORD_ANIM_LOOKUP(m_idleAnims[0], s__IDLE1);
-    WARLORD_ANIM_LOOKUP(m_idleAnims[1], s__IDLE2);
-    WARLORD_ANIM_LOOKUP(m_idleAnims[2], s__IDLE3);
-    WARLORD_ANIM_LOOKUP(m_idleAnims[3], s__IDLE4);
+    WARLORD_ANIM_LOOKUP(m_idleAnims[0], DATA_COMPGEN(0x0020d284, animSuffixIdle1, "_IDLE1"));
+    WARLORD_ANIM_LOOKUP(m_idleAnims[1], DATA_COMPGEN(0x0020d27c, animSuffixIdle2, "_IDLE2"));
+    WARLORD_ANIM_LOOKUP(m_idleAnims[2], DATA_COMPGEN(0x0020d274, animSuffixIdle3, "_IDLE3"));
+    WARLORD_ANIM_LOOKUP(m_idleAnims[3], DATA_COMPGEN(0x0020d26c, animSuffixIdle4, "_IDLE4"));
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[0], s__BATTLECRY1);
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[1], s__BATTLECRY2);
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[2], s__BATTLECRY3);
     WARLORD_ANIM_LOOKUP(m_animJoy, s__JOY);
-    WARLORD_ANIM_LOOKUP(m_animDeath, s__DEATH);
+    WARLORD_ANIM_LOOKUP(m_animDeath, DATA_COMPGEN(0x0020d22c, animSuffixDeath, "_DEATH"));
     WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
     WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
 
@@ -698,8 +685,7 @@ RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == 0) {
-        bool alreadyPanicking =
-            (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) == 0);
+        bool alreadyPanicking = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") == 0);
         if (!alreadyPanicking) {
             if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
                 g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x436, -1, -1, -1);
@@ -732,7 +718,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
             m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
 
             m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId(s_codeD);
+            m_objAux->m_actKey = ActFindId("D");
             return 1;
         }
     }
@@ -762,10 +748,10 @@ i32 CWarlord::ResolveDeathAnimation() {
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_animDeath);
 
-    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__DEATH);
+    m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_keyC);
+    m_objAux->m_actKey = ActFindId("C");
     return 1;
 }
 
@@ -832,7 +818,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     m_wwdObject->ApplyLookupSprite("GRUNTZ_" + m_warlordName + s__IDLE, frame);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_keyA);
+    m_objAux->m_actKey = ActFindId("A");
     return 1;
 }
 
@@ -864,6 +850,6 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(s_keyF);
+    m_objAux->m_actKey = ActFindId("F");
     return 1;
 }

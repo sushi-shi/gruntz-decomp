@@ -175,14 +175,6 @@ DATA(0x00211a98)
 static char s_MAIN[] = "MAIN";
 DATA(0x00211aa0)
 static char s_MENU_MAINMENU_TITLE[] = "MENU_MAINMENU_TITLE";
-DATA(0x00211a10)
-static char s_OPTIONZ[] = "OPTIONZ";
-DATA(0x00211888)
-static char s_BACK[] = "BACK";
-DATA(0x0020ce90)
-static char s_CREDITZ[] = "CREDITZ";
-DATA(0x00211744)
-static char s_TRAINING[] = "TRAINING";
 
 // A `$E` dynamic initializer, not a called function: the `.CRT$XC` table holds
 // 0x000a1170 (the 5-byte jmp cell 0x20 ahead of this body) and nothing calls
@@ -226,7 +218,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_MULTIPLAYER, s_MENU_MAINMENU_MULTIPLAYER, 0, s_MULTIPLAYER, 0);
-    page->AddItem(s_OPTIONZ, s_MENU_MAINMENU_OPTIONZ, 0x80e2, 0, 0);
+    page->AddItem("OPTIONZ", s_MENU_MAINMENU_OPTIONZ, 0x80e2, 0, 0);
     it = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, 0);
     if (g_cdPromptResult != 0) {
         it->Disable(MENUSTATE_DISABLED);
@@ -249,7 +241,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     page->AddItem(s_BATTLEZ, s_MENU_SINGLEPLAYER_BATTLEZ, 0x80e1, 0, 0);
     page->AddItem(s_LOADGAME, s_MENU_SINGLEPLAYER_LOADGAME, 0x80ce, 0, 0);
     page->AddItem(s_CUSTOMLEVELZ, s_MENU_SINGLEPLAYER_CUSTOMLEVELZ, 0x8042, 0, 0);
-    page->AddItem(s_BACK, s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
+    page->AddItem("BACK", s_MENU_SINGLEPLAYER_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -264,7 +256,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         it->Disable(MENUSTATE_DISABLED);
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, 0, 0);
-    page->AddItem(s_BACK, s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
+    page->AddItem("BACK", s_MENU_MULTIPLAYER_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -280,8 +272,8 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (g_gameReg->m_saveSink->CheckMagic() == 0) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddItem(s_CREDITZ, s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
-    page->AddItem(s_BACK, s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
+    page->AddItem("CREDITZ", s_MENU_MOVIEZ_CREDITZ, 0x8021, 0, 0);
+    page->AddItem("BACK", s_MENU_MOVIEZ_BACK, 0, s_MAIN, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -292,7 +284,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         return 0;
     }
     progress = g_gameReg->m_saveSink->CurrentLevel();
-    page->AddItem(s_TRAINING, s_MENU_QUESTZ_TRAINING, 0, s_TRAINING, 0);
+    page->AddItem("TRAINING", s_MENU_QUESTZ_TRAINING, 0, "TRAINING", 0);
     page->AddSubItem(
         s_AREA1,
         s_MENU_QUESTZ_AREA1,
@@ -386,13 +378,13 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE4_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddItem(s_BACK, s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
+    page->AddItem("BACK", s_MENU_QUESTZ_BACK, 0, s_SINGLEPLAYER, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
 
     page = new CMenuPage;
-    if (page->Configure(menu, s_TRAINING, s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
+    if (page->Configure(menu, "TRAINING", s_MENU_AREAS_TRAININGTITLE, s_QUESTZ, 0) == 0) {
         delete page;
         return 0;
     }
@@ -432,7 +424,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
         0,
         0
     );
-    page->AddItem(s_BACK, s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
+    page->AddItem("BACK", s_MENU_AREAS_BACK, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -487,7 +479,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA1_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -545,7 +537,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA2_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -603,7 +595,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA3_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -661,7 +653,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA4_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -719,7 +711,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA5_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -777,7 +769,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA6_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -835,7 +827,7 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA7_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     if (menu->AddNode(page) == 0) {
         return 0;
     }
@@ -893,6 +885,6 @@ i32 BuildMainMenuTree(CChatBox* menu, i32) {
     if (progress > QUESTLEVEL_LAST || progress < QUESTLEVEL_AREA8_STAGE3_END) {
         it->Disable(MENUSTATE_DISABLED);
     }
-    page->AddSubItem(s_BACK, s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
+    page->AddSubItem("BACK", s_MENU_AREAS_BACK, IDX(CMD_SET_QUEST_AREA), 0, 0, s_QUESTZ, 0);
     return menu->AddNode(page) != 0;
 }

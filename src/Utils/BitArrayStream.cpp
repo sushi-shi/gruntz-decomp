@@ -32,7 +32,7 @@ istream& operator>>(istream& accum, zBitVec& bits) {
     if (accum.ipfx(0)) {
         i32 bit;
         char ch;
-        accum.get(ch);
+        accum >> ch;
         if (!accum) {
             return accum;
         }
@@ -62,7 +62,7 @@ istream& operator>>(istream& accum, zBitVec& bits) {
             }
             bits.Set(bit);
 
-            accum.get(ch);
+            accum >> ch;
             if (!accum) {
                 return accum;
             }

@@ -945,14 +945,6 @@ void __stdcall TileSwitch(CGrunt* g, i32 col, i32 row, i32 burnRandA, i32 burnRa
 //   "F" ATTACK     latched by RearmAttackAnim/RearmAttackAnim2; its step is
 //                  StepAttackAction.
 // MOVINGTOY is one of the remaining letters; which is not yet proven.
-extern char s_codeD[];
-extern char s_codeF[];
-extern char s_codeH[];
-extern char s_codeK[];
-extern char s_codeM[];
-extern char s_codeN[];
-extern char s_codeO[];
-extern char s_codeQ[];
 
 static void GruntScratchTeardown();
 

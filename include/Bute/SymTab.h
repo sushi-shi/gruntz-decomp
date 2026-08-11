@@ -128,6 +128,4 @@ public:
 };
 SIZE(0x4c);
 
-extern "C" char g_sepSlash[];
-
 #endif // SRC_BUTE_SYMTAB_H

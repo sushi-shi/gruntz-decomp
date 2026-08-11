@@ -62,9 +62,6 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
-static char s_Grunt[] = "Grunt";
-static char s_CombatTimeout[] = "CombatTimeout";
-
 // @early-stop
 RVA(0x00077f80, 0xab)
 CGrunt* CTriggerMgr::FindNearestInRow(CGrunt* g) {
@@ -1848,7 +1845,7 @@ i32 CTriggerMgr::CombatCue(i32 x, i32 y, i32 radius, CombatCueKind tier, i32 fla
                         g->m_health = HEALTH_FULL;
                         g->CreateHealthSprite();
                         g->m_combatTimeoutLo = static_cast<i32>(
-                            g_buteMgr.GetDwordDef(s_Grunt, s_CombatTimeout, 0x1388)
+                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388)
                         );
                         g->m_combatTimeoutHi = 0;
                         g->m_combatClockLo = g_frameTime;

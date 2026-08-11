@@ -109,13 +109,9 @@ const double s_fpZero = 0.0;
 // one register per value that the retail schedule shows.
 
 // @early-stop
-DATA(0x0020cc98)
-static char s_codeL[] = "L";
 
 i32 g_movingSeed;
 
-DATA(0x0020d414)
-static char s_TimePerTile[] = "TimePerTile";
 DATA(0x0020d424)
 static char s_d48_BREAK[] = "_BREAK";
 DATA(0x0020d42c)
@@ -236,8 +232,6 @@ DATA(0x0020d7dc)
 static char s_pose_ATTACK2[] = "_ATTACK2";
 DATA(0x0020d7e8)
 static char s_pose_ATTACK1[] = "_ATTACK1";
-DATA(0x0020d900)
-static char s_GruntGhostTransparencyOn[] = "GruntGhostTransparencyOn";
 DATA(0x0020d974)
 static char s_ConversionTime[] = "ConversionTime";
 DATA(0x0020dfac)
@@ -248,12 +242,6 @@ DATA(0x0020dfd0)
 static char s_FadeTransparency[] = "FadeTransparency";
 DATA(0x002455b0)
 i32 g_traitorMode;
-
-static const char s_pose_IDLE1[] = "_IDLE1";
-static const char s_pose_IDLE2[] = "_IDLE2";
-static const char s_pose_IDLE3[] = "_IDLE3";
-static const char s_pose_IDLE4[] = "_IDLE4";
-static const char s_pose_DEATH[] = "_DEATH";
 
 static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
     CAniElement* out = 0;
@@ -523,16 +511,13 @@ void CGrunt::ReadConfigFromButeMgr() {
 
     m_timePerTile = g_buteMgr.GetDwordDef(
         const_cast<char*>(static_cast<const char*>(m_animSetName)),
-        s_TimePerTile,
-        1000
-    );
+        DATA_COMPGEN(0x0020d414, buteKeyTimePerTile, "TimePerTile"), 1000
+        );
 
     if (m_gruntKind == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
     }
 }
-
-static const char s_d48_DEATH[] = "_DEATH";
 
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
@@ -582,7 +567,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
         m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_ITEM;
         m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_ITEM;
         m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_ITEM;
-        m_deathFrameSetName = "GRUNTZ_" + m_animSetName + s_d48_DEATH;
+        m_deathFrameSetName = "GRUNTZ_" + m_animSetName + "_DEATH";
     } else if (dirOnly != 0) {
         m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST;
         m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH;
@@ -615,14 +600,14 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
         LOAD_POSE(m_poseAttackIdle, s_pose_ATTACKIDLE);
         LOAD_POSE(AT(m_poseStruck, GRUNT_STRUCK1), s_pose_STRUCK1);
         LOAD_POSE(AT(m_poseStruck, GRUNT_STRUCK2), s_pose_STRUCK2);
-        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE1), s_pose_IDLE1);
-        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE2), s_pose_IDLE2);
-        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE3), s_pose_IDLE3);
-        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE4), s_pose_IDLE4);
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE1), "_IDLE1");
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE2), "_IDLE2");
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE3), "_IDLE3");
+        LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE4), "_IDLE4");
         LOAD_POSE(AT(m_poseIdle, GRUNT_IDLE5), s_pose_IDLE5);
         LOAD_POSE(AT(m_poseItem, GRUNT_ITEM1), s_pose_ITEM);
         LOAD_POSE(AT(m_poseItem, GRUNT_ITEM2), s_pose_ITEM2);
-        LOAD_POSE(m_poseDeath, s_pose_DEATH);
+        LOAD_POSE(m_poseDeath, "_DEATH");
         return;
     }
 
@@ -782,7 +767,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 // takes the m_objAux temp in edx, sets ecx to &g_typeColl BEFORE the argument
 // load, and pushes from eax; cl takes the temp in eax, leaves the argument in
 // ecx and therefore has to reload ecx with the receiver after the push.  The
-// first probe (s_codeF) colours retail's way on both sides, so it is an
+// first probe ("F") colours retail's way on both sides, so it is an
 // allocator preference and not a shape difference - same instruction count,
 // same operands, same size.  The three `m_value = ...; Setup(...)` sites carry
 // the same ecx/edx swap plus a store scheduled before rather than after the
@@ -795,12 +780,12 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
     if (eq) {
         return;
     }
     bool ne;
-    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    ne = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") != 0);
     if (ne) {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "A") == 0);
         if (!eq) {
@@ -825,7 +810,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                 }
                 eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
                 if (!eq) {
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) == 0);
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "M") == 0);
                     if (!eq) {
                         goto walk;
                     }
@@ -1015,7 +1000,7 @@ i32 CGrunt::StepArrivalDrop(
     bool eq;
 
     m_pendingTrigger = 0;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") != 0);
     if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
     }
@@ -1610,7 +1595,7 @@ label_4c6e4:
         CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
         bool ne;
-        ne = (strcmp(*r, "L") != 0);
+        ne = (strcmp(*r, DATA_COMPGEN(0x0020cc98, animKeyL, "L")) != 0);
         if (ne) {
             m_entranceActive = 0;
         }
@@ -2241,7 +2226,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "A") != 0);
         if (eq) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), s_codeD) != 0);
+            eq = (strcmp((*g_typeColl.GetNameRecord(m_objAux->m_actKey)), "D") != 0);
             if (eq) {
                 goto fail;
             }
@@ -2800,7 +2785,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "BABYWALKERGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2823,7 +2808,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "BEACHBALLGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2845,7 +2830,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "BIGWHEELGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2868,7 +2853,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "GOKARTGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2891,7 +2876,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "JACKINTHEBOXGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2913,7 +2898,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "JUMPROPEGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2935,7 +2920,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "POGOSTICKGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2959,7 +2944,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "SCROLLGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2981,7 +2966,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "SQUEAKTOYGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -3003,7 +2988,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "YOYOGRUNT";
             CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, s_codeD) == 0);
+            eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -3093,7 +3078,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
-            i32 t = g_buteMgr.GetIntDef("Powerupz", s_GruntGhostTransparencyOn, 0xe0);
+            i32 t = g_buteMgr.GetIntDef(
+                "Powerupz",
+                DATA_COMPGEN(0x0020d900, buteKeyGhostTransparencyOn, "GruntGhostTransparencyOn"), 0xe0
+                );
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
             m_object->m_fillFraction = t;
@@ -3289,7 +3277,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             ActNameConstructGrownSlots();
         }
 
-        eq = (strcmp(*rec, s_codeH) == 0);
+        eq = (strcmp(*rec, "H") == 0);
         if (eq) {
             CAniElement* el = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* first;
@@ -3329,7 +3317,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 ActNameConstructGrownSlots();
             }
 
-            eq = (strcmp(*rec2, s_codeD) == 0);
+            eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
                 GruntDirectionCell cell2 = m_entranceCell;
                 m_wwdObject->ApplyName(
@@ -3646,7 +3634,7 @@ void CGrunt::XferName(char*) {
             }
             if (m_entranceReason == PICKUP_BOMB) {
                 bool nameDiffers =
-                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeM) != 0);
+                    (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "M") != 0);
                 if (!nameDiffers) {
                     goto afterTile;
                 }
@@ -3697,7 +3685,7 @@ void CGrunt::XferName(char*) {
                     }
                     slot++;
                 }
-                bool nameDiffers = (strcmp(*node, s_codeN) != 0);
+                bool nameDiffers = (strcmp(*node, "N") != 0);
                 if (nameDiffers) {
                     BuildGruntLoseItemAnimation();
                 }
@@ -4006,7 +3994,7 @@ kindDispatch:
                 i64 rem = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
                 u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
                 double topaque = static_cast<double>(
-                    g_buteMgr.GetIntDef("Powerupz", s_GruntGhostTransparencyOn, 0x100)
+                    g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0x100)
                 );
                 i32 frac = static_cast<i32>(
                     topaque * static_cast<double>(remMs)
@@ -4257,19 +4245,19 @@ void CGrunt::AdvanceMotion() {
 
     CString* code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool different = strcmp(*code, s_codeD);
+    bool different = strcmp(*code, "D");
     if (different) {
         code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        different = strcmp(*code, s_codeN);
+        different = strcmp(*code, "N");
         if (different) {
             code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
             ActNameConstructGrownSlots();
-            different = strcmp(*code, s_codeL);
+            different = strcmp(*code, "L");
             if (different) {
                 code = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                 ActNameConstructGrownSlots();
-                different = strcmp(*code, s_codeM);
+                different = strcmp(*code, "M");
                 if (different) {
                     return;
                 }
@@ -4399,13 +4387,13 @@ void CGrunt::AdvanceMotion() {
 
         CString* rec = ActNameLookupCallReport(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        bool hit = (strcmp(*rec, s_codeN) == 0);
+        bool hit = (strcmp(*rec, "N") == 0);
         if (hit) {
             return;
         }
         rec = ActNameLookupCallReport(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        hit = (strcmp(*rec, s_codeL) == 0);
+        hit = (strcmp(*rec, "L") == 0);
         if (hit) {
             if (StepCompassMove() != 0) {
                 return;
@@ -4415,7 +4403,7 @@ void CGrunt::AdvanceMotion() {
         }
         rec = ActNameLookupCallReport(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
-        hit = (strcmp(*rec, s_codeM) == 0);
+        hit = (strcmp(*rec, "M") == 0);
         if (hit) {
             if (ClaimSwitchTile() != 0) {
                 return;

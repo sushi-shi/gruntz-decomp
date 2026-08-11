@@ -24,9 +24,6 @@
 #include <sys/types.h>
 #include <time.h>
 
-DATA(0x0020cff0)
-char g_sepSlash[] = "\\";
-
 static __inline i32 IsTokenChar(const char* delims, char ch) {
     if (delims) {
         return strchr(delims, ch) == NULL;
@@ -140,7 +137,7 @@ GZ_ENUM_RETURN(RezTypeTag, u32) CParseSource::GetEntryTag() {
 RVA(0x00139810, 0x140)
 char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     if (m_owner->m_parent == NULL) {
-        strcpy(dst, g_sepSlash);
+        strcpy(dst, DATA_COMPGEN(0x0020cff0, pathSeparator, "\\"));
     } else {
         char* scratch = new char[size];
         strcpy(dst, "");
@@ -148,7 +145,7 @@ char* CParseSource::CurrentScopePath(char* dst, i32 size) {
         while (node != NULL) {
             strcpy(scratch, dst);
             if (node->m_parent != NULL) {
-                strcpy(dst, g_sepSlash);
+                strcpy(dst, "\\");
             } else {
                 dst[0] = 0;
             }
@@ -1099,7 +1096,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
     char pattern[REZ_SCAN_PATH_MAX];
     strcpy(pattern, path);
     if (pattern[strlen(pattern) - 1] != '\\') {
-        strcat(pattern, g_sepSlash);
+        strcat(pattern, "\\");
     }
     char full[REZ_SCAN_PATH_MAX];
     strcpy(full, pattern);
@@ -1123,7 +1120,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
             char childpath[REZ_SCAN_PATH_MAX];
             strcpy(childpath, pattern);
             strcat(childpath, subName);
-            strcat(childpath, g_sepSlash);
+            strcat(childpath, "\\");
             void* child = node->FindSub(subName);
             if (child == NULL) {
                 child = node->CreateSub(subName);

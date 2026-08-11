@@ -50,7 +50,7 @@ i32 CGrunt::LoadPickupSprites(
 
         bool eqA = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "A") == 0);
         if (!eqA) {
-            bool eqD = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), s_codeD) == 0);
+            bool eqD = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "D") == 0);
             if (!eqD) {
                 bool eqE = (strcmp(*g_typeColl.GetNameRecord(m_objAux->ActKey()), "E") == 0);
                 if (!eqE) {

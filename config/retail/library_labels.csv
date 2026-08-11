@@ -802,7 +802,7 @@ rva,name,lib,confidence,source
 0x18f830,_ldexp,LIBCMT,HIGH,offstart-ghidra-missed
 0x18fa90,_DirectInputCreateA@16,DINPUT,HIGH,dinput-import-thunk
 0x191d00,??0DNameNode@@IAE@XZ,LIBCMT,AMBIG,anchored
-0x1937c6,_DirectPlayEnumerate@8,DPLAYX,HIGH,reloc-R26
+0x1937c6,_DirectPlayEnumerateA@8,DPLAYX,HIGH,reloc-R26
 0x1937e0,_strtod,LIBCMT,HIGH,anchored
 0x193900,__access,LIBCMT,AMBIG,anchored
 0x1b26d2,??0CString@@QAE@DH@Z,NAFXCW,HIGH,anchored
@@ -990,7 +990,7 @@ rva,name,lib,confidence,source
 0x1b83de,?GetAssocAt@CMapStringToPtr@@IBEPAUCAssoc@1@PBDAAI@Z,NAFXCW,CRUNTIME,anchored
 0x1b8438,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,CRUNTIME,anchored
 0x1b845a,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,CRUNTIME,anchored
-0x1b847c,??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z,NAFXCW,AMBIG,anchored
+0x1b847c,??ACMapStringToPtr@@QAEAAPAXPBD@Z,NAFXCW,AMBIG,anchored
 0x1b84de,?RemoveKey@CMapStringToPtr@@QAEHPBD@Z,NAFXCW,CRUNTIME,anchored
 0x1b8546,?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z,NAFXCW,CRUNTIME,anchored
 0x1b85b1,??0CMapPtrToPtr@@QAE@H@Z,NAFXCW,CRUNTIME,anchored
@@ -1447,9 +1447,9 @@ rva,name,lib,confidence,source
 0x1c6924,??1CPaintDC@@UAE@XZ,NAFXCW,HIGH,anchored
 0x1c696b,?DeleteTempMap@CWnd@@SGXXZ,NAFXCW,AMBIG,anchored
 0x1c697f,?afxMapHGDIOBJ@@YAPAVCHandleMap@@H@Z,NAFXCW,HIGH,anchored
-0x1c69ef,?FromHandle@CImageList@@SGPAV1@PAU_IMAGELIST@@@Z,NAFXCW,AMBIG,anchored
-0x1c6a05,?Attach@CImageList@@QAEHPAU_IMAGELIST@@@Z,NAFXCW,AMBIG,anchored
-0x1c6a32,?Detach@CImageList@@QAEPAU_IMAGELIST@@XZ,NAFXCW,AMBIG,anchored
+0x1c69ef,?FromHandle@CGdiObject@@SGPAV1@PAX@Z,NAFXCW,AMBIG,anchored
+0x1c6a05,?Attach@CGdiObject@@QAEHPAX@Z,NAFXCW,AMBIG,anchored
+0x1c6a32,?Detach@CGdiObject@@QAEPAXXZ,NAFXCW,AMBIG,anchored
 0x1c6a5c,?DeleteObject@CGdiObject@@QAEHXZ,NAFXCW,HIGH,anchored
 0x1c6a72,??0CPen@@QAE@HHK@Z,NAFXCW,HIGH,anchored
 0x1c6ac2,??0CPen@@QAE@HHPBUtagLOGBRUSH@@HPBK@Z,NAFXCW,HIGH,anchored
@@ -1879,9 +1879,9 @@ rva,name,lib,confidence,source
 0x16a760,??0ofstream@@QAE@H@Z,LIBCIMT,HIGH,anchored
 0x16a820,??0ofstream@@QAE@HPADH@Z,LIBCIMT,HIGH,anchored
 0x16a8e0,??1ofstream@@UAE@XZ,LIBCIMT,AMBIG,anchored
-0x16a900,?setbuf@ifstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
+0x16a900,?setbuf@ofstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
 0x16a9e0,?open@ofstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
-0x16aa50,?close@ifstream@@QAEXXZ,LIBCIMT,AMBIG,anchored
+0x16aa50,?close@ofstream@@QAEXXZ,LIBCIMT,AMBIG,anchored
 0x16aab0,?put@ostream@@QAEAAV1@E@Z,LIBCIMT,HIGH,anchored
 0x16ab20,?write@ostream@@QAEAAV1@PBDH@Z,LIBCIMT,HIGH,anchored
 0x16ab70,??0filebuf@@QAE@XZ,LIBCIMT,HIGH,anchored

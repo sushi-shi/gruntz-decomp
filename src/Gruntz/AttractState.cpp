@@ -26,9 +26,6 @@
 #include <ddraw.h>
 #include <stddef.h>
 
-DATA(0x0020b5bc)
-char s_dat60b5bc[] = "2";
-
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* a, i32 b, i32 mode) {
 
@@ -98,7 +95,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     page->BlitPage(page->m_backPair);
 
     i32 r = GetRandomNumber();
-    const char* pick = (r % 2) ? s_dat60b5bc : "";
+    const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, attractSuffix2, "2") : "";
 
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);

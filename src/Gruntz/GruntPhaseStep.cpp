@@ -48,7 +48,7 @@
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
     m_neighborScanEnabled = 0;
-    bool isFlag = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    bool isFlag = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
     if (isFlag) {
         return 1;
     }
@@ -173,7 +173,7 @@ s0_reset:
 }
 
 state2: {
-    bool isFlagObj = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeF) == 0);
+    bool isFlagObj = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "F") == 0);
     if (isFlagObj) {
         goto common;
     }

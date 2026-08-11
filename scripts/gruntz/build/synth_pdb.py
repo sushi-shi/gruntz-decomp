@@ -334,6 +334,57 @@ def read_iat_symbols(exe_path, base_dir=None, lib_dirs=(), nm="llvm-nm"):
     return syms
 
 
+def read_import_thunk_names(exe_path, iat_syms, names_map):
+    """{rva: `_Foo@N`} for every 6-byte `FF 25 <IAT slot>` import thunk.
+
+    The IMPORT analog of ``read_ilt_thunk_names``. MSVC 5.0 compiles a Win32 call
+    without ``__declspec(dllimport)`` as a direct ``call rel32``; the linker then
+    plants a 6-byte ``jmp DWORD PTR [__imp__Foo@N]`` and points the call at it. Our
+    base obj takes its relocation against ``_Foo@N`` directly, so unless the thunk
+    carries that name the delinked target obj resolves the SAME call to an
+    anonymous ``FUN_<va>`` and the reference compares unequal - invisibly, because
+    objdiff masks address operands.
+
+    Fully derived, never guessed: an entry is emitted only when the four bytes
+    after ``FF 25`` are the absolute address of an IAT slot ``read_iat_symbols``
+    has already PROVEN a ``__imp_`` decoration for. The call name is that
+    decoration with the ``__imp_`` prefix removed, which is exactly the symbol the
+    import library defines the thunk as.
+    """
+    slots = {}
+    for slot, dec in iat_syms:
+        slots[slot] = "_" + dec[len("__imp__"):] if dec.startswith("__imp__") \
+            else dec[len("__imp_"):]
+    with open(exe_path, "rb") as f:
+        data = f.read()
+    pe_off = struct.unpack_from("<I", data, 0x3C)[0]
+    num_sec = struct.unpack_from("<H", data, pe_off + 6)[0]
+    opt_size = struct.unpack_from("<H", data, pe_off + 20)[0]
+    image_base = struct.unpack_from("<I", data, pe_off + 24 + 28)[0]
+    sec_off = pe_off + 24 + opt_size
+    text_rva = text_raw = text_raw_size = None
+    for i in range(num_sec):
+        b = sec_off + i * 40
+        if data[b:b + 8].rstrip(b"\0") != b".text":
+            continue
+        _vsize, text_rva, text_raw_size, text_raw = struct.unpack_from(
+            "<IIII", data, b + 8)
+        break
+    if text_rva is None:
+        raise ValueError("PE has no .text section")
+
+    out = {}
+    blob = data[text_raw:text_raw + text_raw_size]
+    pos = blob.find(b"\xff\x25")
+    while pos != -1 and pos + 6 <= len(blob):
+        target = struct.unpack_from("<I", blob, pos + 2)[0] - image_base
+        rva = text_rva + pos
+        if target in slots and rva not in names_map:
+            out[rva] = slots[target]
+        pos = blob.find(b"\xff\x25", pos + 1)
+    return out
+
+
 def sanitize_name(name: str) -> str:
     """Make a symbol name safe to embed in single-quoted YAML.
 
@@ -383,7 +434,7 @@ def read_names_map(path):
 
 
 def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
-                   drop_spans=()):
+                   drop_spans=(), import_thunks=None):
     """Yield (rva, size, name) for .text functions with size > 0.
 
     If ``names_map`` (``{rva: (name, unit, size)}``) supplies an entry for an
@@ -403,6 +454,7 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
     names_map = names_map or {}
     library_rvas = set(library_rvas)
     thunk_names = thunk_names or {}
+    import_thunks = import_thunks or {}
     spans = sorted(drop_spans)
     span_lo = [lo for lo, _hi in spans]
     out = []
@@ -453,6 +505,11 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
             # A retail incremental-link thunk is not part of the owning TU,
             # but every reference through it denotes the body it forwards.
             name = thunk_names[rva]
+        elif rva in import_thunks:
+            # Likewise the linker's `jmp [__imp__Foo@N]` glue: our base obj calls
+            # `_Foo@N` directly, so the thunk must carry that name or the same
+            # call compares unequal against an anonymous FUN_<va>.
+            name = import_thunks[rva]
         out.append((rva, size, name))
         seen.add(rva)
 
@@ -473,6 +530,19 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
     if synth_thunks:
         print("[synth_pdb] synthesized %d ILT thunk record(s) absent from the inventory"
               % synth_thunks, file=sys.stderr)
+
+    # The IMPORT thunk band, same reasoning, but each entry is the 6-byte
+    # `FF 25 <IAT slot>` the linker plants for a non-dllimport Win32 call.
+    synth_imp = 0
+    for rva, name in sorted(import_thunks.items()):
+        if rva in seen:
+            continue
+        out.append((rva, 6, name))
+        seen.add(rva)
+        synth_imp += 1
+    if synth_imp:
+        print("[synth_pdb] synthesized %d import thunk record(s) from named IAT slots"
+              % synth_imp, file=sys.stderr)
 
     synth = 0
     unsized = []
@@ -549,20 +619,36 @@ def read_ilt_thunk_names(exe_path, functions_path, names_map):
     if text_rva is None:
         raise ValueError("PE has no .text section")
 
-    aliases = {}
+    # Inventory-carved 5-byte `E9 rel32` rows, ANYWHERE in .text: the linker also
+    # plants forwarders outside the leading band, and it CHAINS them (0x1a9b ->
+    # 0x94750 -> `?Destroy@CGameWnd@@QAEXXZ`). Resolve to a fixpoint so a thunk
+    # whose target is itself a thunk still inherits the body's name. The
+    # target-already-named guard keeps this exact: a row that forwards somewhere
+    # uncurated stays anonymous, as before.
+    e9 = {}
     for row in read_retail_functions(_Path(functions_path)):
         rva = row["rva"]
-        size = row["size"]
-        if size != 5 or not TEXT_BASE <= rva < min(TEXT_END, ILT_BAND_END):
+        if row["size"] != 5 or not TEXT_BASE <= rva < TEXT_END:
             continue
         off = text_raw + rva - text_rva
         if not text_raw <= off <= text_raw + text_raw_size - 5:
             continue
         if data[off] != 0xE9:
             continue
-        target = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
-        if target in names_map:
-            aliases[rva] = names_map[target][0]
+        e9[rva] = rva + 5 + struct.unpack_from("<i", data, off + 1)[0]
+
+    aliases = {}
+    while True:
+        grew = False
+        for rva, target in e9.items():
+            if rva in aliases or rva in names_map:
+                continue
+            name = names_map[target][0] if target in names_map else aliases.get(target)
+            if name is not None:
+                aliases[rva] = name
+                grew = True
+        if not grew:
+            break
     # The inventory need not contain every band entry, so also walk the raw band:
     # any E9 whose
     # exact target is curated is a forwarding thunk to a known body - e.g. the
@@ -1030,8 +1116,19 @@ def main():
     if nfold:
         print("[synth_pdb] %d carved ILT thunk label(s) superseded by the forwarded "
               "body name" % nfold, file=sys.stderr)
+    # .idata IAT symbols: proven `__imp__...` decorations only (base objs + the
+    # MSVC 5.0 / DX import libs). Required by the data-topology delinker; harmless
+    # to the current one (extra records it does not read). Read BEFORE the function
+    # list so the import-thunk band can inherit these names.
+    lib_dirs = [os.path.join(d, "lib") for d in
+                (os.environ.get("MSVC_DIR"), os.environ.get("DXSDK_DIR")) if d]
+    lib_dirs += [os.path.join(d, "Lib") for d in
+                 (os.environ.get("DXSDK_DIR"),) if d]
+    iat_syms = read_iat_symbols(args.exe, args.base_dir, lib_dirs)
+    import_thunks = read_import_thunk_names(args.exe, iat_syms, names_map)
+
     funcs = read_functions(args.functions, names_map, thunk_names, library_rvas,
-                           drop_spans=band_spans)
+                           drop_spans=band_spans, import_thunks=import_thunks)
     rdata_syms, data_syms = read_data_symbols(args.exe)
     if data_names:
         ndat = apply_named_data(rdata_syms, data_syms, data_names)
@@ -1041,15 +1138,6 @@ def main():
         nstr = apply_string_names(rdata_syms, data_syms, args.exe, args.base_dir)
         print("[synth_pdb] renamed %d string constant(s) to MSVC ??_C@ names" % nstr,
               file=sys.stderr)
-    # .idata IAT symbols: proven `__imp__...` decorations only (base objs + the
-    # MSVC 5.0 / DX import libs). Required by the data-topology delinker; harmless
-    # to the current one (extra records it does not read).
-    lib_dirs = [os.path.join(d, "lib") for d in
-                (os.environ.get("MSVC_DIR"), os.environ.get("DXSDK_DIR")) if d]
-    lib_dirs += [os.path.join(d, "Lib") for d in
-                 (os.environ.get("DXSDK_DIR"),) if d]
-    iat_syms = read_iat_symbols(args.exe, args.base_dir, lib_dirs)
-
     print("[synth_pdb] functions: %d  rdata: %d  data: %d  idata: %d  named: %d"
           % (len(funcs), len(rdata_syms), len(data_syms), len(iat_syms),
              len(names_map)),

@@ -5,8 +5,11 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/GameAssetNamespaces.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/MenuVersion.h>
+#include <Gruntz/StartUpPrompt.h>
 #include <Wap32/Wap32.h>
 
 #include <stdio.h>
@@ -16,12 +19,8 @@ typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
 } GruntzHotKey;
 
-static i32 g_version0;
-static i32 g_version1;
-static i32 g_version2;
-static i32 g_version3;
-static CGruntzApp* g_pApp;
-static HINSTANCE g_hInstance;
+DATA(0x00251600)
+CGruntzApp* g_pApp;
 
 RVA(0x0011c860, 0x327)
 i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
@@ -57,10 +56,10 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         sscanf(
             static_cast<const char*>(pValue),
             "%d, %d, %d, %d",
-            &g_version0,
-            &g_version1,
-            &g_version2,
-            &g_version3
+            &g_versionMajor,
+            &g_versionMid,
+            &g_versionMinor,
+            &g_buildNumber
         );
         delete[] pInfo;
     }
@@ -74,7 +73,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
-    g_hInstance = hInstance;
+    g_appResHandle = hInstance;
     i32 bAdvanced = 0;
     ActiveWait(0x64);
     if (static_cast<i16>(GetAsyncKeyState(VK_CONTROL)) & 0x80000000) {
@@ -110,7 +109,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     if (bAdvanced != 0) {
         i32 nDlgResult =
-            DialogBoxParamA(g_hInstance, "CONFIG_ADVANCED", 0, &AdvancedOptionsDialogProc, 0);
+            DialogBoxParamA(g_appResHandle, "CONFIG_ADVANCED", 0, &AdvancedOptionsDialogProc, 0);
         if (nDlgResult == 0) {
             if (g_pApp != NULL) {
                 delete g_pApp;

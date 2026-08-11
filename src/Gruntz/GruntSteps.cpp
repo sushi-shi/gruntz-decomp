@@ -64,12 +64,7 @@ GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, DIR_WEST);
 DATA(0x00244918)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 
-static char s_TimePerTile[] = "TimePerTile";
-static char s_Grunt[] = "Grunt";
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
-static char s_IdleDelay[] = "IdleDelay";
-static char s_PlayerDefenderRadius[] = "PlayerDefenderRadius";
-static char s_CombatTimeout[] = "CombatTimeout";
 
 DATA(0x0020dbf8)
 static char s_ToyTiles[] = "ToyTiles";
@@ -946,7 +941,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
     if (!eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeD) != 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "D") != 0);
     if (!eq) {
         goto applyTail;
     }
@@ -983,7 +978,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                     goto applyTail;
                 }
-                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), s_codeQ) == 0);
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "Q") == 0);
                 if (eq) {
                     return 1;
                 }
@@ -991,7 +986,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 if (eq) {
 
                     m_entranceActive = 0;
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), s_codeD) == 0);
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
                             m_entranceActive = 0;
@@ -1002,7 +997,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                         }
                         m_tileMoveCommitted = 0;
                         m_prevAnimSetNode = m_objAux->m_actKey;
-                        m_objAux->m_actKey = ActFindId(s_codeD);
+                        m_objAux->m_actKey = ActFindId("D");
                         m_value = m_wwdObject->m_animCursor.m_animation;
                         m_wwdObject->m_animCursor.Setup(m_poseWalk);
 
@@ -1038,7 +1033,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 {
                     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                     ActNameConstructGrownSlots();
-                    eq = (strcmp(*rec, s_codeN) == 0);
+                    eq = (strcmp(*rec, "N") == 0);
                 }
                 if (eq) {
 
@@ -1057,14 +1052,14 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                         goto applyTail;
                     }
                     m_prevAnimSetNode = m_objAux->m_actKey;
-                    m_objAux->m_actKey = ActFindId(s_codeD);
+                    m_objAux->m_actKey = ActFindId("D");
                     SetupTubeAnim(m_coordToggle);
                     goto applyTail;
                 }
                 {
                     CString* rec = g_typeColl.ScratchResolve(m_objAux->m_actKey);
                     ActNameConstructGrownSlots();
-                    eq = (strcmp(*rec, s_codeM) == 0);
+                    eq = (strcmp(*rec, "M") == 0);
                 }
                 if (eq) {
                     m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_NORMAL, -1);
