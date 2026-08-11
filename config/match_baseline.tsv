@@ -628,7 +628,7 @@ bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	85.1988	85.1988	15	f9b
 bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	92.5568	92.5568	5	f3c182846d09	0x18830	92.5568
 bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	82.5094	82.5094	8	a0054fd46cdf	0x1d440	83.1896
 bootystateactivate	?LoadGruntEffectSprites@CBootyState@@QAEHXZ	99.9547	99.9547	11	2620dda5c1f4	0x1a040	99.9547
-bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	76.5227	76.5227	4	e454ce255a42	0x19b90	76.5227
+bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	94.0341	94.0341	5	2df9d2e5b49b	0x19b90	94.0341
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420	100.0000
 bootystateactivate	?OnKeyDown@CMultiBootyState@@UAEHHH@Z	100.0000	100.0000	1	c834612aa5cc	0x1f920	100.0000
 bootystateactivate	?OnLButtonDown@CBootyState@@UAEHHHH@Z	100.0000	100.0000	1	645c1d534fe5	0x1d3e0	100.0000
@@ -2660,7 +2660,7 @@ inftrees	_inflate_trees_dynamic	100.0000	100.0000	1	dfefcb841088	0x18a850	100.00
 inftrees	_inflate_trees_fixed	100.0000	100.0000	1	0a70daff599f	0x18a940	100.0000
 inftrees	_inflate_trees_free	100.0000	100.0000	1	f385d577afa6	0x18aab0	100.0000
 infutil	_inflate_flush	100.0000	100.0000	1	e0e7519d9f47	0x18b300	100.0000
-ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	80.1167	80.1167	33	7de56c20b8b3	0x95b10	92.2252
+ingameicon	??0CInGameIcon@@QAE@PAUCGameObject@@@Z	98.2552	98.2552	34	9686eaecc381	0x95b10	98.2552
 ingameicon	??0CInGameText@@QAE@PAUCGameObject@@@Z	97.0138	97.0138	9	f62ffd3e8975	0x99110	97.0138
 ingameicon	??0CToyPeek@@QAE@PAUCGameObject@@@Z	89.2593	89.2593	3	f67c3043a6b5	0x98140	89.3056
 ingameicon	??1CInGameIcon@@UAE@XZ	100.0000	100.0000	2	690087dfa580	0x11d00	100.0000
@@ -2957,7 +2957,7 @@ movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	2	1ab3aa8ae735	0
 movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	93.7500	93.7500	4	9060f10cf27b	0x16f3c0	100.0000
 movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	93.7500	93.7500	4	0dc4f8151309	0x16f430	100.0000
 movinglogic	?SerializeMove@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	ab2c6eff9722	0x16f4a0	100.0000
-movinglogic	?Step@CMotionState@@QAEXN@Z	82.9390	81.2783	2	b587e5ea5cdd	0x16ecd0	82.9390
+movinglogic	?Step@CMotionState@@QAEXN@Z	81.2783	81.2783	2	b587e5ea5cdd	0x16ecd0	82.9390
 multi	??0CNetCmdSlot@@QAE@XZ	100.0000	100.0000	5	10c9ad0d19e7	0xbbec0	100.0000
 multi	??1CMulti@@UAE@XZ	100.0000	100.0000	8	f6002d2fbb63	0x8d270	100.0000
 multi	??1CMultiStartDlg@@UAE@XZ	100.0000	100.0000	1	cpp:c09cc2324cc9	0xb8960	100.0000
@@ -3289,7 +3289,7 @@ pathhazard	?RegisterPathHazardActions@@YAXXZ	100.0000	100.0000	2	3cb88b96e2f4	0x
 pathhazard	?SerializeMove@CPathHazard@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	a306f4662421	0xb4d30	100.0000
 pathhazard	?SerializeMove@CRainCloud@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	b0b7dd9405b5	0xb4cb0	100.0000
 pathhazard	?SerializeMove@CUFO@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	e5d59a6a48d0	0xb4c40	100.0000
-pathhazard	?SiblingTick@CPathHazard@@UAEHXZ	91.2109	91.1719	13	5837a659038b	0xb43f0	91.2109
+pathhazard	?SiblingTick@CPathHazard@@UAEHXZ	91.1719	91.1719	13	5837a659038b	0xb43f0	91.2109
 pathhazard	?Tick@CPathHazard@@UAEHXZ	97.5678	97.5678	23	cb4bd0853b8c	0xb4020	97.5678
 pathhazard	?Tick@CRainCloud@@UAEHXZ	100.0000	100.0000	5	09ac529e600d	0xb4350	100.0000
 pathhazard	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330	100.0000
@@ -4247,7 +4247,7 @@ triggermgr	?DestroyGroup@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	7	4b9de6173c5
 triggermgr	?EnqueueGroupCells@CTriggerMgr@@QAEHXZ	100.0000	100.0000	19	f4601f04cb5d	0x7d6e0	100.0000
 triggermgr	?FindNearestInRow@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	89.5263	89.5263	7	5d5951626b97	0x77f80	89.5263
 triggermgr	?HudRect@CTriggerMgr@@QAEXUtagRECT@@H@Z	90.2439	90.2439	13	8f07229cfe45	0x78060	90.2439
-triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	89.4953	89.4953	18	45902e4fd7c3	0x7abc0	89.4953
+triggermgr	?Load@CTriggerMgr@@QAEHPAVCFileMemBase@@@Z	95.2749	95.2749	19	3ab81ae6f629	0x7abc0	95.2749
 triggermgr	?LoadCameraSprite@CTriggerMgr@@QAEHXZ	100.0000	100.0000	12	30a510c97236	0x78960	100.0000
 triggermgr	?LoadExplosionSprites@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	7	ac1a40273130	0x7b330	100.0000
 triggermgr	?LoadFinishLevelSprite@CTriggerMgr@@QAEXW4FinishLevelReason@@@Z	86.0642	86.0642	4	6bbb7a7b0232	0x7c3d0	86.0642
