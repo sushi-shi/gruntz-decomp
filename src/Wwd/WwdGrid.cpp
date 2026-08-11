@@ -14,33 +14,23 @@ CWwdGridShell::~CWwdGridShell() {}
 RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
 RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
 
+// @early-stop
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    // One struct ASSIGNMENT, not four field stores: retail materialises &m_bounds once
-    // (`lea eax,[esi+0x28]; mov edx,eax`) and writes [edx+0/4/8/c].
-    WwdRect b;
-    b.m_minY = rect.top;
-    b.m_maxX = rect.right;
-    b.m_minX = rect.left;
-    b.m_maxY = rect.bottom;
-    m_bounds = b;
-    // Swap through a temp - retail's `mov edx,eax; mov eax,edi; mov edi,edx` triple,
-    // not a pair of re-assignments from the original fields.
-    i32 lox = rect.left, hix = rect.right;
-    if (hix < lox) {
-        i32 t = lox;
-        lox = hix;
-        hix = t;
+    m_bounds.m_rect = rect;
+    if (rect.right < rect.left) {
+        i32 t = rect.left;
+        rect.left = rect.right;
+        rect.right = t;
     }
-    i32 loy = rect.top, hiy = rect.bottom;
-    if (hiy < loy) {
-        i32 t = loy;
-        loy = hiy;
-        hiy = t;
+    if (rect.bottom < rect.top) {
+        i32 t = rect.top;
+        rect.top = rect.bottom;
+        rect.bottom = t;
     }
-    m_width = hix - lox;
-    m_height = hiy - loy;
+    m_width = rect.right - rect.left;
+    m_height = rect.bottom - rect.top;
     m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
     m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
     m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));

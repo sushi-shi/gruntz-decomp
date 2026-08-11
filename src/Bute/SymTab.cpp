@@ -54,7 +54,9 @@ static const i32 REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
 static inline i32 PeekI32(const char* p) {
-    return *reinterpret_cast<const i32*>(p);
+    i32 value;
+    memcpy(&value, p, sizeof(value));
+    return value;
 }
 
 RVA(0x001396f0, 0x1a)

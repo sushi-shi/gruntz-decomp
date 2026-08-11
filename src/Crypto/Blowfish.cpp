@@ -7,7 +7,7 @@
 #include <Ints.h>
 
 #include <iostream.h>
-#include <string.h>
+#include <memory.h>
 
 DATA(0x0021aeb0)
 u32 g_bfP[18] = BF_PI_P_INIT;
@@ -94,6 +94,12 @@ void Blowfish_encipher(u32* xl, u32* xr) {
     *xr = l;
     *xl = r;
 }
+
+// LOAD-BEARING POSITION: cl 5.0's cumulative declaration state gives retail's
+// encipher and decipher twins different register schemes. Hoisting this include
+// above encipher makes that function lose its exact schedule.
+// docs/patterns/string-h-intrinsics-reallocate-the-tu.md
+#include <string.h>
 
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {

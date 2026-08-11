@@ -51,6 +51,7 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_rectC.h = 576;
 }
 
+// @early-stop
 RVA(0x0015d280, 0x279)
 i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
@@ -62,36 +63,39 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     m_header = *hdr;
 
     // Byte-forced view of packed WWD storage.
-    char* block = reinterpret_cast<char*>(hdr);
+    WwdHeader* source = hdr;
+    char* block = reinterpret_cast<char*>(source);
     Bytef* ehAlloc = 0;
 
-    u32* pflags = &hdr->flags;
+    u32* pflags = &source->flags;
 
     if (*pflags & 0x2) {
-        u32 allocSize = hdr->mainBlockLength + hdr->headerSize + 0x40;
-        Bytef* buf = new Bytef[allocSize];
+        u32 capacity = source->mainBlockLength + source->headerSize + 0x20;
+        Bytef* buf = new Bytef[capacity + 0x20];
         if (buf == NULL) {
             return 0;
         }
 
         // Byte-forced view of packed WWD storage.
-        block = reinterpret_cast<char*>(WwdFile_InflateMainBlock(hdr, buf, allocSize - 0x20));
-        if (block == NULL) {
+        hdr = reinterpret_cast<WwdHeader*>(WwdFile_InflateMainBlock(source, buf, capacity));
+        if (hdr == NULL) {
             delete[] buf;
             return 0;
         }
+        // Byte-forced view of packed WWD storage.
+        block = reinterpret_cast<char*>(hdr);
         ehAlloc = buf;
     }
 
-    strcpy(m_levelName, hdr->levelName);
+    strcpy(m_levelName, source->levelName);
     m_flags = *pflags;
-    m_checksum = hdr->checksum;
+    m_checksum = source->checksum;
 
     i32 result = 0;
 
-    char* cursor = block + hdr->planesOffset;
+    char* cursor = block + source->planesOffset;
 
-    for (u32 i = 0; i < hdr->numPlanes; ++i) {
+    for (u32 i = 0; i < source->numPlanes; ++i) {
         // Byte-forced view of packed WWD storage.
 
         if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_planeCtx)
@@ -102,10 +106,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     // `> 0` on the unsigned field, not `!= 0`: retail's guard is `cmp off,0 / jbe`.
-    if (hdr->tileDescriptionsOffset > 0) {
+    if (source->tileDescriptionsOffset > 0) {
 
         WwdTileDescTable* rec = // Byte-forced view of packed WWD storage.
-            reinterpret_cast<WwdTileDescTable*>(block + hdr->tileDescriptionsOffset);
+            reinterpret_cast<WwdTileDescTable*>(block + source->tileDescriptionsOffset);
         char* elem = rec->m_descriptors;
         if (elem == NULL) {
             result = -1;
@@ -134,8 +138,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     {
-        i32 startX = hdr->startX;
-        i32 startY = hdr->startY;
+        i32 startX = source->startX;
+        i32 startY = source->startY;
         CDDrawWorkerHost* mp = m_mainPlane;
         if (mp->m_flags & 1) {
             mp->m_scaledX = static_cast<float>(startX);

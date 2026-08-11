@@ -13,10 +13,15 @@ class CWwdGrid;
 struct BucketHead;
 
 struct WwdRect {
-    i32 m_minX;
-    i32 m_minY;
-    i32 m_maxX;
-    i32 m_maxY;
+    union {
+        struct {
+            i32 m_minX;
+            i32 m_minY;
+            i32 m_maxX;
+            i32 m_maxY;
+        };
+        RECT m_rect;
+    };
 };
 SIZE_UNKNOWN();
 

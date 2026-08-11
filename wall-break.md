@@ -51,15 +51,75 @@ compiler decision, and a real VC5 build must confirm the fix.
   33 AST variants were byte-identical, so the remaining scheduler residue is
   parked while the behavior correction is retained.
 
-## 2026-08-11 — `CWwdGrid::Setup` (ongoing)
+## 2026-08-11 — `CWwdGrid::Setup`
 
 - Unit/RVA: `wwdgrid`, `0x001915c0`.
 - Before: 80.8718%. The body has the right arithmetic and allocation calls, but
   its `RECT` parameter homes and allocation epilogue layout differ.
-- Source levers measured: all 24 semantically equivalent aggregate field-init
-  orders crossed with shared-tail versus positive-success allocation exits.
-  Twelve orders tie for the best only with the positive-success shape.
-- Result: 82.79% current with top/right/left/bottom initialization and
-  `if (arr) { m_allocated = 1; return 1; } return 0;`. Three additional exit
-  spellings did not reproduce retail's duplicated EH epilogues. This function
-  remains active and is not marked `@early-stop`.
+- Classification: the main defect was structural, followed by two bounded
+  register/EH walls. Retail's `lea eax,[esi+0x28]` and four stores through one
+  base prove one typed struct assignment; its swap triples operate on the dead
+  by-value `RECT`, not four scalar copies.
+- Source lever: give `WwdRect` an overlapping typed `RECT` view, assign
+  `m_bounds.m_rect = rect`, normalize `rect` in place, and derive width/height
+  from it. This makes the complete bounds-copy, both swaps, and both dimension
+  calculations agree instruction-for-instruction.
+- Result: 92.14%, up from 82.79% at the start of this pass (80.8718% before the
+  earlier field-order sweep). Remaining differences are two dead-parameter
+  homes and retail keeping two /GX return epilogues where cl merges one.
+  Six shift-result forms, nine allocation-exit forms, and 17 eligible states
+  from an 80-trial mixed TU probe were flat or worse. The structural correction
+  is retained and the bounded residue is marked `@early-stop`.
+
+## 2026-08-11 — `CSingleFrameMessage::CSingleFrameMessage`
+
+- Unit/RVA: `singleframemessage`, `0x000ab310`.
+- Before: 84.0175%. Retail computes both rectangle centers before either member
+  store, keeping the vertical result in `ecx` while it computes the horizontal
+  result. The source's two direct assignments let cl finish and store one center
+  before starting the other.
+- Source lever: materialize `centerY` and `centerX` as two simultaneously-live
+  locals, then store them in member order. This restores retail's two-result
+  dataflow and prevents the first store from shortening the second expression's
+  live range.
+- Result: 86.31%. The remaining whole-function rotation is retail reserving
+  `ebx` as a zero value through the inlined base constructor and reusing it for
+  `r.left`, while the candidate reuses `edi`. Eight reviewed center/local
+  shapes and all 80 mixed TU states were flat or worse. The liveness correction
+  is retained and the bounded register residue is marked `@early-stop`.
+
+## 2026-08-11 — `CGameLevel::LoadWwd`
+
+- Unit/RVA: `gamelevel`, `0x0015d280`.
+- Before: 84.7577%. The compressed path named the allocation size rather than
+  the inflater's capacity and kept the original header and returned payload as
+  unrelated pointer values, rotating their registers and stack homes.
+- Classification: source-level value identity followed by a bounded register
+  wall. Retail preserves the original header for metadata in a stack home, but
+  consumes the inflater result in the pointer parameter's former callee-saved
+  register.
+- Source lever: name the capacity directly, save `source = hdr`, then rebind
+  `hdr` to the inflater result and derive the payload byte view from it. This
+  expresses the original-header versus current-buffer lifetimes visible in the
+  retail dataflow.
+- Result: 91.22%, with all 10 ordered relocations exact. Swapping the plane-loop
+  cursor/index declaration shape was byte-identical, and all 14 eligible states
+  from a 60-trial mixed TU probe stayed at 91.22%. The remaining differences are
+  stack-home and loop-register colouring, so the structural correction is
+  retained and the bounded residue is marked `@early-stop`.
+
+## 2026-08-11 — `Blowfish_encipher`
+
+- Unit/RVA: `blowfish`, `0x0016f7f0`.
+- Before: 60.3505%. Its mirror `Blowfish_decipher` was exact, but the encipher
+  diff was a pure whole-function register/scheduling rotation over the same 16
+  unrolled Feistel rounds.
+- Classification: TU declaration state, confirmed by the existing controlled
+  include-position matrix. A compiland merge had hoisted `<string.h>` above both
+  twins, although retail's two functions occupy different compiler-state windows.
+- Source lever: use `<memory.h>` above `CButeTail::Encode` for `memset`, and parse
+  `<string.h>` only between encipher and decipher. This changes only the later
+  twin's cumulative declaration state without adding a synthetic declaration.
+- Verdict: both ciphers are 100.00% byte-exact, and the complete `blowfish` unit
+  is 6/6 exact. This recovers a historical exact state lost during the compiland
+  merge and validates the load-bearing include-position pattern end to end.

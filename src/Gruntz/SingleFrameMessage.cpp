@@ -32,6 +32,7 @@ i32 CSingleFrameMessage::SerializeMove(
 RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
+// @early-stop
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -42,8 +43,10 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
         RECT r;
         RECT bounds;
         CopyRect(&r, g_gameReg->GetRect(&bounds));
-        m_object->m_screenX = r.left + (r.right - r.left) / 2;
-        m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
+        i32 centerY = r.top + (r.bottom - r.top) / 2;
+        i32 centerX = r.left + (r.right - r.left) / 2;
+        m_object->m_screenX = centerX;
+        m_object->m_screenY = centerY;
     }
 }
 
