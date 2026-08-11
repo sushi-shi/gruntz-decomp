@@ -658,49 +658,35 @@ void CBootyState::MoveLettersByDir() {
             switch (static_cast<DirectionRingIndex>(i)) {
                 case DIRECTION_RING_NORTH:
                     y -= 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_NORTHEAST:
                     y -= 4;
                     x += 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_EAST:
                     x += 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTHEAST:
                     y += 4;
                     x += 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTH:
                     y += 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_SOUTHWEST:
                     y += 4;
                     x -= 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_WEST:
                     x -= 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
                 case DIRECTION_RING_NORTHWEST:
                     y -= 4;
                     x -= 4;
-                    (*p)->m_screenX = x;
-                    (*p)->m_screenY = y;
                     break;
             }
+            (*p)->m_screenX = x;
+            (*p)->m_screenY = y;
         }
     }
 }
