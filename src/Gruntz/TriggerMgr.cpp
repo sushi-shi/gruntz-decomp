@@ -1399,26 +1399,25 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     m_rollingballWanted = 0;
     m_teleportWanted = 0;
 
-    for (i32 base = 7; base < 0x43; base += 0xf) {
-        for (i32 i = 0; i < 0xf; i++) {
+    for (i32 owner = 0; owner < TM_GRID_ROWS; owner++) {
+        for (i32 i = 0; i < TM_GRID_COLS; i++) {
             i32 key;
             ar->Read(&key, sizeof(key));
             void* cell = 0;
             if (key != 0) {
                 void* found = 0;
-                void* looked = 0;
-                if (MapLookupById(world->m_childGroup->m_map48, key, found) != 0) {
-                    looked = found;
-                }
-                if (looked == NULL) {
+                if (MapLookupById(world->m_childGroup->m_map48, key, found) == 0) {
                     return 0;
                 }
-                cell = (static_cast<CGameObject*>(looked))->m_animWorker->m_logic;
+                if (found == NULL) {
+                    return 0;
+                }
+                cell = (static_cast<CGameObject*>(found))->m_animWorker->m_logic;
                 if (cell == NULL) {
                     return 0;
                 }
             }
-            m_grid[base - 7 + i] = static_cast<CGrunt*>(cell);
+            m_grid[owner * TM_GRID_COLS + i] = static_cast<CGrunt*>(cell);
         }
     }
 
