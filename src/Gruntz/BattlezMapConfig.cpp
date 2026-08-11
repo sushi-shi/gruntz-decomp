@@ -2472,13 +2472,15 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 while (node != NULL) {
                     CoordNode* remaining = node;
                     node = node->m_next;
-                    CoordPoolNode* slot = g_coordPool.m_freeHead;
+                    // Spelled through the global at every use: the stores via `copy`
+                    // may alias it, so retail RELOADS g_coordPool.m_freeHead for the
+                    // unlink (3 refs at this site, not 2).
                     Coord* copy = NULL;
-                    if (slot->m_next != NULL) {
-                        copy = &slot->m_coord;
+                    if (g_coordPool.m_freeHead->m_next != NULL) {
+                        copy = &g_coordPool.m_freeHead->m_coord;
                         copy->m_x = remaining->m_coord->m_x;
                         copy->m_y = remaining->m_coord->m_y;
-                        g_coordPool.m_freeHead = slot->m_next;
+                        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
                     list.AddTail(copy);
                 }
@@ -2503,7 +2505,14 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     }
                 }
 
-                CRect hitFull(0, 0, board->m_width, board->m_height);
+                // Only ONE CRect ctor call here in retail (the other two Clip
+                // expansions have two): the full-board rect is written field by
+                // field, sharing the m_width/m_height loads with the ctor args.
+                RECT hitFull;
+                hitFull.left = 0;
+                hitFull.top = 0;
+                hitFull.right = board->m_width;
+                hitFull.bottom = board->m_height;
                 RECT hitBox = CRect(0, 0, board->m_width, board->m_height);
                 RECT* hitBoxDst = &board->m_bounds;
                 if (!IntersectRect(hitBoxDst, &hitBox, &hitFull)) {
@@ -3745,16 +3754,22 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             } else if (cell != NULL) {
                 BrickTileId id = static_cast<BrickTileId>(cell->m_actionCode);
                 i32 occ = cell->m_playerFlags[m_ownerId];
+                // TWO separate ifs, not if/else-if: retail re-tests `occ`
+                // (`test eax,eax; jne ladder` / `test eax,eax; mov edx,1; je done`)
+                // and keeps two distinct `special = 1` stores.
                 i32 special = 0;
                 if (occ == 0) {
                     special = 1;
-                } else if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP
-                           || id == BRICKTILE_RED_3_TOP || id == BRICKTILE_BLACK_1
-                           || id == BRICKTILE_BLACK_2_TOP || id == BRICKTILE_BLACK_3_TOP
-                           || id == BRICKTILE_BLUE_1 || id == BRICKTILE_BLUE_2_TOP
-                           || id == BRICKTILE_BLUE_3_TOP || id == BRICKTILE_BROWN_1
-                           || id == BRICKTILE_BROWN_2 || id == BRICKTILE_BROWN_3) {
-                    special = 1;
+                }
+                if (occ != 0) {
+                    if (id == BRICKTILE_RED_1 || id == BRICKTILE_RED_2_TOP
+                        || id == BRICKTILE_RED_3_TOP || id == BRICKTILE_BLACK_1
+                        || id == BRICKTILE_BLACK_2_TOP || id == BRICKTILE_BLACK_3_TOP
+                        || id == BRICKTILE_BLUE_1 || id == BRICKTILE_BLUE_2_TOP
+                        || id == BRICKTILE_BLUE_3_TOP || id == BRICKTILE_BROWN_1
+                        || id == BRICKTILE_BROWN_2 || id == BRICKTILE_BROWN_3) {
+                        special = 1;
+                    }
                 }
                 if (special != 0) {
                     CPtrList list3(10);
@@ -4231,10 +4246,11 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     if (unit->CoordCount() == 0) {
         return 0;
     }
-    // retail leaves the target cell uninitialised - it is only read on the
-    // found == 1 path.
-    i32 tx;
-    i32 ty;
+    // The target cell is a Coord OBJECT, not two ints: retail keeps it in a
+    // real 8-byte stack slot ([esp+0x14]/[esp+0x18]) written by a whole-object
+    // copy on the found path, and leaves it uninitialised otherwise - it is
+    // only read on the found == 1 path.
+    Coord target;
     i32 found = 0;
     if (useArg == 0) {
 
@@ -4246,71 +4262,77 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             if (c != NULL) {
                 BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_flags & 4) {
-                    tx = c->m_x;
-                    ty = c->m_y;
+                    target = *c;
                     found = 1;
                     break;
                 }
             }
         }
+
+        // Everything from here to the join lives INSIDE the useArg == 0 arm:
+        // retail's else arm (0x2ef2d) is entered only by the `jne` at the top
+        // and falls straight into the FOURTH `found` gate at 0x2ef42, so the
+        // three gates below are unreachable when the caller supplied the cell.
+        // Each gate is a guarded BLOCK, not an early return: cl threads every
+        // false edge onto the final `return 0`, which is what retail's three
+        // `test esi,esi; je <ret0>` rows are.
+        if (found != 0) {
+            if (unit->m_defenderState == AISTATE_RETURN) {
+                return 1;
+            }
+        }
+        if (found != 0) {
+            if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
+
+                if (unit->CoordCount() != 0) {
+                    CoordNode* n2 = unit->CoordHead();
+                    while (n2 != NULL) {
+                        CoordNode* cur = n2;
+                        n2 = n2->m_next;
+                        if (cur->m_coord != NULL) {
+                            g_coordPool.Push(cur->m_coord);
+                        }
+                    }
+                    unit->m_coordList.RemoveAll();
+                }
+                unit->m_defenderState = AISTATE_SEEK;
+                return 1;
+            }
+        }
+        if (found != 0 && PathCrossesMarkedTile(unit) != 0) {
+
+            if (unit->CoordCount() != 0) {
+                CoordNode* p = unit->CoordHead();
+                Coord* c = p->m_coord;
+                i32 word;
+                CMapMgr* b = m_board;
+                if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
+                    && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
+                    word = b->m_rows[c->m_y][c->m_x].m_flags;
+                } else {
+                    word = 1;
+                }
+                if (!(word & BRICKZ_CELL_OCCUPIED)) {
+                    return 1;
+                }
+            }
+        }
     } else {
-        tx = ax;
-        ty = ay;
+        target.m_x = ax;
+        target.m_y = ay;
         found = 1;
     }
     if (found == 0) {
         return 0;
     }
-    if (unit->m_defenderState == AISTATE_RETURN) {
-        return 1;
-    }
-    if (found == 0) {
-        return 0;
-    }
-    if (IsCoordOccupied(unit, tx, ty) != 0) {
-
-        if (unit->CoordCount() != 0) {
-            CoordNode* n = unit->CoordHead();
-            while (n != NULL) {
-                CoordNode* cur = n;
-                n = n->m_next;
-                if (cur->m_coord != NULL) {
-                    g_coordPool.Push(cur->m_coord);
-                }
-            }
-            unit->m_coordList.RemoveAll();
-        }
-        unit->m_defenderState = AISTATE_SEEK;
-        return 1;
-    }
-    if (found == 0) {
-        return 0;
-    }
-    if (PathCrossesMarkedTile(unit) != 0) {
-
-        if (unit->CoordCount() != 0) {
-            CoordNode* p = unit->CoordHead();
-            Coord* c = p->m_coord;
-            i32 word;
-            CMapMgr* b = m_board;
-            if (static_cast<u32>(c->m_x) < static_cast<u32>(b->m_width)
-                && static_cast<u32>(c->m_y) < static_cast<u32>(b->m_height)) {
-                word = b->m_rows[c->m_y][c->m_x].m_flags;
-            } else {
-                word = 1;
-            }
-            if (!(word & BRICKZ_CELL_OCCUPIED)) {
-                return 1;
-            }
-        }
-    }
-    if (IsCoordOccupied(unit, tx, ty) != 0) {
+    if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
         return 0;
     }
 
+    // Bottom-tested count loop: retail's back-edge is `jl <top>` with the exit
+    // as the fall-through, which a `break` on `scanned >= 15` inverts.
     i32 r = rand() % 15;
-    i32 scanned = 0;
-    for (;;) {
+    for (i32 scanned = 0; scanned < 15; scanned++) {
         CGrunt* cand = m_triggerMgr->m_grid[m_ownerId * 15 + r];
         if (cand != NULL) {
             CGameObject* lvl = cand->m_object;
@@ -4416,10 +4438,6 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
             }
         }
         r = (r + 1) % 15;
-        scanned++;
-        if (scanned >= 15) {
-            break;
-        }
     }
     return 0;
 }
