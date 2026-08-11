@@ -140,7 +140,7 @@
 0x229e78	?s_gruntDirCenter_229e78@@3UGruntDirectionCell@@A	customleveldlg	0xc	data
 0x229e88	?s_gruntDirSouthWest_229e88@@3UGruntDirectionCell@@A	customleveldlg	0xc	data
 0x229e94	_?$S155@?4??DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z@4EA$S	customleveldlg	0x1	data
-0x229f18	_?$S116@?BD@??BuildBootyWalkingGruntz@CBootyState@@QAEHXZ@4EA$S	bootywalkanim	0x1	data
+0x229f18	_?$S116@?BD@??BuildBootyWalkingGruntz@CBootyState@@QAEHXZ@4EA$S	bootystateactivate	0x1	data
 0x22b2e0	?s_gruntDirEast_22b2e0@@3UGruntDirectionCell@@A	chatboxowner	0xc	data
 0x22b2f0	?s_gruntDirNorth_22b2f0@@3UGruntDirectionCell@@A	chatboxowner	0xc	data
 0x22b300	?s_gruntDirSouth_22b300@@3UGruntDirectionCell@@A	chatboxowner	0xc	data

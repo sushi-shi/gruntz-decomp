@@ -352,12 +352,12 @@ HEADER = """\
 def fmt_rows(rows, owners):
     out = [HEADER]
     for i, r in enumerate(rows):
-        out.append(f"{i}\t{r.unit}\t{r.start:#010x}\t{r.end:#010x}\t{r.cls}"
-                   f"\t{r.module}\t{r.n}\t{r.evidence}\t{r.notes}")
+        out.append((f"{i}\t{r.unit}\t{r.start:#010x}\t{r.end:#010x}\t{r.cls}"
+                    f"\t{r.module}\t{r.n}\t{r.evidence}\t{r.notes}").rstrip("\t"))
     for r in owners:
         span = (f"{r.start:#010x}\t{r.end:#010x}" if r.start is not None else "-\t-")
-        out.append(f"-\t{r.unit}\t{span}\tcomdat-owner\t{r.module}\t{r.n}"
-                   f"\t{r.evidence}\t{r.notes}")
+        out.append((f"-\t{r.unit}\t{span}\tcomdat-owner\t{r.module}\t{r.n}"
+                    f"\t{r.evidence}\t{r.notes}").rstrip("\t"))
     return "\n".join(out) + "\n"
 
 
