@@ -66,9 +66,9 @@ RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
 // @early-stop
-// Frame is 4 B larger than retail's and one callee-saved register short, so every
-// inlined strcmp takes the 3-register form and cl cross-jumps the SetupSprite tails
-// (docs/patterns/inline-strcmp-form-reads-out-a-spilled-register.md).
+// Frame, saved-register set and every call/string referent now agree with retail.
+// Residue is which register carries the re-materialised m_object in each ladder arm
+// (retail edx where cl picks eax and vice versa) plus one load-or-store vs `or [mem],imm`.
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
@@ -173,29 +173,37 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FIRST);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            lvl->m_anchors[0].m_x = m_object->m_screenX;
-            lvl->m_anchors[0].m_y = m_object->m_screenY;
+            i32 anchorX = m_object->m_screenX;
+            i32 anchorY = m_object->m_screenY;
+            lvl->m_anchors[0].m_x = anchorX;
+            lvl->m_anchors[0].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_SECOND);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            lvl->m_anchors[1].m_x = m_object->m_screenX;
-            lvl->m_anchors[1].m_y = m_object->m_screenY;
+            i32 anchorX = m_object->m_screenX;
+            i32 anchorY = m_object->m_screenY;
+            lvl->m_anchors[1].m_x = anchorX;
+            lvl->m_anchors[1].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_THIRD);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            lvl->m_anchors[2].m_x = m_object->m_screenX;
-            lvl->m_anchors[2].m_y = m_object->m_screenY;
+            i32 anchorX = m_object->m_screenX;
+            i32 anchorY = m_object->m_screenY;
+            lvl->m_anchors[2].m_x = anchorX;
+            lvl->m_anchors[2].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FOURTH);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            lvl->m_anchors[3].m_x = m_object->m_screenX;
-            lvl->m_anchors[3].m_y = m_object->m_screenY;
+            i32 anchorX = m_object->m_screenX;
+            i32 anchorY = m_object->m_screenY;
+            lvl->m_anchors[3].m_x = anchorX;
+            lvl->m_anchors[3].m_y = anchorY;
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_WELDER);
@@ -371,13 +379,11 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     i32 row = m_object->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        i32* cell = &grid->m_rowInts[row][col * 7];
-        cell[2] = mv;
-        i32* cell0 = &grid->m_rowInts[row][col * 7];
+        grid->m_rowInts[row][col * 7 + 2] = mv;
         if (mv != 0) {
-            cell0[0] |= 0x40000;
+            grid->m_rowInts[row][col * 7] |= 0x40000;
         } else {
-            cell0[0] &= ~0x40000;
+            grid->m_rowInts[row][col * 7] &= ~0x40000;
         }
     }
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
