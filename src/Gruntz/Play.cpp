@@ -240,11 +240,18 @@ i32 CPlay::OnMouseMove(i32 unused, i32 cursorX, i32 cursorY) {
 }
 
 // @early-stop
-// The residue is the inlined CStatusBarMgr constructor (operator new(0x630)):
-// retail rolls ONE member-array loop and straight-lines the other two (10i + a 7i
-// loop + 117i) where cl emits three 7i loops + 101i - and it does so from the same
-// ctor that CMulti::LoadGameAssetNamespaces expands with three loops on BOTH sides.
-// The decision lives in CStatusBarMgr, not here.
+// The residue is the inlined CStatusBarMgr ctor's array members, and the decision is
+// cl's INLINE BUDGET, not a source shape.  Retail calls `??_H` (vector constructor
+// iterator) for BOTH CSbiHlRow arrays - m_groupSlots[3] at 0xc8081 and m_hlGrid[12]
+// at 0xc80c6, same ctor address 0x403a3a pushed twice.  Here cl expands the iterator
+// itself for the 3-element one (a call-loop with the counter in the dead prevStateId
+// parameter home) and calls ??_H only for the 12-element one.  That inline loop is
+// the whole frame difference: it needs a live counter, so `this` cannot go in the
+// slot retail uses and every [esp+N] in the function shifts by 4.  The same ctor
+// inlined into CMulti::LoadGameAssetNamespaces expands its body into three loops on
+// BOTH sides (multi.obj has no ??0CSbiHlRow call at all), i.e. cl picks per SITE
+// according to how much it has already inlined - there is no source lever here that
+// is not a fitted artifact.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -276,11 +283,15 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CChatBoxOwner* ctl = new CChatBoxOwner;
         m_hitTest = ctl;
         if (m_hitTest->Attach(m_world, m_mgr->m_chatLog) == 0) {
-            if (m_hitTest == NULL) {
+            // retail loads m_hitTest ONCE (0xc7f9a `mov esi,[ebx+0x2e0]`) and feeds
+            // the same esi to Deactivate and operator delete - a cached local, not
+            // two member reads.
+            CChatBoxOwner* dead = m_hitTest;
+            if (dead == NULL) {
                 return 0;
             }
-            m_hitTest->Deactivate();
-            ::operator delete(m_hitTest);
+            dead->Deactivate();
+            ::operator delete(dead);
             m_hitTest = NULL;
             return 0;
         }
@@ -680,6 +691,12 @@ i32 CPlay::Render() {
         }
 
         if (m_snapshotActive != 0) {
+            // Note: retail adds the pair FIRST and subtracts the clock
+            // after (0xc92b8 add/adc, then 0xc92c2 sub/sbb).  cl reassociates it into
+            // `(base - now) + dur` and no spelling stops it - a separate `deadline`
+            // temp, a compound `-=`, and a separate `now` temp all fold to the same
+            // tree, and swapping the two addends only moves which one is the
+            // accumulator.
             i64 deadline = m_snapDur64.m_v + m_snapBase64.m_v;
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
@@ -707,17 +724,22 @@ i32 CPlay::Render() {
                 m_snapshotActive = 0;
 
                 if (g_gameReg->m_options[0].m_warlordObjectId != 0) {
+                    // The lookup result is materialised BEFORE the null test, not
+                    // nested inside it: retail's 0xc9396 `je` skips only the
+                    // `mov eax,[esp+0x10]` and both paths share the one `cmp eax,edi`
+                    // (a failed lookup leaves eax 0 from its own `test`).
                     void* out = 0;
+                    CGameObject* object = 0;
                     if (MapLookupById(
                             g_gameReg->m_world->m_childGroup->m_map48,
                             g_gameReg->m_options[0].m_warlordObjectId,
                             out
                         )) {
-                        CGameObject* object = static_cast<CGameObject*>(out);
-                        if (object != NULL && object->m_animWorker->m_logic != NULL) {
-                            static_cast<CWarlord*>(object->m_animWorker->m_logic)
-                                ->ResolveDeathAnimation();
-                        }
+                        object = static_cast<CGameObject*>(out);
+                    }
+                    if (object != NULL && object->m_animWorker->m_logic != NULL) {
+                        static_cast<CWarlord*>(object->m_animWorker->m_logic)
+                            ->ResolveDeathAnimation();
                     }
                 }
             } else {
@@ -882,6 +904,10 @@ void CPlay::DrawWorldFrame() {
 }
 
 // @early-stop
+// Residue is one register-naming swap (retail colours the two saved clocks ebx/ebp
+// where cl picks ebp/ebx) and where the second `sub` lands.  The substep counter is
+// declared ABOVE the `if (steps > 0)` because that is where retail zeroes it
+// (0xc9d0a `xor edi,edi`, before the `test edx,edx`): 93.43 -> 99.31.
 RVA(0x000c9cc0, 0x12e)
 i32 CPlay::DrawWorldFrames() {
     i32 delta = static_cast<i32>(g_frameDelta);
@@ -901,9 +927,9 @@ i32 CPlay::DrawWorldFrames() {
     }
     now -= delta;
     accum -= delta;
+    i32 i = 0;
     if (steps > 0) {
         i32 last = steps - 1;
-        i32 i = 0;
         do {
             i32 dt = (i == last && rem > 0) ? static_cast<i32>(rem) : FIXED_SUBSTEP_MS;
             accum += dt;
@@ -1053,14 +1079,18 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
-// The call sequence is now retail's exactly (161 vs 161, same order, same callees) and
-// the block count matches; residue is register/scheduling plus two conditional branches
-// retail has and we do not, in the ScanShuffleQuads / SyncOptionsState window (B129-B134).
+// The call sequence is retail's exactly (161 vs 161, same order, same callees).
+// Residue is register allocation: retail parks the constant 1 in edi and materialises
+// each zero as an immediate, cl does the opposite (zero in edi, `mov [x],1` inline),
+// which flips ~40 stores between the register and immediate forms; and retail
+// cross-jumps the two `atoi(p) / EndParse()` arms of the battlez/multi world-name
+// parse where cl emits both.  Frame is 4 bytes short of retail's 0xdc.
 RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
     void* set;
+    CSymTab* prevTiles;
     i32 reload = 0;
     i32 diff = 0;
 
@@ -1077,10 +1107,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         g_levelBias100 = 1;
     }
 
+    // Per-dword, as in Render: retail fills 0x40/0x44 then 0x30/0x34 (0xca25e),
+    // while the i64 spelling makes cl interleave the two pairs 0x40/0x30/0x44/0x34.
     CTimer* worker = self->m_frameMarker;
     if (worker != NULL) {
-        worker->m_unusedStamp.m_v = 0;
-        worker->m_accum.m_v = 0;
+        worker->m_unusedStamp.m_lo = 0;
+        worker->m_unusedStamp.m_hi = 0;
+        worker->m_accum.m_lo = 0;
+        worker->m_accum.m_hi = 0;
         worker->m_running = 0;
         worker->m_currentMs = 0;
     }
@@ -1098,9 +1132,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (g_gameReg->m_frameGate != 0) {
-            i32 v = g_gameReg->m_frameGate ^ 1;
-            g_gameReg->m_frameGate = v;
-            g_gameReg->FinishLevel(v, 1);
+            g_gameReg->m_frameGate ^= 1;
+            g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
         }
     }
 
@@ -1247,13 +1280,19 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             case AREA_ROCKY_ROADZ:
                 g_areaPitDeath = DEATH_SINK;
                 break;
+            // 7, not DEATH_DROP(0).  cl hoists the switch bound into ecx
+            // (`mov ecx,0x7` at 0xca5fb) precisely because the same constant is
+            // stored in these two arms: retail writes `[g_areaPitDeath],ecx` /
+            // `[g_areaHazardDeath],ecx` at 0xca627 and `[g_areaHazardDeath],ecx`
+            // at 0xca63f, while the arm that really is DEATH_DROP writes the
+            // immediate 0 (0xca6a9).  And PIT is assigned first in both.
             case AREA_GRUNTZICLEZ:
-                g_areaHazardDeath = DEATH_DROP;
-                g_areaPitDeath = DEATH_DROP;
+                g_areaPitDeath = DEATH_BURN;
+                g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_TROUBLE_IN_THE_TROPICZ:
-                g_areaHazardDeath = DEATH_DROP;
                 g_areaPitDeath = DEATH_FALL;
+                g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_HIGH_ON_SWEETZ:
                 g_areaPitDeath = DEATH_FALL;
@@ -1283,7 +1322,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        CSymTab* prevTiles = self->m_stateBank;
+        prevTiles = self->m_stateBank;
         self->m_stateBank = (self->m_levelBank);
         UpdateWindow(self->m_mgr->m_gameWnd->m_hwnd);
 
@@ -1295,7 +1334,6 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } else if (level > 0x24) {
             sprintf(nameBuf, "TRAINING");
         }
-        static_cast<void>(prevTiles);
     }
 
     if (!FadeInTitle(nameBuf, 0, 0, 0, 0, 1)) {
@@ -1303,7 +1341,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     RetireScene(0x50, 0x3e8, 0, 1);
     DrawLevelInfoText();
-    self->m_stateBank = NULL;
+    // RESTORE, not clear: retail reads m_stateBank into edi before overwriting it
+    // (0xca6b9 `mov edi,[esi+0x2c]`) and writes edi back here (0xca722), so the
+    // bank is saved across the title fade rather than nulled.
+    self->m_stateBank = prevTiles;
     {
         i32* z = initScratch;
         i32 n = 0x25;
@@ -1314,7 +1355,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     LoadLoadingBarSprite();
     BuildHelpReveal(0);
     FreeListTeardown();
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1326,7 +1367,11 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     {
         i32 cached = g_lastLevelNum;
         i32 eq = g_pAreaMgr->IsSameWorld(cached);
-        reload = (eq == 0) ? 1 : 0;
+        // Note: retail lowers this with cl's negate idiom (0xca9dc
+        // `neg ebp` / `sbb ebp,ebp` / `inc ebp`); both `!eq` and the ternary give
+        // `test eax,eax` / `sete cl` here.  The sibling `diff` below already
+        // matches (`cmp` / `setne`).
+        reload = !eq;
         diff = (level != g_lastLevelNum) ? 1 : 0;
         if (g_pAreaMgr == NULL) {
             return 0;
@@ -1334,13 +1379,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         g_lastLevelNum = level;
 
         BuildHelpReveal(0);
-        if (savedThis != NULL) {
+        if (modeFlag) {
             (savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
 
         BuildHelpReveal(0);
-        if (savedThis != NULL) {
+        if (modeFlag) {
             (savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
@@ -1351,7 +1396,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1364,7 +1409,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1372,7 +1417,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1385,7 +1430,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1393,7 +1438,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1401,12 +1446,12 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     SetEffectSpriteDurations();
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1414,7 +1459,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1422,7 +1467,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1430,7 +1475,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1438,7 +1483,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         goto fail0;
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1452,7 +1497,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             ->ActivateVisibleObjects();
     }
     BuildHelpReveal(0);
-    if (savedThis != NULL) {
+    if (modeFlag) {
         (savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
@@ -1535,14 +1580,16 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (savedThis == NULL) {
 
                 CStatusBarMgr* tiles = self->m_guts;
-                // Retail branches here (`mov eax,0x1a9 / cmp [ecx],ebx / je / mov
-                // eax,0x249` at 0xcacfd); we take cl's branchless select
-                // (`neg / sbb / and 0xa0 / add 0x1a9`), and an if/else spelling does
-                // not steer it back.  The 0xa0 in that select IS the status-bar width
-                // the two origins differ by, which is what named them.
-                i32 originX = (tiles->m_position == STATUSBAR_DOCK_RIGHT)
-                                  ? TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX
-                                  : TIMER_ORIGIN_X_PX;
+                // Initialise to the docked-right origin and OVERWRITE, which is
+                // retail's shape (0xcacfd `mov eax,0x1a9` / `cmp [ecx],ebx` / `je` /
+                // `mov eax,0x249`).  A ternary compiles to cl's branchless select
+                // `neg / sbb / and 0xa0 / add 0x1a9` - and the 0xa0 in it IS the
+                // status-bar width the two origins differ by, which is what named
+                // them.
+                i32 originX = TIMER_ORIGIN_X_STATUSBAR_RIGHT_PX;
+                if (tiles->m_position != STATUSBAR_DOCK_RIGHT) {
+                    originX = TIMER_ORIGIN_X_PX;
+                }
                 if (!self->m_frameMarker->LoadTimerSprite(originX, TIMER_ORIGIN_Y_PX)) {
                     CTimer* spr = self->m_frameMarker;
                     if (spr != NULL) {
@@ -1575,7 +1622,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                             ->ActivateVisibleObjects();
                     }
                     BuildHelpReveal(0);
-                    if (savedThis != NULL) {
+                    if (modeFlag) {
                         (savedThis)->AckJoinFailure();
                     }
                     RegisterInputBindings();
@@ -1589,13 +1636,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     okContinue:
         BuildHelpReveal(0);
-        if (savedThis != NULL) {
+        if (modeFlag) {
             (savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
         BuildHelpReveal(1);
         ActiveWait(0x64);
-        if (savedThis != NULL) {
+        if (modeFlag) {
             (savedThis)->AckJoinFailure();
         }
 
@@ -1938,6 +1985,23 @@ i32 CPlay::OnChar(i32 key, i32 flag) {
 }
 
 // @early-stop
+// Instruction COUNT is already retail's (1990 vs 1993); the residue is ordering.
+// Two things dominate: cl materialises both loop constants in the prologue (the
+// zero and the 1), so the five leading guards read `cmp [x],reg` where retail,
+// which materialises each at its first use, reads `mov eax,[x]` / `test eax,eax`;
+// and cl cross-jumps the 'Y' and 'Q' arms' identical CLEAR_TAB_HINT + phase-check
+// prefix into one copy where retail emits both (retail 374 blocks, we have 371).
+//
+// MEASURED AND REJECTED, do not repeat: retail's frame is 0x10 = one 16-byte RECT
+// and it spills only .top/.bottom, 8 apart at [esp+0x14] and [esp+0x1c], which
+// reads exactly like a whole-struct `LevelCoordRect r = ...->m_planeCtx;` local at
+// both bounds tests - and it is not.  Writing it that way (with `m_mgr`/`m_guts`
+// inlined so cl stops spilling them, which does give retail's `sub esp,0x10`)
+// drops the instruction count to 1957 and the in-order agreement from 47% to 34%.
+// The four scalars are closer everywhere else, so they stay and the frame does not
+// match.  See docs/patterns/whole-struct-copy-vs-scalars.md.  Hoisting the four
+// bounds to function scope does NOT buy the frame either: cl sizes it by SPILL
+// count, not declaration count, and still spills only two dwords.
 RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_hudSuppressed != 0) {
@@ -2001,7 +2065,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'R') {
                 if (host->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase != FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                    // g_gameReg, not m_mgr: retail reads m_world off the global here
+                    // (0xcbf65 `mov eax,[ecx+0x30]` with ecx = ds:0x64556c) while the
+                    // gameMode test above it still comes from m_mgr.  Same for the 'N'
+                    // and 'O' arms below; the five arms before them do use m_mgr.
+                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     CGameWnd* r = g_gameReg->m_gameWnd;
                     PostMessageA(r->m_hwnd, WM_COMMAND, IDX(CMD_RELOAD_LEVEL), 0);
                 }
@@ -2010,7 +2078,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'N') {
                 if (host->m_gameMode == GAMEMODE_SINGLE
                     && g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
-                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     host->AccrueScoreTime();
                 }
                 return 1;
@@ -2018,7 +2086,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             if (vk == 'O') {
                 if (host->m_gameMode != GAMEMODE_SINGLE
                     && this->m_guts->m_observerTabAvailable != 0) {
-                    CLEAR_TAB_HINT(host->m_world->m_soundRegistry);
+                    CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
                     this->ReleaseLevelOverlay(0);
                 }
                 return 1;
@@ -2759,11 +2827,20 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 }
 
 // @early-stop
-// Block topology is now exact (101/101 blocks, every jcc target aligned, 66 branches,
+// Block topology is exact (101/101 blocks, every jcc target aligned, 66 branches,
 // 22 rets). Residue is register allocation around `y`: retail keeps y memory-resident
 // and re-reads [esp+0x3c] at every use (B54/B62/B64/B99 are 1-2 instructions LONGER
-// there), while cl here enregisters it; and our frame is 0x24 vs retail's 0x20 because
-// `placed` gets its own slot instead of recycling the dead `a` parameter home.
+// there), while cl here enregisters it; and our frame is 0x24 vs retail's 0x20 by one
+// dword. That dword is NOT `placed`: writing the flag into the dead first parameter
+// (both as `i32& placed = a;` and as bare `a = 0/1`) compiles byte-identically to a
+// fresh local and leaves the frame at 0x24, so cl is not colouring it into an argument
+// home either way.
+// MEASURED AND REJECTED: retail materialises `&m_viewRect` for the first scroll
+// conversion (0xcdc0f `add eax,0x40`) where the `cam->m_viewRect.left` form below uses
+// a displacement. Spelling it as a `RECT*` local DOES emit that instruction and costs
+// far more than it buys - `xr` moves out of ebx and the whole block re-colours,
+// 89.53 -> 87.33 with in-order agreement 74% -> 64%. See
+// docs/patterns/whole-struct-copy-vs-scalars.md for the same lesson on OnKeyDown.
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 a, i32 x, i32 y) {
     i32 xr;
@@ -3096,12 +3173,11 @@ i32 CPlay::OnLButtonDblClk(i32 msg, i32 x, i32 y) {
         return 1;
     }
 
-    RECT* rc = (&m_world->m_level->m_planeCtx);
-    i32 rl = rc->left;
-    i32 rt = rc->top;
-    i32 rr = rc->right;
-    i32 rb = rc->bottom;
-    if (x < rl || x > rr || y < rt || y > rb) {
+    // Whole-struct copy, as in OnKeyDown: retail loads all four fields off one
+    // materialised base (0xce6e6 `add eax,0x10` / `mov esi,eax`, then [esi],
+    // [esi+4], [esi+8], [esi+0xc]) and compares against the REGISTER.
+    RECT rc = m_world->m_level->m_planeCtx;
+    if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
         return m_guts->ClickHilite(msg, x, y);
     }
 
@@ -3171,6 +3247,9 @@ i32 CPlay::OnRButtonDblClk(i32 a, i32 b, i32 c) {
 // Retail emits its own `mov eax,1` epilogue after the minimap-command arm and
 // rematerialises y from the parameter slot at each use; cl shares one return-1
 // tail and pins both coordinates in callee-saved registers.
+// MEASURED AND REJECTED, as in OnLButtonDown: retail forms `&m_viewRect` here too
+// (0xcec8d `add ecx,0x40`), and a `RECT*` local that reproduces it re-colours `this`
+// out of esi - 89.98 -> 89.48, in-order agreement 82% -> 66%.
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 a, i32 x, i32 y) {
     if (m_hudSuppressed != 0) {
@@ -3351,7 +3430,6 @@ i32 CPlay::DrawWorldPresent() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-// @early-stop
 RVA(0x000cf0a0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (g_debugDisplayFlags & 0x20) {
@@ -3425,18 +3503,19 @@ void CPlay::DrawDebugStatsFull() {
     SetBkColor(hdc, 0);
     PostSetup(hdc);
 
-    RECT* src = &m_world->m_level->m_planeCtx;
-    RECT lr;
-    lr.left = src->left;
-    lr.top = src->top;
-    lr.right = src->right;
-    lr.bottom = src->bottom;
-    RECT dr;
-    dr.left = lr.left;
-    dr.top = lr.bottom - 0x1c;
-    dr.right = lr.right;
-    dr.bottom = lr.bottom;
-    DrawTextA(hdc, buf, -1, &dr, 0x20);
+    // Whole-struct copy: retail still writes `lr.top` to its own slot (0xcf3d3
+    // `mov [esp+0x30],edx`) even though nothing reads it, which field-by-field
+    // assignment does not survive - cl dead-stores the unread field.
+    {
+        RECT* src = &m_world->m_level->m_planeCtx;
+        RECT lr = *src;
+        RECT dr;
+        dr.left = lr.left;
+        dr.top = lr.bottom - 0x1c;
+        dr.right = lr.right;
+        dr.bottom = lr.bottom;
+        DrawTextA(hdc, buf, -1, &dr, 0x20);
+    }
 
     if (g_debugDisplayFlags & 0x8) {
         SetBkMode(hdc, 2);
@@ -4096,10 +4175,10 @@ i32 CPlay::DrawCursorSaveUnder(CDDrawSurfacePair* pair) {
 // memory form `or dword ptr [esi+0x40],1`, which frees eax early so cl also hoists
 // `mov eax,1` out of the shared tail. No source spelling found that steers the RMW
 // form; the other three |= sites in this function pick the memory form in retail too.
+// (The drag-rect clamp above WAS a source shape - see the comment there.)
 RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
 
-    i32 left, top, right, bottom;
     LevelCoordRect box;
     if (m_inGame != 0) {
         return 1;
@@ -4125,11 +4204,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     }
 
     box = m_world->m_level->m_planeCtx;
-    left = box.left;
-    top = box.top;
-    right = box.right;
-    bottom = box.bottom;
-    if (x >= left && x <= right && y >= top && y <= bottom) {
+    if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
 
         if (m_dragInProgress != 0) {
             m_guts->ClearTabSprites(TAB_ALL);
@@ -4137,10 +4212,19 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         m_dragInProgress = 0;
         if (m_worldReady != 0) {
 
-            m_hudRect.left = m_cursorX < m_dragClampMaxX ? m_cursorX : m_dragClampMaxX;
-            m_hudRect.right = m_cursorX <= m_dragClampMaxX ? m_dragClampMaxX : m_cursorX;
-            m_hudRect.top = m_cursorY < m_dragClampMaxY ? m_cursorY : m_dragClampMaxY;
-            m_hudRect.bottom = m_cursorY <= m_dragClampMaxY ? m_dragClampMaxY : m_cursorY;
+            // Clamp anchor first: retail loads m_dragClampMaxX into the accumulator
+            // BEFORE m_cursorX (0xd0ee8/0xd0eee), which is what makes the max arm
+            // read `jle` (keep the anchor) rather than cl's mirrored `jg`.
+            {
+                i32 anchorX = m_dragClampMaxX;
+                i32 curX = m_cursorX;
+                m_hudRect.left = curX < anchorX ? curX : anchorX;
+                m_hudRect.right = curX <= anchorX ? anchorX : curX;
+                i32 anchorY = m_dragClampMaxY;
+                i32 curY = m_cursorY;
+                m_hudRect.top = curY < anchorY ? curY : anchorY;
+                m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
+            }
         rearm:
             CWwdGameObjectA* s = m_scrollSink;
             if (s == NULL) {
@@ -4182,13 +4266,13 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     m_guts->ClickToggle(a, x, y);
     if (m_worldReady != 0) {
 
-        m_hudRect.left = m_cursorX > left ? m_cursorX : left;
+        m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
         m_hudRect.left = m_hudRect.left < m_dragClampMaxX ? m_hudRect.left : m_dragClampMaxX;
-        m_hudRect.right = m_cursorX < right ? m_cursorX : right;
+        m_hudRect.right = m_cursorX < box.right ? m_cursorX : box.right;
         m_hudRect.right = m_hudRect.right > m_dragClampMaxX ? m_hudRect.right : m_dragClampMaxX;
-        m_hudRect.top = m_cursorY <= top ? top : m_cursorY;
+        m_hudRect.top = m_cursorY <= box.top ? box.top : m_cursorY;
         m_hudRect.top = m_hudRect.top < m_dragClampMaxY ? m_hudRect.top : m_dragClampMaxY;
-        m_hudRect.bottom = m_cursorY < bottom ? m_cursorY : bottom;
+        m_hudRect.bottom = m_cursorY < box.bottom ? m_cursorY : box.bottom;
         m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
     }
     if (m_dragEndNotify != 0 && m_mgr->m_cmdGrid->m_pendingFxKind == 0) {
@@ -4431,6 +4515,13 @@ void CPlay::PlayCueAt(
     }
 }
 
+// @early-stop
+// cl REASSOCIATES the two scroll offsets and there is no spelling that stops it:
+// retail computes y as (vr->top - planeCtx.top) + m_cursorY (0xd1adf sub / 0xd1aec
+// add) while cl always makes the this-relative m_cursorY the accumulator and emits
+// (m_cursorY - planeCtx.top) + vr->top.  Splitting the subtraction into its own
+// statement, a compound `+=`, and flat left-to-right order all fold back to the
+// same tree.  x already matches.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
@@ -5378,6 +5469,9 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 }
 
 // @early-stop
+// Frame is 0x294 against retail's 0x290 - one scalar cl still refuses to overlay -
+// and retail parks &m_startMarkers / &m_placedObjectCells[k] in ebp across each
+// record loop while cl rematerialises the `lea` and spills the loop counter instead.
 RVA(0x000d8060, 0x6ce)
 i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -5411,7 +5505,11 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.m_freeHead = q;
             }
         }
-        m_startMarkers.SetSize(0, -1);
+        // retail parks &m_startMarkers in ebp across the read loop (0xd8149
+        // `lea ebp,[ebx+0x370]`, then `mov eax,[ebp+0x8]` for the count and
+        // `mov ecx,ebp` for both calls) instead of rematerialising the lea.
+        CPtrArray* markers = &m_startMarkers;
+        markers->SetSize(0, -1);
         i32 n;
         ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
@@ -5423,7 +5521,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, sizeof(*node));
-            m_startMarkers.SetAtGrow(StartMarkerCount(), node);
+            markers->SetAtGrow(markers->GetSize(), node);
         }
     }
 
@@ -5438,8 +5536,11 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
     {
 
+        // ONE cursor, as retail: 0xd81c0 `lea ebp,[ebx+0x3ac]` (biased to
+        // &elem.m_nSize) and `lea ecx,[ebp-0x8]` recomputed at each call.  Mixing a
+        // cached `CPtrArray*` with the subscript form gave cl two induction
+        // variables and it spilled both.
         for (i32 k = 0; k < 4; k++) {
-            CPtrArray* coll = &m_placedObjectCells[k];
             for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
                 Coord* node = PlacedObjectCellAt(k, i);
                 if (node) {
@@ -5448,7 +5549,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                     g_coordPool.m_freeHead = q;
                 }
             }
-            coll->SetSize(0, -1);
+            m_placedObjectCells[k].SetSize(0, -1);
             i32 n;
             ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
@@ -5460,7 +5561,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                     g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, sizeof(*node));
-                coll->SetAtGrow(PlacedObjectCellCount(k), node);
+                m_placedObjectCells[k].SetAtGrow(PlacedObjectCellCount(k), node);
             }
         }
     }
@@ -5475,51 +5576,72 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
+    // ONE 0x80 name buffer, reused for both records: retail's frame is 0x290 =
+    // 0x200 (m_cueText scratch) + 0x80 (this) + 0x10, so the second record does
+    // not get a slot of its own.
     g_serialCounter++;
-    char buf80a[SERIAL_NAME_LEN];
-    ar->Read(buf80a, SERIAL_NAME_LEN);
-    i32 idx;
-    ar->Read(&idx, sizeof(idx));
-    if (strlen(buf80a) == 0) {
-        m_gridCurFrame = NULL;
-    } else {
-        CObject* found = 0;
-        res->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(buf80a), found);
-        CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
-        if (set == NULL || idx < set->m_minIndex || idx > set->m_maxIndex) {
-            m_gridCurFrame = NULL;
+    char nameBuf[SERIAL_NAME_LEN];
+    ar->Read(nameBuf, SERIAL_NAME_LEN);
+    {
+        i32 idx;
+        ar->Read(&idx, sizeof(idx));
+        // Positive gate: retail's `je` at 0xd82be reaches PAST the lookup to a sunk
+        // `m_gridCurFrame = NULL`, i.e. the non-empty name is the FALL-THROUGH.
+        if (strlen(nameBuf) != 0) {
+            CObject* found = 0;
+            res->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(nameBuf), found);
+            CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+            if (set == NULL || idx < set->m_minIndex || idx > set->m_maxIndex) {
+                m_gridCurFrame = NULL;
+            } else {
+                m_gridCurFrame = static_cast<CImage*>(set->m_items.GetAt(idx));
+            }
         } else {
-            m_gridCurFrame = static_cast<CImage*>(set->m_items.GetAt(idx));
+            m_gridCurFrame = NULL;
         }
     }
 
     g_serialCounter++;
-    char buf80b[SERIAL_NAME_LEN];
-    ar->Read(buf80b, SERIAL_NAME_LEN);
-    CObject* gridObj = 0;
-    if (strlen(buf80b) == 0) {
-        m_grid = NULL;
-    } else {
-        res->m_imageRegistry->m_10map.Lookup(buf80b, gridObj);
-        m_grid = static_cast<CDDrawWorker*>(gridObj);
-    }
+    ar->Read(nameBuf, SERIAL_NAME_LEN);
+    {
+        CObject* gridObj = 0;
+        if (strlen(nameBuf) != 0) {
+            res->m_imageRegistry->m_10map.Lookup(nameBuf, gridObj);
+            m_grid = static_cast<CDDrawWorker*>(gridObj);
+        } else {
+            m_grid = NULL;
+        }
 
-    ar->Read(&m_gridDelayBase, sizeof(m_gridDelayBase));
-    ar->Read(&m_gridDelayCount, sizeof(m_gridDelayCount));
-    ar->Read(&m_gridRow, sizeof(m_gridRow));
-    g_serialCounter++;
-    i32 v;
-    ar->Read(&v, sizeof(v));
+        ar->Read(&m_gridDelayBase, sizeof(m_gridDelayBase));
+        ar->Read(&m_gridDelayCount, sizeof(m_gridDelayCount));
+        ar->Read(&m_gridRow, sizeof(m_gridRow));
+        g_serialCounter++;
+        {
+            i32 v;
+            ar->Read(&v, sizeof(v));
+        }
 
-    CGameObject* oe = 0;
-    CWwdGameObjectA* sink = NULL;
-    if (MapLookup(res->m_childGroup->m_map48, gridObj, oe) && oe != NULL) {
-
-        sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
-    }
-    m_scrollSink = sink;
-    if (sink == NULL && gridObj != NULL) {
-        return 0;
+        // Every path ASSIGNS sink; it is not pre-initialised.  That is what lets cl
+        // keep it in eax and reuse MapLookup's own zero on the failure path (retail
+        // 0xd8499 `je` straight to the merge), leaving the `oe == NULL` arm to
+        // materialise its own (0xd84a3 `xor eax,eax`).  Pre-initialising it puts
+        // sink in a callee-saved register and merges both arms onto one exit.
+        CGameObject* oe = 0;
+        CWwdGameObjectA* sink;
+        if (MapLookup(res->m_childGroup->m_map48, gridObj, oe)) {
+            if (oe != NULL) {
+                sink =
+                    oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
+            } else {
+                sink = NULL;
+            }
+        } else {
+            sink = NULL;
+        }
+        m_scrollSink = sink;
+        if (sink == NULL && gridObj != NULL) {
+            return 0;
+        }
     }
 
     ar->Read(&m_gridWalkActive, sizeof(m_gridWalkActive));
@@ -5549,9 +5671,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     m_stepCountdown = 2;
     ar->Read(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
-    i32 n488;
-    ar->Read(&n488, sizeof(n488));
     {
+        i32 n488;
+        ar->Read(&n488, sizeof(n488));
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             void* node = CameraBookmarkData()[i];
             if (node) {
@@ -6165,18 +6287,20 @@ i32 CPlay::DrawLevelInfoText() {
 }
 
 // @early-stop
-// Strength reduction: retail biases the row pointer by +8 and the record cursor
-// by +8 so the stores use negative displacements, and splits the flag clear into
-// load/and/store; cl anchors both pointers at offset 0.
+// Strength reduction.  Retail biases the per-block cursor to &elem.m_pData
+// (`lea ebp,[ecx+0x3a8]`, so the two reads are [ebp+4]/[ebp]) where cl anchors it at
+// the CPtrArray itself; and retail pre-scales the cell index once (`shl eax,2`) and
+// splits the flag clear into load / and / store through a separately materialised
+// address (0xda13d).  Writing that clear through an explicit temp does NOT reproduce
+// the split - cl folds it straight back to `and dword ptr [edx+eax*4],imm`.
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
-        CPtrArray* rec = &m_placedObjectCells[blockIdx];
         i32 i = 0;
         i32 done = 0;
         while (!done) {
-            if (i < rec->GetSize()) {
-                Coord* obj = static_cast<Coord*>(rec->GetAt(i));
+            if (i < PlacedObjectCellCount(blockIdx)) {
+                Coord* obj = PlacedObjectCellAt(blockIdx, i);
                 CMapMgr* grid = g_gameReg->m_tileGrid;
 
                 i32 occupantId;

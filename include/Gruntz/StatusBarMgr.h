@@ -370,6 +370,15 @@ SIZE(0x630);
 
 SIZE_UNKNOWN();
 
+// CONTESTED, unresolved against the CURRENT layout: an independent lane read retail
+// as emitting each zero-store pair at its DECLARATION position in the member-ctor
+// sequence - ahead of `??_H(m_groupSlots,0x18,3)` (0xc8046), ahead of
+// `??0CPtrArray(m_ptrPool)` (0xc80cb), and straight after it (0xc8106) - which would
+// make these mem-initializers rather than body statements. That reading was written
+// against the OLD four-i64 spelling of the 0x2a0/0x2b0 band and no longer compiles
+// now that the band is two 16-byte clock objects, so it has never been A/B'd against
+// this layout. Re-test it here before trusting either form; do not cite the address
+// evidence as settled.
 inline CStatusBarMgr::CStatusBarMgr() {
     // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
     // where retail's stores are - between the m_slots[5] and m_groupSlots[3] ctor loops
@@ -414,18 +423,19 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_toggleHandle = 0;
     m_barFrameGate = 0x1e0;
     m_tabCycle = 0;
+    // Seven memsets in ASCENDING member order, which is what retail emits:
+    // 0x114 / 0x150 / 0x18c as `rep stosd`, then 0x204 (5), 0x308 (3), 0x498 (12)
+    // and 0x61c (4).  A short memset unrolls to stores through ONE `lea` base
+    // (0xc81b8 `lea eax,[esi+0x204]`, 0xc8203 `lea edx,[esi+0x308]`, 0xc8220
+    // `lea ecx,[esi+0x61c]`); per-element `= NULL` assignments emit a disp32
+    // store each instead, and land in source order rather than ascending.
     memset(m_statFlags, 0, sizeof(m_statFlags));
     memset(m_hitRects, 0, sizeof(m_hitRects));
     memset(m_statObj, 0, sizeof(m_statObj));
     memset(m_slotNotify, 0, sizeof(m_slotNotify));
+    memset(m_groupNotify, 0, sizeof(m_groupNotify));
     memset(m_hlNotify, 0, sizeof(m_hlNotify));
-    m_groupNotify[0] = NULL;
-    m_groupNotify[1] = NULL;
-    m_groupNotify[2] = NULL;
-    m_warlordHead[0] = NULL;
-    m_warlordHead[1] = NULL;
-    m_warlordHead[2] = NULL;
-    m_warlordHead[3] = NULL;
+    memset(m_warlordHead, 0, sizeof(m_warlordHead));
     m_notify0 = NULL;
     m_notify2 = NULL;
     m_notify3 = NULL;
