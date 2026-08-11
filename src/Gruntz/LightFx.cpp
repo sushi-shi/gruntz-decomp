@@ -72,7 +72,8 @@ i32 CreateLightFx(CGameObject* obj) {
     return 1;
 }
 
-// @early-stop
+// @early-stop the same out-parameter `= NULL` store schedule as Activate; the only
+// other diff rows are the `fs:0` reloc-masking artifact. FLAT across 24 TU states.
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_anchorA = 2;
@@ -93,18 +94,20 @@ void CLightFx::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 
-// @early-stop
+// @early-stop the out-parameter's `= NULL` store, which retail schedules AFTER the
+// argument pushes and cl before them. 16 spellings of both out-params (void* vs
+// typed, declaration position, extra copy) compiled byte-identical at 253 B, and
+// the unit is FLAT across 24 TU-state probes.
 RVA(0x0009d520, 0xfd)
 void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     CObject* nodeOb = 0;
 
     m_animWorker->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
-    void* found = nodeOb;
-    g_gameReg->m_logicPump->Push(static_cast<CDDrawWorker*>(found), anchorA, SHADE_DST_BY_SRC_16);
+    CDDrawWorker* en = static_cast<CDDrawWorker*>(nodeOb);
+    g_gameReg->m_logicPump->Push(en, anchorA, SHADE_DST_BY_SRC_16);
     CWwdGameObjectA* o = m_wwdObject;
-    if (found != NULL) {
+    if (en != NULL) {
 
-        CDDrawWorker* en = static_cast<CDDrawWorker*>(found);
         i32 key = en->m_minIndex;
 
         o->m_frameSet = en;
@@ -117,7 +120,7 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
         o->m_layer = val;
         o->m_frameIndex = key;
     }
-    void* node = NULL;
+    CAniElement* node = NULL;
     m_wwdObject->m_flags |= 2;
     m_anchorA = anchorA;
     m_anchorB = anchorB;
@@ -127,7 +130,7 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
         node = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
         m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(static_cast<CAniElement*>(node));
+        m_wwdObject->m_animCursor.Setup(node);
         RebindNode();
     }
 }

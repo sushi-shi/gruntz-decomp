@@ -35,6 +35,24 @@ GridSize(const CGruntzMapMgr* grid) {
     return s;
 }
 
+static inline i32 PixOffset(const CDDSurface* s, i32 x, i32 y) {
+    return y * s->m_pitch + x * s->m_bytesPerPixel;
+}
+
+static inline i32 OccupantAt(const CGruntzMapMgr* g, u32 x, u32 y) {
+    if (x < g->m_width && y < g->m_height) {
+        return g->m_rows[y][x].m_occupantId;
+    }
+    return -1;
+}
+
+static inline i32 TileIdAt(const CGruntzMapMgr* g, u32 x, u32 y) {
+    if (x < g->m_width && y < g->m_height) {
+        return g->m_rows[y][x].m_tileId;
+    }
+    return 0;
+}
+
 static inline u16 Pack(i32 r, i32 g, i32 b) {
     return static_cast<u16>(
         (((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown))
@@ -110,7 +128,10 @@ i32 CLightFxRender::AllocSurface() {
     return 1;
 }
 
-// @early-stop
+// @early-stop register colouring. The prologue and the first 68 loop instructions
+// are byte-exact and the frame matches; what is left is x/alt/this landing in
+// esi/edi/ebp vs edi/ebx/ebp and the y and x*0x1c spill slots being swapped.
+// Flat across 24 TU states (68.16-69.22) and across every desc/dst/alt spelling.
 RVA(0x000a3460, 0x2f3)
 i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     if (rebuild == 0) {
@@ -144,12 +165,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     for (u32 y = 0; y < m_tileGrid->m_height; y++) {
         for (u32 x = 0; x < m_tileGrid->m_width; x++) {
             u16* dst = Pix16(base + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
-            i32 tile;
-            if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                tile = m_tileGrid->m_rows[y][x].m_occupantId;
-            } else {
-                tile = -1;
-            }
+            i32 tile = OccupantAt(m_tileGrid, x, y);
 
             if (tile != -1) {
 
@@ -186,12 +202,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                     }
                 } else if (static_cast<u32>(g_timer100) < 0x32) {
 
-                    i32 idx;
-                    if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                        idx = m_tileGrid->m_rows[y][x].m_tileId;
-                    } else {
-                        idx = 0;
-                    }
+                    i32 idx = TileIdAt(m_tileGrid, x, y);
                     if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
                         *dst = 0;
                     } else {
@@ -206,17 +217,14 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                     *dst = node->m_teamColor2;
                 }
             } else {
-                i32 idx;
-                if (x < m_tileGrid->m_width && y < m_tileGrid->m_height) {
-                    idx = m_tileGrid->m_rows[y][x].m_tileId;
-                } else {
-                    idx = 0;
-                }
+                i32 idx = TileIdAt(m_tileGrid, x, y);
+                u16 c;
                 if (static_cast<u32>(idx) >= MINIMAP_TILE_COLOR_COUNT) {
-                    *dst = 0;
+                    c = 0;
                 } else {
-                    *dst = m_buf[idx];
+                    c = m_buf[idx];
                 }
+                *dst = c;
             }
         }
     }
@@ -224,26 +232,31 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     return 1;
 }
 
-// @early-stop
+// @early-stop register colouring. Retail parks `surf` in ecx and therefore spills
+// qx, which lets `scale` coalesce with qy in eax; cl parks `surf` in edi, keeps
+// both quotients in registers and spills src->left instead - one extra frame slot
+// (0x18 vs retail 0x14). FLAT at 69.46 across 24 TU states and across every
+// local-existence axis (srcRect, surf position, extent hoisting, viewrect).
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
     if (surf == NULL) {
         return 0;
     }
-    RECT* srcRect = &m_srcRect;
-    *srcRect = *src;
-    i32 w = src->right - src->left + 1;
-    i32 h = src->bottom - src->top + 1;
+    m_srcRect = *src;
+    i32 sl = src->left;
+    i32 st = src->top;
+    i32 w = src->right - sl + 1;
+    i32 h = src->bottom - st + 1;
 
-    i32 cx = src->left + w / 2;
-    i32 cy = src->top + h / 2;
+    i32 cx = sl + w / 2;
+    i32 cy = st + h / 2;
     i32 qx = w / surf->m_width;
     i32 qy = h / surf->m_height;
 
-    i32 scale = qy;
-    if (qx < qy) {
-        scale = qx;
+    i32 scale = qx;
+    if (qy < qx) {
+        scale = qy;
     }
 
     i32 s = 3;
@@ -271,10 +284,8 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 
         box.left *= m_scale;
         box.top *= m_scale;
-        box.right *= m_scale;
-        box.bottom *= m_scale;
-        box.right += m_scale - 1;
-        box.bottom += m_scale - 1;
+        box.right = box.right * m_scale + m_scale - 1;
+        box.bottom = box.bottom * m_scale + m_scale - 1;
     }
     box.left += m_dstRect.left;
     box.right += m_dstRect.left;
@@ -284,30 +295,26 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     return 1;
 }
 
-// @early-stop
+// @early-stop the side-edge loop only: cl sees that `rp - lp` is loop-invariant and
+// collapses the two cursors into one induction variable plus a displacement, where
+// retail carries both. Five loop spellings compile to the identical 228 B.
 RVA(0x000a3a20, 0xe2)
 void CLightFxRender::DrawBorderRaw(RECT* r, void* base, i32 color) {
     i32 w = r->right - r->left + 1;
 
-    u16* tp = Pix16(
-        static_cast<char*>(base) + r->left * m_surface->m_bytesPerPixel
-        + r->top * m_surface->m_pitch
-    );
+    u16* tp = Pix16(static_cast<char*>(base) + PixOffset(m_surface, r->left, r->top));
     for (i32 t = 0; t < w; t++) {
         tp[t] = static_cast<u16>(color);
     }
 
-    u16* bp = Pix16(
-        static_cast<char*>(base) + r->bottom * m_surface->m_pitch
-        + r->left * m_surface->m_bytesPerPixel
-    );
+    u16* bp = Pix16(static_cast<char*>(base) + PixOffset(m_surface, r->left, r->bottom));
     for (i32 b = 0; b < w; b++) {
         bp[b] = static_cast<u16>(color);
     }
 
     i32 h = r->bottom - r->top + 1;
-    i32 lo = r->top * m_surface->m_pitch + r->left * m_surface->m_bytesPerPixel;
-    i32 ro = r->top * m_surface->m_pitch + r->right * m_surface->m_bytesPerPixel;
+    i32 lo = PixOffset(m_surface, r->left, r->top);
+    i32 ro = PixOffset(m_surface, r->right, r->top);
     i32 step = m_surface->m_pitch;
 
     if (h > 0) {
