@@ -84,9 +84,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     obj->m_screenX = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     obj->m_screenY = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
 
-    if (obj->m_sortKey != SORTKEY_INGAME_INFO) {
-        obj->m_sortKey = SORTKEY_INGAME_INFO;
-        obj->m_flags |= 0x20000;
+    CWwdGameObjectA* snapped = m_object;
+    if (snapped->m_sortKey != SORTKEY_INGAME_INFO) {
+        snapped->m_sortKey = SORTKEY_INGAME_INFO;
+        snapped->m_flags |= 0x20000;
     }
 
     AnimWorkerObj* aux = m_objAux;
