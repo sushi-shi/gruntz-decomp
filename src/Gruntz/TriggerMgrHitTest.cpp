@@ -22,21 +22,30 @@
 // unused parameters are not read.
 // @early-stop
 // The control flow is PROVEN exact: `--branches --diff` reports 556 branches and
-// 96 rets on both sides with every symbolic target agreeing. The residue is 43
-// instructions out of 6511, in three families, all confined to the last third of
-// the body (asm 4191-6386, source lines 1457-2147) while the same source
-// spellings earlier in the function are byte-identical:
-//   A (9 sites) `mov edi,[esp+0x2d8]` before vs after the `mov edx,[eax]` of the
+// 96 rets on both sides with every symbolic target agreeing, and the registers
+// agree everywhere. The whole residue is post-RA SCHEDULING: 20 sites where one
+// ESP-relative load sits one slot LATER than retail puts it (plus one block where
+// retail duplicates `mov ecx,[esp+0x24]` into both predecessors of a join):
+//   A (9 sites) `mov edi,[esp+0x2d8]` after vs before the `mov edx,[eax]` of the
 //     Coord copy at `*pCell = *stepN.Set(...)`
-//   B (9 sites) the `mov ecx,[g_gameReg]` for the sideX CellFlagsAt scheduled
-//     before vs after the first argument's `mov eax,[esp+0x1c]`
-//   C (2 sites) the same swap on `[esp+0x2c4]`
-// All nine family-B sites are the SECOND sideY/sideX block of a case arm; the
-// first block of every arm matches, so the difference is register pressure in
-// that region, not the spelling. Two levers were measured and are dead: a
-// 13-cell TU-declaration-count sweep is flat at 99.4577, and rewriting all 96
-// out-param copies field-wise (`pCell->m_x = c->m_x`) takes the diff from 23 to
-// 30 hunks.
+//   B (9 sites) `mov eax,[esp+0x1c]` after vs before the `mov ecx,[g_gameReg]`
+//     of the sideX CellFlagsAt
+//   C (2 sites) the same, on `[esp+0x2c4]`, in `goalX - g->EntrancePx().m_x`
+// Every site is in the OOL-call region (the /Ob budget makes Coord::Set and
+// CellFlagsAt out-of-line from the SOUTHEAST arm onward, on BOTH sides); the
+// identical statements in the earlier, inlined arms are byte-exact. Retail
+// uniformly schedules the ESP-relative load FIRST at these sites and cl does not.
+// Measured dead levers: a 24-cell TU-declaration-count sweep, `extern int`
+// declarations, added typedefs and an extra `#include <string.h>` are ALL flat to
+// four decimals - this TU's regalloc/scheduling does not respond to TU state at
+// all, so "bank the max by perturbing the TU" is not available here. Compiling the
+// unit with /G5, /G4, /G3 or /GB is likewise byte-identical (the processor flag does
+// not reach this function's scheduling), and /Ob2 is byte-identical to the /O2
+// default - so the out-of-line Coord::Set/CellFlagsAt calls are not an inline-budget
+// artifact we can move either. /Oa and /Ow crater it to 84.71. Splitting
+// the copy into `Coord* c = stepN.Set(...); *pCell = *c;` is byte-identical, and
+// hoisting `sideX` to function scope (matching `sideY`) is byte-identical.
+// Rewriting all 96 out-param copies field-wise takes the diff from 23 to 30 hunks.
 RVA(0x0006f2f0, 0x5227)
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
@@ -2206,6 +2215,15 @@ GruntDirectionCell __stdcall TmDeflectStep(
 }
 
 // @early-stop
+// Instruction-for-instruction identical to retail; the residue is one callee-save
+// ROTATION in the prologue. Retail materialises the `x` parameter into esi (the
+// register that falls free right after `push esi`) and defers `g_gameReg` to edi;
+// cl loads the global into esi and pushes `x` down to edi, and that esi<->edi swap
+// then propagates through the whole body. Measured dead: swapping the ix/iy decls
+// (94.14), hoisting the `plane` decl above them (90.78), reordering the RECT box
+// stores into address order (88.49), collapsing `attr` to an initialiser + one-armed
+// `if` (48.22), and inlining `g_gameReg->m_tileGrid` at all three uses (identical).
+// TU-state devices do not reach this unit at all (see TmDeflectStep above).
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
@@ -2253,6 +2271,15 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exa
 }
 
 // @early-stop
+// Three source-order defects were found and fixed here (the frame was 4 B short
+// because of them): the row/col decode must extract `row` from `ah` BEFORE `col`
+// masks `eax` (otherwise cl copies `val` to a scratch first), `sx + 0xe` / `sy + 0xe`
+// must be named locals so both are live before the first compare, and `x` must be
+// declared BEFORE `xEnd` - retail loads `span->left` before `span->right` and
+// computes x straight into its own register. What is left is the same callee-save
+// rotation as HitTestCell: retail puts `span` in esi and `trow` in edi, cl swaps
+// them, and the naming propagates. `RECT rc` declared first is byte-identical;
+// declaring `trow` before `tcol` is worse (88.46).
 RVA(0x00075c60, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
     i32 tcol = px >> TILE_SHIFT_PX;
@@ -2269,8 +2296,8 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
             span->bottom * 32 + py + 7
         );
     }
-    i32 xEnd = span->right + tcol + 1;
     i32 x = tcol - span->left - 1;
+    i32 xEnd = span->right + tcol + 1;
 
     if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
         do {
@@ -2293,8 +2320,8 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 if (val == -1) {
                     continue;
                 }
-                i32 col = val & 0xff;
                 i32 row = (val >> 8) & 0xff;
+                i32 col = val & 0xff;
                 CGrunt* g = m_grid[col + row * TM_GRID_COLS];
                 if (!g) {
                     continue;
@@ -2304,8 +2331,9 @@ CGrunt* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* o
                 }
                 i32 sx = g->m_object->m_screenX - 7;
                 i32 sy = g->m_object->m_screenY - 7;
-                if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe
-                    && rc.bottom >= sy) {
+                i32 sx2 = sx + 0xe;
+                i32 sy2 = sy + 0xe;
+                if (rc.left <= sx2 && rc.right >= sx && rc.top <= sy2 && rc.bottom >= sy) {
                     *outCol = row;
                     *outRow = col;
                     return g;

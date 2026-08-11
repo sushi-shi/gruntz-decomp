@@ -698,7 +698,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
 }
 
 RVA(0x0008f120, 0x170)
-i32 __stdcall LaunchWebBrowser(char* url) {
+i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];
     if (RegQueryValueA(HKEY_CLASSES_ROOT, "http\\shell\\open\\command", cmd, &len)) {

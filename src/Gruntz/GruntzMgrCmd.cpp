@@ -42,12 +42,15 @@
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
     }
-#define PLAYCUE_MAP(TAG)                                                                           \
-    if (m_world->m_soundRegistry->m_emitGate == 0) {                                               \
-        LeafCue* _c = 0;                                                                           \
-        MapLookup(m_world->m_soundRegistry->m_cues, TAG, _c);                                      \
-        if (_c)                                                                                    \
-            _c->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                               \
+#define PLAYCUE_MAP(TAG, VAR)                                                                      \
+    {                                                                                              \
+        CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;                                     \
+        if (_reg->m_emitGate == 0) {                                                               \
+            VAR = 0;                                                                               \
+            MapLookup(_reg->m_cues, TAG, VAR);                                                     \
+            if (VAR)                                                                               \
+                VAR->PlayIfElapsed(g_sndCueTag, 0, 0, 0);                                          \
+        }                                                                                          \
     }
 #define ITEMCHEAT(N, MSG)                                                                          \
     {                                                                                              \
@@ -107,28 +110,26 @@
     }
 #define RESTART(N)                                                                                 \
     {                                                                                              \
-        GameStateId st = m_curState->Update();                                                     \
         CMenuState* mus = 0;                                                                       \
+        GameStateId st = m_curState->Update();                                                     \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
-            if (ShowCursor(0) >= 0)                                                                \
-                while (ShowCursor(0) >= 0) {                                                       \
-                }                                                                                  \
+            while (ShowCursor(0) >= 0) {                                                           \
+            }                                                                                      \
         }                                                                                          \
         ChangeState(N);                                                                            \
         if (mus) {                                                                                 \
             mus->StartMusic();                                                                     \
-            if (ShowCursor(1) < 0)                                                                 \
-                while (ShowCursor(1) < 0) {                                                        \
-                }                                                                                  \
+            while (ShowCursor(1) < 0) {                                                            \
+            }                                                                                      \
         }                                                                                          \
         return 1;                                                                                  \
     }
 #define RESTART2(N)                                                                                \
     {                                                                                              \
-        GameStateId st = m_curState->Update();                                                     \
         CMenuState* mus = 0;                                                                       \
+        GameStateId st = m_curState->Update();                                                     \
         if (st == GAMESTATE_MENU) {                                                                \
             mus = static_cast<CMenuState*>(m_curState);                                            \
             (static_cast<CMenuState*>(m_curState))->StopMusicChain();                              \
@@ -140,11 +141,38 @@
     }
 
 // @early-stop
-// frame 0x84 vs retail's 0x94 AND 264 instructions short - this needs reconstruction,
-// not a frame tweak. The 16 bytes are four Lookup out-param dwords: retail gives the
-// three consecutive PLAYCUE_MAP/Lookup sites at +0x232a/+0x238b/+0x23fb three DISTINCT
-// slots (0x1c/0x10/0x14) where the macro's block-scoped `_c` collapses onto one, plus
-// a fourth slot at 0x30 in a tail block we have not reconstructed at all.
+// The frame matches retail exactly (`sub esp,0x94`) and so does every parameter
+// displacement, and `--branches --diff` reports 313 conditional branches and 1 ret on
+// BOTH sides with only four polarity flips (all four in CHEAT_MONOLITH) - so the
+// control flow, and with it the source shape, is right. What is left is dominated by
+// ONE cl decision we have not been able to steer: which duplicate blocks get
+// cross-jumped. Retail folds far more `return 1;`
+// sites into a shared `mov eax,1` block than we do (110 `mov eax,1` in retail vs 122
+// here), so at a dozen guards retail emits `je <shared ret-1>` where cl emits
+// `jne <continue> / mov eax,1 / jmp <epilogue>` inline - and it goes the OTHER way for
+// `ReportError`, which retail leaves inline at two sites (6 call relocs vs our 4).
+// The branch polarity that follows from it is also why retail can `push eax` for a
+// known-zero argument where we must `push 0`.
+// Smaller residue, each re-derived from the current build:
+//   * `(g_debugDisplayFlags ^ 0x100) & ~0x40` at CHEAT_BRICK_TEXT_ALT_DISPLAY is
+//     emitted `and`-then-`xor`: cl sorts the two disjoint bit operations by constant
+//     magnitude (the sibling arm's `(x ^ 0x40) & ~0x100` is already in that order and
+//     matches). Splitting it into two statements on the global is byte-identical.
+//   * CMD_SCREENSHOT: retail loads `m_modeSize.cx` TWICE (once for the push, once for
+//     the temp's home slot) where cl reuses the one register for both.
+//   * three of the thirteen `_cell` grid-index sites (BRICKPICKUP(0x39) and the last
+//     two BRICKABILITY arms) use retail's `add edx,edi` instead of `add ecx,edx`. It is
+//     not the source order - swapping the addends flips all thirteen and costs 0.04 -
+//     and it is what makes the diff misalign eight near-identical macro expansions.
+// Note that the last two diff hunks are NOT code: they are the jump table, the byte
+// index table and the pooled string literals disassembled as instructions.
+// Measured and REJECTED, so nobody re-runs them: rewriting the CHEAT_MONOLITH early
+// returns into nested `if`s (`if (X) { rest } return 1;`) takes the branch count to
+// 315 vs retail's 313 - a structural difference, so the early-return spelling is the
+// right one and the four polarity flips are layout, not shape. Compiling the unit with
+// /G5, /G4, /G3 or /GB is byte-identical (the processor flag does not reach this
+// function's scheduling at all), /Ob2 is byte-identical to the /O2 default, and /Oa,
+// /Ow and /Ox are all worse.
 
 RVA(0x000862f0, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
@@ -157,16 +185,15 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_LOAD_WORLD:
-            m_strWorldFile.Empty();
             m_gameMode = GAMEMODE_SINGLE;
+            m_strWorldFile.Empty();
             if (!PassClickToPlayState(lParam, 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
-            m_strWorldFile.Empty();
             m_gameMode = GAMEMODE_SINGLE;
-
+            m_strWorldFile.Empty();
             if (!PassClickToPlayState(IDX(m_saveSink->m_maxLevel), 0, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
@@ -182,6 +209,16 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             // fall through to default
         default:
             if (m_curState->Update() == GAMESTATE_PLAY) {
+                // The four `Lookup`/`MapLookup` out-parameters below live HERE, at the
+                // scope that encloses the cheat switch, not inside their own arms:
+                // retail gives each of them its own dword slot, and cl packs locals
+                // declared in disjoint nested scopes onto the same slot. Together with
+                // the tagSIZE temp in CMD_SCREENSHOT they are the 0x10 bytes that make
+                // the frame `sub esp,0x94` instead of `0x84`.
+                CGameObject* _dr;
+                LeafCue* _cueMiniature;
+                LeafCue* _cueSpace;
+                void* _c_ob;
                 switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
                     case CHEAT_PROGRAMMING_GOD: {
                         if (m_world->m_soundRegistry->m_emitGate == 0) {
@@ -339,7 +376,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         m_cmdGrid->ClearRowAndRefresh(5);
                         i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
-                            CGameObject* _dr = 0;
+                            _dr = 0;
                             if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, _key, _dr)
                                 && _dr) {
                                 CWarlord* _d = static_cast<CWarlord*>(_dr->m_animWorker->m_logic);
@@ -358,8 +395,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 0;
                         }
                         CTimer* _t = _g->m_frameMarker;
-                        _t->m_unusedStamp.m_v = 0;
-                        _t->m_accum.m_v = 0;
+                        _t->m_unusedStamp.m_lo = 0;
+                        _t->m_unusedStamp.m_hi = 0;
+                        _t->m_accum.m_lo = 0;
+                        _t->m_accum.m_hi = 0;
                         _t->m_running = 0;
                         _t->m_currentMs = 0;
                         PLAYCUE("GAME_MAJORCHEAT");
@@ -546,27 +585,31 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         m_saveSink->SetCurLevel(QUESTLEVEL_AREA5_STAGE4);
                         return 1;
                     case CHEAT_WARP_MINIATURE_MASTERZ:
-                        PLAYCUE_MAP("GAME_MINORCHEAT");
+                        PLAYCUE_MAP("GAME_MINORCHEAT", _cueMiniature);
                         AppendChatMessage("Warp to The Miniature Masterz activated!");
                         m_saveSink->SetCurLevel(QUESTLEVEL_AREA6_STAGE4);
                         return 1;
                     case CHEAT_WARP_GRUNTZ_IN_SPACE:
-                        PLAYCUE_MAP("GAME_MINORCHEAT");
+                        PLAYCUE_MAP("GAME_MINORCHEAT", _cueSpace);
                         AppendChatMessage("Warp to Gruntz in Space activated!");
                         m_saveSink->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
                         g_explosionz ^= 1;
-                        if (m_world->m_soundRegistry->m_emitGate == 0) {
-                            void* _c_ob = 0;
-                            m_world->m_soundRegistry->m_cues.Lookup("GAME_MAJORCHEAT", _c_ob);
+                        CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;
+                        if (_reg->m_emitGate == 0) {
+                            _c_ob = 0;
+                            _reg->m_cues.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = static_cast<LeafCue*>(_c_ob);
-                            if (_c && g_sndEnabled) {
-                                i32 now = g_killCueClock;
-                                if (static_cast<u32>((now - _c->m_lastPlayTime))
-                                    >= static_cast<u32>(_c->m_replayDelay)) {
-                                    _c->m_lastPlayTime = now;
-                                    _c->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                            if (_c) {
+                                i32 _tag = g_sndCueTag;
+                                if (g_sndEnabled) {
+                                    i32 now = g_killCueClock;
+                                    if (static_cast<u32>((now - _c->m_lastPlayTime))
+                                        >= static_cast<u32>(_c->m_replayDelay)) {
+                                        _c->m_lastPlayTime = now;
+                                        _c->m_sound->ConfigureItem(_tag, 0, 0, 0);
+                                    }
                                 }
                             }
                         }
@@ -890,16 +933,16 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                 }
-                i32 f = m_frameGate ^ 1;
-                m_frameGate = f;
+                m_frameGate ^= 1;
+                i32 f = m_frameGate;
                 FinishLevel(f, 1);
             }
             return 1;
         }
         case CMD_FINISH_LEVEL: {
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-                i32 f = m_frameGate ^ 1;
-                m_frameGate = f;
+                m_frameGate ^= 1;
+                i32 f = m_frameGate;
                 FinishLevel(f, 0);
             }
             return 1;
@@ -973,10 +1016,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         }
         case CMD_CONFIG_SETTINGS: {
             GameStateId st = m_curState->Update();
-            CMenuState* mus = 0;
+            CMenuState* mus;
             if (st == GAMESTATE_MENU) {
                 mus = static_cast<CMenuState*>(m_curState);
                 (static_cast<CMenuState*>(m_curState))->StopMusicChain();
+            } else {
+                mus = 0;
             }
 
             RunModalDialog("CONFIG_SETTINGS", GameOptionsDlgProc, 0);
@@ -989,8 +1034,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_frameGate) {
                 return 1;
             }
-            i32 v = m_musicEnabled ^ 1;
-            m_musicEnabled = v;
+            m_musicEnabled ^= 1;
+            i32 v = m_musicEnabled;
             i32 pl = CheckPlayState();
             if (!pl) {
                 if (m_curState->Update() != GAMESTATE_CREDITS_OVER_CURRENT
@@ -1012,9 +1057,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     p->Stop();
                 }
             }
-            i32 v = m_soundEnabled ^ 1;
-            m_soundEnabled = v;
-            g_sndEnabled = v;
+            m_soundEnabled ^= 1;
+            g_sndEnabled = m_soundEnabled;
+            i32 v = m_soundEnabled;
             if (v != 0) {
                 m_inputState->Resume();
             } else {
@@ -1044,8 +1089,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             SaveFrontBufferShot(
                 m_settings,
                 this,
-                g_gameReg->m_modeSize.cx,
-                g_gameReg->m_modeSize.cy,
+                g_gameReg->GetModeSize().cx,
+                g_gameReg->GetModeSize().cy,
                 0,
                 0
             );
@@ -1056,7 +1101,6 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!_g) {
                 return 1;
             }
-            m_strWorldFile = m_strWorldFile;
             if (!PassClickToPlayState(m_curState->m_levelIndex, 0, 1)) {
                 ReportError(IDX(IDS_CHANGE_LEVEL), 0x434);
             }

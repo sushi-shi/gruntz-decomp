@@ -263,6 +263,12 @@ public:
 
     i32 ChangeState(i32 arg);
 
+    // A member: HandleCommand's only call site materialises `this` in ecx
+    // (`push <url> / mov ecx,esi / call`), which is the __thiscall sequence; the body
+    // never reads `this`, and __thiscall with one stack argument returns `ret 4` just
+    // as the __stdcall spelling did.
+    i32 LaunchWebBrowser(char* url);
+
     // Retail reproduces the whole tagSIZE at every `.cx`/`.cy` use - an 8-byte frame
     // temp whose unread half is a dead store - so the size arrives by value.
     tagSIZE GetModeSize() {
@@ -359,8 +365,6 @@ public:
     GruntzPlayer m_options[4];
 };
 SIZE(0xa30);
-
-i32 __stdcall LaunchWebBrowser(char* url);
 
 extern "C" i32 g_scoreTimeBase;
 
