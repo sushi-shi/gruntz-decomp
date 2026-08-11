@@ -631,9 +631,10 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 }
 
 // @early-stop
-// `add reg,-4` where retail emits `sub reg,4`; `y - 4`, `y -= 4` and the store-through
-// form all canonicalise to `add`.  That also blocks the two arm suffixes retail shares
-// (EAST is NORTHEAST minus its `sub edx,4`, WEST is NORTHWEST minus its).
+// Every arm body and both loops now agree instruction-for-instruction with retail; what
+// is left is one whole-function register permutation (retail esi/ecx/edx/edi/ebx/eax for
+// e/x/y/p/i/1, ours edx/eax/ecx/esi/edi/ebx), which also picks `add ecx,0x204` over
+// retail's `lea edx,[ecx+0x204]` for the cursor.
 RVA(0x00019b90, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
