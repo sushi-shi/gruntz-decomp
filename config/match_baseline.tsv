@@ -36,7 +36,7 @@ areamgr	57	55
 arrayserialize	4	4
 attract	16	10
 attractstate	13	11
-battlezdata	31	28
+battlezdata	31	29
 battlezdlgcolors	8	8
 battlezmapconfig	40	15
 battlezrepath	2	1
@@ -329,7 +329,7 @@ winmain	1	1
 worldsoundset	36	33
 wormhole	29	23
 wormholeacts	2	2
-wwdfactoryobject	52	43
+wwdfactoryobject	52	44
 wwdfile	3	2
 wwdgameobject	45	33
 wwdgameobjectrender	15	11
@@ -497,7 +497,7 @@ battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	5	6c265d0561f1	0x
 battlezdata	?ClearWins@CBattlezData@@QAEXXZ	100.0000	100.0000	5	d7309bdddb49	0xfcc90	100.0000
 battlezdata	?FillRecord@CBattlezData@@QAEXHH@Z	100.0000	100.0000	9	401906a0ad5d	0xfd330	100.0000
 battlezdata	?GetFlag@CBattlezData@@QAEHHH@Z	100.0000	100.0000	4	a46a68fb692c	0xfcc10	100.0000
-battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	99.5000	99.5000	6	e95cdee1f71a	0xfced0	99.5000
+battlezdata	?GetRecordValue@CBattlezData@@QAEHH@Z	100.0000	100.0000	7	a5a2bdc61734	0xfced0	100.0000
 battlezdata	?GroupAllScored@CBattlezData@@QAEHXZ	100.0000	100.0000	3	3c3123c1d08d	0xfce80	100.0000
 battlezdata	?GroupRatio@CBattlezData@@QAEMXZ	100.0000	100.0000	3	05cfc6c45756	0xfce00	100.0000
 battlezdata	?InBounds@CBattlezData@@QAEHH@Z	100.0000	100.0000	6	aab3829d67a1	0xfcd70	100.0000
@@ -4533,7 +4533,7 @@ wwdfactoryobject	?Setup@CWwdGameObjectA@@UAEHHHHPAUAnimWorkerObj@@@Z	100.0000	10
 wwdfactoryobject	?SetupDeferred@CWwdGameObjectF@@UAEHHPAUAnimWorkerObj@@@Z	100.0000	100.0000	1	198377e91ae5	0x15bc30	100.0000
 wwdfactoryobject	?SetupFlagged@CWwdGameObjectC@@UAEHHHHPAUAnimWorkerObj@@H@Z	100.0000	100.0000	2	a10c29e477ed	0x15c1d0	100.0000
 wwdfactoryobject	?Unload@CAniAdvanceCursor@@UAEXXZ	100.0000	100.0000	4	67d9f18044ec	0x15c2c0	100.0000
-wwdfactoryobject	?Unload@CResolveNode@@UAEXXZ	75.8000	75.8000	3	ca9789f14ff5	0x154a80	75.8000
+wwdfactoryobject	?Unload@CResolveNode@@UAEXXZ	100.0000	100.0000	4	8e17728d11b8	0x154a80	100.0000
 wwdfile	?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z	100.0000	100.0000	1	dfb8fcb3a672	0xd53a0	100.0000
 wwdfile	?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z	100.0000	100.0000	2	434ccad61b10	0x311e0	100.0000
 wwdfile	?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z	91.4875	91.4875	2	4d92e231b09a	0xa000	91.4875

@@ -228,7 +228,8 @@ i32 CBattlezData::GetRecordValue(i32 b) {
     if (idx == m_count - 1) {
         return m_scoreValue;
     }
-    return m_records[idx].m_scoreValue;
+    BattlezRecord* record = &m_records[idx];
+    return record->m_scoreValue;
 }
 
 RVA(0x000fcf20, 0x37)

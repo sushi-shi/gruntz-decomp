@@ -85,12 +85,10 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
     AttachToOwner(owner, id);
 }
 
-// @early-stop
 RVA(0x00154a80, 0x13)
 void CResolveNode::Unload() {
     m_screenX = COORD_UNSET;
-    m_dirty.m_rect.left = COORD_UNSET;
-    m_dirty.m_armed = -1;
+    m_dirty.Reset();
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
