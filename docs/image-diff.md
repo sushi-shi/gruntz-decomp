@@ -342,8 +342,8 @@ candidate this partitions the 72-region bucket into **34 genuinely different
 identities** and **38 multiplicity-only regions**.
 
 With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **36 wrong-referent regions** (26 symbol-proven, 10
-weak/content-only), **39 ordering-only regions**, and **38 multiplicity-only regions**.
+current authoritative worklist is **35 wrong-referent regions** (25 symbol-proven, 10
+weak/content-only), **39 ordering-only regions**, and **39 multiplicity-only regions**.
 
 A twelfth resolver defect treated printable bytes as stronger than a paired data
 symbol.  That mislabeled `g_levelMsgRectsB[0].top` (integer value 92) as the string
@@ -353,6 +353,14 @@ also exposed two previously hidden CRT identity differences: retail's
 `___lc_lctostr` and `___init_numeric` reach named `g_dot`, while our link reaches a
 pooled `"."` literal.  The honest wrong-region count therefore rises **34 -> 36**.
 The selftest uses the `RECT` field as a negative control.
+
+`CChatBoxOwner::ProcessCheatInput` then supplied the first source correction from the
+identity-only list.  Retail pushes `??_C@_00A@?$AA@` and calls
+`CString::CString(const char*)` for the `group` local; `CString group = "";`
+reproduces that evidence.  The region leaves the wrong-identity bucket (**36 -> 35**).
+It remains in the multiplicity worklist (**38 -> 39**) because our frame emits one
+additional default-constructor/destructor pair; that is still tracked code-shape
+evidence, but no operand reaches a CString identity absent from retail.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed

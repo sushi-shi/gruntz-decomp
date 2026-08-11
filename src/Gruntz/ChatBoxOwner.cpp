@@ -126,7 +126,7 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                 }
 
                 if (parsed) {
-                    CString group;
+                    CString group = "";
                     CString code;
                     i32 enabled = 0;
                     i32 count = bute.GetIntDef("Cheatz", "NumCheatz", 0);

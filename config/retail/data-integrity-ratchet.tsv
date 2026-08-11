@@ -1,5 +1,5 @@
 metric	maximum	note
 unclaimed_runs	37	retail-accessed runs outside every DATA claim
-wrong_referent_regions	36	paired regions reaching a genuinely different decidable referent; paired non-literal data symbols outrank coincidental string-like bytes, exposing two CRT g_dot-vs-pooled-literal identities
+wrong_referent_regions	35	paired regions reaching a genuinely different decidable referent; ProcessCheatInput's retail empty-literal CString constructor is now reconstructed
 ordering_only_regions	39	paired regions reaching the same decidable referent multiset in another order; six were exposed by proving the complete decidable multiset before unknown-operand alignment (five moved from wrong, one was previously suppressed); includes 3 immutable g_motionZero load-order rows from the MotionStateStep -> MovingLogic fold
-multiplicity_only_regions	38	paired regions reaching the same decidable identities with different occurrence counts; code-shape/call-count evidence, not a wrong-target claim
+multiplicity_only_regions	39	paired regions reaching the same decidable identities with different occurrence counts; ProcessCheatInput moved here after its wrong constructor identity was fixed, retaining one extra default-ctor/dtor pair from frame/code shape
