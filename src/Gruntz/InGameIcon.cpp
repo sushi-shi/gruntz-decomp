@@ -81,8 +81,10 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekTimer.m_hi = 0;
     m_peekWindow.m_hi = 0;
 
-    obj->m_screenX = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    obj->m_screenY = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 snapY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_object->m_screenX = snapX;
+    m_object->m_screenY = snapY;
 
     CWwdGameObjectA* snapped = m_object;
     if (snapped->m_sortKey != SORTKEY_INGAME_INFO) {
@@ -90,9 +92,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         snapped->m_flags |= 0x20000;
     }
 
-    AnimWorkerObj* aux = m_objAux;
-    m_prevAnimSetNode = aux->m_actKey;
-    aux->m_actKey = ActFindId("A");
+    m_prevAnimSetNode = m_objAux->m_actKey;
+    m_objAux->m_actKey = ActFindId("A");
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
@@ -106,7 +107,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekWindow.m_hi = 0;
 
     InGameIconGlitter glitter = ICON_GLITTER_NONE;
-    CDDrawWorker* frameSet = static_cast<CWwdGameObjectA*>(obj)->m_frameSet;
+    CDDrawWorker* frameSet = m_wwdObject->m_frameSet;
     if (frameSet != NULL) {
         CString name;
         name = frameSet->m_name;
