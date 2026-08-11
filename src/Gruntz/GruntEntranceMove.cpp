@@ -131,6 +131,13 @@ DATA(0x001e9a50)
 const double g_wingzBias = -0.5;
 
 // @early-stop
+// Retail keeps a provably-dead arm that cl removes. After `cmp eax,0x22` it emits
+// BOTH `jl <toyCheck>` and a bare `jge <brick>` on the same live flags (0x67a16)
+// and then a second `xor eax,eax` / ret block for the unreachable fall-through;
+// cl proves the pair complementary and drops the jge and the block. Swapping the
+// two tests to retail's order does not reproduce it (cl still folds, and the brick
+// block moves to the tail), and re-reading m_entrancePickup in the second test is
+// worse still - it defeats the CSE that puts both compares on one register.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
@@ -227,8 +234,17 @@ i32 CGrunt::GruntInRadius(i32 col, i32 row) {
 }
 
 // @early-stop
-// Regalloc: retail spills `found` into the dead `mode` param home (one fewer
-// frame dword) and keeps `base` on the stack instead of a register.
+// The animation-set name is assigned to `key` INSIDE each arm, not collected into a
+// `const char* base` and assigned once after the chain: retail pushes the literal in
+// the arm (0x67e2f `push 0x60e944`, 0x67e45 `push 0x60e034`) and tail-merges only
+// the `lea ecx,[esp+0x14] / call CString::operator=` pair, and it loads `found` into
+// edi in each arm rather than reading its home at the merge.
+// The wormhole block reads g_gameReg at each use, not through one hoisted local -
+// retail loads the global four times (`reloc_multiset` is what shows this).
+// Regalloc residue: retail takes EBP as a fourth callee-saved register and reserves
+// ONE frame dword (`push ecx`), cl takes three and reserves two (`sub esp,8`), so
+// retail has a spare register to park the constant 1 in (`mov [esi+0x25c],ebp`,
+// `cmp eax,ebp`) where cl spells every such site as an immediate.
 RVA(0x00067bd0, 0x2ef)
 void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_prevAnimSetNode = m_objAux->m_actKey;
@@ -248,20 +264,18 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     CString key;
 
     CAniElement* found;
-    const char* base;
 
     if (mode == GRUNT_ENTRANCE_WORMHOLE) {
         i32 onScreen = 0;
-        CGruntzMgr* g = g_gameReg;
         {
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
-            if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
                 onScreen = 1;
             } else {
 
                 CGrunt* focus;
-                CTriggerMgr* tm = g->m_cmdGrid;
+                CTriggerMgr* tm = g_gameReg->m_cmdGrid;
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {
@@ -285,9 +299,9 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 found
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37a, -1, 0, -1, -1);
             }
-            base = "GRUNTZ_ENTRANCEZ";
+            key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
             found = NULL;
             MapLookup(
@@ -296,9 +310,9 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 found
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37b, -1, 0, -1, -1);
             }
-            base = "GRUNTZ_ENTRANCEZ";
+            key = "GRUNTZ_ENTRANCEZ";
         } else {
             found = NULL;
             MapLookup(
@@ -307,9 +321,9 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 found
             );
             if (onScreen) {
-                g->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->SpawnVoiceDriver(this, 0x37c, -1, 0, -1, -1);
             }
-            base = "GRUNTZ_ENTRANCEZ";
+            key = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = NULL;
@@ -318,7 +332,7 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             s_GRUNTZ_ENTRANCEZ_DROP,
             found
         );
-        base = s_GRUNTZ_ENTRANCEZ_DROP;
+        key = s_GRUNTZ_ENTRANCEZ_DROP;
     } else {
         found = NULL;
         MapLookup(
@@ -326,10 +340,8 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             s_GRUNTZ_ENTRANCEZ_RESSURECT,
             found
         );
-        base = "GRUNTZ_DEATHZ_MELT";
+        key = "GRUNTZ_DEATHZ_MELT";
     }
-
-    key = base;
 
     if (!found) {
         ResetEntranceAnimation(1, 0, 0);
@@ -346,7 +358,9 @@ void CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
 // @early-stop
 // Regalloc colour only: retail pins the tile flags in edi where cl uses ebp,
-// so retail cannot CSE grid->m_width across the two range checks.
+// so retail cannot CSE grid->m_width across the two range checks. The tile-cell
+// read-modify-writes now go through a materialised BrickzCell* the way retail
+// addresses them (docs/patterns/rmw-byte-field-materialises-the-cell-pointer.md).
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
@@ -392,13 +406,15 @@ i32 CGrunt::LoadEntranceConfig() {
         if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* og = g_gameReg->m_tileGrid;
 
-            og->m_rows[oldTileY][oldTileX].m_flagBytes[3] &= ~0x20;
+            BrickzCell* oc = &og->m_rows[oldTileY][oldTileX];
+            oc->m_flagBytes[3] &= ~0x20;
             og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
             CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
 
-            ng->m_rows[newTileY][newTileX].m_flagBytes[3] |= 0x20;
+            BrickzCell* nc = &ng->m_rows[newTileY][newTileX];
+            nc->m_flagBytes[3] |= 0x20;
             ng->m_rowInts[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
         m_lastTilePx.m_x = newPxX;
@@ -439,8 +455,8 @@ i32 CGrunt::LoadEntranceConfig() {
         LoadAnimNameTable(0, 0);
     }
 
-    if (m_wwdObject->m_animCursor.m_finished == 0
-        || m_wwdObject->m_animCursor.m_frameTicksLeft != 0) {
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    if (cur->m_finished == 0 || cur->m_frameTicksLeft != 0) {
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -686,7 +702,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
                                    ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                    : 0;
         i32 frame = elem->m_param;
-        i32 idx = 3 * m_entranceCell.row + m_entranceCell.column;
+        GruntDirectionCell cell = m_entranceCell;
+        i32 idx = 3 * cell.row + cell.column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
         m_wwdObject->ApplyLookupSprite(buf, frame);
         return 1;
@@ -703,7 +720,8 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
                                    ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                    : 0;
         i32 frame = elem->m_param;
-        i32 idx = 3 * m_entranceCell.row + m_entranceCell.column;
+        GruntDirectionCell cell = m_entranceCell;
+        i32 idx = 3 * cell.row + cell.column;
         char* buf = m_cells[idx].IdleName().GetBuffer(0);
         m_wwdObject->ApplyLookupSprite(buf, frame);
     }
@@ -1352,11 +1370,13 @@ i32 CGrunt::FinishActiveAction() {
         i32 newTy = newY >> TILE_SHIFT_PX;
         if (oldTx != -1 && oldTy != -1) {
             CMapMgr* oldGrid = g_gameReg->m_tileGrid;
-            oldGrid->m_rows[oldTy][oldTx].m_flagBytes[3] &= ~0x20;
+            BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];
+            oc->m_flagBytes[3] &= ~0x20;
             oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;
         }
         CMapMgr* newGrid = g_gameReg->m_tileGrid;
-        newGrid->m_rows[newTy][newTx].m_flagBytes[3] |= 0x20;
+        BrickzCell* nc = &newGrid->m_rows[newTy][newTx];
+        nc->m_flagBytes[3] |= 0x20;
         newGrid->m_rowInts[newTy][newTx * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         m_lastTilePx.m_x = newX;
         m_lastTilePx.m_y = newY;

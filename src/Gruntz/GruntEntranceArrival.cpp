@@ -391,11 +391,14 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // @early-stop
-// Blocks are 79/79 and the rets 3/3; three branches are still missing, all in the
-// `sel` decision.  Retail cross-jumps the two non-degenerate arms into a shared
-// four-test lattice (0x625d4/0x625d8 each fall into 0x625e0/0x625e4, and both
-// reach the `cmp edi,eax / sbb / inc` at 0x625ef), which a plain nested ?: cannot
-// spell - cl emits the straight tree instead.
+// The `sel` decision is a FLAT four-arm else-if chain over (d0!=0, d1!=0), not a
+// nested ?: - retail's 0x625d4/0x625d8 lattice is cl threading the known-value
+// edges of that chain, its blocks are jumped ONTO past their own first test, and
+// the last arm's compare is UNSIGNED (`cmp edi,eax / sbb edi,edi / inc edi`).
+// Branch counts now agree 47/47.
+// Residue: the pose test. Retail compares the member in place (`cmp DWORD PTR
+// [edx+0x1b4],ecx`) and then RE-LOADS m_animation inside the if body for m_value,
+// where cl materialises the load once for the compare and reuses it.
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -462,10 +465,10 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             m_wwdObject->ApplyLookupSprite(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
-            CGruntzMgr* g = g_gameReg;
             i32 m380 = m_moveVariant;
             if (m380 != 0) {
                 i32 tier = cueTier + m380 - 1;
+                CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
@@ -474,12 +477,13 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             } else {
                 if (m_moveKind == 0) {
                     i32 md = 3;
-                    if (g->m_gameMode != GAMEMODE_SINGLE) {
+                    if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
                         md = 6;
                     }
                     m_moveKind = GetRandom(1, md);
                 }
                 i32 tier = cueTier + m_moveKind - 1;
+                CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_viewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
@@ -548,18 +552,19 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         d1 = t1 - cap;
     }
     i32 sel;
-    if (d0 != 0) {
-        sel = (d1 != 0) ? ((d0 < d1) ? 0 : 1) : 0;
-    } else if (d1 != 0) {
-        sel = 1;
-    } else {
+    if (d0 == 0 && d1 == 0) {
         i32 r = rand() % 0x64 + 1;
         sel = (r >= m_toyBlendPct) ? 1 : 0;
+    } else if (d0 != 0 && d1 == 0) {
+        sel = 0;
+    } else if (d1 != 0 && d0 == 0) {
+        sel = 1;
+    } else {
+        sel = (static_cast<u32>(d0) < static_cast<u32>(d1)) ? 0 : 1;
     }
 
-    CAniElement* cur = m_wwdObject->m_animCursor.m_animation;
     CAniElement* want = m_poseToy[sel];
-    if (cur != want) {
+    if (m_wwdObject->m_animCursor.m_animation != want) {
         m_value = m_wwdObject->m_animCursor.m_animation;
         m_wwdObject->m_animCursor.Setup(want);
         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
@@ -576,17 +581,12 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 yy = hud->m_screenY;
     i32 xx = hud->m_screenX;
 
-    RecordBytes<CDDrawWorkerHost*> band;
-    band.m_rec = &g->m_world->m_level->m_mainPlane;
-    i32* rectBase = band.m_dwords;
-    i32 lim = rectBase[0x48 / 4];
-    i32* rect = rectBase + 0x40 / 4;
     if (sel != 0) {
-        if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+        if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xb, -1, -1, -1);
         }
     } else {
-        if (xx < lim && xx >= rect[0] && yy < rect[3] && yy >= rect[1]) {
+        if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xx, yy)) {
             g->m_cueSink->LoadGruntSpawnConfig(this, 0xa, -1, -1, -1);
         }
     }
@@ -728,6 +728,9 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 }
 
 // @early-stop
+// g_gameReg is loaded once per PointInBounds BLOCK (the bounds test and the
+// LoadGruntSpawnConfig call in each block share ONE load; retail 0x6300d, 0x63041)
+// - `reloc_multiset` counts four loads in retail and six with a per-use spelling.
 // Two observed residues, both small and both regalloc-shaped:
 //  1. GetRandom(1, count)'s degenerate arm.  Retail selects with a branch between
 //     the literal lo and the register holding hi (0x62f72 `test al,1 / je / mov
@@ -772,36 +775,41 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
                 g_gameReg->Rand();
                 i32 focused = (m_tileOwnerHi == g_curPlayer);
                 if (focused && idx > 0x5a) {
+                    CGruntzMgr* g = g_gameReg;
                     if (CGameLevel::PointInBounds(
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                            &g->m_world->m_level->m_mainPlane->m_viewRect,
                             m_object->m_screenX,
                             m_object->m_screenY
                         )) {
 
-                        g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 4, -1, -1, -1);
+                        g->m_cueSink->LoadGruntSpawnConfig(this, 4, -1, -1, -1);
                     }
                 } else if (focused || m_entranceReason != PICKUP_NONE) {
                     switch (idx) {
-                        case GRUNT_IDLE_VARIANT_PRIMARY:
+                        case GRUNT_IDLE_VARIANT_PRIMARY: {
+                            CGruntzMgr* g = g_gameReg;
                             if (CGameLevel::PointInBounds(
-                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    &g->m_world->m_level->m_mainPlane->m_viewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )) {
 
-                                g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 5, -1, -1, -1);
+                                g->m_cueSink->LoadGruntSpawnConfig(this, 5, -1, -1, -1);
                             }
                             break;
-                        case GRUNT_IDLE_VARIANT_SECONDARY:
+                        }
+                        case GRUNT_IDLE_VARIANT_SECONDARY: {
+                            CGruntzMgr* g = g_gameReg;
                             if (CGameLevel::PointInBounds(
-                                    &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect,
+                                    &g->m_world->m_level->m_mainPlane->m_viewRect,
                                     m_object->m_screenX,
                                     m_object->m_screenY
                                 )) {
 
-                                g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 6, -1, -1, -1);
+                                g->m_cueSink->LoadGruntSpawnConfig(this, 6, -1, -1, -1);
                             }
                             break;
+                        }
                         default:
                             break;
                     }
