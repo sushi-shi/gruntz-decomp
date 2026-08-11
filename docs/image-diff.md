@@ -342,7 +342,7 @@ candidate this partitions the 72-region bucket into **34 genuinely different
 identities** and **38 multiplicity-only regions**.
 
 With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **35 wrong-referent regions** (25 symbol-proven, 10
+current authoritative worklist is **33 wrong-referent regions** (23 symbol-proven, 10
 weak/content-only), **39 ordering-only regions**, and **39 multiplicity-only regions**.
 
 A twelfth resolver defect treated printable bytes as stronger than a paired data
@@ -361,6 +361,16 @@ reproduces that evidence.  The region leaves the wrong-identity bucket (**36 -> 
 It remains in the multiplicity worklist (**38 -> 39**) because our frame emits one
 additional default-constructor/destructor pair; that is still tracked code-shape
 evidence, but no operand reaches a CString identity absent from retail.
+
+Two duplicate MFC labels then hid one real call defect.  The bodies decide their own
+identities: retail `0x1b2a0f` calls `_mbsrchr` and is
+`CString::ReverseFind(char)`; `0x1b2a30` calls `_mbsstr` and is
+`CString::Find(const char*)`.  They are not second copies of `Find(char)` and
+`FindOneOf`.  Correcting the catalog removes those two false rows and exposes
+`CFecFile::AddFile`, whose path split really did call `Find('\\')` where retail calls
+`ReverseFind('\\')`.  Reconstructing that call takes the authoritative wrong-identity
+count **35 -> 33**.  Objdiff cannot reflect this fix because it masks the call target;
+the linked-referent gate is the acceptance evidence.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed

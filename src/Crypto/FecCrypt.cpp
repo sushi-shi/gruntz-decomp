@@ -175,7 +175,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_nextIndex++;
 
     CString base = name;
-    i32 slash = base.Find('\\');
+    i32 slash = base.ReverseFind('\\');
     if (slash != -1) {
         base = base.Right(base.GetLength() - slash - 1);
     }

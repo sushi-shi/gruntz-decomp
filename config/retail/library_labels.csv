@@ -815,8 +815,8 @@ rva,name,lib,confidence,source
 0x1b2944,?Left@CString@@QBE?AV1@H@Z,NAFXCW,HIGH,anchored
 0x1b29bb,?SpanIncluding@CString@@QBE?AV1@PBD@Z,NAFXCW,AMBIG,anchored
 0x1b29e5,?SpanIncluding@CString@@QBE?AV1@PBD@Z,NAFXCW,AMBIG,anchored
-0x1b2a0f,?Find@CString@@QBEHD@Z,NAFXCW,AMBIG,offstart-ghidra-missed
-0x1b2a30,?FindOneOf@CString@@QBEHPBD@Z,NAFXCW,AMBIG,anchored
+0x1b2a0f,?ReverseFind@CString@@QBEHD@Z,NAFXCW,HIGH,cruntime-callee
+0x1b2a30,?Find@CString@@QBEHPBD@Z,NAFXCW,HIGH,cruntime-callee
 0x1b2a4f,?FormatV@CString@@IAEXPBDPAD@Z,NAFXCW,HIGH,anchored
 0x1b2cf5,?Format@CString@@QAAXPBDZZ,NAFXCW,HIGH,anchored
 0x1b2d08,?Format@CString@@QAAXIZZ,NAFXCW,HIGH,offstart-ghidra-missed
