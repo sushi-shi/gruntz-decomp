@@ -4506,6 +4506,7 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
     return 1;
 }
 
+// @early-stop
 RVA(0x001090a0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {
