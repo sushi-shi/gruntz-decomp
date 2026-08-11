@@ -3985,15 +3985,12 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
     }
 
-    i32 dl = m_board->m_bounds.left;
-    i32 dt = m_board->m_bounds.top;
-    i32 dr = m_board->m_bounds.right;
-    i32 db = m_board->m_bounds.bottom;
-    if (dl < dr) {
-        i32 colOff = (dl * 7) << 2;
-        i32 w = dr - dl;
+    RECT sweep = m_board->m_bounds;
+    if (sweep.left < sweep.right) {
+        i32 colOff = (sweep.left * 7) << 2;
+        i32 w = sweep.right - sweep.left;
         do {
-            for (i32 r = dt; r < db; r++) {
+            for (i32 r = sweep.top; r < sweep.bottom; r++) {
                 m_board->m_rowBytes[r][colOff + 2] &= 0xfd;
             }
             colOff += 0x1c;

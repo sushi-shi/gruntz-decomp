@@ -5490,6 +5490,10 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 // Frame is 0x294 against retail's 0x290 - one scalar cl still refuses to overlay -
 // and retail parks &m_startMarkers / &m_placedObjectCells[k] in ebp across each
 // record loop while cl rematerialises the `lea` and spills the loop counter instead.
+// At the map48 lookup retail keeps the false return in eax at the merge and emits
+// the null out-param as a separate fall-through; cl cross-jumps both zero arms.
+// Nested/combined/ternary spellings are byte-identical, and reusing the out-param
+// as the result is worse (docs/patterns/over-merge-is-decided-before-layout.md).
 RVA(0x000d8060, 0x6ce)
 i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -5639,19 +5643,14 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             ar->Read(&v, sizeof(v));
         }
 
-        // Every path ASSIGNS sink; it is not pre-initialised.  That is what lets cl
-        // keep it in eax and reuse MapLookup's own zero on the failure path (retail
-        // 0xd8499 `je` straight to the merge), leaving the `oe == NULL` arm to
-        // materialise its own (0xd84a3 `xor eax,eax`).  Pre-initialising it puts
-        // sink in a callee-saved register and merges both arms onto one exit.
         CGameObject* oe = 0;
         CWwdGameObjectA* sink;
         if (MapLookup(res->m_childGroup->m_map48, gridObj, oe)) {
-            if (oe != NULL) {
+            if (oe == NULL) {
+                sink = NULL;
+            } else {
                 sink =
                     oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdGameObjectA*>(oe) : 0;
-            } else {
-                sink = NULL;
             }
         } else {
             sink = NULL;

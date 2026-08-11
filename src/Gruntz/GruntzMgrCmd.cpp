@@ -376,7 +376,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         m_cmdGrid->ClearRowAndRefresh(5);
                         i32 _key = g_gameReg->m_options[0].m_warlordObjectId;
                         if (_key) {
-                            _dr = 0;
+                            _dr = NULL;
                             if (MapLookupById(g_gameReg->m_world->m_childGroup->m_map48, _key, _dr)
                                 && _dr) {
                                 CWarlord* _d = static_cast<CWarlord*>(_dr->m_animWorker->m_logic);
@@ -598,7 +598,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         g_explosionz ^= 1;
                         CDDrawSubMgrLeafScan* _reg = m_world->m_soundRegistry;
                         if (_reg->m_emitGate == 0) {
-                            _c_ob = 0;
+                            _c_ob = NULL;
                             _reg->m_cues.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = static_cast<LeafCue*>(_c_ob);
                             if (_c) {
@@ -1021,7 +1021,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 mus = static_cast<CMenuState*>(m_curState);
                 (static_cast<CMenuState*>(m_curState))->StopMusicChain();
             } else {
-                mus = 0;
+                mus = NULL;
             }
 
             RunModalDialog("CONFIG_SETTINGS", GameOptionsDlgProc, 0);

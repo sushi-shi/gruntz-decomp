@@ -19,8 +19,8 @@ struct WaveFormatX {
     u16 wBitsPerSample;
     u16 cbSize;
 };
-#pragma pack(pop)
 SIZE(0x12);
+#pragma pack(pop)
 
 union RiffCursor {
     u32* m_words;

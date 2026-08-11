@@ -75,7 +75,7 @@ import sys
 from gruntz.core import vtable_catalog
 from gruntz.core import vtable_scan as vs
 from gruntz.core.class_meta import rel, vtbl_annotations
-from gruntz.cleanliness.vtable_virtuality import _index_classes
+from gruntz.cleanliness.vtable_virtuality import LIB_BASES, _index_classes
 
 REPO = vs.REPO
 BASELINE = REPO / "config" / "vtable-slot-binding-baseline.tsv"
@@ -167,6 +167,8 @@ def base_closure(name, classes, seen=None):
     if name in seen:
         return seen
     seen.add(name)
+    for b in LIB_BASES.get(name, ()):
+        base_closure(b, classes, seen)
     for b in classes.get(name, (0, []))[1]:
         base_closure(b, classes, seen)
     return seen

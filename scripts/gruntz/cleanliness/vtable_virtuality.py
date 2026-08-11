@@ -43,6 +43,14 @@ LIB_BASE_SLOTS = {
     "CFile": 12, "CException": 4, "CGdiObject": 4,
 }
 
+# External classes are absent from the source index, but their ancestry still decides
+# whether an inherited retail slot is correctly bound to an MFC base implementation.
+LIB_BASES = {
+    "CCmdTarget": ["CObject"],
+    "CWnd": ["CCmdTarget"],
+    "CDialog": ["CWnd"],
+}
+
 
 def _slot_counts_from_scan():
     """{rva: slot_count} for every analysed vtable (vtable_scan)."""

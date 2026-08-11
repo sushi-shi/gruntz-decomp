@@ -1398,6 +1398,13 @@ class TestSlotBindingBaseline(unittest.TestCase):
         self.assertEqual(vsb.classify_storage(vsb.split_mangled(
             "?Setup@CFoo@@QAEXXZ")[2]), "non-virtual")
 
+    def test_external_mfc_ancestry_is_in_the_base_closure(self):
+        classes = {"CGameDialog": (0, ["CDialog"])}
+        self.assertEqual(
+            vsb.base_closure("CGameDialog", classes),
+            {"CGameDialog", "CDialog", "CWnd", "CCmdTarget", "CObject"},
+        )
+
 
 # --------------------------------------------------------------------------- #
 # class_meta: the shared scanner both halves of class_sizes depend on          #
