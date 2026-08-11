@@ -926,7 +926,6 @@ void SoundDevice::Shutdown() {
 }
 
 // @early-stop
-// @early-stop
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     WaveFormatX wf;
