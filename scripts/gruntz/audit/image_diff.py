@@ -732,6 +732,18 @@ def _align_undecidable(rseq, cseq):
     doing this per paired region is cheap compared with decoding the image.
     The third return value counts retail operands that became undecidable.
     """
+    # Identity is already decided when the complete DECIDABLE multisets agree.
+    # Do not let wildcard placement overturn that stronger fact.  A large
+    # source-order permutation can put the unknown operands beside different
+    # known anchors; the dynamic program below then discards different known
+    # items from the two sides and manufactures an identity defect.  The
+    # LoadPickupSprites switch was the decisive counterexample: all 131 named
+    # referents agree, but its differently ordered case bands made HEALTH/
+    # CONVERSION appear to be replaced by DEATHTOUCH/REACTIVEARMOR.
+    rknown, cknown = _decidable(rseq), _decidable(cseq)
+    if Counter(rknown) == Counter(cknown):
+        return rknown, cknown, max(rseq.count(UNDECIDABLE), cseq.count(UNDECIDABLE))
+
     n, m = len(rseq), len(cseq)
     score = [[0] * (m + 1) for _ in range(n + 1)]
     step = [[None] * (m + 1) for _ in range(n + 1)]
@@ -1940,6 +1952,15 @@ def selftest():
     check("a known-vs-known referent difference survives normalization",
           _align_undecidable(a3, b3)[:2] == (a3, b3),
           "known difference suppressed")
+    # A wildcard alignment must not destroy a multiset identity already proven
+    # by every decidable operand.  This is the minimal form of the reordered
+    # LoadPickupSprites switch that used to delete different known items.
+    a4 = [UNDECIDABLE, "A", "B", "C"]
+    b4 = ["A", UNDECIDABLE, "C", "B"]
+    ra4, ca4, _ru4 = _align_undecidable(a4, b4)
+    check("unknowns cannot turn a proven referent permutation into an identity defect",
+          Counter(ra4) == Counter(ca4) == Counter(("A", "B", "C")),
+          "%r / %r" % (ra4, ca4))
 
     # --- 3b. the resolver's ASYMMETRY traps --------------------------------
     # Each of these four made a correct operand read as a wrong referent, and

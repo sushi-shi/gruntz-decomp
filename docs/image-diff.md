@@ -315,9 +315,22 @@ The negative controls prove all three cases. On the ordinary linked candidate th
 removes **1 false-positive region**; the authoritative retail-order/real-archive
 candidate already placed the neighbouring constants alike, so its ratchet stays flat.
 
+A tenth defect was inside the sixth correction itself.  The wildcard aligner handled
+one-sided unknowns correctly when the surrounding order was stable, but a large
+permutation could align those unknowns beside different known operands and then delete
+different identities from each side.  `LoadPickupSprites` is the decisive control:
+before wildcard alignment, both images have the exact same **131 decidable referents**;
+after the old alignment, it falsely claimed retail-only CONVERSION/SUPERSPEED and
+candidate-only DEATHTOUCH/REACTIVEARMOR.  The complete decidable multiset is stronger
+evidence than any wildcard placement, so equality is now decided first and only the
+ordering comparison sees the unknown-free sequences.  A minimal four-element
+permutation is a negative control in `--selftest`.  On the authoritative candidate this
+moves the wrong count **77 -> 72** and exposes six ordering-only bodies (**33 -> 39**):
+five were misclassified as wrong and one had been over-suppressed entirely.
+
 With the corrected audit, derived object order, and reconstructed static archives, the
-current authoritative worklist is **77 wrong-referent regions** (67 symbol-proven, 10
-weak/content-only) plus **33 ordering-only regions**.
+current authoritative worklist is **72 wrong-referent regions** (62 symbol-proven, 10
+weak/content-only) plus **39 ordering-only regions**.
 
 `CGruntzMgr::SetGruntColor` reaches the same RED/GREEN/BLUE/PURPLE asset keys as
 retail, and the pickup loader reaches the same decidable key multiset. The observed
@@ -366,6 +379,7 @@ classify each one. Every check states what a *wrong* implementation would report
     [PASS] a literal carrying \n resolves to its TEXT
     [PASS] no wrong-referent row is an interior SELF-reference (a jump table)
     [PASS] an undecidable operand cannot manufacture a wrong referent
+    [PASS] unknowns cannot turn a proven referent permutation into an identity defect
     [PASS] two swapped relocated dwords -> ONE ordering-only region
     [PASS] ...and NOT a wrong-referent region (the multiset is intact)
     [PASS] ...and the ordering worklist attributes it to the right region

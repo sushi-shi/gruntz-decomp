@@ -1,4 +1,4 @@
 metric	maximum	note
 unclaimed_runs	37	retail-accessed runs outside every DATA claim
-wrong_referent_regions	77	paired regions reaching a genuinely different decidable referent
-ordering_only_regions	33	paired regions reaching the same decidable referent multiset in another order; 3 immutable g_motionZero load-order rows were exposed by the proven MotionStateStep -> MovingLogic one-compiland fold without adding a wrong-referent region
+wrong_referent_regions	72	paired regions reaching a genuinely different decidable referent
+ordering_only_regions	39	paired regions reaching the same decidable referent multiset in another order; six were exposed by proving the complete decidable multiset before unknown-operand alignment (five moved from wrong, one was previously suppressed); includes 3 immutable g_motionZero load-order rows from the MotionStateStep -> MovingLogic fold
