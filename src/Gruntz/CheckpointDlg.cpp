@@ -43,10 +43,10 @@ const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-// @early-stop
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CWnd* c = GetDlgItem(0x53a);
     i32 checked = ::SendMessageA(c->m_hWnd, BM_GETCHECK, 0, 0);
-    g_gameReg->m_isCheckpointPrompts = checked == 0;
+    CGruntzMgr* reg = g_gameReg;
+    reg->m_isCheckpointPrompts = checked == 0;
 }

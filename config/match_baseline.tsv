@@ -67,7 +67,7 @@ chatbox	29	25
 chatbox_eh	1	1
 chatboxowner	13	11
 cheatmgr	7	4
-checkpointdlg	6	5
+checkpointdlg	6	6
 cimage	20	11
 cimagecomdats	9	9
 cmdscrollapply	3	2
@@ -794,7 +794,7 @@ checkpointdlg	??1CCheckpointDlg@@UAE@XZ	100.0000	100.0000	1	cpp:b5a9ac7b38ee	0x2
 checkpointdlg	??_GCCheckpointDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b5a9ac7b38ee	0x234d0	100.0000
 checkpointdlg	?DoDataExchange@CCheckpointDlg@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	5	43b23447bbea	0x23520	100.0000
 checkpointdlg	?GetMessageMap@CCheckpointDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	4	27713149344a	0x23570	100.0000
-checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	97.8571	97.8571	4	86d2827fcb93	0x23590	97.8571
+checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	100.0000	100.0000	5	5815f9699068	0x23590	100.0000
 cimage	?BlitFlipH@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.0249	98.0249	5	efe6282073e0	0x153d90	98.6766
 cimage	?BlitFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	97.4155	97.4155	5	467120518147	0x153b20	98.7440
 cimage	?BlitNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	98.6131	98.6131	4	587cf438f72a	0x1538c0	98.7588
