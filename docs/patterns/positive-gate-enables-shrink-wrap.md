@@ -387,6 +387,34 @@ of them exists. Check that before filing an inverse-direction function as a wall
 So: when `jcc_sieve` shows `rets N -> N+1`, read it as *diagnosed, not actionable*, and spend
 the budget on the function's other residue.
 
+### Shared nonzero success tail: gate the work, not the cheap success path
+
+The same return-count test applies when both arms return **one**, rather than to the usual
+failure-zero tail. `CBattlezMapConfig::RouteToNearbyEnemy` @0x2e3a0 had four candidate returns
+against retail's three. Retail's dwell gate is decisive:
+
+```asm
+    cmp  dword ptr [unit+0x2ec],0x64
+    jbe  <shared mov eax,1 epilogue>
+    ...expensive route update...
+    jmp  <same success epilogue>
+```
+
+The behaviorally equivalent early-return source
+`if ((u32)dwell <= 100) return 1;` gave the cheap arm its own epilogue. Spell the inverse as a
+positive gate around the work, followed by one return:
+
+```cpp
+if (static_cast<u32>(dwell) > 100) {
+    /* expensive route update */
+}
+return 1;
+```
+
+This changed 67.4795 -> 68.7256 and made both sides agree at 96 blocks, 58 conditional branches,
+and three returns. This is not a condition-polarity guess: the retail `jbe` target proves that the
+cheap arm joins the later success tail.
+
 ### Bound, re-confirmed
 
 `b_ret > t_ret` can also mean **the base is missing a whole inlined construction**, not a

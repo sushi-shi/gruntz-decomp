@@ -4138,111 +4138,110 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
     }
     if (best != NULL) {
-        if (static_cast<u32>(unit->m_dwell) <= 0x64) {
-            return 1;
-        }
-        // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
-        {
-            const RECT* src = &box;
-            CMapMgr* board = m_board;
-            CRect b(0, 0, board->m_width, board->m_height);
-            RECT a;
-            if (src != NULL) {
-                a.left = src->left;
-                a.top = src->top;
-                a.right = src->right + 1;
-                a.bottom = src->bottom + 1;
-            } else {
-                a = CRect(0, 0, board->m_width, board->m_height);
-            }
-            RECT* aDst = &board->m_bounds;
-            if (!IntersectRect(aDst, &a, &b)) {
-                *aDst = a;
-            }
-            board->m_gridW = aDst->right - aDst->left;
-            board->m_gridH = aDst->bottom - aDst->top;
-        }
-
-        i32 flags = 0;
-        PickupType prim = unit->m_entranceReason;
-        PickupType t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
-        }
-        if (t == PICKUP_TOOB) {
-            flags = 0x100;
-        }
-        t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
-        }
-        if (t == PICKUP_WINGZ) {
-            flags = 0x942;
-        }
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            prim = unit->m_toolId;
-        }
-        if (prim == PICKUP_SPRING) {
-            flags = 0x1000;
-        }
-        Coord bc;
-        best->GetScreenTile(&bc);
-        if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) == 0) {
-            // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
-            CMapMgr* board = m_board;
-            CRect b(0, 0, board->m_width, board->m_height);
-            RECT a;
-            a = CRect(0, 0, board->m_width, board->m_height);
-            RECT* aDst = &board->m_bounds;
-            if (!IntersectRect(aDst, &a, &b)) {
-                *aDst = a;
-            }
-            board->m_gridW = aDst->right - aDst->left;
-            board->m_gridH = aDst->bottom - aDst->top;
-            unit->m_dwell = 0;
-            return 0;
-        }
-        if (unit->m_defenderState != AISTATE_RETURN) {
-            unit->m_defenderState = AISTATE_SEEK;
-            unit->m_routeMaskC = 0;
-        }
-        if (unit->m_blockedVoicePending != 0) {
-            __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
-            if (elapsed >= m_routeWindow.m_v) {
-                unit->m_blockedVoicePending = 0;
-                CGameObject* lvl = unit->m_object;
-
-                RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
-                if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
-                    g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
+        if (static_cast<u32>(unit->m_dwell) > 0x64) {
+            // CMapMgr::Clip(&box) expanded; cl5 keeps both arms of `&box != NULL`.
+            {
+                const RECT* src = &box;
+                CMapMgr* board = m_board;
+                CRect b(0, 0, board->m_width, board->m_height);
+                RECT a;
+                if (src != NULL) {
+                    a.left = src->left;
+                    a.top = src->top;
+                    a.right = src->right + 1;
+                    a.bottom = src->bottom + 1;
+                } else {
+                    a = CRect(0, 0, board->m_width, board->m_height);
                 }
-                // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
-                // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
-                // clock) - and we emitted only six.  The zero pass has to go through the
-                // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
-                // dead against the 0x1388 that follows and drops it, and the re-arm has
-                // to stay two i32 halves for the same reason.
-                m_routeTimers[0].m_v = 0;
-                m_routeTimers[1].m_v = 0;
-                m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
-                m_routeWindowHi = 0;
-                m_routeClock.m_v = g_frameTime;
+                RECT* aDst = &board->m_bounds;
+                if (!IntersectRect(aDst, &a, &b)) {
+                    *aDst = a;
+                }
+                board->m_gridW = aDst->right - aDst->left;
+                board->m_gridH = aDst->bottom - aDst->top;
             }
-        }
 
-        {
-            CMapMgr* board = m_board;
-            CRect gb(0, 0, board->m_width, board->m_height);
-            RECT grc;
-            grc = gb;
-            RECT* grcDst = &board->m_bounds;
-            if (!IntersectRect(grcDst, &grc, &gb)) {
-                *grcDst = grc;
+            i32 flags = 0;
+            PickupType prim = unit->m_entranceReason;
+            PickupType t = prim;
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
+                t = unit->m_toolId;
             }
-            board->m_gridW = grcDst->right - grcDst->left;
-            board->m_gridH = grcDst->bottom - grcDst->top;
+            if (t == PICKUP_TOOB) {
+                flags = 0x100;
+            }
+            t = prim;
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
+                t = unit->m_toolId;
+            }
+            if (t == PICKUP_WINGZ) {
+                flags = 0x942;
+            }
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
+                prim = unit->m_toolId;
+            }
+            if (prim == PICKUP_SPRING) {
+                flags = 0x1000;
+            }
+            Coord bc;
+            best->GetScreenTile(&bc);
+            if (RouteUnitTo(unit, bc.m_x, bc.m_y, 0x1000d8f, flags, 1) == 0) {
+                // CMapMgr::Clip(NULL): the constant src folds to the else arm alone.
+                CMapMgr* board = m_board;
+                CRect b(0, 0, board->m_width, board->m_height);
+                RECT a;
+                a = CRect(0, 0, board->m_width, board->m_height);
+                RECT* aDst = &board->m_bounds;
+                if (!IntersectRect(aDst, &a, &b)) {
+                    *aDst = a;
+                }
+                board->m_gridW = aDst->right - aDst->left;
+                board->m_gridH = aDst->bottom - aDst->top;
+                unit->m_dwell = 0;
+                return 0;
+            }
+            if (unit->m_defenderState != AISTATE_RETURN) {
+                unit->m_defenderState = AISTATE_SEEK;
+                unit->m_routeMaskC = 0;
+            }
+            if (unit->m_blockedVoicePending != 0) {
+                __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
+                if (elapsed >= m_routeWindow.m_v) {
+                    unit->m_blockedVoicePending = 0;
+                    CGameObject* lvl = unit->m_object;
+
+                    RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_viewRect;
+                    if (CGameLevel::PointInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
+                        g_gameReg->m_cueSink->SpawnVoiceDriver(unit, 0x366, -1, 0, -1, -1);
+                    }
+                    // Retail zeroes BOTH timers before re-arming - eight stores at 0x2e9e2
+                    // (0x78/0x80/0x7c/0x84 = 0, then 0x80 = 0x1388 / 0x84 = 0, then the
+                    // clock) - and we emitted only six.  The zero pass has to go through the
+                    // ARRAY alias: written as `m_routeWindow.m_v = 0` cl proves the store
+                    // dead against the 0x1388 that follows and drops it, and the re-arm has
+                    // to stay two i32 halves for the same reason.
+                    m_routeTimers[0].m_v = 0;
+                    m_routeTimers[1].m_v = 0;
+                    m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
+                    m_routeWindowHi = 0;
+                    m_routeClock.m_v = g_frameTime;
+                }
+            }
+
+            {
+                CMapMgr* board = m_board;
+                CRect gb(0, 0, board->m_width, board->m_height);
+                RECT grc;
+                grc = gb;
+                RECT* grcDst = &board->m_bounds;
+                if (!IntersectRect(grcDst, &grc, &gb)) {
+                    *grcDst = grc;
+                }
+                board->m_gridW = grcDst->right - grcDst->left;
+                board->m_gridH = grcDst->bottom - grcDst->top;
+            }
+            unit->m_dwell = 0;
         }
-        unit->m_dwell = 0;
         return 1;
     }
     unit->m_blockedVoicePending = 1;

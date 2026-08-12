@@ -377,3 +377,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   order compiled identically, and `u, v, y` statement order was slightly worse.
   The closest structural reconstruction remains `@early-stop` while the narrow
   x87 scheduling state is unresolved.
+
+## 2026-08-12 — `CBattlezMapConfig::RouteToNearbyEnemy`
+
+- Unit/RVA: `battlezmapconfig`, `0x0002e3a0`.
+- Before: 67.4795% current-source MAX. Candidate and retail both had 58
+  conditional branches, but candidate had four returns against retail's three.
+  At retail `0x0002e7d1`, unsigned `m_dwell <= 100` branches forward to the
+  function's existing `mov eax,1` success epilogue; the source instead returned
+  immediately from the guard and made VC5 emit a fourth success epilogue.
+- Classification: control-flow layout and tail merging. The branch target, not
+  the equivalent C condition, proves that the cheap path shares the later
+  success return. This is the mid-function form of
+  `positive-gate-enables-shrink-wrap.md`.
+- Source lever: express the expensive route update as the positive gate
+  `if (static_cast<u32>(m_dwell) > 100) { ... }`, then leave one `return 1`
+  after it. This preserves the behavior while giving both success paths the
+  same source return node.
+- Result: 68.7256%. Candidate and retail now both have 96 basic blocks, 58
+  conditional branches, and three returns. A follow-up lifetime experiment
+  removing the scope around the four initial `Coord` probes enlarged the frame
+  from `0x6c` to `0x88` against retail's `0x80` and regressed to 68.21%, so it
+  was rejected. The proven exit-layout correction is retained; the remaining
+  frame and register-colouring residue stays `@early-stop`.
