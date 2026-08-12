@@ -89,7 +89,7 @@ public:
     i32 m_width;
     i32 m_height;
     ColorDepth m_bpp;
-    i32 m_srcRect[4];
+    RECT m_srcRect;
     CDDSurface* m_surface;
 };
 SIZE(0x30);

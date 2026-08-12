@@ -69,42 +69,42 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 // @early-stop
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, CDDrawSurfacePair* c) {
-    i32 rc[4];
+    RECT rc;
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
         i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
         i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            rc[0] = m_dirty.m_lastX;
-            rc[1] = m_dirty.m_lastY;
-            rc[2] = m_dirty.m_lastX + m_dirty.m_w;
-            rc[3] = m_dirty.m_lastY + m_dirty.m_h;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_shadow.m_lastX;
-            rc[1] = m_shadow.m_lastY;
-            rc[2] = m_shadow.m_lastX + m_shadow.m_w;
-            rc[3] = m_shadow.m_lastY + m_shadow.m_h;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+            rc.left = m_dirty.m_lastX;
+            rc.top = m_dirty.m_lastY;
+            rc.right = m_dirty.m_lastX + m_dirty.m_w;
+            rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
+            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
+            rc.left = m_shadow.m_lastX;
+            rc.top = m_shadow.m_lastY;
+            rc.right = m_shadow.m_lastX + m_shadow.m_w;
+            rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
+            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
         } else {
             i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
             i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;
-            rc[0] = left;
-            rc[1] = top;
-            rc[2] = left + dx;
-            rc[3] = top + dy;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+            rc.left = left;
+            rc.top = top;
+            rc.right = left + dx;
+            rc.bottom = top + dy;
+            a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
         }
     } else if (m_dirty.m_armed != -1) {
-        rc[0] = m_dirty.m_lastX;
-        rc[1] = m_dirty.m_lastY;
-        rc[2] = m_dirty.m_lastX + m_dirty.m_w;
-        rc[3] = m_dirty.m_lastY + m_dirty.m_h;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        rc.left = m_dirty.m_lastX;
+        rc.top = m_dirty.m_lastY;
+        rc.right = m_dirty.m_lastX + m_dirty.m_w;
+        rc.bottom = m_dirty.m_lastY + m_dirty.m_h;
+        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
     } else if (m_shadow.m_armed != -1) {
-        rc[0] = m_shadow.m_lastX;
-        rc[1] = m_shadow.m_lastY;
-        rc[2] = m_shadow.m_lastX + m_shadow.m_w;
-        rc[3] = m_shadow.m_lastY + m_shadow.m_h;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        rc.left = m_shadow.m_lastX;
+        rc.top = m_shadow.m_lastY;
+        rc.right = m_shadow.m_lastX + m_shadow.m_w;
+        rc.bottom = m_shadow.m_lastY + m_shadow.m_h;
+        a->m_surface->BltEx(&rc, b->m_surface, &rc, 0x1000000, 0);
     }
 }
 

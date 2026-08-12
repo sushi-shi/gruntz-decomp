@@ -110,11 +110,11 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    i32* rect = m_srcRect;
-    rect[0] = 0;
-    rect[1] = 0;
-    rect[2] = w;
-    rect[3] = h;
+    RECT* rect = &m_srcRect;
+    rect->left = 0;
+    rect->top = 0;
+    rect->right = w;
+    rect->bottom = h;
     if (kind == 1) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = static_cast<CDDSurface*>(mgr->m_ptrColl->CreatePoolItem(
@@ -166,12 +166,12 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
         return 0;
     }
     m_width = w;
-    m_srcRect[2] = w;
+    m_srcRect.right = w;
     m_height = h;
     m_bpp = bpp;
-    m_srcRect[0] = 0;
-    m_srcRect[1] = 0;
-    m_srcRect[3] = h;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.bottom = h;
     m_id = 0x63;
     m_surface = src;
     m_ownsSurface = 0;
@@ -410,13 +410,13 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     }
     if (w > 0 && h > 0
         && (bpp == BPP_PALETTED_8 || bpp == BPP_RGB_16 || bpp == BPP_RGB_24 || bpp == BPP_RGB_32)) {
-        m_srcRect[0] = 0;
-        m_srcRect[1] = 0;
+        m_srcRect.left = 0;
+        m_srcRect.top = 0;
         m_width = w;
         m_height = h;
         m_bpp = bpp;
-        m_srcRect[2] = w;
-        m_srcRect[3] = h;
+        m_srcRect.right = w;
+        m_srcRect.bottom = h;
         return 1;
     }
     return 0;
@@ -607,10 +607,10 @@ i32 CDDrawSurfaceChildA::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         m_bpp = bpp;
         m_width = w;
         m_height = h;
-        m_srcRect[0] = 0;
-        m_srcRect[1] = 0;
-        m_srcRect[2] = w;
-        m_srcRect[3] = h;
+        m_srcRect.left = 0;
+        m_srcRect.top = 0;
+        m_srcRect.right = w;
+        m_srcRect.bottom = h;
         return 1;
     }
     return 0;

@@ -1377,3 +1377,22 @@ compiler decision, and a real VC5 build must confirm the fix.
   the corresponding eight-byte frame. The declaration-plus-assignment control
   compiles identically to copy initialization. No address-taking or manual state
   probe is added to force those stores; the function remains `@early-stop`.
+
+## 2026-08-12 — rectangle type sweep
+
+- Function/RVA: `CWwdGameObjectC::BltDirtyEx`, `0x001662a0`; historical MAX
+  remains 76.1387%.
+- Type correction: its four-word blit scratch is now a `RECT`, not an
+  `i32[4]`. Every use supplies the same object as both source and destination
+  rectangle to `CDDSurface::BltEx`, which proves the aggregate identity and
+  field order. The typed spelling is byte-identical.
+- Structural verdict: candidate and retail have the same eight conditional
+  branches with identical symbolic targets. Retail has four physical returns
+  where VC5 tail-merges the candidate to three; explicit early-return and
+  flattened top-level controls compile identically and are not retained. This
+  is a bounded tail-merge wall, not missing rectangle structure.
+- Cross-file correction: `CDrawSubWorker::m_srcRect` is likewise now a real
+  `RECT`. Its four fields are initialized as left/top/right/bottom and all
+  consumers pass the complete object to DirectDraw blit APIs. The class remains
+  size `0x30`, and the 52-TU compile produced no codegen change from the type
+  repair.

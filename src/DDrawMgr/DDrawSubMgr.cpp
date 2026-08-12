@@ -1061,7 +1061,8 @@ i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
         return 0;
     }
     if (copyFromBack) {
-        m_overlayPair->m_surface->BltFast(0, 0, m_backPair->m_surface, m_backPair->m_srcRect, 0x10);
+        m_overlayPair->m_surface
+            ->BltFast(0, 0, m_backPair->m_surface, &m_backPair->m_srcRect, 0x10);
     }
     return 1;
 }
@@ -1181,7 +1182,7 @@ i32 CDDrawSubMgrPages::TransTitle() {
     }
     CDDrawSurfacePair* a = m_backPair;
     CDDrawSurfacePair* b = m_overlayPair;
-    b->m_surface->BltFast(0, 0, a->m_surface, a->m_srcRect, 0x10);
+    b->m_surface->BltFast(0, 0, a->m_surface, &a->m_srcRect, 0x10);
     return 1;
 }
 
@@ -1198,7 +1199,7 @@ i32 CDDrawSubMgrPages::TransExit() {
     }
     CDDrawSurfacePair* a = m_overlayPair;
     CDDrawSurfacePair* b = m_backPair;
-    b->m_surface->BltFast(0, 0, a->m_surface, a->m_srcRect, 0x10);
+    b->m_surface->BltFast(0, 0, a->m_surface, &a->m_srcRect, 0x10);
     return 1;
 }
 
@@ -1235,10 +1236,10 @@ i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     m_width = w;
     m_bpp = bpp;
     m_height = h;
-    m_srcRect[3] = h;
-    m_srcRect[0] = 0;
-    m_srcRect[1] = 0;
-    m_srcRect[2] = w;
+    m_srcRect.bottom = h;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
     return 1;
 }
 
@@ -1251,12 +1252,12 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         return 0;
     }
     m_height = h;
-    m_srcRect[3] = h;
+    m_srcRect.bottom = h;
     m_width = w;
     m_bpp = bpp;
-    m_srcRect[0] = 0;
-    m_srcRect[1] = 0;
-    m_srcRect[2] = w;
+    m_srcRect.left = 0;
+    m_srcRect.top = 0;
+    m_srcRect.right = w;
     return 1;
 }
 
