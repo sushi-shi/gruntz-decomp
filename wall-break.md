@@ -503,3 +503,42 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: bounded at 66.6959% current-source MAX. Source is unchanged and the
   complete function remains `@early-stop`; no dummy state carrier or falsified
   guard was retained.
+
+## 2026-08-12 — `CGrunt::TileSwitch`
+
+- Unit/RVA: `grunt`, `0x0004b320`.
+- Before: 66.7500% current-source MAX. Candidate and retail are each one basic
+  block with no conditional branches, one return, and the same sole relocation
+  to `CGrunt::StepArrivalDrop`.
+- Classification: register-allocation wall. Retail saves esi, moves each of the
+  four pass-through arguments through esi before pushing it, computes col/row
+  in edx/eax, then restores esi. Candidate pushes the pass-through arguments
+  directly and computes the same two coordinates in eax/edx. The call's values,
+  order, target, and callee-cleaned stack size agree.
+- Exhaustion: 49 semantic permutation variants were already flat. A new sweep
+  compiled every one of the 494 valid single declaration/include/parser-state
+  mutations for this TU; all 494 were byte-identical at 66.7500%, size 50, with
+  the relocation count matching 1/1.
+- Verdict: bounded at 66.7500% current-source MAX. Source remains unchanged and
+  the complete wrapper stays `@early-stop`; no unused include, declaration, or
+  artificial argument shuttle was retained.
+
+## 2026-08-12 — `CPlay::SetEffectSpriteDurations`
+
+- Unit/RVA: `playassetload`, `0x000dc060`.
+- Before: 67.0648% current-source MAX. Candidate and retail have the same 1307
+  byte size, 65/65 basic blocks, 32/32 conditional branches with identical
+  symbolic targets, one return, and 64/64 matching relocations.
+- Classification: repeated instruction-scheduling wall. For each of the 32
+  sound-cue lookups, candidate writes `d = NULL` before forming and pushing the
+  arguments. Retail forms and pushes them first, then writes the same stack slot
+  before the same MFC lookup call. Every block has the same instruction count;
+  only this independent-instruction order differs.
+- Negative control: replacing the first typed `MapLookup` wrapper with the
+  direct MFC `void*&` boundary expression compiled byte-identically, disproving
+  the later union-view wrapper as the scheduling cause. The source was restored.
+- State sweep: all 445 valid single declaration/include/parser-state mutations
+  compiled byte-identically at 67.064835%, size 1307, relocations 64/64.
+- Verdict: bounded at 67.0648% current-source MAX. The explicit per-cue records
+  and values remain intact; no artificial table, cast, include, or state carrier
+  was retained. The complete body remains `@early-stop`.

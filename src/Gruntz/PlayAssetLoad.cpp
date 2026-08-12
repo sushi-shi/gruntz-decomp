@@ -389,6 +389,9 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
 }
 
 // @early-stop
+// CFG, size, and all 64 relocations agree. Retail sinks each repeated d = NULL
+// store between argument setup and the MapLookup call; cl schedules it before
+// setup in every tested source/TU-state spelling.
 RVA(0x000dc060, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     LeafCue* d;
