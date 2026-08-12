@@ -1076,3 +1076,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   different x87 spill schedule. The CFG and arithmetic entities are now
   settled, so this bounded remainder is classified as x87 lifetime/scheduling
   rather than reopened with unused declarations or score-only spills.
+
+## 2026-08-12 — `CDDrawShadeBlit::ConvertRowDouble`
+
+- Unit/RVA: `ddrawshadeblit`, `0x0014d950`; current-source MAX rises from
+  69.5031% to the reproduced 73.5610% high-water.
+- Wall classification: parser-visible TU state followed by register homing.
+  Candidate and retail already have the same 24-block CFG, 12 conditional
+  branches, five returns, and all 17 relocation identities in order. Ordinary
+  compilation carries one four-byte spill slot that retail avoids.
+- State break: a bounded 128-cell wall-identifier sweep found six independent
+  member-declaration states at the same best class. A representative cell makes
+  the complete `SHADE_DST_BY_SRC` arm block-for-block exact and reproduces the
+  73.5610% current-source peak without changing any referent. The synthetic
+  declarations are diagnostic only and were removed.
+- Source-shape control: sequencing each alpha result as LUT0 followed by
+  `LUT1 | LUT2` makes one 46-instruction loop exact in the ordinary build and
+  both 46-instruction loops exact under the winning state. It also expands the
+  ordinary frame to eight bytes and changes cross-arm alignment, falling to
+  65.7012% ordinary and 70.0427% under that state. The flat, semantically
+  equivalent expression is therefore retained.
+- Residue: no tested state reaches exact, and the repeated best cells do not
+  identify one missing semantic declaration. The remaining differences are
+  register homes and LUT evaluation scheduling, not missing raster behavior.

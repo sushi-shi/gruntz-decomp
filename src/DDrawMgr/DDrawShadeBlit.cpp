@@ -27,7 +27,7 @@
 //
 // TU-STATE FINGERPRINT (diagnostic; probes are never shipped). A throwaway
 // declaration above the first definition moves BlitShaded{Forward,Mirrored},
-// ConvertRow{,Flip,Double,DoubleFwd} by up to +/-3 points and leaves BlitAt,
+// ConvertRow{,Flip,Double,DoubleFwd} by several points and leaves BlitAt,
 // Blit, BlitCopy{Forward,Mirrored} and the whole ImageOwned half untouched; the
 // window is aperiodic over N = 1..16 and never reaches 100, and the kind of the
 // probe (fwd-decl / typedef / empty class / class with members / static function
