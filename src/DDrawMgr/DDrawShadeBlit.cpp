@@ -895,8 +895,9 @@ void CDDrawShadeBlit::BlitCopyMirrored(
 }
 
 // @early-stop
-// Block skeleton now matches retail (197 blocks both sides). Four structural facts
-// were recovered from the target: arm 2's row loop is `row < clip->bottom` (retail
+// The conditional-branch census is 102/102 with one remaining target mismatch;
+// the block skeleton is 196/197. Four structural facts were recovered from the
+// target: arm 2's row loop is `row < clip->bottom` (retail
 // `jge`, not `jg`); arm 3 tests `x + run >= clip->right` with the CLAMPED path as
 // the if-body (retail `jl` to the full path), which is also what lets cl tail-merge
 // the two ConvertRow call sites into one; the destination/source/count expressions
@@ -928,7 +929,8 @@ void CDDrawShadeBlit::BlitShadedForward(
     i32 pitch = src->m_pitch;
     u8* base = static_cast<u8*>(src->Lock(0));
 
-    i32 pos = 0, row = 0, x = 0;
+    u32 pos = 0;
+    i32 row = 0, x = 0;
 
     if (clip->top != 0) {
         while (row < clip->top) {

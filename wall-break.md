@@ -1099,3 +1099,26 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Residue: no tested state reaches exact, and the repeated best cells do not
   identify one missing semantic declaration. The remaining differences are
   register homes and LUT evaluation scheduling, not missing raster behavior.
+
+## 2026-08-12 — `CDDrawShadeBlit::BlitShadedForward`
+
+- Unit/RVA: `ddrawshadeblit`, `0x0014a200`; the ordinary current-source result
+  rises from 72.7725% to 73.5407%.
+- Type break: the RLE cursor is a nonnegative byte-array index bounded by the
+  `u32 m_rleLen`. Retyping only `pos` from `i32` to `u32` produces the gain; a
+  control that merely splits the original signed declaration remains exactly
+  at 72.7725%, so this is a type effect rather than declaration-order state.
+- Structural controls: candidate and retail each have 102 conditional branches
+  and one return, but one branch still lands in the preceding block. The full
+  block census is 196 versus 197, not the stale 197/197 claim. Candidate has
+  1,835 instructions against retail's 1,797 and a 0x38 frame against 0x34.
+- Rejected probe: a bounded parser-state sweep peaked at 73.7042% but did not
+  close the function or repair its structural residue. No synthetic declaration
+  was retained or banked. A staged `u32` LUT accumulator fell to 73.0153%, and
+  narrow accumulator/store spellings changed retail's 32-bit OR into a 16-bit
+  OR; all were removed.
+- Residue: the first genuine block split is in the first 16-bit scratch loop,
+  where retail reloads its scratch bias on the backedge. The candidate also has
+  20 excess zero-extension `xor` instructions and under-reads `g_scratch` twice.
+  This remains a source type/lifetime and register-homing problem, not a closed
+  state wall.
