@@ -31,6 +31,16 @@ i32 cursor = AdvanceB(t, x, y, flags);   // -> a local frame slot
 y = AdvanceB(t, x, y, flags);            // -> y's incoming home, which is what retail uses
 ```
 
+Do not infer the parameter's source width from the width of a later coalesced local.
+Every argument owns a four-byte ABI stack slot here, including `char` arguments, and cl
+may place an unrelated `i32` local into that dead home. `CPlay::ExecCommand` is the
+negative control: two `CellHitTest` outputs occupy incoming command-argument homes, but
+changing the seven narrow parameters to `i32` destroys two byte-exact callers (61.55%
+and 72.67%). One function-scope pair of `i32` coordinate locals removes the synthetic
+frame while preserving those caller-proven parameter types. Matching a home address or
+write width proves storage coalescence, not source identity; direct `&param` requires
+independent type/caller evidence.
+
 ```asm
 base:   mov ebp,[esp+0x20] | ... | mov [esp+0x28],ebp   ; the redundant copy
 target: mov ebp,[esp+0x20] | ... |                      ; slot already holds it
@@ -44,4 +54,5 @@ WRONG when the parameter is still pushed as a register argument earlier
 differing rows). Evidence (2026-07-28, `src/Gruntz/GameLevel.cpp`):
 `ResolveMoveUp` 93.51 -> **100 EXACT** (with the early-return shrink-wrap),
 `ResolveMoveDown` 83.49 -> **100 EXACT**, `MoveHandlerB`/`MoveHandlerA`/`MoveHandlerC`
-prologues. All were filed "register-scheduling wall ... not source-steerable".
+prologues. All were filed "register-scheduling wall ... not source-steerable". The
+source-identity boundary was confirmed by `CPlay::ExecCommand` (2026-08-12).

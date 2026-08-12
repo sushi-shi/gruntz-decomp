@@ -1973,7 +1973,7 @@ grunt	?CreateStaminaSprite@CGrunt@@QAEHXZ	99.6491	99.6491	19	131de33a76b6	0x4d2f
 grunt	?CreateToySprite@CGrunt@@QAEHXZ	91.2264	91.2264	20	2c651e7a7314	0x4d220	91.2264
 grunt	?CreateToyTimeSprite@CGrunt@@QAEHXZ	99.7222	99.7222	20	5177d923fe36	0x4d3e0	99.7222
 grunt	?CreateWingzTimeSprite@CGrunt@@QAEHXZ	99.7059	99.7059	20	62ece324e88f	0x4d520	99.7059
-grunt	?FinalizeStep@CGrunt@@UAEXPAD@Z	96.3685	96.3685	8	7b7e984dcc42	0x5ecd0	96.3685
+grunt	?FinalizeStep@CGrunt@@UAEXPAD@Z	96.3685	96.3685	9	9e6afc5ff587	0x5ecd0	96.3685
 grunt	?IntersectsTileObjectAxes@CGrunt@@QAEHXZ	100.0000	100.0000	2	fe0cdd3112b2	0x4a9f0	100.0000
 grunt	?LoadAnimNameTable@CGrunt@@QAEXHH@Z	100.0000	100.0000	14	0a9331a0b31e	0x49c60	100.0000
 grunt	?LoadCellAnimNames@CGrunt@@QAEXHH@Z	100.0000	100.0000	11	20e22a2c1125	0x48470	100.0000
@@ -3404,7 +3404,7 @@ playassetload	?LoadLevelAnims@CPlay@@QAEHH@Z	100.0000	100.0000	5	5bd2554f561b	0x
 playassetload	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	8	ec6c2f7bb630	0xdb7e0	100.0000
 playassetload	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	8	80c2370efbdb	0xdb6c0	100.0000
 playassetload	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	10	165a7192fc92	0xdc060	67.0648
-playercommandstep	?ExecCommand@CPlay@@QAEHEDDFFDE@Z	69.7691	69.7691	3	38b9eecb4c8b	0xd1b60	69.7691
+playercommandstep	?ExecCommand@CPlay@@QAEHEDDFFDE@Z	74.0949	74.0949	6	92564e9b366d	0xd1b60	74.0949
 playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	99.5915	99.5915	22	aefe16f1a1e5	0xd53d0	99.5915
 projectile	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.2308	97.2308	4	e0c848bdc92c	0xe0650	97.3077
 projectile	??0CProjectile@@QAE@PAUCGameObject@@@Z	99.7721	99.7721	16	a7b738cb2e3f	0xdec60	99.7785

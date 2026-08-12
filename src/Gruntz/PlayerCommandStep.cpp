@@ -21,8 +21,6 @@
 
 #include <stddef.h>
 
-static const char s_gameBadSelect[] = "GAME_BADSELECT";
-
 // @early-stop
 RVA(0x000d1b60, 0xc90)
 i32 CPlay::ExecCommand(
@@ -39,9 +37,12 @@ i32 CPlay::ExecCommand(
         return 0;
     }
     i32 res;
+    i32 hitRow;
+    i32 hitCol;
 
     switch (static_cast<u8>(cmdKind)) {
         case PLAYERCMD_PLACE_GRUNT: {
+            u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
             i32 r = mgr->m_cmdGrid->PlaceObject(
                 static_cast<u8>(targetIndex),
@@ -58,22 +59,20 @@ i32 CPlay::ExecCommand(
                 0,
                 0
             );
-            if (r != -1) {
-                if (static_cast<u8>(targetIndex) == static_cast<u32>(g_curPlayer)) {
-
-                    g_gameReg->m_cmdGrid->ResetAll();
+            if (r == -1) {
+                if (m_world->m_soundRegistry->m_emitGate == 0) {
+                    LeafCue* cue =
+                        static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup("GAME_BADSELECT"));
+                    if (cue != NULL) {
+                        cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    }
                 }
-                return 1;
+                return 0;
             }
-            if (m_world->m_soundRegistry->m_emitGate == 0) {
-
-                LeafCue* cue =
-                    static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup(s_gameBadSelect));
-                if (cue != NULL) {
-                    cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
-                }
+            if (static_cast<u8>(targetIndex) == currentPlayer) {
+                g_gameReg->m_cmdGrid->ResetAll();
             }
-            return 0;
+            return 1;
         }
 
         case PLAYERCMD_MOVE: {
@@ -85,17 +84,16 @@ i32 CPlay::ExecCommand(
             }
             res = m_mgr->m_cmdGrid
                       ->ClearCell(player, gi, static_cast<u16>(posX), static_cast<u16>(posY), 0);
+            u32 currentPlayer = static_cast<u32>(g_curPlayer);
 
-            if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                    || g->m_entranceCommitted == 0) {
+            if (!res) {
+                if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
                     return 0;
                 }
                 g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                || g->m_entranceCommitted == 0) {
+            if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
                 return 1;
             }
             g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
@@ -195,8 +193,6 @@ i32 CPlay::ExecCommand(
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
 
-            i32 hitRow;
-            i32 hitCol;
             CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
@@ -224,7 +220,7 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2);
-            if (res != 0) {
+            if (res) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
@@ -283,7 +279,7 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2);
-            if (res != 0) {
+            if (res) {
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
                     || g->m_entranceCommitted == 0) {
@@ -318,8 +314,6 @@ i32 CPlay::ExecCommand(
             }
             i32 px = static_cast<u16>(posX);
             i32 py = static_cast<u16>(posY);
-            i32 hitRow;
-            i32 hitCol;
             CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
             if (node != NULL && g->m_entranceActive == 0) {
                 g->SetArrivalTarget(
@@ -347,7 +341,7 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3);
-            if (res != 0) {
+            if (res) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
                     return 1;
                 }
@@ -406,7 +400,7 @@ i32 CPlay::ExecCommand(
                 return 1;
             }
             res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3);
-            if (res != 0) {
+            if (res) {
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
                     || g->m_entranceCommitted == 0) {

@@ -6,6 +6,36 @@ inliner, control flow, then register allocation. A score change alone is not a
 break; the retail instruction, relocation, or table evidence must identify the
 compiler decision, and a real VC5 build must confirm the fix.
 
+## 2026-08-12 — `CPlay::ExecCommand`
+
+- Unit/RVA: `playercommandstep`, `0x000d1b60`.
+- Before: 69.7691% current-source MAX, 942 candidate instructions against 885
+  retail instructions. The candidate had one extra frame dword and all 18
+  returns therefore carried an extra `pop ecx`.
+- Register/entity break: retail's two `CellHitTest` sites take the addresses of
+  two dead incoming command-argument homes and write 32-bit coordinates through
+  them. Two case-local coordinate pairs created independent entities; one
+  function-scope pair lets cl coalesce the shared lifetimes into parameter
+  homes, removing the frame and all 18 surplus pops.
+- Refuted inference: those homes do not make the parameters `i32`. All arguments
+  have four-byte ABI slots, and an unrelated 32-bit local may reuse a dead
+  narrow parameter's home. Widening the signature destroyed two byte-exact
+  callers (to 61.55% and 72.67%) and was rejected. The caller-proven narrow
+  signature plus shared `i32` scratch pair is the evidence-backed model.
+- Control-flow break: after `PlaceObject`, retail falls through on `-1` into the
+  bad-selection cue and branches on success to the reset path. Reversing the
+  reconstructed success-first `if` to the retail failure-first arm made the
+  entire placement arm align and raised the score by about 2.5 points.
+- Referent break: retail's lookup operand reaches the pooled literal
+  `"GAME_BADSELECT"`; the reconstructed TU-static array was a distinct datum.
+  Passing the literal directly removes that relocation-masked wrong referent.
+- Result: the evidence-backed form is about 74.1% in an ordinary build, with no
+  synthetic frame. The remaining residue is not declared bounded: candidate
+  still emits one extra physical `ClearCell` tail, three excess `g_curPlayer`
+  relocations, and broad cross-jump/register differences across the four
+  trigger arms. These are the next worklist, not a reason to restore the
+  independent scratch pairs or the wrong static string.
+
 ## 2026-08-11 — `CTileTriggerLogic::LoadBridgeMove`
 
 - Unit/RVA: `tileswitchlogic`, `0x00110860`.
