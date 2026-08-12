@@ -37,6 +37,15 @@ a third, independent signal that survives unreliable names. Drop this patch once
 objdiff compares reloc addends under `data_value` upstream (or grows a separate
 `addend` strictness knob).
 
+2026-08-13: the project now runs `functionRelocDiffs = all` (gate_selftest asserts
+it), which already requires name+addend OR `address_eq` - so this patch's remaining
+live effect under `all` is killing the `address_eq` rescue for a SAME-named symbol
+with a differing addend. That corner is real here, not theoretical: base and
+delinked-target objects both use small 0-based section-relative symbol addresses
+(commensurable spaces), and the delinker's per-symbol packing places a same-named
+referent at different offsets, so a wrong addend can be exactly compensated. Keep
+the patch under either mode; it is the strictest-mode ruling in patch form.
+
 diff -u -r '--unified=3' objdiff-orig/objdiff-core/src/arch/mod.rs objdiff-src/objdiff-core/src/arch/mod.rs
 --- a/objdiff-core/src/arch/mod.rs
 +++ b/objdiff-core/src/arch/mod.rs
