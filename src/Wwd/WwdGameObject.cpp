@@ -55,7 +55,7 @@ i32 g_logicTypesRegistered;
 RVA(0x001504d0, 0x6c)
 void CWwdGameObjectA::ApplyLookupSprite(const char* name, i32 frame) {
     CObject* sprOb = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
+    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(name, sprOb);
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(sprOb);
     m_frameSet = spr;
     if (spr) {
@@ -74,7 +74,7 @@ RVA(0x00150540, 0x65)
 void CWwdGameObjectA::ApplyName(const char* name) {
     CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(name, sprOb);
+    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(name, sprOb);
     spr = static_cast<CDDrawWorker*>(sprOb);
     m_frameSet = spr;
     if (spr) {
@@ -315,7 +315,7 @@ i32 CWwdGameObjectA::SerializeSpriteName(CFileMemBase* src) {
         CDDrawWorker* found = 0;
         CObject* foundOb = 0;
         CDDrawSurfaceMgr* mgr = OwnerMgr();
-        mgr->m_imageRegistry->m_10map.Lookup(name, foundOb);
+        mgr->m_imageRegistry->m_workersByName.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
         m_frameSet = found;
         if (found != NULL && flag == 1) {

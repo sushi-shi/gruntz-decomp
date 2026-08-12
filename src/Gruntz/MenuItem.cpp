@@ -96,7 +96,7 @@ i32 CMenuItem::Init(
     if (!OnInit()) {
         CObject* slot = 0;
 
-        m_owner->m_imageRegistry->m_10map.Lookup(spriteKey, slot);
+        m_owner->m_imageRegistry->m_workersByName.Lookup(spriteKey, slot);
         m_sprite = slot;
         if (!slot) {
             return 0;
@@ -251,17 +251,17 @@ i32 CMenuItem2::Init(
 
     sprintf(buf, "%s_NORMAL", spriteKey);
     sprite = NULL;
-    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
+    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
     m_spriteNormal = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(buf, "%s_SELECTED", spriteKey);
     sprite = NULL;
-    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
+    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
     m_spriteSelected = static_cast<CDDrawWorker*>(sprite);
 
     sprintf(buf, "%s_DISABLED", spriteKey);
     sprite = NULL;
-    m_owner->m_imageRegistry->m_10map.Lookup(buf, sprite);
+    m_owner->m_imageRegistry->m_workersByName.Lookup(buf, sprite);
     m_spriteDisabled = static_cast<CDDrawWorker*>(sprite);
 
     return 1;

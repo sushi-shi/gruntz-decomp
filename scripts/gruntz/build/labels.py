@@ -593,7 +593,6 @@ def blank_comments(text):
 
 DATACOMPGEN_RE = re.compile(r"\bDATA_COMPGEN\s*\(")
 COMPGEN_ADDR_RE = re.compile(r"0x[0-9a-f]{8}$")
-COMPGEN_NAME_RE = re.compile(r"[A-Za-z_]\w*$")
 _STR_SEG_RE = re.compile(r'"((?:[^"\\]|\\.)*)"')
 _FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+[eE][-+]?\d+|\d+\.?\d*[eE][-+]?\d+)"
                        r"([fF]?)$")
@@ -679,7 +678,7 @@ def compgen_value(value_src):
 
 
 def compgen_tu(text, tu, unit, obj_path):
-    """[(rva, name, unit, size, vkind, payload, semantic)] claims + [errors].
+    """[(rva, name, unit, size, vkind, payload)] claims + [errors].
 
     Every claim is authority-checked against the TU's base obj - the exact
     artifact cl emitted from this source:
@@ -707,30 +706,22 @@ def compgen_tu(text, tu, unit, obj_path):
                 cs = coff.cstring(secnum, value)
                 if cs is not None:
                     strings[cs] = nm
-    seen_sem, seen_rva = {}, {}
+    seen_rva = {}
     for line, args_ in compgen_invocations(text):
         where = (tu, line)
-        if len(args_) != 3:
-            errors.append((*where, "DATA_COMPGEN takes (addr, name, value); got %d arg(s)"
+        if len(args_) != 2:
+            errors.append((*where, "DATA_COMPGEN takes (addr, value); got %d arg(s)"
                            % len(args_)))
             continue
-        addr_s, sem, value_src = args_
+        addr_s, value_src = args_
         if not COMPGEN_ADDR_RE.fullmatch(addr_s):
             errors.append((*where, "address %r not canonical 0x%%08x form" % addr_s))
             continue
-        if not COMPGEN_NAME_RE.fullmatch(sem):
-            errors.append((*where, "semantic name %r is not an identifier" % sem))
-            continue
         vkind, payload = compgen_value(value_src)
         if vkind is None:
-            errors.append((*where, "%s: %s" % (sem, payload)))
+            errors.append((*where, "%s: %s" % (addr_s, payload)))
             continue
         rva = int(addr_s, 16)
-        if sem in seen_sem and seen_sem[sem] != rva:
-            errors.append((*where, "semantic name %r reused for a second rva "
-                           "0x%08x (first: 0x%08x)" % (sem, rva, seen_sem[sem])))
-            continue
-        seen_sem[sem] = rva
         if rva in seen_rva:
             if seen_rva[rva] != (vkind, payload):
                 errors.append((*where, "0x%08x claimed twice in this TU with "
@@ -741,7 +732,7 @@ def compgen_tu(text, tu, unit, obj_path):
             name = strings.get(payload)
             if coff is not None and name is None:
                 errors.append((*where, "%s: string %r is not a pooled ??_C@ literal "
-                               "in this TU's base obj" % (sem, payload[:40])))
+                               "in this TU's base obj" % (addr_s, payload[:40])))
                 continue
             if name is None:            # no obj (candidate mode): cannot derive
                 continue
@@ -752,13 +743,13 @@ def compgen_tu(text, tu, unit, obj_path):
                         if rawsize) if coff is not None else False
             if coff is not None and not found:
                 errors.append((*where, "%s: %s bits %s not present in this TU's "
-                               "base obj (FP pool)" % (sem, vkind, payload.hex())))
+                               "base obj (FP pool)" % (addr_s, vkind, payload.hex())))
                 continue
             if coff is None:
                 continue
             name = "$T%d" % rva
             size = len(payload)
-        claims.append((rva, name, unit, size, vkind, payload, sem))
+        claims.append((rva, name, unit, size, vkind, payload))
     return claims, errors
 
 
@@ -1651,7 +1642,7 @@ def main():
     global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
     no_ir = []         # TUs whose label pass produced NO IR at all      -> FATAL
     no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
-    compgen_claims = []  # (rva, name, unit, size, vkind, payload, semantic)
+    compgen_claims = []  # (rva, name, unit, size, vkind, payload)
     compgen_errors = []  # (tu, line, reason)                            -> FATAL
     for i, tu in enumerate(args.tu):
         # Comments are BLANKED before any text scan: a doc comment quoting an
@@ -1784,7 +1775,7 @@ def main():
                 text, tu, unit, args.obj[i] if have_obj else None)
             compgen_claims += cg_claims
             compgen_errors += cg_errors
-            for rva, name, cunit, size, _vkind, _payload, _sem in cg_claims:
+            for rva, name, cunit, size, _vkind, _payload in cg_claims:
                 rows.append((rva, name, cunit, size, "data"))
 
         # A TU that carries rva.h macros MUST label something. If it labelled nothing,
@@ -1918,9 +1909,9 @@ def main():
     # data manifest enrolls a folded literal once per owner from this.
     cg_out = Path(args.out).with_name("data_compgen.csv")
     cg_out.parent.mkdir(parents=True, exist_ok=True)
-    cg_lines = ["rva,name,unit,size,kind,semantic\n"] + [
-        "0x%08x,%s,%s,0x%x,%s,%s\n" % (rva, name, unit, size, vkind, sem)
-        for rva, name, unit, size, vkind, _payload, sem in sorted(compgen_claims)]
+    cg_lines = ["rva,name,unit,size,kind\n"] + [
+        "0x%08x,%s,%s,0x%x,%s\n" % (rva, name, unit, size, vkind)
+        for rva, name, unit, size, vkind, _payload in sorted(compgen_claims)]
     cg_text = "".join(cg_lines)
     if not cg_out.exists() or cg_out.read_text() != cg_text:
         cg_out.write_text(cg_text)

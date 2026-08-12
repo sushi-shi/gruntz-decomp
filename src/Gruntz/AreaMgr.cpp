@@ -237,7 +237,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* entry, CSymTab* src) {
     }
     m_spawnEntryList.ClearFlags();
 
-    CMapStringToOb* srcMap = &entry->m_imageRegistry->m_10map;
+    CMapStringToOb* srcMap = &entry->m_imageRegistry->m_workersByName;
     if (srcMap == NULL) {
         return 0;
     }

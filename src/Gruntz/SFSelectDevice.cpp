@@ -33,13 +33,13 @@ unsigned char g_routerSysEx[12] = {
 };
 
 DATA(0x0024da80)
-u16 g_idx_64da80 = 0;
+u16 g_sfDeviceIndex = 0;
 DATA(0x0024da84)
-DWORD g_ratingRaw_64da84 = 0;
+DWORD g_sfCandidateSampleBytes = 0;
 DATA(0x0024da88)
-i32 g_factoryRc_64da88 = 0;
+i32 g_sfManagerResult = 0;
 DATA(0x0024da90)
-char g_traceBuf_64da90[0x3c];
+char g_sfTraceBuffer[0x3c];
 DATA(0x0024dacc)
 CSFMIDILocation g_sfMidiLocation;
 DATA(0x0024dad0)
@@ -59,7 +59,7 @@ char g_sfLocal[0x100];
 DATA(0x0024df30)
 CSFCapsObject g_sfCaps;
 DATA(0x0024df98)
-u16 g_remaining_64df98 = 0;
+u16 g_sfOpenAttemptsRemaining = 0;
 DATA(0x0024df9c)
 DWORD g_sfRouterId = 0;
 DATA(0x0024dfa0)
@@ -71,13 +71,13 @@ u16 g_sfDeviceCount = 0;
 DATA(0x0024e0a8)
 HMODULE g_sfDll = 0;
 DATA(0x0024e0ac)
-SfManagerFactory* g_factory_64e0ac = 0;
+SfManagerFactory* g_sfManagerFactory = 0;
 DATA(0x0024e0b0)
 SFMANL101API* g_sfDevice = 0;
 DATA(0x0024e0b8)
 i32 g_sfReady = 0;
 DATA(0x0024e0c0)
-u8 g_ratings_64e0c0[344] = {0};
+u8 g_sfDeviceRatings[344] = {0};
 
 // @early-stop
 RVA(0x000f8970, 0x3b4)
@@ -90,13 +90,13 @@ i32 SFManager_SelectBestDevice() {
     ProcAddr<SfManagerFactory*> mgrProc;
     mgrProc.m_raw = GetProcAddress(g_sfDll, "SFManager");
     SfManagerFactory* fn = mgrProc.m_fn;
-    g_factory_64e0ac = fn;
+    g_sfManagerFactory = fn;
     if (fn == NULL) {
         FreeLibrary(g_sfDll);
         return 0;
     }
-    g_factoryRc_64da88 = (*fn)(0x10000, &g_sfDevice);
-    if (g_factoryRc_64da88 != 0) {
+    g_sfManagerResult = (*fn)(0x10000, &g_sfDevice);
+    if (g_sfManagerResult != 0) {
         FreeLibrary(g_sfDll);
         return 0;
     }
@@ -106,58 +106,58 @@ i32 SFManager_SelectBestDevice() {
         return 0;
     }
 
-    for (g_idx_64da80 = 0; g_idx_64da80 < g_sfDeviceCount; g_idx_64da80++) {
+    for (g_sfDeviceIndex = 0; g_sfDeviceIndex < g_sfDeviceCount; g_sfDeviceIndex++) {
         memset(&g_sfCaps, 0, sizeof(g_sfCaps));
         g_sfCaps.m_SizeOf = sizeof(g_sfCaps);
-        g_sfDevice->SF_GetDevCaps(g_idx_64da80, &g_sfCaps);
-        sprintf(g_traceBuf_64da90, "Querying %s ", g_sfCaps.m_DevName);
+        g_sfDevice->SF_GetDevCaps(g_sfDeviceIndex, &g_sfCaps);
+        sprintf(g_sfTraceBuffer, "Querying %s ", g_sfCaps.m_DevName);
         if (g_sfCaps.m_DevCaps & 0x40000000) {
-            g_ratings_64e0c0[g_idx_64da80] = 0x20;
+            g_sfDeviceRatings[g_sfDeviceIndex] = 0x20;
         } else if (g_sfCaps.m_DevCaps & 0x80000000) {
-            g_ratings_64e0c0[g_idx_64da80] = 0x80;
+            g_sfDeviceRatings[g_sfDeviceIndex] = 0x80;
         } else {
-            g_sfDevice->SF_Open(g_idx_64da80);
+            g_sfDevice->SF_Open(g_sfDeviceIndex);
             g_sfDevice->SF_QueryStaticSampleMemorySize(
-                g_idx_64da80,
+                g_sfDeviceIndex,
                 &g_staticSampleBytes,
-                &g_ratingRaw_64da84
+                &g_sfCandidateSampleBytes
             );
-            u8 r = static_cast<u8>(((g_ratingRaw_64da84 >> 0x13) + 0x40));
-            g_ratings_64e0c0[g_idx_64da80] = r;
+            u8 r = static_cast<u8>(((g_sfCandidateSampleBytes >> 0x13) + 0x40));
+            g_sfDeviceRatings[g_sfDeviceIndex] = r;
             if (r == SF_DEVICE_RATING_UNUSABLE) {
-                g_ratings_64e0c0[g_idx_64da80] = 0;
+                g_sfDeviceRatings[g_sfDeviceIndex] = 0;
             }
-            g_sfDevice->SF_Close(g_idx_64da80);
+            g_sfDevice->SF_Close(g_sfDeviceIndex);
         }
     }
 
-    g_remaining_64df98 = g_sfDeviceCount;
+    g_sfOpenAttemptsRemaining = g_sfDeviceCount;
     if (g_sfDeviceCount != 0) {
         do {
             g_sfDeviceId = 0;
-            sprintf(g_traceBuf_64da90, "Device 0's rating is %d", g_ratings_64e0c0[0] & 0xff);
-            g_remaining_64df98--;
-            for (g_idx_64da80 = 1; g_idx_64da80 < g_sfDeviceCount; g_idx_64da80++) {
-                if (g_ratings_64e0c0[g_idx_64da80] > g_ratings_64e0c0[g_sfDeviceId]) {
-                    g_sfDeviceId = g_idx_64da80;
+            sprintf(g_sfTraceBuffer, "Device 0's rating is %d", g_sfDeviceRatings[0] & 0xff);
+            g_sfOpenAttemptsRemaining--;
+            for (g_sfDeviceIndex = 1; g_sfDeviceIndex < g_sfDeviceCount; g_sfDeviceIndex++) {
+                if (g_sfDeviceRatings[g_sfDeviceIndex] > g_sfDeviceRatings[g_sfDeviceId]) {
+                    g_sfDeviceId = g_sfDeviceIndex;
                     sprintf(
-                        g_traceBuf_64da90,
+                        g_sfTraceBuffer,
                         "Device %d's rating is %d",
-                        g_idx_64da80,
-                        g_ratings_64e0c0[g_idx_64da80] & 0xff
+                        g_sfDeviceIndex,
+                        g_sfDeviceRatings[g_sfDeviceIndex] & 0xff
                     );
                 }
             }
-            sprintf(g_traceBuf_64da90, "Best Device number is %d", g_sfDeviceId);
+            sprintf(g_sfTraceBuffer, "Best Device number is %d", g_sfDeviceId);
             if (g_sfDevice->SF_Open(g_sfDeviceId) != 0) {
-                g_ratings_64e0c0[g_sfDeviceId] = 0;
+                g_sfDeviceRatings[g_sfDeviceId] = 0;
             } else {
-                g_remaining_64df98 = 0;
+                g_sfOpenAttemptsRemaining = 0;
             }
-        } while (g_remaining_64df98 != 0);
+        } while (g_sfOpenAttemptsRemaining != 0);
     }
 
-    if (g_ratings_64e0c0[g_sfDeviceId] == 0) {
+    if (g_sfDeviceRatings[g_sfDeviceId] == 0) {
         FreeLibrary(g_sfDll);
         return 0;
     }

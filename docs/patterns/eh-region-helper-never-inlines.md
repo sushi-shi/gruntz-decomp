@@ -43,7 +43,7 @@ helper is not a refactor the compiler can undo.
 
 `CDDrawWorkerRegistry::DispatchKeyed38/34/30/2C` (0x154ae0 / 0x154be0 / 0x154ce0 /
 0x154df0) and `CDDrawWorkerRegistry::InstallTree` (0x154f80) all inline
-`new CDDrawWorker(m_ownerCtx, m_10map.GetCount())`:
+`new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount())`:
 
 ```
 154b24: 6a 6c              push 0x6c                  ; sizeof(CDDrawWorker)

@@ -40,24 +40,23 @@ like). Pool entries have no mangled name to give.
 ## What `DATA_COMPGEN` actually is
 
 ```c
-#define DATA_COMPGEN(addr, name, value) value
+#define DATA_COMPGEN(addr, value) value
 ```
 
 It compiles to nothing. It is a **claim written at the use site**:
 
 ```cpp
 // src/Gruntz/Projectile.cpp:370
->= mag * DATA_COMPGEN(0x001eaa98, fp_1eaa98, 0.9) || ...
+>= mag * DATA_COMPGEN(0x001eaa98, 0.9) || ...
 ```
 
-read as: *retail address `0x001eaa98` holds the constant `0.9`; call it
-`fp_1eaa98`.* The name is ours, for reports — it never has to match anything cl
-emitted, because cl's name is unusable.
+read as: *retail address `0x001eaa98` holds the constant `0.9`.* There is no
+source-side name: cl's pool name is volatile, and an address-derived alias such
+as `fp_1eaa98` would only repeat the coordinate while pretending to add identity.
 
-### The `name` argument is NOT the symbol name
+### The generated symbol name is derived, never supplied
 
-`fp_1eaa98` never reaches any object file. The emitted symbol is minted from the
-address alone — `labels.py` line 759 is literally:
+The emitted symbol is minted from the address alone:
 
 ```python
 name = "$T%d" % rva
@@ -71,16 +70,9 @@ so `DATA_COMPGEN(0x001eaa98, …)` lands in `symbol_names.csv` as
 
 a cl-shaped pool name the delinker uses to carve the datum — and which
 `VOLATILE_T` (`^\$T[0-9]+$`) then erases on the way to `$anon_f64_…`, exactly as
-it erases our own `$T36166`. Both sides converge because both sides are thrown
-away.
-
-So what is the third argument for? It is the **semantic** name: the
-human-readable identity of the claim, used in reports and audits. It is gated,
-not decorative — a claim is rejected when the name is not a valid identifier, or
-when the same name is reused for a second address. That uniqueness rule is the
-useful part: it makes two claims on different addresses impossible to confuse,
-and it is the only place a *meaning* is recorded at all, since the emitted name
-is pure coordinate and the pairing is pure content.
+it erases our own `$T36166`. Both sides converge because both volatile names are
+discarded. Identity is established by address, owning TU, type, and payload bytes;
+an extra free-form source name contributes no evidence.
 
 **The value's SPELLING is the allocation's type**, and that is load-bearing:
 
@@ -111,7 +103,7 @@ And the adjacent pair from `GruntzMgr.cpp`, which shows the pool packing two
 ```
 retail @0x001ea2bc : 33 33 b3 3f | 9a 99 a9 40
                      ^^^^^^^^^^^   ^^^^^^^^^^^
-                     1.4f          5.3f  ( = DATA_COMPGEN(0x001ea2c0, fp_1ea2c0, 5.3f) )
+                     1.4f          5.3f  ( = DATA_COMPGEN(0x001ea2c0, 5.3f) )
 ```
 
 Two independent `DATA_COMPGEN` claims land on two consecutive words, and both

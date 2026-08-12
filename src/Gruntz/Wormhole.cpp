@@ -73,7 +73,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     CShadeTable* color;
     if (kind == -1) {
         color = g_gameReg->m_logicPump->m_tables[g_buteMgr.GetIntDef(
-            DATA_COMPGEN(0x0020a7ac, wormholeButeSection, "Wormhole"), "EntranceColor", 3
+            DATA_COMPGEN(0x0020a7ac, "Wormhole"), "EntranceColor", 3
         )];
     } else {
         color = g_gameReg->m_logicPump->m_tables[kind];

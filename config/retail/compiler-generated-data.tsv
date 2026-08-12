@@ -6,7 +6,7 @@
 #   * DATA(rva) rides an AST VarDecl in the MAIN file, so it is ignored inside a
 #     header (labels.collect_vars is main-file-only) - and a function-local static
 #     inside a header inline function lives exactly there;
-#   * DATA_COMPGEN(rva, name, value) wraps a compiler-generated allocation AT ITS
+#   * DATA_COMPGEN(rva, value) wraps a compiler-generated allocation AT ITS
 #     USE SITE, so it needs a value expression - and a dynamic-init guard byte has
 #     no source spelling at all (cl names it with a `??_B...@<counter>` ordinal it
 #     assigns itself).

@@ -68,7 +68,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     if (onLeft != 0) {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
-        g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
             nOb
         );
@@ -87,7 +87,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     } else {
         CDDrawWorker* n = 0;
         CObject* nOb = 0;
-        g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
             "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
             nOb
         );
@@ -172,7 +172,7 @@ i32 CSBI_SideTab::BuildHandle() {
         return 1;
     }
     CObject* gm_ob = 0;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
         "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
         gm_ob
     );
@@ -254,7 +254,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
@@ -273,7 +273,7 @@ i32 CSBI_SideTab::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId 
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {

@@ -118,7 +118,7 @@ def resolve(arg, lits):
     m = re.match(r'^"((?:[^"\\]|\\.)*)"$', arg)
     if m:
         return m.group(1), True
-    m = re.match(r'^DATA_COMPGEN\(0x[0-9a-f]+,\s*\w+,\s*"((?:[^"\\]|\\.)*)"\)$', arg)
+    m = re.match(r'^DATA_COMPGEN\(0x[0-9a-f]+,\s*"((?:[^"\\]|\\.)*)"\)$', arg)
     if m:
         return m.group(1), True
     m = re.match(r"^(?:const_cast<char\*>\()?static_cast<(?:const char\*|LPCTSTR)>\((\w+)\)\)?$", arg)

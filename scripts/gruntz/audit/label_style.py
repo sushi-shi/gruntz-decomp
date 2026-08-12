@@ -12,8 +12,7 @@ Checked forms:
   VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
   SIZE(0xN)                        SIZE_UNKNOWN()
-  DATA_COMPGEN(0x00xxxxxx, name, <value>)   (addr + name on the macro's line;
-                                             the value expression may spill)
+  DATA_COMPGEN(0x00xxxxxx, <value>)   (the value expression may spill)
 
 Comments are blanked first (labels.py does the same), so prose may quote an
 invocation freely. The retired comment-form carriers (`// @rva-symbol:` /
@@ -56,9 +55,9 @@ CANON = {
     "SIZE": rf"SIZE\({HEXN}\)",
     "SIZE_UNKNOWN": r"SIZE_UNKNOWN\(\)",
     # Expression-position macro: the labels.py parser is balanced-paren, so only
-    # the addr + semantic name are pinned to the macro's own line; the value may
+    # The address is pinned to the macro's own line; the value may
     # continue past it (wrap-immune via WhitespaceSensitiveMacros).
-    "DATA_COMPGEN": rf"DATA_COMPGEN\({ADDR}, {NAME},",
+    "DATA_COMPGEN": rf"DATA_COMPGEN\({ADDR},",
 }
 CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit

@@ -511,7 +511,7 @@ void CGrunt::ReadConfigFromButeMgr() {
 
     m_timePerTile = g_buteMgr.GetDwordDef(
         const_cast<char*>(static_cast<const char*>(m_animSetName)),
-        DATA_COMPGEN(0x0020d414, buteKeyTimePerTile, "TimePerTile"), 1000
+        DATA_COMPGEN(0x0020d414, "TimePerTile"), 1000
         );
 
     if (m_gruntKind == GRUNT_SUPERSPEED) {
@@ -622,7 +622,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 
         if (x < y) {
             double blend =
-                DATA_COMPGEN(0x001e9748, fp_1e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, fp_1e9740, -1.0)) - g_slopeNegHalf;
+                DATA_COMPGEN(0x001e9748, 100.0) / (static_cast<double>(y) / x - DATA_COMPGEN(0x001e9740, -1.0)) - g_slopeNegHalf;
             i32 pct = static_cast<i32>(blend);
             m_toyBlendPct = 100 - pct;
         } else {
@@ -1573,7 +1573,7 @@ label_4c6e4:
         CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
         bool ne;
-        ne = (strcmp(*r, DATA_COMPGEN(0x0020cc98, animKeyL, "L")) != 0);
+        ne = (strcmp(*r, DATA_COMPGEN(0x0020cc98, "L")) != 0);
         if (ne) {
             m_entranceActive = 0;
         }
@@ -3059,7 +3059,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetIntDef(
                 "Powerupz",
-                DATA_COMPGEN(0x0020d900, buteKeyGhostTransparencyOn, "GruntGhostTransparencyOn"), 0xe0
+                DATA_COMPGEN(0x0020d900, "GruntGhostTransparencyOn"), 0xe0
                 );
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
@@ -3388,7 +3388,7 @@ void CGrunt::XferName(char*) {
                 double span =
                     static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
-                flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, fp_1e9a40, 750.0));
+                flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, 750.0));
             }
             if (flash < 0x1e) {
                 flash = 0x1e;
@@ -3852,7 +3852,7 @@ afterArrival:
         i64 left = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
         m_wingzTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
-            * DATA_COMPGEN(0x001e9a58, fp_1e9a58, 0.01) - g_wingzBias
+            * DATA_COMPGEN(0x001e9a58, 0.01) - g_wingzBias
             );
         i64 left2 = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
@@ -3977,7 +3977,7 @@ kindDispatch:
                 );
                 i32 frac = static_cast<i32>(
                     topaque * static_cast<double>(remMs)
-                    * DATA_COMPGEN(0x001e9a60, fp_1e9a60, 0.0003333333333333333)
+                    * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
                 CWwdGameObjectA* obj = m_object;
                 obj->m_drawActive = 1;

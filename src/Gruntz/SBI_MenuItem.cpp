@@ -78,7 +78,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
 
     CObject* rec_v = 0;
     CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_host);
-    host->m_imageRegistry->m_10map.Lookup(key, rec_v);
+    host->m_imageRegistry->m_workersByName.Lookup(key, rec_v);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
     if (rec == NULL) {
@@ -204,7 +204,7 @@ i32 CSBI_MenuItem::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeI
             ar->Read(tmp, SERIAL_NAME_LEN);
             if (strlen(tmp) != 0) {
                 CObject* found_ob = 0;
-                mgr->m_imageRegistry->m_10map.Lookup(tmp, found_ob);
+                mgr->m_imageRegistry->m_workersByName.Lookup(tmp, found_ob);
                 m_record = static_cast<CDDrawWorker*>(found_ob);
             } else {
                 m_record = NULL;

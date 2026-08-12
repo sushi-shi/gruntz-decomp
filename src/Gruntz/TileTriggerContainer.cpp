@@ -541,11 +541,11 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
     POSITION pos = m_list1.GetHeadPosition();
     while (pos != NULL) {
         POSITION cur = pos;
-        void* elem = m_list1.GetNext(pos);
+        CTileTriggerLogic* elem = static_cast<CTileTriggerLogic*>(m_list1.GetNext(pos));
         if (elem == data) {
             m_list1.RemoveAt(cur);
             m_list2.AddTail(elem);
-            *(static_cast<i32*>(elem) + 14) = 0;
+            elem->m_dutyOn = 0;
             return 1;
         }
     }

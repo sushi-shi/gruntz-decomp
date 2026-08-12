@@ -321,7 +321,7 @@ i32 CObjectDropper::Update() {
     if (m_travelDx > 0) {
         m_posX += drift;
         if (m_posX >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_wrapW)) {
-            m_posX = DATA_COMPGEN(0x001ea9f8, fp_1ea9f8, 0.0);
+            m_posX = DATA_COMPGEN(0x001ea9f8, 0.0);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }

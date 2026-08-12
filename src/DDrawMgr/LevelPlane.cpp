@@ -78,7 +78,7 @@ i32 CDDrawWorkerHost::Read(
 
             CObject* val;
             val = NULL;
-            OwnerMgr()->m_imageRegistry->m_10map.Lookup(nameBuf, val);
+            OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(nameBuf, val);
             m_frameSets.SetAtGrow(static_cast<char>(n), val);
         }
     }
@@ -276,7 +276,7 @@ RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val;
     val = NULL;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, val);
+    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(key, val);
     m_frameSets.SetAtGrow(index, val);
 }
 

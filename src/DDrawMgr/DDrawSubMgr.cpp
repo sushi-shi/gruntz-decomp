@@ -132,10 +132,10 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymParser* parser, const char* key) {
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = 0;
-    m_10map.Lookup(key, val);
+    m_workersByName.Lookup(key, val);
     CDDrawWorker* w = static_cast<CDDrawWorker*>(val);
     if (val != NULL) {
-        m_10map.RemoveKey(key);
+        m_workersByName.RemoveKey(key);
         delete w;
     }
 }

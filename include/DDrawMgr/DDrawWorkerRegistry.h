@@ -65,7 +65,7 @@ public:
     virtual void RemoveByKey(const char* key);
     virtual void MapTeardown();
 
-    CMapStringToOb m_10map;
+    CMapStringToOb m_workersByName;
 
     i32 RemoveKeysEqual(const char* base, const char* str);
 

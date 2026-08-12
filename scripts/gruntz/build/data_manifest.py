@@ -299,7 +299,7 @@ def string_rows(exe=EXE, base_dir=None):
 
 
 def compgen_rows(exe=EXE, table=None):
-    """Reviewed `DATA_COMPGEN(rva, name, value)` claims -> per-owning-unit rows.
+    """Reviewed `DATA_COMPGEN(rva, value)` claims -> per-owning-unit rows.
 
     labels.py already authority-checked every claim against the claiming TU's
     base obj (a string payload equals a `??_C@` COMDAT there; a float's bits sit

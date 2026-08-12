@@ -61,7 +61,7 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
 RVA(0x00147530, 0x54)
 void CDDPalette::Destroy() {
     m_pos = NULL;
-    m_8 = 0;
+    m_reserved = 0;
     if (m_palette != NULL) {
         m_palette = NULL;
     }

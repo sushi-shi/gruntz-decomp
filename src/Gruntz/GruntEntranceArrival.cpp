@@ -756,10 +756,9 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = g_frameTime;
-        i32 d = static_cast<i32>(g_buteMgr.GetDwordDef(
-            "Grunt",
-            DATA_COMPGEN(0x0020e1a0, buteKeyIdleDelay, "IdleDelay"), 0x7530
-            ));
+        i32 d = static_cast<i32>(
+            g_buteMgr.GetDwordDef("Grunt", DATA_COMPGEN(0x0020e1a0, "IdleDelay"), 0x7530)
+            );
         m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
@@ -936,7 +935,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                         default:
                             m_defenderRadius = g_buteMgr.GetIntDef(
                                 "Grunt",
-                                DATA_COMPGEN(0x0020e1ac, buteKeyPlayerDefenderRadius, "PlayerDefenderRadius"), 3
+                                DATA_COMPGEN(0x0020e1ac, "PlayerDefenderRadius"), 3
                                 )
                                 + 1;
                             break;
@@ -1405,11 +1404,8 @@ i32 CGrunt::StepCombatReaction(
         m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
         goto tail;
     }
-    eq = (strcmp(
-        *g_typeColl.GetNameRecord(m_objAux->m_actKey),
-        DATA_COMPGEN(0x0020dc08, animKeyQ, "Q")
-        )
-        == 0);
+    eq =
+        (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), DATA_COMPGEN(0x0020dc08, "Q") ) == 0);
     if (eq) {
         m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
         return 0;
@@ -1455,11 +1451,8 @@ i32 CGrunt::StepCombatReaction(
         }
         goto tail;
     }
-    eq = (strcmp(
-        *g_typeColl.GetNameRecord(m_objAux->m_actKey),
-        DATA_COMPGEN(0x0020dc04, animKeyN, "N")
-        )
-        == 0);
+    eq =
+        (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), DATA_COMPGEN(0x0020dc04, "N") ) == 0);
     if (eq) {
         CWwdGameObjectA* h = m_object;
         i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;

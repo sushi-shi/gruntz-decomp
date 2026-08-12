@@ -39,17 +39,17 @@ void CDDrawWorkerRegistry::Unload() {
 RVA(0x00154ae0, 0xfc)
 CImage* CDDrawWorkerRegistry::InsertFrameByKey(void* rec, const char* key, i32 index, i32 mode) {
     CObject* worker = 0;
-    m_10map.Lookup(key, worker);
+    m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
 
-        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
         if (static_cast<CDDrawWorker*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
             }
             return 0;
         }
-        m_10map.SetAt(key, worker);
+        m_workersByName.SetAt(key, worker);
     }
     return static_cast<CDDrawWorker*>(worker)->InsertFrame(rec, index, mode);
 }
@@ -57,16 +57,16 @@ CImage* CDDrawWorkerRegistry::InsertFrameByKey(void* rec, const char* key, i32 i
 RVA(0x00154be0, 0xfc)
 CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed) {
     CObject* worker = 0;
-    m_10map.Lookup(key, worker);
+    m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
         if (static_cast<CDDrawWorker*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
             }
             return 0;
         }
-        m_10map.SetAt(key, worker);
+        m_workersByName.SetAt(key, worker);
     }
     return static_cast<CDDrawWorker*>(worker)->LoadFrame(path, index, keyed);
 }
@@ -80,16 +80,16 @@ CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     u32 size
 ) {
     CObject* worker = 0;
-    m_10map.Lookup(key, worker);
+    m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
         if (static_cast<CDDrawWorker*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
             }
             return 0;
         }
-        m_10map.SetAt(key, worker);
+        m_workersByName.SetAt(key, worker);
     }
     return static_cast<CDDrawWorker*>(worker)->CreateDescriptorFrame(desc, mode, index, size);
 }
@@ -103,16 +103,16 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
     i32 keyed
 ) {
     CObject* worker = 0;
-    m_10map.Lookup(key, worker);
+    m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
-        worker = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+        worker = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
         if (static_cast<CDDrawWorker*>(worker)->SetKey(key) == 0) {
             if (worker != NULL) {
                 delete worker;
             }
             return 0;
         }
-        m_10map.SetAt(key, worker);
+        m_workersByName.SetAt(key, worker);
     }
     return static_cast<CDDrawWorker*>(worker)->CreateBlankFrame(width, height, index, keyed);
 }
@@ -172,16 +172,16 @@ i32 CDDrawWorkerRegistry::InstallTree(void* tree, const char* sub, const char* p
     }
     if (sub != NULL && *sub != 0) {
         CObject* w = 0;
-        m_10map.Lookup(sub, w);
+        m_workersByName.Lookup(sub, w);
         if (w == NULL) {
-            w = new CDDrawWorker(m_ownerCtx, m_10map.GetCount());
+            w = new CDDrawWorker(m_ownerCtx, m_workersByName.GetCount());
             if (static_cast<CDDrawWorker*>(w)->SetKey(sub) == 0) {
                 if (w != NULL) {
                     delete w;
                 }
                 return 0;
             }
-            m_10map.SetAt(sub, w);
+            m_workersByName.SetAt(sub, w);
         }
         static_cast<CDDrawWorker*>(w)->BuildFramesFromSymTab(dir);
         if (static_cast<CDDrawWorker*>(w)->m_items.GetSize() == 0) {
@@ -216,7 +216,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
     }
     if (sub != NULL && *sub != 0) {
         CObject* out = 0;
-        m_10map.Lookup(sub, out);
+        m_workersByName.Lookup(sub, out);
         if (out != NULL) {
 
             if (static_cast<CDDrawWorker*>(out)->ValidateFramesFromSymTab(dir) == -1) {
@@ -235,7 +235,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(void* tree, const char* sub, const char*
 RVA(0x00155280, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != NULL) {
-        m_10map.RemoveKey(worker->m_name);
+        m_workersByName.RemoveKey(worker->m_name);
         delete worker;
     }
 }
@@ -243,17 +243,17 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
 RVA(0x001552b0, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown() {
     CObject* val = 0;
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_workersByName.GetStartPosition();
     CString key;
     if (pos != NULL) {
         do {
-            m_10map.GetNextAssoc(pos, key, val);
+            m_workersByName.GetNextAssoc(pos, key, val);
             if (val != NULL) {
                 delete (static_cast<CDDrawWorker*>(val));
             }
         } while (pos != NULL);
     }
-    m_10map.RemoveAll();
+    m_workersByName.RemoveAll();
 }
 
 RVA(0x00155360, 0xf8)
@@ -263,12 +263,12 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
     i32 len = match.GetLength();
     CString key;
     CObject* val = 0;
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_workersByName.GetStartPosition();
     i32 n = 0;
     while (pos != NULL) {
-        m_10map.GetNextAssoc(pos, key, val);
+        m_workersByName.GetNextAssoc(pos, key, val);
         if (strncmp(key, match, len) == 0) {
-            m_10map.RemoveKey(key);
+            m_workersByName.RemoveKey(key);
             if (val != NULL) {
                 delete (static_cast<CDDrawWorker*>(val));
             }
@@ -280,13 +280,13 @@ i32 CDDrawWorkerRegistry::RemoveKeysEqual(const char* base, const char* str) {
 
 RVA(0x00155460, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_workersByName.GetStartPosition();
     i32 total = 0;
     CObject* val = 0;
     CString key;
     while (pos != NULL) {
         val = NULL;
-        m_10map.GetNextAssoc(pos, key, val);
+        m_workersByName.GetNextAssoc(pos, key, val);
         if (val != NULL) {
             if (str == NULL || *str == 0) {
                 total += (static_cast<CDDrawWorker*>(val))->GetMemoryUsage(raw);
@@ -303,9 +303,9 @@ i32 CDDrawWorkerRegistry::HasKeyEqual(const char* str) {
     i32 len = strlen(str);
     CString key;
     CObject* val = 0;
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_workersByName.GetStartPosition();
     while (pos != NULL) {
-        m_10map.GetNextAssoc(pos, key, val);
+        m_workersByName.GetNextAssoc(pos, key, val);
         if (strncmp(key, str, len) == 0) {
             return 1;
         }
@@ -320,9 +320,9 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
     }
     CString key;
     CObject* val = 0;
-    POSITION pos = m_10map.GetStartPosition();
+    POSITION pos = m_workersByName.GetStartPosition();
     while (pos != NULL) {
-        m_10map.GetNextAssoc(pos, key, val);
+        m_workersByName.GetNextAssoc(pos, key, val);
         if (val != NULL && (static_cast<CDDrawWorker*>(val))->FindFrame(frame, outName, outIndex)) {
             return 1;
         }

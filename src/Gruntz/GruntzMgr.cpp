@@ -1199,7 +1199,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
     CDDrawWorker* rec;
     {
         CObject* out = 0;
-        m_world->m_imageRegistry->m_10map.Lookup("GAME_MONOLITH", out);
+        m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MONOLITH", out);
         rec = static_cast<CDDrawWorker*>(out);
     }
     if (rec == NULL) {
@@ -1256,7 +1256,7 @@ RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
         CObject* out = 0;
-        m_world->m_imageRegistry->m_10map.Lookup(key, out);
+        m_world->m_imageRegistry->m_workersByName.Lookup(key, out);
         CDDrawWorker* row = static_cast<CDDrawWorker*>(out);
         if (row) {
             CImage* dst = static_cast<CImage*>(row->m_items.GetAt(row->m_minIndex));
@@ -1310,7 +1310,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
         return 0;
     }
     CObject* found = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_DEVHEADS", found);
+    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_DEVHEADS", found);
     CDDrawWorker* out = static_cast<CDDrawWorker*>(found);
     if (out == NULL) {
         return 0;
@@ -1346,7 +1346,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
         CDDrawWorker* set;
         {
             CObject* found = 0;
-            m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
+            m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
             set = static_cast<CDDrawWorker*>(found);
         }
         if (set) {
@@ -1395,7 +1395,7 @@ void CGruntzMgr::CheatEclipseToggle() {
         CDDrawWorker* set;
         {
             CObject* found = 0;
-            m_world->m_imageRegistry->m_10map.Lookup("Gruntz", found);
+            m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
             set = static_cast<CDDrawWorker*>(found);
         }
         if (set) {
@@ -2197,18 +2197,18 @@ void CGruntzMgr::RecomputeViewScale() {
     i32 ih = ext->bottom - ext->top + 1;
     float fw = static_cast<float>(iw);
 
-    view->m_rectA.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2bc, fp_1ea2bc, 1.4f)));
+    view->m_rectA.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2bc, 1.4f)));
     float fh = static_cast<float>(ih);
     view->m_rectA.h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectB.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c0, fp_1ea2c0, 5.3f)));
+    view->m_rectB.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c0, 5.3f)));
     view->m_rectB.h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_rectC.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c4, fp_1ea2c4, 1.12f)));
+    view->m_rectC.w = static_cast<i32>((fw * DATA_COMPGEN(0x001ea2c4, 1.12f)));
     view->m_rectC.h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 

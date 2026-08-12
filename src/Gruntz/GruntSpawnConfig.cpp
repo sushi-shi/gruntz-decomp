@@ -119,23 +119,23 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
         return 0;
     }
     i32 voiceId = GetButeSlot(who, cue);
-    CString local_10;
-    CString local_14;
-    local_14.Format("SG%i", voiceId);
-    local_10.Format("G%i", cue);
+    CString cueKey;
+    CString voiceSection;
+    voiceSection.Format("SG%i", voiceId);
+    cueKey.Format("G%i", cue);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Per", -1);
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", -1);
         if (percent == -1) {
-            percent = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(local_10), 0);
+            percent = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(cueKey), 0);
         }
     }
     if (percent < 100 && percent < g_gameReg->Rand() % 0x65) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_14), "Pri", -1);
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", -1);
         if (priority == -1) {
-            priority = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(local_10), 1);
+            priority = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(cueKey), 1);
         }
     }
     for (i32 i = 0; i < 2; i++) {
@@ -222,16 +222,16 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (!IsReady()) {
         return 0;
     }
-    CString local_10;
-    local_10.Format("SG%i", voiceId);
+    CString voiceSection;
+    voiceSection.Format("SG%i", voiceId);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Pri", 1);
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (voices[i]->m_playFlags >= priority) {
@@ -320,16 +320,16 @@ i32 CGruntSpawnConfig::SpawnVoiceDriver(
     if (!IsReady()) {
         return 0;
     }
-    CString local_10;
-    local_10.Format("SG%i", voiceId);
+    CString voiceSection;
+    voiceSection.Format("SG%i", voiceId);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Per", 100);
+        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(local_10), "Pri", 1);
+        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (voices[i]->m_playFlags >= priority) {

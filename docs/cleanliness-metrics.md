@@ -24,7 +24,7 @@ by 2×–30×), and the `rg` commands are *approximations* of the board's
 comment-/string-stripped count, kept only to show what each metric looks for.
 
 The **hard rule** these encode: *there should be no casts, no `void*` members, no
-`m_<hex>`/`Unknown`/`g_<hex>`/`Method<N>` placeholders, and no per-TU/fabricated
+offset-/address-derived identifiers, `Unknown`/`Method<N>` placeholders, and no per-TU/fabricated
 views where we can afford it* — a survivor means something isn't typed or named
 right. Keep a cast/placeholder ONLY when removing it changes the matched bytes and
 no correct typing/naming avoids it (i64 DWORD-pair overlays, pointer-as-int
@@ -39,6 +39,7 @@ directly where `const char*` is expected, no cast (and no helper).
 | metric | baseline row | what it looks for | target |
 |---|---|---|---|
 | `m_<hex>` fields | `m_<hex> fields` | `\bm_[0-9a-f]{2,}\b` (minus `m_<n><g-z>`) | provable→named; only genuinely-unknowable remain. **Renames come LAST** — model first |
+| address-/slot-derived names | `address-derived identifiers` | `local_14`, `m_10map`, `g_ratingRaw_64da84` and equivalent decorated forms | 0 — use an evidence-backed role, or an honest `reserved` name when no role is proven |
 | `Unknown` identifiers (class/method/field/vslot) | `Unknown ids` | `\w*[Uu]nknown\w*` | **0** — name by xref/RTTI |
 | `g_<hex>` globals | `g_<hex> globals` | `\bg_[0-9a-f]{4,}\b` | 0 (name by usage) |
 | `Method<N>`/`Stub_`/`vfunc_`/`FUN_` | `Method/Stub/FUN/Gap` | placeholder function names | 0 |

@@ -72,7 +72,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = NULL;
-    m_host->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_frame = (set != NULL) ? set->GetAt(4) : 0;
     if (m_frame == NULL) {
@@ -91,7 +91,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = NULL;
-    m_host->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_baseFrame = (set != NULL) ? set->GetAt(2) : 0;
     if (m_baseFrame == NULL) {
@@ -106,7 +106,7 @@ i32 CSBI_WellGoo::Setup(
     }
 
     found = NULL;
-    m_host->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     set = static_cast<CDDrawWorker*>(found);
     m_fgFrame = (set != NULL) ? set->GetAt(3) : 0;
     if (m_fgFrame == NULL) {
@@ -147,10 +147,9 @@ i32 CSBI_WellGoo::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect14.bottom + 3, 0);
 
-    double fill =
-        static_cast<float>((m_rect14.bottom - m_rect14.top)) * m_fillScale
-        * DATA_COMPGEN(0x001eab28, fp_1eab28, 0.01f) - DATA_COMPGEN(0x001eab2c, fp_1eab2c, 3.0f);
-    if (fill <= DATA_COMPGEN(0x001eab30, fp_1eab30, 1.0)) {
+    double fill = static_cast<float>((m_rect14.bottom - m_rect14.top)) * m_fillScale
+                  * DATA_COMPGEN(0x001eab28, 0.01f) - DATA_COMPGEN(0x001eab2c, 3.0f);
+    if (fill <= DATA_COMPGEN(0x001eab30, 1.0)) {
         fill = 1.0;
     }
     m_dstRect.top = static_cast<i32>((static_cast<double>(m_rect14.bottom) - fill));
@@ -226,7 +225,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;
-                mgr->m_imageRegistry->m_10map.Lookup(buf, found);
+                mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
                     m_fgFrame = set->GetAt(idx);
@@ -241,7 +240,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 CObject* found = 0;
-                mgr->m_imageRegistry->m_10map.Lookup(buf, found);
+                mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
                 CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
                 if (set != NULL) {
                     m_baseFrame = set->GetAt(idx);

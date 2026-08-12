@@ -69,7 +69,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
 
     found = NULL;
     m_cmd = cmd;
-    h->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", found);
+    h->m_imageRegistry->m_workersByName.Lookup(
+        "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
+        found
+    );
     rec = static_cast<CDDrawWorker*>(found);
     if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
         spr = NULL;
@@ -81,7 +84,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         return 0;
     }
     found = NULL;
-    m_host->m_imageRegistry->m_10map.Lookup(key, found);
+    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
     cfg = static_cast<CDDrawWorker*>(found);
     m_config = cfg;
     if (cfg == NULL) {
@@ -248,7 +251,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             s->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 m_config = static_cast<CDDrawWorker*>(out);
             } else {
                 m_config = NULL;
@@ -261,7 +264,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
@@ -281,7 +284,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {
@@ -300,7 +303,7 @@ i32 CSBI_GruntMachine::SerializeFields(
             if (strlen(buf) != 0) {
                 i32 i = idx;
                 out = NULL;
-                reg->m_imageRegistry->m_10map.Lookup(buf, out);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {

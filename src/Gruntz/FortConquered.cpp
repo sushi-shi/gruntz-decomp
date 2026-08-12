@@ -54,7 +54,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
                         loser->GetName() + " was conquered by " + winner->GetName()
-                            + DATA_COMPGEN(0x0020d168, exclaimStr, "!")
+                            + DATA_COMPGEN(0x0020d168, "!")
                         ),
                         0,
                         0x11

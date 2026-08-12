@@ -6,6 +6,27 @@ inliner, control flow, then register allocation. A score change alone is not a
 break; the retail instruction, relocation, or table evidence must identify the
 compiler decision, and a real VC5 build must confirm the fix.
 
+## 2026-08-12 — `CTriggerMgr::PlaceObject`
+
+- Unit/RVA: `triggermgrgrid`, `0x0006b6d0`.
+- Before: 73.3010%. The candidate used an exit-tested occupied-cell scan, kept
+  a redundant `m_world` snapshot, and copied `typeKind` into a `PickupType`
+  before the AI-unit switch. The switch then changed `typeKind`, but `Place`
+  received the stale copy. That was a behavioral defect hidden inside a broad
+  code-generation mismatch.
+- Source levers: use the top-tested retail scan, keep one `g_gameReg` lifetime
+  across the placement body, pass the post-switch `typeKind`, and express the
+  row-capacity success arm as the guarded body. These restore retail's 12-byte
+  frame, 31-branch/four-return topology, and the intended placed-object type.
+- Result: 92.1651% current-source fuzzy. The remaining broad residue is
+  scheduling and entity allocation around sprite creation and the AI switch;
+  the structural fixes are retained regardless of that current score.
+- Refuted wall hypothesis: explicit labels for the special-tile false arm were
+  byte-for-byte flat at 92.1651% and still did not reproduce retail's shared
+  out-of-line zero assignment. They were removed instead of becoming a manual
+  source probe. A direct `switch (aiType)` was also byte-identical to a typed
+  temporary, so the unnecessary cast/local was removed.
+
 ## 2026-08-12 — `CPlay::ExecCommand`
 
 - Unit/RVA: `playercommandstep`, `0x000d1b60`.

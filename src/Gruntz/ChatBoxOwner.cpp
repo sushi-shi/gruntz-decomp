@@ -204,7 +204,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
 
     CDDrawWorker* spr = 0;
     CObject* sprOb = 0;
-    self->m_world->m_imageRegistry->m_10map.Lookup("GAME_CHATBOX", sprOb);
+    self->m_world->m_imageRegistry->m_workersByName.Lookup("GAME_CHATBOX", sprOb);
     spr = static_cast<CDDrawWorker*>(sprOb);
     if (!spr) {
         return 0;

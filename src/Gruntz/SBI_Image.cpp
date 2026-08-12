@@ -45,7 +45,7 @@ i32 CSBI_Image::SetupImage(
         m_cmd = cmd;
         if (key != NULL) {
             CObject* found = 0;
-            host->m_imageRegistry->m_10map.Lookup(key, found);
+            host->m_imageRegistry->m_workersByName.Lookup(key, found);
             CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
             CImage* val;
             if (rec == NULL || rec->m_minIndex > 1 || rec->m_maxIndex < 1) {
@@ -105,7 +105,7 @@ i32 CSBI_Image::SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
                 CObject* r_ob = 0;
-                mgr->m_imageRegistry->m_10map.Lookup(name, r_ob);
+                mgr->m_imageRegistry->m_workersByName.Lookup(name, r_ob);
                 CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
                 if (r && idx >= r->m_minIndex && idx <= r->m_maxIndex) {
                     m_frame = static_cast<CImage*>(r->m_items.GetAt(idx));

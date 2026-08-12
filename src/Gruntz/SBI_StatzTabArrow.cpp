@@ -98,7 +98,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     found = NULL;
     m_cmd = cmd;
-    h->m_imageRegistry->m_10map.Lookup(key, found);
+    h->m_imageRegistry->m_workersByName.Lookup(key, found);
     head = static_cast<CDDrawWorker*>(found);
     m_glyphMap = head;
     if (head == NULL) {
@@ -128,7 +128,10 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CImage* val;
     if (selMode != 0) {
         found = NULL;
-        m_host->m_imageRegistry->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", found);
+        m_host->m_imageRegistry->m_workersByName.Lookup(
+            "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR",
+            found
+        );
         CDDrawWorker* sel = static_cast<CDDrawWorker*>(found);
         m_timerGlyphMap = sel;
         if (sel == NULL) {
@@ -151,7 +154,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
     } else {
         found = NULL;
-        m_host->m_imageRegistry->m_10map.Lookup(
+        m_host->m_imageRegistry->m_workersByName.Lookup(
             "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
             found
         );

@@ -102,7 +102,7 @@ RVA(0x0009d520, 0xfd)
 void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 anchorB) {
     CObject* nodeOb = 0;
 
-    m_animWorker->m_ownerCtx->m_imageRegistry->m_10map.Lookup(spec, nodeOb);
+    m_animWorker->m_ownerCtx->m_imageRegistry->m_workersByName.Lookup(spec, nodeOb);
     CDDrawWorker* en = static_cast<CDDrawWorker*>(nodeOb);
     g_gameReg->m_logicPump->Push(en, anchorA, SHADE_DST_BY_SRC_16);
     CWwdGameObjectA* o = m_wwdObject;

@@ -3491,7 +3491,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (g_debugDisplayFlags & 0x80) {
         CString t = FormatElapsedTime(g_frameTime);
-        t += DATA_COMPGEN(0x00212754, spaceStr, " ");
+        t += DATA_COMPGEN(0x00212754, " ");
         strcat(buf, t);
         t += " ";
     }
@@ -3719,7 +3719,7 @@ i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
     CObject* lookup_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", lookup_ob);
+    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MESSAGEZ", lookup_ob);
     CDDrawWorker* set = static_cast<CDDrawWorker*>(lookup_ob);
     if (set == NULL) {
         return 0;
@@ -4044,7 +4044,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     CDDrawWorker* grid = 0;
     CObject* gridOb = 0;
 
-    m_world->m_imageRegistry->m_10map.Lookup(key, gridOb);
+    m_world->m_imageRegistry->m_workersByName.Lookup(key, gridOb);
     grid = static_cast<CDDrawWorker*>(gridOb);
     m_grid = grid;
     if (grid == NULL) {
@@ -4356,7 +4356,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     i32 sy = g->m_snappedY;
     // retail keeps the percent scale as its own temp: the int range multiply
     // lands after the double multiply, not reassociated ahead of it.
-    double frac = static_cast<double>(w->m_scrollSpeed) * DATA_COMPGEN(0x001eaa10, fp_1eaa10, 0.01);
+    double frac = static_cast<double>(w->m_scrollSpeed) * DATA_COMPGEN(0x001eaa10, 0.01);
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
     SIZE
@@ -4454,7 +4454,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     CObject* set_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_MESSAGEZ", set_ob);
+    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MESSAGEZ", set_ob);
     CDDrawWorker* set = static_cast<CDDrawWorker*>(set_ob);
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
@@ -5233,7 +5233,7 @@ i32 CPlay::BuildHelpReveal(i32 final) {
 
     i32 counter = m_revealFrame;
     i32 col = static_cast<i32>(
-        (static_cast<float>(counter) * DATA_COMPGEN(0x001eaa18, fp_1eaa18, 3.7857143878936768f))
+        (static_cast<float>(counter) * DATA_COMPGEN(0x001eaa18, 3.7857143878936768f))
     );
     // `final` picks the shape: a mid-reveal frame slides ONE strip to col+0xe0
     // and stops there; the final frame paints every remaining strip and then
@@ -5248,8 +5248,7 @@ i32 CPlay::BuildHelpReveal(i32 final) {
             for (i32 i = counter; 0x37 > i; i++) {
                 i32 x = 0xe0
                         - static_cast<i32>(
-                            (static_cast<float>(i)
-                             * DATA_COMPGEN(0x001eaa1c, fp_1eaa1c, -3.7857143878936768f))
+                            (static_cast<float>(i) * DATA_COMPGEN(0x001eaa1c, -3.7857143878936768f))
                         );
                 LayerBlitFrame(m_world, static_cast<CImage*>(m_revealCapMid), x, 0x1a6, 1, 0);
             }
@@ -5264,7 +5263,7 @@ i32 CPlay::BuildHelpReveal(i32 final) {
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
-    m_world->m_imageRegistry->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
+    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_LOADINGBAR", spr_ob);
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     if (!spr) {
         return 0;
@@ -5612,7 +5611,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         // `m_gridCurFrame = NULL`, i.e. the non-empty name is the FALL-THROUGH.
         if (strlen(nameBuf) != 0) {
             CObject* found = 0;
-            res->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(nameBuf), found);
+            res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
             CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
             if (set == NULL || idx < set->m_minIndex || idx > set->m_maxIndex) {
                 m_gridCurFrame = NULL;
@@ -5629,7 +5628,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
         CObject* gridObj = 0;
         if (strlen(nameBuf) != 0) {
-            res->m_imageRegistry->m_10map.Lookup(nameBuf, gridObj);
+            res->m_imageRegistry->m_workersByName.Lookup(nameBuf, gridObj);
             m_grid = static_cast<CDDrawWorker*>(gridObj);
         } else {
             m_grid = NULL;

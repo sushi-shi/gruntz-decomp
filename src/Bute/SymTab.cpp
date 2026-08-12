@@ -139,7 +139,7 @@ GZ_ENUM_RETURN(RezTypeTag, u32) CParseSource::GetEntryTag() {
 RVA(0x00139810, 0x140)
 char* CParseSource::CurrentScopePath(char* dst, i32 size) {
     if (m_owner->m_parent == NULL) {
-        strcpy(dst, DATA_COMPGEN(0x0020cff0, pathSeparator, "\\"));
+        strcpy(dst, DATA_COMPGEN(0x0020cff0, "\\"));
     } else {
         char* scratch = new char[size];
         strcpy(dst, "");

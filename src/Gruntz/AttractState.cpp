@@ -95,7 +95,7 @@ i32 CAttract::EnterState(GameStateId arg) {
     page->BlitPage(page->m_backPair);
 
     i32 r = GetRandomNumber();
-    const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, attractSuffix2, "2") : "";
+    const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, "2") : "";
 
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);

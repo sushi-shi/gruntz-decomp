@@ -37,7 +37,10 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     CObject* spr_ob = 0;
 
     m_active = 0;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
+        "GAME_ACTIONOPTIONZMENUBAR",
+        spr_ob
+    );
     CDDrawWorker* spr = static_cast<CDDrawWorker*>(spr_ob);
     m_frame = (spr && spr->m_minIndex <= 1 && spr->m_maxIndex >= 1)
                   ? static_cast<CImage*>(spr->m_items.GetAt(1))
@@ -47,7 +50,10 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
+        "GAME_INGAMEICONZ_NORMCHIPZ",
+        spr_ob
+    );
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_normChipSprite = spr;
     if (!spr) {
@@ -55,7 +61,10 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
+        "GAME_INGAMEICONZ_HIGHCHIPZ",
+        spr_ob
+    );
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_highChipSprite = spr;
     if (!spr) {
@@ -63,7 +72,10 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr_ob = NULL;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", spr_ob);
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
+        "GAME_INGAMEICONZ_GREYCHIPZ",
+        spr_ob
+    );
     spr = static_cast<CDDrawWorker*>(spr_ob);
     m_greyChipSprite = spr;
     if (!spr) {
@@ -392,7 +404,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         m_normChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_normChipSprite = NULL;
@@ -402,7 +414,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         m_highChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_highChipSprite = NULL;
@@ -412,7 +424,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         m_greyChipSprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_greyChipSprite = NULL;
@@ -424,7 +436,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -443,7 +455,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -462,7 +474,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        mgr->m_imageRegistry->m_10map.Lookup(buf, out);
+        mgr->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {

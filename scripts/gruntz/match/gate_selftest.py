@@ -62,6 +62,38 @@ class RenameMemberToolTests(unittest.TestCase):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
 
 
+class SourceIdentityContractTests(unittest.TestCase):
+    def test_address_and_stack_derived_identifiers_are_counted(self):
+        source = """
+            i32 m_8;
+            CMapStringToOb m_10map;
+            CString local_14;
+            DWORD g_ratingRaw_64da84;
+        """
+        self.assertEqual(cleanliness._count_address_derived_identifiers(source), 4)
+        self.assertEqual(
+            cleanliness._count_address_derived_identifiers(
+                "i32 m_reserved; CMapStringToOb m_workersByName; CString voiceSection;"
+            ),
+            0,
+        )
+
+    def test_data_compgen_accepts_no_source_identity_argument(self):
+        _claims, errors = labels.compgen_tu(
+            "double x = DATA_COMPGEN(0x001ea410, 1.0);", "sample.cpp", "sample", None
+        )
+        self.assertEqual(errors, [])
+
+        _claims, errors = labels.compgen_tu(
+            "double x = DATA_COMPGEN(0x001ea410, fp_1ea410, 1.0);",
+            "sample.cpp",
+            "sample",
+            None,
+        )
+        self.assertEqual(len(errors), 1)
+        self.assertIn("takes (addr, value)", errors[0][2])
+
+
 class TuOrderExileControls(unittest.TestCase):
     EXILES = {0x1000: ("Owner", "Host", "Fn")}
     SPANS = {"Host": (0x1000, 0x1100)}

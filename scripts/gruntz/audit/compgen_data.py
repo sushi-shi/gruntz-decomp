@@ -7,7 +7,7 @@ the tree, but that neither source-side data device can reach.
 
   * `DATA(rva)` binds to an AST VarDecl in the MAIN file, so it is ignored inside a
     header - and a function-local static in a header inline lives exactly there;
-  * `DATA_COMPGEN(rva, name, value)` wraps a compiler-generated allocation at its
+  * `DATA_COMPGEN(rva, value)` wraps a compiler-generated allocation at its
     USE SITE, so it needs a value expression - and a `??_B` dynamic-init guard byte
     has no source spelling at all (cl assigns it a counter).
 

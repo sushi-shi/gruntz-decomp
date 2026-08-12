@@ -127,7 +127,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
     m_tileMgr->RemoveCellRecord(m_tileOwnerHi, m_tileOwnerLo, 1);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020cc90, animKeyC, "C"));
+    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020cc90, "C"));
 
     m_wwdObject->m_flags |= 1;
     {

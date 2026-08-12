@@ -12,7 +12,7 @@ the store redundant. Two recurring shapes:
 often preceded by an explicit `out = 0` even though the callee writes it.
 ```cpp
 CObject* outOb = 0;      // retail: mov DWORD PTR [esp+0x18],eax  (eax==0) before the call
-reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
+reg->m_imageRegistry->m_workersByName.Lookup(buf, outOb);
 ```
 
 **2. A save/restore around a state change.** cl deletes `p->f = p->f` when both accesses

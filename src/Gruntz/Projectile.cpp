@@ -219,7 +219,7 @@ i32 CProjectile::LoadProjectileSprites(
     void* out;
     out = NULL;
     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
-        key + DATA_COMPGEN(0x00213658, spriteKeyOne, "1"), out
+        key + DATA_COMPGEN(0x00213658, "1"), out
         );
     m_frames[0] = static_cast<CAniElement*>(out);
     if (m_frames[0] == NULL) {
@@ -349,7 +349,7 @@ void CProjectile::AdvanceMotion() {
         i32 xRes = static_cast<i32>((m_roundX + m_posX));
         i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;
-        if (m_velX > DATA_COMPGEN(0x001eaa90, fp_1eaa90, 0.0)) {
+        if (m_velX > DATA_COMPGEN(0x001eaa90, 0.0)) {
             if (xRes > m_targetX) {
                 localX = m_targetX;
                 xRes = m_targetX;
@@ -379,7 +379,7 @@ void CProjectile::AdvanceMotion() {
             double dist = sqrt(dx * dx + dy * dy);
             if (dist
                 >= m_flightDist
-                       * DATA_COMPGEN(0x001eaa98, fp_1eaa98, 0.9) || dist < m_flightDist * DATA_COMPGEN(0x001eaaa0, fp_1eaaa0, 0.1)) {
+                       * DATA_COMPGEN(0x001eaa98, 0.9) || dist < m_flightDist * DATA_COMPGEN(0x001eaaa0, 0.1)) {
                 offX = 0x4;
                 offY = -0x4;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
@@ -392,7 +392,7 @@ void CProjectile::AdvanceMotion() {
             } else if (
                 dist
                 >= m_flightDist
-                       * DATA_COMPGEN(0x001eaaa8, fp_1eaaa8, 0.8) || dist < m_flightDist * DATA_COMPGEN(0x001eaab0, fp_1eaab0, 0.2)) {
+                       * DATA_COMPGEN(0x001eaaa8, 0.8) || dist < m_flightDist * DATA_COMPGEN(0x001eaab0, 0.2)) {
                 offX = 0x8;
                 offY = -0x8;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
@@ -405,7 +405,7 @@ void CProjectile::AdvanceMotion() {
             } else if (
                 dist
                 >= m_flightDist
-                       * DATA_COMPGEN(0x001eaab8, fp_1eaab8, 0.7) || dist < m_flightDist * DATA_COMPGEN(0x001eaac0, fp_1eaac0, 0.3)) {
+                       * DATA_COMPGEN(0x001eaab8, 0.7) || dist < m_flightDist * DATA_COMPGEN(0x001eaac0, 0.3)) {
                 offX = 0xc;
                 offY = -0xc;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
@@ -418,7 +418,7 @@ void CProjectile::AdvanceMotion() {
             } else if (
                 dist
                 >= m_flightDist
-                       * DATA_COMPGEN(0x001eaac8, fp_1eaac8, 0.6) || dist < m_flightDist * DATA_COMPGEN(0x001eaad0, fp_1eaad0, 0.4)) {
+                       * DATA_COMPGEN(0x001eaac8, 0.6) || dist < m_flightDist * DATA_COMPGEN(0x001eaad0, 0.4)) {
                 offX = 0x10;
                 offY = -0x10;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {

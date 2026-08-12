@@ -51,7 +51,7 @@ Neither test needs a disassembly read.
 ## The fix
 
 Every site becomes the bare literal. The retail address is kept by exactly ONE
-`DATA_COMPGEN(rva, name, "lit")` at a use site **in the unit that currently owns
+`DATA_COMPGEN(rva, "lit")` at a use site **in the unit that currently owns
 the pin** — `labels.py` resolves it against the `??_C@` COMDAT in that TU's own
 base obj, so the use site must spell the literal verbatim. A literal that no
 pinned copy owns needs no pin at all: the delinker names an unclaimed pooled

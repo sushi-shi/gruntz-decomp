@@ -36,7 +36,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         m_sprite = static_cast<CDDrawWorker*>(out);
     } else {
         m_sprite = NULL;
@@ -50,7 +50,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -69,7 +69,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -88,7 +88,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -107,7 +107,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
@@ -126,7 +126,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = NULL;
-        reg->m_imageRegistry->m_10map.Lookup(buf, out);
+        reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
         CDDrawWorker* tt = static_cast<CDDrawWorker*>(out);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {

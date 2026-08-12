@@ -1111,7 +1111,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // sibling sites below already do.
     char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool neH = (strcmp(*rec0, DATA_COMPGEN(0x0020d7fc, animKeyH, "H")) != 0);
+    bool neH = (strcmp(*rec0, DATA_COMPGEN(0x0020d7fc, "H")) != 0);
     if (neH) {
         i32 keyF = m_objAux->m_actKey;
         g_typeColl.m_grown = 0;
@@ -1127,8 +1127,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
             recF = g_typeColl.Elem(keyF);
         }
         ActNameConstructGrownSlots();
-        bool neF =
-            (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, animKeyF, "F")) != 0);
+        bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
         if (neF) {
             i32 keyO = m_objAux->m_actKey;
             g_typeColl.m_grown = 0;
@@ -1938,13 +1937,13 @@ void RegisterGruntActions() {
 
 RVA(0x0005caa0, 0x5e4)
 void CGrunt::Activate() {
-    double diag = sqrt(DATA_COMPGEN(0x001e9a28, fp_1e9a28, 2.0));
+    double diag = sqrt(DATA_COMPGEN(0x001e9a28, 2.0));
 
-    double s = DATA_COMPGEN(0x001e9a30, fp_1e9a30, 1.0) / diag;
+    double s = DATA_COMPGEN(0x001e9a30, 1.0) / diag;
 
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.x = 0.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.y =
-        DATA_COMPGEN(0x001e9a38, fp_1e9a38, -1.0);
+        DATA_COMPGEN(0x001e9a38, -1.0);
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.x = 0.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.y = -0.5;
 

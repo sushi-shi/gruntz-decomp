@@ -532,7 +532,7 @@ registry-located base-0 vtable), `CArray<PLAYLISTINFOSTRUCT*>`'s graph
 comparable, and their base-side `??_R4zPTree@@6BzErrHandling@@@` — a secondary/MI
 record the enrolment still withholds — now honestly costs 24 B each until the MI pass.
 
-### 3b-iii. `DATA_COMPGEN(rva, name, value)` — reviewed compiler-generated data (wired)
+### 3b-iii. `DATA_COMPGEN(rva, value)` — reviewed compiler-generated data (wired)
 
 Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic
 string inference cannot establish retail identity when a payload content-matches several
@@ -541,8 +541,8 @@ bytes also occur inside other data), when Ghidra never carved the literal, or fo
 entries (no content-derived name exists at all). The macro wraps the value AT ITS USE SITE
 and expands to it under both compilers:
 
-    g_pathStr += DATA_COMPGEN(0x0020cfbc, wwdExtension, ".WWD");
-    health * DATA_COMPGEN(0x001e9a98, healthSlotScale, 0.2)
+    g_pathStr += DATA_COMPGEN(0x0020cfbc, ".WWD");
+    health * DATA_COMPGEN(0x001e9a98, 0.2)
 
 `labels.py` parses the invocations (balanced-paren - expression position wraps), then
 authority-checks each claim against the claiming TU's base obj: a string payload must
@@ -554,14 +554,14 @@ row per claiming unit) + one representative `symbol_names.csv` row per rva; the 
 manifest enrolls them via `compgen_rows()` (strings take the candidate-COFF section
 shape, floats the legacy packed form).
 
-**Gates (labels.py, FATAL):** semantic name unique per TU; one compiler-generated
-identity per RVA - EXCEPT byte-identical string payloads, which /Gf pooling (implied by
+**Gates (labels.py, FATAL):** one compiler-generated identity per RVA - EXCEPT
+byte-identical string payloads, which /Gf pooling (implied by
 /O2) legitimately folds from N TUs onto ONE retail RVA (`docs/string-pooling.md`); those
 claims coalesce onto the one `??_C@` name and enroll once per owner (the §3b-i alias
 form). This per-RVA relaxation is the deliberate divergence from homm2's stricter
 "different names at one RVA are rejected" rule: VC4.2 there, VC5 pooling here. FP pools
-never fold, so a numeric RVA claimed by two TUs is always a mis-pin. The semantic name is
-per-TU documentation only - it never reaches the delinker.
+never fold, so a numeric RVA claimed by two TUs is always a mis-pin. No source-side name
+is accepted because the compiler-generated datum has no source identity to name.
 
 First proven claims: the `".WWD"` disambiguation (0x20cfbc vs the `"*.WWD"` tail at
 0x20cf95 that inference withheld), a 2-TU `"Wormhole"` fold (gameobjectfactory +

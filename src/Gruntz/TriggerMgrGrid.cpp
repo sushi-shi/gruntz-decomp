@@ -88,14 +88,12 @@ i32 CTriggerMgr::PlaceObject(
 ) {
 
     {
-        CDDrawSurfaceMgr* world = m_world;
-        if (world == NULL) {
+        if (m_world == NULL) {
             goto fail;
         }
         i32 wantSlot = 0;
         i32 special = 0;
-        PickupType placedType = static_cast<PickupType>(typeKind);
-        if (placedType == PICKUP_TOOB) {
+        if (static_cast<PickupType>(typeKind) == PICKUP_TOOB) {
             special = 0x100;
             wantSlot = 1;
         }
@@ -131,16 +129,11 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         i32 base = row * TM_GRID_COLS;
-        if (m_grid[base] != NULL) {
-
-            CGrunt** cells = &m_grid[row * TM_GRID_COLS];
-            while (col < TM_GRID_COLS) {
-                cells++;
-                col++;
-                if (*cells == NULL) {
-                    break;
-                }
+        while (m_grid[base + col] != NULL) {
+            if (col >= TM_GRID_COLS) {
+                goto fail;
             }
+            col++;
         }
         if (col >= TM_GRID_COLS) {
             goto fail;
@@ -152,14 +145,14 @@ i32 CTriggerMgr::PlaceObject(
         }
         sprite->m_animWorker->m_notify(sprite);
         CGrunt* logic = static_cast<CGrunt*>(sprite->m_animWorker->m_logic);
+        CGruntzMgr* game = g_gameReg;
 
         // NOT a PickupType local: the AI-type switch fills it with tool ids,
         // but the player-slot path below overwrites it with m_colorIndex, so it
         // carries two domains. Converted explicitly where it enters Place().
         i32 kindId;
-        if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
-            BattlezUnitKind battlezKind = static_cast<BattlezUnitKind>(aiType);
-            switch (battlezKind) {
+        if (game->m_gameMode == GAMEMODE_SINGLE) {
+            switch (aiType) {
                 case BZUNIT_BOMB:
                     kindId = IDX(PICKUP_BOMB);
                     break;
@@ -224,64 +217,63 @@ i32 CTriggerMgr::PlaceObject(
             kindId = kindDefault;
         }
 
-        if (m_rowCount[row] >= g_gameReg->m_options[row].m_comboSel) {
-            goto fail;
-        }
-        if (g_gameReg->m_options[row].m_liveGate != 0
-            || (row != g_curPlayer
-                && kindId == IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex))) {
-            kindId = IDX(g_gameReg->m_options[row].m_colorIndex);
-        }
-        if (row == g_curPlayer && aiType != 0) {
-            aiType = 0;
-        }
+        if (m_rowCount[row] < game->m_options[row].m_comboSel) {
+            if (game->m_options[row].m_liveGate != 0
+                || (row != g_curPlayer
+                    && kindId == IDX(game->m_options[g_curPlayer].m_colorIndex))) {
+                kindId = IDX(game->m_options[row].m_colorIndex);
+            }
+            if (row == g_curPlayer && aiType != 0) {
+                aiType = 0;
+            }
 
-        AddrWord<RECT> span;
-        span.m_word = spanWord;
-        if (logic->Place(
-                this,
-                row,
-                col,
-                static_cast<PickupType>(kindId),
-                placedType,
-                vehicleKind,
-                static_cast<EnemyAiType>(aiType),
-                aiRadius,
-                placeArg9,
-                placeArg10,
-                span.m_rect,
-                mode
-            )
-            == 0) {
-            logic->m_wwdObject->m_flags |= 0x10000;
-            return -1;
-        }
-
-        if (mode == GRUNT_ENTRANCE_WORMHOLE) {
-            CWwdGameObjectA* hole =
-                m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
-            if (hole == NULL) {
+            AddrWord<RECT> span;
+            span.m_word = spanWord;
+            if (logic->Place(
+                    this,
+                    row,
+                    col,
+                    static_cast<PickupType>(kindId),
+                    static_cast<PickupType>(typeKind),
+                    vehicleKind,
+                    static_cast<EnemyAiType>(aiType),
+                    aiRadius,
+                    placeArg9,
+                    placeArg10,
+                    span.m_rect,
+                    mode
+                )
+                == 0) {
                 logic->m_wwdObject->m_flags |= 0x10000;
                 return -1;
             }
-            hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
-        } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
 
-            if (mode == GRUNT_ENTRANCE_RESURRECT) {
-                logic->m_health = HEALTH_RESPAWN;
+            if (mode == GRUNT_ENTRANCE_WORMHOLE) {
+                CWwdGameObjectA* hole =
+                    m_world->m_childGroup->CreateSprite(0, x, y, 0, "Wormhole", 0x40003);
+                if (hole == NULL) {
+                    logic->m_wwdObject->m_flags |= 0x10000;
+                    return -1;
+                }
+                hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
+            } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
+
+                if (mode == GRUNT_ENTRANCE_RESURRECT) {
+                    logic->m_health = HEALTH_RESPAWN;
+                }
+            } else {
+                if (onSpecialTile != 0) {
+                    logic->SetupTubeAnim(1);
+                }
+                WireTileSwitchLogic(logic, x, y);
             }
-        } else {
-            if (onSpecialTile != 0) {
-                logic->SetupTubeAnim(1);
-            }
-            WireTileSwitchLogic(logic, x, y);
+
+            m_grid[base + col] = logic;
+            m_rowCount[row] += 1;
+            m_cellFlag[base + col] = 0;
+            game->m_scoreHud->m_counts[row] += 1;
+            return col;
         }
-
-        m_grid[base + col] = logic;
-        m_rowCount[row] += 1;
-        m_cellFlag[base + col] = 0;
-        g_gameReg->m_scoreHud->m_counts[row] += 1;
-        return col;
     }
 fail:
     return -1;

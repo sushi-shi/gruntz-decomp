@@ -275,7 +275,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
-            CMapStringToOb* map = &m_world->m_imageRegistry->m_10map;
+            CMapStringToOb* map = &m_world->m_imageRegistry->m_workersByName;
             CObject* found = 0;
 
             map->Lookup("GAME_STATUSBAR_MAINBAR", found);
@@ -4761,7 +4761,7 @@ i32 CWarpStoneFly::Init(void* owner, i32 srcX, i32 srcY, WarpStoneFragment fragm
 
     CObject* spr_ob = 0;
     i32 n = IDX(fragment) + 1;
-    g_gameReg->m_world->m_imageRegistry->m_10map.Lookup(
+    g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
         spr_ob
     );
@@ -4862,7 +4862,7 @@ i32 CWarpStoneFly::Sync(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, 
             if (strlen(name) != 0) {
                 i32 i = index;
                 CObject* out = 0;
-                lvl->m_imageRegistry->m_10map.Lookup(name, out);
+                lvl->m_imageRegistry->m_workersByName.Lookup(name, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
                 if (rec != NULL && i >= rec->m_minIndex && i <= rec->m_maxIndex) {

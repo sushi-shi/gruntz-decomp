@@ -153,7 +153,7 @@ i32 CGrunt::RunEntranceMove() {
     ActNameConstructGrownSlots();
     const char* nm0 = *nmSlot;
     bool eq;
-    eq = (strcmp(nm0, DATA_COMPGEN(0x0020cca4, animKeyD, "D")) == 0);
+    eq = (strcmp(nm0, DATA_COMPGEN(0x0020cca4, "D")) == 0);
     if (eq) {
         if (m_poweredUp != 0 && m_neighborValid == 0) {
             m_entranceActive = 0;
@@ -565,10 +565,10 @@ i32 CGrunt::StartBombGruntRun() {
     m_moveTile.m_x = dx;
     m_moveTile.m_y = dy;
     m_prevAnimSetNode = m_objAux->m_actKey;
-    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020d7f4, animKeyM, "M"));
-    m_timePerTile = static_cast<i32>(g_buteMgr.GetDwordDef(
-        DATA_COMPGEN(0x0020dbd0, bombGruntButeSection, "BOMBGRUNT"), "RunningTimePerTile", 0x64
-    ));
+    m_objAux->m_actKey = ActFindId(DATA_COMPGEN(0x0020d7f4, "M"));
+    m_timePerTile = static_cast<i32>(
+        g_buteMgr.GetDwordDef(DATA_COMPGEN(0x0020dbd0, "BOMBGRUNT"), "RunningTimePerTile", 0x64)
+        );
     m_bombRunActive = 1;
     {
         CWwdGameObjectA* h = m_object;
@@ -1067,7 +1067,7 @@ i32 CGrunt::FinishEntranceMove() {
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed =
-        DATA_COMPGEN(0x001e9a78, fp_1e9a78, 16.0) / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_MovingDeathTime, 0x3e8));
+        DATA_COMPGEN(0x001e9a78, 16.0) / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_MovingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;

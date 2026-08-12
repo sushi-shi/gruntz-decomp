@@ -177,7 +177,7 @@ i32 CChatBox::ConfigureLeftCursorAnimation(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
+    m_page->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(key), a_ob);
     CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row0Anim = a;
     if (!a) {
@@ -198,7 +198,7 @@ i32 CChatBox::ConfigureRightCursorAnimation(void* key, i32 x, i32 y) {
         return 0;
     }
     CObject* a_ob = 0;
-    m_page->m_imageRegistry->m_10map.Lookup(static_cast<const char*>(key), a_ob);
+    m_page->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(key), a_ob);
     CDDrawWorker* a = static_cast<CDDrawWorker*>(a_ob);
     m_row1Anim = a;
     if (!a) {

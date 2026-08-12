@@ -25,7 +25,7 @@ public:
     CDDPalette() {
         m_palette = NULL;
         m_pos = NULL;
-        m_8 = 0;
+        m_reserved = 0;
         m_cacheA = NULL;
         m_cacheB = NULL;
         m_active = 0;
@@ -67,7 +67,7 @@ public:
     POSITION m_pos;
 
     IDirectDrawPalette* m_palette;
-    i32 m_8;
+    i32 m_reserved;
 
     PALETTEENTRY* m_cacheA;
     PALETTEENTRY* m_cacheB;

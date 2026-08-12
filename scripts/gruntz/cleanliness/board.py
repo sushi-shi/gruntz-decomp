@@ -94,6 +94,25 @@ def _count_placeholders(code: str) -> int:
     return sum(1 for n in _TYPEDEF.findall(code) if _is_placeholder(n))
 
 
+# Source identifiers must not encode a recovered stack slot, member offset, or
+# retail address. The older `m_<hex>` / `g_<hex>` metrics missed decorated forms
+# such as `m_10map`, `g_ratingRaw_64da84`, and decompiler locals such as
+# `local_14`, allowing the same placeholder identity to survive behind a hint.
+_ADDRESS_DERIVED_IDENTIFIER = re.compile(
+    r"\b(?:local_[0-9a-f]+"
+    r"|m_[0-9][0-9a-f]*(?:[A-Za-z_]\w*)?"
+    r"|[gsm]_[A-Za-z_]\w*_[0-9a-f]{4,})\b"
+)
+
+
+def _count_address_derived_identifiers(code: str) -> int:
+    return sum(
+        1
+        for name in _ADDRESS_DERIVED_IDENTIFIER.findall(code)
+        if any(c.isdigit() for c in name)
+    )
+
+
 # The ".cpp-local views" metric enforces matcher.md rule 0: a struct/class DEFINITION inside
 # a .cpp is a per-TU view of a class whose one true shape belongs in a header - regardless of
 # its NAME (unlike "placeholder classes", which is name-based). Counts DEFINITIONS (name then
@@ -434,6 +453,7 @@ def _count_unexplained_casts(code: str) -> int:
 
 METRICS = (
     ("m_<hex> fields", re.compile(r"\bm_[0-9a-f]{2,}\b"), False),
+    ("address-derived identifiers", _count_address_derived_identifiers, False),
     ("Unknown ids", re.compile(r"\b\w*[Uu]nknown\w*\b"), False),
     ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
     # Placeholder/orphan function names (identity not recovered). Covers BOTH the underscore
@@ -639,6 +659,7 @@ _RATCHET = _VIEW_METRICS | _SEMANTIC_LABEL_SET | {
     # arg metric: existing debt is drained on its own schedule, but NEW placeholder fields do
     # not get to arrive unnoticed.
     "m_<hex> fields",
+    "address-derived identifiers",
 }
 
 

@@ -49,7 +49,7 @@ i32 CSBI_ImageSet::SetupImage(
         return 0;
     }
     CObject* found = 0;
-    host->m_imageRegistry->m_10map.Lookup(key, found);
+    host->m_imageRegistry->m_workersByName.Lookup(key, found);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
     m_frameSet = rec;
     if (rec == NULL) {
@@ -132,7 +132,7 @@ i32 CSBI_ImageSet::SerializeFields(CFileMemBase* s, SerialMode mode, LogicTypeId
                 CDDrawWorker* out;
 
                 CObject* outOb = 0;
-                reg->m_imageRegistry->m_10map.Lookup(buf, outOb);
+                reg->m_imageRegistry->m_workersByName.Lookup(buf, outOb);
                 out = static_cast<CDDrawWorker*>(outOb);
                 m_frameSet = out;
             } else {

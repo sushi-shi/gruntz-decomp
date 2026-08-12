@@ -1325,7 +1325,7 @@ void CDDrawWorkerA::RenderFrame(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x00166040, 0x66)
 i32 CDDrawWorkerB::Helper(const char* key, i32 idx) {
     CObject* obj = 0;
-    OwnerMgr()->m_imageRegistry->m_10map.Lookup(key, obj);
+    OwnerMgr()->m_imageRegistry->m_workersByName.Lookup(key, obj);
 
     CDDrawWorker* p = static_cast<CDDrawWorker*>(obj);
     CImage* v;
