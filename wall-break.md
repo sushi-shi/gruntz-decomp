@@ -976,6 +976,30 @@ compiler decision, and a real VC5 build must confirm the fix.
   `backward-goto-sinks-its-target-region.md`, plus the initial inline-`strcmp`
   register choice. No probe declaration, include, or score-only guard was kept.
 
+## 2026-08-12 — `CGameObject::Play`
+
+- Unit/RVA: `wwdgameobject`, `0x00151150`; ordinary current-source result rises
+  from the linear scorer's 0.0000% floor to 92.9655%.
+- CFG break: retail has three notification call sites, not four. LOAD and
+  POSTLOAD establish different action values and then share one notify/restore
+  tail. PRESAVE falls directly into the middle dispatch block, while SAVE and
+  the shared load tail jump backward to it. Modeling those edges removes the
+  whole-stream rotation that had hidden the reconstructed body at 0%.
+- Failure-layout break: spelling POSTLOAD's worker test as a positive gate puts
+  the single failure epilogue after the shared tail, as in retail. Candidate and
+  retail now both contain 139 instructions, 14 conditional branches, five
+  returns, and the same ordered relocation targets.
+- Controls: restoring separate LOAD/POSTLOAD tails falls to 73.0276% and 136
+  instructions; returning directly from every switch arm expands to 155
+  instructions; a flat zero-carrier guard falls to 91.5172% and moves the
+  polarity mismatch to the preceding branch. Typed `AnimWorkerAct` accessors
+  and direct MFC `Lookup` spelling are neutral at 92.9655%.
+- Residue: retail preserves separate lookup-failure and zero-id null stores and
+  uses saved/action registers `edi`/`ebx`; cl currently merges the null stores
+  and chooses `ebx`/`edi`, leaving one branch polarity mismatch. This is a
+  localized CFG/register-lifetime wall. No parser-state declaration, forced
+  register, or score-only side effect was introduced.
+
 ## 2026-08-12 — `CBattlezMapConfig::StepDefenderUnit`
 
 - Unit/RVA: `gruntstatestep`, `0x00033520`; full-build current-source result rises

@@ -1,8 +1,9 @@
 # A 0.00% objdiff row is not always an unwritten body: cross-jump grouping floors the score
 
 **Tags:** `cpp:switch` `cpp:control-flow` | `topic:wall` `topic:scoring-artifact`
-**Confidence:** 9/10 — `CGameObject::Play` 0x151150, verified instruction-by-instruction
-against retail and against a 192-variant wall-breaker run.
+**Confidence:** 10/10 — `CGameObject::Play` 0x151150, verified instruction-by-instruction
+against retail, a 192-variant wall-breaker run, and a source-shape correction that moved
+the same body from 0.0000% to 92.9655%.
 
 ## Symptom
 
@@ -44,7 +45,7 @@ gets the shared tail placed immediately after it.
 | | merged group | falls through to the tail | tail lands at |
 |---|---|---|---|
 | retail | C + D | A (PRESAVE) | the MIDDLE, +0x73 |
-| ours | A + B + C | D (POSTLOAD) | the END, +0x13e |
+| previous candidate | A + B + C | D (POSTLOAD) | the END, +0x13e |
 
 One grouping decision, and every subsequent block is at a different offset with a
 different jump direction (retail's arms jump *backwards* to the tail, ours *forwards*).
@@ -71,12 +72,22 @@ Before parking one of these, rule out the things that DO look like this and are 
 
 ## Steerability
 
-Not steerable by ordinary means. `gruntz permute variants --state-trials 48 --max-depth 2
---limit 192` produced **192 candidates that all compiled to the identical 380-byte body**
-— commutative reorders, declaration hoists, inline-expression and inline-member-access
-rewrites, and five families of TU-state island (class / enum / extern / function / member).
-The grouping is stable against everything the permuter can reach, so the lever, if one
-exists, is a source shape that makes two of the four suffixes genuinely non-identical —
-and inventing one to fit is a fitted artifact, not a model.
+The original conclusion that this instance was unsteerable was false. `gruntz permute
+variants --state-trials 48 --max-depth 2 --limit 192` did produce **192 candidates that
+all compiled to the identical 380-byte body**, but that sweep searched declaration and
+parser-state axes while the missing lever was the function's real CFG.
 
-Park it, and do not let the next reader mistake the 0 for an empty body.
+Retail has only three notify call sites: LOAD and POSTLOAD share one notification tail.
+Express that join explicitly, let PRESAVE fall through to the dispatch block, and spell
+POSTLOAD's worker check as the positive gate whose false edge reaches the final failure
+epilogue. Those three structural facts move dispatch to retail's middle position, give
+candidate and retail the same 139 instructions, 14 conditional branches, five returns,
+and ordered referents, and raise the ordinary build from 0.0000% to 92.9655% without a
+state probe.
+
+The remaining residue is narrower: retail keeps lookup-failure and zero-id carrier
+stores distinct and assigns the shared tail's saved value/action to `edi`/`ebx`; the
+candidate merges the two zero stores and uses `ebx`/`edi`. Treat that as a local CFG and
+register-lifetime problem. The general rule is: a cross-jump grouping wall proves the
+stream rotation, but does **not** prove that parser state is the only remaining lever.
+Recover shared call sites, fallthrough ownership, and failure-epilogue placement first.

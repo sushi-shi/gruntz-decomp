@@ -4565,7 +4565,7 @@ wwdgameobject	?IsLoaded@AnimWorkerObj@@UAEHXZ	100.0000	100.0000	2	8cbd8c821cc7	0
 wwdgameobject	?LoadFrame@CDDrawWorker@@UAEPAVCImage@@PADHH@Z	100.0000	100.0000	2	3c4069a06bff	0x151fb0	100.0000
 wwdgameobject	?LookupAnimSprite@CWwdGameObjectA@@QAEHPBD@Z	91.3043	91.3043	5	b6b07dd130df	0x150610	91.3043
 wwdgameobject	?NotifyHooked@CGameObject@@QAEHH@Z	100.0000	100.0000	2	1c14fc02e422	0x151d20	100.0000
-wwdgameobject	?Play@CGameObject@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	0.0000	0.0000	1	a99d71be37cd	0x151150	0.0000
+wwdgameobject	?Play@CGameObject@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	92.9655	92.9655	2	88bbe8a19a8e	0x151150	92.9655
 wwdgameobject	?Play@CWwdGameObjectA@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	100.0000	100.0000	1	6dd1e90613a8	0x150a70	100.0000
 wwdgameobject	?ReadState@CWwdGameObjectA@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	388c8baf4b7c	0x150b00	100.0000
 wwdgameobject	?ReloadFrame@CDDrawWorker@@UAEHPAUCParseSource@@HH@Z	100.0000	100.0000	3	9111c3cd8f1b	0x1523b0	100.0000

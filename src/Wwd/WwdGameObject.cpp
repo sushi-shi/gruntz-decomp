@@ -474,99 +474,103 @@ void CGameObject::AddLogicBump(char* key) {
 }
 
 // @early-stop
-// cl and retail cross-jump a DIFFERENT pair of the four post-notify blocks, which moves
-// the shared tail and cascades: docs/patterns/cross-jump-grouping-floors-objdiff.md.
 RVA(0x00151150, 0x190)
 i32 CGameObject::Play(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, void* self) {
     if (ar == NULL) {
         return 0;
     }
 
+    AnimWorkerObj* notifyWorker;
+    i32 notifySaved;
+    AnimWorkerAct notifyAct;
     switch (mode) {
         case SERIAL_PRESAVE: {
             m_carrierId = 0;
             if (m_carrier != NULL) {
                 m_carrierId = m_carrier->m_objectId;
             }
-            AnimWorkerObj* w3 = m_animWorker;
-            if (w3 == NULL) {
+            notifyWorker = m_animWorker;
+            if (notifyWorker == NULL) {
                 goto fail;
             }
-            i32 saved3 = w3->m_actKey;
-            w3->SetWorkerAct(ACT_PREPARE_SAVE);
+            notifySaved = notifyWorker->m_actKey;
+            notifyAct = ACT_PREPARE_SAVE;
+            notifyWorker->SetWorkerAct(notifyAct);
 
             m_animWorker->m_notify(this);
-            w3 = m_animWorker;
-            if (w3->WorkerAct() == ACT_PREPARE_SAVE) {
-                w3->m_actKey = saved3;
+            notifyWorker = m_animWorker;
+            if (notifyWorker->WorkerAct() == notifyAct) {
+                notifyWorker->m_actKey = notifySaved;
             }
-            break;
         }
+        default:
+        dispatch:
+            return m_animWorker->Dispatch(ar, mode, typeId, self) != 0;
         case SERIAL_SAVE: {
             if (Serialize(ar) == 0) {
                 return 0;
             }
-            AnimWorkerObj* w4 = m_animWorker;
-            if (w4 == NULL) {
+            notifyWorker = m_animWorker;
+            if (notifyWorker == NULL) {
                 goto fail;
             }
-            i32 saved4 = w4->m_actKey;
-            w4->SetWorkerAct(ACT_AFTER_SAVE);
+            notifySaved = notifyWorker->m_actKey;
+            notifyAct = ACT_AFTER_SAVE;
+            notifyWorker->SetWorkerAct(notifyAct);
 
             m_animWorker->m_notify(this);
-            w4 = m_animWorker;
-            if (w4->WorkerAct() == ACT_AFTER_SAVE) {
-                w4->m_actKey = saved4;
+            notifyWorker = m_animWorker;
+            if (notifyWorker->WorkerAct() == notifyAct) {
+                notifyWorker->m_actKey = notifySaved;
             }
-            break;
+            goto dispatch;
         }
         case SERIAL_LOAD: {
             if (SerializeObjectState(ar) == 0) {
                 return 0;
             }
-            AnimWorkerObj* w7 = m_animWorker;
-            if (w7 == NULL) {
+            notifyWorker = m_animWorker;
+            if (notifyWorker == NULL) {
                 goto fail;
             }
-            i32 saved7 = w7->m_actKey;
-            w7->SetWorkerAct(ACT_AFTER_LOAD);
-
-            m_animWorker->m_notify(this);
-            w7 = m_animWorker;
-            if (w7->WorkerAct() == ACT_AFTER_LOAD) {
-                w7->m_actKey = saved7;
-            }
-            break;
+            notifySaved = notifyWorker->m_actKey;
+            notifyAct = ACT_AFTER_LOAD;
+            goto notifyAfterLoad;
         }
         case SERIAL_POSTLOAD: {
             i32 node = m_carrierId;
             if (node != 0) {
+                AddrWord<char> key;
+                key.m_word = node;
                 void* found = 0;
-                if (MapLookupById(OwnerMgr()->m_childGroup->m_map48, node, found) == 0) {
+                if (OwnerMgr()->m_childGroup->m_map48.Lookup(key.m_addr, found) == 0) {
                     m_carrier = NULL;
-                } else {
-
-                    m_carrier = static_cast<CWwdGameObject*>(found);
+                    goto carrierResolved;
                 }
-            } else {
-                m_carrier = NULL;
+                m_carrier = static_cast<CWwdGameObject*>(found);
+                goto carrierResolved;
             }
-            AnimWorkerObj* w8 = m_animWorker;
-            if (w8 == NULL) {
-                goto fail;
-            }
-            i32 saved8 = w8->m_actKey;
-            w8->SetWorkerAct(ACT_AFTER_LOAD_REFERENCES);
+            m_carrier = NULL;
 
-            m_animWorker->m_notify(this);
-            w8 = m_animWorker;
-            if (w8->WorkerAct() == ACT_AFTER_LOAD_REFERENCES) {
-                w8->m_actKey = saved8;
+        carrierResolved:
+            notifyWorker = m_animWorker;
+            if (notifyWorker != NULL) {
+                notifySaved = notifyWorker->m_actKey;
+                notifyAct = ACT_AFTER_LOAD_REFERENCES;
+                goto notifyAfterLoad;
             }
-            break;
+            goto fail;
         }
+
+        notifyAfterLoad:
+            notifyWorker->SetWorkerAct(notifyAct);
+            m_animWorker->m_notify(this);
+            notifyWorker = m_animWorker;
+            if (notifyWorker->WorkerAct() == notifyAct) {
+                notifyWorker->m_actKey = notifySaved;
+            }
+            goto dispatch;
     }
-    return m_animWorker->Dispatch(ar, mode, typeId, self) != 0;
 fail:
     return 0;
 }
