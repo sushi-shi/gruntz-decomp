@@ -1294,3 +1294,21 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Fix: remove the cache and express both range checks and item lookups through
   the owning `m_frameSet` member. This reproduces the retail reload, register
   homes, and all instructions exactly without a state probe.
+
+## 2026-08-12 — `CRandomAmbientSound::InitCycleTiming`
+
+- Unit/RVA: `worldsoundset`, `0x0000cd70`; historical MAX rises from 74.6667%
+  to 75.6923%.
+- Lifetime break: `span` was declared before the four duration fields were
+  initialized. Moving that derived value below the parameter-to-member stores
+  makes VC5 load the duration arguments as one initialization group before it
+  computes the play-duration range, matching more of retail's prologue.
+- Structural evidence: candidate and retail each retain 11 blocks, four
+  conditional branches, and three returns with identical symbolic branch
+  targets. Both zero-span arms and the modulo arm write the same phase and
+  countdown values.
+- Residue: retail assigns play minimum/maximum to `ebx`/`ebp`; the candidate
+  assigns the same values to `ebp`/`ebx`, which rotates the range calculation
+  and both countdown stores without changing their meaning. No declaration
+  permutation or manual state probe is retained for that register wall, so the
+  function remains `@early-stop`.

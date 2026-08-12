@@ -871,11 +871,11 @@ void CRandomAmbientSound::InitCycleTiming(
     i32 silenceDurationMin,
     i32 silenceDurationMax
 ) {
-    i32 span = playDurationMax - playDurationMin + 1;
     m_playDurationMin = playDurationMin;
     m_playDurationMax = playDurationMax;
     m_silenceDurationMin = silenceDurationMin;
     m_silenceDurationMax = silenceDurationMax;
+    i32 span = playDurationMax - playDurationMin + 1;
     i32 random;
     if (span == 0) {
         random = GetRandomNumber();

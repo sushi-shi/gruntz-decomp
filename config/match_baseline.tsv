@@ -4430,7 +4430,7 @@ worldsoundset	?CreateRandomBox@CWorldSoundSet@@QAEPAVCRandomAmbientSound@@PBDHPA
 worldsoundset	?Deactivate@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	2	2694629b9da2	0xb620	100.0000
 worldsoundset	?Fade@CAmbientSound@@QAEXHHH@Z	89.2569	89.2569	3	f3e2165b9d44	0xc2a0	89.2569
 worldsoundset	?Init@CWorldSoundSet@@QAEHPAXH@Z	100.0000	100.0000	6	72419a52a647	0xb5e0	100.0000
-worldsoundset	?InitCycleTiming@CRandomAmbientSound@@QAEXHHHH@Z	74.6667	74.6667	4	178d96aa326e	0xcd70	74.6667
+worldsoundset	?InitCycleTiming@CRandomAmbientSound@@QAEXHHHH@Z	75.6923	75.6923	5	bc1926d30415	0xcd70	75.6923
 worldsoundset	?InitFromKey@CAmbientPosSound@@QAEHPAUCRandomAmbientWorld@@PBDHHPAUAmbientPoint@@H@Z	100.0000	100.0000	2	73a469743f15	0xc4b0	100.0000
 worldsoundset	?InitFromKey@CAmbientSound@@QAEHPAUCRandomAmbientWorld@@PBDHHPAUtagRECT@@H@Z	100.0000	100.0000	2	b724d352cd55	0xbdd0	100.0000
 worldsoundset	?InitFromSound@CAmbientPosSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	2	6b91143123d2	0xc530	100.0000
