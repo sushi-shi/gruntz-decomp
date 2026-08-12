@@ -8,14 +8,6 @@
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 
-static inline i32 GridLookup(CMapMgr* g, i32 x, i32 y) {
-    if (static_cast<u32>(x) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(y) < static_cast<u32>(g->m_height)) {
-        return g->m_rows[y][x].m_flags;
-    }
-    return 1;
-}
-
 // @early-stop
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::Scan(CGrunt* arg) {
@@ -51,7 +43,7 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
                 || static_cast<u32>(a) >= static_cast<u32>(grid->m_height)) {
                 continue;
             }
-            i32 flags = GridLookup(grid, b, a);
+            i32 flags = grid->CellFlagsAt(b, a);
             if (flags & BRICKZ_BLOCKED_MASK) {
                 continue;
             }

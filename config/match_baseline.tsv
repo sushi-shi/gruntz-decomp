@@ -4121,7 +4121,7 @@ tilelogicpump	_CreateTileTrigger	100.0000	100.0000	1	5b300c323aaa	0x10cb10	100.0
 tilelogicpump	_CreateTileTriggerSwitch	100.0000	100.0000	1	b8871a3de80b	0x10cc50	100.0000
 tilelogicpump	_CreateTileTriggerTransition	100.0000	100.0000	1	659c01c6ae0f	0x10d150	100.0000
 tilelogicpump	_CreateWarpStonePad	100.0000	100.0000	1	3acb4dee3dfb	0x10d510	100.0000
-tilescan	?Scan@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.3025	72.3025	5	abf582df1bbf	0x35f10	72.3025
+tilescan	?Scan@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.3025	72.3025	6	d2a34112af49	0x35f10	72.3025
 tileswitchlogic	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	2	1756216b219d	0x1127f0	100.0000
 tileswitchlogic	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	2	3af0621b487e	0x112240	100.0000
 tileswitchlogic	??0CGiantRockLogic@@QAE@XZ	100.0000	100.0000	2	967e1f743d7a	0x112210	100.0000

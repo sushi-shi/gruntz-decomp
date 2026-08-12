@@ -1,7 +1,18 @@
-# A store run retail emits in SOURCE order, that cl reorders no matter how you spell it, is a `volatile` receiver
+# A `volatile` receiver can force a store order, but does not prove volatile source
 
 - confidence: 10/10
-- tags: `cpp:member` `cpp:struct` `cpp:local` | `asm:mov` | `topic:codegen-idiom` `topic:wall-broken`
+- tags: `cpp:member` `cpp:struct` `cpp:local` | `asm:mov` | `topic:negative-control` `topic:wall`
+
+## Retraction
+
+The original version called the access-site `volatile` spelling a recovered
+source idiom because it made the two example functions exact. That conclusion
+was too strong. `volatile` imposes an externally observable access-order
+constraint for which there is no program evidence here; it is a compiler
+steering device, not a reconstruction of the object. Commit `1fbdd8236` removed
+both qualifiers and retained the lower, honest result. The experiment remains
+useful as a negative control: it proves that the residual is only store
+scheduling, not that the retail source was volatile.
 
 ## Symptom
 
@@ -41,12 +52,10 @@ indistinguishable from a scheduling wall until then. The measurements that estab
   an inserted `static` function) moves the score by 0.00, so `--state-trials` is the wrong
   lever by its own classification rule.
 
-## Fix
+## Rejected workaround
 
-Bind the receiver through a `volatile` reference. Volatile stores cannot be reordered
-with respect to each other, so cl emits them in source order; non-volatile loads are
-still free to move, which is what lets retail hoist the argument load into the middle of
-the run:
+Binding the receiver through a `volatile` reference forces cl to emit the stores
+in source order and happens to reproduce retail's bytes:
 
 ```cpp
 volatile CSbiHlRow& r = m_machineA;
@@ -56,25 +65,28 @@ r.m_interval = static_cast<u32>(z);
 r.m_last = g_frameTime;
 ```
 
-`volatile T&`, `volatile T*` and the volatile-qualified inline helper all give the SAME
-byte-exact result, so pick the one that reads best. A volatile qualifier on just the one
-store that moved does NOT work - the whole receiver has to be volatile, which is the
-honest reading: the object is volatile, not the assignment.
+`volatile T&`, `volatile T*` and the volatile-qualified inline helper all give the
+same byte-exact result. None establishes that the object was actually volatile.
+Do not retain any of them without independent evidence of volatile storage or
+observable concurrent/device access.
 
-## Why it cannot be a `volatile` MEMBER
+## Why a `volatile` member is not the answer either
 
 `volatile CSbiHlRow m_machineA;` is not legal C++ when the type has a user-declared
 constructor - constructors cannot be cv-qualified, so the containing class could never
 construct it. `CSbiHlRow::CSbiHlRow` is a real retail function (0x000c86d0), so the
-declaration must be plain and the volatility applied at the access site.
+declaration must be plain. With no independent access-site evidence, neither volatile
+model is justified.
 
-## Evidence
+## Measurement
 
-`CStatusBarMgr::SetHudRectA` 0x1066f0 and `SetHudRectB` 0x106740 - byte-identical twins,
-both stuck at 71.83 through ~400 measured cells - go to **100.00 EXACT** together, size
-59 each, the moment the receiver is volatile. Tree exact 3304 -> 3309 (the twins plus
-three ripple gains in the same TU). Twins are the tell: two independent instances of the
-same deterministic mis-order is a source-shape fact, never scheduler noise.
+`CStatusBarMgr::SetHudRectA` 0x1066f0 and `SetHudRectB` 0x106740 are byte-identical
+twins. Both remain at 71.83 through roughly 400 ordinary source-shape cells and
+become **100.00 EXACT** with the access-site qualifier. Their plain bodies have
+the same stores, offsets, values, size, and straight-line control flow as retail;
+the residue is one scheduling swap. The exact volatile result is therefore a
+compiler control, while the retained non-volatile source is the evidence-backed
+model.
 
 ## Related
 

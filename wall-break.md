@@ -1163,3 +1163,19 @@ compiler decision, and a real VC5 build must confirm the fix.
   20 excess zero-extension `xor` instructions and under-reads `g_scratch` twice.
   This remains a source type/lifetime and register-homing problem, not a closed
   state wall.
+
+## 2026-08-12 — `CBattlezMapConfig::Scan`
+
+- Unit/RVA: `tilescan`, `0x00035f10`; current-source MAX remains 72.3025%.
+- Entity correction: the source carried a file-local `GridLookup` clone even
+  though the reconstructed class already owns the bounds-checked
+  `CMapMgr::CellFlagsAt` entity with a retail COMDAT at `0x00075a40`. The call
+  site now uses that real member and the clone is removed.
+- Structural evidence: retail has 25 blocks and 17 conditional branches against
+  the candidate's 21 and 15. The missing pair is retail repeating the same
+  unsigned width/height guards inside the expanded cell lookup immediately
+  after the caller's own guards. The member spelling compiles byte-identically
+  to the clone, so VC5 still eliminates the repeated pair here.
+- Verdict: the entity model is corrected without inventing a volatile access,
+  fake alias, or redundant branch. The remaining shift CSE and late-inline
+  boundary residue stays `@early-stop`; no parser-state probe was used.
