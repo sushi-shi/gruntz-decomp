@@ -41,7 +41,7 @@
 // the entry power state as a distinct local preserves retail's low-stamina re-test;
 // reading the member directly lets cl fold it.  Candidate still has seven returns
 // against retail's six because the first empty DRAIN_COORDS path gets a duplicate
-// epilogue.  It also parks `this` in ebp where retail uses ebx.
+// epilogue.  The ordered branch sequences otherwise agree.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -109,9 +109,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         return 1;
     }
 
-    if (g == NULL) {
-        m_blockedVoicePending = 0;
-    } else {
+    if (g != NULL) {
         if (m_neighborValid != 0) {
             return 1;
         }
@@ -132,6 +130,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
                 return 1;
             }
         }
+    } else {
+        m_blockedVoicePending = 0;
     }
 
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS

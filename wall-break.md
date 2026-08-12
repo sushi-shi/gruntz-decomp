@@ -421,6 +421,14 @@ compiler decision, and a real VC5 build must confirm the fix.
   epilogue while the candidate duplicates that epilogue; the second expansion
   already has retail's split. No `STATE` probe was used because this function is
   still a source-layout problem, not an isolated high-score register wall.
+- Positive-null-gate follow-up: retail's `test esi; je null` falls through into
+  the full non-null combat body, while the inverse source spelling parked that
+  body out of line. The higher-scoring `StepGooSuckerBehavior` independently
+  uses the positive `if (g != NULL)` form. Reorienting only that gate raises MAX
+  from 61.8152% to 83.85% and makes all 70 conditional branches agree in their
+  complete mnemonic and symbolic-target sequence. The remaining structural
+  residue is the already-localized seventh return at the first empty
+  `DRAIN_COORDS` path.
 
 ## 2026-08-12 — `SoundDevice::CreateBuffer`
 
