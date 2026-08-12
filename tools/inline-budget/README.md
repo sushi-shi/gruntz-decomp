@@ -2,10 +2,16 @@
 
 Reproduces the measurements in
 `docs/patterns/inline-budget-emits-ool-comdat.md` § "The rule".
-The decision model itself is reverse-engineered from the VC6 back end in the
-sibling homm3 project (`homm3-decomp/docs/vc6/inliner.md`, executable as
-`python3 -m homm3.vc6.inline_model --predict --spec sites.json`); everything
-below is that model re-validated against **our** pinned cl 5.0.
+The decision model is executable in-repo as `gruntz.core.inline_model`
+(ported from the sibling homm3 project's VC6 reverse-engineering, re-validated
+against **our** pinned cl 5.0 — the module docstring lists the divergences):
+
+```sh
+python3 -m gruntz.core.inline_model --selftest
+python3 -m gruntz.core.inline_model --spec sites.json       # predict one caller
+python3 -m gruntz.core.inline_model --gap  sites.json       # starved sites -> caller statements
+python3 -m gruntz.core.inline_model --measure-cb h.cpp --fn CALLEE --caller CALLER --sites N
+```
 
 ```sh
 # generate: S statements in the callee, N call sites, PAD statements of
