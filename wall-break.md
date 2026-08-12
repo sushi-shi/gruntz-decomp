@@ -790,3 +790,30 @@ compiler decision, and a real VC5 build must confirm the fix.
   a bounded VC5 liveness/CSE wall. No long-lived cache, volatile value, unused
   declaration, or include steering was retained; the function remains
   `@early-stop` at 69.3281% current-source MAX.
+
+## 2026-08-12 — `CLightFxRender::ComputeRect`
+
+- Unit/RVA: `lightfxrender`, `0x000a3820`.
+- Misclassified wall: the former source comment called the whole residue
+  register colouring, but candidate had 158 instructions against retail's 156.
+  Its combined inclusive-edge expressions emitted four `inc` and two `dec`
+  operations; retail scales the four edges first and then extends right/bottom
+  with two LEAs.
+- Source break: preserve the four scale assignments and name the shared border
+  extension `m_scale - 1` before applying it to right and bottom. This prevents
+  VC5's `(edge + 1) * scale - 1` factorization, raises current-source MAX from
+  69.4551% to 71.8590%, and reaches retail's 156-instruction count.
+- Controls: candidate and retail now have 11 blocks, five identical symbolic
+  branches, three returns, no strong-immediate mismatch, and the same ordered
+  2/2 relocation sequence (`BltEx`, then `DrawBorder`).
+- Exhaustion: a 25-cell Cartesian matrix crossed five inclusive-width forms
+  with five combined/shared/per-edge extension forms. Only the shared/per-edge
+  extension family reached 71.8590%; all width spellings were byte-identical,
+  and direct/combined extensions returned to 69.4551%. On the corrected body,
+  57 valid cells of a 64-family TU-state sweep were byte-identical at 71.8590%;
+  seven include/mixed cells failed compilation.
+- Residual wall: candidate still uses a 0x18 frame against retail's 0x14 and
+  rotates `surf`, the width quotients, scale, and destination coordinates.
+  With instruction/CFG/referent identity closed and both local and TU axes
+  exhausted, this is a bounded VC5 register-homing/frame wall; no unused
+  declaration, include, or synthetic spill was retained.

@@ -232,11 +232,7 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
     return 1;
 }
 
-// @early-stop register colouring. Retail parks `surf` in ecx and therefore spills
-// qx, which lets `scale` coalesce with qy in eax; cl parks `surf` in edi, keeps
-// both quotients in registers and spills src->left instead - one extra frame slot
-// (0x18 vs retail 0x14). FLAT at 69.46 across 24 TU states and across every
-// local-existence axis (srcRect, surf position, extent hoisting, viewrect).
+// @early-stop
 RVA(0x000a3820, 0x18e)
 i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
     CDDSurface* surf = m_surface;
@@ -284,8 +280,11 @@ i32 CLightFxRender::ComputeRect(CDDrawSurfacePair* ctx, RECT* src) {
 
         box.left *= m_scale;
         box.top *= m_scale;
-        box.right = box.right * m_scale + m_scale - 1;
-        box.bottom = box.bottom * m_scale + m_scale - 1;
+        box.right *= m_scale;
+        box.bottom *= m_scale;
+        i32 extension = m_scale - 1;
+        box.right += extension;
+        box.bottom += extension;
     }
     box.left += m_dstRect.left;
     box.right += m_dstRect.left;
