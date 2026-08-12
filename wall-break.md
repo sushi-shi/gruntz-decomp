@@ -478,3 +478,28 @@ compiler decision, and a real VC5 build must confirm the fix.
   remaining two-instruction, ebx-save residue is a bounded VC5 handle-state
   wall. No unused declaration/include or unproven entity spelling was retained;
   the complete body remains `@early-stop`.
+
+## 2026-08-12 — `CDDSurface::ShadeBlt`
+
+- Unit/RVA: `ddsurface`, `0x0013f020`.
+- Before: 66.6959% current-source MAX. Candidate and retail both have 29
+  conditional branches and two returns, but branch 11 differs: retail factors
+  the common `g_rDown != 3` failure directly to reject while retaining the
+  repeated `g_rDown` comparison in the RGB565 arm. Candidate enters that arm.
+  Retail also has 39 blocks against candidate's 37 because each row loop keeps
+  a forward-jump first-iteration path around one loop-carried reload.
+- Classification: optimizer control-flow and register-state wall after the
+  already-proven semantic reconstruction. The two format arms use the same
+  conditions, pixel equations, callees, and cleanup outcomes; the bank spelling
+  already emits retail's separate `and 0xff / shr 3 / shl 0xb` sequence.
+- Negative control: adding an explicit early `g_rDown` guard looked like the
+  branch-11 source fix, but VC5 then removed the later redundant comparison.
+  Candidate fell to 28 branches and 66.19%, disproving that source shape; the
+  guard was removed.
+- State sweep: 512 single declaration/include/parser-state trials produced four
+  score classes in the focused scorer: 117 at the 66.68025% baseline, 2 at
+  66.31035%, 380 at 66.27273%, and 13 at 64.59875%. None reproduced retail's
+  topology or exceeded baseline.
+- Verdict: bounded at 66.6959% current-source MAX. Source is unchanged and the
+  complete function remains `@early-stop`; no dummy state carrier or falsified
+  guard was retained.
