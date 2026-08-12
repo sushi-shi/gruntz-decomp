@@ -1950,13 +1950,12 @@ void RegisterGruntActions() {
 
 RVA(0x0005caa0, 0x5e4)
 void CGrunt::Activate() {
-    double diag = sqrt(DATA_COMPGEN(0x001e9a28, 2.0));
+    double diag = sqrt(2.0);
 
-    double s = DATA_COMPGEN(0x001e9a30, 1.0) / diag;
+    double s = 1.0 / diag;
 
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.y =
-        DATA_COMPGEN(0x001e9a38, -1.0);
+    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.y = -1.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.x = 0.0;
     m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.y = -0.5;
 

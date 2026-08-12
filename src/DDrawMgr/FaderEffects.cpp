@@ -1162,9 +1162,7 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
     m_halfWidth = pInit->m_halfWidth;
 
     if (m_mode == FADER_SWEEP_FORWARD || m_mode == FADER_SWEEP_REVERSE) {
-        if (m_span < static_cast<i32>(
-                (static_cast<double>(m_halfWidth) * DATA_COMPGEN(0x001f08a8, 3.14159))
-            )) {
+        if (m_span < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
             return 0;
         }
     }
@@ -1202,9 +1200,9 @@ i32 CFaderShape::ApplyInit(CFxModeDesc* desc) {
         i32 m = m_halfWidth << 1;
         m_shadeRamp = new u8[m];
         for (i = 0; i < m; i++) {
-            i32 t = static_cast<i32>((
-                sin(static_cast<float>(i) / static_cast<float>(m) * DATA_COMPGEN(0x001f08b0, 3.14f))
-                    * DATA_COMPGEN(0x001f08b8, -32.0)));
+            i32 t = static_cast<i32>(
+                (sin(static_cast<float>(i) / static_cast<float>(m) * 3.14f) * -32.0)
+            );
             m_shadeRamp[i] = static_cast<u8>((0x10 - t));
         }
     }

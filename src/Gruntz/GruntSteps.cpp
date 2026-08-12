@@ -269,7 +269,7 @@ void CGrunt::PlayMoveSound(i32 x, i32 y) {
     }
 
     float ratio = static_cast<float>(dy) / dx;
-    if (ratio > DATA_COMPGEN(0x001e9770, 2.0f) || ratio < DATA_COMPGEN(0x001e9774, -2.0f)) {
+    if (ratio > 2.0f || ratio < -2.0f) {
         if (y > h->m_screenY) {
             PlaySound(1000, g_gruntMoveDirSouth);
         } else {

@@ -839,24 +839,24 @@ ColorHSV RgbToHsv(u32 color) {
     float h;
 
     hsv.v = v;
-    if (v == DATA_COMPGEN(0x001efb60, 0.0)) {
+    if (v == 0.0) {
         hsv.s = 0.0;
         hsv.h = 0.0;
     } else {
         float delta = v - mn;
         hsv.s = delta / v;
         if (delta == 0.0) {
-            h = DATA_COMPGEN(0x001efb68, 0.0f);
+            h = 0.0f;
         } else if (GetRValue(color) == v) {
             h = (GetGValue(color) - GetBValue(color)) / delta;
         } else if (GetGValue(color) == v) {
-            h = (GetBValue(color) - GetRValue(color)) / delta - DATA_COMPGEN(0x001efb6c, -2.0f);
+            h = (GetBValue(color) - GetRValue(color)) / delta - -2.0f;
         } else {
-            h = (GetRValue(color) - GetGValue(color)) / delta - DATA_COMPGEN(0x001efb70, -4.0f);
+            h = (GetRValue(color) - GetGValue(color)) / delta - -4.0f;
         }
-        h = h * DATA_COMPGEN(0x001efb74, 60.0f);
+        h = h * 60.0f;
         if (h < 0.0) {
-            h = h - DATA_COMPGEN(0x001efb78, -360.0f);
+            h = h - -360.0f;
         }
         hsv.h = h;
     }

@@ -147,9 +147,8 @@ i32 CSBI_WellGoo::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect14.bottom + 3, 0);
 
-    double fill = static_cast<float>((m_rect14.bottom - m_rect14.top)) * m_fillScale
-                  * DATA_COMPGEN(0x001eab28, 0.01f) - DATA_COMPGEN(0x001eab2c, 3.0f);
-    if (fill <= DATA_COMPGEN(0x001eab30, 1.0)) {
+    double fill = static_cast<float>((m_rect14.bottom - m_rect14.top)) * m_fillScale * 0.01f - 3.0f;
+    if (fill <= 1.0) {
         fill = 1.0;
     }
     m_dstRect.top = static_cast<i32>((static_cast<double>(m_rect14.bottom) - fill));

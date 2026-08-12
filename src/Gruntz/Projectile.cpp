@@ -342,7 +342,7 @@ void CProjectile::AdvanceMotion() {
         i32 xRes = static_cast<i32>((m_roundX + m_posX));
         i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;
-        if (m_velX > DATA_COMPGEN(0x001eaa90, 0.0)) {
+        if (m_velX > 0.0) {
             if (xRes > m_targetX) {
                 localX = m_targetX;
                 xRes = m_targetX;
@@ -370,9 +370,7 @@ void CProjectile::AdvanceMotion() {
             double dx = fabs(static_cast<double>(m_targetX) - m_posX);
             double dy = fabs(static_cast<double>(m_targetY) - m_posY);
             double dist = sqrt(dx * dx + dy * dy);
-            if (dist
-                >= m_flightDist
-                       * DATA_COMPGEN(0x001eaa98, 0.9) || dist < m_flightDist * DATA_COMPGEN(0x001eaaa0, 0.1)) {
+            if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
@@ -382,10 +380,7 @@ void CProjectile::AdvanceMotion() {
                         m_shadow->m_animCursor.Setup(m_frames[0]);
                     }
                 }
-            } else if (
-                dist
-                >= m_flightDist
-                       * DATA_COMPGEN(0x001eaaa8, 0.8) || dist < m_flightDist * DATA_COMPGEN(0x001eaab0, 0.2)) {
+            } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
                 offX = 0x8;
                 offY = -0x8;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
@@ -395,10 +390,7 @@ void CProjectile::AdvanceMotion() {
                         m_shadow->m_animCursor.Setup(m_frames[1]);
                     }
                 }
-            } else if (
-                dist
-                >= m_flightDist
-                       * DATA_COMPGEN(0x001eaab8, 0.7) || dist < m_flightDist * DATA_COMPGEN(0x001eaac0, 0.3)) {
+            } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
                 offX = 0xc;
                 offY = -0xc;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
@@ -408,10 +400,7 @@ void CProjectile::AdvanceMotion() {
                         m_shadow->m_animCursor.Setup(m_frames[2]);
                     }
                 }
-            } else if (
-                dist
-                >= m_flightDist
-                       * DATA_COMPGEN(0x001eaac8, 0.6) || dist < m_flightDist * DATA_COMPGEN(0x001eaad0, 0.4)) {
+            } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
                 offX = 0x10;
                 offY = -0x10;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
