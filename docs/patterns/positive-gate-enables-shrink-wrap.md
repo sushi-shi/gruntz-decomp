@@ -161,6 +161,16 @@ Measured on this exact signature (`b_ret` >> `t_ret`):
 | `CMapMgr::UpdateDiagonals` @0x82030 | 2 -> 1 | 52.13 -> 54.43 |
 | `CFontConfig::RenderInputText` @0x22160 | 2 -> 1 | 75.22 -> 74.22 (layout right, other residue) |
 
+**Correction — `SoundStream::CreateStreamBuffer` is not a `goto fail` case.** The row above
+captured a real intermediate improvement, but the source still had the wrong local/dataflow set:
+one positive compound gate around the body, an eagerly zeroed COM out-parameter, all POD locals
+declared above the guards, and a separately initialized/assigned `StreamVoice*`. With those fixed,
+four plain negative early-return guards naturally tail-merge to retail's one /GX epilogue; no
+source label is required. The flat form is 100.00% exact at `0x137780` (63.0248 -> 100.00), while
+the old positive wrapper had 15 blocks / two returns against retail's 19 / one. Treat the old
+40.70 -> 54.73 row as evidence that `goto fail` can improve a mismodelled body, not evidence that
+it reconstructs this function's original guard shape.
+
 **Does NOT apply when the base is missing structure the target has.** Screened but rejected
 because the base lacks retail's `/GX` frame entirely (a destructible-local modelling gap, not a
 layout choice): `RebuildPlanes` @0x1628f0, `InstallTree` @0x154f80, `FillCustomLevelList` @0x3af90,

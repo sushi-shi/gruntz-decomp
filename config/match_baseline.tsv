@@ -286,7 +286,7 @@ singleanimation	8	7
 singleframemessage	8	7
 slotcombofill	3	2
 soundfontpath	4	3
-soundstream	36	32
+soundstream	36	33
 soundvoicelist	5	5
 splashstate	9	9
 spotlight	9	5
@@ -3867,7 +3867,7 @@ soundstream	??_GSoundStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:014fd7213b16	0x13
 soundstream	??_GStreamVoice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:014fd7213b16	0x137630	100.0000
 soundstream	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	0b279428c3b6	0x137590	100.0000
 soundstream	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	4	20a71901d812	0x137520	100.0000
-soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	63.0248	63.0248	9	d8425c5a3960	0x137780	74.0413
+soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	100.0000	100.0000	10	b22f17f00ebe	0x137780	100.0000
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	4	d7c521b444f2	0x1379d0	100.0000
 soundstream	?Feed@StreamVoiceFeeder@@UAEHPAXIPAI0I1@Z	100.0000	100.0000	2	b7fc8d76c1f4	0x137380	100.0000
 soundstream	?FeedData@StreamFeeder@@UAEHXZ	100.0000	100.0000	1	59028c341f5e	0x137e10	100.0000

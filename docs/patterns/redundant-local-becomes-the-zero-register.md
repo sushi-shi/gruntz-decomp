@@ -65,7 +65,12 @@ not what pays for the reloads", so measure one at a time.
 Adjacent, same function: dropping a redundant `= 0` on two out-parameters
 (`i32 outA = 0; i32 outB = 0;` handed to `ScreenToCell(&outB, &outA, ..)`) is
 worth another +0.27 - an out-parameter's pre-initialisation is a store retail
-never makes.
+never makes. The COM form is equally readable: `SoundStream::CreateStreamBuffer`
+passes `&out` to `IDirectSound::CreateSoundBuffer` and returns immediately on a
+failed HRESULT, so retail never initializes `out` first. Removing `out = NULL`,
+moving the POD declarations below the four entry guards, and directly initializing
+the later `StreamVoice*` helped restore the exact 19-block/one-return dataflow
+(63.0248 -> 100.00 together with the guard reconstruction).
 
 ## How to spot it
 

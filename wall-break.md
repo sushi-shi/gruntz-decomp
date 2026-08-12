@@ -244,3 +244,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   kept the 1,924-byte extent, 29 relocations, 0x94 frame, and `this` in `ebx`
   rather than retail's `ebp`. The structural fixes are retained and the
   compiler-state residue remains `@early-stop`.
+
+## 2026-08-12 — `SoundStream::CreateStreamBuffer`
+
+- Unit/RVA: `soundstream`, `0x00137780`.
+- Before: 63.0248% current-source MAX. The classifier found identical callees
+  but 15 candidate blocks against 19 retail and two returns against one. Our
+  positive compound gate inverted all four entry branches and gave the HRESULT
+  failure path a separate /GX epilogue.
+- Source levers: reconstruct the four retail-negative entry guards as flat
+  early returns; declare the POD work objects only after those guards; leave
+  the DirectSound buffer pointer uninitialized because the successful COM call
+  defines it and the failed path returns before reading it; directly initialize
+  the `StreamVoice*` from `new`; retain the proven `!= 0` normalization of the
+  DirectSound result.
+- Verdict: 100.00% exact. Candidate and retail are both 369 bytes and 121
+  instructions, with 19 blocks, eight conditional branches, one return, the
+  same five-callee multiset, and an exact ordered relocation stream including
+  offsets, types, identities, and addends. The stale `@early-stop` marker was
+  removed.
+- Doctrine correction: an older pattern table called this a `goto fail` case.
+  That was an intermediate improvement against the mismodelled local set, not
+  the original structure; ordinary flat guards reach exact once the associated
+  dataflow is faithful.
