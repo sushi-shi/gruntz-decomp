@@ -36,6 +36,22 @@ out: `DESTROYPLAYERORGROUP` had to be written before `CREATEPLAYERORGROUP` (96.6
 and the last 0.03 was the index table — the source had `DPSYS_SESSIONLOST` and `DPSYS_HOST`
 transposed on their two arms, which the byte table settles outright (99.97 → 100 EXACT).
 
+## Shared bodies identify which switch appeared first
+
+Two nested or adjacent switches may point at the same arm bodies. In that case the
+physical order identifies the switch that originally owned each body: its source cases
+are emitted first, and the later switch reuses matching bodies while appending only its
+unique arms.
+
+`CGrunt::StepCompassMove` @0x51c00 has an outer tile-command table at `0x45287c`
+and an eight-direction table at `0x4528a0`. The outer table points its fixed arrows
+at the `N,E,S,W` bodies; the direction table points its cardinal slots back to those
+same addresses and adds `NE,SE,SW,NW` afterward. Putting `ARROW_CURRENT` first in
+source inverted the runs to diagonals then cardinals. Putting the four fixed-arrow
+case groups first reproduces retail's `N,E,S,W,NE,SE,SW,NW` body ownership. This is
+stronger than sorting relocation addresses: the two decoded tables prove both which
+switch owns the shared bodies and which semantic direction occupies every body.
+
 ## Corollary: `if (a == X || a == Y) { body }` is TWO arms in retail
 
 The `||` form makes cl emit one body with a shared `cmp X; je <shared>`; retail's

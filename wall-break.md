@@ -213,6 +213,22 @@ compiler decision, and a real VC5 build must confirm the fix.
   inlining directly proves the original byte reads; the score-only dword forms
   were rejected. The remaining branch and register/inliner residue stays
   `@early-stop`.
+- Switch-order follow-up: decoding the two retail tables at `0x0045287c` and
+  `0x004528a0` proves the outer fixed-arrow cases own the cardinal bodies in
+  `N,E,S,W` order. The nested `ARROW_CURRENT` table points those four entries
+  back at the same bodies and owns only the four later diagonal bodies. Moving
+  `ARROW_CURRENT` after the fixed cases changes the candidate body order from
+  `NE,SE,SW,NW,N,E,S,W` to retail's `N,E,S,W,NE,SE,SW,NW` and raises the
+  current-source result from 60.7711% to 60.7996%.
+- Negative controls: five scalar/`Coord` entity forms left the four-scalar form
+  best; source-only `Coord` values were effectively flat, while reference-backed
+  source/move objects grew the frame and fell to 54.40%, 52.50%, and 52.26%.
+  A 1,024-state request produced 984 legal variants and was stopped once the
+  tables proved a source-order defect; no completed state before interruption
+  exceeded the baseline. The
+  remaining 82-versus-83 branch residue lies in the second movement-validity
+  expansion, where retail spills `result` and widens four aligned flag probes
+  to dword `0x2000` tests while the candidate retains byte `0x20` tests.
 
 ## 2026-08-12 — `CAreaMgr::IsSameWorld`
 

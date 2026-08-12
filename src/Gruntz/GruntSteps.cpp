@@ -518,9 +518,37 @@ i32 CGrunt::StepCompassMove() {
     if (board->CellFlagsAt(tx, ty) & 0x80) {
 
         i32 cmd = board->m_rowInts[ty][tx * 7 + 4];
-        // retail's arrow arms tail-merge into the matching arm of the
-        // ARROW_CURRENT direction switch, so that switch is emitted first.
+        // The fixed arrow arms are emitted first; the ARROW_CURRENT switch
+        // reuses those cardinal bodies and appends only its diagonal arms.
         switch (static_cast<TileCollisionKind>(cmd)) {
+            case TILEKIND_ARROW_UP_A:
+            case TILEKIND_ARROW_UP_B:
+                y -= 0x20;
+                moveX = x;
+                moveY = y;
+                voice = g_gruntMoveDirNorth;
+                break;
+            case TILEKIND_ARROW_RIGHT_A:
+            case TILEKIND_ARROW_RIGHT_B:
+                x += 0x20;
+                moveX = x;
+                moveY = y;
+                voice = g_gruntMoveDirEast;
+                break;
+            case TILEKIND_ARROW_DOWN_A:
+            case TILEKIND_ARROW_DOWN_B:
+                y += 0x20;
+                moveX = x;
+                moveY = y;
+                voice = g_gruntMoveDirSouth;
+                break;
+            case TILEKIND_ARROW_LEFT_A:
+            case TILEKIND_ARROW_LEFT_B:
+                x -= 0x20;
+                moveX = x;
+                moveY = y;
+                voice = g_gruntMoveDirWest;
+                break;
             case TILEKIND_ARROW_CURRENT:
                 switch (m_entranceCell.direction) {
                     case DIR_NORTH:
@@ -576,34 +604,6 @@ i32 CGrunt::StepCompassMove() {
                         voice = g_gruntMoveDirNorthWest;
                         break;
                 }
-                break;
-            case TILEKIND_ARROW_UP_A:
-            case TILEKIND_ARROW_UP_B:
-                y -= 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirNorth;
-                break;
-            case TILEKIND_ARROW_RIGHT_A:
-            case TILEKIND_ARROW_RIGHT_B:
-                x += 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirEast;
-                break;
-            case TILEKIND_ARROW_DOWN_A:
-            case TILEKIND_ARROW_DOWN_B:
-                y += 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirSouth;
-                break;
-            case TILEKIND_ARROW_LEFT_A:
-            case TILEKIND_ARROW_LEFT_B:
-                x -= 0x20;
-                moveX = x;
-                moveY = y;
-                voice = g_gruntMoveDirWest;
                 break;
         }
         i32 mtx = moveX >> TILE_SHIFT_PX;
