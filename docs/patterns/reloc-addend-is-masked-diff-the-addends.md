@@ -2,6 +2,11 @@
 
 **Tags:** data:objdiff cpp:array cpp:global | asm:mov asm:lea | topic:tooling topic:mis-model
 
+> **Current scoring:** the project now uses `functionRelocDiffs=all`, and its
+> pinned objdiff additionally compares absolute `DIR32` addends. The historical
+> blind spot below remains useful as the reason for the independent audit and for
+> reading raw COFF, but these mismatches now cost the function score.
+
 ## Symptom
 
 A function that indexes a file-scope array scores clean, or near-clean, while it

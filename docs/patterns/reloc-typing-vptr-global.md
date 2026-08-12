@@ -3,6 +3,12 @@ tags: cpp:ctor cpp:member | asm:mov asm:call | topic:scoring-artifact topic:tool
 symptoms: ~99.5% fuzzy with 0 structural diffs, diffs only in 4-byte operand slots, ??_7…/__imp__/DAT_ names
 confidence: 9/10
 
+**CURRENT (2026-08-12):** the project uses `functionRelocDiffs=all`. Target
+name/address, pointed-to data, and the pinned absolute-DIR32 addend comparison all
+participate in scoring. The measurements below document the former `data_value`
+and older configurations; do not apply their name-masking conclusions to the
+current score.
+
 **CORRECTION (2026-07-01, directly MEASURED — SUPERSEDES the "name a DIR32 data referent to score
 exact" claim in the 2026-07 note below):** DIR32 data-reloc **NAMES do NOT gate exactness** under
 the current objdiff config — naming a global (`DATA()`), a pooled `??_C@` string (`coff_oracle`),

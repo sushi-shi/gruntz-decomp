@@ -1061,12 +1061,12 @@ def _canonicalize_eh_section_names(payload: bytes) -> tuple[bytes, tuple[Canonic
     """Fold cl's `.text$x` / `.xdata$x` onto the section the linker put them in.
 
     THIS IS WHAT MADE THE WHOLE BAND UNSCORABLE, and it is invisible in a byte
-    diff. objdiff runs here with `functionRelocDiffs = data_value`, whose
-    relocation comparison is
+    diff. It was found under `functionRelocDiffs = data_value`, whose relocation
+    comparison reduced to
 
         section_name_eq(left, right) && <the referenced bytes are equal>
 
-    - the target symbol's NAME is deliberately not consulted. cl emits a /GX
+    - the target symbol's NAME was deliberately not consulted. cl emits a /GX
     function's funclets into a `.text$x` COMDAT and its EH state tables into
     `.xdata$x`; the delinked target has neither name, because retail's linker
     folded them into `.text` and `.rdata` and that is what the delinker rebuilds.

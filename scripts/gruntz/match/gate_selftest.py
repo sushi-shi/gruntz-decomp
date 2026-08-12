@@ -35,6 +35,8 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
+import configure as build_config
+
 from gruntz.audit import aggregate_copies, data_denominator, data_integrity, image_diff
 from gruntz.audit import rename_member, tu_layout, tu_order_check
 from gruntz.audit import nested_static_casts
@@ -56,6 +58,17 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class ObjdiffRelocationPolicyTests(unittest.TestCase):
+    def test_generated_project_uses_strict_relocation_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            build_config.emit_objdiff(
+                {"build": {}, "unit": [{"unit": "probe"}]}, out
+            )
+            project = json.loads((out / "objdiff.json").read_text())
+        self.assertEqual(project["options"]["functionRelocDiffs"], "all")
 
 
 class SourceIdentityContractTests(unittest.TestCase):

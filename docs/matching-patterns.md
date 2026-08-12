@@ -222,18 +222,17 @@ emits `IMAGE_REL_I386_DIR32` against the mangled symbol (`??_7Class@@6B@`). The
 sides, so objdiff won't score it "exact". **Confirm by direct byte-compare**
 (reloc-covered slots masked) before chasing a phantom diff.
 
-**FIXED + SCOPED (2026-07, measured):** the DIR32 fix is DONE — the pinned
+**HISTORICAL (2026-07, superseded by strict relocation scoring):** the DIR32 fix
+was DONE — the pinned
 `vostok-delinker` types absolute `.text→data` stores as DIR32, and vtables/globals/
 pooled strings are named (`config/retail/vtables_game.csv`, `labels.py` `DATA()`, the
 `coff_oracle` string oracle). So a **named** DIR32 data referent now scores exact; an
 **unnamed** one is fixed simply by naming it (DATA()/vtable_names). CRUCIALLY, objdiff
-**MASKS `REL32` call/branch reloc target-names and `call [disp32]` import operands**
-(name-insensitive — measured: renaming 5909 call/ILT-thunk relocs + adding 788 `__imp__`
-relocs moved the score **0.0%**). Therefore a code-byte-exact function that STILL caps
-below 100% is EITHER an unnamed DIR32 data referent (→ name it) OR a **real codegen diff**
-(regalloc/scheduling/inlining) — it is **NEVER** a call/import/ILT-thunk name artifact.
-Do not build a thunk/import-name delinker fix (one was prototyped: 0 delta). A real
-codegen diff is the `permute` skill's job, not an early-stop.
+formerly masked `REL32` target names under `data_value`. The project now uses
+`functionRelocDiffs=all`: REL32 callee names, data name/address, pointed-to data,
+and the patched absolute DIR32 addends all score. A strict name mismatch is a real
+normalization finding, but prove whether it is an alias/interior-label defect before
+changing source.
 
 ---
 

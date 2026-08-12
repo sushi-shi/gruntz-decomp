@@ -46,10 +46,11 @@ python -m gruntz.audit.link_sections --undersized  # is the extent right?
 
 ## Scoring config that must be deliberate
 
-- `functionRelocDiffs=data_value` — otherwise a wrong data referent is **free**.
-- **Addends are not compared by default**, even under `data_value`. Patch it. → §3c
-- Reloc **names never score** (types + addend + pointed-content do). Never run a
-  "rename the referent to flip it" pass.
+- `functionRelocDiffs=all` — target name/address and pointed-to data both score.
+- Absolute DIR32 addends score too; the pinned patch preserves this if the mode is
+  relaxed during an experiment. → §3c
+- A name-only mismatch is evidence to reconcile, not automatically a source bug:
+  prove whether it is an alias or an interior-address naming defect.
 - A relocated word cannot be byte-compared at all — the linker writes it. → §3
 - Section-name grouping (`.text$x`, `.xdata$x`) makes a reloc compare FALSE even when the
   target is right; cost lands on the *owner*, not the target.

@@ -5,9 +5,9 @@ confidence: 10/10
 
 ## What it is
 
-This project runs objdiff with `functionRelocDiffs = data_value`. Read
-`objdiff-core/src/diff/code.rs::reloc_eq` with that setting substituted in and what
-is left is:
+This was discovered while the project ran objdiff with
+`functionRelocDiffs = data_value`. With that historical setting,
+`objdiff-core/src/diff/code.rs::reloc_eq` reduced to:
 
 ```rust
 section_name_eq(left_obj, right_obj, left_sym.section, right_sym.section)
@@ -15,7 +15,7 @@ section_name_eq(left_obj, right_obj, left_sym.section, right_sym.section)
     && (kind != Object || size == 0 || <the referenced bytes are equal>)
 ```
 
-The relocation target's **name is deliberately not consulted**. Two things decide
+The relocation target's **name was deliberately not consulted**. Two things decided
 the comparison: the target symbol's **section NAME** must be equal on both sides,
 and (for a data target) the bytes it points at must be equal.
 
@@ -63,3 +63,7 @@ Before concluding that a relocation operand is "the same on both sides", check t
 target symbol's SECTION NAME, not its symbol name. Any section cl spells with a `$`
 group suffix that the delinker rebuilds under the group name has this defect, and it
 will never show up in a masked diff.
+
+The current `functionRelocDiffs = all` mode also compares target name/address and
+pointed-to data. Section normalization remains necessary because the section-name
+predicate is common to every relocation mode.

@@ -2276,9 +2276,10 @@ def _referent_evidence(divs):
 def _referent_worklist(reps, top):
     """The actionable output: paired regions that reach something ELSE.
 
-    This is the finding per-object objdiff structurally cannot report, because
-    it MASKS relocations - a wrong string literal, a call to the wrong overload
-    or a constructor for the wrong class all score 100% there and show up here.
+    This is the linked-image identity check beyond per-object objdiff. Strict
+    relocation scoring catches named target differences in objects; this pass
+    additionally resolves aliases, indirect/final-image targets, ordering, and
+    multiplicity after the real link.
     """
     rows = defaultdict(list)
     for r in reps:

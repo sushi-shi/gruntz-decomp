@@ -4,10 +4,10 @@
 
 WHY THIS EXISTS (and why reloc_fidelity.py is not enough):
 
-objdiff MASKS relocations when scoring, so it never checks a reloc's TARGET. A "100% match" can
-silently reference the WRONG global/const/field/function - or CALL A FABRICATED FUNCTION that is
-declared, never defined, and (because we compile-but-don't-link) never caught as an unresolved
-external. A wrong reloc costs ~0.005%, which rounds to "100.00%" in the display.
+Objdiff now scores relocation target name/address, pointed-to data, and absolute DIR32 addends.
+This independent RVA multiset audit remains useful for aliases, final-address resolution, and
+near-exact functions whose instruction alignment makes the scored residue hard to interpret. It
+also reports fabricated externals before a link.
 
 This complements the two tools we already have:
   * reloc_fidelity.py  - offset-EXACT, per-site, and only over byte-EXACT functions. Precise, but
@@ -690,7 +690,8 @@ def main():
         "[%d FAKE, %d WRONG]" % (seen, THRESHOLD, len(bad), fake, len(bad) - fake)
     )
     if bad:
-        print("objdiff MASKS relocs, so none of these cost %.")
+        print("Strict objdiff scoring should charge named target differences; this RVA audit "
+              "also catches aliases and final-address defects.")
         if fake:
             print("A FAKE ref is a symbol nothing DEFINES - verify with `gruntz link` before "
                   "calling it a link break; a COMMON/weak/COMDAT definition resolves fine and "

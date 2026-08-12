@@ -146,6 +146,7 @@ COMPDB = "build/clangd/compile_commands.json"
 # Target (delink) inputs.
 EXE = "build/exe/GRUNTZ.EXE"
 FUNCTIONS = "config/retail/functions.tsv"
+RELOC_ALIASES = "config/retail/reloc-aliases.tsv"
 
 # Out-dir layout (under build/, git-ignored).
 OBJDIFF_DIR = "build/objdiff"
@@ -401,6 +402,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         w.rule("delink",
                command=(f"{PY} {DELINK} --exe {EXE} --functions {FUNCTIONS} "
                         f"--names-map {GEN_NAMES} "
+                        f"--reloc-alias-manifest {RELOC_ALIASES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
                         f"--target-dir {TARGET_DIR} --stamp {delink_stamp} {unit_args}"),
                description="delink GRUNTZ.EXE -> target objs")
@@ -414,6 +416,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py",
                           "scripts/gruntz/build/data_manifest.py",
                           "scripts/gruntz/core/data_audit.py",
+                          RELOC_ALIASES,
                           # synth_pdb carries the tracked FID library labels into
                           # the fake PDB, so the delinked target speaks the same
                           # CRT/MFC symbol names our base objs reference. Editing
@@ -603,10 +606,11 @@ def emit_objdiff(manifest: dict, objdiff_dir: Path) -> None:
         "$schema": "https://raw.githubusercontent.com/encounter/objdiff/main/config.schema.json",
         "build_base": False,
         "build_target": False,
-        # DATA-level reloc scoring: a DIR32 into defined data must also match the
-        # pointed-to VALUE, so a wrong referent (right bytes, wrong datum) scores
-        # as a diff instead of being masked. Names still never score.
-        "options": {"functionRelocDiffs": "data_value"},
+        # Strict relocation scoring: require name/address identity AND the
+        # pointed-to data value.  This makes REL32 callee identity visible and
+        # keeps the DATA-level check; our pinned objdiff also compares absolute
+        # DIR32 addends.
+        "options": {"functionRelocDiffs": "all"},
         "watch_patterns": ["*.obj"],
         "units": units,
     }

@@ -613,6 +613,14 @@ negative addends where the nearest enrolled datum sits AFTER the target. Requiri
 containment takes that to **0**, and the stub now names `DAT_<va>` at addend 0 — the
 FuncInfo exactly.
 
+Strict containment deliberately excludes one-past pointers: the byte at
+`datum_rva + sizeof(datum)` is not part of the datum. When retail proves that an
+individual relocation encoded such an expression, record its exact function,
+target, relocation-field RVA, owner and addend in
+`config/retail/reloc-aliases.tsv`. The delinker validates the owner/addend equation,
+site membership and occurrence count before using it; the build graph makes the
+manifest an input to re-delinking.
+
 What is left is the FuncInfo's EXTENT, and it is the `.xdata$x` half
 (`docs/referent-debt-ddrawmgr.tsv`, class `c`): the delinker sizes a PDB data symbol
 to its next neighbour and gets **4 B** — just the `0x19930520` magic — where cl emits

@@ -224,7 +224,8 @@ very different amounts to act on:
 | `string literal` | the TEXT at the two targets differs | decisive, and usually a one-line fix — but read retail's bytes, never guess (`"Num Runs"` vs `"Num_Runs"` is exactly what a plausible guess gets backwards) |
 | `weak / content only` | at least one side is only a width-bounded byte window over an unnamed target | real, but **not proof**; do not spend symbol-class effort on it |
 
-A sample, each a real defect that scores 100% in a relocation-masked object diff:
+A historical sample from the former `data_value` scoring mode. Each defect scored
+100% there; strict `all` scoring now makes named-target differences visible:
 
 | region | retail reaches | we reach |
 |---|---|---|

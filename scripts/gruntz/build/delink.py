@@ -60,6 +60,8 @@ def main() -> None:
     ap.add_argument("--exe", required=True, help="the retail GRUNTZ.EXE.")
     ap.add_argument("--functions", required=True, help="tracked retail functions.tsv.")
     ap.add_argument("--names-map", required=True, help="build/gen/symbol_names.csv.")
+    ap.add_argument("--reloc-alias-manifest", required=True,
+                    help="reviewed exact retail relocation spellings.")
     ap.add_argument("--pdb-dir", required=True, help="dir for the synth PDB/YAML.")
     ap.add_argument("--delink-dir", required=True, help="raw delinker output dir.")
     ap.add_argument("--target-dir", required=True,
@@ -74,12 +76,13 @@ def main() -> None:
     exe = Path(args.exe)
     functions = Path(args.functions)
     names = Path(args.names_map)
+    reloc_alias_manifest = Path(args.reloc_alias_manifest)
     pdb_dir = Path(args.pdb_dir)
     delink_dir = Path(args.delink_dir)
     target_dir = Path(args.target_dir)
     units = args.unit
 
-    for f in (exe, functions, names):
+    for f in (exe, functions, names, reloc_alias_manifest):
         if not f.exists():
             die(f"missing input: {f}")
 
@@ -137,6 +140,7 @@ def main() -> None:
          "--engine-path", "c:\\proj\\",
          "--data-manifest", str(data_manifest),
          "--data-section-manifest", str(section_manifest),
+         "--reloc-alias-manifest", str(reloc_alias_manifest),
          # Safety net only. The manifest now covers enough that the STRICT path
          # succeeds on its own (measured: byte-identical results either way), but a
          # future DATA() edit could leave a writable RVA uncovered, and strict turns
