@@ -862,6 +862,8 @@ i32 CGruntzMgr::Rand() {
 }
 
 // @early-stop
+// Both range arms assign the same local: that identity lets cl hoist the shared
+// GetRandomNumber guard while retaining retail's two mutually exclusive updates.
 RVA(0x0000cd70, 0xe5)
 void CRandomAmbientSound::InitCycleTiming(
     i32 playDurationMin,
@@ -874,8 +876,10 @@ void CRandomAmbientSound::InitCycleTiming(
     m_playDurationMax = playDurationMax;
     m_silenceDurationMin = silenceDurationMin;
     m_silenceDurationMax = silenceDurationMax;
+    i32 random;
     if (span == 0) {
-        if (GetRandomNumber() & 1) {
+        random = GetRandomNumber();
+        if (random & 1) {
             i32 countdown = playDurationMin;
             m_phase = 1;
             m_countdownMs = countdown;
@@ -886,6 +890,7 @@ void CRandomAmbientSound::InitCycleTiming(
         }
         return;
     }
+    random = GetRandomNumber();
     m_phase = 1;
-    m_countdownMs = playDurationMin + GetRandomNumber() % span;
+    m_countdownMs = playDurationMin + random % span;
 }

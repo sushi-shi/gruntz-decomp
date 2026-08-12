@@ -599,3 +599,31 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: bounded at 68.2796% current-source MAX. All 312 relocation slots are
   present, the complete behavior remains `@early-stop`, and no synthetic TU
   state, unsupported helper, or score-only source change was retained.
+
+## 2026-08-12 — `CRandomAmbientSound::InitCycleTiming`
+
+- Unit/RVA: `worldsoundset`, `0x0000cd70`.
+- Before: 68.8846% current-source MAX, 219 candidate bytes against 229 retail
+  bytes, and 10/9 relocations. The source called `GetRandomNumber` separately in
+  the zero-span and modulo arms, so cl reloaded the inline local-static guard in
+  both arms. Retail loads that guard once before the span branch, then retains
+  two mutually exclusive PRNG update blocks.
+- Source entity recovered: one `random` local is assigned by both call sites and
+  consumed in their respective arms. This preserves the two calls and observed
+  behavior while exposing their shared result identity to cl. The candidate is
+  now 74.6667%, 214 bytes, and 9/9 relocations; its 11-block CFG, four ordered
+  conditional branches, and three returns agree with retail exactly.
+- Rejected shapes: one call before the branch collapsed both PRNG updates and
+  fell to 19.7692%; a shared zero-span countdown merged retail's two exits and
+  scored 66.9872%; inverted coin-flip polarity scored 64.6795%. Endpoint locals
+  and moving the span declaration were byte-neutral. The original two unrelated
+  result expressions retained the extra guard relocation.
+- Exhaustion: all 128 parser-visible TU states were byte-identical at 74.666664%,
+  214 bytes, and 9/9 relocations. All 14 legal depth-two expression/declaration
+  AST variants were also flat. An earlier 128-state sweep of the merged-exit
+  shape was flat at 66.987180%.
+- Remaining wall: retail colors `min/max` as `ebx/ebp`; cl colors them as
+  `ebp/ebx`, rotates the affine PRNG scratch registers, and emits direct member
+  stores where retail uses an `edx` move. No synthetic TU state or unsupported
+  helper was retained. The function remains `@early-stop` at a new 74.6667%
+  current-source MAX.
