@@ -1238,3 +1238,47 @@ compiler decision, and a real VC5 build must confirm the fix.
   member call, CFG, and every other instruction agree. No unused declaration
   or explicit register-state probe is introduced for that dead receiver load,
   so the function remains `@early-stop`.
+
+## 2026-08-12 — `CLatencyList::FillCombo`
+
+- Unit/RVA: `slotcombofill`, `0x00037ff0`; historical MAX remains 72.0132%.
+- Structural agreement: candidate and retail perform the same list-count gate,
+  dialog lookup, combo reset, list traversal, temporary `CString` conversion,
+  add-string call, conditional item-data call, and final list-count return.
+  Retail assigns `this`, combo, position, packed data, and item index to
+  `edi`/`ebx`/`esi`/`ebp`/`edi`; cl rotates those values through
+  `esi`/`ebp`/`edi`/`esi`/`ebx` in the candidate.
+- Packing controls: direct, named-intermediate, and stepwise 32-bit spellings
+  compile byte-identically. `MAKELPARAM` instead emits two partial-word writes
+  absent from retail and falls to 68.0921%, disproving the apparent SDK-macro
+  shape. An initialized result combined with that macro reaches 72.6842% only
+  by removing a required saved register, so it is not retained as a score-only
+  gain.
+- CFG controls: positive nesting and function-scope declarations are
+  byte-neutral. Assigning a result at each exit and spelling the shared retail
+  epilogue with `goto` makes VC5 duplicate both EH epilogues and falls to
+  63.4474%. The retained source has no synthetic state; the remaining whole-
+  function register coloring and EH-epilogue merge stay `@early-stop`.
+
+## 2026-08-12 — `CWwdGameObjectA::BltDirtyEx`
+
+- Unit/RVA: `wwdgameobject`, `0x001506b0`; current-source MAX rises from
+  73.7702% to 78.8385%.
+- Type and lifetime break: the four-word blit scratch was modeled as an
+  untyped `i32[4]`, although both of its uses are `CDDSurface::BltEx` source and
+  destination rectangles. It is now a real `RECT` in each mutually exclusive
+  branch. Retail likewise reuses one 16-byte stack range for those branch-local
+  rectangles while retaining a distinct 16-byte intersection rectangle.
+- Arithmetic evidence: retail preserves the union's named `x`, `y`, width, and
+  height entities through the right/bottom calculation before constructing the
+  blit rectangle. Direct field expressions, `POINT`/`SIZE`, and named scalar
+  spellings compile identically here; the scalar names are retained because
+  they state those proven entities without inventing aggregate storage.
+- CFG control: explicit early returns between the both-armed, dirty-only, and
+  shadow-only cases compile identically to the `else if` chain. Retail keeps
+  separate call/return tails where VC5 merges the candidate's last two tails,
+  so that residue is not reachable through this local control-flow spelling.
+- Residue: the candidate still allocates the intersection and blit rectangles
+  to the opposite stack halves in the both-armed path and chooses different
+  callee-saved homes for the coordinate construction. No unused object or
+  manual state probe is retained; the function remains `@early-stop`.
