@@ -1491,28 +1491,11 @@ def main():
     # denominator move. A green build must MEAN the labels landed - so this is fatal, and
     # it names the units.
     # ------------------------------------------------------------------
-    # ------------------------------------------------------------------
-    # DATA_COMPGEN cross-TU gate (fatal). One compiler-generated identity per
-    # RVA - EXCEPT identical string payloads: /Gf pooling (implied by /O2) folds
-    # the same literal from N TUs onto ONE retail RVA, so N string claims with
-    # byte-identical content are the SAME datum and all coalesce onto its one
-    # `??_C@` name (docs/string-pooling.md). FP pools never fold (per-TU $T
-    # statics), so a numeric RVA claimed by two TUs is always a mis-pin.
-    # ------------------------------------------------------------------
-    by_rva = {}
-    for c in compgen_claims:
-        by_rva.setdefault(c[0], []).append(c)
-    for rva, group in sorted(by_rva.items()):
-        if len(group) == 1:
-            continue
-        kinds = {c[4] for c in group}
-        payloads = {c[5] for c in group}
-        if kinds != {"str"} or len(payloads) != 1:
-            units = ", ".join(sorted({c[2] for c in group}))
-            compgen_errors.append(
-                ("<cross-TU>", 0,
-                 "0x%08x claimed by [%s] with non-identical or non-string values - "
-                 "only byte-identical pooled strings may share an rva" % (rva, units)))
+    # DATA_COMPGEN authority gate (fatal, per-TU): every claim's payload was
+    # checked against the claiming TU's own base obj in compgen_tu. Cross-TU
+    # discipline is NOT checked here - each ninja invocation sees one TU - it is
+    # enforced downstream by the data manifest (two names at one rva withhold
+    # both; a de-enrolled datum then fails the data_denominator partition gate).
     if compgen_errors:
         for etu, eline, why in compgen_errors:
             log(f"ERROR {etu}:{eline}: DATA_COMPGEN {why}")
@@ -1595,18 +1578,6 @@ def main():
                 f"the wrong rva. Delete it, or put its declaration back.")
         log(f"{len(orphans)} orphan annotation(s); refusing to write {args.out}.")
         return 1
-
-    # The reviewed DATA_COMPGEN claims table, one row PER CLAIMING UNIT (unlike
-    # symbol_names.csv, whose per-rva dedup keeps one representative row) - the
-    # data manifest enrolls a folded literal once per owner from this.
-    cg_out = Path(args.out).with_name("data_compgen.csv")
-    cg_out.parent.mkdir(parents=True, exist_ok=True)
-    cg_lines = ["rva,name,unit,size,kind\n"] + [
-        "0x%08x,%s,%s,0x%x,%s\n" % (rva, name, unit, size, vkind)
-        for rva, name, unit, size, vkind, _payload in sorted(compgen_claims)]
-    cg_text = "".join(cg_lines)
-    if not cg_out.exists() or cg_out.read_text() != cg_text:
-        cg_out.write_text(cg_text)
 
     # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,
     # DATA keep-last-per-rva dedup, sort, write-if-changed). It sorts `rows` in
