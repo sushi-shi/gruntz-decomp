@@ -1218,3 +1218,23 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: the entity model is corrected without inventing a volatile access,
   fake alias, or redundant branch. The remaining shift CSE and late-inline
   boundary residue stays `@early-stop`; no parser-state probe was used.
+
+## 2026-08-12 — `CGruntzCmdMgr::Serialize`
+
+- Unit/RVA: `gruntzcmdmgr`, `0x00024890`; current similarity rises from
+  79.9701% to 99.4012%.
+- Control-flow break: retail performs the virtual command `Serialize` call
+  inside both record-kind arms, immediately after allocating the concrete
+  single- or multi-command. The source had merged that call below the arms.
+  Restoring the duplicated branch-local calls raises the result to 91.7186%
+  and reproduces retail's branch and register-lifetime structure.
+- Lifetime break: load-side iteration and save-side command count are mutually
+  exclusive uses of the same function-scope scratch. Modeling them as one
+  `cursorOrCount` object removes the source's extra stack slot and reproduces
+  retail's one-local frame, argument homes, and loop register allocation.
+- Residue: the only remaining instruction difference is retail's redundant
+  `mov ecx,edi` immediately before the proven exact global
+  `__stdcall IsActive2(void*)` call. The call referent, argument, following
+  member call, CFG, and every other instruction agree. No unused declaration
+  or explicit register-state probe is introduced for that dead receiver load,
+  so the function remains `@early-stop`.

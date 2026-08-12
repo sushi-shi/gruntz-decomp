@@ -601,6 +601,7 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
     if (!stream) {
         return 0;
     }
+    u32 cursorOrCount;
     if (mode != SERIAL_SAVE) {
         if (mode != SERIAL_LOAD) {
             return 1;
@@ -612,24 +613,27 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
         Clear();
         i32 count;
         stream->Read(&count, sizeof(count));
-        u32 idx = 0;
-        while (idx < static_cast<u32>(count)) {
+        cursorOrCount = 0;
+        while (cursorOrCount < static_cast<u32>(count)) {
             i32 tagWord;
             stream->Read(&tagWord, sizeof(tagWord));
             GruntzCommandRecordKind tag = static_cast<GruntzCommandRecordKind>(tagWord);
             CGruntzCommand* cmd;
             if (tag == COMMAND_RECORD_SINGLE) {
                 cmd = CGruntzSingleCommand::Allocate();
+                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
+                    return 0;
+                }
             } else if (tag == COMMAND_RECORD_MULTI) {
                 cmd = CGruntzMultiCommand::Allocate();
+                if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
+                    return 0;
+                }
             } else {
                 return 0;
             }
-            if (!cmd->Serialize(stream, SERIAL_LOAD, typeId, pObj)) {
-                return 0;
-            }
             m_base.AddTail(cmd);
-            idx++;
+            cursorOrCount++;
         }
         return 1;
     }
@@ -637,8 +641,8 @@ i32 CGruntzCmdMgr::Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId 
     if (!IsActive(stream)) {
         return 0;
     }
-    i32 count = m_base.GetCount();
-    stream->Write(&count, sizeof(count));
+    cursorOrCount = m_base.GetCount();
+    stream->Write(&cursorOrCount, sizeof(cursorOrCount));
 
     POSITION pos = m_base.GetHeadPosition();
     while (pos != NULL) {
