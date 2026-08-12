@@ -776,9 +776,6 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
-// frame 0x10 vs retail 0x18: retail spills m_height and derives (m_height - i) as
-// a decrementing IV; every source spelling that hoists m_height into a local scores
-// worse, so cl reaches those two slots from the member read, not from a source local.
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {

@@ -889,3 +889,66 @@ compiler decision, and a real VC5 build must confirm the fix.
   VC5 replicates the single-predecessor drop tail at the head. No fake
   predecessor, volatile spill, unused declaration, or score-only field order
   was retained; the complete function remains `@early-stop`.
+
+## 2026-08-12 — `CSBI_MenuItem::ResolveFrame`
+
+- Unit/RVA: `sbi_menuitem`, `0x000e81e0`; current-source MAX 70.3774%.
+- Classification: register-homing wall. Retail zeroes `eax` before loading the
+  selected frame and ends both selection arms with
+  `test ecx,ecx; mov [esi+0x30],ecx; setne al`. Candidate reuses `eax` for the
+  frame load and must materialize the boolean through `cl`.
+- Local controls: four evidence-compatible result/frame spellings removed one
+  candidate reload but scored about 65.1%, below the retained direct member
+  form. An asymmetric local likewise measured 65.1887% and was removed.
+- TU-state exhaustion: 14 compiling cells from a 60-state mixed declaration
+  sweep were byte-identical at 70.377360%; 46 cells were rejected. No source
+  spelling or parser-visible state moved the flag-register choice.
+- Verdict: complete body and bounded flag-register wall. The stale causal prose
+  was removed from the source; `@early-stop` remains the machine-visible state.
+
+## 2026-08-12 — `CRezImage::FlipVertical`
+
+- Unit/RVA: `imagepool`, `0x00176840`; current-source MAX 71.0707%.
+- Classification: induction-variable/frame wall. Retail uses a 0x18-byte frame
+  and retains the row counter, scratch pointer, a decreasing bottom-row entity,
+  a byte offset, and the height. Candidate's direct symmetric loop uses a
+  0x10-byte frame while preserving the same row-swap behavior.
+- Source controls: explicit row/byte induction forms scored about 59–62%.
+  Algebra chosen only to force the 0x18 frame emitted 102 instructions against
+  retail's 99 and scored 57.98%; an explicit height local scored 56.78%, while
+  symmetric top/bottom pointers scored 66.29%. All were removed as less
+  faithful or artificial.
+- TU-state exhaustion: 49 compiling cells from a 256-state mixed sweep were
+  byte-identical at 71.070710%; 207 cells were rejected.
+- Verdict: the simple complete swap loop is retained with no synthetic local or
+  forced frame. The residue is a bounded VC5 induction/register allocation wall.
+
+## 2026-08-12 — `CProjectile::AdvanceMotion`
+
+- Unit/RVA: `projectile`, `0x000dfd00`. The full-build current-source result
+  rises from 71.5214% to 88.5363%.
+- x87 entity break: retail reloads `m_flightDist` from `[esi+0x188]` before each
+  of eight threshold comparisons, with no intervening call or store that could
+  invalidate it. Deleting the invented shared `double mag` and spelling the
+  member at every use raises the result to 76.8162%. A six-form Cartesian
+  distance matrix made every raw/absolute-value alternative worse.
+- Control-flow break: retail emits `test ah,0x9; jne` to a far, out-of-line water
+  splash arm while the ordinary landing logic falls through. Expressing the
+  ordinary path as the negative gate and the splash as its `else` restores that
+  layout and raises the result to 87.5256%.
+- Tail reconstruction: loading and testing `PF_FALL` and `PF_IMPACT` inside
+  their respective arms, then sharing the setup/no-sprite labels, raises the
+  full-build result to 88.5363% and brings candidate and retail to 90/90 CFG
+  blocks. The first remaining skeleton divergence is the placement of that
+  shared setup block, not a missing arm.
+- Controls: a four-form tail-layout matrix found the retained structured form
+  tied for best; explicit impact/fall labels were worse. All variants retained
+  the ordered 49/49 relocations. Of 64 requested parser-state trials, 56 were
+  legal and every one was byte-identical at the standalone scorer's 88.482900%;
+  eight unsafe include/mixed states were rejected.
+- Residual wall: candidate and retail still rotate the zero/kind registers,
+  order the first x87 multiply pair differently, and place the shared sprite
+  setup block on opposite sides of the impact arm. With local CFG forms and
+  parser-visible state exhausted, this is bounded VC5 scheduling/register
+  placement. No forced register, unused include/declaration, or duplicate call
+  was retained.

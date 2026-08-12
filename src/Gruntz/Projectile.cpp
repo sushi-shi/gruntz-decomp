@@ -377,9 +377,9 @@ void CProjectile::AdvanceMotion() {
             double dx = fabs(static_cast<double>(m_targetX) - m_posX);
             double dy = fabs(static_cast<double>(m_targetY) - m_posY);
             double dist = sqrt(dx * dx + dy * dy);
-            double mag = m_flightDist;
             if (dist
-                >= mag * DATA_COMPGEN(0x001eaa98, fp_1eaa98, 0.9) || dist < mag * DATA_COMPGEN(0x001eaaa0, fp_1eaaa0, 0.1)) {
+                >= m_flightDist
+                       * DATA_COMPGEN(0x001eaa98, fp_1eaa98, 0.9) || dist < m_flightDist * DATA_COMPGEN(0x001eaaa0, fp_1eaaa0, 0.1)) {
                 offX = 0x4;
                 offY = -0x4;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
@@ -391,7 +391,8 @@ void CProjectile::AdvanceMotion() {
                 }
             } else if (
                 dist
-                >= mag * DATA_COMPGEN(0x001eaaa8, fp_1eaaa8, 0.8) || dist < mag * DATA_COMPGEN(0x001eaab0, fp_1eaab0, 0.2)) {
+                >= m_flightDist
+                       * DATA_COMPGEN(0x001eaaa8, fp_1eaaa8, 0.8) || dist < m_flightDist * DATA_COMPGEN(0x001eaab0, fp_1eaab0, 0.2)) {
                 offX = 0x8;
                 offY = -0x8;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
@@ -403,7 +404,8 @@ void CProjectile::AdvanceMotion() {
                 }
             } else if (
                 dist
-                >= mag * DATA_COMPGEN(0x001eaab8, fp_1eaab8, 0.7) || dist < mag * DATA_COMPGEN(0x001eaac0, fp_1eaac0, 0.3)) {
+                >= m_flightDist
+                       * DATA_COMPGEN(0x001eaab8, fp_1eaab8, 0.7) || dist < m_flightDist * DATA_COMPGEN(0x001eaac0, fp_1eaac0, 0.3)) {
                 offX = 0xc;
                 offY = -0xc;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
@@ -415,7 +417,8 @@ void CProjectile::AdvanceMotion() {
                 }
             } else if (
                 dist
-                >= mag * DATA_COMPGEN(0x001eaac8, fp_1eaac8, 0.6) || dist < mag * DATA_COMPGEN(0x001eaad0, fp_1eaad0, 0.4)) {
+                >= m_flightDist
+                       * DATA_COMPGEN(0x001eaac8, fp_1eaac8, 0.6) || dist < m_flightDist * DATA_COMPGEN(0x001eaad0, fp_1eaad0, 0.4)) {
                 offX = 0x10;
                 offY = -0x10;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
@@ -469,8 +472,41 @@ void CProjectile::AdvanceMotion() {
         } else {
             flags = plane->m_rowInts[tileY][tileX * 7];
         }
-        if (flags & 0x900) {
+        if ((flags & 0x900) == 0) {
+            if (flags & 0x2) {
+                if (flags & 0x40) {
+                    tier = 1;
+                } else {
+                    switch (reg->m_curState->m_levelType) {
+                        case AREA_HIGH_ON_SWEETZ:
+                        case AREA_HIGH_ROLLERZ:
+                        case AREA_GRUNTZ_IN_SPACE:
+                            tier = 1;
+                            break;
+                        case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
+                            break;
+                        default:
 
+                            if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetX, m_targetY)) {
+                                CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
+                                    0,
+                                    m_targetX,
+                                    m_targetY,
+                                    SORTKEY_ACTOR_BEHIND,
+                                    "Particlez",
+                                    0x40003
+                                );
+                                if (fx != NULL) {
+                                    fx->ApplyName("LEVEL_DEATHSPLASH");
+                                    fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                }
+                            }
+                            m_wwdObject->m_flags |= 0x10000;
+                            return;
+                    }
+                }
+            }
+        } else {
             if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetX, m_targetY)) {
                 CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
                     0,
@@ -488,47 +524,25 @@ void CProjectile::AdvanceMotion() {
             m_wwdObject->m_flags |= 0x10000;
             return;
         }
-        if (flags & 0x2) {
-            if (flags & 0x40) {
-                tier = 1;
-            } else {
-                switch (reg->m_curState->m_levelType) {
-                    case AREA_HIGH_ON_SWEETZ:
-                    case AREA_HIGH_ROLLERZ:
-                    case AREA_GRUNTZ_IN_SPACE:
-                        tier = 1;
-                        break;
-                    case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
-                        break;
-                    default:
-
-                        if (CGameLevel::PointInRect(&reg->m_viewBounds, m_targetX, m_targetY)) {
-                            CWwdGameObjectA* fx = reg->m_world->m_childGroup->CreateSprite(
-                                0,
-                                m_targetX,
-                                m_targetY,
-                                SORTKEY_ACTOR_BEHIND,
-                                "Particlez",
-                                0x40003
-                            );
-                            if (fx != NULL) {
-                                fx->ApplyName("LEVEL_DEATHSPLASH");
-                                fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
-                            }
-                        }
-                        m_wwdObject->m_flags |= 0x10000;
-                        return;
-                }
-            }
+    }
+    CAniElement* sprite;
+    if (tier != 0) {
+        sprite = m_frames[PF_FALL];
+        if (sprite == NULL) {
+            goto noSprite;
         }
+        goto setupSprite;
     }
-    CAniElement* sprite = (tier != 0) ? m_frames[PF_FALL] : m_frames[PF_IMPACT];
+    sprite = m_frames[PF_IMPACT];
     if (sprite == NULL) {
-        m_wwdObject->m_flags |= 0x10000;
-        return;
+        goto noSprite;
     }
+setupSprite:
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(sprite);
+    return;
+noSprite:
+    m_wwdObject->m_flags |= 0x10000;
 }
 
 RVA(0x000e05e0, 0x4e)
