@@ -767,3 +767,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   No forced register, unused declaration, or include-state steering was
   retained; the function remains `@early-stop` pending a source-level entity
   that explains that prefix.
+
+## 2026-08-12 — `CMultiStartDlg::SyncChannelSlot`
+
+- Unit/RVA: `multistartdlgroster`, `0x000c2ab0`.
+- Source correction: on the empty-slot arm, retail tests
+  `m_humanControlled != 0`, conditionally drops the player, then tests
+  `m_humanControlled == 0` before restoring the color slot. The second test is
+  present in the instruction stream, proving two independent guards rather
+  than the reconstructed `else if (m_liveGate != 0)`.
+- Controls: candidate and retail retain the same ordered 19/19 relocation
+  sequence. The ordinary build remains 125 versus 128 instructions and
+  69.3281% fuzzy: candidate reuses `edi` as a zero value on the early-return
+  arm and folds the second human-control test, while retail keeps the channel
+  index in `edi`, uses `test`, and retains the path-sensitive recheck.
+- Exhaustion: independent guards, an explicit nested `else`, and cached
+  human/live values reached no higher state; caching the human value across the
+  arm rotated it into `edi` and regressed to 69.2891%. A 64-cell TU-state sweep
+  produced 62 valid byte-identical objects at 69.3281%; two include/mixed cells
+  failed compilation.
+- Verdict: the control-flow identity is corrected, but its ordinary output is
+  a bounded VC5 liveness/CSE wall. No long-lived cache, volatile value, unused
+  declaration, or include steering was retained; the function remains
+  `@early-stop` at 69.3281% current-source MAX.

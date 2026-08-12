@@ -110,8 +110,11 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
             if (s->m_liveGate != 0) {
                 g_multiState->DropChannelPlayer(s->m_playerIndex);
             }
-        } else if (s->m_liveGate != 0) {
-            ChannelSlots_Set(IDX(s->m_colorIndex), 1);
+        }
+        if (s->m_humanControlled == 0) {
+            if (s->m_liveGate != 0) {
+                ChannelSlots_Set(IDX(s->m_colorIndex), 1);
+            }
         }
         s->m_liveGate = 0;
         s->m_readyFlag = 0;
