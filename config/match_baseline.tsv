@@ -1983,7 +1983,7 @@ grunt	?Place@CGrunt@@QAEHPAVCTriggerMgr@@HHW4PickupType@@1HW4EnemyAiType@@HHHPAU
 grunt	?PlaySound@CGrunt@@QAEXHUGruntDirectionCell@@@Z	93.3739	93.3739	9	4abf1b5a3e41	0x4ac10	93.3739
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	12	9fb488e8c436	0x48400	100.0000
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	15	c46fdbe9c506	0x4d060	100.0000
-grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	11	db9e5b14ff41	0x4b370	33.4511
+grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	12	ff023302d79a	0x4b370	33.4511
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	76.2346	76.2346	38	26edd2313065	0x4c170	76.2346
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66.7500
 grunt	?XferName@CGrunt@@UAEXPAD@Z	86.8291	86.8280	11	fbdbef3c6c70	0x5d210	86.8291

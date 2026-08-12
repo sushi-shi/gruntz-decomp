@@ -931,50 +931,6 @@ i32 CGrunt::TileSwitch(i32 col, i32 row, i32 arrivalPhase, i32 maskA, i32 clearF
 }
 
 // @early-stop
-// The dominant residue is a REGION ROTATION, not the cross-jump: cl emits
-// prologue / nudge / bresenham / reProbe / pathGate where retail emits
-// prologue / pathGate / nudge / bresenham / reProbe, so every branch
-// displacement in both halves is re-encoded.  The two backward `goto pathGate`
-// sites are ONE half of the trigger; the other half is the /GX EH scope of the
-// `CPtrList probe(10)` below, and it is the half that is actually decisive.
-// Two independent probes (both semantically wrong, layout-only): delete the whole
-// probe block, or keep the block and give the list a HEAP home so the local is no
-// longer destructible - EITHER ONE puts region A back at the top with the late
-// sites reaching it by backward `jmp`, i.e. retail's order.  With the stack local
-// restored, cl sinks A again.  Retail HAS that same EH scope, byte-for-byte the
-// same size (state 0 at 0x4b651 through state -1 at 0x4b73f = 0xee bytes, ours
-// 0x962..0xa50 = 0xee), reached by the same gotos over it (retail's own `je
-// 0x4b74e` jumps the whole scope), so the source shape is not what differs.
-// REFUTED as the suppressor, one build each: writing the battlez arm as
-// `if (state == BATTLEZ) reinit = 0; else { CPtrList probe(10); ... }` instead of
-// `goto commitEntrance` (ctor still at 0x934 of 0xb30, sunk); and hoisting the
-// declaration to FUNCTION scope so no goto crosses a scope boundary at all (the
-// probe SearchEdge stays at 0xa1a, sunk).  So it is not the scope's position and
-// not the crossing - the mere PRESENCE of a destructible local is enough.
-// Also see docs/patterns/backward-goto-sinks-its-target-region.md, which records
-// the earlier probe (both gotos removed => retail's order, 33.37 -> 66.15) and the
-// three restructurings that do NOT move it.
-// The second residue is the cross-jump the rotation drags with it: cl merges
-// the `if (CoordCount()) pop head` at dropHead with the byte-identical one at
-// reProbe.  Retail keeps both copies because it scheduled them differently
-// (0x4b4e3 `mov edx,ds:0x645544; sub eax,ecx` vs 0x4bde4 `sub eax,ecx;
-// mov ecx,ds:0x645544`), so its cross-jumper declined.  The callee SET is
-// complete - the `insn_seq --multiset` rows (RemoveHead 3/4, g_coordPool 18/21)
-// are that same merge, and g_gameReg 10/7 is its mirror (cl re-loads the global
-// where retail holds it in a register).
-//
-// JUDGE THIS FUNCTION WITH `--blocks --diff`, NOT WITH THE REPORTED PERCENT.
-// objdiff's diff is a LINEAR alignment; with the region rotation above it has no
-// global anchor, so its number is bistable - one operand flip anywhere in the
-// body swings it between 0.00 and ~33 while the emitted basic blocks do not
-// change at all.  A 0.00 here does NOT mean the body is wrong.  (Do not "fix" it
-// with a Yoda condition: `0 != (lastFlags & 0x80)` does raise the reported score,
-// but it makes cl emit `test al,al` where retail has `test al,0x80` at 0x4b585 -
-// further from retail, not closer.  Measured both ways.)
-// What the blocks say: the probe-count gate below carries retail's polarity
-// (0x4b681 `jg` jumps AWAY to the free-everything walk and FALLS INTO the splice
-// arm), and that puts twelve consecutive blocks at retail's B48..B59 shape
-// exactly - 11i,3i,5i,4i,2i,2i,3i,8i,1i,3i,1i,10i - which they were not before.
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -1138,22 +1094,18 @@ i32 CGrunt::StepArrivalDrop(
 
     nudged = 0;
 
-    if (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 4] != IDX(TILEKIND_GIANT_ROCK)) {
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    if (grid->m_rowInts[tileY][tileX * 7 + 4] != IDX(TILEKIND_GIANT_ROCK)) {
         goto nudgeDone;
     }
-    free4 = (g_gameReg->m_tileGrid->m_rowInts[tileY + 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
-                ? ROCKADJ_BELOW
-                : ROCKADJ_NONE;
-    free4 |=
-        (g_gameReg->m_tileGrid->m_rowInts[tileY - 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK))
-            ? ROCKADJ_ABOVE
-            : ROCKADJ_NONE;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 + 11] == IDX(TILEKIND_GIANT_ROCK))
-                 ? ROCKADJ_RIGHT
-                 : ROCKADJ_NONE;
-    free4 |= (g_gameReg->m_tileGrid->m_rowInts[tileY][tileX * 7 - 3] == IDX(TILEKIND_GIANT_ROCK))
-                 ? ROCKADJ_LEFT
-                 : ROCKADJ_NONE;
+    free4 = (grid->m_rowInts[tileY + 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_BELOW
+                                                                                    : ROCKADJ_NONE;
+    free4 |= (grid->m_rowInts[tileY - 1][tileX * 7 + 4] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_ABOVE
+                                                                                     : ROCKADJ_NONE;
+    free4 |= (grid->m_rowInts[tileY][tileX * 7 + 11] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_RIGHT
+                                                                                  : ROCKADJ_NONE;
+    free4 |= (grid->m_rowInts[tileY][tileX * 7 - 3] == IDX(TILEKIND_GIANT_ROCK)) ? ROCKADJ_LEFT
+                                                                                 : ROCKADJ_NONE;
     switch (free4) {
         case ROCKADJ_RIGHT | ROCKADJ_BELOW:
             tileX++;
@@ -1189,14 +1141,12 @@ i32 CGrunt::StepArrivalDrop(
 
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            saved[sx - tileX + 1][sy - tileY + 1] =
-                g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7];
-            g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7] = 0;
+            saved[sx - tileX + 1][sy - tileY + 1] = grid->m_rowInts[sy][sx * 7 + 7];
+            grid->m_rowInts[sy][sx * 7 + 7] = 0;
         }
     }
-    if (g_gameReg->m_tileGrid
-                ->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC)
-            != 0
+    grid = g_gameReg->m_tileGrid;
+    if (grid->SearchEdge(lastX, lastY, tileX, tileY, &m_coordList, clearFlag, maskA, maskC) != 0
         && CoordCount() != 0) {
         pooled = g_coordPool.NodeOf(m_coordList.RemoveHead());
         pooled->m_next = g_coordPool.m_freeHead;
@@ -1215,8 +1165,7 @@ i32 CGrunt::StepArrivalDrop(
     }
     for (sy = tileY - 1; sy < tileY + 2; sy++) {
         for (sx = tileX - 1; sx < tileX + 2; sx++) {
-            g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7 + 7] =
-                saved[sx - tileX + 1][sy - tileY + 1];
+            grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
         }
     }
     if (nudged != 0) {
@@ -1246,15 +1195,16 @@ nudgeDone:
     walkY = tileY;
     if (abs(tileX - lastX) > abs(tileY - lastY)) {
         step = ((tileY - lastY) << 16) / abs(tileX - lastX);
+        CMapMgr* lineGrid = g_gameReg->m_tileGrid;
         acc = lastY << 16;
         sx = lastX;
         if (tileX - lastX > 0) {
             while (blocked == 0) {
                 sy = acc >> 16;
-                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                err = (static_cast<u32>(sx) >= lineGrid->m_width
+                       || static_cast<u32>(sy) >= lineGrid->m_height)
                           ? 1
-                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                          : lineGrid->m_rowInts[sy][sx * 7];
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1267,10 +1217,10 @@ nudgeDone:
         } else {
             while (blocked == 0) {
                 sy = acc >> 16;
-                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                err = (static_cast<u32>(sx) >= lineGrid->m_width
+                       || static_cast<u32>(sy) >= lineGrid->m_height)
                           ? 1
-                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                          : lineGrid->m_rowInts[sy][sx * 7];
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1283,15 +1233,16 @@ nudgeDone:
         }
     } else {
         step = ((tileX - lastX) << 16) / abs(tileY - lastY);
+        CMapMgr* lineGrid = g_gameReg->m_tileGrid;
         acc = lastX << 16;
         sy = lastY;
         if (tileY - lastY > 0) {
             while (blocked == 0) {
                 sx = acc >> 16;
-                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                err = (static_cast<u32>(sx) >= lineGrid->m_width
+                       || static_cast<u32>(sy) >= lineGrid->m_height)
                           ? 1
-                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                          : lineGrid->m_rowInts[sy][sx * 7];
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {
@@ -1304,10 +1255,10 @@ nudgeDone:
         } else {
             while (blocked == 0) {
                 sx = acc >> 16;
-                err = (static_cast<u32>(sx) >= g_gameReg->m_tileGrid->m_width
-                       || static_cast<u32>(sy) >= g_gameReg->m_tileGrid->m_height)
+                err = (static_cast<u32>(sx) >= lineGrid->m_width
+                       || static_cast<u32>(sy) >= lineGrid->m_height)
                           ? 1
-                          : g_gameReg->m_tileGrid->m_rowInts[sy][sx * 7];
+                          : lineGrid->m_rowInts[sy][sx * 7];
                 if ((maskA & err) != 0 && (m_passableMask & err) == 0) {
                     blocked = 1;
                 } else {

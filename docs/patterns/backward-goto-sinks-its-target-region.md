@@ -50,3 +50,14 @@ of the two gotos does not flip it, so it is not a predecessor-count effect. Neit
 region A to file scope with an explicit `goto nudgeStart`, nor wrapping A in a `for (;;)` and
 turning the re-entries into `continue`, changes the decision (31.89% both). Wall so far — record
 the residue, do not re-derive it.
+
+After the original experiment, relocation-count analysis recovered three missing
+scoped `CMapMgr*` locals (see
+`global-reload-runs-prove-scoped-pointer-locals.md`). That structural correction
+made the frame and all seven `g_gameReg` relocations agree and left the candidate
+only eight bytes shorter than retail, but did not change the region order. A
+64-trial parser-state request produced 56 legal states; every result stayed at
+the linear scorer's 0.00 floor. The remaining referent-count difference is only
+the known cross-jump copy (`RemoveHead` 3/4 and `g_coordPool` 18/21). This is new
+evidence that the rotation is independent of the missing cache locals rather
+than evidence against those locals.

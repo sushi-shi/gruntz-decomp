@@ -952,3 +952,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   parser-visible state exhausted, this is bounded VC5 scheduling/register
   placement. No forced register, unused include/declaration, or duplicate call
   was retained.
+
+## 2026-08-12 — `CGrunt::StepArrivalDrop`
+
+- Unit/RVA: `grunt`, `0x0004b370`; current-source MAX remains at the linear
+  scorer's 0.0000% floor.
+- Entity break: retail references `g_gameReg` seven times; the candidate
+  referenced it ten times and had a 0x4c frame against retail's 0x50. One
+  nudge-region `CMapMgr*` local and one post-`idiv` local in each Bresenham arm
+  recover the exact seven-reference sequence and the exact frame size.
+- Scope control: declaring both Bresenham locals before their division lets cl
+  common-hoist the load and emits only six references, disproving a shared
+  cache. The two post-division declarations preserve retail's one load per arm.
+- Result: candidate size falls from 2908 to 2856 bytes against retail's 2864.
+  The referent multiset now differs only in the already-known duplicated
+  path-list tail: `RemoveHead` 3/4 and `g_coordPool` 18/21.
+- Score trap: a ten-form `strcmp`/guard matrix found direct comparison forms at
+  33.2309%, but they delete retail's explicit `setne` boolean materialization
+  and were rejected. The faithful `bool` form remains despite its 0% score.
+- Exhaustion: of 64 requested parser-state trials, 56 were legal. All stayed at
+  0.0000%; none changed the macro-region rotation. The residual is still the
+  backward-`goto`/EH-scope wall documented in
+  `backward-goto-sinks-its-target-region.md`, plus the initial inline-`strcmp`
+  register choice. No probe declaration, include, or score-only guard was kept.
