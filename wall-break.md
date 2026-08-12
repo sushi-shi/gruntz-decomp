@@ -6,6 +6,53 @@ inliner, control flow, then register allocation. A score change alone is not a
 break; the retail instruction, relocation, or table evidence must identify the
 compiler decision, and a real VC5 build must confirm the fix.
 
+## 2026-08-12 — `CGameLevel::BroadPhase`
+
+- Unit/RVA: `gamelevelmove`, `0x00167ea0`; historical MAX remains 76.1119%.
+- Classification: scalar-replacement/register-allocation wall. Candidate and
+  retail have the same ordered 20 conditional branches, three returns, and
+  symbolic branch targets. Retail reserves a 0x1c-byte frame and spills the
+  four current-object bounds contiguously; the candidate reserves 0x10 and
+  keeps more bounds in registers.
+- Refuted structure: contiguous retail spills do not prove a source `RECT`.
+  Three `RECT`s produce a 0x30 frame and 75.4701%; one `RECT` plus scalar other
+  and candidate bounds produces 0x20 and 76.0970%; removing the candidate
+  scalar entities produces 0x14 and 70.7612%. None reproduces retail's frame or
+  scheduling, so the simple scalar collision bounds remain.
+- Verdict: the control-flow and collision semantics are complete. No aggregate
+  invented from spill adjacency and no frame-forcing local is retained.
+
+## 2026-08-12 — `CBattlezMapConfig::ClaimTilesAround`
+
+- Unit/RVA: `battlezmapconfig`, `0x0002d800`; historical MAX remains 74.0925%.
+- Classification: loop-layout/register wall. Both sides emit 69 conditional
+  branches and one return. The only symbolic branch difference is the final
+  `g_stepRun` back-edge: candidate branches backward on `jne`; retail exits on
+  `je` and follows it with an unconditional backward jump.
+- Control: spelling the source as an infinite loop with an explicit
+  `g_stepRun == 0` break compiles byte-identically, preserving the candidate's
+  0x68-byte frame, 88 blocks, and opposite ownership. Retail uses a 0x60-byte
+  frame and 90 blocks. The source spelling is therefore not the lever.
+- Verdict: the recursive neighbor order, branch count, and behavior agree; the
+  remaining back-edge ownership follows the broader frame/register allocation
+  difference. No explicit label or artificial loop carrier is retained.
+
+## 2026-08-12 — `CPlay::ExecCommand` tail merge follow-up
+
+- Retail has four physical `ClearCell` calls: MOVE, each of the two on-grunt
+  arms, and one tail shared by both point-target arms. The shared tail receives
+  mode 2 or 3 from its predecessor. The candidate has five calls because VC5
+  does not merge the two textually duplicated point-target tails in the current
+  register state; this accounts for a substantial part of the existing
+  103-versus-91 branch and 155-versus-142 block gap.
+- Control: expressing that merge explicitly with a shared label removes one
+  `ClearCell`, five branches, and five blocks, but lengthens every epilogue by
+  introducing an eight-byte frame and moves fuzzy 74.0949% to 72.1715%. A
+  reduced-lifetime variant still creates the frame and scores 71.2255%.
+- Verdict: the retail tail merge is proven, but a source `goto` is not. The
+  duplicated semantic arms remain until their natural entity/register state
+  lets VC5 perform the same merge; no explicit cross-case jump is retained.
+
 ## 2026-08-12 — `CTileTriggerContainer::AddLogic`
 
 - Unit/RVA: `tiletriggercontainer`, `0x00116610`.
