@@ -1282,3 +1282,15 @@ compiler decision, and a real VC5 build must confirm the fix.
   to the opposite stack halves in the both-armed path and chooses different
   callee-saved homes for the coordinate construction. No unused object or
   manual state probe is retained; the function remains `@early-stop`.
+
+## 2026-08-12 — `CSBI_WarlordHead::ShowFrames`
+
+- Unit/RVA: `sbi_warlordhead`, `0x000eb740`; historical MAX rises from
+  95.1111% to 100% exact.
+- Entity/lifetime break: the source invented a function-wide `cfg` cache for
+  `m_frameSet`. Retail keeps `this` in `edi`, reads `m_frameSet` for frame 1,
+  and deliberately reloads the member before resolving frame 2; the cached
+  candidate instead kept the first pointer in `edi` across both halves.
+- Fix: remove the cache and express both range checks and item lookups through
+  the owning `m_frameSet` member. This reproduces the retail reload, register
+  homes, and all instructions exactly without a state probe.

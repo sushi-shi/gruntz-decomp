@@ -35,16 +35,14 @@ i32 CSBI_WarlordHead::SetupImage(
     return 1;
 }
 
-// @early-stop
 RVA(0x000eb740, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
-    CDDrawWorker* cfg = m_frameSet;
-    if (cfg == NULL) {
+    if (m_frameSet == NULL) {
         return 0;
     }
 
-    CImage* f = (cfg->m_minIndex <= 1 && cfg->m_maxIndex >= 1)
-                    ? static_cast<CImage*>(cfg->m_items.GetAt(1))
+    CImage* f = (m_frameSet->m_minIndex <= 1 && m_frameSet->m_maxIndex >= 1)
+                    ? static_cast<CImage*>(m_frameSet->m_items.GetAt(1))
                     : 0;
     if (f == NULL) {
         return 0;
@@ -56,8 +54,9 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
         f->m_owned->m_palDescr = palDescr;
     }
 
-    f = (cfg->m_minIndex <= 2 && cfg->m_maxIndex >= 2) ? static_cast<CImage*>(cfg->m_items.GetAt(2))
-                                                       : 0;
+    f = (m_frameSet->m_minIndex <= 2 && m_frameSet->m_maxIndex >= 2)
+            ? static_cast<CImage*>(m_frameSet->m_items.GetAt(2))
+            : 0;
     if (f == NULL) {
         return 0;
     }

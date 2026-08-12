@@ -47,9 +47,9 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
         do {
             CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
             if (p->m_pending == 0) {
-                i32 v54 = p->m_tileX;
-                i32 v58 = p->m_tileY;
-                if (v54 == tileX && v58 == tileY) {
+                i32 puddleX = p->m_tileX;
+                i32 puddleY = p->m_tileY;
+                if (puddleX == tileX && puddleY == tileY) {
                     return 1;
                 }
             }
