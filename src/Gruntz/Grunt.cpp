@@ -511,8 +511,9 @@ void CGrunt::ReadConfigFromButeMgr() {
 
     m_timePerTile = g_buteMgr.GetDwordDef(
         const_cast<char*>(static_cast<const char*>(m_animSetName)),
-        DATA_COMPGEN(0x0020d414, "TimePerTile"), 1000
-        );
+        "TimePerTile",
+        1000
+    );
 
     if (m_gruntKind == GRUNT_SUPERSPEED) {
         m_timePerTile >>= 1;
@@ -1573,7 +1574,7 @@ label_4c6e4:
         CString* r = g_typeColl.ScratchResolve(m_objAux->m_actKey);
         ActNameConstructGrownSlots();
         bool ne;
-        ne = (strcmp(*r, DATA_COMPGEN(0x0020cc98, "L")) != 0);
+        ne = (strcmp(*r, "L") != 0);
         if (ne) {
             m_entranceActive = 0;
         }
@@ -3057,10 +3058,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
-            i32 t = g_buteMgr.GetIntDef(
-                "Powerupz",
-                DATA_COMPGEN(0x0020d900, "GruntGhostTransparencyOn"), 0xe0
-                );
+            i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             m_object->m_drawActive = 1;
             m_object->m_drawFillCmd = SHADE_PAL_ALPHA_16;
             m_object->m_fillFraction = t;

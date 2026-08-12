@@ -82,7 +82,7 @@ void RegisterGameObjectTypes(CDDrawSurfaceMgr* ctx) {
     RegisterIconActions();
     ctx->m_workerCache->CreateWorker(CreateInGameText, "InGameText", 4);
     RegisterTextLogic();
-    ctx->m_workerCache->CreateWorker(CreateWormhole, DATA_COMPGEN(0x0020a7ac, "Wormhole"), 4);
+    ctx->m_workerCache->CreateWorker(CreateWormhole, "Wormhole", 4);
     RegisterWormholeLogic();
     ctx->m_workerCache->CreateWorker(CreateGruntPuddle, "GruntPuddle", 4);
     RegisterLogic();

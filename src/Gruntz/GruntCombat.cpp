@@ -1124,7 +1124,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // sibling sites below already do.
     char** rec0 = g_typeColl.GetNameRecordRaw(m_objAux->m_actKey);
     ActNameConstructGrownSlots();
-    bool neH = (strcmp(*rec0, DATA_COMPGEN(0x0020d7fc, "H")) != 0);
+    bool neH = (strcmp(*rec0, "H") != 0);
     if (neH) {
         i32 keyF = m_objAux->m_actKey;
         g_typeColl.m_grown = 0;

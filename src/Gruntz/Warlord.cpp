@@ -173,15 +173,15 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, 0);
 
-    WARLORD_ANIM_LOOKUP(m_idleAnims[0], DATA_COMPGEN(0x0020d284, "_IDLE1"));
-    WARLORD_ANIM_LOOKUP(m_idleAnims[1], DATA_COMPGEN(0x0020d27c, "_IDLE2"));
-    WARLORD_ANIM_LOOKUP(m_idleAnims[2], DATA_COMPGEN(0x0020d274, "_IDLE3"));
-    WARLORD_ANIM_LOOKUP(m_idleAnims[3], DATA_COMPGEN(0x0020d26c, "_IDLE4"));
+    WARLORD_ANIM_LOOKUP(m_idleAnims[0], "_IDLE1");
+    WARLORD_ANIM_LOOKUP(m_idleAnims[1], "_IDLE2");
+    WARLORD_ANIM_LOOKUP(m_idleAnims[2], "_IDLE3");
+    WARLORD_ANIM_LOOKUP(m_idleAnims[3], "_IDLE4");
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[0], s__BATTLECRY1);
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[1], s__BATTLECRY2);
     WARLORD_ANIM_LOOKUP(m_battlecryAnims[2], s__BATTLECRY3);
     WARLORD_ANIM_LOOKUP(m_animJoy, s__JOY);
-    WARLORD_ANIM_LOOKUP(m_animDeath, DATA_COMPGEN(0x0020d22c, "_DEATH"));
+    WARLORD_ANIM_LOOKUP(m_animDeath, "_DEATH");
     WARLORD_ANIM_LOOKUP(m_animMoving, s__MOVING);
     WARLORD_ANIM_LOOKUP(m_animPanic, s__PANIC);
 
