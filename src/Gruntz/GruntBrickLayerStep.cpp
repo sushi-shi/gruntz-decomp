@@ -37,13 +37,11 @@
 #include <string.h>
 
 // @early-stop
-// B0-B14 are now instruction-exact.  Divergence starts at the powered-up arm: cl
-// PROVES `m_poweredUp != 0` inside the `stamina < FULL` else-arm and deletes that
-// arm's `if (m_poweredUp == 0) return 1;` (retail keeps it - 0xece99 re-tests the ecx
-// the outer 0xece23 load left behind), and it gives the >= FULL arm's copy its own
-// epilogue instead of the 2-instruction reload+jmp retail has at 0xece85.  Everything
-// downstream is index-shifted by that one missing block.  Frame is 0x8c vs retail's
-// 0x7c, and `this` is spilled where retail parks it in ebx for the whole body.
+// The control-flow skeleton now agrees through B24 and the frame is retail's 0x7c.
+// The first true divergence is B25: cl proves `m_poweredUp != 0` in the low-stamina
+// arm and deletes retail's re-test at 0xece99.  Candidate has 69 branches / 7 returns
+// against retail's 70 / 6; it also parks `this` in ebp where retail uses ebx.  Eighty
+// mixed TU states moved only 0.015 points and never changed that wall class.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -75,37 +73,38 @@ i32 CGrunt::StepBrickLayerBehavior() {
     if (m_poweredUp != 0) {
         if (m_neighborValid == 0) {
             if (m_combatActive != 0) {
-                return 1;
+                goto L_powered_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
                 if (FindGridNeighbor(1) != NULL) {
-                    return 1;
+                    goto L_powered_yes;
                 }
                 if (atTarget && g == NULL) {
-                    return 1;
+                    goto L_powered_yes;
                 }
                 if (m_poweredUp == 0) {
-                    return 1;
+                    goto L_powered_yes;
                 }
             } else {
                 if (atTarget) {
-                    return 1;
+                    goto L_powered_yes;
                 }
                 if (m_poweredUp == 0) {
-                    return 1;
+                    goto L_powered_yes;
                 }
             }
             if (m_neighborValid != 0) {
-                return 1;
+                goto L_powered_yes;
             }
             m_entranceActive = 0;
             m_combatActive = 0;
             m_neighborValid = 0;
             m_poweredUp = 0;
             ResetEntranceAnimation(1, 0, 0);
-            return 1;
+        } else {
+            m_neighborValid = 0;
         }
-        m_neighborValid = 0;
+    L_powered_yes:
         return 1;
     }
 
@@ -204,7 +203,7 @@ L_ed153:
         i32 best = INT_MAX;
         i32 bestCol = -1;
         i32 bestRow = -1;
-        GRID_CLIP_INL(grid, &isect);
+        GRID_CLIP_INL_FIELDS(grid, &isect);
         for (i32 row = isect.top; row < isect.bottom; row++) {
             BrickzCell* cell = &grid->m_rows[row][isect.left];
             for (i32 col = isect.left; col < isect.right; col++) {

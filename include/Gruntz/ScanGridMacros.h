@@ -101,6 +101,36 @@
         (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
+// Same expansion with field stores in both the bounds rect and the NULL arm.
+// StepBrickLayerBehavior's retail relocation stream contains no CRect constructor
+// at this site; its NULL arm writes the four fields directly.
+#define GRID_CLIP_INL_FIELDS(grid, srcRect)                                                        \
+    {                                                                                              \
+        const RECT* clipSrc = (srcRect);                                                           \
+        RECT rb;                                                                                   \
+        rb.left = 0;                                                                               \
+        rb.top = 0;                                                                                \
+        rb.right = (grid)->m_width;                                                                \
+        rb.bottom = (grid)->m_height;                                                              \
+        RECT ra;                                                                                   \
+        if (clipSrc != NULL) {                                                                     \
+            ra = *clipSrc;                                                                         \
+            ra.right = ra.right + 1;                                                               \
+            ra.bottom = ra.bottom + 1;                                                             \
+        } else {                                                                                   \
+            ra.left = 0;                                                                           \
+            ra.top = 0;                                                                            \
+            ra.right = (grid)->m_width;                                                            \
+            ra.bottom = (grid)->m_height;                                                          \
+        }                                                                                          \
+        RECT* clipBounds = &(grid)->m_bounds;                                                      \
+        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
+            *clipBounds = ra;                                                                      \
+        }                                                                                          \
+        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
+        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
+    }
+
 // CMapMgr::Clip(NULL) expanded in place: the constant-NULL source folds the
 // `src != NULL` arm away, so both rects are built by the out-of-line CRect ctor
 // -- rb directly, ra by assignment from a second, temporary CRect (a four-field

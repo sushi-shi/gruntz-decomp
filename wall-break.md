@@ -295,3 +295,29 @@ compiler decision, and a real VC5 build must confirm the fix.
   returns, and the exact ordered relocation stream including offsets, types,
   identities, and addends. The stale `@early-stop` and historical “TU state”
   explanation were removed.
+
+## 2026-08-12 — `CGrunt::StepBrickLayerBehavior`
+
+- Unit/RVA: `gruntbricklayerstep`, `0x000ecc90`.
+- Before: 59.0364% current-source MAX. The first 15 blocks agreed, but eight
+  candidate returns versus six retail returns rotated the powered-up state
+  machine. The candidate also carried one `CRect(int,int,int,int)` relocation
+  in the later clipping path that retail does not have.
+- Classification: control-flow/source-entity wall. The structurally parallel
+  `StepGooSuckerBehavior` spells the powered-up failures as jumps to one local
+  return, and its six retail exits were already reproduced. Retail's clipping
+  null arm writes all four `RECT` fields directly; the ordered relocation
+  stream therefore disproves a constructor at that site.
+- Source levers: merge the powered-up failures at `L_powered_yes`, and use a
+  field-store variant of the inlined clip expansion. This raises the ordinary
+  build to 59.9576%, narrows the candidate to seven returns, restores retail's
+  0x7c frame, aligns the control-flow skeleton through B24, and removes the
+  extra constructor relocation. Candidate and retail now both have 34 address
+  relocations.
+- Bounded residue: the first true skeleton divergence is B25, where cl deletes
+  the low-stamina `m_poweredUp` re-test retained at retail `0x000ece99`; one
+  later return remains unmerged, and `this` is in ebp instead of retail's ebx.
+  Sharing the powered-up check across both stamina arms worsened the score to
+  59.7379%. Eighty mixed TU-state trials never changed the wall class and
+  peaked at 59.9727%, so the authentic structural corrections are retained
+  while the remaining control-flow/register residue stays `@early-stop`.
