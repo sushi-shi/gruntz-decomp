@@ -297,11 +297,11 @@ i32 ImagePolyClipRect(
 }
 
 // @early-stop
-// Block topology, block sizes and all 29 fcom branch polarities now agree.  Residue is
-// the x87 schedule inside the four interpolation blocks: retail evaluates the
-// multiplicand difference before the divide's operands and keeps bound0 live with a
-// single `fst`, where cl orders the subtractions the other way and duplicates the
-// clip plane on the stack.
+// The extent, CFG and all 29 fcom branch polarities agree. Retail keeps clip2
+// live through the first pointer setup and batches the last two interpolation
+// multiplies before the component adds. Named weighted-delta locals force a
+// frame, while commutative operand and independent-store orders do not reach
+// that remaining x87 schedule.
 RVA(0x00146550, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
@@ -315,13 +315,12 @@ i32 RotateRasterize(
     i32 clipC,
     i32 clipD
 ) {
-    float bound0, clip0, clip1, clip2;
+    float bound0, clip1, clip0, clip2;
     if (clipFlag == -1) {
-
-        clip1 = g_c10;
-        clip0 = static_cast<float>(dst->m_width);
-        clip2 = static_cast<float>(dst->m_height);
-        bound0 = clip1;
+        clip1 = 0.0f;
+        clip2 = static_cast<float>(dst->m_width);
+        clip0 = static_cast<float>(dst->m_height);
+        bound0 = g_c10;
     } else {
         bound0 = static_cast<float>(clipFlag);
         clip0 = static_cast<float>(clipB);
@@ -330,49 +329,60 @@ i32 RotateRasterize(
     }
 
     ClipVtx* out = g_rasterVtxA;
-    if (n > 0) {
+    {
         ClipVtx* prev = &verts[n - 1];
         ClipVtx* cur = verts;
-        i32 j = n;
-        do {
-            if (prev->x >= bound0) {
-                *out++ = *prev;
-            }
-            if ((prev->x < bound0 && cur->x >= bound0) || (prev->x >= bound0 && cur->x < bound0)) {
-                out->x = bound0;
-                out->y = prev->y + (cur->y - prev->y) * ((bound0 - prev->x) / (cur->x - prev->x));
-                out->u = prev->u + (cur->u - prev->u) * ((bound0 - prev->x) / (cur->x - prev->x));
-                out->v = prev->v + (cur->v - prev->v) * ((bound0 - prev->x) / (cur->x - prev->x));
-                out++;
-            }
-            prev = cur;
-            cur++;
-        } while (--j);
+        if (n > 0) {
+            i32 j = n;
+            do {
+                if (prev->x >= bound0) {
+                    *out++ = *prev;
+                }
+                if ((prev->x < bound0 && cur->x >= bound0)
+                    || (prev->x >= bound0 && cur->x < bound0)) {
+                    out->x = bound0;
+                    out->y =
+                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (bound0 - prev->x);
+                    out->u =
+                        prev->u + ((cur->u - prev->u) / (cur->x - prev->x)) * (bound0 - prev->x);
+                    out->v =
+                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (bound0 - prev->x);
+                    out++;
+                }
+                prev = cur;
+                cur++;
+            } while (--j);
+        }
     }
     n = static_cast<i32>((out - g_rasterVtxA));
     if (n == 0) {
         return 0;
     }
 
-    out = g_rasterVtxB;
-    if (n > 0) {
+    {
         ClipVtx* prev = &g_rasterVtxA[n - 1];
         ClipVtx* cur = g_rasterVtxA;
-        i32 j = n;
-        do {
-            if (cur->x < clip0) {
-                *out++ = *cur;
-            }
-            if ((cur->x < clip0 && prev->x >= clip0) || (cur->x >= clip0 && prev->x < clip0)) {
-                out->x = clip0;
-                out->y = cur->y + (prev->y - cur->y) * ((clip0 - cur->x) / (prev->x - cur->x));
-                out->u = cur->u + (prev->u - cur->u) * ((clip0 - cur->x) / (prev->x - cur->x));
-                out->v = cur->v + (prev->v - cur->v) * ((clip0 - cur->x) / (prev->x - cur->x));
-                out++;
-            }
-            prev = cur;
-            cur++;
-        } while (--j);
+        out = g_rasterVtxB;
+        if (n > 0) {
+            i32 j = n;
+            do {
+                if (prev->x < clip0) {
+                    *out++ = *prev;
+                }
+                if ((prev->x < clip0 && cur->x >= clip0) || (prev->x >= clip0 && cur->x < clip0)) {
+                    out->x = clip0;
+                    out->y =
+                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (clip0 - prev->x);
+                    out->u =
+                        prev->u + ((cur->u - prev->u) / (cur->x - prev->x)) * (clip0 - prev->x);
+                    out->v =
+                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (clip0 - prev->x);
+                    out++;
+                }
+                prev = cur;
+                cur++;
+            } while (--j);
+        }
     }
     n = static_cast<i32>((out - g_rasterVtxB));
     if (n == 0) {
@@ -380,24 +390,29 @@ i32 RotateRasterize(
     }
 
     out = g_rasterVtxA;
-    if (n > 0) {
+    {
         ClipVtx* prev = &g_rasterVtxB[n - 1];
-        ClipVtx* cur = g_rasterVtxB;
-        i32 j = n;
-        do {
-            if (cur->y >= clip1) {
-                *out++ = *cur;
-            }
-            if ((cur->y >= clip1 && prev->y < clip1) || (cur->y < clip1 && prev->y >= clip1)) {
-                out->y = clip1;
-                out->x = cur->x + (prev->x - cur->x) * ((clip1 - cur->y) / (prev->y - cur->y));
-                out->u = cur->u + (prev->u - cur->u) * ((clip1 - cur->y) / (prev->y - cur->y));
-                out->v = cur->v + (prev->v - cur->v) * ((clip1 - cur->y) / (prev->y - cur->y));
-                out++;
-            }
-            prev = cur;
-            cur++;
-        } while (--j);
+        if (n > 0) {
+            ClipVtx* cur = g_rasterVtxB;
+            i32 j = n;
+            do {
+                if (prev->y >= clip1) {
+                    *out++ = *prev;
+                }
+                if ((prev->y >= clip1 && cur->y < clip1) || (prev->y < clip1 && cur->y >= clip1)) {
+                    out->y = clip1;
+                    out->x =
+                        prev->x + ((cur->x - prev->x) / (cur->y - prev->y)) * (clip1 - prev->y);
+                    out->u =
+                        prev->u + ((cur->u - prev->u) / (cur->y - prev->y)) * (clip1 - prev->y);
+                    out->v =
+                        prev->v + ((cur->v - prev->v) / (cur->y - prev->y)) * (clip1 - prev->y);
+                    out++;
+                }
+                prev = cur;
+                cur++;
+            } while (--j);
+        }
     }
     n = static_cast<i32>((out - g_rasterVtxA));
     if (n == 0) {
@@ -405,24 +420,29 @@ i32 RotateRasterize(
     }
 
     out = g_rasterVtxB;
-    if (n > 0) {
+    {
         ClipVtx* prev = &g_rasterVtxA[n - 1];
-        ClipVtx* cur = g_rasterVtxA;
-        i32 j = n;
-        do {
-            if (cur->y < clip2) {
-                *out++ = *cur;
-            }
-            if ((cur->y < clip2 && prev->y >= clip2) || (cur->y >= clip2 && prev->y < clip2)) {
-                out->y = clip2;
-                out->x = cur->x + (prev->x - cur->x) * ((clip2 - cur->y) / (prev->y - cur->y));
-                out->u = cur->u + (prev->u - cur->u) * ((clip2 - cur->y) / (prev->y - cur->y));
-                out->v = cur->v + (prev->v - cur->v) * ((clip2 - cur->y) / (prev->y - cur->y));
-                out++;
-            }
-            prev = cur;
-            cur++;
-        } while (--j);
+        if (n > 0) {
+            ClipVtx* cur = g_rasterVtxA;
+            i32 j = n;
+            do {
+                if (prev->y < clip2) {
+                    *out++ = *prev;
+                }
+                if ((prev->y < clip2 && cur->y >= clip2) || (prev->y >= clip2 && cur->y < clip2)) {
+                    out->y = clip2;
+                    out->x =
+                        prev->x + ((cur->x - prev->x) / (cur->y - prev->y)) * (clip2 - prev->y);
+                    out->u =
+                        prev->u + ((cur->u - prev->u) / (cur->y - prev->y)) * (clip2 - prev->y);
+                    out->v =
+                        prev->v + ((cur->v - prev->v) / (cur->y - prev->y)) * (clip2 - prev->y);
+                    out++;
+                }
+                prev = cur;
+                cur++;
+            } while (--j);
+        }
     }
     n = static_cast<i32>((out - g_rasterVtxB));
     if (n == 0) {

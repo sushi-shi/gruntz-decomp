@@ -345,3 +345,35 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: 100.00% exact. Candidate and retail are both 360 bytes with the same
   branch skeleton, one return, ordered relocation stream, and EH funclet. The
   stale `@early-stop` marker was removed.
+
+## 2026-08-12 — `RotateRasterize`
+
+- Unit/RVA: `imagepolyclip`, `0x00146550`.
+- Before: 66.1540% current-source MAX. The branch skeleton already agreed, but
+  all four clipping passes associated each attribute delta with a shared
+  `clipDelta / axisDelta` ratio. Retail divides each attribute delta by the
+  axis delta first, producing three independent x87 divides.
+- Classification: algebraic-expression, traversal-identity, and pseudo-lifetime
+  walls. The last three passes copied and interpolated from `cur`; retail's
+  relocation and pointer progression prove that every pass emits from `prev`
+  and advances `prev = cur`. The two traversals are geometrically equivalent
+  only up to a cyclic vertex rotation, so this was a real source correction.
+- Source levers: associate each interpolation as
+  `(attributeDelta / axisDelta) * clipDelta`; use the retail `prev` traversal in
+  all four passes; initialize the rotated default X bound from
+  `dst->m_height`, the default Y bound from `dst->m_width`, keep `clip1` as an
+  immediate zero, and load `bound0` independently from `g_c10`; create each
+  last-vertex pointer before its positive-count guard; in pass two, create the
+  input-array pseudos before assigning the output array.
+- Result: 95.5313% in the ordinary build. The 1,226-byte admitted extent, CFG,
+  all 29 floating-point branch polarities, and the first interpolation block
+  agree. The successive measured plateaus were 81.3884%, 90.1116%, 91.0446%,
+  95.5089%, and 95.5313%, so each retained lever has an independent compiler
+  verdict.
+- Bounded residue: retail keeps the final default bound live across two initial
+  pointer loads and batches the final two weight multiplications before any
+  component additions in passes two through four. Named weighted-delta locals
+  forced an eight-byte frame and regressed to 87.5893%; commutative addition
+  order compiled identically, and `u, v, y` statement order was slightly worse.
+  The closest structural reconstruction remains `@early-stop` while the narrow
+  x87 scheduling state is unresolved.
