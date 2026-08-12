@@ -71,7 +71,7 @@ def main():
     for k in range(1, len(fns) - 1):
         rva, sz, unit, name = fns[k]
         pu, nu = fns[k - 1][2], fns[k + 1][2]
-        if unit != pu or pu != nu or "?" in (unit, pu):
+        if unit == pu or pu != nu or "?" in (unit, pu):
             continue
         sites = callers.get(rva, []) + callers.get(thunk.get(rva, -1), [])
         cu = sorted({owner(s)[2] for s in sites})
