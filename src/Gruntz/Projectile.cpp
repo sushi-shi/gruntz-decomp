@@ -618,23 +618,19 @@ i32 CBoomerang::LoadProjectileSprites(
 }
 
 // @early-stop
+// Retail keeps the two rotated components and the phase increment live in a
+// 0x20-byte x87 frame; the equivalent local form below currently uses 0x18.
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
-    i32 impact = 0;
-    if (m_launched == 0) {
-        if (m_phase > g_projPhase0) {
-
-            m_object->m_screenX = m_targetX;
-            m_object->m_screenY = m_targetY;
-            if (m_shadow != NULL) {
-                m_shadow->m_screenX = m_targetX;
-                m_shadow->m_screenY = m_targetY;
-            }
-            m_launched = 1;
-            goto step;
+    if (m_launched == 0 && m_phase > g_projPhase0) {
+        m_object->m_screenX = m_targetX;
+        m_object->m_screenY = m_targetY;
+        if (m_shadow != NULL) {
+            m_shadow->m_screenX = m_targetX;
+            m_shadow->m_screenY = m_targetY;
         }
-    } else if (m_phase > g_projPhase1) {
-
+        m_launched = 1;
+    } else if (m_phase > g_projPhase1 && m_launched != 0) {
         ScanTargets(1);
         if (m_shadow != NULL) {
             m_shadow->m_flags |= 0x10000;
@@ -643,19 +639,16 @@ void CBoomerang::AdvanceMotion() {
         m_wwdObject->m_flags |= 0x10000;
         return;
     }
-step:
-    ScanTargets(impact);
+    ScanTargets(0);
 
     double s = sin(m_phase);
     double c = cos(m_phase);
     double amp = static_cast<double>(g_frameDelta);
-    double vx = -m_dirX;
-    double vy = m_dirY;
-    double px = m_originX + vy * m_velScale * s - vx * amp * c + m_phase;
-    double py = m_originY + vy * amp * c + vx * m_velScale * s;
-    m_posX = px;
-    m_posY = py;
-    m_phase = px;
+    double vx = m_dirX;
+    double vy = -m_dirY;
+    m_phase += amp * m_velScale;
+    m_posX = m_originX + vy * s - vx * c;
+    m_posY = m_originY + vx * s + vy * c;
     m_object->m_screenX = static_cast<i32>(m_posX);
     m_object->m_screenY = static_cast<i32>(m_posY);
     if (m_shadow != NULL) {

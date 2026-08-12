@@ -3416,7 +3416,7 @@ projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70	100.000
 projectile	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:096e761cd109	0x129d0	100.0000
 projectile	??_GCProjectile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8f6502dd7c51	0x12980	100.0000
 projectile	??_GCTimeBomb@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8f6502dd7c51	0x12a40	100.0000
-projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	73.9535	73.9535	2	d2c24441fe6d	0xe08b0	73.9535
+projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	86.2481	86.2481	3	279d8809f231	0xe08b0	86.2481
 projectile	?AdvanceMotion@CProjectile@@UAEXXZ	88.5363	88.5363	6	462d416d3b31	0xdfd00	88.5363
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	16	0182c0e4c262	0xe05e0	100.0000
 projectile	?FinalizeStep@CMovingLogic@@UAEXPAD@Z	100.0000	100.0000	3	4d06a9ba65ca	0x13c70	100.0000

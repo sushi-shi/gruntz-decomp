@@ -1048,3 +1048,31 @@ compiler decision, and a real VC5 build must confirm the fix.
   evidence-compatible entity/order forms bounded this scheduling wall. The
   corrected source remains `@early-stop`; the lower historical spelling is not
   restored merely to protect a score.
+
+## 2026-08-12 — `CBoomerang::AdvanceMotion`
+
+- Unit/RVA: `projectile`, `0x000e08b0`; current-source MAX rises from 73.9535%
+  to 86.2481%.
+- Control-flow break: retail tests `m_launched` first, uses the phase-0 compare
+  for the initial snap, and reaches the phase-1 cleanup only when the saved
+  launched state is nonzero. Expressing those as one `if` / `else if` chain
+  restores all seven conditional branches, both returns, and every symbolic
+  branch target. The previous nested condition plus `goto` let cl remove the
+  second launched-state test.
+- Semantic break: tracing retail's x87 stack proves that the motion is a
+  rotation about `(m_originX, m_originY)`: the old phase supplies `sin` and
+  `cos`, `m_dirY` is negated, and the two rotated components are written to
+  `m_posX` and `m_posY`. Separately, retail advances
+  `m_phase += double(g_frameDelta) * m_velScale`. The previous source scaled
+  position terms by frame time and velocity, then assigned the computed X
+  coordinate to `m_phase`; those are behaviorally different entities.
+- Source-shape controls: removing the invented `px`/`py` locals raised 81.0078%
+  to 83.9380%; moving the proven phase advance before the position assignments
+  raised it to 86.2481%. Repeating the members directly collapsed the frame to
+  0x8 and fell to 82.0388%; a named delayed `nextPhase` used a 0x10 frame and
+  fell to 83.0000%. Both were rejected.
+- Residue: retail uses a 0x20 frame and spills both rotated components before
+  converting `g_frameDelta`; the retained equivalent source uses 0x18 and a
+  different x87 spill schedule. The CFG and arithmetic entities are now
+  settled, so this bounded remainder is classified as x87 lifetime/scheduling
+  rather than reopened with unused declarations or score-only spills.
