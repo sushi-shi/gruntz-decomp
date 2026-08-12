@@ -39,7 +39,7 @@ from unittest import mock
 from pathlib import Path
 
 from gruntz.audit import aggregate_copies, data_denominator, data_integrity, image_diff
-from gruntz.audit import rename_member, tu_layout
+from gruntz.audit import rename_member, tu_layout, tu_order_check
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
 from gruntz.cleanliness import class_sizes
@@ -60,6 +60,26 @@ from gruntz.match import verify_unique_names as vun
 class RenameMemberToolTests(unittest.TestCase):
     def test_whole_tree_rename_has_no_file_count_cap(self):
         self.assertIn("--rename-file-limit=0", rename_member.clangd_command())
+
+
+class TuOrderExileControls(unittest.TestCase):
+    EXILES = {0x1000: ("Owner", "Host", "Fn")}
+    SPANS = {"Host": (0x1000, 0x1100)}
+
+    def test_header_inline_owner_emission_proves_exile_pin(self):
+        self.assertEqual(
+            tu_order_check.verify_exiles(
+                self.EXILES, {}, self.SPANS, {0x1000: {"owner", "host"}}
+            ),
+            [],
+        )
+
+    def test_host_only_emission_does_not_impersonate_owner(self):
+        bad = tu_order_check.verify_exiles(
+            self.EXILES, {}, self.SPANS, {0x1000: {"host"}}
+        )
+        self.assertEqual(len(bad), 1)
+        self.assertIn("no owner RVA() pin/emission", bad[0])
 
 
 class AggregateCopyAuditTests(unittest.TestCase):

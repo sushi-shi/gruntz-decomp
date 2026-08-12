@@ -27,10 +27,11 @@ excluded from both checks, counted explicitly, and VERIFIED every run: a row
 whose rva is no longer pinned in its owner unit, or no longer lies within
 (+/-0x1800 seam slack of) its host unit's span, FAILS the audit.
 
-Header RVA() inlines are ignored (we glob *.cpp only). DATA() lives in a different
-section and is not checked here. src/Stub/ is the un-homed backlog: excluded by
-default (pass --include-stub to see it interleave everything, which is expected
-until re-homing drains it).
+Header RVA() inlines are excluded from file-order spans, but their generated
+per-unit label manifests prove an exile owner still emits the annotated COMDAT.
+DATA() lives in a different section and is not checked here. src/Stub/ is the
+un-homed backlog: excluded by default (pass --include-stub to see it interleave
+everything, which is expected until re-homing drains it).
 
 Exit 0 = clean (gate PASS); exit 1 = violations (gate FAIL).
 
@@ -43,6 +44,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import sys
 from pathlib import Path
 
@@ -51,6 +53,7 @@ from gruntz.audit.tu_layout import RVA_RE, SIG_RE, _parse_size, pooled
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
+LABELS = REPO / "build" / "gen" / "labels"
 
 # The kept-COMDAT exile ledger (see module docstring). rva -> (owner, host, name).
 EXILES_TSV = REPO / "config" / "retail" / "kept-comdat-exiles.tsv"
@@ -73,16 +76,42 @@ def load_exiles():
     return out
 
 
-def verify_exiles(exiles, claimed, spans) -> list:
+def load_emitted_labels() -> dict[int, set[str]]:
+    """RVA -> units whose generated label manifest emits that function.
+
+    A real header-inline RVA annotation is absent from the *.cpp source scan,
+    but labels.py propagates it into every base object that actually emits the
+    COMDAT. This lets the exile gate verify the semantic owner's copy without
+    mistaking the selected host copy for ownership.
+    """
+    out: dict[int, set[str]] = {}
+    if not LABELS.is_dir():
+        return out
+    for path in LABELS.glob("*.csv"):
+        with path.open(newline="") as fh:
+            for row in csv.DictReader(fh):
+                if row.get("kind") != "func" or not row.get("rva"):
+                    continue
+                out.setdefault(int(row["rva"], 16), set()).add(
+                    (row.get("unit") or path.stem).casefold()
+                )
+    return out
+
+
+def verify_exiles(exiles, claimed, spans, emitted=None) -> list:
     """The ledger is evidence, so it is re-proven every run. Returns violation
-    strings: a row whose rva is not pinned in owner_unit's .cpp (stale claim),
-    or whose rva lies outside host_unit's span +/- SEAM_SLACK (stale host)."""
+    strings: a row whose rva is neither pinned in owner_unit's .cpp nor emitted
+    from an owner unit carrying a header-inline pin (stale claim), or whose rva
+    lies outside host_unit's span +/- SEAM_SLACK (stale host)."""
+    emitted = emitted or {}
     bad = []
     for rva, (owner, host, name) in sorted(exiles.items()):
         got = claimed.get(rva)
-        if got is None:
-            bad.append(f"exile {rva:#010x} {name}: no RVA() pin found in src (owner {owner})")
-        elif got != owner:
+        owner_emits = owner.casefold() in emitted.get(rva, set())
+        if got is None and not owner_emits:
+            bad.append(f"exile {rva:#010x} {name}: no owner RVA() pin/emission found "
+                       f"(owner {owner})")
+        elif got is not None and got != owner and not owner_emits:
             bad.append(f"exile {rva:#010x} {name}: pinned in {got}, ledger says {owner}")
         sp = spans.get(host)
         if sp is None:
@@ -247,7 +276,7 @@ def check_inter(tus):
 BASELINE = REPO / "config" / "cleanliness" / "tu-order-baseline.tsv"
 
 
-def _gate(intra, inter, exile_bad=(), n_exiled=0) -> int:
+def _gate(intra, inter, exile_bad=(), n_exiled=0, n_ledger=0) -> int:
     """Down-only ratchet vs the committed backlog. A TU whose intra-violation
     count RISES (or a brand-new offender TU, or a rise in the total interleave
     pair count) fails the build; improvements roll the baseline down. Floors
@@ -299,7 +328,8 @@ def _gate(intra, inter, exile_bad=(), n_exiled=0) -> int:
         save()                             # down-only roll
     print(f"tu-order: no new wiring defects; backlog {len(cur)} TU(s) / "
           f"{pairs} pair(s) (frozen in {BASELINE.name}); "
-          f"{n_exiled} kept-COMDAT exile bodies excluded ({EXILES_TSV.name}, verified)")
+          f"{n_ledger} kept-COMDAT exile rows verified, "
+          f"{n_exiled} .cpp bodies excluded ({EXILES_TSV.name})")
     return 0
 
 
@@ -329,10 +359,10 @@ def main():
     exiles = load_exiles()
     tus_all = tus                                     # exiles still visible in --tu
     tus, claimed, n_exiled = split_exiles(tus, exiles)
-    exile_bad = verify_exiles(exiles, claimed, tu_spans(tus))
+    exile_bad = verify_exiles(exiles, claimed, tu_spans(tus), load_emitted_labels())
 
     if args.gate:
-        return _gate(check_intra(tus), check_inter(tus), exile_bad, n_exiled)
+        return _gate(check_intra(tus), check_inter(tus), exile_bad, n_exiled, len(exiles))
 
     if args.outliers:
         out = tu_outliers(tus)
@@ -370,7 +400,8 @@ def main():
     print(f"scanned {len(tus)} TUs, "
           f"{sum(len(s) for s in tus.values())} functions "
           f"({'incl' if args.include_stub else 'excl'} src/Stub/); "
-          f"{n_exiled} kept-COMDAT exile bodies excluded ({EXILES_TSV.name})\n")
+          f"{len(exiles)} kept-COMDAT exile rows verified, "
+          f"{n_exiled} .cpp bodies excluded ({EXILES_TSV.name})\n")
     if exile_bad:
         print("=== EXILE LEDGER (rows failing re-verification) ===")
         for b in exile_bad:

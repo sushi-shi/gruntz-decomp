@@ -267,3 +267,31 @@ compiler decision, and a real VC5 build must confirm the fix.
   That was an intermediate improvement against the mismodelled local set, not
   the original structure; ordinary flat guards reach exact once the associated
   dataflow is faithful.
+
+## 2026-08-12 — `CMenuPage::AddSubItem2`
+
+- Unit/RVA: `menupage`, `0x00183850`.
+- Before: 63.1176% current-source MAX. Candidate and retail agreed on the
+  allocation, six `CString` constructors, and `Append`, but candidate expanded
+  `CMenuItem::Reset` into four `CString::Empty` calls where retail emitted one
+  call to the standalone `Reset` COMDAT. That expansion also merged two retail
+  exits and rotated the frame/register plan.
+- Classification: per-caller inline-budget wall caused by missing source
+  entities, not declaration state. All 192 mixed parser-visible TU states were
+  byte-identical at the plateau. Adding 128 dead locals or 16 redundant member
+  stores to `Reset` also changed neither site choice nor emitted bytes.
+- Source levers: model the two command-field writes as the class's tiny inline
+  `SetCommandParam` and `SetSecondaryCommandId` methods in both sub-item
+  factories. Make the existing virtual `CMenuItem2::SetFrame` header-visible
+  and call it from the constructor instead of duplicating its one store. Those
+  three real inline sites compile to the same stores but charge the front-end
+  candidate list; together they make VC5 decline the nested base `Reset` only
+  in the largest factory. A combined two-field setter alone, the two setters
+  without header-visible `SetFrame`, and header-visible derived `Reset` were
+  measured and rejected.
+- Verdict: 100.00% exact. All four menu-item factories remain exact, as do the
+  standalone `SetFrame` and `Reset` bodies. `AddSubItem2` has the retail
+  315-byte admitted extent, 102 instructions, eight blocks, three branches, two
+  returns, and the exact ordered relocation stream including offsets, types,
+  identities, and addends. The stale `@early-stop` and historical “TU state”
+  explanation were removed.

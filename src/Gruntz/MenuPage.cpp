@@ -124,8 +124,8 @@ CMenuItem* CMenuPage::AddSubItem(
         }
         return 0;
     }
-    item->m_cmdParam = cmdParam;
-    item->m_secondaryCmdId = tag;
+    item->SetCommandParam(cmdParam);
+    item->SetSecondaryCommandId(tag);
     return Append(item) ? item : 0;
 }
 
@@ -149,9 +149,6 @@ CMenuItem2* CMenuPage::AddItem2(
     return Append(item) ? item : 0;
 }
 
-// @early-stop
-// cl inlines CMenuItem::Reset() here; retail's budget was spent by the three
-// earlier new-sites and emitted a real call (see MenuItem.h).
 RVA(0x00183850, 0x13b)
 CMenuItem2* CMenuPage::AddSubItem2(
     const char* name,
@@ -171,8 +168,8 @@ CMenuItem2* CMenuPage::AddSubItem2(
         return 0;
     }
     item->SetFrame(frame);
-    item->m_cmdParam = cmdParam;
-    item->m_secondaryCmdId = parentCtx;
+    item->SetCommandParam(cmdParam);
+    item->SetSecondaryCommandId(parentCtx);
     return Append(item) ? item : 0;
 }
 RVA(0x00183990, 0x38)

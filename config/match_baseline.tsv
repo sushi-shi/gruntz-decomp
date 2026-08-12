@@ -225,8 +225,8 @@ logicworkerhandlersb	6	6
 mainmenubuilder	2	2
 maplogic	1	1
 mapmgr	27	19
-menuitem	33	32
-menupage	34	31
+menuitem	32	31
+menupage	35	33
 menusparkle	7	5
 menustate	18	16
 motionstate	3	3
@@ -2889,13 +2889,12 @@ menuitem	?Place@CMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	4	99
 menuitem	?Release@CMenuItem@@UAEHXZ	100.0000	100.0000	2	226c44084e76	0x1856c0	100.0000
 menuitem	?Reset@CMenuItem2@@UAEXXZ	100.0000	100.0000	3	f7f11b5ab5b4	0x184890	100.0000
 menuitem	?Reset@CMenuItem@@UAEXXZ	100.0000	100.0000	6	2b66c4a146d9	0x184730	100.0000
-menuitem	?SetFrame@CMenuItem2@@UAEXH@Z	100.0000	100.0000	2	a7f6d88dbaac	0x1847a0	100.0000
 menuitem	?Trigger@CMenuItem@@UAEHXZ	100.0000	100.0000	7	c894aa1ce098	0x1856d0	100.0000
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	3	b3a198ffe122	0x183dd0	100.0000
 menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@PBD0H0HH@Z	100.0000	100.0000	1	5ef409593016	0x1836f0	100.0000
 menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@PBD0H0H@Z	100.0000	100.0000	5	17c2a51021bf	0x183460	100.0000
-menupage	?AddSubItem2@CMenuPage@@QAEPAVCMenuItem2@@PBD0HHH0HH@Z	63.1176	63.1176	2	570399a5f459	0x183850	100.0000
-menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@PBD0HHH0H@Z	100.0000	100.0000	6	159fb4248f16	0x1835a0	100.0000
+menupage	?AddSubItem2@CMenuPage@@QAEPAVCMenuItem2@@PBD0HHH0HH@Z	100.0000	100.0000	3	0aa2124d9026	0x183850	100.0000
+menupage	?AddSubItem@CMenuPage@@QAEPAVCMenuItem@@PBD0HHH0H@Z	100.0000	100.0000	7	29fb85536108	0x1835a0	100.0000
 menupage	?Append@CMenuPage@@QAEHPAVCMenuItem@@@Z	100.0000	100.0000	1	ab8a2a6f5071	0x183430	100.0000
 menupage	?CanWrap@CMenuPage@@QAEHXZ	100.0000	100.0000	9	fa6a684355e6	0x183e30	100.0000
 menupage	?Clear@CMenuPage@@QAEXXZ	100.0000	100.0000	6	2b79971e3c2c	0x1833c0	100.0000
@@ -2924,6 +2923,7 @@ menupage	?ReleaseAll@CMenuPage@@QAEHXZ	100.0000	100.0000	7	6f839f8291d1	0x183990
 menupage	?ResolveSubPage@CMenuPage@@QAEHPBD@Z	90.4762	90.4762	8	d5f5b4238bc5	0x1833f0	90.4762
 menupage	?RestoreFocus@CMenuPage@@QAEHXZ	100.0000	100.0000	9	45f0cea094b3	0x1839d0	100.0000
 menupage	?SetFocus@CMenuPage@@QAEHPAVCMenuItem@@H@Z	100.0000	100.0000	7	8c4fd704b390	0x183ad0	100.0000
+menupage	?SetFrame@CMenuItem2@@UAEXH@Z	100.0000	100.0000	2	a7f6d88dbaac	0x1847a0	100.0000
 menupage	?Switch@CMenuPage@@QAEHH@Z	100.0000	100.0000	9	4ad07ff2f2b9	0x183df0	100.0000
 menusparkle	??0CMenuSparkle@@QAE@PAUCGameObject@@@Z	96.4210	96.4210	6	27dce0636e75	0xadbe0	96.4210
 menusparkle	??1CMenuSparkle@@UAE@XZ	100.0000	100.0000	1	482591037e85	0x101b0	100.0000

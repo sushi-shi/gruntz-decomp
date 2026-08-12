@@ -26,6 +26,7 @@ public:
     virtual i32 Notify(u32 dt) OVERRIDE;
     virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y) OVERRIDE;
     virtual i32 OnInit() OVERRIDE;
+    RVA(0x001847a0, 0xa)
     virtual void SetFrame(i32 v);
 
     CDDrawWorker* GetCurrentSprite();
@@ -41,13 +42,19 @@ public:
 };
 SIZE(0x74);
 
+// The constructor calls this header-visible body; the vtable also retains the
+// standalone COMDAT emitted from MenuItem.cpp.
+inline void CMenuItem2::SetFrame(i32 v) {
+    m_frameDelay = v;
+}
+
 inline CMenuItem2::CMenuItem2() {
     m_spriteNormal = NULL;
     m_spriteSelected = NULL;
     m_spriteDisabled = NULL;
     m_frameIdx = 0;
     m_frameCountdown = 0;
-    m_frameDelay = 0x64;
+    SetFrame(0x64);
 }
 
 #endif // GRUNTZ_MENUITEM2_H

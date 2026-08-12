@@ -47,10 +47,6 @@ void CMenuItem2::Disable(MenuItemState mode) {
     m_frameCountdown = frameLimit;
 }
 
-RVA(0x001847a0, 0xa)
-void CMenuItem2::SetFrame(i32 v) {
-    m_frameDelay = v;
-}
 RVA(0x001847b0, 0x6)
 i32 CMenuItem2::OnInit() {
     return 1;

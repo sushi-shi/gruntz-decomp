@@ -200,6 +200,37 @@ no caller padding can substitute, and each was measured.
 
 ## Evidence
 
+### Worked example: byte-identical setters close `CMenuPage::AddSubItem2`
+
+`CMenuPage::AddSubItem2` at `0x183850` was parked at 63.1176% because our
+constructor expanded `CMenuItem::Reset`, while retail called the standalone
+COMDAT. The first three sibling factories already expanded the same body and
+were exact, so moving `Reset` out of line merely exchanged one correct site for
+three regressions.
+
+The old explanation called this generic TU state. A 192-trial mixed declaration
+sweep was completely flat, as were 128 dead locals and 16 redundant stores in
+`Reset`. The missing charge was three semantic inline call sites whose expanded
+instructions were already present as direct stores:
+
+- `CMenuItem2::CMenuItem2` calls the header-visible virtual `SetFrame(0x64)`;
+- `AddSubItem` and `AddSubItem2` use separate inline `SetCommandParam` and
+  `SetSecondaryCommandId` setters.
+
+The standalone `SetFrame` COMDAT remains exact through its vtable binding, both
+sub-item factories retain the same store order, and all four factories are
+exact. In the largest factory these three candidate sites make cl decline the
+nested base `Reset`: 102 instructions, eight blocks, two returns, and every
+ordered relocation now agree with retail. A combined command setter alone, the
+two command setters without header-visible `SetFrame`, and header-visible
+`CMenuItem2::Reset` were negative controls.
+
+This is the reverse-use rule: when direct stores already match but one nested
+inline decision does not, look for existing one-store methods or natural field
+setters that the reconstruction flattened. Their bodies can be byte-neutral
+after expansion while their call sites remain visible to the front-end budget.
+Raw dead statements and parser-state noise do not substitute for those sites.
+
 `CMapMgr::Clip` (0x2b340, 0xaa) has four retail rel32 callers and is expanded in
 ~13 more places. Making it a header `inline` and writing real calls: cl expanded
 **every** site in every TU — including `CGrunt::PathScan`'s three and
