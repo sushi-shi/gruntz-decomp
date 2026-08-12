@@ -627,3 +627,37 @@ compiler decision, and a real VC5 build must confirm the fix.
   stores where retail uses an `edx` move. No synthetic TU state or unsupported
   helper was retained. The function remains `@early-stop` at a new 74.6667%
   current-source MAX.
+
+## 2026-08-12 — `CGrunt::LoadPickupSprites`
+
+- Unit/RVA: `gruntpickupload`, `0x00065e80`.
+- Before: 68.8631% current-source MAX. Candidate and retail already had the
+  same 63 conditional branches and two returns, but the first true CFG-skeleton
+  divergence was block 97. The source emitted the brick bodies before the
+  health and powerup bodies, so relocation masking hid a large source-order
+  error behind plausible fuzzy matches.
+- Source structure recovered: the retail COFF relocation stream proves the
+  outer switch-body order independently of enum values. After the ordinary
+  tool/toy bodies it emits `HEALTH1..3`, `CONVERSION`, `DEATHTOUCH`, `GHOST`,
+  `INVULNERABILITY`, `REACTIVEARMOR`, `ROIDZ`, `SUPERSPEED`, then the megaphone
+  body and its inner switch, the four brick bodies, the four forced-effect
+  bodies, and finally `W`, `A`, `R`, `P`, `HELPBOX`, `COIN`, `STOPWATCH`.
+- Progression: moving megaphone behind the health/powerup band raised fuzzy to
+  70.9176% and moved the first skeleton divergence to block 103. Moving the
+  brick band behind megaphone raised it to 75.2437% and moved the divergence to
+  block 157. Reordering the final literal bodies and the internal powerup band
+  made the complete ordered literal-referent stream agree with retail. The
+  faithful final source is 74.6667%; the lower score is accepted because the
+  75.2437% intermediate still had retail-disproven case order.
+- Behavioral payoff: the candidate now reaches `GRUNTZ_PICKUPS_HEALTH1..3` in
+  the same switch-body positions as retail instead of comparing those bodies
+  against the red/blue/gold brick literals. This removes the named-asset
+  identity defect at its source; it is not a relocation-masked score claim. A
+  fresh static candidate link reports 24 wrong-referent regions and 37
+  ordering-only regions globally; `LoadPickupSprites` is absent from both.
+- Remaining wall: the branch sequence is exact, while the first skeleton
+  divergence remains at block 157 where VC5 shares the forced-effect tail
+  differently. Retail has no local stack allocation and reuses the unread
+  fourth parameter's home as the `CAniElement*` scratch; the candidate emits
+  `push ecx` and uses a separate local, perturbing stack references and register
+  scheduling across the 5 KB body. The source remains `@early-stop`.

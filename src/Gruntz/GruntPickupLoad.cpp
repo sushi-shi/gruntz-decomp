@@ -28,9 +28,8 @@
 
 // @early-stop
 // The three ActKey() comparisons are `bool eq = (strcmp(..) == 0); if (!eq)` - retail's
-// sete proves the polarity. Residue: cl allocates one 4-byte stack local (push ecx)
-// where retail has none - it reuses the never-read 4th parameter's home slot for the
-// CAniElement* scratch - so every [esp+N] in the 5 KB body is off by 4.
+// sete proves the polarity. Retail reuses the never-read 4th parameter's home slot for
+// the CAniElement* scratch; this source state instead makes cl allocate a 4-byte local.
 RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
@@ -217,17 +216,35 @@ i32 CGrunt::LoadPickupSprites(
         case PICKUP_YOYO:
             PICKUP("GRUNTZ_PICKUPS_YOYO", 0x3df);
             break;
-        case PICKUP_REDBRICK:
-            PICKUP("GRUNTZ_PICKUPS_REDBRICK", 0x3e3);
+        case PICKUP_HEALTH1:
+            PICKUP("GRUNTZ_PICKUPS_HEALTH1", 0x3e4);
             break;
-        case PICKUP_BLUEBRICK:
-            PICKUP("GRUNTZ_PICKUPS_BLUEBRICK", 0x3e1);
+        case PICKUP_HEALTH2:
+            PICKUP("GRUNTZ_PICKUPS_HEALTH2", 0x3e5);
             break;
-        case PICKUP_GOLDBRICK:
-            PICKUP("GRUNTZ_PICKUPS_GOLDBRICK", 0x3e2);
+        case PICKUP_HEALTH3:
+            PICKUP("GRUNTZ_PICKUPS_HEALTH3", 0x3e6);
             break;
-        case PICKUP_BLACKBRICK:
-            PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
+        case PICKUP_CONVERSION:
+            PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
+            break;
+        case PICKUP_DEATHTOUCH:
+            PICKUP("GRUNTZ_PICKUPS_DEATHTOUCH", 0x3e8);
+            break;
+        case PICKUP_GHOST:
+            PICKUP("GRUNTZ_PICKUPS_GHOST", 0x3ed);
+            break;
+        case PICKUP_INVULNERABILITY:
+            PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
+            break;
+        case PICKUP_REACTIVEARMOR:
+            PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
+            break;
+        case PICKUP_ROIDZ:
+            PICKUP("GRUNTZ_PICKUPS_ROIDZ", 0x3ea);
+            break;
+        case PICKUP_SUPERSPEED:
+            PICKUP("GRUNTZ_PICKUPS_SUPERSPEED", 0x3e9);
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -365,35 +382,17 @@ i32 CGrunt::LoadPickupSprites(
             }
             break;
         }
-        case PICKUP_HEALTH1:
-            PICKUP("GRUNTZ_PICKUPS_HEALTH1", 0x3e4);
+        case PICKUP_REDBRICK:
+            PICKUP("GRUNTZ_PICKUPS_REDBRICK", 0x3e3);
             break;
-        case PICKUP_HEALTH2:
-            PICKUP("GRUNTZ_PICKUPS_HEALTH2", 0x3e5);
+        case PICKUP_BLUEBRICK:
+            PICKUP("GRUNTZ_PICKUPS_BLUEBRICK", 0x3e1);
             break;
-        case PICKUP_HEALTH3:
-            PICKUP("GRUNTZ_PICKUPS_HEALTH3", 0x3e6);
+        case PICKUP_GOLDBRICK:
+            PICKUP("GRUNTZ_PICKUPS_GOLDBRICK", 0x3e2);
             break;
-        case PICKUP_GHOST:
-            PICKUP("GRUNTZ_PICKUPS_GHOST", 0x3ed);
-            break;
-        case PICKUP_SUPERSPEED:
-            PICKUP("GRUNTZ_PICKUPS_SUPERSPEED", 0x3e9);
-            break;
-        case PICKUP_INVULNERABILITY:
-            PICKUP("GRUNTZ_PICKUPS_INVULNERABILITY", 0x3ec);
-            break;
-        case PICKUP_CONVERSION:
-            PICKUP("GRUNTZ_PICKUPS_CONVERSION", 0x3e7);
-            break;
-        case PICKUP_DEATHTOUCH:
-            PICKUP("GRUNTZ_PICKUPS_DEATHTOUCH", 0x3e8);
-            break;
-        case PICKUP_ROIDZ:
-            PICKUP("GRUNTZ_PICKUPS_ROIDZ", 0x3ea);
-            break;
-        case PICKUP_REACTIVEARMOR:
-            PICKUP("GRUNTZ_PICKUPS_REACTIVEARMOR", 0x3eb);
+        case PICKUP_BLACKBRICK:
+            PICKUP("GRUNTZ_PICKUPS_BLACKBRICK", 0x3e0);
             break;
         case PICKUP_RANDOMCOLORZ:
             PICKUP("GRUNTZ_PICKUPS_RANDOMCOLORZ", 0x3f1);
@@ -411,12 +410,6 @@ i32 CGrunt::LoadPickupSprites(
             PICKUP("GRUNTZ_PICKUPS_MINICAM", 0x3ee);
             forced = 1;
             break;
-        case PICKUP_STOPWATCH:
-            PICKUP("GRUNTZ_PICKUPS_STOPWATCH", 0x3bf);
-            break;
-        case PICKUP_COIN:
-            PICKUP("GRUNTZ_PICKUPS_COIN", 0x3bf);
-            break;
         case PICKUP_W:
             PICKUP("GRUNTZ_PICKUPS_W", 0x3bf);
             break;
@@ -431,6 +424,12 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_HELPBOX:
             PICKUP("GRUNTZ_PICKUPS_HELPBOX", 0x3be);
+            break;
+        case PICKUP_COIN:
+            PICKUP("GRUNTZ_PICKUPS_COIN", 0x3bf);
+            break;
+        case PICKUP_STOPWATCH:
+            PICKUP("GRUNTZ_PICKUPS_STOPWATCH", 0x3bf);
             break;
         default:
             return 0;
