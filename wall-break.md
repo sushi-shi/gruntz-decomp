@@ -198,12 +198,21 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Source lever: spell the quadrants as an `if`/`else if` chain, make the
   same-tile case the outer success arm so both inlinings jump to their shared
   success tail, and type the toy index/count as `u32`.
-- Result: 58.7547% in the ordinary build, with 158 blocks on both sides and the
-  same-tile and toy-count branch polarities restored. An eight-form quadrant
-  topology sweep rejected independent-arm hybrids. A 16-form flag-width sweep
-  scored higher for mixed widths, but retail's first inlining directly proves
-  the original byte reads; the score-only dword forms were rejected. The
-  remaining one-branch and register-colouring residue is marked `@early-stop`.
+- Follow-up classification: the 831-versus-872 instruction deficit was not
+  allocator noise. In each retail diagonal quadrant, VC5 reloads
+  `board->m_width` and recomputes the 28-byte row stride. Our named `stride`
+  local falsely shared that value across all four mutually exclusive arms.
+- Follow-up lever: keep `board->m_width * 7 * 4` in each arm's actual pointer
+  expression. This recovered 24 missing instructions and raised the ordinary
+  build from 58.7547% to 60.7711%. A `goto` exit from the random-direction loop
+  brought the total instruction count within two but collapsed 12 real retail
+  branches and fell to 54.6561%, so it was rejected.
+- Result: 60.7711%, with the source-level stride CSE defect removed. An
+  eight-form quadrant topology sweep rejected independent-arm hybrids. A
+  16-form flag-width sweep scored higher for mixed widths, but retail's first
+  inlining directly proves the original byte reads; the score-only dword forms
+  were rejected. The remaining branch and register/inliner residue stays
+  `@early-stop`.
 
 ## 2026-08-12 — `CAreaMgr::IsSameWorld`
 

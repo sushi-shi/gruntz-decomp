@@ -110,25 +110,28 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
         Pix16Ptr row;
         row.m_dwords = tgt;
         char* tg = row.m_chars;
-        i32 stride = board->m_width * 7 * 4;
         if (dx > 0 && dy > 0) {
-            if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg - 0x1c) & 0x2000)
-                || (TileFlags(tg - stride) & 0x2000)) {
+            if ((cur[0x1d] & 0x20) || (cur[board->m_width * 7 * 4 + 1] & 0x20)
+                || (TileFlags(tg - 0x1c) & 0x2000)
+                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
                 return 0;
             }
         } else if (dx < 0 && dy > 0) {
-            if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg + 0x1c) & 0x2000)
-                || (TileFlags(tg - stride) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20) || (cur[board->m_width * 7 * 4 + 1] & 0x20)
+                || (TileFlags(tg + 0x1c) & 0x2000)
+                || (TileFlags(tg - board->m_width * 7 * 4) & 0x2000)) {
                 return 0;
             }
         } else if (dx > 0 && dy < 0) {
-            if ((cur[0x1d] & 0x20) || (TileFlags(cur - stride) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
+            if ((cur[0x1d] & 0x20) || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
+                || (TileFlags(tg - 0x1c) & 0x2000)
+                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
                 return 0;
             }
         } else if (dx < 0 && dy < 0) {
-            if ((cur[-0x1b] & 0x20) || (TileFlags(cur - stride) & 0x2000)
-                || (TileFlags(tg + 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
+            if ((cur[-0x1b] & 0x20) || (TileFlags(cur - board->m_width * 7 * 4) & 0x2000)
+                || (TileFlags(tg + 0x1c) & 0x2000)
+                || (TileFlags(tg + board->m_width * 7 * 4) & 0x2000)) {
                 return 0;
             }
         }
@@ -495,10 +498,11 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 // The body and referents are complete. Retail spills `result` and `this` while
 // keeping x/y in ebx/ebp and moveX/moveY in esi/edi. Its ARROW arms adjust x/y
 // in place before copying them; the TOY arms leave x/y untouched. The two
-// s_CanCommitMove inlinings also compile the same byte flag reads differently:
-// the toy path proves the byte spelling below, while the bag path widens them
-// to dword tests. The remaining residue is allocator/inliner state, not a
-// license to replace the proven byte accesses with dword source reads.
+// s_CanCommitMove inlinings recompute the row stride in every quadrant; hoisting
+// it deletes retail instructions. They also compile the same byte flag reads
+// differently: the toy path proves the byte spelling below, while the bag path
+// widens them to dword tests. The remaining residue is allocator/inliner state,
+// not a license to replace the proven byte accesses with dword source reads.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
