@@ -1224,6 +1224,11 @@ def cmd_sema_disasm(args) -> None:
     disasm.run(args)
 
 
+def cmd_sema_diagnose(args) -> None:
+    from gruntz.sema import diagnose
+    diagnose.run(args)
+
+
 def cmd_sema_strings(args) -> None:
     from gruntz.sema import strings
     strings.run(args)
@@ -1391,6 +1396,15 @@ def _add_sema(sub) -> None:
                          "classified SIGNEDNESS / POLARITY / OTHER / TOPOLOGY; rc=1 if "
                          "they differ. Whole tree: python -m gruntz.audit.jcc_sieve")
     sd.set_defaults(func=cmd_sema_disasm)
+
+    sdg = ss.add_parser(
+        "diagnose",
+        help="classify a plateau from the scored obj pair (no recompile): "
+             "inline/call-set -> control-flow -> register -> masked/referent, "
+             "with the evidence command and lever for the class; rc=1 when "
+             "classified, 0 when already exact")
+    sdg.add_argument("rva", help="RVA (0x..) a src fn claims")
+    sdg.set_defaults(func=cmd_sema_diagnose)
 
     st = ss.add_parser("strings", help="per-fn string set / --find reverse lookup")
     st.add_argument("rva", nargs="?", help="RVA (0x..) whose string set to print")
