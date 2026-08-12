@@ -1984,9 +1984,9 @@ grunt	?PlaySound@CGrunt@@QAEXHUGruntDirectionCell@@@Z	93.3739	93.3739	9	4abf1b5a
 grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	12	9fb488e8c436	0x48400	100.0000
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	15	c46fdbe9c506	0x4d060	100.0000
 grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	0.0000	0.0000	11	db9e5b14ff41	0x4b370	33.4511
-grunt	?StepGruntMovement@CGrunt@@QAEHXZ	69.4635	69.4635	37	f2fe340b9235	0x4c170	70.1549
+grunt	?StepGruntMovement@CGrunt@@QAEHXZ	76.2346	76.2346	38	26edd2313065	0x4c170	76.2346
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	66.7500	66.7500	4	961b076c5f38	0x4b320	66.7500
-grunt	?XferName@CGrunt@@UAEXPAD@Z	86.8291	86.8291	11	fbdbef3c6c70	0x5d210	86.8291
+grunt	?XferName@CGrunt@@UAEXPAD@Z	86.8291	86.8280	11	fbdbef3c6c70	0x5d210	86.8291
 gruntarrivalneighbor	?ResolveArrivalNeighbor@CGrunt@@QAEHXZ	86.5443	86.5443	8	d884fe0af738	0xf26f0	86.5443
 gruntarrivalscan	?ResolveArrivalReposition@CGrunt@@QAEHXZ	95.2908	95.2908	17	0f6239e9d6d1	0xec670	95.2908
 gruntarrivalupdate	?UpdateArrival@CGrunt@@QAEHXZ	85.8715	85.8715	27	c246cf3d7920	0xf0130	85.8715

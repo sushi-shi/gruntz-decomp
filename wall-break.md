@@ -817,3 +817,45 @@ compiler decision, and a real VC5 build must confirm the fix.
   With instruction/CFG/referent identity closed and both local and TU axes
   exhausted, this is a bounded VC5 register-homing/frame wall; no unused
   declaration, include, or synthetic spill was retained.
+
+## 2026-08-12 — `CGrunt::StepGruntMovement`
+
+- Unit/RVA: `grunt`, `0x0004c170`. Before: 69.4635% current-source MAX. The
+  old source comment called the residue a record-home allocator wall, but the
+  wall-identifier controls contradicted that classification: candidate and
+  retail had different instruction and return counts, and the first CFG
+  divergence was the `CoordCount() == 0` exit rather than a register-only row.
+- Source break: retail's first direction cascade selects three independently
+  live values. Each arm reads `column`, `row`, and `direction`, and only later
+  materializes the `GruntDirectionCell` at the join. Modeling those selected
+  scalars explicitly, then assigning the record once, raises the faithful
+  current-source result to 76.2346%. The rescanned cascade has the same entity
+  split, with retail's observed `row`, `column`, `direction` order.
+- Referent and constant controls: the retained source has the same 99-entry
+  relocation multiset as retail and still emits all four physical
+  `SetEntrancePos` calls. The ordered relocation stream differs only by that
+  call's placement: candidate emits the `CoordCount` failure copy near the
+  function head while retail retains it at the end. The strong-immediate and
+  mask-immediate sieves report no row for this function.
+- Tail controls: sharing `label_dropRet0` from the later `PlaySound` arm raised
+  the scalar variant to 77.7722%, but emitted 98/99 relocations, three
+  `SetEntrancePos` calls, and seven returns against retail's nine. Sharing the
+  immediately preceding `ValidateUnitPath` failure reached 77.0393% but again
+  emitted only three calls and seven returns. Both higher fuzzy results were
+  rejected because raw relocation/call evidence disproves them. The explicit
+  fourth call is retained despite the lower score.
+- Local exhaustion: all six declaration orders were byte-identical at
+  77.7329% in the shared-tail diagnostic state. A 36-cell Cartesian product of
+  the two record-store orders peaked at 77.7520% only by reordering the second
+  join away from retail's observed field order, so that fitted result was
+  rejected. Keeping only the scalars and constructing a temporary cell at each
+  call regressed to 70.1740% and restored six-instruction arms.
+- Remaining source/codegen split: the retained candidate has 843 instructions,
+  185 blocks, 121 conditional branches, eight returns, and a 0x30 frame;
+  retail has 891 instructions, 187 blocks, 119 conditional branches, nine
+  returns, and a 0x38 frame. Retail spills the selected column in every first
+  cascade arm and retains a second record home; candidate keeps the three
+  selected scalars in registers and emits four-instruction arms. Separately,
+  VC5 replicates the single-predecessor drop tail at the head. No fake
+  predecessor, volatile spill, unused declaration, or score-only field order
+  was retained; the complete function remains `@early-stop`.

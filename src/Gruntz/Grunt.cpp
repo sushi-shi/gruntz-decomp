@@ -1356,28 +1356,12 @@ reProbe:
 }
 
 // @early-stop
-// The two `goto 0x4c68b` sites are now nested guards, which puts base and retail on
-// 187/187 blocks with the whole 0x4c446..0x4c5de span aligned.
-// First skeleton divergence: `label_dropRet0` has a single predecessor, so cl
-// inverts its guard and HOISTS the block to +0x77; retail keeps it at the source
-// position, 0x4cd35, and reaches it with a forward `je`. Wrapping the body in a
-// positive `CoordCount() != 0` gate instead puts the tail at the end but then cl
-// merges the battlez exit into it (3 SetEntrancePos sites, 185 blocks) - refuted,
-// one build.
-// Residue is `rec`'s HOME. cl gives it one (3 slots); retail's cl split the live range
-// into two homes ({-,0x2c,0x30} with word0 permanently in edi, and {0x3c,0x40,0x44}),
-// so retail's frame is 0x38 against our 0x30. That split is what lets retail's sixteen
-// direction arms leave the cell in eax/ecx/edx and sink the stores to the join (arms of
-// 4i and 5i where ours are 6i, i.e. 24 instructions); we spill two of the three words
-// inside every arm. Two source records instead of one reproduces the second home but
-// costs 6 slots (0x3c), so it is not a missing declaration.
-// Second residue, same cause: retail loads `flagHead` and `m_passableMask` into
-// registers before their `test` (0x4c3c5 / 0x4c3eb) where cl uses the memory operand
-// form - but retail re-reads [esi+0x24c] at its other two sites, so neither is a local.
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
     i32 gtX, gtY;
+    i32 recRow, recColumn;
+    GruntDirection recDirection;
     GruntDirectionCell rec;
     i32 tgtPxX, tgtPxY;
     i32 flagHead;
@@ -1420,27 +1404,46 @@ i32 CGrunt::StepGruntMovement() {
     gtY = m_object->m_screenY >> TILE_SHIFT_PX;
     if (coordX > gtX) {
         if (coordY > gtY) {
-            rec = g_gruntMoveDirSouthEast;
+            recColumn = g_gruntMoveDirSouthEast.column;
+            recRow = g_gruntMoveDirSouthEast.row;
+            recDirection = g_gruntMoveDirSouthEast.direction;
         } else if (coordY == gtY) {
-            rec = g_gruntMoveDirEast;
+            recColumn = g_gruntMoveDirEast.column;
+            recRow = g_gruntMoveDirEast.row;
+            recDirection = g_gruntMoveDirEast.direction;
         } else {
-            rec = g_gruntMoveDirNorthEast;
+            recColumn = g_gruntMoveDirNorthEast.column;
+            recRow = g_gruntMoveDirNorthEast.row;
+            recDirection = g_gruntMoveDirNorthEast.direction;
         }
     } else if (coordX < gtX) {
         if (coordY > gtY) {
-            rec = g_gruntMoveDirSouthWest;
+            recColumn = g_gruntMoveDirSouthWest.column;
+            recRow = g_gruntMoveDirSouthWest.row;
+            recDirection = g_gruntMoveDirSouthWest.direction;
         } else if (coordY == gtY) {
-            rec = g_gruntMoveDirWest;
+            recColumn = g_gruntMoveDirWest.column;
+            recRow = g_gruntMoveDirWest.row;
+            recDirection = g_gruntMoveDirWest.direction;
         } else {
-            rec = g_gruntMoveDirNorthWest;
+            recColumn = g_gruntMoveDirNorthWest.column;
+            recRow = g_gruntMoveDirNorthWest.row;
+            recDirection = g_gruntMoveDirNorthWest.direction;
         }
     } else {
         if (coordY < gtY) {
-            rec = g_gruntMoveDirNorth;
+            recColumn = g_gruntMoveDirNorth.column;
+            recRow = g_gruntMoveDirNorth.row;
+            recDirection = g_gruntMoveDirNorth.direction;
         } else {
-            rec = g_gruntMoveDirSouth;
+            recColumn = g_gruntMoveDirSouth.column;
+            recRow = g_gruntMoveDirSouth.row;
+            recDirection = g_gruntMoveDirSouth.direction;
         }
     }
+    rec.row = recRow;
+    rec.column = recColumn;
+    rec.direction = recDirection;
 
     tgtPxY = (coordY << TILE_SHIFT_PX) + TILE_HALF_PX;
     tgtPxX = (coordX << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -1539,27 +1542,46 @@ i32 CGrunt::StepGruntMovement() {
                 i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
                 if (cx > gx) {
                     if (cy > gy) {
-                        rec = g_gruntMoveDirSouthEast;
+                        recRow = g_gruntMoveDirSouthEast.row;
+                        recColumn = g_gruntMoveDirSouthEast.column;
+                        recDirection = g_gruntMoveDirSouthEast.direction;
                     } else if (cy == gy) {
-                        rec = g_gruntMoveDirEast;
+                        recRow = g_gruntMoveDirEast.row;
+                        recColumn = g_gruntMoveDirEast.column;
+                        recDirection = g_gruntMoveDirEast.direction;
                     } else {
-                        rec = g_gruntMoveDirNorthEast;
+                        recRow = g_gruntMoveDirNorthEast.row;
+                        recColumn = g_gruntMoveDirNorthEast.column;
+                        recDirection = g_gruntMoveDirNorthEast.direction;
                     }
                 } else if (cx < gx) {
                     if (cy > gy) {
-                        rec = g_gruntMoveDirSouthWest;
+                        recRow = g_gruntMoveDirSouthWest.row;
+                        recColumn = g_gruntMoveDirSouthWest.column;
+                        recDirection = g_gruntMoveDirSouthWest.direction;
                     } else if (cy == gy) {
-                        rec = g_gruntMoveDirWest;
+                        recRow = g_gruntMoveDirWest.row;
+                        recColumn = g_gruntMoveDirWest.column;
+                        recDirection = g_gruntMoveDirWest.direction;
                     } else {
-                        rec = g_gruntMoveDirNorthWest;
+                        recRow = g_gruntMoveDirNorthWest.row;
+                        recColumn = g_gruntMoveDirNorthWest.column;
+                        recDirection = g_gruntMoveDirNorthWest.direction;
                     }
                 } else {
                     if (cy < gy) {
-                        rec = g_gruntMoveDirNorth;
+                        recRow = g_gruntMoveDirNorth.row;
+                        recColumn = g_gruntMoveDirNorth.column;
+                        recDirection = g_gruntMoveDirNorth.direction;
                     } else {
-                        rec = g_gruntMoveDirSouth;
+                        recRow = g_gruntMoveDirSouth.row;
+                        recColumn = g_gruntMoveDirSouth.column;
+                        recDirection = g_gruntMoveDirSouth.direction;
                     }
                 }
+                rec.row = recRow;
+                rec.column = recColumn;
+                rec.direction = recDirection;
                 CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
                 if (bd->m_rowInts[cy][cx * 7] & 0x20000000) {
                     PlaySound(0x3e8, rec);
@@ -1764,9 +1786,6 @@ label_4c92b: {
 }
 
 label_4cb2a:
-    // Retail spells this arm out (0x4cb2a PlaySound, 0x4cb36 push 1/push 1,
-    // 0x4cb3c SetEntrancePos, xor eax,eax/ret) instead of jumping to the shared
-    // dropRet0 tail - four SetEntrancePos call sites, not three.
     PlaySound(0x3e8, rec);
     SetEntrancePos(1, 1);
     return 0;
@@ -4123,8 +4142,7 @@ void CGrunt::FinalizeStep(char* name) {
     // block below - not to a `ret`, so the guard is part of the arm's condition and
     // the arm is SKIPPED (falls into the "S" handling), it does not return.
     if (eqO
-        && (m_object->m_screenX != m_lastTilePx.m_x
-            || m_object->m_screenY != m_lastTilePx.m_y)) {
+        && (m_object->m_screenX != m_lastTilePx.m_x || m_object->m_screenY != m_lastTilePx.m_y)) {
         GruntDirectionCell c = m_entranceCell;
         i32 row = c.row;
         switch (row) {
