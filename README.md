@@ -22,7 +22,7 @@ _**Reconstructable coverage** = enrolled bytes divided by retail bytes not prove
 
 _Totals are vs the whole engine = every in-`.text` reconstruction-target function; the generated/library categories tabled below (compiler EH funclets, private lifecycle/cleanup helpers, CRT/MFC library, jump thunks) are excluded from the denominator. Any unclaimed reconstruction targets appear in an `(unmatched)` row. `Fuzzy` = code-weighted partial credit (how close); `Fuzzy Max` = the same with every function at its best-ever fuzzy% - a gap above `Fuzzy` is entropy churn since the last `update`._
 
-_Started units alone: 3,546/4,351 fns exact, 93.79% fuzzy over 1,134,668 of 1,114,867 engine code bytes._
+_Started units alone: 3,546/4,351 fns exact, 93.80% fuzzy over 1,134,668 of 1,114,867 engine code bytes._
 
 | Module       | Units |       Functions exact |  Fuzzy | Fuzzy Max |
 | :----------- | ----: | --------------------: | -----: | --------: |

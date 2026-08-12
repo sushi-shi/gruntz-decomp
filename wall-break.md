@@ -724,3 +724,46 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: complete body, bounded register/cross-jump wall at a proven 69.2227%
   current-source MAX. No unused include, declaration, or fitted ternary was
   retained.
+
+## 2026-08-12 — `zPTree::FindOrInsert`
+
+- Unit/RVA: `butetree`, `0x001933b0`.
+- Classification: register-homing wall after the inline `strlen`. Retail keeps
+  `key` in esi, copies it to edi for `repnz scas`, and spills `sbit` to the
+  frame. Candidate loads `key` directly into edi, loses it across the scan, and
+  keeps `sbit` in a register. That removes retail's separate loop preheader and
+  accounts for the complete 48-versus-52 block and 25-versus-26 branch delta.
+  Both sides retain three returns and the ordered 10/10 relocation sequence.
+- Local exhaustion: the existing 120-cell Cartesian matrix crossed `sbit`
+  declaration, child-slot selection, loop form, and key/strlen lifetime. Every
+  legal semantics-preserving spelling was byte-identical at 68.71915%; the two
+  child-selection variants that emitted different code scored lower.
+- TU-state exhaustion: 56 of 64 parser-visible typedef/enum/struct/class/
+  packed/member/extern/static-data/prototype/function/include/mixed trials
+  compiled, and every valid cell was byte-identical at 68.71915%. Eight
+  include/mixed cells were rejected by compilation.
+- Verdict: complete body and bounded VC5 register/preheader wall. No synthetic
+  declaration, forced spill, or score-only child selector was retained; the
+  function remains `@early-stop` at 68.7191% current-source MAX.
+
+## 2026-08-12 — `CTileTriggerSwitchLogic::SwitchUp`
+
+- Unit/RVA: `tileswitchlogic`, `0x001106b0`.
+- Break: retail loads the sound-enabled flag and cue tag together before the
+  enabled branch, then keeps separate unsigned clock, elapsed, and replay-delay
+  entities. Recovering those lifetimes changes the clock comparison from the
+  incorrect signed `jl` to retail's wrap-safe unsigned `jb` and makes the
+  complete sound-play tail align. Current-source MAX rises from 68.9195% to
+  80.9310%.
+- Controls: candidate and retail now emit 87/87 instructions, ten blocks, eight
+  conditional branches, one return, and the same ordered 9/9 relocation
+  sequence. The calls, globals, and `"GAME_SWITCHUP"` referent therefore agree;
+  this is not a relocation-masked score gain.
+- Refuted axis: naming `tileX` and `tileY` locals caused VC5 to spill `tileY`,
+  lowered the score to 77.3333%, and moved farther from retail's register-only
+  prefix. That spelling was removed.
+- Residual wall: the two grid accesses and cue lookup have the same operations
+  and control flow but different register colors and instruction scheduling.
+  No forced register, unused declaration, or include-state steering was
+  retained; the function remains `@early-stop` pending a source-level entity
+  that explains that prefix.

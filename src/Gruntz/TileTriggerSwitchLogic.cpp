@@ -147,10 +147,16 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
             h->m_cues.Lookup("GAME_SWITCHUP", spr_ob);
             LeafCue* spr = static_cast<LeafCue*>(spr_ob);
             if (spr) {
-                if (g_sndEnabled != 0
-                    && g_killCueClock - spr->m_lastPlayTime >= spr->m_replayDelay) {
-                    spr->m_lastPlayTime = g_killCueClock;
-                    spr->m_sound->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                i32 sndEnabled = g_sndEnabled;
+                i32 cueTag = g_sndCueTag;
+                if (sndEnabled != 0) {
+                    u32 now = g_killCueClock;
+                    u32 elapsed = now - static_cast<u32>(spr->m_lastPlayTime);
+                    u32 replayDelay = static_cast<u32>(spr->m_replayDelay);
+                    if (elapsed >= replayDelay) {
+                        spr->m_lastPlayTime = now;
+                        spr->m_sound->ConfigureItem(cueTag, 0, 0, 0);
+                    }
                 }
             }
         }
