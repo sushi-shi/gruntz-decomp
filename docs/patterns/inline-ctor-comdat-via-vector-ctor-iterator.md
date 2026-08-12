@@ -41,9 +41,10 @@ both halves — every site becomes a `call`, which shows up as surplus relocs.
 The pin travels with the COMDAT, so put `RVA()` on the header definition and let
 `labels.py` attribute it to whichever obj emits it. Retail agrees on the owner:
 0xc86d0 sits directly after `CPlay::LoadGameAssetNamespaces` (0xc7ec0 + 0x5f5 =
-0xc84b5), inside play's contribution, not in sbi_rectonly's span. Expect the
-labels gate to report the matching per-unit LOST/GAINED (`GRUNTZ_LABELS_ACK=<unit>`,
-then commit `config/labels_manifest.tsv`); the TOTAL must be conserved.
+0xc84b5), inside play's contribution, not in sbi_rectonly's span. The function
+census (`config/retail/gruntz_functions.tsv`) keys on RVAs, so the move passes
+with the rows re-homed; a row that VANISHES rather than moves fails
+`gruntz build --full`.
 
 ## Evidence
 

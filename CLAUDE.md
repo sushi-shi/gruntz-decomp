@@ -1,49 +1,35 @@
-# Codex Guide
-
-This file is the short, durable orientation. When changing reconstructed C++,
-also read `.claude/agents/matcher.md`; it contains the detailed matching
-doctrine. `wall-break.md` is the evidence log for the active historical-MAX
-campaign. Keep `AGENTS.md` and `CLAUDE.md` byte-identical. Do not add live
-scores, current assignments, queue snapshots, or one-off campaign notes here.
-
 ## Objective And Authority
 
 - Reconstruct the original C++ structure of **Gruntz** so that MSVC 5.0 SP3
   (`/O2 /MT`) emits COFF matching the retail `GRUNTZ.EXE`.
-- `src/` is the source of truth. Retail bytes, relocations, RTTI, call graphs,
-  and observed data layouts are the evidence used to improve it.
-- Correct structure outranks a transient fuzzy score: real classes, types,
-  ownership, storage, control flow, calling conventions, and relocation targets
-  must not be distorted to protect a metric.
-- The matching objective is **per-function historical MAX fuzzy = 100%**. It is
-  neither necessary nor expected for every function to be at 100% in the same
-  build. The MAX ledger preserves each function's best observed result.
-- Current fuzzy, overall fuzzy, and current exact-function totals are navigation
-  signals, not acceptance gates. MSVC codegen is easily perturbed by declaration
-  state: even a typedef, include, or declaration above a function can change that
-  function or unrelated functions in the TU. Accept correct work whenever the
-  MAX gate holds; never revert it to restore a current aggregate or exact count.
-- Raw instructions, constants, and ordered relocations decide whether a
-  reconstruction is correct.
 - The binary has no original PDB. Generated PDBs, delinked objects, inferred
   function boundaries, and contribution ranges are working models, not new
   ground truth.
+- `src/` and `config/retail/` are used to label retail executable.
+- Correct structure outranks a transient fuzzy score: real classes, types,
+  ownership, storage, control flow, calling conventions, and relocation targets
+  must not be distorted to protect a metric.
+- The matching objective is **per-function MAX fuzzy = 100%**. MAX is derived
+  for each function source hash.
+- MAX gates current fuzzy per function hash. Overall fuzzy and exact-function
+  totals are navigation only. Earlier TU declarations or definitions can rarely
+  change VC5 register allocation and instruction scheduling. Expect these
+  perturbations; do not distort correct source to restore a current score.
+- `hist` is a retail function's highest observed fuzzy score across source
+  hashes. It records known headroom, not proof of the current implementation.
+- Raw instructions, constants, and ordered relocations decide whether a
+  reconstruction is correct.
 
 ## Session And Evidence Discipline
 
-- Work in the pinned `nix develop` environment. Refresh `gruntz structs` before
-  relying on a build because source changes do not invalidate that cache. A
-  build reporting `ninja 0.0s` did not test a source change.
-- Never run, launch, replay, or capture the game. Do not use the Ghidra
-  decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
-  and relocation evidence.
+- Work in the pinned `nix develop` environment.
 - Inspect ownership, callers/callees, strings, types, and the retail disassembly
   before editing. Compare from the first real divergence after each build.
-- Objdiff masks relocated address words. Always verify raw constants and ordered
-  relocation targets; a perfect masked score can still call or load the wrong
-  referent.
-- Run a full `gruntz build` with `GRUNTZ_LABELS_ACK` unset before hand-off or
-  commit. A generated report alone is not authoritative.
+- Objdiff uses strict relocation scoring: target name/address, pointed-to data,
+  and absolute DIR32 addends participate in the score. Linked-image referent
+  audits remain authoritative for aliases, indirect calls, and final placement.
+- Run a full `gruntz build` before hand-off or commit. A generated report
+  alone is not authoritative.
 
 ## Historical-MAX Wall Campaign
 
@@ -118,14 +104,11 @@ scores, current assignments, queue snapshots, or one-off campaign notes here.
 
 ## Address Annotations And State Markers
 
-- Address labels live in `include/rva.h` macros, never comments. Let the
-  label-style gate enforce mechanical spelling rather than duplicating it here.
+- Address labels live in `include/rva.h` macros.
 - Never bind volatile compiler ordinals such as `_$E<n>` with
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   Keep observed RVA/name/size evidence in
   `config/retail/compiler-generated-functions.tsv` instead.
-- `DATA_SYMBOL` is RETIRED and gone from `rva.h`; there is no declaration-only
-  data pin. Every datum is a real C++ definition carrying `DATA(rva)`.
 - The DATA analog of `RVA_COMPGEN` is therefore a manifest, not a macro:
   `config/retail/compiler-generated-data.tsv` names a datum cl emits as a COFF
   COMMON from a header-inline's local static (and the `??_B` guard byte beside
@@ -133,10 +116,9 @@ scores, current assignments, queue snapshots, or one-off campaign notes here.
   so it states only the retail address; `gruntz.audit.compgen_data` re-proves
   the rest against the base objs and ratchets coverage.
 
-- The marker vocabulary is closed by `docs/comment-markers.md`; do not invent
-  new `@` states. `@early-stop` means a complete, evidence-bounded body, not
-  missing logic or unresolved relocation work. Re-derive its residue instead of
-  trusting an old source comment.
+- The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
+  means a complete, evidence-bounded body, not missing logic or unresolved
+  relocation work. Re-derive its residue instead of trusting an old source comment.
 
 ## Data, Generated Models, And Linking
 
@@ -156,7 +138,6 @@ scores, current assignments, queue snapshots, or one-off campaign notes here.
 
 - Keep every build gate green. Cleanliness work removes the underlying modeling
   debt rather than hiding its textual signature.
-- Do not edit or format `vendor/`.
 - Put a newly proven reusable MSVC idiom in `docs/patterns/` and its index rather
   than leaving it only in a source comment or commit message.
 - When a build refresh disproves matching doctrine, document both the failed

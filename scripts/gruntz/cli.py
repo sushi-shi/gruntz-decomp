@@ -651,6 +651,13 @@ def cmd_build(args) -> None:
     _gate("gruntz.cleanliness.vtable_secondary", [],
           "secondary-vtable coverage violated - a catalogued through-base vtable "
           "name is unbound (python -m gruntz.cleanliness.vtable_secondary --list)", "normal")
+    # Labelled retail functions may not vanish: the census keys on RVAs, so a
+    # cross-unit move or rename passes; only a lost label fails. FULL tier -
+    # losses are rare now that most of the game is mapped.
+    _gate("gruntz.audit.function_census", [],
+          "a labelled retail function VANISHED from the build - a move/rename is "
+          "not a loss, so a label stopped being emitted "
+          "(python -m gruntz.audit.function_census)", "full")
 
     # Non-fatal extras (normal+): per-function fingerprints, README score, regressions.
     if (REPO / "build" / "clangd" / "compile_commands.json").is_file():

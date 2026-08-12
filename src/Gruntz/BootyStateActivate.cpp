@@ -2484,8 +2484,6 @@ CString g_str645520;
 
 DATA(0x00245534)
 i32 g_attractStateCount = 0;
-DATA(0x00245538)
-i32 g_dlgVal_645538;
 DATA(0x0024553c)
 GruntDeathType g_areaHazardDeath = DEATH_DROP;
 

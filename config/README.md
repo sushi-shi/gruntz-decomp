@@ -13,9 +13,6 @@ the owning tool's merge/update rule.
 - **`match_baseline.tsv`** — per-function best-fuzzy% regression baseline
   (`gruntz.match.status`). Bless reviewed dips/losses via
   `status update --accept-regressions`.
-- **`labels_manifest.tsv`** — ACK-record: expected source-label count per unit
-  (`build/labels.py` gate). A count change must be ACKed here in the same
-  commit that causes it.
 - **`tidy-audit.yaml`** — curated checks for the read-only `gruntz audit tidy`
   de-hack finder; it is an on-demand tool configuration, not a cleanliness
   metric or gate.
@@ -49,6 +46,10 @@ are nearly complete and therefore change infrequently.
   source annotations and reviewed corrections update it directly. Its narrow
   `kind` column retains only compiler-EH/linker-thunk classification needed by
   the full-engine denominator; it is not a symbol-name database.
+- **`gruntz_functions.tsv`** — census of every retail function RVA the source
+  tree labels (rva, name, unit); the floor for the `gruntz build --full`
+  vanish gate (`gruntz.audit.function_census`). Keyed on RVAs, so cross-unit
+  moves and renames pass; a deliberate removal is a committed row deletion.
 - **`compiler-generated-functions.tsv`** — observed MSVC-private `$E<n>` helper
   RVAs, sizes, and owner units. The unstable compiler ordinal is evidence, not a
   source annotation.

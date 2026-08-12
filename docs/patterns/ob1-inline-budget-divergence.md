@@ -27,8 +27,8 @@ When a real caller naturally causes the reconstructed compiler to emit the body,
 place its `RVA_COMPGEN` binding in that emitting TU. When no real caller emits it,
 the retail function remains in `config/retail/functions.tsv` and in historical MAX
 evidence, but is unclaimed by the current source build. A deliberate label-count
-drop must be acknowledged in `config/labels_manifest.tsv`; it is not repaired with
-scaffolding.
+drop is recorded by deleting its row from `config/retail/gruntz_functions.tsv`
+(committed); it is not repaired with scaffolding.
 
 This policy removed the former WWD placement switches in August 2026. The rebuild
 then showed that `CResolveNode`, `AnimWorkerObj`, and `CAniAdvanceCursor` are emitted

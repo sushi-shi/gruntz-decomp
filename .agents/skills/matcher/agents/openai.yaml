@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gruntz Matcher"
+  short_description: "Reconstruct and byte-match Gruntz C++"
+  default_prompt: "Use $matcher to reconstruct and verify a Gruntz function against retail."

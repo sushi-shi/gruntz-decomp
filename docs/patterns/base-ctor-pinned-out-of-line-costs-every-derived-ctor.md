@@ -75,8 +75,8 @@ tells you if any TU already does). Never introduce an emitter-only TU or an out-
 definition to farm the one row - see
 [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md) for the standing
 doctrine and [no-ifdef-guard-devices] for why a per-TU `#ifdef` switch is not the answer
-either. The `labels_manifest.tsv` denominator drop is the *acknowledged* cost
-(`GRUNTZ_LABELS_ACK=<unit>`), and it is one row against sixty-five.
+either. Losing the function's census row (`config/retail/gruntz_functions.tsv`,
+deletion committed) is the accepted cost, and it is one row against sixty-five.
 
 ## Refinement (2026-08-08): pin the SMALL leaf ctors, keep the expanded one inline
 
@@ -95,8 +95,8 @@ configurations, measured whole-tree on the same worktree:
 
 The winning shape moves `CDDrawChildGroup::CreateDeferredObject` 62.87 -> 93.39,
 `CreateDotObject` 65.67 -> 94.40, `CreateSpriteObject` 66.73 -> 94.56 and banks three new
-EXACT rows, at no denominator cost (`levelplane` -3 / `wwdfactoryobject` +3, so the
-`labels_manifest.tsv` ACK is net-neutral). Pinning `CGameObject::CGameObject` as well costs
+EXACT rows, at no denominator cost (`levelplane` -3 / `wwdfactoryobject` +3, a pure
+transfer the RVA-keyed function census passes on its own). Pinning `CGameObject::CGameObject` as well costs
 all three `Create*Object` rows ~45 points each - exactly the tax this pattern warns about.
 
 So run the `sema xref` caller test on **each** ctor in the chain separately: the one whose

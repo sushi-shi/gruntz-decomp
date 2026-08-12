@@ -281,16 +281,9 @@ def _data_line() -> list[str]:
                 f"(initialized data; `.bss` {bss_cov:.2f}% / "
                 f"{bss['fidelity']:.2f}% is reported apart).")
             partition_note = (
-                f"The generated reachability partition proves "
-                f"{init['excluded']:,} B private and unreachable, leaving "
-                f"{init['eligible_retail']:,} eligible B. Its "
-                f"{init['eligible_unenrolled']:,} unenrolled B remain in the "
-                "denominator, including every unclassified byte. Library-owned "
-                "data directly reached from game/compiler code or through enrolled "
-                "data is eligible, never excluded."
-                + (f" `.bss` is partitioned the same way: {bss['excluded']:,} B "
-                   "excluded (zero-fill referenced only by proven library code, "
-                   "plus sub-alignment slack)." if bss_part else ""))
+                "Unclassified bytes stay in the eligible denominator, and "
+                "library-owned data reached from game/compiler code stays "
+                "eligible.")
         else:
             headline = (
                 f"**Data — gross coverage {init['coverage']:.2f}% &middot; fidelity "
@@ -305,17 +298,14 @@ def _data_line() -> list[str]:
             *_md_table(["Data region", "retail B", "excluded B", "eligible B",
                         "enrolled B", "coverage", "fidelity"], "lrrrrrr", rows),
             "",
-            "_**Reconstructable coverage** = enrolled bytes divided by retail bytes "
-            "not proven private and unreachable. **Gross coverage** retains all "
-            "retail initialized bytes as its denominator. **Fidelity** = of enrolled "
-            "bytes, the share objdiff scores byte-equal — the narrow question the "
-            "old headline answered. " + partition_note + " `.bss` is kept out of "
-            "the initialized total because zero-fill matching "
-            "zero-fill is nearly free. objdiff's own "
-            f"`matched_data` is {od['matched_data']:,} / {od['total_data']:,} B "
-            f"({od['matched_data_percent']:.2f}%, whole sections only): a PER-UNIT "
-            "sum, so a COMDAT defined in N units counts N times — kept for history, "
-            "never the headline. What the uncovered bytes ARE: "
+            "_**Reconstructable coverage** = enrolled bytes ÷ eligible bytes "
+            "(retail minus the proven-private `excluded B`). **Gross coverage** "
+            "divides by all retail bytes; **fidelity** = of enrolled bytes, the "
+            "share objdiff scores byte-equal. " + partition_note + " `.bss` is "
+            "reported apart: zero-fill matching zero-fill is nearly free. "
+            f"objdiff's own `matched_data` ({od['matched_data_percent']:.2f}%) is "
+            "a per-unit sum (a shared COMDAT counts once per emitting unit) — "
+            "history, never the headline. What the uncovered bytes ARE: "
             "`gruntz audit data_denominator`._",
             "",
         ]

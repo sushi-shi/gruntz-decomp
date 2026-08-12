@@ -84,9 +84,10 @@ free call inside the shared body is not, and needs the TU split.**
   already ends at 0x15b340); giving `??0CMotionState@@QAE@XZ` a real `RVA()` claim at 0x136d0 in
   `SerialObjectFactory.cpp` is not - it stretches that unit across the carved
   `SerializeSyncMarker` (0x13610) and adds an interleave pair.
-- moving an out-of-line body between units is a **transfer** in `labels_manifest.tsv`, not a
-  loss (`wwdfactoryobject 57 -> 55`, `wwdobjmgr 52 -> 54`); acknowledge it with the unit named,
-  `GRUNTZ_LABELS_ACK=wwdfactoryobject`, and check the gaining unit really gained.
+- moving an out-of-line body between units is a **transfer**, not a loss
+  (`wwdfactoryobject 57 -> 55`, `wwdobjmgr 52 -> 54`); the function census
+  (`config/retail/gruntz_functions.tsv`) keys on RVAs, so it passes on its own -
+  check the rows really re-homed rather than vanished.
 
 ## What this supersedes
 

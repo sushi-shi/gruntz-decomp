@@ -38,29 +38,6 @@ const u16 g_cmdBitTable[16] = {
     0x8000
 };
 
-DATA(0x002451a4)
-i32 g_dlgVal_6451a4;
-DATA(0x00245268)
-i32 g_dlgVal_645268;
-DATA(0x0024526c)
-i32 g_dlgVal_64526c;
-DATA(0x002452a8)
-i32 g_dlgVal_6452a8;
-DATA(0x002452d0)
-i32 g_dlgVal_6452d0;
-DATA(0x002452d4)
-i32 g_dlgVal_6452d4;
-DATA(0x00245558)
-i32 g_dlgVal_645558;
-DATA(0x0024555c)
-i32 g_dlgVal_64555c;
-DATA(0x00245560)
-i32 g_dlgVal_645560;
-DATA(0x00245564)
-i32 g_dlgVal_645564;
-DATA(0x00245568)
-i32 g_dlgVal_645568;
-
 static inline i16 PeekI16(const void* p) {
 
     return *static_cast<const i16*>(p);
@@ -675,49 +652,4 @@ i32 __stdcall IsActive2(void* enable) {
 RVA(0x00085bd0, 0x56)
 CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
-}
-
-// @interleaver DebugGruntTypeDialogProc - 525 B, sits in this class's destructor-COMDAT pool at
-// 0x92ab0 rather than in the TU's own .text block.
-RVA(0x00092ab0, 0x20d)
-i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-    switch (msg) {
-        case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x4db, g_dlgVal_64526c, 0);
-            SetDlgItemInt(hDlg, 0x4da, g_dlgVal_6452d0, 0);
-            SetDlgItemInt(hDlg, 0x4dc, g_dlgVal_645268, 0);
-            SetDlgItemInt(hDlg, 0x4dd, g_dlgVal_645568, 0);
-            SetDlgItemInt(hDlg, 0x4de, g_dlgVal_645538, 0);
-            SetDlgItemInt(hDlg, 0x4df, g_dlgVal_6451a4, 0);
-            SetDlgItemInt(hDlg, 0x4e0, g_dlgVal_6452d4, 0);
-            SetDlgItemInt(hDlg, 0x4e9, g_dlgVal_6452a8, 0);
-            SetDlgItemInt(hDlg, 0x4e3, g_dlgVal_645558, 0);
-            SetDlgItemInt(hDlg, 0x4e4, g_dlgVal_645560, 0);
-            SetDlgItemInt(hDlg, 0x4e5, g_dlgVal_64555c, 0);
-            SetDlgItemInt(hDlg, 0x4e6, g_dlgVal_645564, 0);
-            return 1;
-        case WM_COMMAND:
-            if (wParam == IDCANCEL) {
-                EndDialog(hDlg, 0);
-                return 1;
-            }
-            if (wParam == IDOK) {
-                g_dlgVal_64526c = GetDlgItemInt(hDlg, 0x4db, 0, 0);
-                g_dlgVal_6452d0 = GetDlgItemInt(hDlg, 0x4da, 0, 0);
-                g_dlgVal_645268 = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
-                g_dlgVal_645568 = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
-                g_dlgVal_645538 = GetDlgItemInt(hDlg, 0x4de, 0, 0);
-                g_dlgVal_6451a4 = GetDlgItemInt(hDlg, 0x4df, 0, 0);
-                g_dlgVal_6452d4 = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
-                g_dlgVal_6452a8 = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
-                g_dlgVal_645558 = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
-                g_dlgVal_645560 = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
-                g_dlgVal_64555c = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
-                g_dlgVal_645564 = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
-                EndDialog(hDlg, 1);
-                return 1;
-            }
-            break;
-    }
-    return 0;
 }

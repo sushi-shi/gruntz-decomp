@@ -46,6 +46,7 @@
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
+#include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
@@ -120,6 +121,31 @@ static char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
 DATA(0x002452d8)
 char g_msgScratch[256];
+
+DATA(0x002451a4)
+i32 g_debugGruntRow;
+DATA(0x00245268)
+i32 g_debugGruntToy;
+DATA(0x0024526c)
+i32 g_debugGruntPlayer;
+DATA(0x002452a8)
+i32 g_debugGruntRadius;
+DATA(0x002452d0)
+i32 g_debugGruntTool;
+DATA(0x002452d4)
+i32 g_debugGruntColor;
+DATA(0x00245538)
+i32 g_debugGruntColumn;
+DATA(0x00245558)
+i32 g_debugGruntMoveLeft;
+DATA(0x0024555c)
+i32 g_debugGruntMoveTop;
+DATA(0x00245560)
+i32 g_debugGruntMoveRight;
+DATA(0x00245564)
+i32 g_debugGruntMoveBottom;
+DATA(0x00245568)
+i32 g_debugGruntAiType;
 
 DATA(0x002455e8)
 i32 g_monologoShown;
@@ -2026,6 +2052,49 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
         ran = RunModalDialog("DEBUG_GRUNTTYPE", DebugGruntTypeDialogProc, 1);
     }
     return ran != 0;
+}
+
+RVA(0x00092ab0, 0x20d)
+i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            SetDlgItemInt(hDlg, 0x4db, g_debugGruntPlayer, 0);
+            SetDlgItemInt(hDlg, 0x4da, g_debugGruntTool, 0);
+            SetDlgItemInt(hDlg, 0x4dc, g_debugGruntToy, 0);
+            SetDlgItemInt(hDlg, 0x4dd, g_debugGruntAiType, 0);
+            SetDlgItemInt(hDlg, 0x4de, g_debugGruntColumn, 0);
+            SetDlgItemInt(hDlg, 0x4df, g_debugGruntRow, 0);
+            SetDlgItemInt(hDlg, 0x4e0, g_debugGruntColor, 0);
+            SetDlgItemInt(hDlg, 0x4e9, g_debugGruntRadius, 0);
+            SetDlgItemInt(hDlg, 0x4e3, g_debugGruntMoveLeft, 0);
+            SetDlgItemInt(hDlg, 0x4e4, g_debugGruntMoveRight, 0);
+            SetDlgItemInt(hDlg, 0x4e5, g_debugGruntMoveTop, 0);
+            SetDlgItemInt(hDlg, 0x4e6, g_debugGruntMoveBottom, 0);
+            return 1;
+        case WM_COMMAND:
+            if (wParam == IDCANCEL) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == IDOK) {
+                g_debugGruntPlayer = GetDlgItemInt(hDlg, 0x4db, 0, 0);
+                g_debugGruntTool = GetDlgItemInt(hDlg, 0x4da, 0, 0);
+                g_debugGruntToy = GetDlgItemInt(hDlg, 0x4dc, 0, 0);
+                g_debugGruntAiType = GetDlgItemInt(hDlg, 0x4dd, 0, 0);
+                g_debugGruntColumn = GetDlgItemInt(hDlg, 0x4de, 0, 0);
+                g_debugGruntRow = GetDlgItemInt(hDlg, 0x4df, 0, 0);
+                g_debugGruntColor = GetDlgItemInt(hDlg, 0x4e0, 0, 0);
+                g_debugGruntRadius = GetDlgItemInt(hDlg, 0x4e9, 0, 0);
+                g_debugGruntMoveLeft = GetDlgItemInt(hDlg, 0x4e3, 0, 0);
+                g_debugGruntMoveRight = GetDlgItemInt(hDlg, 0x4e4, 0, 0);
+                g_debugGruntMoveTop = GetDlgItemInt(hDlg, 0x4e5, 0, 0);
+                g_debugGruntMoveBottom = GetDlgItemInt(hDlg, 0x4e6, 0, 0);
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
 }
 
 RVA(0x0008e780, 0x2a)

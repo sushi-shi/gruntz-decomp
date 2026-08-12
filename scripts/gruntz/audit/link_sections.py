@@ -566,18 +566,13 @@ def link_block(R, C):
           + (f": {', '.join('`%s`' % n for n in exact)}._" if exact else "._"),
           ""]
     if sim:
-        L += ["_**Size parity is not a byte match.** `retail bytes reproduced` is "
-              "measured by `python -m gruntz.audit.image_diff`, which pairs regions "
-              "by SYMBOL (never by file offset - our `.text` is 26 KB short, so a "
-              "positional differ would call everything after the first delta "
-              "different) and masks address operands by resolving each to its "
-              "REFERENT, the way objdiff scores a function. Retail bytes we never "
-              "paired count against the figure; bytes we emit that retail does not "
-              "have never count for it. `not measurable` is retail bytes no honest "
-              "alignment exists for - `.bss` zero fill, the `.text$x` unwind "
-              "funclets and the `.xdata$x` EH blobs, none of which carry a symbol in "
-              "either image - and they stay in the denominator, so each figure is a "
-              "floor._",
+        L += ["_**Size parity is not a byte match.** `retail bytes reproduced` comes "
+              "from `python -m gruntz.audit.image_diff`: regions paired by symbol, "
+              "address operands masked to their referents (objdiff's rule). Unpaired "
+              "retail bytes count against the figure and our extra bytes never count "
+              "for it, so each figure is a floor. `not measurable` is symbol-less "
+              "retail bytes (`.bss` zero fill, `.text$x` funclets, `.xdata$x` EH "
+              "blobs); they stay in the denominator._",
               ""]
         if refs and refs[1]:
             L += [f"_Independently of where the bytes landed, **{refs[0]:,} of "

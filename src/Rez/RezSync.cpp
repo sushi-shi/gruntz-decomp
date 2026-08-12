@@ -34,6 +34,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCmdMgrDtorInline.h>
+#include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -151,18 +152,18 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_enableEmulation = m_settings->GetValueDword("Enable Emulation", 0);
     m_isCheckpointPrompts = m_settings->GetValueDword("Checkpoint Prompts", 1);
     g_enableHiColor = 1;
-    g_dlgVal_64526c = 0;
-    g_dlgVal_6452d0 = 0;
-    g_dlgVal_645268 = 0;
-    g_dlgVal_645568 = 0;
-    g_dlgVal_645538 = 0;
-    g_dlgVal_6451a4 = 0;
-    g_dlgVal_6452d4 = 1;
-    g_dlgVal_6452a8 = 0;
-    g_dlgVal_645558 = 0;
-    g_dlgVal_645560 = 0;
-    g_dlgVal_64555c = 0;
-    g_dlgVal_645564 = 0;
+    g_debugGruntPlayer = 0;
+    g_debugGruntTool = 0;
+    g_debugGruntToy = 0;
+    g_debugGruntAiType = 0;
+    g_debugGruntColumn = 0;
+    g_debugGruntRow = 0;
+    g_debugGruntColor = 1;
+    g_debugGruntRadius = 0;
+    g_debugGruntMoveLeft = 0;
+    g_debugGruntMoveRight = 0;
+    g_debugGruntMoveTop = 0;
+    g_debugGruntMoveBottom = 0;
 
     i32 vMusic = m_settings->GetValueDword("Music", m_musicEnabled);
     i32 vSound = m_settings->GetValueDword("Sound", m_soundEnabled);

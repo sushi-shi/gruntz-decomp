@@ -934,19 +934,19 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     DSoundCloneInst* result;
 
     if (m_initialized == 0) {
-        result = 0;
+        result = NULL;
         goto done;
     }
     if (bytes == 0) {
-        result = 0;
+        result = NULL;
         goto done;
     }
     if (fmt == NULL) {
-        result = 0;
+        result = NULL;
         goto done;
     }
     if (fmt->wFormatTag != 1) {
-        result = 0;
+        result = NULL;
         goto done;
     }
 
@@ -964,11 +964,11 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
-        result = 0;
+        result = NULL;
         goto done;
     }
     if (out == NULL) {
-        result = 0;
+        result = NULL;
         goto done;
     }
 

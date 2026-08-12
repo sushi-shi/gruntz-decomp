@@ -78,6 +78,4 @@ inline CGruntzCmdMgr::CGruntzCmdMgr() {
 
 i32 __stdcall IsActive2(void* enable);
 
-i32 CALLBACK DebugGruntTypeDialogProc(HWND, UINT, WPARAM, LPARAM);
-
 #endif // GRUNTZ_GRUNTZCMDMGR_H
