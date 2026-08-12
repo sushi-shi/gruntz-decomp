@@ -171,6 +171,15 @@ the old positive wrapper had 15 blocks / two returns against retail's 19 / one. 
 40.70 -> 54.73 row as evidence that `goto fail` can improve a mismodelled body, not evidence that
 it reconstructs this function's original guard shape.
 
+**Correction — `SoundDevice::CreateBuffer` needs a common result, but not one working pointer.**
+The row above was again only an intermediate improvement. A single pointer initialized to zero
+and reused for the successful `DSoundCloneInst` makes cl coalesce both roles into esi: every
+failure arm becomes `xor esi,esi`, and the `bytes` argument is repeatedly reloaded. Retail has
+`xor eax,eax` in every failure arm, keeps the successful voice in esi, and holds `bytes` in ebp.
+Use an uninitialized common `result`, assign it in each failure arm, and keep the allocated voice
+as a distinct block-local pointer before assigning `result = voice`. This reaches 100.00% exact;
+see [`separate-return-result-from-working-pointer.md`](separate-return-result-from-working-pointer.md).
+
 **Does NOT apply when the base is missing structure the target has.** Screened but rejected
 because the base lacks retail's `/GX` frame entirely (a destructible-local modelling gap, not a
 layout choice): `RebuildPlanes` @0x1628f0, `InstallTree` @0x154f80, `FillCustomLevelList` @0x3af90,

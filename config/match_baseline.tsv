@@ -101,7 +101,7 @@ dialogs	62	60
 dircellmethods	19	18
 directdrawmgr	68	68
 directinputmgr2	45	45
-directsoundmgr	79	75
+directsoundmgr	79	76
 donothing	7	6
 droppedobject	26	23
 engstrrendertext	2	1
@@ -1517,7 +1517,7 @@ directsoundmgr	?Compact@SoundDevice@@QAEHXZ	100.0000	100.0000	1	2aecdee8585a	0x1
 directsoundmgr	?ComputeDuration@DirectSoundMgr@@QAEXXZ	100.0000	100.0000	3	b808e14fc74d	0x1359a0	100.0000
 directsoundmgr	?ConfigureItem@DSoundCloneInst@@QAEHHHHH@Z	100.0000	100.0000	2	b57854144649	0x1360d0	100.0000
 directsoundmgr	?Create@SoundDevice@@QAEHPAXII@Z	100.0000	100.0000	4	1fd53d8f30c4	0x136550	100.0000
-directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDSoundCloneInst@@PAUWaveFormatX@@II@Z	65.5630	65.5630	8	eba7010f8d75	0x1366f0	70.4706
+directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDSoundCloneInst@@PAUWaveFormatX@@II@Z	100.0000	100.0000	9	8ab225728c20	0x1366f0	100.0000
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	100.0000	100.0000	5	5a1487729420	0x137260	100.0000
 directsoundmgr	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	2	49614f2370ac	0x136ed0	77.4074
 directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAK0@Z	100.0000	100.0000	1	b6af491b6363	0x135a20	100.0000

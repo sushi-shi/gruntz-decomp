@@ -321,3 +321,27 @@ compiler decision, and a real VC5 build must confirm the fix.
   59.7379%. Eighty mixed TU-state trials never changed the wall class and
   peaked at 59.9727%, so the authentic structural corrections are retained
   while the remaining control-flow/register residue stays `@early-stop`.
+
+## 2026-08-12 — `SoundDevice::CreateBuffer`
+
+- Unit/RVA: `directsoundmgr`, `0x001366f0`.
+- Before: 65.5630% current-source MAX. Candidate and retail had the same calls
+  and one `/GX` epilogue, but the source initialized one `voice` pointer to zero
+  and reused it for the successful allocation. VC5 therefore put both the
+  failure result and working voice in esi, collapsed each guard into
+  `xor esi,esi`, and repeatedly reloaded `bytes`; retail returns failure zeros
+  through eax, keeps the successful voice in esi, and holds `bytes` in ebp.
+- Classification: control-flow plus register-live-range wall, not TU state.
+  Plain early returns duplicated seven complete epilogues. Assigning zero in
+  each failure arm through the one shared pointer restored the retail branch
+  skeleton and raised 65.5630% to 77.4202%, proving the common-return shape but
+  retaining the wrong live-range identity.
+- Source levers: use a distinct uninitialized `result` for the common return and
+  a block-local `voice` for the successful construction, assigning
+  `result = voice` only after the post-construction work. This restored retail's
+  eax/esi/ebp roles and reached 96.5546%. Removing the unsupported pre-zero of
+  the COM out-parameter and moving `wf.cbSize = 0` immediately after the format
+  copy removed the final store and instruction-order difference.
+- Verdict: 100.00% exact. Candidate and retail are both 360 bytes with the same
+  branch skeleton, one return, ordered relocation stream, and EH funclet. The
+  stale `@early-stop` marker was removed.

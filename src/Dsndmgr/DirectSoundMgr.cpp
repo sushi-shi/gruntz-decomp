@@ -925,32 +925,33 @@ void SoundDevice::Shutdown() {
     m_initialized = 0;
 }
 
-// @early-stop
 RVA(0x001366f0, 0x168)
 DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
     WaveFormatX wf;
     IDirectSoundBuffer* out;
     DSBUFFERDESC desc;
     i32 hr;
-
-    DSoundCloneInst* voice = 0;
+    DSoundCloneInst* result;
 
     if (m_initialized == 0) {
+        result = 0;
         goto done;
     }
     if (bytes == 0) {
+        result = 0;
         goto done;
     }
     if (fmt == NULL) {
+        result = 0;
         goto done;
     }
     if (fmt->wFormatTag != 1) {
+        result = 0;
         goto done;
     }
 
     wf = *fmt;
-
-    out = NULL;
+    wf.cbSize = 0;
 
     memset(&desc, 0, sizeof(DSBUFFERDESC));
     desc.dwSize = DSBUFFERDESC_SIZE;
@@ -960,30 +961,33 @@ DSoundCloneInst* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flag
     fmtPtr.m_rec = &wf;
     desc.lpwfxFormat = fmtPtr.m_sdk;
 
-    wf.cbSize = 0;
-
     hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
+        result = 0;
         goto done;
     }
     if (out == NULL) {
+        result = 0;
         goto done;
     }
 
-    voice = new DSoundCloneInst(out, this);
-    // Retail 0x136808 `mov edx,[esp+0x14]` reads wf+4, NOT wf+0: the pUnkOuter
-    // `push esi` at 0x13674b is consumed by the CreateSoundBuffer call, so esp is
-    // 4 higher here than in the copy block above. m_freq is the buffer's base
-    // playback rate - see docs/patterns/early-arg-push-reaims-an-esp-displacement.md
-    voice->m_freq = wf.nSamplesPerSec;
-    m_bufferList.InsertHead(voice ? &voice->m_link : 0);
-    voice->m_rateBase = fmt->nAvgBytesPerSec;
-    voice->m_sampleRate = fmt->nAvgBytesPerSec;
-    voice->m_sampleCount = bytes;
-    voice->ComputeDuration();
+    {
+        DSoundCloneInst* voice = new DSoundCloneInst(out, this);
+        // Retail 0x136808 `mov edx,[esp+0x14]` reads wf+4, NOT wf+0: the pUnkOuter
+        // `push esi` at 0x13674b is consumed by the CreateSoundBuffer call, so esp is
+        // 4 higher here than in the copy block above. m_freq is the buffer's base
+        // playback rate - see docs/patterns/early-arg-push-reaims-an-esp-displacement.md
+        voice->m_freq = wf.nSamplesPerSec;
+        m_bufferList.InsertHead(voice ? &voice->m_link : 0);
+        voice->m_rateBase = fmt->nAvgBytesPerSec;
+        voice->m_sampleRate = fmt->nAvgBytesPerSec;
+        voice->m_sampleCount = bytes;
+        voice->ComputeDuration();
+        result = voice;
+    }
 done:
-    return voice;
+    return result;
 }
 
 RVA(0x00136860, 0xa9)
