@@ -542,3 +542,32 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: bounded at 67.0648% current-source MAX. The explicit per-cue records
   and values remain intact; no artificial table, cast, include, or state carrier
   was retained. The complete body remains `@early-stop`.
+
+## 2026-08-12 — `CGrunt::ClaimSwitchTile`
+
+- Unit/RVA: `gruntsteps`, `0x00052c70`.
+- Before: 67.8429% current-source MAX. Retail's direction jump table proves the
+  six distinct switch arms plus `SOUTHWEST -> SOUTH` and `NORTHWEST -> NORTH`
+  fallthroughs. It also proves the odd out-of-range path: retail loads the
+  uninitialized output pair from stack homes, while every valid arm derives it
+  from `m_lastTilePx`. The source already expresses both facts; initializing the
+  outputs would be a behavioral fabrication despite an older 67.8786% history.
+- Classification: register coalescing at the switch join. Retail uses a 16-byte
+  frame, keeps the seed/output pair in ebx/edi through the valid arms, and loads
+  their uninitialized homes only on the default edge. Candidate uses an 8-byte
+  frame, carries the seeds in eax/ecx, and stores the selected outputs before
+  the join. The branch counts and two returns agree, but retail has 18 basic
+  blocks against candidate's 19; the focused scorer sees 13/14 relocations.
+- Rejected false gain: a 600-iteration semantic permutation found a 68.90%
+  normalized candidate by reversing the x/y assignments in the northeast,
+  east, and southeast arms. That reduced the candidate to 17 blocks and moved
+  it farther from retail's raw instruction order. Restoring retail's assignment
+  order restored 67.8429%; declaration splits from the same candidate were
+  byte-neutral. The higher fuzzy score was therefore rejected.
+- State sweep: none of 512 valid single declaration/include/parser-state
+  mutations beat the faithful focused baseline of 67.557144%. The source was
+  restored automatically after the sweep.
+- Verdict: bounded at 67.8429% current-source MAX. The retail-proven jump-table
+  behavior remains intact and no score-only arm reorder, output initialization,
+  unused include, declaration, or artificial state carrier was retained. The
+  complete body remains `@early-stop`.
