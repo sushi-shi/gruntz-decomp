@@ -27,7 +27,7 @@ Measured across one 40-65% batch (2026-08-07):
 | `CGrunt::ChargeStep` 0xef6b0 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::ResetEntranceAnimation` 0x62e10 | `push ecx` (4) | 0xc | retail +8 |
 | `CGrunt::StepArrivalDefense` 0xf2b20 | 0xc | 0x10 | retail +4 |
-| `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x98 | 0x8c | retail -12 |
+| `CGrunt::StepDiggerBehavior` 0xf36a0 | 0x94 | 0x8c | retail -8 |
 | `CGrunt::StepGooSuckerBehavior` 0xf0e20 | 0x90 | 0x88 | retail -8 |
 | `CGrunt::LoadPickupSprites` 0x65e80 | `push ecx` (4) | 0 | retail -4 |
 
@@ -39,8 +39,9 @@ Each delta is a concrete, findable modelling fact, and each is different:
 - **retail has FEWER** - a local WE spill that retail keeps in a register, or a local
   retail folds into a dead parameter's home slot. `LoadPickupSprites`'s `push ecx` holds a
   `CAniElement*` scratch; retail reuses the never-read 4th parameter's slot at `[esp+0x20]`
-  for it and allocates nothing. `StepDiggerBehavior` spills `this` to `[esp+0x44]` where
-  retail keeps it in `ebp` the whole way.
+  for it and allocates nothing. After removing two oversized `Coord[2]` out-parameter
+  locals, `StepDiggerBehavior` still keeps `this` in `ebx` with an eight-byte-wider frame,
+  where retail keeps it in `ebp` the whole way.
 
 ## The `mov <reg>,ecx` tell
 

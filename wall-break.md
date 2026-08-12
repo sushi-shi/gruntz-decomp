@@ -222,3 +222,25 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: 100.00% current-source MAX banked for source hash `f06c6ed10d01`.
   The synthetic state was removed; ordinary codegen remains at 58.5000% and is
   parked because it is the equivalent alternate register assignment.
+
+## 2026-08-12 — `CGrunt::StepDiggerBehavior`
+
+- Unit/RVA: `gruntdiggerstep`, `0x000f36a0`.
+- Before: 62.6290% current-source MAX. The wall classifier found identical call
+  multisets but 53 candidate conditional branches against 54 retail, plus a
+  whole-function callee-saved-register rotation and an oversized frame.
+- Source levers: each `GetScreenPos` writes one eight-byte `Coord`, so replace
+  the two unsupported `Coord[2]` locals with single objects; this removes 16
+  frame bytes. Retail then materializes `m_poweredUp == 0` and unsigned
+  `m_dwell > 1000` as 0/1 values and combines them with `test`, proving eager
+  bitwise boolean `&` rather than short-circuit `&&`.
+- Result: 63.3527%, with retail's 85 basic blocks, five returns, 13-callee
+  multiset, and 29 relocation identities in order. The frame narrowed from
+  0xa4 to 0x94; retail is 0x8c. The remaining two conditional branches are the
+  low-stamina `m_poweredUp` and `m_neighborValid` rechecks that retail retains
+  even though candidate cl folds them from the enclosing guards.
+- Bounded residue: 164 parser-visible TU states produced only two code hashes;
+  156 were byte-identical at 63.3527% and eight were slightly worse. Every state
+  kept the 1,924-byte extent, 29 relocations, 0x94 frame, and `this` in `ebx`
+  rather than retail's `ebp`. The structural fixes are retained and the
+  compiler-state residue remains `@early-stop`.

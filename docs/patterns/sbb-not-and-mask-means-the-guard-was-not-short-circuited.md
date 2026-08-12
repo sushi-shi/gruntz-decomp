@@ -53,3 +53,34 @@ Two details that both mattered:
 sides. A one-line sieve over a unit's functions - compare `grep -c sbb` on `--target` vs
 `--base` - finds them; across the 29 sub-100 functions of the trigger cluster this was the
 only site, so it is precise rather than noisy.
+
+## Two comparisons combined as values use bitwise `&`, not short-circuit `&&`
+
+A second form has no selected pointer and may have no literal `and` instruction. Retail
+can materialize each comparison as 0/1 and combine them only for flags:
+
+```asm
+  xor   ecx,ecx
+  cmp   esi,edx
+  sete  cl
+  cmp   edx,eax
+  sbb   eax,eax
+  neg   eax
+  test  eax,ecx
+  je    done
+```
+
+That is eager value evaluation:
+
+```cpp
+if ((m_poweredUp == 0) & (static_cast<u32>(m_dwell) > 1000)) {
+    // ...
+}
+```
+
+The behavior agrees with `&&` when both operands are side-effect-free, but the compiler
+IR does not: `&&` emits two short-circuit branches, while `&` emits both boolean values
+and one final branch. In `CGrunt::StepDiggerBehavior` at `0x000f36a0`, this spelling
+removed the candidate-only branch, made the block/return counts agree at 85/5, and raised
+current-source MAX from 62.6290% to 63.3527%. The two remaining branch-count differences
+are separately identified redundant guards in the low-stamina arm.

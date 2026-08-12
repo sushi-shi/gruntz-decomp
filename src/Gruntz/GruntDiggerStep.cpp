@@ -37,9 +37,10 @@
 #include <string.h>
 
 // @early-stop
-// Reloc sequence is identical to retail's (29/29, in order) and the instruction
-// count is +4; the residue is that cl spills `this` to [esp+0x44] where retail
-// keeps it in ebp, so the frame is wider and every [esp+N] shifts.
+// Reloc identities are identical to retail's (29/29, in order), and the CFG now
+// has retail's 85 blocks and five returns. The residue is two redundant guards
+// that retail retains, plus cl keeping `this` in ebx with a 0x94 frame where
+// retail uses ebp and 0x8c; 164 mixed TU states did not move either decision.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     // Retail holds the strcmp result in a `bool` (`sete cl / test cl,cl`).
@@ -50,12 +51,12 @@ i32 CGrunt::StepDiggerBehavior() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
-    Coord c1[2];
-    GetScreenPos(c1);
-    i32 cx = c1[0].m_x >> TILE_SHIFT_PX;
-    Coord c2[2];
-    GetScreenPos(c2);
-    i32 cy = c2[0].m_y >> TILE_SHIFT_PX;
+    Coord c1;
+    GetScreenPos(&c1);
+    i32 cx = c1.m_x >> TILE_SHIFT_PX;
+    Coord c2;
+    GetScreenPos(&c2);
+    i32 cy = c2.m_y >> TILE_SHIFT_PX;
 
     CGrunt* g = m_tileMgr->FindNearestEnemy(this);
     i32 atTarget = 0;
@@ -163,7 +164,7 @@ i32 CGrunt::StepDiggerBehavior() {
 
 L_tailc:
     if (CoordCount() == 0) {
-        if (m_poweredUp == 0 && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
+        if ((m_poweredUp == 0) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             RECT box;
             box.left = cx - r;

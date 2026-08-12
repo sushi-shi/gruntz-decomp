@@ -2031,7 +2031,7 @@ gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.000
 gruntdefensealt	?StepArrivalDefenseAlt@CGrunt@@QAEHXZ	78.9546	78.9546	17	54fe3e0e16a8	0xf1c70	78.9546
 gruntdefenselean	?StepArrivalDefenseLean@CGrunt@@QAEHXZ	74.7088	74.7088	22	f87e5880e259	0xf8240	74.7088
 gruntdefensestep	?StepArrivalDefense@CGrunt@@QAEHXZ	83.0854	83.0854	21	9a9fa9633194	0xf2b20	83.0854
-gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	62.6290	62.6290	9	61571d96cd8a	0xf36a0	62.6290
+gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	63.3527	63.3527	10	250a1fdc3f8d	0xf36a0	63.3527
 gruntentrancearrival	?Apply@CWapX@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	2	42b4c6794352	0x6b2e0	100.0000
 gruntentrancearrival	?AtChecked@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	1	ea69a14a5515	0x6b270	100.0000
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	20	215b427b5812	0x641b0	100.0000
