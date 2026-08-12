@@ -17,7 +17,7 @@
 //! | inflate the main block | [`expand`] | `WwdFile_InflateMainBlock` @0x160790 |
 //! | walk the plane headers | `wwd::split` | `CGameLevel::LoadWwd` @0x15d280 |
 //! | read one plane | [`render_plane`] | `CDDrawWorkerHost::Read` @0x161640 |
-//! | resolve an image-set name | [`load_frame_set`] | `CDDrawWorkerRegistry::m_10map.Lookup` |
+//! | resolve an image-set name | [`load_frame_set`] | `CDDrawWorkerRegistry::m_workersByName.Lookup` |
 //! | build the registry keys | [`installed_key`] | `CDDrawWorkerRegistry::InstallTree` @0x154f80 |
 //! | pick the three registry roots | [`registry_roots`] | `CPlay::LoadActionTileSprites` @0xdb600, `LoadLevelImages` @0xdb7e0, `LoadGameImages` @0xdb8a0 |
 //! | frame number from a resource name | [`first_number`] | `CDDrawWorker::BuildFramesFromSymTab` @0x1521f0 — skip to the first digit, then `atoi` |
