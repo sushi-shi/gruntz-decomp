@@ -37,11 +37,11 @@
 #include <string.h>
 
 // @early-stop
-// The control-flow skeleton now agrees through B24 and the frame is retail's 0x7c.
-// The first true divergence is B25: cl proves `m_poweredUp != 0` in the low-stamina
-// arm and deletes retail's re-test at 0xece99.  Candidate has 69 branches / 7 returns
-// against retail's 70 / 6; it also parks `this` in ebp where retail uses ebx.  Eighty
-// mixed TU states moved only 0.015 points and never changed that wall class.
+// The frame is retail's 0x7c and both sides have 70 conditional branches.  Keeping
+// the entry power state as a distinct local preserves retail's low-stamina re-test;
+// reading the member directly lets cl fold it.  Candidate still has seven returns
+// against retail's six because the first empty DRAIN_COORDS path gets a duplicate
+// epilogue.  It also parks `this` in ebp where retail uses ebx.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::StepBrickLayerBehavior() {
     bool eqI = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "I") == 0);
@@ -70,7 +70,8 @@ i32 CGrunt::StepBrickLayerBehavior() {
         }
     }
 
-    if (m_poweredUp != 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
         if (m_neighborValid == 0) {
             if (m_combatActive != 0) {
                 goto L_powered_yes;

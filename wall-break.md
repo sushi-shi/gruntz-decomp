@@ -412,6 +412,15 @@ compiler decision, and a real VC5 build must confirm the fix.
   MAX to 61.8076%. The candidate is now three instructions short with the same
   callee/relocation multiset; its 69-versus-70 branches and 7-versus-6 returns
   remain the next structural wall.
+- Entry-snapshot follow-up: the sibling `ChargeStep` and retail's live `ecx`
+  through both stamina arms identify a distinct entry value for `m_poweredUp`.
+  Introducing that local preserves retail's otherwise redundant low-stamina
+  guard, restores the conditional-branch count to 70-versus-70, and raises MAX
+  to 61.82%. The remaining seventh return is now localized to the first
+  `DRAIN_COORDS` expansion: retail sends its zero-count arm to the shared final
+  epilogue while the candidate duplicates that epilogue; the second expansion
+  already has retail's split. No `STATE` probe was used because this function is
+  still a source-layout problem, not an isolated high-score register wall.
 
 ## 2026-08-12 — `SoundDevice::CreateBuffer`
 
