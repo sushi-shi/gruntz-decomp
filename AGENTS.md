@@ -2,7 +2,8 @@
 
 This file is the short, durable orientation. When changing reconstructed C++,
 also read `.claude/agents/matcher.md`; it contains the detailed matching
-doctrine. Do not add live scores, current assignments, queue snapshots, or
+doctrine. `wall-break.md` is the evidence log for the active historical-MAX
+campaign. Do not add live scores, current assignments, queue snapshots, or
 one-off campaign notes here.
 
 ## Objective And Authority
@@ -44,13 +45,25 @@ one-off campaign notes here.
 ## Environment And Front Doors
 
 Use `nix develop`; it provides the pinned MSVC/Wine toolchain and analysis
-utilities. The principal commands are:
+utilities. Before a matching session, verify the executable/store pairs and
+refresh the structures cache; source edits do not invalidate
+`build/gen/structs.json`:
+
+```sh
+readlink -f "$(command -v vostok-delinker)"; nix eval --raw .#vostok-delinker
+readlink -f "$(command -v objdiff-cli)"; nix eval --raw .#objdiff-cli
+gruntz structs
+```
+
+If either pair differs, run builds through `nix develop --command`. A build
+reporting `ninja 0.0s` did not recompile anything and is not verification. The
+principal commands are:
 
 ```sh
 gruntz init                    # cached Wine, clangd, and Ghidra setup
 gruntz build                   # configure, compile, delink, diff, report, gates
 gruntz build --fast            # iteration only; skips the gate tail
-gruntz status                  # authoritative current match status
+gruntz status                  # current report plus per-function MAX ledger
 gruntz sema -h                 # semantic source/retail navigator
 gruntz format                  # format reconstructed source and headers
 gruntz sema xref 0x00... --callees # prefer to use xrefs for recovering structure
@@ -78,8 +91,8 @@ objects and the report.
 
 2. Recover semantics and shape: the real owner TU, class hierarchy, member
    layout, types, calling convention, control flow, locals, and external
-   referents. Use Ghidra only when the lower-level evidence does not make the
-   structure clear.
+   referents. Do not use the Ghidra decompiler on `GRUNTZ.EXE`; use the static
+   assembly, xref, RTTI, vtable, and data evidence exposed by `gruntz sema`.
 3. Build, then compare from the first genuine divergence:
 
    ```sh
@@ -102,6 +115,35 @@ objects and the report.
 Use `rg` for lexical searches. Use `gruntz sema`, clangd/LSP, retail xrefs, and
 RTTI for semantic claims such as ownership, identity, call relationships, types,
 and vtable slots. RVA proximity alone does not prove TU ownership.
+
+## Historical-MAX Wall Campaign
+
+- Work the lowest historical-MAX functions first, except rows already bounded
+  by reproducible evidence in `wall-break.md`. Do not preferentially select easy
+  high-score functions while lower structural mismatches remain.
+- Classify a plateau in this order: inline/call-set divergence, CFG/branch
+  divergence, then register allocation and scheduling. A branch-count mismatch
+  is a structural reconstruction problem; matching branch sequences and return
+  counts are evidence that the remaining wall is instruction selection,
+  lifetime, or allocation.
+- Use compiler-state or permutation experiments only as disposable A/B tests.
+  Never retain unused includes, declarations, fake locals, manual `STATE`
+  probes, volatile carriers, or source distortions to steer codegen. These are
+  especially inappropriate on low-score functions whose structure is not yet
+  established.
+- Historical MAX is banked only by a real build against the same per-function
+  source fingerprint. If an unchanged function reaches exact under a disposable
+  TU-state experiment, update the ledger while exact, remove the experiment,
+  rebuild, and keep the historical proof. Do not call a current dip a regression
+  when the MAX gate remains green.
+- Record every structural break and every genuinely bounded wall in
+  `wall-break.md`: the before/after historical MAX, the retail evidence, the
+  retained source lever, negative controls, and the remaining mismatch class.
+  Keep investigation history there, not in C++ comments.
+- The HoMM3 `wall-identifier` skill is useful doctrine for VC compiler internals
+  and the inline → CFG → register routing order, but its commands and compiler
+  version are project-specific. Re-prove every proposed lever with Gruntz's
+  pinned compiler and `gruntz` reports.
 
 ## Source Modeling Rules
 
@@ -129,6 +171,12 @@ and vtable slots. RVA proximity alone does not prove TU ownership.
 - Preserve proven packed layouts, sizes, storage widths, and member offsets.
   Improve placeholder names when their meaning is established; never invent a
   name merely to reduce a cleanliness counter.
+- Treat adjacent same-width scalars as a possible aggregate, not a conclusion.
+  Four dwords used as one Win32 rectangle should be modeled as `RECT`/`CRect`;
+  copied coordinate pairs should be modeled as `Coord`/`POINT`. Prove the type
+  from complete-object calls, field order, copies, serialization, and stack or
+  data extents. Do not split one retail object into overlapping globals, and do
+  not invent an aggregate merely because it changes a score.
 - For polymorphic classes, derive declarations mechanically from
   `gruntz sema class <Class>` or
   `python -m gruntz.core.vtable_hierarchy --class <Class>`:

@@ -29,26 +29,27 @@ i32 CBattlezMapConfig::Scan(CGrunt* arg) {
     }
 
     CGameObject* p = arg->m_object;
-    i32 v60 = p->m_screenY;
-    i32 v5c = p->m_screenX;
-    i32 tileY = v60 >> TILE_SHIFT_PX;
-    i32 tileX = v5c >> TILE_SHIFT_PX;
-    for (i32 a = tileY - 1; a < tileY + 2; a++) {
-        for (i32 b = tileX - 1; b < tileX + 2; b++) {
-            if (b == (v5c >> TILE_SHIFT_PX) && a == (v60 >> TILE_SHIFT_PX)) {
+    i32 centerPxY = p->m_screenY;
+    i32 centerPxX = p->m_screenX;
+    i32 rowStart = (centerPxY >> TILE_SHIFT_PX) - 1;
+    i32 rowEnd = (centerPxY >> TILE_SHIFT_PX) + 2;
+    i32 colStart = (centerPxX >> TILE_SHIFT_PX) - 1;
+    i32 colEnd = (centerPxX >> TILE_SHIFT_PX) + 2;
+    for (i32 row = rowStart; row < rowEnd; row++) {
+        for (i32 col = colStart; col < colEnd; col++) {
+            if (col == (centerPxX >> TILE_SHIFT_PX) && row == (centerPxY >> TILE_SHIFT_PX)) {
                 continue;
             }
-            CMapMgr* grid = m_board;
-            if (static_cast<u32>(b) >= static_cast<u32>(grid->m_width)
-                || static_cast<u32>(a) >= static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
+                || static_cast<u32>(row) >= static_cast<u32>(m_board->m_height)) {
                 continue;
             }
-            i32 flags = grid->CellFlagsAt(b, a);
+            i32 flags = m_board->CellFlagsAt(col, row);
             if (flags & BRICKZ_BLOCKED_MASK) {
                 continue;
             }
             if ((flags & 2) == 0) {
-                arg->TileSwitch(b, a, 0, 0xd87, 0, 0);
+                arg->TileSwitch(col, row, 0, 0xd87, 0, 0);
                 arg->m_dwell = 0;
                 return 1;
             }

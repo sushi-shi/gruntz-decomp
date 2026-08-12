@@ -1396,3 +1396,25 @@ compiler decision, and a real VC5 build must confirm the fix.
   consumers pass the complete object to DirectDraw blit APIs. The class remains
   size `0x30`, and the 52-TU compile produced no codegen change from the type
   repair.
+
+## 2026-08-12 — `CBattlezMapConfig::Scan`
+
+- Unit/RVA: `tilescan`, `0x00035f10`; historical MAX rises from 72.3025% to
+  77.9664%.
+- Inline-structure break: the source cached the center tile and `m_board`, so
+  VC5 proved both bounds checks inside the inlined `CMapMgr::CellFlagsAt`
+  redundant. Retail retains those two checks and has 17 conditional branches;
+  the candidate had only 15.
+- Source lever: retain the center in pixel coordinates, derive the four scan
+  bounds independently, and access `m_board` at the two source call sites. The
+  inlined accessor is now reconstructed in full, and candidate and retail have
+  17 branches, two returns, and identical symbolic branch targets.
+- Aggregate control: the four bounds describe a rectangle geometrically, but a
+  `RECT` spelling scores lower and VC5 eliminates its storage. Retail's setup
+  order instead supports four loop-bound entities, so the source keeps named
+  row/column start/end scalars rather than fitting an unproven aggregate.
+- Residue: retail preserves the four unshifted pixel-coordinate copies long
+  enough to allocate a `0x14` frame; the candidate common-subexpresses the shifts
+  and needs only one stack slot. This is now a lifetime/register wall after the
+  missing inline CFG was restored; no address-taking or manual state probe is
+  retained.
