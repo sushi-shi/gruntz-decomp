@@ -661,3 +661,36 @@ compiler decision, and a real VC5 build must confirm the fix.
   fourth parameter's home as the `CAniElement*` scratch; the candidate emits
   `push ecx` and uses a separate local, perturbing stack references and register
   scheduling across the 5 KB body. The source remains `@early-stop`.
+
+## 2026-08-12 — `CBattlezMapConfig::Step`
+
+- Unit/RVA: `battlezunitstep`, `0x00031610`.
+- Before: 76.2066% current-source MAX. Candidate and retail both had 36
+  conditional branches, but candidate had six returns against retail's five,
+  two branch-polarity mismatches, and the first CFG-skeleton divergence at
+  block 28.
+- Control-flow reconstruction: the active-target half is a positive
+  `if (cur != NULL)` region whose fallthrough is the clear-target path. Its
+  distance test has separate recycle arms; the far arm jumps to `L_clearAt`,
+  while the near arm reaches `TileSwitch` and shares `L_done` only on success.
+  This recovered retail's shared dwell reset without fabricating behavior.
+  Candidate and retail now have 55 blocks, 36/36 conditional branches with the
+  same polarity and symbolic targets, and 5/5 returns.
+- Entity spelling: retaining the arrival cell as one copied `Coord` raised the
+  faithful source from 86.1148% to 86.8163%. The compiler still deletes the
+  copy's two stack stores, consistent with
+  `dead-eight-byte-coord-temp-is-unreproduced.md`; it is not a claim that a
+  source local can force retail's spill.
+- Relocation and constant audit: all 32 function relocations have the same
+  ordered target sequence as retail. The strong-immediate sieve has no
+  candidate-only value; its only retail-only row is three extra `-1` encodings
+  caused by the differing store/spill shape.
+- Exhaustion: 56 valid single parser-visible TU-state trials produced only
+  86.8163% or 86.8112%; eight include/mixed cells failed compilation. None
+  changed the 24-byte candidate frame into retail's 32-byte frame or reached an
+  exact closure.
+- Verdict: 86.8163% faithful current-source result. The remaining whole-function
+  register rotation (`this` in ebx versus edi) and dead eight-byte spill pair
+  are a bounded VC5 allocator wall, so the complete function remains
+  `@early-stop`. No volatile local, unused declaration/include, or score-only
+  control-flow spelling was retained.

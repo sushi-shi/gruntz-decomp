@@ -138,9 +138,8 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
     }
 inflight: {
 
-    i32 col = g->m_arrivalCell.m_x;
-    i32 row = g->m_arrivalCell.m_y;
-    CGrunt* cur = m_triggerMgr->m_grid[15 * col + row];
+    Coord arrivalCell = g->m_arrivalCell;
+    CGrunt* cur = m_triggerMgr->m_grid[15 * arrivalCell.m_x + arrivalCell.m_y];
     i32 W = m_board->m_width;
     i32 H = m_board->m_height;
     Coord c0;
@@ -182,68 +181,67 @@ inflight: {
         cur = nb;
     }
 
-    if (cur == NULL) {
-        goto L_clear;
-    }
-    {
-        CGameObject* s = cur->m_object;
-        if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
+    if (cur != NULL) {
+        {
+            CGameObject* s = cur->m_object;
+            if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
 
+                if (g->CoordCount() != 0) {
+                    MOVE_RECYCLE(g);
+                }
+                g->m_arrivalCell.m_x = -1;
+                g->m_arrivalCell.m_y = -1;
+                HandleUnitContact(g, cur);
+                g->m_defenderState = AISTATE_SEEK;
+                return 1;
+            }
+        }
+
+        if (static_cast<u32>(g->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
+            return 1;
+        }
+        {
+            Coord here;
+            g->GetScreenPos((&here));
+            i32 x5 = here.m_x >> TILE_SHIFT_PX;
+            i32 y5 = here.m_y >> TILE_SHIFT_PX;
+            Coord nbpos;
+            nbpos = cur->GetTilePos();
+            i32 dx = nbpos.m_x - x5;
+            i32 dy = nbpos.m_y - y5;
+            i32 adx = abs(dx);
+            i32 ady = abs(dy);
+            i32 dist = static_cast<i32>(sqrt(static_cast<double>((adx * adx + ady * ady))));
+            if (dist > m_assignedTargetMaxDistance) {
+                if (g->CoordCount() != 0) {
+                    MOVE_RECYCLE(g);
+                }
+                goto L_clearAt;
+            }
             if (g->CoordCount() != 0) {
                 MOVE_RECYCLE(g);
             }
-            g->m_arrivalCell.m_x = -1;
-            g->m_arrivalCell.m_y = -1;
-            HandleUnitContact(g, cur);
-            g->m_defenderState = AISTATE_SEEK;
-            return 1;
+            CGameObject* s = cur->m_object;
+            if (g->TileSwitch(
+                    s->m_screenX >> TILE_SHIFT_PX,
+                    s->m_screenY >> TILE_SHIFT_PX,
+                    0xd87,
+                    0,
+                    0,
+                    0
+                )
+                != 0) {
+                goto L_done;
+            }
         }
-    }
-
-    if (static_cast<u32>(g->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
+    L_clearAt:
+        g->m_arrivalCell.m_x = -1;
+        g->m_arrivalCell.m_y = -1;
+        g->m_defenderState = AISTATE_SEEK;
+    L_done:
+        g->m_dwell = 0;
         return 1;
     }
-    {
-        Coord here;
-        g->GetScreenPos((&here));
-        i32 x5 = here.m_x >> TILE_SHIFT_PX;
-        i32 y5 = here.m_y >> TILE_SHIFT_PX;
-        Coord nbpos;
-        nbpos = cur->GetTilePos();
-        i32 dx = nbpos.m_x - x5;
-        i32 dy = nbpos.m_y - y5;
-        i32 adx = abs(dx);
-        i32 ady = abs(dy);
-        i32 dist = static_cast<i32>(sqrt(static_cast<double>((adx * adx + ady * ady))));
-        if (dist > m_assignedTargetMaxDistance) {
-            if (g->CoordCount() != 0) {
-                MOVE_RECYCLE(g);
-            }
-            goto L_clearAt;
-        }
-        if (g->CoordCount() != 0) {
-            MOVE_RECYCLE(g);
-        }
-        CGameObject* s = cur->m_object;
-        if (g->TileSwitch(
-                s->m_screenX >> TILE_SHIFT_PX,
-                s->m_screenY >> TILE_SHIFT_PX,
-                0xd87,
-                0,
-                0,
-                0
-            )
-            != 0) {
-            g->m_dwell = 0;
-            return 1;
-        }
-    }
-L_clearAt:
-    g->m_arrivalCell.m_x = -1;
-    g->m_arrivalCell.m_y = -1;
-    g->m_defenderState = AISTATE_SEEK;
-    g->m_dwell = 0;
-    return 1;
 
 L_clear:
     g->m_arrivalCell.m_x = -1;
