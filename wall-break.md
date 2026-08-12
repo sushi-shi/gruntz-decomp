@@ -6,6 +6,24 @@ inliner, control flow, then register allocation. A score change alone is not a
 break; the retail instruction, relocation, or table evidence must identify the
 compiler decision, and a real VC5 build must confirm the fix.
 
+## 2026-08-12 — `CTileTriggerContainer::AddLogic`
+
+- Unit/RVA: `tiletriggercontainer`, `0x00116610`.
+- Before: 73.6779%. The reconstructed container method hand-expanded object
+  initialization as one block, obscuring the original inline ownership.
+- Inliner break: retail checks `m_initGate`, copies the 24 dwords occupied by
+  six `RECT`s, then checks `m_initGate` again before the scalar stores. The
+  exact `CTileTriggerSwitchLogic` sibling independently proves this two-layer
+  design: its outer `BuildSmall` performs the first gate and copy, then calls
+  `Setup`, whose first instruction sequence performs the second gate. Restoring
+  corresponding `CTileTriggerLogic::Build` and `Setup` methods makes the full
+  rectangle-copy and gate region align.
+- Result: 83.8558% current-source fuzzy. The residual begins in allocation
+  temporary placement and register ownership (`logicType` in candidate `ebp`
+  versus retail `edi`), then changes the shared-return layout. Directly using a
+  conditional list receiver was byte-neutral, so list selection is not the
+  remaining cause. No compiler-state probe was introduced.
+
 ## 2026-08-12 — `CTriggerMgr::PlaceObject`
 
 - Unit/RVA: `triggermgrgrid`, `0x0006b6d0`.

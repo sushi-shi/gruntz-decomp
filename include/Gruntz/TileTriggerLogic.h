@@ -12,6 +12,7 @@
 #include <Ints.h>
 
 class CTileTriggerContainer;
+struct tagRECT;
 
 GZ_ENUM_BEGIN(TrigLogicId)
 // Wildcard: the container lookups read `if (k2 == 0 || m_typeId == k2)`,
@@ -90,6 +91,31 @@ public:
     i32 FindIndexByKey(i32 key);
 
     void LoadBridgeMove(TileCollisionKind type);
+
+    i32 Build(
+        CTileTriggerContainer* owner,
+        TrigLogicId typeTag,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        const tagRECT* rects,
+        i32 tileToken,
+        i32 dutyOnSpan,
+        i32 leadInSpan,
+        i32 dutyOffSpan
+    );
+
+    i32 Setup(
+        CTileTriggerContainer* owner,
+        TrigLogicId typeTag,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        i32 tileToken,
+        i32 dutyOnSpan,
+        i32 leadInSpan,
+        i32 dutyOffSpan
+    );
 
     i32 ValidateByType(void* archive, SerialMode mode, LogicTypeId typeId, i32 pObj);
     i32 Serialize(CFileMemBase* s);

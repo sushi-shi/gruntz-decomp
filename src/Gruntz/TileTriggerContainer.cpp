@@ -217,8 +217,69 @@ void CTileTriggerContainer::AddLogicFromRecord(
     );
 }
 
-// @early-stop
+__inline i32 CTileTriggerLogic::Build(
+    CTileTriggerContainer* owner,
+    TrigLogicId typeTag,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    const RECT* rects,
+    i32 tileToken,
+    i32 dutyOnSpan,
+    i32 leadInSpan,
+    i32 dutyOffSpan
+) {
+    if (m_initGate != 0) {
+        return 0;
+    }
+    memcpy(m_linkKeys, rects, sizeof(m_linkKeys));
+    return Setup(
+        owner,
+        typeTag,
+        tileX,
+        tileY,
+        cellKey,
+        tileToken,
+        dutyOnSpan,
+        leadInSpan,
+        dutyOffSpan
+    );
+}
 
+__inline i32 CTileTriggerLogic::Setup(
+    CTileTriggerContainer* owner,
+    TrigLogicId typeTag,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    i32 tileToken,
+    i32 dutyOnSpan,
+    i32 leadInSpan,
+    i32 dutyOffSpan
+) {
+    if (m_initGate != 0) {
+        return 0;
+    }
+    m_tileY = tileY;
+    m_tileX = tileX;
+    m_owner = owner;
+    m_typeTag = typeTag;
+    m_cellKey = cellKey;
+    m_initGate = 1;
+    m_tileToken = tileToken;
+    m_startClock = g_frameTime;
+    m_leadInSpan = leadInSpan;
+    m_dutyOn = 0;
+    m_dutyOnSpan = dutyOnSpan;
+    m_dutyOffSpan = dutyOffSpan;
+    if (typeTag != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
+        m_dutyOffSpan = dutyOnSpan;
+        m_startClock = g_frameTime;
+    }
+    return 1;
+}
+
+// @early-stop
 RVA(0x00116610, 0x350)
 CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     TileCollisionKind tileType,
@@ -265,37 +326,24 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     local[4] = switchRectA;
     local[5] = switchRectB;
 
-    i32 ok = 0;
-    if (obj->m_initGate == 0) {
-        memcpy(obj->m_linkKeys, local, sizeof(local));
-        if (obj->m_initGate == 0) {
-            obj->m_tileY = tileY;
-            obj->m_tileX = tileX;
-            obj->m_owner = this;
-            obj->m_typeTag = logicType;
-            obj->m_cellKey = cellKey;
-            obj->m_initGate = 1;
-            obj->m_tileToken = tileToken;
-            obj->m_startClock = g_frameTime;
-            obj->m_leadInSpan = leadInSpan;
-            obj->m_dutyOn = 0;
-            obj->m_dutyOnSpan = dutyOnSpan;
-            obj->m_dutyOffSpan = dutyOffSpan;
-            if (logicType != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
-                obj->m_dutyOffSpan = dutyOnSpan;
-                obj->m_startClock = g_frameTime;
-            }
-            ok = 1;
-        }
-    }
-
-    if (ok == 0) {
+    if (obj->Build(
+            this,
+            logicType,
+            tileX,
+            tileY,
+            cellKey,
+            local,
+            tileToken,
+            dutyOnSpan,
+            leadInSpan,
+            dutyOffSpan
+        )
+        == 0) {
         delete obj;
         return 0;
     }
 
-    CPtrList* list = logicType == TRIGID_TIME_TRIGGER_23 ? &m_list2 : &m_list1;
-    list->AddTail(obj);
+    (logicType == TRIGID_TIME_TRIGGER_23 ? m_list2 : m_list1).AddTail(obj);
     if (logicType == TRIGID_TILE_TRIGGER_21
         && (tileType == TILEKIND_PYRAMID_LATCH_A || tileType == TILEKIND_PYRAMID_LATCH_B)) {
         m_latchedLeaf = obj;
