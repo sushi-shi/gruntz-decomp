@@ -50,3 +50,32 @@ statement forms compiled byte-identically, but **44 of 60** mixed TU states emit
 unchanged source hash `a7b2facaa76c`, then the declarations were discarded. Thus an
 almost-exact, relocation-free two-load rotation can still be a C1 handle-state wall, and
 a small local spelling matrix does not refute that classification.
+
+## Quantified (2026-08-13): the mechanism is C1XX symbol-handle renumbering, and each probe kind has a measured stride
+
+The hypothesis above — "each kind advances cl 5.0's parse state differently" — is now a
+measured number, proven at the IL boundary. MSVC 5.0's front end can be tapped
+(`/d1il<prefix>` captures the four C1XX→C2 streams `ex`/`gl`/`in`/`sy`; `/d2il<prefix>`
+feeds them back), and an appended unused declaration renumbers every later symbol handle
+while the symbol NAME sequence stays identical — HoMM3's C1 signature, reproduced on our
+compiler. The codegen delta reproduces from the IL bytes alone through one unchanged C2
+(`fed(IL_B) == plain B`), so the verdict for declaration-count and include-set
+perturbations is FRONT-END, not a C2 codegen theory.
+
+Measured handle strides per appended probe kind (SpriteRef.cpp, cpp-rtti; the C front
+end differs — a C struct costs +1):
+
+| probe kind | handle Δ |
+|---|---|
+| `typedef` / `extern` datum | +1 |
+| `enum` | +2 |
+| prototype / `static` function with body | +3 |
+| `struct` | +7 |
+| class with an inline member | +11 |
+
+A uniform sweep of one kind steps the counter in a fixed stride and can only visit that
+residue class — that is WHY flat single-family sweeps stay flat. Mixing kinds is what
+changes the stride. Full recipe, normalization rules (the `ex` stream carries u8/u16
+source-line records that must be masked), and the probe scripts: regenerate with the
+capture commands in `build/il-probe/REPORT.md` (evidence run 2026-08-13; scripts
+`ilcap.py` / `sweep.py` / `causation.py` beside it).

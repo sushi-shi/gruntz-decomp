@@ -130,9 +130,9 @@ stamp is transitional reconstruction debt, not original source.
 ## Use walls and permutation correctly
 
 Use the project `permute` skill only when the body is complete and the call set,
-CFG, types, constants, and referents are credible. The HoMM3
-`wall-identifier` skill may guide VC compiler classification, but re-prove every
-lever with Gruntz's pinned compiler.
+CFG, types, constants, and referents are credible. Classify the wall first with
+the project `wall-identifier` skill (`gruntz sema diagnose <rva>`); every lever
+it does not list as cl 5.0-proven must be re-proved here before use.
 
 - Use source permutations and TU-state changes as disposable A/B experiments.
 - Never retain unused includes, declarations, fake locals, volatile carriers,

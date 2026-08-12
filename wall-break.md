@@ -1,7 +1,7 @@
 # Wall breaks
 
-This is the evidence ledger for walls broken while applying the HoMM3
-`wall-identifier` doctrine to Gruntz. Entries follow the classifier order:
+This is the evidence ledger for walls broken under the project `wall-identifier`
+skill (`gruntz sema diagnose <rva>`). Entries follow the classifier order:
 inliner, control flow, then register allocation. A score change alone is not a
 break; the retail instruction, relocation, or table evidence must identify the
 compiler decision, and a real VC5 build must confirm the fix.

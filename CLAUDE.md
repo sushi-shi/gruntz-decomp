@@ -55,10 +55,10 @@
   `wall-break.md`: the before/after historical MAX, the retail evidence, the
   retained source lever, negative controls, and the remaining mismatch class.
   Keep investigation history there, not in C++ comments.
-- The HoMM3 `wall-identifier` skill is useful doctrine for VC compiler internals
-  and the inline → CFG → register routing order, but its commands and compiler
-  version are project-specific. Re-prove every proposed lever with Gruntz's
-  pinned compiler and `gruntz` reports.
+- Classify a plateau with the project `wall-identifier` skill
+  (`gruntz sema diagnose <rva>`): inline/call-set → CFG → register →
+  masked/referent, with only cl 5.0-proven levers. HoMM3's VC6 mechanics
+  (register model, IL capture) stay hypothesis-only until re-proven here.
 
 ## Source Modeling Rules
 
