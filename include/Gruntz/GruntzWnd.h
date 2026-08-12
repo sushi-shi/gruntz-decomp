@@ -33,6 +33,5 @@ public:
         return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);
     }
 };
-SIZE(0x10);
 
 #endif // GRUNTZ_GRUNTZWND_H

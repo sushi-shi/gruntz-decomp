@@ -54,7 +54,6 @@ public:
     CPtrList m_palettes;
     i32 m_reserved48;
 };
-SIZE_UNKNOWN();
 
 extern "C" HINSTANCE g_hResModule;
 

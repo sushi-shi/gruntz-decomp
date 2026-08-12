@@ -10,7 +10,5 @@
 #include <Gruntz/UserLogic.h>
 
 struct CIndicatorSyncHelper {};
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTINDICATORSPRITE_H

@@ -13,7 +13,6 @@
 #include <Wap32/ZVec.h>
 
 struct CVoiceSample {};
-SIZE_UNKNOWN();
 
 struct StreamVoice;
 
@@ -50,7 +49,6 @@ public:
     i32 m_owner;
     char m_pad74[0x78 - 0x74];
 };
-SIZE(0x78);
 
 typedef i32 (CUserLogic::*CActHandler)();
 

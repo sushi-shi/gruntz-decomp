@@ -19,7 +19,6 @@ struct CBSecStream : zPTree {
     CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
     virtual ~CBSecStream() OVERRIDE {}
 };
-SIZE(0x2c);
 
 #include <stdlib.h>
 
@@ -144,13 +143,11 @@ public:
     ButeDoubleVector* GetVector(const char* tag, const char* key);
     ButeDoubleRange* GetRange(const char* tag, const char* key);
 };
-SIZE(0x110);
 
 class ButeMgr : public CButeMgr {
 public:
     bool ParseAttributeFile();
 };
-SIZE(0x110);
 
 extern CButeMgr g_buteMgr;
 

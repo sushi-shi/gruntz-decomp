@@ -12,7 +12,6 @@ struct ClipVtx {
 
     i32 fx, fu, fv;
 };
-SIZE(0x1c);
 
 extern "C" ClipVtx g_rasterVtxA[100];
 extern "C" ClipVtx g_rasterVtxB[100];

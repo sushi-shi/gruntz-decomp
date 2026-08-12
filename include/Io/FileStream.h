@@ -11,7 +11,6 @@ public:
 
     void OpenGruntzLog();
 };
-SIZE_UNKNOWN();
 
 extern CFile g_obj646778;
 

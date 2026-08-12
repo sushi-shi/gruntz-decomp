@@ -84,6 +84,5 @@ public:
         i32 m_scaleBits;
     };
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_ANIADVANCECURSOR_H

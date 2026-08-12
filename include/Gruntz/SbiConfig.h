@@ -8,6 +8,5 @@
 #include <Image/ImageSet.h>
 
 struct CSbiSurfacePool {};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SBICONFIG_H

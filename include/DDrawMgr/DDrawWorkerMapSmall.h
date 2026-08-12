@@ -39,6 +39,5 @@ public:
     i32 RemoveByValue(CObject* obj);
     i32 RemoveByKey(const char* key);
 };
-SIZE(0x68);
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERMAPSMALL_H

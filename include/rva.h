@@ -17,9 +17,6 @@
         __COUNTER__                                                                                \
     ) = 0
 
-#define SIZE(bytes)
-#define SIZE_UNKNOWN()
-
 #define VTBL_ABSENT(type) GRUNTZ_META("vtbl-absent class:" #type)
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
 
@@ -32,8 +29,6 @@
 #define DATA(addr)
 #define OVERRIDE
 
-#define SIZE(bytes)
-#define SIZE_UNKNOWN()
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)
 #define DATA_COMPGEN(addr, value) value

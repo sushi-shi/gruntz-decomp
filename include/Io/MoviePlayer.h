@@ -60,7 +60,6 @@ struct PLAYLISTINFOSTRUCT {
     i32 m_flags;
     i32 m_count;
 };
-SIZE(0x20);
 
 typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
@@ -185,8 +184,6 @@ public:
     CMoviePlaylist m_playlist;
     i32 m_loopCount;
 };
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
 
 inline CMoviePlayer::~CMoviePlayer() {
     Teardown();

@@ -15,7 +15,6 @@ struct DSoundLink {
     DSoundLink* m_next;
     DSoundLink* m_prev;
 };
-SIZE(0x8);
 
 // Language-forced container-of adjustment at the intrusive-list boundary.
 template<class T> inline T* elemOf(DSoundLink* link) {
@@ -32,7 +31,6 @@ struct PureSoundElem {
     // ??3PureSoundElem@@SAXPAX@Z and has the funclet call that instead.
     ~PureSoundElem() {}
 };
-SIZE(0x4);
 
 struct DSoundElem : public PureSoundElem {
 
@@ -40,7 +38,6 @@ struct DSoundElem : public PureSoundElem {
     u32 m_tag;
     DirectSoundMgr* m_key;
 };
-SIZE(0x14);
 
 // The shared list head: retail carries exactly one copy of each operation below
 // (InsertHead 0x1390e0 .. Unlink 0x1391e0), reached from DirectSoundMgr,
@@ -60,7 +57,6 @@ struct DSoundList {
     void Unlink(DSoundLink* node);
     void RemoveMatching(DirectSoundMgr* key, u32 tag);
 };
-SIZE(0x8);
 
 // Three typed list heads, each with its OWN destructor. cl emits one dtor COMDAT
 // per type, and retail carries THREE distinct empty (`ret`-only) ones - 0x135ba0,
@@ -70,16 +66,13 @@ SIZE(0x8);
 struct DSoundBufferList : public DSoundList {
     ~DSoundBufferList() {}
 };
-SIZE(0x8);
 
 struct DSoundVoiceList : public DSoundList {
     ~DSoundVoiceList() {}
 };
-SIZE(0x8);
 
 struct DSoundCloneList : public DSoundList {
     ~DSoundCloneList() {}
 };
-SIZE(0x8);
 
 #endif // SRC_DSNDMGR_SOUNDVOICELIST_H

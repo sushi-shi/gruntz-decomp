@@ -12,6 +12,5 @@ struct CDDrawRect {
     i32 right;
     i32 bottom;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_WWD_WWDFACTORYOBJECT_H

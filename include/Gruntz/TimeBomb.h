@@ -36,6 +36,5 @@ public:
         CPairRecord m_timing;
     };
 };
-SIZE(0x68);
 
 #endif // GRUNTZ_CTIMEBOMB_H

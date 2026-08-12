@@ -12,7 +12,6 @@ class CString;
 class CDDSurface;
 
 typedef struct tagRECT ShadeRect;
-SIZE_UNKNOWN();
 
 struct PidHeader;
 
@@ -26,7 +25,6 @@ struct CImageFrameRebuildDesc {
     i32 f6;
     i32 f7;
 };
-SIZE(0x20);
 
 class CDDrawShadeBlit {
 public:
@@ -82,7 +80,6 @@ public:
     u16* m_lutBank1;
     u16* m_lutBank2;
 };
-SIZE(0x3c);
 
 extern u8 g_scratch[];
 extern CShadeTable* g_shadeDescr208;

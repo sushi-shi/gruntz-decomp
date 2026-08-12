@@ -24,14 +24,12 @@ struct FecEntry {
     u16 m_scramble;
     i32 m_payloadLen;
 };
-SIZE(0x10c);
 
 struct FecArchiveHeader {
     i32 m_versionMajor;
     i32 m_versionMinor;
     i32 m_fileCount;
 };
-SIZE(0xc);
 
 GZ_ENUM_CONST_BEGIN(FecFormatOffset)
     FEC_ENTRY_TABLE_OFFSET = FEC_MAGIC_SIZE + sizeof(FecArchiveHeader),
@@ -69,7 +67,6 @@ public:
     CDWordArray m_index;
     char m_copyBuf[FEC_COPY_BUFFER_SIZE];
 };
-SIZE(0x814c);
 
 inline CFecFile::~CFecFile() {
     Close();

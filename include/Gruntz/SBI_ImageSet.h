@@ -56,7 +56,6 @@ public:
     CDDrawWorker* m_frameSet;
     i32 m_frameIndex;
 };
-SIZE(0x3c);
 
 inline CSBI_ImageSet::~CSBI_ImageSet() {
     Reset();

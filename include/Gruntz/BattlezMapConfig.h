@@ -217,7 +217,6 @@ public:
     i32 m_welderzPct;
     i32 m_wingzPct;
 };
-SIZE(0x1e8);
 
 extern const float g_diffScale;
 extern i32 g_stepRun;

@@ -838,7 +838,7 @@ def cmd_audit(aud):
         #      byte-match the base dtor (diff_primary then reads "inherited"), re-tag that
         #      slot "override" so a legit declared ~ is not mis-counted (would false-REDECLARE).
         #  (b) BASE MISS: if the spine found no base at all (all slots new/unknown - a
-        #      registry direct-base miss: base on the header decl, catalog/SIZE elsewhere),
+        #      registry direct-base miss: base on the header decl, catalog elsewhere),
         #      fall back to a raw compare against the SOURCE-declared base's slots.
         disp = {r[0]: r[4] for r in rows}
         dtor_i = next((r[0] for r in rows

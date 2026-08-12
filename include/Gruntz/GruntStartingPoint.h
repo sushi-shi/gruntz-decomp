@@ -24,8 +24,5 @@ public:
 
     i32 Idle();
 };
-SIZE(0x54);
-
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CGRUNTSTARTINGPOINT_H

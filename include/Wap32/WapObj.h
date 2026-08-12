@@ -112,6 +112,5 @@ public:
         return m_ownerCtx;
     }
 };
-SIZE(0x10);
 
 #endif // WAP32_CWAPOBJ_H

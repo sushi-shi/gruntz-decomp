@@ -33,7 +33,6 @@ struct CNetLobbyName {
     char* m_shortName;
     char* m_longName;
 };
-SIZE(0x10);
 
 struct CNetLobbyConnection {
     u32 m_dwSize;
@@ -42,7 +41,6 @@ struct CNetLobbyConnection {
     CNetSessionDesc* m_sessionDesc;
     CNetLobbyName* m_playerName;
 };
-SIZE_UNKNOWN();
 
 void SetActiveAndFocus(void* hwnd);
 void FillPlayerList(HWND hList, CNetMgr* session);
@@ -282,8 +280,6 @@ public:
 
     char m_pad618[0x660 - 0x618];
 };
-SIZE(0x660);
-SIZE_UNKNOWN();
 
 extern CMulti* g_multiState;
 extern CString g_sessionName;

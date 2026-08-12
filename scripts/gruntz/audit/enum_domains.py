@@ -9,7 +9,7 @@ Checks the invariants the numeric-domain campaign depends on
      `GZ_ENUM_STORAGE(N, S2)` for that domain must use the SAME S. A mismatch
      means two different beliefs about how many bytes retail stores - exactly
      the "u8 here, i32 there" defect the layer exists to prevent. It is also the
-     one check that can catch a class-layout change before class_sizes does.
+     one check that can catch a class-layout change immediately.
 
   2. STORAGE NAMES A REAL DOMAIN (fatal). `GZ_ENUM_STORAGE(N, S)` where N was
      never declared is a typo that silently expands to the raw storage type in

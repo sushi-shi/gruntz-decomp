@@ -39,7 +39,6 @@ class CDDrawSubMgrLeafScan;
 
 class CDDrawWorkerRegistry;
 
-SIZE_UNKNOWN();
 class CDDrawWorker;
 
 class CDDrawSurfaceMgr;
@@ -372,7 +371,6 @@ public:
     char m_pad14c[0x150 - 0x14c];
     GruntzPlayer m_options[4];
 };
-SIZE(0xa30);
 
 extern "C" i32 g_scoreTimeBase;
 

@@ -459,8 +459,6 @@ public:
     i32 ScanBuildTiles();
     i32 ScanShuffleQuads();
 };
-SIZE(0x520);
-SIZE_UNKNOWN();
 
 i32 ChannelSlots_FindFree();
 void ChannelSlots_Set(i32 slot, i32 value);

@@ -18,7 +18,6 @@ struct CRandomAmbientWorld {
     CMapStringToPtr m_map;
     SoundDevice* m_soundDev;
 };
-SIZE_UNKNOWN();
 
 enum {
     kSoundVolumeMax = 100
@@ -82,7 +81,6 @@ public:
     i32 m_listenerX;
     i32 m_listenerY;
 };
-SIZE_UNKNOWN();
 
 inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
     m_world = NULL;

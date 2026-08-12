@@ -49,6 +49,5 @@ public:
 
     i32 m_ownsSurface;
 };
-SIZE(0x34);
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

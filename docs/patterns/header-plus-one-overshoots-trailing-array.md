@@ -61,7 +61,7 @@ which is exactly retail's `pid + m_rleLen` formed once and indexed at +0x20.
 ## Where else to look
 
 Any `X + 1` / `(X*)p + 1` on a type that ends in a trailing array, and any type
-whose `SIZE()` annotation is smaller than its C++ `sizeof` — that gap IS the
-padding `+ 1` will step over. `PidHeader` (`SIZE(0x20)`, `sizeof` 0x24) is the
+whose retail extent is smaller than its C++ `sizeof` — that gap IS the
+padding `+ 1` will step over. `PidHeader` (retail 0x20, `sizeof` 0x24) is the
 one proven instance; the pattern generalises to every `T hdr; u8 data[1];`
 reader in the image and REZ paths.

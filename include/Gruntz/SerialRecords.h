@@ -16,7 +16,6 @@ struct CPairRecord {
     Clock64 m_duration;
     i32 Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d);
 };
-SIZE(0x10);
 
 inline void SerBandPair(CFileMemBase* ar, SerialMode mode, void* band) {
     char* p = static_cast<char*>(band);

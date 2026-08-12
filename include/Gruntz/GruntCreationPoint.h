@@ -25,6 +25,5 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 AdvanceAnim();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CGRUNTCREATIONPOINT_H

@@ -37,7 +37,7 @@
 
 #define RVA_POLYISCONVEXCW 0x00145e30
 
-/* include/Image/RasterVtx.h, SIZE(0x1c). Only x/y are read here, but the
+/* include/Image/RasterVtx.h, sizeof 0x1c. Only x/y are read here, but the
  * stride has to be right or the walk reads the wrong vertices. */
 struct ClipVtx {
     float x, y, u, v;

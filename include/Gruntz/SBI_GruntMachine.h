@@ -53,6 +53,5 @@ public:
     i32 m_frameIdxB;
     CImage* m_standaloneFrame;
 };
-SIZE(0x48);
 
 #endif // SBI_GRUNTMACHINE_H

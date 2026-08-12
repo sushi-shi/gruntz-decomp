@@ -61,7 +61,6 @@ struct CTriRecord {
     i32 column;
     GruntDirection direction;
 };
-SIZE(0xc);
 
 struct GruntDirectionCell : public CTriRecord {
     GruntDirectionCell() {}
@@ -74,6 +73,5 @@ struct GruntDirectionCell : public CTriRecord {
     void RotateClockwise(i32 steps);
     void RotateCounterclockwise(i32 steps);
 };
-SIZE(0xc);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTDIRECTION_H

@@ -10,7 +10,6 @@ struct Glyph {
     i32 width;
     i32 height;
 };
-SIZE(0x8);
 
 class Font {
 public:
@@ -31,7 +30,6 @@ public:
     Glyph* m_glyphs;
     i32 m_maxHeight;
 };
-SIZE(0x14);
 
 extern Font g_largeFont;
 extern Font g_mediumFont;
@@ -47,7 +45,6 @@ struct TextExtent {
     i32 width;
     i32 height;
 };
-SIZE(0x8);
 
 class CDDSurface;
 
@@ -77,6 +74,5 @@ public:
     i32 m_surface;
     i32 m_clip;
 };
-SIZE(0x10);
 
 #endif // SRC_FONT_FONT_H

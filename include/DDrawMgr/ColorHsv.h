@@ -10,7 +10,6 @@ struct ColorHSV {
     float s;
     float v;
 };
-SIZE_UNKNOWN();
 
 ColorHSV RgbToHsv(u32 color);
 

@@ -13,6 +13,5 @@ struct CSlotHolder {
     char m_pad10[0x34 - 0x10];
     i32 m_tileToken;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SLOTHOLDER_H

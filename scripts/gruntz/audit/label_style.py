@@ -11,7 +11,6 @@ Checked forms:
   RVA(0x00xxxxxx, 0xN)             DATA(0x00xxxxxx)
   VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
-  SIZE(0xN)                        SIZE_UNKNOWN()
   DATA_COMPGEN(0x00xxxxxx, <value>)   (the value expression may spill)
 
 Comments are blanked first (labels.py does the same), so prose may quote an
@@ -52,8 +51,6 @@ CANON = {
     "DATA": rf"DATA\({ADDR}\)",
     "VTBL_ABSENT": rf"VTBL_ABSENT\({NAME}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
-    "SIZE": rf"SIZE\({HEXN}\)",
-    "SIZE_UNKNOWN": r"SIZE_UNKNOWN\(\)",
     # Expression-position macro: the labels.py parser is balanced-paren, so only
     # The address is pinned to the macro's own line; the value may
     # continue past it (wrap-immune via WhitespaceSensitiveMacros).
@@ -63,10 +60,10 @@ CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit
 # (the WhitespaceSensitiveMacros carrier RVA_COMPGEN is wrap-immune - a giant
 # mangled name may legitimately run long).
-WRAPPABLE = {"RVA", "DATA", "VTBL_ABSENT", "SIZE", "SIZE_UNKNOWN"}
-# longest-first so RVA_COMPGEN/SIZE_UNKNOWN/VTBL_ABSENT win their prefixes
+WRAPPABLE = {"RVA", "DATA", "VTBL_ABSENT"}
+# longest-first so RVA_COMPGEN/VTBL_ABSENT win their prefixes
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|DATA_COMPGEN|SIZE_UNKNOWN|VTBL_ABSENT|SIZE|RVA|DATA)\s*\(")
+    r"\b(RVA_COMPGEN|DATA_COMPGEN|VTBL_ABSENT|RVA|DATA)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /

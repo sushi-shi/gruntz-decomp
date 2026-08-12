@@ -63,7 +63,6 @@ public:
     i32 m_redrawFrames;
     class CStatusBarMgr* m_owner;
 };
-SIZE_UNKNOWN();
 
 inline CStatusBarItem::~CStatusBarItem() {
     Reset();

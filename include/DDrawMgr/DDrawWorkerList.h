@@ -35,6 +35,5 @@ public:
 
     CObList m_workers;
 };
-SIZE(0x2c);
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H

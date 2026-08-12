@@ -28,6 +28,5 @@ public:
     CString m_previewName;
     i32 m_previewIndex;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_PREVIEWSTATE_H

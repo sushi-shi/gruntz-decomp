@@ -137,13 +137,11 @@ change, and a search harness must treat it differently.
   for every `<stem>` NOT in `config/units.toml`, then `rm -f build/objdiff/.delink.stamp`, rebuild.
   **`rm -f build/objdiff/.delink.stamp` alone fixes the third mask** and is the cheap first try.
   Unit merges are now routine (the TU-partition worklist has ~20 more), so expect this.
-- **`build/gen/structs.json` is a cache NOTHING invalidates on a code change.** It is written
-  by `gruntz structs` and read by the data manifest, but no build edge depends on the parser
-  that produces it, so a worktree seeded before a parser fix keeps the pre-fix layouts
-  forever. A pool worktree carrying one predating `315661cba` silently re-broke
-  `logicdispatchinit`'s `s_table` sizing and **failed the data-reloc gate on unmodified
-  main** — an hour lost to a defect that was not in the tree. Every seeded worktree is
-  exposed. If a gate fails on a clean checkout, run `gruntz structs` before believing it.
+- **Stale `structs.json` once corrupted DATA extents — fixed.** DATA labels now take
+  each declaration's size directly from pylibclang in the current TU; the delinker
+  manifest no longer reads the whole-tree layout cache. `structs.json` remains an
+  input to full-tier layout audits and the optional Ghidra viewer, and a full build
+  refreshes it before those consumers run.
 - **`build.ninja` stale after the include graph changed** — FIXED 2026-08-08; the note below
   is why you may still see it in an old tree. The `cl` edges DO carry per-header implicit deps
   (159 headers on `gamemode.obj`) and touching a listed header DOES rebuild — but the lists are
@@ -254,7 +252,7 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
 - The one-shot cast CONVERTERS that drove those to 0 (`cast_ptr_to_named`, `cast_to_static`,
   `cast_str_to_named`, `cast_drivers`) are ARCHIVED in `scripts/archive/`.
 - Live gates run every `gruntz build` (fail the build): `vtable_slot_binding`,
-  `vtable_coverage`, `vtable_virtuality`, `vtable_bans`, `class_vtables`, `class_sizes`,
+  `vtable_coverage`, `vtable_virtuality`, `vtable_bans`, `class_vtables`,
   `view_debt`, `verify_stubs`, `verify_unique_names`,
   `verify_library_overlap`, `gate_selftest`, `tu_order_check`. **Caveat:** a cleanliness
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh
@@ -357,7 +355,7 @@ it** (swept 2026-08-09, all evidence static):
 
 | checked | how | result |
 |---|---|---|
-| object sizes | `gruntz.audit.alloc_size` — retail `push <n>; call ??2` vs our `SIZE()` *and* computed `sizeof` | 430 attributed sites, **0 contradictions**. `CImage` 0x34 (0x151f24), `CDDrawWorker` 0x6c (0x154b24), `CDDrawWorkerHost` 0x158 (0x15d8ef), `CPlay` 0x520 |
+| object sizes | `gruntz.audit.alloc_size` — retail `push <n>; call ??2` vs Clang-computed `sizeof` | 430 attributed sites. `CImage` 0x34 (0x151f24), `CDDrawWorker` 0x6c (0x154b24), `CDDrawWorkerHost` 0x158 (0x15d8ef), `CPlay` 0x520 |
 | member offsets | `gruntz.audit.subobject_offsets` (831 agree / 0 disagree), `this_offsets` (0 past-sizeof) + hand-check vs retail | `CDDrawWorker`: `CObArray` @+0x10, `m_pData` @+0x14, `m_nSize` @+0x18, `m_name[0x40]` @+0x24, `m_minIndex` @+0x64, `m_maxIndex` @+0x68. The "+0x10 vs +0x14" discrepancy in the first write-up is not one: +0x10 is the sub-object (`lea ecx,[esi+0x10]`), +0x14 is `m_pData` |
 | vtable slots | `vtable_hierarchy --audit` 0 flags, `vtable_owner --audit` 0 MISBOUND / 0 RTTI-MISBOUND, `vtable_slot_binding` all 2887 slots wired | `CImage` 18 slots, `CDDrawWorker` 17 — both match RTTI and our headers in order. `InsertFrame`'s `[edx+0x2c]` is `CImage::Resolve`, `[edx+0x4]` the deleting dtor |
 | ctor init | retail's inlined worker ctor in `InsertFrameByKey` 0x154ae0 | vptr, `m_id`, `m_flags=0`, `m_ownerCtx`, **`call CObArray::CObArray()` on `this+0x10`**, vptr, `m_minIndex=0x1869f`, `m_maxIndex=0` — exactly our header's inline ctor. `Unload` 0x151ee2 resets the same pair |

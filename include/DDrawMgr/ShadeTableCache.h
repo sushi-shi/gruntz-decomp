@@ -34,7 +34,6 @@ struct CShadeTable {
     i32 ReadFrom(CFile* file, i32 id);
     i32 SaveToFile(CString path);
 };
-SIZE(0x10);
 
 struct CShadeTableArray : CObject {
     CShadeTable** m_pData;
@@ -48,8 +47,6 @@ struct CShadeTableArray : CObject {
 
     void SetSizeGrow(i32 n, i32 grow);
 };
-SIZE(0x14);
-SIZE(0x14);
 
 class CShadeTableCache {
 public:
@@ -82,7 +79,6 @@ public:
     i32 m_initialized;
     CShadeTableArray m_arr;
 };
-SIZE(0x18);
 
 extern const float g_one;
 extern const float g_255;

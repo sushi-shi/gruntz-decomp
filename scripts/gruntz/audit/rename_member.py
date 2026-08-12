@@ -256,8 +256,8 @@ def mask_noncode(text: str) -> str:
 
 def find_class_block(text: str, masked: str, class_name: str):
     """Locate the DEFINITION (has a body) of struct/class `class_name`. Returns
-    (open_brace_offset, close_brace_offset_exclusive) or None. Forward decls and
-    SIZE_UNKNOWN(...) mentions (no `{`) are skipped."""
+    (open_brace_offset, close_brace_offset_exclusive) or None. Forward
+    declarations (no `{`) are skipped."""
     pat = re.compile(r"\b(?:struct|class)\s+" + re.escape(class_name)
                      + r"\b(?:\s*:\s*[^{;]+)?\s*\{")
     for m in pat.finditer(masked):

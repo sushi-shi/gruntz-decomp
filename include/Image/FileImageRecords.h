@@ -12,7 +12,6 @@ struct Bmp256Info {
     BITMAPINFOHEADER bmiHeader;
     RGBQUAD bmiColors[256];
 };
-SIZE(0x428);
 
 union BmpInfoHeaderStamp {
     BITMAPINFOHEADER m_ih;
@@ -23,13 +22,11 @@ union BmpInfoHeaderStamp {
         DWORD m_planesAndBitCount;
     };
 };
-SIZE(0x28);
 
 union BmpFileHeaderStamp {
     BITMAPFILEHEADER m_hdr;
     char m_bytes[0xe];
 };
-SIZE(0xe);
 
 #pragma pack(push, 1)
 
@@ -37,7 +34,6 @@ struct BmpFileImage {
     BITMAPFILEHEADER fh;
     Bmp256Info info;
 };
-SIZE(0x436);
 #pragma pack(pop)
 
 #pragma pack(push, 1)
@@ -57,7 +53,6 @@ struct PcxHeader {
 
     u8 m_pixels[1];
 };
-SIZE(0x80);
 #pragma pack(pop)
 
 #endif // SRC_IMAGE_CFILEIMAGERECORDS_H

@@ -52,7 +52,6 @@ struct CNetVersionMsg {
     i32 m_remoteVersion;
     i32 m_localVersion;
 };
-SIZE_UNKNOWN();
 
 struct CNetVersionPacket {
     u8 m_flags;
@@ -65,7 +64,6 @@ struct CNetVersionPacket {
     i32 m_remoteVersion;
     i32 m_localVersion;
 };
-SIZE(0x20);
 
 class CNetSessionNode;
 
@@ -76,7 +74,6 @@ struct CNetStatPacket {
     i32 m_value;
     char m_padc[4];
 };
-SIZE_UNKNOWN();
 
 struct CNetChannelStatPacket {
     u8 m_flags;
@@ -84,7 +81,6 @@ struct CNetChannelStatPacket {
     NetMsgId m_statId;
     i32 m_value;
 };
-SIZE(0xc);
 
 #pragma pack(push, 1)
 struct CNetChannelPacket {
@@ -102,7 +98,6 @@ struct CNetChannelPacket {
     i32 m_hostIndex;
     char m_name[0x28 - 0x14];
 };
-SIZE(0x28);
 
 struct CNetOneChannelPacket {
     u8 m_flags;
@@ -120,7 +115,6 @@ struct CNetOneChannelPacket {
     i32 m_slotKey;
     char m_name[0x2c - 0x18];
 };
-SIZE(0x2c);
 
 struct CNetChannelRow {
     u8 m_liveGate;
@@ -134,7 +128,6 @@ struct CNetChannelRow {
     i32 m_slotKey;
     char m_name[0x20 - 0x0c];
 };
-SIZE(0x20);
 
 struct CNetChannelTablePacket {
     u8 m_flags;
@@ -142,7 +135,6 @@ struct CNetChannelTablePacket {
     NetMsgId m_statId;
     CNetChannelRow m_rows[4];
 };
-SIZE(0x88);
 #pragma pack(pop)
 
 struct CNetCmdSlot {
@@ -188,7 +180,6 @@ struct CNetCmdSlot {
 
     i32 Ready();
 };
-SIZE(0x64);
 
 #pragma pack(push, 1)
 struct CNetCmdHdr {
@@ -198,7 +189,6 @@ struct CNetCmdHdr {
 
     u8 m_entryCount;
 };
-SIZE(0xd);
 #pragma pack(pop)
 
 struct GruntRec {
@@ -209,7 +199,6 @@ struct GruntRec {
     i32 m_payloadLen;
     char m_payload[0x410 - 0x10];
 };
-SIZE(0x410);
 
 class CGruntzCommand;
 struct CNetCtrlMsg;
@@ -290,7 +279,6 @@ struct CNetSession {
         ResetAll();
     }
 };
-SIZE(0x20bb0);
 
 struct NetDPName {
     u32 dwSize;
@@ -298,7 +286,6 @@ struct NetDPName {
     char* lpszShortNameA;
     char* lpszLongNameA;
 };
-SIZE(0x10);
 
 typedef BOOL(__stdcall* NetEnumSessionsCallback)(
     void* lpThisSD,
@@ -390,7 +377,6 @@ struct IDirectPlay4Z {
         LPDWORD lpMsgId
     ) PURE;
 };
-SIZE_UNKNOWN();
 
 class CNetPlayerListNode;
 
@@ -410,7 +396,6 @@ struct CNetSessionDesc {
     i32 m_dwUser3;
     i32 m_dwUser4;
 };
-SIZE(0x50);
 
 struct CNetCaps {
     i32 m_dwSize;
@@ -424,7 +409,6 @@ struct CNetCaps {
     i32 m_dwHeaderLength;
     i32 m_dwTimeout;
 };
-SIZE(0x28);
 
 class CNetPlayerListNode : public CObject {
 public:
@@ -443,7 +427,6 @@ public:
 
     char* GroupName();
 };
-SIZE(0x58);
 
 class CNetSessionNode : public CObject {
 public:
@@ -468,7 +451,6 @@ public:
 
     CString GetName();
 };
-SIZE(0x24);
 
 extern "C" BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
@@ -490,7 +472,6 @@ struct CNetCtrlMsg {
     i32 m_subCode;
     i32 m_playerId;
 };
-SIZE_UNKNOWN();
 
 struct MenuSelectEvent {
     char m_pad0[0x4];
@@ -500,7 +481,6 @@ struct MenuSelectEvent {
     char* m_nameA;
     char* m_nameB;
 };
-SIZE_UNKNOWN();
 
 class CFontConfig;
 
@@ -516,7 +496,6 @@ struct CChatPacket {
     i32 m_val;
     char m_buf[0x100]; // capacity unproven
 };
-SIZE_UNKNOWN();
 
 extern CChatPacket g_chatPacket;
 
@@ -700,7 +679,6 @@ public:
     void PopulateGroupList(HWND hList, i32 flag);
     void SetServiceName(CString s);
 };
-SIZE(0x8c);
 
 extern "C" i32 g_spEnumValidated;
 class CNetMgr;

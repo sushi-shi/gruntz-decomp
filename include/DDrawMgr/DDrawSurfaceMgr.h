@@ -27,7 +27,6 @@ struct CSnapshotHeader {
     u32 m_objIdCounter;
     char m_reserved118[0x120 - 0x118];
 };
-SIZE(0x120);
 #pragma pack(pop)
 
 class CWapObj;
@@ -104,8 +103,6 @@ public:
     GZ_ENUM_STORAGE(WorldInitError, u32) m_lastError;
     HP_Callback m_callback;
 };
-SIZE(0x40);
-SIZE_UNKNOWN();
 
 extern void __cdecl SetSurfaceRestoreHandler(SurfaceRestoreFn handler);
 

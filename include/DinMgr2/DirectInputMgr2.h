@@ -22,7 +22,6 @@ struct CDeviceListNode : public CFixedPtrArray32 {
         m_count = 0;
     }
 };
-SIZE(0x88);
 
 class DirectInputMgr2 {
 public:
@@ -66,7 +65,6 @@ public:
     CPtrArray m_devices;
     CPtrList m_deviceList;
 };
-SIZE_UNKNOWN();
 
 // Inline in retail: CGruntzMgr::Run expands it (Shutdown plus both container
 // members, in reverse declaration order) at its delete site, and CGruntzMgr::Close
@@ -81,7 +79,6 @@ struct DIMouseStateZ {
     i32 lZ;
     u8 rgbButtons[4];
 };
-SIZE(0x10);
 struct DIJoyState2Z {
     i32 lX;
     i32 lY;
@@ -89,13 +86,11 @@ struct DIJoyState2Z {
     u8 rgbButtons[10];
     char pad3a[0x110 - 0x3a];
 };
-SIZE(0x110);
 union DeviceState {
     u8 keys[0x100];
     DIMouseStateZ mouse;
     DIJoyState2Z joy;
 };
-SIZE(0x110);
 
 class CInputDevRoot {
 public:
@@ -139,7 +134,6 @@ public:
     u32 m_currentKeys;
     u32 m_edgeKeys;
 };
-SIZE(0x2b4);
 
 class CInputDevBase : public CInputDevRoot {
 public:
@@ -158,7 +152,6 @@ public:
     }
     virtual i32 ResetState();
 };
-SIZE(0x2b4);
 
 // The device's 32 key bindings. Owning the fill + the element access here is what
 // reproduces retail's emission order in CInputDevice::SetupKeyTable (a raw member
@@ -179,7 +172,6 @@ public:
 
     u32 m_keys[0x20];
 };
-SIZE(0x80);
 
 class CInputDevice : public CInputDevBase {
 public:
@@ -194,7 +186,6 @@ public:
     CKeyTable m_keyTable;
     i32 m_modeFlags;
 };
-SIZE(0x338);
 
 class CDeviceConfigB : public CInputDevBase {
 public:
@@ -209,7 +200,6 @@ public:
     i32 m_flags;
     char m_pad2b8[0x2c8 - 0x2b8];
 };
-SIZE(0x2c8);
 
 class CDeviceConfigC : public CInputDevBase {
 public:
@@ -222,7 +212,6 @@ public:
 
     i32 m_flags;
 };
-SIZE(0x2b8);
 
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref);
 

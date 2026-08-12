@@ -35,8 +35,6 @@ public:
     struct LeafCue* m_host;
     i32 m_activeFlag;
 };
-SIZE(0x1c0);
-SIZE(0x1c0);
 
 extern i32 g_suppress_64e360;
 #endif // GRUNTZ_GRUNTZ_CATTRACT_H

@@ -17,7 +17,6 @@ struct BrickzCellNode {
     BrickzCellNode* m_cellPrev;
     BrickzCellNode* m_cellNext;
 };
-SIZE(0xc);
 
 struct BrickzNode {
     i32 m_col;
@@ -31,7 +30,6 @@ struct BrickzNode {
     BrickzNode* m_parent;
     BrickzCellNode* m_cellLink;
 };
-SIZE(0x24);
 
 // Every bit in BrickzCell::m_flags that makes a cell not free to move through.
 //
@@ -96,7 +94,6 @@ struct BrickzCell {
     i32 m_count;
     BrickzCellNode* m_head;
 };
-SIZE_UNKNOWN();
 
 // Bounds-checked cell-flag read; out-of-bounds cells carry the blocking bit 0.
 // TmDeflectStep is the only caller of the retail out-of-line COMDAT.

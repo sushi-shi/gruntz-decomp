@@ -13,6 +13,5 @@ struct CWwdGridShell : public CWwdGrid {
     virtual void OnFound(WwdRegion* r) OVERRIDE;
     CWwdGridShell() {}
 };
-SIZE(0x44);
 
 #endif // GRUNTZ_WWD_WWDGRIDSHELL_H

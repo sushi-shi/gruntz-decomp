@@ -25,7 +25,6 @@ struct PlayerLatency {
     i32 m_avg;
     i32 m_count;
 };
-SIZE(0x8);
 
 class GruntzPlayer {
 public:
@@ -72,6 +71,5 @@ public:
     PlayerLatency m_latency;
     char m_pad234[0x238 - 0x234];
 };
-SIZE_UNKNOWN();
 
 #endif

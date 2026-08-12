@@ -16,7 +16,6 @@ struct WaveFormatX;
 struct CloneNode : public DSoundLink {
     DirectSoundMgr* m_inst;
 };
-SIZE(0xc);
 
 class DirectSoundMgr {
 public:
@@ -84,7 +83,6 @@ public:
     i32 m_playKey;
     DirectSoundMgr* m_reacquireOwner;
 };
-SIZE(0x58);
 
 class DSoundBaseSub : public DirectSoundMgr {
 public:
@@ -93,7 +91,6 @@ public:
     DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, DirectSoundMgr* original);
     virtual ~DSoundBaseSub() OVERRIDE;
 };
-SIZE(0x58);
 
 class DSoundCloneInst : public DSoundBaseSub {
 public:
@@ -109,7 +106,6 @@ public:
 
     DSoundCloneList m_cloneList;
 };
-SIZE(0x60);
 
 extern "C" i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
 

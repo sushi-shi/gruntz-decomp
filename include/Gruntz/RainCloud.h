@@ -17,6 +17,5 @@ public:
     virtual i32 Tick() OVERRIDE;
     virtual i32 HitTest(i32, i32) OVERRIDE;
 };
-SIZE(0x130);
 
 #endif // GRUNTZ_CRAINCLOUD_H

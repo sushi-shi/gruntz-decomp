@@ -1,7 +1,7 @@
 # Comment markers — the blessed vocabulary
 
 Every ADDRESS/SYMBOL binding is a macro from `include/rva.h` (`RVA`, `DATA`,
-`VTBL_ABSENT`, `SIZE`, `SIZE_UNKNOWN`,
+`VTBL_ABSENT`,
 `RVA_COMPGEN`, `DATA_COMPGEN`) — no label ever lives in a comment. Two bindings
 have no source site to sit on at all and are TRACKED TABLES instead, never a
 comment and never a new macro: `config/retail/zlib_labels.csv` (vendored C TUs

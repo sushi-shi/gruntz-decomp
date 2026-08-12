@@ -39,6 +39,5 @@ public:
     i32 m_cellCol;
     i32 m_storyMode;
 };
-SIZE(0xa8);
 
 #endif // GRUNTZ_CSPOTLIGHT_H

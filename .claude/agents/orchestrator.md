@@ -229,7 +229,7 @@ once — main has a single `build/` and a single HEAD):
    inverted-polarity bug (fixed)". KEEP comments stating something TRUE about the
    code *as it is now*: current offset/RVA/identity evidence, why-not / faithful-
    model reasons (the N-COMDAT-copy explanation, C-linkage exceptions),
-   `@early-stop` reasons, open `@identity-TODO`, the RVA()/DATA()/SIZE()/VTBL()
+   `@early-stop` reasons, open `@identity-TODO`, the RVA()/DATA()/VTBL()
    macro-line comments. The comment-only `DISSOLVED` sweep is mechanizable
    (`sed -i -E '/^[[:space:]]*\/\/.*([Dd]issolv|DISSOLV)/d' <file>`); the rest is a
    quick eyeball of the applied diff. Byte-neutral, so it never affects the build

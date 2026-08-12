@@ -70,7 +70,6 @@ struct GruntDirectionCell {
     i32 column;
     i32 direction;
 };
-SIZE(0xc);
 
 DATA(0x00......)
 GruntDirectionCell g_direction(0, 1, 1);

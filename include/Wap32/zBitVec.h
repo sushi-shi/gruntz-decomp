@@ -37,8 +37,6 @@ public:
 
     CVariantSlot* m_errSink;
 };
-SIZE(0x8);
-SIZE_UNKNOWN();
 
 class zBitVec : public zErrHandling {
 public:
@@ -76,7 +74,6 @@ public:
         return this;
     }
 };
-SIZE(0x10);
 
 ostream& operator<<(ostream& accum, const zBitVec& bits);
 istream& operator>>(istream& accum, zBitVec& bits);

@@ -61,6 +61,5 @@ public:
     u32 m_bufferFlags;
     i32 m_force8Bit;
 };
-SIZE(0x94);
 
 #endif // DSNDMGR_SOUNDDEVICE_H

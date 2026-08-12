@@ -21,9 +21,7 @@ class CSbFactory {
 public:
     void* GetByIndex(i32 idx, i32 z);
 };
-SIZE_UNKNOWN();
 
 class CSbIconSet {};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CSTATUSBARMGR_BUILDERS_H

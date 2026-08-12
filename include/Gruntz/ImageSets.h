@@ -23,7 +23,6 @@ struct WwdTileImageRecord {
     char m_header[8];
     i32 m_fields[1];
 };
-SIZE_UNKNOWN();
 
 VTBL_ABSENT(CTileImageSet);
 class CTileImageSet : public CObject {
@@ -37,7 +36,6 @@ public:
 
     i32 m_width;
 };
-SIZE_UNKNOWN();
 
 struct CImageSet1 : public CTileImageSet {
     virtual ~CImageSet1() OVERRIDE;
@@ -71,7 +69,6 @@ struct CImageSet1 : public CTileImageSet {
     i32 m_height;
     i32 m_collisionValue;
 };
-SIZE(0x10);
 struct CImageSet2 : public CTileImageSet {
     virtual ~CImageSet2() OVERRIDE;
 
@@ -107,7 +104,6 @@ struct CImageSet2 : public CTileImageSet {
     i32 m_right;
     i32 m_bottom;
 };
-SIZE(0x24);
 struct CImageSet3 : public CTileImageSet {
     virtual ~CImageSet3() OVERRIDE;
 
@@ -146,7 +142,5 @@ struct CImageSet3 : public CTileImageSet {
 
     u8* m_pixels;
 };
-SIZE_UNKNOWN();
-SIZE(0x18);
 
 #endif // GRUNTZ_IMAGESETS_H

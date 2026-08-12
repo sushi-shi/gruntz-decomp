@@ -96,7 +96,6 @@ public:
     CString m_upName;
     CString m_downName;
 };
-SIZE(0x5c);
 
 inline CMenuItem::~CMenuItem() {
     Cleanup();

@@ -67,6 +67,5 @@ private:
         return band.m_elem;
     }
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_TYPECOLLRUNTIME_H

@@ -13,7 +13,6 @@
 #include <ddraw.h>
 
 typedef struct tagRECT LevelCoordRect;
-SIZE_UNKNOWN();
 
 struct CWwdSpatialMgr;
 
@@ -126,8 +125,5 @@ public:
 
     DDBLTFX m_bltFx;
 };
-SIZE(0x158);
-
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CDDRAWWORKERHOST_H

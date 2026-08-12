@@ -37,7 +37,6 @@ public:
     FILE* m_handle;
     CRezDir* m_dir;
 };
-SIZE(0x1c);
 
 extern "C" char g_wildcard[];
 

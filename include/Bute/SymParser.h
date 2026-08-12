@@ -20,14 +20,12 @@ struct CParserObjList : public CObjList {
     // (`sema disasm 0x0013a0f0 --branches --diff`).
     u32 m_count;
 };
-SIZE(0x10);
 
 struct CParseSource;
 
 struct CSlotNode : public DSoundLink {
     CParseSource* m_buffer;
 };
-SIZE(0xc);
 
 // CSymParser::m_nodes (this+0x88). Its own empty destructor COMDAT - the lone
 // `c3` at 0x13abb0, fenced by nop fill on both sides and reached from the unwind
@@ -36,7 +34,6 @@ SIZE(0xc);
 struct CSlotNodeList : public DSoundList {
     ~CSlotNodeList() {}
 };
-SIZE(0x8);
 
 #pragma pack(push, 1)
 GZ_ENUM_CONST_BEGIN(SymTabFileMagic)
@@ -63,7 +60,6 @@ struct SymTabFileHeader {
     u32 m_largestCommentSize;
     u8 m_sorted;
 };
-SIZE(0xa8);
 
 #pragma pack(pop)
 
@@ -143,6 +139,5 @@ public:
     CSlotNodeList m_nodes;
     i32 m_parseSlotBlockCount;
 };
-SIZE(0x94);
 
 #endif // SRC_BUTE_SYMPARSER_H

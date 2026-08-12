@@ -20,6 +20,5 @@ struct CButeTail {
     void Decode(class istream* in, class ostream* out);
     void Encode(class istream* src, class ostream* dst);
 };
-SIZE(0x1);
 
 #endif // SRC_BUTE_BUTETAIL_H

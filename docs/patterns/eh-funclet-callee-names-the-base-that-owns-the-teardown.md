@@ -94,7 +94,7 @@ Merging `CLoadable` into `CWapObj` (delete `include/Gruntz/Loadable.h`, move
 `CImage::FreeAll` -> `CImage::Unload OVERRIDE`, rebind `??_7CLoadable@@6B@` ->
 `??_7CWapObj@@6B@`) took the funclet band **2706 -> 2737 exact** in one build, census
 `different-targets` 54 -> 29 and `identical` 86.4% -> 89.7%, with every renamed pin still
-100.00 and `vtable_hierarchy --audit` / `vtable_owner --audit` / `class_sizes` clean.
+100.00 and `vtable_hierarchy --audit` / `vtable_owner --audit` clean.
 `VTBL_ABSENT(CWapObj)` was removed - the class does have a `??_7`, we had just hung it on
 the wrong name.
 

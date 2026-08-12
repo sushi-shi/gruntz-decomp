@@ -16,7 +16,6 @@ struct CGameInfoTime {
     i32 m_year;
     i32 m_reserved;
 };
-SIZE_UNKNOWN();
 
 struct CGameInfoBody {
     i32 m_headerWord;
@@ -27,7 +26,6 @@ struct CGameInfoBody {
     CGameInfoTime m_time;
     u32 m_type;
 };
-SIZE(0xd4);
 
 class CGameInfo {
 public:
@@ -41,7 +39,6 @@ public:
     char m_reserved00[4];
     CGameInfoBody m_body;
 };
-SIZE(0xd8);
 
 i32 BuildGameDate(CGameInfoTime* out);
 

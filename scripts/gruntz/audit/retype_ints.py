@@ -29,7 +29,7 @@ WHAT IT LEAVES RAW (by design - see the refactor brief):
   - plain `char` (text; `signed char`!=`char` as a type). Only signed/unsigned char map.
   - numeric literals (1L, 0xFFUL), comments, string/char contents, identifiers
     that merely CONTAIN int/long (Point, sprintf, m_longName), enum tags, and
-    the RVA()/DATA()/SIZE() macro bodies (handled as ordinary tokens - those
+    the RVA()/DATA() macro bodies (handled as ordinary tokens - those
     macros take addresses/types/sizes, not bare int keywords, so they're safe).
 
 Headers it rewrites get `#include <Ints.h>` injected (idempotent) so the aliases

@@ -167,7 +167,8 @@ ratchet, not a finished job — see "What the strict count means".**
    params and returns, module by module. Prefer `GZ_ENUM_FORWARD` over a new
    `#include` wherever the TU only needs the type.
 5. **Narrow the split domains** — `GZ_ENUM_STORAGE` on `CGruntzCommand`,
-   `CButeMgr`, the `NetMgr` packet fields. `class_sizes` is the safety net.
+   `CButeMgr`, the `NetMgr` packet fields. The allocation and access-map audits
+   are the safety net.
 6. **Strict pass** — add the C++20 clang mode and drive its errors to zero.
    homm2's equivalent pass surfaced 71 real defects (conflated domains, flags
    cleared by subtraction, typed values compared against `0`, enums used as raw
@@ -298,7 +299,7 @@ are annotated with the measurement showing the shape is byte-evidenced.
 - **Per edit:** `gruntz build --fast`, read the touched unit's `%`.
 - **Per commit:** `gruntz build --normal` — cleanliness ratchet, `label_style`,
   `include_order`, `verify_unique_names`, and the per-function MAX report.
-- **After any member retype:** `gruntz build --full` runs `class_sizes`, which is
+- **After any member retype:** `gruntz build --full` runs the layout/access audits, which are
   what catches an accidental 1→4 byte widening.
 
 ## Traps

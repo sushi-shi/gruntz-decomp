@@ -24,7 +24,6 @@ class CDDSurface;
 class CDDrawShadeBlit;
 
 typedef struct tagRECT BlitRect;
-SIZE(0x10);
 
 struct PidHeader;
 
@@ -83,7 +82,6 @@ public:
     CDDSurface* m_surface;
     CDDrawShadeBlit* m_owned;
 };
-SIZE(0x34);
 
 inline CImage::~CImage() {
     Unload();

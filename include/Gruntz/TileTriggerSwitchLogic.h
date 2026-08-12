@@ -66,13 +66,11 @@ public:
     i32 m_checkpointType;
     i32 m_block[24];
 };
-SIZE(0x8c);
 
 class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileMultiTriggerSwitchLogic();
 };
-SIZE(0x8c);
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
@@ -81,7 +79,6 @@ class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileExclusiveTriggerSwitchLogic();
 };
-SIZE(0x8c);
 
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE;
@@ -89,7 +86,6 @@ class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileSecretTriggerSwitchLogic();
 };
-SIZE(0x8c);
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE;
@@ -98,7 +94,6 @@ class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 public:
     CTileTimeTriggerSwitchLogic();
 };
-SIZE(0x8c);
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 SwitchDown() OVERRIDE;
@@ -119,6 +114,5 @@ public:
         i32 checkpointType
     ) OVERRIDE;
 };
-SIZE(0x8c);
 
 #endif // SRC_GRUNTZ_TILETRIGGERSWITCHLOGIC_H

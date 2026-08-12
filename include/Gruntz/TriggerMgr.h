@@ -48,7 +48,6 @@ struct CueTimer {
     i64 m_base;
     i64 m_window;
 };
-SIZE(0x10);
 
 class CTriggerMgr {
 public:
@@ -349,7 +348,6 @@ public:
     i32 m_teleportWanted;
     i32 m_groupFlag;
 };
-SIZE_UNKNOWN();
 
 extern i32 g_groupSentinel;
 

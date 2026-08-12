@@ -85,7 +85,7 @@ void* operator new(u32) { return ::operator new(0x6c); }   // BANNED
 This inverts the project's own class-size oracle
 ([class-layout-has-three-retail-oracles.md](class-layout-has-three-retail-oracles.md)):
 `push 0x6c` then proves nothing, because we told cl to push it. It also hides a layout bug
-from `class_sizes` — the hardcoded literal can disagree with both `SIZE()` and the real
+from `alloc_size` — the hardcoded literal can disagree with the real
 `sizeof` and nothing fires. Delete the member `operator new` and let `new CFoo` compute the
 size; cl inlines a forwarding member `operator new` away entirely, so no `??2CFoo@@SAPAXI@Z`
 COMDAT is emitted either way (retail has none, and neither do our base objs).

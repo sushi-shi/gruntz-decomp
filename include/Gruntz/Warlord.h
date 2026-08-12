@@ -68,6 +68,5 @@ public:
 
     i32 m_ownerTag;
 };
-SIZE(0xb0);
 
 #endif // GRUNTZ_CWARLORD_H

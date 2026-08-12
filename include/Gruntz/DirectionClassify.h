@@ -19,6 +19,5 @@ struct MotionEntity {
     i32 m_gridY;
     GruntDirectionCell* Classify(MotionEntity* other, char exact);
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_DIRECTIONCLASSIFY_H

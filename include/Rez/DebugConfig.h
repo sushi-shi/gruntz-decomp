@@ -8,6 +8,5 @@ public:
     CDebugConfig();
     ~CDebugConfig();
 };
-SIZE(0x1);
 
 #endif // GRUNTZ_REZ_DEBUGCONFIG_H

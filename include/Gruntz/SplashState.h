@@ -29,7 +29,5 @@ public:
     i32 m_reserved1b4;
     i32 m_splashCountdownMs;
 };
-SIZE(0x1bc);
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SPLASHSTATE_H

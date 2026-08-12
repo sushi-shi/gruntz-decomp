@@ -23,7 +23,6 @@ public:
 
     virtual i32 UpdateOverlay(void* srcRect, CDDSurface* dest, void* destRect, u32 flags, void* fx);
 };
-SIZE(0xc0);
 
 class CPoolItemAB8 : public CDDSurface {
 public:
@@ -33,7 +32,6 @@ public:
     virtual i32 Setup(CDDrawPtrCollections*, i32, i32, i32);
     virtual i32 InstallColorFormat();
 };
-SIZE(0xc0);
 
 class CPoolItemAE8 : public CDDSurface {
 public:
@@ -43,7 +41,6 @@ public:
 
     virtual i32 Blit47(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32);
 };
-SIZE(0xc0);
 
 struct CDdModePair;
 
@@ -160,8 +157,6 @@ public:
     i32 m_paletteTag;
     DDrawDeviceError m_lastError;
 };
-SIZE_UNKNOWN();
-SIZE(0x948);
 
 void BuildColorChannelTables();
 

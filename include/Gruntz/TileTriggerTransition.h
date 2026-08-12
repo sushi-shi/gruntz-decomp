@@ -23,6 +23,5 @@ public:
     i32 ApplyAnimation(char* sprite, char* geom);
     i32 TransitionAct();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_TILETRIGGERTRANSITION_H

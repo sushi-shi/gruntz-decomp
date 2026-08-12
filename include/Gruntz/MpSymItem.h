@@ -6,7 +6,5 @@
 struct MpSymItem {
     char* m_name;
 };
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_MPSYMITEM_H

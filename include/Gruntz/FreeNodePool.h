@@ -12,7 +12,6 @@ struct CoordPoolNode {
     CoordPoolNode* m_next;
     Coord m_coord;
 };
-SIZE(0xc);
 
 class FreeNodePool {
 public:
@@ -41,7 +40,6 @@ public:
     i32 m_count;
     i32 m_linkOffset;
 };
-SIZE(0x10);
 
 extern FreeNodePool g_coordPool;
 

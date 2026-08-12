@@ -79,8 +79,6 @@ WhitespaceSensitiveMacros:
   - DATA
   - VTBL
   - VTBL_ABSENT
-  - SIZE
-  - SIZE_UNKNOWN
   - RVA_COMPGEN
   - DATA_SYMBOL
 AttributeMacros:

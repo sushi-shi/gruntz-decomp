@@ -25,7 +25,7 @@ Subcommands
         automatically - no stale rows.
 
   labels        Just (re)generate build/gen/symbol_names.csv from src @address.
-  structs       Just (re)generate build/gen/structs.json + enums.json (clang).
+  structs       Regenerate the Clang record-layout indexes used by static audits.
   ghidra-refresh  Populate an optional disposable Ghidra viewer database from
                   tracked retail boundaries and generated source data.
   init          One-time FULL local setup: dirs + configure + retail EXE copy +
@@ -376,10 +376,10 @@ def cmd_build(args) -> None:
     # This used to RETURN here when report.json had not moved ("a no-op build refreshes
     # nothing, so there is nothing to summarize/check"), which made `gruntz build` exit 0
     # having run ZERO gates. That reasoning holds for the objdiff summary and for nothing
-    # else: the FATAL gates below read SOURCE, not report.json. verify_stubs, class_sizes,
+    # else: the FATAL gates below read SOURCE, not report.json. verify_stubs,
     # vtable_bans, class_vtables, vtable_virtuality and the catalog asserts all
     # scan src/ + include/ + config/ - so the ONLY edits they exist to catch (an @stub tag,
-    # a SIZE(), a vtable catalog binding, a header layout) are exactly the edits that need not
+    # a vtable catalog binding, a header layout) are exactly the edits that need not
     # produce a byte of new codegen. The check was therefore skipped precisely when it was
     # the only thing that could fail, and "the build passed" could mean "nothing was
     # checked". Measured: an @stub metadata fix + a header edit -> ninja no-op -> exit 0,
@@ -387,18 +387,6 @@ def cmd_build(args) -> None:
     #
     # So: a no-op is now reported, not returned on. The latency-sensitive matcher loop is
     # `--fast`, which deliberately runs no source gates and says so.
-    # build/gen/structs.json is an INPUT to gen_labels: labels.sizeof_qualtype resolves
-    # a DATA() global's byte extent through it, and an unsized datum never enrols in the
-    # delinker data manifest - every reference to it then degrades to
-    # `<previous named symbol>+addend` in the target obj. Measured in a fresh worktree
-    # (which only ever ran --fast, and so never reached the FULL-tier regen below):
-    # 389 sizeless DATA rows vs 301 with the file present, 3323 enrolled manifest rows
-    # vs 3405. So a MISSING file is generated here, at every tier; a merely stale one is
-    # still the FULL tier's business (that regen is ~4.5 min).
-    if not (GEN_NAMES.parent / "structs.json").is_file():
-        log("build/gen/structs.json is absent - generating it once (record layouts are "
-            "an input to the DATA() extent resolver, not just to the class gates).")
-        cmd_structs(argparse.Namespace(tu=[]))
     before = REPORT.stat().st_mtime if REPORT.exists() else 0
     ninja_t0 = time.monotonic()
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
@@ -489,8 +477,7 @@ def cmd_build(args) -> None:
     # Gate 0: the gates' own NEGATIVE CONTROLS (~0.01s, hermetic - no build artifacts).
     # Every gate below reports a number, and a gate nobody has watched FAIL reports it
     # whether or not it is true: vtable_slot_binding's baseline once parsed as empty (so it
-    # passed everything), class_sizes read SIZE() out of a COMMENT (so it failed correct
-    # code), and the MAX-% ratchet absorbed a 0/0 report's 100% and pinned itself there
+    # passed everything), and the MAX-% ratchet absorbed a 0/0 report's 100% and pinned itself there
     # forever. Each of those is now a test that fails against the code that shipped it.
     # This runs FIRST: if the checks are broken, their verdicts below are worthless.
     _run_checked("gruntz.match.gate_selftest")
@@ -547,10 +534,25 @@ def cmd_build(args) -> None:
     # the compiler emits is wrong - and objdiff's next-symbol .bss size inference can
     # MASK the shift, so this is the only reporter for the g_panTable class. Proves
     # itself by injecting nine defects (--selftest).
+    # It reads the whole-tree Clang layout index, so it belongs after the full-tier
+    # refresh below rather than answering from a stale snapshot during normal builds.
+    if req >= _ORD["full"]:
+        from gruntz.core.class_meta import source_files
+        layout_index = GEN_NAMES.parent / "structs.json"
+        stale = (not layout_index.is_file() or any(
+            path.stat().st_mtime > layout_index.stat().st_mtime
+            for path in source_files()
+        ))
+        if stale:
+            started = time.monotonic()
+            cmd_structs(argparse.Namespace(tu=[]))
+            _timed("gruntz.structs", started)
+        else:
+            log("Clang layout index is current - skipping regeneration.")
     _gate("gruntz.audit.data_access_map", ["--gate"],
           "data-mismodel gate violated - a declared data type is the wrong shape "
           "(count/width/aggregation); fix the declaration or accept it with evidence "
-          "(python -m gruntz.audit.data_access_map --findings)", "normal")
+          "(python -m gruntz.audit.data_access_map --findings)", "full")
     # The initialized-data denominator is derived from retail relocations, the
     # function ownership universe, exact SDK GUID payloads, and parsed compiler
     # records.  Reachability overrides ownership: library data named by game code
@@ -672,44 +674,6 @@ def cmd_build(args) -> None:
                         "--report", str(REPORT), "check"], cwd=str(REPO), env=_pkg_env())
         _timed("feedback:regressions", started)
 
-    # build/gen/structs.json holds clang's ACTUAL record layouts, and it is NOT a ninja
-    # target - so it goes stale the instant a header changes, and every consumer then
-    # answers from a snapshot of the old tree. Measured 2026-07-13: this made class_sizes
-    # BOTH false-fail (3 classes flagged whose fixes had already landed) and, far worse,
-    # capable of false-PASSING a class whose layout we have since broken - which is the
-    # exact defect the gate exists to catch. It also fooled stale_walls into reporting all
-    # 9 layout bugs as still-live for 90 minutes after they were fixed.
-    # Regenerate it here, before anything reads it.
-    #
-    # It is NOT cheap (a clang layout+ast dump per TU, ~4.5 min - it dominates the gate
-    # tail), so do it only when it is actually stale. structs.json is a pure function of
-    # src/+include/, so "no source is newer than it" == "it already describes this tree";
-    # the same _stale_sources() predicate class_sizes uses to decide whether it may
-    # answer at all. This keeps the gates running on every full build (a no-op build must
-    # still verify the source invariants) without paying 4.5 min to recompute a file that
-    # cannot have changed.
-    # Only the FULL-tier class/vtable gates read structs.json, so regen it only there
-    # (the ~4.5-min-when-stale clang layout dump must not land in a normal commit build).
-    if req >= _ORD["full"]:
-        from gruntz.cleanliness.class_sizes import _stale_sources
-        if _stale_sources() or not (GEN_NAMES.parent / "structs.json").is_file():
-            started = time.monotonic()
-            cmd_structs(argparse.Namespace(tu=[]))
-            _timed("gruntz.structs", started)
-        else:
-            log("structs.json is current (no source newer) - skipping the layout regen.")
-
-    # Class-metadata invariants. Every vtable-bearing class should carry a
-    # retail/manual/RTTI catalog entry, and every class a SIZE/SIZE_UNKNOWN - so a
-    # class added without one is caught here, not later.
-    # SIZE reached 0 (all classes annotated) -> now a FATAL gate: a class added
-    # without SIZE/SIZE_UNKNOWN fails the build. It ALSO now checks CORRECTNESS:
-    # a class that DECLARES SIZE(C,N) but does not COMPUTE N, and is `new`ed, emits the
-    # wrong `push <size>` immediate into operator new - a real byte defect that nothing
-    # checked before (SIZE() was effectively a comment).
-    _gate("gruntz.cleanliness.class_sizes", [],
-          "class-sizes: a class lacks SIZE()/SIZE_UNKNOWN or its computed size is "
-          "wrong (python -m gruntz.cleanliness.class_sizes)", "full")
     # The four manual-vtable idioms (*Vtbl structs / ->vtbl / g_*Vtbl / m_vtbl/m_vptr)
     # were driven to 0 - a FATAL gate so none can reappear (they must be real virtuals).
     _gate("gruntz.cleanliness.vtable_bans", [],
@@ -816,10 +780,11 @@ def cmd_labels(args) -> None:
 
 
 def cmd_structs(args) -> None:
-    """Regenerate build/gen/structs.json + enums.json via clang record layouts.
+    """Regenerate the whole-tree Clang record-layout and enum indexes.
 
-    Source: matched src/ layouts (the clangd compdb); headers come in through their
-    own #includes. (The src/Stub/types/ comprehension layer is gone.)
+    Static layout/access audits consume these files. The optional Ghidra viewer is
+    another consumer, not their authority or purpose. Source comes from the clangd
+    compdb; headers enter through their own includes.
     """
     clang = _clang()
     cmd = [sys.executable, str(BUILD / "ghidra_metadata_generate.py"), "--clang", clang]
@@ -883,10 +848,8 @@ def _ensure_compdb_fresh() -> None:
 
     That is not hypothetical. `ShowMultiDlg.cpp` was deleted in d34f5af3f; every worktree
     initialised before that kept a compdb entry for the dead file, so
-    ghidra_metadata_generate could not compile it, correctly refused to emit a partial
-    structs.json - and `gruntz build` died there, on a file the tree no longer has. With
-    structs.json frozen, the class_sizes CORRECTNESS gate then refused to answer for as
-    long as the compdb stayed stale.
+    ghidra_metadata_generate could not compile it and correctly refused to emit a
+    partial layout index.
 
     Regenerating costs ~0.5s (it emits JSON from units.toml; nothing is compiled), so
     just keep it honest on every build, like the retail copy below.
@@ -1472,7 +1435,7 @@ def main() -> None:
                                   "functions.json + globals.json (via ninja)"
                    ).set_defaults(func=cmd_labels)
 
-    s = sub.add_parser("structs", help="regenerate structs.json + enums.json")
+    s = sub.add_parser("structs", help="regenerate Clang layout/enum audit indexes")
     s.add_argument("--tu", action="append", default=[])
     s.set_defaults(func=cmd_structs)
 

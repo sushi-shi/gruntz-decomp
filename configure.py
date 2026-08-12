@@ -347,16 +347,9 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
         zlib_dep = (["config/retail/zlib_labels.csv"]
                     if (REPO / "config/retail/zlib_labels.csv").exists() else [])
-        # build/gen/structs.json is a REAL input: labels.sizeof_qualtype resolves a
-        # DATA() global's byte extent through clang's record layouts, and a sizeless
-        # datum never enrols in the delinker's data manifest. It is regenerated
-        # OUTSIDE ninja (`gruntz structs`, and the FULL tier's staleness regen, which
-        # runs AFTER this graph), so without the dependency a fresh structs.json is
-        # never picked up until some source happens to change - the next build says
-        # "no work to do" and the delink keeps the stale extents. It is not a ninja
-        # OUTPUT, so declare it only when it exists.
-        structs_dep = (["build/gen/structs.json"]
-                       if (REPO / "build/gen/structs.json").exists() else [])
+        # DATA extents come directly from pylibclang's Type.get_size() in this
+        # per-TU edge.  structs.json is a separate whole-tree audit cache and must
+        # never make label correctness depend on when that cache was refreshed.
         frags, func_frags, glob_frags = [], [], []
         for u in units:
             frag = f"{LABELS_DIR}/{u['unit']}.csv"
@@ -369,7 +362,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
             w.build([frag, funcfrag, globfrag], "gen_labels_one",
                     inputs=u["source"],
                     implicit=[obj, GEN_LABELS, "config/units.toml"]
-                             + compdb_dep + zlib_dep + structs_dep,
+                             + compdb_dep + zlib_dep,
                     variables={"src": u["source"], "obj": obj, "unit": u["unit"],
                                "csvfrag": frag,
                                "funcfrag": funcfrag, "globfrag": globfrag})

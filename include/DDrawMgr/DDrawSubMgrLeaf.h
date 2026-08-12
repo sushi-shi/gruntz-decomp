@@ -32,6 +32,5 @@ public:
 
     CMapStringToPtr m_animations;
 };
-SIZE(0x2c);
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGRLEAF_H

@@ -14,7 +14,6 @@ struct AmbSoundRecord {
     char m_pad00[0x10];
     DirectSoundMgr* m_mgr;
 };
-SIZE_UNKNOWN();
 
 class CRandomAmbientSound : public CAmbientSound {
 public:
@@ -41,6 +40,5 @@ public:
     i32 m_countdownMs;
     i32 m_phase;
 };
-SIZE(0x58);
 
 #endif // GRUNTZ_CRANDOMAMBIENTSOUND_H

@@ -70,8 +70,7 @@ StatementMacros:
   - DATA
   - VTBL
   - VTBL_ABSENT
-  - SIZE
-  - SIZE_UNKNOWN
+  - SIZE # Win32 type name; retained for existing formatter behavior, not an rva.h macro.
 # The mangled-symbol carrier is whitespace-sensitive ONLY (one canonical
 # spelling, gated by gruntz.audit.label_style): clang-format must never re-space
 # or wrap its args - it splits stdcall decorations (`_WinMain@16` ->

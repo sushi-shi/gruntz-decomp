@@ -32,5 +32,4 @@ public:
     class CDDrawSurfaceMgr* m_resChain;
     CFaderMgr* m_faderMgr;
 };
-SIZE_UNKNOWN();
 #endif // GRUNTZ_CSOUNDFXEMITTER_H

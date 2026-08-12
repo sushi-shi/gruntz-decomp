@@ -24,8 +24,5 @@ public:
 
     i32 Update();
 };
-SIZE(0x54);
-
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CEXPLOSION_H

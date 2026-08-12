@@ -104,7 +104,6 @@ struct LevelDims {
     i32 w;
     i32 h;
 };
-SIZE(0x8);
 
 GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
 // ToggleObjectLayer selects the penultimate plane only in this layout;
@@ -308,7 +307,6 @@ public:
     LevelDims m_rectC;
     WwdHeader m_header;
 };
-SIZE(0x6d4);
 
 int WapUncompress(
     unsigned char* dest,

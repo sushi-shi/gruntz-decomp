@@ -36,7 +36,6 @@ struct LeafCue : public CWapObj {
     i32 m_lastPlayTime;
     i32 m_replayDelay;
 };
-SIZE(0x1c);
 inline LeafCue::LeafCue(i32 count, CDDrawSurfaceMgr* handle)
     : CWapObj(handle, count, 0, CWapObj::NO_SEED) {
     m_sound = NULL;

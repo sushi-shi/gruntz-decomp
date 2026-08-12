@@ -14,6 +14,5 @@ union Clock64 {
     };
 };
 #pragma pack(pop)
-SIZE(0x8);
 
 #endif // GRUNTZ_CLOCK64_H

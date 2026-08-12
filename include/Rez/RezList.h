@@ -24,7 +24,6 @@ struct CObjList : public CObjListBase {
     void AddHead(CRezItmBase* node);
     void Remove(CRezItmBase* node);
 };
-SIZE(0xc);
 
 struct CRezList : public CObjList {
     CRezList() {
@@ -39,6 +38,5 @@ struct CRezList : public CObjList {
     void InsertAfter(CRezItmBase* pos, CRezItmBase* node);
     void InsertBefore(CRezItmBase* pos, CRezItmBase* node);
 };
-SIZE(0xc);
 
 #endif // REZ_REZLIST_H

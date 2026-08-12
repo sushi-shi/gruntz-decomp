@@ -23,7 +23,6 @@ struct CParseSlotHashNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;
 };
-SIZE(0x18);
 
 struct CParseSource {
 
@@ -76,6 +75,5 @@ struct CParseSource {
     CRezItmBase* m_reader;
     char* m_buffer;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CPARSESOURCE_H

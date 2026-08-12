@@ -25,6 +25,5 @@ public:
 
     i32 LoadAttributes(i32 a, i32 b);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CBRICKZ_H

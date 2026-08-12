@@ -607,7 +607,7 @@ convention across `src/`; leave the size arg unpadded. You do NOT
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
 3. **Build + diff — iterate with `gruntz build --fast`.** `--fast` runs the FULL ninja graph
    (compile → gen_labels → `symbol_names.csv` → delink → objdiff → `report.json`), prints the
-   objdiff %, and STOPS before the ~20 s structural gate tail (verify_*/class_sizes/vtable_*/status).
+   objdiff %, and STOPS before the ~20 s structural gate tail (verify_*/vtable_*/status).
    Read the per-function objdiff after each `--fast` build. It is the proper inner-loop tool for
    **every** task, including:
      - **reloc-fixing:** `--fast` still regenerates `symbol_names.csv` + re-delinks, so a new
@@ -617,7 +617,7 @@ convention across `src/`; leave the size arg unpadded. You do NOT
        run the view-debt tool manually if you need the count.
    Run ONE full `gruntz build` (all gates) ONLY at the very end before you leave the tree — that is
    where the FATAL gates a fold/rebind can trip fire (`verify_unique_names`, `vtable_hierarchy
-   --audit`, `class_sizes`) and the baseline is written. Never `gruntz clean` for a metric (it wipes
+   --audit`) and the baseline is written. Never `gruntz clean` for a metric (it wipes
    the Ghidra DB → cold re-import); the reloc/delink pairing is refreshed by any `--fast` build.
    **Run everything INSIDE one open `nix develop .#build` shell** — `cd` into your assigned worktree
    FIRST, enter the shell once, and run every `gruntz build --fast`/`status` *inside* it (don't spawn

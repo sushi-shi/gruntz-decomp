@@ -21,7 +21,6 @@ public:
     u16 m_teamColor2;
     u16 m_pad0e;
 };
-SIZE_UNKNOWN();
 
 class CShadeTableCache;
 
@@ -56,6 +55,5 @@ public:
     CSpriteRef* m_toyRefs[TINT_COUNT];
     i32 m_built;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_SPRITEREFTABLE_H

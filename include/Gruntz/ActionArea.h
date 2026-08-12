@@ -40,9 +40,7 @@ public:
         CPairRecord m_timing;
     };
 };
-SIZE(0x68);
 
 typedef i32 (CUserLogic::*CActHandler)();
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CACTIONAREA_H

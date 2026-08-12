@@ -53,7 +53,6 @@ public:
     HFONT m_trainingFont;
     HFONT m_messageFont;
 };
-SIZE(0x44);
 
 extern "C" i32 g_chatTextWidth;
 extern "C" i32 g_caretBlinkMs;
@@ -65,6 +64,5 @@ struct FontItem {
     i32 data;
     CString name;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

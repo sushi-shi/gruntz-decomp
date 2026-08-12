@@ -40,7 +40,6 @@ public:
     Coord m_tilePosition;
     double m_stepMag;
 };
-SIZE(0x90);
 
 extern const double g_slimeSpeedNum;
 #endif // GRUNTZ_CKITCHENSLIME_H

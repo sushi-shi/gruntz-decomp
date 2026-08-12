@@ -42,7 +42,7 @@ so declaration order (and thus codegen) is preserved:
 #include <Gruntz/CBankMgr.h>
 ```
 
-Also delete the now-duplicate `SIZE_UNKNOWN(...)` metadata lines the header brings
+Also delete any now-duplicate metadata lines the header brings
 (they are `__COUNTER__`-guarded so they never *conflict*, but they should not be
 double-counted). Verify with a full `gruntz build`: **no regressions vs baseline**.
 

@@ -81,7 +81,6 @@ public:
         u8* gruntList
     );
 };
-SIZE(0x14);
 
 extern const u16 g_cmdBitTable[16];
 
@@ -101,7 +100,6 @@ public:
     static CGruntzSingleCommand* Allocate();
     static void FreeAll();
 };
-SIZE(0x14);
 
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
@@ -119,6 +117,5 @@ public:
     static CGruntzMultiCommand* Allocate();
     static void FreeAll();
 };
-SIZE(0x14);
 
 #endif // SRC_GRUNTZ_GRUNTZCOMMAND_H

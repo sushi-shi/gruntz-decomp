@@ -36,7 +36,6 @@ public:
     SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj);
     virtual LogicTypeId GetTypeTag();
 };
-SIZE_UNKNOWN();
 
 class CUserLogic : public CUserBase {
 public:
@@ -106,7 +105,6 @@ public:
 
     i32 m_prevAnimSetNode;
 };
-SIZE(0x34);
 
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
@@ -176,7 +174,6 @@ public:
     class CAniElement* m_value;
     char m_blob[0x10];
 };
-SIZE(0x20);
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
@@ -196,6 +193,5 @@ public:
     static void RegisterActs();
     i32 AdvanceAnim();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_USERLOGIC_H

@@ -55,7 +55,6 @@ public:
     i32 m_mode;
     CString m_name;
 };
-SIZE(0x10);
 
 class CFileMem : public CFileMemBase {
 public:
@@ -89,6 +88,5 @@ public:
     i32 m_length;
     i32 m_offset;
 };
-SIZE(0x28);
 
 #endif // SRC_IO_FILEMEM_H

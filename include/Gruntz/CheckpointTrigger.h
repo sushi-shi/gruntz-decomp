@@ -23,6 +23,5 @@ public:
     i32 m_state[15];
     i32 m_firstEmpty;
 };
-SIZE(0x94);
 
 #endif // GRUNTZ_CCHECKPOINTTRIGGER_H

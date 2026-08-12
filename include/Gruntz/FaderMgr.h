@@ -29,7 +29,6 @@ struct CFaderArray : public CObject {
     void SetAtGrow(i32 index, CFader* fader);
     void SetSize(i32 size, i32 growBy = -1);
 };
-SIZE_UNKNOWN();
 
 inline CFaderArray::CFaderArray() {
     m_pData = NULL;
@@ -129,6 +128,5 @@ public:
 
     class CDDrawPtrCollections* m_sharedPtrColl;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CFADERMGR_H

@@ -51,8 +51,5 @@ public:
     i32 m_tickHandled;
     char m_pad6c[0x70 - 0x6c];
 };
-SIZE(0x70);
-
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CTELEPORTER_H

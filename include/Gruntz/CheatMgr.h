@@ -11,7 +11,6 @@ struct CheatEntry {
     i32 commandId;
     i32 flag;
 };
-SIZE_UNKNOWN();
 
 class CCheatMgr {
 public:
@@ -30,7 +29,6 @@ public:
     i32 m_pendingCodeLength;
     i32 m_cheatsUsed;
 };
-SIZE_UNKNOWN();
 
 extern char s_cheat_20c920[];
 extern char s_cheat_20c918[];

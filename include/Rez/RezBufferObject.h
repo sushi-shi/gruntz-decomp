@@ -11,7 +11,6 @@ struct RezElem40 {
     i32 m_reserved20;
     float m_scale;
 };
-SIZE(0x28);
 
 // Retail's per-element construction helper (0x17f300): a bare `mov eax,ecx; ret`
 // __fastcall identity called from CRezBufferObject::Serialize's construct loop.
@@ -34,7 +33,6 @@ struct CRezBufferObject : public CObject {
 
     void SetSize(i32 nNewSize, i32 nGrowBy);
 };
-SIZE_UNKNOWN();
 
 inline CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {

@@ -6,6 +6,5 @@
 #include <Ints.h>
 
 struct CTypeColl2 {};
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CTYPECOLL2_H

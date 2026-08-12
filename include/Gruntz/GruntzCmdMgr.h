@@ -12,8 +12,6 @@
 
 class CState;
 
-SIZE_UNKNOWN();
-
 class CGruntzMgr;
 
 class CGruntzCmdMgr {
@@ -72,7 +70,6 @@ public:
     CPtrList m_pendingCommands;
     CGruntzMgr* m_manager;
 };
-SIZE_UNKNOWN();
 
 inline CGruntzCmdMgr::CGruntzCmdMgr() {
     m_manager = NULL;

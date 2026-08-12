@@ -10,6 +10,5 @@ struct CObjListBase {
 
     ~CObjListBase() {}
 };
-SIZE(0x4);
 
 #endif // GRUNTZ_BUTE_OBJLISTBASE_H

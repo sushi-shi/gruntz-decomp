@@ -14,7 +14,6 @@ public:
     class CDDSurface* m_targetSurface;
     class CDDSurface* m_sourceSurface;
 };
-SIZE(0xc);
 
 class CFxModeT2 : public CFxModeDesc {
 public:
@@ -26,7 +25,6 @@ public:
     i32 m_centerY;
     class CShadeTable* m_shadeTable;
 };
-SIZE(0x24);
 
 class CFxModeT3 : public CFxModeDesc {
 public:
@@ -34,7 +32,6 @@ public:
     i32 m_clearToBlack;
     i32 m_intensityPercent;
 };
-SIZE(0x14);
 
 class CFxModeT4 : public CFxModeDesc {
 public:
@@ -43,7 +40,6 @@ public:
     class CDDPalette* m_palette;
     class CShadeTable* m_shadeTable;
 };
-SIZE(0x18);
 
 class CFxModeT5 : public CFxModeDesc {
 public:
@@ -52,7 +48,6 @@ public:
     i32 m_durationPercent;
     i32 m_splitPercent;
 };
-SIZE(0x18);
 
 class CFxModeT6 : public CFxModeDesc {
 public:
@@ -64,6 +59,5 @@ public:
     i32 m_cols;
     i32 m_rows;
 };
-SIZE(0x24);
 
 #endif // GRUNTZ_CFXMODEDESC_H

@@ -161,6 +161,5 @@ public:
     CTileTriggerLogic* m_latchedLeaf;
     i32 m_built;
 };
-SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

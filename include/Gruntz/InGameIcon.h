@@ -67,6 +67,5 @@ public:
     CWwdGameObjectA* m_glitterSprite;
     i32 m_reserved7c; // retail news 0x80 (push in CreateInGameIcon); position unproven
 };
-SIZE(0x80);
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

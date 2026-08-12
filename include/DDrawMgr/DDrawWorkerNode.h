@@ -53,7 +53,6 @@ public:
         m_stateFlags = 0;
     }
 };
-SIZE(0x7c);
 
 // +0x78 holds a raw pixel VALUE, not a CImage*, so the three CDDrawWorkerBase
 // virtuals that treat it as a pointer are overridden back (retail vtable
@@ -73,7 +72,6 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     }
     virtual i32 PlaceFrameValue(i32 x, i32 y, i32 frame);
 };
-SIZE(0x7c);
 
 struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual ~CDDrawWorkerB() OVERRIDE;
@@ -90,6 +88,5 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
 
     i32 Helper(const char* key, i32 idx);
 };
-SIZE(0x7c);
 
 #endif // GRUNTZ_GRUNTZ_CDDRAWWORKERNODE_H

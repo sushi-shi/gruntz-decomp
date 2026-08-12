@@ -27,6 +27,5 @@ public:
     static void RegisterActs();
     i32 Advance();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CDROPPEDOBJECTSHADOW_H

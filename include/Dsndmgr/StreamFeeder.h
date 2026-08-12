@@ -54,7 +54,6 @@ struct StreamFeeder {
 
     i32 TickPump(i32 now);
 };
-SIZE(0x44);
 
 struct StreamVoiceFeeder : StreamFeeder {
     StreamVoiceFeeder() {}
@@ -62,6 +61,5 @@ struct StreamVoiceFeeder : StreamFeeder {
     virtual i32 FeedData() OVERRIDE;
     virtual void OnDrain() OVERRIDE;
 };
-SIZE(0x44);
 
 #endif // DSNDMGR_STREAMFEEDER_H

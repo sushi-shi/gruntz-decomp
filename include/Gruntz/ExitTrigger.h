@@ -28,6 +28,5 @@ public:
     CWarlord* m_warlordLogic;
     i32 m_resolved;
 };
-SIZE(0x5c);
 
 #endif // GRUNTZ_CEXITTRIGGER_H

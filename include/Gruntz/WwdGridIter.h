@@ -23,7 +23,6 @@ struct WwdRect {
         RECT m_rect;
     };
 };
-SIZE_UNKNOWN();
 
 struct WwdGridNode : DSoundLink {
     WwdGridNode();
@@ -40,7 +39,6 @@ struct WwdGridNode : DSoundLink {
     i32 m_x;
     i32 m_y;
 };
-SIZE(0x18);
 
 struct WwdRegion : WwdGridNode {
     WwdRegion();
@@ -74,7 +72,6 @@ struct WwdRegion : WwdGridNode {
     ~WwdRegion() {}
     struct CGameObject* m_object;
 };
-SIZE(0x1c);
 
 // Both ctors are out-of-line in retail: CDDrawChildGroup's factories CALL them
 // (0x15b2a0 from 0x1592b5/0x1594a5, 0x15b2b0 from 0x159663) while the derived
@@ -104,7 +101,6 @@ public:
     i32 m_rowBase;
     i32 m_remove;
 };
-SIZE(0x44);
 
 inline CWwdGridIter::CWwdGridIter() {
     m_grid = NULL;

@@ -20,13 +20,11 @@ struct CRezFillRect {
     i32 right;
     i32 bottom;
 };
-SIZE(0x10);
 
 struct ScanlinePalette {
     char m_pad0[8];
     PALETTEENTRY m_colors[256];
 };
-SIZE_UNKNOWN();
 
 class CRezImage {
 public:
@@ -96,7 +94,6 @@ public:
     i32 m_paletteScalar;
     CImagePaletteNode* m_paletteNode;
 };
-SIZE_UNKNOWN();
 
 class CFileImageSurface : public CDDSurface {
 public:
@@ -109,13 +106,11 @@ public:
     virtual i32
     LoadKeyed(void* surf, i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
 };
-SIZE(0xc0);
 
 class CFileImagePal {
 public:
     char _00[0x0c];
     PALETTEENTRY* m_srcPalette;
 };
-SIZE_UNKNOWN();
 
 #endif // SRC_IMAGE_IMAGE_H

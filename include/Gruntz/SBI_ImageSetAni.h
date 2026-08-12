@@ -51,7 +51,6 @@ public:
     i32 m_frameEnd;
     i32 m_frameStart;
 };
-SIZE(0x54);
 
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
     Reset();
@@ -68,6 +67,5 @@ public:
     void SetDirection(StatusBarDock position, i32 animate);
     void SetDirectionAlt(StatusBarDock position, i32 animate);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

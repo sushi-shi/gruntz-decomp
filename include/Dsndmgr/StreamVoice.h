@@ -28,6 +28,5 @@ struct StreamVoice : public DSoundCloneInst {
 
     StreamVoiceFeeder m_feeder;
 };
-SIZE(0xb0);
 
 #endif // DSNDMGR_STREAMVOICE_H

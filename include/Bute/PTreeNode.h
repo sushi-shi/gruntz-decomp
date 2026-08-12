@@ -26,7 +26,6 @@ public:
     char m_pada[2];
     i32 m_nodeCount;
 };
-SIZE(0x10);
 
 class zPTree : public zErrHandling, public zPtrColl {
 public:
@@ -71,7 +70,6 @@ public:
     i32 m_keyBitLength;
     i32 m_lookupPending;
 };
-SIZE(0x2c);
 
 class CButeNode : public zPTree {
 public:
@@ -81,6 +79,5 @@ public:
 
     CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
-SIZE(0x2c);
 
 #endif // SRC_BUTE_PTREENODE_H

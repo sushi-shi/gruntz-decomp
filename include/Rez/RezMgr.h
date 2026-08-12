@@ -31,7 +31,6 @@ public:
     CRezItmBase* m_prev;
     CSymParser* m_parent;
 };
-SIZE(0x10);
 
 class CRezItm : public CRezItmBase {
 public:
@@ -56,7 +55,6 @@ public:
     i32 m_reserved1c;
     i32 m_pos;
 };
-SIZE(0x24);
 
 class CRezDir : public CRezItmBase {
 public:
@@ -77,7 +75,6 @@ public:
     i32 m_readonly;
     i32 m_write;
 };
-SIZE(0x38);
 
 class CRezDirNode;
 class CSymParser;
@@ -97,6 +94,5 @@ public:
     char m_pad40[8];
     u8* m_buf;
 };
-SIZE_UNKNOWN();
 
 #endif // SRC_REZ_REZMGR_H

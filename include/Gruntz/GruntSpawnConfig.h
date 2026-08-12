@@ -59,6 +59,5 @@ public:
     CPtrArray m_voiceLists;
     i32 m_voiceVolume;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTSPAWNCONFIG_H

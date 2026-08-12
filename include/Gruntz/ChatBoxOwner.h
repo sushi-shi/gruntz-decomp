@@ -54,6 +54,5 @@ public:
 
     CDDrawSurfaceMgr* m_world;
 };
-SIZE(0x1c);
 
 #endif // GRUNTZ_GRUNTZ_CHATBOXOWNER_H

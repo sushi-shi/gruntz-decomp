@@ -29,7 +29,6 @@ public:
     double m_phase;
     i32 m_launched;
 };
-SIZE(0x260);
 
 extern const double g_boomHalf;
 extern const double g_boomTimeScale;

@@ -56,6 +56,5 @@ struct CAniRecordView : public CObject {
     i32 m_cueCount;
     LeafCue** m_cues;
 };
-SIZE(0x34);
 
 #endif // GRUNTZ_CANIRECORDVIEW_H

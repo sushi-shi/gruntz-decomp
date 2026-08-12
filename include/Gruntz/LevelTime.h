@@ -20,6 +20,5 @@ public:
 
     CLevelTime(CGameObject* obj);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CLEVELTIME_H

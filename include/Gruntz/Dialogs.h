@@ -141,7 +141,6 @@ protected:
 private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
-SIZE_UNKNOWN();
 
 class CBattlezDlgCustom : public CDialog {
 public:
@@ -159,7 +158,6 @@ protected:
 private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
-SIZE_UNKNOWN();
 
 class CBattlezDlgColors : public CDialog {
 public:
@@ -179,7 +177,6 @@ public:
     ColorTint m_pickedColor;
     i32 m_networked;
 };
-SIZE_UNKNOWN();
 
 class CMultiStartDlg : public CDialog {
 public:
@@ -277,7 +274,6 @@ public:
     CString m_worldName;
     CStringList m_reserved74;
 };
-SIZE_UNKNOWN();
 
 class CCheckpointDlg : public CDialog {
 public:
@@ -293,7 +289,6 @@ public:
 private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
-SIZE_UNKNOWN();
 
 class CMultiHelpDlg : public CDialog {
 public:
@@ -308,7 +303,6 @@ protected:
 private:
     static const AFX_MSGMAP_ENTRY _messageEntries[];
 };
-SIZE_UNKNOWN();
 
 extern CString g_gruntNames[4];
 

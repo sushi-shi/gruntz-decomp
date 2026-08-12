@@ -92,7 +92,6 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 
 | metric | command | state |
 |---|---|---|
-| SIZE missing | `python -m gruntz.cleanliness.class_sizes` | **FATAL** (`--full` tier) |
 | Vtable catalog | `python -m gruntz.cleanliness.class_vtables --assert-unique` | **FATAL** — catalog rows are structurally valid (proven-absent `??_7` carry `VTBL_ABSENT`) |
 | src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
 | stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | **FATAL** |

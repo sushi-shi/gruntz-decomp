@@ -32,14 +32,12 @@ public:
     char* m_alloc;
     i32 m_grown;
 };
-SIZE(0x24);
 
 class _zdvec : public _zvec {
 public:
     _zdvec(i32 stride, i32 lo, i32 hi, void* scratch);
     char* IndexToPtr(i32 i);
 };
-SIZE(0x24);
 
 template<class T> class zDArray : public _zdvec {
 public:
@@ -60,6 +58,5 @@ public:
         return band.m_elem;
     }
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_WAP32_ZVEC_H

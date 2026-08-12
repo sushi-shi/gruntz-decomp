@@ -46,7 +46,6 @@ struct WwdDirtyRect {
     i32 m_h;
     i32 m_armed;
 };
-SIZE(0x24);
 
 class CResolveNode : public CWapObj {
 public:
@@ -98,7 +97,5 @@ public:
 
     RECT m_clip;
 };
-SIZE_UNKNOWN();
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

@@ -238,9 +238,9 @@ def main():
     print(f"wrote {out / 'grind_ctors.csv'}")
 
     if "--label" in sys.argv:
-        # Each discovered ctor is labeled as a ctor OF ITS CLASS with the class
-        # SIZE()-set: the real RTTI name where that class isn't defined yet, else a
-        # placeholder (non-RTTI has no name) - sized from its operator-new site.
+        # Each discovered ctor is labeled as a ctor OF ITS CLASS: the real RTTI
+        # name where that class isn't defined yet, else a placeholder. The backing
+        # byte array is sized from the retail operator-new site.
         szmap = {}
         nf = REPO / "ctor-survey/new_functions.csv"
         if nf.exists():
@@ -265,8 +265,8 @@ def main():
         H = ["#ifndef GRUNTZ_STUB_MALLOCCONSTRUCTORS_H", "#define GRUNTZ_STUB_MALLOCCONSTRUCTORS_H",
              "#include <rva.h>",
              "// MallocConstructors.h - classes whose constructors gruntz.analysis.grind_ctors",
-             "// discovered at operator-new/malloc sites; class SIZE()-set from the allocation",
-             "// site. Real RTTI name where the class wasn't defined elsewhere, else a",
+             "// discovered at operator-new/malloc sites. Real RTTI name where the class",
+             "// wasn't defined elsewhere, else a",
              "// MallocCtor_<rva> placeholder (no recoverable name).", ""]
         C = ["#include <rva.h>", "#include <Stub/MallocConstructors.h>",
              "// MallocConstructors.cpp - constructor bodies for MallocConstructors.h.", ""]
@@ -282,7 +282,6 @@ def main():
             H.append(f"    {name}();")
             if s: H.append(f"    char m_data[0x{s:x}]; // operator-new size; real fields TBD")
             H.append("};")
-            if s: H.append(f"SIZE({name}, 0x{s:x});")
             H.append("")
             C.append(f"RVA(0x{r:08x}, 0x{fsize.get(r,0):x})")
             C.append(f"{name}::{name}() {{}}")

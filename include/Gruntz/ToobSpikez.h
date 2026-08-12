@@ -24,6 +24,5 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CTOOBSPIKEZ_H

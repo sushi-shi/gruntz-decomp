@@ -18,7 +18,6 @@ struct CNetConfigBlob {
     i32 m_autoCommandDelay;
     i32 m_rngSeed;
 };
-SIZE(0x11c);
 
 struct CNetMsg {
     u8 m_flags;
@@ -27,6 +26,5 @@ struct CNetMsg {
     i32 m_value;
     char m_payload[4];
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_NET_NETPACKETS_H

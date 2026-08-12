@@ -6,6 +6,4 @@
 #include <Gruntz/MapMgr.h>
 #include <Ints.h>
 
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_GRUNTZ_CTILEGRID_H

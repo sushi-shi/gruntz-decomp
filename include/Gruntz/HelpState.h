@@ -24,7 +24,6 @@ public:
 
     char m_pad1b4[0x1b8 - 0x1b4];
 };
-SIZE(0x1b8);
 
 extern char g_titleBuf[];
 #endif // GRUNTZ_HELPSTATE_H

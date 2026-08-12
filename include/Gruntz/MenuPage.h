@@ -118,6 +118,5 @@ public:
 
     CMenuItem* m_focus;
 };
-SIZE(0x68);
 
 #endif // GRUNTZ_MENUPAGE_H

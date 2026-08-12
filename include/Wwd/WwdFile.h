@@ -60,7 +60,6 @@ struct WwdHeader {
     char imageDirectory[4][0x80];
     char imagePrefix[4][0x20];
 };
-SIZE(0x5f4);
 
 struct WwdPlaneHeader {
     u32 headerSize;
@@ -88,7 +87,6 @@ struct WwdPlaneHeader {
     i32 zCoord;
     u8 pad_94[WWD_PLANE_HEADER_SIZE - 0x94];
 };
-SIZE(0xa0);
 
 class WwdInputStream {
 public:
@@ -103,7 +101,6 @@ private:
     i32 m_open;
     char* m_name;
 };
-SIZE(0x10);
 
 class CDDSurface;
 
@@ -162,7 +159,6 @@ struct PlaneObjectRecord {
     };
     char m_strings[1];
 };
-SIZE_UNKNOWN();
 
 // The tile-attribute table at WwdHeader::tileDescriptionsOffset, running to EOF:
 // this header then a packed array of variable-stride records indexed by a tile
@@ -179,7 +175,6 @@ struct WwdTileDescTable {
     u32 m_reserved0c[5];
     char m_descriptors[1];
 };
-SIZE_UNKNOWN();
 
 class CFileMemBase;
 
@@ -195,6 +190,5 @@ public:
 
     static CString GetMapBaseName(CString path);
 };
-SIZE_UNKNOWN();
 
 #endif // SRC_WWD_WWDFILE_H

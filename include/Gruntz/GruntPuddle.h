@@ -13,7 +13,6 @@
 class CFileMemBase;
 
 struct CGruntPuddleSink {};
-SIZE_UNKNOWN();
 
 extern char g_puddleSpriteKey[];
 
@@ -46,9 +45,6 @@ public:
 
     i32 m_placeIndex;
 };
-SIZE(0x70);
-
-SIZE_UNKNOWN();
 
 extern "C" i32 CellTargetable(i32 col, i32 row);
 

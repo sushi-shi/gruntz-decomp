@@ -168,7 +168,6 @@ public:
     i32 m_carrierId;
     i32 m_objectId;
 };
-SIZE_UNKNOWN();
 
 // The one textual copy of the ctor body.  Both CGameObject ctor entities expand it.
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
@@ -270,7 +269,6 @@ public:
     LeafCue* m_soundCue;
     CAniAdvanceCursor m_animCursor;
 };
-SIZE(0x1dc);
 
 class CWwdGameObject : public CWwdGameObjectA {
 public:
@@ -315,7 +313,6 @@ public:
 
     i32 m_reserved1f8; // zeroed in ctor/Unload only
 };
-SIZE(0x1fc);
 
 class CWwdGameObjectF : public CGameObject {
 public:
@@ -339,7 +336,6 @@ public:
 
     virtual i32 SetupDeferred(i32 sortKey, AnimWorkerObj* tmpl);
 };
-SIZE(0x18c);
 
 class CWwdGameObjectC : public CGameObject {
 public:
@@ -371,7 +367,6 @@ public:
     u8 m_dotColor;
     char _p18d[0x190 - 0x18d];
 };
-SIZE(0x190);
 
 inline CGameObject* CDDrawChildGroup::NextChild(POSITION& pos) {
     return static_cast<CGameObject*>(m_list.GetNext(pos));

@@ -84,6 +84,5 @@ public:
     i32 m_row1Offset;
     i32 m_row1FrameIdx;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CHATBOX_H

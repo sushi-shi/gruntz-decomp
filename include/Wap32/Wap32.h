@@ -61,7 +61,6 @@ public:
     CGameApp* m_owner;
     i32 m_closeGuard;
 };
-SIZE(0x10);
 
 class CGameMgr;
 class CGameMgr {
@@ -99,7 +98,6 @@ public:
     i32 m_windowStartTick;
     i32 m_frameBudgetMs;
 };
-SIZE(0x2c);
 
 struct GameInfo {
     i32 size;
@@ -113,7 +111,6 @@ struct GameInfo {
     i32 windowWidth;
     i32 windowHeight;
 };
-SIZE(0x1d4);
 
 extern i32 g_gameAppInstanceCount;
 
@@ -169,5 +166,4 @@ public:
     i32 m_errorCode;
     i32 m_errorDetail;
 };
-SIZE(0x254);
 #endif // WAP32_H

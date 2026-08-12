@@ -35,7 +35,5 @@ public:
     CImage* m_sprite;
     CStatusBarMgr* m_owner;
 };
-SIZE(0x40);
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_WARPSTONEFLY_H

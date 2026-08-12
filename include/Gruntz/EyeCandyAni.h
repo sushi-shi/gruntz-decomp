@@ -25,6 +25,5 @@ public:
 
     i32 AdvanceAnim();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CEYECANDYANI_H

@@ -33,7 +33,6 @@ public:
     BrickzNode* m_storage;
     u32 m_count;
 };
-SIZE_UNKNOWN();
 
 class CMapArrayB {
 public:
@@ -46,7 +45,6 @@ public:
     BrickzCellNode* m_freeList;
     u32 m_count;
 };
-SIZE_UNKNOWN();
 
 class CGruntzMgr;
 class CMapMgr {
@@ -112,8 +110,5 @@ public:
     i32 m_gridH;
     CDDrawSurfaceMgr* m_attrMgr;
 };
-SIZE_UNKNOWN();
-
-SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_MAPMGR_H

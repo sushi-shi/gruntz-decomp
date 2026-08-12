@@ -78,6 +78,5 @@ public:
     i32 m_refreshInterval;
     i32 m_refreshRemaining;
 };
-SIZE(0x43c);
 
 #endif

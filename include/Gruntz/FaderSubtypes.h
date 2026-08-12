@@ -27,7 +27,6 @@ struct CFaderRadialCell {
     float m_radius;
     u8 m_pixel;
 };
-SIZE(0x10);
 
 class CFaderMesh : public CFader {
 public:
@@ -48,7 +47,6 @@ public:
     i32 m_rows;
     CRezBufferObject m_meshBuf;
 };
-SIZE(0x6c);
 
 class CFaderSine : public CFader {
 public:
@@ -89,7 +87,6 @@ public:
     float m_arr2[2000];
     i32 m_arr3[2000];
 };
-SIZE(0x7d5c);
 
 class CFaderFlat : public CFader {
 public:
@@ -107,7 +104,6 @@ public:
     i32 m_desc14;
     i32* m_frames;
 };
-SIZE(0x50);
 
 class CFaderLight : public CFader {
 public:
@@ -141,7 +137,6 @@ public:
     i32 m_surfWidth;
     i32 m_surfHeight;
 };
-SIZE(0x206c);
 
 class CFaderRadial : public CFader {
 public:
@@ -164,7 +159,6 @@ public:
     i32 m_centerX;
     i32 m_centerY;
 };
-SIZE(0x5c);
 
 class CFaderShape : public CFader {
 public:
@@ -204,6 +198,5 @@ public:
 
     i32 m_reserved490;
 };
-SIZE(0x494);
 
 #endif // GRUNTZ_GRUNTZ_CFADERSUBTYPES_H

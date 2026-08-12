@@ -26,7 +26,6 @@ struct NetCmdSendMsg {
     u8 m_count;
     u8 m_payload[0x3f2];
 };
-SIZE(0x400);
 #pragma pack(pop)
 
 #pragma pack(push, 1)
@@ -39,7 +38,6 @@ struct NetGruntRecMsg {
     u8 m_count;
     u8 m_payload[0x3f1];
 };
-SIZE(0x400);
 #pragma pack(pop)
 
 extern char g_lobbyRecvBuf[0x800];

@@ -52,7 +52,6 @@ class DSoundCloneInst;
 class DirectSoundMgr;
 
 typedef struct tagRECT CCueRect;
-SIZE_UNKNOWN();
 
 class CGruntSpawnConfig;
 
@@ -97,7 +96,6 @@ class CGruntCoordList : public CPtrList {
 public:
     void*& NextData(POSITION& pos);
 };
-SIZE_UNKNOWN();
 
 class CGruntPuddle;
 
@@ -144,7 +142,6 @@ struct CGruntCellRec {
 
     i32 DeserializeStrings(class CFileMemBase* ar);
 };
-SIZE(0x68);
 extern GruntDirectionCell g_gruntMoveDirNorth;
 extern GruntDirectionCell g_gruntMoveDirNorthEast;
 extern GruntDirectionCell g_gruntMoveDirEast;
@@ -905,7 +902,6 @@ public:
 
     i32 ArrivalReticleScan();
 };
-SIZE(0x8d8);
 
 union NotifyWord {
     GameObjNotifyFn m_fn;
@@ -922,7 +918,6 @@ union GruntActPmf {
 };
 
 typedef i32 (CGrunt::*GruntActHandler)();
-SIZE(0x4);
 
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);
 

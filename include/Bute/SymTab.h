@@ -18,7 +18,6 @@ struct CSymTabNode : public CHashElement {
         m_symTab = NULL;
     }
 };
-SIZE(0x18);
 
 void __stdcall UnpackTag(RezTypeTag tag, char* dst);
 
@@ -33,7 +32,6 @@ struct CSymRecNode : public CHashElement {
         m_symRec = NULL;
     }
 };
-SIZE(0x18);
 
 class CSymRec {
 public:
@@ -52,7 +50,6 @@ public:
     CHashC m_valTable;
     CSymTab* m_scope;
 };
-SIZE(0x30);
 
 struct CParseSource;
 class CRezItmBase;
@@ -126,6 +123,5 @@ public:
     CHashD m_symbols;
     char* m_mappedBuf;
 };
-SIZE(0x4c);
 
 #endif // SRC_BUTE_SYMTAB_H

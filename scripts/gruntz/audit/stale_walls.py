@@ -4,15 +4,14 @@
 WHY THIS EXISTS.
 
 A wall note is a claim about the binary, written at a moment in time. It is never re-checked.
-So it ROTS: the phantom it blamed gets killed, the class it called SIZE_UNKNOWN gets a proven
-size, the header it said "can never coexist" ends up with a single includer - and the note
+So it ROTS: the phantom it blamed gets killed, an unknown class size becomes measurable,
+the header it said "can never coexist" ends up with a single includer - and the note
 still sits there in the present tense, blocking work. Four inherited walls have now been
 falsified this way, each one on a premise that was mechanically checkable:
 
   * "CGrunt has a phantom +0x120 gap"        -> sizeof(CGrunt) is 0x8d8 from its ALLOCATION
                                                 SITE, and the reconstruction already computed
-                                                exactly that. The class was SIZE_UNKNOWN, so
-                                                nothing had ever contradicted the note.
+                                                exactly that, directly contradicting the note.
   * "GameText.h can never coexist (C2011)"    -> that header has exactly ONE includer.
   * "?ClearRecursive has 7 external callers"  -> a typedef re-mangles every call site.
   * "these 8 RVAs are not function starts"    -> correct, and thunk-resolving them recovered
@@ -235,9 +234,8 @@ def reconstructed_sizes():
     Against the allocation-site oracle this is the sharpest check in the file: the binary says
     how many bytes retail allocated, clang says how many bytes our class occupies, and any gap
     is a LAYOUT BUG - a wrong base, a phantom pad, a missing member. It stays invisible while
-    the class is SIZE_UNKNOWN, because nothing compares the two. That is exactly how the CGrunt
-    "+0x120 gap" survived: had this check existed, it would have said MATCH and the wall would
-    never have been written."""
+    source and retail directly, without a copied size annotation. That is exactly how the
+    CGrunt "+0x120 gap" was disproved."""
     import json
     p = REPO / "build/gen/structs.json"
     if not p.is_file():
@@ -265,7 +263,7 @@ def reconstructed_sizes():
 
 
 def scan_sources():
-    files, sizes, unknown, defined, includes = {}, {}, set(), set(), {}
+    files, defined, includes = {}, set(), {}
     # class -> the files that DEFINE it. A C2011 needs a class with >= 2 definitions; the
     # includer count of a header is irrelevant to that (see T3).
     defs_by_class = {}
@@ -275,7 +273,6 @@ def scan_sources():
             rel = os.path.relpath(f, REPO)
             t = open(f, encoding="latin-1").read()
             files[rel] = t
-            # (SIZE labels are read once, positionally, below this loop)
             here = set(DEF_RE.findall(t))
             defined.update(here)
             defined.update(TYPEDEF_RE.findall(t))
@@ -284,16 +281,7 @@ def scan_sources():
                 defs_by_class.setdefault(c, set()).add(rel)
             for h in INCLUDE_RE.findall(t):
                 includes.setdefault(os.path.basename(h), set()).add(rel)
-    from gruntz.core.class_meta import positional_size_annotations
-    for name, entries in positional_size_annotations().items():
-        if name is None:
-            continue
-        for val, _p, _l in entries:
-            if val is None:
-                unknown.add(name)
-            else:
-                sizes[name] = val
-    return files, sizes, unknown, defined, includes, defs_by_class, defs_by_file
+    return files, defined, includes, defs_by_class, defs_by_file
 
 
 # ---------------------------------------------------------------------------
@@ -310,7 +298,7 @@ BLOCKER = re.compile(
 CLASS_TOK = re.compile(r"\b((?:C[A-Z]\w+|z[A-Z]\w+|_z\w+))\b")
 RVA_TOK = re.compile(r"\b0x0*([0-9a-f]{4,6})\b", re.I)
 HDR_TOK = re.compile(r"<([\w/]+\.h)>|\b(\w+\.h)\b")
-SIZE_PREMISE = re.compile(r"SIZE_UNKNOWN|size (?:is )?(?:not|un)known|unknown size|size TBD", re.I)
+SIZE_PREMISE = re.compile(r"size (?:is )?(?:not|un)known|unknown size|size TBD", re.I)
 # A note that ALREADY records a wall as dead/corrected is not a live claim. Without this the
 # tool re-flags its own fix notes forever ("STALE-WALL NOTE, corrected: ... the wall is DEAD"),
 # which is the fastest way to teach people to ignore it.
@@ -383,9 +371,10 @@ def near(blk, premise_re, token, window=140):
 
 def audit(img, opnew):
     rva2name, _n2r = load_symbols()
-    files, sizes, unknown, defined, includes, defs_by_class, defs_by_file = scan_sources()
+    files, defined, includes, defs_by_class, defs_by_file = scan_sources()
     libcls = library_classes()
     oracle = allocation_oracle(img, opnew, rva2name)
+    computed = reconstructed_sizes()
 
     findings = []
     for rel, text in sorted(files.items()):
@@ -406,10 +395,10 @@ def audit(img, opnew):
                             "STALE size premise: %s is SIZE-KNOWN from its allocation site "
                             "(push 0x%x) - re-derive the layout claim" % (c, oracle[c])
                         )
-                    elif c in sizes:
+                    elif c in computed:
                         hits.append(
-                            "STALE size premise: %s now carries SIZE(%s, 0x%x)"
-                            % (c, c, sizes[c])
+                            "STALE size premise: Clang computes sizeof(%s) as 0x%x"
+                            % (c, computed[c])
                         )
 
             # T2 - "phantom/view X blocks this", but X is gone from the tree.
@@ -417,7 +406,7 @@ def audit(img, opnew):
                 for c in cited_classes:
                     if c.isupper() or c in libcls:
                         continue  # not a tree class: a library type, or not a name at all
-                    if c in defined or c in sizes or c in unknown:
+                    if c in defined or c in computed:
                         continue  # still exists
                     if not near(blk, PHANTOM_RE, c):
                         continue  # cited in passing, not as the premise
@@ -516,7 +505,7 @@ def audit(img, opnew):
             for h in hits:
                 findings.append((rel, line, h))
 
-    return findings, oracle, sizes, unknown
+    return findings, oracle, computed
 
 
 def main():
@@ -535,19 +524,16 @@ def main():
         print("stale_walls: could not find ??2@YAPAXI@Z in config/retail/library_labels.csv")
         return 2
 
-    findings, oracle, sizes, unknown = audit(img, opnew)
+    findings, oracle, computed = audit(img, opnew)
 
     if a.oracle:
         print("allocation-size oracle: %d class(es) sized from the binary\n" % len(oracle))
         for c, s in sorted(oracle.items()):
-            src = ("SIZE(0x%x)" % sizes[c]) if c in sizes else (
-                "SIZE_UNKNOWN" if c in unknown else "-")
+            src = ("sizeof 0x%x" % computed[c]) if c in computed else "-"
             flag = ""
-            if c in sizes:
-                if sizes[c] != s:
+            if c in computed:
+                if computed[c] != s:
                     flag = "   <-- MISMATCH vs source (a real layout bug)"
-            elif c in unknown:
-                flag = "   <-- recoverable (source says unknown)"
             print("  %-34s push 0x%-5x  src %-14s%s" % (c, s, src, flag))
         return 0
 
@@ -565,10 +551,8 @@ def main():
             print("  %-46s:%-5d %s" % (rel, line, h))
 
     # the ranked-by-yield list the sweep should work first
-    ours = reconstructed_sizes()
-    bugs = [(c, ours[c], oracle[c]) for c in sorted(oracle)
-            if c in ours and ours[c] != oracle[c]]
-    recov = sorted(c for c in unknown if c in oracle and c not in sizes)
+    bugs = [(c, computed[c], oracle[c]) for c in sorted(oracle)
+            if c in computed and computed[c] != oracle[c]]
     print("\nallocation-size oracle: %d class(es) sized straight from the binary" % len(oracle))
     if bugs:
         print("  LAYOUT BUG - our sizeof disagrees with the binary's allocation (%d, HIGHEST"
@@ -576,10 +560,6 @@ def main():
         for c, o, b in bugs:
             print("    %-34s ours 0x%-6x binary 0x%-6x  (off by 0x%x)"
                   % (c, o, b, abs(o - b)))
-    if recov:
-        print("  SIZE_UNKNOWN but recoverable from the binary (%d) - pin SIZE() so no future"
-              " note can claim the size is unknown:" % len(recov))
-        print("    " + ", ".join(recov))
     print("\nstale_walls: %d STALE claim(s), %d SUSPECT claim(s)" % (len(stale), len(suspect)))
     print("A claim whose PREMISE is dead is not a wall. Re-derive it from the binary before")
     print("trusting it. A real wall survives on byte-level proof, never on a citation.")

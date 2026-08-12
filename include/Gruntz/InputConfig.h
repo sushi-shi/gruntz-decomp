@@ -16,6 +16,5 @@ public:
     char m_pad00[0x14];
     InputDeviceSel m_deviceId;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_INPUTCONFIG_H

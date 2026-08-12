@@ -29,6 +29,5 @@ public:
     Coord m_cell;
     PickupType m_lastLayer;
 };
-SIZE(0x60);
 
 #endif // GRUNTZ_CGRUNTTOYSPRITE_H

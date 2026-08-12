@@ -22,6 +22,5 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 Tick();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CSECRETLEVELTRIGGER_H

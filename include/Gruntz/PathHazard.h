@@ -14,14 +14,12 @@ struct CPathWaypoint {
     i32 x;
     i32 y;
 };
-SIZE_UNKNOWN();
 
 struct CHazardTimer {
     i64 m_deadline;
     i64 m_window;
     CHazardTimer() : m_deadline(0), m_window(0) {}
 };
-SIZE_UNKNOWN();
 
 #include <Rez/FrameClock.h>
 
@@ -79,6 +77,5 @@ public:
     char m_pad11c[0x120 - 0x11c];
     CHazardTimer m_strike;
 };
-SIZE(0x130);
 
 #endif // GRUNTZ_CPATHHAZARD_H

@@ -17,7 +17,6 @@ public:
     i32 m_count;
     CInputDevBase* m_items[32];
 };
-SIZE_UNKNOWN();
 
 extern "C" CFixedPtrArray32* g_actorList;
 

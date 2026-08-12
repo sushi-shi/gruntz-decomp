@@ -45,6 +45,5 @@ public:
     i32 m_running;
     i32 m_currentMs;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_TIMER_H

@@ -63,4 +63,3 @@ public:
     CDDrawWorker* m_greyChipSprite;
     i32 m_loaded;
 };
-SIZE_UNKNOWN();

@@ -26,6 +26,5 @@ struct InterfaceObject : public CObject {
     i32 IsSerialProvider();
     i32 MatchesUnclassifiedProvider();
 };
-SIZE(0x10);
 
 #endif // SRC_NET_INTERFACEOBJECT_H

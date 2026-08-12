@@ -59,7 +59,6 @@ struct CSbiSlot {
     };
     i64 m_interval;
 };
-SIZE(0x18);
 
 // A 64-bit timestamp paired with its 64-bit interval - the unit `SyncClockPair`
 // serializes and the shape CSbiHlRow carries in its own tail. Its constructor writes
@@ -85,7 +84,6 @@ struct SbiClockPair {
         };
     };
 };
-SIZE(0x10);
 
 struct CSbiHlRow {
     // Inline: retail's out-of-line copy has NO rel32 caller at all - it exists only
@@ -120,7 +118,6 @@ struct CSbiHlRow {
         };
     };
 };
-SIZE(0x18);
 
 class CSBI_SideTab;
 class CSBI_StatzTabArrow;
@@ -366,9 +363,6 @@ public:
     CSBI_WarlordHead* m_warlordHead[4];
     i32 m_tabCycle;
 };
-SIZE(0x630);
-
-SIZE_UNKNOWN();
 
 // SETTLED (re-read against the current layout, in the ctor's only expansion,
 // CPlay::LoadGameAssetNamespaces 0xc7ec0). The zero-store quadruples ARE at their

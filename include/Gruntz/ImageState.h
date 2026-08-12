@@ -8,6 +8,5 @@
 class CImageState : public CState {
 public:
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_IMAGESTATE_H

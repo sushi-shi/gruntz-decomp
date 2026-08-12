@@ -60,7 +60,6 @@ public:
     HSEQUENCE m_seqHandle;
     char* m_loadBuffer;
 };
-SIZE(0x60);
 
 class CGruntzSoundZ {
 public:
@@ -91,6 +90,5 @@ public:
     HINSTANCE m_hInstance;
     i32 m_enabled;
 };
-SIZE(0x2c);
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

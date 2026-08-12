@@ -23,6 +23,5 @@ struct DSoundVoice : public PureSoundElem {
 
     DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp);
 };
-SIZE(0x28);
 
 #endif // DSNDMGR_DSOUNDVOICE_H

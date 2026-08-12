@@ -33,6 +33,5 @@ public:
     i32 m_anchorA;
     i32 m_anchorB;
 };
-SIZE(0x5c);
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

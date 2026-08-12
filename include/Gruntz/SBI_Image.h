@@ -47,7 +47,6 @@ public:
     virtual void Reset() OVERRIDE;
     virtual i32 Refresh(i32 a) OVERRIDE;
 };
-SIZE(0x30);
 
 inline CSBI_RectOnly::~CSBI_RectOnly() {
     Reset();
@@ -94,7 +93,6 @@ public:
 
     CImage* m_frame;
 };
-SIZE(0x34);
 
 inline CSBI_Image::~CSBI_Image() {
     Reset();

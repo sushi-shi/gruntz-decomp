@@ -25,18 +25,15 @@ struct ButeIntRect {
     ButeIntRect(DWORD a_, DWORD b_, DWORD c_, DWORD d_) : a(a_), b(b_), c(c_), d(d_) {}
     DWORD a, b, c, d;
 };
-SIZE(0x10);
 struct ButeIntPoint {
     ButeIntPoint() : a(0), b(0) {}
     ButeIntPoint(DWORD a_, DWORD b_) : a(a_), b(b_) {}
     DWORD a, b;
 };
-SIZE(0x8);
 
 struct ButeRefLarge {
     double x, y, z;
 };
-SIZE(0x18);
 
 struct ButeDoubleVector : ButeRefLarge {
     ButeDoubleVector() {
@@ -50,7 +47,6 @@ struct ButeDoubleVector : ButeRefLarge {
         z = z_;
     }
 };
-SIZE(0x18);
 
 struct ButeDoubleRange {
     ButeDoubleRange() {
@@ -63,7 +59,6 @@ struct ButeDoubleRange {
     }
     double x, y;
 };
-SIZE(0x10);
 
 struct CButeValue {
     ButeType type;
@@ -116,7 +111,6 @@ struct CButeValue {
 
     inline CButeValue* CopyValue(CButeValue* other);
 };
-SIZE(0x8);
 
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     // One arm per ButeType, each through the payload's REAL type - the retail jump

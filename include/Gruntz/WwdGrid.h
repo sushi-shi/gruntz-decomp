@@ -16,7 +16,6 @@ struct BucketHead : DSoundList {
 
     ~BucketHead();
 };
-SIZE_UNKNOWN();
 
 class CWwdGrid : public CObject {
 public:
@@ -52,6 +51,5 @@ public:
     i32 m_cellW;
     BucketHead* m_buckets;
 };
-SIZE(0x44);
 
 #endif // GRUNTZ_WWDGRID_H

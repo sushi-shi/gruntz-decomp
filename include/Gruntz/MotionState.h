@@ -64,7 +64,6 @@ public:
     DoubleVector3 m_maxStep;
     DoubleVector3 m_maxVelocity;
 };
-SIZE(0x108);
 
 inline CMotionState::~CMotionState() {}
 

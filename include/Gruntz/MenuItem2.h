@@ -40,7 +40,6 @@ public:
     i32 m_frameCountdown;
     i32 m_frameDelay;
 };
-SIZE(0x74);
 
 // The constructor calls this header-visible body; the vtable also retains the
 // standalone COMDAT emitted from MenuItem.cpp.

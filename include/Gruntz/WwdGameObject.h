@@ -26,7 +26,6 @@ struct WwdSnapshot {
     i32 m_screenY;
     i32 m_sortKey;
 };
-SIZE(0xa0);
 
 class CDDrawWorker;
 
@@ -43,6 +42,5 @@ class CWwdGameObjectSerial : public CGameObject {
 public:
     virtual i32 GetSerialTypeId();
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_WWDGAMEOBJECT_H

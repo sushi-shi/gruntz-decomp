@@ -8,9 +8,9 @@ their class sizes from `GRUNTZ.EXE`. The work is done — kept for reference onl
 The durable output is in the tree:
 
 - **`include/Stub/MallocConstructors.h`** — the discovered constructor classes,
-  each `SIZE()`-set from its `operator new` / `malloc` site (real RTTI name where
-  the class wasn't already defined, else a `MallocCtor_<rva>` placeholder for a
-  non-RTTI class).
+  with placeholder storage sized from each `operator new` / `malloc` site (real
+  RTTI name where the class wasn't already defined, else a `MallocCtor_<rva>`
+  placeholder for a non-RTTI class).
 - **`src/Stub/MallocConstructors.cpp`** — the RVA-labeled constructor bodies
   (so they delink/diff against retail), `#include`-ing the header.
 

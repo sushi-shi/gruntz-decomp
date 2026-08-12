@@ -21,14 +21,12 @@ public:
     i32 m_flag;
     i32 m_data;
 };
-SIZE(0xc);
 
 struct CSpawnNode {
     CSpawnNode* m_next;
     CSpawnNode* m_prev;
     CSpawnEntry* m_entry;
 };
-SIZE(0xc);
 
 class CSpawnList {
 public:
@@ -51,6 +49,5 @@ public:
     POSITION m_cursor;
     i32 m_lastPicked;
 };
-SIZE(0x24);
 
 #endif // GRUNTZ_GRUNTZ_SPAWNLIST_H

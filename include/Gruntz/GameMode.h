@@ -67,8 +67,6 @@ public:
 
     void BuildVersionString(tagRECT r);
 };
-SIZE(0x1c0);
-SIZE_UNKNOWN();
 
 class CCreditsState : public CState {
 public:
@@ -136,8 +134,6 @@ public:
 
     i32 SetupTitle();
 };
-SIZE(0x218);
-SIZE_UNKNOWN();
 
 class CBootyState : public CState {
 public:
@@ -258,8 +254,6 @@ public:
 
     char m_pad31c[0x320 - 0x31c];
 };
-SIZE(0x320);
-SIZE_UNKNOWN();
 
 class CMultiBootyState : public CState {
 public:
@@ -315,7 +309,5 @@ public:
     CWwdGameObjectA* m_warlordBooty;
     CWwdGameObjectA* m_fortSprite;
 };
-SIZE(0x244);
-SIZE_UNKNOWN();
 
 #endif // SRC_GRUNTZ_GAMEMODE_H

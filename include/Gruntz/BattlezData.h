@@ -26,7 +26,6 @@ struct BattlezRecord {
     i32 m_secretsAvailable;
     i32 m_coinsAvailable;
 };
-SIZE_UNKNOWN();
 
 // The four Battlez players. It is the dimension of every per-player table on
 // CBattlezData - m_counts, and the m_wins / m_flags matrices - and the stride
@@ -111,7 +110,6 @@ public:
     i32 m_powerupPickupz[28];
     i32 m_miscPickupz[16];
 };
-SIZE_UNKNOWN();
 
 inline CBattlezData::CBattlezData() {
     Init();

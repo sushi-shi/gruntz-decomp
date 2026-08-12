@@ -295,8 +295,8 @@ def collect_vars(ast, main_file):
     def visit(node):
         if isinstance(node, dict):
             update_file(node)
-            # `gruntz_clsmeta_*` are SIZE/SIZE_UNKNOWN class-metadata
-            # carriers (include/rva.h): file-scope `used` statics that DO carry a
+            # `gruntz_clsmeta_*` are VTBL_ABSENT class-metadata carriers
+            # (include/rva.h): file-scope `used` statics that DO carry a
             # mangledName. Skip them so a carrier written between a DATA(...) and
             # its extern can never steal the DATA binding (data_labels picks the
             # first VarDecl below the macro).
@@ -306,240 +306,8 @@ def collect_vars(ast, main_file):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:
-                    ty = node.get("type") or {}
-                    qt = ty.get("qualType") or ""
-                    # clang's own desugaring of a typedef (HWND -> HWND__ *), used
-                    # only to SIZE the global; the sugar type stays the reported one.
-                    out.append((node["mangledName"], off, qt,
-                                ty.get("desugaredQualType") or ""))
-            for c in node.get("inner", []) or []:
-                visit(c)
-    visit(ast)
-    return out
-
-
-# --- DATA() sizeof: the EXACT extent of a matched global from its declared type
-# A CodeView data record carries no length and the retail EXE has no symbol sizes,
-# so the DECLARED C++ TYPE is the only authority for a global's byte extent (the
-# same role homm2's libclang VarDecl inventory plays; see docs/data-attribution.md).
-# Without it every extent degrades to the next-symbol GAP, which is only an upper
-# bound (it swallows padding and any unlabelled neighbour) and is useless as a
-# delinker data-manifest extent.
-#
-# SAFETY: a WRONG size would make the delinker materialize the wrong bytes, so this
-# resolver is deliberately conservative - it returns a size ONLY for shapes it can
-# prove (i386/MSVC5 scalars, any pointer/reference, a sized array of a resolvable
-# element, or a record whose clang-computed layout is in structs.json) and None for
-# everything else. None simply leaves the column empty = today's behaviour.
-_SCALAR_SIZES = {
-    # Rust-style aliases (include/Ints.h) - Gruntz's own, unambiguous.
-    "i8": 1, "u8": 1, "i16": 2, "u16": 2, "i32": 4, "u32": 4,
-    "i64": 8, "u64": 8, "f32": 4, "f64": 8,
-    # C/C++ scalars, i386 / MSVC 5.0 ABI.
-    "char": 1, "signed char": 1, "unsigned char": 1, "bool": 1,
-    "short": 2, "short int": 2, "unsigned short": 2, "unsigned short int": 2,
-    "wchar_t": 2,
-    "int": 4, "signed int": 4, "unsigned int": 4, "unsigned": 4,
-    "long": 4, "long int": 4, "unsigned long": 4, "unsigned long int": 4,
-    "float": 4,
-    "double": 8, "long double": 8, "__int64": 8, "unsigned __int64": 8,
-}
-_ARRAY_RE = re.compile(r"^(.*?)\s*\[(\d+)\]$")
-_RECORD_SIZES_CACHE = {}
-_ENUM_NAMES_CACHE = {}
-
-
-_TYPE_TAG_RE = re.compile(r"\b(?:class|struct|union|enum)\s+")
-
-
-def canon_record_name(name):
-    """One spelling for a record name across clang's TWO printers.
-
-    `-fdump-record-layouts` (which fills structs.json) writes the elaborated form
-    with `(void)` for an empty parameter list:
-        class zDArray<int (CUserLogic::*)(void) __attribute__((thiscall))>
-    the AST's desugaredQualType (which is what a DATA() global carries) writes:
-        zDArray<int (CUserLogic::*)() __attribute__((thiscall))>
-    Both are clang printing the SAME type, so folding the tags, `(void)` and the
-    whitespace is a deterministic normalization, not a guess. Ordinary class names
-    are unaffected - they contain none of those.
-    """
-    t = _TYPE_TAG_RE.sub("", name or "")
-    return re.sub(r"\s+", "", t.replace("(void)", "()"))
-
-
-def record_sizes(path=None):
-    """{record name: byte size} from the generated clang record layouts.
-
-    build/gen/structs.json is produced by ghidra_metadata_generate with the same
-    i386/MSVC target as the build, so its sizes ARE the MSVC layout. Absent file =>
-    no record sizes (scalars/pointers still resolve); never fatal.
-
-    Every record is also indexed under canon_record_name() so a template
-    specialization written one way in the layout dump and another in the AST still
-    resolves. A canonical spelling two DIFFERENT-sized records share is dropped,
-    exactly like a name whose size disagrees across TUs."""
-    path = str(path or (REPO / "build/gen/structs.json"))
-    if path not in _RECORD_SIZES_CACHE:
-        out = {}
-        try:
-            for rec in json.loads(Path(path).read_text()):
-                name, size = rec.get("name"), rec.get("size")
-                if name and isinstance(size, int) and size > 0:
-                    # Same record from several TUs must agree; a disagreement means
-                    # the layout is TU-dependent -> refuse to size it.
-                    if out.get(name, size) != size:
-                        out[name] = None
-                    else:
-                        out.setdefault(name, size)
-        except (OSError, json.JSONDecodeError, TypeError):
-            pass
-        for name, size in list(out.items()):
-            canon = canon_record_name(name)
-            if canon != name:
-                out[canon] = size if out.get(canon, size) == size else None
-        _RECORD_SIZES_CACHE[path] = {k: v for k, v in out.items() if v}
-    return _RECORD_SIZES_CACHE[path]
-
-
-def enum_names(path=None):
-    """The set of enum tags clang saw in this tree (build/gen/enums.json).
-
-    MSVC 5.0 has no `enum class` and sizes EVERY enum as 4 bytes (CLAUDE.md; the
-    GZ_ENUM_* layer in <Enums.h> is built on that invariant), so knowing a name IS
-    an enum is knowing its extent. Without this an enum-typed global stays sizeless,
-    never enrols in the delinker data manifest, and every reference to it degrades to
-    `<previous symbol>+addend` in the target obj - which objdiff then scores as a
-    different referent (found via `gruntz.audit.crt_symbols`: retail's
-    `_g_opt_22bdc4` x4 was our `_g_opt_22bdc4` x2 + `_g_opt_22bdc8` x2)."""
-    path = str(path or (REPO / "build/gen/enums.json"))
-    if path not in _ENUM_NAMES_CACHE:
-        out = set()
-        try:
-            for rec in json.loads(Path(path).read_text()):
-                name = rec.get("name")
-                if name:
-                    out.add(name)
-        except (OSError, json.JSONDecodeError, TypeError, AttributeError):
-            pass
-        _ENUM_NAMES_CACHE[path] = out
-    return _ENUM_NAMES_CACHE[path]
-
-
-# Trailing/leading cv-qualifier, with or without a separating space ("void *const").
-_CV_TRAIL_RE = re.compile(r"\s*\b(?:const|volatile)\s*$")
-_CV_LEAD_RE = re.compile(r"^\s*\b(?:const|volatile)\b\s*")
-
-
-def _strip_cv(t):
-    t = t.strip()
-    for _ in range(4):
-        before = t
-        t = _CV_LEAD_RE.sub("", t)
-        t = _CV_TRAIL_RE.sub("", t)
-        t = t.strip()
-        if t == before:
-            break
-    return t
-
-
-def sizeof_qualtype(qt, records=None, desugared=None, typedefs=None):
-    """Exact sizeof for a clang qualType, or None when not provable.
-
-    `desugared` is clang's own desugaredQualType for the same declaration. Win32/MFC
-    typedefs (HWND, WORD, HINSTANCE, ...) are resolved through it rather than a
-    hand-rolled typedef table, so the REAL headers stay the authority (see CLAUDE.md).
-
-    `typedefs` is the TU's own TypedefDecl map, needed because clang emits NO
-    `desugaredQualType` for an ARRAY of a typedef'd record: `const RECT[4]` comes
-    through with the sugar only, `RECT` is not a key in structs.json (which is
-    keyed on the TAG, `tagRECT`), and the global silently goes sizeless -> withheld
-    from the data manifest -> its bytes are never compared by objdiff at all. That
-    is the too-small-claim defect in its purest form and it hid 12 real globals,
-    incl. all eight of BootyStateActivate's `RECT` tables (560 B) and
-    `g_paletteRampBuf`. Resolving through the TU's own AST keeps clang the
-    authority; no hand-rolled typedef table is introduced.
-    """
-    for cand in (qt, desugared):
-        size = _sizeof_one(cand, records, typedefs)
-        if size:
-            return size
-    return None
-
-
-#: A variable of PLAIN function-pointer type - `LRESULT (*)(HWND, UINT, ...)`,
-#: `int (__stdcall *)(void)`. Four bytes on i386, always. Deliberately excludes a
-#: pointer-to-MEMBER-function (`int (CFoo::*)()`), whose MSVC representation is
-#: 4/8/12/16 bytes depending on the inheritance model - that one stays unprovable.
-_FNPTR_RE = re.compile(r"\((?:\s*__\w+)?\s*\*\s*\)\s*\(")
-
-
-def _sizeof_one(qt, records=None, typedefs=None):
-    if not qt:
-        return None
-    t = _strip_cv(qt)
-    if not t:
-        return None
-    if "::*" not in t and _FNPTR_RE.search(t):
-        return 4
-    # A TEMPLATE SPECIALIZATION IS ONE NAME, EVEN WITH PARENTHESES IN IT. Its
-    # argument list can hold a pointer-to-member (`zDArray<int (CUserLogic::*)()>`),
-    # so it must be looked up WHOLE before the function-type screen below rejects it
-    # on the parenthesis. That screen is why all 51 `CActRegPool<T>::s_table`
-    # statics were sizeless.
-    if "<" in t and not t.endswith(("*", "&", "[]")):
-        recs = record_sizes() if records is None else records
-        size = recs.get(canon_record_name(t))
-        if size:
-            return size
-    if "(" in t:                   # function / function-pointer types: not sized here
-        return None
-    if t.endswith(("*", "&")):     # any pointer/reference is 4 on i386
-        return 4
-    m = _ARRAY_RE.match(t)
-    if m:
-        elem = _sizeof_one(m.group(1), records, typedefs)
-        n = int(m.group(2))
-        return elem * n if elem else None
-    if t.endswith("[]"):           # incomplete array: extent unknown
-        return None
-    if t in _SCALAR_SIZES:
-        return _SCALAR_SIZES[t]
-    recs = record_sizes() if records is None else records
-    key = re.sub(r"^(struct|class|union|enum)\s+", "", t)
-    size = recs.get(key)
-    if size is None and (t.startswith("enum ") or key in enum_names()):
-        return 4                   # MSVC 5.0 sizes every enum as 4 bytes
-    if size is None and typedefs:
-        # clang leaves an array-of-typedef'd-record undesugared, so follow the
-        # TU's own TypedefDecl chain (bounded, so a self-referential typedef
-        # cannot loop).
-        seen, under = set(), typedefs.get(key)
-        while under and key not in seen and len(seen) < 8:
-            seen.add(key)
-            size = _sizeof_one(under, records)
-            if size:
-                return size
-            key = re.sub(r"^(struct|class|union|enum)\s+", "", _strip_cv(under))
-            under = typedefs.get(key)
-    return size
-
-
-def typedef_map(ast):
-    """{typedef name: underlying qualType} over the WHOLE AST, headers included.
-
-    Unlike `collect_vars` this is deliberately not main-file-only: `RECT` is
-    declared in windows.h and used by a global in the .cpp, so restricting it to
-    the main file would defeat the purpose.
-    """
-    out = {}
-
-    def visit(node):
-        if isinstance(node, dict):
-            if node.get("kind") == "TypedefDecl" and node.get("name"):
-                qt = (node.get("type") or {}).get("qualType")
-                if qt:
-                    out.setdefault(node["name"], qt)
+                    qt = (node.get("type") or {}).get("qualType") or ""
+                    out.append((node["mangledName"], off, qt))
             for c in node.get("inner", []) or []:
                 visit(c)
     visit(ast)
@@ -559,6 +327,61 @@ def clang_ast(clang, tu, flags, cl_flags=None):
     except json.JSONDecodeError:
         log(f"ERROR {tu}: clang produced no JSON AST\n{res.stderr[:400]}")
         return None
+
+
+def clang_var_sizes(tu, flags, cl_flags=None):
+    """{mangled VarDecl name: exact byte extent} from the current TU.
+
+    This is the DATA extent authority.  libclang lays each declaration out under
+    the TU's real i386/MSVC flags, so a record, typedef, array, or enum is sized
+    directly from the source being labelled.  Do not route this through the
+    whole-tree ``structs.json`` audit cache: that snapshot may be older than this
+    per-TU label edge.
+
+    Return None when libclang could not parse the TU cleanly.  An incomplete type
+    has a negative ``get_size()`` and is deliberately omitted from the result.
+    """
+    try:
+        import clang.cindex as cidx
+    except ImportError as exc:
+        log(f"ERROR {tu}: pylibclang unavailable for DATA extents: {exc}")
+        return None
+
+    if cl_flags is not None:
+        parse_args = ["--driver-mode=cl", "/DGRUNTZ_EMIT_META",
+                      *cl_flags, *INC_CL]
+    else:
+        parse_args = ["-DGRUNTZ_EMIT_META", *MS_FLAGS, *flags, *INC_GCC]
+    try:
+        parsed = cidx.Index.create().parse(tu, args=parse_args)
+    except cidx.LibclangError as exc:
+        log(f"ERROR {tu}: pylibclang parse failed for DATA extents: {exc}")
+        return None
+    errors = [d for d in parsed.diagnostics if d.severity >= cidx.Diagnostic.Error]
+    if errors:
+        log(f"ERROR {tu}: pylibclang reported DATA-extent parse errors:\n" +
+            "\n".join(str(d) for d in errors[:10]))
+        return None
+
+    main_real = os.path.realpath(tu)
+    sizes = {}
+    conflicts = set()
+    for cursor in parsed.cursor.walk_preorder():
+        if cursor.kind != cidx.CursorKind.VAR_DECL or cursor.location.file is None:
+            continue
+        if os.path.realpath(cursor.location.file.name) != main_real:
+            continue
+        name = cursor.mangled_name
+        size = cursor.type.get_size()
+        if not name or size < 0:
+            continue
+        if name in sizes and sizes[name] != size:
+            conflicts.add(name)
+        else:
+            sizes[name] = size
+    for name in conflicts:
+        sizes.pop(name, None)
+    return sizes
 
 
 def blank_comments(text):
@@ -759,8 +582,8 @@ def data_labels(text, ast, main_file):
     with functions, so a non-matched global cannot steal a function's address.
     """
     off2line = line_index(text)
-    var_defs = sorted((off2line(off), mn, qt, dq)
-                      for (mn, off, qt, dq) in collect_vars(ast, main_file))
+    var_defs = sorted((off2line(off), mn, qt)
+                      for (mn, off, qt) in collect_vars(ast, main_file))
     out = []
     line_no = 1
     for m in re.finditer(r"[^\n]*\n", blank_comments(text)):
@@ -768,9 +591,9 @@ def data_labels(text, ast, main_file):
         dm = DATA_MACRO_RE.search(seg)
         if dm:
             rva = int(dm.group(1), 16)
-            cand = next(((mn, qt, dq) for (dl, mn, qt, dq) in var_defs if dl >= line_no),
-                        (None, None, None))
-            out.append((rva, cand[0], cand[1], cand[2]))
+            cand = next(((mn, qt) for (dl, mn, qt) in var_defs if dl >= line_no),
+                        (None, None))
+            out.append((rva, cand[0], cand[1]))
         line_no += 1
     return out
 
@@ -1508,8 +1331,7 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     # contribute nothing.
     #
     # A fragment IS allowed to be empty when its TU carries no rva.h label macro at
-    # all: class-metadata-only TUs may exist purely to host SIZE() annotations. So
-    # consult the SOURCE rather
+    # all. Consult the SOURCE rather
     # than guessing from the file - the check stays honest and needs no marker file.
     src_of = {u: s for s, u in units_from_toml(REPO / "config/units.toml").items()} \
         if (REPO / "config/units.toml").exists() else {}
@@ -1642,6 +1464,7 @@ def main():
     global_meta = {}   # rva -> {name, type, unit} for globals.json (typed data)
     no_ir = []         # TUs whose label pass produced NO IR at all      -> FATAL
     no_rows = []       # TUs that carry rva.h macros but labelled nothing -> FATAL
+    no_data_sizes = [] # TUs whose current libclang layout parse failed  -> FATAL
     compgen_claims = []  # (rva, name, unit, size, vkind, payload)
     compgen_errors = []  # (tu, line, reason)                            -> FATAL
     for i, tu in enumerate(args.tu):
@@ -1691,6 +1514,11 @@ def main():
         # which equals the IR-paired symbol (`ir_sym`), so the join is by rva below.
         ast = clang_ast(args.clang, tu, args.flag, cl_flags)
         ast_param_names = param_names_from_ast(ast, tu) if ast is not None else {}
+        data_sizes = None
+        if DATA_MACRO_RE.search(text):
+            data_sizes = clang_var_sizes(tu, args.flag, cl_flags)
+            if data_sizes is None:
+                no_data_sizes.append(tu)
         for rva, ir_sym, size in func_labels_from_ir(ir):
             addr_sites.setdefault(rva, []).append((tu, ir_sym))
             # The IR pairs the annotation with the function's own mangled symbol.
@@ -1741,24 +1569,21 @@ def main():
                 misses.append((rva, sym, unit, "RVA_COMPGEN not in base obj"))
 
         # --- DATA via AST (IR drops the extern's annotation) ---
-        if ast is not None and DATA_MACRO_RE.search(text):
-            tdefs = typedef_map(ast)
-            for rva, cand, qtype, dqtype in data_labels(text, ast, tu):
+        if ast is not None and data_sizes is not None and DATA_MACRO_RE.search(text):
+            for rva, cand, qtype in data_labels(text, ast, tu):
                 if cand is None:
                     misses.append((rva, None, unit, "no VarDecl below DATA()"))
                     continue
+                clang_name = cand
                 if all_syms is not None and cand not in all_syms:
                     cand = msvc5_data_symbol(cand, all_syms) or cand
                 # The `globals` unit is trusted (see GLOBALS_UNIT): its externs are
                 # never referenced in its own base obj, so bypass the authority
                 # check (the names came pre-checked from the matched TUs).
                 if obj_syms is None or cand in all_syms or unit == GLOBALS_UNIT:
-                    # The declared type is the ONLY authority for a global's extent
-                    # (no CodeView length, no retail symbol sizes) - see
-                    # sizeof_qualtype. Unprovable types stay None => empty column =>
-                    # the consumer falls back to the next-symbol gap, as before.
-                    dsize = sizeof_qualtype(qtype, desugared=dqtype,
-                                            typedefs=tdefs)
+                    # libclang sizes the declaration in THIS TU under the real
+                    # i386/MSVC flags. Unprovable/incomplete types stay None.
+                    dsize = data_sizes.get(clang_name)
                     rows.append((rva, cand, unit, dsize, "data"))
                     # remember the declared type so apply.py can type the global
                     global_meta[rva] = {"name": cand, "type": qtype, "unit": unit,
@@ -1832,7 +1657,7 @@ def main():
             f"{args.out}.")
         return 1
 
-    if no_ir or no_rows:
+    if no_ir or no_rows or no_data_sizes:
         for tu in no_ir:
             log(f"ERROR {tu}: label pass produced NO IR - the TU compiles under cl but "
                 f"clang rejected it, so ALL of its functions would silently vanish from "
@@ -1843,7 +1668,11 @@ def main():
         for tu in no_rows:
             log(f"ERROR {tu}: carries rva.h macros but labelled NOTHING - its functions "
                 f"would silently vanish from {args.out}.")
-        log(f"{len(no_ir) + len(no_rows)} TU(s) contributed no labels; refusing to write "
+        for tu in no_data_sizes:
+            log(f"ERROR {tu}: pylibclang could not derive DATA extents from the current "
+                "TU; refusing to reuse a structs.json snapshot or emit stale sizes.")
+        log(f"{len(no_ir) + len(no_rows) + len(no_data_sizes)} TU(s) failed label "
+            "generation; refusing to write "
             f"{args.out}. A TU that compiles MUST contribute.")
         return 1
 

@@ -22,7 +22,6 @@ struct AmbientPoint {
     i32 x;
     i32 y;
 };
-SIZE_UNKNOWN();
 
 struct CRandomAmbientWorld;
 
@@ -70,7 +69,6 @@ public:
     i32 m_panIndex;
     POSITION m_listNode;
 };
-SIZE(0x40);
 
 class CAmbientPosSound : public CAmbientSound {
 public:
@@ -91,6 +89,5 @@ public:
 
     AmbientPoint m_position;
 };
-SIZE(0x48);
 
 #endif // GRUNTZ_CAMBIENTSOUND_H

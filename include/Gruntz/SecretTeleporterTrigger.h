@@ -26,6 +26,5 @@ public:
 
     i32 SpawnTeleporter();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CSECRETTELEPORTERTRIGGER_H

@@ -25,7 +25,6 @@ struct CHashSlot {
     char m_pad00[0x8];
     DSoundList m_chain;
 };
-SIZE(0x10);
 
 VTBL_ABSENT(CHashElement);
 class CHashElement {
@@ -46,7 +45,6 @@ public:
         CRezDirNode* m_rezDirNode;
     };
 };
-SIZE(0x18);
 
 class CHashBase {
 public:
@@ -71,7 +69,6 @@ public:
     u32 m_count;
     CHashSlot* m_buckets;
 };
-SIZE(0x8);
 
 // FOUR typed heads over the one CHashBase. Each carries its own inline
 // `~X() { RemoveAll(); }`, so cl emits four 5-byte `jmp CHashBase::RemoveAll`
@@ -104,7 +101,6 @@ public:
         RemoveAll();
     }
 };
-SIZE(0x8);
 
 // CSymTab::m_subTabs - CSymTab elements chained through CSymTabNode, keyed by name.
 class CHashB : public CHashBase {
@@ -119,7 +115,6 @@ public:
     u32 HashStr(const char* s);
     void* Walk(const char* name, i32 ci);
 };
-SIZE(0x8);
 
 // CSymRec::m_valTable and CSymParser::m_hash - CParseSource elements chained
 // through CParseSlotHashNode, keyed by name.
@@ -135,7 +130,6 @@ public:
     u32 HashStr(const char* s);
     void* Walk(const char* name, i32 ci);
 };
-SIZE(0x8);
 
 // CSymTab::m_symbols - CSymRec elements chained through CSymRecNode, keyed by the
 // integer symbol key.
@@ -153,6 +147,5 @@ public:
     // arbitrary symbol key, so the parameter is NOT a single domain.
     void* FindInt(u32 key);
 };
-SIZE(0x8);
 
 #endif // SRC_BUTE_HASH_H

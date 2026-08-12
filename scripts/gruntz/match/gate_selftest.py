@@ -9,9 +9,6 @@ nobody had ever falsified:
   * ``vtable_slot_binding`` read its own baseline through ``csv.DictReader``, which
     ate the ``#`` banner as the header row - so the frozen backlog parsed as EMPTY
     and the gate passed everything, forever. Found by writing a negative control.
-  * ``class_sizes`` matched ``SIZE(C, N)`` in PROSE, and ``out[name]`` let the last
-    writer win - so a COMMENT beat the real declaration and turned a FATAL gate red
-    against correct code.
   * ``cleanliness`` dropped a ratcheted metric's row whenever its subprocess failed,
     and the next ``save_baseline`` deleted that metric's floor.
 
@@ -42,7 +39,6 @@ from gruntz.audit import aggregate_copies, data_denominator, data_integrity, ima
 from gruntz.audit import rename_member, tu_layout, tu_order_check
 from gruntz.audit import nested_static_casts
 from gruntz.cleanliness import board as cleanliness
-from gruntz.cleanliness import class_sizes
 from gruntz.cleanliness import view_debt
 from gruntz.core import class_meta
 from gruntz.core import branches
@@ -92,6 +88,31 @@ class SourceIdentityContractTests(unittest.TestCase):
         )
         self.assertEqual(len(errors), 1)
         self.assertIn("takes (addr, value)", errors[0][2])
+
+
+class DataExtentAuthorityTests(unittest.TestCase):
+    def test_pylibclang_sizes_current_tu_without_structs_cache(self):
+        with tempfile.TemporaryDirectory() as td:
+            source = Path(td) / "extent.cpp"
+            source.write_text(
+                "struct Rect { int left, top, right, bottom; };\n"
+                "Rect g_rect;\n"
+            )
+            sizes = labels.clang_var_sizes(
+                str(source), ["--target=i386-pc-windows-msvc"]
+            )
+            self.assertIsNotNone(sizes)
+            self.assertIn(16, sizes.values())
+
+    def test_pylibclang_omits_incomplete_extent(self):
+        with tempfile.TemporaryDirectory() as td:
+            source = Path(td) / "incomplete.cpp"
+            source.write_text("extern char g_unknown[];\n")
+            sizes = labels.clang_var_sizes(
+                str(source), ["--target=i386-pc-windows-msvc"]
+            )
+            self.assertIsNotNone(sizes)
+            self.assertFalse(any("g_unknown" in name for name in sizes))
 
 
 class TuOrderExileControls(unittest.TestCase):
@@ -895,46 +916,6 @@ class TestMsvc5DataSymbols(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
-# class_sizes: PROSE is not CODE, and a duplicate is not a race                #
-# --------------------------------------------------------------------------- #
-class TestClassSizesProse(unittest.TestCase):
-    def test_size_in_a_comment_is_not_a_declaration(self):
-        """THE ORIGINAL BUG: a note mentioning SIZE(C, 0x30) beat the real SIZE(C, 0x34)."""
-        with _Tree({"a.h": "class CUserLogic {};\nSIZE(0x34);\n",
-                    "b.cpp": "// (2) SIZE(0x30) under CUserLogic revisited - a base at +0x34 ...\n"}):
-            self.assertEqual(class_sizes._declared_sizes(), {"CUserLogic": 0x34},
-                             "a SIZE() written in prose was read as a declaration")
-
-    def test_conflicting_real_declarations_are_an_error_not_a_race(self):
-        """Two REAL decls disagreeing must FAIL, not silently pick the last writer."""
-        # The gate reports the conflict on stderr; swallow it so this EXPECTED failure
-        # does not read as a real one in the build log it now runs inside.
-        with _Tree({"a.h": "struct CFoo {};\nSIZE(0x34);\n", "b.h": "struct CFoo;\nSIZE(0x30);\n"}):
-            with contextlib.redirect_stderr(io.StringIO()) as err:
-                with self.assertRaises(SystemExit) as cm:
-                    class_sizes._declared_sizes()
-            self.assertEqual(cm.exception.code, 1)
-            self.assertIn("CONFLICTING", err.getvalue())
-            self.assertIn("0x34", err.getvalue())   # both sides named, no winner picked
-            self.assertIn("0x30", err.getvalue())
-
-    def test_agreeing_duplicates_are_fine(self):
-        with _Tree({"a.h": "struct CFoo {};\nSIZE(0x34);\n", "b.h": "struct CFoo;\nSIZE(0x34);\n"}):
-            self.assertEqual(class_sizes._declared_sizes(), {"CFoo": 0x34})
-
-    def test_loadbearing_ignores_english_prose(self):
-        """`new` is an English word. Prose must not make a class load-bearing -
-        that escalates a documented partial model into a FATAL byte-bug report."""
-        with _Tree({"a.cpp": "// allocate a new CGameMgr for the new tile when the\n"
-                             "// new fader runs; sizeof(CObject) is discussed here.\n"
-                             "void f() { CReal* p = new CReal(); }\n"}):
-            lb = class_sizes._loadbearing()
-        self.assertIn("CReal", lb, "a real `new CReal()` must be load-bearing")
-        for prose in ("CGameMgr", "CObject", "tile", "fader"):
-            self.assertNotIn(prose, lb, f"prose word {prose!r} counted as load-bearing")
-
-
-# --------------------------------------------------------------------------- #
 # verify_unique_names: one NAME per rva, and one stretch of .text per CLAIM     #
 # --------------------------------------------------------------------------- #
 class TestClaimExtents(unittest.TestCase):
@@ -1551,21 +1532,20 @@ class TestSlotBindingBaseline(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
-# class_meta: the shared scanner both halves of class_sizes depend on          #
+# class_meta: comments and strings do not create class definitions             #
 # --------------------------------------------------------------------------- #
 class TestClassMetaScanner(unittest.TestCase):
     def test_a_comment_never_declares_anything(self):
-        with _Tree({"a.cpp": "// class CGhost { };  SIZE(0x10);\n"
-                             "/* class CBlock {}; SIZE(0x20); */\n"
-                             "class CReal {};\nSIZE(0x30);\n"}):
+        with _Tree({"a.cpp": "// class CGhost { };\n"
+                             "/* class CBlock {}; */\n"
+                             "class CReal {};\n"}):
             self.assertEqual(set(class_meta.unique_class_defs()), {"CReal"})
-            self.assertEqual(class_meta.size_annotated_names(), {"CReal"})
 
     def test_a_double_slash_inside_a_string_is_not_a_comment(self):
         """The state machine must not treat "http://x" as starting a comment and eat
         the real declaration that follows on the same line."""
-        with _Tree({"a.cpp": 'const char* u = "http://x";\nstruct CAfter {};\nSIZE(0x40);\n'}):
-            self.assertIn("CAfter", class_meta.size_annotated_names())
+        with _Tree({"a.cpp": 'const char* u = "http://x";\nstruct CAfter {};\n'}):
+            self.assertIn("CAfter", class_meta.unique_class_defs())
 
 
 class TestOmittedZeroFuzzyPercent(unittest.TestCase):

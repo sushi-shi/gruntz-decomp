@@ -16,6 +16,5 @@ public:
     char m_pad0[0xc];
     CDDrawSurfaceMgr* m_world;
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_DEMOHELPERS_H

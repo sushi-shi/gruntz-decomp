@@ -34,6 +34,5 @@ struct CAniRecordBase2 : public CWapObj {
     virtual i32 CreatePaletteFromTrailingData(void* data, i32 size, i32 flag);
     virtual i32 PushPalette();
 };
-SIZE(0x14);
 
 #endif // GRUNTZ_DDRAWMGR_ANIRECORDBASE2_H

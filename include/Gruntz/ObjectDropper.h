@@ -47,6 +47,5 @@ public:
         CPairRecord m_dropTiming;
     };
 };
-SIZE(0x98);
 
 #endif // GRUNTZ_COBJECTDROPPER_H

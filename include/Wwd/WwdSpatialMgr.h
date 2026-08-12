@@ -55,8 +55,6 @@ struct CWwdSpatialMgr {
     CGameObject* GetFirstObject();
     CGameObject* GetNextObject();
 };
-SIZE(0xb8);
-SIZE_UNKNOWN();
 
 // Both are inline in retail: RebuildPlanes (0x1628f0) inlines the ctor's five
 // NULL stores after `operator new`, and inlines the dtor (FreeGrids + the

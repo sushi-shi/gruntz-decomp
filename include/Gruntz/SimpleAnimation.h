@@ -23,6 +23,5 @@ public:
 
     virtual void FireActivation(i32 id) OVERRIDE;
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CSIMPLEANIMATION_H

@@ -31,6 +31,5 @@ public:
     i32 m_cachedAreaId;
     i32 m_cachedSubId;
 };
-SIZE(0x5c);
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

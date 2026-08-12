@@ -19,6 +19,5 @@ public:
 
     virtual i32 GetDisplayedValue(CGrunt* grunt) OVERRIDE;
 };
-SIZE(0x64);
 
 #endif // GRUNTZ_CGRUNTWINGZTIMESPRITE_H

@@ -9,7 +9,6 @@ struct SecretMsgRow {
     char strA[0x20];
     char strB[0x80];
 };
-SIZE_UNKNOWN();
 
 extern RECT g_levelMsgRectsA[8];
 

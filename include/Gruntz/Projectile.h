@@ -70,7 +70,5 @@ public:
     i32 m_targetId, m_ownerId;
 };
 
-SIZE_UNKNOWN();
-
 extern const double g_projPhase1;
 #endif // GRUNTZ_PROJECTILE_H

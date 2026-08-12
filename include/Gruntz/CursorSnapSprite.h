@@ -24,8 +24,5 @@ public:
 
     i32 AdvanceAnim();
 };
-SIZE(0x54);
-
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_CCURSORSNAPSPRITE_H

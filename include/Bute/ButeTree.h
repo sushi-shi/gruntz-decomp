@@ -27,7 +27,6 @@ struct CVariantSlot {
     i32 m_reserved10;
     char* m_label;
 };
-SIZE(0x18);
 
 struct TypeKeyRec {
     i32 m_key;
@@ -35,7 +34,6 @@ struct TypeKeyRec {
     short m_value;
     char m_pad0a[2];
 };
-SIZE(0xc);
 
 struct CButeTreeNode {
     CButeTreeNode* m_child[2];
@@ -45,13 +43,11 @@ struct CButeTreeNode {
     // CButeValue*, g_buteTree stores an id packed into the pointer.
     char* m_value;
 };
-SIZE(0x14);
 
 class CButeTree : public zPTree {
 public:
     CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
 };
-SIZE_UNKNOWN();
 
 // g_buteTree's teardown callback; the tree owns no node payloads.
 void ButeTreeNopFree(void*);

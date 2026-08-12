@@ -150,6 +150,5 @@ struct AnimWorkerObj : public CWapObj {
     i32 m_targetId;
     u32 m_payloadSize;
 };
-SIZE(0x17c);
 
 #endif // GRUNTZ_DDRAWMGR_ANIMWORKEROBJ_H

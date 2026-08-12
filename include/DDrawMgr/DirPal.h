@@ -15,13 +15,11 @@ union LogPal256 {
         PALETTEENTRY palPalEntry[256];
     };
 };
-SIZE_UNKNOWN();
 
 union Palette256 {
     u8 m_bytes[0x400];
     PALETTEENTRY m_entries[256];
 };
-SIZE(0x400);
 
 extern HINSTANCE g_resModule;
 

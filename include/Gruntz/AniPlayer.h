@@ -44,6 +44,5 @@ public:
         };
     };
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CANIPLAYER_H

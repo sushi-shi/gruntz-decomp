@@ -21,6 +21,5 @@ public:
 
     i32 SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi);
 };
-SIZE(0x20);
 
 #endif // GRUNTZ_NET_LATENCYLIST_H

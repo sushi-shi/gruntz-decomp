@@ -56,6 +56,5 @@ public:
     RECT m_srcRect;
     RECT m_dstRect;
 };
-SIZE(0x6c);
 
 #endif // SBI_WELLGOO_H

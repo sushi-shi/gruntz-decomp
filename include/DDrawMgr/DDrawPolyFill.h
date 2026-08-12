@@ -6,6 +6,4 @@
 #include <Image/RasterVtx.h>
 #include <Ints.h>
 
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_DDRAWMGR_DDRAWPOLYFILL_H

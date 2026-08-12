@@ -63,7 +63,6 @@ public:
 private:
     void InitOwner(const double& timeScale);
 };
-SIZE_UNKNOWN();
 
 // The untagged default ctor is out of line in SerialObjectFactory.cpp (0x13940); it
 // expands CMotionState's body, while the owner-taking one below leaves it a call -

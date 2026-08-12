@@ -23,6 +23,5 @@ public:
 
     i32 Tick();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CVOICETRIGGER_H

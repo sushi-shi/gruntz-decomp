@@ -56,7 +56,6 @@ public:
     CDDrawSurfacePair* m_backPair;
     CDDrawSurfacePair* m_overlayPair;
 };
-SIZE(0x1c);
 
 class CDrawSubWorker : public CWapObj {
 public:
@@ -92,7 +91,6 @@ public:
     RECT m_srcRect;
     CDDSurface* m_surface;
 };
-SIZE(0x30);
 
 class CDDrawSurfaceChildA : public CDrawSubWorker {
 public:
@@ -109,6 +107,5 @@ public:
     virtual i32 SetGeometry(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
     virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
 };
-SIZE(0x30);
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

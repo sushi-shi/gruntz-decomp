@@ -9,8 +9,6 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
-SIZE_UNKNOWN();
-
 struct CAniSource {
     char m_pad00[0x8];
     i32 m_flags;
@@ -20,7 +18,6 @@ struct CAniSource {
     char m_pad14[0xc];
     char m_data[1];
 };
-SIZE_UNKNOWN();
 
 class CAniElement : public CObject {
 public:
@@ -42,6 +39,5 @@ public:
     float m_scale;
     i32 m_total;
 };
-SIZE(0x28);
 
 #endif // GRUNTZ_CANIELEMENT_H

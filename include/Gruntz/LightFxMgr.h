@@ -32,7 +32,6 @@ public:
     CShadeTable* m_greyTable;
     CShadeTable* m_tables[10];
 };
-SIZE(0x3c);
 
 void SetShadeDescr(CShadeTable* v, ShadeMode mode);
 

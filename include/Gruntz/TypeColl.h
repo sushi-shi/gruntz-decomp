@@ -7,6 +7,5 @@ struct CTypeColl {
 
     i32 Find(i32 key, i32 z);
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_GRUNTZ_CTYPECOLL_H

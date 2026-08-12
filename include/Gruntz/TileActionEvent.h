@@ -43,6 +43,5 @@ public:
     CTileTriggerContainer* m_owner;
     i32 m_playerFlags[4];
 };
-SIZE(0x28);
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

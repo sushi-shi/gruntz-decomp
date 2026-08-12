@@ -15,13 +15,11 @@ struct Coord {
         return &*this;
     }
 };
-SIZE(0x8);
 
 struct CoordNode {
     CoordNode* m_next;
     char m_pad04[0x04];
     Coord* m_coord;
 };
-SIZE(0xc);
 
 #endif // GRUNTZ_GRUNTZ_COORDNODE_H

@@ -30,6 +30,5 @@ public:
     i32 m_tileCol;
     i32 m_tileRow;
 };
-SIZE(0x6c);
 
 #endif // GRUNTZ_CSTATICHAZARD_H

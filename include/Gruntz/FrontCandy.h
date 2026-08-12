@@ -20,6 +20,5 @@ public:
     CFrontCandy() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CFrontCandy(CGameObject* obj);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CFRONTCANDY_H

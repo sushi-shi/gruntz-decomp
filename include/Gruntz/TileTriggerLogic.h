@@ -138,7 +138,6 @@ public:
     i32 m_dutyOn;
     i32 m_linkKeys[24];
 };
-SIZE(0x9c);
 
 class CGiantRockLogic : public CTileTriggerLogic {
 public:
@@ -154,19 +153,16 @@ public:
     PickupType m_powerupType;
     i32 m_textId;
 };
-SIZE(0xc8);
 
 class CCoveredPowerupLogic : public CTileTriggerLogic {
 public:
     CCoveredPowerupLogic();
 };
-SIZE(0x9c);
 
 class CTileTimeTriggerLogic : public CTileTriggerLogic {
 public:
     CTileTimeTriggerLogic();
 };
-SIZE(0x9c);
 
 class CTileSecretTriggerLogic : public CTileTriggerLogic {
     virtual i32 Tick() OVERRIDE;
@@ -174,6 +170,5 @@ class CTileSecretTriggerLogic : public CTileTriggerLogic {
 public:
     CTileSecretTriggerLogic();
 };
-SIZE(0x9c);
 
 #endif // TILETRIGGERLOGIC_H

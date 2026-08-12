@@ -18,6 +18,5 @@ public:
     CWayPoint() {}
     CWayPoint(CGameObject* obj);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CWAYPOINT_H

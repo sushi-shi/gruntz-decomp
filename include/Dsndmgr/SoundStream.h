@@ -46,7 +46,6 @@ public:
 
     DSoundList m_voices;
 };
-SIZE(0x9c);
 
 extern "C" i32 g_ssLogEnabled;
 extern "C" i32 g_ssMsgBoxEnabled;

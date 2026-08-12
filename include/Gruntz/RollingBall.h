@@ -49,6 +49,5 @@ public:
     i64 m_explodeWindow;
     double m_moveDelta;
 };
-SIZE(0xa0);
 
 #endif // GRUNTZ_GRUNTZ_ROLLINGBALL_H

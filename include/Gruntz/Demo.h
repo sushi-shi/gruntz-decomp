@@ -22,6 +22,5 @@ public:
     i32 m_demoCountdown;
     i32 m_reserved524;
 };
-SIZE(0x528);
 
 #endif // GRUNTZ_GRUNTZ_CDEMO_H

@@ -55,7 +55,6 @@ struct SaveSlot {
         i32 m_isBattlez;
     };
 };
-SIZE(0x100);
 
 class CSaveGame {
 public:
@@ -102,7 +101,6 @@ public:
     char m_pad100[0x924];
     SaveSlot m_slots[SAVE_SLOT_COUNT];
 };
-SIZE_UNKNOWN();
 
 // Inline in retail: CGruntzMgr::Run expands it (Reset plus the two CString members
 // in reverse declaration order) at its delete site, and CGruntzMgr::Close calls the

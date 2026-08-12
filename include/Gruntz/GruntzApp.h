@@ -43,7 +43,6 @@ public:
         return LoadSwitchDownSprite() != 0;
     }
 };
-SIZE(0x254);
 
 extern "C" i32 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, i32);
 

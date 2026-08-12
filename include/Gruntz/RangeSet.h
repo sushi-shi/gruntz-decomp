@@ -9,7 +9,6 @@ struct CRange {
     u32 lo;
     u32 hi;
 };
-SIZE_UNKNOWN();
 
 class CRangeSet {
 public:
@@ -20,6 +19,5 @@ public:
     u32 m_count;
     CRange m_pairs[16];
 };
-SIZE_UNKNOWN();
 
 #endif // GRUNTZ_RANGESET_H

@@ -64,7 +64,6 @@ public:
 
     CDDrawWorker* m_record;
 };
-SIZE(0x3c);
 
 inline CSBI_MenuItem::~CSBI_MenuItem() {
     Reset();

@@ -21,6 +21,5 @@ public:
     CString m_shadeTablePath;
     class CDDPalette* m_palette;
 };
-SIZE(0x2c);
 
 #endif // GRUNTZ_FXMODET1_H

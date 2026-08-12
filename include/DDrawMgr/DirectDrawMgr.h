@@ -18,7 +18,6 @@ void __cdecl DDrawLogLine(char* fmt, ...);
 struct CDdModePair {
     i32 a, b;
 };
-SIZE_UNKNOWN();
 
 struct CDDPalette {
 public:
@@ -82,14 +81,12 @@ public:
     i32 m_colorCount;
     i32 m_active;
 };
-SIZE(0x38);
 
 struct DDModeInfo {
     i32 width;
     i32 height;
     ColorDepth bpp;
 };
-SIZE_UNKNOWN();
 
 class CMoviePlayer;
 

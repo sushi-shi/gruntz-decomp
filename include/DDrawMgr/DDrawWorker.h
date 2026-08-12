@@ -71,6 +71,5 @@ public:
     i32 m_minIndex;
     i32 m_maxIndex;
 };
-SIZE(0x6c);
 
 #endif // GRUNTZ_CDDRAWWORKER_H

@@ -18,6 +18,5 @@ public:
     CGuardPoint() {}
     CGuardPoint(CGameObject* obj);
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CGUARDPOINT_H

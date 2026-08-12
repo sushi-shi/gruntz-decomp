@@ -20,6 +20,5 @@ public:
 
     virtual i32 Tick() OVERRIDE;
 };
-SIZE(0x130);
 
 #endif // GRUNTZ_CUFO_H

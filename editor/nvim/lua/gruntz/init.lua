@@ -1148,14 +1148,13 @@ function M.xrefs()
   end)
 end
 
---- Resolve the class to inspect for vi: a VTBL(Name,..)/SIZE(Name,..)/class Name/
+--- Resolve the class to inspect for vi: a VTBL(Name,..)/class Name/
 --- struct Name on the current line wins; else <cword> (sema class takes a
 --- case-insensitive substring); else the class parsed from the function-at-cursor's
 --- mangled symbol (?Method@Class@@...).
 local function class_at_cursor(root, buf, lnum)
   local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1] or ""
   local m = line:match("VTBL%s*%(%s*([%w_:]+)")
-        or line:match("SIZE[_%w]*%s*%(%s*([%w_:]+)")
         or line:match("^%s*class%s+([%w_]+)")
         or line:match("^%s*struct%s+([%w_]+)")
   if m then return m end
@@ -1167,7 +1166,7 @@ local function class_at_cursor(root, buf, lnum)
 end
 
 --- vi: inheritance forest + the vtable-slot table (VTBL) of the class/vtable under
---- the cursor. Shows `sema class <Name>` (slots + SIZE/VTBL + methods, slot RVAs
+--- the cursor. Shows `sema class <Name>` (slots + VTBL + methods, slot RVAs
 --- navigable) followed by `sema class <Name> --tree` (the RTTI inheritance subtree).
 function M.inherit()
   with_root(function(root)

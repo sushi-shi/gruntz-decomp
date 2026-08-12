@@ -25,8 +25,6 @@ union BltFxWords {
 struct ClipRect16 {
     i32 a, b, c, d;
 };
-SIZE(0x10);
-SIZE(0x10);
 
 GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
 
@@ -61,7 +59,6 @@ struct PidHeader {
 
     u8 pixels[1];
 };
-SIZE(0x20);
 
 // The format CDDSurface::Resolve decodes. CImage picks it from the REZ entry
 // tag: IMGTAG_PMB('BMP')->FMT_BMP, IMGTAG_XCP('PCX')->FMT_PCX,
@@ -256,9 +253,6 @@ public:
     i32(__cdecl* m_restoreCallback)(CDDSurface*);
     i32 m_hasColorKey;
 };
-SIZE(0xc0);
-SIZE(0xc0);
-SIZE_UNKNOWN();
 
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
     u8* bits = static_cast<u8*>(Lock(0));

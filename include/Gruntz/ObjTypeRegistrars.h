@@ -28,12 +28,10 @@
 struct CProjectile : public CMovingLogic {
     static void RegisterType();
 };
-SIZE(0x228);
 
 struct CProjActObj {
     static void RegisterType();
 };
-SIZE_UNKNOWN();
 struct CAniCycle {
     static void RegisterActs();
 };

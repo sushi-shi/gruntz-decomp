@@ -18,14 +18,12 @@ struct SbzControllerArray {
     CInputDevice** m_data;
     i32 m_count;
 };
-SIZE_UNKNOWN();
 
 struct SbzDeviceList {
     char _vft0[4];
     i32 m_count;
     CInputDevice* m_elems[1];
 };
-SIZE_UNKNOWN();
 
 class StateMgrBZ {
 public:
@@ -57,7 +55,6 @@ public:
     u32 m_latchedKeys;
     i32 m_suppress;
 };
-SIZE(0x28);
 
 inline StateMgrBZ::StateMgrBZ() {
     m_device = NULL;

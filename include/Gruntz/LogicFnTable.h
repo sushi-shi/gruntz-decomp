@@ -5,6 +5,4 @@
 
 #include <Gruntz/ActReg.h>
 
-SIZE_UNKNOWN();
-
 #endif // GRUNTZ_GRUNTZ_LOGICFNTABLE_H

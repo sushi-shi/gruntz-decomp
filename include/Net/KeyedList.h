@@ -18,7 +18,6 @@ struct CKeyedNode {
     CString GetName();
     ~CKeyedNode();
 };
-SIZE_UNKNOWN();
 
 class CKeyedList {
 public:
@@ -35,6 +34,5 @@ public:
     CPtrList m_list;
     i32 m_mode;
 };
-SIZE(0x20);
 
 #endif // GRUNTZ_NET_KEYEDLIST_H

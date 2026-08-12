@@ -4,14 +4,9 @@
 `push <n>; call ??2@YAPAXI@Z` is ground truth for `sizeof(C)`: the immediate the
 retail compiler baked into every `new C` site. Nothing else in the tree reads it.
 
-`gruntz.cleanliness.class_sizes` checks two INTERNAL things - that every class
-carries a `SIZE()`/`SIZE_UNKNOWN()` annotation, and that a declared `SIZE(C, N)`
-is the N our own headers compute. Both can be self-consistently WRONG: a class
-whose members are all invented agrees with itself perfectly. This tool supplies
-the EXTERNAL yardstick, so the three numbers can finally be triangulated:
+The report compares two independent quantities directly:
 
     retail   the `push <n>` immediate at a `new C` site      (ground truth)
-    declared the `SIZE(C, N)` annotation in our headers      (our claim)
     computed clang's sizeof over our real member list        (what we emit)
 
 ATTRIBUTION - which class is being allocated. Scan forward from the site to the
@@ -43,14 +38,14 @@ and the nearest stamp often belongs to a different one:
     python -m gruntz.audit.alloc_size --class CFoo # one class, with its sites
     python -m gruntz.audit.alloc_size --ctor-tier  # include the weak ctor tier
 
-NOT A GATE. Three innocent causes of a "mismatch":
-  * a deliberately PARTIAL model (we declare the retail size, model few members)
-    - that is `declared == retail, computed < retail`, which is the intended
-      state for a class nothing `new`s;
+NOT A GATE. Three causes of an apparent mismatch need classification:
+  * a deliberately partial model whose `sizeof` is never emitted by reconstructed
+    code;
   * `new C[n]` with a constant count (size = n*sizeof + 4 cookie) - flagged when
     a `??_H`/`??_E` vector iterator follows;
   * a class we simply have not modelled (reported as UNMODELLED, free knowledge).
-The row that matters is `retail != declared` - our claim contradicts the binary.
+The actionable row is a uniquely defined class whose computed size differs from
+retail: reconstructed `new C` will emit the wrong allocation immediate.
 """
 from __future__ import annotations
 
@@ -324,19 +319,6 @@ def _cls_of(mangled):
 
 
 # --- our side ---------------------------------------------------------------
-def declared_sizes():
-    from gruntz.core.class_meta import positional_size_annotations
-    out = {}
-    for name, entries in positional_size_annotations().items():
-        if name is None:
-            continue
-        for e in entries:
-            val = e[0]
-            if val is not None:
-                out.setdefault(name, val)
-    return out
-
-
 def computed_sizes():
     if not _STRUCTS.is_file():
         return {}
@@ -383,12 +365,12 @@ def main():
         (strong if tier.startswith("vtbl") else weak)[cls].add(size)
         where[cls].append((site, size, tier, own, vec))
 
-    decl, comp, ndefs = declared_sizes(), computed_sizes(), def_counts()
+    comp, ndefs = computed_sizes(), def_counts()
     if not comp:
         print("[alloc_size] build/gen/structs.json missing - run `gruntz structs` "
               "for the computed-size column")
 
-    bad_decl, bad_comp, unknown, unmodelled, split, ok = [], [], [], [], [], []
+    bad_comp, unresolved, unmodelled, split, multi_def, ok = [], [], [], [], [], []
     names = set(strong) | (set(weak) if a.ctor_tier else set())
     for cls in sorted(names):
         sizes = strong.get(cls) or weak.get(cls)
@@ -397,35 +379,25 @@ def main():
             split.append((cls, sorted(sizes), tier))
             continue
         n = next(iter(sizes))
-        d, c = decl.get(cls), comp.get(cls)
+        c = comp.get(cls)
         if cls not in ndefs:
             unmodelled.append((cls, n, tier))
-        elif d is None:
-            unknown.append((cls, n, c, tier))
-        elif d != n:
-            bad_decl.append((cls, n, d, c, tier, ndefs[cls]))
-        elif c is not None and c != n and ndefs[cls] == 1:
-            bad_comp.append((cls, n, d, c, tier))
+        elif c is None:
+            unresolved.append((cls, n, tier))
+        elif c != n and ndefs[cls] > 1:
+            multi_def.append((cls, n, c, tier, ndefs[cls]))
+        elif c != n:
+            bad_comp.append((cls, n, c, tier))
         else:
             ok.append((cls, n, tier))
 
     def hx(v):
         return "-" if v is None else f"0x{v:x}"
 
-    if bad_decl:
-        print(f"\n=== SIZE() CONTRADICTS RETAIL  ({len(bad_decl)}) "
-              f"- our declared size is not the one retail allocates")
-        for cls, n, d, c, tier, k in sorted(bad_decl, key=lambda r: -abs(r[1] - r[2])):
-            dd = n - d
-            print(f"  {cls:<34} retail {hx(n):>7}  declared {hx(d):>7} "
-                  f"({dd:+#x})  computed {hx(c):>7}  [{tier}, {k} def]")
-            for site, size, t, own, vec in where[cls][:3]:
-                print(f"        0x{site:08x} push 0x{size:x}"
-                      f"{' [vector?]' if vec else ''}   <- {own}")
     if bad_comp:
         print(f"\n=== WE EMIT THE WRONG sizeof  ({len(bad_comp)}) "
-              f"- SIZE() agrees with retail but our members do not compute it")
-        for cls, n, d, c, tier in sorted(bad_comp, key=lambda r: -abs(r[1] - r[3])):
+              f"- Clang's layout disagrees with retail's allocation")
+        for cls, n, c, tier in sorted(bad_comp, key=lambda r: -abs(r[1] - r[2])):
             print(f"  {cls:<34} retail {hx(n):>7}  computed {hx(c):>7} "
                   f"({c - n:+#x})  [{tier}]")
     if split:
@@ -436,12 +408,16 @@ def main():
             for site, size, t, own, vec in where[cls]:
                 print(f"        0x{site:08x} push 0x{size:x}"
                       f"{' [vector?]' if vec else ''}   <- {own}")
-    if unknown:
-        print(f"\n=== SIZE_UNKNOWN, RETAIL KNOWS  ({len(unknown)}) - free to bank")
-        for cls, n, c, tier in unknown:
-            flag = "" if c is None or c <= n else "   !! computed EXCEEDS retail"
-            print(f"  {cls:<34} retail {hx(n):>7}  computed {hx(c):>7} "
-                  f"[{tier}]{flag}")
+    if multi_def:
+        print(f"\n=== MULTIPLE SOURCE DEFINITIONS  ({len(multi_def)}) - the layout "
+              "index keeps one size per name, so this comparison is not sound")
+        for cls, n, c, tier, count in multi_def:
+            print(f"  {cls:<34} retail {hx(n):>7}  indexed {hx(c):>7} "
+                  f"[{tier}, {count} definitions]")
+    if unresolved:
+        print(f"\n=== SOURCE LAYOUT UNRESOLVED  ({len(unresolved)})")
+        for cls, n, tier in unresolved:
+            print(f"  {cls:<34} retail {hx(n):>7}  [{tier}]")
     if unmodelled:
         print(f"\n=== UNMODELLED  ({len(unmodelled)}) - retail news a class we "
               f"have no definition for")
@@ -455,9 +431,9 @@ def main():
     print(f"\n{len(sw.sites)} operator-new sites, {len(rows)} with a constant size "
           f"and an attributed class; {len(strong)} classes by vptr stamp, "
           f"{len(weak)} more by ctor only.")
-    print(f"contradicts SIZE(): {len(bad_decl)}   wrong computed sizeof: "
-          f"{len(bad_comp)}   ambiguous: {len(split)}   "
-          f"unknown-but-provable: {len(unknown)}   unmodelled: {len(unmodelled)}")
+    print(f"wrong computed sizeof: {len(bad_comp)}   ambiguous sites: {len(split)}   "
+          f"multiple definitions: {len(multi_def)}   unresolved: {len(unresolved)}   "
+          f"unmodelled: {len(unmodelled)}")
     return 0
 
 

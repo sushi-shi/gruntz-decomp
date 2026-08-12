@@ -22,6 +22,5 @@ public:
 
 public:
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CDONOTHINGNORMAL_H

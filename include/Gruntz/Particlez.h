@@ -23,6 +23,5 @@ public:
     static void RegisterActs();
     i32 Update();
 };
-SIZE(0x54);
 
 #endif // GRUNTZ_CPARTICLEZ_H
