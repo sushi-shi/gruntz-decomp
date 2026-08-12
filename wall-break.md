@@ -571,3 +571,31 @@ compiler decision, and a real VC5 build must confirm the fix.
   behavior remains intact and no score-only arm reorder, output initialization,
   unused include, declaration, or artificial state carrier was retained. The
   complete body remains `@early-stop`.
+
+## 2026-08-12 — `CGrunt::ScanNearestTarget`
+
+- Unit/RVA: `gruntscantarget`, `0x000f42f0`.
+- Before: 68.2796% current-source MAX. The 5.4 KB candidate is one block, one
+  conditional branch, and one return short: 396/397 blocks, 90/91 branches, and
+  12/13 returns. Its frame is `0x44` against retail's `0x40`. The first 60 block
+  topologies agree, while the prologue and early target-selection code use a
+  whole-function callee-saved-register rotation.
+- Classification: control-flow tail plus TU-sensitive register allocation. The
+  old source comment overlocalized the missing exit to a merged powered-up reset
+  arm, but the candidate already has two ordered relocations to
+  `ResetEntranceAnimation`, matching retail's two call sites. The comment was
+  removed rather than preserving a disproven mechanism.
+- State sweep: all 437 valid single declaration/include/parser-state mutations
+  compiled. 434 were byte-identical at the focused 67.513310% baseline; three
+  include states reached 67.513985%. Every variant retained the 5,436-byte
+  candidate extent and 312/312 relocation count, and none fixed the frame, CFG,
+  or authoritative normalized MAX. The best disposable state was reproduced in
+  a normal build, where it remained 68.2796%, then removed.
+- Rejected entity hypothesis: the five-store plus `ResetEntranceAnimation`
+  sequence recurs throughout the class, so it was tested as one header-inline
+  `CGrunt` method at both sites. VC5 emitted the target function identically and
+  rebuilt scores of unrelated consumers through header state; the helper was
+  removed.
+- Verdict: bounded at 68.2796% current-source MAX. All 312 relocation slots are
+  present, the complete behavior remains `@early-stop`, and no synthetic TU
+  state, unsupported helper, or score-only source change was retained.
