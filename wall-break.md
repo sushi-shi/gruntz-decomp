@@ -975,3 +975,24 @@ compiler decision, and a real VC5 build must confirm the fix.
   backward-`goto`/EH-scope wall documented in
   `backward-goto-sinks-its-target-region.md`, plus the initial inline-`strcmp`
   register choice. No probe declaration, include, or score-only guard was kept.
+
+## 2026-08-12 — `CBattlezMapConfig::StepDefenderUnit`
+
+- Unit/RVA: `gruntstatestep`, `0x00033520`; full-build current-source result rises
+  from 70.8105% to 77.5979%.
+- Wall classification: local-lifetime and entity-creation-order wall. The
+  candidate began with a `0x8c` frame against retail's `0x58` and only 28 of
+  retail's 34 arithmetic shifts.
+- Lifetime break: close each completed `Coord` group at its last semantic use.
+  VC5 then reuses their stack homes and reduces the frame to `0x60`, without a
+  fabricated aggregate, unused declaration, or forced spill.
+- Entity-order break: each four-coordinate rectangle cluster is constructed in
+  retail's bottom/right/top/left order, with each surviving component shifted
+  and written back immediately after its `GetScreenPos` call. The first three
+  objects retain both components; the final object retains only `m_x`. Applying
+  the same `b3, b2, b1, b0` / `d3, d2, d1, d0` sequence restores all six missing
+  `sar` instructions and raises the result from 75.0262% to 77.5979%.
+- Controls: the candidate has 947 instructions against retail's 955 and all
+  81 relocation targets remain in the same order. The frame remains eight bytes
+  too large and the CFG/homing residue is not exact, so the function stays
+  `@early-stop`.

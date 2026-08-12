@@ -41,12 +41,23 @@ homes BOTH the temp and the destination. Expand the helper at every site and del
 (the usual [`shared-tail-helper-is-our-invention-expand-it`](shared-tail-helper-is-our-invention-expand-it.md)
 rule; a by-value `Coord` return is our invention, not a period idiom).
 
-**Evidence.** `CBattlezMapConfig::StepDefenderUnit` @0x33520: the histogram read
-`sarl 22 -> 34` and `movl 314 -> 368`. Deleting the `ScreenTile` helper and expanding its
-eight sites, then converting the two remaining at-the-use-site shifts (`FindIdleGruntInBox`,
-`TileSwitch`) to in-place write-backs took it **66.96 -> 70.81** and the instruction
-deficit from **-55 to -19**.
+## Declaration order is observable inside a rectangle cluster
 
-Residue worth knowing: the eight expanded `Coord`s do not overlay for cl, so our frame
-is `sub esp,0x8c` against retail's `0x58`; retail evidently reuses two `Coord` slots per
-cluster across its four `GetScreenPos` calls.
+When four `Coord`s supply one field each to a rectangle, recover their construction order
+from retail's calls and write-backs rather than declaring them in rectangle field order.
+`StepDefenderUnit` constructs the bottom, right, top, and left sources (`b3`, `b2`, `b1`,
+`b0`) in that order. Each `GetScreenPos` call is immediately followed by the shifts whose
+results survive: both components for the first three objects, but only `m_x` for the final
+object because its `m_y` is dead. The same order repeats for the second rectangle cluster.
+Moving all four calls before all shifts changes both entity lifetimes and register creation
+order even though the resulting `RECT` has the same values.
+
+**Evidence.** `CBattlezMapConfig::StepDefenderUnit` @0x33520 first read `sarl 22 -> 34`
+and `movl 314 -> 368`. Deleting the invented `ScreenTile` helper, expanding its eight sites,
+and converting the remaining use-site shifts took it **66.96 -> 70.81**. Scoping completed
+`Coord` groups then reduced the candidate frame from `0x8c` to `0x60` against retail's
+`0x58`. Finally, restoring the retail-observed `b3, b2, b1, b0` and `d3, d2, d1, d0`
+construction/write-back order restored the complete `sar` census and raised the full-build
+current-source result to **77.60%**. The candidate has 947 instructions against retail's
+955 and preserves all 81 ordered referents. The remaining residue is not evidence for
+keeping all eight objects live together.
