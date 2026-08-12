@@ -58,3 +58,27 @@ own slot instead, which is the tell that the site was mis-assigned.
 On StepGooSuckerBehavior the proven assignment scores 79.80 where putting one ctor at the
 first site and two at the last scores 82.70 -- the wrong pairing happens to align better
 against the delinked stream. Take the census; the bytes decide, not the percent.
+
+## The tail also proves whether the bounds address was a named local
+
+After the correct constructor variant is selected, inspect the loads following
+`IntersectRect`. A tail that computes both dimensions through one register—loads at
+`+0`, `+4`, `+8`, and `+0xc` from the same base—came from one pointer-valued source entity:
+
+```cpp
+RECT* clipBounds = &grid->m_bounds;
+if (!IntersectRect(clipBounds, &ra, &rb)) {
+    *clipBounds = ra;
+}
+grid->m_gridW = clipBounds->right - clipBounds->left;
+grid->m_gridH = clipBounds->bottom - clipBounds->top;
+```
+
+Spelling `&grid->m_bounds` independently at the call, assignment, and size reads is
+semantically equivalent, but VC5 creates a different pointer pseudo and may re-derive the
+later fields from `grid`. The difference propagates into register scheduling well beyond
+the tail. Adding the typed local to the shared `GRID_RECT_BOUNDS` expansion changes only
+its two consumers and improves both: `CGrunt::StepBrickLayerBehavior` 59.9576 -> 61.0500
+and `CGrunt::StepDiggerBehavior` 63.3527 -> 65.9534. A three-cell matrix over the two
+`Coord` declaration orders and grouped declarations was flat, which rules out the adjacent
+stack-local order as the cause.

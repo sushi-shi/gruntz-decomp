@@ -41,11 +41,13 @@
         CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         ra = rb;                                                                                   \
-        if (!IntersectRect(&(grid)->m_bounds, &ra, &rb)) {                                         \
-            (grid)->m_bounds = ra;                                                                 \
+        /* Retail keeps this address as the common base for the call, copy and size reads. */      \
+        RECT* clipBounds = &(grid)->m_bounds;                                                      \
+        if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \
+            *clipBounds = ra;                                                                      \
         }                                                                                          \
-        (grid)->m_gridW = (grid)->m_bounds.right - (grid)->m_bounds.left;                          \
-        (grid)->m_gridH = (grid)->m_bounds.bottom - (grid)->m_bounds.top;                          \
+        (grid)->m_gridW = clipBounds->right - clipBounds->left;                                    \
+        (grid)->m_gridH = clipBounds->bottom - clipBounds->top;                                    \
     }
 
 // CMapMgr::Clip(src) expanded in place -- the shape cl emits when it inlines the

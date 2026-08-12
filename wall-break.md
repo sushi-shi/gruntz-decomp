@@ -253,6 +253,12 @@ compiler decision, and a real VC5 build must confirm the fix.
   kept the 1,924-byte extent, 29 relocations, 0x94 frame, and `this` in `ebx`
   rather than retail's `ebp`. The structural fixes are retained and the
   compiler-state residue remains `@early-stop`.
+- Shared-entity follow-up: the same retail bounds tail reads every field through
+  one materialized pointer. Modelling that pointer in `GRID_RECT_BOUNDS` raises
+  this function to 65.9534% without changing its source, frame, CFG, call set or
+  ordered relocations. The gain therefore belongs to the reconstructed inline
+  entity; the two redundant low-stamina guards remain the first unresolved
+  control-flow wall.
 
 ## 2026-08-12 — `SoundStream::CreateStreamBuffer`
 
@@ -330,6 +336,15 @@ compiler decision, and a real VC5 build must confirm the fix.
   59.7379%. Eighty mixed TU-state trials never changed the wall class and
   peaked at 59.9727%, so the authentic structural corrections are retained
   while the remaining control-flow/register residue stays `@early-stop`.
+- Wall-identifier follow-up: inline/call counts and all 34 relocation identities
+  agree, so the portable classifier keeps this in control-flow/register routing,
+  not the inliner bucket. The two legal `Coord` declaration orders and grouped
+  form all compiled byte-identically at 59.9576%. Retail's initial bounds tail,
+  however, uses one materialized `RECT*` for `IntersectRect`, the fallback copy,
+  and both size calculations. Giving the shared `GRID_RECT_BOUNDS` entity that
+  typed `clipBounds` local changes exactly those reads plus the downstream
+  register schedule and raises current-source MAX to 61.0500%; the 70-versus-69
+  branch and 6-versus-7 return residue is unchanged and remains bounded.
 
 ## 2026-08-12 — `SoundDevice::CreateBuffer`
 
