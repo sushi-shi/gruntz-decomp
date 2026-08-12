@@ -1312,3 +1312,21 @@ compiler decision, and a real VC5 build must confirm the fix.
   and both countdown stores without changing their meaning. No declaration
   permutation or manual state probe is retained for that register wall, so the
   function remains `@early-stop`.
+
+## 2026-08-12 — `CBattlezMapConfig::CheckQueuedSpawnTile`
+
+- Unit/RVA: `battlezspawncheck`, `0x00034c70`; historical MAX rises from
+  75.1778% to 76.7778%.
+- Aggregate break: the source split `m_arrivalCell` into independent `x` and
+  `y` scalars. Retail loads both fields together and writes them to one adjacent
+  eight-byte stack range before computing the tile address, which is evidence
+  for a copied `Coord`. The source now models that object directly.
+- Structural evidence: candidate and retail still have 20 blocks, 12
+  conditional branches, and one return with identical symbolic branch targets.
+  Tile selection, dwell tests, `TileSwitch`, both coordinate-list drains, and
+  final state resets agree.
+- Residue: this VC5 build eliminates the candidate's copied `Coord`, while
+  retail retains both otherwise-dead stack stores, an extra zero register, and
+  the corresponding eight-byte frame. The declaration-plus-assignment control
+  compiles identically to copy initialization. No address-taking or manual state
+  probe is added to force those stores; the function remains `@early-stop`.
