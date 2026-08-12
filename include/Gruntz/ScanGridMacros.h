@@ -38,9 +38,10 @@
 
 #define GRID_RECT_BOUNDS(grid)                                                                     \
     {                                                                                              \
-        CRect ra(0, 0, (grid)->m_width, (grid)->m_height);                                         \
         CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        ra = rb;                                                                                   \
+        RECT ra;                                                                                   \
+        /* Retail copies the second ctor's returned CRect into a separate RECT. */                 \
+        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
         /* Retail keeps this address as the common base for the call, copy and size reads. */      \
         RECT* clipBounds = &(grid)->m_bounds;                                                      \
         if (!IntersectRect(clipBounds, &ra, &rb)) {                                                \

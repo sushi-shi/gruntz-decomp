@@ -275,6 +275,13 @@ compiler decision, and a real VC5 build must confirm the fix.
   ordered relocations. The gain therefore belongs to the reconstructed inline
   entity; the two redundant low-stamina guards remain the first unresolved
   control-flow wall.
+- Assigned-temporary follow-up: retail's second `CRect` constructor returns a
+  pointer in eax, and the next four loads copy from that pointer into a distinct
+  `RECT`. Reconstructing the shared expansion as `RECT ra; ra = CRect(...)`
+  reproduces that dataflow and raises this function to 67.2912%. Candidate and
+  retail still have the same callee/relocation multiset; the remaining five
+  instruction and two-branch deficit stays in the already bounded control-flow
+  and register wall.
 
 ## 2026-08-12 — `SoundStream::CreateStreamBuffer`
 
@@ -361,6 +368,13 @@ compiler decision, and a real VC5 build must confirm the fix.
   typed `clipBounds` local changes exactly those reads plus the downstream
   register schedule and raises current-source MAX to 61.0500%; the 70-versus-69
   branch and 6-versus-7 return residue is unchanged and remains bounded.
+- Assigned-temporary follow-up: retail dereferences the second `CRect`
+  constructor's eax return for four copy loads before `IntersectRect`, proving
+  that `ra` is a separate `RECT` assigned from a temporary rather than a second
+  `CRect` copied from `rb`. Applying that shared lifetime raises current-source
+  MAX to 61.8076%. The candidate is now three instructions short with the same
+  callee/relocation multiset; its 69-versus-70 branches and 7-versus-6 returns
+  remain the next structural wall.
 
 ## 2026-08-12 — `SoundDevice::CreateBuffer`
 

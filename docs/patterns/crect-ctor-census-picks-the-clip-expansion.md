@@ -22,17 +22,17 @@ is one reloc you can count**:
 
 Then read each site's `rb` and pick by the ctor count at that site:
 
-| what the site shows                                                        | expansion            | ctors |
-|---------------------------------------------------------------------------|----------------------|-------|
-| `rb` built by the CTOR, no field stores, no `test <addr>,<addr>`            | `GRID_CLIP_NULL`     | 2     |
-| `rb` by FIELD STORES + `test <addr>,<addr>` + one ctor in the else arm      | `GRID_CLIP_INL(src)` | 1     |
-| `rb` by FIELD STORES, no null test, one ctor for the temp                   | `GRID_CLIP_INL(NULL)`| 1     |
-| both rects by FIELD STORES                                                  | `GRID_RECT_INLINE`   | 0     |
+| what the site shows                                              | expansion                              | ctors |
+|-----------------------------------------------------------------|----------------------------------------|-------|
+| `rb` by CTOR, then a ctor return copied into `ra`, no null test | `GRID_RECT_BOUNDS` / `GRID_CLIP_NULL` | 2     |
+| `rb` by FIELD STORES + null test + ctor in the else arm         | `GRID_CLIP_INL(src)`                   | 1     |
+| `rb` by FIELD STORES, no null test, one ctor for the temp       | `GRID_CLIP_INL(NULL)`                  | 1     |
+| both rects by FIELD STORES                                      | `GRID_RECT_INLINE`                     | 0     |
 
 The counts must add up to the census. On `CGrunt::StepGooSuckerBehavior` 0xf0e20 they do
 exactly: 2 (0xf0e5c/0xf0e64) + 1 (0xf1224) + 1 (0xf1705) + 0 = the four calls in the body.
 
-## Reading `Clip(NULL)`: three rects, not two
+## Reading a two-ctor bounds site: three rects, not two
 
 `CMapMgr::Clip(const RECT* src)` with a constant-NULL argument folds the `src != NULL` arm
 away, and the surviving `else` is `ra = CRect(0,0,w,h)` -- an ASSIGNMENT from a temporary. cl
@@ -46,7 +46,9 @@ register**:
 
 So the site has THREE 16-byte objects (`rb`, the temporary, `ra`) and the `IntersectRect`
 src2 is a slot the copy never wrote. A `ra = rb;` model reads the copy source out of `rb`'s
-own slot instead, which is the tell that the site was mis-assigned.
+own slot instead, which is the tell that the site was mis-assigned. The no-source
+`GRID_RECT_BOUNDS` expansion has the same lifetime shape even though it does not arise from an
+explicit constant-NULL call.
 
 `GRID_CLIP`'s `new (&rb) CRect(...)` is NOT this shape -- placement new adds
 `lea <reg>,&rb; test <reg>,<reg>; je` (see
@@ -82,3 +84,10 @@ its two consumers and improves both: `CGrunt::StepBrickLayerBehavior` 59.9576 ->
 and `CGrunt::StepDiggerBehavior` 63.3527 -> 65.9534. A three-cell matrix over the two
 `Coord` declaration orders and grouped declarations was flat, which rules out the adjacent
 stack-local order as the cause.
+
+Those same two consumers also show the second constructor's return register being dereferenced
+immediately for all four copy loads. Replacing the semantically equivalent `CRect ra; ra = rb;`
+with the three-entity lifetime `RECT ra; ra = CRect(...)` reproduces that local dataflow and raises
+BrickLayer 61.0500 -> 61.8076 and Digger 65.9534 -> 67.2912. Their callee/relocation multisets
+remain identical to retail; the remaining differences are downstream control-flow and register
+walls.
