@@ -1022,3 +1022,29 @@ compiler decision, and a real VC5 build must confirm the fix.
   upper-bound branch. Four evidence-compatible loop spellings failed to remove
   that first CFG divergence. The partial lifetime break is retained and the
   function remains `@early-stop`.
+
+## 2026-08-12 — `CBoomerang::LoadProjectileSprites`
+
+- Unit/RVA: `projectile`, `0x000e0690`; current-source MAX rises from 73.2439%
+  to 76.8618%.
+- Wall classification: wrong floating-point entity followed by x87 scheduling.
+  Retail converts unsigned `m_timePerTile` once, preserves that duration on the
+  x87 stack, derives the reciprocal velocity scale from a duplicate, and later
+  consumes the original duration when computing `m_holdWindowLo`.
+- Semantic break: the source instead used the reciprocal `d` in the hold-window
+  expression. Naming the unsigned duration, constructing `d` before the launch
+  coordinate stores, and using the duration again in the hold-window expression
+  restores the retail entity. This is behaviorally material: duration and its
+  reciprocal are not interchangeable.
+- Lifetime/frame break: assign `m_originX` and `m_originY` directly and derive
+  the direction fields from the stored launch/origin members. Removing the two
+  invented origin temporaries reduces the frame from 0x10 to retail's 0x8.
+- Controls: candidate and retail have the same six conditional branches and two
+  returns, and the data-referent audit reports no one-sided global. An explicit
+  scaled-duration temporary fell to 71.4715%; a single `originY` temporary fell
+  to 72.4146%. Both were removed.
+- Residue: retail uses `fld st(0)` to duplicate duration before multiplying by
+  `g_boomTimeScale`; cl loads the constants into deeper x87 slots instead. Four
+  evidence-compatible entity/order forms bounded this scheduling wall. The
+  corrected source remains `@early-stop`; the lower historical spelling is not
+  restored merely to protect a score.
