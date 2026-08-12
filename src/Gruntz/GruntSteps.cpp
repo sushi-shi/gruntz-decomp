@@ -83,55 +83,50 @@ static __inline i32 s_CanCommitMove(CGrunt* g, i32 moveX, i32 moveY) {
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
     i32 arr = g->m_arrivalFlags | 0x20000000;
-    if (tx == mtx && ty == mty) {
-        return 1;
-    }
-    if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
-        || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
-        return 0;
-    }
-    i32* tgt = &board->m_rowInts[mty][mtx * 7];
-    i32 tflags = *tgt;
-    i32 hit = arr & tflags;
-    if (hit & 0x20000000) {
-        return 0;
-    }
-    if (hit != 0) {
-        i32 mask = g->m_passableMask | 0x18000482;
-        if ((tflags & mask) == 0) {
+    if (tx != mtx || ty != mty) {
+        if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
+            || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
             return 0;
         }
-    }
-    i32 dx = mtx - tx;
-    i32 dy = mty - ty;
-    if (dx == 0 || dy == 0) {
-        return 1;
-    }
-    char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
+        i32* tgt = &board->m_rowInts[mty][mtx * 7];
+        i32 tflags = *tgt;
+        i32 hit = arr & tflags;
+        if (hit & 0x20000000) {
+            return 0;
+        }
+        if (hit != 0) {
+            i32 mask = g->m_passableMask | 0x18000482;
+            if ((tflags & mask) == 0) {
+                return 0;
+            }
+        }
+        i32 dx = mtx - tx;
+        i32 dy = mty - ty;
+        if (dx == 0 || dy == 0) {
+            return 1;
+        }
+        char* cur = board->m_rowBytes[ty] + tx * 7 * 4;
 
-    Pix16Ptr row;
-    row.m_dwords = tgt;
-    char* tg = row.m_chars;
-    i32 stride = board->m_width * 7 * 4;
-    if (dx > 0) {
-        if (dy > 0) {
+        Pix16Ptr row;
+        row.m_dwords = tgt;
+        char* tg = row.m_chars;
+        i32 stride = board->m_width * 7 * 4;
+        if (dx > 0 && dy > 0) {
             if ((cur[0x1d] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg - 0x1c) & 0x2000)
                 || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
-        } else {
-            if ((cur[0x1d] & 0x20) || (TileFlags(cur - stride) & 0x2000)
-                || (TileFlags(tg - 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
-                return 0;
-            }
-        }
-    } else {
-        if (dy > 0) {
+        } else if (dx < 0 && dy > 0) {
             if ((cur[-0x1b] & 0x20) || (cur[stride + 1] & 0x20) || (TileFlags(tg + 0x1c) & 0x2000)
                 || (TileFlags(tg - stride) & 0x2000)) {
                 return 0;
             }
-        } else {
+        } else if (dx > 0 && dy < 0) {
+            if ((cur[0x1d] & 0x20) || (TileFlags(cur - stride) & 0x2000)
+                || (TileFlags(tg - 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
+                return 0;
+            }
+        } else if (dx < 0 && dy < 0) {
             if ((cur[-0x1b] & 0x20) || (TileFlags(cur - stride) & 0x2000)
                 || (TileFlags(tg + 0x1c) & 0x2000) || (TileFlags(tg + stride) & 0x2000)) {
                 return 0;
@@ -497,22 +492,13 @@ i32 CGrunt::RectContainsGated(i32 x, i32 y) {
 }
 
 // @early-stop
-// The whole body is present but the register budget is spent the other way
-// round: retail spills `result` and `this` to the frame and keeps x/y in
-// ebx/ebp AND moveX/moveY in esi/edi.  The ARROW arms are the byte proof that
-// the two pairs are distinct there - retail's DIR_NORTH arm is
-// `add ebp,0xffffffe0 / mov esi,ebx / mov edi,ebp` (x,y adjusted IN PLACE and
-// then copied), which is why the arms below adjust x/y rather than spelling
-// `moveX = x + 0x20`.  The TOY arms keep the other shape - retail spells them
-// `lea esi,[ebx-0x20] / lea edi,[ebp-0x20]`, x/y untouched.  cl still folds our
-// `y -= 0x20; moveY = y;` back into one `lea` because y is dead on that path,
-// so the arms stay a instruction short of retail's.
-// Hoisting the pair copy out of the arms to a single `moveX = x; moveY = y;`
-// after the switch is much worse; so is dropping the moveX/moveY initialisers
-// and giving each switch an explicit default.  400 AST variants moved none of
-// it.  The `0x2000` mask rows in the immediates sieve are NOT a defect: cl
-// spells the same test `test ah,0x20` where retail materialises 0x2000 in a
-// register.
+// The body and referents are complete. Retail spills `result` and `this` while
+// keeping x/y in ebx/ebp and moveX/moveY in esi/edi. Its ARROW arms adjust x/y
+// in place before copying them; the TOY arms leave x/y untouched. The two
+// s_CanCommitMove inlinings also compile the same byte flag reads differently:
+// the toy path proves the byte spelling below, while the bag path widens them
+// to dword tests. The remaining residue is allocator/inliner state, not a
+// license to replace the proven byte accesses with dword source reads.
 RVA(0x00051c00, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -633,7 +619,7 @@ i32 CGrunt::StepCompassMove() {
         goto commit;
     }
 
-    if (m_toyTileIndex != 0) {
+    if (m_toyTileIndex > 0) {
         CString str;
         // The bias is LOAD-BEARING: switching on the domain directly and using
         switch (m_entranceReason) {
@@ -652,9 +638,8 @@ i32 CGrunt::StepCompassMove() {
             default:
                 break;
         }
-        i32 toyCount = static_cast<i32>(
-            g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1)
-        );
+        u32 toyCount =
+            g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:

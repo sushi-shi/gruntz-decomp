@@ -2160,7 +2160,7 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	11	a9490b6291
 gruntsteps	?SerializeMove@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	91822eacedeb	0x53b80	100.0000
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	6	49bf4fc7f565	0x52ed0	100.0000
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	6	bf3f90a0203c	0x517b0	100.0000
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	56.6221	56.6221	22	649c22d94a65	0x51c00	57.4502
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	58.7547	58.7547	23	17507d133e11	0x51c00	58.7547
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	92.9641	92.9641	8	7e961894b944	0x52fb0	92.9888
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.5742	81.5742	8	82302a150093	0x32ce0	83.2773
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	97.8000	97.8000	9	67cbce4f0644	0x7f350	97.8000

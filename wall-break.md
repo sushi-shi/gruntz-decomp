@@ -183,3 +183,24 @@ compiler decision, and a real VC5 build must confirm the fix.
   the constructor's `m_alloc` home, raising it from 82.75% to 92.1875% without
   `volatile`; its remaining eax/edx scheduling rotation is marked
   `@early-stop`.
+
+## 2026-08-11 — `CGrunt::StepCompassMove`
+
+- Unit/RVA: `gruntsteps`, `0x00051c00`.
+- Before: 56.6221% current-source MAX. The two inlined movement-validity trees
+  had 146 candidate blocks versus 158 retail blocks, and the toy-index guards
+  used signed branches where retail uses `jbe`/`jae`.
+- Classification: control-flow source shape plus a real field signedness defect,
+  followed by register/inliner state. Retail tests all four diagonal quadrants
+  as mutually exclusive compound conditions; the nested 2x2 tree encoded the
+  same behavior but gave VC5 a different CFG. Retail also treats
+  `m_toyTileIndex` and the `GetDwordDef` result as unsigned.
+- Source lever: spell the quadrants as an `if`/`else if` chain, make the
+  same-tile case the outer success arm so both inlinings jump to their shared
+  success tail, and type the toy index/count as `u32`.
+- Result: 58.7547% in the ordinary build, with 158 blocks on both sides and the
+  same-tile and toy-count branch polarities restored. An eight-form quadrant
+  topology sweep rejected independent-arm hybrids. A 16-form flag-width sweep
+  scored higher for mixed widths, but retail's first inlining directly proves
+  the original byte reads; the score-only dword forms were rejected. The
+  remaining one-branch and register-colouring residue is marked `@early-stop`.

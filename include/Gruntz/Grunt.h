@@ -485,7 +485,7 @@ public:
     i32 m_moveKind;
     i32 m_moveVariant;
     i32 m_coordRetryCount;
-    i32 m_toyTileIndex;
+    u32 m_toyTileIndex;
     i32 m_warpstoneAnchorIndex;
     i32 m_blockedVoicePending;
 
