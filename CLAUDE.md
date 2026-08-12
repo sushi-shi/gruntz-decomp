@@ -1,163 +1,191 @@
-# gruntz — Claude working notes
+# Codex Guide
 
-Binary-matching decompilation of **Gruntz** 
+This file is the short, durable orientation. When changing reconstructed C++,
+also read `.claude/agents/matcher.md`; it contains the detailed matching
+doctrine. `wall-break.md` is the evidence log for the active historical-MAX
+campaign. Keep `AGENTS.md` and `CLAUDE.md` byte-identical. Do not add live
+scores, current assignments, queue snapshots, or one-off campaign notes here.
 
-Goal: C++ that, compiled with the original toolchain (**MSVC 5.0**), produces COFF
-objects matching the retail `GRUNTZ.EXE`, verified with **objdiff**.
+## Objective And Authority
 
-`src/` holds the reconstructed C++ and is **the single source of truth**; the **`gruntz` CLI**
-(`python -m gruntz`, `scripts/gruntz/cli.py`) drives everything. For the current score, run
-`gruntz status` — never trust a number written down here.
+- Reconstruct the original C++ structure of **Gruntz** so that MSVC 5.0 SP3
+  (`/O2 /MT`) emits COFF matching the retail `GRUNTZ.EXE`.
+- `src/` is the source of truth. Retail bytes, relocations, RTTI, call graphs,
+  and observed data layouts are the evidence used to improve it.
+- Correct structure outranks a transient fuzzy score: real classes, types,
+  ownership, storage, control flow, calling conventions, and relocation targets
+  must not be distorted to protect a metric.
+- The matching objective is **per-function historical MAX fuzzy = 100%**. It is
+  neither necessary nor expected for every function to be at 100% in the same
+  build. The MAX ledger preserves each function's best observed result.
+- Current fuzzy, overall fuzzy, and current exact-function totals are navigation
+  signals, not acceptance gates. MSVC codegen is easily perturbed by declaration
+  state: even a typedef, include, or declaration above a function can change that
+  function or unrelated functions in the TU. Accept correct work whenever the
+  MAX gate holds; never revert it to restore a current aggregate or exact count.
+- Raw instructions, constants, and ordered relocations decide whether a
+  reconstruction is correct.
+- The binary has no original PDB. Generated PDBs, delinked objects, inferred
+  function boundaries, and contribution ranges are working models, not new
+  ground truth.
 
-`scripts/gruntz/` is THE package — ALL importable code, one package per role:
-the pipeline (`{build,ghidra,init}/`, path-invoked by ninja/the CLI), the
-shared engine library (`core/`: pe/symbols/report/vtables/exe_map/clangd),
-match scoring + integrity gates (`match/`), the cleanliness board + quality
-gates (`cleanliness/`), the permuter climbers (`permute/`), the `gruntz sema`
-navigation surface (`sema/`, one module per subcommand), and one-shot campaign
-audits (`audit/`, incl. the `fid/` matcher). Run the non-pipeline tools as
-`python -m gruntz.<area>.<module>`; `scripts/` is on `PYTHONPATH` (set by the
-nix shells + the `gruntz` wrapper). Nothing importable lives outside the package.
+## Session And Evidence Discipline
 
-See **`docs/build-system.md`** (the build, the `gruntz` CLI, and how `src/` became
-the single source of truth) and **`docs/gotchas.md`** (measurement/build/matching
-traps + the mislabeled-bug audit playbook + which cleanliness tooling is live).
-**`docs/relevations/`** holds the findings that changed how we LOOK — a signal the
-project had been masking, with the worked example and the measured before/after that
-turned it into an oracle (e.g. a `/GX` unwind funclet names a member's TYPE, which is
-how three fabricated classes were dissolved).
+- Work in the pinned `nix develop` environment. Refresh `gruntz structs` before
+  relying on a build because source changes do not invalidate that cache. A
+  build reporting `ninja 0.0s` did not test a source change.
+- Never run, launch, replay, or capture the game. Do not use the Ghidra
+  decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
+  and relocation evidence.
+- Inspect ownership, callers/callees, strings, types, and the retail disassembly
+  before editing. Compare from the first real divergence after each build.
+- Objdiff masks relocated address words. Always verify raw constants and ordered
+  relocation targets; a perfect masked score can still call or load the wrong
+  referent.
+- Run a full `gruntz build` with `GRUNTZ_LABELS_ACK` unset before hand-off or
+  commit. A generated report alone is not authoritative.
 
-## Tools come from Nix
+## Historical-MAX Wall Campaign
 
-- **One shell for everything:** `nix develop` — analysis (`vostok-delinker`,
-  `objdiff`/`objdiff-cli`, `ghidra`, `llvm-pdbutil`, python/rg/file/xxd/jq) **and** the
-  MSVC 5.0 toolchain under `wine` for the base/recompile side. The `gruntz-toolchain` tarball is packaged
-  (fetched + pinned in `flake.nix`); `gruntz init` (auto-run on shell entry) builds the
-  local env — wine prefix, clangd DB, Ghidra DB — a few minutes cold, fast/idempotent
-  after (see the build-speed note under Conventions).
+- Work the lowest historical-MAX functions first, except rows already bounded
+  by reproducible evidence in `wall-break.md`. Do not preferentially select easy
+  high-score functions while lower structural mismatches remain.
+- Classify a plateau in this order: inline/call-set divergence, CFG/branch
+  divergence, then register allocation and scheduling. A branch-count mismatch
+  is a structural reconstruction problem; matching branch sequences and return
+  counts are evidence that the remaining wall is instruction selection,
+  lifetime, or allocation.
+- Use compiler-state or permutation experiments only as disposable A/B tests.
+  Never retain unused includes, declarations, fake locals, manual `STATE`
+  probes, volatile carriers, or source distortions to steer codegen. These are
+  not appropriate while a function's structure is still unresolved and are
+  rarely justified below 90%.
+- Historical MAX is banked only by a real build against the same per-function
+  source fingerprint. If an unchanged function reaches exact under a disposable
+  TU-state experiment, update the ledger while exact, remove the experiment,
+  rebuild, and keep the historical proof. Do not call a current dip a regression
+  when the MAX gate remains green.
+- Record every structural break and every genuinely bounded wall in
+  `wall-break.md`: the before/after historical MAX, the retail evidence, the
+  retained source lever, negative controls, and the remaining mismatch class.
+  Keep investigation history there, not in C++ comments.
+- The HoMM3 `wall-identifier` skill is useful doctrine for VC compiler internals
+  and the inline → CFG → register routing order, but its commands and compiler
+  version are project-specific. Re-prove every proposed lever with Gruntz's
+  pinned compiler and `gruntz` reports.
 
-`GRUNTZ_EXE` is exported pointing at the Internet-Archive-fetched binary.
+## Source Modeling Rules
 
-## Target facts
+- A class has one real definition in a shared header. Do not create `.cpp`-local
+  classes, layout views, or placeholder shells to make an access compile.
+- When a receiver's identity is unclear, chase both directions: callers and
+  allocation/storage sites, plus callees, mangled signatures, vptr stores,
+  vtable slots, RTTI, and member offsets. If the evidence remains insufficient,
+  record an `@identity-TODO`; do not fabricate an identity.
+- Put each function and global in its evidence-backed owner TU/header. Do not
+  scatter per-TU `extern` declarations or alias semantic names onto hex names
+  with macros.
+- Names describe semantics, not storage accidents: do not introduce address-
+  derived identifiers, compiler ordinals, or contextless stack-slot names.
+- Model fields and relationships so access is expressed through real members.
+  Raw offset casts and offset-access macros are forbidden. Casting `this` is a
+  class-model defect, not a solution.
+- Avoid C-style casts. Prefer correct types; when a conversion is genuinely
+  required, use the appropriate C++ named cast. Preserve authentic SDK/ABI
+  types at external boundaries.
+- Use `<Mfc.h>` for MFC translation units and `<Win32.h>` for pure Win32/DirectX
+  units. Do not hand-roll Windows typedefs, imports, or calling conventions.
+- Use named, typed enums for proven numeric domains instead of magic macros.
+  Enumerate only values supported by evidence. Changing a function parameter
+  or return type to an enum changes MSVC mangling, so verify such signature
+  changes deliberately.
+- Preserve proven packed layouts, sizes, storage widths, and member offsets.
+  Improve placeholder names when their meaning is established; never invent a
+  name merely to reduce a cleanliness counter.
+- Treat adjacent same-width scalars as a possible aggregate, not a conclusion.
+  Four dwords used as one Win32 rectangle should be modeled as `RECT`/`CRect`;
+  copied coordinate pairs should be modeled as `Coord`/`POINT`. Prove the type
+  from complete-object calls, field order, copies, serialization, and stack or
+  data extents. Do not split one retail object into overlapping globals, and do
+  not invent an aggregate merely because it changes a score.
+- For polymorphic classes, derive declarations mechanically from
+  `gruntz sema class <Class>` or
+  `python -m gruntz.core.vtable_hierarchy --class <Class>`:
+  inherited slots are not redeclared, overrides use `OVERRIDE`, and new slots
+  are plain `virtual`. Never pad a vtable with dummy virtual methods.
+- Define a symbol or label only when evidence supports it. Never add fake code,
+  storage, aliases, or padding solely to improve objdiff or final RVA layout.
 
-- `GRUNTZ.EXE` (`$GRUNTZ_EXE`, flake-fetched) — EN v1.0, 2,511,872 B, MD5 `81c7f648…`.
-- Built with **MSVC 5.0**; **CRT + MFC statically linked**.
-- `.reloc` **present** → the EXE is delinkable. **No PDB** → `synth_pdb.py` fakes one, and
-  contribution ranges must be *recovered*, not read (`docs/tu-partition-brief.md`).
-- Leaked source paths give retail's compiland layout:
-  `C:\Proj\{DDrawMgr,DinMgr2,Dsndmgr,NetMgr,Gruntz}\` over shared `incs\`.
+## Address Annotations And State Markers
 
-## The pipeline
+- Address labels live in `include/rva.h` macros, never comments. Let the
+  label-style gate enforce mechanical spelling rather than duplicating it here.
+- Never bind volatile compiler ordinals such as `_$E<n>` with
+  `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
+  Keep observed RVA/name/size evidence in
+  `config/retail/compiler-generated-functions.tsv` instead.
+- `DATA_SYMBOL` is RETIRED and gone from `rva.h`; there is no declaration-only
+  data pin. Every datum is a real C++ definition carrying `DATA(rva)`.
+- The DATA analog of `RVA_COMPGEN` is therefore a manifest, not a macro:
+  `config/retail/compiler-generated-data.tsv` names a datum cl emits as a COFF
+  COMMON from a header-inline's local static (and the `??_B` guard byte beside
+  it, which has no source spelling). It has no owning TU to host a source pin,
+  so it states only the retail address; `gruntz.audit.compgen_data` re-proves
+  the rest against the base objs and ratchets coverage.
 
-**One-time, cached (`gruntz init`):** GRUNTZ.EXE → Ghidra (import + auto-analyse + RTTI +
-FLIRT + leaked names) → exports. Not part of the build loop.
+- The marker vocabulary is closed by `docs/comment-markers.md`; do not invent
+  new `@` states. `@early-stop` means a complete, evidence-bounded body, not
+  missing logic or unresolved relocation work. Re-derive its residue instead of
+  trusting an old source comment.
 
-**Every `gruntz build`** — `src/` drives both sides; they meet at objdiff:
+## Data, Generated Models, And Linking
 
-1. **compile** — `src/` → base objs (`cl /O2 /MT` under wine).
-2. **labels** — `RVA()`/`DATA()` annotations (read from LLVM IR) ∩ base objs → per-TU
-   fragments → merge → `build/gen/symbol_names.csv`. **The hinge**: the delink re-fires on it.
-3. **synth PDB** — `symbol_names.csv` + Ghidra exports → fake PDB (`synth_pdb.py`).
-4. **delink** — GRUNTZ.EXE + fake PDB (+ data/section manifests) → per-unit *target* objs
-   (`vostok-delinker`).
-5. **normalize** — base + target → content-addressed comparison copies (objdiff pairs by name).
-6. **objdiff** — normalized base vs target → `report.json`, then the gates.
+- `DATA(...)` records semantic/audit identity; it does not force a linker
+  address. Model the retail storage class, initializer, type, and owner.
+- Delinked target data sections may be synthesized, duplicated, or zero-filled.
+  Do not infer original `.data`/`.bss` membership or global data correctness
+  solely from aggregate objdiff data percentages.
+- Never model an interior address as overlapping independent storage. Refine the
+  owning object and access its real member or table element.
+- Final-image gaps are link-layout facts, not justification for giant padding
+  arrays in reconstructed source.
+- Changes to label annotations can regenerate the fake PDB and re-delink target
+  objects. Treat resulting broad movement as something to inspect, not bypass.
 
-**Opt-in (`ninja candidate`):** link → candidate `.EXE` + `.map` — the layout/contribution audits
-(`gruntz link`, `exe-diff`). See `docs/data-attribution.md` + `docs/tu-partition-brief.md`.
+## Quality And Change Discipline
 
-## Conventions
-
-- Keep `README.md` and the relevant `docs/` (esp. `build-system.md`) current when
-  the build/diff flow, tools, or paths change.
-- **Win32/MFC types & functions come from the real headers** (`<Mfc.h>` for MFC TUs,
-  `<Win32.h>` for pure-Win32/DirectX) — don't hand-roll typedefs/externs. See
-  `docs/patterns/win32-import-decl-stdcall.md`.
-- **Label macros have ONE canonical spelling** (gated FATAL, `gruntz.audit.label_style`):
-  addresses zero-padded to 8 hex digits (`0x00xxxxxx`), size args unpadded lowercase hex
-  (`0x0` = unknown), one line per invocation. No label ever lives in a comment
-  (`RVA_COMPGEN` is the compiler-generated pin). There is no data *macro* analog:
-  `DATA_SYMBOL` is RETIRED and removed from `rva.h` — every datum is a real C++
-  definition carrying `DATA(rva)`, so reintroducing it is a compile error. The
-  DATA analog of `RVA_COMPGEN` is a **manifest**,
-  `config/retail/compiler-generated-data.tsv` (gated FATAL,
-  `gruntz.audit.compgen_data`): a datum cl emits as a COFF **COMMON** from a
-  header-inline's local static — plus its `??_B` guard byte, which has no source
-  spelling at all — has no owning TU to host a source pin, so only its retail
-  ADDRESS is stated and every other column is re-proven against the base objs.
-  Details: `docs/build-system.md` § "Compiler-generated DATA pins".
-- **Formatting is automated; don't hand-format.** Rust-like clang-format (root
-  `.clang-format`) via a pre-commit hook + `gruntz format`; whitespace-only, so
-  matching-neutral. **Never format `vendor/`.** Details: `docs/build-system.md`.
-- **The `#include` block is canonical** (gated, `gruntz.audit.include_order`): no
-  duplicates, every header self-sufficient (standalone-compile-proven), and one
-  order everywhere — config `#define`s, `<rva.h>`, the TU's own header, platform
-  preludes (`<Mfc.h>`/`<MfcNoInline.h>`/`<MfcWin.h>`/`<Win32.h>`, dependency-ranked),
-  project headers sorted, libraries sorted. Never hand-order:
-  `python -m gruntz.audit.include_order --fix-dupes --fix`. No TU includes an
-  `<afxwin.h>` directly — the `_AFX_ENABLE_INLINES` devices live in the two Mfc*
-  wrappers. `<Mfc.h>` is a superset of `<Win32.h>`; including both trips MFC's
-  C1189. Rules + traps: `docs/patterns/include-order.md`.
-- **MAX match is the metric — never revert on a current-% dip.** A byte-evidenced change
-  (shape seen in the target disasm) is KEPT even if its fn's current-% stalls, a sibling
-  craters, or Overall drops. Revert only when the change's OWN evidence fails or the build
-  breaks. Gate on BUILD, not %. **A sibling drop is NOT a problem and never a reason to
-  stop** — the `permute` skill (forests × islands, banked by MAX) is what recovers those.
-  The ledger (`config/match_baseline.tsv`) has TWO peaks per function, with opposite jobs:
-  - **`best_pct` is scoped to the IMPLEMENTATION** (the per-function `src_hash`, a clangd
-    extent — NOT the whole `.cpp`). Same hash + a different % ⇒ the variance is TU
-    composition, so **bank the max**. A CHANGED hash ⇒ **`best` resets to `cur`**, because
-    the old peak was scored by source that no longer exists. **`best` == 100 means ALREADY
-    FIXED — park it.** So bank the MAX *before* rewriting if the old peak is worth keeping.
-  - **`hist_pct` never resets** — the all-time peak. **`hist` > `best` means KNOWN
-    HEADROOM**: a better implementation existed and was lost. That is the worklist
-    (`gruntz.audit.max_divergence --history`).
-  - Reaching 100 with the function's own source unchanged **proves that source correct** —
-    the residue is TU state. Perturb the TU, `status update`, then revert the perturbation:
-    the proof is banked and nobody need look at the function again. Never leave the
-    perturbation in the tree; an unused include kept to steer regalloc is a fitted artifact.
-- **Builds are FAST — don't engineer around build time.** A full from-scratch
-  `gruntz clean && gruntz init` is a few minutes; `gruntz build` (incremental) is faster.
-  Run them in the foreground and verify changes with a real build — don't background out of
-  fear or skip verification. `--fast` skips the gate tail; run one full build before a commit.
-- **Read the target with `gruntz sema disasm`, and START with `--blocks`.**
-  `--blocks --diff --lite` gives the basic-block topology (in-edges, branch arrows,
-  loop back-edges, shared ret tails) — getting the CONTROL-FLOW STRUCTURE right is
-  what makes a reconstruction match. Rebuilding the shape by hand from jump targets
-  is wasted effort. `--rich` once the shape is right and you're chasing which
-  *statement* produced which instructions. **Trap:** `--diff` and `--blocks --diff`
-  MASK address operands, so a pure control-flow divergence prints "identical" while
-  the function is <100% — then use **`--branches --diff`**, which names each target by
-  branch index (`docs/patterns/masked-diff-hides-branch-target.md`). The Ghidra
-  decompiler is banned; assembly only.
-- **Numeric domains are named types, not `i32`** (gated, `gruntz.audit.enum_domains`):
-  one domain per meaning, declared once through the `GZ_ENUM_*` layer in
-  `<Enums.h>`, `SCREAMING_SNAKE` enumerators with a domain prefix and an explicit
-  `= value`. MSVC 5.0 has no `enum class` and sizes every enum as 4 bytes, so the
-  layer expands two ways: real `enum`s for the matching build, `enum class` +
-  `GzEnumStorage<N,S>` for a C++20 clang type-check (`gruntz.audit.strict_enums`).
-  Retyping a member/param/return `i32` -> enum is BYTE-NEUTRAL (measured); only a
-  signature's mangling moves. Use `GZ_ENUM_FORWARD(N)` instead of a new `#include`
-  to type a header without the regalloc butterfly. Details:
-  `docs/enum-modeling-plan.md`, `docs/patterns/enum-domains.md`.
-- **Every body lives in its real owner TU** — owner proven by xref / vtable-slot, never by RVA
-  proximity (`docs/tu-partition-brief.md`; a contribution must be contiguous).
-- **Game semantics** (what WWD fields/ids/logic MEAN): `docs/domain/` (distilled) over
-  `docs/reference/gooroosgruntz/` (mirrored community docs); the +0x114 union is
-  Score/Points/Powerup/Damage/Smarts/Health.
-- **On-disk formats** (what the shipped files ARE): `docs/formats/` — derived from the
-  archived bytes + retail's own reader disassembly, never from `src/`. `tools/gruntz-rez`
-  reads AND writes the REZ v1 container; `src/Rez/` is the file-driver layer, not the
-  container, so it is not an authority on it.
-- **Cleanliness endgame + cast policy** (`docs/cast-metric-policy.md`): drive EVERY
-  metric in `config/cleanliness/cleanliness-{text,semantic}-baseline.tsv` to 0. Mis-model casts (views, `)this`) are ELIMINATED by
-  real typing; a genuinely-needed cast uses a **C++ named cast** (`static_cast` for math/numeric,
-  `reinterpret_cast`/`const_cast`/`dynamic_cast` otherwise) so the C-style-pattern metrics slide to 0;
-  **offset-casts `(char*)x + N` are BANNED outright** (named member `&x->m_field`, never even a C++
-  cast). `m_<hex>` naming is last.
-- **Function-state markers (comments):** `// @stub` = an empty, not-yet-
-  reconstructed body; `// @early-stop` (reason on the next line) = a complete reconstruction
-  parked below 100% match; `// @identity-TODO` = an unproven class/owner identity — leave it,
-  never fabricate. A reconstructed method is either ~100% (unmarked) or `@early-stop`; the
-  final-sweep worklist is `rg '@early-stop' src`. The full (closed, gated) marker
-  vocabulary: `docs/comment-markers.md`.
+- Keep every build gate green. Cleanliness work removes the underlying modeling
+  debt rather than hiding its textual signature.
+- Do not edit or format `vendor/`.
+- Put a newly proven reusable MSVC idiom in `docs/patterns/` and its index rather
+  than leaving it only in a source comment or commit message.
+- When a build refresh disproves matching doctrine, document both the failed
+  assumption and the recognizable reverse-audit signature. Do not preserve an
+  outdated explanation merely because an old cache or high-water score once
+  appeared to support it.
+- Treat a reproducible matching surprise as a matching pattern, including
+  cross-function MSVC optimizer-state effects. Record the controlled A/B
+  evidence, detection signature, and safe reverse-use heuristic in
+  `docs/patterns/` plus `docs/patterns/INDEX.md`; correct older pattern claims
+  that the new evidence falsifies. Do not leave this knowledge only in a source
+  comment or commit message.
+- Do not investigate ordinary current-score or exact-count movement caused by a
+  correctness fix. Codegen perturbation is expected and unrelated functions do
+  not impose a cost. Investigate only evidence of a substantive modeling error,
+  a build failure, or a MAX-gate failure. A reproducible perturbation mechanism
+  may be documented for later reverse use, but attribution is not a prerequisite
+  for keeping or committing correct work.
+- Documentation and green tests are claims, not authority. If retail evidence
+  falsifies a documented tool contract, correct the documentation and add a
+  negative or integration control that exercises the full path which failed;
+  a recognizer-only test does not prove its consumer uses the result.
+- Preserve user and concurrent changes. Do not revert unrelated edits, and
+  stage only files belonging to the current unit of work.
+- Keep C++ comments operational: machine-visible state markers, concise
+  ABI/codegen constraints, interleaver/dead-code evidence, real fallthrough
+  annotations, and explanations for unavoidable unsafe seams. Do not retain
+  reconstruction history, address notes, score history, section banners, or
+  prose that duplicates the code. Trailing include-guard labels such as
+  `#endif // HEADER_GUARD` are allowed.
+- Prefer focused commits such as `match: reconstruct CThing::Method` or
+  `tools: verify relocation targets`. Do not commit generated build state.

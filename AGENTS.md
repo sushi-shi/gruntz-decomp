@@ -3,8 +3,8 @@
 This file is the short, durable orientation. When changing reconstructed C++,
 also read `.claude/agents/matcher.md`; it contains the detailed matching
 doctrine. `wall-break.md` is the evidence log for the active historical-MAX
-campaign. Do not add live scores, current assignments, queue snapshots, or
-one-off campaign notes here.
+campaign. Keep `AGENTS.md` and `CLAUDE.md` byte-identical. Do not add live
+scores, current assignments, queue snapshots, or one-off campaign notes here.
 
 ## Objective And Authority
 
@@ -29,92 +29,21 @@ one-off campaign notes here.
   function boundaries, and contribution ranges are working models, not new
   ground truth.
 
-## Repository Map
+## Session And Evidence Discipline
 
-- `src/`: reconstructed C++, grouped by retail modules and translation units.
-- `include/`: shared class and ABI headers; `rva.h` owns all address annotations.
-- `scripts/gruntz/`: the only importable Python package and implementation of
-  the build, semantic navigation, matching, cleanliness, permutation, and audit
-  tools. Run modules as `python -m gruntz.<area>.<module>`.
-- `config/units.toml`: translation-unit build manifest.
-- `docs/patterns/`: indexed MSVC 5 code-generation idioms.
-- `docs/domain/`: distilled game and WWD semantics.
-- `vendor/`: verbatim third-party source. Read-only.
-- `build/`: generated and fetched state.
-
-## Environment And Front Doors
-
-Use `nix develop`; it provides the pinned MSVC/Wine toolchain and analysis
-utilities. Before a matching session, verify the executable/store pairs and
-refresh the structures cache; source edits do not invalidate
-`build/gen/structs.json`:
-
-```sh
-readlink -f "$(command -v vostok-delinker)"; nix eval --raw .#vostok-delinker
-readlink -f "$(command -v objdiff-cli)"; nix eval --raw .#objdiff-cli
-gruntz structs
-```
-
-If either pair differs, run builds through `nix develop --command`. A build
-reporting `ninja 0.0s` did not recompile anything and is not verification. The
-principal commands are:
-
-```sh
-gruntz init                    # cached Wine, clangd, and Ghidra setup
-gruntz build                   # configure, compile, delink, diff, report, gates
-gruntz build --fast            # iteration only; skips the gate tail
-gruntz status                  # current report plus per-function MAX ledger
-gruntz sema -h                 # semantic source/retail navigator
-gruntz format                  # format reconstructed source and headers
-gruntz sema xref 0x00... --callees # prefer to use xrefs for recovering structure
-```
-
-Builds are expected to be fast enough to run in the foreground. Use incremental
-`gruntz build --fast` while iterating, but run a full `gruntz build` before
-hand-off or commit. Do not trust a score copied into documentation or produced
-by a bare objdiff report regeneration; the real build refreshes normalized
-objects and the report.
-
-
-## Investigation And Matching Loop
-
-1. Inspect before editing. Start with the target's dossier, callers/callees,
-   strings, vtable information, and target disassembly:
-
-   ```sh
-   gruntz sema rva 0x00......
-   gruntz sema xref 0x00...... --callees
-   gruntz sema strings 0x00......
-   gruntz sema class ClassName
-   gruntz sema disasm 0x00...... --lite
-   ```
-
-2. Recover semantics and shape: the real owner TU, class hierarchy, member
-   layout, types, calling convention, control flow, locals, and external
-   referents. Do not use the Ghidra decompiler on `GRUNTZ.EXE`; use the static
-   assembly, xref, RTTI, vtable, and data evidence exposed by `gruntz sema`.
-3. Build, then compare from the first genuine divergence:
-
-   ```sh
-   gruntz build --fast
-   gruntz sema disasm 0x00...... --diff --lite
-   gruntz sema disasm 0x00...... --base
-   gruntz sema disasm 0x00...... --rich --lite
-   ```
-
-4. Audit raw constants and relocations. Objdiff masks address-sized immediates,
-   so `--diff` can conceal a wrong constant or target. A near match still needs
-   semantic, byte, and relocation review.
-5. Fix source-level causes before compiler steering: signedness, types, loop
-   form, condition polarity, declaration scope/order, lifetime, aliasing,
-   calling convention, and inline/out-of-line shape. Use permutation tools only
-   after the reconstruction is structurally credible.
-6. Finish with a full build, focused disassembly/relocation review, formatting,
-   and `git diff --check`.
-
-Use `rg` for lexical searches. Use `gruntz sema`, clangd/LSP, retail xrefs, and
-RTTI for semantic claims such as ownership, identity, call relationships, types,
-and vtable slots. RVA proximity alone does not prove TU ownership.
+- Work in the pinned `nix develop` environment. Refresh `gruntz structs` before
+  relying on a build because source changes do not invalidate that cache. A
+  build reporting `ninja 0.0s` did not test a source change.
+- Never run, launch, replay, or capture the game. Do not use the Ghidra
+  decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
+  and relocation evidence.
+- Inspect ownership, callers/callees, strings, types, and the retail disassembly
+  before editing. Compare from the first real divergence after each build.
+- Objdiff masks relocated address words. Always verify raw constants and ordered
+  relocation targets; a perfect masked score can still call or load the wrong
+  referent.
+- Run a full `gruntz build` with `GRUNTZ_LABELS_ACK` unset before hand-off or
+  commit. A generated report alone is not authoritative.
 
 ## Historical-MAX Wall Campaign
 
@@ -129,8 +58,8 @@ and vtable slots. RVA proximity alone does not prove TU ownership.
 - Use compiler-state or permutation experiments only as disposable A/B tests.
   Never retain unused includes, declarations, fake locals, manual `STATE`
   probes, volatile carriers, or source distortions to steer codegen. These are
-  especially inappropriate on low-score functions whose structure is not yet
-  established.
+  not appropriate while a function's structure is still unresolved and are
+  rarely justified below 90%.
 - Historical MAX is banked only by a real build against the same per-function
   source fingerprint. If an unchanged function reaches exact under a disposable
   TU-state experiment, update the ledger while exact, remove the experiment,
@@ -156,6 +85,8 @@ and vtable slots. RVA proximity alone does not prove TU ownership.
 - Put each function and global in its evidence-backed owner TU/header. Do not
   scatter per-TU `extern` declarations or alias semantic names onto hex names
   with macros.
+- Names describe semantics, not storage accidents: do not introduce address-
+  derived identifiers, compiler ordinals, or contextless stack-slot names.
 - Model fields and relationships so access is expressed through real members.
   Raw offset casts and offset-access macros are forbidden. Casting `this` is a
   class-model defect, not a solution.
@@ -187,13 +118,8 @@ and vtable slots. RVA proximity alone does not prove TU ownership.
 
 ## Address Annotations And State Markers
 
-All bindings use macros from `include/rva.h`; address labels never live in
-comments. Keep their enforced spelling:
-
-- addresses are zero-padded eight-digit lowercase hex, such as `0x0008c750`;
-- size arguments are unpadded lowercase hex; `0x0` means unknown;
-- one annotation invocation per line;
-- use the dedicated compiler-generated forms where applicable.
+- Address labels live in `include/rva.h` macros, never comments. Let the
+  label-style gate enforce mechanical spelling rather than duplicating it here.
 - Never bind volatile compiler ordinals such as `_$E<n>` with
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
   Keep observed RVA/name/size evidence in
@@ -207,19 +133,10 @@ comments. Keep their enforced spelling:
   so it states only the retail address; `gruntz.audit.compgen_data` re-proves
   the rest against the base objs and ratchets coverage.
 
-The machine-visible comment vocabulary is closed; see
-`docs/comment-markers.md`. The common states are:
-
-- `// @stub` with required confidence/source evidence: an empty unreconstructed
-  body;
-- `// @early-stop`: a complete reconstruction parked below exact match; rederive
-  the current residue from disassembly rather than trusting a source narrative;
-- `// @identity-TODO`: identity or ownership remains unproven after an evidence
-  chase.
-
-Do not invent new `@` markers. A reconstructed method is normally exact and
-unmarked, or complete with a justified `@early-stop`; the marker never excuses
-missing logic or unresolved relocation work.
+- The marker vocabulary is closed by `docs/comment-markers.md`; do not invent
+  new `@` states. `@early-stop` means a complete, evidence-bounded body, not
+  missing logic or unresolved relocation work. Re-derive its residue instead of
+  trusting an old source comment.
 
 ## Data, Generated Models, And Linking
 
@@ -239,11 +156,9 @@ missing logic or unresolved relocation work.
 
 - Keep every build gate green. Cleanliness work removes the underlying modeling
   debt rather than hiding its textual signature.
-- Formatting is automated and matching-neutral. Run `gruntz format`; never
-  format `vendor/`.
-- Update `README.md` and the relevant durable documentation when commands,
-  paths, build flow, or tool contracts change. Put a newly proven reusable MSVC
-  idiom in `docs/patterns/` and its index rather than in an isolated comment.
+- Do not edit or format `vendor/`.
+- Put a newly proven reusable MSVC idiom in `docs/patterns/` and its index rather
+  than leaving it only in a source comment or commit message.
 - When a build refresh disproves matching doctrine, document both the failed
   assumption and the recognizable reverse-audit signature. Do not preserve an
   outdated explanation merely because an old cache or high-water score once
@@ -274,14 +189,3 @@ missing logic or unresolved relocation work.
   `#endif // HEADER_GUARD` are allowed.
 - Prefer focused commits such as `match: reconstruct CThing::Method` or
   `tools: verify relocation targets`. Do not commit generated build state.
-
-## Focused References
-
-- `docs/build-system.md`: CLI, pipeline, manifests, generated state, and clangd.
-- `docs/gotchas.md`: measurement and build traps worth checking when results
-  look impossible.
-- `docs/matching-patterns.md` and `docs/patterns/INDEX.md`: MSVC 5 behavior and
-  source-shape recipes.
-- `docs/tu-partition-brief.md`: TU ownership and contribution evidence.
-- `docs/cast-metric-policy.md`: typing and cast policy.
-- `docs/comment-markers.md`: complete marker contract.
