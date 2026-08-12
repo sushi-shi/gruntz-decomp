@@ -204,3 +204,21 @@ compiler decision, and a real VC5 build must confirm the fix.
   scored higher for mixed widths, but retail's first inlining directly proves
   the original byte reads; the score-only dword forms were rejected. The
   remaining one-branch and register-colouring residue is marked `@early-stop`.
+
+## 2026-08-12 — `CAreaMgr::IsSameWorld`
+
+- Unit/RVA: `areamgr`, `0x0009b430`.
+- Before: 58.6471% current-source MAX. Retail and candidate already had the
+  same three-block CFG, one branch, two returns, and no relocations; the wall
+  was a whole-function parameter/divisor register rotation.
+- Classification: VC5 TU declaration state. An exhaustive 1,024-trial state
+  sweep moved the unchanged body to the retail 73-byte extent. Its best class
+  reached 99.7059%, with the sole residue `cmp esi,eax` versus retail
+  `cmp eax,esi`.
+- Source lever: retain the semantic operand order visible in retail,
+  `currentWorld == requestedWorld`. Under the proven mixed state this emits all
+  34 retail instructions exactly. The function has no address operands, so the
+  byte-exact result also closes the relocation audit.
+- Verdict: 100.00% current-source MAX banked for source hash `f06c6ed10d01`.
+  The synthetic state was removed; ordinary codegen remains at 58.5000% and is
+  parked because it is the equivalent alternate register assignment.

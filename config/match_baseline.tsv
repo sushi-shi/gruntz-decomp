@@ -451,7 +451,7 @@ areamgr	?InitializeTrainingStage1@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	8b7e4ec07
 areamgr	?InitializeTrainingStage2@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	60ecaca950ea	0x9b3d0	100.0000
 areamgr	?InitializeTrainingStage3@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	5c1af147a97e	0x9b3f0	100.0000
 areamgr	?InitializeTrainingStage4@CAreaMgr@@QAEHXZ	100.0000	100.0000	1	2d9596782226	0x9b410	100.0000
-areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	58.6471	58.6471	4	d55a68bf6b43	0x9b430	58.6471
+areamgr	?IsSameWorld@CAreaMgr@@QAEHH@Z	100.0000	58.5000	5	f06c6ed10d01	0x9b430	100.0000
 areamgr	?LoadObjectAnimResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	8	771b00524656	0x9ac20	100.0000
 areamgr	?LoadObjectImageResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	7	3d102abe807d	0x9a510	100.0000
 areamgr	?LoadObjectResources@CAreaMgr@@QAEHPAVCDDrawSurfaceMgr@@PAVCSymTab@@@Z	100.0000	100.0000	2	afadbc689abe	0x9a4c0	100.0000
