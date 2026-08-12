@@ -2798,7 +2798,7 @@ lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	4	d45170de34
 lightfxrender	?Init@CLightFxRender@@QAEHPAVCGruntzMgr@@H@Z	100.0000	100.0000	4	931183b7dd3c	0xa32c0	100.0000
 lightfxrender	?IssueMinimapCommand@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	2	74591c4d6a69	0xa9550	100.0000
 lightfxrender	?Reset@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	05ac57b5edfc	0xa3360	100.0000
-lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	68.3193	68.3193	13	aaae03af7bd2	0xa3460	69.2227
+lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	69.2227	68.3193	13	aaae03af7bd2	0xa3460	69.2227
 loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	2	25e7083fe958	0x9e0b0	100.0000
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	9	24852ad1d2e8	0x9dff0	100.0000
 loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	4	31aae3635583	0x9e2d0	100.0000

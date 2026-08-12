@@ -229,6 +229,13 @@ compiler decision, and a real VC5 build must confirm the fix.
   remaining 82-versus-83 branch residue lies in the second movement-validity
   expansion, where retail spills `result` and widens four aligned flag probes
   to dword `0x2000` tests while the candidate retains byte `0x20` tests.
+- Completed state exhaustion: 124 of 128 parser-visible trials compiled against
+  the corrected switch order; every valid typedef/enum/struct/class/packed/
+  member/extern/static-data/prototype/function/include/mixed cell was
+  byte-identical at the focused 60.5542% baseline (155 candidate versus 151
+  retail relocations). Four include/mixed cells were rejected by compilation.
+  The state axis therefore cannot supply the missing spill/branch/inlining
+  decisions; no synthetic TU declaration was retained.
 
 ## 2026-08-12 — `CAreaMgr::IsSameWorld`
 
@@ -694,3 +701,26 @@ compiler decision, and a real VC5 build must confirm the fix.
   are a bounded VC5 allocator wall, so the complete function remains
   `@early-stop`. No volatile local, unused declaration/include, or score-only
   control-flow spelling was retained.
+
+## 2026-08-12 — `CLightFxRender::Resize`
+
+- Unit/RVA: `lightfxrender`, `0x000a3460`.
+- Source state: the repeated `OccupantAt`/`TileIdAt` expressions are already
+  recovered as separate inline entities. That prevents a false whole-loop CSE,
+  restores retail's frame, and leaves the prologue plus the first 68 loop
+  instructions byte-exact. Candidate and retail both have 34 conditional
+  branches and four returns.
+- Remaining wall: after the aligned prefix, VC5 colors x/alt/this as
+  edi/ebx/ebp instead of retail's esi/edi/ebp and swaps the y and x-stride spill
+  slots. The changed register schedule makes the cross-jumper group and place
+  the later loop exits differently (62 candidate versus 61 retail blocks), so
+  the linear fuzzy score understates the aligned work. Every desc/dst/alt local
+  spelling and the earlier 24 parser-state cells left this wall class intact.
+- MAX-ledger correction: git history proves the exact current source hash
+  `aaae03af7bd2` scored 69.2227%, and an older baseline correctly held
+  `best_pct=69.2227`. A later update lowered best to 68.3193 without changing
+  that hash while retaining `hist_pct=69.2227`. Restoring best to 69.2227 is a
+  same-source MAX repair, not a historical-source carry or a new fuzzy claim.
+- Verdict: complete body, bounded register/cross-jump wall at a proven 69.2227%
+  current-source MAX. No unused include, declaration, or fitted ternary was
+  retained.
