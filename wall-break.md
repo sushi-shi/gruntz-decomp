@@ -454,3 +454,27 @@ compiler decision, and a real VC5 build must confirm the fix.
   from `0x6c` to `0x88` against retail's `0x80` and regressed to 68.21%, so it
   was rejected. The proven exit-layout correction is retained; the remaining
   frame and register-colouring residue stays `@early-stop`.
+
+## 2026-08-12 — `CGruntzCmdMgr::BlitTileMarker`
+
+- Unit/RVA: `gruntzcmdmgr`, `0x00023d90`.
+- Before: 65.0790% current-source MAX. Candidate and retail have one block, no
+  conditional branches, one return, and the same sole callee/referent. Retail
+  emits 38 instructions and saves esi/edi; candidate emits 40 and additionally
+  saves ebx. The extra live arithmetic pseudo rotates the complete coordinate
+  calculation.
+- Classification: register allocation driven by TU parser state. The exact
+  current function hash had a reproducible historical 66.4210% proof, so this
+  was not inferred from a plausible register pattern. A correctly configured
+  512-trial state sweep reproduced that value in 20 mixed/include states; the
+  other 492 states were byte-identical at 65.0790%.
+- Negative controls: splitting each compound coordinate into raw/snap locals,
+  then splitting out the camera-origin deltas, compiled byte-identically. A
+  600-iteration semantic permutation sweep over commutative operands,
+  declarations, and independent statements was completely flat. The source
+  was restored after every experiment.
+- Verdict: 66.4210% current-source MAX restored from the independently
+  reproduced same-source proof. None of 512 parser states reached 100%, so the
+  remaining two-instruction, ebx-save residue is a bounded VC5 handle-state
+  wall. No unused declaration/include or unproven entity spelling was retained;
+  the complete body remains `@early-stop`.
