@@ -67,6 +67,14 @@ u8* bits = static_cast<u8*>(surf->Lock(0));
 saturates: any position **above** the `Lock` scores 76.4-76.5 and any position
 below scores 66.9-68.3, and the two orderings of the pair are worth nothing.
 
+`WarpTextureBlit` @0x146a20 independently confirms the lifetime lever across two
+`Lock` calls. Moving both edge cursors above the calls and rotating the row loops
+to an explicit guard plus `do` raises the current-source result from 71.4791% to
+71.7824%. It is only a partial break there: the same pair feeds three mutually
+exclusive mode arms, and cl still folds the left cursor into an index in each
+arm. The remaining signature is one extra `_g_rasterEdgeL` reference per arm,
+not evidence for three different source arrays.
+
 ## What did NOT move it
 
 Measured on the same function, all flat - do not re-walk them:

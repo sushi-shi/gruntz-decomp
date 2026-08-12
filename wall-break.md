@@ -996,3 +996,29 @@ compiler decision, and a real VC5 build must confirm the fix.
   81 relocation targets remain in the same order. The frame remains eight bytes
   too large and the CFG/homing residue is not exact, so the function stays
   `@early-stop`.
+
+## 2026-08-12 — `WarpTextureBlit`
+
+- Unit/RVA: `imagepolyclip`, `0x00146a20`; current-source MAX rises from
+  71.4791% to 71.7824%.
+- Wall classification: induction-variable lifetime wall. Retail computes the
+  common `minY * sizeof(ClipVtx)` contribution before locking both surfaces and
+  later advances two independent edge cursors. The candidate declared each
+  pair inside its mode arm after the calls, letting cl collapse them into one
+  shared byte index.
+- Lifetime break: declare both typed edge cursors before the two `Lock` calls,
+  then guard each mode loop with `minY < maxY` and use its natural decreasing
+  row count. This makes their address computation live across both calls and
+  raises the result by 0.3033 points without a cast, forced spill, or invented
+  datum.
+- Strict controls: candidate and retail still have two returns, but candidate
+  has 28 conditional branches against retail's 27. The remaining referent
+  difference is an over-read of `_g_rasterEdgeL`: cl still folds one cursor into
+  an index in each of the three mutually exclusive mode arms. The row-indexed
+  alternative increased the array-reference mismatch and fell to 65.5978%, so
+  it was rejected.
+- Residue: retail uses a 0x28 frame and does not peel the first power-of-two
+  test; candidate uses 0x20 and emits the peeled `test al,cl` plus a separate
+  upper-bound branch. Four evidence-compatible loop spellings failed to remove
+  that first CFG divergence. The partial lifetime break is retained and the
+  function remains `@early-stop`.

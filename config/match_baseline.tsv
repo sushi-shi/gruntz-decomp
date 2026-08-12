@@ -2540,7 +2540,7 @@ imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	85.7027	4	b90f4052f6b4
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	76.6978	76.6978	5	832b81dd3e6d	0x1471d0	76.6978
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	95.5312	95.5312	6	0c19f276ebb7	0x146550	95.5312
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000
-imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	71.4791	71.4791	4	781491c7fd35	0x146a20	71.5121
+imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	71.7824	71.7824	5	bb39b0078945	0x146a20	71.7824
 imagepool	?AddImageDispatch@CImagePool@@QAEPAUCImagePaletteNode@@PAXIW4RezDecodeKind@@H@Z	100.0000	100.0000	1	5adb796df256	0x175680	100.0000
 imagepool	?AddImageFile@CImagePool@@QAEPAUCImagePaletteNode@@PADH@Z	100.0000	100.0000	1	b9c918d30476	0x1755f0	100.0000
 imagepool	?AddPaletteEntries@CImagePool@@QAEPAUCImagePaletteNode@@PAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	1	17bae85da524	0x1754f0	100.0000
