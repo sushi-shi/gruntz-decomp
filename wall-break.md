@@ -1506,6 +1506,9 @@ compiler decision, and a real VC5 build must confirm the fix.
   use as a NEGATIVE oracle (proving a wall is not front-end reachable), the
   complement of its designed purpose. Functions classifying here need
   C2-side levers (statement mass, expression shape) or stand bounded.
+  Sharpened: PhaseStep is ALONE in its TU (no predecessor state exists),
+  so its residue is the pure C2 allocation of its own tuple stream - the
+  cleanest possible specimen for the eventual c2.exe allocator RE.
 
 ## 2026-08-13 — TU-state family scan (negative-oracle panel, first pass)
 
