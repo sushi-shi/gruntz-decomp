@@ -2110,3 +2110,20 @@ both compiles; the normal-path bytes MATCH (masked). Dead-TRACE titration to
 so this decline is C1 TU-state (handle/il), not caller-cb budget. Park for
 the IL tap. Same signature likely covers gamelevel ??1CImageSet3's
 CTileImageSet->CObject row.
+
+## 2026-08-13 (late-3): the inline-site divergence surface, MEASURED
+
+config/inline-site-divergence.tsv: 698 unit-level (unit, callee) REL32
+call-count divergences between base objs and delinked targets, 132 units.
+This is the site-level inline-expansion disagreement surface the drained
+COMDAT screens cannot see. Read it as: ours>retail = our compile CALLS where
+retail expanded (TransitionState's ??0CMultiBootyState was exactly such a row,
+fixed by dead-TRACE mass); ours<retail = we expand where retail called (the
+ddrawsurfacemgr/play class; fix = missing sites / statement mass, or C1
+TU-state a la ~CPen). Caveats: rows inside COMDAT sections our obj carries
+but the packed target lacks are delink-packing noise (arrayserialize's
+CArray family, vector-iterator helpers); per-CALLER attribution needs
+census-boundary plumbing (the packed target objs defeat section-owner
+attribution - 15k phantom rows, do NOT trust that cut).
+Top units: play 836*, multi, gruntzmgr, sbi_rectonly, grunt, butemgr
+(*per-caller counts, inflated; unit-level rows are the authority).
