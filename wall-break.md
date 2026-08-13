@@ -2018,3 +2018,62 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   switch/exit-merge coins. The exact-count ceiling at 81.1% is the c2.exe
   canonicalization/layout/merge mechanism, proven now by exhaustive scan
   from three directions (weight, near-exact, full branch-count).
+
+## 2026-08-13 (late): EH-unwind-map campaign - the C1 fingerprint the code cannot show
+
+User directive: match EH state transitions retail-vs-candidate as a worklist.
+The mechanism (docs/patterns/eh-unwind-map-is-a-c1-fingerprint.md): maxState
+counts C1 scope allocations; C2 deletes code but never map entries, so retail's
+FuncInfo exposes dead TRACEs, destructible locals, and inline-expansion
+decisions invisible in bytes. `gruntz.audit.eh_band` STATES had 10 rows;
+scratchpad/eh_states_diff.py dumps any function's two maps side by side.
+
+CLOSED rows:
+- rezsync Run 40->42/42: dead TRACE with CString(a)+b nested temp pair (25,26
+  NULL, never stored). Score ~neutral; map retail-proven.
+- leveltilevalidation ValidateLevelTiles 22->23/23: trailing dead TRACE temp.
+- gruntzmgr TransitionState 21->24/24, 86.42->93.22 NEW MAX, branches 21/21:
+  entry TRACE's caller-cb mass re-enabled the DECLINED CCreditsState inline
+  ctor (states 20-22 = CState guard, ~CRgn@+0x1e8, ~CString@+0x1f0; layout
+  already correct). Sequence proof: retail stores 0x13,0x14,0x15 at push 0x218.
+- spriteloaders CTimer: Init() WAS the ctor (retail delete-guard state at
+  new CTimer + return-this + post-new null-check shape). ??0CTimer 100.00;
+  caller +1.2.
+- creditsstate ~CMoviePlayer 4-vs-5: NOT a defect in the image - the
+  creditsstate.obj COMDAT copy is 5/5 and link order keeps it (unit 46 < 98);
+  gruntzmgr.obj's 4-state copy diverges because its TU context declines one
+  ~CObject-scope expansion (Mfc.h vs MfcWin.h axis). Audit reads an arbitrary
+  copy. TU-parity clue for gruntzmgr only.
+- keyedlist AddNode: code 100 + missing NULL state is UNRESOLVABLE together at
+  154 B: every TRACE-temp spelling (by-value, CString(key), static_cast,
+  comma) adds the lifetime-flag zero that flips the zero-reg heuristic
+  (cmp/test + push edi); dead-after-return allocates nothing; lvalue-CString
+  varargs is bitwise (no temp, no state) and clang refuses it anyway. Parked
+  with the A/B matrix; map-only residue, does not affect fuzzy.
+
+OPEN rows, each decoded to its mechanism:
+- play LoadGameAssetNamespaces (12->13 ours vs 9): remaining 4 extra states =
+  ours inline-expands ~CTileTriggerContainer in the delete m_beginMarker arm;
+  retail calls the play-unit standalone 0xc8640. Budget: our CChatBoxOwner
+  ctor expansion is missing statement mass (retail has an extra push <addr>
+  after the 5x0x18 zero loop; loop anchored +0x228 vs our +0x230) - finish
+  the ctor body, the budget then declines the dtor site.
+- ddrawsurfacemgr Snapshot/RestoreChildren: ours expands ~CFileMemBase at 5
+  sites (m_name ~CString member-destruction states surface at -0x14c);
+  retail calls ??1CFileMemBase at all of them (the @early-stop comment knew).
+  14 retail (base,CFile) dtor-phase pairs = 14 return sites. ChangeState-style
+  free-site titration needed. CFile<->CFileMemBase census swaps are THIS.
+- butemgr SetString 13-vs-12: map constrains the FindOrInsert site - retail's
+  5th site has NO new-guard and its 6th is an expanded del+dtor TEMP pair,
+  i.e. retail shape is FindOrInsert(key)->CopyValue(&CButeValue(...)), not
+  our FindOrInsert(key, new CButeValue(...)). Feeds the FindOrInsert dossier.
+- chatboxowner ProcessCheatInput 27-vs-26 + zErrHandling<->zPtrColl funclet
+  swaps: undumped, next sitting.
+- Frame-offset census rows (uniform frame-size fixes): multi
+  LoadGameAssetNamespaces +0x8, BuildVoiceSoundList -0x4, AdvanceAnim +0x4,
+  menustate +0x28, AddLogic -0x78, PathScan +0x20, SetRect/SetRange +0x4,
+  DrawWrapped/MeasureWrapped mixed - each is one surplus/missing local.
+
+META: the "C2 coin" verdicts on Run/TransitionState-class walls were
+INCOMPLETE - the reachable set includes C1-input defects the unwind map
+exposes. The placement mechanism itself still stands where maps already match.
