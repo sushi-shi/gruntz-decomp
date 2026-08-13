@@ -17,57 +17,6 @@
 
 #include <string.h>
 
-RVA(0x000087d0, 0x8)
-i32 CUserBase::SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
-    return 1;
-}
-
-RVA(0x000087f0, 0x3)
-LogicTypeId CUserBase::GetTypeTag() {
-    return LOGIC_UNSET;
-}
-
-RVA(0x00008840, 0x4)
-LogicTypeId CUserLogic::GetTypeTag() {
-    return LOGIC_NONE;
-}
-
-RVA(0x000088d0, 0x1)
-void CUserLogic::Activate() {}
-
-RVA(0x000088f0, 0x6)
-i32 CUserLogic::AdvanceAnimation() {
-    return 1;
-}
-
-RVA(0x00008910, 0x6)
-i32 CUserLogic::RecordFrameTick() {
-    return 1;
-}
-
-RVA(0x00008930, 0x6)
-i32 CUserLogic::StepAttackFire() {
-    return 1;
-}
-
-RVA(0x00008950, 0x1)
-void CUserLogic::OnLeaveActiveRegion() {}
-
-RVA(0x00008970, 0x1)
-void CUserLogic::OnObjectRemoved() {}
-
-RVA(0x00008990, 0x1)
-void CUserLogic::AfterLoad() {}
-
-RVA(0x000089b0, 0x1)
-void CUserLogic::AfterSave() {}
-
-RVA(0x000089d0, 0x1)
-void CUserLogic::PrepareSave() {}
-
-RVA(0x000089f0, 0x1)
-void CUserLogic::AfterLoadReferences() {}
-
 // @early-stop
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {

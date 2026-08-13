@@ -32,9 +32,14 @@ class CUserBase {
 public:
     CUserBase() {}
     virtual ~CUserBase() {}
-    virtual i32
-    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj);
-    virtual LogicTypeId GetTypeTag();
+    RVA(0x000087d0, 0x8)
+    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
+        return 1;
+    }
+    RVA(0x000087f0, 0x3)
+    virtual LogicTypeId GetTypeTag() {
+        return LOGIC_UNSET;
+    }
 };
 
 class CUserLogic : public CUserBase {
@@ -58,7 +63,10 @@ public:
     CUserLogic(CGameObject* obj, EInlineBase);
     virtual ~CUserLogic() OVERRIDE {}
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x00008840, 0x4)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_NONE;
+    }
 
     virtual void XferName(char* name);
 
@@ -66,18 +74,34 @@ public:
 
     virtual void FinalizeStep(char* name);
 
-    virtual void Activate();
-    virtual i32 AdvanceAnimation();
-    virtual i32 RecordFrameTick();
+    RVA(0x000088d0, 0x1)
+    virtual void Activate() {}
+    RVA(0x000088f0, 0x6)
+    virtual i32 AdvanceAnimation() {
+        return 1;
+    }
+    RVA(0x00008910, 0x6)
+    virtual i32 RecordFrameTick() {
+        return 1;
+    }
 
-    virtual i32 StepAttackFire();
+    RVA(0x00008930, 0x6)
+    virtual i32 StepAttackFire() {
+        return 1;
+    }
 
-    virtual void OnLeaveActiveRegion();
-    virtual void OnObjectRemoved();
-    virtual void AfterLoad();
-    virtual void AfterSave();
-    virtual void PrepareSave();
-    virtual void AfterLoadReferences();
+    RVA(0x00008950, 0x1)
+    virtual void OnLeaveActiveRegion() {}
+    RVA(0x00008970, 0x1)
+    virtual void OnObjectRemoved() {}
+    RVA(0x00008990, 0x1)
+    virtual void AfterLoad() {}
+    RVA(0x000089b0, 0x1)
+    virtual void AfterSave() {}
+    RVA(0x000089d0, 0x1)
+    virtual void PrepareSave() {}
+    RVA(0x000089f0, 0x1)
+    virtual void AfterLoadReferences() {}
 
     void GetScreenPos(Coord* out);
 
