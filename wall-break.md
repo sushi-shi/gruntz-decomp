@@ -1549,3 +1549,16 @@ compiler decision, and a real VC5 build must confirm the fix.
   remain real - state-reachability is per-TU, and the oracle panel is now
   the 8-minute test that sorts any TU before a state sweep is attempted.
   Doctrine: run the panel BEFORE any declaration-sweep campaign.
+
+## 2026-08-13 — `CPlay::ExecCommand` (switch-arm interleave, dossier)
+
+- Unit/RVA: `playercommandstep`, `0x000d1b60`; current 73.998.
+- The 11-slot jump table AGREES both sides (same targets). The 13 excess
+  blocks are WITHIN the arms: retail shares exit tails across cases (case-1
+  MOVE's handler at 0xd2783 is a `jne` target FROM the case-0 PLACE_GRUNT
+  arm), so the cold sound-cue and ResetAll paths are hoisted to shared
+  out-of-line tails. Ours keeps each arm's cold path inline.
+- Not a per-arm spelling: the hoist is cl's whole-switch cold-block
+  scheduling. Needs the forward-goto-hoists-target lever applied
+  CONSISTENTLY across the shared-exit arms, or stands as a scheduling wall.
+  Bounded; large correct-shape reconstruction, not a quick respell.
