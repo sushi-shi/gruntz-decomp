@@ -1763,3 +1763,16 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   diagnose verdict flips CONTROL FLOW -> REGISTER/SCHEDULE (5 drift rows
   left). The chain family (ActKey dispatch batteries) recurs across CGrunt -
   the same signature is worth screening on every strcmp-chain function.
+
+## 2026-08-13 — `CBattlezMapConfig::RouteToNearbyEnemy` RVO-copy dossier (68.73, open)
+
+- 0x2e3a0, CONTROL FLOW many-flips. The B57+ window: both sides call the
+  Coord-probe helper via hidden-pointer return; RETAIL then copies 4 dwords
+  through the RETURNED pointer (`mov edx,[eax]...`) into a SEPARATE
+  destination object (frame 0x80 vs our 0x6c - 5 dwords more), and its
+  rect-adjust stores a field pre-inc AND post-inc (copy-then-increment of a
+  whole object). Ours aliases the temp and destination into one object and
+  computes the inc before storing. This is the struct-return-rvo-idioms
+  class: model the temp + destination as distinct objects, adjudicate the
+  copy shape per site (variants beam). Next sitting's target; expect it to
+  clear most of the 6 !! rows and the frame delta.
