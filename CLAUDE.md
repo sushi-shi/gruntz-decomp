@@ -57,8 +57,15 @@
   Keep investigation history there, not in C++ comments.
 - Classify a plateau with the project `wall-identifier` skill
   (`gruntz sema diagnose <rva>`): inline/call-set → CFG → register →
-  masked/referent, with only cl 5.0-proven levers. HoMM3's VC6 mechanics
-  (register model, IL capture) stay hypothesis-only until re-proven here.
+  masked/referent, with only cl 5.0-proven levers. For an inline/call-set
+  wall, `python -m gruntz.core.inline_model --gap` PREDICTS the budget-starved
+  sites and quantifies the finish-the-caller lever (cl 5.0-validated model;
+  `--measure-cb` titrates a callee with the real compiler). For a suspected
+  front-end TU-state wall, the cl 5.0 IL tap is PROVEN (capture `/d1il`, feed
+  `/d2il`; recipe and normalization in the tu-state-probe pattern's quantified
+  section) — an inert-source A/B whose IL differs is C1 handle state, and the
+  probe-kind stride table (typedef +1 … class +11) is the steering lever.
+  HoMM3's VC6 register-allocator model remains hypothesis-only here.
 
 ## Source Modeling Rules
 

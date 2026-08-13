@@ -487,7 +487,7 @@ rva	name	unit
 0x020f20	?CheatMgr@CGruntzMgr@@QAEPAVCCheatMgr@@XZ	chatboxowner
 0x020f40	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	chatboxowner
 0x021140	?HitTest@CChatBoxOwner@@QAEHHH@Z	chatboxowner
-0x0212a0	?ResetCopy@zPTree@@QAEXXZ	butestoreclear
+0x0212a0	?ResetCopy@zPTree@@QAEXXZ	chatboxowner
 0x0212e0	??_GzPTree@@UAEPAXI@Z	chatboxowner
 0x021310	??1zPTree@@UAE@XZ	chatboxowner
 0x0213c0	??1CButeMgr@@QAE@XZ	chatboxowner
@@ -1793,11 +1793,11 @@ rva	name	unit
 0x0c2a50	?ReconcileChannel2@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 0x0c2a80	?ReconcileChannel3@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 0x0c2ab0	?SyncChannelSlot@CMultiStartDlg@@QAEXH@Z	multistartdlgroster
-0x0c2c80	?OnTimer@CMultiStartDlg@@QAEXI@Z	multistartdlg
+0x0c2c80	?OnTimer@CMultiStartDlg@@QAEXI@Z	multistartdlgroster
 0x0c2cb0	?OnInitDialog@CMultiStartDlg@@UAEHXZ	multistartdlgroster
 0x0c2ce0	?AppendChatLine@CMultiStartDlg@@QAEXPAD@Z	multistartdlgroster
 0x0c2e20	?FlashCtrlD@CMultiStartDlg@@QAEHXZ	multistartdlgroster
-0x0c30d0	?OnMeasureItem@CMultiStartDlg@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	multistartdlg
+0x0c30d0	?OnMeasureItem@CMultiStartDlg@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	multistartdlgroster
 0x0c3100	?OnDrawItem@CMultiStartDlg@@QAEXHPAUtagDRAWITEMSTRUCT@@@Z	multistartdlgroster
 0x0c3830	?OnColorSlot0@CMultiStartDlg@@QAEXXZ	multistartdlgroster
 0x0c3950	?OnColorSlot1@CMultiStartDlg@@QAEXXZ	multistartdlgroster
@@ -3353,7 +3353,7 @@ rva	name	unit
 0x1577e0	??1CDDrawSubMgrLeaf@@UAE@XZ	ddrawsubmgr
 0x157850	??0CFileMemBase@@QAE@XZ	ddrawsubmgr
 0x1578b0	??1CFileMemBase@@UAE@XZ	ddrawsubmgr
-0x157910	?Close@CFileMemBase@@UAEXXZ	ddrawsubmgr
+0x157910	?Close@CFileMemBase@@UAEXXZ	ddrawsurfacemgr
 0x157920	?GetName@CFileMemBase@@UAE?AVCString@@XZ	ddrawsubmgr
 0x157940	?WantRead@CFileMemBase@@UAEHXZ	ddrawsubmgr
 0x157950	?WantCreate@CFileMemBase@@UAEHXZ	ddrawsubmgr

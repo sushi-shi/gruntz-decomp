@@ -77,6 +77,22 @@ def run(args) -> None:
 
     # 2 - control flow: branch counts, then the symbolic sequence.
     res = B.compare(bi, ti)
+    if res["status"] == "struct":
+        # A mid-function jump table truncates the symbol-scoped decode on ONE
+        # side (gruntz.core.branches.table_stop), which fakes a huge branch
+        # deficit. The rendered block view survives tables, so sanity-check the
+        # struct verdict against block counts before routing.
+        from gruntz.sema.disasm import _cfg, base_text, target_text
+        nb, nt = len(_cfg(base_text(args.rva))), len(_cfg(target_text(args.rva)))
+        if nt and abs(nb - nt) / nt < 0.1:
+            print(f"  branch decode disagrees (base {res['nbr']} vs target "
+                  f"{res['nbr_t']}) but block skeletons nearly agree "
+                  f"({nb} vs {nt}) - a jump table truncated one side's decode.")
+            print(f"  trust the blocks: `gruntz sema disasm {args.rva} "
+                  "--blocks --diff --lite` and read the first !! row.")
+            print("  CLASS: CONTROL FLOW (local) or finer - classify from the "
+                  "block diff, not the branch count.")
+            sys.exit(1)
     if res["status"] not in ("clean", "no-branches"):
         br, tr = res["rets"]
         print(f"  CLASS: CONTROL FLOW - base {res['nbr']} branch(es)/{br} "
