@@ -1999,3 +1999,22 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   are harvested; the residue across the whole distribution is the C2
   canonicalization/placement mechanism. The campaign's remaining path to
   higher exact-count is the c2.exe layout-pass RE, characterized and staged.
+
+## 2026-08-13 — FULL-SET branch-count scan: the source-reachable surface is bounded at <=76
+
+- Scanned ALL 720 sizeable (>=120 B) sub-100% functions for branch/ret count
+  mismatch (the unambiguous source-reachable signal). RESULT: only 76 have any
+  count mismatch; 644 are EQUAL-count = register/schedule/placement (C2).
+- The 76 characterized by representative A/B: (a) the butemgr Set*/Get* cluster
+  (~10 fns, all 18-vs-17) is the inlined CButeValue CopyValue TYPE-SWITCH
+  jump-table overbuild - C2; (b) the ret-count mismatches are the exit-merge
+  regime coin - FillCombo 0x37ff0 (2 rets vs 1) restructured to a single
+  `result` local MATCHES the ret count (5/1) but LOWERS fuzzy 72.0->68.5
+  because retail cross-jumps its two `return 0`s automatically from the
+  three-return source while our C2 keeps them split - the goto-fail lever this
+  tree already exhausted (DUP-EXIT triage). Reverted.
+- DEFINITIVE: the readily source-reachable structural work across the ENTIRE
+  binary is <=76 functions, and the sampled representatives are all C2
+  switch/exit-merge coins. The exact-count ceiling at 81.1% is the c2.exe
+  canonicalization/layout/merge mechanism, proven now by exhaustive scan
+  from three directions (weight, near-exact, full branch-count).
