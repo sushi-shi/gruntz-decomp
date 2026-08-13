@@ -1868,3 +1868,16 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   needs its own block-diff sitting. The bulk missing-branch screen itself
   (branches --diff over the weighted top-N, base<target filter) is the
   fastest fold-candidate finder and should run after every new lever lands.
+
+## 2026-08-13 — placement-coin discriminator: the rotation is decided INSIDE c2.exe
+
+- IL-tap A/B on ChargeStep's rotation flip (the one-line neighborValid local
+  that collapses 81.94 -> 0.00): the captured C1 IL differs only by the new
+  local's tuples and a +1 gl handle renumber (name sequence identical,
+  1878/1878). The IL is a linear tuple stream carrying NO block-order
+  decision - c2.exe takes near-identical IL and produces opposite layouts.
+  VERDICT: the block-placement/merge coin is C2-internal state with
+  hair-trigger IL sensitivity; no C1-side steering exists. The investigation
+  narrows to c2.exe's layout pass (660,240 B, standalone program - the
+  HoMM3-style RE now has a precise target and a minimal reproducer pair:
+  chargestep_A/B one-line variants).
