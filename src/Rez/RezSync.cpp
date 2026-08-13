@@ -417,15 +417,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     m_logicPump = new CLightFxMgr;
-    if (m_logicPump) {
-        m_logicPump->m_reg = NULL;
-        m_logicPump->m_world = NULL;
-        m_logicPump->m_cache = NULL;
-        m_logicPump->m_greyTable = NULL;
-        for (i32 k = 0; k < 10; ++k) {
-            m_logicPump->m_tables[k] = NULL;
-        }
-    }
     if (!m_logicPump->Init(this, 0)) {
         if (m_logicPump) {
             m_logicPump->Reset();
@@ -484,15 +475,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     m_spriteFactory = new CSpriteRefTable;
-    if (m_spriteFactory) {
-        m_spriteFactory->m_factory = NULL;
-        m_spriteFactory->m_spriteMgrHolder = NULL;
-        m_spriteFactory->m_built = 0;
-        for (i32 k = 0; k < 0x11; ++k) {
-            m_spriteFactory->m_toolRefs[k] = NULL;
-            m_spriteFactory->m_toyRefs[k] = NULL;
-        }
-    }
 
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
         if (m_spriteFactory) {

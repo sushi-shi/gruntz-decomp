@@ -25,6 +25,8 @@ GZ_ENUM_CONST_END(MinimapTileColor)
 
 class CLightFxRender {
 public:
+    CLightFxRender();
+
     i32 Init(CGruntzMgr* mgr, i32 refreshInterval);
 
     void Reset();
@@ -78,5 +80,16 @@ public:
     i32 m_refreshInterval;
     i32 m_refreshRemaining;
 };
+
+inline CLightFxRender::CLightFxRender() {
+    m_mgr = NULL;
+    m_cmdGrid = NULL;
+    m_tileGrid = NULL;
+    m_world = NULL;
+    m_surface = NULL;
+    m_handle = 0;
+    m_refreshInterval = 0;
+    m_refreshRemaining = 0;
+}
 
 #endif

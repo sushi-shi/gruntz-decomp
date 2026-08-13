@@ -2194,3 +2194,32 @@ the two tails are genuinely separate; the surplus allocation is elsewhere in
 the chain (candidates: an internal `pValue` allocation inside our
 CButeValue(type, val) ctor that retail did not have, or one of the three
 `&CButeValue(...)` CopyValue temps). Reverted; SetInt back at 95.20.
+
+## 2026-08-13 (late-7): guarded default-init blocks are four inline constructors
+
+- Census: all 209 consecutive `new`/`if` sites were reviewed. Forty-seven are
+  array or buffer allocations, 58 already pass constructor arguments, and 104
+  are plain-object allocations. Four plain-object sites contained a guarded run
+  of class-invariant default stores: `CLightFxMgr`, `CLightFxRender`,
+  `CSpriteRef`, and `CSpriteRefTable`.
+- Structural break: move each store run into the canonical class definition as
+  an inline default constructor and leave the caller as scalar `new T`. Retail
+  has no standalone `??0` symbol for any of the four, and the rebuilt objects
+  emit none. `CLightFxMgr::m_owner` remains uninitialized because its retail
+  store run omits that member.
+- Result: `CGruntzMgr::Run` (`rezsync`, `0x00083450`) moves from 83.0916%
+  current / 83.6067% historical MAX to 85.2590%. `CPlay::LoadByMode` remains
+  94.5728% and `CSpriteRefTable::Add` remains 97.5000%; those two remodels are
+  byte-neutral and replace decompiler-opened ctor lowering with the real class
+  ownership.
+- Negative controls: plain allocation/null checks in the byte-exact world-sound
+  factories do not imply constructors; `CGruntzApp`, `CMenuItem`,
+  `CTileActionEvent`, `CGiantRockLogic`, `CSpawnEntry`, and `LeafCue` already
+  have modeled constructors; the remaining guarded multi-store block is
+  `CButeTreeNode`, whose values are call-specific (`critbit`, payload, allocated
+  key, and direction-dependent children), not default initialization. No
+  constructor was invented for it.
+- Remaining wall: `gruntz sema diagnose 0x83450` still classifies `Run` as CFG
+  (124 branches and one return on each side, but a differently owned branch
+  sequence). The constructor break is retained; no compiler-state probe or
+  artificial allocation was introduced.

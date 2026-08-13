@@ -288,15 +288,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     if (!alpha) {
         return 0;
     }
-    CSpriteRef* node;
-    CSpriteRef* tmp = new CSpriteRef;
-    if (tmp) {
-        tmp->m_cache = NULL;
-        tmp->m_alphaKey = NULL;
-        node = tmp;
-    } else {
-        node = NULL;
-    }
+    CSpriteRef* node = new CSpriteRef;
     if (node->Build(m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();

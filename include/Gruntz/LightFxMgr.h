@@ -18,6 +18,8 @@ class CDDrawWorker;
 
 class CLightFxMgr {
 public:
+    CLightFxMgr();
+
     i32 Init(class CGruntzMgr* reg, class CGruntzMgr* owner);
 
     void Reset();
@@ -32,6 +34,16 @@ public:
     CShadeTable* m_greyTable;
     CShadeTable* m_tables[10];
 };
+
+inline CLightFxMgr::CLightFxMgr() {
+    m_reg = 0;
+    m_world = 0;
+    m_cache = 0;
+    m_greyTable = 0;
+    for (i32 i = 0; i < 10; ++i) {
+        m_tables[i] = 0;
+    }
+}
 
 void SetShadeDescr(CShadeTable* v, ShadeMode mode);
 

@@ -12,6 +12,8 @@ GZ_ENUM_FORWARD_SPLIT(ColorTint, u8);
 
 class CSpriteRef {
 public:
+    CSpriteRef();
+
     i32 Build(CShadeTableCache* cache, void* shade, ColorTint kind);
     void Free();
     CShadeTableCache* m_cache;
@@ -22,6 +24,11 @@ public:
     u16 m_pad0e;
 };
 
+inline CSpriteRef::CSpriteRef() {
+    m_cache = NULL;
+    m_alphaKey = NULL;
+}
+
 class CShadeTableCache;
 
 class CDDrawSurfaceMgr;
@@ -29,6 +36,8 @@ class CDDrawSurfaceMgr;
 class CSymParser;
 class CSpriteRefTable {
 public:
+    CSpriteRefTable();
+
     i32 Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder);
 
     void Reset();
@@ -55,5 +64,15 @@ public:
     CSpriteRef* m_toyRefs[TINT_COUNT];
     i32 m_built;
 };
+
+inline CSpriteRefTable::CSpriteRefTable() {
+    m_factory = NULL;
+    m_spriteMgrHolder = NULL;
+    m_built = 0;
+    for (i32 i = 0; i < TINT_COUNT; ++i) {
+        m_toolRefs[i] = NULL;
+        m_toyRefs[i] = NULL;
+    }
+}
 
 #endif // GRUNTZ_SPRITEREFTABLE_H

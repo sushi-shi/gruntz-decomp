@@ -1492,18 +1492,6 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     if (self->m_lightFx == NULL) {
         CLightFxRender* ctx = new CLightFxRender;
-        if (ctx != NULL) {
-            ctx->m_mgr = NULL;
-            ctx->m_cmdGrid = NULL;
-            ctx->m_tileGrid = NULL;
-            ctx->m_world = NULL;
-            ctx->m_surface = NULL;
-            ctx->m_handle = 0;
-            ctx->m_refreshInterval = 0;
-            ctx->m_refreshRemaining = 0;
-        } else {
-            ctx = NULL;
-        }
         self->m_lightFx = ctx;
         if (!ctx->Init(self->m_mgr, 0xfa)) {
             goto fail0;
