@@ -515,6 +515,54 @@ class EhBandScoreboardTests(unittest.TestCase):
              (0x1D7D3B, "__ehreg$?Foo@@QAEHXZ", "u", 10)])
         self.assertEqual((group.start, group.end), (0x1D7D20, 0x1D7D45))
 
+    def test_funclet_shape_normalizes_disp8_and_disp32_frame_operands(self):
+        from gruntz.audit.eh_band import _funclet_shape
+        short = (bytes.fromhex("8d 4d f4 e9 00 00 00 00"), ("??1T@@QAE@XZ",))
+        wide = (bytes.fromhex("8d 8d e0 fa ff ff e9 00 00 00 00"),
+                ("??1T@@QAE@XZ",))
+        a = _funclet_shape(short)
+        b = _funclet_shape(wide)
+        self.assertEqual(a[0], b[0])
+        self.assertEqual(a[1], (-12,))
+        self.assertEqual(b[1], (-1312,))
+        self.assertEqual(a[2], b[2])
+
+    def test_nonexact_census_limits_scope_and_uses_full_topology(self):
+        from gruntz.audit import eh_band as audit
+        from gruntz.build import eh_band
+
+        differing = eh_band.Group(owner_rva=0x1000, owner="?Different@@QAEHXZ",
+                                  unit="u", funclets=(), stub=0x1010, states=2)
+        exact = eh_band.Group(owner_rva=0x2000, owner="?Exact@@QAEHXZ",
+                             unit="u", funclets=(), stub=0x2010, states=3)
+        scoreboard = {
+            differing.owner: {"unit": "u", "owner": differing.owner,
+                              "best": 90.0, "current": 90.0, "rva": 0x1000,
+                              "historical": 90.0},
+            exact.owner: {"unit": "u", "owner": exact.owner, "best": 100.0,
+                          "current": 100.0, "rva": 0x2000,
+                          "historical": 100.0},
+            "?Mapless@@QAEHXZ": {"unit": "u", "owner": "?Mapless@@QAEHXZ",
+                                  "best": 80.0, "current": 80.0,
+                                  "rva": 0x3000, "historical": 80.0},
+        }
+        shapes = [("identical", differing, (), ()),
+                  ("identical", exact, (), ())]
+        maps = ({differing.owner: ((-1, True), (-1, False)),
+                 exact.owner: ((-1, True),) * 3},
+                {differing.owner: ((-1, True), (0, False)),
+                 exact.owner: ((-1, True),) * 3})
+        with mock.patch.object(audit, "_scoreboard_functions",
+                               return_value=scoreboard):
+            verdicts, rows = audit.nonexact_census(
+                (differing, exact), {differing.owner: 2, exact.owner: 2},
+                shapes, maps)
+
+        self.assertEqual(verdicts,
+                         {"c1-map-topology-diff": 1, "no-retail-eh-map": 1})
+        self.assertEqual({row["owner"] for row in rows},
+                         {differing.owner, "?Mapless@@QAEHXZ"})
+
 
 class ResidualQueueTests(unittest.TestCase):
     def test_campaign_starts_at_residual_weighted_middle(self):

@@ -2310,3 +2310,40 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   `CButeTreeNode` allocation, so moving the call-specific stores into a ctor
   would add CFG retail lacks. The experiment was removed on structural, not
   score-only, evidence.
+
+## 2026-08-13 (late-10): EH fingerprint assessed over every current sub-100 function
+
+- Scope: all 827 current sub-100 rows in `config/match_baseline.tsv`, joined by
+  mangled owner to all 750 retail EH groups. `gruntz.audit.eh_band --nonexact`
+  now emits the complete classification and can write it as TSV.
+- Result: 600 have no retail EH map (oracle inapplicable), 184 have identical
+  map and funclets, 35 differ only in frame displacement, five differ in state
+  count, one differs in equal-count map topology, and two differ only in
+  ordered teardown target. All 827 are accounted for.
+- Dead-TRACE assessment: all five count rows have MORE candidate states than
+  retail (`SetString` 13/12, `ProcessCheatInput` 27/26, `RestoreChildren`
+  28/25, `SnapshotChildren` 30/29, `LoadGameAssetNamespaces` 13/9). None has
+  the retail-only NULL-action state required to infer a missing destructible
+  TRACE temp. No current sub-100 source addition is justified by that half of
+  the pattern. The caller-cb half remains map-invisible when the dead statement
+  has no destructible temp and still requires independent inline-call evidence.
+- CORRECTION to late-cont Screen 1: equal counts are not sufficient.
+  `CGruntzMgr::ChangeState` is 11/11 but 7 map rows differ in `(toState,
+  has_action)` because its `CMoviePlayer` ctor/dtor expansion nests differently.
+  The current full-map result is 743/744 equal-count groups, not zero topology
+  differences.
+- CORRECTION to the original seven-row state census: candidate COMDAT copies
+  must be read from the retail group's OWNER TU. The arbitrary-copy scan made
+  `CMoviePlayer::~CMoviePlayer` look 4/5; `creditsstate.obj`, the owner, is 5/5.
+  Six genuine all-band count rows remain, including exact-primary-code
+  `CKeyedList::AddNode` 2/3. This is the negative control proving that even a
+  100% primary function is not necessarily structurally correct.
+- CORRECTION to funclet classification: canonicalize both disp8 and disp32 EBP
+  frame operands. The old fixed-width masker called large frame shifts
+  different code; the corrected 750-group census is 703 identical, 38
+  frame-only, eight target-only, and one permuted. The sub-100 slice contains
+  35 of those frame-only rows.
+- Retained lever: the owner-TU state reader, full map-topology comparison,
+  frame-encoding normalization, and exhaustive `--nonexact` report are now in
+  `gruntz.audit.eh_band`, with a disp8/disp32 negative control in the gate
+  self-test. No C++ source changed.
