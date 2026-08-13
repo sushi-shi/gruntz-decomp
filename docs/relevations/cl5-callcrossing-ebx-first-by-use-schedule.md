@@ -63,6 +63,17 @@ ESI/EDI cases are C2-anchored - park them or sort with the IL tap. This is
 why the earlier per-function sweeps on this class were flat: most of the
 class is outside the lever's reach.
 
+## Campaign implication (third control, ProbeHeadSoft)
+
+A third canonicalization control: `CGameLevel::ProbeHeadSoft` 0x160450,
+`py = m_screenY + m_extent.top + dy` - three operand orderings all scored
+99.97701, the [0x60]/[0x138] EBX load-order swap never moved. So the near-exact
+register TAIL (the many 99.9% functions whose entire residue is one
+canonicalized operand load-order swap) is C2-anchored and CANNOT be closed from
+source. Reaching 100% on that tail is gated on C2 codegen RE or accepting the
+bytes - NOT on more source reconstruction. This retires source-sweeping of the
+99%+ register residues.
+
 ## Negative control (the boundary, proven)
 
 `CTriggerMgr::FindGruntAt` (0x075c60, 94.04%) has a pure ESI<->EDI role swap
