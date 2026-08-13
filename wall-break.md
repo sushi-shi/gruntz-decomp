@@ -2127,3 +2127,26 @@ census-boundary plumbing (the packed target objs defeat section-owner
 attribution - 15k phantom rows, do NOT trust that cut).
 Top units: play 836*, multi, gruntzmgr, sbi_rectonly, grunt, butemgr
 (*per-caller counts, inflated; unit-level rows are the authority).
+
+## 2026-08-13 (late-4): play LoadGameAssetNamespaces - mechanism PROVEN, source form open
+
+Titration with disposable free inline sites (`probe += StartMarkerCount()`),
+placed AFTER the ctor block, in CPlay::LoadGameAssetNamespaces 0xc7ec0:
+
+| free sites | 0 | 6 | 12 | 20 | 32 |
+|---|--:|--:|--:|--:|--:|
+| fuzzy | 85.53 | 85.79 | **89.89** | 83.23 | 80.59 |
+| `??_H` (retail 2) | 1 | 2 | **2** | 2 | 3 |
+| `??1CTileTriggerContainer` (retail 2) | 1 | 1 | **2** | 2 | 2 |
+
+At N=12 the surplus 2 branches vanish (25 -> 23 = retail) and BOTH declines
+match retail; only `??0CSbiHlRow` (ours 2, retail 0) remains. POSITION IS
+DECISIVE: the same 12 sites at function ENTRY give a different, worse result
+(86.63, `??_H`=1) - sequential spend order confirmed on a real caller.
+Our body is NOT short: 1600 B vs retail 1525 - we are 75 B BIGGER, which is
+exactly the over-expansion. So this is not missing code; it is ~12 missing
+front-end inline SITES in the tail (candidates: ResetClockGlobals,
+PostLoadImageBanks, LoadImageBanks, LoadByMode, LoadCursorSprites as header
+inlines, each carrying nested sites). +4.36 is banked-as-available; the probe
+is NOT retained (doctrine). CMulti::LoadGameAssetNamespaces carries the same
+~CTileTriggerContainer note and should be re-tested with any real fix.
