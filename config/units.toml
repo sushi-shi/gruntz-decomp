@@ -1154,10 +1154,6 @@ unit = "actionarea"
 source = "src/Gruntz/ActionArea.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "butestoreclear"
-source = "src/Bute/ButeStoreClear.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "interfaceobject"

@@ -150,6 +150,12 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     }
 }
 
+RVA(0x000c2c80, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
+
 RVA(0x000c2cb0, 0x1f)
 i32 CMultiStartDlg::OnInitDialog() {
     CDialog::OnInitDialog();
@@ -220,6 +226,12 @@ i32 CMultiStartDlg::FlashCtrlD() {
     }
     return 1;
 }
+
+RVA(0x000c30d0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
 
 RVA(0x000c3100, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {

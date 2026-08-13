@@ -531,18 +531,6 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     return ::SendMessageA(c->m_hWnd, CB_GETCURSEL, 0, 0) + 1;
 }
 
-RVA(0x000c2c80, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
-
-RVA(0x000c30d0, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
-
 RVA(0x000c4e40, 0x0)
 // @confidence: high
 // @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
