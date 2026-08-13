@@ -1861,3 +1861,10 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   (MAX 81.94 held). Reverted pending the placement-coin investigation - the
   lever is right but unverifiable at the floor. AdvanceMotion's 32-branch
   "gap" is jump-table decode artifact (blocks 90/90).
+
+- Sweep addendum: `StepArrivalDefense` 0xf2b20 (missing 2) remains open - the
+  dominated `else if (occ == NULL)` fold is the visible candidate but the
+  grid-slot load census matches (4/4), so the kept branches are elsewhere;
+  needs its own block-diff sitting. The bulk missing-branch screen itself
+  (branches --diff over the weighted top-N, base<target filter) is the
+  fastest fold-candidate finder and should run after every new lever lands.
