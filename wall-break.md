@@ -1830,6 +1830,12 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   constructs the temp only on the ELSE path, IN the slot ([esp+0x48]) that
   IntersectRect later receives as &b, and copies `a` through the ctor's
   returned pointer. The then-arm aggregate+inc shape already matches. One
-  investigation for both functions: where does retail's THEN path get b, and
-  is `b` actually the else-temp (meaning the source declared ONE CRect used
-  as both)? Map the then-path upstream for a second ctor call, then model.
+  investigation for both functions: RESOLVED same day - retail constructs b
+  BEFORE the test too (0x33769, the same slot after push-accounting), so the
+  GRID_CLIP macro's shape is already canonical (rb placement-ctor, aggregate
+  ra = *src + right/bottom increments, else-arm temp). The +4-branch excess
+  in StepDefenderUnit is NOT the Clip expansion: it lives in the four-Coord
+  box-construction cluster upstream (b0..b3 GetScreenPos group, the old
+  entity-order wall) - the bounded lifetime/homing residue. The placement-new
+  devices in GRID_CLIP/STEP_BOUNDS stay flagged as cast-debt for the
+  dissolution campaign, but their emitted shape matches retail.
