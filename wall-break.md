@@ -1774,5 +1774,9 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   whole object). Ours aliases the temp and destination into one object and
   computes the inc before storing. This is the struct-return-rvo-idioms
   class: model the temp + destination as distinct objects, adjudicate the
-  copy shape per site (variants beam). Next sitting's target; expect it to
-  clear most of the 6 !! rows and the frame delta.
+  copy shape per site (variants beam). PARTIAL same day: the then-arm IS
+  `a = *src; a.right++; a.bottom++;` (aggregate copy + re-stores) - applied,
+  68.73 -> 69.35. Remaining: the else-arm's copy-through-returned-pointer
+  (CRect ctor eax) and the frame 0x6c vs 0x80 - the four probe Coords' slot
+  sharing sits BETWEEN our scoped (0x6c) and unscoped (0x88) spellings; a
+  partial-sharing arrangement is the next experiment.
