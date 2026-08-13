@@ -40,15 +40,28 @@ why the ESI/EDI pair flips between the two probes. Definition order alone does
 NOT decide it (a is defined 1st in both yet goes EBX vs ESI); the tail use
 schedule does.
 
-## The lever
+## The lever, and its two proven boundaries
 
-When retail holds a value in EBX and our compile holds it in ESI/EDI (or vice
-versa), the value that should own EBX is the one retail references FIRST after
-the crossing call. Reorder the post-call source so that value's first use leads
-— a semantics-preserving statement/term reorder the permuter can also find, now
-with a KNOWN target instead of a blind sweep. The residual ESI/EDI split between
-the other two is schedule/handle state (the C1 class the IL tap sorts); this
-lever only pins the EBX pick, but that is the modal one.
+When retail holds a value in EBX and our compile holds it in ESI/EDI, the value
+that should own EBX is the one retail references FIRST after the crossing call —
+IF that first use is a SEPARATE STATEMENT whose order the source controls.
+Reorder the post-call statements so that value's use leads.
+
+TWO boundaries, each a measured negative control, narrow this sharply:
+1. The residual ESI/EDI split between the OTHER two values is schedule/handle
+   state, not source-reachable (FindGruntAt: coordinate-decl swap moved
+   94.04 -> 88.46 WORSE).
+2. When the EBX value is an OPERAND of a single commutative arithmetic
+   expression, cl 5.0 CANONICALIZES the operand load order - it is invariant to
+   source term order and NOT reachable (SumWeighted 0x15aaf0: four term
+   orderings of `i*(screenX+sortKey+screenY+id)` ALL scored 99.85185 to five
+   decimals; the EBX/[0x4]-vs-[0x5c] load order never moved).
+
+So the lever's true domain is NARROW: a call-crossing value whose first post-
+call use is a distinct, reorderable statement. Operand-position and pure-
+ESI/EDI cases are C2-anchored - park them or sort with the IL tap. This is
+why the earlier per-function sweeps on this class were flat: most of the
+class is outside the lever's reach.
 
 ## Negative control (the boundary, proven)
 
