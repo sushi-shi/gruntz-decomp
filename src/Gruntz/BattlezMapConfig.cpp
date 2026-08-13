@@ -1126,7 +1126,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     }
                         {
                             i32 special = 1;
-                            if (unit->m_lastTilePx.m_x != unit->m_object->m_screenX
+                            if (unit->m_object->m_screenX != unit->m_lastTilePx.m_x
                                 || unit->m_object->m_screenY != unit->m_lastTilePx.m_y) {
                                 special = 0;
                             }
@@ -1372,7 +1372,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         }
         if (unit != NULL) {
             if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
-                && unit->m_lastTilePx.m_y == unit->m_object->m_screenY
+                && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                 && unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
                 && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
                 eq = (strcmp((*g_typeColl.GetNameRecord(unit->m_objAux->m_actKey)), "I") == 0);
