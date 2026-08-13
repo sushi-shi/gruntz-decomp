@@ -1780,3 +1780,17 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   (CRect ctor eax) and the frame 0x6c vs 0x80 - the four probe Coords' slot
   sharing sits BETWEEN our scoped (0x6c) and unscoped (0x88) spellings; a
   partial-sharing arrangement is the next experiment.
+
+## 2026-08-13 — 330-440 weight band screen: the coin owns the residue
+
+- Screened: ResolveArrival 0x2c690 (1 flip = backedge rotation, cold code
+  parked before the exit), ArrivalReticleScan 0xee800 (1 "flip" = our jne+jmp
+  split around an interloper block vs retail's single far je),
+  StepArrivalDefenseAlt 0xf1c70 (2 flips, same family), LoadGruntDeathAnimations
+  0x60150 (TOPOLOGY - unexamined, queued), SeekTarget/DefenseLean (jump-table
+  truncation masks), RepathAroundBlockedTiles + SetEffectSpriteDurations
+  (REGISTER). Every examined CONTROL FLOW verdict in this band decodes to the
+  C2 block-placement coin, not to arm content. With StepCombatReaction's chain
+  and the local-guard family closed, the source-reachable levers on the heavy
+  worklist are exhausted down to weight ~330; the coin investigation
+  (c2.exe layout pass / IL-tap discriminator) is the gate to the next tier.
