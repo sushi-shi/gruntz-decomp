@@ -1752,3 +1752,14 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   is still unfound; remaining candidates need the doc's one-at-a-time
   measurement. Guard-block +1i residue (mov/test vs cmp-ebp) persists until
   the pin dies.
+
+## 2026-08-13 — `CGrunt::StepCombatReaction` goto-chain nested 84.07 -> 93.65
+
+- Unit/RVA: `gruntentrancearrival`, `0x000646b0`. The flat `goto reject`
+  guard chain (G/L/P probes) had cl pull the reject body up after its LAST
+  predecessor with the probe inverted (the goto-chain-of-distinct-bodies
+  mechanism, textbook signature). Nesting the three probes as `if (!eq) {`
+  makes the reject body the join after the nest: +9.58 in one edit, and the
+  diagnose verdict flips CONTROL FLOW -> REGISTER/SCHEDULE (5 drift rows
+  left). The chain family (ActKey dispatch batteries) recurs across CGrunt -
+  the same signature is worth screening on every strcmp-chain function.

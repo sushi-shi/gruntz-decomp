@@ -1382,91 +1382,86 @@ i32 CGrunt::StepCombatReaction(
         goto tail;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "G") == 0);
-    if (eq) {
-        goto reject;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
-    if (eq) {
-        goto reject;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
-    if (eq) {
-        goto reject;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
-    if (eq) {
-        SnapToLastTile(1);
-        m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-        goto tail;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "Q") == 0);
-    if (eq) {
-        m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
-        return 0;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
-    if (eq) {
-        m_entranceActive = 0;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
-        if (eq) {
-            if (m_poweredUp != 0 && m_neighborValid == 0) {
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
-                ResetEntranceAnimation(1, 0, 0);
+    if (!eq) {
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "L") == 0);
+        if (!eq) {
+            eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "P") == 0);
+            if (!eq) {
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "O") == 0);
+                if (eq) {
+                    SnapToLastTile(1);
+                    m_tileMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+                    goto tail;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "Q") == 0);
+                if (eq) {
+                    m_tileMgr->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, DEATH_SHATTER, srcRow);
+                    return 0;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "J") == 0);
+                if (eq) {
+                    m_entranceActive = 0;
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
+                    if (eq) {
+                        if (m_poweredUp != 0 && m_neighborValid == 0) {
+                            m_entranceActive = 0;
+                            m_combatActive = 0;
+                            m_neighborValid = 0;
+                            m_poweredUp = 0;
+                            ResetEntranceAnimation(1, 0, 0);
+                        }
+                        m_tileMoveCommitted = 0;
+                        m_prevAnimSetNode = m_objAux->m_actKey;
+                        m_objAux->m_actKey = ActFindId("D");
+                        m_value = m_wwdObject->m_animCursor.m_animation;
+                        m_wwdObject->m_animCursor.Setup(m_poseWalk);
+                        GruntDirectionCell cell = m_entranceCell;
+                        i32 col = cell.column + cell.row * 2;
+                        i32 base = cell.row + col;
+                        char* cn = m_cells[base].WalkName().GetBuffer(0);
+                        m_wwdObject->ApplyName(cn);
+                    } else {
+                        ResetEntranceAnimation(1, 0, 0);
+                    }
+                    PickupType mode = m_entrancePickup;
+                    if (mode >= PICKUP_POWERUPZ_FIRST) {
+                        LoadGruntTypeTable(mode, 1, 0, 1);
+                        m_entrancePickup = PICKUP_INVALID;
+                        m_helpCueId = 0;
+                    } else if (mode >= PICKUP_BRICKZ_FIRST) {
+                        m_brickPickupType = mode;
+                        m_entrancePickup = PICKUP_INVALID;
+                    } else if (mode >= PICKUP_TOYZ_FIRST) {
+                        LoadVehicleGruntSprites(mode);
+                    } else {
+                        LoadGruntTypeTable(mode, 1, 0, 1);
+                        m_entrancePickup = PICKUP_INVALID;
+                    }
+                    goto tail;
+                }
+                eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
+                if (eq) {
+                    CWwdGameObjectA* h = m_object;
+                    i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 hy = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 flag = 1;
+                    if (hx != m_lastTilePx.m_x || hy != m_lastTilePx.m_y) {
+                        if (IsDropReady(1)) {
+                            m_coordToggle = (m_coordToggle == 0) ? 1 : 0;
+                            flag = 0;
+                        }
+                    }
+                    SnapToLastTile(1);
+                    if (flag != 0) {
+                        m_prevAnimSetNode = m_objAux->m_actKey;
+                        m_objAux->m_actKey = ActFindId("D");
+                        SetupTubeAnim(m_coordToggle);
+                    }
+                }
+                goto tail;
             }
-            m_tileMoveCommitted = 0;
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->m_animCursor.Setup(m_poseWalk);
-            GruntDirectionCell cell = m_entranceCell;
-            i32 col = cell.column + cell.row * 2;
-            i32 base = cell.row + col;
-            char* cn = m_cells[base].WalkName().GetBuffer(0);
-            m_wwdObject->ApplyName(cn);
-        } else {
-            ResetEntranceAnimation(1, 0, 0);
-        }
-        PickupType mode = m_entrancePickup;
-        if (mode >= PICKUP_POWERUPZ_FIRST) {
-            LoadGruntTypeTable(mode, 1, 0, 1);
-            m_entrancePickup = PICKUP_INVALID;
-            m_helpCueId = 0;
-        } else if (mode >= PICKUP_BRICKZ_FIRST) {
-            m_brickPickupType = mode;
-            m_entrancePickup = PICKUP_INVALID;
-        } else if (mode >= PICKUP_TOYZ_FIRST) {
-            LoadVehicleGruntSprites(mode);
-        } else {
-            LoadGruntTypeTable(mode, 1, 0, 1);
-            m_entrancePickup = PICKUP_INVALID;
-        }
-        goto tail;
-    }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "N") == 0);
-    if (eq) {
-        CWwdGameObjectA* h = m_object;
-        i32 hx = (h->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 hy = (h->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 flag = 1;
-        if (hx != m_lastTilePx.m_x || hy != m_lastTilePx.m_y) {
-            if (IsDropReady(1)) {
-                m_coordToggle = (m_coordToggle == 0) ? 1 : 0;
-                flag = 0;
-            }
-        }
-        SnapToLastTile(1);
-        if (flag != 0) {
-            m_prevAnimSetNode = m_objAux->m_actKey;
-            m_objAux->m_actKey = ActFindId("D");
-            SetupTubeAnim(m_coordToggle);
         }
     }
-    goto tail;
-
-reject:
     if (m_entranceReason == PICKUP_SCROLL) {
         g_gameReg->m_cueSink->StopVoice(m_object->m_objectId);
     }
