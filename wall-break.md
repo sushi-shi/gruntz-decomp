@@ -1578,3 +1578,23 @@ Systematic sweep of all 11 sieve DUP-EXIT hits. NONE is a clean goto-fail lever:
   StepBrickLayerBehavior, BuildSmall — epilogue cross-jump / register class.
 VERDICT: the goto-fail lever is exhausted on this tree. Remaining DUP-EXITs are
 the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
+
+## 2026-08-13 — `zPTree::FindOrInsert` (genuine structural-CFG target, dossier)
+
+- Unit/RVA: `butetree`, `0x001933b0`; 68.72%. The RARE source-reachable kind:
+  block skeletons 48 (ours) vs 52 (retail) = a real 4-block control-flow gap,
+  NOT scheduling. diagnose masks it as jump-table truncation; the block diff
+  shows the true divergence at B3-B11 (the crit-bit descent loop).
+- Retail loop (0x193413): `lea eax,[edi+4]` computes &m_child[1] UNCONDITIONALLY,
+  then `test ebx,ebx; jne; mov eax,edi` overrides with &m_child[0] (child[0] at
+  +0, child[1] at +4); `mov edi,[eax]` loads the child. Our ternary
+  `dir ? &m_child[1] : &m_child[0]` structures the select as a branch, adding
+  blocks. Retail also threads m_candidateLeaf (+0x20) and m_descentCursor
+  (+0x1c) stores INSIDE the loop at specific points; ours hoists/reorders them.
+- The fix is a loop-body reconstruction: unconditional child[1]-address then
+  conditional child[0] override (a select, not a branch), with the two
+  candidate stores placed at retail's points. A full sitting - the crit-bit
+  descent has ~11 interacting instructions per iteration to align.
+- Verified NOT @early-stop and NOT C2-anchored (branch-count differs), so real
+  source work lands here. This is the model of a source-reachable target after
+  the diagnose-REGISTER/SCHEDULE screen: pursue ONLY these.
