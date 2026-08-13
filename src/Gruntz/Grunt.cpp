@@ -1015,7 +1015,7 @@ i32 CGrunt::StepArrivalDrop(
                 if (hit == 0) {
                     goto commitEntrance;
                 }
-                if ((maskC & headFlags) != 0) {
+                if ((headFlags & maskC) != 0) {
                     goto commitEntrance;
                 }
             }
@@ -1024,7 +1024,7 @@ i32 CGrunt::StepArrivalDrop(
 
             SetEntrancePos(1, 1);
             if (m_object->m_screenX == m_lastTilePx.m_x
-                && m_object->m_screenY == m_lastTilePx.m_y) {
+                && m_lastTilePx.m_y == m_object->m_screenY) {
                 PlayMoveSoundAtTile(tileX, tileY);
             }
             return 0;
@@ -1056,7 +1056,7 @@ i32 CGrunt::StepArrivalDrop(
                     g_coordPool.m_freeHead = pooled;
                     if (CoordCount() != 0) {
                         n = CoordHead();
-                        while (n != NULL) {
+                        while (NULL != n) {
                             cur = n;
                             n = n->m_next;
                             if (cur->m_coord != NULL) {
@@ -1169,7 +1169,7 @@ i32 CGrunt::StepArrivalDrop(
             grid->m_rowInts[sy][sx * 7 + 7] = saved[sx - tileX + 1][sy - tileY + 1];
         }
     }
-    if (nudged != 0) {
+    if (0 != nudged) {
         if (CoordCount() == 1 && arrivalPhase == IDX(PICKUP_BOOMERANG)
             && m_entranceReason == PICKUP_GAUNTLETZ) {
             m_tileMgr->ApplyTriggerA(m_tileOwnerHi, m_tileOwnerLo, pxX, pxY);
@@ -1183,7 +1183,7 @@ nudgeDone:
     if (nudged != 0) {
         goto pathGate;
     }
-    if (m_arrivalState != AI_NONE) {
+    if (AI_NONE != m_arrivalState) {
         SetEntrancePos(1, 1);
         return 0;
     }
@@ -1271,7 +1271,7 @@ nudgeDone:
             }
         }
     }
-    if (lastX != walkX || lastY != walkY) {
+    if (walkX != lastX || lastY != walkY) {
         goto reProbe;
     }
 reCommit:
