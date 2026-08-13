@@ -1821,3 +1821,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   snap-ANDs vs our 4, 56 vs our 54 branches) - the same C2 duplication/
   placement coin; our compile merges instead. The old peak was alignment on
   a structure the edge map refutes.
+
+## 2026-08-13 — StepDefenderUnit shares RouteToNearbyEnemy's Clip-expansion residual
+
+- 0x33520 (142 vs 134 blocks, ours +4 branches): the first divergence is the
+  SAME expanded CMapMgr::Clip if/else as RouteToNearbyEnemy. Ours constructs
+  `CRect b(0,0,w,h)` unconditionally BEFORE the src null-test; retail
+  constructs the temp only on the ELSE path, IN the slot ([esp+0x48]) that
+  IntersectRect later receives as &b, and copies `a` through the ctor's
+  returned pointer. The then-arm aggregate+inc shape already matches. One
+  investigation for both functions: where does retail's THEN path get b, and
+  is `b` actually the else-temp (meaning the source declared ONE CRect used
+  as both)? Map the then-path upstream for a second ctor call, then model.
