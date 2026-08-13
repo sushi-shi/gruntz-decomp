@@ -14,11 +14,17 @@ Usage: python -m gruntz.audit.interleavers
 """
 import bisect
 import csv
+import glob
 import os
 import struct
+import subprocess
 
-from gruntz.core.pe import ILT_HI          # one band definition, never a local copy
+from gruntz.audit.tu_layout import pooled  # the two shared special-member bands
+from gruntz.core.pe import ILT_HI, REPO    # one band definition, never a local copy
 from gruntz.core.symbols import SYMCSV
+
+EXILES = REPO / "config/retail/kept-comdat-exiles.tsv"
+BASE_OBJS = REPO / "build/objdiff/base"
 
 
 def _load_exe():
@@ -77,15 +83,54 @@ def main():
         cu = sorted({owner(s)[2] for s in sites})
         out.append((rva, name, unit, pu, cu))
 
+    # --- classification inputs -------------------------------------------------
+    # exile ledger: rows already adjudicated + re-proven per build by tu_order_check
+    exiled = set()
+    if EXILES.exists():
+        for ln in EXILES.read_text().splitlines():
+            if ln and not ln.startswith("#"):
+                exiled.add(int(ln.split("\t")[0], 16))
+    # base-obj definers per symbol: >1 obj == COMDAT, so the modeled-as unit is
+    # labels.py's keep-last cosmetic pick, not a partition claim
+    ndef = {}
+    if BASE_OBJS.is_dir():
+        want = {name for _, name, _u, _h, _c in out}
+        objs = sorted(glob.glob(str(BASE_OBJS / "*.obj")))
+        r = subprocess.run(["bash", "-c",
+                            "for f in %s/*.obj; do llvm-nm --defined-only \"$f\" "
+                            "2>/dev/null; done" % BASE_OBJS],
+                           capture_output=True, text=True)
+        for ln in r.stdout.splitlines():
+            parts = ln.split(None, 2)
+            if len(parts) == 3 and parts[2] in want:
+                ndef[parts[2]] = ndef.get(parts[2], 0) + 1
+
+    def klass(rva, name, cu, host):
+        if rva in exiled:
+            return "EXILE"      # ledgered kept-COMDAT, host-verified every build
+        if pooled(rva):
+            return "POOL"       # special-member band: attribution granularity only
+        if ndef.get(name, 0) > 1:
+            return "COMDAT"     # multi-emitter inline: modeled-as is keep-last cosmetic
+        return "DEFECT?"        # single emitter modeled elsewhere: partition signal
+
     print(f"{len(out)} interleaved lone methods (unit sandwiched inside another unit)\n")
-    print("  rva       method                                    modeled-as        sits-in           called-by")
+    print("  rva       class    method                                    modeled-as        sits-in           called-by")
     for rva, name, unit, host, cu in out:
         cs = ",".join(cu) if cu else "(no direct caller)"
         # the strongest signal: caller unit == host unit -> home there
         star = " *" if cu == [host] else ""
-        print(f"  0x{rva:06x} {name[:40]:<40} {unit:<17} {host:<17} {cs}{star}")
+        kl = klass(rva, name, cu, host)
+        print(f"  0x{rva:06x} {kl:<8} {name[:40]:<40} {unit:<17} {host:<17} {cs}{star}")
     homed = sum(1 for _, _, _, h, cu in out if cu == [h])
+    kc = {}
+    for rva, name, unit, host, cu in out:
+        kc[klass(rva, name, cu, host)] = kc.get(klass(rva, name, cu, host), 0) + 1
     print(f"\n  {homed} have caller==host (highest-confidence: home into that unit / a header it includes)")
+    print("  " + "  ".join(f"{k}={v}" for k, v in sorted(kc.items())))
+    print("  EXILE = kept-comdat-exiles.tsv row (re-proven per build); POOL = special-member band;")
+    print("  COMDAT = >1 base-obj definer, modeled-as is labels keep-last, not a partition claim;")
+    print("  DEFECT? = single definer sandwiched in a foreign run - a real re-home/partition lead.")
     return 0
 
 
