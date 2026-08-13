@@ -1562,3 +1562,19 @@ compiler decision, and a real VC5 build must confirm the fix.
   scheduling. Needs the forward-goto-hoists-target lever applied
   CONSISTENTLY across the shared-exit arms, or stands as a scheduling wall.
   Bounded; large correct-shape reconstruction, not a quick respell.
+
+## 2026-08-13 — DUP-EXIT worklist fully triaged (no clean goto-fail targets remain)
+
+Systematic sweep of all 11 sieve DUP-EXIT hits. NONE is a clean goto-fail lever:
+- UpdateStatusBarTabHighlight 0xfe910, BuildTabzDialog 0x10a340 — switch-context
+  cross-jump coin (BuildTabzDialog: 4 groupings refuted, C2362-bounded).
+- ValidateUnitPath 0x29b40 — the stray return already compiler-merges
+  (byte-neutral 85.033 both ways).
+- ApplyTriggerA 0x6dae0 — MAX-held (blessed dip, do not chase).
+- AdvanceAnim@CExitTrigger 0x3f5f0 (4->1) — already has `goto done; done: return
+  0`; the 4 epilogues are /GX UNWIND funclets from the CString concat
+  temporaries crossing the gotos (the pattern doc's excluded unwind-coin class).
+- LoadGruntCombatAnimations, StepArrivalDefense, AdvanceToEnemyBase,
+  StepBrickLayerBehavior, BuildSmall — epilogue cross-jump / register class.
+VERDICT: the goto-fail lever is exhausted on this tree. Remaining DUP-EXITs are
+the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
