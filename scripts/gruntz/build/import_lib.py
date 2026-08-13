@@ -27,6 +27,19 @@ and keep the `/IMPLIB:` that link.exe emits for it. That import lib carries both
 `_AIL_startup@0` / `__imp__AIL_startup@0` **and** the `_AIL_startup@0` hint/name
 string - byte-identical in shape to retail's own import descriptor.
 
+Hints are reproduced too. A `.idata$6` hint is the export's index in the DLL's
+*sorted export-name table*, so the vendor's lib carries the index each name had in
+the REAL DLL's full export list (`_AIL_release_sequence_handle@4` = 126 out of
+~196 Miles exports), and retail's import table stores those values byte-for-byte -
+which makes retail itself the evidence for the vendor DLL's name-table shape. The
+stub reproduces it by exporting `__cdecl` FILLER names (export name = the bare
+identifier) that sort strictly between the real decorated names, one per unclaimed
+index up to the highest retail hint. Retail's hints are strictly ascending in
+sorted-name order for both DLLs (asserted), which is exactly what "indices into one
+sorted name table" implies, so the interleave always exists. The fillers never
+reach the image: nothing references them, so no member of theirs is ever pulled.
+`_verify_hints` re-reads the produced lib's `.idata$6` and dies on any mismatch.
+
 The stub DLL itself is discarded; only the `.lib` is a build input. Nothing here
 needs the real MSS32/SMACKW32 DLLs (see docs/runtime-dlls.md: those are runtime-only).
 
@@ -82,12 +95,120 @@ def survey():
     return rows
 
 
-def stub_source(dll, names):
-    """C for a stub DLL whose exports decorate to exactly `names`."""
+def retail_hints(dll):
+    """{decorated_name: hint} for one DLL, straight from retail's import table.
+
+    The hint is the 2-byte prefix of the `.idata$6` hint/name blob - the index
+    the name had in the vendor DLL's sorted export-name table, recorded by the
+    vendor's import lib and copied into the image by the linker."""
+    import struct
+    from gruntz.core.pe import PE
+    pe = PE()
+    d = pe.data
+    rva = struct.unpack_from("<I", d, pe._opt + 96 + 1 * 8)[0]
+    o = pe.off(rva)
+    while True:
+        olt, _ts, _fc, nm, fta = struct.unpack_from("<IIIII", d, o)
+        if not (olt or nm or fta):
+            break
+        if pe.cstr(nm) == dll:
+            out = {}
+            t = pe.off(olt or fta)
+            while True:
+                v = struct.unpack_from("<I", d, t)[0]
+                if v == 0:
+                    break
+                if not (v & 0x80000000):
+                    hn = v & 0x7FFFFFFF
+                    out[pe.cstr(hn + 2)] = struct.unpack_from("<H", d, pe.off(hn))[0]
+                t += 4
+            return out
+        o += 20
+    return {}
+
+
+# Filler export names: valid C identifiers (they are compiled as `__cdecl`
+# functions, and a cdecl dllexport's export-table string is the identifier as
+# written), generated to sort strictly between two decorated real names.
+_IDENT = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+
+
+def _gap_base(a, b):
+    """An identifier string `base` with a < base + <digits> < b bytewise.
+
+    `a` may be None (any base < b works). Walk the common prefix; at the first
+    divergence try a character strictly between; when the two are adjacent,
+    extend past `a`'s next character instead. The prefix of a decorated import
+    name up to any divergence below '@' is identifier-clean (asserted)."""
+    ident = sorted(_IDENT)
+    if a is None:
+        for j in range(len(b)):
+            lo = [c for c in ident if c < b[j]]
+            if lo:
+                base = b[:j] + lo[-1]
+                if all(c in _IDENT for c in base):
+                    return base
+        raise SystemExit(f"[import-lib] no filler name sorts below {b!r}")
+    i = 0
+    while i < len(a) and i < len(b) and a[i] == b[i]:
+        i += 1
+    assert i < len(b), f"{a!r} !< {b!r}"
+    mid = [c for c in ident if (i >= len(a) or c > a[i]) and c < b[i]]
+    if mid:
+        base = a[:i] + mid[0]
+    else:
+        # adjacent characters: step inside `a` and clear its tail instead
+        nxt = [c for c in ident if c > (a[i + 1] if i + 1 < len(a) else "")]
+        assert nxt, f"cannot split the gap {a!r} .. {b!r}"
+        base = a[: i + 1] + nxt[0]
+    assert all(c in _IDENT for c in base), (a, b, base)
+    assert (a is None or a < base) and base < b, (a, b, base)
+    return base
+
+
+def _export_table(names, hints):
+    """[(export_name, is_filler)] in sorted order, fillers padding every index
+    below the retail hint of each real name so the stub DLL's sorted name table
+    puts each real export at exactly its retail index."""
+    real = sorted(names)
+    hs = [hints[n] for n in real]
+    if hs != sorted(hs) or len(set(hs)) != len(hs):
+        raise SystemExit("[import-lib] retail hints are not ascending in "
+                         "sorted-name order - not one sorted name table?")
+    table = []
+    prev = None
+    pos = 0
+    for n, h in zip(real, hs):
+        k = h - pos
+        if k:
+            base = _gap_base(prev, n)
+            width = len(str(k - 1))
+            fillers = [f"{base}{i:0{width}d}" for i in range(k)]
+            assert all(prev is None or prev < f for f in fillers)
+            assert fillers == sorted(fillers) and fillers[-1] < n, (prev, n, k)
+            table += [(f, True) for f in fillers]
+            pos += k
+        table.append((n, False))
+        prev = n
+        pos += 1
+    flat = [x for x, _f in table]
+    assert all(x < y for x, y in zip(flat, flat[1:])), "table not strictly sorted"
+    return table
+
+
+def stub_source(dll, names, hints=None):
+    """C for a stub DLL whose exports decorate to exactly `names` - padded with
+    filler exports so each name's hint (sorted-name-table index) matches retail."""
     lines = [f"/* GENERATED by gruntz.build.import_lib - stub exports for {dll}.",
-             "   Bodies are irrelevant: only the DECORATED export names matter, and",
-             "   they come from retail GRUNTZ.EXE's own import table. */"]
-    for n in sorted(names):
+             "   Bodies are irrelevant: only the DECORATED export names and their",
+             "   sorted-name-table INDICES (the hints) matter, and both come from",
+             "   retail GRUNTZ.EXE's own import table. */"]
+    table = (_export_table(names, hints) if hints and all(n in hints for n in names)
+             else [(n, False) for n in sorted(names)])
+    for n, filler in table:
+        if filler:
+            lines.append(f"__declspec(dllexport) void {n}(void) {{}}")
+            continue
         m = STDCALL.match(n)
         if m:
             nargs, rem = divmod(int(m.group("bytes")), 4)
@@ -107,6 +228,43 @@ def stub_source(dll, names):
     return "\n".join(lines) + "\n"
 
 
+def _verify_hints(lib, want):
+    """Die unless every hint/name blob in `lib`'s .idata$6 matches `want`.
+
+    The hint a member carries is what the linker copies into the image, so this
+    re-reads the produced archive rather than trusting the export-table math."""
+    import struct
+    data = lib.read_bytes()
+    if data[:8] != b"!<arch>\n":
+        die(f"{lib}: not an archive")
+    got = {}
+    off = 8
+    while off + 60 <= len(data):
+        size = int(data[off + 48:off + 58].decode().strip() or "0")
+        body = off + 60
+        m = data[body:body + size]
+        if len(m) > 20 and m[:4] != b"\xff\xff\0\0":     # skip linker members
+            try:
+                nsec = struct.unpack_from("<H", m, 2)[0]
+                for i in range(nsec):
+                    raw = m[20 + 40 * i: 20 + 40 * (i + 1)]
+                    if raw[:8].rstrip(b"\0") == b".idata$6":
+                        rsz, rp = struct.unpack_from("<II", raw, 16, )[0], \
+                            struct.unpack_from("<I", raw, 20)[0]
+                        blob = m[rp:rp + rsz]
+                        if len(blob) > 3:
+                            hint = struct.unpack_from("<H", blob, 0)[0]
+                            name = blob[2:blob.find(b"\0", 2)].decode("latin1")
+                            if name in want:
+                                got[name] = hint
+            except (struct.error, ValueError):
+                pass
+        off = body + size + (size & 1)
+    bad = {n: (want[n], got.get(n)) for n in want if got.get(n) != want[n]}
+    if bad:
+        die(f"{lib.name}: hint mismatch after synthesis: {bad}")
+
+
 def synthesize(dll, names, out_dir=OUT_DIR, verbose=True):
     """Build `<out_dir>/<stem>.lib` for `dll`; returns the lib path."""
     msvc = msvc_dir()
@@ -118,7 +276,8 @@ def synthesize(dll, names, out_dir=OUT_DIR, verbose=True):
     stem = Path(dll).stem
     src, obj = out_dir / f"{stem}_stub.c", out_dir / f"{stem}_stub.obj"
     lib, stub_dll = out_dir / f"{stem}.lib", out_dir / dll   # /OUT name == the
-    src.write_text(stub_source(dll, names))                  # recorded DLL name
+    hints = retail_hints(dll)                                # recorded DLL name
+    src.write_text(stub_source(dll, names, hints))
     for f in (obj, lib, stub_dll):
         f.unlink(missing_ok=True)
 
@@ -136,8 +295,13 @@ def synthesize(dll, names, out_dir=OUT_DIR, verbose=True):
     # The stub DLL and its .exp are scaffolding; only the .lib is a build input.
     for f in (stub_dll, out_dir / f"{stem}.exp", obj):
         f.unlink(missing_ok=True)
+    named = {n: hints[n] for n in names if n in hints}
+    if named:
+        _verify_hints(lib, named)
     if verbose:
-        print(f"[import-lib] {dll}: {len(names)} import(s) -> {lib}")
+        print(f"[import-lib] {dll}: {len(names)} import(s) -> {lib}"
+              + (f" (hints verified against retail, {len(named)} name(s))"
+                 if named else ""))
     return lib
 
 
