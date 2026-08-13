@@ -71,8 +71,10 @@ i32 CGrunt::StepDiggerBehavior() {
     m_defenderPx.m_x = m_lastTilePx.m_x;
     m_defenderPx.m_y = m_lastTilePx.m_y;
 
-    if (m_poweredUp != 0) {
-        if (m_neighborValid == 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
+        i32 neighborValid = m_neighborValid;
+        if (neighborValid == 0) {
             if (m_combatActive != 0) {
                 return 1;
             }
