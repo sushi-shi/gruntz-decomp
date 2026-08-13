@@ -1980,3 +1980,22 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   This unifies the campaign - every remaining tranche waits on the c2 RE, now
   characterized to a bounded disassembly problem. Confirmed source levers are
   exhausted across BOTH the heavy-weight and the near-exact ends of the list.
+
+## 2026-08-13 — mid-band screen (weight 150-340), third confirmation of the ceiling
+
+- Bulk-diagnosed the previously-unscreened 150-340 weight band (~28 CONTROL
+  FLOW verdicts). Branch-count check: all but one are equal-count
+  (TOPOLOGY/POLARITY = the placement coin or if-body-fallthrough), not
+  count-mismatch structural. The one over-build (SetString 0x1732a0, 20 vs 18)
+  is the inlined CButeValue CopyValue TYPE-SWITCH jump-table - C2 structure,
+  the documented switch-overbuild caveat.
+- The single clean-polarity candidate (WireTileSwitchLogic 0x6c130 #40) was
+  A/B-tested: flipping the source `VerifyBlockLinksB()==0`/`SwitchDown()==0`
+  guards to `!=0` LOWERS the score (92.43 -> 92.26 -> 92.21) and just shifts
+  the polarity flag to the next site - the if-body-owns-fallthrough C2 arm
+  choice from IDENTICAL source, NOT a transcription bug. Reverted.
+- THREE independent screens now agree (heavy-weight, near-exact [99,100),
+  mid-band [150,340]): the readily source-reachable structural/polarity wins
+  are harvested; the residue across the whole distribution is the C2
+  canonicalization/placement mechanism. The campaign's remaining path to
+  higher exact-count is the c2.exe layout-pass RE, characterized and staged.
