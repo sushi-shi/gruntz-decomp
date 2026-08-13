@@ -699,6 +699,11 @@ that neither source-side data device can reach:
 | `DATA(rva)` | an AST VarDecl in the MAIN file | a function-local static inside a **header** inline lives outside the main file, and `labels.collect_vars` is main-file-only |
 | `DATA_COMPGEN(rva, value)` | a value expression at a **use site** | a `??_B` dynamic-init guard byte has **no source spelling at all** — cl assigns it a counter (`??_B?1??Fn@@YAHXZ@51`) |
 
+(The `DATA_COMPGEN` *macro* is a different, last-resort device for use-site
+literals the automatic identity oracles cannot reach — its rule and wiring live in
+`docs/data-attribution.md` §3b-iii. This manifest covers the COMMON population
+neither macro can express.)
+
 Schema (gated): four tab-separated columns `rva` (zero-padded to 8 lowercase hex
 digits) · `size` (unpadded lowercase hex) · `symbol` (verbatim, as `RVA_COMPGEN`
 takes it) · `emitter` (the header + function whose definition makes cl emit it),

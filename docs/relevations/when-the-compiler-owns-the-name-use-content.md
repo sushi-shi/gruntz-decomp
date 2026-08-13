@@ -46,13 +46,18 @@ like). Pool entries have no mangled name to give.
 It compiles to nothing. It is a **claim written at the use site**:
 
 ```cpp
-// src/Gruntz/Projectile.cpp:370
->= mag * DATA_COMPGEN(0x001eaa98, 0.9) || ...
+// src/Gruntz/Grunt.cpp
+flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, 750.0));
 ```
 
-read as: *retail address `0x001eaa98` holds the constant `0.9`.* There is no
+read as: *retail address `0x001e9a40` holds the constant `750.0`.* There is no
 source-side name: cl's pool name is volatile, and an address-derived alias such
-as `fp_1eaa98` would only repeat the coordinate while pretending to add identity.
+as `fp_1e9a40` would only repeat the coordinate while pretending to add identity.
+
+Since the retail-reloc FP oracle landed (`data_manifest.fp_pool_rows`), a claim is
+written **only for a slot the oracle cannot reach** — one with no reloc-corroborated
+referrer yet. Every oracle-covered slot goes bare; the 2026-08-13 reconciliation
+removed 41 such pins with zero movement (`docs/data-attribution.md` §3b-iii).
 
 ### The generated symbol name is derived, never supplied
 
@@ -62,10 +67,10 @@ The emitted symbol is minted from the address alone:
 name = "$T%d" % rva
 ```
 
-so `DATA_COMPGEN(0x001eaa98, …)` lands in `symbol_names.csv` as
+so `DATA_COMPGEN(0x001e9a40, …)` lands in `symbol_names.csv` as
 
 ```
-0x1eaa98,$T2009752,projectile,0x8,data          # 0x1eaa98 == 2009752
+0x1e9a40,$T2005568,grunt,0x8,data               # 0x1e9a40 == 2005568
 ```
 
 a cl-shaped pool name the delinker uses to carve the datum — and which
@@ -93,20 +98,20 @@ because the tool must know exactly how many bytes to compare.
 **Retail side.** Read the image at the claimed address:
 
 ```
-0.9 as f64 little-endian : cd cc cc cc cc cc ec 3f
-retail @0x001eaa98       : cd cc cc cc cc cc ec 3f     ✔
+750.0 as f64 little-endian : 00 00 00 00 00 70 87 40
+retail @0x001e9a40         : 00 00 00 00 00 70 87 40     ✔
 ```
 
-And the adjacent pair from `GruntzMgr.cpp`, which shows the pool packing two
-`f32` entries back to back:
+And the adjacent pair from `Grunt.cpp`, two claims on two consecutive f64 pool
+slots:
 
 ```
-retail @0x001ea2bc : 33 33 b3 3f | 9a 99 a9 40
-                     ^^^^^^^^^^^   ^^^^^^^^^^^
-                     1.4f          5.3f  ( = DATA_COMPGEN(0x001ea2c0, 5.3f) )
+retail @0x001e9740 : 00 00 00 00 00 00 f0 bf | 00 00 00 00 00 00 59 40
+                     ^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^
+                     -1.0                      100.0  ( = DATA_COMPGEN(0x001e9748, 100.0) )
 ```
 
-Two independent `DATA_COMPGEN` claims land on two consecutive words, and both
+Two independent `DATA_COMPGEN` claims land on two consecutive slots, and both
 decode. That is not a coincidence you can arrange by accident.
 
 **Our side.** The claim is authority-checked against the base object cl actually
@@ -154,11 +159,11 @@ $ llvm-nm build/objdiff/normalized/target/projectile.c.obj | grep '$anon'
   $anon_f64_3fe999999999999a_0     $anon_f64_3feccccccccccccd_0
 ```
 
-Both lists are identical — 9 symbols, same names. And the last one is the
-`DATA_COMPGEN` claim we started from: `0.9` is `0x3feccccccccccccd`, so
-`$anon_f64_3feccccccccccccd_0` is *the* pool entry at retail `0x001eaa98`. The
-`0.1 / 0.2 / 0.3 / 0.4 / 0.6 / 0.7 / 0.8` beside it are the sibling claims from
-the same four `if` statements.
+Both lists are identical — 9 symbols, same names. `0.9` is
+`0x3feccccccccccccd`, so `$anon_f64_3feccccccccccccd_0` is *the* pool entry at
+retail `0x001eaa98` — carried today by the retail-reloc oracle with no pin, its
+bare literal spelled in `CProjectile`'s flight-distance `if` ladder alongside the
+`0.1 / 0.2 / 0.3 / 0.4 / 0.6 / 0.7 / 0.8` siblings.
 
 Before normalization our side of that list reads `$T36166 $T36170 $T36180
 $T36182 $T36205`. Afterwards those spellings do not exist in the object at all.

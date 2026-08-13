@@ -532,41 +532,73 @@ registry-located base-0 vtable), `CArray<PLAYLISTINFOSTRUCT*>`'s graph
 comparable, and their base-side `??_R4zPTree@@6BzErrHandling@@@` — a secondary/MI
 record the enrolment still withholds — now honestly costs 24 B each until the MI pass.
 
-### 3b-iii. `DATA_COMPGEN(rva, value)` — reviewed compiler-generated data (wired)
+### 3b-iii. `DATA_COMPGEN(rva, value)` — the LAST-RESORT reviewed pin (wired)
 
-Adopted from homm2-decomp's contract (its `docs/candidate-data-topology.md`): automatic
-string inference cannot establish retail identity when a payload content-matches several
-retail RVAs (the "identical payload at N retail RVAs" withheld class - short strings whose
-bytes also occur inside other data), when Ghidra never carved the literal, or for FP pool
-entries (no content-derived name exists at all). The macro wraps the value AT ITS USE SITE
-and expands to it under both compilers:
+**The rule (one sentence): a `DATA_COMPGEN` claim exists only where the automatic
+identity oracles cannot establish the retail identity of a compiler-generated datum;
+everywhere else the literal is written bare.** The two oracles, both re-proven every
+build:
 
-    g_pathStr += DATA_COMPGEN(0x0020cfbc, ".WWD");
-    health * DATA_COMPGEN(0x001e9a98, 0.2)
+* **strings** — `string_rows()` content-matches every retail-referenced address (the
+  PE `.reloc`-derived data-symbol universe, `synth_pdb.read_data_symbols`) against
+  the base objs' `??_C@` pools; `synth_pdb.apply_string_names` names the same
+  addresses in the fake PDB, which is what keeps the *referencing functions*
+  matching with no pin at all. Inference withholds only an ambiguous payload
+  (identical bytes at several retail addresses — 1–2 byte literals, mostly).
+* **FP pool slots** — `fp_pool_rows()` addresses cl's `$T` pool out of retail's own
+  relocation table (positional pairing of DIR32 sites inside each corroborated
+  referrer, self-proving, byte-re-proven). A slot is unreachable only while NO
+  referrer function is reloc-corroborated ("stranded").
+
+Only in those two failure classes does the macro wrap the value AT ITS USE SITE
+(expanding to it under both compilers — byte-neutral by construction):
+
+    t += DATA_COMPGEN(0x00212754, " ");                  // ambiguous payload
+    frac * frac * DATA_COMPGEN(0x001e9a40, 750.0)        // stranded FP slot
 
 `labels.py` parses the invocations (balanced-paren - expression position wraps), then
-authority-checks each claim against the claiming TU's base obj: a string payload must
-equal a `??_C@` COMDAT there (cl's own spelling for those bytes IS the emitted name), a
-float's bits must sit in the TU's `$T` FP pool (emitted spelling `$T<rva>`, which only has
-to satisfy canonicalize's VOLATILE_T - both sides content-address to `$anon_f64_<bits>`,
-so the volatile counter never matters). Claims land in `build/gen/data_compgen.csv` (one
-row per claiming unit) + one representative `symbol_names.csv` row per rva; the data
-manifest enrolls them via `compgen_rows()` (strings take the candidate-COFF section
-shape, floats the legacy packed form).
+authority-checks each claim against the claiming TU's base obj (FATAL, per TU): a
+string payload must equal a `??_C@` COMDAT there (cl's own spelling for those bytes
+IS the emitted name), a float's bits must sit in the TU's `$T` FP pool (emitted
+spelling `$T<rva>`, which only has to satisfy canonicalize's VOLATILE_T - both sides
+content-address to `$anon_f64_<bits>`, so the volatile counter never matters). The
+claim travels as an ordinary `kind=data` row in the TU's label fragment into
+`symbol_names.csv`; the data manifest enrolls it through `candidates()`
+(`src-DATA-sizeof`), and a float claim additionally feeds the `fp_pool_rows()`
+bridge for its stranded slot (`src-DATA_COMPGEN-fp-pool`). There is no separate
+claims table: `build/gen/data_compgen.csv` and `compgen_rows()` are RETIRED — the
+per-TU fragment build had left that channel dead (the table was clobbered per TU at
+a path nothing read) while the symbol_names channel carried every claim, measured
+by A/B removal (2026-08-13).
 
-**Gates (labels.py, FATAL):** one compiler-generated identity per RVA - EXCEPT
-byte-identical string payloads, which /Gf pooling (implied by
-/O2) legitimately folds from N TUs onto ONE retail RVA (`docs/string-pooling.md`); those
-claims coalesce onto the one `??_C@` name and enroll once per owner (the §3b-i alias
-form). This per-RVA relaxation is the deliberate divergence from homm2's stricter
-"different names at one RVA are rejected" rule: VC4.2 there, VC5 pooling here. FP pools
-never fold, so a numeric RVA claimed by two TUs is always a mis-pin. No source-side name
-is accepted because the compiler-generated datum has no source identity to name.
+**Cross-TU discipline is enforced downstream, not in labels.py** (each ninja label
+invocation sees one TU): two names at one rva withhold BOTH in the manifest, and any
+de-enrolled datum fails the FATAL `data_denominator` partition gate on the same
+build. Byte-identical string payloads from N TUs legitimately coalesce onto one
+`??_C@` name (/Gf pooling, `docs/string-pooling.md`), and two of our TUs may both
+spill the FP literal that retail's TU boundary put in ONE pool slot (the
+`kitchenslime`/`pathhazard` 0x1ea400 fold) — a same-value cross-TU claim is a fold,
+not a mis-pin.
 
-First proven claims: the `".WWD"` disambiguation (0x20cfbc vs the `"*.WWD"` tail at
-0x20cf95 that inference withheld), a 2-TU `"Wormhole"` fold (gameobjectfactory +
-wormhole at 0x20a7ac), and grunthealthsprite's `0.2`/`0.5` FP pool entries
-(0x1e9a98/0x1e9aa0) - the first FP data to pair at all.
+**Removal is self-verifying.** A pin whose slot an oracle covers is noise: removing
+it moves nothing (the manifest row survives under the oracle's provenance, the
+partition reproduces). A load-bearing pin's removal de-materializes the datum and
+fails the partition gate on the next build — measured on `"2"`@0x0020b5bc: the
+manifest row and its neighbouring gap row vanish, the 2 enrolled bytes become an
+eligible-unenrolled run, `data_denominator --check` goes FATAL, while the
+referencing function's score does NOT move (the PDB oracle still names the reloc).
+The 2026-08-13 reconciliation removed every oracle-covered pin (18 string sites, 41
+FP slots) and kept 13: 8 ambiguous-payload strings (`" "` `"!"` `"1"` `"2"` `"C"`
+`"D"` `"F"` `"\\"`) and 5 stranded FP slots (all in `grunt`, whose referrers are
+not yet reloc-corroborated). When a referrer later corroborates, its pin may be
+dropped — the build proves it (no partition diff). The negative control: unwrapping
+`750.0`@0x001e9a40 left its slot with no manifest row and the partition gained an
+8-byte eligible-unenrolled run — the FATAL gate caught it on the same build.
+
+First proven claims (historical): the `".WWD"` disambiguation (0x20cfbc vs the
+`"*.WWD"` tail at 0x20cf95 that inference then withheld — the oracle reaches it
+today), a 2-TU `"Wormhole"` fold at 0x20a7ac, and grunthealthsprite's `0.2`/`0.5`
+FP pool entries (0x1e9a98/0x1e9aa0) - the first FP data to pair at all.
 
 ### 3b-iv. `config/retail/compiler-generated-data.tsv` — COMMON pins (wired)
 

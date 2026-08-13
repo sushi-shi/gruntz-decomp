@@ -50,12 +50,13 @@ Neither test needs a disassembly read.
 
 ## The fix
 
-Every site becomes the bare literal. The retail address is kept by exactly ONE
-`DATA_COMPGEN(rva, "lit")` at a use site **in the unit that currently owns
-the pin** — `labels.py` resolves it against the `??_C@` COMDAT in that TU's own
-base obj, so the use site must spell the literal verbatim. A literal that no
-pinned copy owns needs no pin at all: the delinker names an unclaimed pooled
-literal from its content.
+Every site becomes the bare literal. A pin is kept only when the content oracle
+cannot reach the address (an ambiguous 1–2 byte payload the inference withholds —
+`docs/data-attribution.md` §3b-iii): then exactly ONE `DATA_COMPGEN(rva, "lit")`
+stays at a use site **in the unit that currently owns the pin** — `labels.py`
+resolves it against the `??_C@` COMDAT in that TU's own base obj, so the use site
+must spell the literal verbatim. Every other literal needs no pin at all: the
+delinker names an unclaimed pooled literal from its content, re-proven each build.
 
 Byte-neutral in the instruction stream; only the relocation's name changes.
 
