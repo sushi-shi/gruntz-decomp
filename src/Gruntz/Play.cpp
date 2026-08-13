@@ -297,11 +297,6 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         }
 
         CTimer* r50 = new CTimer;
-        if (r50) {
-            r50->Init();
-        } else {
-            r50 = NULL;
-        }
         m_frameMarker = r50;
         if (r50 == NULL) {
             return 0;

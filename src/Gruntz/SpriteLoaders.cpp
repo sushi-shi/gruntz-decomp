@@ -24,7 +24,7 @@
 #include <string.h>
 
 RVA(0x0009bab0, 0x35)
-CTimer* CTimer::Init() {
+CTimer::CTimer() {
     // Halves, not the i64: cl5 batches a RUN of 64-bit stores as all-lo-then-all-hi,
     // so four `m_v = 0` in a row emit lo x4 / hi x4. Retail pairs them two at a time.
     m_baseTime.m_lo = 0;
@@ -43,7 +43,6 @@ CTimer* CTimer::Init() {
     m_frameSecOnes = NULL;
     m_active = 0;
     m_running = 0;
-    return this;
 }
 
 RVA(0x0009bb00, 0x119)
