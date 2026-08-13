@@ -416,7 +416,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     i32 rightX = tileX + radius;
                     for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
                         if (state->m_beginMarker->SetCell(leftX, scanY, ownerHi) != 0
-                            && ownerHi == g_curPlayer) {
+                            && g_curPlayer == ownerHi) {
                             i32 fxX = leftX * 0x20 + 0x10;
                             i32 fxY = scanY * 0x20 + 0x10;
                             CWwdGameObjectA* light =
