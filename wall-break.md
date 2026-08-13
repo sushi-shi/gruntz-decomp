@@ -1527,3 +1527,7 @@ compiler decision, and a real VC5 build must confirm the fix.
   (mixed positions) also flat, PhaseStep's C2-anchored bound is sealed. The
   per-TU panel costs ~8 min through causation.py and is the standing recipe
   for the rest of the family.
+- PANEL COMPLETE for font/Font.cpp (same day): all five kinds, zero .text
+  movement (56-110 B symbol text each - the TU's many statics amplify the
+  rename surface, none of it code). DrawWrapped's C2-anchored bound seals
+  on panel + flat climb. Remaining panels: grunt, playercommandstep.
