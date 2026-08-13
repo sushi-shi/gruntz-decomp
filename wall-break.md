@@ -1705,3 +1705,22 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   cl re-inlines the arm copies either way. The DUP-EXIT triage's
   "epilogue cross-jump coin" classification stands on direct evidence.
   Reverted; bounded.
+
+## 2026-08-13 — META: one C2 block-placement/merge coin spans tonight's heavy rows
+
+- Run@CGruntzMgr A/B seals it: nesting the body as the alloc-check's then-block
+  reproduces retail's head EXACTLY (je-far to an end arm, init loop inline) but
+  the later error arms then over-merge into the end copy (79.75, reverted);
+  the original inline spelling emits row-1 while retail emitted the sunk arm
+  FROM row-1 source (the allocate-check pattern's own warning, mirrored).
+- The same signature, one session: StepArrivalDrop's region sink (construct-
+  independent), ScanNearestTarget's unmerged twin 9i rets, StepRowUnits'
+  cold arms parked below the row loop, ExecCommand's switch-arm interleave
+  (prior dossier), LoadGruntCombatAnimations' 7-vs-6 epilogues, Run's error
+  arm. All are C2 BLOCK PLACEMENT + CROSS-JUMP decisions where our compile
+  and retail's diverge on identical-shape source.
+- IMPLICATION: these are not N independent walls - one C2 mechanism (cold-arm
+  sinking / tail-merge aggression) systematically differs. Finding its state
+  input (c2.exe RE of the layout pass, or a TU-body-parity discovery) is the
+  highest-leverage single investigation left on the heavy worklist; per-fn
+  source spellings cannot reach it (proven across 6 constructs tonight).
