@@ -1682,3 +1682,18 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   keeps its own slot; coloring INTO a param home is cl slot-assignment state
   (SaveRle16 precedent), not a source construct. Verdict stays
   REGISTER/SCHEDULE; type model now clean.
+
+## 2026-08-13 — `CBattlezMapConfig::StepRowUnits` per-iteration hit reset (structure over score)
+
+- Unit/RVA: `battlezmapconfig`, `0x000267c0`; 88.22 -> 84.89 current (blessed,
+  hist banked). Retail zeroes the `hit` slot ([esp+0x3c]) TWICE: once deep in
+  the guarded chain (our line ~1287) and once unconditionally per iteration,
+  fused before the `if (unit != NULL)` guard (0x27b99). Ours lacked the second
+  - so paths skipping the nest read a stale/uninitialized `hit` at the
+  `if (hit == 0)` consumer. Inserted `hit = 0;` at body top level; the entry
+  edge (#0 je) now targets the reset block exactly as retail (blk249).
+- Remaining POLARITY row (#422, jl vs jge at the row-loop backedge) is a
+  layout consequence: retail parks ~0x5EB B of out-of-line cold arms between
+  the loop bottom and the exit block, so its backedge is jge-exit + jmp-top
+  while ours falls into the exit. Cold-arm placement work, not a spelling of
+  the loop itself.

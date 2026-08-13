@@ -1297,6 +1297,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 }
             }
         }
+        hit = 0;
         if (unit != NULL) {
             if (static_cast<i64>(g_frameTime) - unit->m_arrivalReroll64
                 >= unit->m_arrivalRerollWindow64) {
