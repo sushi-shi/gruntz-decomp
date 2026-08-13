@@ -67,7 +67,6 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 UNITS = REPO / "config" / "units.toml"
 EXILES = REPO / "config" / "retail" / "kept-comdat-exiles.tsv"
-COMPGEN_FNS = REPO / "config" / "retail" / "compiler-generated-functions.tsv"
 ORDER_TSV = REPO / "config" / "retail" / "link-order.tsv"
 BASE_OBJS = REPO / "build" / "objdiff" / "base"
 
@@ -172,16 +171,10 @@ def thunk_target_set():
 
 
 def xcu_first_slots(pe, allf):
-    """unit -> first CRT-init-table slot index. Attribution: the volatile `$E`
-    manifest (compiler-generated-functions.tsv) first, then function extents."""
-    frag2unit = {}
-    if COMPGEN_FNS.is_file():
-        for ln in COMPGEN_FNS.read_text().splitlines():
-            if not ln.strip() or ln.startswith("#"):
-                continue
-            f = ln.split("\t")
-            if len(f) >= 4:
-                frag2unit[int(f[0], 16)] = f[3]
+    """unit -> first CRT-init-table slot index. Attribution: the RVA_DYNINIT
+    source pins (gruntz.core.dyninit) first, then function extents."""
+    from gruntz.core.dyninit import rows as dyninit_rows
+    frag2unit = {r["rva"]: r["unit"] for r in dyninit_rows(REPO)}
     starts = [x[0] for x in allf]
 
     def unit_at(rva):

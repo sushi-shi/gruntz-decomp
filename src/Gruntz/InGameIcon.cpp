@@ -48,10 +48,22 @@
 
 #include <string.h>
 
+RVA_DYNINIT(0x000977e0, 0xa, int)
+RVA_DYNINIT(0x00097800, 0x15, int)
+RVA_DYNINIT(0x00097830, 0xe, int)
+RVA_DYNINIT(0x00097850, 0x1f, int)
 template<> DATA(0x002458b0)
 CActReg CActRegPool<CInGameIcon>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x00097d40, 0xa, int)
+RVA_DYNINIT(0x00097d60, 0x15, int)
+RVA_DYNINIT(0x00097d90, 0xe, int)
+RVA_DYNINIT(0x00097db0, 0x1f, int)
 template<> DATA(0x00245928)
 CActReg CActRegPool<CToyPeek>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x000993c0, 0xa, int)
+RVA_DYNINIT(0x000993e0, 0x15, int)
+RVA_DYNINIT(0x00099410, 0xe, int)
+RVA_DYNINIT(0x00099430, 0x1f, int)
 template<> DATA(0x00245950)
 CActReg CActRegPool<CInGameText>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -49,17 +49,41 @@
 
 #include <string.h>
 
+RVA_DYNINIT(0x0010d820, 0xa, int)
+RVA_DYNINIT(0x0010d840, 0x15, int)
+RVA_DYNINIT(0x0010d870, 0xe, int)
+RVA_DYNINIT(0x0010d890, 0x1f, int)
 template<> DATA(0x0024e6a0)
 CActReg CActRegPool<CWarpStonePad>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x0010de00, 0xa, int)
+RVA_DYNINIT(0x0010de20, 0x15, int)
+RVA_DYNINIT(0x0010de50, 0xe, int)
+RVA_DYNINIT(0x0010de70, 0x1f, int)
 template<> DATA(0x0024e798)
 CActReg CActRegPool<CTileTriggerSwitch>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x0010e400, 0xa, int)
+RVA_DYNINIT(0x0010e420, 0x15, int)
+RVA_DYNINIT(0x0010e450, 0xe, int)
+RVA_DYNINIT(0x0010e470, 0x1f, int)
 template<> DATA(0x0024e810)
 CActReg CActRegPool<CTileTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x0010e9e0, 0xa, int)
+RVA_DYNINIT(0x0010ea00, 0x15, int)
+RVA_DYNINIT(0x0010ea30, 0xe, int)
+RVA_DYNINIT(0x0010ea50, 0x1f, int)
 template<> DATA(0x0024e7c0)
 CActReg CActRegPool<CBrickz>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x0010f140, 0xa, int)
+RVA_DYNINIT(0x0010f160, 0x15, int)
+RVA_DYNINIT(0x0010f190, 0xe, int)
+RVA_DYNINIT(0x0010f1b0, 0x1f, int)
 template<> DATA(0x0024e7e8)
 CActReg CActRegPool<CCheckpointTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
+RVA_DYNINIT(0x0010fc70, 0xa, int)
+RVA_DYNINIT(0x0010fc90, 0x15, int)
+RVA_DYNINIT(0x0010fcc0, 0xe, int)
+RVA_DYNINIT(0x0010fce0, 0x1f, int)
 template<> DATA(0x0024e720)
 CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

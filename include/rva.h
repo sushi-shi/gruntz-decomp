@@ -21,6 +21,7 @@
 #define DATA(addr) __attribute__((annotate("data:" #addr)))
 
 #define RVA_COMPGEN(addr, size, symbol)
+#define RVA_DYNINIT(addr, size, owner)
 #define DATA_COMPGEN(addr, value) value
 
 #else
@@ -31,6 +32,7 @@
 
 #define VTBL_ABSENT(type)
 #define RVA_COMPGEN(addr, size, symbol)
+#define RVA_DYNINIT(addr, size, owner)
 #define DATA_COMPGEN(addr, value) value
 
 #endif

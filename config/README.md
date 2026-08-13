@@ -50,9 +50,6 @@ are nearly complete and therefore change infrequently.
   tree labels (rva, name, unit); the floor for the `gruntz build --full`
   vanish gate (`gruntz.audit.function_census`). Keyed on RVAs, so cross-unit
   moves and renames pass; a deliberate removal is a committed row deletion.
-- **`compiler-generated-functions.tsv`** — observed MSVC-private `$E<n>` helper
-  RVAs, sizes, and owner units. The unstable compiler ordinal is evidence, not a
-  source annotation.
 - **`compiler-helper-functions.tsv`** — proven standalone compiler/source-induced
   forwarding helpers, including their exact retail jump targets.
 - **`vtables_game.csv`** — manually maintained game/engine vtables. `kind`

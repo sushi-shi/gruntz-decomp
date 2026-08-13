@@ -117,9 +117,12 @@ stamp is transitional reconstruction debt, not original source.
 ## Preserve data and annotation truth
 
 - A datum is a real definition with `DATA(rva)`; `DATA_SYMBOL` is retired.
-- Compiler-generated data belongs in
-  `config/retail/compiler-generated-data.tsv`; never invent `DATA_COMPGEN` source
-  macros or bind compiler emission ordinals as semantic names.
+- A `DATA_COMPGEN` pin is last-resort: only for a datum the automatic oracles
+  cannot identify (an ambiguous string payload, an FP slot with no
+  reloc-corroborated referrer). Oracle-covered pins are removable noise; the
+  header-inline COFF COMMONs live in `config/retail/compiler-generated-data.tsv`.
+  Never bind compiler emission ordinals as semantic names; a `$E` helper is
+  pinned at its owner with `RVA_DYNINIT`.
 - `DATA(...)` identifies and audits storage; it does not force linker placement.
 - Do not infer initialized-data correctness from aggregate objdiff data or from
   synthesized target sections. Keep `.bss` separate from initialized data.

@@ -11,6 +11,7 @@ Checked forms:
   RVA(0x00xxxxxx, 0xN)             DATA(0x00xxxxxx)
   VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
+  RVA_DYNINIT(0x00xxxxxx, 0xN, <owner-identifier>)
   DATA_COMPGEN(0x00xxxxxx, <value>)   (the value expression may spill)
 
 Comments are blanked first (labels.py does the same), so prose may quote an
@@ -51,6 +52,7 @@ CANON = {
     "DATA": rf"DATA\({ADDR}\)",
     "VTBL_ABSENT": rf"VTBL_ABSENT\({NAME}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
+    "RVA_DYNINIT": rf"RVA_DYNINIT\({ADDR}, {HEXN}, [A-Za-z_][A-Za-z0-9_:]*\)",
     # Expression-position macro: the labels.py parser is balanced-paren, so only
     # The address is pinned to the macro's own line; the value may
     # continue past it (wrap-immune via WhitespaceSensitiveMacros).
@@ -63,7 +65,7 @@ CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 WRAPPABLE = {"RVA", "DATA", "VTBL_ABSENT"}
 # longest-first so RVA_COMPGEN/VTBL_ABSENT win their prefixes
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|DATA_COMPGEN|VTBL_ABSENT|RVA|DATA)\s*\(")
+    r"\b(RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|VTBL_ABSENT|RVA|DATA)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /

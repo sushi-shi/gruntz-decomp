@@ -16,6 +16,10 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
+RVA_DYNINIT(0x0000af30, 0xa, g_registryHelper)
+RVA_DYNINIT(0x0000af50, 0xb, g_registryHelper)
+RVA_DYNINIT(0x0000af70, 0xe, g_registryHelper)
+RVA_DYNINIT(0x0000af90, 0xa, g_registryHelper)
 DATA(0x002295d8)
 static Utils::RegistryHelper g_registryHelper;
 

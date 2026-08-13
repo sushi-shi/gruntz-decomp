@@ -107,14 +107,25 @@
 - Address labels live in `include/rva.h` macros.
 - Never bind volatile compiler ordinals such as `_$E<n>` with
   `RVA_COMPGEN`; their suffix is emission-order state, not semantic identity.
-  Keep observed RVA/name/size evidence in
-  `config/retail/compiler-generated-functions.tsv` instead.
-- The DATA analog of `RVA_COMPGEN` is therefore a manifest, not a macro:
-  `config/retail/compiler-generated-data.tsv` names a datum cl emits as a COFF
-  COMMON from a header-inline's local static (and the `??_B` guard byte beside
-  it, which has no source spelling). It has no owning TU to host a source pin,
-  so it states only the retail address; `gruntz.audit.compgen_data` re-proves
-  the rest against the base objs and ratchets coverage.
+  A `$E` dynamic-init helper is pinned at its OWNER instead:
+  `RVA_DYNINIT(rva, size, owner)` on the owning datum's definition line
+  (`gruntz.core.dyninit` scrapes the pins; the current build's ordinal is
+  derived from the emitting obj when needed, never stored).
+- Compiler-generated data follows ONE rule: identity comes from the automatic
+  oracles, and a pin exists only where they cannot reach. Use-site literals
+  (pooled `??_C@` strings, `$T` FP-pool constants) are written bare — the
+  string content oracle and the retail-reloc FP oracle re-prove them every
+  build. A `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous
+  string payload or an FP slot with no reloc-corroborated referrer; removal is
+  self-verifying (an oracle-covered pin unwraps with zero movement, a
+  load-bearing one fails the FATAL `data_denominator` partition gate on the
+  same build). Separately — and disjointly —
+  `config/retail/compiler-generated-data.tsv` is a manifest, not a macro: it
+  names the COFF COMMONs cl emits from a header-inline's local static (plus
+  the `??_B` guard byte beside it, which has no source spelling at all); these
+  have no owning TU, so only the retail address is stated and
+  `gruntz.audit.compgen_data` re-proves the rest against the base objs and
+  ratchets coverage. Details: `docs/data-attribution.md` §3b-iii.
 
 - The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
   means a complete, evidence-bounded body, not missing logic or unresolved

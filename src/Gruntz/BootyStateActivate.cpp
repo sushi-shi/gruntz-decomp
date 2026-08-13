@@ -183,6 +183,10 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 
+RVA_DYNINIT(0x00018720, 0xa, g_levelMsgStrings)
+RVA_DYNINIT(0x00018740, 0x79, g_levelMsgStrings)
+RVA_DYNINIT(0x000187e0, 0xe, g_levelMsgStrings)
+RVA_DYNINIT(0x00018800, 0x14, g_levelMsgStrings)
 DATA(0x00229ef8)
 CString g_levelMsgStrings[8] = {
     "Time:",
@@ -2429,6 +2433,10 @@ void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     }
 }
 
+RVA_DYNINIT(0x00082970, 0xa, g_areaNames)
+RVA_DYNINIT(0x00082990, 0x79, g_areaNames)
+RVA_DYNINIT(0x00082a30, 0xe, g_areaNames)
+RVA_DYNINIT(0x00082a50, 0x14, g_areaNames)
 DATA(0x002454e8)
 CString g_areaNames[8] = {
     "Rocky Roadz",
@@ -2441,12 +2449,20 @@ CString g_areaNames[8] = {
     "Gruntz in Space",
 };
 
+RVA_DYNINIT(0x00082a80, 0xa, g_gruntzWinApp)
+RVA_DYNINIT(0x00082aa0, 0x10, g_gruntzWinApp)
+RVA_DYNINIT(0x00082ac0, 0xe, g_gruntzWinApp)
+RVA_DYNINIT(0x00082ae0, 0xa, g_gruntzWinApp)
 DATA(0x002451a8)
 CWinApp g_gruntzWinApp("Gruntz");
 
 DATA(0x00245270)
 GruntDeathType g_areaPitDeath;
 
+RVA_DYNINIT(0x00082b00, 0xa, g_buteMgr)
+RVA_DYNINIT(0x00082b20, 0xa, g_buteMgr)
+RVA_DYNINIT(0x00082b40, 0xe, g_buteMgr)
+RVA_DYNINIT(0x00082b60, 0xa, g_buteMgr)
 DATA(0x002453d8)
 CButeMgr g_buteMgr;
 
@@ -2455,27 +2471,59 @@ i32 g_panMinX;
 DATA(0x0024550c)
 i32 g_panMaxX;
 
+RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082bc0, 0xe, g_brickText1)
+RVA_DYNINIT(0x00082be0, 0xa, g_brickText1)
 DATA(0x00245524)
 CString g_brickText1;
 
+RVA_DYNINIT(0x00082c00, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082c20, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082c40, 0xe, g_brickText2)
+RVA_DYNINIT(0x00082c60, 0xa, g_brickText2)
 DATA(0x00245528)
 CString g_brickText2;
 
+RVA_DYNINIT(0x00082c80, 0xa, g_str64552c)
+RVA_DYNINIT(0x00082ca0, 0xa, g_str64552c)
+RVA_DYNINIT(0x00082cc0, 0xe, g_str64552c)
+RVA_DYNINIT(0x00082ce0, 0xa, g_str64552c)
 DATA(0x0024552c)
 CString g_str64552c;
 
+RVA_DYNINIT(0x00082d00, 0xa, g_str645530)
+RVA_DYNINIT(0x00082d20, 0xa, g_str645530)
+RVA_DYNINIT(0x00082d40, 0xe, g_str645530)
+RVA_DYNINIT(0x00082d60, 0xa, g_str645530)
 DATA(0x00245530)
 CString g_str645530;
 
+RVA_DYNINIT(0x00082d80, 0xa, g_str645514)
+RVA_DYNINIT(0x00082da0, 0xa, g_str645514)
+RVA_DYNINIT(0x00082dc0, 0xe, g_str645514)
+RVA_DYNINIT(0x00082de0, 0xa, g_str645514)
 DATA(0x00245514)
 CString g_str645514;
 
+RVA_DYNINIT(0x00082e00, 0xa, g_str645518)
+RVA_DYNINIT(0x00082e20, 0xa, g_str645518)
+RVA_DYNINIT(0x00082e40, 0xe, g_str645518)
+RVA_DYNINIT(0x00082e60, 0xa, g_str645518)
 DATA(0x00245518)
 CString g_str645518;
 
+RVA_DYNINIT(0x00082e80, 0xa, g_str64551c)
+RVA_DYNINIT(0x00082ea0, 0xa, g_str64551c)
+RVA_DYNINIT(0x00082ec0, 0xe, g_str64551c)
+RVA_DYNINIT(0x00082ee0, 0xa, g_str64551c)
 DATA(0x0024551c)
 CString g_str64551c;
 
+RVA_DYNINIT(0x00082f00, 0xa, g_str645520)
+RVA_DYNINIT(0x00082f20, 0xa, g_str645520)
+RVA_DYNINIT(0x00082f40, 0xe, g_str645520)
+RVA_DYNINIT(0x00082f60, 0xa, g_str645520)
 DATA(0x00245520)
 CString g_str645520;
 
@@ -2484,6 +2532,10 @@ i32 g_attractStateCount = 0;
 DATA(0x0024553c)
 GruntDeathType g_areaHazardDeath = DEATH_DROP;
 
+RVA_DYNINIT(0x00082f80, 0xa, g_coordPool)
+RVA_DYNINIT(0x00082fa0, 0x17, g_coordPool)
+RVA_DYNINIT(0x00082fd0, 0xe, g_coordPool)
+RVA_DYNINIT(0x00082ff0, 0x2f, g_coordPool)
 DATA(0x00245540)
 FreeNodePool g_coordPool;
 

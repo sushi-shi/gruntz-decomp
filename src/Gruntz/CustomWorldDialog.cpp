@@ -28,10 +28,22 @@
 
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0};
+RVA_DYNINIT(0x0003ac10, 0xa, g_pathStr)
+RVA_DYNINIT(0x0003ac30, 0xa, g_pathStr)
+RVA_DYNINIT(0x0003ac50, 0xe, g_pathStr)
+RVA_DYNINIT(0x0003ac70, 0xa, g_pathStr)
 DATA(0x0022c25c)
 CString g_pathStr;
+RVA_DYNINIT(0x0003ad10, 0xa, g_levelStr)
+RVA_DYNINIT(0x0003ad30, 0xa, g_levelStr)
+RVA_DYNINIT(0x0003ad50, 0xe, g_levelStr)
+RVA_DYNINIT(0x0003ad70, 0xa, g_levelStr)
 DATA(0x0022c260)
 CString g_levelStr;
+RVA_DYNINIT(0x0003ac90, 0xa, g_str62c264)
+RVA_DYNINIT(0x0003acb0, 0xa, g_str62c264)
+RVA_DYNINIT(0x0003acd0, 0xe, g_str62c264)
+RVA_DYNINIT(0x0003acf0, 0xa, g_str62c264)
 DATA(0x0022c264)
 CString g_str62c264;
 DATA(0x0022c268)

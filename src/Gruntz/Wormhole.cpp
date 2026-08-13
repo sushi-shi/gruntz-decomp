@@ -36,10 +36,22 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
+RVA_DYNINIT(0x0003ffb0, 0xa, int)
+RVA_DYNINIT(0x0003ffd0, 0x15, int)
+RVA_DYNINIT(0x00040000, 0xe, int)
+RVA_DYNINIT(0x00040020, 0x1f, int)
 template<> DATA(0x00244660)
 CActReg CActRegPool<CWormhole>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x000406b0, 0xa, int)
+RVA_DYNINIT(0x000406d0, 0x15, int)
+RVA_DYNINIT(0x00040700, 0xe, int)
+RVA_DYNINIT(0x00040720, 0x1f, int)
 template<> DATA(0x002445e8)
 CActReg CActRegPool<CGruntPuddle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x00041480, 0xa, int)
+RVA_DYNINIT(0x000414a0, 0x15, int)
+RVA_DYNINIT(0x000414d0, 0xe, int)
+RVA_DYNINIT(0x000414f0, 0x1f, int)
 template<> DATA(0x002446b0)
 CActReg CActRegPool<CTeleporter>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -616,8 +616,10 @@ class TestFunctionUniverse(unittest.TestCase):
                 "rva,name,lib,confidence,source\n"
                 "0x8400,library_high,LIBCMT,HIGH,test\n"
                 "0x8500,library_low,LIBCMT,LOW,test\n")
-            (root / "config/retail/compiler-generated-functions.tsv").write_text(
-                "0x00008300\t0xa\t_$E1\tu\ttest\n")
+            (root / "src").mkdir()
+            (root / "src/u.cpp").write_text(
+                "RVA_DYNINIT(0x00008300, 0xa, gTest)\n"
+                "int gTest = init();\n")
             (root / "config/retail/compiler-helper-functions.tsv").write_text(
                 "0x00008700\t0x5\t0x00008800\tforward\ttest\n")
 

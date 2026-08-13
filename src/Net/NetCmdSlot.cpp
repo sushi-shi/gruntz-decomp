@@ -29,6 +29,10 @@ NetCmdSendMsg g_netCmdSendMsg;
 DATA(0x0024a8a8)
 NetGruntRecMsg g_netGruntRecMsg;
 
+RVA_DYNINIT(0x000beef0, 0xa, s_freeList)
+RVA_DYNINIT(0x000bef10, 0xd, s_freeList)
+RVA_DYNINIT(0x000bef30, 0xe, s_freeList)
+RVA_DYNINIT(0x000bef50, 0x1f, s_freeList)
 template<> DATA(0x0024aca8)
 CPtrList CPtrListPool<GruntRec>::s_freeList(0xa);
 

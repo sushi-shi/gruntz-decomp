@@ -6,9 +6,17 @@
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>
 
+RVA_DYNINIT(0x000238b0, 0xa, s_freeList)
+RVA_DYNINIT(0x000238d0, 0xd, s_freeList)
+RVA_DYNINIT(0x000238f0, 0xe, s_freeList)
+RVA_DYNINIT(0x00023910, 0x1f, s_freeList)
 template<> DATA(0x0022b5d0)
 CPtrList CPtrListPool<CGruntzSingleCommand>::s_freeList(0xa);
 
+RVA_DYNINIT(0x00023940, 0xa, s_freeList)
+RVA_DYNINIT(0x00023960, 0xd, s_freeList)
+RVA_DYNINIT(0x00023980, 0xe, s_freeList)
+RVA_DYNINIT(0x000239a0, 0x1f, s_freeList)
 template<> DATA(0x0022b640)
 CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
 

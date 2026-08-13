@@ -60,23 +60,13 @@ def _library(path: Path) -> dict[int, dict]:
     return out
 
 
-def _compiler_private(path: Path) -> dict[int, dict]:
-    out = {}
-    if not path.is_file():
-        return out
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("0x"):
-            continue
-        parts = line.split("\t")
-        if len(parts) < 4:
-            continue
-        try:
-            rva, size = _rint(parts[0]), _rint(parts[1])
-        except ValueError:
-            continue
-        out[rva] = {"size": size, "name": parts[2], "unit": parts[3],
-                    "evidence": parts[4] if len(parts) > 4 else ""}
-    return out
+def _compiler_private(repo: Path) -> dict[int, dict]:
+    """The RVA_DYNINIT-pinned `$E` helpers (gruntz.core.dyninit). The pin's
+    OWNER stands in for a name; the volatile build ordinal is never stored."""
+    from gruntz.core.dyninit import rows as dyninit_rows
+    return {r["rva"]: {"size": r["size"], "name": r["owner"], "unit": r["unit"],
+                       "evidence": r["where"]}
+            for r in dyninit_rows(Path(repo))}
 
 
 def _compiler_helpers(path: Path) -> dict[int, dict]:
@@ -132,7 +122,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
     rows = _functions(funcs_path)
     source = _source_functions(repo / "build/gen/symbol_names.csv")
     library = _library(repo / "config/retail/library_labels.csv")
-    private = _compiler_private(repo / "config/retail/compiler-generated-functions.tsv")
+    private = _compiler_private(repo)
     helpers = _compiler_helpers(repo / "config/retail/compiler-helper-functions.tsv")
     read = _pe_reader(Path(os.environ.get("GRUNTZ_EXE")
                            or repo / "build/exe/GRUNTZ.EXE"))

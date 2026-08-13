@@ -55,6 +55,10 @@ static char s__IDLE[] = "_IDLE";
 DATA(0x0020d374)
 static char s__BATTLECRY[] = "_BATTLECRY";
 
+RVA_DYNINIT(0x000445a0, 0xa, int)
+RVA_DYNINIT(0x000445c0, 0x15, int)
+RVA_DYNINIT(0x000445f0, 0xe, int)
+RVA_DYNINIT(0x00044610, 0x1f, int)
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
@@ -695,6 +699,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 if (static_cast<i64>(g_frameTime) - m_timer2Stamp >= m_timer2Window
                     && g_gameReg->m_cmdGrid->m_pendingFx == this) {
                     g_gameReg->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, 0x440, -1, -1, -1);
+                    RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
                     static CString s_alert("ALERT - Your Fort is under attack!");
                     g_gameReg->m_chatLog->AddItem(

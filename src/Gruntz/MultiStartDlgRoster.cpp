@@ -16,6 +16,10 @@
 
 #include <string.h>
 
+RVA_DYNINIT(0x000c1690, 0xa, g_gruntNames)
+RVA_DYNINIT(0x000c16b0, 0x3d, g_gruntNames)
+RVA_DYNINIT(0x000c1700, 0xe, g_gruntNames)
+RVA_DYNINIT(0x000c1720, 0x14, g_gruntNames)
 DATA(0x0024bdb0)
 CString g_gruntNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 

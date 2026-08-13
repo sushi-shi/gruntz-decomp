@@ -21,6 +21,10 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x0007ff80, 0xa, int)
+RVA_DYNINIT(0x0007ffa0, 0x15, int)
+RVA_DYNINIT(0x0007ffd0, 0xe, int)
+RVA_DYNINIT(0x0007fff0, 0x1f, int)
 template<> DATA(0x00244d30)
 CActReg CActRegPool<CGruntPowerupSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)

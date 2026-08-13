@@ -8,6 +8,10 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x0003a510, 0xa, int)
+RVA_DYNINIT(0x0003a530, 0x15, int)
+RVA_DYNINIT(0x0003a560, 0xe, int)
+RVA_DYNINIT(0x0003a580, 0x1f, int)
 template<> DATA(0x0022bfa0)
 CActReg CActRegPool<CCursorSnapSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

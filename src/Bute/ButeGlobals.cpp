@@ -48,9 +48,17 @@ inline CTypeCollRuntime::~CTypeCollRuntime() {
     }
 }
 
+RVA_DYNINIT(0x0016e720, 0xa, g_typeColl)
+RVA_DYNINIT(0x0016e730, 0x51, g_typeColl)
+RVA_DYNINIT(0x0016e790, 0xe, g_typeColl)
+RVA_DYNINIT(0x0016e7a0, 0x48, g_typeColl)
 DATA(0x002bf650)
 CTypeCollRuntime g_typeColl;
 
+RVA_DYNINIT(0x0016e690, 0xa, g_buteTree)
+RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
+RVA_DYNINIT(0x0016e6d0, 0xe, g_buteTree)
+RVA_DYNINIT(0x0016e6e0, 0x3e, g_buteTree)
 DATA(0x002bf620)
 CButeTree g_buteTree(&ButeTreeNopFree, 0);
 

@@ -14,6 +14,10 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x000ad7b0, 0xa, int)
+RVA_DYNINIT(0x000ad7d0, 0x15, int)
+RVA_DYNINIT(0x000ad800, 0xe, int)
+RVA_DYNINIT(0x000ad820, 0x1f, int)
 template<> DATA(0x00245f98)
 CActReg CActRegPool<CBehindCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -36,6 +36,10 @@
 #include <math.h>
 #include <stddef.h>
 
+RVA_DYNINIT(0x000b3ac0, 0xa, int)
+RVA_DYNINIT(0x000b3ae0, 0x15, int)
+RVA_DYNINIT(0x000b3b10, 0xe, int)
+RVA_DYNINIT(0x000b3b30, 0x1f, int)
 template<> DATA(0x00246250)
 CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)

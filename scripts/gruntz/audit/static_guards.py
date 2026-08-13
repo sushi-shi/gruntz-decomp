@@ -195,16 +195,9 @@ def compgen_spans():
     ordinal is volatile; see labels.VOLATILE_ORDINAL_FN_RE). Reporting them as
     unwritten functions manufactures a worklist of bodies nobody can write.
     """
-    out = []
-    p = REPO / "config/retail/compiler-generated-functions.tsv"
-    for ln in p.read_text().splitlines():
-        if not ln.strip() or ln.startswith("#"):
-            continue
-        f = ln.split("\t")
-        rva, size = int(f[0], 16), int(f[1], 16)
-        out.append((rva, rva + size, f[2], f[3] if len(f) > 3 else ""))
-    out.sort()
-    return out
+    from gruntz.core.dyninit import rows as dyninit_rows
+    return [(r["rva"], r["rva"] + r["size"], r["owner"], r["unit"])
+            for r in dyninit_rows(REPO)]
 
 
 def library_spans():

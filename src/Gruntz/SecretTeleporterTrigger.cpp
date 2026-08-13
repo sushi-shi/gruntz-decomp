@@ -26,8 +26,16 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x000420b0, 0xa, int)
+RVA_DYNINIT(0x000420d0, 0x15, int)
+RVA_DYNINIT(0x00042100, 0xe, int)
+RVA_DYNINIT(0x00042120, 0x1f, int)
 template<> DATA(0x00244688)
 CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
+RVA_DYNINIT(0x000426c0, 0xa, int)
+RVA_DYNINIT(0x000426e0, 0x15, int)
+RVA_DYNINIT(0x00042710, 0xe, int)
+RVA_DYNINIT(0x00042730, 0x1f, int)
 template<> DATA(0x00244598)
 CActReg CActRegPool<CSecretLevelTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -19,6 +19,10 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x0007e5c0, 0xa, int)
+RVA_DYNINIT(0x0007e5e0, 0x15, int)
+RVA_DYNINIT(0x0007e610, 0xe, int)
+RVA_DYNINIT(0x0007e630, 0x1f, int)
 template<> DATA(0x00244da8)
 CActReg CActRegPool<CGruntSelectedSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)

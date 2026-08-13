@@ -106,7 +106,7 @@ rva	name	unit
 0x00f400	??0CGruntCellRec@@QAE@XZ	grunt
 0x00f430	??1CGruntCellRec@@QAE@XZ	grunt
 0x00f450	?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
-0x00f470	?SerializeMove@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	anicycle
+0x00f470	?SerializeMove@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	serialobjectfactory
 0x00f4e0	??_GCAniCycle@@UAEPAXI@Z	anicycle
 0x00f510	??1CAniCycle@@UAE@XZ	anicycle
 0x00f580	?GetTypeTag@CSingleFrameMessage@@UAE?AW4LogicTypeId@@XZ	singleframemessage
@@ -146,7 +146,7 @@ rva	name	unit
 0x00ff90	??_GCEyeCandyAni@@UAEPAXI@Z	frontcandyani
 0x00ffc0	??1CEyeCandyAni@@UAE@XZ	frontcandyani
 0x010030	?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
-0x010050	?SerializeMove@CBehindCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	behindcandyani
+0x010050	?SerializeMove@CBehindCandyAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	serialobjectfactory
 0x0100c0	??_GCBehindCandyAni@@UAEPAXI@Z	behindcandyani
 0x0100f0	??1CBehindCandyAni@@UAE@XZ	behindcandyani
 0x010160	?GetTypeTag@CMenuSparkle@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
@@ -165,7 +165,7 @@ rva	name	unit
 0x010510	??_GCSingleAnimation@@UAEPAXI@Z	singleanimation
 0x010540	??1CSingleAnimation@@UAE@XZ	singleanimation
 0x0105b0	?GetTypeTag@CGruntStartingPoint@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
-0x0105d0	?SerializeMove@CGruntStartingPoint@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	gruntstartingpoint
+0x0105d0	?SerializeMove@CGruntStartingPoint@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	serialobjectfactory
 0x010640	??_GCGruntStartingPoint@@UAEPAXI@Z	gruntstartingpoint
 0x010670	??1CGruntStartingPoint@@UAE@XZ	gruntstartingpoint
 0x0106e0	?GetTypeTag@CGruntCreationPoint@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
@@ -303,11 +303,11 @@ rva	name	unit
 0x012c30	??_GCToobSpikez@@UAEPAXI@Z	toobspikez
 0x012c60	??1CToobSpikez@@UAE@XZ	toobspikez
 0x012cd0	?GetTypeTag@CParticlez@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
-0x012cf0	?SerializeMove@CParticlez@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	fortressflag
+0x012cf0	?SerializeMove@CParticlez@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	serialobjectfactory
 0x012d60	??_GCParticlez@@UAEPAXI@Z	fortressflag
 0x012d90	??1CParticlez@@UAE@XZ	fortressflag
 0x012e00	?GetTypeTag@CExplosion@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
-0x012e20	?SerializeMove@CExplosion@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	fortressflag
+0x012e20	?SerializeMove@CExplosion@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	serialobjectfactory
 0x012e90	??_GCExplosion@@UAEPAXI@Z	fortressflag
 0x012ec0	??1CExplosion@@UAE@XZ	fortressflag
 0x012f30	?GetTypeTag@CRollingBall@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
@@ -324,7 +324,7 @@ rva	name	unit
 0x013230	?HitTest@CPathHazard@@UAEHHH@Z	serialobjectfactory
 0x013250	??_GCPathHazard@@UAEPAXI@Z	pathhazard
 0x013280	??1CPathHazard@@UAE@XZ	pathhazard
-0x0132f0	?GetTypeTag@CRainCloud@@UAE?AW4LogicTypeId@@XZ	pathhazard
+0x0132f0	?GetTypeTag@CRainCloud@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
 0x013310	??_GCRainCloud@@UAEPAXI@Z	pathhazard
 0x013340	??1CRainCloud@@UAE@XZ	pathhazard
 0x0133b0	?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
@@ -342,7 +342,7 @@ rva	name	unit
 0x013bb0	?GetTypeTag@CMovingLogic@@UAE?AW4LogicTypeId@@XZ	serialobjectfactory
 0x013bd0	??1CMovingLogic@@UAE@XZ	serialobjectfactory
 0x013c40	??_GCMovingLogic@@UAEPAXI@Z	serialobjectfactory
-0x013c70	?FinalizeStep@CMovingLogic@@UAEXPAD@Z	projectile
+0x013c70	?FinalizeStep@CMovingLogic@@UAEXPAD@Z	serialobjectfactory
 0x013fb0	?LoadGameAssetNamespaces@CAttract@@UAEHPAVCGruntzMgr@@HH@Z	attractstate
 0x0140d0	?ReleaseResources@CAttract@@UAEXXZ	attractstate
 0x014120	?EnterState@CAttract@@UAEHW4GameStateId@@@Z	attractstate
@@ -1121,12 +1121,12 @@ rva	name	unit
 0x08c750	??0CState@@QAE@XZ	gruntzmgr
 0x08c830	??1CPlay@@UAE@XZ	gruntzmgr
 0x08c910	?Update@CPlay@@UAE?AW4GameStateId@@XZ	multi
-0x08c930	?UnusedPlayQuery@CPlay@@UAEHXZ	play
-0x08c950	?GetFrame@CPlay@@UAEHXZ	play
-0x08c970	?OnMouseMove@CPlay@@UAEHHHH@Z	play
+0x08c930	?UnusedPlayQuery@CPlay@@UAEHXZ	multi
+0x08c950	?GetFrame@CPlay@@UAEHXZ	multi
+0x08c970	?OnMouseMove@CPlay@@UAEHHHH@Z	multi
 0x08c9a0	??_GCPlay@@UAEPAXI@Z	gruntzmgr
 0x08c9d0	??0CPlay@@QAE@XZ	gruntzmgr
-0x08cd40	?Update@CAttract@@UAE?AW4GameStateId@@XZ	attractstate
+0x08cd40	?Update@CAttract@@UAE?AW4GameStateId@@XZ	gruntzmgr
 0x08cd60	??_GCAttract@@UAEPAXI@Z	attractstate
 0x08cd90	??1CAttract@@UAE@XZ	attractstate
 0x08ce10	?Update@CMenuState@@UAE?AW4GameStateId@@XZ	menustate
@@ -2177,7 +2177,7 @@ rva	name	unit
 0x0fa790	?FadeScene2@CSoundFxEmitter@@QAEHHHH@Z	attract
 0x0fa8f0	?RetireScene@CState@@QAEHHHHH@Z	attract
 0x0faa60	?FadeSceneClear2@CSoundFxEmitter@@QAEHHHH@Z	attract
-0x0fab90	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	levelpreview
+0x0fab90	?LoadScreen@CPreviewState@@QAEHPADHHH@Z	attract
 0x0fac70	?OnPaint@CState@@UAEHXZ	attract
 0x0face0	?InputVirtual@CState@@UAEHXZ	attract
 0x0faec0	?Present@CState@@QAEXH@Z	attract

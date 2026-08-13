@@ -114,6 +114,10 @@ u32 g_ackThrottleDeadline;
 DATA(0x00248cec)
 i32 g_activePlayerCount = 0;
 
+RVA_DYNINIT(0x000b5360, 0xa, g_sessionName)
+RVA_DYNINIT(0x000b5380, 0xa, g_sessionName)
+RVA_DYNINIT(0x000b53a0, 0xe, g_sessionName)
+RVA_DYNINIT(0x000b53c0, 0xa, g_sessionName)
 DATA(0x002473d8)
 CString g_sessionName;
 
@@ -142,6 +146,10 @@ CMulti::~CMulti() {
     CMulti::ReleaseResources();
 }
 
+RVA_DYNINIT(0x000b53e0, 0xa, g_obj646778)
+RVA_DYNINIT(0x000b5400, 0xa, g_obj646778)
+RVA_DYNINIT(0x000b5420, 0xe, g_obj646778)
+RVA_DYNINIT(0x000b5440, 0xa, g_obj646778)
 DATA(0x00246778)
 CFile g_obj646778;
 DATA(0x002467d8)

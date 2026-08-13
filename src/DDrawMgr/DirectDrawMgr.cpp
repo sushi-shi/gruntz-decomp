@@ -37,6 +37,10 @@ i32 (*g_restoreHandler)() = 0;
 
 DATA(0x00283ee8)
 IDirectDraw2* g_DirectDraw = 0;
+RVA_DYNINIT(0x00141c70, 0xa, g_modeArray)
+RVA_DYNINIT(0x00141c80, 0xa, g_modeArray)
+RVA_DYNINIT(0x00141c90, 0xe, g_modeArray)
+RVA_DYNINIT(0x00141ca0, 0xa, g_modeArray)
 DATA(0x00283ec8)
 CPtrArray g_modeArray;
 DATA(0x00283ee4)

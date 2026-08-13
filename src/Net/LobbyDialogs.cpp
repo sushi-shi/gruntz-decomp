@@ -29,6 +29,9 @@ namespace NetLobby {
     DATA(0x002496ac)
     CMulti* g_curMulti;
 
+    RVA_DYNINIT(0x000bd7f0, 0xa, g_str649618)
+    RVA_DYNINIT(0x000bd810, 0xe, g_str649618)
+    RVA_DYNINIT(0x000bd830, 0xa, g_str649618)
     DATA(0x00249618)
     CString g_str649618;
 

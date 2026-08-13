@@ -34,6 +34,10 @@ i32 CSimpleAnimation::SerializeMove(
 RVA_COMPGEN(0x0000f9a0, 0x1e, ??_GCSimpleAnimation@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f9d0, 0x44, ??1CSimpleAnimation@@UAE@XZ)
 
+RVA_DYNINIT(0x000abb70, 0xa, int)
+RVA_DYNINIT(0x000abb90, 0x15, int)
+RVA_DYNINIT(0x000abbc0, 0xe, int)
+RVA_DYNINIT(0x000abbe0, 0x1f, int)
 template<> DATA(0x00246038)
 CActReg CActRegPool<CSimpleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

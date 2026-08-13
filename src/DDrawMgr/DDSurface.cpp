@@ -35,6 +35,10 @@
 // entire axis, so their residue is intra-function and no amount of TU state
 // reaches it. Do not re-run the sweep on this file.
 
+RVA_DYNINIT(0x0013e060, 0xa, g_imageCache)
+RVA_DYNINIT(0x0013e070, 0xa, g_imageCache)
+RVA_DYNINIT(0x0013e080, 0xe, g_imageCache)
+RVA_DYNINIT(0x0013e090, 0xa, g_imageCache)
 DATA(0x00253c88)
 CPtrArray g_imageCache;
 DATA(0x00253ca0)

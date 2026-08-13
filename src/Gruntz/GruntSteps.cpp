@@ -45,22 +45,31 @@
 #include <stdlib.h>
 #include <string.h>
 
+RVA_DYNINIT(0x00047760, 0x1a, g_gruntMoveDirNorth)
 DATA(0x002448d8)
 GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
+RVA_DYNINIT(0x000477b0, 0x1a, g_gruntMoveDirNorthEast)
 DATA(0x00244908)
 GruntDirectionCell g_gruntMoveDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
+RVA_DYNINIT(0x00047800, 0x1f, g_gruntMoveDirEast)
 DATA(0x002448c8)
 GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, DIR_EAST);
+RVA_DYNINIT(0x00047850, 0x1a, g_gruntMoveDirSouthEast)
 DATA(0x00244928)
 GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
+RVA_DYNINIT(0x000479e0, 0x1a, g_gruntMoveDirCenter)
 DATA(0x00244938)
 GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
+RVA_DYNINIT(0x000478a0, 0x1f, g_gruntMoveDirSouth)
 DATA(0x002448e8)
 GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
+RVA_DYNINIT(0x000478f0, 0x1f, g_gruntMoveDirSouthWest)
 DATA(0x00244948)
 GruntDirectionCell g_gruntMoveDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
+RVA_DYNINIT(0x00047940, 0x1f, g_gruntMoveDirWest)
 DATA(0x002448f8)
 GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, DIR_WEST);
+RVA_DYNINIT(0x00047990, 0x17, g_gruntMoveDirNorthWest)
 DATA(0x00244918)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 

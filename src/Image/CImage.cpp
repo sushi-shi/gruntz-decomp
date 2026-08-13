@@ -462,6 +462,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
+    RVA_DYNINIT(0x00153800, 0x10, clip)
     DATA(0x002bf2a0)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
@@ -477,6 +478,7 @@ void CImage::RenderFrameClipped(
     RECT* clipRect,
     i32 flags
 ) {
+    RVA_DYNINIT(0x001538b0, 0x10, clip)
     DATA(0x002bf228)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {

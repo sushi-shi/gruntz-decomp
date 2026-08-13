@@ -107,8 +107,9 @@ DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
 RVA_COMPGEN_RE = re.compile(
     r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,\s*([^\s,)]+)\s*\)")
 # `$E<n>` (x86 `_$E<n>`) dynamic-init/EH helpers have a volatile emission
-# ordinal, not a semantic source identity. They are evidence-only rows in
-# config/retail/compiler-generated-functions.tsv and must never become source labels.
+# ordinal, not a semantic source identity. Their pins live at the OWNER's
+# definition as RVA_DYNINIT (gruntz.core.dyninit); the ordinal itself must
+# never become a source label.
 VOLATILE_ORDINAL_FN_RE = re.compile(r"^_?\$E[0-9]+$")
 
 # Annotation strings carried in @llvm.global.annotations (emitted by include/rva.h).
@@ -1422,8 +1423,8 @@ def main():
             if VOLATILE_ORDINAL_FN_RE.match(sym):
                 misses.append((
                     rva, sym, unit,
-                    "volatile compiler ordinal belongs in "
-                    "config/retail/compiler-generated-functions.tsv",
+                    "volatile compiler ordinal - pin it at its owner with "
+                    "RVA_DYNINIT instead",
                 ))
             elif obj_syms is None or sym in obj_syms:
                 rows.append((rva, sym, unit, size, "func"))

@@ -43,9 +43,11 @@ TypeKeyRec g_recs23[32];
 DATA(0x002bf618)
 i32 g_recCount23;
 
+RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
 
+RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
 DATA(0x002bf430)
 CVariantSlot g_globalErrorSlot("Global Error: ");
 
@@ -66,9 +68,11 @@ char* g_errNoFile;
 DATA(0x002bf464)
 char* g_errOutOfMem;
 
+RVA_DYNINIT(0x0016de20, 0x10, g_dynamicArrayErrorSlot)
 DATA(0x002bf468)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 
+RVA_DYNINIT(0x0016dfe0, 0x10, g_symTabErrorSlot)
 DATA(0x002bf480)
 CVariantSlot g_symTabErrorSlot("zSymTab: ");
 

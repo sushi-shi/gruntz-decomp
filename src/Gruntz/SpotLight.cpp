@@ -42,6 +42,10 @@ const double g_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0;
 
+RVA_DYNINIT(0x000b1590, 0xa, int)
+RVA_DYNINIT(0x000b15b0, 0x15, int)
+RVA_DYNINIT(0x000b15e0, 0xe, int)
+RVA_DYNINIT(0x000b1600, 0x1f, int)
 template<> DATA(0x00246188)
 CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

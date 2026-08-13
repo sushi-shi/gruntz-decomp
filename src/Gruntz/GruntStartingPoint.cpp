@@ -17,6 +17,10 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
+RVA_DYNINIT(0x0003e100, 0xa, int)
+RVA_DYNINIT(0x0003e120, 0x15, int)
+RVA_DYNINIT(0x0003e150, 0xe, int)
+RVA_DYNINIT(0x0003e170, 0x1f, int)
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

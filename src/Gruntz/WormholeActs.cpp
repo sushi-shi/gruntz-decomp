@@ -11,6 +11,10 @@
 
 #include <stddef.h>
 
+RVA_DYNINIT(0x0003f1f0, 0xa, int)
+RVA_DYNINIT(0x0003f210, 0x15, int)
+RVA_DYNINIT(0x0003f240, 0xe, int)
+RVA_DYNINIT(0x0003f260, 0x1f, int)
 template<> DATA(0x002445c0)
 CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

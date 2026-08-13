@@ -1751,6 +1751,7 @@ RVA(0x001731d0, 0xb6)
 CString* CButeMgr::GetString(const char* tag, const char* key) {
     // Retail 0x2bf698; its guard byte (cl's `?$S45..@4EA`, no source
     // spelling) is 0x2bf6b8 and stays unenrolled like Play's s_ambientCoin guard.
+    RVA_DYNINIT(0x00173290, 0xa, s_empty)
     DATA(0x002bf698)
     static CString s_empty("");
 
@@ -1842,6 +1843,7 @@ RVA(0x00173770, 0xc6)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     // Guard byte 0x2bf688.
     DATA(0x002bf6d0)
+    RVA_DYNINIT(0x00173840, 0x1, s_default)
     static ButeIntRect s_default;
 
     void* grp = Tree()->Find(tag);
@@ -1928,6 +1930,7 @@ RVA(0x00173d00, 0xbb)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     // Guard byte 0x2bf67c.
     DATA(0x002bf690)
+    RVA_DYNINIT(0x00173dc0, 0x1, s_default)
     static ButeIntPoint s_default;
 
     void* grp = Tree()->Find(tag);
@@ -2013,6 +2016,7 @@ RVA(0x00174240, 0xe3)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     // Guard byte 0x2bf684.
     DATA(0x002bf6a0)
+    RVA_DYNINIT(0x00174330, 0x1, s_default)
     static ButeDoubleVector s_default;
 
     void* grp = Tree()->Find(tag);
@@ -2098,6 +2102,7 @@ RVA(0x001747c0, 0xcf)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     // Guard byte 0x2bf680.
     DATA(0x002bf6c0)
+    RVA_DYNINIT(0x00174890, 0x1, s_default)
     static ButeDoubleRange s_default;
 
     void* grp = Tree()->Find(tag);
