@@ -57,3 +57,26 @@ every caller). Direct-called statics (RegisterActs, called by
 gameobjectfactory) stay out-of-line for the same reason regardless of
 placement. And run the test per BODY, not per class: one class routinely mixes
 both spellings (GetTypeTag inline, GetDisplayedValue out-of-line).
+
+**MEASURED LIMIT (2026-08-13): expansion evidence outranks placement.** The
+test must NOT be run in the inline->out-of-line direction on placement alone.
+`??1CUserLogic` (kept at 0x8860 in userlogic's run although 46 of our base
+objs emit it and actionarea links first) looked like an out-of-line user dtor;
+converting `~CUserLogic() {}` to out-of-line cratered ~70 derived dtors to
+2.35% - retail's derived `??1` bodies inline-EXPAND the base dtor, which only
+an inline-visible spelling produces. Check callers/derived bodies for
+expansions FIRST; any expansion pins the inline spelling, and the placement
+anomaly then signals an unresolved partition (who is the true first
+materializer / is the "host" run really a separate obj), not a spelling.
+Corollary: cl 5.0 materializes standalone `??1`/`??_G`/`??_7` copies far more
+selectively than "every referencing TU" - a ctor expansion that STAMPS
+`??_7CUserBase` does not force that TU to emit the vtable family.
+
+**Labeling limit.** An `RVA()` claim on a header body binds only if clang
+EMITS the body in some labelling TU (the empty-fragment gate names this).
+Virtuals always qualify (vtable slot reference); a pure accessor clang inlines
+everywhere does not (`CMenuItem::Reset` stays a pin). The 148 `??1` pins
+(65 header-spelled dtors materialized out-of-line, 83 implicit) and 20 `??0`
+pins (19 header-spelled inline ctors) survive for this reason - the pin names
+the compiler-materialized copy, while the spelling, when one exists, already
+lives in the header.
