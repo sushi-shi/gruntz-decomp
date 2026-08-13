@@ -2179,3 +2179,18 @@ Also built: scratchpad/callsite_attr.py - per-function attribution, base obj by
 symbol-VALUE ranges (base mixes COMDAT and shared .text; section-owner
 attribution is wrong) and retail by image scan over names.csv ranges (target
 objs are COMDAT-packed and cannot attribute).
+
+## 2026-08-13 (late-6): butemgr Set* family - one surplus `new`, shared-tail REFUTED
+
+Every `CButeMgr::Set*` (SetInt/SetDword/SetFloat/SetRect/SetVector, and
+SetString's 13-vs-12 EH states) emits exactly ONE more `??2@YAPAXI@Z` than
+retail (ours 10, retail 9) - a single shared source shape, not five bugs.
+Branch counts confirm it: SetInt base 18 vs target 17, rets 5/5.
+NEGATIVE CONTROL: merging the two tail paths into one shared
+`made->FindOrInsert(key, new CButeValue(...))` (hoisted `CButeNode* made`,
+if/else instead of two returns) OVERSHOOTS hard - rets collapse 5 -> 1,
+branches 16 vs 17, `new` 8 vs 9, 95.20 -> 79.18. Retail keeps FIVE exits, so
+the two tails are genuinely separate; the surplus allocation is elsewhere in
+the chain (candidates: an internal `pValue` allocation inside our
+CButeValue(type, val) ctor that retail did not have, or one of the three
+`&CButeValue(...)` CopyValue temps). Reverted; SetInt back at 95.20.
