@@ -1481,3 +1481,12 @@ compiler decision, and a real VC5 build must confirm the fix.
   (1998 declare-then-assign style). The productive next attempt is the
   declare-at-top restructure of the arm scopes FIRST, then the pair-grouping
   beam over legal label placements.
+- CONTINUED (same day): the declare-at-top hoist of all 12 locals is proven
+  BYTE-NEUTRAL (88.03716 exact, re-appliable mechanically). On the hoisted
+  base, two further groupings scored and refuted: victory/else status-rsn
+  pairs (84.59) and the tail statz-pair + observe/quit INLINE_CHAIN pair
+  (82.11) - the latter after mapping base B44 to the OBSERVE arm via its
+  SBICMD_DIALOG_PRIMARY (0x324) push. Four controlled refutations across
+  every plausible grouping reclassify the site: the 8-vs-6 ret delta is cl's
+  epilogue cross-jump coin (the PlaceObjectFull mechanism), not a goto/||
+  spelling artifact. Bounded pending the mirror-direction study.
