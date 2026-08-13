@@ -1724,3 +1724,19 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   input (c2.exe RE of the layout pass, or a TU-body-parity discovery) is the
   highest-leverage single investigation left on the heavy worklist; per-fn
   source spellings cannot reach it (proven across 6 constructs tonight).
+
+## 2026-08-13 — `CPlay::ValidateLevelTiles` dossier (two named-local levers, unapplied)
+
+- Unit/RVA: `leveltilevalidation`, `0x000d2dd0`; 85.87, weight ~1092. The
+  outer do-while over m_childGroup diverges at its head: retail establishes
+  ebp=1 in the guard block AND re-establishes it in a 2i backedge-only block
+  (0xd2e42), and holds the 0x10000 flags-mask in ebx across the whole body
+  (preheader load from [esp+0x14]); ours re-materializes both per iteration
+  in caller-saved regs (loop-head `mov edx,1; mov ebx,0x10000` clobbered by
+  every call). CONTENT class, not the placement coin: the fix is two named
+  locals declared before the loop (the mask; and the per-iteration ok=1
+  re-init actually spelled inside the body), used at the ~10
+  `obj->m_flags |= 0x10000` sites - the register-residency evidence
+  (callee-saved + spill home + backedge reload) is the scoped-local proof
+  class (global-reload-runs pattern). Next session: map every ebp/ebx use,
+  name the bit semantically, apply, measure.
