@@ -321,8 +321,3 @@ i32 CSBI_GruntMachine::SerializeFields(
 
     return CStatusBarItem::SerializeFields(s, mode, typeId, pObj) != 0 ? 1 : 0;
 }
-
-RVA(0x00104ce0, 0x55)
-CSBI_GruntMachine::~CSBI_GruntMachine() {
-    Reset();
-}

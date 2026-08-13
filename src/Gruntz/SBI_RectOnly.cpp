@@ -2812,6 +2812,11 @@ CSBI_StatzTabArrow::~CSBI_StatzTabArrow() {
 
 RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 
+RVA(0x00104ce0, 0x55)
+CSBI_GruntMachine::~CSBI_GruntMachine() {
+    Reset();
+}
+
 RVA(0x00104d60, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
