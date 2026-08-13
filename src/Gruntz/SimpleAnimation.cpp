@@ -58,8 +58,6 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
     if (*CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx) != 0) {
@@ -78,8 +76,6 @@ void RegisterSimpleAnimLogic() {
     *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 
-// @interleaver AdvanceAnim - fixed-size generated body (23 B, byte-identical across
-// 10 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000abf70, 0x17)
 i32 CSimpleAnimation::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

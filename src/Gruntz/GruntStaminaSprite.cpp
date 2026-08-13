@@ -25,8 +25,6 @@ CGruntStaminaSprite::CGruntStaminaSprite(CGameObject* obj) : CGruntHealthSprite(
     m_yOffset = -0x20;
 }
 
-// @interleaver GetDisplayedValue - fixed-size generated body (13 B, byte-identical across
-// 4 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0007fbb0, 0xd)
 i32 CGruntStaminaSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_stamina;

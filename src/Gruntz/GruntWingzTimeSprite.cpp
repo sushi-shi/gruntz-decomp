@@ -24,8 +24,6 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
     m_yOffset = -0x26;
 }
 
-// @interleaver GetDisplayedValue - fixed-size generated body (13 B, byte-identical across
-// 4 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0007fd90, 0xd)
 i32 CGruntWingzTimeSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_wingzTime;

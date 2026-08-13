@@ -112,8 +112,6 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id));
@@ -122,8 +120,6 @@ void CEyeCandyAni::FireActivation(i32 id) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -131,8 +127,6 @@ void CEyeCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
-// @interleaver AdvanceAnim - fixed-size generated body (23 B, byte-identical across
-// 10 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000acf10, 0x17)
 i32 CEyeCandyAni::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);
@@ -164,8 +158,6 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
@@ -175,8 +167,6 @@ void CFrontCandyAni::FireActivation(i32 coord) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -184,8 +174,6 @@ void CFrontCandyAni::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 
-// @interleaver AdvanceAnim - fixed-size generated body (23 B, byte-identical across
-// 10 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ad510, 0x17)
 i32 CFrontCandyAni::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

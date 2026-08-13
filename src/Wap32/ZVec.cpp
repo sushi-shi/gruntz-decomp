@@ -36,8 +36,8 @@ char* _zdvec::IndexToPtr(i32 i) {
     return r;
 }
 
-// @interleaver IndexToPtr - 116 B lone body at 0x312a0, between Drain
-// (queuedrainhost) and Step (battlezmapconfig): a first-use placement.
+// @interleaver IndexToPtr - retail copy kept inside battlezmapconfig's
+// tail pocket 0x310f0-0x31314 (kept-comdat-exiles.tsv; docs/link-text-layout.md).
 RVA(0x000312a0, 0x74)
 char* _zvec::IndexToPtr(i32 idx) {
     char* r;

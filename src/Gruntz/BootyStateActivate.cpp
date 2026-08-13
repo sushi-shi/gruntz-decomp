@@ -806,9 +806,6 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
     return lo + (GetRandomNumber()) % span;
 }
 
-// @interleaver Rng2Next - 70 B lone body at 0x15cbe0, between Deserialize
-// (wwdfactoryobject) and GetFrame (wwdfactoryobject): a first-use placement.
-
 // @early-stop
 RVA(0x0001a040, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {

@@ -706,8 +706,6 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
 RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
-// @interleaver VerifyBlockLinksB - 196 B lone body at 0x111f40, between ?0CTileMultiTriggerSwitchLogic
-// (tileswitchlogic) and ?0CTileExclusiveTriggerSwitchLogic (tileswitchlogic): a first-use placement.
 RVA(0x00111f40, 0xc4)
 i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     if (m_linkGate == 0) {

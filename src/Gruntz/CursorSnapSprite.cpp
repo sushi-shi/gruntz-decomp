@@ -81,8 +81,6 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x0003a5b0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));

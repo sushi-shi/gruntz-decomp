@@ -499,9 +499,6 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     m_objAux->m_actKey = ActFindId("A");
 }
 
-// @interleaver SerializeMove - 152 B lone body at 0x983e0, between RefreshCell
-// (ingameicon) and PeekCycle (ingameicon): a first-use placement.
-
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdGameObjectA* obj = m_object;

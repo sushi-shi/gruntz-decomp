@@ -40,8 +40,6 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
@@ -50,8 +48,6 @@ void CSingleAnimation::FireActivation(i32 id) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000aeb80, 0x18d)
 void CSingleAnimation::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -59,8 +55,6 @@ void CSingleAnimation::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 
-// @interleaver AdvanceAnim - 57 B lone body at 0xaed80, between RegisterActs
-// (singleanimation) and _CreateRollingBall (logicworkerhandlersb): a first-use placement.
 RVA(0x000aed80, 0x39)
 i32 CSingleAnimation::AdvanceAnim() {
     m_wwdObject->m_animCursor.Advance(g_engineFrameDelta);

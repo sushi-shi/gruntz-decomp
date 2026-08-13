@@ -93,8 +93,6 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     CActHandler* e = ActLookup(coord);
@@ -104,8 +102,6 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -134,8 +130,6 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
@@ -145,8 +139,6 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -154,8 +146,6 @@ void CSecretLevelTrigger::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
-// @interleaver Tick - 144 B lone body at 0x42ac0, between RegisterActs
-// (secretteleportertrigger) and SpawnTeleporter (secretteleportertrigger): a first-use placement.
 RVA(0x00042ac0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 outA, outB;

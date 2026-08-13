@@ -50,8 +50,6 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     }
 }
 
-// @interleaver FireActivation - fixed-size generated body (258 B, byte-identical across
-// 51 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
@@ -60,8 +58,6 @@ void CSingleFrameMessage::FireActivation(i32 id) {
     }
 }
 
-// @interleaver RegisterActs - fixed-size generated body (397 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     ACT_NAME_ID(id, "A")
@@ -69,8 +65,6 @@ void CSingleFrameMessage::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
-// @interleaver AdvanceAnim - 18 B lone body at 0xab910, between RegisterActs
-// (singleframemessage) and ?0CSimpleAnimation (simpleanimation): a first-use placement.
 RVA(0x000ab910, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
     m_wwdObject->m_flags |= 0x10000;
