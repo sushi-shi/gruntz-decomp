@@ -2099,3 +2099,14 @@ exposes. The placement mechanism itself still stands where maps already match.
   is therefore entirely SITE-level inside callers where both sides emit -
   the parked titrations (play LoadGameAssetNamespaces sites-divisor,
   ddrawsurfacemgr ~CFileMemBase 5 sites).
+
+## 2026-08-13 (late-2): MeasureLabel ~CPen funclet - NOT the sequential budget
+
+fontconfig MeasureLabel (99.55): our funclet calls the ??1CPen COMDAT where
+retail's expands it (-> direct ??1CGdiObject; retail image has NO ??1CPen).
+~CPen is AFXWIN1.INL's empty inline under _AFX_ENABLE_INLINES - visible to
+both compiles; the normal-path bytes MATCH (masked). Dead-TRACE titration to
++4 units does NOT flip the funclet-side expansion, unlike TransitionState -
+so this decline is C1 TU-state (handle/il), not caller-cb budget. Park for
+the IL tap. Same signature likely covers gamelevel ??1CImageSet3's
+CTileImageSet->CObject row.
