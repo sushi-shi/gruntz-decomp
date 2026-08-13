@@ -1911,3 +1911,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   of c2's layout pass must explain all three points. ChargeStep supersedes
   PhaseStep as the c2-RE anchor: deterministic c2(IL), one-operand IL
   delta, no TU state, three-point constraint set.
+
+- SPLICE TARGET ISOLATED (same day): variant C (dead local + member test) vs
+  B (local test) ex streams share a 258,414-B prefix and 6,484-B suffix; the
+  WHOLE deciding delta is one span at ex+0x3f16e - B: `45 a9 01 00` (load
+  local 0x1a9); C: `3c a9 01 00` + `5a a0 43 33 41 80 1c 02 00 00 27 41`
+  (dead-local marker + member load, the 0x21c m_neighborValid offset literal
+  in-stream). ONE condition tuple (16B member-form vs 4B local-form) flips
+  the 64-byte relayout. Next mechanical step: splice with gl ex-offset
+  patching (gl records carry per-function ex offsets; a 12-B shrink shifts
+  later spans), then the region-size-vs-operand-kind hybrid to name c2's
+  actual threshold. The tuple opcodes read directly: 0x45 = local load,
+  0x5a = member load - two more rows for the ex grammar.
