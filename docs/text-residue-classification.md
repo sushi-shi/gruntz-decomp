@@ -29,6 +29,26 @@ The class boundaries are the ones PROVEN this session (see the relevations).
   caller-saved (EAX/ECX/EDX) operand scheduling (partly C2-side). This is where
   the next investigation wave should focus — it dominates the weight.
 
+## Sharpening (2026-08-13, later): REGISTER/SCHEDULE is C2-anchored at ANY %
+
+CGruntPuddle::CGruntPuddle (0x40490, 55.87%) is `diagnose`-classified
+REGISTER/SCHEDULE (call set + branches agree). Its entire 44% residue is
+constant-pinning: retail pins 0 in EBX and 1 in EBP and reuses them across the
+ctor's many `m_x = 0/1` member stores; we materialize each constant inline. The
+constant COUNT is fixed by the ctor's semantics (m_pending=1, m_placed=0, flag
+bits) - no legitimate source change alters it (forcing a pinning local is the
+banned zero-register hack). Permute moved it 55.80 -> 55.87 (noise).
+
+IMPLICATION: a `diagnose` REGISTER/SCHEDULE verdict = C2-anchored REGARDLESS of
+percentage. Low-% register functions are not "more reconstructable" - they just
+have denser C2 register/constant scheduling. So the ACTUAL source-reachable set
+is ONLY the structural-CFG (branch-count-mismatch) functions; much of the
+crude "referent/other" bucket is REGISTER/SCHEDULE the byte-classifier
+mislabeled. The source-reachable share of the residue is therefore SMALLER than
+the 18.9%+57.4% upper bound - closer to the structural-CFG 18.9% plus the
+genuine wrong-type/wrong-referent subset of referent/other. Screen every
+candidate with `diagnose` FIRST; only pursue structural-CFG verdicts by hand.
+
 ## Method to reproduce / re-measure
 
 The classifier is inline in the campaign notes (per-obj objdiff JSON, count
