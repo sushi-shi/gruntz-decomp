@@ -1490,3 +1490,19 @@ compiler decision, and a real VC5 build must confirm the fix.
   every plausible grouping reclassify the site: the 8-vs-6 ret delta is cl's
   epilogue cross-jump coin (the PlaceObjectFull mechanism), not a goto/||
   spelling artifact. Bounded pending the mirror-direction study.
+
+## 2026-08-13 — `CGrunt::PhaseStep` (first IL-tap-proven C2-side wall)
+
+- Unit/RVA: `gruntphasestep`, `0x000f60f0`; current 82.85.
+- Chain: 40-iteration hill-climb flat; 150 variants (AST depth 1 + 40
+  TU-state trials) all byte-flat; the IL tap then closed the question from
+  the other side - a +7-stride struct probe DOES reach the TU's IL (4/4
+  streams, handle signature, causation verdict FRONT-END) yet the entire
+  object delta is 7 bytes of symbol-table text (renamed $S ordinals) plus a
+  .bss header artifact: ZERO .text bytes move, and PhaseStep's own section
+  is untouched.
+- Verdict: the residue is C2-ANCHORED - register/schedule state the front
+  end cannot reach through declaration handles. This is the IL tap's first
+  use as a NEGATIVE oracle (proving a wall is not front-end reachable), the
+  complement of its designed purpose. Functions classifying here need
+  C2-side levers (statement mass, expression shape) or stand bounded.
