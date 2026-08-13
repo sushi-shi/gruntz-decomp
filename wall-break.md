@@ -2077,3 +2077,25 @@ OPEN rows, each decoded to its mechanism:
 META: the "C2 coin" verdicts on Run/TransitionState-class walls were
 INCOMPLETE - the reachable set includes C1-input defects the unwind map
 exposes. The placement mechanism itself still stands where maps already match.
+
+## 2026-08-13 (cont): dead-TRACE titration is QUANTITATIVE + three oracle screens drained
+
+- TransitionState 93.22 -> 93.92 NEW MAX: retail's image has NO
+  ??0CMultiBootyState COMDAT anywhere => retail never declined that expansion.
+  Titration: entry TRACE alone doesn't flip it; +2 more statement-units
+  (distinct pre-switch and tail TRACEs) flip it exactly; +3 over-expands
+  (89.76); a 4-arg TRACE is still ONE cb unit - cl's cb counts STATEMENTS,
+  not arguments. COMDAT emission now matches retail.
+- Screen 1 (drained): full-map (toState, has-action) comparison over all 750
+  EH groups - ZERO equal-count structural diffs. The EH oracle's reachable
+  surface is exactly the 7 count rows + the funclet-content census.
+- Screen 2: COMDATs we emit that retail's image never kept - 27, of which
+  real signals were CMultiBootyState (fixed), ??1CPen (fontconfig
+  MeasureLabel local type), ??1CTileImageSet (gamelevel), ??3CDDrawSurfaceMgr
+  (rezsync Run state 0); rest are the arrayserialize instantiation TU and
+  Realize* devices.
+- Screen 3 (drained): retail functions with no defining base obj - 0; retail
+  COMDAT owner-unit vs our emitter sets - 0 divergences. Inline divergence
+  is therefore entirely SITE-level inside callers where both sides emit -
+  the parked titrations (play LoadGameAssetNamespaces sites-divisor,
+  ddrawsurfacemgr ~CFileMemBase 5 sites).
