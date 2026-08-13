@@ -1325,7 +1325,7 @@ i32 CGrunt::StepGruntMovement() {
         i32 entX = m_entrancePx.m_x;
         i32 lastX = m_lastTilePx.m_x;
         i32 entY = m_entrancePx.m_y;
-        if (lastX == entX && m_lastTilePx.m_y == entY) {
+        if (entX == lastX && m_lastTilePx.m_y == entY) {
             goto label_ret1;
         }
     }
@@ -1361,12 +1361,12 @@ i32 CGrunt::StepGruntMovement() {
             recDirection = g_gruntMoveDirSouthEast.direction;
         } else if (coordY == gtY) {
             recColumn = g_gruntMoveDirEast.column;
-            recRow = g_gruntMoveDirEast.row;
             recDirection = g_gruntMoveDirEast.direction;
+            recRow = g_gruntMoveDirEast.row;
         } else {
             recColumn = g_gruntMoveDirNorthEast.column;
-            recRow = g_gruntMoveDirNorthEast.row;
             recDirection = g_gruntMoveDirNorthEast.direction;
+            recRow = g_gruntMoveDirNorthEast.row;
         }
     } else if (coordX < gtX) {
         if (coordY > gtY) {
@@ -1384,8 +1384,8 @@ i32 CGrunt::StepGruntMovement() {
         }
     } else {
         if (coordY < gtY) {
-            recColumn = g_gruntMoveDirNorth.column;
             recRow = g_gruntMoveDirNorth.row;
+            recColumn = g_gruntMoveDirNorth.column;
             recDirection = g_gruntMoveDirNorth.direction;
         } else {
             recColumn = g_gruntMoveDirSouth.column;
@@ -1511,7 +1511,7 @@ i32 CGrunt::StepGruntMovement() {
                         recRow = g_gruntMoveDirSouthWest.row;
                         recColumn = g_gruntMoveDirSouthWest.column;
                         recDirection = g_gruntMoveDirSouthWest.direction;
-                    } else if (cy == gy) {
+                    } else if (gy == cy) {
                         recRow = g_gruntMoveDirWest.row;
                         recColumn = g_gruntMoveDirWest.column;
                         recDirection = g_gruntMoveDirWest.direction;
@@ -1637,8 +1637,8 @@ label_4c6e4:
         if (CGameLevel::PointInRect(rr, hudX, hudY)) {
             g_gameReg->m_cueSink->LoadGruntSpawnConfig(this, 8, -1, -1, -1);
         }
-        tgtPxY = beyondPxY;
         tgtPxX = beyondPxX;
+        tgtPxY = beyondPxY;
     }
 
 label_4c92b: {
