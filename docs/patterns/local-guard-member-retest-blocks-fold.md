@@ -40,6 +40,11 @@ if (powered != 0) {
 
 Do NOT spell the inner tests through the locals (copy-prop folds them) and do
 not expect member-outer/member-inner to keep them (dominance folds them).
+Scope rule (IL-probe-proven): the outer local only SURVIVES for a member the
+function also STORES (the store blocks C1's copy-forwarding; an unstored
+member's single-use temp folds away entirely). The lever is therefore exactly
+as wide as the store set - the five-store battery members qualify, m_stamina
+does not.
 
 Measured: `CGrunt::SeekTarget` 0xf71c0 80.82 -> 85.14 (the biggest hit; its
 file comment had declared the fold "not reachable from source" - retired).

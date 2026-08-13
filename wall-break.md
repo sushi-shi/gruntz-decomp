@@ -1891,3 +1891,14 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   chargestep_A/B pair and the capture/feed workdirs are the standing
   reproducer (scratchpad copies; re-derive from gruntchargestep.cpp +- the
   neighborValid local).
+
+- Source-level bisect of the reproducer (same day): declaration-only (C) and
+  an unrelated single-use temp of m_stamina (E) BOTH compile byte-identical
+  to A - C1 copy-propagates single-use member temps away UNLESS the member is
+  also STORED in the function (m_neighborValid's five-store blocks the
+  forwarding; m_stamina has no store, so its temp folds). Consequences:
+  (1) the deciding IL delta is precisely the neighborValid condition-operand
+  tuple - the byte-splice targets ONE cluster family, not 329; (2) a NEW
+  steering rule for the local-guard pattern: the lever only takes for members
+  the function also stores - which predicts exactly the five-store battery
+  family and explains every hit and miss to date.
