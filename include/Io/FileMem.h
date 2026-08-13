@@ -30,6 +30,7 @@ public:
         Close();
     }
     virtual i32 SetName(const char* name, i32 a, i32 b);
+    RVA(0x00157910, 0x5)
     virtual void Close() {
         Reset();
     }
@@ -67,6 +68,7 @@ public:
     virtual ~CFileMem() OVERRIDE {
         Close();
     }
+    RVA(0x00157a70, 0x5)
     virtual void Close() OVERRIDE {
         Reset();
     }

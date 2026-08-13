@@ -187,7 +187,6 @@ CString CFontConfig::GetInputText() {
 
 // The inline accessor ProcessCheatInput above reaches m_cheatMgr through; this TU
 // wins the COMDAT, so retail's copy is the 4-byte `mov eax,[ecx+0x44]; ret` here.
-RVA_COMPGEN(0x00020f20, 0x4, ?CheatMgr@CGruntzMgr@@QAEPAVCCheatMgr@@XZ)
 
 // @early-stop
 RVA(0x00020f40, 0x188)

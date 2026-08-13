@@ -112,6 +112,7 @@ struct CButeValue {
     inline CButeValue* CopyValue(CButeValue* other);
 };
 
+RVA(0x00172040, 0x120)
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     // One arm per ButeType, each through the payload's REAL type - the retail jump
     // table (0x17213c) has nine entries over eight bodies, and the one shared pair

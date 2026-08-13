@@ -23,6 +23,7 @@ public:
     };
 
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
+    RVA(0x00013bb0, 0x4)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
     }

@@ -431,7 +431,6 @@ CFileMemBase::CFileMemBase() {
 }
 
 RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
-RVA_COMPGEN(0x00157910, 0x5, ?Close@CFileMemBase@@UAEXXZ)
 
 RVA(0x00157920, 0x20)
 CString CFileMemBase::GetName() {

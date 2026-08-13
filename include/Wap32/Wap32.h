@@ -145,6 +145,7 @@ public:
 
     virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId cmdId, i32 lParam);
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);
+    RVA(0x00080db0, 0x1)
     virtual void ShowError() {}
     virtual CGameWnd* InitializeGameWindow();
     virtual CGameMgr* InitializeGameManager();

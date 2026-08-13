@@ -123,5 +123,4 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 }
 
 RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
-RVA_COMPGEN(0x00080db0, 0x1, ?ShowError@CGameApp@@UAEXXZ)
 RVA_COMPGEN(0x00080dd0, 0x32, ??_GCGameApp@@UAEPAXI@Z)

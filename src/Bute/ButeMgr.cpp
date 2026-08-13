@@ -1467,8 +1467,6 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
 
 RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
 
-RVA_COMPGEN(0x00172040, 0x120, ?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z)
-
 RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)

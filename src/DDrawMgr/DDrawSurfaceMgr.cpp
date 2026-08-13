@@ -457,4 +457,3 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
 
 RVA_COMPGEN(0x00157980, 0x74, ??1CFileMem@@UAE@XZ)
 RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)
-RVA_COMPGEN(0x00157a70, 0x5, ?Close@CFileMem@@UAEXXZ)
