@@ -1598,3 +1598,26 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
 - Verified NOT @early-stop and NOT C2-anchored (branch-count differs), so real
   source work lands here. This is the model of a source-reachable target after
   the diagnose-REGISTER/SCHEDULE screen: pursue ONLY these.
+
+## 2026-08-13 — `CGrunt::StepArrivalDrop` (edge-map audit; tails corrected; sink still unbroken)
+
+- Unit/RVA: `grunt`, `0x0004b370`. Mapped every backward edge into region A from
+  the retail block graph: pathGate 0x4b4ff is entered by nudgeDone's bare `jne`
+  and reProbe's threaded `je`/`jmp` pair; 0x4b605 / 0x4b787 / 0x4b78c are
+  cross-jumped return tails. Retail FuncInfo maxState=1 (one CPtrList scope) —
+  full-region source duplication is refuted; retail's source had OUR two-goto
+  structure and cl still kept A inline. The sink trigger difference remains
+  unfound.
+- Structure recovered: both late commit tails return `arrivalPhase != 0` after
+  storing `m_arrivalPhase` (retail tests eax and branches into the shared
+  `mov eax,1`; fallthrough reuses eax=0). Ours returned constant 1 — a real
+  behavioral divergence when arrivalPhase==0. Corrected in source; cl emits a
+  shared `setne` block for every local spelling (if/return, ternary, `!= 0`),
+  so the branch-vs-setne residue joins the rotation wall.
+- Refuted levers (one build each): un-nesting A to top level
+  (`if (SearchEdge==0) goto nudgeStart`) — still sinks; end-of-function
+  `goto arrivalBail` block — hoisted to the goto site, opposite of retail's
+  end placement.
+- Current-source score sits at the linear scorer's 0.00 floor (rotation clamp);
+  the 32.89 peak belongs to the pre-correction fingerprint. Blessed as a
+  correctness dip. Next untested hypothesis for the sink: TU body-set parity.

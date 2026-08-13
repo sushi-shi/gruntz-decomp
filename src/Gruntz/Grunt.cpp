@@ -1280,7 +1280,7 @@ reCommit:
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
-    return 1;
+    return arrivalPhase != 0;
 
 reProbe:
     pxX = walkX * 32 + 0x10;
@@ -1304,7 +1304,7 @@ reProbe:
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
-    return 1;
+    return arrivalPhase != 0;
 }
 
 // @early-stop

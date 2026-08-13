@@ -61,3 +61,30 @@ the linear scorer's 0.00 floor. The remaining referent-count difference is only
 the known cross-jump copy (`RemoveHead` 3/4 and `g_coordPool` 18/21). This is new
 evidence that the rotation is independent of the missing cache locals rather
 than evidence against those locals.
+
+2026-08-13, two more refuted levers plus the retail edge map, one build each:
+
+- UN-NESTING region A (`if (SearchEdge(..) == 0) goto nudgeStart;` with A as
+  top-level straight-line code, no if-block at all) still sinks A. The trigger
+  is not the lexical region attached to the `if`.
+- Spelling the AI_NONE bail as a forward `goto arrivalBail` with the block at
+  the function end (retail's end placement, 0x4be5b) gets the target HOISTED to
+  the goto site — the forward-goto-hoists behavior wins over end placement in
+  our TU, so retail's end block does not come from that spelling here.
+- Retail's complete backward-edge map into A (in-edges from the late regions):
+  `0x4b4ff` (pathGate head) from a bare `jne` at nudgeDone plus a threaded
+  `je`/`jmp` pair in reProbe; `0x4b605` (`xor eax,eax` return-0 tail) and
+  `0x4b787`/`0x4b78c` (`mov eax,1`/epilogue) are ordinary cross-jump tail
+  merges. So retail's source had the SAME two-goto structure ours has — the
+  extra edge targets are back-end artifacts, not extra gotos — and cl compiled
+  it WITHOUT the sink. The deciding input difference remains unfound; the
+  declaration-probe panel (wall-break 2026-08-13) proves it is not reachable
+  by parser-state handles. Untested residue hypothesis: TU body-set parity
+  (a sibling body present/absent changes C2 layout state).
+- Real structure recovered while mapping: both late commit tails (reCommit
+  0x4bd6c, reProbe-fail 0x4be44) store `m_arrivalPhase` then return
+  `arrivalPhase != 0` (test + branch into the shared `mov eax,1`; fallthrough
+  reuses eax=0), NOT the unconditional `return 1` we had. cl if-converts every
+  local spelling of this to a shared `setne` block, so the branch shape itself
+  is layout-state residue, but the SEMANTICS (`return arrivalPhase != 0`) are
+  retail ground truth and are kept.
