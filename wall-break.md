@@ -1506,3 +1506,18 @@ compiler decision, and a real VC5 build must confirm the fix.
   use as a NEGATIVE oracle (proving a wall is not front-end reachable), the
   complement of its designed purpose. Functions classifying here need
   C2-side levers (statement mass, expression shape) or stand bounded.
+
+## 2026-08-13 — TU-state family scan (negative-oracle panel, first pass)
+
+- Members scanned with the +7 struct probe + causation: gruntphasestep,
+  font (Font.cpp), grunt (Grunt.cpp), playercommandstep. ALL show zero
+  .text movement - the object deltas (7/103/357/7 B) are symbol-table text
+  and .bss header artifacts only.
+- CAVEAT (doctrine): one probe kind at one position proves only itself; the
+  tu-state pattern's movers were MIXED-kind panels at both insertion points
+  (ProbeFootSoft moved in 44/60 mixed states). A C2-ANCHORED verdict needs
+  the full probe panel (typedef/enum/prototype/struct/class-with-member ×
+  both positions, per the stride table). PhaseStep additionally has 150
+  flat variants including 40 engine state trials; the other three carry
+  only the single-probe result so far. Next pass: the panel run, mechanized
+  through ilcap.py, before any of the three is declared bounded.
