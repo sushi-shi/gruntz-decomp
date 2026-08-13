@@ -1902,3 +1902,12 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   steering rule for the local-guard pattern: the lever only takes for members
   the function also stores - which predicts exactly the five-store battery
   family and explains every hit and miss to date.
+
+- SPECIMEN DESIGNATION (same day): gruntchargestep is a SINGLE-FUNCTION TU
+  (like PhaseStep) - so the reproducer pair carries no TU/body-set state at
+  all. And the decisive contradiction: RETAIL emits B's guard set (61
+  branches, the surviving re-tests) WITH A's layout (no rotation) - a
+  combination our c2 produces from NEITHER variant's IL. Any correct model
+  of c2's layout pass must explain all three points. ChargeStep supersedes
+  PhaseStep as the c2-RE anchor: deterministic c2(IL), one-operand IL
+  delta, no TU state, three-point constraint set.
