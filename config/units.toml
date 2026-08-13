@@ -574,10 +574,6 @@ unit = "butetree"
 source = "src/Bute/ButeTree.cpp"
 flags = "cpp"
 
-[[unit]]
-unit = "butenode"
-source = "src/Bute/ButeNode.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "debugtiming"
