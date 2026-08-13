@@ -20,7 +20,7 @@
 
 #define PICKUP(key, idv)                                                                           \
     do {                                                                                           \
-        geo = 0;                                                                                   \
+        CAniElement* geo = 0;                                                                      \
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
         id = (idv);                                                                                \
         m_pickupGeoSrc = geo;                                                                      \
@@ -38,7 +38,6 @@ i32 CGrunt::LoadPickupSprites(
     i32 unused,
     i32 countStats
 ) {
-    CAniElement* geo;
     if (m_gruntKind == GRUNT_CONVERSION || m_gruntKind == GRUNT_DEATHTOUCH) {
         return 0;
     }
@@ -248,7 +247,7 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            geo = NULL;
+            CAniElement* geo = NULL;
             MapLookup(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 "GRUNTZ_PICKUPS_MEGAPHONE",

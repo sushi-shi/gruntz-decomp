@@ -1656,3 +1656,29 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
 - Remaining residue: the atTarget join zeroes (`xor ebp` sunk per-predecessor
   vs retail's single join copy, +2i in B60), the frame word (0x44 vs 0x40),
   and the callee-saved rotation — register/schedule class. Blocks 396 vs 397.
+
+## 2026-08-13 — `CDDrawShadeBlit::BlitShadedForward` reclassified C2-anchored
+
+- Unit/RVA: `ddrawshadeblit`, `0x0014a200`, 73.54. The 2026-08-12 entry called
+  the residue "not a closed state wall"; that predates the REGISTER/SCHEDULE-
+  is-C2-anchored ruling. Fresh evidence: (a) the retail "string-op intrinsics"
+  in the histogram (cmps/scas/stos/lods/lahf) are the tail jump table decoded
+  as code — not real; (b) pre-guard hoisting of the loop invariants regresses
+  73.54 -> 67.11 (the licm-placement pattern already proves in-body is the
+  retail shape here); (c) the 16-bit loop pair diverges only in induction
+  choice (ours up-counts and spills `s`; retail down-counts, keeps `s` in esi,
+  spills the scratch bias and reloads it in a 1i backedge block). Same source
+  statements both sides — C2 induction/allocation state. PARKED C2-anchored;
+  the +20 xor / +37 add excess is this allocation difference across the ~13
+  RLE loops, not a type defect.
+
+## 2026-08-13 — `CGrunt::LoadPickupSprites` geo block-scoping 74.75 -> 75.84
+
+- Unit/RVA: `gruntpickupload`, `0x00065e80`. The function-scope `CAniElement*
+  geo` becomes a per-PICKUP-site block-scoped local (macro-internal + the
+  megaphone arm's own). VC5 stack-colors the copies and the surrounding
+  scheduling tightens: +1.09. The dead-4th-param home reuse (retail's `push
+  ecx`-free prologue) still does not reproduce - our address-taken out-arg
+  keeps its own slot; coloring INTO a param home is cl slot-assignment state
+  (SaveRle16 precedent), not a source construct. Verdict stays
+  REGISTER/SCHEDULE; type model now clean.
