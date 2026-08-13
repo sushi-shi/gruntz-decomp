@@ -74,7 +74,10 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
         i32 b = node->m_bit;
         dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
         *p++ = dir;
-        CButeTreeNode** slot = dir ? &node->m_child[1] : &node->m_child[0];
+        CButeTreeNode** slot = &node->m_child[1];
+        if (!dir) {
+            slot = &node->m_child[0];
+        }
         CButeTreeNode* child = *slot;
         m_candidateLeaf = child;
         if (child == NULL) {
