@@ -1467,3 +1467,17 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: bounded. Candidate future levers: the mirror-direction study the
   pattern doc calls for, or TU-state scheduling nudges; not a source-shape
   defect.
+
+## 2026-08-13 — `CStatusBarMgr::BuildTabzDialog` (exit grouping, C2362 boundary)
+
+- Unit/RVA: `sbi_rectonly`, `0x0010a340`; current 88.04 (same-harness), rets
+  8 vs retail 6 - two merges, two distinct shared targets (B71/B84).
+- Refuted: three-into-one goto (86.71, wrong grouping); adjacency pairs with
+  `if (0) { label: }` devices (82.17, the device pollutes the shape);
+  end-of-function labels (C2362 - the gotos cross initialized declarations).
+- EVIDENCE from the failures: cl 5.0's C2362 forbids the merged-exit goto
+  spelling unless the crossed locals are declared scope-top. Retail's merged
+  exits therefore imply the original declared its CSBI_* locals at scope top
+  (1998 declare-then-assign style). The productive next attempt is the
+  declare-at-top restructure of the arm scopes FIRST, then the pair-grouping
+  beam over legal label placements.
