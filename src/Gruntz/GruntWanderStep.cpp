@@ -52,8 +52,10 @@ i32 CGrunt::WanderStep() {
         }
     }
 
-    if (m_poweredUp != 0) {
-        if (m_neighborValid == 0) {
+    i32 powered = m_poweredUp;
+    if (powered != 0) {
+        i32 neighborValid = m_neighborValid;
+        if (neighborValid == 0) {
             if (m_combatActive == 0) {
                 if (m_stamina >= STAMINA_FULL) {
                     if (FindGridNeighbor(1) != NULL) {
