@@ -45,25 +45,6 @@
 0x00165dd0	AniRecord	DDrawSurfacePair	CAniRecordBase2::~CAniRecordBase2	91B dtor; same run
 # --- gamelevel/levelplane seam group 0x161330-0x161558: CImageSet1/2/3 inline members
 #     (their real out-of-line objs sit at 0x166990-0x166ea8; 1-byte bodies prove header-inline)
-0x00161330	ImageSet1	LevelPlane	CImageSet1::FreePixels	1B ret; seam group before LevelPlane's first fn 0x1615a0
-0x00161340	ImageSet1	LevelPlane	CImageSet1::GetKind	6B; seam group
-0x00161370	ImageSet1	LevelPlane	CImageSet1::~CImageSet1	7B; seam group
-0x00161380	ImageSet1	LevelPlane	CImageSet1::GetCollisionAt	6B; seam group
-0x00161390	ImageSet1	LevelPlane	CImageSet1::ScanRunLeft	5B stub; seam group
-0x001613a0	ImageSet1	LevelPlane	CImageSet1::ScanRunLeftForValue	5B stub; seam group
-0x001613b0	ImageSet1	LevelPlane	CImageSet1::ScanUp	5B stub; seam group
-0x001613c0	ImageSet1	LevelPlane	CImageSet1::ScanUpForValue	5B stub; seam group
-0x001613d0	ImageSet1	LevelPlane	CImageSet1::ScanRight	7B stub; seam group
-0x001613e0	ImageSet1	LevelPlane	CImageSet1::ScanRightForValue	5B stub; seam group
-0x001613f0	ImageSet1	LevelPlane	CImageSet1::ScanDown	7B stub; seam group
-0x00161400	ImageSet1	LevelPlane	CImageSet1::ScanDownForValue	5B stub; seam group
-0x00161410	ImageSet1	LevelPlane	CImageSet1::GetStride	6B; seam group
-0x00161420	ImageSet2	LevelPlane	CImageSet2::FreePixels	1B ret; seam group
-0x00161430	ImageSet2	LevelPlane	CImageSet2::GetKind	6B; seam group
-0x00161460	ImageSet2	LevelPlane	CImageSet2::~CImageSet2	7B; seam group
-0x00161470	ImageSet2	LevelPlane	CImageSet2::GetCollisionAt	44B; seam group
-0x001614a0	ImageSet2	LevelPlane	CImageSet2::GetStride	6B; seam group
-0x00161500	ImageSet3	LevelPlane	CImageSet3::~CImageSet3	88B dtor; seam group
 # --- lone tiny inline ctors/helpers kept inside foreign runs
 0x00154a80	WwdFactoryObject	DDrawWorkerRegistry	CResolveNode::Unload	19B; at DDrawWorkerRegistry's head seam
 0x0015b2b0	WwdFactoryObject	WwdObjMgr	WwdRegion::WwdRegion	14B inline ctor; inside WwdObjMgr's run

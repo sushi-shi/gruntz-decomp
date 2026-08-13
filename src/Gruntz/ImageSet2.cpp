@@ -2,30 +2,6 @@
 
 #include <Gruntz/ImageSets.h>
 
-RVA(0x00161420, 0x1)
-void CImageSet2::FreePixels() {}
-
-RVA(0x00161430, 0x6)
-i32 CImageSet2::GetKind() {
-    return TILE_IMAGESET_RECT;
-}
-
-RVA(0x00161460, 0x7)
-CImageSet2::~CImageSet2() {}
-
-RVA(0x00161470, 0x2c)
-TileCollisionKind CImageSet2::GetCollisionAt(i32 x, i32 y) {
-    if (x < m_left || x > m_right || y < m_top || y > m_bottom) {
-        return static_cast<TileCollisionKind>(m_outsideValue);
-    }
-    return static_cast<TileCollisionKind>(m_insideValue);
-}
-
-RVA(0x001614a0, 0x6)
-i32 CImageSet2::GetStride() {
-    return 0x28;
-}
-
 // @early-stop
 RVA(0x00166990, 0x4c)
 i32 CImageSet2::Parse(void* record) {
