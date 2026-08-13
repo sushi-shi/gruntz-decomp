@@ -27,7 +27,19 @@ public:
         return LOGIC_NONE;
     }
 
-    virtual void FinalizeStep(char* unused) OVERRIDE;
+    RVA(0x00013c70, 0x47)
+    virtual void FinalizeStep(char*) OVERRIDE {
+        if (m_deferredCallback != 0) {
+            if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
+                (this->*m_gatedCallback)();
+                m_gatedCallback = 0;
+            }
+            (this->*m_deferredCallback)();
+            m_deferredCallback = 0;
+            m_gatedActKey = IDX(ACT_NONE);
+        }
+        AdvanceMotion();
+    }
 
     char m_pad34[0x38 - 0x34];
 

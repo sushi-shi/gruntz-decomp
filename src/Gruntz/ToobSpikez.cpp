@@ -81,16 +81,6 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 }
 
-// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x00012bc0, 0x47)
-i32 CToobSpikez::SerializeMove(CFileMemBase* a, SerialMode b, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(a, b, c, d)) {
-        return 0;
-    }
-    return Chain(a, b, c, d) != 0;
-}
-
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));

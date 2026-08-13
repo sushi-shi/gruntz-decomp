@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -42,7 +43,13 @@ public:
         const char* key,
         i32 fillScale
     ) OVERRIDE;
-    virtual void Reset() OVERRIDE;
+    RVA(0x00104c80, 0x1f)
+    virtual void Reset() OVERRIDE {
+        if (m_gooSrc != NULL) {
+            m_host->m_ptrColl->RemoveItemA(m_gooSrc);
+            m_gooSrc = NULL;
+        }
+    }
     virtual i32 Refresh(i32 a) OVERRIDE;
     virtual i32 Render() OVERRIDE;
 

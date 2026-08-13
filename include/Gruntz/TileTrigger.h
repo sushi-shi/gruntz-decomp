@@ -8,21 +8,30 @@
 
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x000114f0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TILESECRETTRIGGER;
+    }
     CTileSecretTrigger() {}
     CTileSecretTrigger(CGameObject* obj);
 };
 
 class CGiantRock : public CTileTrigger {
 public:
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x000115b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GIANTROCK;
+    }
     CGiantRock() {}
     CGiantRock(CGameObject* obj);
 };
 
 class CCoveredPowerup : public CTileTrigger {
 public:
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x00011670, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_COVEREDPOWERUP;
+    }
     CCoveredPowerup() : CTileTrigger(CUserLogic::INLINE_BASE) {}
     CCoveredPowerup(CGameObject* obj);
 };

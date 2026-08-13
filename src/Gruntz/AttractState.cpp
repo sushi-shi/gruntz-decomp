@@ -245,13 +245,6 @@ i32 CAttract::OnPaint() {
     return 1;
 }
 
-// @interleaver Update - fixed-size generated body (6 B, byte-identical across
-// 11 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x0008cd40, 0x6)
-GameStateId CAttract::Update() {
-    return GAMESTATE_ATTRACT;
-}
-
 RVA_COMPGEN(0x0008cd60, 0x1e, ??_GCAttract@@UAEPAXI@Z)
 RVA(0x0008cd90, 0x55)
 CAttract::~CAttract() {

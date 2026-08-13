@@ -45,28 +45,8 @@ static inline CActHandler* PartLookup(i32 coord) {
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
 
-// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x00012cf0, 0x47)
-i32 CParticlez::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
-
 RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
-
-// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x00012e20, 0x47)
-i32 CExplosion::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
 
 RVA_COMPGEN(0x00012e90, 0x1e, ??_GCExplosion@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)

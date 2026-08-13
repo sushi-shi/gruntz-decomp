@@ -80,28 +80,13 @@ CActReg CActRegPool<CProjectile>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-// @interleaver CTimeBomb::~CTimeBomb emitted in the 0x12xxx destructor COMDAT pool.
+// @interleaver ??_G/??1 COMDATs - retail's kept copies sit in serialobjectfactory.obj's
+// contribution (first obj on the link line realizing these vtables; docs/link-text-layout.md).
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
 RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
-
-// @interleaver FinalizeStep - 71 B, sits in this class's destructor-COMDAT pool at
-// 0x13c70 rather than in the TU's own .text block.
-RVA(0x00013c70, 0x47)
-void CMovingLogic::FinalizeStep(char*) {
-    if (m_deferredCallback != 0) {
-        if (m_gatedCallback != 0 && m_objAux->ActKey() == m_gatedActKey) {
-            (this->*m_gatedCallback)();
-            m_gatedCallback = 0;
-        }
-        (this->*m_deferredCallback)();
-        m_deferredCallback = 0;
-        m_gatedActKey = IDX(ACT_NONE);
-    }
-    AdvanceMotion();
-}
 
 // The header-inline `~CMotionState() {}` (MotionState.h) emitted out of line: the
 // unwind funclets of ??0CProjectile (this-0x18 +0x38) and ??0CGrunt take its

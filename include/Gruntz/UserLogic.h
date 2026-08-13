@@ -177,8 +177,19 @@ public:
 
 class CTileTrigger : public CUserLogic, public CWapX {
 public:
-    virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x000111f0, 0x47)
+    virtual i32
+    SerializeMove(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* pObj)
+        OVERRIDE {
+        if (!CUserLogic::SerializeMove(ar, mode, typeId, pObj)) {
+            return 0;
+        }
+        return Chain(ar, mode, typeId, pObj) != 0;
+    }
+    RVA(0x000111d0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TILETRIGGER;
+    }
 
 public:
     // Two entities, same tag type.  The out-of-line one at 0x11160 EXPANDS its

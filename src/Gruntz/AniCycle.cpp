@@ -14,16 +14,6 @@
 template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x0000f470, 0x47)
-i32 CAniCycle::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGameObject* d) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
-
 RVA_COMPGEN(0x0000f4e0, 0x1e, ??_GCAniCycle@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
 

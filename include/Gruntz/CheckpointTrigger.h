@@ -10,7 +10,10 @@
 class CCheckpointTrigger : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    RVA(0x00011430, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_CHECKPOINTTRIGGER;
+    }
 
 public:
     CCheckpointTrigger() {}

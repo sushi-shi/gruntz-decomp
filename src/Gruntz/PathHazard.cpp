@@ -41,13 +41,6 @@ CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
 
-// @interleaver GetTypeTag - fixed-size generated body (6 B, byte-identical across
-// 67 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x000132f0, 0x6)
-LogicTypeId CRainCloud::GetTypeTag() {
-    return LOGIC_RAINCLOUD;
-}
-
 RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
 RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)

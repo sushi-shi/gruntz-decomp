@@ -298,13 +298,3 @@ CSBI_WellGoo::~CSBI_WellGoo() {
         m_gooSrc = NULL;
     }
 }
-
-// @interleaver Reset - 31 B, sits in this class's destructor-COMDAT pool at
-// 0x104c80 rather than in the TU's own .text block.
-RVA(0x00104c80, 0x1f)
-void CSBI_WellGoo::Reset() {
-    if (m_gooSrc != NULL) {
-        m_host->m_ptrColl->RemoveItemA(m_gooSrc);
-        m_gooSrc = NULL;
-    }
-}

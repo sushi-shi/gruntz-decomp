@@ -85,13 +85,24 @@ public:
     virtual i32 OnRButtonDown(i32, i32, i32) OVERRIDE;
     virtual i32 OnRButtonUp(i32, i32, i32) OVERRIDE;
     virtual i32 OnRButtonDblClk(i32, i32, i32) OVERRIDE;
-    virtual i32 OnMouseMove(i32, i32, i32) OVERRIDE;
+    RVA(0x0008c970, 0x1c)
+    virtual i32 OnMouseMove(i32, i32 cursorX, i32 cursorY) OVERRIDE {
+        m_cursorX = cursorX;
+        m_cursorY = cursorY;
+        return 1;
+    }
     virtual i32 CompleteLevel() OVERRIDE;
     virtual i32 PauseGame() OVERRIDE;
     virtual i32 ResumeGame() OVERRIDE;
 
-    virtual i32 UnusedPlayQuery();
-    virtual i32 GetFrame();
+    RVA(0x0008c930, 0x3)
+    virtual i32 UnusedPlayQuery() {
+        return 0;
+    }
+    RVA(0x0008c950, 0x3)
+    virtual i32 GetFrame() {
+        return 0;
+    }
 
     virtual i32 CountObjectsByCategory(i32 category);
 

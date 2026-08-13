@@ -20,21 +20,6 @@
 template<> DATA(0x002446d8)
 CActReg CActRegPool<CGruntStartingPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-// @interleaver SerializeMove - fixed-size generated body (71 B, byte-identical across
-// 29 classes), so every TU emits one and the linker folds them to first use.
-RVA(0x000105d0, 0x47)
-i32 CGruntStartingPoint::SerializeMove(
-    CFileMemBase* ar,
-    SerialMode tag,
-    LogicTypeId c,
-    CGameObject* d
-) {
-    if (!CUserLogic::SerializeMove(ar, tag, c, d)) {
-        return 0;
-    }
-    return Chain(ar, tag, c, d) != 0;
-}
-
 RVA_COMPGEN(0x00010640, 0x1e, ??_GCGruntStartingPoint@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010670, 0x44, ??1CGruntStartingPoint@@UAE@XZ)
 

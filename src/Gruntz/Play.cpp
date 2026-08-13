@@ -216,29 +216,6 @@ GruntzPlayer::~GruntzPlayer() {
     Clear();
 }
 
-// @interleaver UnusedPlayQuery - 3 B, sits in this class's destructor-COMDAT pool at
-// 0x8c930 rather than in the TU's own .text block.
-RVA(0x0008c930, 0x3)
-i32 CPlay::UnusedPlayQuery() {
-    return 0;
-}
-
-// @interleaver GetFrame - 3 B, sits in this class's destructor-COMDAT pool at
-// 0x8c950 rather than in the TU's own .text block.
-RVA(0x0008c950, 0x3)
-i32 CPlay::GetFrame() {
-    return 0;
-}
-
-// @interleaver OnMouseMove - 28 B, sits in this class's destructor-COMDAT pool at
-// 0x8c970 rather than in the TU's own .text block.
-RVA(0x0008c970, 0x1c)
-i32 CPlay::OnMouseMove(i32 unused, i32 cursorX, i32 cursorY) {
-    m_cursorX = cursorX;
-    m_cursorY = cursorY;
-    return 1;
-}
-
 // @early-stop
 // The residue is the inlined CStatusBarMgr ctor's array members, and the decision is
 // cl's INLINE BUDGET, not a source shape.  Retail calls `??_H` (vector constructor
