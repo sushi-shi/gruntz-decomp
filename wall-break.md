@@ -2212,13 +2212,18 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   94.5728% and `CSpriteRefTable::Add` remains 97.5000%; those two remodels are
   byte-neutral and replace decompiler-opened ctor lowering with the real class
   ownership.
-- Negative controls: plain allocation/null checks in the byte-exact world-sound
-  factories do not imply constructors; `CGruntzApp`, `CMenuItem`,
-  `CTileActionEvent`, `CGiantRockLogic`, `CSpawnEntry`, and `LeafCue` already
-  have modeled constructors; the remaining guarded multi-store block is
-  `CButeTreeNode`, whose values are call-specific (`critbit`, payload, allocated
-  key, and direction-dependent children), not default initialization. No
-  constructor was invented for it.
+- Already modeled controls: all six byte-exact world-sound factories inline the
+  existing `CAmbientSound`, `CAmbientPosSound`, or `CRandomAmbientSound`
+  constructor. Retail has two distinct null branches at each allocation: the
+  compiler-generated guard around the constructor body and the source-level
+  allocation-failure check. `WinMain` has the same pair around the existing,
+  out-of-line `CGruntzApp` constructor (`0x00080850`); both the constructor and
+  `WinMain` are exact. The explicit post-`new` checks therefore remain.
+- Negative controls: `CMenuItem`, `CTileActionEvent`, `CGiantRockLogic`,
+  `CSpawnEntry`, and `LeafCue` also already have modeled constructors. The
+  remaining guarded multi-store block is `CButeTreeNode`, whose values are
+  call-specific (`critbit`, payload, allocated key, and direction-dependent
+  children), not default initialization. No constructor was invented for it.
 - Remaining wall: `gruntz sema diagnose 0x83450` still classifies `Run` as CFG
   (124 branches and one return on each side, but a differently owned branch
   sequence). The constructor break is retained; no compiler-state probe or
