@@ -49,6 +49,27 @@ the 18.9%+57.4% upper bound - closer to the structural-CFG 18.9% plus the
 genuine wrong-type/wrong-referent subset of referent/other. Screen every
 candidate with `diagnose` FIRST; only pursue structural-CFG verdicts by hand.
 
+## Diagnose-screen of the heavy worklist (top-45 weighted sub-95%)
+
+Screening the 45 heaviest sub-95% functions with `gruntz sema diagnose`:
+
+| verdict | count | reachable? |
+|---|---|---|
+| structural (branch-count diff) | 14 | YES |
+| structural (block-gap >=4) | 8 | YES |
+| masked-truncation (blocks near-agree) | 12 | mostly C2 |
+| register / C2-anchored | 11 | NO |
+
+So ~49% (22/45) of the heavy worklist is source-reachable structural work - a
+substantial, concrete backlog. The proven-productive loop: `diagnose`-screen,
+discard REGISTER/register verdicts, hand-reconstruct the structural ones.
+FindOrInsert (child-select) was closed this way (+0.32). Fresh structural
+targets identified: LoadAttributes (switch-jump-structure, likely C2), Run@
+CGruntzMgr (253v258 blocks), StepDefenderUnit / ExecCommand / ValidateLevelTiles
+(dossiered). NOTE: switch-heavy overbuilds (LoadAttributes' PickA/B/C dispatch)
+are usually C2 jump-table-structure choices, not source-reachable - verify the
+divergence is NOT inside a switch before committing to a sitting.
+
 ## Method to reproduce / re-measure
 
 The classifier is inline in the campaign notes (per-obj objdiff JSON, count
