@@ -1640,3 +1640,19 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   outside this function's body: C2-side TU state. Next probe when tackled:
   TU body-set parity / preceding-function state in Grunt.cpp, via the IL tap
   as the C1-vs-C2 discriminator for the ordering decision.
+
+## 2026-08-13 — `CGrunt::ScanNearestTarget` (two arm-placement fixes, 68.32 -> 69.31)
+
+- Unit/RVA: `gruntscantarget`, `0x000f42f0`. The 2026-08-12 bound (68.28) fell
+  to the goto-continuation arm-swap lever, applied twice from the retail block
+  graph: (1) the powered guard battery nests under `if (neighborValid == 0)`
+  with `m_neighborValid = 0; return 1;` AFTER the if (retail emits that arm
+  out-of-line at 0xf477d after both 16i five-store rets); (2) case
+  AISTATE_ATTACK's head inverts to `if (m_poweredUp == 0) { chase+500ms;
+  return 1; }` with the big arm following unconditionally.
+- Fix (2)'s emission is still re-normalized by cl: our head copy cross-jumps
+  into the L_setLock copy (je far) while retail keeps two identical 9i blocks
+  unmerged (0xf47b0 in-1, 0xf4a30 in-7). Merge-regime state, not source shape.
+- Remaining residue: the atTarget join zeroes (`xor ebp` sunk per-predecessor
+  vs retail's single join copy, +2i in B60), the frame word (0x44 vs 0x40),
+  and the callee-saved rotation — register/schedule class. Blocks 396 vs 397.

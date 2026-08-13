@@ -122,18 +122,31 @@ i32 CGrunt::ScanNearestTarget() {
     i32 powered = m_poweredUp;
     if (powered != 0) {
         i32 neighborValid = m_neighborValid;
-        if (neighborValid != 0) {
-            m_neighborValid = 0;
-            return 1;
-        }
-        if (m_combatActive != 0) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
+        if (neighborValid == 0) {
+            if (m_combatActive != 0) {
                 return 1;
             }
-            if (atTarget && best == NULL) {
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (atTarget && best == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == 0) {
+                    return 1;
+                }
+                if (m_neighborValid != 0) {
+                    return 1;
+                }
+                m_entranceActive = 0;
+                m_combatActive = 0;
+                m_neighborValid = 0;
+                m_poweredUp = 0;
+                ResetEntranceAnimation(1, 0, 0);
+                return 1;
+            }
+            if (atTarget) {
                 return 1;
             }
             if (m_poweredUp == 0) {
@@ -149,20 +162,7 @@ i32 CGrunt::ScanNearestTarget() {
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        if (atTarget) {
-            return 1;
-        }
-        if (m_poweredUp == 0) {
-            return 1;
-        }
-        if (m_neighborValid != 0) {
-            return 1;
-        }
-        m_entranceActive = 0;
-        m_combatActive = 0;
         m_neighborValid = 0;
-        m_poweredUp = 0;
-        ResetEntranceAnimation(1, 0, 0);
         return 1;
     }
 
@@ -364,7 +364,12 @@ i32 CGrunt::ScanNearestTarget() {
             return 1;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp != 0) {
+            if (m_poweredUp == 0) {
+                m_defenderState = AISTATE_CHASE;
+                m_dwell = DWELL_REPATH_MS;
+                return 1;
+            }
+            {
                 CGrunt* sg =
                     m_tileMgr->m_grid[m_arrivalCell.m_x * TM_GRID_COLS + m_arrivalCell.m_y];
                 if (sg == NULL) {
@@ -405,9 +410,6 @@ i32 CGrunt::ScanNearestTarget() {
                 m_dwell = DWELL_REPATH_MS;
                 return 1;
             }
-            m_defenderState = AISTATE_CHASE;
-            m_dwell = DWELL_REPATH_MS;
-            return 1;
         }
     }
     return 1;
