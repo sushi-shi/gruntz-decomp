@@ -1531,3 +1531,9 @@ compiler decision, and a real VC5 build must confirm the fix.
   movement (56-110 B symbol text each - the TU's many statics amplify the
   rename surface, none of it code). DrawWrapped's C2-anchored bound seals
   on panel + flat climb. Remaining panels: grunt, playercommandstep.
+- PANEL COMPLETE for grunt/Grunt.cpp (same day): all five kinds, zero .text
+  movement (235-432 B symbol text - the tree's biggest TU, biggest rename
+  surface, no code response). XferName, StepGruntMovement's residue, and
+  StepArrivalDrop's remaining this-rotation all classify C2-anchored here;
+  their gains, if any remain, must come from C2-side levers (statement
+  mass, expression shape) per the inline-budget model's calibration.
