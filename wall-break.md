@@ -1451,3 +1451,19 @@ compiler decision, and a real VC5 build must confirm the fix.
   (ptrdiff compare, index loop) change the emitted compare shape. The site
   needs either a cast-policy ruling or a typed model for address-valued
   signed integers before the byte can be taken.
+
+## 2026-08-13 — `CTriggerMgr::PlaceObjectFull` (mirror-direction exit split)
+
+- Unit/RVA: `triggermgr`, `0x00078a50`; current 72.53.
+- Classification: the goto-fail pattern's MIRROR direction at four sites -
+  retail emits a full inline epilogue after each per-arm handler call
+  (HitClick / LoadCursorSprites arms, distinct callees so the call blocks
+  cannot merge), while our cl cross-jumps the four identical plain epilogues
+  into one shared exit (base 69 branches/13 rets vs retail 81/16; base B27/
+  B34/B46/B50 are 2i jmp stubs against retail's 12-21i inline returns).
+- Source state: every per-arm call and return is present and correct; the
+  divergence is purely cl's epilogue cross-jump coin, which the pattern doc
+  records as unsolved in this direction (/Os refuted there).
+- Verdict: bounded. Candidate future levers: the mirror-direction study the
+  pattern doc calls for, or TU-state scheduling nudges; not a source-shape
+  defect.
