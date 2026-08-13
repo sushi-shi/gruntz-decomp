@@ -1935,3 +1935,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   threshold must be relative (region size vs function size, or vs the fall
   chain), which the c2 layout-pass RE can now search for with the dispatch
   tables already extracted.
+
+- Relativity REFUTED (same day): branch-carrying pads outside the region
+  (k=2..64, function 1936 -> 3248 B, 60 -> ~124 branches) never disengage
+  B's rotation - LCP-vs-B constant at every k. The sink decision is invariant
+  to all function mass outside the region: not function-relative, not
+  total-branch-relative. It is region-INTRINSIC - yet retail's region
+  carries MORE surviving guards than B's and still lays out un-rotated, so
+  a region-absolute count model fails too. The empirical space at source
+  level is exhausted; the decision procedure must be read out of c2.exe's
+  layout pass itself (dispatch tables extracted, reproducer minimal, all
+  hypotheses to test enumerated: region tuple order, per-tuple weights,
+  entry-edge classification).
