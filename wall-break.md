@@ -2150,3 +2150,32 @@ PostLoadImageBanks, LoadImageBanks, LoadByMode, LoadCursorSprites as header
 inlines, each carrying nested sites). +4.36 is banked-as-available; the probe
 is NOT retained (doctrine). CMulti::LoadGameAssetNamespaces carries the same
 ~CTileTriggerContainer note and should be re-tested with any real fix.
+
+## 2026-08-13 (late-5): the divergence screen's THREE false-positive classes
+
+Working the screen top-down found three ways a call-count row lies. All are
+now either filtered out of config/inline-site-divergence.tsv (698 -> 242 rows)
+or documented as a reading rule:
+
+1. **Surplus COMDAT copies** (filtered). sbi_rectonly's four
+   `??1CSBI_*` rows: retail OWNS those in sbi_wellgoo/sbi_sidetab etc., our
+   obj merely emits an extra COMDAT the linker discards. Rule: `ours>retail`
+   on a symbol whose retail owner unit != this unit is noise.
+2. **$E dynamic-init hosts** (filtered). bootystateactivate's
+   `??0CString@@QAE@PBD@Z` ours=31 retail=15 was entirely
+   `g_levelMsgStrings[8]` + `g_areaNames[8]` inside `_$E143`/`_$E150` - both
+   PINNED at real retail RVAs (0x18740, 0x82990), so retail has them too;
+   the retail-side image scan just cannot enumerate `$E` helpers (they are not
+   func rows in symbol_names.csv). Rule: skip relocs hosted in a `$E` section.
+3. **Tail-merge, not missing code** (reading rule). grunt
+   `?GetIntDef ours=24 retail=25` attributes to CGrunt::LoadGruntTypeTable
+   0x4dd50 (20 vs 21). Its 23 source arms are NOT 23 emitted calls in either
+   build: retail's cases 3,4,5 / 13,15,16,17 are 13-byte stubs
+   (`lea ebp,[esi+0x1c0]; push <str>; jmp`) cross-jumped into the next arm's
+   body. So an `ours<retail` deficit can mean OUR C2 merged one arm group MORE
+   than retail's - the exit-merge coin, not a missing statement.
+
+Also built: scratchpad/callsite_attr.py - per-function attribution, base obj by
+symbol-VALUE ranges (base mixes COMDAT and shared .text; section-owner
+attribution is wrong) and retail by image scan over names.csv ranges (target
+objs are COMDAT-packed and cannot attribute).
