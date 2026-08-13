@@ -1537,3 +1537,12 @@ compiler decision, and a real VC5 build must confirm the fix.
   StepArrivalDrop's remaining this-rotation all classify C2-anchored here;
   their gains, if any remain, must come from C2-side levers (statement
   mass, expression shape) per the inline-budget model's calibration.
+- PANEL COMPLETE for playercommandstep (same day): all five kinds, zero
+  .text movement (3-9 B). THE FAMILY VERDICT IS IN: all four TU-state-
+  suspected units are .text-immune to the full declaration-probe panel at
+  the append position. Combined with each function's flat climbs, the
+  entire register-residue family of this campaign wave classifies
+  C2-ANCHORED. The tu-state pattern's movers (DDrawMgr/palette-era TUs)
+  remain real - state-reachability is per-TU, and the oracle panel is now
+  the 8-minute test that sorts any TU before a state sweep is attempted.
+  Doctrine: run the panel BEFORE any declaration-sweep campaign.
