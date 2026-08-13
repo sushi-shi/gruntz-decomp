@@ -1697,3 +1697,11 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   the loop bottom and the exit block, so its backedge is jge-exit + jmp-top
   while ours falls into the exit. Cold-arm placement work, not a spelling of
   the loop itself.
+
+## 2026-08-13 — LoadGruntCombatAnimations goto-fail A/B confirms the triage
+
+- 0x597a0: converting the four quadrant-arm `return 1;`s to `goto` the final
+  return (retail's single 0x5aad3 epilogue, 6 rets vs our 7) is byte-neutral -
+  cl re-inlines the arm copies either way. The DUP-EXIT triage's
+  "epilogue cross-jump coin" classification stands on direct evidence.
+  Reverted; bounded.
