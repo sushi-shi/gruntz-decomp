@@ -1947,3 +1947,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   layout pass itself (dispatch tables extracted, reproducer minimal, all
   hypotheses to test enumerated: region tuple order, per-tuple weights,
   entry-edge classification).
+
+- c2 interface map (same day): the flag table at c2.exe 0x99660-0x99778 is
+  recovered (-dos -Fo# -Brepro -Fs# -Fa# -FA# -QI0f -QIfdiv -p6gj -noblend
+  -nolock -noehopt -ehopt -bzalign -basic -nogen -MTd/-MDd/-MLd -loopopt
+  -Loop# -EHa -EHs -Inl# -vol# -il# -isize# -ide -QIf). The /d2<flag>
+  passthrough is PROVEN (bogus flag -> C1007 'unrecognized flag in p2').
+  Toggling -noblend/-basic/-loopopt/-noehopt on the variant-B compile is
+  byte-neutral: at /O2 the driver sends c2 NO optimization switches - the
+  entire -Og/-Oi/-Ot/-Oy/-Ob1/-Gf decomposition goes to C1, so the
+  optimizer state travels IN THE IL, and the layout decision is c2 code
+  parameterized by in-IL state only. The toggle route to the sink is
+  eliminated; the RE proceeds by disassembly of the layout pass proper.
