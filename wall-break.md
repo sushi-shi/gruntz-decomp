@@ -1418,3 +1418,21 @@ compiler decision, and a real VC5 build must confirm the fix.
   and needs only one stack slot. This is now a lifetime/register wall after the
   missing inline CFG was restored; no address-taking or manual state probe is
   retained.
+
+## 2026-08-13 — `CGrunt::LoadGruntCombatAnimations`
+
+- Unit/RVA: `gruntcombat`, `0x000597a0`; current 73.672, MAX banked.
+- Classification: DUP-EXIT, epilogue cross-jump class. Base emits 7 rets vs
+  retail 6: two identical `return 1` epilogues (base +0x1024/+0x130e) that
+  retail cross-jumps into one, at the tail of the four flat quadrant-probe
+  arms (their `||` chains already share arm-internal targets).
+- Negative controls: a four-option axes family over the welder/health exit
+  cluster (baseline, `||` pair, goto-mid, goto-health-only) compiled BYTE-
+  IDENTICAL (73.668180, size 5012, relocs 207/208 for all four) - that site
+  is exit-merge-invariant and was the wrong suspect. The goto-fail pattern's
+  own caveat identifies epilogue cross-jumps as scheduling-driven coin-flips
+  its levers do not reach; a 150-iteration hill-climb moved 73.668 -> 73.672
+  without flipping the merge.
+- Verdict: structure complete (call set and probe threading retail-proven in
+  the source comment); the remaining residue is the cross-jump plus register
+  homing. Revisit with the IL tap if a front-end lever is ever suspected.

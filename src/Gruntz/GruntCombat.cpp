@@ -1577,7 +1577,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         i32 nxt = newPos.m_x >> TILE_SHIFT_PX;
         i32 oxt = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oyt = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        if (!(oxt == nxt && oyt == nyt)) {
+        if (!(oxt == nxt && nyt == oyt)) {
             i32 w = grid->m_width;
             if (static_cast<u32>(nxt) >= static_cast<u32>(w)) {
                 return 1;
