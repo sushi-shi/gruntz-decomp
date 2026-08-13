@@ -292,6 +292,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
         return 1;
     }
 
+    TRACE("creating state %d\n", stateId);
     CState* obj = NULL;
     switch (stateId) {
         // arm order is byte-proven by the retail bodies' allocation sizes
@@ -352,6 +353,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
         m_owner->m_running = 1;
         g_inputMgr->ReadAll();
         RefreshGameClock();
+        TRACE("TransitionState %d done\n", stateId);
         return 1;
     }
 }

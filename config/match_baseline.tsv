@@ -2419,7 +2419,7 @@ gruntzmgr	?ToggleBaseLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	76f6634c8652	0
 gruntzmgr	?ToggleHeightLayer@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	d6bd8e783c79	0x8f060	100.0000
 gruntzmgr	?ToggleObjectLayer@CGruntzMgr@@QAEHXZ	89.7436	89.7436	1	004aa60835c3	0x8efe0	89.7436
 gruntzmgr	?TopState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	1	625d5a18ae88	0x90980	100.0000
-gruntzmgr	?TransitionState@CGruntzMgr@@QAEHW4GameStateId@@HHH@Z	93.2227	93.2227	2	4e17e0f007af	0x8b960	93.2227
+gruntzmgr	?TransitionState@CGruntzMgr@@QAEHW4GameStateId@@HHH@Z	93.9214	93.9214	3	1b01330a70ad	0x8b960	93.9214
 gruntzmgr	?UnloadSoundChain@CGruntzMgr@@QAEXXZ	100.0000	100.0000	1	f1f34a207e4c	0x8f740	100.0000
 gruntzmgr	?UnusedPlayQuery@CMulti@@UAEHXZ	100.0000	100.0000	1	34aee77b66bb	0x8d200	100.0000
 gruntzmgr	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8cd40	100.0000
