@@ -318,14 +318,25 @@ lib produced them. It does this by generating a throwaway **stub DLL** of
 and keeping link.exe's `/IMPLIB:` — `LIB /DEF:` cannot express it, because it derives
 the public symbol by prefixing an underscore (`__imp___AIL_startup@0`, one too many)
 or, if you drop the underscore in the .def, writes the wrong hint/name string.
+The **hints** are reproduced too: a hint is the name's index in the vendor DLL's
+sorted export-name table, and retail's import table stores the vendor's values
+(`_AIL_release_sequence_handle@4` = 126 of the real Miles DLL's ~196 exports), so
+the stub pads its export list with `__cdecl` filler names that sort strictly
+between the real decorated names until every real export sits at exactly its
+retail index. The fillers never reach the image — nothing references them, so no
+member of theirs is ever pulled (measured: thunk order byte-identical with and
+without them) — and `_verify_hints` re-reads the produced archive's `.idata$6`
+and fails the synthesis on any mismatch.
 
 Result: the candidate EXE's import table has **the same 16 DLLs in retail's exact
-descriptor order, and the same imported-name set per DLL** — 456 names, none missing,
-none extra (`PE.imports` on both). Getting the DLL order exact required naming
+descriptor order, the same imported-name set per DLL — 456 names, none missing,
+none extra (`PE.imports` on both) — and all 449 named imports carrying retail's
+hint values**. Getting the DLL order exact required naming
 `nafxcw`/`libcmt` *first*, since 306 of the 456 names are referenced only by MFC/CRT
 members; see `docs/linker-flags.md` § Libraries. Still open: the order *within* each
-DLL (pull order of MFC's own members — not driven by our TU order) and 26 hint values
-in the two synthesised libs.
+DLL — a resolution-history artifact of the linker's undefined-symbol worklist, not
+a link-line property; the mechanism and its bounded evidence are in
+`docs/patterns/idata-thunk-order-is-resolution-history.md`.
 
 This is the tool behind **`docs/link-order-investigation.md`**: the candidate map
 cross-referenced with retail RVAs recovers the build order (intra-TU order =

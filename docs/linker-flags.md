@@ -126,21 +126,31 @@ import-descriptor order EXACTLY (0/120 inversions, all 16 DLLs).** Two rules:
 Measured side effects of the ordering: **zero of our own symbols move** (only the
 MFC/CRT block shifts, ~2959 library symbols); the imported-name *sets* are unchanged.
 
-Residuals, both real but neither a flag:
+Residuals, one closed and one bounded (2026-08-13):
 
-- **Per-DLL name order does NOT follow our object order.** Relinking with the objects
-  fed in retail-RVA order (`--order`) moved it 63.2% → 62.1% pairwise-misordered —
-  nothing. It is dominated by the order MFC/CRT members get pulled from `NAFXCW.LIB`,
-  which is a function of *which* members our code drags in, not of TU sequence. It is
-  also not hint-sorted in either binary (~50% ascending in both), so there is no cheap
-  structural rule to copy.
-- **26 wrong hint values, all in the synthesised libs.** 423 of 449 named imports
-  carry the *same* `.idata$6` hint as retail — our Win32/DX import libs are the right
-  vintage. The 26 that differ are exactly mss32(16) + smackw32(10): a hint is the
-  export-table index, and our stub DLL exports only the 26 names retail imports, not
-  the real DLL's full export list. Fixable by stubbing every export of the real DLLs
-  (needs `$GRUNTZ_RUNTIME`) or by patching the hints from retail. Functionally inert —
-  the loader falls back to a name search — but it blocks a byte-exact `.idata`.
+- **Per-DLL name order is resolution-history noise, not a link-line property —
+  [BOUNDED].** Probed with the pinned link.exe
+  (`docs/patterns/idata-thunk-order-is-resolution-history.md`): `/VERBOSE` shows
+  members pulled by a LIFO scan of the undefined-symbol worklist, and the emitted
+  slot order is a further deterministic-but-chaotic function of the whole
+  resolution history. Three controlled full-scale A/Bs: retail-derived obj order
+  (`--order`) left all 456 slot positions byte-identical, `--engine-lib` archives
+  likewise, while ONE extra early reference to a single import scrambled 12 of
+  its DLL's 16 slots without touching any other DLL. So the order converges only
+  as the reconstruction's symbol-reference structure converges to retail's;
+  no honest link-line lever moves it toward retail today.
+- **Hint values — [FIXED].** All 449 named imports now carry retail's `.idata$6`
+  hint. The 26 that differed were exactly mss32(16) + smackw32(10): a hint is the
+  export's index in the DLL's sorted export-name table, and the stub DLLs used to
+  export only the imported names. `gruntz.build.import_lib` now pads the stub's
+  export table with `__cdecl` filler names sorting strictly between the real
+  decorated names until each real export sits at its retail index (retail's hints
+  are strictly ascending in sorted-name order for both DLLs — the signature of
+  one sorted name table — so the interleave always exists). Fillers are never
+  referenced, hence never pulled: measured order-inert. `_verify_hints` re-reads
+  the produced archive and dies on mismatch, and `image_diff` now scores every
+  measurable `.idata` byte equal (78.03% → 78.20% of the section; the rest is
+  zero slack/padding, see `docs/image-diff.md`).
 
 
 ### Static-library split — [VERIFIED]

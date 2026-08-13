@@ -188,11 +188,22 @@ Both headlines are dominated by content that cannot be aligned honestly:
 ### `.idata` is a logical identity
 
 Same 16 DLLs in the same order, **456 of 456 imports paired by name, 0 unpaired on
-either side.** A raw byte compare reports 10,404 of 15,360 bytes differing, which is
-almost entirely misleading: **12 of the 16 DLLs simply order their thunk array
-differently**, an import-library member-order artifact. Paired by `(dll, import
-name)`, 99.78% of the measurable bytes agree. The 3,307 B not paired is hint/name
-pool alignment padding whose position follows that same ordering.
+either side, and 100.00% of the measurable bytes agree** — since the synthesised
+RAD libs started reproducing retail's hint values (2026-08-13,
+`gruntz.build.import_lib`), not one measured byte of the section differs. The
+region layout agrees byte-for-byte as well: every descriptor, ILT/IAT array and
+name pointer sits at the same section offset as retail's (the arrays are laid out
+in member-name order with the same incremental growth slack). A raw byte compare
+still reports thousands of differing bytes, which is almost entirely misleading:
+**12 of the 16 DLLs order the entries *inside* their thunk array differently** —
+a fossil of the linker's undefined-symbol worklist, not of any link input; the
+controlled evidence is in
+`docs/patterns/idata-thunk-order-is-resolution-history.md`. The 3,307 B not
+paired decompose into pool even-alignment padding, inter-array incremental-link
+slack and the section tail — every one of those retail bytes is ZERO (measured:
+3,279 B of structural slack + 28 B of by-ordinal slot accounting), and the slack
+between arrays sits at identical offsets in both images; only the pool padding's
+positions follow the entry ordering.
 
 ### `.rsrc` is byte-exact — proved, not asserted
 
