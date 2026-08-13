@@ -1923,3 +1923,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   later spans), then the region-size-vs-operand-kind hybrid to name c2's
   actual threshold. The tuple opcodes read directly: 0x45 = local load,
   0x5a = member load - two more rows for the ex grammar.
+
+- Threshold-model refinement (same day): variant F (redundant member
+  conjunct) folds the OTHER way - cl keeps the member test, drops the local,
+  59 branches, A's un-rotated shape at A's exact 1872 B. Net reading across
+  A/B/C/E/F: the rotation engages when the always-returning below-entered
+  region GAINS its 60th surviving branch (B) and disengages at 59 (A/C/F) -
+  a block/branch-count threshold in c2's sink decision, with ChargeStep
+  sitting exactly on the boundary. Retail's 61-branch un-rotated emission
+  remains the constraint the count model alone cannot satisfy - the
+  threshold must be relative (region size vs function size, or vs the fall
+  chain), which the c2 layout-pass RE can now search for with the dispatch
+  tables already extracted.
