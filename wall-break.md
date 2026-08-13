@@ -1881,3 +1881,13 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   narrows to c2.exe's layout pass (660,240 B, standalone program - the
   HoMM3-style RE now has a precise target and a minimal reproducer pair:
   chargestep_A/B one-line variants).
+
+- Causation leg (same day): fed-A == plain-A and fed-B == plain-B byte-exactly
+  (1872 vs 1936 text bytes), through the SAME c2 in ONE workdir. The layout
+  decision is a pure function of the IL bytes - no environment or instance
+  state. Next increment: the ex-stream splice bisect (needs the tuple framing
+  from REPORT.md's normalization section) over the 329 diff clusters to
+  localize the deciding bytes; ~9 feeds at binary-search pace. The
+  chargestep_A/B pair and the capture/feed workdirs are the standing
+  reproducer (scratchpad copies; re-derive from gruntchargestep.cpp +- the
+  neighborValid local).
