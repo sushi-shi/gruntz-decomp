@@ -2204,8 +2204,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
         const Coord* flagPos = g_bootyFlagPos;
-        for (i32 w = 0; reinterpret_cast<i32>(flagPos) < reinterpret_cast<i32>(g_bootyFlagPos + 4);
-             w++, flagPos++) {
+        for (i32 w = 0; flagPos < g_bootyFlagPos + 4; w++, flagPos++) {
             i32 held = g_gameReg->m_scoreHud->SumFlags(w);
             i32 placed = 0;
             for (i32 c = 0; c < 4; c++) {
