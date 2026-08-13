@@ -1521,3 +1521,9 @@ compiler decision, and a real VC5 build must confirm the fix.
   flat variants including 40 engine state trials; the other three carry
   only the single-probe result so far. Next pass: the panel run, mechanized
   through ilcap.py, before any of the three is declared bounded.
+- PANEL COMPLETE for gruntphasestep (same day): all five probe kinds at the
+  append position (typedef/enum/prototype/struct/class-with-member) move
+  ZERO .text bytes (5-8 B symbol text each). With the 150 engine variants
+  (mixed positions) also flat, PhaseStep's C2-anchored bound is sealed. The
+  per-TU panel costs ~8 min through causation.py and is the standing recipe
+  for the rest of the family.
