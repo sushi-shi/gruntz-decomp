@@ -608,8 +608,8 @@ i32 CGrunt::StepCompassMove() {
                         x -= 0x20;
                         y -= 0x20;
                         moveX = x;
-                        moveY = y;
                         voice = g_gruntMoveDirNorthWest;
+                        moveY = y;
                         break;
                 }
                 break;
@@ -656,8 +656,8 @@ i32 CGrunt::StepCompassMove() {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:
                     moveX = x;
-                    moveY = y - 0x20;
                     voice = g_gruntMoveDirNorth;
+                    moveY = y - 0x20;
                     break;
                 case DIR_NORTHEAST:
                     moveX = x + 0x20;
@@ -676,8 +676,8 @@ i32 CGrunt::StepCompassMove() {
                     break;
                 case DIR_SOUTH:
                     moveX = x;
-                    moveY = y + 0x20;
                     voice = g_gruntMoveDirSouth;
+                    moveY = y + 0x20;
                     break;
                 case DIR_SOUTHWEST:
                     moveX = x - 0x20;
@@ -759,8 +759,8 @@ i32 CGrunt::StepCompassMove() {
                     break;
                 case DIR_SOUTHWEST:
                     moveX = x - 0x20;
-                    moveY = y + 0x20;
                     voice = g_gruntMoveDirSouthWest;
+                    moveY = y + 0x20;
                     break;
                 case DIR_WEST:
                     moveX = x - 0x20;
@@ -768,9 +768,9 @@ i32 CGrunt::StepCompassMove() {
                     voice = g_gruntMoveDirWest;
                     break;
                 case DIR_NORTHWEST:
+                    voice = g_gruntMoveDirNorthWest;
                     moveX = x - 0x20;
                     moveY = y - 0x20;
-                    voice = g_gruntMoveDirNorthWest;
                     break;
             }
             result = s_CanCommitMove(this, moveX, moveY);
