@@ -2059,7 +2059,7 @@ gruntentrancearrival	?StepArrivalCommitA@CGrunt@@QAEHXZ	100.0000	100.0000	1	17bb
 gruntentrancearrival	?StepArrivalCommitB@CGrunt@@QAEHXZ	100.0000	100.0000	1	eeaa13022c66	0x654b0	100.0000
 gruntentrancearrival	?StepArrivalReroll@CGrunt@@QAEHXZ	95.3440	95.3440	1	56077bcde847	0x63b60	95.3440
 gruntentrancearrival	?StepAttackFire@CGrunt@@UAEHXZ	98.7612	98.7612	1	8786209e6861	0x61cb0	98.7612
-gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	84.0713	84.0713	1	7647440e49bb	0x646b0	84.0713
+gruntentrancearrival	?StepCombatReaction@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	93.6474	93.6474	2	8d6f80b242e4	0x646b0	93.6474
 gruntentrancearrival	?StepEntranceReinit@CGrunt@@QAEHXZ	90.1838	90.1838	1	0f832eab15f0	0x637a0	90.1838
 gruntentrancearrival	?StepEntranceRelatchA@CGrunt@@QAEHXZ	98.7989	98.7989	1	666fd8bae59a	0x62840	98.7989
 gruntentrancearrival	?StepEntranceRelatchB@CGrunt@@QAEHXZ	98.2192	98.2192	1	2c972c5e9519	0x65c20	98.2192
