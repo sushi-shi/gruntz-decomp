@@ -65,7 +65,12 @@
   `/d2il`; recipe and normalization in the tu-state-probe pattern's quantified
   section) — an inert-source A/B whose IL differs is C1 handle state, and the
   probe-kind stride table (typedef +1 … class +11) is the steering lever.
-  HoMM3's VC6 register-allocator model remains hypothesis-only here.
+  HoMM3's VC6 register-allocator model is mostly hypothesis-only here, but ONE
+  piece is now proven on cl 5.0's `c2.exe`: the preference table
+  `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is present (2 copies), and the first
+  call-crossing value USED after the call takes EBX — reorder that value's
+  first post-call use to steer the EBX pick
+  (docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md).
 
 ## Source Modeling Rules
 

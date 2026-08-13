@@ -54,7 +54,11 @@ lever only pins the EBX pick, but that is the modal one.
 
 Measured on the pinned cl 5.0 `c2.exe` 2026-08-13 with the probes above
 (`build/il-probe/re/`, harness in the scratch `regalloc/` set). Three
-call-crossing values; the >3 case frame-homes the fourth (unverified here).
-Byte-sized values lose ESI/EDI/EBP (the char-homing exclusion) and are out of
-scope. This is a PARTIAL allocator model — the EBX pick is proven, the full
+call-crossing values. The FOUR-value case was then measured: in a frameless
+function the fourth call-crossing value takes **EBP** (sequence EBX ESI EDI
+EBP), NOT a frame slot - a cl-5.0 refinement over the VC6 model, which frame-
+homes the fourth. So cl 5.0 has FOUR callee-saved GPRs in play (EBX ESI EDI
+EBP) before it spills, and EBP drops out of the pool only when the function
+needs a frame pointer. Byte-sized values lose ESI/EDI/EBP (the char-homing
+exclusion) and are out of scope. This is a PARTIAL allocator model — the EBX pick is proven, the full
 processing-order traversal (the rest of the c2 regasg RE) is not done.
