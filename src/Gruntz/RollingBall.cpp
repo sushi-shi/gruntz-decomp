@@ -235,9 +235,11 @@ i32 CRollingBall::Update() {
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
             i32 raw = pl->m_tileGrid[pl->m_colOffsets[col] + row];
             // A TileCollisionKind: the devirtualised CTileImageSet::GetCollisionAt(0, 0).
-            i32 act = 0;
+            i32 act;
             if (raw != UNINIT_FILL && raw != -1) {
                 act = VtblResolve(lvl->m_imageSets[raw & 0xffff]);
+            } else {
+                act = 0;
             }
 
             switch (static_cast<TileCollisionKind>(act)) {
@@ -447,9 +449,11 @@ i32 CRollingBall::Update() {
             }
             CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
             i32 raw2 = pl2->m_tileGrid[pl2->m_colOffsets[col2] + row2];
-            i32 act2 = 0;
+            i32 act2;
             if (raw2 != UNINIT_FILL && raw2 != -1) {
                 act2 = VtblResolve(lvl2->m_imageSets[raw2 & 0xffff]);
+            } else {
+                act2 = 0;
             }
             switch (static_cast<TileCollisionKind>(act2)) {
                 case TILEKIND_ARROW_UP_A:

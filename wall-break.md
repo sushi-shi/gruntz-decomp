@@ -1738,5 +1738,17 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   re-init actually spelled inside the body), used at the ~10
   `obj->m_flags |= 0x10000` sites - the register-residency evidence
   (callee-saved + spill home + backedge reload) is the scoped-local proof
-  class (global-reload-runs pattern). Next session: map every ebp/ebx use,
-  name the bit semantically, apply, measure.
+  class (global-reload-runs pattern). CORRECTED same day: the use map refutes
+  the named-local read - retail ors 0x10000 as an IMMEDIATE at 8 of 10 sites
+  (ebx carries it once at 0xd4212) and ebp=1 feeds triple-stores/call args -
+  the CGruntPuddle constant-pinning class, C2-anchored. PARKED.
+
+## 2026-08-13 — `CRollingBall::Update` act/act2 else-path zero-init 83.94 -> 84.48
+
+- Unit/RVA: `rollingball`, `0x000b0140`. Both `i32 act = 0; if (ok) act =
+  VtblResolve(...);` pairs re-spelled with the zero on the else path
+  (redundant-local-becomes-the-zero-register's fix shape): +0.54. The ebp=0
+  pin itself SURVIVES (9 cmp-vs-ebp + 7 push-ebp sites) - the seeding local
+  is still unfound; remaining candidates need the doc's one-at-a-time
+  measurement. Guard-block +1i residue (mov/test vs cmp-ebp) persists until
+  the pin dies.
