@@ -264,6 +264,7 @@ i32 PumpIdleFrame() {
 RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
+    TRACE("TransitionState %d\n", stateId);
     GameStateId local10 = GAMESTATE_NONE;
     if (m_curState != NULL) {
         local10 = m_curState->Update();

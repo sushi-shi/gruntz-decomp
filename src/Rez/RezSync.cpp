@@ -518,6 +518,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         CParseSource* stream =
             g_gameReg->m_symParser->ResolveQualified("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
+        TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         bool ok = false;
         if (stream) {

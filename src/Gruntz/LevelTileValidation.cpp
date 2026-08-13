@@ -787,6 +787,7 @@ i32 CPlay::ValidateLevelTiles() {
         }
     } while (pos != NULL);
 
+    TRACE("%s\n", static_cast<LPCTSTR>(CString("ValidateLevelTiles")));
     return ok;
 }
 
