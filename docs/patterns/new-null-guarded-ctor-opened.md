@@ -1,7 +1,7 @@
 # Opened scalar `new T(...)` shows as `operator new` + null-guarded ctor
 tags: cpp:new cpp:ctor | asm:call asm:test asm:jcc | topic:codegen-idiom
 symptoms: operator new(size); if(p) p=p->Ctor(...); else p=0; push <sizeof>; call ??2; test eax,eax; je; mov ecx,eax; call ctor
-confidence: 8/10
+confidence: 10/10
 variants: newd-class-real-size.md, rezalloc-placement-new-no-eh-frame.md, inline-multiderived-ctor-vtable-stores.md
 
 MSVC5 commonly lowers a source `new T(args...)` into an allocation, a compiler
@@ -62,6 +62,17 @@ and constructor body are attributed to the `new` line, while a second test
 attributed to the following `if` is source control flow. Retail's six
 `CWorldSoundSet` factories and `WinMain` contain both tests and are exact with
 both source statements retained.
+
+The complete tree audit confirms that this distinction is mechanical, not an
+example-based heuristic. All 209 lexical results of
+`rg -U ' new .*\n.*if' src` were checked: three are substring false positives;
+the other 206 contain a retail branch for the following condition. Of those,
+113 have byte-exact machine-code confirmation, 82 have `/Z7` line attribution
+plus normalized instruction mapping, and 11 need direct retail inspection
+because VC5 tail-merges or reorders the relevant block. Exactness does not
+prove a unique original source spelling. A full constructor/caller remodel can
+move that condition, but deleting it alone cannot explain retail's second
+branch.
 
 The inverse trap is an implicit default constructor that is too weak. If retail
 has member/base constructor calls followed by scalar stores inside the

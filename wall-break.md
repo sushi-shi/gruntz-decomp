@@ -2265,3 +2265,48 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   FLOW: both sides have 124 branches and one return, but the branch sequence has
   many flips. The constructor recovery changes no source branch and introduces
   no compiler-state probe.
+
+## 2026-08-13 (late-9): complete adjacent post-`new` branch audit
+
+- Exhaustive proof covers all 209 lexical results from
+  `rg -U ' new .*\n.*if' src`: 159 scalar allocations, 47 arrays/buffers, and
+  three substring false positives (`iface` and two `Notify` assignments). The
+  206 real sites divide into 76 allocation-null checks, 114 method-result
+  checks, and 16 other conditions.
+- Machine-code coverage: 113 sites are in byte-exact functions; this confirms
+  the emitted branch and relocations, not a unique original C++ spelling. For
+  the 93 non-exact sites, `/Z7` line attribution separates the generated
+  allocation guard on the `new` line from the branch belonging to the following
+  source condition; normalized instruction mapping proves 79 locally and three
+  more have both branches merged onto the `new` line by CodeView.
+- The remaining 11 are not contrary evidence. Nine condition branches sit in
+  retail shared blocks: two `CSBI_MenuItem::SetupImage` tests in
+  `BuildTabzDialog` (`0x10a340`) and seven `ValidateByType` tests in
+  `CTileTriggerContainer::LoadElement` (`0x117800`). The other two are the
+  allocation-null checks in `AddToList3` (`0x116a40`) and `AddToList1`
+  (`0x116cf0`); retail contains a second pointer test after the generated ctor
+  guard but reverses its branch polarity when laying out the null epilogue.
+- Conclusion: every real result has retail evidence for the condition in
+  addition to any scalar-construction null guard. A full constructor/caller
+  remodel may move or respell that condition and may cross a temporary score
+  valley, but deleting it in isolation removes target CFG. Arrays and trivial
+  scalar types have only the source condition. No C++ source was changed by
+  this audit.
+- Source-shape check independent of exactness: the 38 scalar allocation-null
+  rows either follow a modeled constructor or are the three trivial shells
+  `CButeTreeNode`, `CSlotNode`, and `CheatEntry`. In those three, the retail
+  branch targets the allocation-failure exit before work that cannot belong to
+  a ctor (a second allocation/tree insertion, parse-slot allocation, or map
+  insertion); it is not a ctor join. The 114 method-result rows test a genuine
+  fallible operation such as `Setup`, `Load`, `ValidateByType`, or an `Init`
+  returning status. The tree-wide `return this` audit finds no remaining
+  ctor-shaped `Init`; `CTimer` is already remodeled.
+- Local-minimum control: the lowest-MAX result, `zPTree::FindOrInsert`
+  (`0x1933b0`), was tested as a complete positive-gate plus `if`/`do-while`
+  descent remodel rather than a one-line deletion. The positive gate was
+  byte-neutral; the loop form changed 25/26 branches to 26/26 and 48/52 blocks
+  to 50/52, but its first real block diverged farther and fuzzy fell
+  69.0383% -> 67.4298%. Retail has only one test around the trivial
+  `CButeTreeNode` allocation, so moving the call-specific stores into a ctor
+  would add CFG retail lacks. The experiment was removed on structural, not
+  score-only, evidence.
