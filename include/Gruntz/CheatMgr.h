@@ -14,6 +14,13 @@ struct CheatEntry {
 
 class CCheatMgr {
 public:
+    CCheatMgr() {
+        m_owner = NULL;
+        m_flag = 0;
+        m_pendingCodeLength = 0;
+        m_cheatsUsed = 0;
+    }
+
     BOOL Init(HWND owner);
     void Empty();
     BOOL AddCheat(const char* code, i32 cmdId, i32 flag);

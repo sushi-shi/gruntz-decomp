@@ -10,6 +10,13 @@
 
 class CFontConfig {
 public:
+    CFontConfig() {
+        m_reserved34 = 0;
+        m_inputActive = 0;
+        m_arialFont = NULL;
+        m_trainingFont = NULL;
+    }
+
     CPtrList m_list;
     i32 LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold);
     void FreeNodes();

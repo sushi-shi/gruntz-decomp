@@ -2228,3 +2228,40 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   (124 branches and one return on each side, but a differently owned branch
   sequence). The constructor break is retained; no compiler-state probe or
   artificial allocation was introduced.
+
+## 2026-08-13 (late-8): complete `new`/`if` ctor census finds four implicit-shell misses
+
+- Corrected census: the exact `rg -U ' new .*\n.*if'` result is 209 lexical
+  matches. Three are substring false positives (`iface` once and `Notify`
+  twice), 47 are arrays/buffers, and 159 are scalar object allocations across
+  73 types: 41 parameterized `new T(args)`, 14 `new T()`, and 104 bare
+  `new T`.
+- Constructor ownership: 59 scalar types already had an explicit local
+  constructor. Ten initially used a nontrivial implicit default constructor,
+  three are trivial aggregates (`CButeTreeNode`, `CSlotNode`, `CheatEntry`), and `CWnd`
+  is MFC-owned. The positive guarded block on `CButeTreeNode` writes the
+  call-specific critbit node and is not default initialization. The three
+  trivial types have one post-allocation test and no guarded constructor body.
+- Structural break: retail `CGruntzMgr::Run` carries scalar stores inside four
+  implicit-constructor guards that the base object omitted. Restore explicit
+  header-inline constructors for `CCheatMgr` (owner, flag, counters),
+  `DirectInputMgr2` (interface/window/instance/device pointers), `CFontConfig`
+  (input state and two proven font handles, with the retail-omitted message
+  font left untouched), and `CGruntSpawnConfig` (owner/config plus both pointer
+  arrays). The rebuilt `/Z7` object attributes every recovered store to the
+  `new` line; no standalone `??0` symbol is emitted.
+- Result: `CGruntzMgr::Run` (`0x00083450`) rises from 85.2590% to 86.3292%.
+  Its constructor blocks now carry the same member/base calls, scalar store
+  sets, and null guards as retail. `CSaveGame` and `CGruntzMapMgr` need only
+  their existing implicit member/base construction; the four implicit derived
+  DirectDraw pool types and MFC `CWnd` are proven by byte-exact allocation
+  functions.
+- Pointer-return audit: `CTimer::Init` was already remodeled into the exact
+  constructor. The remaining `return this` methods are fluent bit/value
+  operations or `CHashBase::Construct(count)`, whose count-dependent bucket
+  allocation is exact and not a default constructor; `CWwdGridIter::Init`
+  returns a region rather than `this`.
+- Remaining wall: `gruntz sema diagnose 0x83450` classifies `Run` as CONTROL
+  FLOW: both sides have 124 branches and one return, but the branch sequence has
+  many flips. The constructor recovery changes no source branch and introduces
+  no compiler-state probe.

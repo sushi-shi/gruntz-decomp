@@ -25,6 +25,13 @@ class CGrunt;
 
 class CGruntSpawnConfig {
 public:
+    CGruntSpawnConfig() {
+        m_owner = NULL;
+        m_configTree = NULL;
+        memset(m_voices, 0, sizeof(m_voices));
+        memset(m_streams, 0, sizeof(m_streams));
+    }
+
     BOOL Init(CGruntzMgr* owner);
     void Clear();
     BOOL LoadGruntVoices();

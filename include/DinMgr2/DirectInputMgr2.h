@@ -25,6 +25,14 @@ struct CDeviceListNode : public CFixedPtrArray32 {
 
 class DirectInputMgr2 {
 public:
+    DirectInputMgr2() {
+        m_directInput = NULL;
+        m_owner = NULL;
+        m_hinst = NULL;
+        m_deviceB = NULL;
+        m_deviceA = NULL;
+    }
+
     i32 Create(HWND owner, HINSTANCE hinst, u32 flags);
 
     ~DirectInputMgr2();
