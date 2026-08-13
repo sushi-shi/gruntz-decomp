@@ -446,9 +446,9 @@ i32 CGrunt::LoadPickupSprites(
             g->m_cueSink->SpawnVoiceDriver(this, id, -1, 0, -1, -1);
         }
     }
-    m_helpCueId = helpCueId;
     m_entranceActive = 1;
     m_entrancePickup = type;
+    m_helpCueId = helpCueId;
     if (m_healthSprite != NULL) {
         m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = NULL;
