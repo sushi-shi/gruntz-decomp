@@ -38,7 +38,6 @@
 0x000d5e00	CImageComdats	Play	CImage::FlipHorizontal	3B stub; same pocket
 0x000d5e20	CImageComdats	Play	CImage::FlipBoth	27B; same pocket
 # --- MenuState.obj: kept ~CChatBox (MenuState constructs the menu chat box)
-0x000a0360	ChatBoxEh	MenuState	CChatBox::~CChatBox	100B dtor COMDAT inside MenuState's run
 # --- DDrawSurfacePair.obj emission points: AniRecord view dtors/accessors
 0x001657a0	AniRecord	DDrawSurfacePair	CAniRecordView::~CAniRecordView	102B dtor; woven at emission point inside the DDrawSurfacePair run
 0x00165d90	AniRecord	DDrawSurfacePair	CAniRecordBase2::IsLoaded	11B accessor; same run
@@ -78,11 +77,6 @@
 0x000312a0	ZVec	BattlezMapConfig	_zvec::IndexToPtr	template member; same pocket (src comment: @interleaver first-use placement)
 # --- NetMgr.obj tail band 0x179300-0x17967b: NetMgr-module record classes' inline members
 #     (woven among NetMgr's own pinned IsIpxProvider/IsTcpIpProvider inline group at 0x1794b0)
-0x00179300	InterfaceObject	NetMgr	InterfaceObject::GetName	32B CString getter; NetMgr tail band
-0x00179340	InterfaceObject	NetMgr	InterfaceObject::~InterfaceObject	72B dtor; same band
-0x001793b0	NetSessionNode	NetMgr	CNetPlayerListNode::~CNetPlayerListNode	70B dtor; same band
-0x00179420	NetSessionNode	NetMgr	CNetSessionNode::~CNetSessionNode	138B dtor; same band
-0x001795a0	NetSessionNode	NetMgr	CNetPlayerListNode::Init	219B; same band, between NetMgr's own inline emissions
 # --- FrontCandyAni.obj (the F-E-F sandwich TU): candy-class inline ctors kept mid-run
 0x000ac1d0	DoNothing	FrontCandyAni	CDoNothing::CDoNothing	421B inline ctor; inside FrontCandyAni's proven one-TU interval
 0x000ac3f0	BehindCandy	FrontCandyAni	CBehindCandy::CBehindCandy	433B inline ctor; same interval

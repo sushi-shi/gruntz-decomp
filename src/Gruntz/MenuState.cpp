@@ -189,6 +189,11 @@ void CMenuState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
+RVA(0x000a0360, 0x64)
+CChatBox::~CChatBox() {
+    Reset();
+}
+
 RVA(0x000a03f0, 0x14b)
 i32 CMenuState::EnterState(GameStateId mode) {
     char stateName[0x20];

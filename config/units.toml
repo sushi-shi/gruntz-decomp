@@ -1110,10 +1110,6 @@ unit = "chatbox"
 source = "src/Gruntz/ChatBox.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "chatbox_eh"
-source = "src/Gruntz/ChatBoxEh.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "chatboxowner"
@@ -1151,10 +1147,6 @@ source = "src/Gruntz/ActionArea.cpp"
 flags = "cpp-rtti"
 
 
-[[unit]]
-unit = "interfaceobject"
-source = "src/Net/InterfaceObject.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "lightfxmgr"
@@ -1378,10 +1370,6 @@ flags = "cpp"
 unit = "netsessionmgr"
 source = "src/Net/NetSessionMgr.cpp"
 flags = "cpp-rtti"
-[[unit]]
-unit = "netsessionnode"
-source = "src/Net/NetSessionNode.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "netlobbydialogs"

@@ -935,8 +935,40 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 
 
 
+RVA(0x00179300, 0x20)
+CString InterfaceObject::GetName() {
+    return m_name;
+}
+
+RVA_COMPGEN(0x00179320, 0x1e, ??_GInterfaceObject@@UAEPAXI@Z)
+RVA(0x00179340, 0x48)
+InterfaceObject::~InterfaceObject() {
+    m_guid = NULL;
+    m_listPosition = NULL;
+}
+
 RVA_COMPGEN(0x00179390, 0x1e, ??_GCNetPlayerListNode@@UAEPAXI@Z)
+
+RVA(0x001793b0, 0x46)
+CNetPlayerListNode::~CNetPlayerListNode() {
+    FreeStrings();
+}
+
 RVA_COMPGEN(0x00179400, 0x1e, ??_GCNetSessionNode@@UAEPAXI@Z)
+
+RVA(0x00179420, 0x8a)
+CNetSessionNode::~CNetSessionNode() {
+    m_id = 0;
+    m_listPosition = NULL;
+    if (m_ownedBufferA) {
+        ::operator delete(m_ownedBufferA);
+    }
+    m_ownedBufferA = NULL;
+    if (m_ownedBufferB) {
+        ::operator delete(m_ownedBufferB);
+    }
+    m_ownedBufferB = NULL;
+}
 RVA(0x001794b0, 0x21)
 i32 InterfaceObject::IsIpxProvider() {
     if (!m_guid) {
@@ -975,6 +1007,26 @@ i32 InterfaceObject::MatchesUnclassifiedProvider() {
         return 0;
     }
     return memcmp(m_guid, g_unclassifiedProviderGuid, 16) == 0 ? 1 : 0;
+}
+
+RVA(0x001795a0, 0xdb)
+i32 CNetPlayerListNode::Init(CNetSessionDesc* src) {
+    if (!src) {
+        return 0;
+    }
+    memcpy(&m_desc, src, sizeof(*src));
+    m_desc.m_dwSize = sizeof(m_desc);
+    m_desc.m_lpszName = NULL;
+    m_desc.m_lpszPassword = NULL;
+    if (src->m_lpszName && strlen(src->m_lpszName)) {
+        m_desc.m_lpszName = new char[strlen(src->m_lpszName) + 8];
+        strcpy(m_desc.m_lpszName, src->m_lpszName);
+    }
+    if (src->m_lpszPassword && strlen(src->m_lpszPassword)) {
+        m_desc.m_lpszPassword = new char[strlen(src->m_lpszPassword) + 8];
+        strcpy(m_desc.m_lpszPassword, src->m_lpszPassword);
+    }
+    return 1;
 }
 
 RVA(0x00179680, 0x3a)
