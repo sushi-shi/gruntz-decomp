@@ -143,6 +143,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
         g_gameReg->m_scoreHud->BumpWin(killerSlot, m_tileOwnerHi);
     }
 
+    i32 tag;
     switch (deathType) {
         case DEATH_SQUASH:
             if (m_entranceReason == PICKUP_BOMB) {
@@ -207,14 +208,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
             goto finalize;
 
         case DEATH_QUICKFALL:
-            m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-            m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+            tag = 0x357;
             m_poseDeath = static_cast<CAniElement*>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
             );
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyGeometryDirect(m_poseDeath, 0);
-            m_wwdObject->ApplyLookupSprite(s_DEATHZ_FALL, DEATH_FRAME());
             {
                 CWwdGameObjectA* o = m_object;
                 if (o->m_sortKey != -1) {
@@ -222,15 +219,16 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                     o->m_flags |= 0x20000;
                 }
             }
-            DEATH_CUE(0x357);
-            goto finalize;
+            goto fallSnap;
 
         case DEATH_FALL: {
-            CMapMgr* grid = g_gameReg->m_tileGrid;
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
+            CMapMgr* grid;
+            grid = g_gameReg->m_tileGrid;
+            TileCollisionKind attr;
+            attr = static_cast<TileCollisionKind>((
                 (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
             )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
-            i32 tag = 0x355;
+            tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath = static_cast<CAniElement*>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->LookupValue(s_DEATHZ_QUICKFALL)
@@ -243,6 +241,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerSlot) {
                         o->m_flags |= 0x20000;
                     }
                 }
+            fallSnap:
                 m_object->m_screenX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_object->m_screenY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
             } else {

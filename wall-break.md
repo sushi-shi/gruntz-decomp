@@ -1806,3 +1806,18 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   guard's skip path converges on the shared copy. Also retail orders the pose
   LookupValue BEFORE the guard (ours snaps first) - that reorder is part of
   the same sitting.
+
+## 2026-08-13 — `CGrunt::LoadGruntDeathAnimations` shared-tail model LANDED (structure over score)
+
+- 0x60150: the in-edge map (0x608fa in: both 0x357 guards) proves QUICKFALL
+  and FALL's DEATHBRIDGE arm converge in source: QUICKFALL = tag pin, Lookup,
+  sortKey guard, `goto fallSnap` into FALL's bridge arm at the snaps, sharing
+  FALL's whole ending - including NotifyCell + LoadGruntMovingDeathConfig,
+  which the old `goto finalize` spelling SKIPPED on the QUICKFALL path (a
+  real behavior divergence, now fixed). Jump legality: FALL's grid/attr/tag
+  became declare-then-assign; tag hoisted before the switch.
+- Current 86.28 vs the old shape's 90.70 (blessed): retail's compile
+  tail-duplicates [snaps+value+apply] into the first guard's then-arm (6
+  snap-ANDs vs our 4, 56 vs our 54 branches) - the same C2 duplication/
+  placement coin; our compile merges instead. The old peak was alignment on
+  a structure the edge map refutes.
