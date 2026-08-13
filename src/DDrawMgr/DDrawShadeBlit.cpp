@@ -1583,7 +1583,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                 memcpy(g_scratch, d - count * 2 - 2, count * 2);
                                 u8* sc = &g_scratch[count * 2 - 2];
                                 while (count-- > 0) {
-                                    i32 rd = pitch / 2 * 2;
+                                    i32 rd = 2 * pitch / 2;
                                     u32 idx = pal2[Load16(sc)];
                                     u32 hi = *s++;
                                     hi >>= 4;
@@ -1617,7 +1617,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                                     }
                                 } else {
                                     while (count-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
+                                        i32 rd = 2 * pitch / 2;
                                         u32 a = Load16(ss2);
                                         u32 dv = Load16(sc);
                                         i32 v = m_lutBank0[(a >> 0xb) + ((dv >> 6) & ~0x1f)]
@@ -1646,7 +1646,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                             memcpy(g_scratch, d - count + 1, count);
                             u8* sc = &g_scratch[count - 1];
                             while (count-- > 0) {
-                                *d-- = cbase[(*sc-- << 8) + *s++];
+                                *d-- = cbase[*s++ + (*sc-- << 8)];
                             }
                             break;
                         }
