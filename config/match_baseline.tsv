@@ -559,7 +559,7 @@ battlezmapconfig	?SerializeState@CBattlezMapConfig@@QAEHPAVCFileMemBase@@W4Seria
 battlezmapconfig	?StepAllRowSpawns@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	1	cecca5bc5558	0x25c20	100.0000
 battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	95.3292	95.3292	1	43b0ba2ed9c4	0x25d90	95.3292
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	84.4062	84.4062	1	286386dbc51b	0x26470	84.4062
-battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	88.2172	88.2172	2	79848b272353	0x267c0	88.2172
+battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	84.8865	84.8865	3	7dca1a34d4e8	0x267c0	88.2172
 battlezmapconfig	?TileSwitch@@YGXPAVCGrunt@@HHHHH@Z	100.0000	100.0000	1	eb557163a8f4	0x29af0	100.0000
 battlezmapconfig	?TrySeedSpawnAt@CBattlezMapConfig@@QAEHHH@Z	94.5918	94.5918	1	6dcff90f5825	0x30990	94.5918
 battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.0331	85.0331	9	3539ebdee8e1	0x29b40	85.0331
@@ -2100,7 +2100,7 @@ gruntindicatorworkerhandlers	_CreateGruntToyTimeSprite	100.0000	100.0000	1	7c8a6
 gruntindicatorworkerhandlers	_CreateGruntWingzTimeSprite	100.0000	100.0000	1	ad67361ac7bb	0x7e160	100.0000
 gruntpeertracking	?StepPeerTracking@CGrunt@@QAEHXZ	97.9915	97.9915	3	97c27cf182a9	0xf7d90	97.9915
 gruntphasestep	?PhaseStep@CGrunt@@QAEHXZ	82.8571	82.8571	23	e1839f0d53b4	0xf60f0	82.8688
-gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHW4PickupType@@HHHH@Z	74.7534	74.7534	7	1788445eec70	0x65e80	74.7534
+gruntpickupload	?LoadPickupSprites@CGrunt@@QAEHW4PickupType@@HHHH@Z	75.8416	75.8416	8	df088a394a6f	0x65e80	75.8416
 gruntpowerupsprite	??0CGruntPowerupSprite@@QAE@PAUCGameObject@@@Z	96.3043	96.3043	1	496193872728	0x7fdb0	96.3043
 gruntpowerupsprite	??1CGruntPowerupSprite@@UAE@XZ	100.0000	100.0000	1	cpp:606441ad1fc4	0x12370	100.0000
 gruntpowerupsprite	??_GCGruntPowerupSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:606441ad1fc4	0x12340	100.0000
