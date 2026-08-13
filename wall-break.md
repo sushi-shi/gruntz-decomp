@@ -1848,3 +1848,16 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   members. +4.32 in one edit; comment retired. DefenseLean's similar-looking
   window is NOT the battery (PointInRect all four bounds present; residue is
   block fusion + one frame word) - bounded.
+
+## 2026-08-13 — fold-signature sweep: UpdateArrival +4.01; ChargeStep rotation-blocked
+
+- Bulk missing-branch screen (base branches < retail) over the top-90 rows
+  found 7 candidates. `CGrunt::UpdateArrival` 0xf0130: its earlier locals
+  attempt spelled the else-arm re-tests through the LOCALS (the copy-prop
+  fold variant) - switching them to members lands 85.95 -> 89.96 (+4.01).
+- `CGrunt::ChargeStep` 0xef6b0: adding the neighborValid local recovers 4 of
+  5 missing branches (56 -> 60 vs 61) but triggers the region-sink coin:
+  the layout rotates and the linear score collapses to the 0.00 floor
+  (MAX 81.94 held). Reverted pending the placement-coin investigation - the
+  lever is right but unverifiable at the floor. AdvanceMotion's 32-branch
+  "gap" is jump-table decode artifact (blocks 90/90).

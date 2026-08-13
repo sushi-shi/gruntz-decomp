@@ -42,9 +42,8 @@
 // full `m_entranceActive/m_combatActive/m_neighborValid/m_poweredUp = 0` blocks
 // with their own epilogues; cl proves the second arm's two guards redundant
 // against the enclosing `poweredUp != 0` gate, drops them and cross-jumps what
-// is left onto the first block.  Reading the two members into locals at the top
-// of the gate (which is what retail's `mov ecx,[esi+0x220]` / `mov eax,
-// [esi+0x21c]` are) recovers most of it, but not the fold.
+// is left onto the first block. Local outer guards + MEMBER inner re-tests
+// keep the second arm's guards (local-guard-member-retest-blocks-fold).
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
     char* name = *g_typeColl.GetNameRecord(m_objAux->m_actKey);
@@ -100,10 +99,10 @@ i32 CGrunt::UpdateArrival() {
             if (atTarget) {
                 return 1;
             }
-            if (poweredUp == 0) {
+            if (this->m_poweredUp == 0) {
                 return 1;
             }
-            if (neighborValid != 0) {
+            if (this->m_neighborValid != 0) {
                 return 1;
             }
             this->m_entranceActive = 0;
