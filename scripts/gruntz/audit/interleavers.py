@@ -16,6 +16,7 @@ import bisect
 import csv
 import glob
 import os
+import re
 import struct
 import subprocess
 
@@ -105,11 +106,21 @@ def main():
             if len(parts) == 3 and parts[2] in want:
                 ndef[parts[2]] = ndef.get(parts[2], 0) + 1
 
+    # RVA_COMPGEN pin addresses: compiler-materialized copies. The pin's TU is the
+    # (an) emitting TU by gate proof; the retail address is the linker's KEPT copy,
+    # so a foreign host records materialization order, never a partition claim.
+    pins = set()
+    for path in glob.glob(str(REPO / "src/**/*.cpp"), recursive=True):
+        for m in re.finditer(r"RVA_COMPGEN\((0x[0-9a-fA-F]+),", open(path).read()):
+            pins.add(int(m.group(1), 16))
+
     def klass(rva, name, cu, host):
         if rva in exiled:
             return "EXILE"      # ledgered kept-COMDAT, host-verified every build
         if pooled(rva):
             return "POOL"       # special-member band: attribution granularity only
+        if rva in pins:
+            return "PIN"        # RVA_COMPGEN copy: kept where the host materialized it
         if ndef.get(name, 0) > 1:
             return "COMDAT"     # multi-emitter inline: modeled-as is keep-last cosmetic
         return "DEFECT?"        # single emitter modeled elsewhere: partition signal
