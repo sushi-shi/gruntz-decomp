@@ -41,7 +41,9 @@ if (powered != 0) {
 Do NOT spell the inner tests through the locals (copy-prop folds them) and do
 not expect member-outer/member-inner to keep them (dominance folds them).
 
-Measured: `CGrunt::WanderStep` 0xed9f0 83.38 -> 84.34 (the no-call arm's two
+Measured: `CGrunt::SeekTarget` 0xf71c0 80.82 -> 85.14 (the biggest hit; its
+file comment had declared the fold "not reachable from source" - retired).
+`CGrunt::WanderStep` 0xed9f0 83.38 -> 84.34 (the no-call arm's two
 tests reappear as `cmp eax,ebp` / `cmp ecx,ebp`, block census 115 -> 117 of
 retail's 121). `CGrunt::ScanNearestTarget` 0xf42f0 carries the same shape
 (its `powered`/`neighborValid` locals are why its else-arm tests survive).

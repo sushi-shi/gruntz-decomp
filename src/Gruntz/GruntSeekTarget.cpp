@@ -36,12 +36,7 @@
 #include <string.h>
 
 // @early-stop
-// Blocks 107 of 109. The residue is that retail keeps the <STAMINA_FULL arm's
-// m_poweredUp/m_neighborValid re-tests (0xf750d, 0xf7515, against the cached
-// ecx/eax) which cl proves dead and folds - the outer `if (m_poweredUp != 0)`
-// dominates them with no intervening call - plus one dead spill of the
-// candidate's tile x at 0xf778f. Neither is reachable from source; the same
-// fold shows in StepGooSuckerBehavior.
+// One dead spill of the candidate's tile x at 0xf778f remains unreached.
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::SeekTarget() {
     this->m_defenderPx.m_x = this->m_lastTilePx.m_x;
@@ -147,8 +142,10 @@ i32 CGrunt::SeekTarget() {
                 atTarget = 1;
             }
         }
-        if (this->m_poweredUp != 0) {
-            if (this->m_neighborValid == 0) {
+        i32 powered = this->m_poweredUp;
+        if (powered != 0) {
+            i32 neighborValid = this->m_neighborValid;
+            if (neighborValid == 0) {
                 if (this->m_combatActive != 0) {
                     return 1;
                 }

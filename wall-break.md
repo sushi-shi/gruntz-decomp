@@ -1839,3 +1839,12 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   entity-order wall) - the bounded lifetime/homing residue. The placement-new
   devices in GRID_CLIP/STEP_BOUNDS stay flagged as cast-debt for the
   dissolution campaign, but their emitted shape matches retail.
+
+## 2026-08-13 — `CGrunt::SeekTarget` local-guard lever 80.82 -> 85.14 (a "bounded" wall falls)
+
+- 0xf71c0: the file's @early-stop comment declared the <STAMINA_FULL arm's
+  folded re-tests "not reachable from source". The local-guard pattern reaches
+  them: outer powered/neighborValid guards through locals, inner re-tests as
+  members. +4.32 in one edit; comment retired. DefenseLean's similar-looking
+  window is NOT the battery (PointInRect all four bounds present; residue is
+  block fusion + one frame word) - bounded.
