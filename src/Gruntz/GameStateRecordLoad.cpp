@@ -252,7 +252,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_coordList)->AddTail(item);
     }
 
-    while (m_payloads.GetCount() != 0 && m_payloads.GetHead() != NULL) {
+    // Retail's drain condition: a count-guarded head term tested for NULL, then
+    // the count re-test (0x567c0..0x567dd) - the fused && form emits 2 blocks, not 6.
+    while ((m_payloads.GetCount() != 0 ? m_payloads.GetHead() : NULL) != NULL
+           && m_payloads.GetCount() != 0) {
         i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
         delete[] rem;
     }
