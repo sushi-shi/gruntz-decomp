@@ -1436,3 +1436,18 @@ compiler decision, and a real VC5 build must confirm the fix.
 - Verdict: structure complete (call set and probe threading retail-proven in
   the source comment); the remaining residue is the cross-jump plus register
   homing. Revisit with the IL tap if a front-end lever is ever suspected.
+
+## 2026-08-13 — `CMultiBootyState::LoadGameAssetNamespaces` (signedness, blocked spelling)
+
+- Unit/RVA: `bootystateactivate`, `0x0001d440`; current 82.49, proven +0.107
+  reachable.
+- Evidence: branch #41 is a SIGNEDNESS twin - base `jb`, retail `jl` - on the
+  flag-cursor loop bound (`cmp cursor, g_bootyFlagPos+0x20`). Retail compared
+  the cursor as a SIGNED integer address (the 1998 idiom). A
+  `reinterpret_cast<i32>` respell of both compare operands flips the byte and
+  scores 82.598 (sibling CBootyState untouched at 92.489).
+- Blocked: the spelling costs +2 on the reinterpret_cast cleanliness ratchet,
+  which is fatal and must never be blessed upward. Cast-free alternatives
+  (ptrdiff compare, index loop) change the emitted compare shape. The site
+  needs either a cast-policy ruling or a typed model for address-valued
+  signed integers before the byte can be taken.
