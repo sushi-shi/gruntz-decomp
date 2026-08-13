@@ -1959,3 +1959,24 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   optimizer state travels IN THE IL, and the layout decision is c2 code
   parameterized by in-IL state only. The toggle route to the sink is
   eliminated; the RE proceeds by disassembly of the layout pass proper.
+
+## 2026-08-13 — near-exact cluster analysis: the exact-count ceiling IS the C2 coin
+
+- To raise the EXACT function count directly (not fuzzy%), screened the
+  [99,100) cluster (~100 fns, one fix flips each to exact). Composition by
+  real diff rows (masked fs:/scas/reloc removed): 14 at ZERO rows, 22 at 2,
+  18 at 4 - i.e. ~55 fns sit at <=4 real rows. Spot-checks of the top ~10:
+  * imul/lea/mov COMMUTATIVE operand-load-order swaps (Save gridW*gridH,
+    ProbeHeadSoft/HoldMove/ProbeColumn 0x60-vs-0x138 pair, CCheckpointTrigger
+    lea [ecx+edx] vs [edx+ecx]) - the proven C2 load-order canonicalization;
+    a source `a*b`->`b*a` flip is byte-NEUTRAL (cl re-canonicalizes).
+  * the ZERO-row functions (RunFadeStepped, PlayMoveSound, the ButeMgr
+    Get* family) diff ONLY in masked reloc blocks = DIR32 addend / referent
+    identity against synthesized delink data, not codegen.
+- VERDICT: the near-exact cluster - the most direct exact-count lever - is
+  dominated by the SAME C2 operand canonicalization as the placement coin,
+  plus delink-addend referent noise. The 81.1%-exact -> higher-exact path and
+  the 94%-fuzzy -> 100% path are ONE gate: c2's operand/layout canonicalization.
+  This unifies the campaign - every remaining tranche waits on the c2 RE, now
+  characterized to a bounded disassembly problem. Confirmed source levers are
+  exhausted across BOTH the heavy-weight and the near-exact ends of the list.
