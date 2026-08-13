@@ -179,30 +179,3 @@ void CPreviewState::Cancel() {
     }
     PostMessageA(static_cast<HWND>((m_mgr->m_gameWnd->m_hwnd)), 0x111, 0x8027, 0);
 }
-// @interleaver LoadScreen - 170 B lone body at 0xfab90, between FadeSceneClear2
-// (attract) and OnPaint (attract): a first-use placement.
-RVA(0x000fab90, 0xaa)
-i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
-    if (m_world == NULL) {
-        return 0;
-    }
-    if (m_symParser == NULL) {
-        return 0;
-    }
-    if (m_stateBank == NULL) {
-        return 0;
-    }
-    char buf[64];
-    sprintf(buf, "\\SCREENZ\\%s", name);
-    CParseSource* sym = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
-    if (sym == NULL) {
-        return 0;
-    }
-    if (m_world->m_drawTarget->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
-        return 0;
-    }
-    if (doFlip != 0) {
-        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
-    }
-    return 1;
-}

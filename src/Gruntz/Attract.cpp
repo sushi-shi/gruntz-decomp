@@ -20,6 +20,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PreviewState.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundFxEmitter.h>
 #include <Gruntz/String.h>
@@ -335,6 +336,32 @@ i32 CSoundFxEmitter::FadeSceneClear2(i32 pct, i32 dur, i32 lead) {
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
+    return 1;
+}
+
+RVA(0x000fab90, 0xaa)
+i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
+    if (m_world == NULL) {
+        return 0;
+    }
+    if (m_symParser == NULL) {
+        return 0;
+    }
+    if (m_stateBank == NULL) {
+        return 0;
+    }
+    char buf[64];
+    sprintf(buf, "\\SCREENZ\\%s", name);
+    CParseSource* sym = SymTab2c()->ResolveQualified(buf, IMGTAG_XCP);
+    if (sym == NULL) {
+        return 0;
+    }
+    if (m_world->m_drawTarget->LoadPageImage(sym, DDRAW_PAGE_BACK) == 0) {
+        return 0;
+    }
+    if (doFlip != 0) {
+        m_world->m_drawTarget->m_frontPair->m_surface->Flip(0);
+    }
     return 1;
 }
 
