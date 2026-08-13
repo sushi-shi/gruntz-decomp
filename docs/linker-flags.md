@@ -148,9 +148,12 @@ Residuals, one closed and one bounded (2026-08-13):
   are strictly ascending in sorted-name order for both DLLs — the signature of
   one sorted name table — so the interleave always exists). Fillers are never
   referenced, hence never pulled: measured order-inert. `_verify_hints` re-reads
-  the produced archive and dies on mismatch, and `image_diff` now scores every
-  measurable `.idata` byte equal (78.03% → 78.20% of the section; the rest is
-  zero slack/padding, see `docs/image-diff.md`).
+  the produced archive and dies on mismatch. With the hints fixed and
+  `image_diff`'s `.idata` pairing completed (entry pads with their entries,
+  slack positionally after a skeleton-offset proof), the section measures
+  **100.00% reproduced — all 15,169 retail bytes, 0 differing** (was 78.03%
+  with 26 differing hint bytes and 3,307 B unmeasured); see
+  `docs/image-diff.md`.
 
 
 ### Static-library split — [VERIFIED]

@@ -185,25 +185,26 @@ Both headlines are dominated by content that cannot be aligned honestly:
   referents correct: every data object we do pin, we reproduce. The gap is coverage — 271 retail data regions have
   no candidate symbol — not correctness.
 
-### `.idata` is a logical identity
+### `.idata` is a logical identity — 100.00%, every byte measured
 
-Same 16 DLLs in the same order, **456 of 456 imports paired by name, 0 unpaired on
-either side, and 100.00% of the measurable bytes agree** — since the synthesised
-RAD libs started reproducing retail's hint values (2026-08-13,
-`gruntz.build.import_lib`), not one measured byte of the section differs. The
-region layout agrees byte-for-byte as well: every descriptor, ILT/IAT array and
-name pointer sits at the same section offset as retail's (the arrays are laid out
-in member-name order with the same incremental growth slack). A raw byte compare
-still reports thousands of differing bytes, which is almost entirely misleading:
-**12 of the 16 DLLs order the entries *inside* their thunk array differently** —
-a fossil of the linker's undefined-symbol worklist, not of any link input; the
-controlled evidence is in
-`docs/patterns/idata-thunk-order-is-resolution-history.md`. The 3,307 B not
-paired decompose into pool even-alignment padding, inter-array incremental-link
-slack and the section tail — every one of those retail bytes is ZERO (measured:
-3,279 B of structural slack + 28 B of by-ordinal slot accounting), and the slack
-between arrays sits at identical offsets in both images; only the pool padding's
-positions follow the entry ordering.
+Same 16 DLLs in the same order, **456 of 456 imports paired by name, 0 unpaired
+on either side, all 15,169 retail bytes measured, 0 differing** (2026-08-13).
+Two changes closed it: the synthesised RAD libs reproduce retail's hint values
+(`gruntz.build.import_lib`), and `do_idata` completes its pairing to the whole
+section — each hint/name blob and DLL-name string travels with its
+even-alignment pad byte, by-ordinal slot pairs compare by ordinal identity, and
+the incremental-link slack (inter-array growth room, the pre-pool gap, the pool
+tail — 3,019 B, all zero) is compared **positionally after proving both import
+skeletons sit at identical section offsets** (the `.rsrc` rule: verify the
+alignment, then compare; the pairing falls back to UNMEASURED if the skeletons
+ever diverge). The selftest plants a flipped slack byte and a flipped hint and
+requires exactly +2 unreproduced, so the completed pairing is a measurement
+that can fail, not an assumption. A raw byte compare still reports thousands of
+differing bytes, which is misleading: **12 of the 16 DLLs order the entries
+*inside* their thunk array differently** — a fossil of the linker's
+undefined-symbol worklist, not of any link input, masked exactly like a
+reordered operand and reported in the notes; the controlled evidence is in
+`docs/patterns/idata-thunk-order-is-resolution-history.md`.
 
 ### `.rsrc` is byte-exact — proved, not asserted
 

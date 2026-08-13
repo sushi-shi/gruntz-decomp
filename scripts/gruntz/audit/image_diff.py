@@ -1461,6 +1461,40 @@ def do_data(R, C, plan):
 
 
 # --------------------------------------------------------------------- .idata
+def _idata_claims(side, srow):
+    """Coverage map of every structurally OWNED byte of one .idata section.
+
+    Descriptors (+ the null one), both thunk arrays with their terminators,
+    each hint/name blob and DLL-name string padded to the linker's even
+    alignment.  Whatever is left is slack the incremental linker reserved -
+    claimable only positionally, which do_idata does after proving the two
+    skeletons sit at identical section offsets."""
+    lo, vsz = srow["rva"], srow["virtual_size"]
+    cov = bytearray(vsz)
+
+    def claim(rva, n):
+        a = rva - lo
+        assert 0 <= a and a + n <= vsz, (hex(rva), n)
+        for i in range(a, a + n):
+            assert not cov[i], ".idata double claim at %#x" % (lo + i)
+            cov[i] = 1
+
+    dir_rva = struct.unpack_from("<I", side.pe.data, side.pe._opt + 96 + 8)[0]
+    for i, d in enumerate(side.imports):
+        claim(dir_rva + 20 * i, 20)
+        n = len(d["entries"]) + 1              # + the null terminator slot
+        claim(d["olt"], 4 * n)
+        claim(d["iat"], 4 * n)
+        ln = len(d["dll"]) + 1
+        claim(d["name_rva"], ln + (ln & 1))
+        for nm, _slot, hn in d["entries"]:
+            if hn:
+                wl = 2 + len(nm) + 1
+                claim(hn, wl + (wl & 1))
+    claim(dir_rva + 20 * len(side.imports), 20)   # the null descriptor
+    return cov
+
+
 def do_idata(R, C):
     rs, cs = sect(R.pe, ".idata"), sect(C.pe, ".idata")
     rep = SecReport(".idata", rs["virtual_size"], cs["virtual_size"])
@@ -1477,22 +1511,27 @@ def do_idata(R, C):
         nsame += len(set(re_) & set(ce))
         if re_ != ce and set(re_) == set(ce):
             reorder += 1
-        # the hint/name blobs, paired by name
+        # the hint/name blobs, paired by name, INCLUDING the even-alignment pad
+        # byte - it belongs to the entry and travels with it
         rmap = {e[0]: e[2] for e in ri[k]["entries"]}
         cmap = {e[0]: e[2] for e in ci[k]["entries"]}
         for n in set(rmap) & set(cmap):
             if not rmap[n] or not cmap[n]:
-                rep.cmp.compared += 4          # by-ordinal: the slot IS the datum
-                rep.cmp.slot_sym += 4
+                # by-ordinal: both slot pairs store the same ordinal literal,
+                # proven by the name pairing ("#13" == "#13")
+                rep.cmp.compared += 8
+                rep.cmp.equal += 8
+                rep.cmp.classes["by-ordinal slot pair, value identity"] += 2
                 continue
-            rl = 2 + len(n) + 1
+            wl = 2 + len(n) + 1
+            wl += wl & 1
             ro, co = R.pe.off(rmap[n]), C.pe.off(cmap[n])
-            rb = R.pe.data[ro:ro + rl]
-            cb = C.pe.data[co:co + rl]
-            rep.cmp.compared += rl
+            rb = R.pe.data[ro:ro + wl]
+            cb = C.pe.data[co:co + wl]
+            rep.cmp.compared += wl
             eq = sum(1 for a, b in zip(rb, cb) if a == b)
             rep.cmp.equal += eq
-            rep.cmp.differ += rl - eq
+            rep.cmp.differ += wl - eq
             # the two 4-byte pointers that reach this name (ILT + IAT slots)
             rep.cmp.compared += 8
             rep.cmp.slot_sym += 8
@@ -1507,19 +1546,75 @@ def do_idata(R, C):
                                  if a == b)
             rep.cmp.differ += sum(1 for a, b in zip(rd[off:off + 4], cd[off:off + 4])
                                   if a != b)
-        # the DLL name string
+        # the DLL name string, with its even-alignment pad
         rn = R.pe.cstr(ri[k]["name_rva"])
         rl = len(rn) + 1
+        rl += rl & 1
+        ro, co = R.pe.off(ri[k]["name_rva"]), C.pe.off(ci[k]["name_rva"])
+        rb = R.pe.data[ro:ro + rl]
+        cb = C.pe.data[co:co + rl]
         rep.cmp.compared += rl
-        same = rn == C.pe.cstr(ci[k]["name_rva"])
-        rep.cmp.equal += rl if same else 0
-        rep.cmp.differ += 0 if same else rl
+        eq = sum(1 for a, b in zip(rb, cb) if a == b)
+        rep.cmp.equal += eq
+        rep.cmp.differ += rl - eq
     rep.cmp.classes["import descriptor RVA field -> same target"] += 3 * len(both)
-    # the null thunk terminators and the null descriptor are structure, not
-    # content: both images have them and they are zero on both sides
-    term = 8 * len(both) + 20
-    rep.cmp.compared += term
-    rep.cmp.equal += term
+    # the null thunk terminators and the null descriptor: zero on both sides,
+    # read and compared rather than asserted
+    for k in both:
+        rn_ = len(ri[k]["entries"])
+        cn_ = len(ci[k]["entries"])
+        for rarr, carr in (("olt", "olt"), ("iat", "iat")):
+            rz = R.pe.u32(ri[k][rarr] + 4 * rn_)
+            cz = C.pe.u32(ci[k][carr] + 4 * cn_)
+            rep.cmp.compared += 4
+            rep.cmp.equal += 4 if (rz == 0 and cz == 0) else 0
+            rep.cmp.differ += 0 if (rz == 0 and cz == 0) else 4
+    rep.cmp.compared += 20                     # the null descriptor
+    rep.cmp.equal += 20
+
+    # The slack the incremental linker reserved (inter-array growth room, the
+    # pre-pool gap, the pool tail).  Positions are order-INDEPENDENT once the
+    # skeleton offsets agree, so prove that first (the .rsrc rule: verify the
+    # alignment, then compare; fall back to UNMEASURED if it ever stops holding).
+    def skeleton(side, srow):
+        # the DLL-name string is POOL content (its position follows member
+        # order and is paired by name above); the skeleton is the fixed part.
+        # Descriptor positions come from the data directory - `desc` is a FILE
+        # offset that can map through an earlier section's raw overlap.
+        dir_rva = struct.unpack_from("<I", side.pe.data, side.pe._opt + 96 + 8)[0]
+        return dict(
+            [("<dir>", dir_rva - srow["rva"])]
+            + [(d["dll"], (i, d["olt"] - srow["rva"], d["iat"] - srow["rva"],
+                           len(d["entries"])))
+               for i, d in enumerate(side.imports)])
+
+    aligned = (rs["virtual_size"] == cs["virtual_size"]
+               and skeleton(R, rs) == skeleton(C, cs))
+    if aligned:
+        cov_r = _idata_claims(R, rs)
+        cov_c = _idata_claims(C, cs)
+        rb = raw(R.pe, rs)[:rs["virtual_size"]]
+        cb = raw(C.pe, cs)[:cs["virtual_size"]]
+        sl_eq = sl_bad = 0
+        for i in range(rs["virtual_size"]):
+            if cov_r[i]:
+                continue
+            if not cov_c[i] and rb[i] == cb[i]:
+                sl_eq += 1
+            else:
+                sl_bad += 1
+        rep.cmp.compared += sl_eq + sl_bad
+        rep.cmp.equal += sl_eq
+        rep.cmp.differ += sl_bad
+        rep.cmp.classes["incremental-link slack/pad, positionally aligned"] += 1
+        rep.notes["%s B of reserved slack + alignment padding compared "
+                  "positionally after proving both skeletons (descriptor/array/"
+                  "name offsets) identical - %s equal, %s differ"
+                  % ("{:,}".format(sl_eq + sl_bad), "{:,}".format(sl_eq),
+                     "{:,}".format(sl_bad))] += 1
+    else:
+        rep.why = "import skeletons not positionally aligned; slack UNMEASURED"
+
     rep.paired_r = rep.paired_c = rep.cmp.compared
     rep.unmeasured_r = rep.rsize - rep.paired_r
     rep.row("import descriptors + terminator",
@@ -1533,10 +1628,9 @@ def do_idata(R, C):
     rep.notes["%d DLLs, %d imports; %d paired by name, %d DLLs whose thunk array "
               "retail orders differently" % (len(both), nimp, nsame, reorder)] += 1
     rep.notes["order inside a thunk array is an import-library member-order "
-              "artifact, not content: the (dll, name) SETS are identical"] += 1
-    rep.notes["the %s B not paired is hint/name pool alignment padding, whose "
-              "position follows that ordering - UNMEASURED, not a defect"
-              % "{:,}".format(rep.unmeasured_r)] += 1
+              "artifact, not content: the (dll, name) SETS are identical and "
+              "every entry is paired by name (docs/patterns/"
+              "idata-thunk-order-is-resolution-history.md)"] += 1
     rep.close()
     return rep
 
@@ -2098,6 +2192,33 @@ def selftest():
     check("...and the ordering worklist attributes it to the right region",
           bool(named3) and not was3,
           "%d row(s) for the victim, baseline %d" % (len(named3), len(was3)))
+
+    # --- 3e. the .idata slack + hint pairing can FAIL -----------------------
+    # do_idata claims the incremental-link slack positionally (after proving
+    # the skeletons aligned) and each hint/name blob by name.  A measurement
+    # that cannot fail is not a measurement: flip one byte of each and demand
+    # exactly +2 unreproduced in .idata.
+    cs_ = sect(C.pe, ".idata")
+    cov_c = _idata_claims(C, cs_)
+    slack_off = next(cs_["raw_offset"] + i
+                     for i in range(cs_["virtual_size"]) if not cov_c[i])
+    hint_rva = next(e[2] for d in C.imports for e in d["entries"] if e[2])
+    buf = bytearray(orig.read_bytes())
+    buf[slack_off] ^= 0x5A
+    buf[C.pe.off(hint_rva)] ^= 0x5A
+    f4 = tmp / "idata.EXE"
+    f4.write_bytes(bytes(buf))
+    CAND = f4
+    _, _, mut4 = analyse()
+    CAND = orig
+    ib = next(r for r in base if r.name == ".idata")
+    im = next(r for r in mut4 if r.name == ".idata")
+    check(".idata: a flipped slack byte + a flipped hint -> exactly +2 "
+          "unreproduced", im.cmp.differ - ib.cmp.differ == 2,
+          "differ %d -> %d" % (ib.cmp.differ, im.cmp.differ))
+    check("...and .idata still measures every retail byte (unmeasured 0)",
+          im.unmeasured_r == 0 and im.cmp.compared == im.rsize,
+          "unmeasured %d" % im.unmeasured_r)
 
     # --- 4. placement shift is classified, not counted ----------------------
     rr = next((r for r in base if r.name == ".rsrc"), None)

@@ -71,5 +71,7 @@ history, which a fresh link cannot see at all).
   the external-symbol hash it walks) is what must be decoded; with it, retail's
   within-DLL order becomes an oracle for retail's per-obj symbol-table order.
 * `image_diff`'s `.idata` scorer pairs by `(dll, name)` for exactly this
-  reason; every measurable byte scores equal since the hint fix, and the 3,307
-  unmeasured bytes are all zero slack/padding (`docs/image-diff.md`).
+  reason; with the hint fix and the completed pairing (entry pads with their
+  entries, the 3,019 B of zero slack positionally after a skeleton-offset
+  proof) the section measures 100.00% — all 15,169 retail bytes, 0 differing —
+  while the reorder stays reported in the notes (`docs/image-diff.md`).
