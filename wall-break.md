@@ -1794,3 +1794,15 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
   and the local-guard family closed, the source-reachable levers on the heavy
   worklist are exhausted down to weight ~330; the coin investigation
   (c2.exe layout pass / IL-tap discriminator) is the gate to the next tier.
+
+## 2026-08-13 — `CGrunt::LoadGruntDeathAnimations` duplication model refuted once (dossier sharpened)
+
+- 0x60150, 90.70, TOPOLOGY. The QUICKFALL sortKey guard's je (0x607e9) lands
+  on a snap+value+ApplyGeometryDirect copy at 0x608fa; modeling it as a
+  duplicated else-arm inside QUICKFALL over-duplicates (8 snap-ANDs vs
+  retail 6) and drops to 85.40 - reverted. Correct model to test next: 0x608fa
+  is a tail SHARED with the DEATH_FALL/DEATHBRIDGE arm (map its in-edges
+  first); the QUICKFALL then-arm carries one inline copy (0x607ef) and the
+  guard's skip path converges on the shared copy. Also retail orders the pose
+  LookupValue BEFORE the guard (ours snaps first) - that reorder is part of
+  the same sitting.
