@@ -75,7 +75,16 @@ end differs — a C struct costs +1):
 
 A uniform sweep of one kind steps the counter in a fixed stride and can only visit that
 residue class — that is WHY flat single-family sweeps stay flat. Mixing kinds is what
-changes the stride. Full recipe, normalization rules (the `ex` stream carries u8/u16
+changes the stride.
+
+State-reachability is PER-TU, and the tap sorts a TU in ~8 minutes before any
+sweep is spent on it: run the five-kind probe panel through the causation leg
+(`causation.py <tu> <profile> "<probe>"`) and count .text diff bytes. Zero
+across the panel = the TU's residue is C2-ANCHORED (proven for
+gruntphasestep, font, grunt, playercommandstep on 2026-08-13 - every object
+delta was symbol-table text); the movers this pattern originally measured
+(the DDrawMgr palette TUs) are the reachable class. Panel FIRST, sweep only
+on reachable TUs. Full recipe, normalization rules (the `ex` stream carries u8/u16
 source-line records that must be masked), and the probe scripts: regenerate with the
 capture commands in `build/il-probe/REPORT.md` (evidence run 2026-08-13; scripts
 `ilcap.py` / `sweep.py` / `causation.py` beside it).
