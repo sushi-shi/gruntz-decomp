@@ -1621,3 +1621,22 @@ the unwind-epilogue and cross-jump coins (unsteerable) — do not re-sweep.
 - Current-source score sits at the linear scorer's 0.00 floor (rotation clamp);
   the 32.89 peak belongs to the pre-correction fingerprint. Blessed as a
   correctness dip. Next untested hypothesis for the sink: TU body-set parity.
+
+## 2026-08-13 — StepArrivalDrop loop-family refutation (user-suggested for/while spellings)
+
+- Three goto-free re-entry structures, one build each, all leave region A (the
+  pathGate region) sunk behind B/C/D: (a) `for (;;)` with A at the loop top,
+  entry `goto tryNudge` on search-fail — the forward goto HOISTS tryNudge's
+  region (the hoist, not the sink, controls this variant); (b) `for (;;)` with
+  an `if (havePath)` loop-top test, no goto anywhere, re-entries as
+  `havePath = 1; continue;` — still sunk; (c) do-while(0)/break analysis: its
+  source order is B-first, reproducing the rotated layout by construction, not
+  retail's (not built).
+- SHARPENED MECHANISM: cl takes A off the fall chain whenever A both (i) never
+  falls through (every path returns) and (ii) has branch entries from below —
+  independent of the construct family (goto, loop back-edge, structured flag).
+  The doc's return-probe control (no below-entries → A stays inline) fits this.
+  Retail kept A on the fall chain WITH below-entries, so the deciding input is
+  outside this function's body: C2-side TU state. Next probe when tackled:
+  TU body-set parity / preceding-function state in Grunt.cpp, via the IL tap
+  as the C1-vs-C2 discriminator for the ordering decision.
