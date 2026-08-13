@@ -321,7 +321,7 @@ i32 CGrunt::ScanNearestTarget() {
             PRIO(pa, m_entranceReason);
             i32 pb;
             PRIO(pb, sg->m_entranceReason);
-            if (pa > pb) {
+            if (pb < pa) {
                 goto L_clearMode;
             }
             if (sg->m_entranceCommitted == 0) {
