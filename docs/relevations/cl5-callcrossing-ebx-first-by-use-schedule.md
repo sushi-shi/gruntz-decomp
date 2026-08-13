@@ -50,6 +50,17 @@ with a KNOWN target instead of a blind sweep. The residual ESI/EDI split between
 the other two is schedule/handle state (the C1 class the IL tap sorts); this
 lever only pins the EBX pick, but that is the modal one.
 
+## Negative control (the boundary, proven)
+
+`CTriggerMgr::FindGruntAt` (0x075c60, 94.04%) has a pure ESI<->EDI role swap
+(diff dominated by esi:9/edi:9, NO EBX component): retail `mov esi,ecx; sar
+esi,5` vs ours `mov edi,ecx; sar edi,5` on the tcol/trow coordinates. Swapping
+the two coordinate declarations moved it 94.04 -> 88.46 (WORSE), and no source
+order recovers the split. This is the model working as stated: the EBX pick is
+source-reachable, the ESI/EDI split between the remaining two is C1 handle
+state and is NOT. So the detector must target the EBX component - a swap
+dominated by ESI/EDI alone is handle state, park it (or sort with the IL tap).
+
 ## Bounds
 
 Measured on the pinned cl 5.0 `c2.exe` 2026-08-13 with the probes above
