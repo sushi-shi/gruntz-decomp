@@ -247,6 +247,32 @@
   "spread": 122.11237113402062
  },
  {
+  "file": "src/DDrawMgr/DDrawSurfaceMgr.cpp",
+  "n": 10,
+  "bytes": 3507,
+  "lo": 1398848,
+  "hi": 1407140,
+  "span": 8292,
+  "frags": 2,
+  "avg_cluster": 5.0,
+  "frag_ratio": 0.2,
+  "occupancy": 0.42293777134587557,
+  "spread": 2.3644140290846876
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgr.cpp",
+  "n": 36,
+  "bytes": 4243,
+  "lo": 1404080,
+  "hi": 1412951,
+  "span": 8871,
+  "frags": 2,
+  "avg_cluster": 18.0,
+  "frag_ratio": 0.05555555555555555,
+  "occupancy": 0.478300078908804,
+  "spread": 2.0907376855998114
+ },
+ {
   "file": "src/Wwd/WwdObjMgr.cpp",
   "n": 42,
   "bytes": 6075,
@@ -2484,16 +2510,16 @@
  },
  {
   "file": "src/Gruntz/SBI_RectOnly.cpp",
-  "n": 90,
-  "bytes": 41281,
+  "n": 89,
+  "bytes": 41254,
   "lo": 1039360,
   "hi": 1096724,
   "span": 57364,
   "frags": 1,
-  "avg_cluster": 90.0,
-  "frag_ratio": 0.011111111111111112,
-  "occupancy": 0.7196325221393208,
-  "spread": 1.3895981202005765
+  "avg_cluster": 89.0,
+  "frag_ratio": 0.011235955056179775,
+  "occupancy": 0.7191618436650163,
+  "spread": 1.390507587143065
  },
  {
   "file": "src/Gruntz/DestructButton.cpp",
@@ -3092,32 +3118,6 @@
   "frag_ratio": 0.25,
   "occupancy": 0.9716466739367503,
   "spread": 1.0291806958473626
- },
- {
-  "file": "src/DDrawMgr/DDrawSurfaceMgr.cpp",
-  "n": 9,
-  "bytes": 3423,
-  "lo": 1398848,
-  "hi": 1404066,
-  "span": 5218,
-  "frags": 1,
-  "avg_cluster": 9.0,
-  "frag_ratio": 0.1111111111111111,
-  "occupancy": 0.6559984668455346,
-  "spread": 1.5243938066023957
- },
- {
-  "file": "src/DDrawMgr/DDrawSubMgr.cpp",
-  "n": 37,
-  "bytes": 4327,
-  "lo": 1404080,
-  "hi": 1412951,
-  "span": 8871,
-  "frags": 1,
-  "avg_cluster": 37.0,
-  "frag_ratio": 0.02702702702702703,
-  "occupancy": 0.48776913538496225,
-  "spread": 2.0501502195516523
  },
  {
   "file": "src/DDrawMgr/LevelPlane.cpp",

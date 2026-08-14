@@ -3277,16 +3277,16 @@
  },
  {
   "file": "src/Rez/RezColl.cpp",
-  "n": 9,
-  "bytes": 444,
+  "n": 8,
+  "bytes": 332,
   "lo": 1591472,
   "hi": 1592157,
   "span": 685,
   "frags": 1,
-  "avg_cluster": 9.0,
-  "frag_ratio": 0.1111111111111111,
-  "occupancy": 0.6481751824817519,
-  "spread": 1.5427927927927927
+  "avg_cluster": 8.0,
+  "frag_ratio": 0.125,
+  "occupancy": 0.4846715328467153,
+  "spread": 2.0632530120481927
  },
  {
   "file": "src/Rez/DebugPrintf.cpp",

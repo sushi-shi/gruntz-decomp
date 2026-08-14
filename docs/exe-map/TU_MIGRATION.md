@@ -14,6 +14,7 @@ Outlier mechanisms: REHOME-CANDIDATE 12, COMDAT-AT-USAGE 4.
 | interval | fns | verdict | weave | combine/verify these units |
 |---|---|---|---|---|
 | `0x159250-0x15ccc8` | 57 | seam-glued | 0.04 | wwdobjmgr (41), wwdfactoryobject (16) |
+| `0x155840-0x158f57` | 46 | seam-glued | 0.05 | ddrawsubmgr (36), ddrawsurfacemgr (10) |
 | `0x0c2980-0x0c5333` | 41 | mixed | 0.08 | multistartdlgroster (33), multistartdlg (8) |
 | `0x184610-0x185a0e` | 38 | seam-glued | 0.03 | debugprintf (13), rezcoll (11), menuitem (7), rezlist (5) |
 | `0x056f80-0x05c815` | 26 | seam-glued | 0.04 | gruntcombat (22), motionstate (3) |
@@ -26,7 +27,7 @@ Outlier mechanisms: REHOME-CANDIDATE 12, COMDAT-AT-USAGE 4.
 | battlezmapconfig | `0x24dc0` (7), `0x29a30` (30) |
 | gruntentrancearrival | `0x616e0` (20), `0x6b270` (3) |
 | multistartdlg | `0xc1750` (15), `0xc2980` (8) |
-| sbi_rectonly | `0xfdc00` (29), `0x104d60` (61) |
+| sbi_rectonly | `0xfdc00` (28), `0x104d60` (61) |
 
 ## MOVE — lone strays inside a foreign interval
 
@@ -300,8 +301,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x152660-0x152e04` (7 EH sites): ddrawsubmgrleaf (cpp)
 - `0x153180-0x1549c5` (1 EH sites): cimage (cpp-rtti)
 - `0x155360-0x1556f5` (4 EH sites): ddrawworkerregistry (cpp)
-- `0x155840-0x156ca2` (5 EH sites): ddrawsurfacemgr (cpp)
-- `0x156cb0-0x158f57` (21 EH sites): ddrawsubmgr (cpp)
+- `0x155840-0x158f57` (26 EH sites): ddrawsurfacemgr (cpp), ddrawsubmgr (cpp)
 - `0x159250-0x15ccc8` (11 EH sites): wwdobjmgr (cpp), wwdfactoryobject (cpp)
 - `0x15ccd0-0x161322` (7 EH sites): gamelevel (cpp)
 - `0x1615a0-0x163a00` (3 EH sites): levelplane (cpp)
@@ -642,7 +642,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6422/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 855 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6434/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 858 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea) + `0x9090` (actionoptionsmenubar)
   - `0x8b8c0` (gruntzmgr) + `0x93d40` (?)
@@ -668,7 +668,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 Compressed unit sequence of the 1050 attributed $E initializer fragments (of 1075 live; 501 slots zeroed by relinks). This is the obj order of the original project files:
 
 ```
-?x5 | actionareax10 | actionoptionsmenubarx9 | gameobjectfactoryx9 | advancedoptionsx9 |
+?x5 | actionareax9 | wormhole | actionoptionsmenubarx9 | gameobjectfactoryx9 | advancedoptionsx9 |
 worldsoundsetx10 | gamesavex9 | attractstatex9 | dialogsx9 | battlezdlgcolorsx9 | customleveldlgx9 |
 bootystateactivatex9 | dialogs | chatboxownerx9 | fontconfigx9 | checkpointdlgx9 | gruntzcmdmgrx11 |
 battlezmapconfigx10 | battlezunitstepx9 | grunttilescanx9 | gruntstatestepx9 | battlezspawncheckx9 |
