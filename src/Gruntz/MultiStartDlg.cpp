@@ -186,13 +186,8 @@ i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
     }
 
     MsgParam prev;
-    return CallWindowProcA(
-        (prev.m_long = g_savedMultiWndProc, prev.m_wndproc),
-        hWnd,
-        msg,
-        wParam,
-        lParam
-    );
+    prev.m_long = g_savedMultiWndProc;
+    return CallWindowProcA(prev.m_wndproc, hWnd, msg, wParam, lParam);
 }
 
 // @early-stop
