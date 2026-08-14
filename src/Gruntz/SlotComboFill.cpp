@@ -72,3 +72,22 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     }
     return 0;
 }
+
+RVA(0x00038220, 0x73)
+i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
+    HWND list = GetDlgItem(hDlg, id);
+    if (!list) {
+        return 0;
+    }
+    i32 sel = SendMessageA(list, CB_GETCURSEL, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    i32 data = SendMessageA(list, CB_GETITEMDATA, sel, 0);
+    if (data == -1) {
+        return 0;
+    }
+    *outLo = data & 0xffff;
+    *outHi = static_cast<u32>(data) >> 0x10;
+    return 1;
+}

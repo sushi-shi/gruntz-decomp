@@ -120,25 +120,6 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
 };
 // clang-format on
 
-RVA(0x00038220, 0x73)
-i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
-    HWND list = GetDlgItem(hDlg, id);
-    if (!list) {
-        return 0;
-    }
-    i32 sel = SendMessageA(list, CB_GETCURSEL, 0, 0);
-    if (sel == -1) {
-        return 0;
-    }
-    i32 data = SendMessageA(list, CB_GETITEMDATA, sel, 0);
-    if (data == -1) {
-        return 0;
-    }
-    *outLo = data & 0xffff;
-    *outHi = static_cast<u32>(data) >> 0x10;
-    return 1;
-}
-
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* mgr, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {

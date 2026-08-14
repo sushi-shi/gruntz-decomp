@@ -22,4 +22,8 @@ public:
     i32 SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi);
 };
 
+// The read side of FillCombo's packed item data: unpacks the two 16-bit halves
+// back out of the selected entry.
+i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi);
+
 #endif // GRUNTZ_NET_LATENCYLIST_H
