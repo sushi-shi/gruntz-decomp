@@ -54,5 +54,6 @@ extern const float g_fxEps;
 
 void __cdecl operator delete(void* p);
 void ScatterSamples(i32* arr, i32, i32, i32);
+i32 IsPrime(i32 n);
 
 #endif // GRUNTZ_GRUNTZ_CFADER_H

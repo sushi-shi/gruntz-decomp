@@ -1,23 +1,10 @@
 #include <rva.h>
 
+#include <Gruntz/Fader.h>
 #include <Ints.h>
 
 #include <stddef.h>
 #include <stdlib.h>
-
-RVA(0x00182a80, 0x2e)
-i32 IsPrime(i32 n) {
-    i32 d = 2;
-    if (d >= n) {
-        return 1;
-    }
-    for (; d < n; d++) {
-        if (n % d == 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
 
 RVA(0x00182940, 0x13c)
 void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
@@ -83,4 +70,18 @@ have_prime:
     }
 
     delete[] used;
+}
+
+RVA(0x00182a80, 0x2e)
+i32 IsPrime(i32 n) {
+    i32 d = 2;
+    if (d >= n) {
+        return 1;
+    }
+    for (; d < n; d++) {
+        if (n % d == 0) {
+            return 0;
+        }
+    }
+    return 1;
 }
