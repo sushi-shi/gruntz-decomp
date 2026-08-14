@@ -15,7 +15,6 @@ Outlier mechanisms: REHOME-CANDIDATE 12, COMDAT-AT-USAGE 4.
 |---|---|---|---|---|
 | `0x159250-0x15ccc8` | 57 | seam-glued | 0.04 | wwdobjmgr (41), wwdfactoryobject (16) |
 | `0x155840-0x158f57` | 46 | seam-glued | 0.05 | ddrawsubmgr (36), ddrawsurfacemgr (10) |
-| `0x0c2980-0x0c5333` | 41 | mixed | 0.08 | multistartdlgroster (33), multistartdlg (8) |
 | `0x184610-0x185a0e` | 38 | seam-glued | 0.03 | debugprintf (13), rezcoll (11), menuitem (7), rezlist (5) |
 | `0x056f80-0x05c815` | 26 | seam-glued | 0.04 | gruntcombat (22), motionstate (3) |
 
@@ -26,7 +25,6 @@ Outlier mechanisms: REHOME-CANDIDATE 12, COMDAT-AT-USAGE 4.
 | play | `0xc86d0` (3), `0xcedf0` (19), `0xd5960` (34) |
 | battlezmapconfig | `0x24dc0` (7), `0x29a30` (30) |
 | gruntentrancearrival | `0x616e0` (20), `0x6b270` (3) |
-| multistartdlg | `0xc1750` (15), `0xc2980` (8) |
 | sbi_rectonly | `0xfdc00` (28), `0x104d60` (61) |
 
 ## MOVE — lone strays inside a foreign interval
@@ -48,7 +46,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x013470` | `??0CVoiceTrigger@@QAE@XZ` | gruntvoice | `0x11160` serialobjectfactory |
 | `0x0183d0` | `?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ` | customleveldlg | `0x183d0` ? |
 | `0x0183f0` | `?PickIfSelected@CBattlezDlgCustom@@QAEXXZ` | customleveldlg | `0x183f0` ? |
-| `0x01f450` | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | multistartdlgroster | `0x18f00` bootystateactivate |
+| `0x01f450` | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | multistartdlg | `0x18f00` bootystateactivate |
 | `0x01f940` | `?PlayIfElapsed@LeafCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
 | `0x01f9b0` | `?StartUpPrompt@@YAHPAUHWND__@@@Z` | startupprompt | `0x1f9b0` ? |
 | `0x0310f0` | `?IndexToPtr@_zdvec@@QAEPADH@Z` | zvec | `0x310f0` ? |
@@ -67,7 +65,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x037910` | `?Dispatch@CLatencyList@@QAEHH@Z` | bzkinddispatch | `0x37910` ? |
 | `0x0379a0` | `?Clear@CKeyedList@@QAEXXZ` | keyedlist | `0x379a0` ? |
 | `0x037a70` | `?AddNode@CKeyedList@@QAEPAUCKeyedNode@@PBDHH@Z` | keyedlist | `0x37a70` ? |
-| `0x038220` | `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | multistartdlgroster | `0x38220` ? |
+| `0x038220` | `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | multistartdlg | `0x38220` ? |
 | `0x0387c0` | `?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z` | inputdeviceconfig | `0x387c0` ? |
 | `0x0388e0` | `?PopulateInputDeviceCombo@@YAHPAUHWND__@@HH@Z` | inputdeviceconfig | `0x388e0` ? |
 | `0x039dc0` | `?LoadCreditzAssets@CCreditsState@@QAEXXZ` | creditzassets | `0x39dc0` ? |
@@ -260,8 +258,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x0b67f0-0x0bd1e6` (22 EH sites): multi (cpp-rtti)
 - `0x0bd850-0x0be869` (1 EH sites): netlobbydialogs (cpp-rtti)
 - `0x0bef80-0x0c07ac` (1 EH sites): netsessionmgr (cpp-rtti)
-- `0x0c1750-0x0c296b` (5 EH sites): multistartdlg (cpp-rtti)
-- `0x0c2980-0x0c5333` (13 EH sites): multistartdlgroster (cpp-rtti), multistartdlg (cpp-rtti)
+- `0x0c1750-0x0c5333` (18 EH sites): multistartdlg (cpp-rtti)
 - `0x0c5630-0x0c7be5` (6 EH sites): droppedobject (cpp-rtti)
 - `0x0c86d0-0x0ca1a1` (3 EH sites): play (cpp-rtti)
 - `0x0cedf0-0x0d1b50` (4 EH sites): play (cpp-rtti)
@@ -362,7 +359,6 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - databuffer (`cpp`) — src/DDrawMgr/DataBuffer.cpp
 - terraintileloader (`cpp-rtti`) — src/Gruntz/TerrainTileLoader.cpp
 - rollingball (`cpp-rtti`) — src/Gruntz/RollingBall.cpp
-- multistartdlgroster (`cpp-rtti`) — src/Gruntz/MultiStartDlgRoster.cpp
 - slotcombofill (`cpp-rtti`) — src/Gruntz/SlotComboFill.cpp
 - levelrezpath (`cpp-rtti`) — src/Gruntz/LevelRezPath.cpp
 - brickzload (`cpp-rtti`) — src/Gruntz/BrickzLoad.cpp
@@ -642,7 +638,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6434/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 858 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6435/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 859 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea) + `0x9090` (actionoptionsmenubar)
   - `0x8b8c0` (gruntzmgr) + `0x93d40` (?)
@@ -681,22 +677,23 @@ helpstatex9 | ingameworkerhandlersx9 | ingameiconx3 | areamgr | statedispatchx9 
 spriteloaders | lightfxmgrx9 | loadgamemenux9 | mapmgrx9 | menustate | mainmenubuilderx10 |
 lightfxrenderx9 | logicworkerhandlersax11 | frontcandyanix5 | logicworkerhandlersbx11 | spotlightx2
 | pathhazard | multix9 | pathhazardx2 | netlobbydialogsx9 | multi | multihelpdlgx9 |
-netsessionmgrx10 | netcmdslotx9 | multistartdlgx9 | netcmdslot | droppedobjectx12 |
-playercommandstep | play | playercommandstep | play | playercommandstep | play | playercommandstep |
-playx2 | gruntzplayerx9 | playassetloadx9 | levelpreviewx9 | logicrecorddispatchx9 | projectilex2 |
-savegamedialogsx9 | savegamex9 | aniplayerx9 | sbi_wellgoox9 | sbi_imagex9 | sbi_imagesetx9 |
-sbi_imagesetanix9 | sbi_menuitemx9 | statusbartabbuildersx9 | sbi_sidetabx9 | sbi_statztabarrowx9 |
-cmdscrollapplyx10 | gruntarrivalscanx9 | gruntbricklayerstepx9 | gruntwanderstepx9 |
-gruntreticlescanx9 | gruntchargestepx9 | gruntarrivalupdatex9 | gruntgoosuckerstepx9 |
-gruntdefensealtx9 | gruntarrivalneighborx9 | gruntdefensestepx9 | gruntdiggerstepx9 |
-gruntscantargetx9 | gruntphasestepx9 | gruntseektargetx9 | gruntpeertrackingx9 | gruntdefenseleanx9
-| splashstatex9 | attract | gameassetnamespacesx9 | statichazardx9 | battlezdatax10 | sbi_rectonlyx9
-| statusbarspriteactsx9 | tilelogicpumpx16 | tileswitchlogicx3 | tilelogicpump | tileswitchlogicx3 |
-tilelogicpumpx2 | toobspikezx3 | tileswitchlogic | toobspikezx3 | tileswitchlogicx3 | fonts |
-savefrontbuffershot | fonts | tileswitchlogic | fonts | savefrontbuffershot | fonts |
-tileswitchlogicx2 | tiletriggercontainerx14 | heapdiagx3 | tiletriggercontainer | heapdiagx3 |
-tiletriggercontainerx2 | gruntvoicex11 | gruntspawnconfigx3 | gruntvoice | gruntspawnconfigx3 |
-gruntvoicex2 | ?x19 | ddsurface | directdrawmgr | typekeycollx7 | menupage | ?
+netsessionmgrx10 | netcmdslotx9 | multistartdlgx10 | droppedobjectx9 | multistartdlg |
+droppedobjectx2 | playercommandstep | play | playercommandstep | play | playercommandstep | play |
+playercommandstep | playx2 | gruntzplayerx9 | playassetloadx9 | levelpreviewx9 |
+logicrecorddispatchx9 | projectilex2 | savegamedialogsx9 | savegamex9 | aniplayerx9 | sbi_wellgoox9
+| sbi_imagex9 | sbi_imagesetx9 | sbi_imagesetanix9 | sbi_menuitemx9 | statusbartabbuildersx9 |
+sbi_sidetabx9 | sbi_statztabarrowx9 | cmdscrollapplyx10 | gruntarrivalscanx9 | gruntbricklayerstepx9
+| gruntwanderstepx9 | gruntreticlescanx9 | gruntchargestepx9 | gruntarrivalupdatex9 |
+gruntgoosuckerstepx9 | gruntdefensealtx9 | gruntarrivalneighborx9 | gruntdefensestepx9 |
+gruntdiggerstepx9 | gruntscantargetx9 | gruntphasestepx9 | gruntseektargetx9 | gruntpeertrackingx9 |
+gruntdefenseleanx9 | splashstatex9 | attract | gameassetnamespacesx9 | statichazardx9 |
+battlezdatax10 | sbi_rectonlyx9 | statusbarspriteactsx9 | tilelogicpumpx16 | tileswitchlogicx3 |
+tilelogicpump | tileswitchlogicx3 | tilelogicpumpx2 | toobspikezx3 | tileswitchlogic | toobspikezx3
+| tileswitchlogicx3 | fonts | savefrontbuffershot | fonts | tileswitchlogic | fonts |
+savefrontbuffershot | fonts | tileswitchlogicx2 | tiletriggercontainerx14 | heapdiagx3 |
+tiletriggercontainer | heapdiagx3 | tiletriggercontainerx2 | gruntvoicex11 | gruntspawnconfigx3 |
+gruntvoice | gruntspawnconfigx3 | gruntvoicex2 | ?x19 | ddsurface | directdrawmgr | typekeycollx7 |
+menupage | ?
 ```
 
 *Caveats: the engine-resource mega-interval (0x1396f0+) is glued by our own coarse units and needs per-function re-attribution before it splits (DIRSURF/DDRAWMGR/DIRPAL anchors mark three distinct files inside it). Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*

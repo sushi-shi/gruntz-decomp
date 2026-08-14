@@ -42,14 +42,14 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z` | GameLevel.cpp | **TriggerMgrGrid.cpp** (11 fns) | 966.4 KB |
 | `?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind` | GameLevel.cpp | **GruntzApp.cpp** (9 fns) | 873.6 KB |
 | `?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (10 fns) | 812.7 KB |
-| `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **BootyStateActivate.cpp** (15 fns) | 653.3 KB |
-| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **VideoConfig.cpp** (16 fns) | 553.7 KB |
+| `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **BootyStateActivate.cpp** (15 fns) | 648.7 KB |
+| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlg.cpp | **VideoConfig.cpp** (16 fns) | 549.2 KB |
 | `?GetName@CSpawnEntry@@QAE?AVCString@@XZ` | GruntSpawnConfig.cpp | **AreaMgr.cpp** (54 fns) | 514.8 KB |
 | `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | PlayAssetLoad.cpp | **GruntzMgr.cpp** (54 fns) | 291.3 KB |
 | `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (9 fns) | 156.3 KB |
 | `_CreateStaticHazard` | LogicRecordDispatch.cpp | **BattlezData.cpp** (29 fns) | 114.6 KB |
-| `?GetConfigNameA@CMulti@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **Multi.cpp** (25 fns) | 50.1 KB |
-| `?GetConfigNameB@CMulti@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **Multi.cpp** (25 fns) | 50.1 KB |
+| `?GetConfigNameA@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
+| `?GetConfigNameB@CMulti@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **Multi.cpp** (25 fns) | 45.6 KB |
 
 ## D. HEADER-INLINE — reconstruct in the header (5) · not a move
 

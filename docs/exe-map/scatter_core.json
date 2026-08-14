@@ -1,16 +1,16 @@
 [
  {
-  "file": "src/Gruntz/MultiStartDlgRoster.cpp",
-  "n": 33,
-  "bytes": 7052,
+  "file": "src/Gruntz/MultiStartDlg.cpp",
+  "n": 47,
+  "bytes": 9200,
   "lo": 128080,
   "hi": 807731,
   "span": 679651,
   "frags": 4,
-  "avg_cluster": 8.25,
-  "frag_ratio": 0.12121212121212122,
-  "occupancy": 0.010375913520321458,
-  "spread": 96.37705615428247
+  "avg_cluster": 11.75,
+  "frag_ratio": 0.0851063829787234,
+  "occupancy": 0.013536359101950854,
+  "spread": 73.87510869565217
  },
  {
   "file": "src/Gruntz/GameLevel.cpp",
@@ -1701,19 +1701,6 @@
   "frag_ratio": 0.05555555555555555,
   "occupancy": 0.7050523441055986,
   "spread": 1.4183344092963202
- },
- {
-  "file": "src/Gruntz/MultiStartDlg.cpp",
-  "n": 14,
-  "bytes": 2148,
-  "lo": 792640,
-  "hi": 797035,
-  "span": 4395,
-  "frags": 1,
-  "avg_cluster": 14.0,
-  "frag_ratio": 0.07142857142857142,
-  "occupancy": 0.4887372013651877,
-  "spread": 2.0460893854748603
  },
  {
   "file": "src/Gruntz/DroppedObject.cpp",

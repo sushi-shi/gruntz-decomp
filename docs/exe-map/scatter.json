@@ -221,17 +221,17 @@
   "spread": 21.598600767321148
  },
  {
-  "file": "src/Gruntz/MultiStartDlgRoster.cpp",
-  "n": 37,
-  "bytes": 7600,
+  "file": "src/Gruntz/MultiStartDlg.cpp",
+  "n": 54,
+  "bytes": 11028,
   "lo": 128080,
   "hi": 807731,
   "span": 679651,
   "frags": 4,
-  "avg_cluster": 9.25,
-  "frag_ratio": 0.10810810810810811,
-  "occupancy": 0.011182209692915923,
-  "spread": 89.42776315789473
+  "avg_cluster": 13.5,
+  "frag_ratio": 0.07407407407407407,
+  "occupancy": 0.016225974801773263,
+  "spread": 61.62957925281103
  },
  {
   "file": "src/Gruntz/GameLevel.cpp",
@@ -2338,19 +2338,6 @@
   "frag_ratio": 0.05555555555555555,
   "occupancy": 0.7050523441055986,
   "spread": 1.4183344092963202
- },
- {
-  "file": "src/Gruntz/MultiStartDlg.cpp",
-  "n": 17,
-  "bytes": 3428,
-  "lo": 792400,
-  "hi": 797035,
-  "span": 4635,
-  "frags": 1,
-  "avg_cluster": 17.0,
-  "frag_ratio": 0.058823529411764705,
-  "occupancy": 0.7395900755124056,
-  "spread": 1.352100350058343
  },
  {
   "file": "src/Gruntz/PlayerCommandStep.cpp",

@@ -122,13 +122,13 @@
    ]
   },
   {
-   "file": "src/Gruntz/MultiStartDlgRoster.cpp",
-   "n": 33,
-   "bytes": 7052,
-   "main_lo": 797056,
+   "file": "src/Gruntz/MultiStartDlg.cpp",
+   "n": 47,
+   "bytes": 9200,
+   "main_lo": 792640,
    "main_hi": 807731,
-   "main_n": 29,
-   "main_share": 0.8787878787878788,
+   "main_n": 43,
+   "main_share": 0.9148936170212766,
    "clusters": 4,
    "conflated": false,
    "cluster_list": [
@@ -148,16 +148,16 @@
      "n": 2
     },
     {
-     "lo": 797056,
+     "lo": 792640,
      "hi": 807731,
-     "n": 29
+     "n": 43
     }
    ],
    "outliers": [
     {
      "rva": 128080,
      "name": "?GetName@GruntzPlayer@@QAE?AVCString@@XZ",
-     "dist": 668944,
+     "dist": 664528,
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/ChatBoxOwner.cpp",
@@ -166,7 +166,7 @@
     {
      "rva": 229920,
      "name": "?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z",
-     "dist": 567021,
+     "dist": 562605,
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/VideoConfig.cpp",
@@ -175,7 +175,7 @@
     {
      "rva": 745616,
      "name": "?GetConfigNameA@CMulti@@QAE?AVCString@@XZ",
-     "dist": 51341,
+     "dist": 46925,
      "cluster_n": 2,
      "kind": "interleaver",
      "home": "src/Gruntz/Multi.cpp",
@@ -184,7 +184,7 @@
     {
      "rva": 745680,
      "name": "?GetConfigNameB@CMulti@@QAE?AVCString@@XZ",
-     "dist": 51341,
+     "dist": 46925,
      "cluster_n": 2,
      "kind": "interleaver",
      "home": "src/Gruntz/Multi.cpp",
@@ -196,6 +196,20 @@
     229920,
     745616,
     745680,
+    792640,
+    793104,
+    793248,
+    794208,
+    794576,
+    796192,
+    796224,
+    796352,
+    796480,
+    796608,
+    796736,
+    796864,
+    796928,
+    796992,
     797056,
     797168,
     797216,
