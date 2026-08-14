@@ -123,23 +123,18 @@
   },
   {
    "file": "src/Gruntz/MultiStartDlg.cpp",
-   "n": 47,
-   "bytes": 9200,
+   "n": 46,
+   "bytes": 9085,
    "main_lo": 792640,
    "main_hi": 807731,
    "main_n": 43,
-   "main_share": 0.9148936170212766,
-   "clusters": 4,
+   "main_share": 0.9347826086956522,
+   "clusters": 3,
    "conflated": false,
    "cluster_list": [
     {
      "lo": 128080,
      "hi": 128112,
-     "n": 1
-    },
-    {
-     "lo": 229920,
-     "hi": 230035,
      "n": 1
     },
     {
@@ -164,15 +159,6 @@
      "home_n": 9
     },
     {
-     "rva": 229920,
-     "name": "?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z",
-     "dist": 562605,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/VideoConfig.cpp",
-     "home_n": 16
-    },
-    {
      "rva": 745616,
      "name": "?GetConfigNameA@CMulti@@QAE?AVCString@@XZ",
      "dist": 46925,
@@ -193,7 +179,6 @@
    ],
    "rvas": [
     128080,
-    229920,
     745616,
     745680,
     792640,

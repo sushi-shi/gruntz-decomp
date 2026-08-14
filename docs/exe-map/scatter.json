@@ -208,19 +208,6 @@
   "spread": 21.598600767321148
  },
  {
-  "file": "src/Gruntz/MultiStartDlg.cpp",
-  "n": 54,
-  "bytes": 11028,
-  "lo": 128080,
-  "hi": 807731,
-  "span": 679651,
-  "frags": 4,
-  "avg_cluster": 13.5,
-  "frag_ratio": 0.07407407407407407,
-  "occupancy": 0.016225974801773263,
-  "spread": 61.62957925281103
- },
- {
   "file": "src/Gruntz/GameLevel.cpp",
   "n": 95,
   "bytes": 16594,
@@ -336,6 +323,19 @@
   "frag_ratio": 0.6,
   "occupancy": 0.0013158290341921005,
   "spread": 759.9771505376344
+ },
+ {
+  "file": "src/Gruntz/MultiStartDlg.cpp",
+  "n": 53,
+  "bytes": 10913,
+  "lo": 128080,
+  "hi": 807731,
+  "span": 679651,
+  "frags": 3,
+  "avg_cluster": 17.666666666666668,
+  "frag_ratio": 0.05660377358490566,
+  "occupancy": 0.01605677031299888,
+  "spread": 62.279025016035924
  },
  {
   "file": "src/Gruntz/CreditsState.cpp",
@@ -1652,16 +1652,16 @@
  },
  {
   "file": "src/Gruntz/SlotComboFill.cpp",
-  "n": 3,
-  "bytes": 405,
+  "n": 4,
+  "bytes": 520,
   "lo": 229360,
-  "hi": 229857,
-  "span": 497,
+  "hi": 230035,
+  "span": 675,
   "frags": 1,
-  "avg_cluster": 3.0,
-  "frag_ratio": 0.3333333333333333,
-  "occupancy": 0.8148893360160966,
-  "spread": 1.2271604938271605
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.7703703703703704,
+  "spread": 1.2980769230769231
  },
  {
   "file": "src/Gruntz/StateMgrBZ.cpp",

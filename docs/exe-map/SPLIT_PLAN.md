@@ -28,7 +28,7 @@ be COMDAT scatter or a mis-group. Confirm before splitting.
 - `src/Gruntz/Wormhole.cpp` — 2 blocks: 10@0x0088d0(game)  17@0x03fc70(game)
 - `src/Gruntz/ImageSet3.cpp` — 2 blocks: 4@0x1614b0(engine)  7@0x166d70(engine)
 
-## C. RE-HOME HINTS — unknown-class / bucket functions (11) · low confidence
+## C. RE-HOME HINTS — unknown-class / bucket functions (10) · low confidence
 
 What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
 `CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
@@ -43,7 +43,6 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind` | GameLevel.cpp | **GruntzApp.cpp** (9 fns) | 873.6 KB |
 | `?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (10 fns) | 812.7 KB |
 | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlg.cpp | **BootyStateActivate.cpp** (15 fns) | 648.7 KB |
-| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlg.cpp | **VideoConfig.cpp** (16 fns) | 549.2 KB |
 | `?GetName@CSpawnEntry@@QAE?AVCString@@XZ` | GruntSpawnConfig.cpp | **AreaMgr.cpp** (54 fns) | 514.8 KB |
 | `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | PlayAssetLoad.cpp | **GruntzMgr.cpp** (54 fns) | 291.3 KB |
 | `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (9 fns) | 156.3 KB |

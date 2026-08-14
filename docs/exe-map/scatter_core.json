@@ -1,16 +1,16 @@
 [
  {
   "file": "src/Gruntz/MultiStartDlg.cpp",
-  "n": 47,
-  "bytes": 9200,
+  "n": 46,
+  "bytes": 9085,
   "lo": 128080,
   "hi": 807731,
   "span": 679651,
-  "frags": 4,
-  "avg_cluster": 11.75,
-  "frag_ratio": 0.0851063829787234,
-  "occupancy": 0.013536359101950854,
-  "spread": 73.87510869565217
+  "frags": 3,
+  "avg_cluster": 15.333333333333334,
+  "frag_ratio": 0.06521739130434782,
+  "occupancy": 0.013367154613176469,
+  "spread": 74.81023665382499
  },
  {
   "file": "src/Gruntz/GameLevel.cpp",
@@ -664,16 +664,16 @@
  },
  {
   "file": "src/Gruntz/SlotComboFill.cpp",
-  "n": 3,
-  "bytes": 405,
+  "n": 4,
+  "bytes": 520,
   "lo": 229360,
-  "hi": 229857,
-  "span": 497,
+  "hi": 230035,
+  "span": 675,
   "frags": 1,
-  "avg_cluster": 3.0,
-  "frag_ratio": 0.3333333333333333,
-  "occupancy": 0.8148893360160966,
-  "spread": 1.2271604938271605
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.7703703703703704,
+  "spread": 1.2980769230769231
  },
  {
   "file": "src/Gruntz/StateMgrBZ.cpp",

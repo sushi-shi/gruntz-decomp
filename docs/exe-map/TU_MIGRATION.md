@@ -4,7 +4,7 @@
 
 **Ground truth**: placements are first-link birth positions (demo-oracle: 170/181 outliers identically placed in GruntDem.exe; only 3 ilink moves in the whole EXE), and every obj's contribution is contiguous at first link. So retail `.text` order faithfully records the ORIGINAL TU composition, and the CRT init-table gives the original obj LINK ORDER.
 
-Outlier mechanisms: REHOME-CANDIDATE 12, COMDAT-AT-USAGE 4.
+Outlier mechanisms: REHOME-CANDIDATE 11, COMDAT-AT-USAGE 4.
 
 
 ## MERGE candidates — multi-core intervals (VERIFY per group)
@@ -65,7 +65,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x037910` | `?Dispatch@CLatencyList@@QAEHH@Z` | bzkinddispatch | `0x37910` ? |
 | `0x0379a0` | `?Clear@CKeyedList@@QAEXXZ` | keyedlist | `0x379a0` ? |
 | `0x037a70` | `?AddNode@CKeyedList@@QAEPAUCKeyedNode@@PBDHH@Z` | keyedlist | `0x37a70` ? |
-| `0x038220` | `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | multistartdlg | `0x38220` ? |
 | `0x0387c0` | `?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z` | inputdeviceconfig | `0x387c0` ? |
 | `0x0388e0` | `?PopulateInputDeviceCombo@@YAHPAUHWND__@@HH@Z` | inputdeviceconfig | `0x388e0` ? |
 | `0x039dc0` | `?LoadCreditzAssets@CCreditsState@@QAEXXZ` | creditzassets | `0x39dc0` ? |
@@ -211,7 +210,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x022ad0-0x02318c` (3 EH sites): cheatmgr (cpp-rtti)
 - `0x024dc0-0x029010` (2 EH sites): battlezmapconfig (cpp-rtti)
 - `0x029a30-0x03108d` (7 EH sites): battlezmapconfig (cpp-rtti)
-- `0x037ff0-0x0381e1` (1 EH sites): slotcombofill (cpp-rtti)
+- `0x037ff0-0x038293` (1 EH sites): slotcombofill (cpp-rtti)
 - `0x039570-0x039d8c` (1 EH sites): creditsstate (cpp-rtti)
 - `0x03ad90-0x03bc78` (4 EH sites): customworlddialog (cpp-rtti)
 - `0x03c070-0x03c506` (1 EH sites): demo (cpp-rtti)
