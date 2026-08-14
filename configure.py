@@ -376,10 +376,10 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                restat=True)
         # Vtable catalogs are consumed only by the cheap merge. Catalog edits
         # must not rerun clang IR over every translation unit.
-        vtbl_dep = ["config/retail/vtables_game.csv", "config/retail/vtables_library.csv"]
+        vtbl_dep = ["config/retail/data_vtables.tsv", "config/retail/data_static_libs.tsv"]
         # Reviewed per-TU static-copy pins are folded in at merge time too.
         copies_dep = [str(p.relative_to(REPO))
-                      for p in [REPO / "config/static_data_copies.tsv"] if p.exists()]
+                      for p in [REPO / "config/retail/data_compgen.tsv"] if p.exists()]
         w.build([GEN_NAMES, FUNCTIONS_JSON, GLOBALS_JSON], "merge_labels",
                 inputs=frags + func_frags + glob_frags,
                 implicit=[GEN_LABELS] + vtbl_dep + copies_dep,

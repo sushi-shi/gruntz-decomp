@@ -29,7 +29,7 @@ the RVA() macros the first cut of this guard parsed:
                                                     thunk the compiler synthesizes)
   * data        DATA(0x..)                        - a named game global / vtable
 
-`vtables_library.csv` also deliberately contributes generated data names: rows
+`data_static_libs.tsv` also deliberately contributes generated data names: rows
 assigned to its non-built `library_data` holding unit let the delinker bind
 references to library-owned payload without pretending a game TU owns it.  Those
 generated-only names are library carve-outs, not src claims.  A real DATA() at the
@@ -166,7 +166,7 @@ def generated_claims() -> dict:
             if key in vend:                        # vendored library body - co-listed by design
                 continue
             if key in holding and key not in src:
-                # vtables_library.csv enrolled the payload solely into the
+                # data_static_libs.tsv enrolled the payload solely into the
                 # non-built library_data holding unit.  It appears in the generated
                 # name overlay so target relocations bind, but no source owns it.
                 continue

@@ -484,7 +484,7 @@ def vtable_rows(exe=EXE, base_dir=None):
     # `PAU1::PAUPLAYLISTINFOSTRUCT::?$CArray` and "??_7%s@@6B@" spells a symbol no
     # object defines. Both of the binary's template vtables missed on that alone and
     # were withheld as "no primary-vtable slot map" - the CArray one then had to be
-    # hand-routed through vtables_game.csv's `unit` column, which is exactly the
+    # hand-routed through data_vtables.tsv's `unit` column, which is exactly the
     # attribution that rotted when its unit was dissolved.
     #
     # The manual catalog already states the mangled name and its retail rva, so use

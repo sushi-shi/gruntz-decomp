@@ -15,7 +15,7 @@ A primary game-catalog row is a VIOLATION when:
     through its source/library bases) is LESS than the vtable's slot count (a
     de-virtualized or under-modelled class - some slots have no virtual behind them).
 
-MFC/CRT vtables (config/retail/vtables_library.csv) are exempt - they are library, catalogued
+MFC/CRT vtables (config/retail/data_static_libs.tsv) are exempt - they are library, catalogued
 not reconstructed. Prints every violation and exits nonzero; wired into ``gruntz build``
 as a FATAL gate. Runnable as ``python -m gruntz.cleanliness.vtable_virtuality`` (``--list``).
 """

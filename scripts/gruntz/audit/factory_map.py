@@ -17,7 +17,7 @@ METHOD (no Ghidra, no decompiler)
 
   so the map is 0x45 dwords at RVA 0xeb10.  For each arm take the LAST
   `mov [esi],<imm32>` before its `mov eax,1` epilogue - that is the most-derived
-  class's vptr stamp, and `config/retail/vtables_game.csv` turns the address
+  class's vptr stamp, and `config/retail/data_vtables.tsv` turns the address
   into the class NAME.  Two arms `call` an out-of-line ctor instead of inlining
   it and therefore stamp nothing; they are reported as CALL rows for manual
   adjudication.  Table entries that point at the default arm are ids retail
@@ -77,7 +77,7 @@ def main(argv=None):
         raise KeyError(hex(rva))
 
     vt = {}
-    for line in (REPO / "config/retail/vtables_game.csv").read_text().splitlines():
+    for line in (REPO / "config/retail/data_vtables.tsv").read_text().splitlines():
         if line.startswith("#") or line.startswith("name,"):
             continue
         f = line.split(",")

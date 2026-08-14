@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """compgen_data.py - the compiler-generated DATA pin ratchet.
 
-`config/retail/compiler-generated-data.tsv` is the DATA analog of the RVA_COMPGEN
+`config/retail/data_compgen.tsv` is the DATA analog of the RVA_COMPGEN
 source pin: it names a datum cl.exe emits from a definition that already exists in
 the tree, but that neither source-side data device can reach.
 
@@ -52,7 +52,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 sys.path.insert(0, str(REPO / "scripts"))
 
-MANIFEST = REPO / "config/retail/compiler-generated-data.tsv"
+MANIFEST = REPO / "config/retail/data_compgen.tsv"
 BASE_DIR = REPO / "build/objdiff/base"
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
 
@@ -61,20 +61,29 @@ SIZE_RE = re.compile(r"^0x(?:0|[1-9a-f][0-9a-f]*)$")
 
 
 def parse(path=MANIFEST):
-    """([(lineno, rva, size, symbol, emitter)], [spelling error]) - never raises."""
+    """([(lineno, rva, size, symbol, emitter)], [spelling error]) - never raises.
+
+    Reads data_compgen.tsv and audits the class=common rows (the COMMON pins).
+    class=copy rows (per-TU header-static copies) share the file but have their
+    own authority path in labels.py; only their column count is checked here."""
     rows, errs = [], []
     if not Path(path).exists():
         return rows, ["%s: missing" % path]
     rel = Path(path).relative_to(REPO)
     for i, ln in enumerate(Path(path).read_text().splitlines(), 1):
-        if not ln.strip() or ln.lstrip().startswith("#"):
+        if not ln.strip() or ln.lstrip().startswith("#") or ln.startswith("rva\t"):
             continue
         parts = ln.split("\t")
-        if len(parts) != 4:
-            errs.append("%s:%d: expected 4 tab-separated columns, got %d"
+        if len(parts) != 5:
+            errs.append("%s:%d: expected 5 tab-separated columns, got %d"
                         % (rel, i, len(parts)))
             continue
-        rva_s, size_s, sym, emitter = parts
+        rva_s, size_s, sym, emitter, cls = parts
+        if cls == "copy":
+            continue
+        if cls != "common":
+            errs.append("%s:%d: class %r is not common|copy" % (rel, i, cls))
+            continue
         if not RVA_RE.match(rva_s):
             errs.append("%s:%d: rva %r must be 0x + 8 lowercase hex digits"
                         % (rel, i, rva_s))

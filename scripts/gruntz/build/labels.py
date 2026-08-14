@@ -47,7 +47,7 @@ authority-checked against the base obj (`msvc5_data_symbol` resolves the
 clang-vs-VC5 spellings, including cl's `$S<n>` file-static decoration).
 
 The DATA analog of RVA_COMPGEN is a MANIFEST, not a macro:
-config/retail/compiler-generated-data.tsv. It reaches the data whose real C++
+the class=common rows of config/retail/data_compgen.tsv. It reaches the data whose real C++
 definition sits in a HEADER - a function-local static inside a header inline, and
 the `??_B` dynamic-init guard byte cl emits beside it, which has no source
 spelling at ALL. DATA() cannot reach either (collect_vars is main-file-only) and
@@ -135,7 +135,7 @@ LABEL_CONFIG_DATA = REPO / "config/retail/data_zlib.tsv"
 # as a COFF COMMON into EVERY TU that instantiates the header inline, and the linker
 # merges them into one bss slot. See the file's own header for the full rationale
 # (and why this is not the retired DATA_SYMBOL). Gated by gruntz.audit.compgen_data.
-COMPGEN_DATA = REPO / "config/retail/compiler-generated-data.tsv"
+COMPGEN_DATA = REPO / "config/retail/data_compgen.tsv"
 
 
 def log(msg):
@@ -760,7 +760,7 @@ def load_label_config(func_path=None, data_path=None):
 
 
 def load_compgen_data(path=None):
-    """[(rva, size, symbol, emitter)] from config/retail/compiler-generated-data.tsv.
+    """[(rva, size, symbol, emitter)] - the class=common rows of data_compgen.tsv.
 
     The compiler-generated DATA pins: a datum cl.exe emits from a definition that
     already exists in the tree, but that neither source-side data device can reach -
@@ -770,18 +770,25 @@ def load_compgen_data(path=None):
     against the base objs at every build, so a stale or invented row binds nothing.
     """
     out = []
+    for rva, size_s, name, owner, cls in compgen_rows(path):
+        if cls == "common":
+            out.append((rva, int(size_s, 16), name, owner))
+    return out
+
+
+def compgen_rows(path=None):
+    """Raw (rva, size_str, name, owner, class) rows of data_compgen.tsv."""
+    out = []
     p = Path(path or COMPGEN_DATA)
     if not p.exists():
         return out
     for ln in p.read_text().splitlines():
-        if not ln.strip() or ln.lstrip().startswith("#"):
+        if not ln.strip() or ln.lstrip().startswith("#") or ln.startswith("rva\t"):
             continue
         parts = ln.split("\t")
-        if len(parts) < 3:
+        if len(parts) != 5:
             continue
-        rva_s, size_s, sym = parts[0], parts[1], parts[2]
-        emitter = parts[3] if len(parts) > 3 else ""
-        out.append((int(rva_s, 16), int(size_s, 16), sym, emitter))
+        out.append((int(parts[0], 16), parts[1], parts[2], parts[3], parts[4]))
     return out
 
 
@@ -1249,17 +1256,14 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
         if row.get("unit"):
             rows.append((row["rva"], row["name"], row["unit"], row["size"], "data"))
     # Reviewed per-TU static-copy pins (header statics: DATA() in a header is
-    # ignored, so their retail rvas live in a tracked sidecar - see
-    # include/Gruntz/GruntDirStatics.h).
-    copies = REPO / "config/static_data_copies.tsv"
-    if copies.exists():
-        obj_cache = {}
-        for ln in copies.read_text().splitlines():
-            if not ln.strip() or ln.lstrip().startswith("#"):
-                continue
-            rva_s, name, unit, size_s, kind = ln.split("\t")
-            name = _repair_static_ordinal(name, unit, obj_cache)
-            rows.append((int(rva_s, 16), name, unit, int(size_s, 16), kind))
+    # ignored, so their retail rvas live in data_compgen.tsv class=copy rows -
+    # see include/Gruntz/GruntDirStatics.h).
+    obj_cache = {}
+    for rva, size_s, name, owner, cls in compgen_rows():
+        if cls != "copy":
+            continue
+        name = _repair_static_ordinal(name, owner, obj_cache)
+        rows.append((rva, name, owner, int(size_s, 16), "data"))
     rc = write_symbol_names(rows, addr_sites, out)
     if rc != 0:
         return rc
@@ -1476,7 +1480,7 @@ def main():
         if len(rows) == rows_before:
             no_rows.append(tu)
 
-        # --- compiler-generated DATA pins (config/retail/compiler-generated-data.tsv):
+        # --- compiler-generated DATA pins (data_compgen.tsv class=common):
         # a COMMON cl emitted from a definition that lives in a HEADER, so no source
         # macro can reach it. Deliberately AFTER the no_rows check - these rows are
         # inherited from a shared header, so they must never satisfy the "this TU

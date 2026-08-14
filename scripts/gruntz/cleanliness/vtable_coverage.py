@@ -88,8 +88,8 @@ def main() -> int:
     if gaps:
         n_sec = sum(1 for g in gaps if g[4])
         print(f"vtable-coverage: {len(gaps)} of {len(vts)} analysed vtable(s) UNCOVERED "
-              f"({n_sec} secondary/MI; add each row to vtables_game.csv or "
-              f"vtables_library.csv):", file=sys.stderr)
+              f"({n_sec} secondary/MI; add each row to data_vtables.tsv or "
+              f"data_static_libs.tsv):", file=sys.stderr)
         for rva, size, conf, cls, boff in sorted(gaps):
             sec = f" +{boff} (SECONDARY)" if boff else ""
             print(f"  0x{rva:06x} sz={size:<3} {conf:<13} {cls or '(non-rtti)'}{sec}", file=sys.stderr)

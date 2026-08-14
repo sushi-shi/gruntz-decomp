@@ -49,7 +49,7 @@ CLASSIFICATION
   (c) UNBOUND        nothing in src/ claims R_i - unreconstructed. Expected for the
                      stub backlog: reported as INFO, never a failure.
 
-Library vtables (config/retail/vtables_library.csv) are exempt, as in the sibling gates.
+Library vtables (config/retail/data_static_libs.tsv) are exempt, as in the sibling gates.
 Pure-virtual slots (``__purecall``) are correct-by-construction and pass.
 
 THE RATCHET (RETIRED 2026-07-22 - the gate is now PURE fail-closed)

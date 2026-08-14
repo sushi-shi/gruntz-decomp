@@ -334,7 +334,7 @@ def defined_syms(obj):
        emission of the header-inline GetRandomNumber's local static + its dynamic-init guard,
        one pair per module) as 26 FAKE refs that "WILL break the link". They do not: the real
        MSVC 5.0 link resolves all six as `<common>` in GRUNTZ.candidate.map with 0 unresolved
-       externals. They are pinned now (config/retail/compiler-generated-data.tsv), which is
+       externals. They are pinned now (config/retail/data_compgen.tsv), which is
        what makes their targets VERIFIABLE - but they were never a link defect."""
     b = open(obj, "rb").read()
     symptr = struct.unpack_from("<I", b, 8)[0]
@@ -695,7 +695,7 @@ def main():
         if fake:
             print("A FAKE ref is a symbol nothing DEFINES - verify with `gruntz link` before "
                   "calling it a link break; a COMMON/weak/COMDAT definition resolves fine and "
-                  "is only an unNAMED datum (config/retail/compiler-generated-data.tsv).")
+                  "is only an unNAMED datum (config/retail/data_compgen.tsv).")
         return 1
     print("relocs OK: every near-exact function's reloc targets resolve to the retail address.")
     return 0

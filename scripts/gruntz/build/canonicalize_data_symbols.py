@@ -75,7 +75,7 @@ STATIC_ORDINAL = re.compile(r"\$S[0-9]+(?=@|$)")
 # relocation records, so this is not a source-label authority and an `_$E<n>`
 # RVA_COMPGEN claim is forbidden.
 VOLATILE_E = re.compile(r"^_?\$E[0-9]+$")
-# A delinker-enrolled per-TU copy of a header static (config/static_data_copies.tsv):
+# A delinker-enrolled per-TU copy of a header static (config/retail/data_compgen.tsv):
 # the copies share one source name, so the manifest disambiguates each with its
 # retail RVA (`?s_gruntDirEast_245168@@3UGruntDirectionCell@@A`). cl spells the
 # same object `_s_gruntDirEast$S<n>` - the volatile-ordinal form this module

@@ -494,7 +494,7 @@ def cmd_build(args) -> None:
           "RVA-sorted slot (python -m gruntz.audit.compgen_order)", "normal")
     # The DATA half of the same problem: a datum cl emits as a COFF COMMON from a
     # header-inline's local static. No source macro can reach it, so its retail rva
-    # lives in config/retail/compiler-generated-data.tsv - and this re-proves every
+    # lives in config/retail/data_compgen.tsv - and this re-proves every
     # pin against the base objs and ratchets COVERAGE, because an unnamed COMMON
     # costs 0% (objdiff masks relocs) and so nothing else would ever report it.
     _gate("gruntz.audit.compgen_data", ["--gate"],
@@ -700,12 +700,12 @@ def cmd_build(args) -> None:
     # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
     _gate("gruntz.cleanliness.class_vtables", [],
           "class-vtables: a vtable-bearing class is uncatalogued - add it to "
-          "vtables_game.csv, dissolve the view, or prove VTBL_ABSENT "
+          "data_vtables.tsv, dissolve the view, or prove VTBL_ABSENT "
           "(python -m gruntz.cleanliness.class_vtables)", "full")
     # Vtable COVERAGE: every analysed vtable must be in the game or library catalog.
     _gate("gruntz.cleanliness.vtable_coverage", [],
           "vtable-coverage: analysed vtable(s) uncovered - add them to "
-          "vtables_game.csv or vtables_library.csv "
+          "data_vtables.tsv or data_static_libs.tsv "
           "(python -m gruntz.cleanliness.vtable_coverage --list)", "full")
     # Vtable OWNERSHIP: re-derive every game-catalog binding from the image (the ??_7 slot ->
     # scalar-deleting dtor -> ??1 chain). Slowest of the vtable gates -> full.

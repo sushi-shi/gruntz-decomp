@@ -17,7 +17,7 @@ The pairing is self-proving, `assert_relocs`-style:
     the whole unit - a candidate binding never survives a broken proof.
 
 What survives is (retail rva, cl's verbatim symbol, unit, size-from-obj-extent)
-for statics with NO claim - the exact shape `config/static_data_copies.tsv`
+for statics with NO claim - the exact shape `config/retail/data_compgen.tsv`
 rows take.
 
 USAGE
@@ -366,7 +366,7 @@ def walk(pe: PE | None = None, quiet=False):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--tsv", help="write candidate rows (static_data_copies shape)")
+    ap.add_argument("--tsv", help="write candidate rows (data_compgen.tsv class=copy shape)")
     ap.add_argument("--all", action="store_true",
                     help="list candidates already claimed too")
     args = ap.parse_args()

@@ -213,7 +213,7 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 # owner is proven, never because it became inconvenient. Both entries were closed
 # by proving the owner, so the set is empty and must stay that way.
 #
-#   CLOSED 2026-08-09 - ghidra. config/static_data_copies.tsv's holding unit for
+#   CLOSED 2026-08-09 - ghidra. config/retail/data_compgen.tsv's holding unit for
 #   three GruntDirStatics blocks (27 `.bss` rows). Each copy's owner is decided by
 #   its static initializer: cl emits the `$E` that constructs the nine cells at the
 #   HEAD of that TU's .text contribution, so the first named function after the
@@ -223,7 +223,7 @@ DATA_MANIFEST = REPO / "build" / "gen" / "delink_data_manifest.tsv"
 #   correction - 0x2496e8 was on netlobbydialogs and is multihelpdlg's - since one
 #   TU cannot emit the copy twice.
 #
-#   CLOSED 2026-08-09 - movieplayer. vtables_game.csv attributed
+#   CLOSED 2026-08-09 - movieplayer. data_vtables.tsv attributed
 #   ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (0x1e971c, 0x14, SIX relocated
 #   words) to a unit dissolved on 2026-08-06. The `unit` column existed only because
 #   data_manifest.vtable_rows() could not spell a template specialization's mangled
@@ -296,7 +296,7 @@ def orphan_payloads() -> list[tuple[str, str, str, str]]:
     file `objdiff.json` does not list -- so the payload is withheld from every
     measurement with nothing to report it. `vtable_catalog.validate` checks names
     and RVAs, not the unit column, so this is the ordinary-data twin of the
-    vtables_game.csv row that started this: silently unscored, no gate.
+    data_vtables.tsv row that started this: silently unscored, no gate.
     """
     from gruntz.core.manifest import unit_names
     from gruntz.core.vtable_catalog import LIBRARY_HOLDING_UNIT

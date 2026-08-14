@@ -45,7 +45,7 @@ would hide a real finding:
     happens to precede it (`_inflate_mask` 176 vs 12 is the 0x2293xx band of
     unclaimed statics resolving onto zlib's mask table 0x3db4 bytes earlier);
   * a local static's name differs between the sides when a
-    `config/static_data_copies.tsv` row spells it C-style while cl emits the
+    `config/retail/data_compgen.tsv` row spells it C-style while cl emits the
     mangled `?name@?1??Fn@@...@4U2@A$S<n>` form (`_s_default_rect_butemgr` 7 vs 0;
     those five `CButeMgr::Get*` functions are all 100%, so it costs nothing).
 

@@ -1,4 +1,9 @@
-"""Read the manually maintained retail vtable catalogs."""
+"""Read the manually maintained retail data catalogs.
+
+GAME (data_vtables.tsv) holds the game/engine ``??_7`` tables cl emits from
+reconstructed source; LIBRARY (data_static_libs.tsv) holds static-library data
+labels - vtables, vtable-like tables, SDK GUIDs, and constants game code names.
+"""
 from __future__ import annotations
 
 import csv
@@ -7,8 +12,8 @@ from pathlib import Path
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
-GAME = REPO / "config" / "retail" / "vtables_game.csv"
-LIBRARY = REPO / "config" / "retail" / "vtables_library.csv"
+GAME = REPO / "config" / "retail" / "data_vtables.tsv"
+LIBRARY = REPO / "config" / "retail" / "data_static_libs.tsv"
 
 # The deliberate holding unit for library DATA no game TU can re-emit (e.g.
 # CDialog's messageMap, type_info's vtable, filebuf::openprot): the delinker carves the enrolled
@@ -23,18 +28,21 @@ _SECONDARY_RE = re.compile(r"^\?\?_7([A-Za-z_]\w*)@@6B([A-Za-z_]\w*)@@@$")
 
 
 def read(path: Path) -> list[dict]:
-    """Return normalized rows, retaining the CSV line for diagnostics."""
+    """Return normalized rows, retaining the TSV line for diagnostics."""
     lines = path.read_text().splitlines()
-    data = [line for line in lines if line.strip() and not line.lstrip().startswith("#")]
+    header: list[str] | None = None
     out = []
-    for row in csv.DictReader(data):
-        row = dict(row)
+    for lineno, line in enumerate(lines, 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if header is None:
+            header = line.split("\t")
+            continue
+        row = dict(zip(header, line.split("\t")))
         row["rva"] = int(row["rva"], 16)
         row["size"] = int(row["size"], 16)
         row["path"] = path
-        # Account for leading comments and the header.
-        needle = row["name"] + ","
-        row["line"] = next(i for i, line in enumerate(lines, 1) if line.startswith(needle))
+        row["line"] = lineno
         out.append(row)
     return out
 

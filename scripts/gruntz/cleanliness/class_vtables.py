@@ -10,7 +10,7 @@ A class "has a vtable" when ANY of:
     an ``m_vtbl`` / ``m_vptr`` field - the WAP-engine hand-rolled-vtable idiom).
 
 It is "catalogued" (NOT a violator) when ANY of:
-  * it has a row in ``vtables_game.csv`` or ``vtables_library.csv``, OR
+  * it has a row in ``data_vtables.tsv`` or ``data_static_libs.tsv``, OR
   * it uses a manual ``&...Vtbl`` stamp - the vtable datum is already named through
     the older ``DATA(g_*Vtbl)`` global binding (a second catalog row would collide on
     that rva; the sweep migrates these, it does not double-bind them), OR
