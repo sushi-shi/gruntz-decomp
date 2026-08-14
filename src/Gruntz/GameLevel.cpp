@@ -18,6 +18,7 @@
 #include <Pix16.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wap32/WapUncompress.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdObjectType.h>

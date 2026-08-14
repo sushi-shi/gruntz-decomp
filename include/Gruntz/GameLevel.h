@@ -308,11 +308,4 @@ public:
     WwdHeader m_header;
 };
 
-int WapUncompress(
-    unsigned char* dest,
-    unsigned long* pDestLen,
-    unsigned char* src,
-    unsigned long srcLen
-);
-
 #endif // SRC_GRUNTZ_GAMELEVEL_H

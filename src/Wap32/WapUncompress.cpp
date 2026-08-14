@@ -1,5 +1,7 @@
 #include <rva.h>
 
+#include <Wap32/WapUncompress.h>
+
 #include <stddef.h>
 #include <zlib.h>
 
