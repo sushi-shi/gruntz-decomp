@@ -20,7 +20,7 @@ import clang.cindex as cidx
 
 REPO = Path(__file__).resolve().parents[3]
 CDB = REPO / "build/clangd/compile_commands.json"
-LABEL_RE = re.compile(r"^\s*(RVA|RVA_COMPGEN|DATA|VTBL_ABSENT)\s*\(")
+LABEL_RE = re.compile(r"^\s*(RVA|RVA_COMPGEN|DATA)\s*\(")
 
 K = cidx.CursorKind
 CMP = {"==", "!=", "<", ">", "<=", ">="}

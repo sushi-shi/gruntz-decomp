@@ -24,7 +24,6 @@ struct WwdTileImageRecord {
     i32 m_fields[1];
 };
 
-VTBL_ABSENT(CTileImageSet);
 class CTileImageSet : public CObject {
 public:
     virtual i32 Parse(void* record);

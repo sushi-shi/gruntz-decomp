@@ -26,7 +26,6 @@ struct CHashSlot {
     DSoundList m_chain;
 };
 
-VTBL_ABSENT(CHashElement);
 class CHashElement {
 public:
     virtual u32 Hash();

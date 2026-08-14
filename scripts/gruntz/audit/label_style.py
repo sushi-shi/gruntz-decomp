@@ -9,7 +9,6 @@ clang-format-wrapped invocation silently vanishes from symbol_names.csv).
 Checked forms:
 
   RVA(0x00xxxxxx, 0xN)             DATA(0x00xxxxxx)
-  VTBL_ABSENT(CClass)
   RVA_COMPGEN(0x00xxxxxx, 0xN, <mangled>)
   RVA_DYNINIT(0x00xxxxxx, 0xN, <owner-identifier>)
   DATA_COMPGEN(0x00xxxxxx, <value>)   (the value expression may spill)
@@ -50,7 +49,6 @@ VOLATILE_COMPGEN_RE = re.compile(r"\bRVA_COMPGEN\([^)]*,\s*_?\$E[0-9]+\s*\)")
 CANON = {
     "RVA": rf"RVA\({ADDR}, {HEXN}\)",
     "DATA": rf"DATA\({ADDR}\)",
-    "VTBL_ABSENT": rf"VTBL_ABSENT\({NAME}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
     "RVA_DYNINIT": rf"RVA_DYNINIT\({ADDR}, {HEXN}, [A-Za-z_][A-Za-z0-9_:]*\)",
     # Expression-position macro: the labels.py parser is balanced-paren, so only
@@ -62,10 +60,10 @@ CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 # StatementMacros-formatted labels: clang-format ARG-WRAPS these past ColumnLimit
 # (the WhitespaceSensitiveMacros carrier RVA_COMPGEN is wrap-immune - a giant
 # mangled name may legitimately run long).
-WRAPPABLE = {"RVA", "DATA", "VTBL_ABSENT"}
-# longest-first so RVA_COMPGEN/VTBL_ABSENT win their prefixes
+WRAPPABLE = {"RVA", "DATA"}
+# longest-first so RVA_COMPGEN wins its prefix
 FIND_RE = re.compile(
-    r"\b(RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|VTBL_ABSENT|RVA|DATA)\s*\(")
+    r"\b(RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|RVA|DATA)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 # The blessed comment-marker vocabulary (docs/comment-markers.md). @stub blocks
 # carry @confidence:/@source: tags (verify_stubs.py REQUIRES them); @early-stop /

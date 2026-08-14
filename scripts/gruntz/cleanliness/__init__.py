@@ -11,7 +11,7 @@ per concern (all run in the `gruntz build` gate tail; each also `python -m`):
     vtable_virtuality.py   every vtable's slots must be real virtuals
     vtable_slot_binding.py every slot wired to a real virtual (pure fail-closed;
                            the frozen backlog drained to 0 and was deleted)
-    class_vtables.py       every virtual-owning class is catalogued
+    class_vtables.py       the vtable catalogs are structurally valid
 
 (The shared class-definition scanner these build on is gruntz.core.class_meta.)
 

@@ -298,14 +298,8 @@ def collect_vars(ast, main_file):
     def visit(node):
         if isinstance(node, dict):
             update_file(node)
-            # `gruntz_clsmeta_*` are VTBL_ABSENT class-metadata carriers
-            # (include/rva.h): file-scope `used` statics that DO carry a
-            # mangledName. Skip them so a carrier written between a DATA(...) and
-            # its extern can never steal the DATA binding (data_labels picks the
-            # first VarDecl below the macro).
             if (state["in_main"] and node.get("kind") == "VarDecl"
-                    and "mangledName" in node and not node.get("isImplicit")
-                    and not (node.get("name") or "").startswith("gruntz_clsmeta_")):
+                    and "mangledName" in node and not node.get("isImplicit")):
                 loc = node.get("loc") or {}
                 off = loc.get("offset")
                 if off is not None:

@@ -155,14 +155,6 @@ def vtbl_annotated_names() -> set:
     return names
 
 
-_VTBL_ABSENT_RE = re.compile(r"\bVTBL_ABSENT\s*\(\s*([A-Za-z_]\w*)")
-
-
-def vtbl_absent_names() -> set:
-    """Class names carrying a VTBL_ABSENT(...) catalog entry - vtable-bearing
-    classes whose ??_7 datum is PROVEN absent from the retail image (never-emitted
-    bases / never-constructed dispatch facets). Catalogued, not gaps."""
-    return _annotated(_VTBL_ABSENT_RE)
 
 # The manual-vtable stamp idiom in a class BODY: an ``&...Vtbl`` / ``&..._vftable``
 # address-of or an ``m_vtbl`` / ``m_vptr`` field (the WAP-engine hand-rolled-vtable

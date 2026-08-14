@@ -37,7 +37,6 @@ struct LeafCue;
 // The live callback-object snapshot branch proves slot 16, but the concrete owner
 // remains absent from RTTI, allocation sites, and the factory, whose mode-10 arm
 // returns failure without constructing an object.
-VTBL_ABSENT(CWwdGameObjectSerial);
 class CWwdGameObjectSerial : public CGameObject {
 public:
     virtual i32 GetSerialTypeId();

@@ -697,12 +697,10 @@ def cmd_build(args) -> None:
     _gate("gruntz.cleanliness.class_vtables", ["--assert-unique"],
           "class-vtables: the game-vtable catalog is structurally invalid "
           "(python -m gruntz.cleanliness.class_vtables --assert-unique)", "full")
-    # Catalog completeness: every vtable-bearing class positively bound or VTBL_ABSENT-proven.
-    _gate("gruntz.cleanliness.class_vtables", [],
-          "class-vtables: a vtable-bearing class is uncatalogued - add it to "
-          "data_vtables.tsv, dissolve the view, or prove VTBL_ABSENT "
-          "(python -m gruntz.cleanliness.class_vtables)", "full")
     # Vtable COVERAGE: every analysed vtable must be in the game or library catalog.
+    # (The per-class completeness gate and its VTBL_ABSENT escape are RETIRED: a
+    # class whose vtable retail never emitted simply has no catalog row, and the
+    # coverage/owner/virtuality/slot gates carry the structural burden.)
     _gate("gruntz.cleanliness.vtable_coverage", [],
           "vtable-coverage: analysed vtable(s) uncovered - add them to "
           "data_vtables.tsv or data_static_libs.tsv "

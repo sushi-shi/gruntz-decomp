@@ -16,7 +16,6 @@ class CDDrawWorker;
 
 class CDDrawSurfacePair;
 
-VTBL_ABSENT(CDDrawWorkerBase);
 class CDDrawWorkerBase : public CResolveNode {
 public:
     virtual ~CDDrawWorkerBase() OVERRIDE {
