@@ -38,6 +38,12 @@
 
 RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
 
+RVA(0x00154a80, 0x13)
+void CResolveNode::Unload() {
+    m_screenX = COORD_UNSET;
+    m_dirty.Reset();
+}
+
 // Ascending RVA order in this TU's run: 0x15b2b0 -> 0x15b340 -> 0x15b370 -> 0x15b390.
 RVA(0x0015b2b0, 0xe)
 WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
@@ -83,12 +89,6 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
     AttachToOwner(owner, id);
-}
-
-RVA(0x00154a80, 0x13)
-void CResolveNode::Unload() {
-    m_screenX = COORD_UNSET;
-    m_dirty.Reset();
 }
 
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
