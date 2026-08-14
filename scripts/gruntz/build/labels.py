@@ -93,7 +93,7 @@ REPO = next((p for p in SCRIPT_DIR.parents if (p / "flake.nix").exists()), SCRIP
 # The single consolidated-globals unit (src/Globals.cpp). Its DATA() rows are
 # TRUSTED: the base obj is all unused externs (no symbols), so the authority
 # check cannot confirm them - but each name was authority-checked in the matched
-# TU it came from before `consolidate_globals` (now scripts/archive/) moved it here.
+# TU it came from before `consolidate_globals` (retired) moved it here.
 GLOBALS_UNIT = "globals"
 
 # DATA(0x...) macro invocation - scanned from source text (IR drops extern

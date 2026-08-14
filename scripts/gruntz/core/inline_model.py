@@ -6,7 +6,7 @@ sibling HoMM3 project (homm3-decomp/scripts/homm3/vc6/inline_model.py), where
 the mechanism and every constant were reverse-engineered from VC6's C2.DLL
 (the rva comments below cite that provenance ledger, docs/vc6/inliner.md).
 RE-VALIDATED on our pinned cl 5.0 SP3 by measurement:
-docs/patterns/inline-budget-emits-ool-comdat.md + tools/inline-budget/.
+docs/patterns/inline-budget-emits-ool-comdat.md.
 
     budget = clamp(2 * cb(caller), 1000, 35000)     # cb = front-end estimate
     spent sequentially in tuple order; cb <= 0x28 is budget-exempt;
@@ -30,7 +30,7 @@ USAGE
     python -m gruntz.core.inline_model --gap sites.json  [--json]
     python -m gruntz.core.inline_model --measure-cb h.cpp --fn CALLEE \\
         --caller CALLER --sites N     # titrate cb with the real compiler
-                                      # (harness: tools/inline-budget/)
+                                      # (harness: --gen-harness)
 
 spec JSON: {"caller_cb": N, "sites": [{"name": .., "cb": N, "sites": [..],
 "forceinline": false, "marked": false, "candidate": true}, ..]}
@@ -210,7 +210,7 @@ def die(msg: str) -> None:
 
 # --------------------------------------------------------------------------- #
 # --measure-cb: titrate a callee's cb with the REAL cl 5.0. The harness TU
-# (tools/inline-budget/gen_harness.py) contains the callee and a caller with
+# (--gen-harness S N PAD) contains the callee and a caller with
 # N same-callee sites; with a small caller the budget is the 1000 floor, so
 #     expanded = floor(1000 / cb)   (cb > 40; 0 expanded = not a candidate)
 # and counting REJECTED sites (call + tail-jmp) brackets cb.
@@ -361,6 +361,19 @@ def _load_spec(path: Path):
     return spec["caller_cb"], [mk_site(s) for s in spec["sites"]]
 
 
+def gen_harness(statements: int, sites: int, pad: int) -> str:
+    """The --measure-cb harness TU: a callee of S statements, a caller with N
+    same-callee sites behind PAD statements of caller mass (folded in from the
+    retired tools/inline-budget/gen_harness.py)."""
+    body = "\n".join("    gA[%d] = gA[%d] + row;" % (i, i + 1)
+                     for i in range(statements))
+    padding = "\n".join("    gB[%d] = gB[%d] + p;" % (i % 60, (i + 1) % 60)
+                        for i in range(pad))
+    calls = "\n".join("    leaf(%d);" % i for i in range(sites))
+    return ("int gA[256];\nint gB[256];\n\ninline void leaf(int row) {\n%s\n}\n\n"
+            "void callerX(int p) {\n%s\n%s\n}\n" % (body, padding, calls))
+
+
 def main() -> int:
     import argparse
     ap = argparse.ArgumentParser(
@@ -377,8 +390,14 @@ def main() -> int:
     ap.add_argument("--fn", help="measure-cb: callee")
     ap.add_argument("--caller", help="measure-cb: harness caller function")
     ap.add_argument("--sites", type=int, help="measure-cb: site count")
+    ap.add_argument("--gen-harness", nargs=3, type=int, metavar=("S", "N", "PAD"),
+                    help="print a measure-cb harness TU: S callee statements, "
+                         "N call sites, PAD caller statements ahead of them")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
+    if args.gen_harness:
+        print(gen_harness(*args.gen_harness), end="")
+        return 0
 
     if args.selftest:
         return _selftest()

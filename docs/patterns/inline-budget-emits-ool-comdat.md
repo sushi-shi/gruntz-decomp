@@ -85,7 +85,11 @@ callee with `cb <= 0x28` is inlined regardless of budget or site count.
 
 **cl 5.0 (C2 11.00) shares the rule AND the cost function.** 25-site harness,
 PAD=0 (budget pinned at the 1000 floor), statements `gA[i] = gA[i+1] + row;`,
-`tools/inline-budget/gen_harness.py`:
+`python3 -m gruntz.core.inline_model --gen-harness S N PAD` (S callee
+statements, N sites, PAD caller statements ahead of them; count REJECTED
+sites as `call` + tail `jmp` — cl tail-jump-optimizes a rejected final site.
+`/Ob0` enumerates a real function's candidate set: every expansion becomes a
+visible `call`):
 
 | callee statements S | 1-2 | 3 | 4 | 6 | 8 | 12 | 13 | 14 | 15 |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|

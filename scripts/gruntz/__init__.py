@@ -17,7 +17,7 @@ scripts/). Grouped by area:
   sema/     the `gruntz sema` navigation surface - one module per subcommand
   cleanliness/ the drive-to-0 board + quality gates
 
-  audit/    one-shot campaign audits (`gruntz audit <tool>`) (retired ones: scripts/archive/)
+  audit/    one-shot campaign audits (`gruntz audit <tool>`)
 
 Runnable entrypoints: the pipeline build steps (build/, init/, ghidra/) are
 path-invoked by ninja/the CLI; the CLI/match/audit tools run as

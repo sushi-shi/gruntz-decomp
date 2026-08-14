@@ -22,6 +22,6 @@ gruntz/cleanliness/ + gruntz/match/ (NINE with include_order):
   hygiene    include_order - the canonical #include block (no duplicates, one
              order tree-wide); gated + mechanical fixer, docs/patterns/include-order.md
 
-Retired audits live in scripts/archive/ (read its README before resurrecting
-anything). Shared engines these import live in gruntz/core/.
+Retired audits are DELETED, not archived (git history keeps them; do not
+resurrect). Shared engines these import live in gruntz/core/.
 """

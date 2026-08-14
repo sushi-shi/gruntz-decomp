@@ -88,7 +88,8 @@ dominated by ESI/EDI alone is handle state, park it (or sort with the IL tap).
 ## Bounds
 
 Measured on the pinned cl 5.0 `c2.exe` 2026-08-13 with the probes above
-(`build/il-probe/re/`, harness in the scratch `regalloc/` set). Three
+(`build/il-probe/re/`; the probe sources are embedded above — the scratch
+harness directory is retired). Three
 call-crossing values. The FOUR-value case was then measured: in a frameless
 function the fourth call-crossing value takes **EBP** (sequence EBX ESI EDI
 EBP), NOT a frame slot - a cl-5.0 refinement over the VC6 model, which frame-
@@ -97,3 +98,13 @@ EBP) before it spills, and EBP drops out of the pool only when the function
 needs a frame pointer. Byte-sized values lose ESI/EDI/EBP (the char-homing
 exclusion) and are out of scope. This is a PARTIAL allocator model — the EBX pick is proven, the full
 processing-order traversal (the rest of the c2 regasg RE) is not done.
+
+## Reproduce the preference table
+
+The VC6 preference table `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is present in the
+pinned `c2.exe` (2 copies):
+
+```sh
+python3 -c "import struct; d=open('build/il-probe/re/c2.exe','rb').read(); \
+print(hex(d.find(struct.pack('<8I',1,2,3,7,8,4,6,0))))"
+```
