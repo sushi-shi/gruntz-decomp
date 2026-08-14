@@ -101,19 +101,19 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
     ON_BN_CLICKED(IDC_MULTI_CUSTOM_WORLD, CMultiStartDlg::OnCustomWorld)
     ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldHost)
     ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend)
-    ON_EN_CHANGE(0x50b, CMultiStartDlg::OnEnChange50b)
-    ON_EN_CHANGE(0x50a, CMultiStartDlg::OnEnChange50a)
-    ON_EN_CHANGE(0x50c, CMultiStartDlg::OnEnChange50c)
-    ON_EN_CHANGE(0x50d, CMultiStartDlg::OnEnChange50d)
+    ON_EN_CHANGE(0x50b, CMultiStartDlg::OnPlayerNameChange1)
+    ON_EN_CHANGE(0x50a, CMultiStartDlg::OnPlayerNameChange0)
+    ON_EN_CHANGE(0x50c, CMultiStartDlg::OnPlayerNameChange2)
+    ON_EN_CHANGE(0x50d, CMultiStartDlg::OnPlayerNameChange3)
     ON_CBN_SELCHANGE(IDC_MULTI_SLOT0, CMultiStartDlg::OnSlotSelect0)
     ON_CBN_SELCHANGE(IDC_MULTI_SLOT1, CMultiStartDlg::OnSlotSelect1)
     ON_CBN_SELCHANGE(IDC_MULTI_SLOT2, CMultiStartDlg::OnSlotSelect2)
     ON_CBN_SELCHANGE(IDC_MULTI_SLOT3, CMultiStartDlg::OnSlotSelect3)
     ON_CBN_SELCHANGE(IDC_MULTI_LATENCY, CMultiStartDlg::CommitLatencyOption)
-    ON_BN_CLICKED(0x51f, CMultiStartDlg::OnCmd51f)
-    ON_BN_CLICKED(0x523, CMultiStartDlg::OnCmd523)
-    ON_BN_CLICKED(0x524, CMultiStartDlg::OnCmd524)
-    ON_BN_CLICKED(0x525, CMultiStartDlg::OnCmd525)
+    ON_BN_CLICKED(0x51f, CMultiStartDlg::OnReadyToggle0)
+    ON_BN_CLICKED(0x523, CMultiStartDlg::OnReadyToggle1)
+    ON_BN_CLICKED(0x524, CMultiStartDlg::OnReadyToggle2)
+    ON_BN_CLICKED(0x525, CMultiStartDlg::OnReadyToggle3)
     ON_BN_CLICKED(IDC_MULTI_ECHO_LATENCY, CMultiStartDlg::EchoLatencySettings)
     ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldHost)
     {0, 0, 0, 0, AfxSig_end, 0},
@@ -1450,29 +1450,29 @@ i32 CMulti::GetResendDelay() {
 }
 
 RVA(0x000c4e40, 0x8)
-void CMultiStartDlg::OnEnChange50a() {
-    OnPlayerNameChange(0);
+void CMultiStartDlg::OnPlayerNameChange0() {
+    HandlePlayerNameChange(0);
 }
 
 RVA(0x000c4e60, 0x8)
-void CMultiStartDlg::OnEnChange50b() {
-    OnPlayerNameChange(1);
+void CMultiStartDlg::OnPlayerNameChange1() {
+    HandlePlayerNameChange(1);
 }
 
 RVA(0x000c4e80, 0x8)
-void CMultiStartDlg::OnEnChange50c() {
-    OnPlayerNameChange(2);
+void CMultiStartDlg::OnPlayerNameChange2() {
+    HandlePlayerNameChange(2);
 }
 
 RVA(0x000c4ea0, 0x8)
-void CMultiStartDlg::OnEnChange50d() {
-    OnPlayerNameChange(3);
+void CMultiStartDlg::OnPlayerNameChange3() {
+    HandlePlayerNameChange(3);
 }
 
 // Defined after its four callers so cl cannot inline the empty body away -
 // retail keeps the `push <slot>; call` at every EN_CHANGE site.
 RVA(0x000c4ec0, 0x3)
-void CMultiStartDlg::OnPlayerNameChange(i32 slot) {}
+void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
@@ -1549,22 +1549,22 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 }
 
 RVA(0x000c51c0, 0x8)
-void CMultiStartDlg::OnCmd51f() {
+void CMultiStartDlg::OnReadyToggle0() {
     ToggleReady(0);
 }
 
 RVA(0x000c51e0, 0x8)
-void CMultiStartDlg::OnCmd523() {
+void CMultiStartDlg::OnReadyToggle1() {
     ToggleReady(1);
 }
 
 RVA(0x000c5200, 0x8)
-void CMultiStartDlg::OnCmd524() {
+void CMultiStartDlg::OnReadyToggle2() {
     ToggleReady(2);
 }
 
 RVA(0x000c5220, 0x8)
-void CMultiStartDlg::OnCmd525() {
+void CMultiStartDlg::OnReadyToggle3() {
     ToggleReady(3);
 }
 

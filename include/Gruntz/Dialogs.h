@@ -235,15 +235,15 @@ public:
 
     void OnTimer(u32 nIDEvent);
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
-    void OnEnChange50a();
-    void OnEnChange50b();
-    void OnEnChange50c();
-    void OnEnChange50d();
-    void OnPlayerNameChange(i32 slot);
-    void OnCmd51f();
-    void OnCmd523();
-    void OnCmd524();
-    void OnCmd525();
+    void OnPlayerNameChange0();
+    void OnPlayerNameChange1();
+    void OnPlayerNameChange2();
+    void OnPlayerNameChange3();
+    void HandlePlayerNameChange(i32 index);
+    void OnReadyToggle0();
+    void OnReadyToggle1();
+    void OnReadyToggle2();
+    void OnReadyToggle3();
 
     void OnChatSend();
 
