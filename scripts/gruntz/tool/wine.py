@@ -139,7 +139,8 @@ def init_prefix(force: bool = False) -> None:
     lib = ";".join([winepath(dx / "Lib"), winepath(msvc / "lib")])
 
     cur = _reg("query", _ENV_KEY, "/v", "PATH", capture=True)
-    cur_path = next((l.split()[-1] for l in cur.stdout.splitlines() if "REG_" in l), "")
+    cur_path = next((line.split()[-1] for line in cur.stdout.splitlines()
+                     if "REG_" in line), "")
     if not cur_path:
         _reg("add", _ENV_KEY, "/v", "PATH", "/t", "REG_EXPAND_SZ",
              "/d", f"{vc_bin};%SystemRoot%\\system32;%SystemRoot%", "/f")
@@ -154,7 +155,7 @@ def init_prefix(force: bool = False) -> None:
 def verify_prefix() -> None:
     """Fail unless the registry INCLUDE exists and lists dx before msvc."""
     got = _reg("query", _ENV_KEY, "/v", "INCLUDE", capture=True)
-    val = "".join(l for l in got.stdout.splitlines() if "REG_" in l).lower()
+    val = "".join(line for line in got.stdout.splitlines() if "REG_" in line).lower()
     if "include" not in val:
         raise ToolError("wine registry INCLUDE unset - run init_prefix() "
                         "(a cold wineserver can fail the first winepath)")
