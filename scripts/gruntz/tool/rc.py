@@ -1,5 +1,8 @@
 """gruntz.tool.rc - the era resource compiler (.rc -> .res).
 
+    gruntz tool rc --out <res> --src <rc>
+
+In-process (same function):
     from gruntz.tool import rc
     rc.compile(rc_path, res_path)
 

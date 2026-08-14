@@ -1,10 +1,14 @@
 """gruntz.tool.cl - the era compiler.
 
+    gruntz tool cl --out <obj> --src <src> -- /nologo /c /O2 /MT
+
+In-process (same function):
     from gruntz.tool import cl
     cl.compile(src, obj, ["/nologo", "/c", "/O2", "/MT"])
 
-ninja rule form (same function):
-    python3 -m gruntz.tool.cl --out <obj> --src <src> -- /nologo /c /O2 /MT
+ninja rule lines invoke `python3 -m gruntz.tool.cl` directly - the exact
+interpreter+module with no wrapper dispatch; the umbrella `gruntz tool cl`
+forwards to the same main().
 
 System headers/libs come from the wine registry INCLUDE/LIB (init_prefix);
 repo-local include/ and vendor/<sdk>/ dirs are passed as /I so

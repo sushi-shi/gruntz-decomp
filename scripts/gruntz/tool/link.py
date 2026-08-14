@@ -1,5 +1,8 @@
 """gruntz.tool.link - the era linker (genuine VC5 link.exe 5.10.7303).
 
+    gruntz tool link --expect <exe> -- /NOLOGO /OUT:<exe.w> <objs.w...>
+
+In-process (same function):
     from gruntz.tool import link
     link.link(["/NOLOGO", "/OUT:" + wine.winepath(exe), *obj_args], expect=[exe])
 

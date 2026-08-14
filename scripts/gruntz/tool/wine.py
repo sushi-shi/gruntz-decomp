@@ -1,5 +1,7 @@
 """gruntz.tool.wine - the shared era-toolchain plumbing.
 
+    gruntz tool wine --init [--force] | --verify | --shutdown
+
 Everything cl/link/rc need to run under wine, in one place: tool lookup,
 path translation, the persistent wineserver, prefix initialisation (registry
 PATH/INCLUDE/LIB + MSDIS100.DLL for link.exe), and the one hang-proof runner.
@@ -161,18 +163,28 @@ def verify_prefix() -> None:
                         "msvc/include - run init_prefix(force=True)")
 
 
-if __name__ == "__main__":
+def main() -> int:
     import argparse
+    import sys
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--init", action="store_true", help="initialise the prefix")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--verify", action="store_true")
     ap.add_argument("--shutdown", action="store_true", help="kill the wineserver")
     a = ap.parse_args()
-    if a.init:
-        init_prefix(force=a.force)
-    if a.verify:
-        verify_prefix()
-        print("prefix OK")
+    try:
+        if a.init:
+            init_prefix(force=a.force)
+        if a.verify:
+            verify_prefix()
+            print("prefix OK")
+    except ToolError as e:
+        print(f"[wine] {e}", file=sys.stderr)
+        return 1
     if a.shutdown:
         shutdown_wineserver()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
