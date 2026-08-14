@@ -14,7 +14,8 @@ Entry point:
 Output:
   build/gruntz-toolchain-vc50.tar.xz
     msvc/bin/      - cl.exe, c1.exe, c2.exe, link.exe, cvtres.exe, mspdb50.dll,
-                     msdis100.dll (the last two from SHAREDIDE/BIN, not VC/bin)
+                     msdis100.dll, rc.exe, rcdll.dll (the last four from
+                     SHAREDIDE/BIN, not VC/bin)
     msvc/include/  - C/C++ + MFC 4.2 headers
     msvc/lib/      - LIBCMT.LIB, NAFXCW.LIB, MFC42 static libs, import libs
     dx/{Include,Lib} - DirectX 6.0 SDK (archive.org `directx6sdk`, RAR SFX)
@@ -379,6 +380,29 @@ def bundle_msdis(work: Path, stage_msvc: Path) -> None:
             "on the msdis_stub.py fallback to load under wine.")
 
 
+def bundle_rc(work: Path, stage_msvc: Path) -> None:
+    """RC.EXE + RCDLL.DLL - the era resource compiler (.rc -> .res).
+
+    Ships under SHAREDIDE/BIN like MSPDB50/MSDIS100, so the VC/bin copytree in
+    step1 misses it. RC.EXE is a thin driver that imports RCDLL.DLL (the actual
+    compiler) at load time - both must land in msvc/bin or `wine rc` fails with
+    c0000135. The rebuild's resource step drives this real rc.exe; there is no
+    python fallback."""
+    bin_dir = stage_msvc / "bin"
+    for name in ("rc.exe", "rcdll.dll"):
+        if any(p.name.lower() == name for p in bin_dir.glob("*")):
+            log(f"  {name} already in msvc/bin")
+            continue
+        src = find_named(work, name)
+        if src:
+            shutil.copy2(str(src), str(bin_dir / src.name))
+            log(f"  bundled {src.name} from {src} (resource compiler)")
+        else:
+            log(f"WARNING: {name} not found in the VC5 media - the resource "
+                "step has NO tool without it (check the SHAREDIDE cabs; it may "
+                "require the VS97 IDE disc).")
+
+
 def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
     """Verify the SP3 marker versions + the FID-required static libs.
 
@@ -422,6 +446,14 @@ def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
     else:
         log("NOTE: MSDIS100.DLL absent from msvc/bin - link.exe will use the "
             "msdis_stub.py fallback (linking works; `link /dump /disasm` won't).")
+
+    # The resource compiler pair. No fallback exists in the rebuilt tree, so a
+    # tarball without it cannot compile .rsrc - loud, but not an SP3 marker.
+    for name in ("rc.exe", "rcdll.dll"):
+        if next((p for p in bin_dir.glob("*") if p.name.lower() == name), None):
+            log(f"{name} present OK  <- resource compiler")
+        else:
+            log(f"NOTE: {name} absent from msvc/bin - the resource step has no tool.")
 
     for libname in REQUIRED_LIBS:
         found = next((p for p in lib_dir.glob("*")
@@ -580,6 +612,7 @@ def main() -> None:
         stage_msvc = step1_vc5_base(work, stage)
         step2_apply_sp3(work, stage_msvc)
         bundle_msdis(work, stage_msvc)   # link.exe load-time import (SHAREDIDE/BIN)
+        bundle_rc(work, stage_msvc)      # resource compiler pair (SHAREDIDE/BIN)
         # fatal only when SP3 was supplied; without SP3 we already warned loudly.
         verify_sp3(stage_msvc, fatal=bool(os.environ.get("VS97_SP3_ZIP")
                                           or os.environ.get("VS97_SP3_ISO")))
