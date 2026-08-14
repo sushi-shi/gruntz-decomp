@@ -29,6 +29,11 @@ ILT_LO, ILT_HI = 0x1000, 0x7950
 # .text's virtual extent (va 0x1000 + vsize 0x1e526b). The retail image never
 # changes; retail_functions derives the LAST row's extent against this edge.
 TEXT_LO, TEXT_END = 0x1000, 0x1e626b
+# The three data regions (retail_data derives extents against these edges):
+# .rdata's raw bytes, .data's raw (initialized) bytes, and .data's loader-zero
+# virtual tail (there is no separate .bss section header in this image).
+RDATA_LO, RDATA_END = 0x1e7000, 0x208000
+DATA_LO, BSS_LO, BSS_END = 0x208000, 0x229400, 0x2c27ac
 
 
 def load():

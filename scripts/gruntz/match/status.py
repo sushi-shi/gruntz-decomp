@@ -232,8 +232,13 @@ def _data_line() -> list[str]:
     defined in N units counts N times), so it can never be the headline.
     """
     try:
+        from gruntz.audit.data_denominator import summary
         from gruntz.core.data_universe import measures
-        d = measures()
+        try:
+            live = summary()
+        except Exception:
+            live = None
+        d = measures(partition=live)
         init, bss, od = d["initialized"], d["bss"], d["objdiff"]
         if not init["retail"]:
             return []

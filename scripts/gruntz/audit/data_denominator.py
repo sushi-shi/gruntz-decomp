@@ -60,7 +60,7 @@ USAGE
     python -m gruntz.audit.data_denominator             # the partition
     python -m gruntz.audit.data_denominator --worklist  # the game-data runs
     python -m gruntz.audit.data_denominator --tsv PATH  # every run, classified
-    python -m gruntz.audit.data_denominator --write     # refresh tracked partition
+    python -m gruntz.audit.data_denominator --check     # census agreement gate
     python -m gruntz.audit.data_denominator --check     # re-prove tracked partition
 """
 from __future__ import annotations
@@ -85,7 +85,8 @@ EH_MAGIC = 0x19930520
 #: the SDK GUID archives, in the dev shell's toolchain
 GUID_LIBS = ("$DXSDK_DIR/Lib/dxguid.lib", "$MSVC_DIR/lib/UUID.LIB")
 
-PARTITION = REPO / "config/retail/data-coverage-partition.tsv"
+# The committed census the derived partition is checked against.
+CENSUS = REPO / "config/retail/data.tsv"
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
 BASE_OBJECTS = REPO / "build/objdiff/base"
 GLOBAL_TYPES = REPO / "build/gen/globals.json"
@@ -823,6 +824,111 @@ def partition():
             "guidnames": guidnames}
 
 
+def summary(p=None):
+    """The eligibility summary `gruntz.core.data_universe.measures()` consumes.
+
+    ``{"regions": {rdata|data|bss: {"eligible_unenrolled": B, "excluded": B}},
+       "categories": {verdict: B}}`` - derived LIVE from the image and the
+    current enrolment; nothing here is stored, so nothing can go stale."""
+    p = p or partition()
+    by_region = {k: {"eligible_unenrolled": 0, "excluded": 0}
+                 for k in ("rdata", "data", "bss")}
+    categories: Counter = Counter()
+    for a, b, region, verdict, *_ in p["rows"]:
+        key = region.lstrip(".")
+        field = "eligible_unenrolled" if verdict in ELIGIBLE else "excluded"
+        by_region[key][field] += b - a
+        categories[verdict] += b - a
+    return {"regions": by_region, "categories": dict(categories)}
+
+
+#: verdict -> the census kinds its bytes may carry. Content-proven classes bind
+#: tightly; ownership/eligibility classes are live judgments over plain datum
+#: rows, so they bind to the empty kind only.
+VERDICT_KINDS = {EH: {"ehtable"}, EHPAD: {"pad"}, RTTI: {"rtti"},
+                 LITERAL: {"string", "fppool"}, PAD: {"pad"},
+                 VISIBLE: {""}, LIB: {""}, GUIDV: {""}, UNK: {""}, UNKB: {""}}
+
+
+def _claim_kind(rva, name, compgen):
+    cls = compgen.get(rva)
+    if cls:
+        return cls
+    if name.startswith("??_C@"):
+        return "string"
+    if name.startswith("??_7"):
+        return "vtable"
+    if name.startswith("??_R"):
+        return "rtti"
+    if name.startswith("??_B"):
+        return "guard"
+    if name.startswith("$T") or name.startswith("__real"):
+        return "fppool"
+    return ""
+
+
+def census_check(p=None) -> list[str]:
+    """Errors that fail the census gate.
+
+    1. every enrolled claim's rva must be an admitted `data.tsv` row whose kind
+       matches the claim's name class (the data analog of "every provider rva is
+       a functions.tsv start");
+    2. every census row overlapping a derived unenrolled run must carry a kind
+       compatible with the run's verdict (content-proven rtti/ehtable/pad/
+       string classes bind tightly; eligibility verdicts bind to plain rows);
+    3. each region's first byte must be a row - the census is a partition, not
+       a sample.
+    """
+    import bisect
+
+    from gruntz.build.labels import compgen_rows
+    from gruntz.core.retail_data import REGIONS, all_rows
+
+    p = p or partition()
+    errors = []
+    census = all_rows()
+    starts = [r["rva"] for r in census]
+    by_rva = {r["rva"]: r for r in census}
+    for key, (lo, _hi) in REGIONS.items():
+        if lo not in by_rva:
+            errors.append(f"census: region {key} does not open with a row at 0x{lo:08x}")
+
+    compgen = {rva: cls for rva, _s, _n, _o, cls in compgen_rows()}
+    claims = REPO / "build/gen/delink_data_manifest.tsv"
+    if claims.is_file():
+        with claims.open(newline="") as f:
+            for r in csv.DictReader(f, delimiter="\t"):
+                if str(r.get("provenance", "")).startswith("provisional-band-gap"):
+                    continue
+                rva = int(r["rva"], 16)
+                row = by_rva.get(rva)
+                if row is None:
+                    errors.append(
+                        f"claim 0x{rva:08x} {r['name']} is not an admitted "
+                        f"config/retail/data.tsv row - admit the datum start")
+                    continue
+                want = _claim_kind(rva, r["name"], compgen)
+                if row["kind"] != want:
+                    errors.append(
+                        f"claim 0x{rva:08x} {r['name']}: census kind "
+                        f"{row['kind']!r}, expected {want!r}")
+
+    for a, b, _region, verdict, *_ in p["rows"]:
+        allowed = VERDICT_KINDS[verdict]
+        i = bisect.bisect_right(starts, a) - 1
+        while i < len(starts) and (i < 0 or starts[i] < b):
+            if i >= 0:
+                row = census[i]
+                if max(row["rva"], a) < min(row["rva"] + row["size"], b) \
+                        and row["kind"] not in allowed:
+                    errors.append(
+                        f"census row 0x{row['rva']:08x} kind {row['kind']!r} "
+                        f"overlaps a derived {verdict!r} run 0x{a:08x}..0x{b:08x} "
+                        f"(allowed: {sorted(allowed)})")
+            i += 1
+    return errors
+
+
 def render_tsv(rows) -> str:
     """Canonical tracked partition text."""
     out = io.StringIO(newline="")
@@ -846,11 +952,9 @@ def main() -> int:
     ap.add_argument("--unclassified", action="store_true",
                     help="list the runs no oracle explained")
     ap.add_argument("--tsv", help="write every classified run to a TSV")
-    mode = ap.add_mutually_exclusive_group()
-    mode.add_argument("--write", action="store_true",
-                      help=f"write the derived partition to {PARTITION}")
-    mode.add_argument("--check", action="store_true",
-                      help="fail unless the tracked partition reproduces exactly")
+    ap.add_argument("--check", action="store_true",
+                     help="fail unless config/retail/data.tsv agrees with the "
+                          "derived partition and the current enrolment")
     ap.add_argument("--limit", type=int, default=40)
     args = ap.parse_args()
 
@@ -915,28 +1019,25 @@ def main() -> int:
         if len(rows) > args.limit:
             print(f"  ... {len(rows)-args.limit} more (--limit)")
 
-    rendered = render_tsv(p["rows"])
     if args.tsv:
-        Path(args.tsv).write_text(rendered)
+        Path(args.tsv).write_text(render_tsv(p["rows"]))
         print(f"\nwrote {args.tsv}")
-    if args.write or args.check:
+    if args.check:
         if not p["guids"]:
-            print("cannot reproduce the tracked partition without the pinned SDK GUID "
+            print("cannot check the census without the pinned SDK GUID "
                   "archives", file=sys.stderr)
             return 1
-        if args.write:
-            PARTITION.parent.mkdir(parents=True, exist_ok=True)
-            PARTITION.write_text(rendered)
-            print(f"\nwrote {PARTITION}")
-        else:
-            actual = PARTITION.read_text() if PARTITION.is_file() else ""
-            if actual != rendered:
-                print(f"data coverage partition is stale or missing: {PARTITION}\n"
-                      "refresh it with `python -m gruntz.audit.data_denominator "
-                      "--write`", file=sys.stderr)
-                return 1
-            print(f"\ndata coverage partition: {len(p['rows']):,} ranges reproduce "
-                  "exactly")
+        errors = census_check(p)
+        if errors:
+            print(f"data census: {len(errors)} disagreement(s) with "
+                  "config/retail/data.tsv:", file=sys.stderr)
+            for e in errors[:60]:
+                print(f"  {e}", file=sys.stderr)
+            if len(errors) > 60:
+                print(f"  ... {len(errors) - 60} more", file=sys.stderr)
+            return 1
+        print(f"\ndata census: {len(p['rows']):,} derived ranges agree with "
+              "config/retail/data.tsv")
     return 0
 
 

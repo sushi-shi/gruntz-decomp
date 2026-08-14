@@ -473,33 +473,31 @@ class DataCoverageReachabilityTests(unittest.TestCase):
             data_denominator.coverage_verdict(data_denominator.UNK, False),
             (data_denominator.UNK, True))
 
-    def test_scoreboard_rejects_a_stale_partition(self):
-        header = ("rva\tend\tsize\tsection\tverdict\tcoverage\tattribution\t"
-                  "evidence\treachability\n")
-        rows = (
-            "0x0000006e\t0x00000074\t6\t.rdata\tprivate\texcluded\tprivate\t-\t\n"
-            "0x00000074\t0x00000078\t4\t.rdata\tunknown\teligible\tunknown\t-\t\n"
-            "0x000000d2\t0x000000d7\t5\t.data\tprivate\texcluded\tprivate\t-\t\n"
-            "0x000000d7\t0x000000dc\t5\t.data\tunknown\teligible\tunknown\t-\t\n"
-            "0x000000dc\t0x000000f0\t20\t.bss\tunknown\teligible\tunknown\t-\t\n")
-        regs = {"rdata": (100, 120), "data": (200, 220), "bss": (220, 240)}
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "partition.tsv"
-            path.write_text(header + rows)
-            with mock.patch.object(data_universe, "PARTITION", path):
-                enrolled = [(100, 110), (200, 210)]
-                got = data_universe._partition(regs, enrolled)
-                self.assertEqual(got["regions"]["rdata"]["excluded"], 6)
-                self.assertEqual(
-                    got["regions"]["bss"]["eligible_unenrolled"], 20)
-                # Same byte totals at shifted addresses are stale too; range
-                # identity matters, not just arithmetic coverage.
-                path.write_text(header + rows.replace(
-                    "0x0000006e\t0x00000074", "0x0000006d\t0x00000073"))
-                self.assertIsNone(data_universe._partition(regs, enrolled))
-                path.write_text(header + rows.splitlines(keepends=True)[0])
-                self.assertIsNone(
-                    data_universe._partition(regs, enrolled))
+    def test_summary_partitions_rows_by_region_and_eligibility(self):
+        # The eligibility summary is derived LIVE (nothing stored can go
+        # stale); this pins its shape and the eligible/excluded split that
+        # data_universe.measures() consumes verbatim.
+        p = {"rows": [
+            (100, 106, ".rdata", data_denominator.LIB, "x", "x", "x", ""),
+            (106, 110, ".rdata", data_denominator.UNK, "x", "x", "x", ""),
+            (200, 205, ".data", data_denominator.PAD, "x", "x", "x", ""),
+            (220, 240, ".bss", data_denominator.UNKB, "x", "x", "x", ""),
+        ]}
+        got = data_denominator.summary(p)
+        self.assertEqual(got["regions"]["rdata"],
+                         {"eligible_unenrolled": 4, "excluded": 6})
+        self.assertEqual(got["regions"]["data"],
+                         {"eligible_unenrolled": 0, "excluded": 5})
+        self.assertEqual(got["regions"]["bss"],
+                         {"eligible_unenrolled": 20, "excluded": 0})
+        self.assertEqual(got["categories"][data_denominator.UNKB], 20)
+
+    def test_measures_without_a_partition_never_flatters(self):
+        # No live summary -> every eligibility figure is None (unknown), so a
+        # missing derivation can only make the scoreboard say LESS, not more.
+        d = data_universe.measures(report_doc={}, partition=None)
+        self.assertIsNone(d["initialized"]["eligible_retail"])
+        self.assertIsNone(d["rdata"]["excluded"])
 
 
 class ScoreBankingProvenanceTests(unittest.TestCase):

@@ -223,8 +223,13 @@ def summarize(report: dict, full: bool = True, table: bool = False,
     # retail's initialized data was not enrolled at all, because an unpinned datum
     # enters NEITHER side of the objdiff pair. See gruntz.core.data_universe.
     try:
+        from gruntz.audit.data_denominator import summary
         from gruntz.core.data_universe import measures
-        d = measures(report)
+        try:
+            live = summary()
+        except Exception:
+            live = None
+        d = measures(report, partition=live)
         init, bss = d["initialized"], d["bss"]
         if init["retail"] and init["enrolled"] is not None:
             eligible = init.get("eligible_retail")
@@ -560,9 +565,9 @@ def cmd_build(args) -> None:
     # The checked artifact makes every exclusion reviewable and prevents a stale
     # partition from silently flattering reconstructable coverage.
     _gate("gruntz.audit.data_denominator", ["--check"],
-          "data-denominator partition is stale or no longer reproducible - refresh "
-          "the generated artifact with `python -m gruntz.audit.data_denominator "
-          "--write` after reviewing reachability/ownership changes", "normal")
+          "data census disagrees with the derived partition/enrolment - admit the "
+          "new datum starts in config/retail/data.tsv or correct their kinds "
+          "(python -m gruntz.audit.data_denominator --check)", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "
