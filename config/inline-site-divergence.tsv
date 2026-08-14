@@ -174,10 +174,10 @@ multistartdlg	??0CString@@QAE@ABV0@@Z	2	0
 multistartdlg	??1CDialog@@UAE@XZ	3	1
 multistartdlg	??1CString@@QAE@XZ	15	13
 multistartdlg	??1CStringList@@UAE@XZ	1	0
-multistartdlgroster	??1CDialog@@UAE@XZ	10	7
-multistartdlgroster	??1CString@@QAE@XZ	17	16
-multistartdlgroster	??3@YAXPAX@Z	4	1
-multistartdlgroster	?DeleteObject@CGdiObject@@QAEHXZ	4	2
+multistartdlg	??1CDialog@@UAE@XZ	10	7
+multistartdlg	??1CString@@QAE@XZ	17	16
+multistartdlg	??3@YAXPAX@Z	4	1
+multistartdlg	?DeleteObject@CGdiObject@@QAEHXZ	4	2
 netmgr	??3@YAXPAX@Z	11	9
 pathhazard	??3@YAXPAX@Z	5	3
 play	??0CPtrList@@QAE@H@Z	5	4

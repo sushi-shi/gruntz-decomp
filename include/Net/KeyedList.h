@@ -25,7 +25,10 @@ public:
         m_mode = 0;
     }
 
-    ~CKeyedList();
+    RVA(0x000c5280, 0x49)
+    ~CKeyedList() {
+        Clear();
+    }
 
     CKeyedNode* AddNode(const char* key, i32 commandDelay, i32 drainReload);
 

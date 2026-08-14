@@ -218,11 +218,6 @@ source = "src/Gruntz/RollingBall.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "multistartdlgroster"
-source = "src/Gruntz/MultiStartDlgRoster.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "slotcombofill"
 source = "src/Gruntz/SlotComboFill.cpp"
 flags = "cpp-rtti"

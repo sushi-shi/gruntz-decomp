@@ -19,8 +19,8 @@
 # unpairable payload. vtable_catalog.validate() sanctions exactly this name.
 name,rva,size,unit,note
 ??_7CObject@@6B@,0x1e8cb4,0x14,wwdspatialmgr,MFC/CRT (statically linked; not reconstructed)
-??_7CGdiObject@@6B@,0x1e8cd4,0x14,multistartdlgroster,MFC/CRT (statically linked; not reconstructed)
-??_7CBrush@@6B@,0x1e8cf4,0x14,multistartdlgroster,MFC/CRT (statically linked; not reconstructed)
+??_7CGdiObject@@6B@,0x1e8cd4,0x14,multistartdlg,MFC/CRT (statically linked; not reconstructed)
+??_7CBrush@@6B@,0x1e8cf4,0x14,multistartdlg,MFC/CRT (statically linked; not reconstructed)
 ??_7CRgn@@6B@,0x1ea2a4,0x14,gruntzmgr,MFC/CRT (statically linked; not reconstructed)
 ??_7CMapStringToOb@@6B@,0x1eafd4,0x14,,MFC/CRT (statically linked; not reconstructed)
 ??_7CMapStringToPtr@@6B@,0x1eb014,0x14,,MFC/CRT (statically linked; not reconstructed)
