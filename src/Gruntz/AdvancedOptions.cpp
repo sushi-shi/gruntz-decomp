@@ -1,5 +1,7 @@
 #include <rva.h>
 
+#include <Gruntz/AdvancedOptions.h>
+
 #include <Mfc.h>
 
 #include <Gruntz/GruntDirStatics.h>
@@ -22,6 +24,50 @@ RVA_DYNINIT(0x0000af70, 0xe, g_registryHelper)
 RVA_DYNINIT(0x0000af90, 0xa, g_registryHelper)
 DATA(0x002295d8)
 static Utils::RegistryHelper g_registryHelper;
+
+RVA(0x0000afb0, 0x108)
+INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+        case WM_INITDIALOG:
+            g_registryHelper.Close();
+            g_registryHelper
+                .Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0);
+            LoadOptions(hWnd, &g_registryHelper);
+
+            {
+                HICON hIcon = LoadIconA(g_appResHandle, "GRUNTZ");
+                if (hIcon) {
+                    MsgParam icon;
+                    icon.m_icon = hIcon;
+                    SendMessageA(hWnd, WM_SETICON, 1, icon.m_lparam);
+                }
+            }
+            if (IsIconic(hWnd)) {
+                ShowWindow(hWnd, SW_RESTORE);
+            }
+            SetForegroundWindow(hWnd);
+            BringWindowToTop(hWnd);
+            return 1;
+
+        case WM_COMMAND:
+            if (wParam == IDCANCEL) {
+                EndDialog(hWnd, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                SaveOptions(hWnd, &g_registryHelper);
+                EndDialog(hWnd, 1);
+                return 1;
+            }
+            if (wParam == IDC_DEFAULTS) {
+                SetDefaults(hWnd);
+                return 1;
+            }
+            break;
+    }
+
+    return 0;
+}
 
 RVA(0x0000b110, 0x32)
 void SaveOption(
@@ -71,48 +117,4 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
         SaveOption(hWnd, pRegistryHelper, "Disable Music", IDC_DISABLE_MUSIC);
         SaveOption(hWnd, pRegistryHelper, "Disable High Quality Movie", IDC_DISABLE_MOVIE);
     }
-}
-
-RVA(0x0000afb0, 0x108)
-INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    switch (message) {
-        case WM_INITDIALOG:
-            g_registryHelper.Close();
-            g_registryHelper
-                .Open("Monolith Productions", "Gruntz", "1.0", 0, HKEY_LOCAL_MACHINE, 0);
-            LoadOptions(hWnd, &g_registryHelper);
-
-            {
-                HICON hIcon = LoadIconA(g_appResHandle, "GRUNTZ");
-                if (hIcon) {
-                    MsgParam icon;
-                    icon.m_icon = hIcon;
-                    SendMessageA(hWnd, WM_SETICON, 1, icon.m_lparam);
-                }
-            }
-            if (IsIconic(hWnd)) {
-                ShowWindow(hWnd, SW_RESTORE);
-            }
-            SetForegroundWindow(hWnd);
-            BringWindowToTop(hWnd);
-            return 1;
-
-        case WM_COMMAND:
-            if (wParam == IDCANCEL) {
-                EndDialog(hWnd, 0);
-                return 1;
-            }
-            if (wParam == 1) {
-                SaveOptions(hWnd, &g_registryHelper);
-                EndDialog(hWnd, 1);
-                return 1;
-            }
-            if (wParam == IDC_DEFAULTS) {
-                SetDefaults(hWnd);
-                return 1;
-            }
-            break;
-    }
-
-    return 0;
 }

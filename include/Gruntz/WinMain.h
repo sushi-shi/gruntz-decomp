@@ -12,6 +12,4 @@ i32 FindProcessByName(const char* name, i32 wantCount, void** pHandleOut);
 i32 StartUpPrompt(HWND__* parent);
 void ActiveWait(u32 milliseconds);
 
-i32 CALLBACK AdvancedOptionsDialogProc(HWND, UINT, WPARAM, LPARAM);
-
 #endif // GRUNTZ_WINMAIN_H

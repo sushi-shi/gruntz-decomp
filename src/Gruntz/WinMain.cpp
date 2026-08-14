@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/AdvancedOptions.h>
 #include <Gruntz/GameAssetNamespaces.h>
 #include <Gruntz/GruntzApp.h>
 #include <Gruntz/GruntzCommandId.h>
