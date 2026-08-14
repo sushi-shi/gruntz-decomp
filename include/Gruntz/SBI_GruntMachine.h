@@ -18,7 +18,7 @@ class CDDrawSurfaceMgr;
 
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
-    CSBI_GruntMachine() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+    CSBI_GruntMachine() {
         m_kind = SBI_KIND_GRUNT_MACHINE;
         m_frameA = NULL;
         m_frameB = NULL;

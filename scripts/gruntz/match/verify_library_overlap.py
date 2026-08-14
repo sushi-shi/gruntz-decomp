@@ -29,6 +29,12 @@ the RVA() macros the first cut of this guard parsed:
                                                     thunk the compiler synthesizes)
   * data        DATA(0x..)                        - a named game global / vtable
 
+`vtables_library.csv` also deliberately contributes generated data names: rows
+assigned to its non-built `library_data` holding unit let the delinker bind
+references to library-owned payload without pretending a game TU owns it.  Those
+generated-only names are library carve-outs, not src claims.  A real DATA() at the
+same RVA still is a src claim and remains fatal.
+
 The FID matcher is fuzzy, so it emits false positives (a real function has ONE
 address, yet ??_G__non_rtti_object recurred at ~189 RVAs, __fpclear at ~45): an
 RVA_COMPGEN thunk or a DATA() global landing on such a row is the recurring
@@ -103,6 +109,16 @@ def vendored_rvas() -> set:
     return rvas
 
 
+def library_holding_rvas() -> set:
+    """Generated names deliberately owned by the non-built library-data bucket."""
+    from gruntz.core import vtable_catalog
+    return {
+        norm_addr("0x%x" % row["rva"])
+        for row in vtable_catalog.library_rows()
+        if (row.get("unit") or "").strip() == vtable_catalog.LIBRARY_HOLDING_UNIT
+    }
+
+
 def src_claims() -> dict:
     """rva -> (claim-kind, "path:line") for every src-authored claim. Parses src/
     and include/ directly, so it is always available (the never-vacuous fallback)
@@ -135,6 +151,7 @@ def generated_claims() -> dict:
     every offending row carries its claim kind + src location."""
     src = src_claims()
     vend = vendored_rvas()
+    holding = library_holding_rvas()
     claims = {}
 
     if GEN_NAMES.exists():
@@ -147,6 +164,11 @@ def generated_claims() -> dict:
             except ValueError:
                 continue
             if key in vend:                        # vendored library body - co-listed by design
+                continue
+            if key in holding and key not in src:
+                # vtables_library.csv enrolled the payload solely into the
+                # non-built library_data holding unit.  It appears in the generated
+                # name overlay so target relocations bind, but no source owns it.
                 continue
             if key in src:
                 kind, loc = src[key]

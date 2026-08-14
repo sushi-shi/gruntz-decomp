@@ -60,11 +60,10 @@ CHash::CHash() {
 }
 
 RVA(0x00184960, 0x70)
-CHashBase* CHashBase::Construct(i32 count) {
+CHashBase::CHashBase(i32 count) {
     m_count = count;
 
     m_buckets = new CHashSlot[count];
-    return this;
 }
 
 RVA_COMPGEN(0x001849d0, 0x50, ??_ECHashSlot@@QAEPAXI@Z)

@@ -217,18 +217,9 @@ GruntzPlayer::~GruntzPlayer() {
 }
 
 // @early-stop
-// The residue is the inlined CStatusBarMgr ctor's array members, and the decision is
-// cl's INLINE BUDGET, not a source shape.  Retail calls `??_H` (vector constructor
-// iterator) for BOTH CSbiHlRow arrays - m_groupSlots[3] at 0xc8081 and m_hlGrid[12]
-// at 0xc80c6, same ctor address 0x403a3a pushed twice.  Here cl expands the iterator
-// itself for the 3-element one (a call-loop with the counter in the dead prevStateId
-// parameter home) and calls ??_H only for the 12-element one.  That inline loop is
-// the whole frame difference: it needs a live counter, so `this` cannot go in the
-// slot retail uses and every [esp+N] in the function shifts by 4.  The same ctor
-// inlined into CMulti::LoadGameAssetNamespaces expands its body into three loops on
-// BOTH sides (multi.obj has no ??0CSbiHlRow call at all), i.e. cl picks per SITE
-// according to how much it has already inlined - there is no source lever here that
-// is not a fitted artifact.
+// Retail calls the vector iterator for both CSbiHlRow arrays and calls
+// ~CTileTriggerContainer on the failed load arm; this caller expands the first
+// array and that destructor under /Ob1. Keep the proven member identities intact.
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
@@ -277,9 +268,6 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         m_guts = new CStatusBarMgr;
         if (m_guts->LoadBattlezItemConfig(m_world) == 0) {
-            if (m_guts == NULL) {
-                return 0;
-            }
             delete m_guts;
             m_guts = NULL;
             return 0;
@@ -288,9 +276,6 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         CTileTriggerContainer* r78 = new CTileTriggerContainer;
         m_beginMarker = r78;
         if (m_beginMarker->GetFlag74() == 0) {
-            if (m_beginMarker == NULL) {
-                return 0;
-            }
             delete m_beginMarker;
             m_beginMarker = NULL;
             return 0;

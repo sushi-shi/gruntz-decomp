@@ -26,7 +26,7 @@ namespace Utils {
 
         m_baseKey = hKey;
 
-        char szSoftware[] = "Software";
+        char szSoftware[] = DATA_COMPGEN(0x0021a064, "Software");
 
         if (GetRegistryKey(hKey, szSubKey ? szSubKey : szSoftware, &m_key1)
             && GetRegistryKey(m_key1, szKeyName1, &m_key2)

@@ -118,6 +118,8 @@ void CNetSession::Reset() {
 }
 
 // @early-stop
+// Keep case bodies in retail's jump-table target order: wp 2 through 0x16,
+// followed by the default 0x17 arm. The remaining frame delta is two loop-IV spills.
 RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];
@@ -140,65 +142,65 @@ void CNetSession::BuildGruntzCrcInfo() {
                 case PICKUP_BOMB:
                     wp = 2;
                     break;
-                case PICKUP_BOOMERANG:
-                    wp = 9;
-                    break;
-                case PICKUP_BRICK:
-                    wp = 0xe;
-                    break;
-                case PICKUP_CLUB:
-                    wp = 6;
-                    break;
-                case PICKUP_GAUNTLETZ:
-                    wp = 0xb;
-                    break;
-                case PICKUP_GLOVEZ:
-                    wp = 0x13;
-                    break;
-                case PICKUP_GOOBER:
-                    wp = 0x11;
-                    break;
-                case PICKUP_GRAVITYBOOTZ:
-                    wp = 0xf;
-                    break;
-                case PICKUP_GUNHAT:
-                    wp = 5;
-                    break;
-                case PICKUP_NERFGUN:
-                    wp = 0x15;
-                    break;
-                case PICKUP_ROCK:
-                    wp = 7;
-                    break;
-                case PICKUP_SHIELD:
-                    wp = 0x10;
-                    break;
-                case PICKUP_SHOVEL:
-                    wp = 8;
-                    break;
-                case PICKUP_SPRING:
-                    wp = 0xa;
-                    break;
-                case PICKUP_SPY:
-                    wp = 0xd;
+                case PICKUP_WELDER:
+                    wp = 3;
                     break;
                 case PICKUP_SWORD:
                     wp = 4;
                     break;
-                case PICKUP_TIMEBOMB:
-                    wp = 0x14;
+                case PICKUP_GUNHAT:
+                    wp = 5;
+                    break;
+                case PICKUP_CLUB:
+                    wp = 6;
+                    break;
+                case PICKUP_ROCK:
+                    wp = 7;
+                    break;
+                case PICKUP_SHOVEL:
+                    wp = 8;
+                    break;
+                case PICKUP_BOOMERANG:
+                    wp = 9;
+                    break;
+                case PICKUP_SPRING:
+                    wp = 0xa;
+                    break;
+                case PICKUP_GAUNTLETZ:
+                    wp = 0xb;
+                    break;
+                case PICKUP_WINGZ:
+                    wp = 0xc;
+                    break;
+                case PICKUP_SPY:
+                    wp = 0xd;
+                    break;
+                case PICKUP_BRICK:
+                    wp = 0xe;
+                    break;
+                case PICKUP_GRAVITYBOOTZ:
+                    wp = 0xf;
+                    break;
+                case PICKUP_SHIELD:
+                    wp = 0x10;
+                    break;
+                case PICKUP_GOOBER:
+                    wp = 0x11;
                     break;
                 case PICKUP_TOOB:
                     wp = 0x12;
                     break;
+                case PICKUP_GLOVEZ:
+                    wp = 0x13;
+                    break;
+                case PICKUP_TIMEBOMB:
+                    wp = 0x14;
+                    break;
+                case PICKUP_NERFGUN:
+                    wp = 0x15;
+                    break;
                 case PICKUP_WAND:
                     wp = 0x16;
-                    break;
-                case PICKUP_WELDER:
-                    wp = 3;
-                    break;
-                case PICKUP_WINGZ:
-                    wp = 0xc;
                     break;
                 default:
                     wp = 0x17;
@@ -231,7 +233,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_neighborScanEnabled,
                 rnd
             );
-            info += "\n";
+            info += DATA_COMPGEN(0x002122ac, "\n");
             info += szLine;
         }
     }

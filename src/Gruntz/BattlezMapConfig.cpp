@@ -2405,10 +2405,9 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         const RECT* src = &box;
         RECT a;
         if (src != NULL) {
-            a.left = src->left;
-            a.top = src->top;
-            a.right = src->right + 1;
-            a.bottom = src->bottom + 1;
+            a = *src;
+            a.right++;
+            a.bottom++;
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }

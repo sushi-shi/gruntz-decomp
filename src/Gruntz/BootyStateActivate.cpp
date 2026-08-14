@@ -1014,11 +1014,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
             if (i >= m_slot && (i != m_slot || m_expl[i]->m_animCursor.m_animation == NULL)) {
-                CWwdGameObjectA* e = m_expl[i];
-                e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
-                e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
-                e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
+                m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                m_expl[i]->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+                m_expl[i]->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
+                m_expl[i]->m_screenY =
+                    (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
 
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
@@ -1083,11 +1083,11 @@ i32 CBootyState::LevelMsgHudDriver() {
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             ShowHudMessage(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            CWwdGameObjectA* e = m_expl[i];
-            e->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-            e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
-            e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
-            e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
+            m_expl[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+            m_expl[i]->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+            m_expl[i]->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
+            m_expl[i]->m_screenY =
+                (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
@@ -1849,8 +1849,8 @@ i32 CBootyState::OnKeyDown(i32, i32) {
 }
 
 // @early-stop
-// Structure is settled: 74/74 blocks, the same nine induction variables, and the same
-// referent multiset.  Retail spills `tint`, `best`, `bestIdx` and the tally cursor
+// The 42-branch, 74-block CFG and referent multiset agree. Retail spills `tint`,
+// `best`, `bestIdx` and the tally cursor
 // where cl enregisters them - it burns ebx on the constant 1 and keeps `this` in ebp,
 // cl does the opposite - so retail's frame is 0x14 wider and the registers rotate.
 RVA(0x0001d440, 0xd7d)
@@ -2203,8 +2203,12 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
-        const Coord* flagPos = g_bootyFlagPos;
-        for (i32 w = 0; flagPos < g_bootyFlagPos + 4; w++, flagPos++) {
+        AddrWord<const Coord> flagPos;
+        AddrWord<const Coord> flagEnd;
+        flagPos.m_addr = g_bootyFlagPos;
+        flagEnd.m_addr = g_bootyTabPos;
+        i32 w = 0;
+        do {
             i32 held = g_gameReg->m_scoreHud->SumFlags(w);
             i32 placed = 0;
             for (i32 c = 0; c < 4; c++) {
@@ -2219,13 +2223,16 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
                     spread[2][0] = -2;
                     spread[2][1] = 0;
                     spread[2][2] = 2;
-                    m_flagSprites[c]->m_screenX = (spread[held - 1][placed] << 4) + flagPos->m_x;
-                    m_flagSprites[c]->m_screenY = flagPos->m_y;
+                    m_flagSprites[c]->m_screenX =
+                        (spread[held - 1][placed] << 4) + flagPos.m_addr->m_x;
+                    m_flagSprites[c]->m_screenY = flagPos.m_addr->m_y;
                     m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     placed++;
                 }
             }
-        }
+            w++;
+            flagPos.m_addr++;
+        } while (flagPos.m_word < flagEnd.m_word);
     }
     return 1;
 }

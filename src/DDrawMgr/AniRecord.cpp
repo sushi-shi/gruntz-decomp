@@ -82,13 +82,8 @@ i32 CAniRecordView::Parse(void* ctx, const i16* src) {
 }
 
 // @early-stop
-// the loop tail is ONE fused statement in retail: the GetAt(i) sret return is
-// chained (`mov edx,[eax]`), the CString temp is destroyed AFTER the
-// m_cues[i] store, and `v = 0` lands between the Lookup arg pushes. A comma
-// expression `m_cues[i] = (Lookup(GetAt(i), v), v)` reproduces everything but
-// the v=0 store slot (96.86); a named CString reads the slot instead of
-// chaining; a static FindCue helper refuses to inline (81.27). Parked on the
-// named-local spelling.
+// The GetAt(i) return is the CString temporary consumed directly by Lookup, and
+// the comma expression keeps it alive through the m_cues[i] store.
 RVA(0x00168d00, 0x14c)
 void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str) {
     if (owner == NULL || str == NULL) {
@@ -119,12 +114,8 @@ void CAniRecordView::ResolveIndices(CDDrawSubMgrLeafScan* owner, const char* str
     if (m_cueCount > 0) {
         m_cues = new LeafCue*[m_cueCount];
         for (i32 i = 0; i < m_cueCount; i++) {
-
-            CString t = tokens.GetAt(i);
-            void* v = 0;
-            owner->m_cues.Lookup(t, v);
-
-            m_cues[i] = static_cast<LeafCue*>(v);
+            void* v = NULL;
+            m_cues[i] = (owner->m_cues.Lookup(tokens.GetAt(i), v), static_cast<LeafCue*>(v));
         }
     }
 }

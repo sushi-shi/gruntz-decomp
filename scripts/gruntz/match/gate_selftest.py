@@ -50,9 +50,115 @@ from gruntz.core import report
 from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, data_manifest, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
-from gruntz.match import residual_queue, status
+from gruntz.match import residual_queue, status, verify_library_overlap
 from gruntz.permute import permute_sweep, tu_state_noise
 from gruntz.match import verify_unique_names as vun
+from gruntz.sema import diagnose
+
+
+class DiagnoseCallSetControls(unittest.TestCase):
+    def test_exact_primary_does_not_claim_structural_exactness(self):
+        with mock.patch.object(diagnose, "csv_find", return_value={
+                "unit": "probe", "name": "?Probe@@YAXXZ"}), \
+                mock.patch.object(report.Report, "fn_pct", return_value=100.0), \
+                contextlib.redirect_stdout(io.StringIO()) as out:
+            with self.assertRaisesRegex(SystemExit, "0"):
+                diagnose.run(argparse.Namespace(rva="0x1000"))
+        self.assertIn("does not clear C1/EH structure", out.getvalue())
+
+    def test_calll_count_difference_reaches_inline_classification(self):
+        """Exercise the public classifier, not only its mnemonic recognizer."""
+        name = "?Probe@@YAXXZ"
+        base_insns = [(0, "calll", "0x5 <Probe+0x5>"), (5, "retl", "")]
+        target_insns = [
+            (0, "calll", "0x5 <Probe+0x5>"),
+            (5, "calll", "0xa <Probe+0xa>"),
+            (10, "retl", ""),
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "base.obj"
+            target = Path(tmp) / "target.obj"
+            base.touch()
+            target.touch()
+            decoded = {
+                base: {name: base_insns},
+                target: {name: target_insns},
+            }
+            with mock.patch.object(diagnose, "csv_find", return_value={
+                    "unit": "probe", "name": name}), \
+                    mock.patch.object(report.Report, "fn_pct", return_value=90.0), \
+                    mock.patch.object(branches, "obj_paths", return_value=(base, target)), \
+                    mock.patch.object(branches, "decode",
+                                      side_effect=lambda path, _name: decoded[path]), \
+                    mock.patch.object(branches, "code_stop", return_value=None), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                with self.assertRaisesRegex(SystemExit, "1"):
+                    diagnose.run(argparse.Namespace(rva="0x1000"))
+        self.assertIn("CLASS: INLINE / CALL-SET", out.getvalue())
+
+    def test_equal_call_count_but_different_callee_reaches_call_set_class(self):
+        """The doctrine says multiset, not merely instruction count."""
+        name = "?Probe@@YAXXZ"
+        insns = [(0, "calll", "0x5 <Probe+0x5>"), (5, "retl", "")]
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "base.obj"
+            target = Path(tmp) / "target.obj"
+            base.touch()
+            target.touch()
+            decoded = {base: {name: insns}, target: {name: insns}}
+            relocs = {
+                base: {name: [(1, "?Expanded@@YAXXZ")]},
+                target: {name: [(1, "?Called@@YAXXZ")]},
+            }
+            with mock.patch.object(diagnose, "csv_find", return_value={
+                    "unit": "probe", "name": name}), \
+                    mock.patch.object(report.Report, "fn_pct", return_value=90.0), \
+                    mock.patch.object(branches, "obj_paths", return_value=(base, target)), \
+                    mock.patch.object(branches, "decode",
+                                      side_effect=lambda path, _name: decoded[path]), \
+                    mock.patch.object(branches, "code_stop", return_value=None), \
+                    mock.patch("gruntz.audit.eh_frame.rel32_calls",
+                               side_effect=lambda path: relocs[path]), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                with self.assertRaisesRegex(SystemExit, "1"):
+                    diagnose.run(argparse.Namespace(rva="0x1000"))
+        self.assertIn("direct REL32 callee multisets differ", out.getvalue())
+
+    def test_repeated_callee_delta_does_not_claim_inline_expansion(self):
+        """A repeated direct call may differ because one tail was cross-jumped."""
+        name = "?Probe@@YAXXZ"
+        base_insns = [
+            (0, "calll", "0x5 <Probe+0x5>"),
+            (5, "calll", "0xa <Probe+0xa>"),
+            (10, "retl", ""),
+        ]
+        target_insns = [(0, "calll", "0x5 <Probe+0x5>"), (5, "retl", "")]
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / "base.obj"
+            target = Path(tmp) / "target.obj"
+            base.touch()
+            target.touch()
+            decoded = {base: {name: base_insns}, target: {name: target_insns}}
+            relocs = {
+                base: {name: [(1, "?Repeated@@YAXXZ"),
+                              (6, "?Repeated@@YAXXZ")]},
+                target: {name: [(1, "?Repeated@@YAXXZ")]},
+            }
+            with mock.patch.object(diagnose, "csv_find", return_value={
+                    "unit": "probe", "name": name}), \
+                    mock.patch.object(report.Report, "fn_pct", return_value=90.0), \
+                    mock.patch.object(branches, "obj_paths", return_value=(base, target)), \
+                    mock.patch.object(branches, "decode",
+                                      side_effect=lambda path, _name: decoded[path]), \
+                    mock.patch.object(branches, "code_stop", return_value=None), \
+                    mock.patch("gruntz.audit.eh_frame.rel32_calls",
+                               side_effect=lambda path: relocs[path]), \
+                    contextlib.redirect_stdout(io.StringIO()) as out:
+                with self.assertRaisesRegex(SystemExit, "1"):
+                    diagnose.run(argparse.Namespace(rva="0x1000"))
+        rendered = out.getvalue()
+        self.assertIn("REPEATED-SITE DELTA", rendered)
+        self.assertNotIn("retail expanded", rendered)
 
 
 class RenameMemberToolTests(unittest.TestCase):
@@ -234,6 +340,18 @@ class TuStateNoiseControls(unittest.TestCase):
 
 
 class DataManifestAlignmentControls(unittest.TestCase):
+    def test_member_behind_col_has_dword_not_section_alignment(self):
+        self.assertEqual(data_manifest.member_alignment(8, 0), 8)
+        self.assertEqual(data_manifest.member_alignment(8, 4), 4)
+        self.assertEqual(data_manifest.member_alignment(8, 0, 0x1004), 4)
+        row = {"name": "??_7Probe@@6B@", "object": "probe.c",
+               "rva": 0x1004, "size": 4, "storage": "rdata",
+               "alignment": 4, "section": {"alignment": 8},
+               "section_ordinal": 1, "section_offset": 4,
+               "provenance": "candidate-COFF-vtable"}
+        manifest = data_manifest.manifest_bytes([row]).decode()
+        self.assertIn("\trdata\t0x4\t1\t0x4\texternal\t", manifest)
+
     def test_absolute_rva_mismatch_is_a_placement_adjustment_not_a_gate(self):
         row = {"name": "?validContributionMember@@3PAY0BA@E",
                "object": "probe.c", "rva": 0x1004, "size": 16,
@@ -285,6 +403,53 @@ class DataIntegrityRatchetTests(unittest.TestCase):
 
 
 class DataCoverageReachabilityTests(unittest.TestCase):
+    def test_one_past_pair_requires_all_known_anchors_to_correspond(self):
+        class FakePE:
+            image_base = 0x400000
+
+            def __init__(self):
+                self.data = bytearray(0x40)
+
+            @staticmethod
+            def off(rva):
+                return rva
+
+        pe = FakePE()
+        struct.pack_into("<I", pe.data, 8, pe.image_base + 0x1020)
+        struct.pack_into("<I", pe.data, 16, pe.image_base + 0x2000)
+        text = bytearray(0x20)
+        struct.pack_into("<I", text, 4, 0x20)
+        known = {"array": (0x1000, 0x20, "data", 8),
+                 "anchor": (0x2000, 4, "data", 1)}
+        mine = [(4, "array"), (12, "anchor")]
+        self.assertEqual(
+            data_denominator._paired_one_past_sites(
+                mine, [8, 16], text, pe, known),
+            {8})
+
+        struct.pack_into("<I", pe.data, 16, pe.image_base + 0x2004)
+        self.assertEqual(
+            data_denominator._paired_one_past_sites(
+                mine, [8, 16], text, pe, known),
+            set())
+
+        self.assertEqual(
+            data_denominator._unique_one_past_sites(
+                mine, [8, 16], text, pe, known),
+            {8})
+        struct.pack_into("<I", pe.data, 24, pe.image_base + 0x1020)
+        self.assertEqual(
+            data_denominator._unique_one_past_sites(
+                mine, [8, 16, 24], text, pe, known),
+            set())
+
+        struct.pack_into("<I", text, 4, 0x24)
+        struct.pack_into("<I", pe.data, 8, pe.image_base + 0x1024)
+        self.assertEqual(
+            data_denominator._unique_one_past_sites(
+                mine, [8, 16], text, pe, known),
+            {8})
+
     def test_library_boundary_stops_transitive_reachability(self):
         direct = {0: {"direct game/compiler code": 1}}
         enrolled = {4: 1}
@@ -527,6 +692,19 @@ class EhBandScoreboardTests(unittest.TestCase):
         self.assertEqual(b[1], (-1312,))
         self.assertEqual(a[2], b[2])
 
+        guard_a = (bytes.fromhex(
+            "83 bd c0 fe ff ff 00 c7 85 bc fe ff ff 00 00 00 00"
+        ), ("??1zPtrColl@@UAE@XZ",))
+        guard_b = (bytes.fromhex(
+            "83 bd dc fe ff ff 00 c7 85 c0 fe ff ff 00 00 00 00"
+        ), ("??1zPtrColl@@UAE@XZ",))
+        a = _funclet_shape(guard_a)
+        b = _funclet_shape(guard_b)
+        self.assertEqual(a[0], b[0])
+        self.assertEqual(a[1], (-320, -324))
+        self.assertEqual(b[1], (-292, -320))
+        self.assertEqual(a[2], b[2])
+
     def test_nonexact_census_limits_scope_and_uses_full_topology(self):
         from gruntz.audit import eh_band as audit
         from gruntz.build import eh_band
@@ -644,6 +822,34 @@ class TestLibraryLabels(unittest.TestCase):
                 "0x3000,low,LIBCMT,LOW,test\n"
             )
             self.assertEqual(library_labels.active_rvas(labels), {0x1000, 0x2000})
+
+    def test_library_holding_data_name_is_not_a_source_claim(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src"
+            include = root / "include"
+            src.mkdir()
+            include.mkdir()
+            names = root / "symbol_names.csv"
+            names.write_text(
+                "rva,name,unit,size,kind\n"
+                "0x001f03e0,?openprot@filebuf@@2HB,library_data,0x4,data\n"
+            )
+            vendored = root / "zlib_labels.csv"
+            vendored.write_text("")
+            holding = [{"rva": 0x1f03e0, "unit": "library_data"}]
+            with mock.patch.object(verify_library_overlap, "REPO", root), \
+                    mock.patch.object(verify_library_overlap, "SRC", src), \
+                    mock.patch.object(verify_library_overlap, "INCLUDE", include), \
+                    mock.patch.object(verify_library_overlap, "GEN_NAMES", names), \
+                    mock.patch.object(verify_library_overlap, "VENDORED_CONFIG", vendored), \
+                    mock.patch("gruntz.core.vtable_catalog.library_rows",
+                               return_value=holding):
+                self.assertEqual(verify_library_overlap.generated_claims(), {})
+
+                (src / "owned.cpp").write_text("DATA(0x001f03e0) int owned = 0;\n")
+                claims = verify_library_overlap.generated_claims()
+                self.assertIn("0x1f03e0", claims)
 
 
 class TestFunctionUniverse(unittest.TestCase):

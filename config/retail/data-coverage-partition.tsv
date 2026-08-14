@@ -84,12 +84,12 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001e8ed0	0x001e8ee0	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e8fbc	0x001e8fe8	44	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e93ad	0x001e93b0	3	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x001e93d0	0x001e949c	204	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x001e949c	0x001e94ac	16	.rdata	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (9)	nz=6
-0x001e94ac	0x001e94b8	12	.rdata	game-visible unenrolled data	eligible	UNCLASSIFIED (non-zero)	direct game/compiler code (9)	nz=3
+0x001e93d0	0x001e9498	200	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x001e94a0	0x001e94a8	8	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x001e94b0	0x001e94b8	8	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e94f0	0x001e9500	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e95dc	0x001e9608	44	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x001e9628	0x001e9630	8	.rdata	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (1)	zero bytes with no inbound game-visible reference
+0x001e9628	0x001e9630	8	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e9660	0x001e9670	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e96a0	0x001e96b0	16	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x001e96e0	0x001e96ec	12	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -376,7 +376,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f03bc	0x001f03c8	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03c8	0x001f03d4	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f03d4	0x001f03e0	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
-0x001f03e0	0x001f03e4	4	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (8)	retail library tail; archive member unresolved
 0x001f03e4	0x001f03f4	16	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03f4	0x001f03fc	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f03fc	0x001f0460	100	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
@@ -389,11 +388,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f0490	0x001f049c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f049c	0x001f04b0	20	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f04c0	0x001f04c8	8	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
-0x001f04dc	0x001f04e4	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
 0x001f04ec	0x001f04f0	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
-0x001f0510	0x001f0514	4	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (3)	retail library tail; archive member unresolved
-0x001f0514	0x001f0518	4	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
-0x001f0518	0x001f0520	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (2)	retail library tail; archive member unresolved
 0x001f0524	0x001f0528	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0530	0x001f0538	8	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0538	0x001f0548	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectPlay2
@@ -443,7 +438,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f0964	0x001f09d4	112	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f09d4	0x001f09ec	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f09ec	0x001f0ab0	196	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
-0x001f0ab0	0x001f0ab8	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (3)	retail library tail; archive member unresolved
 0x001f0ab8	0x001f0ac8	16	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0ac8	0x001f0ad4	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f0ad4	0x001f1f20	5196	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
@@ -774,8 +768,13 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f4060	0x001f4068	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f407d	0x001f4088	11	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f4098	0x001f40a0	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
-0x001f40b4	0x001f40d0	28	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
-0x001f40d0	0x001f4150	128	.rdata	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	retail .rdata$r contribution group
+0x001f40b4	0x001f40b8	4	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f40cc	0x001f40d0	4	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f40e8	0x001f40f0	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f4108	0x001f4110	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f411d	0x001f4120	3	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f4130	0x001f4138	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f414c	0x001f4150	4	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f4168	0x001f4170	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f4185	0x001f4190	11	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f41a0	0x001f41a8	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
@@ -1755,7 +1754,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0020b810	0x0020b818	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020b820	0x0020b824	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020b832	0x0020b838	6	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0020b978	0x0020b9b8	64	.data	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (1)	zero bytes with no inbound game-visible reference
+0x0020b978	0x0020b9b8	64	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020b9c1	0x0020b9c4	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020b9cb	0x0020b9cc	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020b9d6	0x0020b9d8	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -1915,7 +1914,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0020c689	0x0020c68c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c698	0x0020c69c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c6b0	0x0020c6b8	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0020c6b8	0x0020c6f4	60	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x0020c6cf	0x0020c6d8	9	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x0020c6ed	0x0020c6f4	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c72c	0x0020c738	12	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c73e	0x0020c740	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0020c749	0x0020c74c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -2885,7 +2885,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00212255	0x0021225c	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021227b	0x00212288	13	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002122a4	0x002122ac	8	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x002122ac	0x002122b0	4	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
+0x002122ae	0x002122b0	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021233b	0x00212358	29	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021238b	0x00212398	13	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021239f	0x002123a0	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3180,7 +3180,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00213ec2	0x00213ec8	6	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213ed6	0x00213ed8	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213ee7	0x00213eec	5	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00213eec	0x00213ef0	4	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (5)	between retail pooled literals; no source pin
+0x00213eee	0x00213ef0	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213ef5	0x00213ef8	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213efa	0x00213efc	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00213efe	0x00213f00	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3376,7 +3376,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002156e0	0x002156ec	12	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x002156ec	0x002156f0	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002156f0	0x002156f4	4	.data	library-private data	excluded	library-private data		NAFXCW
-0x002156f4	0x002156f8	4	.data	UNCLASSIFIED (non-zero)	eligible	UNCLASSIFIED (non-zero)		reloc-bearing run between pooled literals; nz=3
+0x002156f4	0x002156f8	4	.data	library-private data	excluded	library-private data		MSVC-THUNK
 0x002156f8	0x00215710	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215710	0x00215820	272	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215820	0x00215828	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
@@ -3495,8 +3495,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0021a052	0x0021a054	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021a05b	0x0021a05c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021a061	0x0021a064	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021a064	0x0021a06c	8	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
-0x0021a06c	0x0021a070	4	.data	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (1)	zero bytes with no inbound game-visible reference
+0x0021a06d	0x0021a070	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021a09d	0x0021a0a0	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021a0d1	0x0021a0d4	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021a0d9	0x0021a0dc	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference

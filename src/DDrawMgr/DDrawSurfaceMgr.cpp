@@ -274,18 +274,6 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
     return 1;
 }
 
-// @early-stop
-// /Ob1 inline-budget cut POSITION (docs/patterns/ob1-inline-budget-divergence.md).
-// Retail declines ~CFileMemBase at EVERY cleanup site here: each failure exit is
-// `vptr; call [??_7CFileMem+0xc]; mov BYTE state` and cross-jumps to one shared
-// `lea ecx,&m_file; call ??1CFile; call ??1CFileMemBase; xor eax,eax` tail. Our cl
-// still expands the base dtor at the first four exits, so those carry an extra
-// base-vptr stamp + EH state, the later exits lose the cross-jump, and the budget
-// it spent early makes the last two exits decline ??1CFileMem itself. The dtor is
-// header-inline on both sides (retail's own ??1CFileMem COMDAT expands it), so the
-// cut is a caller-IL-size decision, not visibility: retail's pre-inline body was
-// larger than ours. Everything above the first exit is byte-identical; a 200-round
-// permuter pass over the body is inert.
 RVA(0x00156020, 0x505)
 
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
@@ -439,7 +427,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     if (name == NULL) {
         return 0;
     }
-    CFileMem S(CFileMem::INLINE_SEED);
+    CFileMem S;
     if (S.SetName(name, 1, 0) == 0) {
         return 0;
     }
@@ -455,5 +443,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     return 1;
 }
 
+RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
+RVA_COMPGEN(0x00157960, 0x1e, ??_GCFileMemBase@@UAEPAXI@Z)
 RVA_COMPGEN(0x00157980, 0x74, ??1CFileMem@@UAE@XZ)
 RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)

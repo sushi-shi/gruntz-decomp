@@ -56,6 +56,8 @@ i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 // @early-stop
+// residue: retail saves esi/edi before the null guards; candidate shrink-wraps
+// them afterward, moving the CFile/CString homes without changing the frame size.
 RVA(0x000e3690, 0x2ec)
 i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {

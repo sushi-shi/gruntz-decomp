@@ -64,12 +64,7 @@ struct CSbiSlot {
 // serializes and the shape CSbiHlRow carries in its own tail. Its constructor writes
 // lastLo, intervalLo, lastHi, intervalHi, which is retail's +0/+8/+4/+0xc store order.
 struct SbiClockPair {
-    SbiClockPair() {
-        m_lastLo = 0;
-        m_intervalLo = 0;
-        m_lastHi = 0;
-        m_intervalHi = 0;
-    }
+    SbiClockPair() : m_last(0), m_interval(0) {}
 
     union {
         i64 m_last;
@@ -327,14 +322,12 @@ public:
     CSBI_ImageSet* m_hlNotify[12];
     SbiBeltPhase m_machinePhase;
     i32 m_extraNotifyArg0;
-    i64 m_beltLast;
-    i64 m_beltInterval;
+    SbiClockPair m_beltClock;
     CSBI_ImageSet* m_extraNotify0;
     char m_pad4e4[0x4e8 - 0x4e4];
     SbiFallingItemState m_fallActive;
     i32 m_extraNotifyArg1;
-    i64 m_fallLast;
-    i64 m_fallDelay;
+    SbiClockPair m_fallClock;
     CSBI_ImageSet* m_extraNotify1;
     RECT m_fallRect;
     RECT m_itemRect;
@@ -351,8 +344,7 @@ public:
     i32 m_toggleHandle;
     DestructWarningState m_destructWarnActive;
     DestructButtonFrame m_modeState;
-    i64 m_destructWarnLast;
-    i64 m_destructWarnDelay;
+    SbiClockPair m_destructWarnClock;
     CSBI_ImageSet* m_modeNotify;
     i32 m_modeArmed;
     i32 m_observerTabAvailable;
@@ -371,25 +363,15 @@ public:
 //   0xc8046  m_reserved2a0 / m_reserved2b0, scheduled into the argument pushes of
 //            `??_H(m_groupSlots, 0x18, 3)`
 //   0xc808b  m_machineB / m_machineA clocks, into the pushes of `??_H(m_hlGrid,0x18,12)`
-//   0xc80cb  m_beltLast+Interval and m_fallLast+Delay, BEFORE `??0CPtrArray(m_ptrPool)`
-//   0xc8106  m_destructWarnLast+Delay, straight AFTER it
+//   0xc80cb  m_beltClock and m_fallClock, BEFORE `??0CPtrArray(m_ptrPool)`
+//   0xc8106  m_destructWarnClock, straight AFTER it
 // Body assignments land after every member ctor instead - measured, all six sat past
 // `??0CPtrArray` at base+0x218. Mem-initializers put them back where retail has them
 // at no cost (CMulti::LoadGameAssetNamespaces 91.88 -> 94.30).
 //
-// The store ORDER (+0/+8/+4/+0xc, i.e. lastLo/intervalLo/lastHi/intervalHi) says these
-// three pairs are SbiClockPair OBJECTS, like the four above them - but typing them is
-// still blocked, and now for a measured reason: it pushes CStatusBarMgr past cl's /Ob1
-// inline budget, so cl emits three `call ??0SbiClockPair` where retail expands all
-// three inline (CPlay::LoadGameAssetNamespaces 84.49 -> 79.86, re-measured against this
-// layout). The open question is therefore the BUDGET, not the shape.
-inline CStatusBarMgr::CStatusBarMgr()
-    : m_beltLast(0),
-      m_beltInterval(0),
-      m_fallLast(0),
-      m_fallDelay(0),
-      m_destructWarnLast(0),
-      m_destructWarnDelay(0) {
+// The store ORDER (+0/+8/+4/+0xc, i.e. lastLo/intervalLo/lastHi/intervalHi) proves
+// that these three pairs are complete SbiClockPair objects like the four above them.
+inline CStatusBarMgr::CStatusBarMgr() {
     // m_reserved2a0/2b0 and m_machineA/B zero themselves in the mem-init run, which is
     // where retail's stores are - between the m_slots[5] and m_groupSlots[3] ctor loops
     // and between m_groupNotify and m_machineDisplay. Writing them again here only

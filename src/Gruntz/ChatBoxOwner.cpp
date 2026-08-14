@@ -57,13 +57,12 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
 }
 
 // @early-stop
-// The unwind chain is now type-correct end to end - 26 funclets against retail's 26,
-// same destructor at every index - so what is left is pure frame layout: we reserve
-// `sub esp,0x144` against retail's 0x13c (8 bytes more of locals) and cl takes `this`
-// in edi where retail takes ebp and pushes it before the first call, so every [esp+N]
-// and the push order differ. See
+// The 26-state unwind topology and teardown targets agree. The remaining local
+// layout reserves `sub esp,0x140` against retail's 0x13c and materializes the
+// zPtrColl cleanup states differently. The call set also cuts the stream chain
+// oppositely: one extra out-of-line istrstream ctor here versus retail's
+// out-of-line ostrstream::rdbuf + streambuf::out_waiting pair. See
 // docs/patterns/frame-size-mismatch-dominates-the-40-65-band.md.
-// Read the current shape from `eh_band --census`, not from this comment.
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     if (m_fontConfig->TypeChar(a, b) == 0) {
@@ -161,13 +160,12 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
                         }
                     }
                     if (enabled > 0) {
-                        CString message;
-                        message.Format(
+                        code.Format(
                             "Congratulations!  You have just enabled %d new cheats!\n",
                             enabled
                         );
                         g_gameReg->AppendChatMessage(
-                            const_cast<char*>(static_cast<const char*>(message))
+                            const_cast<char*>(static_cast<const char*>(code))
                         );
                     }
                 }

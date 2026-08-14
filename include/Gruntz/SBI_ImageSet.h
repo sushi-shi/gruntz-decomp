@@ -14,25 +14,7 @@ class CDDrawWorker;
 
 class CSBI_ImageSet : public CSBI_Image {
 public:
-    CSBI_ImageSet() {
-        m_frame = NULL;
-        m_kind = SBI_KIND_IMAGE_SET;
-        m_frameSet = NULL;
-    }
-    enum EInlineChain {
-        INLINE_CHAIN
-    };
-    CSBI_ImageSet(EInlineChain) : CSBI_Image(CSBI_Image::INLINE_CHAIN) {
-        m_frame = NULL;
-        m_kind = SBI_KIND_IMAGE_SET;
-        m_frameSet = NULL;
-    }
-    // Selected derived and direct allocation sites stop at CSBI_RectOnly.
-    CSBI_ImageSet(CSBI_Image::ECallRectOnly) : CSBI_Image(CSBI_Image::CALL_RECTONLY) {
-        m_frame = NULL;
-        m_kind = SBI_KIND_IMAGE_SET;
-        m_frameSet = NULL;
-    }
+    CSBI_ImageSet();
     virtual ~CSBI_ImageSet() OVERRIDE;
 
     virtual i32 SerializeFields(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 pObj)
@@ -56,6 +38,12 @@ public:
     CDDrawWorker* m_frameSet;
     i32 m_frameIndex;
 };
+
+inline CSBI_ImageSet::CSBI_ImageSet() {
+    m_frame = NULL;
+    m_kind = SBI_KIND_IMAGE_SET;
+    m_frameSet = NULL;
+}
 
 inline CSBI_ImageSet::~CSBI_ImageSet() {
     Reset();

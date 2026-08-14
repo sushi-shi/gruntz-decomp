@@ -67,6 +67,24 @@ at the end of the full-expression and the assignment is part of it.
 the one-statement-vs-two-statement difference moved the whole function
 **77.30% -> 99.90%** in a single edit.
 
+`CAniRecordView::ResolveIndices` @0x00168d00 adds the C1 control. Retail passes
+`tokens.GetAt(i)` directly to `Lookup`, stores the output into `m_cues[i]`, and only
+then destroys the returned `CString`. Spelling the tail as two statements destroys
+the temporary before the store and scores 93.42%. Naming the CString scores 97.07%
+but swaps its cleanup home with the output pointer, leaving a uniform `+0x4` EH row.
+The single expression
+
+```cpp
+void* v;
+v = 0;
+m_cues[i] = (map.Lookup(tokens.GetAt(i), v), static_cast<LeafCue*>(v));
+```
+
+puts the unnamed temporary and output pointer in retail's homes and makes both unwind
+funclets exact. The body settles at 96.86% because cl schedules `v = 0` before GetAt
+where retail sinks it between the Lookup pushes; that remaining store-placement coin
+does not outweigh the exact lifetime and C1 structure.
+
 ## Recognizing it
 
 Any `out`-parameter helper wrapped in a macro/loop where the diff shows your store of

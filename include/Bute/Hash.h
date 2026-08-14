@@ -48,7 +48,8 @@ public:
 
 class CHashBase {
 public:
-    CHashBase* Construct(i32 count);
+    CHashBase() {}
+    CHashBase(i32 count);
 
     CHashElement* First();
 
@@ -93,9 +94,7 @@ class CHash : public CHashBase {
 public:
     CHash();
 
-    CHash(i32 n) {
-        Construct(n);
-    }
+    CHash(i32 n) : CHashBase(n) {}
 
     ~CHash() {
         RemoveAll();
@@ -105,9 +104,7 @@ public:
 // CSymTab::m_subTabs - CSymTab elements chained through CSymTabNode, keyed by name.
 class CHashB : public CHashBase {
 public:
-    CHashB(i32 n) {
-        Construct(n);
-    }
+    CHashB(i32 n) : CHashBase(n) {}
     ~CHashB() {
         RemoveAll();
     }
@@ -120,9 +117,7 @@ public:
 // through CParseSlotHashNode, keyed by name.
 class CHashC : public CHashBase {
 public:
-    CHashC(i32 n) {
-        Construct(n);
-    }
+    CHashC(i32 n) : CHashBase(n) {}
     ~CHashC() {
         RemoveAll();
     }
@@ -135,9 +130,7 @@ public:
 // integer symbol key.
 class CHashD : public CHashBase {
 public:
-    CHashD(i32 n) {
-        Construct(n);
-    }
+    CHashD(i32 n) : CHashBase(n) {}
     ~CHashD() {
         RemoveAll();
     }

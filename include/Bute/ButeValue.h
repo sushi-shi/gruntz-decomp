@@ -118,37 +118,39 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     // table (0x17213c) has nine entries over eight bodies, and the one shared pair
     // is cl's own fold of BUTE_FLOAT onto BUTE_DWORD (a float-to-float assignment
     // lowers to the same integer `mov`, so writing the arm as `DWORD` only erases
-    // the type).  Every payload is copied as a whole object so both pointers stay in
-    // registers - a per-field copy makes cl reload other->pValue for each word.
+    // the type).  Each body owns its return epilogue; a shared return is C2-equivalent
+    // here but changes the caller's C1 inline accounting.  Every payload is copied as
+    // a whole object so both pointers stay in registers - a per-field copy makes cl
+    // reload other->pValue for each word.
     switch (type) {
         case BUTE_INT:
             *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
-            break;
+            return this;
         case BUTE_DWORD:
             *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
-            break;
+            return this;
         case BUTE_DOUBLE:
             *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
-            break;
+            return this;
         case BUTE_FLOAT:
             *static_cast<float*>(pValue) = *static_cast<float*>(other->pValue);
-            break;
+            return this;
         case BUTE_STRING:
             *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
-            break;
+            return this;
         case BUTE_RECT:
             *static_cast<ButeIntRect*>(pValue) = *static_cast<ButeIntRect*>(other->pValue);
-            break;
+            return this;
         case BUTE_POINT:
             *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
-            break;
+            return this;
         case BUTE_VECTOR:
             *static_cast<ButeDoubleVector*>(pValue) =
                 *static_cast<ButeDoubleVector*>(other->pValue);
-            break;
+            return this;
         case BUTE_RANGE:
             *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
-            break;
+            return this;
     }
     return this;
 }

@@ -1,7 +1,18 @@
-# cl 5.0 drops an inlined destructor AND its `return` unless the function is the compiland's first optimized one
+# REFUTED retail diagnosis: the dropped destructor/return came from a shared-return `CopyValue` spelling
 
-**Tags:** `cpp:dtor` `cpp:eh` `cpp:inline` `cpp:switch` | `asm:jmp` | `topic:wall` `topic:codegen-bug`
-**Confidence:** 10/10 (cl's own `/FAs` listing; trigger isolated to a single binary condition)
+**Tags:** `cpp:dtor` `cpp:eh` `cpp:inline` `cpp:switch` `cpp:return` | `asm:jmp` | `topic:wall-refuted` `topic:codegen-bug`
+**Confidence:** 10/10 for the compiler behavior; refuted as the retail source diagnosis
+
+## Correction (2026-08-14)
+
+The compiler behavior below is reproducible, but the conclusion that the victim's
+source was already correct is false. Retail `CButeValue::CopyValue` owns one complete
+return epilogue per distinct switch body. The candidate used `break` in every arm and
+one shared `return this`; its standalone C2 body happened to remain 100%, hiding the
+C1 distinction. Restoring per-arm returns makes eight `CButeMgr::Set*` callers exact
+and closes SetString's 13/12 unwind map to 12/12 without any pragma. The old
+first-optimized-function state and `inline_depth` experiments describe how cl treats
+the wrong shared-return source; they are negative controls, not a retail workaround.
 
 ## Symptom
 
@@ -39,12 +50,12 @@ independent "switch-arm" problem to attack separately:
 * when the defect fires, cl emits **two separate arm sets**, hoists the EH-state store
   into the second set's arms, and the tail that carried the destructor is gone.
 
-So the arm duplication is a *consequence* of the dropped destructor, and both disappear
-together. Chasing arm order/merging from the source is wasted effort.
+The arm duplication and dropped tail disappear together. The former conclusion that
+source arm exits were irrelevant was wrong: per-arm returns are the authentic lever.
 
 ## The trigger, isolated
 
-The victim's own source is correct. Compiled as the **first optimized function of its
+The old shared-return probe, compiled as the **first optimized function of its
 compiland**, `CButeMgr::SetPoint`'s first 127 instructions are byte-identical to retail
 — prologue, both `CButeValue` ctor expansions, the single shared arm set and the shared
 `push ebx; call operator delete` tail included. What flips it (measured on a probe that
@@ -88,9 +99,8 @@ instruction-sequence diff; none restores the destructor.
   back** — see
   [`msvc5-inline-depth-zero-is-the-only-live-lever`](msvc5-inline-depth-zero-is-the-only-live-lever.md)
   for the placement rules and the whole sweep. Neither reproduces retail's 3-of-7
-  expansion count, so both are workarounds, not the recovered source; the four victims
-  in `src/Bute/ButeMgr.cpp` carry the scoped `inline_depth(0)` because the alternative
-  is shipping the leak.
+  expansion count. They are compiler-state probes only; no `inline_depth` workaround
+  is retained in `src/Bute/ButeMgr.cpp`.
 * **Source spelling:** extra braces around the local + `return` outside — bit-identical
   to the plain early `return`. An `if/else` chain with no `return`s, and a
   `goto done;` chain, both raise the masked-diff ratio a little but **still emit the
@@ -101,8 +111,8 @@ instruction-sequence diff; none restores the destructor.
   `CButeValue* r = hit->CopyValue(&box);`. Both make the census uniform across all nine
   (`new`=11, out-of-line ctor=2, in-body `??3`=3) yet still emit
   `mov __$EHRec$[esp+N],-1` falling through into the `m_tree48` lookup. In the
-  defect-free (first-function) state the plain-`return` spelling is the one that matches
-  retail (and is the shortest), so it stays.
+  defect-free (first-function) state the plain caller `return` spelling was closest.
+  This panel never tested the independently evidenced `CopyValue` per-arm returns.
 * **Header shape:** moving every `CButeValue` ctor out of the class body into
   `inline CButeValue::CButeValue(...)` definitions after the class produces a
   byte-identical obj for all nine `Set<T>`. MSVC 5.0 makes no in-class/out-of-class
@@ -118,7 +128,7 @@ unwind funclets:
 llvm-objdump -dr build/objdiff/base/<unit>.obj | grep -c '??3@YAXPAX@Z'
 ```
 
-In `butemgr`, `SetInt`/`SetDword`/`SetFloat`/`SetDouble` have 3-4 in-body
+In the refuted shared-return build, `SetInt`/`SetDword`/`SetFloat`/`SetDouble` had 3-4 in-body
 `operator delete` calls each and `SetRect`/`SetPoint`/`SetVector`/`SetRange` have
 **zero** (`SetString` has one of two). Those four are exactly the functions with the
 biggest inlined ctor — `new T(*src)`, a copy-construction through a pointer parameter —
@@ -127,8 +137,8 @@ lowers.
 
 ## Related
 
-[[ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach]] is the other half of the same
-family's residual and is present in **all nine** `Set<T>`, defect or not: retail expands
+[[ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach]] recorded the other half of the
+same historical residual: retail expanded
 the ctor at 3 of the 7 sites, cl at 6 (7 when the function is alone). Measured
 masked-diff ratio against retail, per function, current TU vs. the same function alone
 in a TU:
@@ -145,8 +155,5 @@ in a TU:
 | SetVector | 49.4 | **73.0** |
 | SetRange | 43.0 | **77.0** |
 
-The five without the defect are already at or above their alone-state value — for them
-the "later" state is the *better* one, because it expands one fewer ctor. Retail is
-neither state: it has the later state's expansion count *and* the first state's
-destructor. Only one function per compiland can occupy the first slot, and source order
-is pinned to retail RVA order, so there is nothing to trade.
+These measurements remain useful evidence for compiler-state sensitivity, but their
+"nothing to trade" verdict is superseded by the per-arm-return reconstruction.

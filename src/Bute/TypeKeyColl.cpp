@@ -229,6 +229,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 }
 
 // @early-stop
+// The 43-branch CFG agrees; residue is constructor register coloring and spills.
 RVA(0x0016d3a0, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
     i32 maxv = 0;
@@ -271,7 +272,13 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
         if (static_cast<u32>(v) > static_cast<u32>(maxv)) {
             maxv = v;
         }
-        while (*p != 0 && !isdigit(*p)) {
+        if (*p == 0) {
+            break;
+        }
+        while (!isdigit(*p)) {
+            if (*p == 0) {
+                break;
+            }
             if (sawSep && *p != ' ') {
                 goto badchar;
             }
@@ -335,6 +342,9 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             for (++v; static_cast<u32>(v) <= static_cast<u32>(v2); ++v) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
                 band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
+            }
+            if (*q == 0) {
+                break;
             }
             while (*q != 0 && !isdigit(*q)) {
                 ++q;

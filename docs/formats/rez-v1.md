@@ -184,7 +184,7 @@ that falls straight out of retail's own data structure. Follow the 19:
 ```
 CRezMgr ctor  @0x13aa10   m_70 = 0x13                     (19)
 GetOrCreateTyp@0x13a95c   passes m_70 as the CRezTyp ctor's 4th argument
-CRezTyp  ctor @0x139c38   CHashBase::Construct(&typ->m_24, that argument)
+CRezTyp  ctor @0x139c38   constructs CHashBase(&typ->m_24, that argument)
 ReadDirBlock  @0x13a7e5   inserts every resource into typ->m_24 by NAME
 ```
 

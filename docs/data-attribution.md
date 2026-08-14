@@ -325,8 +325,10 @@ gets its own copy.
 slot map (`vtable_hierarchy`'s registry, read out of the shipped image's COL/base-class
 arrays) and the candidate COMDAT cl.exe emitted. `slot_count * 4 == candidate section size`
 or the row is withheld — the same contradiction check `section_rows()` applies to a literal.
-It immediately caught one real defect (`candidate section 0xc != RTTI 2 slots`) plus 17
-secondary/MI vtables (`??_7X@@6B<base>@@@`, left to a later pass).
+It immediately caught one real defect (`candidate section 0xc != RTTI 2 slots`). Secondary/MI
+vtables (`??_7X@@6B<base>@@@`) now take their reviewed retail identity and extent from
+`vtables_game.csv`, while the independently emitted candidate COMDAT still has to agree;
+the former promised "later pass" was never implemented and silently withheld them.
 
 | | vtables withheld | vtables enrolled |
 |---|---|---|
@@ -382,8 +384,8 @@ BOTH ways (one `cpp` TU and one `cpp-rtti` TU compiling the same class — `CObj
 the placed section and the others enroll UNPLACED so two section extents never claim one
 retail range; **5** are withheld — `CFaderFlat/Light/Radial/Shape/Sine`, where **we compile
 `/GR` and retail did not**, so the section would claim four retail bytes that are actually
-the `g_faderHalfPi` / `g_faderOne` float constants beside them; **11** are secondary/MI
-vtables with no primary slot map.
+the `g_faderHalfPi` / `g_faderOne` float constants beside them. The former secondary/MI
+withheld set is enrolled through the catalog-plus-COMDAT cross-check described above.
 
 |  | before | after |
 |---|---|---|
@@ -530,7 +532,9 @@ registry-located base-0 vtable), `CArray<PLAYLISTINFOSTRUCT*>`'s graph
 `.data`) enrolls for its three emitters. Known cost: the walked
 `??_R1A@?0A@A@zErrHandling@@8` makes gametext/chatboxowner's combined `.rdata$r`
 comparable, and their base-side `??_R4zPTree@@6BzErrHandling@@@` — a secondary/MI
-record the enrolment still withholds — now honestly costs 24 B each until the MI pass.
+record formerly withheld by the missing MI pass — is now reached from the reviewed
+secondary-vtable anchor. Its node names still come from cl's relocations and every
+payload is independently re-proven against retail before enrollment.
 
 ### 3b-iii. `DATA_COMPGEN(rva, value)` — the LAST-RESORT reviewed pin (wired)
 

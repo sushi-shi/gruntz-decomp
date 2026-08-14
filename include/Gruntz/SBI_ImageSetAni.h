@@ -13,7 +13,7 @@
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
-    CSBI_ImageSetAni() : CSBI_ImageSet(CSBI_Image::CALL_RECTONLY) {
+    CSBI_ImageSetAni() {
         m_frame = NULL;
         m_kind = SBI_KIND_IMAGE_SET_ANI;
         m_frameSet = NULL;

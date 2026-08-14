@@ -45,12 +45,18 @@ bracketing the inline vector-ctor loop (so a throwing element ctor unwinds the b
 prefix), and the `p ? (construct, p) : 0` merge that gives the alloc-failure edge its own
 `xor eax,eax`.
 
-Corollary that usually comes with it: **a method that takes no arguments and `return this;`
-IS the default constructor.** `?Init@CParseSource@@QAEPAU1@XZ` and
-`??0CParseSource@@QAE@XZ` have the identical `__thiscall`-returning-`this` shape; only the
-mangled name differs, and the RVA binding does not care. Declare it as the ctor and drop
-the explicit `m_node1c.CParseSlotHashNode::CParseSlotHashNode();` call from the body — the
-member ctor then runs implicitly ahead of it (emitting it by hand emits it TWICE).
+Corollary that usually comes with it: **a method whose whole job is object initialization
+and `return this;` may be a constructor, including a parameterized constructor.** A
+constructor and a pointer-returning `__thiscall` initializer have the same ABI return
+shape; only the mangled name distinguishes them. Require independent construction
+evidence: all callers should occur at complete-object, base, or member construction
+sites, and the stores/allocations should initialize the receiver rather than mutate an
+already-live object.
+
+For a default constructor, declare it as the ctor and drop any explicit member-ctor call
+from the body — members then construct implicitly ahead of it (emitting one by hand emits
+it twice). For a parameterized base constructor, move derived wrappers from
+`Construct(n);` bodies to `: Base(n)` initializer lists.
 
 ## Evidence
 
@@ -59,6 +65,12 @@ filed as an "EH-state + regalloc wall (the node/array allocations land in a swap
 callee-saved register, the operator-new trylevel transitions and the slot-block
 down-counter init loop idiom diverge)". Every one of those symptoms was the missing
 array-new. `??0CParseSource@@QAE@XZ` stayed EXACT across the rename.
+
+`CHashBase::Construct(i32)` @0x184960 was already 112-byte exact and carried an identical
+1/1 EH map, but all of its callers were derived-member construction sites. Remodeling it
+as `CHashBase(i32)` and using four derived base-initializer lists preserved the exact body,
+all caller bytes, and all caller EH maps after relabeling. This is the negative control:
+exact output did not prove the old semantic name or source structure.
 
 ## Related
 

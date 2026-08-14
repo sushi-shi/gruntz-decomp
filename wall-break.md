@@ -2044,31 +2044,38 @@ CLOSED rows:
   gruntzmgr.obj's 4-state copy diverges because its TU context declines one
   ~CObject-scope expansion (Mfc.h vs MfcWin.h axis). Audit reads an arbitrary
   copy. TU-parity clue for gruntzmgr only.
-- keyedlist AddNode: code 100 + missing NULL state is UNRESOLVABLE together at
-  154 B: every TRACE-temp spelling (by-value, CString(key), static_cast,
-  comma) adds the lifetime-flag zero that flips the zero-reg heuristic
-  (cmp/test + push edi); dead-after-return allocates nothing; lvalue-CString
-  varargs is bitwise (no temp, no state) and clang refuses it anyway. Parked
-  with the A/B matrix; map-only residue, does not affect fuzzy.
+- keyedlist AddNode: the old code-100 spelling was a local minimum. Restoring
+  the release-elided `TRACE("%s\\n", static_cast<LPCTSTR>(node->GetName()))`
+  supplies retail's missing NULL-action state and makes the 3-row map exact.
+  The authentic dead statement changes zero-register allocation and lowers the
+  primary score, which is not grounds to remove it.
 
 OPEN rows, each decoded to its mechanism:
-- play LoadGameAssetNamespaces (12->13 ours vs 9): remaining 4 extra states =
-  ours inline-expands ~CTileTriggerContainer in the delete m_beginMarker arm;
-  retail calls the play-unit standalone 0xc8640. Budget: our CChatBoxOwner
-  ctor expansion is missing statement mass (retail has an extra push <addr>
-  after the 5x0x18 zero loop; loop anchored +0x228 vs our +0x230) - finish
-  the ctor body, the budget then declines the dtor site.
-- ddrawsurfacemgr Snapshot/RestoreChildren: ours expands ~CFileMemBase at 5
-  sites (m_name ~CString member-destruction states surface at -0x14c);
-  retail calls ??1CFileMemBase at all of them (the @early-stop comment knew).
-  14 retail (base,CFile) dtor-phase pairs = 14 return sites. ChangeState-style
-  free-site titration needed. CFile<->CFileMemBase census swaps are THIS.
-- butemgr SetString 13-vs-12: map constrains the FindOrInsert site - retail's
-  5th site has NO new-guard and its 6th is an expanded del+dtor TEMP pair,
-  i.e. retail shape is FindOrInsert(key)->CopyValue(&CButeValue(...)), not
-  our FindOrInsert(key, new CButeValue(...)). Feeds the FindOrInsert dossier.
-- chatboxowner ProcessCheatInput 27-vs-26 + zErrHandling<->zPtrColl funclet
-  swaps: undumped, next sitting.
+- play LoadGameAssetNamespaces (13 ours vs 9): remaining 4 extra states =
+  ours inline-expands `~CTileTriggerContainer` in the failed `GetFlag74`
+  arm; retail calls the play-unit standalone destructor. The supposed missing
+  CChatBoxOwner statement mass was a false lead: retail's extra pushed address
+  is `CSbiHlRow::CSbiHlRow` passed to `??_H`, and both five-row loops actually
+  begin at effective member offset `+0x228`. Three formerly flattened clock
+  pairs are now correctly modeled as `SbiClockPair` subobjects; their natural
+  two-i64 initializer stays inline and does not add states. The authentic sites
+  needed to decline the tile-trigger destructor remain unidentified. This is a
+  bounded caller-budget frontier, not permission to flatten proven members.
+- ddrawsurfacemgr Snapshot/RestoreChildren: Snapshot is now 29/29 states, with
+  six topology rows confined to two three-row sequences. In each sequence the
+  candidate exposes a `CString` member action around the Base/File chain while
+  retail keeps only the Base/File actions. Retail's post-header failures share
+  one File/Base cleanup suffix; candidate per-site inline cuts prevent the same
+  merge. Restore remains 27/25. The old "retail calls the base destructor at
+  every return" shorthand confused source exits with the three emitted cleanup
+  code sites and is retired. CFile<->CFileMemBase census swaps are THIS.
+- butemgr SetString: resolved below by restoring `CopyValue`'s per-arm returns.
+  The direct `zPTree::FindOrInsert(const char*, void*)` relocation still proves
+  the tree API; the old claim that the ctor alone owned the 13/12 state mismatch
+  was false.
+- chatboxowner ProcessCheatInput: resolved below. Retail reuses the already-live
+  cheat-code `CString` for the final formatted status line; removing the surplus
+  local changes 27 states to retail's 26 and makes the full topology exact.
 - Frame-offset census rows (uniform frame-size fixes): multi
   LoadGameAssetNamespaces +0x8, BuildVoiceSoundList -0x4, AdvanceAnim +0x4,
   menustate +0x28, AddLogic -0x78, PathScan +0x20, SetRect/SetRange +0x4,
@@ -2107,9 +2114,15 @@ retail's expands it (-> direct ??1CGdiObject; retail image has NO ??1CPen).
 ~CPen is AFXWIN1.INL's empty inline under _AFX_ENABLE_INLINES - visible to
 both compiles; the normal-path bytes MATCH (masked). Dead-TRACE titration to
 +4 units does NOT flip the funclet-side expansion, unlike TransitionState -
-so this decline is C1 TU-state (handle/il), not caller-cb budget. Park for
-the IL tap. Same signature likely covers gamelevel ??1CImageSet3's
-CTileImageSet->CObject row.
+so this decline is not caller-cb budget. A five-kind authentic C1 causation
+panel (typedef, enum, struct, class with inline member, and prototype) changed
+raw `FontConfig.obj` metadata by 43/47/71/82/53 bytes, respectively, but all
+121 section byte sequences remained identical in every cell. The teardown
+choice is therefore C2-anchored under the tested declaration surface, not a
+TU handle-state lever. Two natural source controls around `CDC::FromHandle` -
+separate declaration plus assignment-in-condition, and a condition declaration -
+were both byte-identical in the primary body and retained the same `??1CPen`
+funclet target. Park it without retained compiler steering.
 
 ## 2026-08-13 (late-3): the inline-site divergence surface, MEASURED
 
@@ -2180,20 +2193,15 @@ symbol-VALUE ranges (base mixes COMDAT and shared .text; section-owner
 attribution is wrong) and retail by image scan over names.csv ranges (target
 objs are COMDAT-packed and cannot attribute).
 
-## 2026-08-13 (late-6): butemgr Set* family - one surplus `new`, shared-tail REFUTED
+## 2026-08-13 (late-6): butemgr Set* family - shared caller tails refuted
 
-Every `CButeMgr::Set*` (SetInt/SetDword/SetFloat/SetRect/SetVector, and
-SetString's 13-vs-12 EH states) emits exactly ONE more `??2@YAPAXI@Z` than
-retail (ours 10, retail 9) - a single shared source shape, not five bugs.
-Branch counts confirm it: SetInt base 18 vs target 17, rets 5/5.
-NEGATIVE CONTROL: merging the two tail paths into one shared
-`made->FindOrInsert(key, new CButeValue(...))` (hoisted `CButeNode* made`,
-if/else instead of two returns) OVERSHOOTS hard - rets collapse 5 -> 1,
-branches 16 vs 17, `new` 8 vs 9, 95.20 -> 79.18. Retail keeps FIVE exits, so
-the two tails are genuinely separate; the surplus allocation is elsewhere in
-the chain (candidates: an internal `pValue` allocation inside our
-CButeValue(type, val) ctor that retail did not have, or one of the three
-`&CButeValue(...)` CopyValue temps). Reverted; SetInt back at 95.20.
+Every `CButeMgr::Set*` then emitted exactly one more `??2@YAPAXI@Z` than retail,
+and `SetString` had 13 versus 12 EH states. Merging the two caller tail paths into
+one `made->FindOrInsert(...)` overshot: returns collapsed 5 -> 1, branches became
+16 versus 17, allocations 8 versus 9, and SetInt fell 95.20 -> 79.18. Retail keeps
+five caller exits, so that source rewrite was rejected. The later 2026-08-14
+`CopyValue` result below disproves the remaining inference that the ctor alone
+owned the surplus allocation.
 
 ## 2026-08-13 (late-7): guarded default-init blocks are four inline constructors
 
@@ -2257,10 +2265,10 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   DirectDraw pool types and MFC `CWnd` are proven by byte-exact allocation
   functions.
 - Pointer-return audit: `CTimer::Init` was already remodeled into the exact
-  constructor. The remaining `return this` methods are fluent bit/value
-  operations or `CHashBase::Construct(count)`, whose count-dependent bucket
-  allocation is exact and not a default constructor; `CWwdGridIter::Init`
-  returns a region rather than `this`.
+  default constructor. The count-dependent hash initializer was subsequently
+  proven to be the parameterized `CHashBase(count)` constructor; the remaining
+  `return this` methods are fluent bit/value operations, while
+  `CWwdGridIter::Init` returns a region rather than `this`.
 - Remaining wall: `gruntz sema diagnose 0x83450` classifies `Run` as CONTROL
   FLOW: both sides have 124 branches and one return, but the branch sequence has
   many flips. The constructor recovery changes no source branch and introduces
@@ -2299,8 +2307,8 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   a ctor (a second allocation/tree insertion, parse-slot allocation, or map
   insertion); it is not a ctor join. The 114 method-result rows test a genuine
   fallible operation such as `Setup`, `Load`, `ValidateByType`, or an `Init`
-  returning status. The tree-wide `return this` audit finds no remaining
-  ctor-shaped `Init`; `CTimer` is already remodeled.
+  returning status. After the `CTimer` and parameterized `CHashBase` remodels,
+  the tree-wide `return this` audit finds no remaining ctor-shaped initializer.
 - Local-minimum control: the lowest-MAX result, `zPTree::FindOrInsert`
   (`0x1933b0`), was tested as a complete positive-gate plus `if`/`do-while`
   descent remodel rather than a one-line deletion. The positive gate was
@@ -2311,39 +2319,843 @@ CButeValue(type, val) ctor that retail did not have, or one of the three
   would add CFG retail lacks. The experiment was removed on structural, not
   score-only, evidence.
 
+## 2026-08-14: exact `CHashBase::Construct` was a parameterized constructor
+
+- Unit/RVA: `rezcoll`, `0x00184960`; historical MAX remains **100.00 EXACT**.
+  The former `CHashBase* Construct(i32)` consisted only of storing the bucket
+  count, performing `new CHashSlot[count]`, and explicitly returning `this`.
+  Every caller is a `CHash`, `CHashB`, `CHashC`, or `CHashD` member
+  construction inside a containing-class initializer list.
+- Retained source lever: model the function as `CHashBase(i32)` and express the
+  four derived constructors with `: CHashBase(n)`. The ABI-supplied constructor
+  return reproduces the old explicit `return this`: the 112-byte primary body
+  remains exact, including its array-construction EH frame and element-ctor /
+  element-dtor targets.
+- Cross-function proof: after retail relabeling, all five direct caller bodies
+  retain their previous bytes and call-set classifications. The mapped callers
+  `CSymRec(key,owner,c,d)` and `CSymTab(...)` retain exact C1 state counts,
+  topology, teardown targets, and funclets; the constructor's own 1/1 map also
+  remains identical. The full build stays green at 750 groups / 3034 records.
+- Negative control: before regenerating retail labels, the same machine bytes
+  appeared as wrong callee identities (`??0CHashBase` versus the inferred
+  `Construct` name). Regenerating from the RVA owner removes that artifact.
+  This is direct evidence that an exact body and exact caller instructions do
+  not prove the reconstructed semantic identity of a no-PDB symbol.
+
 ## 2026-08-13 (late-10): EH fingerprint assessed over every current sub-100 function
 
 - Scope: all 827 current sub-100 rows in `config/match_baseline.tsv`, joined by
   mangled owner to all 750 retail EH groups. `gruntz.audit.eh_band --nonexact`
   now emits the complete classification and can write it as TSV.
-- Result: 600 have no retail EH map (oracle inapplicable), 184 have identical
-  map and funclets, 35 differ only in frame displacement, five differ in state
-  count, one differs in equal-count map topology, and two differ only in
-  ordered teardown target. All 827 are accounted for.
-- Dead-TRACE assessment: all five count rows have MORE candidate states than
-  retail (`SetString` 13/12, `ProcessCheatInput` 27/26, `RestoreChildren`
-  28/25, `SnapshotChildren` 30/29, `LoadGameAssetNamespaces` 13/9). None has
-  the retail-only NULL-action state required to infer a missing destructible
-  TRACE temp. No current sub-100 source addition is justified by that half of
-  the pattern. The caller-cb half remains map-invisible when the dead statement
-  has no destructible temp and still requires independent inline-call evidence.
+- Current result after the 2026-08-14 structural corrections: 600 have no retail
+  EH map (oracle inapplicable), 192 have identical map and funclets, 26 differ
+  only in frame displacement, five differ in state count, two differ in
+  equal-count map topology, one differs only in ordered teardown target, and one
+  candidate map is missing. All 827 are accounted for.
+- Dead-TRACE assessment: two count rows have MORE candidate states than retail
+  (`RestoreChildren` 27/25 and `LoadGameAssetNamespaces` 13/9).
+  Three concurrent status-bar reconstructions
+  have fewer states (`BuildGameMenu` 1/8, `BuildTabzDialog` 2/12,
+  `LoadTabSprites` 3/25). SetString's former 13/12 row is now exact. The
+  caller-cb half remains map-invisible when a dead statement has no destructible
+  temp and still requires independent inline-call evidence.
 - CORRECTION to late-cont Screen 1: equal counts are not sufficient.
   `CGruntzMgr::ChangeState` is 11/11 but 7 map rows differ in `(toState,
   has_action)` because its `CMoviePlayer` ctor/dtor expansion nests differently.
-  The current full-map result is 743/744 equal-count groups, not zero topology
+  SnapshotChildren's former 30/29 row is now 29/29 with six topology rows
+  different. The current full-map result is 742/744 equal-count groups, not zero topology
   differences.
 - CORRECTION to the original seven-row state census: candidate COMDAT copies
   must be read from the retail group's OWNER TU. The arbitrary-copy scan made
   `CMoviePlayer::~CMoviePlayer` look 4/5; `creditsstate.obj`, the owner, is 5/5.
-  Six genuine all-band count rows remain, including exact-primary-code
-  `CKeyedList::AddNode` 2/3. This is the negative control proving that even a
-  100% primary function is not necessarily structurally correct.
+  The exact-primary-code `CKeyedList::AddNode` discrepancy was subsequently
+  repaired by restoring its authentic release-elided TRACE. This remains the
+  negative control proving that even a 100% primary function is not necessarily
+  structurally correct.
 - CORRECTION to funclet classification: canonicalize both disp8 and disp32 EBP
-  frame operands. The old fixed-width masker called large frame shifts
-  different code; the corrected 750-group census is 703 identical, 38
-  frame-only, eight target-only, and one permuted. The sub-100 slice contains
-  35 of those frame-only rows.
+  frame operands, including the immediate `cmp`/`mov` construction-guard forms.
+  The old fixed-width/opcode-limited masker called large frame shifts different
+  code. `ProcessCheatInput` is the negative control: its three long `zPtrColl`
+  guards have identical code and targets and now join the 31 frame-only rows.
+  Use the live all-band census when COMDAT selection changes.
 - Retained lever: the owner-TU state reader, full map-topology comparison,
   frame-encoding normalization, and exhaustive `--nonexact` report are now in
   `gruntz.audit.eh_band`, with a disp8/disp32 negative control in the gate
   self-test. No C++ source changed.
+
+## 2026-08-14: EH structure outranks exact and current body scores
+
+- `CKeyedList::AddNode`: restoring the release-elided TRACE changes the primary
+  body from exact to 85.5111%, but changes its owner-TU map from 2/3 to the exact
+  retail 3/3 sequence, including the NULL-action allocation state. Tested
+  member-initializer changes, and `new T()` punctuation; none preserved both the
+  retail scope and authentic source semantics. The retained TRACE is the
+  structural fix.
+- `CGruntzMgr::Run`: `CDDrawSurfaceMgr` had a reconstruction-only derived
+  `operator delete`. Retail defines no such symbol, and the candidate symbol's
+  only use was constructor-failure cleanup in `Run`. Removing it retargets the
+  cleanup to inherited `CObject::operator delete`, exactly matching retail. The
+  row therefore moves from teardown-target to its underlying frame-layout
+  residue; the source-level allocation failure check remains independently
+  proven by retail's second post-constructor branch.
+- `CChatBoxOwner::ProcessCheatInput`: formatting the final enabled-cheats line
+  into the already-live `code` string instead of a fresh `message` removes
+  exactly one candidate C1 state. The map changes from 27/26 to an exact 26-row
+  topology and the body rises from historical 84.1649% to 85.18%. Remaining
+  residue is the `0x140` versus `0x13c` frame plus an earlier inline cut: the
+  repaired call gate shows one extra candidate
+  out-of-line `istrstream` ctor against retail's out-of-line `ostrstream::rdbuf`
+  plus `streambuf::out_waiting` pair. This is an inline-budget cut before the
+  frame residue, not a missing destructible scope.
+- Negative controls were removed: spelling `CButeValue`'s string allocation
+  through a typed pointer local or member initializer did not change the former
+  `CButeMgr::SetString` 13/12 map; the later per-arm-return fix closes it.
+  Broadening `CSpotLight::Tick`'s `LeafCue*` scope emitted byte-identical code
+  and frame metadata. No compiler-steering probe is retained.
+- Exact primary code does not clear all-function EH discrepancies either.
+  `CImageSet3::~CImageSet3` calls the implicit `CTileImageSet` destructor COMDAT
+  while retail expands that empty layer to `CObject::~CObject`. The class has no
+  retail vtable or destructor identity supporting a fabricated explicit
+  destructor. Adding an authentic explicit empty virtual destructor was
+  byte-neutral in the exact primary and left the same teardown call. A five-kind
+  declaration causation panel on `GameLevel.cpp` changed only COFF metadata:
+  all 261 section byte sequences were identical in every cell. This remains a
+  bounded C2 owner-TU inline-cut residue, not a source-selected destructor or C1
+  handle-state lever.
+
+## 2026-08-14: `CButeValue::CopyValue` per-arm returns close the Set* family
+
+- Unit/RVAs: `butemgr`, `CopyValue` at `0x00172040`, `SetString` at
+  `0x001732a0`. Retail `CopyValue` has a nine-entry switch over eight distinct
+  bodies and eight complete return epilogues. The old source used `break` in each
+  arm and one trailing `return this`; C2 duplicated that tail, leaving the
+  standalone body deceptively exact.
+- Retained source lever: each switch arm now returns `this`. `CopyValue` remains
+  100%. SetInt, SetDword, SetFloat, SetDouble, SetRect, SetPoint, SetVector, and
+  SetRange all move to 100%. SetString rises 75.0219% -> 81.7868%, and its C1 map
+  changes from 13/12 to an identical 12/12 topology. Its ctor and allocation
+  census now agrees with retail.
+- Negative controls: a typed local around the CString allocation was standalone-
+  exact but left SetString and its map byte-identical. Rewriting SetString as one
+  nested if/else tree made the inline cut worse and retained 13 states. Both were
+  removed. The earlier dead-statement cost panel remains causal evidence for the
+  inliner but is not original source.
+- Remaining SetString residue: candidate makes 36 calls versus retail's 33; the
+  surplus is one CString assignment, one CString destruction, and one delete.
+  This is a string cleanup/shared-tail cut after the recovered C1 structure, not
+  the former constructor-count or EH-state defect.
+
+## 2026-08-14: `CFileMemBase` constructor body closes Snapshot's state count
+
+- Unit/RVA: `ddrawsurfacemgr`, `SnapshotChildren` at `0x00156020`; 71.8089% ->
+  71.5287%. Retail calls `CFileMemBase::CFileMemBase` before constructing the
+  `CFile` member. The old ctor delegated its three default stores to an inline
+  `SeedFields` helper; cl expanded the outer ctor and then called that helper.
+- Retained source lever: spell `m_option = 0`, `m_mode = 0`, and
+  `m_name.Empty()` directly in the ctor body. The standalone ctor and
+  `LoadRecordFile` remain 100%, while Snapshot now makes retail's out-of-line
+  base-ctor call and its C1 count closes from 30/29 to 29/29. `SeedFields` is
+  removed; the real `CFileMemBase::Reset` owns its identical stores directly.
+- Negative controls: making the base ctor call the real inline Reset was
+  byte-neutral in the ctor and both Reset bodies but left Snapshot unchanged and
+  emitted the Reset COMDAT from the wrong owner. Making derived Reset call base
+  Reset or the inline seed added a call and raised Snapshot to 31/29 states. All
+  are removed. With `inline_depth(0)` scoped to Snapshot, cl naturally emits one
+  shared post-header `CFileMem` cleanup call, proving that the split tails are a
+  consequence of the live inline frontier rather than source-authored duplicate
+  cleanup. A single header-inline `InvokeCallback` was also refuted: its compact
+  boolean body emitted no COMDAT from the retail owner, while the exact 58-byte
+  guard/return body emitted the COMDAT but changed Snapshot to 27/29 states.
+  Combined, nested, and OR-early-return wrapper CFGs either removed two Snapshot
+  states or traded Restore's 27/25 count for a new three-row topology defect.
+  A zero-code identity site after `ForEachProbe` moved Snapshot to 31/29, the
+  opposite frontier, so no probe or callback spelling is retained.
+- Remaining residue: six of 29 map rows differ in two three-row destructor
+  groups. Candidate expands `CFileMem::Reset` and makes 57 calls against retail's
+  43; retail calls the derived Reset. This is still an inline/call-set frontier,
+  but no longer a state-count or invented-helper defect. The lower body score is
+  retained because constructor referent and full state count are stronger.
+
+## 2026-08-14: `CProjectile::LoadProjectileSprites` frame model
+
+- Unit/RVA: `projectile`, `0x000df050`; current-source result rises from
+  81.9528% to 82.1602%. Branches remain 8/8, returns 1/1, and all 27
+  CFG blocks retain the same topology.
+- Retail frame evidence: the repeated `CMapStringToPtr::Lookup` output occupies
+  the dead `a` parameter home and the concatenation scratch occupies the dead
+  `b` home. The old function-scope `void* out` forced a distinct dword, giving
+  `sub esp,0x20` against retail's `0x1c` and eight displaced unwind funclets.
+- Retained source lever: the seven lookups and their frame stores now form one
+  lexical block, ending at the last use of `out`; `m_srcRow = a` and
+  `m_srcCol = b` precede the centered-coordinate assignments. VC5 then reuses
+  the same two dead parameter homes and all eight funclets become exact. This
+  removes one sub-100 frame-layout row: 36 -> 35.
+- Negative controls: combining declaration and initialization of `out` was
+  byte-identical; replacing the Wingz `ddx` local by direct assignment to
+  `count` left this function byte-identical and perturbed a later TU function;
+  reversing `dx`/`dy` declaration order kept the 0x1c frame but left the
+  cleanup displacement uniformly four bytes wrong. All were removed.
+- Residue classification: register/x87 scheduling. Candidate and retail still
+  differ by one instruction in the Wingz arm, one in the repeated lookup block,
+  and one in the rounding block; the EH frame/local structure is now closed.
+
+## 2026-08-14: `CTileTriggerContainer::AddLogic` EH frame row bounded
+
+- Unit/RVA: `tiletriggercontainer`, `0x00116610`; 83.8558%. The audit's
+  uniform `-0x78` action displacement is not a missing 0x78 source object:
+  candidate reserves `0x64` and four callee-saved registers, retail reserves
+  `0x68` and three. Both copy the six incoming RECTs into the same 0x60-byte
+  local band and inline the same `rep movsd`/`Build` body.
+- The real difference is one C1 constructor-guard dword. Candidate coalesces
+  each `new` result into a dead incoming-parameter home and preserves
+  `logicType` in `ebp` across the RECT copy; retail gives the guard its own
+  `[esp+0x10]` slot, holds `logicType` in `edi`, then reloads it after `rep
+  movsd`. Calls and all 15 conditional branches agree. Candidate merges the
+  three source returns into one epilogue; retail emits all three.
+- Negative controls were byte-identical and removed: a lexical block around
+  the RECT-copy/Build phase; value-initialization spelling `new T()` on all four
+  arms; and an explicit `else` owning the complete non-null body. The six-RECT
+  local cannot be removed or collapsed onto the incoming band because retail's
+  copy into that local and second copy into `m_linkKeys` are both present.
+- Classification: register allocation / exit materialization after correct C1
+  scope and call structure. No authentic source lever found; do not add a fake
+  guard local or distort the generated post-`new` null join.
+
+## 2026-08-14: `CRollingBall::Update` reuses the arrival tile coordinates
+
+- Unit/RVA: `rollingball`, `0x000b0140`; 84.4829% -> 88.77%. Retail computes
+  `tx/ty` before clearing the occupied-cell bit and carries them across the
+  collision switch. The later arrow lookup reloads `ty` from its frame home and
+  still holds `tx` in `ebx`; it does not recompute either coordinate after the
+  switch may adjust `m_target` for a sink edge.
+- Retained source lever: initialize the later clamped `row2/col2` from the
+  existing `tx/ty`. This restores retail behavior as well as lifetime. VC5 then
+  spills `oldDir`, grows the frame from `0x1c` to `0x20`, changes the lone
+  `jns` mismatch to retail's `test/jge`, and makes both CString funclets exact.
+- Negative control: changing `oldDir` from `i32` to `CardinalDir` was
+  byte-identical. The remaining body residue is register/schedule only after
+  exact branch sequence and EH structure.
+
+## 2026-08-14: `CGrunt::ResetEntranceAnimation` tail parameter-home reuse
+
+- Unit/RVA: `gruntentrancearrival`, `0x00062e10`; primary bytes remain at
+  88.4743%. Retail destroys the tail `CString` at `[ebp+8]`, the dead `apply`
+  parameter home; the function-scope spelling destroyed it at `[ebp-0x1c]`.
+- Retained source lever: one natural block owns `col`, `base`, `key`, the ANI
+  descriptor/view, and the final `ApplyLookupSprite` call. VC5 now reuses the
+  dead parameter home and the unwind funclet is exact. This removes a frame row
+  without changing any primary instruction, an explicit negative control for
+  score- or exact-body-based structural adjudication.
+
+## 2026-08-14: `CBootyState::LevelMsgHudDriver` repeated member access
+
+- Unit/RVA: `bootystateactivate`, `0x0001a700`; 85.1781% -> 85.79% while its
+  third CString frame row remains open. Retail repeatedly indexes `m_expl[i]`
+  in both message loops; it never carries the sprite itself across the lookup
+  and rectangle calculations. Removing the two reconstruction-only `e` locals
+  restores retail's `ebx` loop index, `edi = &m_expl[i]` cursor, and relative
+  accesses to the adjacent bomb/gokart arrays.
+- Negative controls removed: moving `e` to loop scope was byte-identical; a
+  named rectangle cursor fell to 82.53%; a shared function-scope loop index and
+  reversing `RECT`/`CString` declarations moved the destructor to `[ebp-0x2c]`
+  instead of retail's `[ebp-0x34]`. A narrower cursor introduced only after the
+  first `ShowHudMessage` also failed: VC5 reduced the frame from `0x28` to
+  `0x24` (retail `0x2c`) and displaced the two remaining cleanup slots by
+  `-0x8`/`-0xc`. The retained access form is supported by retail instructions.
+  Calls, all 32 branches, four returns, and the CFG agree; the remaining C1
+  slot choices are bounded as register/allocation residue until an authentic
+  source lever or TU-state reachability proof appears.
+
+## 2026-08-14: `CGruntzMgr::Run` EH row is exit/frame allocation residue
+
+- Unit/RVA: `rezsync`, `0x00083450`; 86.3292%. The constructor census restored
+  every retail allocation guard and member-store set. The current 124/124
+  conditional branches, single return, cleanup actions, and cleanup targets
+  agree.
+- CORRECTION after repairing `sema diagnose`'s inert `calll` gate: the direct
+  callee multiset does not agree. At equal 237 call instructions, candidate calls
+  one `istrstream(char*,int)` constructor that retail expands, while retail calls
+  `streambuf::out_waiting()` where candidate expands it. This one-for-one
+  substitution is an `/Ob1` budget/cut decision and precedes any CFG or register
+  classification. The equal C1 map rules out a missing destructible scope, but
+  not map-invisible caller statement mass.
+- Retail has three additional basic blocks because it materializes `eax = 0`
+  in several error arms; candidate C2 cross-jumps those arms to one shared zero
+  epilogue. The 40 frame-only cleanup rows use mixed local homes, matching the
+  known `0x430` candidate versus `0x428` retail local reservation rather than
+  one missing destructible scope. Classification: authentic constructor/null-
+  join structure restored; remaining order is inline/call-set first, followed
+  by exit materialization and frame allocation. Do not permute the latter until
+  an authentic caller-mass lever either restores or reproducibly bounds the
+  one-for-one inline cut.
+
+## 2026-08-14: `BuildGruntzCrcInfo` switch bodies follow jump-table target order
+
+- Unit/RVA: `netsessionmgr`, `0x000bf1d0`; 87.4545% -> 88.10%. The retail and
+  candidate jump tables map every `PickupType` to the same `wp`, but the old
+  source ordered case bodies by pickup id and emitted values
+  `2,9,0xe,6,...`. Retail's ordered table relocations point to bodies emitted
+  as `2,3,4,...,0x16`, then default `0x17`, proving lexical body order.
+- Retained source lever: order the case arms by assigned `wp` without changing
+  any mapping. Calls, all five conditional branches, the single return, and 34
+  CFG blocks agree. Retail spills the inner loop index and its 28-byte grid
+  offset while candidate enregisters both; the sole cleanup remains uniformly
+  eight bytes apart. Classification: corrected source order followed by bounded
+  register/frame allocation residue.
+
+## 2026-08-14: `CGrunt::PathScan` owns two coordinate aggregates
+
+- Unit/RVA: `gruntcombat`, `0x00057db0`; 88.986% -> 89.19%. Retail copies the
+  tail node's two coordinate fields into adjacent frame dwords and repeatedly
+  consumes them as one point. Its independently derived screen-tile X/Y pair
+  has the same adjacent `(x,y)` layout. The scalar reconstruction placed each
+  pair in unrelated homes.
+- Retained source lever: model complete `Coord target` and `Coord start`
+  values. The local reservation falls `0x8c -> 0x84 -> 0x7c`, and both
+  `CPtrList` unwind funclets become exact. Calls, all 60 conditional branches,
+  and the single return agree. The remaining primary residue is register and
+  scheduling allocation; the EH frame row is closed.
+
+## 2026-08-14: empty wait-cursor guards have synthetic unwind receivers
+
+- `CGruntzMgr::ResetWorldState` (`0x91e20`) is primary-code exact, including
+  its `0x10` frame, Begin/End expansion, 16 blocks, 11 branches, and three
+  returns, but its one EH receiver differs by `+0xc`. Custom-level DDX has the
+  exact `0x524` frame and 14-block/8-branch shape while differing by `-0x514`;
+  `FillCustomLevelList` and `StartUpPrompt` differ by `-0x11c` and `-0x8`.
+- All use the fieldless inline `CWaitCursorScope`; its destructor ignores
+  `this`. MFC 4.2's `CWaitCursor` is a negative identity control because its
+  ctor/dtor are out-of-line, unlike retail's direct Begin/End calls. With exact
+  scope count, action, target, and guard callee identity, these four receiver
+  rows are bounded C1 coloring, not missing source storage. This does not bound
+  unrelated owner residue: Custom DDX still has two string call/expand cuts.
+  `StartUpPrompt` now uses the two topology-proven in-scope returns and is
+  primary-code exact; its `-0x8` synthetic guard receiver remains bounded here.
+
+## 2026-08-14: `BuildVoiceSoundList` condition order restores the loop CFG
+
+- Unit/RVA: `gruntspawnconfig`, `0x0011c210`; 95.4136% -> 97.81%. Retail tests
+  `stop` at the loop head and `sndName.IsEmpty()` at the latch. The old
+  `while (stop == 0)` plus a trailing `break` tests both at the latch; the
+  superficially equivalent `stop == 0 && !sndName.IsEmpty()` tests the string
+  at the head and `stop` at the latch.
+- Retained source lever: `while (!sndName.IsEmpty() && stop == 0)`. VC5 rotates
+  the right operand to the latch, producing retail's complete 9-branch sequence
+  and 19-block topology. Declaration-scope and pointer-declaration-order probes
+  were byte-neutral or regressed and were removed.
+- Remaining residue: retail keeps `list` in esi, uses edi for the counter, and
+  spills `list` to one frame dword; candidate colors the two variables oppositely
+  and omits the spill. The uniform `-0x4` EH displacement is therefore a proven
+  register/frame-allocation residue after the CFG repair.
+
+## 2026-08-14: `ParseAttributeFile` scalar lifetimes and explicit CString temporary
+
+- Unit/RVA: `butemgr`, `0x00170750`; 89.2156% -> 89.50%. Retail's RECT, POINT,
+  and VECTOR/RANGE parse buffers occupy distinct simultaneous frame bands, but
+  its INT/DWORD/FLOAT/DOUBLE values do not reserve the old function-scope union
+  plus double. Keeping the aggregate buffers at function scope and declaring
+  each scalar in its switch arm changes `sub esp,0x60` to retail's `0x54`.
+- The sole remaining unwind mismatch was the guarded CString conversion for
+  the string-valued `CButeValue`: implicit conversion from `m_token` put it at
+  `[ebp-0x5c]`; the explicit `CString(m_token)` spelling puts it at retail's
+  `[ebp-0x44]`. All 13 state rows and all unwind funclets are now exact.
+- Negative control: making every parse buffer arm-local over-shrinks the frame
+  to `0x48` and perturbs 12 unrelated exact EH funclets through TU state. It was
+  removed because retail's aggregate-slot addresses independently refute it.
+  Remaining primary residue is scalar allocation-tail cross-jumping, not a
+  frame or C1 defect. The live sub-100 census becomes 188 EH-identical and 32
+  frame-layout rows.
+
+## 2026-08-14: `zBitVec(const char*, int)` nested parse-loop topology
+
+- Unit/RVA: `typekeycoll`, `0x0016d3a0`; 93.5294% -> 95.67%. Retail has an outer
+  NUL check before its separator loop, then an `isdigit`-only loop header and an
+  explicit NUL break inside. The combined condition
+  `while (*p != 0 && !isdigit(*p))` lets VC5 delete that inner edge.
+- Retained source levers: an explicit `if (*p == 0) break` before the separator
+  loop, `while (!isdigit(*p))` with the same check inside, and a direct NUL break
+  before the trailing scan after range expansion. The last break restores the
+  one masked branch-target mismatch at `+0x2e8`.
+- Result: retail and candidate now have the same 43 conditional branches, one
+  return, 59 blocks, and identical symbolic branch targets. The remaining
+  mismatch is register/spill scheduling beginning in the base-constructor
+  prologue; the base `zErrHandling` constructor is independently exact.
+
+## 2026-08-14: `CMultiBootyState::LoadGameAssetNamespaces` adjacent-array sentinel
+
+- Unit/RVA: `bootystateactivate`, `0x0001d440`; 82.499% -> 82.61%. Retail's
+  final flag-position loop compares the walking `g_bootyFlagPos` address against
+  the adjacent `g_bootyTabPos` symbol with signed `jl`. An index bound has the
+  wrong relocation; an ordinary pointer comparison emits unsigned `jb`.
+- Retained source lever: compare the pointer address words as signed `i32` at a
+  do/while latch. A pre-tested `for` preserved the relocation and `jl` but added
+  one branch and block; the do/while form restores retail's unconditional first
+  iteration and exact 42-branch, 74-block topology.
+- Remaining residue is register/frame coloring: retail spills the tint, best
+  value/index, and tally cursor where candidate enregisters them. Do not replace
+  the signed sentinel with a higher-scoring constant trip count; the ordered
+  relocation is source evidence.
+
+## 2026-08-14: `CSpotLight::Tick` restores the native MFC lookup output
+
+- Unit/RVA: `spotlight`, `0x000b1af0`; 78.8750% -> 80.2379%. Retail and
+  candidate both call `CMapStringToPtr::Lookup`, but the typed `MapLookup`
+  forwarder gave C1 a different local entity graph: candidate placed the
+  `CString` at `esp+0x18` and the output pointer at `esp+0x10`, while retail
+  places them at `esp+0x10` and `esp+0x18` respectively.
+- Retained source lever: use the native `void*&` boundary, then cast the loaded
+  value: `void* found = NULL; map.Lookup(name, found); LeafCue* cue =
+  static_cast<LeafCue*>(found);`. The string cleanup closes from
+  `[ebp-0x1c]` to retail's `[ebp-0x24]`; the all-band census moves from 706
+  identical / 33 frame-offset groups to 707 / 32.
+- Negative controls removed: declaration order, a broader pointer scope, and
+  an enclosing pointer scope were byte-identical. Eager initialization before
+  the string hoisted the zero store, fell to 77.2661%, and contradicted
+  retail's zero immediately before `Lookup`.
+
+## 2026-08-14: `RepathAroundBlockedTiles` copies then expands its RECT
+
+- Unit/RVA: `battlezmapconfig`, `0x0002a570`; 72.7377% -> 72.76%. Retail copies
+  the complete source RECT and then post-increments `right` and `bottom`. Four
+  independent field assignments with `+1` on the last two are value-equivalent
+  but omit retail's copy/store schedule.
+- Retained source lever: `a = *src; a.right++; a.bottom++;`. Calls and all 34
+  branches agree. The remaining `0x60` versus retail `0x5c` frame and uniform
+  `-0x10` unwind displacement are register/lifetime allocation residue; a late
+  RECT-scope probe was byte-neutral and removed.
+
+## 2026-08-14: `CTriggerMgr::ApplySwitch` is past the inline and CFG gates
+
+- Unit/RVA: `triggermgrgrid`, `0x0006d300`; 93.6448%. The wall classifier
+  reports register/schedule: the call multiset, all 29 conditional branches,
+  the single return, and the executable CFG agree. The five cleanup actions
+  also name the same `CString` destructor and differ only in mixed frame homes
+  (`-0x8` three times and `-0x4` twice).
+- The remaining block-size tail is the switch jump-table data, not an executable
+  branch-count defect. The earlier source correction spelling each packed key
+  as `(sx >> 5) * 0x100 + (sy >> 5)` retains retail's `sar`/`shl` sequence and
+  raised the function from 79.94%; reverting to the superficially direct
+  shift-of-a-shift form makes cl fold it into `lea` and is structurally wrong.
+- Classification: bounded C2 register/frame colouring and table placement after
+  the authentic expression-shape fix. The wall classifier rules out an inline
+  or call-set lever here; do not add a fake local merely to move the funclets.
+
+## 2026-08-14: exact `CFaderMesh::~CFaderMesh` still has a C1 receiver coin
+
+- Unit/RVA: `fader`, `0x0017e990`; the primary destructor is 100% exact, with
+  the same three blocks, one branch, one return, member teardown order, and
+  destructor targets. The all-function EH census nevertheless finds one
+  cleanup receiver eight bytes away from retail.
+- No source object is absent: the normal path and the unwind path destroy the
+  same proven member. This is a dead frame-home choice made while C1 emits the
+  cleanup, analogous to the fieldless wait-cursor receiver family but with a
+  real member cleanup. Exact primary bytes therefore bound the row as C1 frame
+  colouring; they do not justify inventing storage or changing class layout.
+
+## 2026-08-14: wall classifier inline gate repaired
+
+- `gruntz sema diagnose` promised to classify inline/call-set before CFG and
+  allocation, but `_calls` accepted only `call`. The pinned llvm-objdump emits
+  i386 calls as `calll`, so both sides always appeared to contain zero calls and
+  the first gate was inert. `FontRenderer::DrawWrapped` was the decisive negative
+  control: its proven five retail-only `CRect::Width` calls were misreported as a
+  register wall.
+- Retained tooling fix: accept `call`, `calll`, and `callw`; after equal call
+  instruction counts, compare the complete per-function REL32 callee multiset so
+  a call-for-call substitution cannot fall through either. Public-classifier
+  integration tests exercise both failures. `DrawWrapped` now reports 52/59 as
+  inline/call-set, while the unchanged `ApplySwitch` still reaches register/
+  schedule, proving the corrected stage ordering rather than an always-inline
+  classifier.
+
+## 2026-08-14: `StepCompassMove` fallback removal and split flag predicates
+
+- Unit/RVA: `gruntsteps`, `0x00051c00`; historical MAX 62.0405%, current
+  60.64%. Retail calls `CByteArray::RemoveAt` only after a rejected direction;
+  a successful direction skips removal and leaves the loop. Moving the call
+  below the success test restores that ownership behavior and retail's loop
+  back-edge.
+- Retail's two expanded movement predicates are not one identical source body.
+  The toy path contains the mixed byte/dword diagonal probes, while every
+  fallback probe is an aligned dword read tested with `0x2000`. A shared mixed
+  helper leaves 81 branches after the loop fix; making both helpers uniformly
+  dword produces 85. Separate evidence-backed spellings produce retail's 83
+  branches and two returns exactly.
+- The copied pixel position and proposed position are modeled as `Coord`
+  objects and copied field-by-field. Retail stores both coordinate pairs in
+  adjacent dwords and consumes them as pairs. This changes the CString cleanup
+  displacement from a uniform `-0xc` residue to `-0x8`; the lower current fuzzy
+  score is retained because the aggregate identity and loop semantics outrank
+  it.
+- Removed controls: whole-object `Coord` assignments collapsed the body to 71
+  branches; by-value `Coord` helper form and position-before-board declaration
+  order were codegen-neutral. The remaining 83/83 branch sequence has different
+  block placement beginning in the arrow switch, so the eight-byte cleanup
+  residue is not yet classified as a pure frame coin and no padding local is
+  justified.
+- The repaired wall classifier finds no call-set delta here and routes the
+  function to CFG, not inline budget. Moving each `GruntDirectionCell` copy
+  before its coordinate edits kept the 83/83 count and grouped the three stores
+  inside each arm, superficially resembling retail, but did not change fuzzy or
+  the first divergent block. Adding explicit `default` coordinate copies grew
+  candidate from 158 to 160 blocks; removing the leading proposed-position
+  initialization grew it to 163 blocks and exposed only 71 decoded branches.
+  All three switch experiments were removed. They bound the apparent per-arm
+  improvement as a local code-layout minimum, not recovered source structure.
+
+## 2026-08-14: `CGruntzMgr::ChangeState` source cleanup before the inline frontier
+
+- Unit/RVA: `gruntzmgr`, `0x0008fab0`; 74.837% -> 74.9719%, with an
+  intermediate 77.084% after the teardown correction. The score movement is
+  secondary to retail's call ownership. On each early failure retail performs
+  one `CMoviePlayer::Teardown`, supplied by automatic destruction; the old
+  explicit calls made candidate perform it twice. The success tail retains two
+  calls, one explicit and one from destruction, exactly as retail requires.
+- Retail zeroes the nullable `IDirectSound*` before the `m_soundStream` test and
+  conditionally overwrites it. A local initialized before the test restores
+  that CFG; the old ternary emitted a separate zero arm and join.
+- The EH map remains equal-count at 11/11 but differs in seven rows. After the
+  two structural fixes candidate has 23 calls and 13 conditional branches
+  against retail's 20 and 11. The two surplus branches are the null tests in
+  expanded `CArray<PLAYLISTINFOSTRUCT*>` destructor copies on the early exits;
+  retail calls the destructor COMDAT there. Retail likewise calls the CArray
+  constructor where candidate expands it.
+- `gruntz sema diagnose 0x8fab0` therefore still classifies the residue as
+  inline/call-set. Measured titration needs six free inline sites after the
+  `CMoviePlayer` construction to move the CArray ctor to retail's call side,
+  but retail bytes do not identify those authentic sites. No fake accessor,
+  padding statement, or manual compiler-state probe is retained.
+
+## 2026-08-14: `CSingleFrameMessage` constructor frame is a saved-register wall
+
+- Unit/RVA: `singleframemessage`, `0x000ab310`, 86.3070%. Call multiset and
+  conditional-branch sequence agree. Both sides reserve `0x24` bytes of local
+  frame; retail additionally saves `ebx`, so every parent-frame operand in the
+  five unwind funclets is displaced by four bytes.
+- Retail keeps zero in `ebx` from the first C1 state store through the expanded
+  `CUserLogic` constructor, then reuses `ebx` for `RECT.left` while `edi` keeps
+  `RECT.top` live across both midpoint calculations. Candidate emits immediate
+  zeroes and coalesces those two coordinate bases into `edi`. This is register
+  allocation, not a missing four-byte local.
+- Negative controls: swapping the `centerX`/`centerY` declarations, naming
+  width/height and top/left intermediates, direct field assignments, modeling
+  the two rectangles as `CRect` with `Width`/`Height`, and constructing a
+  `CPoint` all left the saved-register decision and EH row unchanged. MFC
+  `CRect::CenterPoint` is not the source: it emits `(left + right) / 2`, while
+  retail emits `left + (right - left) / 2`. No volatile carrier or padding
+  local is retained.
+
+## 2026-08-14: `BuildLevelTitleString` frame is register-save placement
+
+- Unit/RVA: `savegamedialogs`, `0x000e44e0`, 95.7850%. Direct calls and the
+  ordered conditional-branch sequence agree. Both sides allocate the same
+  `0x384d4` local area for the title and preview buffers.
+- Retail saves `ebx/ebp/esi/edi` before the three null-argument tests. Candidate
+  saves only `ebx/ebp` there and shrink-wraps `edi/esi` after the tests. That
+  changes the CFile and CString home offsets in two directions; it is not a
+  uniform missing-local delta.
+- Negative control: combining the three early returns into
+  `if (!hDlg || !gate || !lev)` preserves every candidate byte, including the
+  late `edi/esi` saves and all unwind displacements. No artificial live local
+  is retained to force the retail prologue.
+
+## 2026-08-14: `CAniRecordView::ResolveIndices` closes its EH frame row
+
+- Unit/RVA: `anirecord`, `0x00168d00`; body score 97.0686% -> 96.8628%, EH
+  funclets 2828 -> 2829 exact. Retail's `CStringArray::GetAt(i)` result is an
+  unnamed `CString` temporary at `esp+0x14`; the lookup output is at
+  `esp+0x10`. The named-string reconstruction reversed those homes and left a
+  uniform `+0x4` cleanup displacement.
+- Retained source lever: pass `tokens.GetAt(i)` directly to `Lookup` and place
+  the lookup plus `m_cues[i]` assignment in one comma expression. The temporary
+  then lives through the member store, so retail and candidate store the output
+  before the CString destructor and both unwind funclets become exact.
+- Negative controls: two separate lookup/store statements close the frame row
+  but destroy the temporary before the member store and fall to 93.4216%; an
+  output declaration followed by a separate assignment is byte-identical;
+  embedding `v = 0` in the reference argument is also byte-identical. Declaring
+  the output before a named CString returns to 97.0686% but reopens the EH row.
+- Remaining residue is one zero store: candidate emits `v = 0` before GetAt,
+  retail schedules it between the already-formed Lookup arguments. No natural
+  spelling tested moves that store without losing the proven temporary identity
+  or C1 map, so the structurally correct lower body score is retained.
+
+## 2026-08-14: `StartUpPrompt` escapes the destructor-tail local minimum
+
+- Unit/RVA: `startupprompt`, `0x0001f9b0`; 97.9951% -> **100.00 EXACT**.
+  Retail's two successful CD checks each run a complete
+  `CWaitCursorScope` teardown and then the two outer CString teardowns. Two
+  `break`s followed by one return merge the first guard teardown into the
+  second; two in-scope `return 1` statements preserve retail's distinct tails.
+- An earlier compiler state made the proven return form score 95.97% because
+  `ebx` moved from the HWND to an inline-copy constant. The current direct A/B
+  disproves that bound: the return form now also restores retail's register
+  allocation and is byte-exact, while the break form remains four instructions
+  short. The retained source follows teardown topology, not the stale high-water
+  spelling.
+- The all-function EH census still reports the fieldless wait guard's synthetic
+  receiver at `retail - ours = -0x8`. Scope count, teardown code and target,
+  Begin/End expansions, and the complete primary body agree. That receiver is
+  the bounded C1 colouring family documented for `CWaitCursorScope`; exact
+  primary code is explicitly not being used to hide an independent defect.
+
+## 2026-08-14: `CFecFile::AddFile` keeps a retail-only CString temp home
+
+- Unit/RVA: `feccrypt`, `0x0017b950`; 98.8741%. Candidate reserves `0x38`
+  local bytes and constructs the `Right()` result in the dead `name` parameter
+  home. Retail reserves `0x3c`, constructs that same unnamed result at
+  `esp+0x1c`, and shifts the CFile from `esp+0x1c` to `esp+0x20`. This produces
+  the two cleanup deltas `-0x40` and `-0x4`; state count, teardown order and
+  targets, all 29 CFG blocks, all branches, and all calls agree.
+- Removed controls: a named block CString and a const-reference-bound temporary
+  still use the parameter home and fall to 96.30%; a named substring length and
+  hoisting the real `copied` counter are byte-neutral. Wrapping the complete
+  success body under `file.Open != 0` falls to 90.77% and rearranges the first
+  fourteen blocks, contradicting retail's early failure tail.
+- The remaining primary difference is two dead instructions in the random
+  name-fill loop (`and edx,ecx` and `mov dh,dl`). No tested authentic lifetime
+  or control-flow spelling creates retail's extra C1 temp home. The row remains
+  bounded as parameter-home allocation residue; no padding or fake live use of
+  `name` is justified.
+
+## 2026-08-14: `CBattlezDlg::DoDataExchange` registry scope controls one CString home
+
+- Unit/RVA: `dialogs`, `0x00014d00`; 96.6319%. Four CString states and their
+  actions/targets agree. Three cleanup receivers are exact; only `display` is
+  four bytes high. Retail's scalar homes are `worlds=esp+0x18`,
+  `defaultMax=+0x1c`, `comboChild=+0x20`, `display=+0x24`, `reg=+0x28`;
+  candidate rotates `reg` to `+0x18` and the next four homes upward.
+- Declaring a separate registry pointer in each load/save branch closes the EH
+  row and raises exact EH funclets 2829 -> 2830, proving which C1 lifetime causes
+  the rotation. It is not retained: VC5 emits two conditional registry loads
+  instead of retail's unconditional prologue preload and the primary score falls
+  to 92.55%. Moving the one outer declaration, splitting its assignment, or
+  bounding it in an inner scope are byte-neutral.
+- Retail therefore supports the current single outer registry identity and
+  unconditional initialization. The remaining receiver is a frame-allocation
+  wall until an authentic earlier declaration/header-state change reproduces
+  the branch-local C1 ordering without contradicting the primary load. A wrong
+  lifetime is not retained merely because it makes the EH bytes exact.
+
+## 2026-08-14: `CPlay` allocation joins and status-bar clock aggregates
+
+- Unit/RVA: `play`, `0x000c7ec0`. The failed `CStatusBarMgr` and
+  `CTileTriggerContainer` arms each had a reconstruction-only explicit null
+  check immediately before `delete`. VC5 already emits the delete null test;
+  candidate therefore had 25 conditional branches against retail's 23.
+  Removing both checks restores the exact 23/23 branch count. This is distinct
+  from `WorldSoundSet` and `WinMain`, where retail has two tests and proves an
+  explicit source check after the compiler-generated constructor guard.
+- Three `{last, interval}` pairs in `CStatusBarMgr` were retained as six loose
+  `i64` fields only because an earlier aggregate experiment lowered the caller
+  score. Retail's member-initialization positions, `+0/+8/+4/+c` zero-store
+  batches, and `SyncClockPair` consumers independently prove three complete
+  `SbiClockPair` subobjects. The aggregate model is retained despite
+  `CPlay` 85.5285% -> 83.3109% and `CMulti` 94.2991% -> 93.9270%.
+- Negative control: a reconstruction-specific four-half `SbiClockPair` body
+  crosses `/Ob1` at one construction site in both callers, changing `CMulti`
+  from retail's 19 states to 20 and `CPlay` from 13 to 14. The natural
+  `m_last(0), m_interval(0)` initializer emits the same proven store order,
+  stays inline, and restores 19/19 plus the prior 13/9 state counts.
+- Further negative controls: spelling `CSbiHlRow`'s two clocks as whole-`i64`
+  assignments removes both vector-constructor calls from CPlay, where retail
+  has two, lowers CPlay to 82.7461%, and leaves 13/9 states. An explicit
+  `return;` in the exact standalone `CTileTriggerContainer` destructor is
+  neutral in CPlay and worsens CMulti. Replacing direct `CState` member reads
+  with its real inline accessors moves the `CSbiHlRow` call population farther
+  from retail without changing the EH count. Positive-tail and `goto` failure
+  rewrites disturb the already-correct 23-branch CFG. All were removed.
+- Remaining `CPlay` residue is an inline cut: candidate expands
+  `~CTileTriggerContainer` on the failed load arm, exposing the four `CPtrList`
+  member-cleanup states; retail calls the header-inline destructor. No fake
+  inline site or flattened member is retained to force that decision.
+
+## 2026-08-14: construction-guard frame operands are not teardown code
+
+- `CChatBoxOwner::ProcessCheatInput` was the sole all-band `different-code`
+  group after its state topology was repaired. Direct shape output showed the
+  same three long `zPtrColl` guards and the same targets on both sides; only
+  the displacements in `cmp [ebp+disp32],0` and
+  `mov [ebp+disp32],0` differed.
+- The census canonicalizer handled only register `mov`/`lea`, so those immediate
+  forms leaked their displacement bytes into the opcode skeleton. It now
+  canonicalizes opcodes `83` and `c7` as frame operands too, with a direct
+  disp32 guard-pair self-test. The all-band result changes from 33 frame plus
+  one different-code group to 34 frame groups and no different-code group;
+  no C++ teardown changed.
+
+## 2026-08-14: `CFileMem` fake constructor local minimum removed
+
+- Retail `SnapshotChildren` and `RestoreChildren` directly call both
+  `??0CFileMemBase` and `CFileMem::Reset`; `LoadRecordFile` expands both and has
+  no relocation to either body. This proves one inline-visible constructor/reset
+  chain, not the former out-of-line base constructor plus tagged inline sibling.
+- Retained source lever: one header-inline `CFileMemBase()`, ordinary
+  `CFileMem(){ Reset(); }`, and a flat inline `Reset` containing the retail four
+  zero stores plus `CString::Empty`. The reconstruction-only `EInlineSeed` API
+  and `SeedMemFields` helper are gone. Compiler-generated base destructor pins
+  moved to `ddrawsurfacemgr`, their natural current emitter.
+- `LoadRecordFile` returns from 75.9565% to **100.00 EXACT** under the single
+  entity model; the base constructor, destructor and deleting destructor are
+  also exact. The EH inventory is again complete at 750 groups / 3034 records.
+- Negative controls: a single inline base constructor with `CFileMem(){Reset();}`
+  but out-of-line-only `Reset` leaves a reset call in `LoadRecordFile`; changing
+  the constructor to call `SeedMemFields` directly makes that caller exact but
+  replaces retail's reset calls in both large functions; making the real inline
+  override call the base-field seed helper leaves its standalone body exact but
+  adds a retail-absent `SeedFields` call to `RestoreChildren`; a combined-TU
+  wrapper changes ownership only and is not retained.
+- Calling `CFileMemBase::Reset` directly from the base destructor instead of
+  the proven `Close` route is also rejected. The standalone destructor falls
+  from exact to 97%, Restore stays 27/25, and two retail-absent base-Reset calls
+  appear. This does not control the early-site destructor cut.
+- Remaining `SnapshotChildren`/`RestoreChildren` residue is still the proven
+  per-site destructor inline-budget family. No tagged overload, forced COMDAT,
+  or `.cpp` inclusion is retained to choose those cuts.
+
+## 2026-08-14: status-bar tagged constructors were an output-fitting local minimum
+
+- Retail `BuildGameMenu` proves three constructor cut depths in one ordinary
+  family: the first three `CSBI_MenuItem` allocations call
+  `CSBI_RectOnly::CSBI_RectOnly`, the next three call
+  `CStatusBarItem::CStatusBarItem`, the seventh is flattened, and the two final
+  `CSBI_ImageSet` arms call `CSBI_RectOnly`. The actual relocation referent, not
+  call count or fuzzy, is the discriminator.
+- The former `NO_SEED` / `INLINE_SELF` / `BASE_CALL` / `CALL_RECTONLY` overloads
+  selected those shapes at source sites. Exact 23-byte and 27-byte standalone
+  constructor bodies did not prove the overloads: a natural one-default-ctor
+  chain keeps `CStatusBarItem::CStatusBarItem` exact while changing the caller
+  population, and disposable front-end-cost probes can materialize the exact
+  `CSBI_RectOnly` COMDAT without producing retail's RectOnly calls in
+  `BuildGameMenu`. The tag API is removed.
+- Controlled RectOnly-cost sweep, all probes removed: at 0/4/8/12/16 added dead
+  statements the four caller call counts were respectively
+  `29/32/141/55`, `29/35/146/57`, `30/37/152/60`, `31/38/154/63`, and
+  `32/38/155/64`, against retail `33/39/163/61`. Scores moved as high as
+  97.07 for `BuildStatusBarTabs`, but rich COFF disassembly showed
+  `BuildGameMenu` still calling only `CStatusBarItem`, never `CSBI_RectOnly`.
+  `CSBI_Image` +4/+8 reproduced the RectOnly +4/+8 rows and wrong referent;
+  `CSBI_MenuItem` +4 was flat and +8 added only one base-ctor call.
+- Negative controls: moving the definitions from late-inline form into the
+  class was byte- and call-count-flat; direct `delete p` versus an explicit
+  `if (p) delete p` was flat alone; replacing raw RECT stores with the proven
+  `SbGeom` helper was flat alone, but the two natural cleanups together changed
+  the caller inline population. The interaction confirms one shared cl5 budget
+  rather than separate source-selected constructor entities.
+- Removing inherited-pointer resets from the derived constructor bodies was
+  also rejected. Although the base chain supplies the same final values,
+  deleting `m_frame` and `m_frameSet` repeats reduced `LoadTabSprites` from 141
+  to 139 calls and `BuildTabzDialog` from 55 to 54 (retail 163/61). Those source
+  statements participate in C1's cost even when optimized stores collapse, so
+  the repeated initializers are retained.
+- A member-initializer-list spelling for `CStatusBarItem` exactly reproduces
+  the prior natural-chain population (`29/32/141/55` calls), drops its
+  standalone ctor from exact to 95.1250%, and leaves all three missing-state
+  rows unchanged. Body assignments are therefore retained; initializer syntax
+  is not the missing joint-population lever.
+- Remaining class: inline/call-set, with missing joint population. The base
+  constructor must be cheap enough to fold inside RectOnly while selected outer
+  Image/MenuItem/ImageSet chains reject RectOnly. Do not retain cost probes or
+  restore per-site overload tags; recover the real helper/constructor/caller
+  statements. The current natural remodel is not EH-complete and is not claimed
+  as a closed reconstruction.
+- Full-link control after removing the tags: `CSBI_RectOnly::CSBI_RectOnly` is
+  currently flattened at every reconstructed use, so the retail 0x101fa0 inline
+  COMDAT is absent and the function-census gate fails. The integrity link also
+  moves from 23 to 28 wrong-referent regions; its added region identities are
+  `BuildStatusBarTabs`, `BuildGameMenu`, `LoadTabSprites`, and
+  `BuildTabzDialog`, all reporting the same missing constructor-call family.
+  This is the caller-visible form of the already classified inline/call-set wall,
+  not a data-coverage regression. The data-integrity ratchet is deliberately not
+  raised: both findings stay visible until the natural call population is recovered.
+
+## 2026-08-14: `CMenuState::LoadGameAssetNamespaces` overlays the cue lookup
+
+- Unit/RVA: `menustate`, `0x0009fe50`; 95.1412% -> 95.2863%. Candidate
+  reserved `0x14` local bytes while retail reserved `0x10`; all four unwind
+  funclets had the same CString teardown shapes and targets at a uniform
+  `retail - ours = +0x28` displacement.
+- Retained source lever: an explicit block around the first `LeafCue* e`
+  lookup/decision region. C1 then overlays `e` with the completed
+  `new CChatBox` construction spill in the dead `areaArg` parameter home.
+  The primary frame becomes retail's `sub esp,0x10`; all four funclets become
+  exact, moving the all-band census from 707/32 to 708/31.
+- Negative controls: replacing all three typed `MapLookup` calls with native
+  `void*&` calls was byte-neutral; naming the `new CChatBox` result was
+  byte-neutral; moving an uninitialized `fm` declaration was byte-neutral.
+  Initializing `fm` before `e` raised the primary score to 95.8628% only by
+  adding a retail-absent early zero and left the EH row open. Moving `e` to
+  function scope put the construction spill in retail's parameter home but
+  gave `e` a separate fifth word, reducing the EH delta to +0x4 and the body
+  to 94.0314%. The older `RECT`-scope experiment remains rejected at 92.02%.
+- Remaining primary residue has the same 14 branches, nine returns, and call
+  set. It is register/schedule and pointer-home coloring: retail schedules each
+  output zero after forming the native Lookup arguments and places final `fm`
+  in the dead `prevStateId` home. No score-only early initialization is retained.
+
+## 2026-08-14: `WireTileSwitchLogic` repeated-call delta is not proof of inlining
+
+- Unit/RVA: `triggermgrgrid`, `0x0006c130`; unchanged at 92.4317%. The repaired
+  call recognizer exposes 96 candidate calls against 95 retail calls. The direct
+  REL32 delta is exactly one surplus `CGrunt::StepArrivalDrop`; both sides retain
+  the same distinct callee set.
+- Retail has all eight source behaviors but only seven relocations: the fixed
+  RIGHT arrow arm sets `m_entranceActive`, forms `x + 32`, and jumps into the
+  nested CURRENT/EAST call tail. Candidate emits those two sites separately.
+  This is a repeated-site cross-jump delta, not evidence that a helper body was
+  expanded or omitted.
+- Negative control: spelling the fixed arm as `x += 32; StepArrivalDrop(x, ...)`
+  was byte-neutral. It left the call count, EH displacement histogram, fuzzy,
+  and diagnosis unchanged, so the edit was removed. Earlier operand-order,
+  local-order, scope, and guard-polarity controls were also neutral or worse.
+- The retail merge is enabled by the opposite whole-function `x`/`y` register
+  coloring visible before the switch. The same allocation decision also colors
+  twelve CString teardown homes differently. The old source `@early-stop` and
+  “exact referent set” comment were removed; the residue remains open rather
+  than bounded as a pure frame-layout wall.
+- Tool correction retained: `gruntz sema diagnose` now reads REL32 multisets
+  even when raw call counts differ and reports same-callee count-only changes as
+  `REPEATED-SITE DELTA`. Its integration control prevents a cross-jump from being
+  narrated as proven inline expansion again.
+
+## 2026-08-14: `RepathAroundBlockedTiles` Clip boundary does not close the EH frame
+
+- Unit/RVA: `battlezmapconfig`, `0x0002a570`; retained source unchanged at
+  72.7377%. Candidate and retail have the same 34 conditional branches and one
+  return. The lone `CPtrList` unwind receiver is `[ebp-0x28]` in candidate and
+  `[ebp-0x38]` in retail, but candidate reserves `0x60` local bytes against
+  retail's smaller `0x5c`; this is object placement, not a missing 16-byte local.
+- Retail overlays the loop's list at runtime `esp+0x40` with the completed first
+  Clip expansion's source/NULL-arm temporary. Candidate puts the corresponding
+  rectangle bands at `+0x24/+0x34/+0x44` and the list after them at `+0x54`.
+  The later two Clip-shaped regions reuse the same retail bands, confirming the
+  addresses are real lifetime evidence rather than a synthetic funclet delta.
+- Negative controls, all removed: replacing only the first hand expansion with
+  an inline free helper grew the frame to `0x68` and moved the list to `+0x5c`;
+  adding an explicit scope around the source rectangle was byte-neutral. Moving
+  the real member definition before the caller without `inline` left an
+  out-of-line Clip call. Marking that definition inline did expand it, but
+  reserved `0x64` and put the list at `+0x58`, while also choosing only one
+  CRect constructor on the NULL arm instead of retail's two.
+- The experiment proves that an apparent original member-call boundary is not
+  sufficient to recover C1's inline-local allocation or nested CRect cut. No
+  helper, definition reorder, or inline keyword is retained. The remaining row
+  stays register/schedule plus inline-state placement until an authentic Clip
+  declaration/body model explains both the call set and all three reused bands.
+
+## 2026-08-14: post-construction null tests are not all compiler guards
+
+- The allocation checks in `WinMain`, all six `CWorldSoundSet` factories,
+  `CSpawnList::AddVoiceSound`, and `CPlay::LoadGameAssetNamespaces` around the
+  timer were re-audited after the `CTimer::Init` constructor remodel. Retail has
+  two distinct comparisons: the compiler-generated pre-constructor guard and a
+  second comparison after the constructor's NULL join.
+- The second branch has source semantics: it returns from `WinMain`, returns
+  from the sound factories and timer load, or skips `CPtrList::AddTail` in
+  `AddVoiceSound`. Removing it cannot be justified by the generated guard and
+  would change the already-retail branch topology. Those checks are retained.
+- Conversely, `CLightFxRender` and the menu-item factories already have the
+  natural form: allocation is followed directly by the fallible `Init`/`Setup`
+  call, with no reconstructed `if (p != NULL)` around that call. The heuristic
+  is therefore only a lead for constructor recovery; the post-join branch and
+  its target decide whether a source null check was real.

@@ -150,10 +150,10 @@ i32 CProjectile::LoadProjectileSprites(
 ) {
     CString key;
     m_srcRow = a;
-    m_targetX = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_srcCol = b;
-    m_kind = kind;
+    m_targetX = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_targetY = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_kind = kind;
     m_targetId = t0;
     m_ownerId = t1;
 
@@ -209,33 +209,35 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    void* out;
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
-        key + DATA_COMPGEN(0x00213658, "1"), out
-        );
-    m_frames[0] = static_cast<CAniElement*>(out);
-    if (m_frames[0] == NULL) {
-        return 0;
+    {
+        void* out;
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(
+            key + DATA_COMPGEN(0x00213658, "1"), out
+            );
+        m_frames[0] = static_cast<CAniElement*>(out);
+        if (m_frames[0] == NULL) {
+            return 0;
+        }
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "2", out);
+        m_frames[1] = static_cast<CAniElement*>(out);
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "3", out);
+        m_frames[2] = static_cast<CAniElement*>(out);
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "4", out);
+        m_frames[3] = static_cast<CAniElement*>(out);
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "5", out);
+        m_frames[4] = static_cast<CAniElement*>(out);
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "IMPACT", out);
+        m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
+        out = NULL;
+        m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "FALL", out);
+        m_frames[PF_FALL] = static_cast<CAniElement*>(out);
     }
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "2", out);
-    m_frames[1] = static_cast<CAniElement*>(out);
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "3", out);
-    m_frames[2] = static_cast<CAniElement*>(out);
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "4", out);
-    m_frames[3] = static_cast<CAniElement*>(out);
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "5", out);
-    m_frames[4] = static_cast<CAniElement*>(out);
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "IMPACT", out);
-    m_frames[PF_IMPACT] = static_cast<CAniElement*>(out);
-    out = NULL;
-    m_wwdObject->OwnerMgr()->m_animRegistry->m_animations.Lookup(key + "FALL", out);
-    m_frames[PF_FALL] = static_cast<CAniElement*>(out);
 
     m_value = m_wwdObject->m_animCursor.m_animation;
     m_wwdObject->m_animCursor.Setup(m_frames[0]);

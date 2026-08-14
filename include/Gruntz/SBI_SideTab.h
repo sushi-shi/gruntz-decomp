@@ -19,7 +19,7 @@ class CStatusBarMgr;
 
 class CSBI_SideTab : public CStatusBarItem {
 public:
-    CSBI_SideTab() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+    CSBI_SideTab() {
         m_topFrame = NULL;
         m_bottomFrame = NULL;
         m_sampledValue = -1;

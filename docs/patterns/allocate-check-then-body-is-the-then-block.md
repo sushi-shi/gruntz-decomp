@@ -46,6 +46,30 @@ The residue underneath is a three-block ROTATION no guard spelling reaches: reta
 `[body][teardown][epilogue]`. A 0..15 throwaway-declaration sweep over the whole TU left all four
 functions bit-for-bit unchanged, so this is source-determined, not TU state.
 
+## A class `new` can have two null tests
+
+Do not delete an adjacent source null check merely because cl emits a null test around a
+constructor call. For a non-trivial class construction, retail can contain both:
+
+1. the compiler-generated allocation/constructor guard, which tests the raw result of
+   `operator new` and skips the constructor when it is null; and
+2. a source-authored check of the selected constructed pointer, which takes the factory's
+   null-return arm.
+
+`CShadeTableCache::HsvShiftTable` (`0x14e540`) is the compact discriminator. Retail tests `eax`
+at `0x14e56e` before calling `CShadeTable::CShadeTable`, selects null or the constructor result,
+then independently tests `ebp` at `0x14e58b` before either returning null or entering the body.
+The six `CWorldSoundSet` factories and `WinMain` have the same two-test structure. Removing the
+explicit checks from the six factories preserved their branch counts because the generated
+constructor guard remained, but each candidate lost one of retail's returns and all six exact
+matches. Restore the checks: the first test proves construction semantics; the second proves
+source control flow.
+
+The constructor-remodel heuristic is narrower. If source has `p = new T; if (p) p->Init();` and
+`Init` is independently proven to be pure default construction returning `this`, remodeling
+`Init` as `T::T()` lets the compiler replace that wrapper with its generated constructor guard.
+It does not generalize to factory error handling after an already modeled constructor.
+
 ## The control that says the idioms themselves are fine
 
 `CTileTriggerContainer::AddSwitchLogic` 0x115f60 is **100%** in the same TU with the same

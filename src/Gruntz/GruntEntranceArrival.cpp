@@ -865,14 +865,17 @@ latch:
         }
     }
 
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
-    CString key = m_cells[base].IdleName();
+    {
+        i32 col = cell.column + cell.row * 2;
+        i32 base = cell.row + col;
+        CString key = m_cells[base].IdleName();
 
-    CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
-    CAniRecordView* elem =
-        desc->m_records.GetSize() > 0 ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0)) : 0;
-    m_wwdObject->ApplyLookupSprite(key, elem->m_param);
+        CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
+        CAniRecordView* elem = desc->m_records.GetSize() > 0
+                                   ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
+                                   : 0;
+        m_wwdObject->ApplyLookupSprite(key, elem->m_param);
+    }
 }
 
 // @early-stop

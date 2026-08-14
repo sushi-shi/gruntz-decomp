@@ -500,12 +500,12 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                         if (m_destructWarnActive == DESTRUCT_WARNING_INACTIVE) {
                             m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
                             m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
-                            m_destructWarnDelay = g_buteMgr.GetDwordDef(
+                            m_destructWarnClock.m_interval = g_buteMgr.GetDwordDef(
                                 "StatusBar",
                                 "DestructButtonWarningDelay",
                                 0x32
                             );
-                            m_destructWarnLast = static_cast<u32>(g_frameTime);
+                            m_destructWarnClock.m_last = static_cast<u32>(g_frameTime);
                             sm->ArmSnapshot(1, 0xbb7);
                         } else {
                             CSBI_ImageSet* n = m_modeNotify;
@@ -882,7 +882,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     i32 by = m_rect10.top;
     CDDrawSurfaceMgr* code = m_world;
 
-    CSBI_RectOnly* dockLeft = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
+    CSBI_RectOnly* dockLeft = new CSBI_RectOnly;
     if (!dockLeft->Setup(
             this,
             code,
@@ -892,9 +892,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (dockLeft) {
-            delete dockLeft;
-        }
+        delete dockLeft;
         return 0;
     }
     m_tabLists[0].AddTail(dockLeft);
@@ -903,7 +901,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     // RELOADS the two frame slots dockLeft's `by + 0xad` / `by + 0xb9` were CSE'd into
     // (`mov eax,[esp+0x34]` / `[esp+0x3c]` at +0x138), so the two dock buttons sit side
     // by side rather than stacked.
-    CSBI_RectOnly* dockRight = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
+    CSBI_RectOnly* dockRight = new CSBI_RectOnly;
     if (!dockRight->Setup(
             this,
             code,
@@ -913,14 +911,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (dockRight) {
-            delete dockRight;
-        }
+        delete dockRight;
         return 0;
     }
     m_tabLists[0].AddTail(dockRight);
 
-    CSBI_RectOnly* hide = new CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF);
+    CSBI_RectOnly* hide = new CSBI_RectOnly;
     if (!hide->Setup(
             this,
             code,
@@ -930,9 +926,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             0,
             -1
         )) {
-        if (hide) {
-            delete hide;
-        }
+        delete hide;
         return 0;
     }
     m_tabLists[0].AddTail(hide);
@@ -951,9 +945,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             -1,
             0
         )) {
-        if (statzTab) {
-            delete statzTab;
-        }
+        delete statzTab;
         return 0;
     }
     m_tabLists[0].AddTail(statzTab);
@@ -970,9 +962,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             -1,
             0
         )) {
-        if (gruntzTab) {
-            delete gruntzTab;
-        }
+        delete gruntzTab;
         return 0;
     }
     m_tabLists[0].AddTail(gruntzTab);
@@ -989,9 +979,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             -1,
             0
         )) {
-        if (resourceTab) {
-            delete resourceTab;
-        }
+        delete resourceTab;
         return 0;
     }
     m_tabLists[0].AddTail(resourceTab);
@@ -1008,9 +996,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             -1,
             0
         )) {
-        if (multiTab) {
-            delete multiTab;
-        }
+        delete multiTab;
         return 0;
     }
     m_tabLists[0].AddTail(multiTab);
@@ -1029,7 +1015,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         multiTab->SetSubtype();
     }
 
-    CSBI_MenuItem* gameTab = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+    CSBI_MenuItem* gameTab = new CSBI_MenuItem;
     if (!gameTab->SetupImage(
             this,
             code,
@@ -1040,9 +1026,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
             -1,
             0
         )) {
-        if (gameTab) {
-            delete gameTab;
-        }
+        delete gameTab;
         return 0;
     }
     m_tabLists[0].AddTail(gameTab);
@@ -1095,14 +1079,6 @@ void CStatusBarItem::SetSubtype() {
     m_redrawFrames = 2;
 }
 
-RVA(0x001005d0, 0x17)
-CStatusBarItem::CStatusBarItem() {
-    m_enabled = 0;
-    m_kind = SBI_KIND_BASE;
-    m_host = NULL;
-    m_redrawFrames = 0;
-}
-
 RVA(0x00100600, 0x8)
 i32 CStatusBarItem::Refresh(i32) {
     return 1;
@@ -1144,9 +1120,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
         POSITION n = m_tabLists[t].GetHeadPosition();
         while (n) {
             CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[t].GetNext(n));
-            if (cur) {
-                delete cur;
-            }
+            delete cur;
         }
         m_tabLists[t].RemoveAll();
     }
@@ -1202,9 +1176,7 @@ void CStatusBarMgr::ClearTabGroup() {
     POSITION n = tab.GetHeadPosition();
     while (n) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        if (cur) {
-            delete cur;
-        }
+        delete cur;
     }
     m_tabLists[IDX(m_activeTab)].RemoveAll();
     switch (m_activeTab) {
@@ -1507,11 +1479,8 @@ i32 CStatusBarMgr::BuildGameMenu() {
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
         if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
-            CSBI_MenuItem* resume = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
-            r.left = bx;
-            r.top = by + 0xd5;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0xec;
+            CSBI_MenuItem* resume = new CSBI_MenuItem;
+            r = SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec);
             if (!resume->SetupImage(
                     this,
                     code,
@@ -1522,19 +1491,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
                     -1,
                     0
                 )) {
-                if (resume) {
-                    delete resume;
-                }
+                delete resume;
                 return 0;
             }
             m_tabLists[5].AddTail(resume);
             m_tabSprite5 = resume;
         } else {
-            CSBI_MenuItem* pause = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
-            r.left = bx;
-            r.top = by + 0xd5;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0xec;
+            CSBI_MenuItem* pause = new CSBI_MenuItem;
+            r = SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec);
             if (!pause->SetupImage(
                     this,
                     code,
@@ -1545,20 +1509,15 @@ i32 CStatusBarMgr::BuildGameMenu() {
                     -1,
                     0
                 )) {
-                if (pause) {
-                    delete pause;
-                }
+                delete pause;
                 return 0;
             }
             m_tabLists[5].AddTail(pause);
             m_tabSprite5 = pause;
         }
 
-        CSBI_MenuItem* load = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
-        r.left = bx;
-        r.top = by + 0x125;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x13c;
+        CSBI_MenuItem* load = new CSBI_MenuItem;
+        r = SbGeom(bx, by + 0x125, bx + 0x9f, by + 0x13c);
         if (!load->SetupImage(
                 this,
                 code,
@@ -1569,9 +1528,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (load) {
-                delete load;
-            }
+            delete load;
             return 0;
         }
         m_tabLists[5].AddTail(load);
@@ -1581,10 +1538,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* save = new CSBI_MenuItem;
-        r.left = bx;
-        r.top = by + 0xfd;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x114;
+        r = SbGeom(bx, by + 0xfd, bx + 0x9f, by + 0x114);
         if (!save->SetupImage(
                 this,
                 code,
@@ -1595,9 +1549,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (save) {
-                delete save;
-            }
+            delete save;
             return 0;
         }
         m_tabLists[5].AddTail(save);
@@ -1607,10 +1559,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* settings = new CSBI_MenuItem;
-        r.left = bx;
-        r.top = by + 0x14d;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x164;
+        r = SbGeom(bx, by + 0x14d, bx + 0x9f, by + 0x164);
         if (!settings->SetupImage(
                 this,
                 code,
@@ -1621,19 +1570,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (settings) {
-                delete settings;
-            }
+            delete settings;
             return 0;
         }
         m_tabLists[5].AddTail(settings);
         m_tabSprite8 = settings;
 
         CSBI_MenuItem* help = new CSBI_MenuItem;
-        r.left = bx;
-        r.top = by + 0x175;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x18c;
+        r = SbGeom(bx, by + 0x175, bx + 0x9f, by + 0x18c);
         if (!help->SetupImage(
                 this,
                 code,
@@ -1644,9 +1588,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (help) {
-                delete help;
-            }
+            delete help;
             return 0;
         }
         m_tabLists[5].AddTail(help);
@@ -1655,11 +1597,8 @@ i32 CStatusBarMgr::BuildGameMenu() {
             help->m_enabled = 0;
         }
 
-        CSBI_MenuItem* quit = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
-        r.left = bx;
-        r.top = by + 0x19d;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x1b4;
+        CSBI_MenuItem* quit = new CSBI_MenuItem;
+        r = SbGeom(bx, by + 0x19d, bx + 0x9f, by + 0x1b4);
         if (!quit->SetupImage(
                 this,
                 code,
@@ -1670,19 +1609,14 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 -1,
                 0
             )) {
-            if (quit) {
-                delete quit;
-            }
+            delete quit;
             return 0;
         }
         m_tabLists[5].AddTail(quit);
         m_tabSprite10 = quit;
 
-        CSBI_ImageSet* destruct = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-        r.left = bx + 0x22;
-        r.top = by + 0x1be;
-        r.right = bx + 0x7d;
-        r.bottom = by + 0x1d6;
+        CSBI_ImageSet* destruct = new CSBI_ImageSet;
+        r = SbGeom(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6);
         if (!destruct->SetupImage(
                 this,
                 code,
@@ -1693,9 +1627,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 IDX(m_modeState),
                 0
             )) {
-            if (destruct) {
-                delete destruct;
-            }
+            delete destruct;
             return 0;
         }
         m_tabLists[5].AddTail(destruct);
@@ -1711,11 +1643,8 @@ i32 CStatusBarMgr::BuildGameMenu() {
 
     CSBI_ImageSet* status;
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
-        status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
-        r.left = bx;
-        r.top = by + 0xd7;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x118;
+        status = new CSBI_ImageSet;
+        r = SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118);
         if (!status->SetupImage(
                 this,
                 code,
@@ -1726,17 +1655,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 1,
                 0
             )) {
-            if (status) {
-                delete status;
-            }
+            delete status;
             return 0;
         }
     } else {
-        status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
-        r.left = bx;
-        r.top = by + 0xd7;
-        r.right = bx + 0x9f;
-        r.bottom = by + 0x118;
+        status = new CSBI_ImageSet;
+        r = SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118);
         if (!status->SetupImage(
                 this,
                 code,
@@ -1747,22 +1671,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 2,
                 0
             )) {
-            if (status) {
-                delete status;
-            }
+            delete status;
             return 0;
         }
     }
     m_tabLists[5].AddTail(status);
     return 1;
-}
-
-// The untagged entity of the pair in SBI_Image.h: retail's 0x101fa0 folds the
-// CStatusBarItem base ctor into its body (vptr + [+4]/[+0x24]/[+0x28] zeroed,
-// [+8] = 1) and the deep chains all `call` it.
-RVA(0x00101fa0, 0x1b)
-CSBI_RectOnly::CSBI_RectOnly() : CStatusBarItem(CStatusBarItem::NO_SEED) {
-    m_kind = SBI_KIND_RECT_ONLY;
 }
 
 RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
@@ -1777,9 +1691,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
     POSITION n = m_tabLists[5].GetHeadPosition();
     while (n) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[5].GetNext(n));
-        if (cur) {
-            delete cur;
-        }
+        delete cur;
     }
     m_tabLists[5].RemoveAll();
     m_tabSprite5 = NULL;
@@ -1853,10 +1765,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
     switch (m_activeTab) {
         case TAB_GRUNTZ:
             it = new CSBI_Image;
-            r.left = bx + 0x18;
-            r.top = by + 0xaf;
-            r.right = bx + 0x70;
-            r.bottom = by + 0xbe;
+            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
@@ -1867,9 +1776,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[2].AddTail(it);
@@ -1879,11 +1786,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* bptr = &m_slots[0].m_value;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    CSBI_ImageSet* set = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
-                    r.left = bx + 0xe;
-                    r.top = y - 0x32;
-                    r.right = bx + 0x39;
-                    r.bottom = y;
+                    CSBI_ImageSet* set = new CSBI_ImageSet;
+                    r = SbGeom(bx + 0xe, y - 0x32, bx + 0x39, y);
                     if (!set->SetupImage(
                             this,
                             code,
@@ -1894,9 +1798,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             *bptr,
                             0
                         )) {
-                        if (set) {
-                            delete set;
-                        }
+                        delete set;
                         return 0;
                     }
                     m_tabLists[2].AddTail(set);
@@ -1916,10 +1818,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
             }
             it = new CSBI_Image;
-            r.left = bx + 0x4c;
-            r.top = by + 0xc8;
-            r.right = bx + 0x97;
-            r.bottom = by + 0x1cd;
+            r = SbGeom(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd);
             if (!it->SetupImage(
                     this,
                     code,
@@ -1930,18 +1829,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[2].AddTail(it);
             m_gaugeNotify = it;
             it = new CSBI_Image;
-            r.left = bx + 0x1e;
-            r.top = by + 0xc4;
-            r.right = bx + 0x3d;
-            r.bottom = by + 0xcd;
+            r = SbGeom(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd);
             if (!it->SetupImage(
                     this,
                     code,
@@ -1952,17 +1846,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[2].AddTail(it);
             it = new CSBI_Image;
-            r.left = bx + 0x68;
-            r.top = by + 0x1cf;
-            r.right = bx + 0x87;
-            r.bottom = by + 0x1d8;
+            r = SbGeom(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8);
             if (!it->SetupImage(
                     this,
                     code,
@@ -1973,17 +1862,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[2].AddTail(it);
             it = new CSBI_WellGoo;
-            r.left = bx + 0x6e;
-            r.top = by + 0xf8;
-            r.right = bx + 0x81;
-            r.bottom = by + 0x1b3;
+            r = SbGeom(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3);
             if (!it->SetupImage(
                     this,
                     code,
@@ -1994,9 +1878,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_gauge,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[2].AddTail(it);
@@ -2005,10 +1887,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
         case TAB_RESOURCE:
             it = new CSBI_Image;
-            r.left = bx + 0x18;
-            r.top = by + 0xaf;
-            r.right = bx + 0x70;
-            r.bottom = by + 0xbe;
+            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2019,17 +1898,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             it = new CSBI_Image;
-            r.left = bx;
-            r.top = by + 0x135;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x1be;
+            r = SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1be);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2040,18 +1914,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_notify0 = it;
             it = new CSBI_Image;
-            r.left = bx;
-            r.top = by + 0xfb;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x134;
+            r = SbGeom(bx, by + 0xfb, bx + 0x9f, by + 0x134);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2062,18 +1931,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_notify2 = it;
             it = new CSBI_Image;
-            r.left = bx + 0x48;
-            r.top = by + 0xd3;
-            r.right = bx + 0x67;
-            r.bottom = by + 0xf3;
+            r = SbGeom(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2084,19 +1948,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_notify3 = it;
 
-            it = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
-            r.left = bx + 0x19;
-            r.top = by + 0x11c;
-            r.right = bx + 0x3c;
-            r.bottom = by + 0x130;
+            it = new CSBI_ImageSet;
+            r = SbGeom(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2107,18 +1966,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_groupSlots[0].m_value,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
-            r.left = bx + 0x40;
-            r.top = by + 0x11c;
-            r.right = bx + 0x63;
-            r.bottom = by + 0x130;
+            r = SbGeom(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2129,18 +1983,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_groupSlots[1].m_value,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
-            r.left = bx + 0x68;
-            r.top = by + 0x11c;
-            r.right = bx + 0x8b;
-            r.bottom = by + 0x130;
+            r = SbGeom(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2151,19 +2000,19 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_groupSlots[2].m_value,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
 
             it = new CSBI_ImageSet;
-            r.left = m_itemRect.left + bx;
-            r.top = m_itemRect.top + by;
-            r.right = m_itemRect.right + bx;
-            r.bottom = m_itemRect.bottom + by;
+            r = SbGeom(
+                m_itemRect.left + bx,
+                m_itemRect.top + by,
+                m_itemRect.right + bx,
+                m_itemRect.bottom + by
+            );
             if (!it->SetupImage(
                     this,
                     code,
@@ -2174,9 +2023,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_extraNotifyArg0,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
@@ -2189,10 +2036,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0x155;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
-                    r.left = bx + 0x1d;
-                    r.top = y - 0x17;
-                    r.right = bx + 0x34;
-                    r.bottom = y;
+                    r = SbGeom(bx + 0x1d, y - 0x17, bx + 0x34, y);
                     if (!set->SetupImage(
                             this,
                             code,
@@ -2203,18 +2047,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[-24],
                             0
                         )) {
-                        if (set) {
-                            delete set;
-                        }
+                        delete set;
                         return 0;
                     }
                     m_tabLists[3].AddTail(set);
                     cachep[-4] = set;
                     set = new CSBI_ImageSet;
-                    r.left = bx + 0x45;
-                    r.top = y - 0x17;
-                    r.right = bx + 0x5c;
-                    r.bottom = y;
+                    r = SbGeom(bx + 0x45, y - 0x17, bx + 0x5c, y);
                     if (!set->SetupImage(
                             this,
                             code,
@@ -2225,18 +2064,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[0],
                             0
                         )) {
-                        if (set) {
-                            delete set;
-                        }
+                        delete set;
                         return 0;
                     }
                     m_tabLists[3].AddTail(set);
                     cachep[0] = set;
                     set = new CSBI_ImageSet;
-                    r.left = bx + 0x6d;
-                    r.top = y - 0x17;
-                    r.right = bx + 0x84;
-                    r.bottom = y;
+                    r = SbGeom(bx + 0x6d, y - 0x17, bx + 0x84, y);
                     if (!set->SetupImage(
                             this,
                             code,
@@ -2247,9 +2081,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             cfgp[24],
                             0
                         )) {
-                        if (set) {
-                            delete set;
-                        }
+                        delete set;
                         return 0;
                     }
                     m_tabLists[3].AddTail(set);
@@ -2261,10 +2093,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
 
             mach = new CSBI_GruntMachine;
-            r.left = bx;
-            r.top = by + 0xc8;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0xfa;
+            r = SbGeom(bx, by + 0xc8, bx + 0x9f, by + 0xfa);
             if (!mach->BuildResourceTabStatusBar(
                     this,
                     code,
@@ -2275,22 +2104,17 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_machineA.m_counter,
                     m_machineB.m_counter
                 )) {
-                if (mach) {
-                    delete mach;
-                }
+                delete mach;
                 return 0;
             }
             m_machineDisplay = mach;
             m_tabLists[3].AddTail(mach);
 
-            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
-            r.left = bx;
+            it = new CSBI_Image;
             // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
             // TAB_RESOURCE image's `by + 0x135` was CSE'd into, and `by + 0x1a6` (what
             // used to stand here) appears in no immediate anywhere in the function.
-            r.top = by + 0x135;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x1df;
+            r = SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1df);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2301,19 +2125,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
             m_notify1 = it;
 
             ani = new CSBI_ImageSetAni;
-            r.left = bx;
-            r.top = by + 0x1bf;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x1cc;
+            r = SbGeom(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc);
             if (!ani->Init(
                     this,
                     code,
@@ -2327,18 +2146,18 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     1
                 )) {
-                if (ani) {
-                    delete ani;
-                }
+                delete ani;
                 return 0;
             }
             m_tabLists[3].AddTail(ani);
 
             it = new CSBI_ImageSet;
-            r.left = m_fallRect.left + bx;
-            r.top = m_fallRect.top + by;
-            r.right = m_fallRect.right + bx;
-            r.bottom = m_fallRect.bottom + by;
+            r = SbGeom(
+                m_fallRect.left + bx,
+                m_fallRect.top + by,
+                m_fallRect.right + bx,
+                m_fallRect.bottom + by
+            );
             if (!it->SetupImage(
                     this,
                     code,
@@ -2349,9 +2168,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_extraNotifyArg1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[3].AddTail(it);
@@ -2359,10 +2176,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             it->m_enabled = 0;
 
             ani = new CSBI_ImageSetAni;
-            r.left = bx;
-            r.top = by + 0x1c7;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x1df;
+            r = SbGeom(bx, by + 0x1c7, bx + 0x9f, by + 0x1df);
             if (!ani->Init(
                     this,
                     code,
@@ -2376,20 +2190,15 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     1
                 )) {
-                if (ani) {
-                    delete ani;
-                }
+                delete ani;
                 return 0;
             }
             m_tabLists[3].AddTail(ani);
             return 1;
 
         case TAB_MULTIPLAYER:
-            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
-            r.left = bx + 0x18;
-            r.top = by + 0xaf;
-            r.right = bx + 0x70;
-            r.bottom = by + 0xbe;
+            it = new CSBI_Image;
+            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2400,18 +2209,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[4].AddTail(it);
 
             it = new CSBI_WarlordHead;
-            r.left = bx + 0x53;
-            r.top = by + 0xcf;
-            r.right = bx + 0x8e;
-            r.bottom = by + 0x10a;
+            r = SbGeom(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2422,18 +2226,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[4].AddTail(it);
             m_warlordHead[0] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
-            r.left = bx + 0x53;
-            r.top = by + 0x112;
-            r.right = bx + 0x8e;
-            r.bottom = by + 0x14d;
+            r = SbGeom(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2444,18 +2243,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[4].AddTail(it);
             m_warlordHead[1] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
-            r.left = bx + 0x53;
-            r.top = by + 0x155;
-            r.right = bx + 0x8e;
-            r.bottom = by + 0x190;
+            r = SbGeom(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2466,18 +2260,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[4].AddTail(it);
             m_warlordHead[2] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
-            r.left = bx + 0x53;
-            r.top = by + 0x197;
-            r.right = bx + 0x8e;
-            r.bottom = by + 0x1d2;
+            r = SbGeom(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2488,9 +2277,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[4].AddTail(it);
@@ -2529,10 +2316,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0xd9;
                 for (i = 0; i < 15; i++) {
                     bar = new CSBI_StatzTabGruntBar;
-                    r.left = by17;
-                    r.top = y - 0x11;
-                    r.right = by52;
-                    r.bottom = y;
+                    r = SbGeom(by17, y - 0x11, by52, y);
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
@@ -2544,9 +2328,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             i,
                             0
                         )) {
-                        if (bar) {
-                            delete bar;
-                        }
+                        delete bar;
                         return 0;
                     }
                     m_tabLists[4].AddTail(bar);
@@ -2556,11 +2338,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_STATZ:
-            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
-            r.left = bx + 0x18;
-            r.top = by + 0xaf;
-            r.right = bx + 0x70;
-            r.bottom = by + 0xbe;
+            it = new CSBI_Image;
+            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2571,9 +2350,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[1].AddTail(it);
@@ -2594,10 +2371,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SbiCommandId id =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
                     arrow = new CSBI_StatzTabArrow;
-                    r.left = arrowL;
-                    r.top = y - 0x11;
-                    r.right = arrowR;
-                    r.bottom = y;
+                    r = SbGeom(arrowL, y - 0x11, arrowR, y);
                     if (!arrow->Init(
                             this,
                             code,
@@ -2611,9 +2385,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             0,
                             0
                         )) {
-                        if (arrow) {
-                            delete arrow;
-                        }
+                        delete arrow;
                         return 0;
                     }
                     m_tabLists[1].AddTail(arrow);
@@ -2629,10 +2401,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         arrow->SetDirection(m_position, 0);
                     }
                     bar = new CSBI_StatzTabGruntBar;
-                    r.left = bx + 0x28;
-                    r.top = y - 0x11;
-                    r.right = bx + 0x77;
-                    r.bottom = y;
+                    r = SbGeom(bx + 0x28, y - 0x11, bx + 0x77, y);
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
@@ -2644,9 +2413,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             i,
                             1
                         )) {
-                        if (bar) {
-                            delete bar;
-                        }
+                        delete bar;
                         return 0;
                     }
                     m_tabLists[1].AddTail(bar);
@@ -2656,11 +2423,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_GAME:
-            it = new CSBI_Image(CSBI_Image::INLINE_CHAIN);
-            r.left = bx + 0x18;
-            r.top = by + 0xaf;
-            r.right = bx + 0x70;
-            r.bottom = by + 0xbe;
+            it = new CSBI_Image;
+            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2671,18 +2435,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     -1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[5].AddTail(it);
 
-            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-            r.left = bx;
-            r.top = by;
-            r.right = bx + 0x9f;
-            r.bottom = by + 0x7f;
+            it = new CSBI_ImageSet;
+            r = SbGeom(bx, by, bx + 0x9f, by + 0x7f);
             if (!it->SetupImage(
                     this,
                     code,
@@ -2693,19 +2452,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     0
                 )) {
-                if (it) {
-                    delete it;
-                }
+                delete it;
                 return 0;
             }
             m_tabLists[5].AddTail(it);
             if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
-                it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-                r.left = bx + 0x17;
-                r.top = by + 0xe;
-                r.right = bx + 0x52;
-                r.bottom = by + 0x44;
+                it = new CSBI_ImageSet;
+                r = SbGeom(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44);
                 if (!it->SetupImage(
                         this,
                         code,
@@ -2716,19 +2470,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         2,
                         0
                     )) {
-                    if (it) {
-                        delete it;
-                    }
+                    delete it;
                     return 0;
                 }
                 m_tabLists[5].AddTail(it);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
-                    it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-                    r.left = bx + 0x4c;
-                    r.top = by + 0xf;
-                    r.right = bx + 0x87;
-                    r.bottom = by + 0x3e;
+                    it = new CSBI_ImageSet;
+                    r = SbGeom(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e);
                     if (!it->SetupImage(
                             this,
                             code,
@@ -2739,19 +2488,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             3,
                             0
                         )) {
-                        if (it) {
-                            delete it;
-                        }
+                        delete it;
                         return 0;
                     }
                     m_tabLists[5].AddTail(it);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
-                        it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-                        r.left = bx + 0x1b;
-                        r.top = by + 0x3b;
-                        r.right = bx + 0x52;
-                        r.bottom = by + 0x71;
+                        it = new CSBI_ImageSet;
+                        r = SbGeom(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71);
                         if (!it->SetupImage(
                                 this,
                                 code,
@@ -2762,19 +2506,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                                 4,
                                 0
                             )) {
-                            if (it) {
-                                delete it;
-                            }
+                            delete it;
                             return 0;
                         }
                         m_tabLists[5].AddTail(it);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
-                            it = new CSBI_ImageSet(CSBI_ImageSet::INLINE_CHAIN);
-                            r.left = bx + 0x4a;
-                            r.top = by + 0x35;
-                            r.right = bx + 0x89;
-                            r.bottom = by + 0x74;
+                            it = new CSBI_ImageSet;
+                            r = SbGeom(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74);
                             if (!it->SetupImage(
                                     this,
                                     code,
@@ -2785,9 +2524,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                                     5,
                                     0
                                 )) {
-                                if (it) {
-                                    delete it;
-                                }
+                                delete it;
                                 return 0;
                             }
                             m_tabLists[5].AddTail(it);
@@ -3260,9 +2997,9 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                             g_buteMgr.GetDwordDef("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
                         m_groupSlots[i].m_last = static_cast<u32>(g_frameTime);
                         m_machinePhase = BELT_FALLING_OFF;
-                        m_beltInterval =
+                        m_beltClock.m_interval =
                             g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
-                        m_beltLast = static_cast<u32>(g_frameTime);
+                        m_beltClock.m_last = static_cast<u32>(g_frameTime);
                     }
                 }
                 break;
@@ -3404,8 +3141,9 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_groupSlots[i].m_value = 1;
                     }
                     m_machinePhase = BELT_IN_MACHINE;
-                    m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
-                    m_beltLast = static_cast<u32>(g_frameTime);
+                    m_beltClock.m_interval =
+                        g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
+                    m_beltClock.m_last = static_cast<u32>(g_frameTime);
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
                         if (host->m_emitGate == 0) {
@@ -3732,35 +3470,37 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 m_itemRect.left += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right += g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             if (m_itemRect.left >= 0x6d) {
                 m_itemRect.left = 0x6d;
                 m_itemRect.right = 0x84;
                 m_machinePhase = BELT_SPEWING;
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval =
+                    g_buteMgr.GetDwordDef("StatusBar", "NextItemInMachineTime", 0x7d0);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             refreshFlag = 1;
             break;
         case BELT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 SetHudRectB(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDwordDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
                 );
                 m_machinePhase = BELT_DROP_START;
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemWaitTime", 0x1f4);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval =
+                    g_buteMgr.GetDwordDef("StatusBar", "NextItemWaitTime", 0x1f4);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             break;
         case BELT_DROP_START:
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 m_machinePhase = BELT_FALLING;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     CDDrawSubMgrLeafScan* host = g_gameReg->m_world->m_soundRegistry;
@@ -3782,16 +3522,18 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                         }
                     }
                 }
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval =
+                    g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             break;
         case BELT_FALLING:
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval =
+                    g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             if (m_itemRect.bottom >= 0x11c) {
                 m_itemRect.bottom = 0x11c;
@@ -3818,8 +3560,8 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                     }
                 }
                 m_machinePhase = BELT_TRAVELLING;
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
                 PickupType activeItem = static_cast<PickupType>(m_extraNotifyArg0);
                 if (activeItem >= PICKUP_BRICKZ_FIRST) {
                     m_itemBaseX = 0x6d;
@@ -3832,11 +3574,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_TRAVELLING:
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 m_itemRect.left -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
                 m_itemRect.right -= g_buteMgr.GetIntDef("StatusBar", "NextItemSpeed", 2);
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval = g_buteMgr.GetDwordDef("StatusBar", "NextItemDelay", 0x64);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             if (m_itemRect.left <= m_itemBaseX) {
                 m_itemRect.left = m_itemBaseX;
@@ -3853,15 +3595,16 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_FALLING_OFF: {
-            if (static_cast<i64>(g_frameTime) - m_beltLast >= m_beltInterval) {
+            if (static_cast<i64>(g_frameTime) - m_beltClock.m_last >= m_beltClock.m_interval) {
                 m_itemRect.top += g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 2);
                 // RETAIL'S TYPO, kept: the shipped EXE's string table carries both
                 // "(FallingItemSpeed" and "FallingItemSpeed" as separate strings, so
                 // this lookup always misses and takes the default. Correcting it would
                 // drop a string from .rdata and stop matching.
                 m_itemRect.bottom += g_buteMgr.GetIntDef("StatusBar", "(FallingItemSpeed", 2);
-                m_beltInterval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
-                m_beltLast = static_cast<u32>(g_frameTime);
+                m_beltClock.m_interval =
+                    g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
+                m_beltClock.m_last = static_cast<u32>(g_frameTime);
             }
             i32 col;
             PickupType item2 = static_cast<PickupType>(m_extraNotifyArg0);
@@ -3940,8 +3683,8 @@ RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
     m_fallActive = FALLING_ITEM_DESCENDING;
-    m_fallDelay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
-    m_fallLast = static_cast<u32>(g_frameTime);
+    m_fallClock.m_interval = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
+    m_fallClock.m_last = static_cast<u32>(g_frameTime);
     CSBI_ImageSet* n = m_extraNotify1;
     i32 l = a2 - 0xc;
     i32 t = a3 - 0xc;
@@ -4013,8 +3756,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64 d = static_cast<i64>(g_frameTime) - m_fallLast;
-        if (d >= m_fallDelay) {
+        i64 d = static_cast<i64>(g_frameTime) - m_fallClock.m_last;
+        if (d >= m_fallClock.m_interval) {
             i32 newLo = m_fallRect.top + speed;
             m_fallRect.top = newLo;
             i32 newHi = m_fallRect.bottom + speed;
@@ -4030,8 +3773,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 w->m_rect14.right = m_fallRect.right + sx;
                 w->m_rect14.bottom = sy + newHi;
             }
-            m_fallDelay = delay;
-            m_fallLast = g_frameTime;
+            m_fallClock.m_interval = delay;
+            m_fallClock.m_last = g_frameTime;
         }
         // Retail's `mov ecx,1` at +0x1d5 is the JOIN of the timer test's taken and
         // fall-through edges, so the flag is set whenever the item is active - not
@@ -4382,11 +4125,11 @@ i32 CStatusBarMgr::Sync(CFileMemBase* s, SerialMode op, LogicTypeId p4, i32 p5) 
         }
     }
 
-    SyncClockPair(s, op, &m_beltLast);
-    SyncClockPair(s, op, &m_fallLast);
+    SyncClockPair(s, op, &m_beltClock.m_last);
+    SyncClockPair(s, op, &m_fallClock.m_last);
     SyncClockPair(s, op, &m_machineB.m_last);
     SyncClockPair(s, op, &m_machineA.m_last);
-    SyncClockPair(s, op, &m_destructWarnLast);
+    SyncClockPair(s, op, &m_destructWarnClock.m_last);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
@@ -5014,7 +4757,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(areYouSure);
 
-        CSBI_MenuItem* yes = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+        CSBI_MenuItem* yes = new CSBI_MenuItem;
         if (!yes->SetupImage(
                 this,
                 w,
@@ -5031,7 +4774,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabLists[6].AddTail(yes);
         m_tabSprite13 = yes;
 
-        CSBI_MenuItem* no = new CSBI_MenuItem(CSBI_Image::CALL_RECTONLY);
+        CSBI_MenuItem* no = new CSBI_MenuItem;
         if (!no->SetupImage(
                 this,
                 w,
@@ -5070,7 +4813,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
 
-        CSBI_ImageSet* status = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        CSBI_ImageSet* status = new CSBI_ImageSet;
         if (!status->SetupImage(
                 this,
                 w,
@@ -5086,7 +4829,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         m_tabLists[6].AddTail(status);
 
-        CSBI_ImageSet* rsn = new CSBI_ImageSet(CSBI_Image::CALL_RECTONLY);
+        CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->SetupImage(
                 this,
                 w,
@@ -5207,7 +4950,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabLists[6].AddTail(replay);
         m_tabSprite11 = replay;
 
-        CSBI_MenuItem* quit = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        CSBI_MenuItem* quit = new CSBI_MenuItem;
         if (!quit->SetupImage(
                 this,
                 w,
@@ -5235,7 +4978,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     if (count >= 2) {
-        CSBI_MenuItem* observe = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        CSBI_MenuItem* observe = new CSBI_MenuItem;
         if (!observe->SetupImage(
                 this,
                 w,
@@ -5253,7 +4996,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabSprite11 = observe;
         m_observerTabAvailable = 1;
 
-        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
                 w,
@@ -5271,7 +5014,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         m_tabSprite12 = statz;
     } else {
         m_observerTabAvailable = 0;
-        CSBI_MenuItem* statz = new CSBI_MenuItem(CSBI_Image::INLINE_CHAIN);
+        CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
                 w,
@@ -5299,9 +5042,7 @@ void CStatusBarMgr::ExitMode() {
     POSITION n = m_tabLists[6].GetHeadPosition();
     while (n) {
         CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        if (cur) {
-            delete cur;
-        }
+        delete cur;
     }
     m_tabLists[6].RemoveAll();
     i32 handle = m_toggleHandle;
@@ -5328,7 +5069,7 @@ void CStatusBarMgr::ExitMode() {
 }
 
 // @early-stop
-// One store slot, twice (both switch arms): retail writes the i64 m_destructWarnLast
+// One store slot, twice (both switch arms): retail writes the i64 m_destructWarnClock.m_last
 // HIGH dword straight after the low one, cl sinks it past the m_modeNotify load and
 // its null compare. 5 spellings measured, including the i64-union assignment form.
 RVA(0x0010b320, 0x167)
@@ -5336,17 +5077,17 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
 
     switch (m_destructWarnActive) {
         case DESTRUCT_WARNING_FORWARD: {
-            i64 d = static_cast<i64>(g_frameTime) - m_destructWarnLast;
-            if (d >= m_destructWarnDelay) {
+            i64 d = static_cast<i64>(g_frameTime) - m_destructWarnClock.m_last;
+            if (d >= m_destructWarnClock.m_interval) {
                 m_modeState = static_cast<DestructButtonFrame>(m_modeState + 1);
                 if (m_modeState >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_LAST;
                     m_destructWarnActive = DESTRUCT_WARNING_REVERSE;
                 }
-                m_destructWarnDelay = static_cast<u32>(
+                m_destructWarnClock.m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                m_destructWarnLast = static_cast<u32>(g_frameTime);
+                m_destructWarnClock.m_last = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(IDX(m_modeState));
@@ -5355,17 +5096,17 @@ void CStatusBarMgr::UpdateDestructButtonStatusBar() {
             break;
         }
         case DESTRUCT_WARNING_REVERSE: {
-            i64 d = static_cast<i64>(g_frameTime) - m_destructWarnLast;
-            if (d >= m_destructWarnDelay) {
+            i64 d = static_cast<i64>(g_frameTime) - m_destructWarnClock.m_last;
+            if (d >= m_destructWarnClock.m_interval) {
                 m_modeState = static_cast<DestructButtonFrame>(m_modeState - 1);
                 if (m_modeState <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_modeState = DESTRUCT_FRAME_WARNING_FIRST;
                     m_destructWarnActive = DESTRUCT_WARNING_FORWARD;
                 }
-                m_destructWarnDelay = static_cast<u32>(
+                m_destructWarnClock.m_interval = static_cast<u32>(
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32)
                 );
-                m_destructWarnLast = static_cast<u32>(g_frameTime);
+                m_destructWarnClock.m_last = static_cast<u32>(g_frameTime);
                 CSBI_ImageSet* w = m_modeNotify;
                 if (w) {
                     w->Notify(IDX(m_modeState));

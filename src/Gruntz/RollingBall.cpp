@@ -429,8 +429,8 @@ i32 CRollingBall::Update() {
         i32 oldDir = dirObj->m_direction;
         if ((terrain & 0x80) != 0) {
             CGameLevel* lvl2 = g_gameReg->m_world->m_level;
-            i32 col2 = m_target.m_y >> TILE_SHIFT_PX;
-            i32 row2 = m_target.m_x >> TILE_SHIFT_PX;
+            i32 col2 = ty;
+            i32 row2 = tx;
             if (row2 < 0) {
                 row2 = 0;
             } else {

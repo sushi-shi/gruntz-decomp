@@ -29,6 +29,10 @@ Measured placements for `inline_depth(1)` in `src/Bute/ButeMgr.cpp` (`del` = in-
 
 ## Why it matters
 
+The table below is a historical causation panel, not a retained workaround. The
+2026-08-14 per-arm-return reconstruction of `CButeValue::CopyValue` closes the Set*
+family naturally; no `inline_depth` pragma remains in `ButeMgr.cpp`.
+
 `docs/patterns/ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md` previously
 recorded that "`#pragma inline_depth(0)` in the TU is accepted by cl 5.0 with no warning
 and produces a byte-identical obj". **That is wrong** and it closed off a live lever for
@@ -57,6 +61,6 @@ the score.
 ## Related
 
 [`ob1-budget-drops-the-inlined-dtor-and-the-return`](ob1-budget-drops-the-inlined-dtor-and-the-return.md)
-— the wrong-code defect this lever is the workaround for.
+— the reproducible wrong-code probe whose retail diagnosis is now refuted.
 [`ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach`](ob1-budget-cutoff-is-a-prefix-visibility-cannot-reach.md)
 — the expansion-count residual that survives every depth.

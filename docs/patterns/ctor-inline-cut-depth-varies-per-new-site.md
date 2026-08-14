@@ -44,7 +44,7 @@ a deeply-derived class is in this family. Until the heuristic is understood thes
 `@early-stop` walls, and the OOL bodies retail emitted (`??0CSBI_RectOnly@@QAE@XZ` @0x101fa0
 is still unnamed) need `RVA_COMPGEN` pins in whichever TU emits the COMDAT.
 
-## MOSTLY BROKEN 2026-08-09: the split is per-CLASS at both ends of the chain
+## RETRACTED 2026-08-14: a per-class majority does not prove sibling constructors
 
 The `??0CLoadable` result (`ob1-inline-budget-divergence.md` § RESOLVED) says to run
 `sema xref` on the callee one level UP and read each `new`'s `??_7` stamp before calling
@@ -62,48 +62,54 @@ with the ctor call that follows it and with the `??_7` the site stamps gives 38 
 | `CSBI_ImageSet` (depth 4) | 6 | **9** | 6 |
 | `CSBI_ImageSetAni` / `CSBI_WarlordHead` / `CSBI_StatzTabArrow` / `CSBI_WellGoo` | 0 | 0 | **8** |
 
-The two ends are unanimous or near-unanimous, and both are expressible with the
-tagged-sibling recipe of `two-shapes-need-two-entities.md`, because retail carries BOTH
-`??0CStatusBarItem` (23 B) and `??0CSBI_RectOnly` (27 B, the base ctor folded in) as real
-standalone COMDATs - which by that pattern's probe table means retail's source had an
-out-of-line definition for each, plus an inline sibling for the expansions:
+That table remains a useful census, but the conclusion formerly drawn from it was too
+strong. A tagged family (`NO_SEED`, `INLINE_SELF`, `BASE_CALL`, `CALL_RECTONLY`) can fit
+the observed call depths and can emit both exact COMDATs, but neither fact proves that
+those overloads existed. The tags choose the desired output at each site and therefore
+encode the answer when the real cl5 decision may instead come from front-end cost and
+candidate order. They were removed from the retained source.
 
-```cpp
-class CStatusBarItem {
-    CStatusBarItem();                       // out-of-line, 0x1005d0
-    enum ENoSeed { NO_SEED };
-    CStatusBarItem(ENoSeed) { ...same 4 stores... }
-};
-class CSBI_RectOnly : public CStatusBarItem {
-    CSBI_RectOnly();                        // out-of-line, 0x101fa0 (base folded in)
-    enum EInlineSelf { INLINE_SELF };
-    CSBI_RectOnly(EInlineSelf) : CStatusBarItem(CStatusBarItem::NO_SEED) { ... }
-    enum EBaseCall { BASE_CALL };
-    CSBI_RectOnly(EBaseCall) { ... }        // calls the out-of-line base
-};
-class CSBI_Image : public CSBI_RectOnly {
-    CSBI_Image() : CSBI_RectOnly(BASE_CALL) { ... }
-    enum ECallRectOnly { CALL_RECTONLY };
-    CSBI_Image(ECallRectOnly) : CSBI_RectOnly() { ... }   // calls 0x101fa0
-};
-```
+The controlled natural-chain rebuild is the negative control. With one ordinary default
+constructor per class, `CStatusBarItem::CStatusBarItem` remains 100% exact, yet the four
+builders start at 29/32/141/55 calls against retail's 33/39/163/61. Moving the same
+definitions from late-inline form into the class was byte- and call-count-flat, so
+declaration position is not the missing lever.
 
-`new CSBI_RectOnly` takes `INLINE_SELF`; the depth-2 siblings seed their base with
-`CStatusBarItem::NO_SEED`; `CSBI_MenuItem`/`CSBI_ImageSet`/`CSBI_WellGoo` and everything
-below take a `CALL_RECTONLY` chain where the census says so.
+Disposable unused-local titration then changed only cl5's front-end cost; every probe was
+removed after measurement:
 
-Measured: `BuildStatusBarTabs` 71.58 -> **78.21**, which is exactly the number the banned
-`#pragma inline_depth(3)` scored - so that pragma was not a lever, it was a *symptom* of a
-missing entity. `BuildTabzDialog` 79.68 -> 84.98, `LoadTabSprites` 76.12 -> 82.41,
-`CAniPlayer::RenderCel` 75.64 -> 98.48, `CSBI_Image::Render` 74.04 -> 100.00, and
-`??0CSBI_RectOnly@@QAE@XZ` goes from unclaimed to 100.00 EXACT (+1 denominator).
+| probe | Tabs calls/score | Game calls/score | Load calls/score | Dialog calls/score |
+|---|---:|---:|---:|---:|
+| natural chain | 29 / 85.55 | 32 / 81.02 | 141 / 83.77 | 55 / 79.66 |
+| +4 in `CSBI_RectOnly` | 29 / 85.55 | 35 / 84.13 | 146 / 84.57 | 57 / 82.02 |
+| +8 in `CSBI_RectOnly` | 30 / 91.76 | 37 / 85.94 | 152 / 88.33 | 60 / 84.39 |
+| +12 in `CSBI_RectOnly` | 31 / 94.42 | 38 / 85.42 | 154 / 89.40 | 63 / 86.53 |
+| +16 in `CSBI_RectOnly` | 32 / 97.07 | 38 / 85.43 | 155 / 89.26 | 64 / 87.81 |
 
-**What is left is a real per-site residue and it is small.** `CSBI_MenuItem` and
-`CSBI_ImageSet` genuinely take all three shapes; the majority is modelled and the rest is
-budget. `BuildGameMenu` 72.33 -> 66.93 is where that concentrates (its seven MenuItem sites
-are 3 `CSBI_RectOnly` / 3 `CStatusBarItem` / 1 fully inline).
+At +8 the `CSBI_RectOnly` COMDAT materializes and its optimized body is 100% exact, but
+rich disassembly shows `BuildGameMenu` still calls only
+`CStatusBarItem::CStatusBarItem`; it never calls `CSBI_RectOnly::CSBI_RectOnly` as retail
+does. `CSBI_Image` +4/+8 reproduces the RectOnly +4/+8 call-count rows and the same wrong
+callee. `CSBI_MenuItem` +4 is flat; +8 adds only one base-ctor call in BuildGameMenu and
+is flat in the other three builders. A single global constructor-cost knob therefore
+cannot recover the mixed retail population, and exact optimized constructor bodies do
+not bound the source-level inline cost.
 
-**Method, reusable:** don't eyeball the cut depth. Pair `operator new` size, the following
-ctor call and the `??_7` reloc per site over EVERY caller the xref lists, then tabulate by
-class. A class that is unanimous is an entity you are missing; a class that is split is the
-residue.
+Removing the apparently redundant inherited-pointer stores from the natural derived
+constructors is also a negative control, not a cleanup. Dropping `m_frame = NULL` from
+`CSBI_MenuItem`, `CSBI_ImageSet`, and `CSBI_WellGoo`, and dropping the inherited
+`m_frame`/`m_frameSet` stores from `CSBI_ImageSetAni` and `CSBI_WarlordHead`, leaves the
+same initialized values available from their base constructors but changes the caller
+population: `LoadTabSprites` falls from 141 to 139 calls and `BuildTabzDialog` from 55
+to 54 (retail 163/61). The repeated stores therefore carry real front-end-cost evidence;
+do not delete them merely because optimized standalone code cannot attribute a surviving
+store to one level of the chain.
+
+**Revised method:** pair `operator new`, ctor-call referent, and `??_7` at every site, but
+use the class table only to locate the missing inline population. Do not synthesize
+tagged sibling constructors from a majority column. Titrate candidate edges only as
+disposable A/B tests, require the actual ctor referent (not just call count or fuzzy) to
+move correctly, and then recover the real caller/helper/constructor statements that
+account for the measured cost. Here the remaining wall is a joint population problem:
+the base must be cheap enough to fold inside RectOnly while selected outer chains must
+reject RectOnly itself.

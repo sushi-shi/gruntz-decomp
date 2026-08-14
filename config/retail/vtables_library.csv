@@ -10,9 +10,10 @@
 #
 # Most such rows name a REAL unit because cl re-emits MFC vtables as COMDATs in
 # any TU deriving from the class, so the enrolled definition pairs against a
-# base-side emission. The two data no cl output can ever re-emit (CDialog's
-# messageMap lives in NAFXCW dgcore.obj; type_info's vtable in LIBCMT
-# typinfo.obj) are routed to the deliberate `library_data` holding unit: it is
+# base-side emission. Library data no game TU can re-emit (CDialog's messageMap
+# in NAFXCW dgcore.obj, type_info's vtable in LIBCMT typinfo.obj, and
+# filebuf::openprot in LIBCIMT) is routed to the deliberate `library_data` holding
+# unit: it is
 # delinked - which is what binds every reference - but config/units.toml does
 # not declare it, so objdiff never opens it and no game unit carries the
 # unpairable payload. vtable_catalog.validate() sanctions exactly this name.
@@ -110,6 +111,7 @@ _IID_IDirectPlay4A,0x1f0588,0x10,library_data,"dxguid.lib GUID named directly by
 ??_7ios@@6B@,0x1f03bc,0x4,,MFC/CRT (statically linked; not reconstructed)
 ??_7ifstream@@6B@,0x1f03c4,0x4,,MFC/CRT (statically linked; not reconstructed)
 ??_7ofstream@@6B@,0x1f03d4,0x4,,MFC/CRT (statically linked; not reconstructed)
+?openprot@filebuf@@2HB,0x1f03e0,0x4,library_data,"LIBCIMT static const int; HIGH link-dup identity, mangled type and retail payload prove extent/value"
 ??_7filebuf@@6B@,0x1f03fc,0x2c,,MFC/CRT (statically linked; not reconstructed)
 ??_7streambuf@@6B@,0x1f042c,0x2c,,MFC/CRT (statically linked; not reconstructed)
 ??_7istream@@6B@,0x1f045c,0x4,,MFC/CRT (statically linked; not reconstructed)

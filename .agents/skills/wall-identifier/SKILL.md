@@ -29,6 +29,12 @@ equivalents, when you need the evidence itself:
 
 Do not call a wall class N while class N-1 still diverges.
 
+`diagnose` classifies the primary body. A 100% primary row is not structural
+proof: the command explicitly routes exact owners to `gruntz.audit.eh_band`
+because C1 state topology, cleanup targets, and synthetic receiver homes live in
+separate scored records (`CKeyedList::AddNode`, `CFaderMesh::~CFaderMesh`, and
+`ResetWorldState` are the controls).
+
 | class | deciding signal | lever |
 |---|---|---|
 | **inline / call-set** | out-of-line CALL multiset differs | body completeness / inline budget — see below |
@@ -44,6 +50,21 @@ modeled — `docs/patterns/inline-budget-emits-ool-comdat.md` re-validated the
 sibling HoMM3 formula (`budget = clamp(2*cb(caller), 1000, 35000)`, free below
 cb 0x28, nested expansions split the remainder) on our compiler, including where
 the two compilers diverge (cl 5.0 has no VC6 S=14 cliff). Consequences:
+
+- `gruntz sema diagnose` reads i386 `calll` instructions first, then the COFF
+  REL32 callee multiset when instruction counts agree. This stage was inert
+  before 2026-08-14 because it accepted only mnemonic `call`; the integration
+  control in `gruntz.match.gate_selftest` prevents that regression.
+- The class name is deliberately **inline / call-set**, not “inline budget.” A
+  call-count difference can also be duplicated or merged call-carrying exit
+  tails (`StartUpPrompt`), and an equal-count callee substitution can be a wrong
+  identity. Name the differing sites before choosing the budget lever.
+- A count-only delta of a direct callee that remains present on both sides is
+  reported as `REPEATED-SITE DELTA`. That does not distinguish a per-site inline
+  decision from a duplicated/cross-jumped call tail. Locate the named sites and
+  check the retail jumps before touching inline budget; `WireTileSwitchLogic` is
+  the negative control (eight `StepArrivalDrop` sites in source, seven retail
+  relocations because two tails merge).
 
 - A missing inline expansion usually means the CALLER's body is incomplete —
   budget follows statement mass. Finish the caller before touching the callee.

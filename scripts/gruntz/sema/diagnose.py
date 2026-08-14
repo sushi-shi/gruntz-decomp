@@ -14,6 +14,7 @@ class is only diagnosable once every earlier one compares clean. See the
 rc: 0 = exact already (nothing to diagnose), 1 = classified, 2 = error.
 """
 import sys
+from collections import Counter
 
 from gruntz.sema._common import GEN_NAMES, REPO, csv_find, die
 
@@ -21,7 +22,11 @@ from gruntz.sema._common import GEN_NAMES, REPO, csv_find, die
 def _calls(insns, stop):
     """Ordered `call` instructions before `stop`: [(offset, operand)]."""
     return [(off, op) for off, mn, op in insns
-            if mn == "call" and (stop is None or off < stop)]
+            # llvm-objdump's i386 AT&T spelling is `calll`; accepting only
+            # `call` made this gate compare two empty lists and silently route
+            # every inline-count wall to a later class.
+            if mn in ("call", "calll", "callw")
+            and (stop is None or off < stop)]
 
 
 def run(args) -> None:
@@ -42,7 +47,10 @@ def run(args) -> None:
     head = f"[diagnose @ {args.rva} - {name} [{unit}]"
     print(head + (f" - {pct:.2f}%]" if pct is not None else " - not in report]"))
     if pct is not None and pct >= 100.0:
-        print("  EXACT - nothing to diagnose.")
+        print("  PRIMARY EXACT - no primary-body wall to classify. This does not "
+              "clear C1/EH structure;")
+        print("  check `python -m gruntz.audit.eh_band --census` because exact "
+              "owners can still have state, target, or frame differences.")
         sys.exit(0)
 
     bobj, tobj = B.obj_paths(unit)
@@ -60,19 +68,38 @@ def run(args) -> None:
 
     # 1 - inline / call-set: the out-of-line CALL sequence must agree first.
     cb, ct = _calls(bi, bstop), _calls(ti, tstop)
-    if len(cb) != len(ct):
+    # Read the COFF REL32 target names even when instruction counts differ. A
+    # one-site deficit of a callee still present elsewhere is not proof of an
+    # inline decision: it can be a duplicated/cross-jumped repeated call tail.
+    # REL32 also sees external tail calls, which are semantically part of the
+    # call set even though their opcode is `jmp`.
+    from gruntz.audit import eh_frame
+    rb = Counter(n for _, n in eh_frame.rel32_calls(bobj).get(name, ()))
+    rt = Counter(n for _, n in eh_frame.rel32_calls(tobj).get(name, ()))
+    if len(cb) != len(ct) or rb != rt:
+        ours = list((rb - rt).elements())
+        retail = list((rt - rb).elements())
         print(f"  CLASS: INLINE / CALL-SET - base makes {len(cb)} call(s), "
-              f"target {len(ct)}.")
-        which = ("we call something retail expanded (or a body is missing a "
-                 "statement that carries a call)" if len(cb) > len(ct) else
-                 "retail calls something we expanded or never wrote")
-        print(f"  {which}.")
-        print(f"  evidence: `gruntz sema disasm {args.rva} --diff` (the call "
-              f"rows), `gruntz sema xref --callees {args.rva}`,")
-        print("  and `llvm-nm build/objdiff/base/*.obj | grep <callee>` for "
-              "COMDAT emission.")
-        print("  levers: body completeness first; the cl 5.0 inline-budget "
-              "rule is docs/patterns/inline-budget-emits-ool-comdat.md.")
+              f"target {len(ct)}; direct REL32 callee multisets "
+              + ("differ." if rb != rt else "agree."))
+        if ours:
+            print("  ours-only: " + ", ".join(ours[:6])
+                  + (" ..." if len(ours) > 6 else ""))
+        if retail:
+            print("  retail-only: " + ", ".join(retail[:6])
+                  + (" ..." if len(retail) > 6 else ""))
+        if rb != rt and set(rb) == set(rt):
+            print("  REPEATED-SITE DELTA - both sides call the same direct "
+                  "callees; a site was expanded/omitted or a repeated call tail "
+                  "was merged/duplicated.")
+            print("  Do not infer inline budget from the count alone. Locate the "
+                  "named sites and check for a retail cross-jump first.")
+        elif rb != rt:
+            print("  decide inline expansion versus wrong callee identity from "
+                  "the named sites before reading CFG or registers.")
+        else:
+            print("  the surplus/deficit is indirect or otherwise has no direct "
+                  "REL32 identity; inspect the call rows before choosing a lever.")
         sys.exit(1)
 
     # 2 - control flow: branch counts, then the symbolic sequence.

@@ -62,6 +62,19 @@ The helper then takes `CHazardTimer*` and the `p + 1` pointer arithmetic goes aw
   and the derived-vptr stamp moves after the stores as retail has it.
 - `?SerializeMove@CPathHazard@@` 0xb4d30 — 100%, unchanged by the retype.
 
+`CStatusBarMgr` supplies the score-led negative control. Three adjacent
+`{last, interval}` pairs were left as six loose `i64` fields because the first
+aggregate experiment lowered `CPlay::LoadGameAssetNamespaces`. Retail independently
+places each pair's stores at one member-initialization position, writes each as
+`lastLo, intervalLo, lastHi, intervalHi`, and passes each pair to `SyncClockPair`.
+Retyping them as `SbiClockPair` objects is therefore required even though the caller
+score moves. The natural `SbiClockPair() : m_last(0), m_interval(0) {}` form emits the
+retail store order and stays inline; the reconstruction-specific four-half body
+crosses `/Ob1` at one site in both `CPlay` and `CMulti`, adding a C1 state. This is a
+useful adjudication rule: the aggregate identity comes from batch boundaries and
+complete-object consumers, while a temporary inline-cut regression is not contrary
+evidence.
+
 ## Related
 
 - [ctor-scalar-seeds-interleaved-are-a-mem-init-list](ctor-scalar-seeds-interleaved-are-a-mem-init-list.md)

@@ -274,7 +274,8 @@ void CFontConfig::EndInput() {
 }
 
 // @early-stop
-// residue: one eax/ecx register-name swap across the textW/provW subtraction pair.
+// residue: one eax/ecx swap in the width pair; the EH cleanup retains the
+// empty CPen destructor where retail cuts directly to CGdiObject.
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {

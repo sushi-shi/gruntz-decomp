@@ -53,9 +53,6 @@ public:
     void* operator new(size_t n) {
         return ::operator new(n);
     }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
 
     virtual ~CDDrawSurfaceMgr() OVERRIDE;
     virtual i32 IsReady();
@@ -69,11 +66,6 @@ public:
 
     void SetRestoreHandler(SurfaceRestoreFn handler);
 
-    // Two entities (docs/patterns/two-shapes-need-two-entities.md): retail's
-    // out-of-line 0x156a90 body is what CDDrawChildGroup::LoadObjects calls, while
-    // SnapshotChildren/RestoreChildren EXPAND the same logic - their first callback
-    // site keeps the un-folded `lea eax,&S; test eax,eax` archive guard that only an
-    // inline expansion leaves behind (a source-level `&S == NULL` folds away).
     i32 InvokeCallbackInline(void* ar, SerialMode mode, LogicTypeId typeId, void* payload) {
         return ar != NULL && m_callback != NULL && m_callback(this, ar, mode, typeId, payload) != 0;
     }

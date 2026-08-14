@@ -59,12 +59,20 @@ same registers - put the temp in different homes; the only difference is how man
 case 3: if (Hit(g, x + y) == 0) { CString msg; msg.Format("m %d %d", x, y); … }
 ```
 
-`WireTileSwitchLogic` 0x6c130 (90.00) is the pure case: identical `sub esp,0x10`, an
-identical set of parameter-home reads (7 of `x`, 6 of `y`), identical block structure -
-and retail funnels all twelve `CString msg` temps into ONE slot (`[esp+0x30]`, the slot
-`cx` vacated) where we spread them over three. Per-arm declarations, bracing the
-clamp/lookup prologue into its own scope, swapping the clamp locals' order and swapping
-the key expression's operands are all byte-identical no-ops there.
+`WireTileSwitchLogic` 0x6c130 remains the parameter-home calibration: identical
+`sub esp,0x10`, the same parameter-home reads, and retail funnels all twelve
+`CString msg` temps into ONE slot (`[esp+0x30]`, the slot `cx` vacated) where we
+spread them over three. Per-arm declarations, bracing the clamp/lookup prologue
+into its own scope, swapping the clamp locals' order and swapping the key
+expression's operands are all byte-identical no-ops there.
+
+It is **not a pure frame-only case**, as an older version of this pattern claimed.
+After `diagnose` learned llvm's i386 `calll` spelling, candidate has 96 calls to
+retail's 95: all eight source `StepArrivalDrop` sites emit here, while retail
+cross-jumps the fixed RIGHT arm into the nested CURRENT/EAST tail and carries the
+arguments there in its opposite `x`/`y` register coloring. The slot displacement
+and repeated-call delta are two downstream symptoms of the same whole-function
+allocation decision; neither is proof of a missing statement or inline body.
 
 **So: before filing a slot difference as pool order, rule out the reachable axes above -
 above all the FRAME SIZE.** In the two other functions opened on this lane the "spill

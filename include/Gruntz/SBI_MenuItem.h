@@ -24,18 +24,6 @@ public:
         m_frame = NULL;
         m_record = NULL;
     }
-    CSBI_MenuItem(CSBI_Image::ECallRectOnly) : CSBI_Image(CSBI_Image::CALL_RECTONLY) {
-        m_kind = SBI_KIND_MENU_ITEM;
-        m_state = MENUITEM_UNSET;
-        m_frame = NULL;
-        m_record = NULL;
-    }
-    CSBI_MenuItem(CSBI_Image::EInlineChain) : CSBI_Image(CSBI_Image::INLINE_CHAIN) {
-        m_kind = SBI_KIND_MENU_ITEM;
-        m_state = MENUITEM_UNSET;
-        m_frame = NULL;
-        m_record = NULL;
-    }
 
     virtual ~CSBI_MenuItem() OVERRIDE;
 

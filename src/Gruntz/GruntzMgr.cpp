@@ -2190,6 +2190,9 @@ GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
 // retail's `call` and it stays flipped - so the gap is ~6 missing inline call sites
 // in this body's tail, not a spelling and not statement mass (padding 20/60
 // statements never moved the decision, it only inflated the body).
+// The two early failures rely on the automatic CMoviePlayer destructor; an explicit
+// Teardown there duplicates retail's cleanup. Retail also initializes the nullable
+// DirectSound receiver before the member test, then conditionally overwrites it.
 RVA(0x0008fab0, 0x318)
 i32 CGruntzMgr::ChangeState(i32 arg) {
     if (arg < 1 || arg > 3) {
@@ -2200,6 +2203,7 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
     }
 
     CMoviePlayer player;
+    IDirectSound* dsound = NULL;
 
     CDDSurface* front = m_world->m_drawTarget->m_frontPair->m_surface;
     IDirectDraw2* dd2 = m_world->m_ptrColl->m_device;
@@ -2207,17 +2211,17 @@ i32 CGruntzMgr::ChangeState(i32 arg) {
     if (m_world->m_soundRegistry->HasKeyEqual("GAME") == 0) {
         void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == NULL) {
-            player.Teardown();
             return 0;
         }
         m_world->m_soundRegistry->ScanTree(static_cast<CSymTab*>(snd), "GAME", "_");
     }
     if (front == NULL || dd2 == NULL) {
-        player.Teardown();
         return 0;
     }
 
-    IDirectSound* dsound = m_world->m_soundStream ? m_world->m_soundStream->m_device : 0;
+    if (m_world->m_soundStream != NULL) {
+        dsound = m_world->m_soundStream->m_device;
+    }
     if (player.InitMode(m_gameWnd->m_hwnd, dd2, front->m_ddSurface, front->m_apiDesc, dsound)) {
         if (player.Open(m_strMoviePath, arg, MOVIE_TILE, m_isInterlaced != 0, 0, 0)) {
             m_modalBusy = 1;

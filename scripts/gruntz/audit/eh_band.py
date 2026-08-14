@@ -220,8 +220,10 @@ def _band_unwind_maps(band, ours_count):
 #: modrm bytes for `[ebp+disp8]` / `[ebp+disp32]`, any destination register.
 _EBP_DISP8 = frozenset((0x45, 0x4D, 0x55, 0x5D, 0x65, 0x6D, 0x75, 0x7D))
 _EBP_DISP32 = frozenset((0x85, 0x8D, 0x95, 0x9D, 0xA5, 0xAD, 0xB5, 0xBD))
-#: the opcodes a funclet uses to address the parent frame (`mov`, `lea`, `mov` store).
-_FRAME_OPCODES = frozenset((0x8B, 0x8D, 0x89))
+#: the opcodes a funclet uses to address the parent frame.  Besides register
+#: `mov`/`lea`, nested base cleanups use `cmp [ebp+disp], imm8` and
+#: `mov [ebp+disp], imm32` for their construction guards.
+_FRAME_OPCODES = frozenset((0x83, 0x89, 0x8B, 0x8D, 0xC7))
 
 
 def _funclet_bodies(path: Path):

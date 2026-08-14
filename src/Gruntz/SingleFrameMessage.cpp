@@ -37,6 +37,8 @@ RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
 // @early-stop
+// residue: retail keeps zero, then the rectangle's left edge, in ebx; candidate
+// uses immediate zeroes and coalesces the coordinate bases into edi.
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

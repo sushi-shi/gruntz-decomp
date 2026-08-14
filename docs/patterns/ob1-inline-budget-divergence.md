@@ -144,6 +144,30 @@ Measured, so nobody re-runs it: declaring `virtual ~CFileMemBase();` and definin
 -5.03, `??1CFileMem` -19.26 and `LoadRecordFile` -12.54 in the same unit. Reverted: the
 +9 is the wall paying out at one site while the shape it needs is wrong everywhere else.
 
+## An exact tagged overload can hide the real inline chain (2026-08-14)
+
+The same three callers also prove the constructor/reset chain. Retail directly calls
+`??0CFileMemBase` and `CFileMem::Reset` from `SnapshotChildren` and
+`RestoreChildren`, but `LoadRecordFile` has no constructor/reset relocation and expands
+both bodies. The retained model is one header-visible base constructor and one
+header-visible, flat `CFileMem::Reset`; `CFileMem()` calls `Reset()` normally. The reset
+body is the retail 22-byte sequence: four zero stores followed by `CString::Empty`.
+
+An earlier reconstruction kept the base constructor out of line and added an artificial
+tagged constructor used only by `LoadRecordFile`. That spelling made the small caller
+exact, but encoded the desired call/expand result as a second source entity. A second
+variant that changed `CFileMem()` to call `SeedMemFields()` directly also made the small
+caller exact while contradicting the two retail `Reset` calls. Both are local minima.
+
+Making the real `Reset` inline-visible and removing the derived-only helper preserves
+`LoadRecordFile` at 100% with no fake overload. A further control made the inline
+override call the existing base-field seed helper: the standalone `Reset` remained exact,
+but `RestoreChildren` acquired a retail-absent `SeedFields` call. The retained flat body
+restores the authentic entity population. The large callers still choose different cut
+points from retail around their destructor exits; `diagnose` correctly leaves those as
+inline/call-set walls. Constructor or primary exactness is therefore not evidence that the
+complete inline entity population is correct.
+
 ## A 4-of-5 control group, which is what makes the verdict cheap (2026-08-08)
 
 `CUserLogic::BuildLogicTypeTable` is expanded into exactly five derived constructors, and
@@ -170,6 +194,21 @@ mentions, so the `CMapStringToOb::Lookup` half is invisible and the row reads as
 - `docs/patterns/msvc5-variable-ctor-inline-depth.md`
 - `docs/patterns/rezalloc-placement-new-no-eh-frame.md`
 
+## Tooling correction: `diagnose` must read i386 `calll` and callee identity
+
+The wall classifier formerly tested only mnemonic `call`, although the pinned
+llvm-objdump prints i386 calls as `calll`. Its inline gate therefore compared two
+empty lists and falsely routed every function with different call counts to CFG or
+register/schedule. `FontRenderer::DrawWrapped` was the negative control: retail has
+five `CRect::Width` calls and 59 call instructions against the candidate's 52, yet
+the broken classifier reported register/schedule.
+
+The gate now accepts `call`/`calll`/`callw` and, when instruction counts agree,
+compares the per-function COFF REL32 callee multiset. A public-classifier integration
+control covers both the 1-vs-2 `calll` case and an equal-count wrong-callee case.
+Do not infer that inlining agrees from a clean branch sequence unless this earlier
+gate actually observed the compiler's mnemonic and the relocation targets.
+
 ## The one-level-up test, applied to every recorded budget wall (2026-08-09)
 
 The rule is: **before recording a budget wall, `sema xref` the callee one level UP and
@@ -177,14 +216,15 @@ check whether retail splits it by CLASS.** Ran on all of them. It is not a unive
 solvent - it cracked four and left four standing, and the ones it leaves standing have a
 shared shape worth naming.
 
-CRACKED (the wall was a missing entity):
+Historical 2026-08-09 classifications (the two StatusBar rows were retracted on
+2026-08-14; the other rows retain their independent evidence):
 
 | recorded wall | what the xref showed | result |
 |---|---|---|
 | `??0CLoadable` 0x156cb0 | 4 callers; `CDDrawSurfaceMgr::Init` alone calls it for 4 child classes and expands it for 4 | +7 exact tree-wide |
 | `CAniAdvanceCursor` in `CWwdGameObject::CreateObject` 0x166640 | 3 users of ONE `CWwdGameObjectA` ctor; two call, one expands | 76.90 -> 87.40 |
-| `??0CStatusBarItem` 0x1005d0 | 4 callers, 38 `new` sites; depth-2 classes 6/6 inline, `CSBI_Image` 10/14 call | BuildStatusBarTabs 71.58 -> 78.21 + 4 more |
-| `??0CSBI_RectOnly` 0x101fa0 | the depth-5 chains are 8/8 `call` | previously-unclaimed COMDAT -> 100.00 EXACT |
+| `??0CStatusBarItem` 0x1005d0 | 4 callers, 38 `new` sites; depth-2 classes 6/6 inline, `CSBI_Image` 10/14 call | routing evidence only; the tagged-entity conclusion was retracted 2026-08-14 |
+| `??0CSBI_RectOnly` 0x101fa0 | the depth-5 chains are 8/8 `call` | routing evidence only; natural cost titration emits the exact COMDAT but selects wrong caller referents |
 
 SURVIVED, and all four for the same reason - **the callee has ONE caller, so there is no
 population to find a per-class majority in**:
@@ -196,10 +236,13 @@ population to find a per-class majority in**:
 | `SnapshotChildren` / `RestoreChildren` / `LoadRecordFile` / `??1CFileMemBase` | corroborated independently: retail's own `??1CFileMem` expands it | already measured, see above |
 | `FontRenderer::DrawWrapped` 0x17a460 / `CRect::Width` 0x17b500 | 1 caller - DrawWrapped itself, 4 sites inside it | the callee is an MFC header inline; a second entity would mean editing MFC |
 
-So the test's discriminator is cheap and mechanical: **count the DISTINCT callers, and if
-there is more than one, tabulate the call/expand choice by the constructed class.** One
-caller means the split is inside a single function and there is nothing to model. Several
-callers with a unanimous or near-unanimous per-class column means an entity is missing.
+So the test remains a cheap routing step: **count the DISTINCT callers, and if there is
+more than one, tabulate the call/expand choice by constructed class.** One caller confines
+the population to that caller. Several callers with a unanimous or near-unanimous column
+identify where to investigate, but do not prove an entity: exact optimized bodies can hide
+different front-end costs, and a tagged overload can merely encode the observed output.
+Require the actual callee referent to move under a natural source experiment and corroborate
+any new entity independently.
 
 Measured detail on the `CFileMemBase` row (2026-08-10): the budget depletes **mid-function**
 and **per caller size**. In one TU retail shows three regimes for the SAME inline dtor -
@@ -210,3 +253,12 @@ and **per caller size**. In one TU retail shows three regimes for the SAME inlin
 sweep is flat, and an OOL-dtor probe (measured: Snapshot 63.3->72.5, but LoadRecordFile
 100->66.4, `??1CFileMem` 100->80.7, Restore 61.6->56.6) is refuted as a model by retail's
 own `??1CFileMem` body expanding the base dtor - the definition was header-visible.
+
+Current-model correction (2026-08-14): do not translate the three emitted retail cleanup
+sites into "every source return calls the base destructor." Snapshot's 29-row map differs
+in only two three-row sequences: candidate actions are `CString/Base/File/CString` where
+retail has `Base/File/Base/File`. The many post-header failures jump to one shared File/Base
+suffix in retail. A scoped `inline_depth(0)` control makes cl share the candidate suffix too,
+so the duplicated primary exits are downstream of the per-site inline decisions. The live
+search target is the authentic inline population/cost in the caller; changing destructor
+visibility, adding a free identity site, or respelling the callback guards does not model it.

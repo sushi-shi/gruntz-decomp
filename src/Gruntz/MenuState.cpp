@@ -69,10 +69,6 @@ CMenuState::~CMenuState() {
     ReleaseResources();
 }
 
-// @early-stop
-// residue: a 4-byte frame difference.  Retail spills the `new CChatBox` result into
-// the dead areaArg parameter slot and puts `fm` in prevStateId's; cl takes mgr's slot
-// for `fm` and allocates a fifth local for the spill, shifting every esp reference.
 RVA(0x0009fe50, 0x343)
 i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (prevStateId == 0) {
@@ -130,14 +126,16 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     ui->m_row0Key = "MENU_SELECT";
     ui->m_row1Key = "MENU_ACTIVATE";
 
-    LeafCue* e = NULL;
-    MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
-    if (e != NULL) {
-        e = NULL;
+    {
+        LeafCue* e = NULL;
         MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
-        m_activateCueDurationMs = e->m_sound->m_durationMs;
-    } else {
-        m_activateCueDurationMs = 0;
+        if (e != NULL) {
+            e = NULL;
+            MapLookup(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE", e);
+            m_activateCueDurationMs = e->m_sound->m_durationMs;
+        } else {
+            m_activateCueDurationMs = 0;
+        }
     }
 
     if (!BuildMainMenuTree(m_menuTree, prevStateId)) {

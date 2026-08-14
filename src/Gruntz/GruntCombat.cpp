@@ -718,6 +718,8 @@ void CGrunt::DestroyAnims() {
 }
 
 // @early-stop
+// The start and tail tiles are complete Coord values; keeping each pair aggregated
+// is required for the retail C1 cleanup-frame layout.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -729,8 +731,9 @@ i32 CGrunt::PathScan() {
 
     POSITION node = coordz->GetHeadPosition();
 
-    i32 col5 = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 row5 = m_object->m_screenY >> TILE_SHIFT_PX;
+    Coord start;
+    start.m_x = m_object->m_screenX >> TILE_SHIFT_PX;
+    start.m_y = m_object->m_screenY >> TILE_SHIFT_PX;
 
     {
         RECT gb;
@@ -739,10 +742,10 @@ i32 CGrunt::PathScan() {
         gb.right = grid->m_width;
         gb.bottom = grid->m_height;
         RECT rs;
-        rs.left = col5 - 2;
-        rs.top = row5 - 2;
-        rs.right = col5 + 2;
-        rs.bottom = row5 + 2;
+        rs.left = start.m_x - 2;
+        rs.top = start.m_y - 2;
+        rs.right = start.m_x + 2;
+        rs.bottom = start.m_y + 2;
         RECT box;
         const RECT* pr = &rs;
         if (pr != NULL) {
@@ -761,8 +764,7 @@ i32 CGrunt::PathScan() {
     }
 
     CoordNode* tail = CoordTail();
-    i32 tcol = tail->m_coord->m_x;
-    i32 trow = tail->m_coord->m_y;
+    Coord target = *tail->m_coord;
     i32 hits = 0;
 
     while (node != NULL) {
@@ -770,12 +772,12 @@ i32 CGrunt::PathScan() {
         if (co != NULL) {
 
             if ((grid->m_rows[co->m_y][co->m_x].m_flagBytes[3] & 0x20) == 0
-                || (co->m_x == tcol && co->m_y == trow)) {
+                || (co->m_x == target.m_x && co->m_y == target.m_y)) {
 
                 CPtrList s(0xa);
                 i32 res = grid->SearchEdge(
-                    col5,
-                    row5,
+                    start.m_x,
+                    start.m_y,
                     co->m_x,
                     co->m_y,
                     &s,
@@ -817,7 +819,7 @@ i32 CGrunt::PathScan() {
                             do {
                                 Coord* d = static_cast<Coord*>(s.GetNext(p));
                                 if (d != NULL) {
-                                    if (d->m_x != col5 || d->m_y != row5) {
+                                    if (d->m_x != start.m_x || d->m_y != start.m_y) {
                                         coordz->AddTail(d);
                                     }
                                 }
@@ -846,11 +848,11 @@ i32 CGrunt::PathScan() {
     SCAN_BOUNDS(grid);
 
     RECT nb;
-    nb.left = tcol - 4;
-    nb.top = trow - 4;
-    nb.right = tcol + 4;
-    nb.bottom = trow + 4;
-    if (CGameLevel::PointInRect(&nb, col5, row5)) {
+    nb.left = target.m_x - 4;
+    nb.top = target.m_y - 4;
+    nb.right = target.m_x + 4;
+    nb.bottom = target.m_y + 4;
+    if (CGameLevel::PointInRect(&nb, start.m_x, start.m_y)) {
 
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
@@ -874,8 +876,8 @@ i32 CGrunt::PathScan() {
                 if (dy == 0 && dx == 0) {
                     continue;
                 }
-                i32 rr = trow + dy;
-                i32 cc = tcol + dx;
+                i32 rr = target.m_y + dy;
+                i32 cc = target.m_x + dx;
 
                 i32 cf;
                 if (static_cast<u32>(cc) < static_cast<u32>(grid->m_width)
@@ -893,8 +895,8 @@ i32 CGrunt::PathScan() {
                 }
                 CPtrList s(0xa);
                 i32 res = grid->SearchEdge(
-                    col5,
-                    row5,
+                    start.m_x,
+                    start.m_y,
                     cc,
                     rr,
                     &s,
@@ -939,8 +941,8 @@ i32 CGrunt::PathScan() {
                             if (grid->SearchEdge(
                                     cc,
                                     rr,
-                                    tcol,
-                                    trow,
+                                    target.m_x,
+                                    target.m_y,
                                     &s,
                                     1,
                                     m_arrivalFlags,

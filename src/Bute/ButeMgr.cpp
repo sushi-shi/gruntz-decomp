@@ -932,28 +932,13 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
 }
 
 // @early-stop
-// Residue, re-derived: (a) cl's cross-jumper tail-merges the inlined `new <scalar>`
-// of the INT/DWORD/FLOAT arms - which share one union slot - into a single block,
-// where retail keeps one copy per arm (4 `zPTree::Insert` referents vs retail's 5);
-// (b) the BUTETOK_DOUBLE write arm parks its FP result in a frame slot retail also
-// uses for the BUTETOK_VECTOR struct copy - naming the double reproduces the spill
-// but costs more than it buys, and block-scoping every arm's scratch local (the
-// only spelling that lets cl overlap them) cost 12 EXACT functions across the TU;
-// (c) the `new CButeValue(BUTE_STRING, m_token)` CString temporary is re-`lea`d
-// where retail reuses the ctor's `eax`.
+// Retail keeps separate copies of scalar allocation tails that cl cross-jumps.
+// The 13-state EH map, frame size, cleanup targets, and frame operands agree.
 RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
-
-    union {
-        i32 vi;
-        DWORD vd;
-        float vf;
-    };
-    double dv;
     i32 a, b, c, d;
     i32 px, py;
     double x, y, z;
-    vi = 0;
 
     m_str104 = m_token;
 
@@ -979,10 +964,10 @@ bool ButeMgr::ParseAttributeFile() {
     switch (m_tokType) {
         case BUTETOK_INT:
         case BUTETOK_INT_SIGNED: {
-            vi = atoi(m_token);
+            i32 v = atoi(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_INT, vi));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_INT, v));
                 }
             } else {
                 (*m_pText) << static_cast<int>(GetInt(m_tagName, m_str104));
@@ -993,10 +978,10 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(BUTETOK_INT)) {
                 return false;
             }
-            vd = strtoul(m_token, 0, 10);
+            DWORD v = strtoul(m_token, 0, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, vd));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DWORD, v));
                 }
             } else {
                 (*m_pText) << s_strDword
@@ -1008,10 +993,10 @@ bool ButeMgr::ParseAttributeFile() {
             if (!ScanToken(BUTETOK_DOUBLE)) {
                 return false;
             }
-            vf = static_cast<float>(atof(m_token));
+            float v = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, v));
                 }
             } else {
                 // float, not a hand-widened double: retail's `mov [eax+4],1` is
@@ -1021,10 +1006,10 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_FLOAT_SUFFIX: {
-            vf = static_cast<float>(atof(m_token));
+            float v = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, vf));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_FLOAT, v));
                 }
             } else {
                 (*m_pText) << GetFloat(m_tagName, m_str104) << s_strFloatSuffix;
@@ -1032,10 +1017,10 @@ bool ButeMgr::ParseAttributeFile() {
             break;
         }
         case BUTETOK_DOUBLE: {
-            dv = atof(m_token);
+            double v = atof(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, dv));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_DOUBLE, v));
                 }
             } else {
                 (*m_pText) << GetDouble(m_tagName, m_str104);
@@ -1099,7 +1084,7 @@ bool ButeMgr::ParseAttributeFile() {
         case BUTETOK_STRING: {
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, m_token));
+                    m_pNode->Insert(m_str104, new CButeValue(BUTE_STRING, CString(m_token)));
                 }
             } else {
                 CString tmp(*GetString(m_tagName, m_str104));
@@ -1421,14 +1406,6 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
     return COORD_UNSET;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1507,14 +1484,6 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     return 0;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1595,14 +1564,6 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     return s_floatErr;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1683,14 +1644,6 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     return s_doubleErr;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1773,14 +1726,6 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     return &s_empty;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1863,14 +1808,6 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     return &s_default;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -1950,14 +1887,6 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     return &s_default;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2036,14 +1965,6 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     return &s_default;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));
@@ -2122,14 +2043,6 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     return &s_default;
 }
 
-// @early-stop
-// One /Ob1 expansion too many: cl expands the CButeValue ctor at 4 of this
-// function's 7 construction sites where retail expands 3 (the extra branch is the
-// `new i32(v)` null test inside the surplus expansion).  The one-level-up xref test
-// does NOT dissolve this one: `sema xref` on the ctor COMDAT lists exactly ONE caller
-// - this function - so there is no per-CLASS call/expand split to express, and the
-// dtor is already modelled inline.  The lever is the CTOR's front-end size.
-// docs/patterns/inline-callee-frontend-cost-drives-ob1-budget.md
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tree.Find(tag));

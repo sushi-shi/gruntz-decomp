@@ -33,7 +33,7 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_height = rect.bottom - rect.top;
     m_shiftY = static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0)));
     m_shiftX = static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)));
-    m_cellH = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftY)));
+    m_cellH = static_cast<i32>(pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_shiftY)));
     m_cellW = static_cast<i32>(pow(2.0, static_cast<double>(m_shiftX)));
     m_cols = m_width / m_cellH + 1;
     m_rows = m_height / m_cellW + 1;

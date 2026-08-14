@@ -142,8 +142,8 @@ delinker's rva-suffixed enrolments (`?s_gruntDirEast_22bd28@@3U...`) onto cl's
 identity (`DELINKED_STATIC_COPY`, proof `bss-no-content` - the same
 two-allocators argument as this patch), and (b) materializes base-side COFF
 COMMONs (header-inline local statics + `??_B` guards) into `.bss` as the
-linker would. The two library data no cl output can re-emit (CDialog's
-messageMap, type_info's vtable) moved to the non-compared `library_data`
+linker would. Library data no game TU can re-emit (CDialog's messageMap,
+type_info's vtable, filebuf::openprot) moved to the non-compared `library_data`
 holding unit; and every one of the 71 `GruntDirectionCell` blocks is enrolled
 rva-suffixed and pairs against its TU's own emission.
 

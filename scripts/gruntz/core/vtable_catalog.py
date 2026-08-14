@@ -10,8 +10,8 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
 GAME = REPO / "config" / "retail" / "vtables_game.csv"
 LIBRARY = REPO / "config" / "retail" / "vtables_library.csv"
 
-# The deliberate holding unit for library DATA no cl output can re-emit (e.g.
-# CDialog's messageMap, type_info's vtable): the delinker carves the enrolled
+# The deliberate holding unit for library DATA no game TU can re-emit (e.g.
+# CDialog's messageMap, type_info's vtable, filebuf::openprot): the delinker carves the enrolled
 # definition there - which is what lets every reference bind by name - while
 # config/units.toml does not declare it, so objdiff never opens it and no
 # compared unit carries the unpairable payload. For GAME data that silence is

@@ -43,8 +43,8 @@ call ??0zBitVec ... call ??1zBitVec
 lea  ecx,[esp+0x24]      ; &bounds - the temp is dead, the slot is reused
 ```
 
-Ours reserved `sub esp,0x34` with a 16-byte hole between `r` and `bounds`. Wrapping the
-pair in braces closed it exactly:
+Ours reserved `sub esp,0x34` with a 16-byte hole between `r` and `bounds`.
+Wrapping the pair in braces recovered the retail primary-frame reservation:
 
 ```cpp
 {
@@ -56,7 +56,10 @@ pair in braces closed it exactly:
 }
 ```
 
-`sub esp,0x34 -> 0x24`, +4 exact funclets. The same edit on
+`sub esp,0x34 -> 0x24`. It did **not** make every unwind record exact: the
+remaining uniform `+0x10` action displacement comes from retail preserving EBX
+as a zero carrier while candidate does not, despite both primary bodies now
+reserving `0x24`. The same scope mechanism on
 `CStatusBarMgr::BuildTabzDialog` @0x10a340 (the `RECT src` / `RECT dst` / `CopyRect` head,
 with `cx`/`cy` hoisted out of the block because they outlive it) took `sub esp,0x40 ->
 0x30` and +12.
@@ -67,10 +70,12 @@ with `cx`/`cy` hoisted out of the block because they outlive it) took `sub esp,0
   RECT bounds;` is byte-identical - measured on the same function, same `sub esp,0x34`.
   Only the enclosing scope moves cl's slot assignment.
 * **Do not brace speculatively.** `CMenuState::LoadGameAssetNamespaces` @0x9fe50 also
-  reads UNIFORM (+0x28) but its cause is different - retail spills the `new CChatBox`
-  result into the DEAD `areaArg` PARAMETER slot, which no scope reaches - and scoping its
-  `RECT rc` cost 95.14 -> 92.02 for zero funclets. Confirm the surplus slot is a real hole
-  in the disassembly (a gap between two named locals) before adding braces; if the shift
-  is parameter-slot reuse, park it.
+  read UNIFORM (+0x28). Scoping its `RECT rc` cost 95.14 -> 92.02 for zero funclets because
+  the rectangle was not the overlapping entity. The decisive A/B scoped only the earlier
+  `LeafCue* e` lookup region: cl then overlaid the construction spill and `e` in the dead
+  `areaArg` home, removed the surplus frame word, and closed all four funclets. Declaring
+  `e` at function scope instead rotated the same entities into three homes and left a
+  UNIFORM +0x4 row. Confirm the exact entities and their disjoint scopes in disassembly;
+  a uniform delta identifies the allocation problem, not which pair deserves braces.
 * A NEGATIVE uniform delta is the mirror (retail's frame is bigger, i.e. we over-merge or
   are missing a local) and the brace lever does not apply to it.

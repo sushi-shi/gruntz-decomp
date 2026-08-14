@@ -164,9 +164,9 @@ i32 CSpotLight::Tick() {
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 CDDrawSubMgrLeafScan* obj = g_gameReg->m_world->m_soundRegistry;
                 if (obj->m_emitGate == 0) {
-
-                    LeafCue* cue = 0;
-                    MapLookup(obj->m_cues, name, cue);
+                    void* found = NULL;
+                    obj->m_cues.Lookup(name, found);
+                    LeafCue* cue = static_cast<LeafCue*>(found);
                     if (cue != NULL && g_sndEnabled != 0) {
                         u32 clk = g_killCueClock;
                         if (clk - cue->m_lastPlayTime >= static_cast<u32>(cue->m_replayDelay)) {
@@ -175,11 +175,12 @@ i32 CSpotLight::Tick() {
                         }
                     }
                 }
+                return 0;
             } else {
                 tgt->SnapToLastTile(1);
                 g_gameReg->m_cmdGrid->CellDispatch(m_cellRow, m_cellCol, DEATH_KAROKE, -1);
+                return 0;
             }
-            return 0;
         }
     }
 

@@ -213,6 +213,7 @@ name,rva,size,kind,unit,note
 ??_7zPtrColl@@6B@,0x1f04d8,0x4,primary,,
 ??_7CButeTree@@6BzPtrColl@@@,0x1f04dc,0x4,secondary,,MI secondary for the zPtrColl sub-object at +8; its one slot is the adjustor thunk 0x16ea80 (sub ecx,8; jmp ??_GCButeTree 0x16e9c0) and g_buteTree's ctor helper 0x16e6a0 stamps it into g_buteTree+8
 ??_7CButeTree@@6B@,0x1f04e0,0x4,primary,,
+??_7CButeTree@@6BzErrHandling@@@,0x1f04e0,0x4,secondary,,MI primary-base alias; the zErrHandling sub-object is at +0 and shares CButeTree's one deleting-destructor slot
 ??_7CTypeCollRuntime@@6B@,0x1f04e4,0x4,primary,,
 ??_7CBSecStream@@6B@,0x1f0510,0x4,primary,,
 ??_7CBSecStream@@6BzErrHandling@@@,0x1f0510,0x4,secondary,,

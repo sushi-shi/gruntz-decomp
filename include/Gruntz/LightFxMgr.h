@@ -6,6 +6,8 @@
 #include <Enums.h>
 #include <Ints.h>
 
+#include <stddef.h>
+
 GZ_ENUM_FORWARD(ShadeMode);
 
 struct CShadeTable;
@@ -36,12 +38,12 @@ public:
 };
 
 inline CLightFxMgr::CLightFxMgr() {
-    m_reg = 0;
-    m_world = 0;
-    m_cache = 0;
-    m_greyTable = 0;
+    m_reg = NULL;
+    m_world = NULL;
+    m_cache = NULL;
+    m_greyTable = NULL;
     for (i32 i = 0; i < 10; ++i) {
-        m_tables[i] = 0;
+        m_tables[i] = NULL;
     }
 }
 

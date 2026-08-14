@@ -17,7 +17,7 @@ i32 ExtractBracketValue(char* out, char* src, char* key) {
     if (strlen(p) < 2) {
         return 0;
     }
-    char* end = strstr(p, "]");
+    char* end = strstr(p, DATA_COMPGEN(0x00213eec, "]"));
     if (!end) {
         return 0;
     }

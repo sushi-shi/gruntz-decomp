@@ -20,7 +20,7 @@ class CDDrawWorker;
 
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
-    CSBI_StatzTabGruntBar() : CStatusBarItem(CStatusBarItem::NO_SEED) {
+    CSBI_StatzTabGruntBar() {
         m_timerAnchorLo = 0;
         m_timerWindowLo = 0;
         m_timerAnchorHi = 0;

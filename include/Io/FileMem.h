@@ -11,25 +11,16 @@
 
 class CFileMemBase {
 public:
-    // Kept OUT OF LINE deliberately: retail HAS a standalone body at 0x157850
-    // AND expands it at other sites - the /Ob1 inline-budget divergence
-    // (docs/patterns/ob1-inline-budget-divergence.md), not a mis-model. Moving it
-    // inline is fuzzy-neutral (87.75 either way, measured) and un-claims four
-    // retail functions, so the OOL definition stays.
-    CFileMemBase();
-
-    // The same seed, INLINE: LoadRecordFile (0x156ad0) expands the whole ctor in
-    // place, where SnapshotChildren/RestoreChildren call the pinned 0x157850.
-    enum EInlineSeed {
-        INLINE_SEED
-    };
-    CFileMemBase(EInlineSeed) {
-        SeedFields();
+    RVA(0x00157850, 0x54)
+    CFileMemBase() {
+        m_option = 0;
+        m_mode = 0;
+        m_name.Empty();
     }
     virtual ~CFileMemBase() {
         Close();
     }
-    virtual i32 SetName(const char* name, i32 a, i32 b);
+    virtual i32 SetName(const char* name, i32 mode, i32 option);
     RVA(0x00157910, 0x5)
     virtual void Close() {
         Reset();
@@ -46,13 +37,7 @@ public:
     virtual i32 Read(void* buf, i32 n) = 0;
     virtual i32 Write(const void* buf, i32 n) = 0;
 
-    void SeedFields() {
-        m_4 = 0;
-        m_mode = 0;
-        m_name.Empty();
-    }
-
-    i32 m_4;
+    i32 m_option;
     i32 m_mode;
     CString m_name;
 };
@@ -62,9 +47,6 @@ public:
     CFileMem() {
         Reset();
     }
-    CFileMem(EInlineSeed t) : CFileMemBase(t) {
-        SeedMemFields();
-    }
     virtual ~CFileMem() OVERRIDE {
         Close();
     }
@@ -72,12 +54,13 @@ public:
     virtual void Close() OVERRIDE {
         Reset();
     }
-    virtual void Reset() OVERRIDE;
-
-    void SeedMemFields() {
+    RVA(0x00157a50, 0x16)
+    virtual void Reset() OVERRIDE {
         m_length = 0;
         m_offset = 0;
-        SeedFields();
+        m_option = 0;
+        m_mode = 0;
+        m_name.Empty();
     }
     virtual i32 GetLength() OVERRIDE;
     virtual i32 GetOffset() OVERRIDE;

@@ -392,6 +392,23 @@ def retail_col_head(pe, vtable_rva):
     return 4 if name and name.startswith(".?A") else 0
 
 
+def member_alignment(section_alignment, offset, rva=None):
+    """Alignment guaranteed for one folded symbol across all of its COMDATs.
+
+    A non-RTTI copy can put a vtable at offset zero in an 8-aligned section while
+    the selected RTTI copy puts the same symbol four bytes behind its COL.  The
+    retail address is then only 4-aligned.  Delinking every emitter under one
+    external symbol therefore needs the alignment common to the candidate member
+    shape *and* the linked address, not each input section's stronger alignment.
+    """
+    alignment = (section_alignment if offset == 0
+                 else min(section_alignment, offset & -offset))
+    if rva is not None:
+        while rva % alignment:
+            alignment //= 2
+    return alignment
+
+
 def vtable_rows(exe=EXE, base_dir=None):
     """Enrollable `??_7` vtable definitions + the withheld ones.
 
@@ -435,10 +452,11 @@ def vtable_rows(exe=EXE, base_dir=None):
     candidate payload disagrees with its retail extent. A disagreement is a real
     mis-modelling signal (our class has the wrong number of virtuals), not noise.
 
-    Only PRIMARY vtables (base_off 0) are enrolled; a secondary/MI vtable
-    (`??_7<class>@@6B<base>@@@`) is left to the next pass. A primary is usually
-    spelled `??_7<class>@@6B@`, but a template specialization is not - see the
-    name-bridge below.
+    Primary vtables take their extent from the retail RTTI slot map. Secondary/MI
+    vtables (`??_7<class>@@6B<base>@@@`) take their identity, RVA, and extent from
+    the reviewed vtable catalog, then still have to agree with the independently
+    emitted candidate COMDAT. A primary is usually spelled `??_7<class>@@6B@`, but
+    a template specialization is not - see the name-bridge below.
     """
     import sys as _sys
     _sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
@@ -451,12 +469,13 @@ def vtable_rows(exe=EXE, base_dir=None):
     except Exception as exc:                      # no Ghidra exports -> enroll nothing
         return [], [(0, "??_7*", "vtable registry unavailable (%s)" % type(exc).__name__)]
 
-    # class -> (primary vtable rva, slot count), straight from the RTTI slot map.
-    primary, by_rva = {}, {}
+    # name -> (vtable rva, slot count). Primary tables come straight from the RTTI
+    # slot map; reviewed secondary-table catalog rows are added below.
+    tables, by_rva = {}, {}
     for name, ci in reg.items():
         p = ci.vtables.get(0)
         if p is not None:
-            primary["??_7%s@@6B@" % name] = (p[0], p[1])
+            tables["??_7%s@@6B@" % name] = (p[0], p[1])
             by_rva[p[0]] = (p[0], p[1])
 
     # A TEMPLATE SPECIALIZATION'S KEY CANNOT BE REBUILT FROM ITS RTTI NAME. The
@@ -479,13 +498,15 @@ def vtable_rows(exe=EXE, base_dir=None):
     except Exception:
         catalog = []
     for row in catalog:
-        hit = by_rva.get(row["rva"])
-        # A secondary/MI table may deliberately ALIAS a primary's rva; bridging it
-        # would hand it the primary's slot map. Still out of scope, still withheld.
-        if hit is None or row.get("kind") == "secondary" \
-                or vtable_catalog.secondary_classes(row["name"]) is not None:
+        secondary = vtable_catalog.secondary_classes(row["name"])
+        if secondary is not None or row.get("kind") == "secondary":
+            if row["size"] % 4 == 0:
+                tables.setdefault(row["name"], (row["rva"], row["size"] // 4))
             continue
-        primary.setdefault(row["name"], hit)
+        hit = by_rva.get(row["rva"])
+        if hit is None:
+            continue
+        tables.setdefault(row["name"], hit)
 
     base_dir = Path(base_dir or REPO / "build/objdiff/base")
     # name -> {offset-in-COMDAT: [(unit, candidate section), ...]}
@@ -506,9 +527,9 @@ def vtable_rows(exe=EXE, base_dir=None):
     pe = PE(str(exe))
     rows, withheld = [], []
     for name, by_offset in sorted(emitters.items()):
-        hit = primary.get(name)
-        if hit is None:                            # secondary/MI vtable, or no RTTI
-            withheld.append((0, name, "no primary-vtable slot map for this name"))
+        hit = tables.get(name)
+        if hit is None:
+            withheld.append((0, name, "no reviewed vtable extent for this name"))
             continue
         rva, slots = hit
         head = retail_col_head(pe, rva)
@@ -525,16 +546,18 @@ def vtable_rows(exe=EXE, base_dir=None):
                                      "candidate section 0x%x != 0x%x + RTTI %d slots"
                                      % (sec["size"], offset, slots)))
                     continue
+                # The COMDAT section may be 8-aligned while the vtable symbol is
+                # four bytes into it behind the COL.  The definition's alignment
+                # is therefore gcd(section alignment, member offset), not the
+                # section's alignment.  RTTI-less copies put the symbol at zero;
+                # both forms then agree on the folded symbol's actual alignment.
+                alignment = member_alignment(sec["alignment"], offset, rva)
                 rows.append({"name": name, "object": "%s.c" % unit, "rva": rva,
                              "size": slots * 4, "vtable_offset": offset,
                              # Only the emitters that agree with retail's COMDAT start
                              # get a placed section; see the docstring.
                              "section_placed": offset == head, "storage": "rdata",
-                             # cl.exe's own COMDAT alignment, NOT one derived from the
-                             # rva: the placed and unplaced copies of a folded COMDAT
-                             # must agree on every column but the object or the
-                             # delinker reads them as two claims on one rva.
-                             "alignment": sec["alignment"],
+                             "alignment": alignment,
                              "provenance": "candidate-COFF-vtable"})
     return rows, withheld
 
@@ -610,11 +633,11 @@ def rtti_rows(exe=EXE, base_dir=None):
                     anchors[name][obj.stem] = head
 
     pe = PE(str(exe))
-    primary = {}
+    vtables = {}
     for name, ci in reg.items():
         p = ci.vtables.get(0)
         if p is not None:
-            primary["??_7%s@@6B@" % name] = p[0]
+            vtables["??_7%s@@6B@" % name] = p[0]
 
     # The same template-specialization bridge vtable_rows() carries: the registry
     # keys off the ??_R0 name decoded on `@`, which for `?$CArray@PAU...` spells a
@@ -623,16 +646,23 @@ def rtti_rows(exe=EXE, base_dir=None):
     # band-gap find that exposed it). The catalog bridges name->rva; the rva must
     # still BE a base-0 vtable the registry located, so nothing rests on the
     # catalog's word alone.
-    known = set(primary.values())
+    known = set(vtables.values())
     try:
         from gruntz.core import vtable_catalog  # noqa: E402
         catalog = vtable_catalog.game_rows() + vtable_catalog.library_rows()
     except Exception:
         catalog = []
     for row in catalog:
-        if row["rva"] in known and row.get("kind") != "secondary" \
-                and vtable_catalog.secondary_classes(row["name"]) is None:
-            primary.setdefault(row["name"], row["rva"])
+        secondary = (row.get("kind") == "secondary"
+                     or vtable_catalog.secondary_classes(row["name"]) is not None)
+        if secondary:
+            # The RTTI registry indexes base-0 tables only. A reviewed secondary
+            # catalog row supplies the missing vtable anchor; the walk below still
+            # derives every RTTI node name from cl's relocations and re-proves its
+            # payload against retail before enrollment.
+            vtables.setdefault(row["name"], row["rva"])
+        elif row["rva"] in known:
+            vtables.setdefault(row["name"], row["rva"])
 
     located, withheld = {}, []          # name -> rva
 
@@ -648,7 +678,7 @@ def rtti_rows(exe=EXE, base_dir=None):
         return True
 
     for vtable, units in sorted(anchors.items()):
-        rva = primary.get(vtable)
+        rva = vtables.get(vtable)
         if rva is None or retail_col_head(pe, rva) != 4:
             continue                    # no slot map, or retail is not /GR here
         col = pe.u32(rva - 4) - pe.image_base
@@ -1645,8 +1675,10 @@ def manifest_bytes(rows, refuted=None):
     (section_ordinal, section_offset); the rest keep the legacy `-` allocation
     form, which lets the delinker pack them itself.
 
-    A PLACED row's alignment is cl's own, read off the candidate COMDAT it sits in;
-    only a legacy row needs the c2 rule modelled (_alignment), because only a legacy
+    A PLACED row's alignment is cl's own symbol alignment.  Usually that is the
+    candidate COMDAT alignment; a vtable four bytes behind an 8-aligned COL is only
+    4-aligned, and carries that independently proven member alignment on the row.
+    Only a legacy row needs the c2 rule modelled (_alignment), because only a legacy
     row is one the delinker allocates itself. `refuted` is the legacy API name
     for collecting rows whose manifest alignment had to be lowered for placement;
     callers must not treat those rows as proven source defects.
@@ -1656,7 +1688,7 @@ def manifest_bytes(rows, refuted=None):
     for r in rows:
         placed = "section_ordinal" in r
         if placed:
-            align = r["section"]["alignment"]
+            align = r.get("alignment", r["section"]["alignment"])
         else:
             kind = _object_kind(r["name"], r["rva"], r["size"], types)
             align, modelled = _alignment(r["rva"], r["size"], kind)

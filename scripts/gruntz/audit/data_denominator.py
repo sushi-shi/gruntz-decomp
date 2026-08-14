@@ -69,7 +69,9 @@ import argparse
 import bisect
 import csv
 import io
+import json
 import os
+import re
 import struct
 import sys
 from collections import Counter, defaultdict, deque
@@ -84,6 +86,9 @@ EH_MAGIC = 0x19930520
 GUID_LIBS = ("$DXSDK_DIR/Lib/dxguid.lib", "$MSVC_DIR/lib/UUID.LIB")
 
 PARTITION = REPO / "config/retail/data-coverage-partition.tsv"
+SYMBOLS = REPO / "build/gen/symbol_names.csv"
+BASE_OBJECTS = REPO / "build/objdiff/base"
+GLOBAL_TYPES = REPO / "build/gen/globals.json"
 
 VISIBLE = "game-visible unenrolled data"
 LIB = "library-private data"
@@ -340,6 +345,152 @@ def claim_alignments() -> dict[int, int]:
     return out
 
 
+def _one_past_addend(anchor, addend):
+    _rva, size, kind, element_size = anchor
+    return (kind == "data" and size
+            and size <= addend < size + max(1, element_size))
+
+
+def _paired_one_past_sites(mine, theirs, text, pe, known):
+    """Retail relocation sites proven to spell ``known datum + sizeof(datum)``.
+
+    ``mine`` and ``theirs`` are the positionally corresponding DIR32 relocation
+    lists for one candidate/retail function.  Every named candidate anchor must
+    agree with the address written into retail before any result is accepted.
+    This is the same self-corroborating pairing used by the FP-pool oracle; the
+    returned *sites*, rather than target addresses, let another genuine reference
+    to the same address remain visible.
+    """
+    if not mine or len(mine) != len(theirs):
+        return set()
+    found = set()
+    for (site, symbol), target_site in zip(mine, theirs):
+        at = pe.off(target_site)
+        if at is None or site + 4 > len(text):
+            return set()
+        value = struct.unpack_from("<I", pe.data, at)[0] - pe.image_base
+        anchor = known.get(symbol)
+        if anchor is None:
+            continue
+        rva, _size, _kind, _element_size = anchor
+        addend = struct.unpack_from("<I", text, site)[0]
+        if value != rva + addend:
+            return set()
+        if _one_past_addend(anchor, addend):
+            found.add(target_site)
+    return found
+
+
+def _unique_one_past_sites(mine, theirs, text, pe, known):
+    """Fallback for a non-matching function: unique same-function identities.
+
+    Structural reconstruction can add or remove other relocations, defeating the
+    positional proof above.  A one-past identity is still unambiguous when exactly
+    one candidate relocation spells ``datum + sizeof(datum)`` and exactly one
+    retail relocation in the same function contains that resulting address.
+    """
+    candidate = Counter()
+    retail = defaultdict(list)
+    for site, symbol in mine:
+        anchor = known.get(symbol)
+        if anchor is None or site + 4 > len(text):
+            continue
+        rva, _size, _kind, _element_size = anchor
+        addend = struct.unpack_from("<I", text, site)[0]
+        if _one_past_addend(anchor, addend):
+            candidate[rva + addend] += 1
+    for target_site in theirs:
+        at = pe.off(target_site)
+        if at is not None:
+            value = struct.unpack_from("<I", pe.data, at)[0] - pe.image_base
+            retail[value].append(target_site)
+    return {retail[value][0] for value, count in candidate.items()
+            if count == 1 and len(retail.get(value, ())) == 1}
+
+
+def paired_one_past_sites(pe, symbols=SYMBOLS, base_dir=BASE_OBJECTS,
+                          global_types=GLOBAL_TYPES):
+    """Code relocation sites whose candidate COFF proves a one-past bound.
+
+    A PE HIGHLOW target at the byte immediately following an enrolled array is
+    otherwise indistinguishable from a reference naming a missing adjacent datum.
+    Candidate COFF preserves the required distinction as ``array + sizeof(array)``.
+    Pair only functions with the same DIR32 count, corroborate every known anchor,
+    and return the retail relocation *site* so the denominator can ignore only the
+    bound expression that supplied the false reachability root.
+    """
+    if not Path(symbols).is_file() or not Path(base_dir).is_dir():
+        return set()
+
+    array_counts = {}
+    try:
+        for row in json.loads(Path(global_types).read_text()):
+            match = re.search(r"\[([1-9][0-9]*)\]\s*$", row.get("type") or "")
+            if match:
+                array_counts[int(row["rva"], 0)] = int(match.group(1))
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+        pass
+
+    known, fn_extent = {}, {}
+    with Path(symbols).open(newline="") as stream:
+        for row in csv.DictReader(line for line in stream
+                                  if not line.lstrip().startswith("#")):
+            try:
+                rva = int(row["rva"], 0)
+                size = int(row["size"], 0) if (row.get("size") or "").strip() else 0
+            except (KeyError, ValueError):
+                continue
+            kind = (row.get("kind") or "").strip()
+            count = array_counts.get(rva, 0)
+            element_size = size // count if count and size % count == 0 else 1
+            known[row["name"]] = (rva, size, kind, element_size)
+            if kind == "func" and size:
+                fn_extent[row["name"]] = (rva, size)
+
+    sys.path.insert(0, str(REPO / "scripts/gruntz/build"))
+    from coff_oracle import _Coff
+
+    sites = pe.reloc_sites
+    proven = set()
+    for obj in sorted(Path(base_dir).glob("*.obj")):
+        try:
+            coff = _Coff(obj)
+        except Exception:
+            continue
+        for sec in coff.section_table:
+            if not sec["characteristics"] & 0x20000000:
+                continue
+            ptr, count, first = sec["reloc_offset"], sec["reloc_count"], 0
+            if not ptr:
+                continue
+            if sec["characteristics"] & 0x01000000 and count == 0xFFFF:
+                count = struct.unpack_from("<I", coff.buf, ptr)[0]
+                first = 1
+            rel = {}
+            for i in range(first, count):
+                site, index, typ = struct.unpack_from("<IIH", coff.buf, ptr + i * 10)
+                if typ == 0x0006:  # IMAGE_REL_I386_DIR32
+                    rel[site] = coff.sym_name(index)
+            if not rel:
+                continue
+            text = coff.section_payload(sec["index"])
+            for offset, name in coff.defined_symbols(sec["index"]):
+                extent = fn_extent.get(name)
+                if extent is None:
+                    continue
+                rva, size = extent
+                mine = sorted((site, symbol) for site, symbol in rel.items()
+                              if offset <= site < offset + size)
+                lo = bisect.bisect_left(sites, rva)
+                hi = bisect.bisect_left(sites, rva + size)
+                theirs = sites[lo:hi]
+                proven.update(_paired_one_past_sites(
+                    mine, theirs, text, pe, known))
+                proven.update(_unique_one_past_sites(
+                    mine, theirs, text, pe, known))
+    return proven
+
+
 def partition():
     pe = PE()
     regs = regions(pe)
@@ -371,6 +522,7 @@ def partition():
         if o is not None:
             by_target[struct.unpack_from("<I", pe.data, o)[0] - ib].append(s)
     ntargets = sorted(by_target)
+    one_past_sites = paired_one_past_sites(pe)
 
     def named_in(lo, hi):
         i = bisect.bisect_left(ntargets, lo)
@@ -441,6 +593,8 @@ def partition():
             for s in by_target.get(t, ()):
                 if not (text_lo <= s < text_hi):
                     continue
+                if s in one_past_sites:
+                    continue
                 f = fn_at(s)
                 category = f["category"] if f else "text?"
                 if category == "text?":
@@ -461,6 +615,11 @@ def partition():
                     direct_reasons[i]["direct game/compiler code"] += 1
                 elif category == "library":
                     libs[f.get("lib") or "?"] += 1
+                elif category == "thunk":
+                    # These bodies are outside the reconstruction target.  Their
+                    # absolute operands are linker/library state unless an
+                    # independent game-side root reaches the same datum.
+                    libs["MSVC-THUNK"] += 1
         if libs:
             libof[i] = libs
 

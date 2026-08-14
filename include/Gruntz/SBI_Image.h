@@ -17,22 +17,7 @@ class CImage;
 
 class CSBI_RectOnly : public CStatusBarItem {
 public:
-    // Out-of-line at 0x101fa0; the base stores are folded into its body.
     CSBI_RectOnly();
-    // Selected allocation sites inline the complete constructor chain.
-    enum EInlineSelf {
-        INLINE_SELF
-    };
-    CSBI_RectOnly(EInlineSelf) : CStatusBarItem(CStatusBarItem::NO_SEED) {
-        m_kind = SBI_KIND_RECT_ONLY;
-    }
-    // Selected allocation sites stop inlining at CStatusBarItem.
-    enum EBaseCall {
-        BASE_CALL
-    };
-    CSBI_RectOnly(EBaseCall) {
-        m_kind = SBI_KIND_RECT_ONLY;
-    }
     virtual ~CSBI_RectOnly() OVERRIDE;
 
     virtual i32 Setup(
@@ -54,25 +39,7 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 
 class CSBI_Image : public CSBI_RectOnly {
 public:
-    CSBI_Image() : CSBI_RectOnly(BASE_CALL) {
-        m_kind = SBI_KIND_IMAGE;
-        m_frame = NULL;
-    }
-    enum EInlineChain {
-        INLINE_CHAIN
-    };
-    CSBI_Image(EInlineChain) : CSBI_RectOnly(CSBI_RectOnly::INLINE_SELF) {
-        m_kind = SBI_KIND_IMAGE;
-        m_frame = NULL;
-    }
-    // Selected allocation sites stop inlining at CSBI_RectOnly.
-    enum ECallRectOnly {
-        CALL_RECTONLY
-    };
-    CSBI_Image(ECallRectOnly) : CSBI_RectOnly() {
-        m_kind = SBI_KIND_IMAGE;
-        m_frame = NULL;
-    }
+    CSBI_Image();
     virtual ~CSBI_Image() OVERRIDE;
 
     virtual i32 SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b) OVERRIDE;
@@ -93,6 +60,16 @@ public:
 
     CImage* m_frame;
 };
+
+RVA(0x00101fa0, 0x1b)
+inline CSBI_RectOnly::CSBI_RectOnly() {
+    m_kind = SBI_KIND_RECT_ONLY;
+}
+
+inline CSBI_Image::CSBI_Image() {
+    m_kind = SBI_KIND_IMAGE;
+    m_frame = NULL;
+}
 
 inline CSBI_Image::~CSBI_Image() {
     Reset();

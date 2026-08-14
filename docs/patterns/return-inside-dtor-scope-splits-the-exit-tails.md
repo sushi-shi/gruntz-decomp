@@ -8,7 +8,7 @@ symptoms: a `/GX` scope holding one destructible local has two conditional exits
   EH state and falls into the second exit's destructor call. `insn_seq --seq` names
   the whole missing destructor call run (`+ call AfxGetModuleState / + call
   EndWaitCursor`).
-confidence: 7/10
+confidence: 10/10
 
 cl5 decides tail-merging on the IL STATEMENT list, and `break`/`goto` out of the scope
 produce the *same* statement list at both exits (destruct, leave the loop), so the two
@@ -39,23 +39,21 @@ for (;;) {
 `goto <label-after-the-loop>` behaves exactly like `break` - measured, it does NOT
 split the tails.
 
-**THE CATCH, and why this is not yet a free win.** Removing the loop's normal exit also
-removes a live range: in `StartUpPrompt` @0x1f9b0 retail pins the `HWND` parameter in
-`ebx` across the loop, which leaves cl no callee-saved register for the `-1` the inline
-`strcpy` needs, so retail spells that `or ecx,0xffffffff` (1 insn). With the `return`
-form cl has `ebx` free, hoists the constant into it (`or ebx,-1; mov ecx,ebx`) and pays
-+1 insn at each of the two inline `strcpy` sites, and the `MessageBoxA` receiver becomes
-`mov eax,[esp+..]; push eax` instead of `push ebx`. Measured on that function:
+An earlier build made the source-correct return form look like a local minimum: it
+freed `ebx`, hoisted the inline-`strcpy` `-1` into that register, and paid one extra
+instruction at each copy site. That observation was compiler-state-specific, not a
+reason to retain the structurally wrong `break` spelling. Re-running the direct A/B in
+the current pinned tree gives:
 
 | spelling | insn delta | fuzzy |
 |---|---|---|
 | `break` x2 (or `goto` x2) | -4 (destructor tail merged) | 97.99 |
-| `return 1` x2 | +2 (the two hoisted `-1`s) | 95.97 |
+| `return 1` x2 | exact | **100.00** |
 
-Forcing the parameter back into a register does not work: an `HWND` local scoped to the
-branch, or one shared by both `MessageBoxA` call sites, leaves the allocation unchanged
-(both measured). So the two knobs are currently mutually exclusive; the `break` form is
-banked and the `return` form is the shape to re-try once the register pressure moves.
+The current return form also reproduces retail's `HWND`/`ebx` lifetime and both inline
+copy sequences without a steering local. This is a negative control for score-led
+parking: when the destructor-exit topology proves `return`, retain it across a temporary
+register-allocation dip and re-audit after legitimate TU/header reconstruction changes.
 
 related: statement-order-decides-the-tail-merge.md, identical-arms-need-distinct-locals.md,
 identical-return-epilogue-tailmerge.md

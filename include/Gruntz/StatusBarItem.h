@@ -18,18 +18,7 @@ class CDDrawSurfaceMgr;
 
 class CStatusBarItem {
 public:
-    // Retail has both the out-of-line COMDAT and inlined copies of these stores;
-    // status-bar allocation sites select the observed cut depth explicitly.
     CStatusBarItem();
-    enum ENoSeed {
-        NO_SEED
-    };
-    CStatusBarItem(ENoSeed) {
-        m_enabled = 0;
-        m_kind = SBI_KIND_BASE;
-        m_host = NULL;
-        m_redrawFrames = 0;
-    }
     virtual ~CStatusBarItem();
 
     virtual i32 SerializeFields(CFileMemBase* ar, SerialMode kind, LogicTypeId a, i32 b);
@@ -63,6 +52,14 @@ public:
     i32 m_redrawFrames;
     class CStatusBarMgr* m_owner;
 };
+
+RVA(0x001005d0, 0x17)
+inline CStatusBarItem::CStatusBarItem() {
+    m_enabled = 0;
+    m_kind = SBI_KIND_BASE;
+    m_host = NULL;
+    m_redrawFrames = 0;
+}
 
 inline CStatusBarItem::~CStatusBarItem() {
     Reset();
