@@ -41,6 +41,20 @@ namespace Utils {
         return 0;
     }
 
+    RVA(0x00139330, 0x3d)
+    void RegistryHelper::Close() {
+        if (m_open) {
+            m_open = 0;
+            RegCloseKey(m_key1);
+            RegCloseKey(m_key2);
+            RegCloseKey(m_key3);
+            if (m_key4 != m_valueKey) {
+                RegCloseKey(m_key4);
+            }
+            RegCloseKey(m_valueKey);
+        }
+    }
+
     RVA(0x00139370, 0x37)
     i32 RegistryHelper::InitializeLastKey(char* szLastKey) {
         if (!m_open) {
@@ -53,6 +67,64 @@ namespace Utils {
         }
 
         return GetRegistryKey(m_key4, szLastKey, &m_valueKey) != 0;
+    }
+
+    RVA(0x001393b0, 0x58)
+    i32 RegistryHelper::SetValueString(const char* szValueName, const char* szValue) {
+        if (!m_open) {
+            return 0;
+        }
+        if (!szValueName) {
+            return 0;
+        }
+        if (!szValue) {
+            return 0;
+        }
+        RegBufC data;
+        return RegSetValueExA(
+                   m_valueKey,
+                   szValueName,
+                   0,
+                   1,
+                   (data.m_chars = szValue, data.m_bytes),
+                   strlen(szValue) + 1
+               )
+               == 0;
+    }
+
+    RVA(0x00139410, 0x45)
+    i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
+        if (!m_open) {
+            return 0;
+        }
+        if (!szValueName) {
+            return 0;
+        }
+        if (!pData) {
+            return 0;
+        }
+        return RegSetValueExA(m_valueKey, szValueName, 0, 3, static_cast<LPBYTE>(pData), dataSize)
+               == 0;
+    }
+
+    RVA(0x00139460, 0x33)
+    i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
+        if (!m_open) {
+            return 0;
+        }
+        if (!szValueName) {
+            return 0;
+        }
+        RegBuf data;
+        return RegSetValueExA(
+                   m_valueKey,
+                   szValueName,
+                   0,
+                   4,
+                   (data.m_dword = &value, data.m_bytes),
+                   4
+               )
+               == 0;
     }
 
     RVA(0x001394a0, 0x97)
@@ -157,78 +229,6 @@ namespace Utils {
             return 0;
         }
         return RegDeleteValueA(m_valueKey, szValueName) == 0;
-    }
-
-    RVA(0x001393b0, 0x58)
-    i32 RegistryHelper::SetValueString(const char* szValueName, const char* szValue) {
-        if (!m_open) {
-            return 0;
-        }
-        if (!szValueName) {
-            return 0;
-        }
-        if (!szValue) {
-            return 0;
-        }
-        RegBufC data;
-        return RegSetValueExA(
-                   m_valueKey,
-                   szValueName,
-                   0,
-                   1,
-                   (data.m_chars = szValue, data.m_bytes),
-                   strlen(szValue) + 1
-               )
-               == 0;
-    }
-
-    RVA(0x00139410, 0x45)
-    i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
-        if (!m_open) {
-            return 0;
-        }
-        if (!szValueName) {
-            return 0;
-        }
-        if (!pData) {
-            return 0;
-        }
-        return RegSetValueExA(m_valueKey, szValueName, 0, 3, static_cast<LPBYTE>(pData), dataSize)
-               == 0;
-    }
-
-    RVA(0x00139460, 0x33)
-    i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
-        if (!m_open) {
-            return 0;
-        }
-        if (!szValueName) {
-            return 0;
-        }
-        RegBuf data;
-        return RegSetValueExA(
-                   m_valueKey,
-                   szValueName,
-                   0,
-                   4,
-                   (data.m_dword = &value, data.m_bytes),
-                   4
-               )
-               == 0;
-    }
-
-    RVA(0x00139330, 0x3d)
-    void RegistryHelper::Close() {
-        if (m_open) {
-            m_open = 0;
-            RegCloseKey(m_key1);
-            RegCloseKey(m_key2);
-            RegCloseKey(m_key3);
-            if (m_key4 != m_valueKey) {
-                RegCloseKey(m_key4);
-            }
-            RegCloseKey(m_valueKey);
-        }
     }
 
     RVA(0x00139650, 0x32)
