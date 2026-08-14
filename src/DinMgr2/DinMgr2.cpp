@@ -297,11 +297,9 @@ CInputDevice::~CInputDevice() {
 }
 
 RVA_COMPGEN(0x00133370, 0xb, ??1CInputDevRoot@@UAE@XZ)
-
 RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x001333b0, 0x55, ??1CInputDevBase@@UAE@XZ)
-
 RVA_COMPGEN(0x00133420, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
 RVA_COMPGEN(0x00133440, 0x1e, ??_GCDeviceConfigC@@UAEPAXI@Z)
 

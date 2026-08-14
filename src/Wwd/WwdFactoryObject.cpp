@@ -94,7 +94,7 @@ void CResolveNode::Unload() {
 RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
 // The header's `~WwdRegion() {}` COMDAT - inlined away at every call site,
 // but the unwind funclet for the member at +0x9c jumps to this address.
-RVA_COMPGEN(0x0015b4e0, 0x10, ??1WwdRegion@@QAE@XZ)
+
 RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
 
 RVA(0x0015b650, 0x4d)
@@ -119,6 +119,7 @@ i32 CAniAdvanceCursor::IsLoaded() {
 }
 
 RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
+
 RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 
 RVA(0x0015b730, 0x2b)
@@ -135,7 +136,9 @@ LoadableClassId CWwdGameObjectA::GetClassId() {
 }
 
 RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdGameObjectA@@UAEPAXI@Z)
+
 RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdGameObjectA@@UAE@XZ)
+
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObjectA::Setup(i32 x, i32 y, i32 sortKey, AnimWorkerObj* tmpl) {
     m_soundCue = NULL;

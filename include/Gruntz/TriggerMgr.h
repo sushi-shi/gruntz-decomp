@@ -257,7 +257,10 @@ public:
         m_groupFlag = 0;
         g_curPlayer = 0;
     }
-    ~CTriggerMgr();
+    RVA(0x00085c50, 0x83)
+    ~CTriggerMgr() {
+        Cleanup();
+    }
 
     void ReportN(i32 a, i32 b, u8* bytes, i32 c, i32 d, i32 e, i32 f);
     i32 PlaceB(i32 a, i32 b, i32 c);

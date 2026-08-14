@@ -18,6 +18,7 @@ struct WwdDirtyRect {
     // 0x1592c8/0x1594b8/0x159673). The body lives in src/Wwd/WwdObjMgr.cpp.
     WwdDirtyRect();
 
+    RVA(0x0015b290, 0x10)
     ~WwdDirtyRect() {}
 
     enum ENoSeed {

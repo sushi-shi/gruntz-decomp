@@ -392,5 +392,3 @@ i32 CChatBox::MoveFocusDownFollowingLinks() {
     }
     return n->MoveFocusDown() != 0;
 }
-
-RVA_COMPGEN(0x00183250, 0x71, ??1CMenuPage@@QAE@XZ)

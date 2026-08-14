@@ -288,7 +288,6 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c, i32 d) : m_keyTable(c), m_valTa
 
 // cl's unwind helper for the member-init list above: an out-of-line copy of the
 // inline ~CHash(), which is just `RemoveAll()` and so tail-jumps to the base.
-RVA_COMPGEN(0x00139c70, 0x5, ??1CHash@@QAE@XZ)
 
 RVA(0x00139c80, 0x6c)
 CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
@@ -322,7 +321,6 @@ CSymRec::~CSymRec() {
 
 // ~CSymRec is the first function to unwind m_valTable (this+0x24), so cl emits
 // that member's inline destructor here - a second, distinct `jmp RemoveAll`.
-RVA_COMPGEN(0x00139dd0, 0x5, ??1CHashC@@QAE@XZ)
 
 // @early-stop
 RVA(0x00139de0, 0xd4)
@@ -354,8 +352,6 @@ CSymTab::CSymTab(
 
 // The CSymTab ctor unwinds m_subTabs (this+0x38) then m_symbols (this+0x40), and
 // cl emits both members' inline destructors behind it, in that order.
-RVA_COMPGEN(0x00139ec0, 0x5, ??1CHashB@@QAE@XZ)
-RVA_COMPGEN(0x00139ed0, 0x5, ??1CHashD@@QAE@XZ)
 
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
@@ -836,8 +832,6 @@ CSymParser::CSymParser() : m_hash(1) {
     m_parseSlotBlockCount = 0x64;
 }
 
-RVA_COMPGEN(0x0013aaf0, 0x7, ??1CParserObjList@@QAE@XZ)
-
 RVA(0x0013ab00, 0xac)
 CSymParser::CSymParser(void* buf, i32 a2, i32 a3) : m_hash(1) {
     {
@@ -847,7 +841,6 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) : m_hash(1) {
 }
 
 // CSymParser::m_nodes (this+0x88) - an empty inline destructor, so a lone `c3`.
-RVA_COMPGEN(0x0013abb0, 0x1, ??1CSlotNodeList@@QAE@XZ)
 
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {

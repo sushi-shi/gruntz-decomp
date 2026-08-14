@@ -29,6 +29,7 @@ struct PureSoundElem {
     // `new`-cleanup on this class calls the GLOBAL ??3@YAXPAX@Z, and a
     // class-level forwarder cannot produce that - cl emits
     // ??3PureSoundElem@@SAXPAX@Z and has the funclet call that instead.
+    RVA(0x00137330, 0x7)
     ~PureSoundElem() {}
 };
 
@@ -64,14 +65,17 @@ struct DSoundList {
 // ??0/??1DSoundCloneInst (this+0x58) and ??0/??1SoundDevice (this+0x4, this+0xc).
 // Three dtor COMDATs mean three classes; one type could only produce one.
 struct DSoundBufferList : public DSoundList {
+    RVA(0x001364e0, 0x1)
     ~DSoundBufferList() {}
 };
 
 struct DSoundVoiceList : public DSoundList {
+    RVA(0x001364f0, 0x1)
     ~DSoundVoiceList() {}
 };
 
 struct DSoundCloneList : public DSoundList {
+    RVA(0x00135ba0, 0x1)
     ~DSoundCloneList() {}
 };
 

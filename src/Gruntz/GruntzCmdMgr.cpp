@@ -648,8 +648,3 @@ i32 __stdcall IsActive2(void* enable) {
     }
     return g_gameReg->m_world != NULL;
 }
-
-RVA(0x00085bd0, 0x56)
-CGruntzCmdMgr::~CGruntzCmdMgr() {
-    ClearAndReset();
-}

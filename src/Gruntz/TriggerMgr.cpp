@@ -2805,8 +2805,3 @@ i32 CTriggerMgr::EnqueueGroupCells() {
     }
     return 1;
 }
-
-RVA(0x00085c50, 0x83)
-CTriggerMgr::~CTriggerMgr() {
-    Cleanup();
-}

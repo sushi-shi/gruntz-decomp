@@ -15,6 +15,7 @@ class CRezItmBase;
 
 struct CParserObjList : public CObjList {
     virtual void UnusedListHook() OVERRIDE;
+    RVA(0x0013aaf0, 0x7)
     ~CParserObjList() {}
     // Unsigned: CRezDirNode::Load compares it with `ja`, not `jg`
     // (`sema disasm 0x0013a0f0 --branches --diff`).
@@ -32,6 +33,7 @@ struct CSlotNode : public DSoundLink {
 // funclets of ??0CSymParser(void*,i32,i32) and ~CSymParser - so it is a distinct
 // class from DSoundList, whose own `~DSoundList()` lives elsewhere.
 struct CSlotNodeList : public DSoundList {
+    RVA(0x0013abb0, 0x1)
     ~CSlotNodeList() {}
 };
 

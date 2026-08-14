@@ -64,7 +64,10 @@ public:
 
     void BlitTileMarker(i32 enqueueFlag, i32 targetIndex, i32 x, i32 y, i32 targetType);
 
-    ~CGruntzCmdMgr();
+    RVA(0x00085bd0, 0x56)
+    ~CGruntzCmdMgr() {
+        ClearAndReset();
+    }
 
     CPtrList m_base;
     CPtrList m_pendingCommands;

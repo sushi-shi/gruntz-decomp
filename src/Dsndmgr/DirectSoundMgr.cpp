@@ -483,8 +483,6 @@ DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
 
 RVA_COMPGEN(0x00135b80, 0x1e, ??_GDSoundCloneInst@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00135ba0, 0x1, ??1DSoundCloneList@@QAE@XZ)
-
 RVA(0x00135bb0, 0x63)
 DSoundCloneInst::~DSoundCloneInst() {
     while (m_cloneList.m_head != NULL) {
@@ -842,10 +840,6 @@ SoundDevice::SoundDevice() {
 }
 
 RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
-
-RVA_COMPGEN(0x001364e0, 0x1, ??1DSoundBufferList@@QAE@XZ)
-
-RVA_COMPGEN(0x001364f0, 0x1, ??1DSoundVoiceList@@QAE@XZ)
 
 RVA(0x00136500, 0x43)
 SoundDevice::~SoundDevice() {
@@ -1438,5 +1432,3 @@ IDirectSoundBuffer* SoundDevice::GetPrimary() {
     }
     return m_primaryBuffer;
 }
-
-RVA_COMPGEN(0x00137330, 0x7, ??1PureSoundElem@@QAE@XZ)

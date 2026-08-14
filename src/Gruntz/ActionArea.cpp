@@ -149,12 +149,9 @@ i32 CActionArea::SerializeMove(CFileMemBase* ar, SerialMode tag, LogicTypeId c, 
     }
     return 1;
 }
-RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 
+RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00008860, 0x44, ??1CUserLogic@@UAE@XZ)
-
 RVA_COMPGEN(0x00008a10, 0x1e, ??_GCUserLogic@@UAEPAXI@Z)
-
-RVA_COMPGEN(0x00008be0, 0x1, ??1CWapX@@QAE@XZ)

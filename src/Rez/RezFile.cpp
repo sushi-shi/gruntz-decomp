@@ -227,8 +227,6 @@ CRezDir::~CRezDir() {
     }
 }
 
-RVA_COMPGEN(0x0013ca30, 0x7, ??1CRezList@@QAE@XZ)
-
 RVA(0x0013ca40, 0x5)
 i32 CRezDir::Read(i32 off, i32 base, u32 count, void* buf) {
     return 0;

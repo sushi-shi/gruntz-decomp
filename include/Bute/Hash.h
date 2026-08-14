@@ -96,6 +96,7 @@ public:
 
     CHash(i32 n) : CHashBase(n) {}
 
+    RVA(0x00139c70, 0x5)
     ~CHash() {
         RemoveAll();
     }
@@ -105,6 +106,7 @@ public:
 class CHashB : public CHashBase {
 public:
     CHashB(i32 n) : CHashBase(n) {}
+    RVA(0x00139ec0, 0x5)
     ~CHashB() {
         RemoveAll();
     }
@@ -118,6 +120,7 @@ public:
 class CHashC : public CHashBase {
 public:
     CHashC(i32 n) : CHashBase(n) {}
+    RVA(0x00139dd0, 0x5)
     ~CHashC() {
         RemoveAll();
     }
@@ -131,6 +134,7 @@ public:
 class CHashD : public CHashBase {
 public:
     CHashD(i32 n) : CHashBase(n) {}
+    RVA(0x00139ed0, 0x5)
     ~CHashD() {
         RemoveAll();
     }

@@ -33,7 +33,6 @@
 #include <Gruntz/GameText.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/GruntzCmdMgrDtorInline.h>
 #include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -47,7 +46,6 @@
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StateMgrBZ.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/TriggerMgrDtorInline.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Ints.h>
 #include <Io/SaveGame.h>

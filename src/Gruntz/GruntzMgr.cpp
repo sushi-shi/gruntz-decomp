@@ -206,7 +206,6 @@ i32 g_warpY = -1;
 RVA_COMPGEN(0x00083330, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
-
 RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00085b50, 0x56, ??1CSaveGame@@QAE@XZ)
@@ -359,6 +358,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurren
 }
 
 RVA_COMPGEN(0x0008c3d0, 0x1e, ??_GCRgn@@UAEPAXI@Z)
+
 RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
 
 RVA(0x0008c530, 0x8)

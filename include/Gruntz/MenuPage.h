@@ -25,6 +25,7 @@ public:
         m_flags = 0;
     }
 
+    RVA(0x00183250, 0x71)
     ~CMenuPage() {
         InitDefaults();
     }

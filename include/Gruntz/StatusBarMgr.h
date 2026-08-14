@@ -136,6 +136,7 @@ public:
     CStatusBarMgr();
     i32 BuildSideTabs();
 
+    RVA(0x000c8980, 0x64)
     ~CStatusBarMgr() {
         Teardown();
     }

@@ -69,6 +69,7 @@ struct WwdRegion : WwdGridNode {
         m_object = NULL;
     }
 
+    RVA(0x0015b4e0, 0x10)
     ~WwdRegion() {}
     struct CGameObject* m_object;
 };

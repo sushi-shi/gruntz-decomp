@@ -15,6 +15,7 @@ struct PlayerLatency {
         m_avg = 0;
         m_count = 0;
     }
+    RVA(0x000832e0, 0x1)
     ~PlayerLatency() {}
 
     void Clear() {

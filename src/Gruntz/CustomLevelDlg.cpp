@@ -82,5 +82,3 @@ void CBattlezDlgCustom::PickIfSelected() {
         CDialog::OnOK();
     }
 }
-
-RVA_COMPGEN(0x00018430, 0xd, ??1CWaitCursorScope@@QAE@XZ)

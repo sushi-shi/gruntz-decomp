@@ -77,6 +77,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
 }
 
 RVA_COMPGEN(0x0000b760, 0x1e, ??_GCAmbientSound@@UAEPAXI@Z)
+
 RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
 
 RVA(0x0000b7b0, 0x80)
@@ -120,6 +121,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
 }
 
 RVA_COMPGEN(0x0000b910, 0x1e, ??_GCAmbientPosSound@@UAEPAXI@Z)
+
 RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
 RVA(0x0000b960, 0x80)
