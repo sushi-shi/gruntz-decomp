@@ -145,11 +145,11 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 
 // The one textual copy of the ctor body.  Both CUserLogic ctor entities expand it.
 //
-// A MACRO, not an inline member: MSVC 5 has no __forceinline and its inline budget
-// declines the body in the two largest derived ctors - CWarlord (0x750 B) and
-// CInGameIcon (0x15f0 B) - where retail expands it verbatim, leaving a
-// `call ?AttachToObject@CUserLogic@@` at ctor+0x48 in both.  A textual macro is the
-// period device for a block that must expand at every site
+// A MACRO, not an inline member: MSVC 5 has no __forceinline, and as a real inline
+// member cl's /Ob1 budget DECLINES it in the two largest derived ctors - measured
+// 2026-08-14: CWarlord (0x42d40) 78.11 -> 70.99 and CInGameIcon (0x95b10) 98.26 ->
+// 93.24, where retail expands it verbatim.  A textual macro is the period device for
+// a block that must expand at every site
 // (docs/patterns/inline-expanded-twice-costs-a-register.md).
 #define USERLOGIC_ATTACH_TO_OBJECT(obj)                                                            \
     m_logicObject = (obj);                                                                         \
@@ -184,6 +184,7 @@ public:
         m_wwdObject = static_cast<CWwdGameObjectA*>(obj);
         m_animWorker = obj->m_animWorker;
     }
+    RVA(0x00008be0, 0x1)
     ~CWapX() {}
 
     i32 Chain(CFileMemBase* arc, SerialMode mode, LogicTypeId unused, CGameObject* obj);

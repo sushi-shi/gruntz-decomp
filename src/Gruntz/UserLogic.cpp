@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrLeaf.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerCache.h>
+#include <DDrawMgr/DDrawWorkerCacheFindInline.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/GameObjectFactory.h>
@@ -17,29 +18,16 @@
 
 #include <string.h>
 
-// @early-stop
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
-    {
-        CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicHit", found);
-        if (!found) {
-            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
-        }
+    if (!obj->OwnerMgr()->m_workerCache->Find("LogicHit")) {
+        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicHitFactory, "LogicHit", 2);
     }
-    {
-        CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicAttack", found);
-        if (!found) {
-            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
-        }
+    if (!obj->OwnerMgr()->m_workerCache->Find("LogicAttack")) {
+        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicAttackFactory, "LogicAttack", 2);
     }
-    {
-        CObject* found = 0;
-        obj->OwnerMgr()->m_workerCache->m_workers.Lookup("LogicBump", found);
-        if (!found) {
-            obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
-        }
+    if (!obj->OwnerMgr()->m_workerCache->Find("LogicBump")) {
+        obj->OwnerMgr()->m_workerCache->CreateWorker(LogicBumpFactory, "LogicBump", 2);
     }
 }
 
