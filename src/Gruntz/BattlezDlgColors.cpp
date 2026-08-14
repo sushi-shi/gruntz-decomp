@@ -43,8 +43,8 @@ const AFX_MSGMAP_ENTRY CBattlezDlgColors::_messageEntries[] = {
      reinterpret_cast<AFX_PMSG>(&CBattlezDlgColors::OnDrawItem)}, // API-forced MFC seam.
     {WM_COMMAND,
      CBN_DBLCLK,
-     0x515,
-     0x515,
+     CTRL_COLOR_LIST,
+     CTRL_COLOR_LIST,
      AfxSig_vv,
      reinterpret_cast<AFX_PMSG>(&CBattlezDlg::OnOkCommand)}, // API-forced MFC seam.
     {0, 0, 0, 0, AfxSig_end, 0},
@@ -64,7 +64,7 @@ RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM);
     if (pDX->m_bSaveAndValidate) {
-        CWnd* lb = GetDlgItem(0x515);
+        CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
         pSend = ::SendMessageA;
         long sel = pSend(lb->m_hWnd, LB_GETCURSEL, 0, 0);
         long data = pSend(lb->m_hWnd, LB_GETITEMDATA, sel, 0);
@@ -73,7 +73,7 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
             m_pickedColor = TINT_WHITE;
         }
     } else {
-        CWnd* lb = GetDlgItem(0x515);
+        CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
         pSend = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             i32 avail = 1;
@@ -107,11 +107,75 @@ void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     lpmis->itemHeight = 0x1e;
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
-RVA(0x00017b10, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {}
+RVA(0x00017b10, 0x1b8)
+void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
+    CWnd* lb = GetDlgItem(CTRL_COLOR_LIST);
+    if (nIDCtl == CTRL_COLOR_LIST) {
+        CDC dc;
+        dc.Attach(lpdis->hDC);
+        COLORREF color;
+        switch (
+            static_cast<ColorTint>(::SendMessageA(lb->m_hWnd, LB_GETITEMDATA, lpdis->itemID, 0))
+        ) {
+            case TINT_DKBLUE:
+                color = 0x800000;
+                break;
+            case TINT_DKGREEN:
+                color = 0x008000;
+                break;
+            case TINT_TURQ:
+                color = 0x808000;
+                break;
+            case TINT_DKRED:
+                color = 0x000080;
+                break;
+            case TINT_PURPLE:
+                color = 0x800080;
+                break;
+            case TINT_DKYELLOW:
+                color = 0x008080;
+                break;
+            case TINT_GREY:
+                color = 0x808080;
+                break;
+            case TINT_BLUE:
+                color = 0xff0000;
+                break;
+            case TINT_GREEN:
+                color = 0x00ff00;
+                break;
+            case TINT_CYAN:
+                color = 0xffff00;
+                break;
+            case TINT_RED:
+                color = 0x0000ff;
+                break;
+            case TINT_PINK:
+                color = 0xff00ff;
+                break;
+            case TINT_YELLOW:
+                color = 0x00ffff;
+                break;
+            case TINT_WHITE:
+                color = 0xffffff;
+                break;
+            case TINT_ORANGE:
+                color = 0x0080ff;
+                break;
+            case TINT_HOTPINK:
+                color = 0x8000ff;
+                break;
+            case TINT_BLACK:
+            default:
+                color = 0;
+                break;
+        }
+        CBrush brush(color);
+        FillRect(dc.m_hDC, &lpdis->rcItem, brush);
+        dc.Detach();
+    }
+    CWnd::OnDrawItem(nIDCtl, lpdis);
+}
 
 RVA(0x00017d40, 0x8)
 void CBattlezDlg::OnOkCommand() {

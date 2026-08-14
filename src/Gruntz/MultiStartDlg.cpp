@@ -641,16 +641,20 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
     }
 }
 
-RVA(0x000c2c80, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnTimer(u32 nIDEvent) {}
+RVA(0x000c2c80, 0x1a)
+void CMultiStartDlg::OnTimer(u32 nIDEvent) {
+    switch (nIDEvent) {
+        case MULTI_START_WATCHDOG_TIMER:
+            Watchdog();
+            break;
+    }
+    Default();
+}
 
 RVA(0x000c2cb0, 0x1f)
 i32 CMultiStartDlg::OnInitDialog() {
     CDialog::OnInitDialog();
-    ::SetTimer(m_hWnd, 1, 0x32, 0);
+    ::SetTimer(m_hWnd, MULTI_START_WATCHDOG_TIMER, 0x32, 0);
     return 1;
 }
 
@@ -718,11 +722,10 @@ i32 CMultiStartDlg::FlashCtrlD() {
     return 1;
 }
 
-RVA(0x000c30d0, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {}
+RVA(0x000c30d0, 0x12)
+void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
+    CWnd::OnMeasureItem(nIDCtl, lpmis);
+}
 
 RVA(0x000c3100, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
@@ -1446,29 +1449,30 @@ i32 CMulti::GetResendDelay() {
     return m_drainReload;
 }
 
-RVA(0x000c4e40, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnEnChange50a() {}
+RVA(0x000c4e40, 0x8)
+void CMultiStartDlg::OnEnChange50a() {
+    OnPlayerNameChange(0);
+}
 
-RVA(0x000c4e60, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnEnChange50b() {}
+RVA(0x000c4e60, 0x8)
+void CMultiStartDlg::OnEnChange50b() {
+    OnPlayerNameChange(1);
+}
 
-RVA(0x000c4e80, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnEnChange50c() {}
+RVA(0x000c4e80, 0x8)
+void CMultiStartDlg::OnEnChange50c() {
+    OnPlayerNameChange(2);
+}
 
-RVA(0x000c4ea0, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnEnChange50d() {}
+RVA(0x000c4ea0, 0x8)
+void CMultiStartDlg::OnEnChange50d() {
+    OnPlayerNameChange(3);
+}
+
+// Defined after its four callers so cl cannot inline the empty body away -
+// retail keeps the `push <slot>; call` at every EN_CHANGE site.
+RVA(0x000c4ec0, 0x3)
+void CMultiStartDlg::OnPlayerNameChange(i32 slot) {}
 
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
@@ -1544,29 +1548,25 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
     }
 }
 
-RVA(0x000c51c0, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnCmd51f() {}
+RVA(0x000c51c0, 0x8)
+void CMultiStartDlg::OnCmd51f() {
+    ToggleReady(0);
+}
 
-RVA(0x000c51e0, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnCmd523() {}
+RVA(0x000c51e0, 0x8)
+void CMultiStartDlg::OnCmd523() {
+    ToggleReady(1);
+}
 
-RVA(0x000c5200, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnCmd524() {}
+RVA(0x000c5200, 0x8)
+void CMultiStartDlg::OnCmd524() {
+    ToggleReady(2);
+}
 
-RVA(0x000c5220, 0x0)
-// @confidence: high
-// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
-// @stub
-void CMultiStartDlg::OnCmd525() {}
+RVA(0x000c5220, 0x8)
+void CMultiStartDlg::OnCmd525() {
+    ToggleReady(3);
+}
 
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {

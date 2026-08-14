@@ -1084,7 +1084,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f9048	0x001f9050	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9078	0x001f9080	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f90a8	0x001f90b0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f90b0	0x001f90e8	56	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
 0x001f90e8	0x001f90f0	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9118	0x001f9120	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9160	0x001f9168	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope

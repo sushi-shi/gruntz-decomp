@@ -55,6 +55,20 @@ GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_READY3 = 0x538
 GZ_ENUM_CONST_END(DialogCtrlId)
 
+// Resource control ids of the colour-picker dialog template (CBattlezDlgColors,
+// IDD 0xc2). Same constant-bag rule as DialogCtrlId - every carrier is an MFC
+// `int nID`.
+GZ_ENUM_CONST_BEGIN(ColorDlgCtrlId)
+    CTRL_COLOR_LIST = 0x515
+GZ_ENUM_CONST_END(ColorDlgCtrlId)
+
+// WM_TIMER ids of the multiplayer start dialog. OnInitDialog arms the watchdog
+// at a 50 ms period; OnTimer dispatches it to Watchdog(). Carried as MFC's
+// `UINT nIDEvent`.
+GZ_ENUM_CONST_BEGIN(MultiStartTimerId)
+    MULTI_START_WATCHDOG_TIMER = 1
+GZ_ENUM_CONST_END(MultiStartTimerId)
+
 typedef LRESULT(WINAPI* WapSendMessageA)(HWND, UINT, WPARAM, LPARAM);
 
 class CLatencyList;
@@ -225,6 +239,7 @@ public:
     void OnEnChange50b();
     void OnEnChange50c();
     void OnEnChange50d();
+    void OnPlayerNameChange(i32 slot);
     void OnCmd51f();
     void OnCmd523();
     void OnCmd524();
