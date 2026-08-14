@@ -22,7 +22,7 @@ regresses. Proven by `llvm-objdump -dr` base-vs-target on `??0CButeNodeEntry@@QA
 
 So: **keep the explicit `void* m_vtbl;` @+0 field + the `m_vtbl = &g_someVtbl;` store** (steerable to
 last) for these classes; do NOT declare virtuals. The vtable itself stays a reloc-masked `extern`
-(named in `config/retail/vtables_game.csv` if needed for scoring). The `z*` "RTTI" a vtable scan reports is
+(named in `config/retail/data_vtables.tsv` if needed for scoring). The `z*` "RTTI" a vtable scan reports is
 the engine's own manual type descriptor, not MSVC `/GR` RTTI — these are not compiler-emitted vtables.
 
 Distinct from the companions:

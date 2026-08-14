@@ -176,7 +176,7 @@ produce a wrong verdict, and each is counted in the build summary
   `+0x8` is the canonical case — `mov DWORD PTR ds:0x6bf628,0x5f04dc` looked like
   an unmodelled pointer member in the hole between `m_errSink` (+4) and
   `m_teardown` (+12), and is `??_7CButeTree@@6BzPtrColl@@@`, already catalogued in
-  `config/retail/vtables_game.csv`. Holes that are *not* vptr stamps are still
+  `config/retail/data_vtables.tsv`. Holes that are *not* vptr stamps are still
   reported.
 * **`width-skip-and-mask`** — cl 5.0 loads a narrow global with a **full-width**
   read and masks the register (`mov edx,DWORD PTR ds:g_idx` … `and edx,0xffff`),

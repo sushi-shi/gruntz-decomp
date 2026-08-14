@@ -943,7 +943,7 @@ Method notes (the conflicting-evidence reconciliation the brief asked for):
   into GruntStartingPoint.cpp (the class file; wormhole-#12 registrar precedent).
 * **GameKeyStr dissolved**: its methods were the anchored MFC CString entry points
   (Set=??4 0x1b9e74, Append=?+= 0x1ba0c8, Reset=?Empty 0x1b9c69, Free1b9b93=??0
-  0x1b9b93 per config/retail/library_labels.csv) - g_pathStr/g_levelStr are plain CString
+  0x1b9b93 per config/retail/functions_static_libs.tsv) - g_pathStr/g_levelStr are plain CString
   globals; the CustomWorldDialog/CustomWorldInfoDlg/OrphanLeaves triple-decl of
   0x22c25c unified. The 0x22c26c/0x22c270 cells are the popup's parent HWND /
   HINSTANCE (semantic names won over g_dat62c26c/70).

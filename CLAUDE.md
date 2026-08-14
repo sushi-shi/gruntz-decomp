@@ -130,14 +130,16 @@
   build. A `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous
   string payload or an FP slot with no reloc-corroborated referrer; removal is
   self-verifying (an oracle-covered pin unwraps with zero movement, a
-  load-bearing one fails the FATAL `data_denominator` partition gate on the
-  same build). Separately — and disjointly —
-  `config/retail/compiler-generated-data.tsv` is a manifest, not a macro: it
-  names the COFF COMMONs cl emits from a header-inline's local static (plus
-  the `??_B` guard byte beside it, which has no source spelling at all); these
-  have no owning TU, so only the retail address is stated and
-  `gruntz.audit.compgen_data` re-proves the rest against the base objs and
-  ratchets coverage. Details: `docs/data-attribution.md` §3b-iii.
+  load-bearing one fails the FATAL `data_denominator --check` census gate on
+  the same build). Separately — and disjointly —
+  `config/retail/data_compgen.tsv` is a manifest, not a macro, in two classes:
+  `class=common` names the COFF COMMONs cl emits from a header-inline's local
+  static (plus the `??_B` guard byte beside it, which has no source spelling at
+  all) — no owning TU exists, so only the retail address is stated and
+  `gruntz.audit.compgen_data` re-proves the rest against the base objs;
+  `class=copy` names the per-TU copies of header statics (the GruntDirStatics
+  device), whose owner is the emitting TU. Details:
+  `docs/data-attribution.md` §3b-iii.
 
 - The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
   means a complete, evidence-bounded body, not missing logic or unresolved

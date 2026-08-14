@@ -184,7 +184,7 @@ foldable symbol, and the TU does not place it at all:**
 a placement: the **linker** chooses its address, so an inline function's local
 static is outside the initializer stream AND outside c1xx's hash walk, and no
 TU can be said to own it. That is precisely why
-`config/retail/compiler-generated-data.tsv` exists (see `CLAUDE.md`) — such a
+`config/retail/data_compgen.tsv` exists (see `CLAUDE.md`) — such a
 datum, and its guard byte, have no source spelling in any single `.cpp` to hang
 a `DATA()` pin on, so only the retail ADDRESS is stated there.
 

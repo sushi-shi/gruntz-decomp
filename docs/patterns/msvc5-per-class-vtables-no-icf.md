@@ -2,7 +2,7 @@
 
 > **Status (2026-07):** the `RELOC_VTBL` macro is now DELETED — every site has been
 > dissolved (to a real per-class vtable, or, for a library COMDAT, a
-> `config/retail/library_labels.csv` carve). The toolchain finding below stands; it is kept
+> `config/retail/functions_static_libs.tsv` carve). The toolchain finding below stands; it is kept
 > as the proof behind the campaign rule. `RELOC_VTBL(...)` no longer exists in the
 > tree, so treat any mention as historical.
 

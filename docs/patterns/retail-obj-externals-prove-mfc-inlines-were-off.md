@@ -23,7 +23,7 @@ does close the five-call deficit.
 ## Why it is wrong
 
 `sec 0` in a delinked object is a DELINKER decision, not a compiler one. Any body
-listed in `config/retail/library_labels.csv` is carved out as library and emitted
+listed in `config/retail/functions_static_libs.tsv` is carved out as library and emitted
 as an undefined external no matter which compiland actually emitted it. Both
 rows are there:
 

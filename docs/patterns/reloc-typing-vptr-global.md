@@ -12,7 +12,7 @@ current score.
 **CORRECTION (2026-07-01, directly MEASURED — SUPERSEDES the "name a DIR32 data referent to score
 exact" claim in the 2026-07 note below):** DIR32 data-reloc **NAMES do NOT gate exactness** under
 the current objdiff config — naming a global (`DATA()`), a pooled `??_C@` string (`coff_oracle`),
-OR a `??_7` vtable (`vtables_game.csv`) flips **NOTHING**. Three independent proofs:
+OR a `??_7` vtable (`data_vtables.tsv`) flips **NOTHING**. Three independent proofs:
 1. **1684** DIR32 name-mismatches sit inside functions already scored **100.0% exact** — including
    **7 pooled `??_C@` string literals** (`RegistryHelper::Open` is 100% with base `??_C@_08LOIE@Software`
    vs target `s_ware_0061a068`; `CWorldState::BuildWorldLevelPath` 100% with `??_C@…BATTLEZ` vs
@@ -47,7 +47,7 @@ stands (those are masked too). See `docs/matching-patterns.md` §215.
 
 **UPDATE (2026-07, measured — largely OBSOLETE; its DIR32 half is now REFUTED, see CORRECTION above):**
 The vtable/global **DIR32** half is
-FIXED — a NAMED DIR32 data referent (vtable via `config/retail/vtables_game.csv`, global via `DATA()`,
+FIXED — a NAMED DIR32 data referent (vtable via `config/retail/data_vtables.tsv`, global via `DATA()`,
 pooled string via the `coff_oracle`) now scores exact; an unnamed one is fixed by naming it. The
 **`__imp__`/import + `REL32`-call half is a NON-issue**: objdiff MASKS `REL32` call/branch reloc
 names and `call [disp32]` import operands, so those never cap the score (measured: renaming 5909

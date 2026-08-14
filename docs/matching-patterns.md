@@ -225,7 +225,7 @@ sides, so objdiff won't score it "exact". **Confirm by direct byte-compare**
 **HISTORICAL (2026-07, superseded by strict relocation scoring):** the DIR32 fix
 was DONE — the pinned
 `vostok-delinker` types absolute `.text→data` stores as DIR32, and vtables/globals/
-pooled strings are named (`config/retail/vtables_game.csv`, `labels.py` `DATA()`, the
+pooled strings are named (`config/retail/data_vtables.tsv`, `labels.py` `DATA()`, the
 `coff_oracle` string oracle). So a **named** DIR32 data referent now scores exact; an
 **unnamed** one is fixed simply by naming it (DATA()/vtable_names). CRUCIALLY, objdiff
 formerly masked `REL32` target names under `data_value`. The project now uses

@@ -327,7 +327,7 @@ arrays) and the candidate COMDAT cl.exe emitted. `slot_count * 4 == candidate se
 or the row is withheld — the same contradiction check `section_rows()` applies to a literal.
 It immediately caught one real defect (`candidate section 0xc != RTTI 2 slots`). Secondary/MI
 vtables (`??_7X@@6B<base>@@@`) now take their reviewed retail identity and extent from
-`vtables_game.csv`, while the independently emitted candidate COMDAT still has to agree;
+`data_vtables.tsv`, while the independently emitted candidate COMDAT still has to agree;
 the former promised "later pass" was never implemented and silently withheld them.
 
 | | vtables withheld | vtables enrolled |
@@ -419,7 +419,7 @@ residual defect**. The three families, each its own follow-on:
   faithful fix.
 * **MFC base slots mislabeled on the TARGET side (314 sites, 40 vtables).** e.g. base
   `?GetRuntimeClass@CObject@@UBEPAUCRuntimeClass@@XZ` versus target
-  `?AfxExtractSubString@@YGHAAVCString@@PBDHD@Z` — a `library_labels.csv` / FLIRT naming
+  `?AfxExtractSubString@@YGHAAVCString@@PBDHD@Z` — a `functions_static_libs.tsv` / FLIRT naming
   defect, now visible.
 
 The genuine per-class residuals this exposed are the deliverable: `??_7CGruntzCommand@@6B@`
@@ -475,7 +475,7 @@ retail vtable holds its address. Accepted only when the map is 1:1 in BOTH direc
 for rvas no src claim (address or extent) and no active library row already covers, and with
 the retail bytes compared against our own COMDAT wherever we emit one. **45 accepted, 0 model
 contradictions, 3 ambiguous.** 32 are MFC bodies and become `HIGH` rows in
-`library_labels.csv` (the `mfc-4.2-header-inline` precedent: `CObject::Serialize` and friends
+`functions_static_libs.tsv` (the `mfc-4.2-header-inline` precedent: `CObject::Serialize` and friends
 are `_AFX_INLINE` in `AFX.INL`, so cl materialises them as COMDATs inside a game TU's
 contribution). The wrong `LOW` FID row `0x014be0,__fpclear` is pruned — that address is
 `CObject::AssertValid`.
@@ -526,7 +526,7 @@ now clean, confirming its `__purecall` fix. The last COL site is
 from the registry alone, and a template vtable's registry key decodes the `??_R0` name
 on `@` into a symbol no object defines (`?$CArray@PAU…` → `PAU1::…::?$CArray`), so a
 template class's ENTIRE RTTI graph went unwalked — `vtable_rows()` had the
-`vtables_game.csv` name→rva bridge, the walk did not. Bridged (the rva must still be a
+`data_vtables.tsv` name→rva bridge, the walk did not. Bridged (the rva must still be a
 registry-located base-0 vtable), `CArray<PLAYLISTINFOSTRUCT*>`'s graph
 (COL `0x1f4320` → R3 `0x1f4308` → R1 `0x1f42d8` → R0 `0x20ceb0`, previously unclaimed
 `.data`) enrolls for its three emitters. Known cost: the walked
@@ -604,7 +604,7 @@ First proven claims (historical): the `".WWD"` disambiguation (0x20cfbc vs the
 today), a 2-TU `"Wormhole"` fold at 0x20a7ac, and grunthealthsprite's `0.2`/`0.5`
 FP pool entries (0x1e9a98/0x1e9aa0) - the first FP data to pair at all.
 
-### 3b-iv. `config/retail/compiler-generated-data.tsv` — COMMON pins (wired)
+### 3b-iv. `config/retail/data_compgen.tsv` — COMMON pins (wired)
 
 The class §3b-iii cannot express: a datum with **no source site to attach to at all**.
 `DATA_COMPGEN` needs a value expression; a `??_B` dynamic-init guard byte has none (cl
@@ -899,7 +899,7 @@ non-exact `.bss` (88 B at 8.70%). `CButeMgr::GetRect`'s `static ButeIntRect s_de
 its guard are a NON-INLINE function's local statics, so cl emits them once, into butemgr's
 own `.bss`, as private decorated symbols — `_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265`
 (`docs/compiler-data-layout.md`, "Function-local statics: the six cases"). They need a
-reviewed `config/static_data_copies.tsv` row only because a `DATA()` pin cannot spell a
+reviewed `config/retail/data_compgen.tsv (class=copy)` row only because a `DATA()` pin cannot spell a
 name cl invents — but the rows named them `_s_default_rect_butemgr`, so the two sides never
 paired. The rows now carry cl's spelling verbatim. BOTH `$S<n>` counters in such a name are
 volatile — c2's `outdname` appends the trailing one, and c1xx spells the guard's own
@@ -973,7 +973,7 @@ manifest generation and the section returns to 100.0 with the byte in the denomi
   site — reading the retail bytes named the datum: `21 00` is `"!"`, not an int 33.
 * The creditsstate `??_R0` was a **missing catalog bridge in `rtti_rows()`**:
   `vtable_rows()` bridges a template specialization (`?$CArray@PAU…`) through
-  `vtables_game.csv` because the registry key decodes its RTTI name into a symbol no
+  `data_vtables.tsv` because the registry key decodes its RTTI name into a symbol no
   object defines, but `rtti_rows()` never got the same bridge, so the class's ENTIRE
   RTTI graph (COL `0x1f4320` → R3 `0x1f4308` → R1 `0x1f42d8` → R0 `0x20ceb0`) went
   unwalked. Bridged (rva still has to be a registry-located base-0 vtable), the graph
@@ -1010,7 +1010,7 @@ hiding at 95–99%.
   delinked object, so it reaches data the delinker never carved.
 * `paired` — for a datum both objects define, each side's referent resolves to an
   RVA (`symbol_names.csv`, Ghidra's address-carrying auto-labels, the delinker's
-  `const_<rva>`, plus `library_labels.csv` minus its `vtable-slot-oracle` rows,
+  `const_<rva>`, plus `functions_static_libs.tsv` minus its `vtable-slot-oracle` rows,
   because a label derived from a vtable slot cannot adjudicate a vtable slot).
 
 Addresses are the design, and NAMES were the first draft's mistake. Ported from
@@ -1067,14 +1067,14 @@ side does not.
 **The gate also fails on an orphan payload** — an enrolled datum carved into an
 object `objdiff.json` never opens, so its bytes are withheld from every
 measurement with nothing to report it. This is the ordinary-data twin of the
-`vtables_game.csv` row that named a dropped unit; `vtable_catalog.validate` checks
+`data_vtables.tsv` row that named a dropped unit; `vtable_catalog.validate` checks
 names and RVAs, not the unit column. Twenty-eight rows exist today, recorded with
 their evidence in `KNOWN_ORPHAN_UNITS`:
 
 | unit | rows | storage | why |
 |---|---|---|---|
-| `movieplayer` | 1 | `.rdata` | `vtables_game.csv:88` puts `??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@` (0x1e971c, 0x14, six relocated slots) on a unit `units.toml` does not declare. Three real units emit it — `arrayserialize`, `creditsstate`, `gruntzmgr` — so all three show it unpaired. Retail neighbours: `creditsstate` `.rdata` ends 0x1e9710, `grunt` starts 0x1e9738. Suggestive, not proof. |
-| `ghidra` | 27 | `.bss` | `static_data_copies.tsv`'s documented holding unit for the GruntDirStatics copies whose TU is not yet partitioned. No bytes exist, so nothing is withheld from scoring. |
+| `movieplayer` | 1 | `.rdata` | `data_vtables.tsv:88` puts `??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@` (0x1e971c, 0x14, six relocated slots) on a unit `units.toml` does not declare. Three real units emit it — `arrayserialize`, `creditsstate`, `gruntzmgr` — so all three show it unpaired. Retail neighbours: `creditsstate` `.rdata` ends 0x1e9710, `grunt` starts 0x1e9738. Suggestive, not proof. |
+| `ghidra` | 27 | `.bss` | `data_compgen.tsv (class=copy)`'s documented holding unit for the GruntDirStatics copies whose TU is not yet partitioned. No bytes exist, so nothing is withheld from scoring. |
 
 The same family, third form: **a live unit for which the delinker produced no
 object at all**. objdiff pairs nothing and scores the empty pairing **100.00% on
@@ -1099,7 +1099,7 @@ there; the delinker has no name for it and spells all six
 `??_7CGruntVoice@@6B@ + 0xfc`. The bytes at 0x1eb068 are `{0x005eb2e0,
 0x005eb070}`, the `AFX_MSGMAP` `{pBaseMessageMap, lpEntries}` shape, which makes
 **0x1eb2e0 `?messageMap@CWnd@@1UAFX_MSGMAP@@B`**. Not landed here:
-`library_labels.csv` is a FUNCTION carve-out list feeding the executable map, so a
+`functions_static_libs.tsv` is a FUNCTION carve-out list feeding the executable map, so a
 data row belongs in the data pin channel, not in it.
 
 ## The access map (`gruntz.audit.data_access`)
@@ -1127,7 +1127,7 @@ The 260-item mis-typed-globals worklist (8 flagged + 252 unclaimed runs) is
 resolved to: **0 flagged symbols**, and unclaimed runs reclassified to
 31 data / 105 library / 836 string-pool / 1 alias. Landed devices: the
 GruntDirStatics per-TU static-copy family (66 full + 14 split copies,
-`config/static_data_copies.tsv` folded in at merge_labels), 45 FP pool
+`config/retail/data_compgen.tsv (class=copy)` folded in at merge_labels), 45 FP pool
 constants as `DATA_COMPGEN` at their use sites, the CButeMgr getter-static
 band, message maps for CBattlezDlgColors/CMultiStartDlg (11 handler stubs
 claimed from pfn evidence), the DirectInput GUID triple, and ~40 per-slot
@@ -1194,7 +1194,7 @@ left open rather than paid for.
 
 **The residual 1,221 B is dominated by `??_B` guard bytes** - the
 `mov cl,[g]; mov al,1; test al,cl; jne; or cl,al; mov [g],cl` prologue of a
-function-local `static`. `config/retail/compiler-generated-data.tsv` is their
+function-local `static`. `config/retail/data_compgen.tsv` is their
 natural home but ratchets COFF **COMMON**s, and these are ordinary per-TU `.bss`
 from main-file statics whose functions are not reconstructed, so there is no
 base-side symbol to pair.
@@ -1226,7 +1226,7 @@ payload proves nothing in zero fill, so a verdict rests on:
 
 * **who references the run** — every absolute-address operand is a `.reloc`
   HIGHLOW site; the containing function's game/library classification
-  (`library_labels.csv`) is the attribution. Referenced only by proven library
+  (`functions_static_libs.tsv`) is the attribution. Referenced only by proven library
   code ⇒ `library-private data`, excluded.
 * **library pointer propagation** — a pointer WRITTEN INSIDE a node already
   proven library-private claims the `.bss` it targets (single-hop by
@@ -1257,7 +1257,7 @@ Two initialized-side refinements landed with it:
 The `.cpp`-local static-init guard family (`_?$S<n>@?N??<fn>@4EA$S<id>`, a named
 STATIC cl 5.0 emits with no source spelling) was censused across every base obj:
 11 guards, 9 already enrolled, the two `CPlay` ones pinned via
-`config/static_data_copies.tsv` (the butemgr-band precedent).
+`config/retail/data_compgen.tsv (class=copy)` (the butemgr-band precedent).
 
 Scoreboard after: initialized 95.15% / `.bss` 91.72% reconstructable, fidelity
 100.00 both. The eligible-unenrolled remainder (the worklist, largest first):
@@ -1290,7 +1290,7 @@ rule (MFC funclet blobs → the static CWnd/CMemoryException objects excluded);
 RTTI/EH records recognised by CONTENT (TypeDescriptor vptr anchor + ≤4-cell
 chains — .data ??_R0s and .xdata$x throw records, initialized UNCLASSIFIED
 4,137 → 21 B); the CDialog/CWnd/CCmdTarget message-map chain and six
-game-named SDK GUIDs enrolled via `vtables_library.csv` → `library_data`.
+game-named SDK GUIDs enrolled via `data_static_libs.tsv` → `library_data`.
 
 **Parked, with reasons** (the residue and why static evidence is exhausted):
 

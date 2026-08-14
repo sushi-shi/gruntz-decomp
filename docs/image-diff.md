@@ -36,7 +36,7 @@ Needs `ninja candidate` (both images + the `.map`) and a `gruntz build`
 Our `.text` is 25,813 B short, so everything downstream of the first divergence
 sits at a different RVA. A positional differ reports near-0% for the whole image —
 true and useless. Regions are therefore paired by **name**: retail's side from
-`config/retail/functions.tsv` × `symbol_names.csv` × `library_labels.csv` (via
+`config/retail/functions.tsv` × `symbol_names.csv` × `functions_static_libs.tsv` (via
 `gruntz.core.exe_map`) plus `delink_data_manifest.tsv` for data; ours from the link
 `.map`'s publics. Pairing is placement-independent by construction, which is what
 makes it survive the layout rules in `docs/link-text-layout.md` — a kept-COMDAT

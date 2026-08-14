@@ -78,7 +78,7 @@ evidence is there (it is real data and a real name), but do not expect the score
 * the fix is upstream — emit COFF symbol sizes on the target side, give every
   unplaced datum its own section row instead of appending it to a neighbour's, or let
   `data_manifest.py` enroll the vtable extents it already knows (`config/retail/
-  vtables_game.csv` carries `0x14` for exactly these vtables; `labels.py` deliberately
+  data_vtables.tsv` carries `0x14` for exactly these vtables; `labels.py` deliberately
   drops the size because the manifest already enrolls the vtable, and feeding it twice
   aborts the delink with `duplicate data RVA` — measured 2026-08-09).
 

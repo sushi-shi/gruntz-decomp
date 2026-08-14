@@ -149,7 +149,7 @@ rva-suffixed and pairs against its TU's own emission.
 
 **`butemgr` was the last hole, and it was the same naming defect one level
 deeper (fixed 2026-08-09, `docs/data-attribution.md` §3d-ii).** Its band stayed
-at 8.70% because `config/static_data_copies.tsv` enrolled it under invented C
+at 8.70% because `config/retail/data_compgen.tsv (class=copy)` enrolled it under invented C
 names (`_s_default_rect_butemgr`) while the base obj spells it the way cl does
 —`_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S20265`, a
 NON-inline function's local static (`docs/compiler-data-layout.md`, the six

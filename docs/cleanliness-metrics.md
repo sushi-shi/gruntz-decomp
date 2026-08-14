@@ -93,9 +93,9 @@ Policy and the named-cast rules live in `docs/cast-metric-policy.md`; offset-cas
 | metric | command | state |
 |---|---|---|
 | Vtable catalog | `python -m gruntz.cleanliness.class_vtables --assert-unique` | **FATAL** — catalog rows are structurally valid (proven-absent `??_7` carry `VTBL_ABSENT`) |
-| src claims ∩ library_labels.csv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
+| src claims ∩ functions_static_libs.tsv | `python -m gruntz.match.verify_library_overlap` | **FATAL** (no allowlist) — FULL generated symbol set: rva-macro + RVA_COMPGEN + DATA (vendored zlib excluded by source, not allowlist) |
 | stub metadata / dup / stub-vs-matched | `python -m gruntz.match.verify_stubs` | **FATAL** |
-| compiler-generated DATA pins | `python -m gruntz.audit.compgen_data` | **FATAL** — spelling + authority + binding + COVERAGE (every COFF COMMON in any base obj is pinned in `config/retail/compiler-generated-data.tsv`) |
+| compiler-generated DATA pins | `python -m gruntz.audit.compgen_data` | **FATAL** — spelling + authority + binding + COVERAGE (every COFF COMMON in any base obj is pinned in `config/retail/data_compgen.tsv`) |
 | narrow-complement masks | `python -m gruntz.audit.mask_immediates` | `truncated masks` (semantic baseline), ratcheted at **0** — our base masks a 32-bit word with the 8/16-bit complement of retail's constant (`andl $0xdf` vs `andb $0xdf`), so the write clears the intended bit AND everything above the byte. Always a width or union-member slip; NOT the MSVC5 enum story (`docs/patterns/enum-complement-is-sixteen-bit.md`). Full mode also prints every base-vs-target mask-constant difference — the wrong-magic-number class objdiff's masked diff hides |
 
 ## Match (the binary-matching goal)

@@ -384,7 +384,7 @@ Unchanged in spirit, just orchestrated by ninja. The `delink` rule runs
 setup runs in `gruntz init`: a stable retail copy at `build/exe/GRUNTZ.EXE`, the
 Wine prefix, and clangd metadata. Ghidra is not a setup or build dependency. The
 FID library labels are tracked
-(`config/retail/library_labels.csv`, so they survive `git clean`); regenerate them with
+(`config/retail/functions_static_libs.tsv`, so they survive `git clean`); regenerate them with
 `python -m gruntz.audit.fid_generate`.
 
 The delink rule's declared outputs are the per-unit `build/objdiff/target/<unit>.c.obj`
@@ -427,7 +427,7 @@ nothing important lives only in the `.gpr` blob — it is all reproducible:
 `apply.py` layers names in a fixed order so the outcome is deterministic and the
 `src/` labels are the SOURCE OF TRUTH at every RVA they claim:
 
-1. **FID library labels** (`config/retail/library_labels.csv`; HIGH/MED/AMBIG only — LOW
+1. **FID library labels** (`config/retail/functions_static_libs.tsv`; HIGH/MED/AMBIG only — LOW
    rows are deliberately skipped as noise) name only the RVAs `src/` does **not**
    claim. A FID row at an `src`-claimed RVA is skipped (counted as `src-claimed
    skipped`): FID's AMBIG collisions — `??0CMetaFileDC@@` at a real ctor,
@@ -516,7 +516,7 @@ The two all-TU libclang scans (`enum_case_labels` and `bare_constants`) were rou
 5–7 minutes each, and a stale `structs.json` layout regeneration adds about 4.5 minutes.
 
 The normal tier also re-proves
-`config/retail/data-coverage-partition.tsv` with
+`config/retail/data.tsv` with
 `python -m gruntz.audit.data_denominator --check`. The artifact partitions every
 unenrolled initialized-data range into eligible or excluded bytes. Its roots are
 game/compiler code and enrolled data; static data-to-data pointers propagate
@@ -685,7 +685,7 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
      ordinal names such as `_$E<n>` are forbidden here and belong in
      `config/retail/compiler-generated-functions.tsv`.
 
-   Its DATA analog is a **manifest**, `config/retail/compiler-generated-data.tsv`
+   Its DATA analog is a **manifest**, `config/retail/data_compgen.tsv`
    (`rva`/`size`/`symbol`/`emitter`) — see "Compiler-generated DATA pins" below.
 
    `labels.py` reads `RVA` from **LLVM IR** (`@llvm.global.annotations`
@@ -695,13 +695,13 @@ does not exist yet is paired against an empty `dummy.obj` so it still lists at
    `DATA` from the clang AST (an `extern`'s annotation is dropped from IR). The
    label map regenerates from these annotations — never hand-edit the CSV. (The
    vendored zlib C TUs keep PRISTINE source — no labels in it; their rva→symbol
-   map is the static `config/retail/zlib_labels.csv`, emitted directly. See
+   map is the static `config/retail/functions_zlib.tsv (+ data_zlib.tsv)`, emitted directly. See
    `docs/zlib-matching.md`.)
 3. `gruntz build` (configure -> compile -> labels -> delink -> objdiff).
 
 ### Compiler-generated DATA pins
 
-`config/retail/compiler-generated-data.tsv` is the DATA analog of `RVA_COMPGEN`.
+`config/retail/data_compgen.tsv` is the DATA analog of `RVA_COMPGEN`.
 It names a datum cl.exe emits from a definition that is already in the tree but
 that neither source-side data device can reach:
 

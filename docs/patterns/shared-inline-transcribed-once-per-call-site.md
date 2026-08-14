@@ -52,7 +52,7 @@ schedule differently. Clusters are ranked by interest x spread, where interest c
 computation and zeroes out four boilerplate families (SEH frames, `` `scalar deleting destructor' ``,
 `rep movs`/`repne scas`/`rep stos`). Without that filter the entire top of the list is
 compiler-generated. Sites are attributed through `build/gen/symbol_names.csv` +
-`config/retail/library_labels.csv`, and `--game-only` (the default) drops the CRT/MFC band, which
+`config/retail/functions_static_libs.tsv`, and `--game-only` (the default) drops the CRT/MFC band, which
 is the largest remaining false-positive family.
 
 ## The confirming evidence, and it is decisive

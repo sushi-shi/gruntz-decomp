@@ -61,7 +61,6 @@ USAGE
     python -m gruntz.audit.data_denominator --worklist  # the game-data runs
     python -m gruntz.audit.data_denominator --tsv PATH  # every run, classified
     python -m gruntz.audit.data_denominator --check     # census agreement gate
-    python -m gruntz.audit.data_denominator --check     # re-prove tracked partition
 """
 from __future__ import annotations
 
@@ -887,7 +886,7 @@ def census_check(p=None) -> list[str]:
     """
     import bisect
 
-    from gruntz.build.labels import compgen_rows
+    from gruntz.build.labels import compgen_table_rows
     from gruntz.core.retail_data import REGIONS, all_rows
 
     p = p or partition()
@@ -899,7 +898,7 @@ def census_check(p=None) -> list[str]:
         if lo not in by_rva:
             errors.append(f"census: region {key} does not open with a row at 0x{lo:08x}")
 
-    compgen = {rva: cls for rva, _s, _n, _o, cls in compgen_rows()}
+    compgen = {rva: cls for rva, _s, _n, _o, cls in compgen_table_rows()}
     claims = REPO / "build/gen/delink_data_manifest.tsv"
     if claims.is_file():
         with claims.open(newline="") as f:

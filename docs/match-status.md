@@ -142,7 +142,7 @@ functions already pulled into units — measuring 62/113 there reads as "99%
 fuzzy" when we've barely begun. So the denominator is the full reversing target:
 every in-`.text` non-thunk function minus FID-identified CRT/MFC library code
 (`config/retail/functions.tsv` classified with
-`config/retail/library_labels.csv`). The bulk we have not started shows up as
+`config/retail/functions_static_libs.tsv`). The bulk we have not started shows up as
 the `(unmatched)` row at 0%, and the headline reads honestly — e.g.
 `62 / 9,083 functions exact (0.68%)`. A second line keeps the started-unit view
 for context. The tracked retail inventory is required build input, so a fresh

@@ -118,7 +118,7 @@
   `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous string payload
   or an FP slot with no reloc-corroborated referrer (removal is
   self-verifying via the FATAL `data_denominator` gate). Separately — and
-  disjointly — `config/retail/compiler-generated-data.tsv` is a manifest, not
+  disjointly — `config/retail/data_compgen.tsv` is a manifest, not
   a macro: it names the COFF COMMONs cl emits from a header-inline's local
   static (plus the `??_B` guard byte beside it); no owning TU, so only the
   retail address is stated and `gruntz.audit.compgen_data` re-proves the rest.

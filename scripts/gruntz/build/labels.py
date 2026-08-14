@@ -764,13 +764,13 @@ def load_compgen_data(path=None):
     against the base objs at every build, so a stale or invented row binds nothing.
     """
     out = []
-    for rva, size_s, name, owner, cls in compgen_rows(path):
+    for rva, size_s, name, owner, cls in compgen_table_rows(path):
         if cls == "common":
             out.append((rva, int(size_s, 16), name, owner))
     return out
 
 
-def compgen_rows(path=None):
+def compgen_table_rows(path=None):
     """Raw (rva, size_str, name, owner, class) rows of data_compgen.tsv."""
     out = []
     p = Path(path or COMPGEN_DATA)
@@ -1253,7 +1253,7 @@ def merge_fragments(frags, out, functions_frags=None, functions_out=None,
     # ignored, so their retail rvas live in data_compgen.tsv class=copy rows -
     # see include/Gruntz/GruntDirStatics.h).
     obj_cache = {}
-    for rva, size_s, name, owner, cls in compgen_rows():
+    for rva, size_s, name, owner, cls in compgen_table_rows():
         if cls != "copy":
             continue
         name = _repair_static_ordinal(name, owner, obj_cache)

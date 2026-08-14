@@ -701,7 +701,7 @@ CUT with an orientation: the band's first byte starts a compiland. One band
 per TU is unconditional (a TU cannot emit two copies), so band COUNT floors
 the TU count and band order fixes link order. Full derivation:
 docs/data-attribution.md (access-map section) + the sidecar
-config/static_data_copies.tsv (rva-suffixed names = holding-unit copies
+config/retail/data_compgen.tsv (class=copy) (rva-suffixed names = holding-unit copies
 awaiting their split).
 
 Cuts inside CURRENT units (band setter rvas; each starts a new TU, span

@@ -82,7 +82,7 @@ each appearing 106 times; 106 runs of exactly 9 contiguous XC slots
 That is `include/Gruntz/GruntDirStatics.h`'s nine `static GruntDirectionCell` objects,
 one private copy per includer - and `grep -rl GruntDirStatics.h src` returns exactly 106
 `.cpp` files. The census is therefore an independent oracle for
-`config/static_data_copies.tsv`: it found 15 cells with no manifest row (bootycheatstate,
+`config/retail/data_compgen.tsv (class=copy)`: it found 15 cells with no manifest row (bootycheatstate,
 gruntzmgr, netsessionmgr each had the four cardinals and not the other five, because the
 linker split those blocks across two `.bss` regions).
 

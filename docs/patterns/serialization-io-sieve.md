@@ -49,7 +49,7 @@ Companion checks that close the rest of the format surface, all also clean:
 * **The factory type-id map** — `SerialObjectFactory`'s arm-9 switch is
   `lea eax,[ecx-0x3e8]; cmp eax,0x44; ja default; jmp [eax*4+0x40eb10]`. Read the 69
   dwords at RVA 0xeb10, take each arm's **last** `mov [esi],<imm>` before its `mov eax,1`
-  epilogue, and look the address up in `config/retail/vtables_game.csv`: the vptr NAMES
+  epilogue, and look the address up in `config/retail/data_vtables.tsv`: the vptr NAMES
   the class the arm constructs. All 69 arms agree with our `case LOGIC_*: new C*;` list,
   including the two ids (0x3f9, 0x40e) whose table entries point at the default arm and
   which our source correctly omits. Two arms (0x42b, 0x42c) `call` an out-of-line ctor

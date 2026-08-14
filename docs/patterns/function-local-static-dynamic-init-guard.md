@@ -94,7 +94,7 @@ manglings and no `_`/`$S` decoration — `?holdrand@?1??GetRandomNumber@@YAHXZ@4
 by the linker into one bss slot. `DATA()` cannot reach either (it binds an AST VarDecl in the MAIN
 file, and these live in a header), and `DATA_COMPGEN` cannot either (it wraps a value expression at
 a use site; the guard byte has no source expression). Pin both in
-**`config/retail/compiler-generated-data.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
+**`config/retail/data_compgen.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
 COMMON has no owning TU for a source pin to sit in. GRUNTZ's three `GetRandomNumber` copies:
 
 | emitter | guard | seed |

@@ -261,7 +261,7 @@ fabricates an owner:
   source spelling at all — has **no owning TU**. cl emits each as a COFF COMMON
   into every TU that instantiates the inline and the linker merges them, so any
   source position would invent an owner. Those live in a manifest,
-  `config/retail/compiler-generated-data.tsv`, whose every row is re-proven
+  `config/retail/data_compgen.tsv`, whose every row is re-proven
   against every base object's COMMON table on each build. That re-proof is what
   keeps it from being the retired declaration-only `DATA_SYMBOL` in a new coat.
 
