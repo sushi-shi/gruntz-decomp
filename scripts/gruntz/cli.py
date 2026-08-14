@@ -1,6 +1,8 @@
 """gruntz - the umbrella CLI.
 
     gruntz tool <name> [args...]     drive one external tool (gruntz/tool/)
+    gruntz init                      local setup (the build wine prefix; the
+                                     dev-shell hook runs this at entry)
 
 Subcommands grow with the rebuild; `tool` forwards to the named module's own
 main(), so `gruntz tool cl ...` and `python3 -m gruntz.tool.cl ...` (the form
@@ -21,6 +23,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\ntools: {', '.join(TOOLS)}")
         return 0 if argv else 2
     cmd, rest = argv[0], argv[1:]
+    if cmd == "init":
+        from gruntz.tool import ToolError
+        from gruntz.tool.wine import init_prefix, verify_prefix
+        try:
+            init_prefix()
+            verify_prefix()
+        except ToolError as e:
+            print(f"[init] {e}", file=sys.stderr)
+            return 1
+        print("[init] build wine prefix OK (the graph/init steps grow with "
+              "the rebuild)")
+        return 0
     if cmd == "tool":
         if not rest or rest[0] not in TOOLS:
             print(f"gruntz tool: pick one of {', '.join(TOOLS)}", file=sys.stderr)

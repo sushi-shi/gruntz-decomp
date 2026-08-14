@@ -108,8 +108,10 @@ _ENV_KEY = (r"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control"
 
 
 def _reg(*args: str, capture: bool = False) -> subprocess.CompletedProcess:
+    quiet = {} if capture else {"stdout": subprocess.DEVNULL,
+                                "stderr": subprocess.DEVNULL}
     return subprocess.run(["wine", "reg", *args], check=False, text=True,
-                          capture_output=capture)
+                          capture_output=capture, **quiet)
 
 
 def ensure_link_deps() -> None:
