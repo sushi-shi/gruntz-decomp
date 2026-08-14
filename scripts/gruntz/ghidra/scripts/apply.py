@@ -145,20 +145,29 @@ def load_csv_rows(path, delim=","):
 
 
 def load_function_inventory(path):
+    """(rva, size) rows; sizes DERIVED to the next start (2-col rva/kind schema).
+
+    The partition's `pad` rows cap the preceding extent and are then dropped;
+    the final row runs to .text's virtual end (0x1e626b)."""
+    text_end = 0x1e626b
     rows = []
     fh = open(path)
     try:
         for line in fh:
-            line = line.strip()
-            if not line or line.startswith("#") or line.startswith("rva\t"):
+            line = line.rstrip("\n")
+            if not line.strip() or line.startswith("#") or line.startswith("rva\t"):
                 continue
             fields = line.split("\t")
-            if len(fields) < 2:
-                raise RuntimeError("malformed retail function row: %r" % line)
-            rows.append((int(fields[0], 0), int(fields[1], 0)))
+            rows.append((int(fields[0], 0),
+                         fields[1].strip() if len(fields) > 1 else ""))
     finally:
         fh.close()
-    return rows
+    rows.sort()
+    out = []
+    for (rva, kind), (nxt, _k) in zip(rows, rows[1:] + [(text_end, "")]):
+        if kind != "pad":
+            out.append((rva, nxt - rva))
+    return out
 
 def load_functions_json(path):
     """build/gen/functions.json -> [dict(rva,name,cls,kind,ret,cc,params)].

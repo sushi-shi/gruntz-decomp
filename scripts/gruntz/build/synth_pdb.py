@@ -479,28 +479,17 @@ def read_functions(path, names_map=None, thunk_names=None, library_rvas=(),
         if rva in names_map:
             name = names_map[rva][0]
             at_size = names_map[rva][2]
-            # Surface disagreements: the tracked table is the admitted
-            # baseline, while a source size may deliberately include inline
-            # data that an analyzer originally excluded.
-            if at_size and at_size != size:
-                # A tiny admitted boundary where src annotates a much larger
-                # @size is a mis-carve; the matcher-verified source extent wins.
-                if size <= 8 and at_size > size:
-                    print("[synth_pdb] 0x%x %r: tiny admitted boundary %d B -> @size %d B"
-                          % (rva, name, size, at_size), file=sys.stderr)
-                    size = at_size
-                elif at_size > size:
-                    # Source sizes can include inline jump tables in the /Gy
-                    # COMDAT beyond the admitted code-body boundary.
-                    print("[synth_pdb] 0x%x %r: @size grows admitted boundary "
-                          "%d B -> %d B (inline-table span)"
-                          % (rva, name, size, at_size), file=sys.stderr)
-                    size = at_size
-                else:
-                    print("[synth_pdb] WARN: 0x%x %r boundary mismatch - "
-                          "inventory=%d B, @size=%d B; using tracked inventory. "
-                          "Check the annotation or update config/retail/functions.tsv."
-                          % (rva, name, size, at_size), file=sys.stderr)
+            # The CLAIM is the size authority: the inventory's extent is derived
+            # to the next admitted start, so it also spans the function's
+            # trailing jump tables and alignment. A claim larger than the
+            # derived extent crosses the next row - rva_size gates that.
+            if at_size:
+                if at_size > size:
+                    print("[synth_pdb] WARN: 0x%x %r @size %d B crosses the next "
+                          "admitted start (derived extent %d B) - fix the "
+                          "annotation or admit the boundary."
+                          % (rva, name, at_size, size), file=sys.stderr)
+                size = at_size
         elif rva in thunk_names:
             # A retail incremental-link thunk is not part of the owning TU,
             # but every reference through it denotes the body it forwards.

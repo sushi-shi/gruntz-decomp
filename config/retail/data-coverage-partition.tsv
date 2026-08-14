@@ -225,7 +225,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ed108	0x001ed118	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		UUID.LIB:_IID_IPersistFile
 0x001ed118	0x001ed138	32	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ed138	0x001ed1bc	132	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x001ed1bc	0x001ed250	148	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ed1bc	0x001ed1d8	28	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (2)	NAFXCW:MFC message-map/data block
+0x001ed1d8	0x001ed250	120	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ed250	0x001ed264	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001ed264	0x001ed278	20	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ed278	0x001ed28c	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
@@ -263,7 +264,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ee1ac	0x001ee1c4	24	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001ee1c4	0x001ee470	684	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
 0x001ee470	0x001ee484	20	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x001ee484	0x001ee544	192	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ee484	0x001ee53c	184	.rdata	library-private data	excluded	library-private data		NAFXCW:MFC message-map/data block
+0x001ee53c	0x001ee544	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	NAFXCW:MFC message-map/data block
 0x001ee544	0x001ee5a4	96	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001ee5a4	0x001ee5ac	8	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001ee5b0	0x001ee624	116	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
@@ -312,11 +314,6 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ef814	0x001ef818	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001ef818	0x001ef828	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_CLSID_DirectDraw
 0x001ef828	0x001ef838	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_CLSID_DirectDrawClipper
-0x001ef838	0x001ef848	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDraw
-0x001ef858	0x001ef868	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDraw4
-0x001ef868	0x001ef878	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface
-0x001ef878	0x001ef888	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface2
-0x001ef898	0x001ef8a8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawSurface4
 0x001ef8a8	0x001ef8b8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawPalette
 0x001ef8b8	0x001ef8c8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawClipper
 0x001ef8c8	0x001ef8d8	16	.rdata	library-private data (SDK GUID)	excluded	library-private data (SDK GUID)		dxguid.lib:_IID_IDirectDrawColorControl
@@ -373,12 +370,15 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f0388	0x001f0394	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f0394	0x001f03b0	28	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03b0	0x001f03bc	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x001f03bc	0x001f03c8	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03bc	0x001f03c4	8	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
+0x001f03c4	0x001f03c8	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03c8	0x001f03d4	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f03d4	0x001f03e0	12	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03e4	0x001f03f4	16	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f03f4	0x001f03fc	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x001f03fc	0x001f0460	100	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f03fc	0x001f042c	48	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
+0x001f042c	0x001f045c	48	.rdata	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (1)	retail library tail; archive member unresolved
+0x001f045c	0x001f0460	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0460	0x001f046c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x001f046c	0x001f0470	4	.rdata	library-private data	excluded	library-private data		retail library tail; archive member unresolved
 0x001f0470	0x001f047c	12	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
@@ -987,7 +987,13 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f5538	0x001f5540	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f5551	0x001f5558	7	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f5568	0x001f5570	8	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
-0x001f5584	0x001f7ad0	9548	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f5584	0x001f6cb8	5940	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f6cb8	0x001f6ce8	48	.rdata	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	retail .rdata$r contribution group
+0x001f6ce8	0x001f6e78	400	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f6e78	0x001f6ec8	80	.rdata	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	retail .rdata$r contribution group
+0x001f6ec8	0x001f6f98	208	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
+0x001f6f98	0x001f6fd0	56	.rdata	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	retail .rdata$r contribution group
+0x001f6fd0	0x001f7ad0	2816	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		retail .rdata$r contribution group
 0x001f7af8	0x001f7b00	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f7b48	0x001f7b50	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f7b78	0x001f7b80	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
@@ -1108,7 +1114,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001f9750	0x001f9758	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9780	0x001f9788	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f97c0	0x001f97c8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001f97c8	0x001f97f0	40	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x001f97c8	0x001f97e8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001f97e8	0x001f97f0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x001f97f0	0x001f97f8	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9820	0x001f9828	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001f9850	0x001f9858	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
@@ -1486,56 +1493,488 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x001ffe28	0x001ffe30	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001ffe60	0x001ffe68	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
 0x001ffe90	0x001ffe98	8	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x001ffe98	0x002001ac	788	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x001ffe98	0x001ffeb8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001ffeb8	0x001ffec8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001ffec8	0x001ffee8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001ffee8	0x001ffef8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001ffef8	0x001fff18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fff18	0x001fff28	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001fff28	0x001fff48	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fff48	0x001fff50	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001fff50	0x001fff70	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fff70	0x001fff78	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001fff78	0x001fff98	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fff98	0x001fffa0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001fffa0	0x001fffc0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fffc0	0x001fffc8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001fffc8	0x001fffe8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x001fffe8	0x001ffff0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x001ffff0	0x00200010	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200010	0x00200020	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200020	0x00200040	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200040	0x00200050	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200050	0x00200070	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200070	0x00200080	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200080	0x002000a0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002000a0	0x002000b0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002000b0	0x002000d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002000d0	0x002000e0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002000e0	0x00200100	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200100	0x00200108	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200108	0x00200128	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200128	0x00200130	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200130	0x00200150	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200150	0x00200158	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200158	0x00200178	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200178	0x002001ac	52	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x002001ac	0x002001b0	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x002001b0	0x00200204	84	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002001b0	0x002001c0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002001c0	0x002001e0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002001e0	0x00200204	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00200204	0x00200208	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00200208	0x0020025c	84	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00200208	0x00200218	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200218	0x00200238	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200238	0x0020025c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x0020025c	0x00200260	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00200260	0x002002dc	124	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00200260	0x00200270	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200270	0x00200290	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200290	0x00200298	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200298	0x002002b8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002002b8	0x002002dc	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x002002dc	0x002002e0	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x002002e0	0x0020035c	124	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002002e0	0x002002f0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002002f0	0x00200310	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200310	0x00200318	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200318	0x00200338	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200338	0x0020035c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x0020035c	0x00200360	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00200360	0x0020043c	220	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00200360	0x00200370	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200370	0x00200390	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200390	0x00200398	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200398	0x002003b8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002003b8	0x002003d0	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002003d0	0x002003f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002003f0	0x002003f8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002003f8	0x00200418	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200418	0x0020043c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x0020043c	0x00200440	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00200440	0x0020056c	300	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00200440	0x00200460	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200460	0x00200480	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200480	0x00200488	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200488	0x002004a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002004a8	0x002004b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002004b0	0x002004d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002004d0	0x002004d8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002004d8	0x002004f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002004f8	0x00200500	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200500	0x00200520	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200520	0x00200528	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200528	0x00200548	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200548	0x0020056c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x0020056c	0x00200570	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00200570	0x002007d8	616	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00200570	0x00200580	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200580	0x002005a0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002005a0	0x002005a8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002005a8	0x002005c8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002005c8	0x002005d0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002005d0	0x002005f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002005f0	0x002005f8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002005f8	0x00200618	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200618	0x00200620	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200620	0x00200640	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200640	0x00200648	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200648	0x00200668	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200668	0x00200670	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200670	0x00200690	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200690	0x00200698	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200698	0x002006b8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002006b8	0x002006c0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002006c0	0x002006e0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002006e0	0x002006e8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002006e8	0x00200708	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200708	0x00200710	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200710	0x00200730	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200730	0x00200738	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200738	0x00200758	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200758	0x00200760	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200760	0x00200780	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200780	0x00200788	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200788	0x002007a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002007a8	0x002007b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002007b0	0x002007d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002007d0	0x002007d8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x002007d8	0x00200878	160	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x00200878	0x002008a0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x002008a0	0x002008c0	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x002008c0	0x002008e8	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x002008e8	0x0020118c	2212	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002008e8	0x00200908	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200908	0x00200910	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200910	0x00200930	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200930	0x00200938	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200938	0x00200958	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200958	0x00200960	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200960	0x00200980	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200980	0x00200988	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200988	0x002009a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002009a8	0x002009b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002009b0	0x002009d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002009d0	0x002009d8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002009d8	0x002009f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002009f8	0x00200a00	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200a00	0x00200a20	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200a20	0x00200a30	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200a30	0x00200a50	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200a50	0x00200a68	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200a68	0x00200a88	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200a88	0x00200aa8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200aa8	0x00200ac8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200ac8	0x00200ad0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200ad0	0x00200af0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200af0	0x00200af8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200af8	0x00200b18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200b18	0x00200b28	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200b28	0x00200b48	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200b48	0x00200b50	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200b50	0x00200b70	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200b70	0x00200b78	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200b78	0x00200b98	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200b98	0x00200ba0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200ba0	0x00200bc0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200bc0	0x00200bc8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200bc8	0x00200be8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200be8	0x00200bf0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200bf0	0x00200c10	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200c10	0x00200c20	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200c20	0x00200c40	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200c40	0x00200c48	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200c48	0x00200c68	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200c68	0x00200c70	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200c70	0x00200c90	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200c90	0x00200ca0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200ca0	0x00200cc0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200cc0	0x00200cc8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200cc8	0x00200ce8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200ce8	0x00200cf8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200cf8	0x00200d18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200d18	0x00200d20	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200d20	0x00200d40	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200d40	0x00200d48	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200d48	0x00200d68	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200d68	0x00200d78	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200d78	0x00200d98	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200d98	0x00200da0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200da0	0x00200dc0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200dc0	0x00200dc8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200dc8	0x00200de8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200de8	0x00200df0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200df0	0x00200e10	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200e10	0x00200e18	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200e18	0x00200e38	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200e38	0x00200e40	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200e40	0x00200e60	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200e60	0x00200e68	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200e68	0x00200e88	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200e88	0x00200e90	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200e90	0x00200eb0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200eb0	0x00200eb8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200eb8	0x00200ed8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200ed8	0x00200ee0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200ee0	0x00200f00	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200f00	0x00200f08	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200f08	0x00200f28	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200f28	0x00200f30	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200f30	0x00200f50	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200f50	0x00200f58	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200f58	0x00200f78	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200f78	0x00200f80	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200f80	0x00200fa0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200fa0	0x00200fa8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200fa8	0x00200fc8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00200fc8	0x00200ff8	48	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00200ff8	0x00201018	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201018	0x00201028	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201028	0x00201048	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201048	0x00201050	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201050	0x00201070	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201070	0x00201080	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201080	0x002010a0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002010a0	0x002010a8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002010a8	0x002010c8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002010c8	0x002010d0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002010d0	0x002010f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002010f0	0x002010f8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002010f8	0x00201118	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201118	0x00201120	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201120	0x00201140	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201140	0x00201148	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201148	0x00201168	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201168	0x0020118c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x0020118c	0x00201190	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201190	0x00201540	944	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201190	0x002011a0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002011a0	0x002011c0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002011c0	0x002011c8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002011c8	0x002011e8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002011e8	0x002011f0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002011f0	0x00201210	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201210	0x00201218	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201218	0x00201238	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201238	0x00201240	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201240	0x00201260	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201260	0x00201268	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201268	0x00201288	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201288	0x00201290	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201290	0x002012b0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002012b0	0x002012d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002012d0	0x002012f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002012f0	0x00201310	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201310	0x00201330	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201330	0x00201338	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201338	0x00201358	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201358	0x00201360	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201360	0x00201380	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201380	0x00201388	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201388	0x002013a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002013a8	0x002013b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002013b0	0x002013d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002013d0	0x002013d8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002013d8	0x002013f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002013f8	0x00201400	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201400	0x00201420	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201420	0x00201430	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201430	0x00201450	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201450	0x00201460	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201460	0x00201480	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201480	0x00201488	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201488	0x002014a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002014a8	0x002014b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002014b0	0x002014d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002014d0	0x002014e0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002014e0	0x00201500	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201500	0x00201510	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201510	0x00201530	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201530	0x00201540	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201540	0x00201560	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x00201560	0x00201588	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
 0x00201588	0x002015a8	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x002015a8	0x002015d0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x002015d0	0x00201674	164	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002015d0	0x002015f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002015f0	0x00201600	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201600	0x00201620	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201620	0x00201628	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201628	0x00201648	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201648	0x00201674	44	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201674	0x00201678	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201678	0x002017bc	324	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201678	0x00201688	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201688	0x002016a8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002016a8	0x002016b0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002016b0	0x002016d0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002016d0	0x002016d8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002016d8	0x002016f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002016f8	0x00201700	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201700	0x00201720	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201720	0x00201728	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201728	0x00201748	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201748	0x00201750	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201750	0x00201770	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201770	0x00201778	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201778	0x00201798	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201798	0x002017bc	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x002017bc	0x002017c0	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x002017c0	0x00201844	132	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002017c0	0x002017d0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002017d0	0x002017f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002017f0	0x00201800	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201800	0x00201820	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201820	0x00201844	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201844	0x00201848	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201848	0x00201a24	476	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201848	0x00201858	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201858	0x00201878	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201878	0x00201880	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201880	0x002018a0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002018a0	0x002018a8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002018a8	0x002018c8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002018c8	0x002018d0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002018d0	0x002018f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002018f0	0x002018f8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002018f8	0x00201918	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201918	0x00201920	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201920	0x00201940	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201940	0x00201948	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201948	0x00201968	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201968	0x00201970	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201970	0x00201990	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201990	0x002019e0	80	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002019e0	0x00201a00	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201a00	0x00201a24	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201a24	0x00201a28	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201a28	0x00201a7c	84	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201a28	0x00201a38	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201a38	0x00201a58	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201a58	0x00201a7c	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201a7c	0x00201a80	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201a80	0x00201ad4	84	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201a80	0x00201a90	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201a90	0x00201ab0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201ab0	0x00201ad4	36	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201ad4	0x00201ad8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x00201ad8	0x00201b78	160	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201ad8	0x00201ae8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201ae8	0x00201b08	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201b08	0x00201b18	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201b18	0x00201b38	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201b38	0x00201b48	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201b48	0x00201b68	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201b68	0x00201b78	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201b78	0x00201b98	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x00201b98	0x00201bc0	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x00201bc0	0x00201c28	104	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201bc0	0x00201be0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201be0	0x00201bf8	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201bf8	0x00201c18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201c18	0x00201c28	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00201c28	0x00201c48	32	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH descriptor by content (cell -> TypeDescriptor)
 0x00201c48	0x00201c70	40	.rdata	compiler: RTTI records	excluded	compiler: RTTI records		RTTI/EH record by content (cell chain -> TypeDescriptor)
-0x00201c70	0x002020b4	1092	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x00201c70	0x00201c90	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201c90	0x00201ca8	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201ca8	0x00201cc8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201cc8	0x00201cd0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201cd0	0x00201cf0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201cf0	0x00201cf8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201cf8	0x00201d18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201d18	0x00201d20	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201d20	0x00201d40	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201d40	0x00201d60	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201d60	0x00201d80	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201d80	0x00201d98	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201d98	0x00201db8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201db8	0x00201dd8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201dd8	0x00201df8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201df8	0x00201e00	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201e00	0x00201e20	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201e20	0x00201e38	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201e38	0x00201e58	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201e58	0x00201e70	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201e70	0x00201e90	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201e90	0x00201e98	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201e98	0x00201eb8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201eb8	0x00201ec0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201ec0	0x00201ee0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201ee0	0x00201ee8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201ee8	0x00201f08	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201f08	0x00201f10	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201f10	0x00201f30	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201f30	0x00201f38	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201f38	0x00201f58	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201f58	0x00201f60	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201f60	0x00201f80	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201f80	0x00201f88	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201f88	0x00201fa8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201fa8	0x00201fb8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201fb8	0x00201fd8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00201fd8	0x00201fe0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00201fe0	0x00202000	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202000	0x00202018	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202018	0x00202038	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202038	0x00202058	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202058	0x00202078	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202078	0x002020b4	60	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x002020b4	0x002020b8	4	.rdata	compiler: EH-table padding	excluded	compiler: EH-table padding		inside parsed EH-table envelope
-0x002020b8	0x00202358	672	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00204670	0x00204c68	1528	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00205cc8	0x00205d70	168	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
-0x00205d98	0x00205e60	200	.rdata	compiler: C++ EH tables	excluded	compiler: C++ EH tables		parsed MSVC /GX table extent
+0x002020b8	0x002020c8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002020c8	0x002020e8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002020e8	0x002020f8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002020f8	0x00202118	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202118	0x00202120	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202120	0x00202140	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202140	0x00202148	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202148	0x00202168	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202168	0x00202170	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202170	0x00202190	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00202190	0x002021a0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002021a0	0x002021c0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002021c0	0x002021c8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002021c8	0x002021e8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002021e8	0x00202290	168	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00202290	0x002022b0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002022b0	0x00202358	168	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204670	0x00204690	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204690	0x00204698	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204698	0x002046b8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002046b8	0x002046c0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002046c0	0x002046e0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002046e0	0x002046e8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002046e8	0x00204708	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204708	0x00204710	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204710	0x00204730	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204730	0x00204740	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204740	0x00204760	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204760	0x00204770	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204770	0x00204790	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204790	0x002047a0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002047a0	0x002047c0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002047c0	0x002047d8	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002047d8	0x002047f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002047f8	0x00204808	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204808	0x00204828	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204828	0x00204840	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204840	0x00204860	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204860	0x00204870	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204870	0x00204890	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204890	0x002048a8	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002048a8	0x002048c8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002048c8	0x002048d8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002048d8	0x002048f8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002048f8	0x00204908	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204908	0x00204928	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204928	0x00204938	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204938	0x00204958	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204958	0x00204970	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204970	0x00204990	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204990	0x002049a0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002049a0	0x002049c0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002049c0	0x002049d0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002049d0	0x002049f0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x002049f0	0x002049f8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x002049f8	0x00204a18	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204a18	0x00204a20	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204a20	0x00204a40	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204a40	0x00204a48	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204a48	0x00204a68	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204a68	0x00204a70	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204a70	0x00204a90	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204a90	0x00204a98	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204a98	0x00204ab8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204ab8	0x00204ac0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204ac0	0x00204ae0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204ae0	0x00204ae8	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204ae8	0x00204b08	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204b08	0x00204b10	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204b10	0x00204b30	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204b30	0x00204b38	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204b38	0x00204b58	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204b58	0x00204b60	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204b60	0x00204b80	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204b80	0x00204b88	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204b88	0x00204ba8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204ba8	0x00204bb0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204bb0	0x00204bd0	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204bd0	0x00204be0	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204be0	0x00204c00	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204c00	0x00204c10	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204c10	0x00204c30	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204c30	0x00204c40	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00204c40	0x00204c60	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00204c60	0x00204c68	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205cc8	0x00205ce8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205ce8	0x00205cf0	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205cf0	0x00205d10	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205d10	0x00205d18	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205d18	0x00205d38	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205d38	0x00205d48	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205d48	0x00205d68	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205d68	0x00205d70	8	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205d98	0x00205db8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205db8	0x00205dc8	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205dc8	0x00205de8	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205de8	0x00205e00	24	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205e00	0x00205e20	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205e20	0x00205e30	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
+0x00205e30	0x00205e50	32	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	direct game/compiler code (1)	parsed MSVC /GX table extent
+0x00205e50	0x00205e60	16	.rdata	game-visible unenrolled data	eligible	compiler: C++ EH tables	pointer from game-visible data (1)	parsed MSVC /GX table extent
 0x00205e60	0x00208000	8608	.rdata	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00208000	0x002098a0	6304	.data	library-private data	excluded	library-private data		LIBCMT
 0x002098a0	0x002099a4	260	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -2688,7 +3127,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00211123	0x00211128	5	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00211136	0x00211138	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00211143	0x00211148	5	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00211148	0x00211160	24	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x00211148	0x00211160	24	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
 0x00211177	0x00211180	9	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x00211199	0x002111a0	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002111ac	0x002111b0	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3377,11 +3816,17 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002156f0	0x002156f4	4	.data	library-private data	excluded	library-private data		NAFXCW
 0x002156f4	0x002156f8	4	.data	library-private data	excluded	library-private data		MSVC-THUNK
 0x002156f8	0x00215710	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215710	0x00215820	272	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215710	0x00215768	88	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215768	0x00215788	32	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215788	0x002157c0	56	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x002157c0	0x002157e0	32	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x002157e0	0x00215820	64	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215820	0x00215828	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
 0x00215828	0x00215ac0	664	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215ac0	0x00215ad8	24	.data	library-private data	excluded	library-private data		NAFXCW
-0x00215ad8	0x00215d30	600	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215ad8	0x00215cf0	536	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215cf0	0x00215d10	32	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x00215d10	0x00215d30	32	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215d30	0x00215d48	24	.data	library-private data	excluded	library-private data		NAFXCW
 0x00215d48	0x00215d64	28	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00215d64	0x00215d68	4	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
@@ -3565,14 +4010,17 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0021aa16	0x0021aa18	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021aa39	0x0021aa3c	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021aa7b	0x0021aa7c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021aa7c	0x0021aabc	64	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021aa7c	0x0021aabc	64	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
 0x0021aae1	0x0021aae4	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021aaf4	0x0021ab14	32	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
+0x0021aaf4	0x0021ab14	32	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (1)	between retail pooled literals; no source pin
 0x0021ab1f	0x0021ab20	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ab91	0x0021ab98	7	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x0021ab98	0x0021ac88	240	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
-0x0021ac88	0x0021ac90	8	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x0021ac90	0x0021ad24	148	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x0021ab98	0x0021abd0	56	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x0021abd0	0x0021ac00	48	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x0021ac00	0x0021ac88	136	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
+0x0021ac88	0x0021ac90	8	.data	game-visible unenrolled data	eligible	compiler: pooled literal data	direct game/compiler code (2)	between retail pooled literals; no source pin
+0x0021ac90	0x0021aca8	24	.data	game-visible unenrolled data	eligible	compiler: RTTI records	pointer from game-visible data (1)	TypeDescriptor by content (type_info vptr + mangled tag)
+0x0021aca8	0x0021ad24	124	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x0021ad36	0x0021ad38	2	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad47	0x0021ad48	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0021ad5b	0x0021ad5c	1	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
@@ -3714,10 +4162,12 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00225900	0x00225918	24	.data	compiler: RTTI records	excluded	compiler: RTTI records		TypeDescriptor by content (type_info vptr + mangled tag)
 0x00225918	0x0022591c	4	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x0022591c	0x00229310	14836	.data	compiler: pooled literal data	excluded	compiler: pooled literal data		between retail pooled literals; no source pin
-0x00229310	0x00229388	120	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x00229310	0x00229318	8	.data	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	zero bytes with no inbound game-visible reference
+0x00229318	0x00229388	112	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
 0x002293ac	0x002293f4	72	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x002293f5	0x00229400	11	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
-0x00229400	0x00229408	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002293f5	0x002293f8	3	.data	padding / alignment (zero)	excluded	padding / alignment (zero)		zero bytes with no inbound game-visible reference
+0x002293f8	0x00229400	8	.data	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (1)	zero bytes with no inbound game-visible reference
+0x00229400	0x00229408	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (1)	no oracle names this zero-fill run
 0x00229414	0x00229418	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229418
 0x00229424	0x00229428	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229428
 0x00229434	0x00229438	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00229438
@@ -3837,7 +4287,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022b4bc	0x0022b4c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b4c0
 0x0022b4cc	0x0022b4d0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b4d0
 0x0022b4dc	0x0022b4e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b4e0
-0x0022b4ec	0x0022b590	164	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0022b4ec	0x0022b588	156	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0022b588	0x0022b590	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (4)	no oracle names this zero-fill run
 0x0022b59c	0x0022b5a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b5a0
 0x0022b5ac	0x0022b5b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b5b0
 0x0022b5bc	0x0022b5c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022b5c0
@@ -3955,7 +4406,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022bf44	0x0022bf48	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022bf48
 0x0022bf54	0x0022bf58	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022bf58
 0x0022bf64	0x0022bf68	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022bf68
-0x0022bf78	0x0022bfa0	40	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0022bf78	0x0022bf98	32	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0022bf98	0x0022bfa0	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0022bfc4	0x0022bfd0	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0022bfdc	0x0022bfe0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022bfe0
 0x0022bfec	0x0022bff0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022bff0
@@ -3986,13 +4438,14 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0022c434	0x0022c450	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0022c454	0x0022c458	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0022c458
 0x0023c458	0x0023f790	13112	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00243794	0x002444f0	3420	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002444fc	0x00244504	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00244504	0x00244508	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244508
-0x00244514	0x0024451c	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024451c	0x00244520	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244520
-0x0024452c	0x00244538	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00244544	0x00244548	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244548
+0x00243794	0x002444e8	3412	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002444e8	0x002444f0	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x002444fc	0x00244504	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x00244504	0x00244508	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00244508
+0x00244514	0x0024451c	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x0024451c	0x00244520	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00244520
+0x0024452c	0x00244538	12	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x00244544	0x00244548	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00244548
 0x00244554	0x00244558	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244558
 0x00244564	0x00244568	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244568
 0x00244574	0x00244578	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244578
@@ -4006,8 +4459,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00244684	0x00244688	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244688
 0x002446ac	0x002446b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002446b0
 0x002446d4	0x002446d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002446d8
-0x00244724	0x002447b4	144	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x002447b4	0x002447b8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447b8
+0x00244724	0x002447b0	140	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002447b0	0x002447b4	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x002447b4	0x002447b8	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x002447b8
 0x002447c4	0x002447c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447c8
 0x002447d4	0x002447d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447d8
 0x002447e4	0x002447e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002447e8
@@ -4036,7 +4490,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002449cc	0x002449d0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449d0
 0x002449dc	0x002449e0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449e0
 0x002449ec	0x002449f0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002449f0
-0x002449fc	0x00244aa0	164	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002449fc	0x00244a98	156	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00244a98	0x00244aa0	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00244aac	0x00244ab0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ab0
 0x00244abc	0x00244ac0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ac0
 0x00244acc	0x00244ad0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ad0
@@ -4054,9 +4509,10 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00244c74	0x00244c78	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244c78
 0x00244c84	0x00244c88	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244c88
 0x00244c94	0x00244c98	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244c98
-0x00244ca8	0x00244ce4	60	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00244ce4	0x00244ce8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244ce8
-0x00244cf4	0x00244d00	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00244ca8	0x00244ce0	56	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00244ce0	0x00244ce4	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x00244ce4	0x00244ce8	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00244ce8
+0x00244cf4	0x00244d00	12	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00244d0c	0x00244d10	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244d10
 0x00244d1c	0x00244d20	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244d20
 0x00244d2c	0x00244d30	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00244d30
@@ -4095,7 +4551,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245294	0x00245298	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245298
 0x002452ac	0x002452b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002452b0
 0x002452bc	0x002452c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002452c0
-0x00245510	0x00245514	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245510	0x00245514	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (3)	no oracle names this zero-fill run
 0x00245554	0x00245558	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002455b8	0x002455bc	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x00245604	0x00245710	268	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
@@ -4116,7 +4572,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245814	0x00245818	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245818
 0x00245824	0x00245828	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245828
 0x00245834	0x00245838	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245838
-0x00245844	0x00245870	44	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245844	0x00245860	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245860	0x00245870	16	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024587c	0x00245880	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245880
 0x0024588c	0x00245890	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245890
 0x0024589c	0x002458a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002458a0
@@ -4138,7 +4595,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245a3c	0x00245a40	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a40
 0x00245a4c	0x00245a50	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a50
 0x00245a5c	0x00245a60	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245a60
-0x00245a6c	0x00245a90	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245a6c	0x00245a88	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245a88	0x00245a90	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00245a9c	0x00245aa0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245aa0
 0x00245aac	0x00245ab0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ab0
 0x00245abc	0x00245ac0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ac0
@@ -4194,10 +4652,10 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00245eb4	0x00245eb8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245eb8
 0x00245ec4	0x00245ec8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245ec8
 0x00245ed4	0x00245ef0	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00245f14	0x00245f18	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245f18
-0x00245f24	0x00245f34	16	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00245f34	0x00245f38	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245f38
-0x00245f44	0x00245f50	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00245f14	0x00245f18	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00245f18
+0x00245f24	0x00245f34	16	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x00245f34	0x00245f38	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00245f38
+0x00245f44	0x00245f50	12	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00245f5c	0x00245f60	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245f60
 0x00245f6c	0x00245f70	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245f70
 0x00245f94	0x00245f98	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00245f98
@@ -4211,9 +4669,10 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024605c	0x00246060	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246060
 0x00246084	0x00246088	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246088
 0x002460ac	0x002460b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002460b0
-0x002460d4	0x0024613c	104	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024613c	0x00246140	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246140
-0x0024614c	0x00246158	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002460d4	0x00246138	100	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00246138	0x0024613c	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x0024613c	0x00246140	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00246140
+0x0024614c	0x00246158	12	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00246164	0x00246168	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246168
 0x00246174	0x00246178	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246178
 0x00246184	0x00246188	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00246188
@@ -4260,7 +4719,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00249744	0x00249748	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249748
 0x00249754	0x00249758	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249758
 0x00249764	0x00249768	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249768
-0x00249774	0x00249818	164	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00249774	0x00249810	156	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00249810	0x00249818	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x00249824	0x00249828	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249828
 0x00249834	0x00249838	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249838
 0x00249844	0x00249848	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00249848
@@ -4289,7 +4749,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024bd8c	0x0024bd90	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bd90
 0x0024bd9c	0x0024bda0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bda0
 0x0024bdac	0x0024bdb0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024bdb0
-0x0024bdd0	0x0024be20	80	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024bdd0	0x0024be10	64	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024be10	0x0024be20	16	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024be2c	0x0024be30	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be30
 0x0024be3c	0x0024be40	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be40
 0x0024be4c	0x0024be50	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024be50
@@ -4339,8 +4800,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024c66c	0x0024c670	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c670
 0x0024c67c	0x0024c680	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c680
 0x0024c68c	0x0024c690	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c690
-0x0024c6a0	0x0024c6c4	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024c6c4	0x0024c6c8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c6c8
+0x0024c6a0	0x0024c6c0	32	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024c6c0	0x0024c6c4	4	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x0024c6c4	0x0024c6c8	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x0024c6c8
 0x0024c6d4	0x0024c6d8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c6d8
 0x0024c6e4	0x0024c6e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c6e8
 0x0024c6f4	0x0024c6f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024c6f8
@@ -4614,7 +5076,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e0a6	0x0024e0a8	2	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x4-aligned claim at 0x0024e0a8
 0x0024e0b4	0x0024e0b8	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x0024e0bc	0x0024e0c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e0c0
-0x0024e218	0x0024e220	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e218	0x0024e220	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024e22c	0x0024e230	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e230
 0x0024e23c	0x0024e240	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e240
 0x0024e24c	0x0024e250	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e250
@@ -4631,7 +5093,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e32c	0x0024e330	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e330
 0x0024e33c	0x0024e340	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e340
 0x0024e34c	0x0024e350	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e350
-0x0024e364	0x0024e390	44	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e364	0x0024e388	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e388	0x0024e390	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024e39c	0x0024e3a0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e3a0
 0x0024e3ac	0x0024e3b0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e3b0
 0x0024e3bc	0x0024e3c0	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e3c0
@@ -4668,10 +5131,11 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e61c	0x0024e620	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e620
 0x0024e62c	0x0024e630	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e630
 0x0024e63c	0x0024e640	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e640
-0x0024e64c	0x0024e670	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e64c	0x0024e668	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e668	0x0024e670	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024e694	0x0024e6a0	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e6c4	0x0024e6d0	12	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x0024e6dc	0x0024e6f0	20	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e6c4	0x0024e6d0	12	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x0024e6dc	0x0024e6f0	20	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024e6fc	0x0024e700	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e700
 0x0024e70c	0x0024e710	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e710
 0x0024e71c	0x0024e720	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e720
@@ -4693,7 +5157,8 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x0024e8e4	0x0024e8e8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8e8
 0x0024e8f4	0x0024e8f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e8f8
 0x0024e904	0x0024e908	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e908
-0x0024e914	0x0024e938	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e914	0x0024e930	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x0024e930	0x0024e938	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x0024e944	0x0024e948	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e948
 0x0024e954	0x0024e958	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e958
 0x0024e964	0x0024e968	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x0024e968
@@ -4735,8 +5200,9 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002513f4	0x002513f8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002513f8
 0x00251404	0x00251408	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251408
 0x00251414	0x00251418	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251418
-0x00251424	0x00251448	36	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
-0x00251454	0x00251458	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251458
+0x00251424	0x00251440	28	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x00251440	0x00251448	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
+0x00251454	0x00251458	4	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (2)	slack below the 0x8-aligned claim at 0x00251458
 0x00251464	0x00251468	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251468
 0x00251474	0x00251478	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251478
 0x00251484	0x00251488	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x00251488
@@ -4772,8 +5238,7 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x00253130	0x002531c8	152	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
 0x002531c8	0x00253208	64	.bss	library-private data	excluded	library-private data		NAFXCW
 0x00253208	0x0025320c	4	.bss	library-private data	excluded	library-private data		MSVC-EH,NAFXCW
-0x0025320c	0x00253210	4	.bss	library-private data	excluded	library-private data		NAFXCW
-0x00253210	0x00253214	4	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
+0x0025320c	0x00253214	8	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
 0x00253214	0x00253494	640	.bss	library-private data	excluded	library-private data		NAFXCW
 0x00253494	0x002534a0	12	.bss	library-private data	excluded	library-private data		MSVC-THUNK,NAFXCW
 0x002534a0	0x002534b4	20	.bss	library-private data	excluded	library-private data		NAFXCW
@@ -4795,16 +5260,16 @@ rva	end	size	section	verdict	coverage	attribution	reachability	evidence
 0x002bed04	0x002bed06	2	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bed06	0x002bed07	1	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (12)	no oracle names this zero-fill run
 0x002bed07	0x002bed08	1	.bss	game-visible unenrolled data	eligible	padding / alignment (zero)	direct game/compiler code (10)	slack below the 0x8-aligned claim at 0x002bed08
-0x002bf228	0x002bf28c	100	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (3)	no oracle names this zero-fill run
+0x002bf228	0x002bf28c	100	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (4)	no oracle names this zero-fill run
 0x002bf28c	0x002bf29c	16	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (1)	no oracle names this zero-fill run
 0x002bf29d	0x002bf2a0	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf2a0
 0x002bf315	0x002bf318	3	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf318
 0x002bf384	0x002bf388	4	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
 0x002bf389	0x002bf390	7	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf390
 0x002bf3a4	0x002bf3a8	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf3a8
-0x002bf3c8	0x002bf400	56	.bss	library-private data	excluded	library-private data		LIBCIMT,LIBCMT
+0x002bf3c8	0x002bf400	56	.bss	game-visible unenrolled data	eligible	library-private data	direct game/compiler code (6)	LIBCMT
 0x002bf404	0x002bf408	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf408
-0x002bf420	0x002bf428	8	.bss	UNCLASSIFIED (.bss)	eligible	UNCLASSIFIED (.bss)		no oracle names this zero-fill run
+0x002bf420	0x002bf428	8	.bss	game-visible unenrolled data	eligible	UNCLASSIFIED (.bss)	direct game/compiler code (2)	no oracle names this zero-fill run
 0x002bf42c	0x002bf430	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf430
 0x002bf61c	0x002bf620	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf620
 0x002bf64c	0x002bf650	4	.bss	padding / alignment (zero)	excluded	padding / alignment (zero)		slack below the 0x8-aligned claim at 0x002bf650

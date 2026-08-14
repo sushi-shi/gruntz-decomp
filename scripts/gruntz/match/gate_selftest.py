@@ -860,9 +860,9 @@ class TestFunctionUniverse(unittest.TestCase):
             (root / "build/gen").mkdir(parents=True)
             (root / "config/retail").mkdir(parents=True)
             (root / "config/retail/functions.tsv").write_text(
-                "rva\tsize\tkind\n"
-                "0x8100\t8\t\n0x8200\t8\t\n0x8300\t10\t\n0x8400\t20\t\n"
-                "0x8500\t20\t\n0x8600\t8\teh\n0x1600\t5\tthunk\n0x8700\t5\t\n")
+                "rva\tkind\n"
+                "0x8100\t\n0x8200\t\n0x8300\t\n0x8400\t\n"
+                "0x8500\t\n0x8600\teh\n0x1600\tthunk\n0x8700\thelper\n")
             (root / "build/gen/symbol_names.csv").write_text(
                 "rva,name,unit,size,kind\n"
                 "0x8100,data_label,u,,data\n"
@@ -875,8 +875,6 @@ class TestFunctionUniverse(unittest.TestCase):
             (root / "src/u.cpp").write_text(
                 "RVA_DYNINIT(0x00008300, 0xa, gTest)\n"
                 "int gTest = init();\n")
-            (root / "config/retail/compiler-helper-functions.tsv").write_text(
-                "0x00008700\t0x5\t0x00008800\tforward\ttest\n")
 
             rows, meta = function_universe.classify(root, strict=False)
             cats = {row["rva"]: (row["category"], row["claimed"]) for row in rows}
@@ -931,8 +929,9 @@ class TestCompilerPrivateFunctionNames(unittest.TestCase):
             struct.pack_into("<i", image, 0x201, 0x2000 - (0x1000 + 5))
             exe.write_bytes(image)
             functions.write_text(
-                "rva\tsize\tkind\n"
-                "0x1000\t5\t\n"
+                "rva\tkind\n"
+                "0x1000\tthunk\n"
+                "0x1005\tpad\n"
             )
 
             saved_bounds = synth_pdb.TEXT_BASE, synth_pdb.TEXT_END

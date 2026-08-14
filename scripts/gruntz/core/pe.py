@@ -26,6 +26,9 @@ IMAGEBASE = 0x400000
 # of the reserve, NOT 0x7c20 - that older value swallowed those nine cells, so
 # `thunks_to`/`is_thunk` called nine real functions ILT pass-throughs.
 ILT_LO, ILT_HI = 0x1000, 0x7950
+# .text's virtual extent (va 0x1000 + vsize 0x1e526b). The retail image never
+# changes; retail_functions derives the LAST row's extent against this edge.
+TEXT_LO, TEXT_END = 0x1000, 0x1e626b
 
 
 def load():

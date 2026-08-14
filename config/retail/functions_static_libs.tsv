@@ -1,4 +1,4 @@
-# Statically-linked library function labels (NAFXCW, LIBCMT, LIBCIMT, DXGUID,
+# Statically-linked library FUNCTION labels (NAFXCW, LIBCMT, LIBCIMT,
 # DINPUT, DPLAYX, MSVC-EH/THUNK asm carve-outs, GAME-ASM): RVAs proven NOT
 # reconstructable game C++, excluded from the match denominator. Label-only -
 # no sizes; extents come from functions.tsv. HIGH/MED/AMBIG/CRUNTIME rows are
@@ -2099,9 +2099,3 @@ rva	name	lib	confidence	source
 0x1d6c17	??1_AFX_WIN_STATE@@UAE@XZ	NAFXCW	HIGH	anchored
 0x1d6c4e	?AfxPostQuitMessage@@YGXH@Z	NAFXCW	HIGH	anchored
 0x1d6c71	??1CWinThread@@UAE@XZ	NAFXCW	HIGH	anchored
-0x1ef838	_IID_IDirectDraw	DXGUID	HIGH	guid-bytes
-0x1ef858	_IID_IDirectDraw4	DXGUID	HIGH	guid-bytes
-0x1ef868	_IID_IDirectDrawSurface	DXGUID	HIGH	guid-bytes
-0x1ef878	_IID_IDirectDrawSurface2	DXGUID	HIGH	guid-bytes
-0x1ef898	_IID_IDirectDrawSurface4	DXGUID	HIGH	guid-bytes
-0x1f03e0	?openprot@filebuf@@2HB	LIBCIMT	HIGH	link-dup-oracle

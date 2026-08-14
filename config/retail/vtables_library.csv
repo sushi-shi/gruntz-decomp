@@ -34,8 +34,13 @@ name,rva,size,unit,note
 _IID_IDirectInputDevice2A,0x1ef458,0x10,library_data,"dxguid.lib GUID named directly by game code"
 _GUID_SysMouse,0x1ef538,0x10,library_data,"dxguid.lib GUID named directly by game code"
 _GUID_SysKeyboard,0x1ef548,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDraw,0x1ef838,0x10,library_data,"dxguid.lib GUID named directly by game code"
 _IID_IDirectDraw2,0x1ef848,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDraw4,0x1ef858,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDrawSurface,0x1ef868,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDrawSurface2,0x1ef878,0x10,library_data,"dxguid.lib GUID named directly by game code"
 _IID_IDirectDrawSurface3,0x1ef888,0x10,library_data,"dxguid.lib GUID named directly by game code"
+_IID_IDirectDrawSurface4,0x1ef898,0x10,library_data,"dxguid.lib GUID named directly by game code"
 _IID_IDirectPlay4A,0x1f0588,0x10,library_data,"dxguid.lib GUID named directly by game code"
 ??_7CDialog@@6B@,0x1eb174,0xd8,,MFC/CRT (statically linked; not reconstructed)
 ??_7CWnd@@6B@,0x1eb5c4,0xc0,,MFC/CRT (statically linked; not reconstructed)

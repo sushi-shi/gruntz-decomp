@@ -1,8 +1,9 @@
 """Authoritative classification of every admitted retail ``.text`` function.
 
-The tracked retail table supplies boundaries, not ownership. This module joins them
-to source function claims, tracked library identities, compiler-private helper
-evidence, and the retail opcodes used to recognize linker/import thunks.  Every
+The tracked retail table supplies starts and structural kinds, not ownership.
+This module joins them to source function claims, the static-libs labels, and
+the RVA_DYNINIT compiler-private pins; kind=thunk/helper rows replace the old
+opcode sniffing (helpers are still re-proven against the EXE bytes).  Every
 consumer of the full-engine denominator must use this module so the filters
 cannot drift independently.
 """
@@ -15,7 +16,7 @@ import struct
 from pathlib import Path
 
 from gruntz.core.library_labels import active_rows
-from gruntz.core.pe import ILT_HI, ILT_LO
+from gruntz.core.pe import ILT_HI
 from gruntz.core.retail_functions import read as read_retail_functions
 
 
@@ -69,22 +70,6 @@ def _compiler_private(repo: Path) -> dict[int, dict]:
             for r in dyninit_rows(Path(repo))}
 
 
-def _compiler_helpers(path: Path) -> dict[int, dict]:
-    out = {}
-    if not path.is_file():
-        return out
-    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        if not line.startswith("0x"):
-            continue
-        parts = line.split("\t")
-        if len(parts) != 5:
-            raise ValueError(f"{path}:{lineno}: expected 5 tab-separated fields")
-        rva, size, target = map(_rint, parts[:3])
-        if rva in out:
-            raise ValueError(f"{path}:{lineno}: duplicate RVA 0x{rva:08x}")
-        out[rva] = {"size": size, "target_rva": target, "role": parts[3],
-                    "evidence": parts[4]}
-    return out
 
 
 def _pe_reader(exe: Path):
@@ -123,39 +108,27 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
     source = _source_functions(repo / "build/gen/symbol_names.csv")
     library = _library(repo / "config/retail/functions_static_libs.tsv")
     private = _compiler_private(repo)
-    helpers = _compiler_helpers(repo / "config/retail/compiler-helper-functions.tsv")
     read = _pe_reader(Path(os.environ.get("GRUNTZ_EXE")
                            or repo / "build/exe/GRUNTZ.EXE"))
 
-    by_rva = {row["rva"]: row for row in rows}
-    if strict:
-        for rva, helper in helpers.items():
-            row = by_rva.get(rva)
-            if row is None:
-                raise ValueError(f"compiler helper 0x{rva:08x} is not in the retail inventory")
-            if row["size"] != helper["size"]:
+    starts = {row["rva"] for row in rows}
+    if strict and read is not None:
+        # A kind=helper row states "5-byte forwarder"; re-prove it from the EXE:
+        # the body must be `E9 rel32` and the jump must land on an admitted start.
+        for row in rows:
+            if row["kind"] != "helper":
+                continue
+            rva = row["rva"]
+            body = read(rva, 5)
+            if body is None or body[0] != 0xE9:
+                raise ValueError(f"compiler helper 0x{rva:08x} is not a rel32 jump")
+            target = rva + 5 + struct.unpack_from("<i", body, 1)[0]
+            if target not in starts:
                 raise ValueError(
-                    f"compiler helper 0x{rva:08x} size {row['size']}, "
-                    f"expected {helper['size']}")
-            if read is not None:
-                body = read(rva, 5)
-                if body is None or body[0] != 0xE9:
-                    raise ValueError(f"compiler helper 0x{rva:08x} is not a rel32 jump")
-                target = rva + 5 + struct.unpack_from("<i", body, 1)[0]
-                if target != helper["target_rva"]:
-                    raise ValueError(
-                        f"compiler helper 0x{rva:08x} jumps to 0x{target:08x}, "
-                        f"expected 0x{helper['target_rva']:08x}")
+                    f"compiler helper 0x{rva:08x} jumps to 0x{target:08x}, "
+                    f"which is not an admitted function start")
 
     ilt_end = ILT_HI
-    iat = set()
-    if read is not None:
-        for row in rows:
-            if row["size"] > 7 or row["rva"] in source:
-                continue
-            body = read(row["rva"], 2)
-            if body and body[0] == 0xFF and body[1] in (0x25, 0x15):
-                iat.add(row["rva"])
 
     for row in rows:
         rva, size, name = row["rva"], row["size"], row["retail_name"]
@@ -167,16 +140,17 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
             row.update({"category": "target", "claimed": True,
                         "unit": (info.get("unit") or "").strip(),
                         "source_name": (info.get("name") or "").strip()})
-        elif ILT_LO <= rva < ilt_end or row["is_thunk"] or rva in iat:
+        elif row["is_thunk"]:
             row["category"] = "thunk"
-        elif rva in helpers:
-            row.update({"category": "compiler", **helpers[rva]})
+        elif row["kind"] == "helper":
+            row.update({"category": "compiler", "role": "forwarder",
+                        "evidence": "kind=helper; E9 target re-proven from EXE"})
         elif rva in private:
             info = private[rva]
-            if strict and info["size"] != size:
+            if strict and info["size"] > size:
                 raise ValueError(
-                    f"compiler-private helper 0x{rva:08x} size {size}, "
-                    f"expected {info['size']}")
+                    f"compiler-private helper 0x{rva:08x} extent {size}, "
+                    f"smaller than its RVA_DYNINIT pin ({info['size']})")
             row.update({"category": "compiler", "role": info["name"],
                         "evidence": info["evidence"]})
         elif rva in library:

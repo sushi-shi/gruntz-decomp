@@ -7,14 +7,15 @@ an EH funclet / a linker jump thunk / still-unknown), and where the GAPS between
 functions are.
 
 Data sources (all products of `gruntz build`):
-  config/retail/functions.tsv               - admitted function starts/extents;
+  config/retail/functions.tsv               - admitted function starts + kinds
+                                              (extents derived to the next start);
       the master ordered list of the .text function layout.
   build/gen/symbol_names.csv                 - what src/ CLAIMS (rva->mangled,unit):
       the "owned by a TU" set, regenerated every build from the `RVA()` annotations.
   config/retail/functions_static_libs.tsv           - FID-identified CRT/MFC/zlib/EH library
       code (rva->name,lib,confidence).
-  config/retail/compiler-generated-functions.tsv - compiler-private `$E<n>` helpers.
-  config/retail/compiler-helper-functions.tsv - proven forwarding helpers.
+  RVA_DYNINIT source pins                    - compiler-private `$E<n>` helpers;
+  kind=helper inventory rows                 - proven forwarding helpers.
   config/units.toml                          - unit -> source path (the FILENAME an
       owned function maps back to).
 

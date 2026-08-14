@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-"""rva_size.py - does every RVA(addr, size) label match the function's real extent?
+"""rva_size.py - does every RVA(addr, size) claim FIT its admitted extent?
 
-The `size` argument is not decoration: the delinker carves the TARGET object using it.
-Declare it short and the delinked function stops early, so objdiff compares our complete,
-byte-perfect body against a TRUNCATED target and scores it below 100 forever. Nothing else
-in the pipeline notices - the code is right, the yardstick is wrong.
+The `size` argument is the size AUTHORITY: the delinker carves the TARGET object
+with it (the inventory carries starts + kinds only, its extents are derived to
+the next admitted start and include trailing jump tables/alignment). Two
+directions, and they are not symmetric:
 
-That cost six exacts before anyone looked (three `IsLoaded` slots at 0x1a where the real
-extent is 0x1d, `CMenuItem2::Disable` 0x14 vs 0x17, two accessors 0xa vs 0xe). Each had
-quietly lost the function's last basic block. They were found by noticing the target asm was
-a strict PREFIX of ours - an expensive way to learn something one subtraction can tell you.
+  OVERRUN  ours > derived extent - the claim crosses the NEXT admitted start,
+           so the carve would swallow another function's bytes. FATAL.
+  MARGIN   ours < derived extent - normal: the tail is the function's own jump
+           table / alignment. Reported (large margins are worth a look - a
+           truncated claim hides here until the .text partition names its
+           jump-table runs explicitly), never gated.
 
-The comparison baseline is the admitted `config/retail/functions.tsv` table.
-Two directions, and they are not symmetric:
-
-  SHORT  ours < inventory - the costly one. The target is truncated and the score is a lie.
-  LONG   ours > inventory - the tracked boundary needs review/update; reported but
-                            not gated because inline tables can explain the growth.
+The historical SHORT class (a claim that silently truncated its own body - six
+exacts lost that way) is no longer decidable from the inventory alone: the
+admitted table stopped storing code-only sizes. It resurfaces as a MARGIN
+outlier and, once jump-table runs become partition rows, as an exact check again.
 
     python -m gruntz.audit.rva_size            # report both directions
-    python -m gruntz.audit.rva_size --gate     # exit 1 if any SHORT label remains
-    python -m gruntz.audit.rva_size --long     # include the LONG list in full
+    python -m gruntz.audit.rva_size --gate     # exit 1 if any OVERRUN remains
+    python -m gruntz.audit.rva_size --margin   # list every MARGIN row too
 """
 import argparse
 import csv
@@ -56,41 +56,41 @@ def labels():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--gate", action="store_true", help="exit 1 if any SHORT label remains")
-    ap.add_argument("--long", action="store_true", help="list every LONG label too")
+    ap.add_argument("--gate", action="store_true", help="exit 1 if any OVERRUN remains")
+    ap.add_argument("--margin", action="store_true", help="list every MARGIN row too")
     a = ap.parse_args()
 
     extents = retail_extents()
-    short, long_, unknown, ok = [], [], 0, 0
+    overrun, margin, unknown, ok = [], [], 0, 0
     for path, line, rva, size in labels():
         real = extents.get(rva)
         if real is None:
             unknown += 1
             continue
-        if size < real:
-            short.append((path, line, rva, size, real))
-        elif size > real:
-            long_.append((path, line, rva, size, real))
+        if size > real:
+            overrun.append((path, line, rva, size, real))
+        elif size < real:
+            margin.append((path, line, rva, size, real))
         else:
             ok += 1
 
-    if short:
-        print("SHORT - the delinked target is TRUNCATED, so objdiff scores a complete body "
-              "against a partial one:")
-        for path, line, rva, size, real in sorted(short, key=lambda r: -(r[4] - r[3])):
-            print("  %s:%d  RVA(0x%08x, 0x%x)  real 0x%x  (short by 0x%x)"
+    if overrun:
+        print("OVERRUN - the claim crosses the next admitted start, the carve would "
+              "swallow another function's bytes:")
+        for path, line, rva, size, real in sorted(overrun, key=lambda r: -(r[3] - r[4])):
+            print("  %s:%d  RVA(0x%08x, 0x%x)  derived extent 0x%x  (over by 0x%x)"
+                  % (path, line, rva, size, real, size - real))
+        print()
+    if margin and a.margin:
+        print("MARGIN - claim < derived extent (own jump table / alignment tail):")
+        for path, line, rva, size, real in sorted(margin, key=lambda r: -(r[4] - r[3])):
+            print("  %s:%d  RVA(0x%08x, 0x%x)  derived 0x%x  (tail 0x%x)"
                   % (path, line, rva, size, real, real - size))
         print()
-    if long_ and a.long:
-        print("LONG - source exceeds the admitted retail boundary "
-              "(shared tail / interleaved data), verify before changing:")
-        for path, line, rva, size, real in sorted(long_, key=lambda r: -(r[3] - r[4])):
-            print("  %s:%d  RVA(0x%08x, 0x%x)  ghidra 0x%x" % (path, line, rva, size, real))
-        print()
 
-    print("rva-size: %d matched, %d SHORT, %d long, %d absent from retail inventory"
-          % (ok, len(short), len(long_), unknown))
-    if a.gate and short:
+    print("rva-size: %d exact, %d OVERRUN, %d with tail margin, %d absent from retail inventory"
+          % (ok, len(overrun), len(margin), unknown))
+    if a.gate and overrun:
         raise SystemExit(1)
 
 

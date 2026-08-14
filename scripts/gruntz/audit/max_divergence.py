@@ -178,14 +178,9 @@ def current():
 def rva_and_size():
     size_by_rva = {}
     if FUNCS.is_file():
-        for i, line in enumerate(FUNCS.read_text().splitlines()):
-            if i == 0 or not line.strip() or line.startswith("#"):
-                continue
-            p = line.split("\t")
-            try:
-                size_by_rva[int(p[0], 16)] = int(p[1])
-            except (ValueError, IndexError):
-                pass
+        from gruntz.core.retail_functions import read as read_retail_functions
+        for r in read_retail_functions(FUNCS):
+            size_by_rva[r["rva"]] = r["size"]
     rva_of = {}
     for line in NAMES.read_text().splitlines():
         line = line.strip()

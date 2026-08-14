@@ -255,15 +255,8 @@ def table(title, rows, total_r, total_c):
 
 
 def load_retail_extents():
-    ext = {}
-    for ln in FUNCS.read_text().splitlines():
-        if ln.startswith('#'):
-            continue
-        p = ln.split('\t')
-        if p[0] == 'rva':
-            continue
-        ext[int(p[0], 16)] = int(p[1])
-    return ext
+    from gruntz.core.retail_functions import read as read_retail_functions
+    return {r['rva']: r['size'] for r in read_retail_functions(FUNCS)}
 
 
 def load_claims():
