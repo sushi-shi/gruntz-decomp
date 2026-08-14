@@ -211,11 +211,6 @@ i32 g_val_24c434;
 DATA(0x002c3e0c)
 i32 g_val_2c3e0c;
 
-RVA(0x00083260, 0x57)
-GruntzPlayer::~GruntzPlayer() {
-    Clear();
-}
-
 // @early-stop
 // Retail calls the vector iterator for both CSbiHlRow arrays and calls
 // ~CTileTriggerContainer on the failed load arm; this caller expands the first

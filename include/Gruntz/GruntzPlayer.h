@@ -30,7 +30,10 @@ struct PlayerLatency {
 class GruntzPlayer {
 public:
     GruntzPlayer();
-    ~GruntzPlayer();
+    RVA(0x00083260, 0x57)
+    ~GruntzPlayer() {
+        Clear();
+    }
 
     i32 SeedForSlot(i32 index);
     void Clear();
