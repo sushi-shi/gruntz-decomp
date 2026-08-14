@@ -955,6 +955,30 @@ i32 CMulti::GetResendDelay() {
     return m_drainReload;
 }
 
+RVA(0x000c4e40, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50a() {}
+
+RVA(0x000c4e60, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50b() {}
+
+RVA(0x000c4e80, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50c() {}
+
+RVA(0x000c4ea0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnEnChange50d() {}
+
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = GetCtrlC(0)->m_hWnd;
@@ -1028,6 +1052,30 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         g_multiState->BroadcastOneChannel(slot);
     }
 }
+
+RVA(0x000c51c0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd51f() {}
+
+RVA(0x000c51e0, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd523() {}
+
+RVA(0x000c5200, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd524() {}
+
+RVA(0x000c5220, 0x0)
+// @confidence: high
+// @source: msgmap-pfn (the AFX_MSGMAP_ENTRY pfn slot names this handler)
+// @stub
+void CMultiStartDlg::OnCmd525() {}
 
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
