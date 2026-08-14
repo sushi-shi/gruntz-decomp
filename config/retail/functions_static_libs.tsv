@@ -5,7 +5,8 @@
 # active claims; LOW rows are diagnostic leads only (core/library_labels.py).
 # An rva may carry SEVERAL rows: alias spellings / independent provenance for
 # the same body. Rows sorted by rva; merge per ROW, never wholesale.
-# Regenerate: python -m gruntz.audit.fid_generate
+# HAND-OWNED: the FID regeneration pipeline is retired (it was not
+# reproducible on Ghidra 12 anyway); edit rows directly, merge per ROW.
 rva	name	lib	confidence	source
 0x0019f1	Ilt_RegionLeave_19f1	MSVC-THUNK	HIGH	asm-carveout
 0x001b9a	Ilt_RegionEnter_1b9a	MSVC-THUNK	HIGH	asm-carveout

@@ -64,7 +64,7 @@ three source-selected regimes (separate returns / `goto fail` / `||`-collapse):
 `dup-exit-means-a-shared-goto-label.md`, `while-not-do-while-keeps-the-inline-return.md`,
 `do-while-duplicates-the-leading-call.md`, `void-vs-bool-return-epilogue-split.md`,
 `backward-goto-sinks-its-target-region.md` cover the common shapes.
-Screen candidates tree-wide with `python -m gruntz.audit.exit_merge_sieve --dup`.
+(The tree-wide exit_merge_sieve screen is retired; check the shape per function.)
 
 ### register / schedule
 

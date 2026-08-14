@@ -23,7 +23,7 @@ tagged (see `cause()`).  Only the last is what the frame naively suggests:
     object difference at all: cl gives every `if (...) return 0;` its own exit block
     but collapses them all when a `||`/`&&` guard sends them to a common
     destination, and each surviving dtor copy carries its own state store.  The
-    lever and the wider sweep are `gruntz.audit.exit_merge_sieve` +
+    lever and the wider sweep are (retired exit_merge_sieve sweep) +
     docs/patterns/goto-fail-shares-one-exit-block.md.
   * **MISSING_OBJECT** / **EXTRA_OBJECT** - no ctor/dtor difference of either kind
     explains it, so one side really does own a destructible object the other's
@@ -398,7 +398,7 @@ def cause(verdict, delta, only_t, only_b, resited):
         common destination, and each surviving copy of the dtor carries its own
         state store.  `CGruntSpawnConfig::SpawnVoiceDriver` calls `??1CString` twice
         for us and EIGHT times in retail off one `&&` guard.  The lever, and the
-        wider sweep, are `gruntz.audit.exit_merge_sieve` +
+        wider sweep, are (retired exit_merge_sieve sweep) +
         docs/patterns/goto-fail-shares-one-exit-block.md.
       MISSING_OBJECT - no ctor/dtor difference of either kind explains the frame, so
         retail owns a destructible object our source never declared: a by-value

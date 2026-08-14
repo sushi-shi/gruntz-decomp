@@ -25,7 +25,7 @@ skips (a pad-view of BITMAPFILEHEADER/BITMAPINFO); "the PROVEN dual-band keep"; 
 
 So the number to drive to zero is the TOTAL, which `reinterpret_casts` already
 ratchets. OPEN reaching 0 means every cast has been LOOKED at once - a milestone, not
-the finish line. `gruntz.audit.cast_reasons` orders the parked ones for the next pass.
+the finish line. (The cast_reasons/cast_worklist one-shots are retired; the ledger is the record.)
 
 The OPEN ones print grouped by file, so a pass gets a work list rather than a number.
 A cast counts as parked when the seam it lives in matches one of the FORCED patterns

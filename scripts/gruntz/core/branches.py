@@ -19,7 +19,6 @@ The answer is a comparison that names branch targets SYMBOLICALLY - which is thi
 - not one that stops masking. Two consumers share it so there is no logic to drift:
 
     gruntz sema disasm <rva> --branches [--diff]   # one function, interactively
-    python -m gruntz.audit.jcc_sieve               # the whole tree, as a worklist
 
 ## What a hit is NOT (the same caveats both consumers print)
 

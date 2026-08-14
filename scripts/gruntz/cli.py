@@ -1070,7 +1070,6 @@ def cmd_audit(args) -> None:
     `tidy` -> tidy_audit. No tool / unknown tool lists what is available."""
     import importlib.util
     tool = (args.tool or "").replace("-", "_")
-    tool = {"tidy": "tidy_audit"}.get(tool, tool)
     if not tool or importlib.util.find_spec(f"gruntz.audit.{tool}") is None:
         avail = sorted(f.stem for f in (PKG / "audit").glob("*.py")
                        if f.stem != "__init__")
@@ -1394,7 +1393,7 @@ def _add_sema(sub) -> None:
                          "it masks address operands, which also hides intra-function "
                          "branch displacements. With --diff, only the differing rows, "
                          "classified SIGNEDNESS / POLARITY / OTHER / TOPOLOGY; rc=1 if "
-                         "they differ. Whole tree: python -m gruntz.audit.jcc_sieve")
+                         "they differ.")
     sd.set_defaults(func=cmd_sema_disasm)
 
     sdg = ss.add_parser(
@@ -1495,8 +1494,8 @@ def main() -> None:
                       "dispatches to gruntz/audit/<tool>.py (folder = command group)")
     au.add_argument("tool", nargs="?",
                     help="audit module, dashes ok: assert-relocs, data-home, "
-                         "stale-walls, reinterpret-census, tu-order-check, "
-                         "interleavers, exe-diff, tidy, ... (no arg lists all)")
+                         "stale-walls, tu-order-check, "
+                         "assert-relocs, jump-tables, ... (no arg lists all)")
     au.add_argument("rest", nargs=argparse.REMAINDER, help="args passed through")
     au.set_defaults(func=cmd_audit)
     da = sub.add_parser("data-audit", help="attribute retail .rdata/.data/.bss bytes "

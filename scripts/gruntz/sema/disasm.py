@@ -677,8 +677,7 @@ def branch_view(rva: str, want_diff: bool, want_target: bool = False) -> int:
     every function whose sizes differ upstream would then grow a +/- on every branch.
     The fix is to name targets by BRANCH INDEX, which is what this does.
 
-    Mechanism, buckets and the ways a row is NOT a real signal: gruntz.core.branches.
-    Whole-tree sweep of the same comparison: `python -m gruntz.audit.jcc_sieve`."""
+    Mechanism, buckets and the ways a row is NOT a real signal: gruntz.core.branches."""
     from gruntz.core import branches as B
     try:
         n = int(rva, 16)

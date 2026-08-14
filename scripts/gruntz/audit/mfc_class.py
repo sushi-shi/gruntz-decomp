@@ -72,7 +72,7 @@ Usage (inside `nix develop`)
                                                         # the technique disambiguates
     python -m gruntz.audit.mfc_class --relabel [--write]
                                                         # rewrite those rows (stage 5
-                                                        # of gruntz.audit.fid_generate)
+                                                        # of the retired fid_generate pipeline)
 
 --audit is the point of the tool: for every function we have reconstructed, it pairs
 our base COMDAT's relocation records against the retail bytes at the same offsets and

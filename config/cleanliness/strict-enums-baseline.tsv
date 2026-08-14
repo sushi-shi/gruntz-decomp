@@ -1,6 +1,0 @@
-metric	count
-domain-as-index	1
-domain-to-int	32
-int-into-domain	14
-other	38
-wrong-domain	4
