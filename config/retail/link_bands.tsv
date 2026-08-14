@@ -1,6 +1,7 @@
-# Retail GRUNTZ.EXE link order - DERIVED, do not hand-edit.
-# Regenerate: python -m gruntz.audit.link_line --emit
-# Verify:     python -m gruntz.audit.link_line --check
+# Retail GRUNTZ.EXE per-unit link-contribution BANDS - DERIVED, do not hand-edit.
+# Ascending band-start rva IS the link order (contributions append in arrival
+# order), so the order is implicit in the bands.
+# Regenerator: gruntz-old/audit/link_line.py (frozen) until the rebuild grows one.
 #
 # Mechanism (docs/link-text-layout.md): .text contributions append in arrival
 # order, so ascending band-start RVA == the order the objects reached link.exe.

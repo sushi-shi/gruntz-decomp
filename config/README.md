@@ -85,7 +85,8 @@ Data providers:
 
 Retail-derived evidence:
 
-- **`link_order.tsv`** — DERIVED retail link order (emit/check).
+- **`link_bands.tsv`** — DERIVED per-unit link-contribution bands (ascending
+  band start = the retail link order).
 - **`reloc_referents.tsv`** — per-site retail relocation referents whose exact
   spelling (symbol + addend) containment inference cannot reach.
 - **`rsrc/`** — the retail resources (extracted payloads + manifest).
