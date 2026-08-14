@@ -282,9 +282,9 @@ are assigned is game/engine code, so you never identify or handle library yourse
 1. **Do NOT defer, skip, or leave a function as a bare stub.** Reconstruct it.
 2. **Push every function to 100%.** A plateau is almost always fixable. FIRST fix any
    codegen-SHAPE bug in your source by hand — wrong control-flow, wrong types, a cast
-   standing in for a real class, wrong calling convention (the permuter CANNOT fix these;
-   hand-fix them first). THEN, when the STRUCTURE is already correct and only codegen
-   residue remains, pick the lever by what KIND of residue it is:
+   standing in for a real class, wrong calling convention (no amount of reordering fixes
+   these; hand-fix them first). THEN, when the STRUCTURE is already correct and only
+   codegen residue remains, pick the lever by what KIND of residue it is:
    - **FIRST, suspect a MISLABELED CORRECTNESS BUG (highest yield — empirically the real
      win).** A large fraction of `@early-stop` "regalloc walls" are actually a hidden
      source bug the diff masks: a signedness slip (`jl/jle` where retail has `jb/jbe` —
@@ -295,50 +295,25 @@ are assigned is game/engine code, so you never identify or handle library yourse
      permanently (FadeRange 99.1→99.9 was a signedness bug mislabeled as a scheduling wall;
      AutoTuneCmdDelay's "wall" was a `/9`-vs-`/30` divisor). Re-audit the disasm before
      believing "regalloc wall".
-   - **NEVER hand-A/B simple reorders (statement swaps, decl order, store order) — the
-     permuter has tried those a million times.** One hand edit = ONE attempt per
-     build; a permuter run = HUNDREDS of attempts per invocation. Your hand is for
-     SEMANTIC shape only; the machine owns orderings.
    - **Recurring shapes are inlined ENTITIES — model the entity, not the expansion.**
      A zero-store pair at a return is a ctor call (`return TextExtent(0, 0);` — cf. the
      devs' explicit `Glyph() {}` pattern); a repeated cast-chain (the g_rDown/g_rUp
      pixel pack/unpack) is an inlined helper or MSVC5 force-inline macro shared across
      TUs. Ask "what did the dev WRITE here?" before transcribing another expansion.
-   - **Fast permuter pass** (operand-order / reassoc / decl-split residue on a genuinely
-     correct body): `gruntz permute fn <src> <unit> <mangled-sym>` /
-     `permute_sweep <unit>`.
-   - **Iterate from the k BEST, not the single best.** A variants/permute run returns a
-     ranked top-N; take the top-k survivors and run the NEXT round from each of them
-     (beam search), banking the per-round best. A single-line greedy climb stalls on
-     plateaus that a 3-5 wide beam walks straight through.
-   - **`match_variants --state-trials` — narrow use, NOT a universal wall-breaker.** The
-     exhaustive engine's TU-state search perturbs the *preceding* TU content, so it moves
-     ONLY walls whose codegen depends on cross-function composition (inlining budget,
-     COMDAT/string ordering, cross-function scheduling). Independent COMDAT sections do
-     NOT guarantee independent optimizer state: a controlled current-header A/B compile
-     proved that adding the real preceding `CDDSurface::BlitIntoDesc` changes two
-     source-identical `ShadeRect` loop schedules, including mask/shift order and `ax` vs
-     `di` partial-register selection. Four other intrinsic wall families still did not
-     move even at 1024 variants. Therefore classify first: use `--state-trials` when the
-     residue moves in a predecessor A/B test or otherwise plausibly depends on
-     TU-cumulative state; do not use it as a substitute for fixing the victim's types,
-     control flow, constants, or ownership.
-     `gruntz permute variants <src.cpp> <rva> --state-trials 64 --max-depth 3
-     --limit 512 -o /tmp/m.json --run --top 12`. See the **`permute` skill**.
+   - **Pure ordering residue (operand order, spill point, register coloring, schedule):
+     the permute machinery is RETIRED** — MSVC5 is stable enough that grinding orderings
+     is not worth the tooling. A couple of targeted, DISPOSABLE hand A/B spellings are
+     allowed when a specific hypothesis names them; keep only the winning spelling and
+     never retain a losing experiment. If they do not close it, park the wall honestly
+     (rule 3) — structure recovery outranks residue-grinding.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
    reconstruction (full body, all logic) where EITHER (a) you have PROVEN with
    `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact and
    the residual is a genuine delinker artifact, OR (b) it is a regalloc/scheduling/frame
-   wall AND you have run the **wall-breaker** (`match_variants --state-trials`) and it
-   genuinely exhausted without finding a variant that matches retail's regalloc.
-   **Before parking a regalloc wall, try to BANK ITS MAX** (see "Bank the MAX, then
-   revert" above): if any TU perturbation drives it to 100.00, bank that and park it as
-   PROVEN CORRECT rather than as a wall — the two are very different states and only one
-   of them means the source still needs work. A
-   regalloc wall is NOT an `@early-stop` until the wall-breaker has failed on it — the
-   code bytes DIFFER (different register/frame choice), and that difference is exactly
-   what the `--state-trials` nudge can flip. Write the byte-level reason (and "state-trials
-   exhausted") in the `// @early-stop` comment. Never a partial that under-counts.
+   wall classified with the `wall-identifier` skill and the BYTE-LEVEL reason (which
+   instruction/register choice diverges, and why it is not a structure bug) is written
+   in the `// @early-stop` comment and, for a genuinely bounded wall, in
+   `wall-break.md`. Never a partial that under-counts.
 4. **Size is not a reason to defer.** Reconstruct large bodies leaf-first, in full.
 5. **You are ONE worker. NEVER spawn subagents.** Do fewer functions if budget is
    tight and report the rest as not-done — do not delegate.
@@ -504,17 +479,11 @@ wrapper, still runnable as `python -m gruntz.<...>`):
     were invisible to the first look. See
     `docs/patterns/masked-diff-hides-branch-target.md`. The tool self-hints on that
     path; believe the hint.
-- **Testing a hypothesis: build ONE Cartesian matrix, never a ladder of edits.** For a
-  function already close to 100%, enumerate every suspect SITE and every legal SPELLING
-  per site, put the whole family in one manifest, and score the product in a single run
-  (`python -m gruntz.permute.match_variants <src> <rva> --axes-from <axes.json> --run`).
-  N sites x M spellings tests the combinations at once, and the interaction between
-  sites is usually where the answer is - which is exactly what a sequential edit-compile
-  ladder cannot see. Full candidate family per site, in ONE file, never laddered across
-  runs. `--max-depth` defaults to 0 (no GENERATED AST trees): at /O2 they are rarely the
-  answer and they multiply an already-exponential product; opt in deliberately. Same for
-  `--state-trials` islands - measured flat across 980 cells on this project. See the
-  `permute` skill.
+- **Testing a hypothesis: name the mechanism first, then ONE targeted A/B.** The
+  exhaustive Cartesian variants engine is RETIRED; a hypothesis that cannot name its
+  suspect site and expected byte effect is not ready for an edit. Run the smallest
+  disposable A/B that decides it, keep only the winner, and record the outcome (a
+  bounded wall goes to `wall-break.md`).
 - the Ghidra decomp + its xrefs — field readers/writers, new-sites, vtable slots.
 An identity/ownership/aliasing judgment backed only by a name-pattern grep is a GUESS —
 cite the `sema` evidence for it in your report instead.

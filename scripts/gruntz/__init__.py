@@ -16,7 +16,7 @@ scripts/). Grouped by area:
             ir, cc_wrap (the wine-cl wrapper), codeview
   sema/     the `gruntz sema` navigation surface - one module per subcommand
   cleanliness/ the drive-to-0 board + quality gates
-  permute/  the source-permutation climbers (the permute skill)
+
   audit/    one-shot campaign audits (`gruntz audit <tool>`) (retired ones: scripts/archive/)
 
 Runnable entrypoints: the pipeline build steps (build/, init/, ghidra/) are

@@ -1,6 +1,6 @@
 ---
 name: matcher
-description: Reconstruct and byte-match Gruntz C++ functions, translation units, classes, globals, and referents against retail GRUNTZ.EXE with MSVC 5.0 SP3. Use for function matching, low historical-MAX work, TU reconstruction, stub completion, class/type recovery, vtable or calling-convention recovery, relocation/referent correction, data modeling, and diagnosing a plateau before using the permuter.
+description: Reconstruct and byte-match Gruntz C++ functions, translation units, classes, globals, and referents against retail GRUNTZ.EXE with MSVC 5.0 SP3. Use for function matching, low historical-MAX work, TU reconstruction, stub completion, class/type recovery, vtable or calling-convention recovery, relocation/referent correction, data modeling, and diagnosing a plateau before parking a wall.
 ---
 
 # Gruntz matcher
@@ -130,14 +130,16 @@ stamp is transitional reconstruction debt, not original source.
   the owner and access its real field or element.
 - Never add source padding to fit a final-image gap.
 
-## Use walls and permutation correctly
+## Use walls correctly
 
-Use the project `permute` skill only when the body is complete and the call set,
-CFG, types, constants, and referents are credible. Classify the wall first with
-the project `wall-identifier` skill (`gruntz sema diagnose <rva>`); every lever
-it does not list as cl 5.0-proven must be re-proved here before use.
+The permute machinery is RETIRED (MSVC5 is stable enough that grinding
+orderings is not worth the tooling). Classify a plateau with the project
+`wall-identifier` skill (`gruntz sema diagnose <rva>`); a register/schedule
+wall on a complete, credible body is PARKED with `@early-stop` and its
+byte-level reason (bounded walls go to `wall-break.md`), not ground.
 
-- Use source permutations and TU-state changes as disposable A/B experiments.
+- A targeted, hypothesis-named hand A/B spelling is allowed as a disposable
+  experiment; keep only the winning spelling.
 - Never retain unused includes, declarations, fake locals, volatile carriers,
   manual `STATE` probes, or contorted spellings to steer codegen.
 - State experiments are rarely justified below 90%; fix structure first.

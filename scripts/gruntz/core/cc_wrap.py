@@ -2,7 +2,7 @@
 """gruntz.core.cc_wrap - the `wine cl` compiler wrapper.
 
 Shared toolchain engine: ninja's `cl` rule invokes it by path (configure.py),
-the permute climbers spawn it per variant, and `gruntz sema disasm --rich`
+retired permute climbers used to spawn it per variant; `gruntz sema disasm --rich`
 calls it in-process for the /Z7 debug obj.
 
 ninja drives the base/recompile side natively on Linux; the actual compiler is

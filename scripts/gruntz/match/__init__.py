@@ -8,7 +8,7 @@
   gate_selftest  negative controls for ALL gates (here + gruntz/cleanliness/).
 
 The drive-to-0 quality board + its gates live in gruntz/cleanliness/; the
-source-permutation climbers live in gruntz/permute/.
+
 Run the CLI as `python -m gruntz.match.status <cmd>`; import the helpers with
 `from gruntz.match.fingerprints import cpp_hash, load_cache`.
 """

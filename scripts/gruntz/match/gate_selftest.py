@@ -51,7 +51,6 @@ from gruntz.core import library_labels
 from gruntz.build import canonicalize_data_symbols, data_manifest, labels, synth_pdb
 from gruntz.cleanliness import vtable_slot_binding as vsb
 from gruntz.match import residual_queue, status, verify_library_overlap
-from gruntz.permute import permute_sweep, tu_state_noise
 from gruntz.match import verify_unique_names as vun
 from gruntz.sema import diagnose
 
@@ -259,84 +258,6 @@ class AggregateCopyAuditTests(unittest.TestCase):
         self.assertIsNone(aggregate_copies.REP_MOVS.match("movsb"))
         self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsb"))
         self.assertIsNotNone(aggregate_copies.REP_MOVS.match("rep movsl"))
-
-
-class TuStateNoiseControls(unittest.TestCase):
-    @staticmethod
-    def _reloc_metrics(stream):
-        return {"reloc_stream_complete": True, "reloc_stream": stream}
-
-    def test_exact_closure_folds_only_producer_specific_eh_relocations(self):
-        candidate = self._reloc_metrics([
-            "00000002:0006:__except_list:00000000",
-            "00000009:0006:$L123:00000000",
-            "00000020:0014:?Call@@YAXXZ:00000000",
-        ])
-        retail = self._reloc_metrics([
-            "00000009:0006:__ehreg$?Fn@@YAXXZ:00000000",
-            "00000020:0014:?Call@@YAXXZ:00000000",
-        ])
-        self.assertEqual(
-            tu_state_noise.exact_closure_rejections(100.0, 32, 32, candidate, retail),
-            [],
-        )
-
-    def test_exact_closure_rejects_a_real_referent_difference(self):
-        candidate = self._reloc_metrics(["00000020:0014:?Wrong@@YAXXZ:00000000"])
-        retail = self._reloc_metrics(["00000020:0014:?Right@@YAXXZ:00000000"])
-        self.assertIn(
-            "ordered relocation offsets/types/identities/addends differ from retail",
-            tu_state_noise.exact_closure_rejections(100.0, 32, 32, candidate, retail),
-        )
-
-    def test_current_source_hash_uses_supported_fingerprinter_api(self):
-        fingerprint = mock.Mock(return_value="range-hash")
-        with mock.patch.object(
-            status,
-            "fingerprinter",
-            return_value=(fingerprint, mock.Mock(), set()),
-        ):
-            self.assertEqual(tu_state_noise.current_source_hash("u", "?Fn@@YAXXZ"), "range-hash")
-        fingerprint.assert_called_once_with("u", "?Fn@@YAXXZ")
-
-    def test_record_exact_updates_best_and_historical_max_in_current_schema(self):
-        original = (
-            "# baseline\n"
-            "u\t?Fn@@YAXXZ\t99.5000\t99.2500\t7\trange-hash\t0x1000\t99.7500\n"
-            "u\t?Other@@YAXXZ\t80.0000\t79.0000\t3\tother-hash\t0x1100\t81.0000\n"
-        )
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "match_baseline.tsv"
-            path.write_text(original)
-            result = tu_state_noise.record_target_max(
-                path, "u", "?Fn@@YAXXZ", "range-hash", 100.0
-            )
-            lines = path.read_text().splitlines()
-        self.assertTrue(result["updated"])
-        self.assertEqual(
-            lines[1],
-            "u\t?Fn@@YAXXZ\t100.0000\t99.2500\t7\trange-hash\t0x1000\t100.0000",
-        )
-        self.assertEqual(lines[2], original.splitlines()[2])
-
-    def test_record_exact_rejects_stale_source_hash(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "match_baseline.tsv"
-            path.write_text(
-                "u\t?Fn@@YAXXZ\t99.5000\t99.2500\t7\told-hash\t0x1000\t99.7500\n"
-            )
-            with self.assertRaisesRegex(tu_state_noise.BaselineUpdateError, "source hash mismatch"):
-                tu_state_noise.record_target_max(path, "u", "?Fn@@YAXXZ", "new-hash", 100.0)
-
-    def test_curated_includes_are_gruntz_or_toolchain_headers(self):
-        self.assertFalse(any("BASE/" in header for header in tu_state_noise.CURATED_INCLUDES))
-
-    def test_include_guard_searches_the_active_pinned_toolchain(self):
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
-            os.environ, {"MSVC_DIR": str(Path(tmp) / "msvc")}
-        ):
-            roots = tu_state_noise.include_search_roots(Path(tmp) / "repo")
-        self.assertIn(Path(tmp) / "msvc" / "include", roots)
 
 
 class DataManifestAlignmentControls(unittest.TestCase):
@@ -1824,11 +1745,11 @@ class TestOmittedZeroFuzzyPercent(unittest.TestCase):
     live `target_symbol` link for exactly these. Measured 2026-07-27: 8 tree functions
     sit at a true 0.0%.
 
-    Two readers guessed the missing key and both guessed wrong, silently:
-      * `permute_sweep._pcts` defaulted it to 100.0, so its "<100%" worklist SKIPPED
-        every 0%-matching function - the ones most in need of permuting.
-      * `Report.fn_pct` returned None, so `gruntz sema rva` printed no match line at
-        all for them (a dossier that omits the worst score is worse than no dossier).
+    Readers that guess the missing key guess wrong, silently: `Report.fn_pct`
+    returned None, so `gruntz sema rva` printed no match line at all for them
+    (a dossier that omits the worst score is worse than no dossier); the retired
+    permute sweep once defaulted it to 100.0 and skipped exactly the functions
+    most in need of work.
     """
 
     _ZERO = {"name": "?Zero@@QAEHXZ", "size": "100", "address": "0"}  # key omitted == 0.0
@@ -1860,54 +1781,6 @@ class TestOmittedZeroFuzzyPercent(unittest.TestCase):
                 self.assertIsNone(r.fn_pct("?Missing@@QAEHXZ"))
             finally:
                 report.REPORT = saved
-
-    def _sweep_tree(self, tmp):
-        """A minimal tree `permute_sweep` can read: report.json + symbol_names.csv + src."""
-        root = Path(tmp)
-        (root / "build" / "objdiff").mkdir(parents=True)
-        (root / "build" / "gen").mkdir(parents=True)
-        (root / "build" / "objdiff" / "report.json").write_text(json.dumps({
-            "units": [{"name": "u", "functions": [self._ZERO, self._HALF]}]}))
-        (root / "build" / "gen" / "symbol_names.csv").write_text(
-            "rva,name,unit,size,kind\n"
-            "0x00001000,?Zero@@QAEHXZ,u,0x64,func\n"
-            "0x00002000,?Half@@QAEHXZ,u,0x64,func\n")
-        (root / "u.cpp").write_text("RVA(0x00001000, 0x64)\nx\nRVA(0x00002000, 0x64)\ny\n")
-        return root
-
-    def test_permute_sweep_does_not_read_a_zero_as_a_hundred(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = self._sweep_tree(tmp)
-            cwd = Path.cwd()
-            os.chdir(root)
-            try:
-                pcts = permute_sweep._pcts("u")
-            finally:
-                os.chdir(cwd)
-            self.assertEqual(pcts["?Zero@@QAEHXZ"], 0.0)
-            self.assertEqual(pcts["?Half@@QAEHXZ"], 50.0)
-            self.assertLess(pcts["?Zero@@QAEHXZ"], 100.0)
-
-    def test_the_sweep_worklist_contains_the_zero_percent_function(self):
-        """THE BUG, end to end: `_ordered` selects the unit's <100% functions, and the
-        0%-matching one - the function most in need of the permuter - must be in it."""
-        with tempfile.TemporaryDirectory() as tmp:
-            root = self._sweep_tree(tmp)
-            cwd = Path.cwd()
-            os.chdir(root)
-            try:
-                got = permute_sweep._ordered("u", str(root / "u.cpp"))
-            finally:
-                os.chdir(cwd)
-            self.assertEqual(got, [("?Zero@@QAEHXZ", 0.0), ("?Half@@QAEHXZ", 50.0)])
-
-    def test_importing_the_sweep_neither_exits_nor_chdirs(self):
-        """An importable module must not sys.exit()/chdir() at module scope - that is
-        what made the bug above untestable in the first place."""
-        import importlib
-        cwd = Path.cwd()
-        importlib.reload(permute_sweep)          # would SystemExit if argv were parsed here
-        self.assertEqual(Path.cwd(), cwd)
 
 
 def main() -> int:

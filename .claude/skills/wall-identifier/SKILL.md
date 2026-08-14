@@ -1,6 +1,6 @@
 ---
 name: wall-identifier
-description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz sema diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs) and `permute` (breaks proven codegen residue); this one DIAGNOSES.
+description: Classify a Gruntz matching WALL before spending effort on it. When a reconstruction plateaus below 100% and no spelling obviously closes it, name WHICH cl 5.0 decision diverged - inline/call-set, control flow, register/schedule, or masked/referent - and route to the lever for that class. Start with `gruntz sema diagnose <rva>`. Use when a function is stuck, when triaging plateaus, when asked "why won't this match" or "what kind of wall is this". Complements `matcher` (reconstructs); this one DIAGNOSES - register/schedule walls are parked with `@early-stop`, not ground (the permute machinery is retired).
 ---
 
 # wall-identifier — classify the wall before fighting it
@@ -11,7 +11,7 @@ reducible in principle — the job is finding which *input* differs. The unit of
 reproduction is the **whole TU**, not the function: some residue is TU-global
 front-end state that no local body edit can reach, but matching the TU context
 can. Classify first; each class has a different lever and two of the four are
-not permute problems at all.
+not codegen-residue problems at all.
 
 ## Start here
 
@@ -32,8 +32,8 @@ Do not call a wall class N while class N-1 still diverges.
 | class | deciding signal | lever |
 |---|---|---|
 | **inline / call-set** | out-of-line CALL multiset differs | body completeness / inline budget — see below |
-| **control flow** | block, branch, or ret COUNTS differ | source construct — structural matcher work, never permute |
-| **register / schedule** | counts and branch sequence agree; operand order, spills, coloring differ | `permute` skill (fn/sweep/variants), TU-state probes |
+| **control flow** | block, branch, or ret COUNTS differ | source construct — structural matcher work, never ordering experiments |
+| **register / schedule** | counts and branch sequence agree; operand order, spills, coloring differ | park with `@early-stop` + byte-level reason (permute machinery retired) |
 | **masked / referent** | masked diff rc 0 but score < 100 | referent identity — labeling work, not codegen |
 
 ### inline / call-set
@@ -68,15 +68,11 @@ Screen candidates tree-wide with `python -m gruntz.audit.exit_merge_sieve --dup`
 
 ### register / schedule
 
-Reached by elimination only. This is the `permute` skill's domain — banked by
-MAX, never hand A/B reorders. Two proven TU-global effects reach residue no
-body edit can: mixed-KIND declaration probes
-(`tu-state-probe-family-decides-reachability.md` — a flat sweep is evidence
-about the probe, not the function) and the declaration-count window
-(`declaration-count-window-steers-regalloc.md`). Probes are diagnostics: bank
-the MAX, then delete them. Caution: one misplaced register op can mean the TYPE
-is wrong (a member array modeled as scalars, a lost aggregate) — re-check the
-model before permuting. Reading rule: `zero-register-compare-is-against-zero.md`.
+Reached by elimination only. The permute machinery is RETIRED: park the wall
+with `@early-stop` and the byte-level reason; a genuinely bounded wall is
+recorded in `wall-break.md`. Caution: one misplaced register op can mean the
+TYPE is wrong (a member array modeled as scalars, a lost aggregate) — re-check
+the model before parking. Reading rule: `zero-register-compare-is-against-zero.md`.
 
 ### masked / referent
 
@@ -84,7 +80,7 @@ Objdiff reloc scoring is strict (target name/address, pointed-to data, DIR32
 addends all participate), and the masked diff by construction cannot show a
 wrong callee. If `--diff` returns rc 0 while the score sits below 100, the
 divergence is referent identity: audit with `assert_relocs`, fix the labeling /
-identity model, and do not grind permute on it.
+identity model - this class is labeling work, not codegen.
 
 ## What does NOT transfer from HoMM3
 

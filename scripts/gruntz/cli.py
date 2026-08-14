@@ -47,8 +47,6 @@ Subcommands
                 SEMANTIC questions go here, grep is lexical-only.
   audit <tool>  One-shot campaign audits - dispatches to gruntz/audit/<tool>.py
                 (no arg lists the tools).
-  permute fn|sweep|variants
-                The source-permutation climbers (gruntz/permute/).
 """
 
 import argparse
@@ -1082,13 +1080,6 @@ def cmd_audit(args) -> None:
     sys.exit(call_main(f"gruntz.audit.{tool}", args.rest))
 
 
-def cmd_permute(args) -> None:
-    """`gruntz permute fn|sweep|variants [args...]` - the climbers, in-process."""
-    mod = {"fn": "permute", "sweep": "permute_sweep", "variants": "match_variants"}[args.which]
-    from gruntz.core import call_main
-    sys.exit(call_main(f"gruntz.permute.{mod}", args.rest))
-
-
 def cmd_data_audit(args) -> None:
     """Attribute retail .rdata/.data/.bss bytes to source DATA() symbols + fingerprint.
 
@@ -1508,14 +1499,6 @@ def main() -> None:
                          "interleavers, exe-diff, tidy, ... (no arg lists all)")
     au.add_argument("rest", nargs=argparse.REMAINDER, help="args passed through")
     au.set_defaults(func=cmd_audit)
-    pm = sub.add_parser(
-        "permute", help="source-permutation climbers - `gruntz permute "
-                        "fn|sweep|variants [args...]` (gruntz/permute/)")
-    pm.add_argument("which", choices=("fn", "sweep", "variants"),
-                    help="fn = one-function hill-climber, sweep = whole unit, "
-                         "variants = exhaustive AST/TU-state search")
-    pm.add_argument("rest", nargs=argparse.REMAINDER, help="args passed through")
-    pm.set_defaults(func=cmd_permute)
     da = sub.add_parser("data-audit", help="attribute retail .rdata/.data/.bss bytes "
                         "to DATA() symbols + fingerprint (-> build/gen/data_attribution.tsv)")
     da.add_argument("--rva", help="audit + print a single data symbol RVA")

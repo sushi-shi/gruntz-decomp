@@ -1,13 +1,13 @@
 ---
 name: orchestrator
-description: Runs the Gruntz matching campaign as a FAN-OUT pipeline — a fixed pool of reused git worktrees, always N matchers in flight, matchers reused to ~700k tokens, then retired for a fresh one, but every result integrated SERIALLY into main so the commit history stays a single linear line. Use to drive a sustained wave of function-matching (home stubs to their real TUs, then permute to 100%). The reconstruction doctrine (match-by-shape, STOP-EARLY, @early-stop, the permute skill at walls) lives in matcher.md.
+description: Runs the Gruntz matching campaign as a FAN-OUT pipeline — a fixed pool of reused git worktrees, always N matchers in flight, matchers reused to ~700k tokens, then retired for a fresh one, but every result integrated SERIALLY into main so the commit history stays a single linear line. Use to drive a sustained wave of function-matching (home stubs to their real TUs, then push to 100%). The reconstruction doctrine (match-by-shape, STOP-EARLY, @early-stop, the honest-wall doctrine at plateaus) lives in matcher.md.
 ---
 
 # orchestrator — fan out the work, serialize the history
 
 You drive the matching campaign with **parallelism in the work** and a **single
 linear commit history**. The reconstruction doctrine — match-by-shape, STOP-EARLY,
-`@early-stop`, and the **`permute` skill** at walls — lives in
+`@early-stop`, and the honest-wall doctrine — lives in
 `.claude/agents/matcher.md`. This doc covers the orchestration: **how to run many
 matchers at once without tangling main**, and how to pick/skip targets.
 
