@@ -23,12 +23,12 @@ block becomes its own unit at its true region.
 Two+ substantial blocks in the *same* region — likely two TUs of one module, but could
 be COMDAT scatter or a mis-group. Confirm before splitting.
 
-- `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 7@0x083030(game)  131@0x08b8c0(game)
-- `src/Gruntz/Multi.cpp` — 2 blocks: 20@0x08c490(game)  95@0x0b5460(game)
-- `src/Gruntz/ImageSet2.cpp` — 2 blocks: 4@0x161420(engine)  9@0x166990(engine)
+- `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 7@0x083030(game)  133@0x08b8c0(game)
+- `src/Gruntz/Multi.cpp` — 2 blocks: 23@0x08c490(game)  95@0x0b5460(game)
+- `src/Gruntz/Wormhole.cpp` — 2 blocks: 10@0x0088d0(game)  17@0x03fc70(game)
 - `src/Gruntz/ImageSet3.cpp` — 2 blocks: 4@0x1614b0(engine)  7@0x166d70(engine)
 
-## C. RE-HOME HINTS — unknown-class / bucket functions (12) · low confidence
+## C. RE-HOME HINTS — unknown-class / bucket functions (11) · low confidence
 
 What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
 `CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
@@ -42,17 +42,16 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z` | GameLevel.cpp | **TriggerMgrGrid.cpp** (11 fns) | 966.4 KB |
 | `?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind` | GameLevel.cpp | **GruntzApp.cpp** (9 fns) | 873.6 KB |
 | `?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (10 fns) | 812.7 KB |
-| `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **BootyStateActivate.cpp** (13 fns) | 653.3 KB |
-| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **VideoConfig.cpp** (19 fns) | 553.7 KB |
+| `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **BootyStateActivate.cpp** (15 fns) | 653.3 KB |
+| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **VideoConfig.cpp** (16 fns) | 553.7 KB |
 | `?GetName@CSpawnEntry@@QAE?AVCString@@XZ` | GruntSpawnConfig.cpp | **AreaMgr.cpp** (54 fns) | 514.8 KB |
-| `?DebugGruntTypeDialogProc@@YGHPAUHWND__@@IIJ@Z` | GruntzCmdMgr.cpp | **GruntzMgr.cpp** (48 fns) | 440.0 KB |
-| `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | Play.cpp | **GruntzMgr.cpp** (53 fns) | 213.5 KB |
-| `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (13 fns) | 156.3 KB |
+| `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | PlayAssetLoad.cpp | **GruntzMgr.cpp** (54 fns) | 291.3 KB |
+| `?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord` | WwdFile.cpp | **BattlezMapConfig.cpp** (9 fns) | 156.3 KB |
 | `_CreateStaticHazard` | LogicRecordDispatch.cpp | **BattlezData.cpp** (29 fns) | 114.6 KB |
 | `?GetConfigNameA@CMulti@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **Multi.cpp** (25 fns) | 50.1 KB |
 | `?GetConfigNameB@CMulti@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **Multi.cpp** (25 fns) | 50.1 KB |
 
-## D. HEADER-INLINE — reconstruct in the header (10) · not a move
+## D. HEADER-INLINE — reconstruct in the header (5) · not a move
 
 Small or virtual member functions sitting **scattered from their own class body**.
 They were defined **inline in a header**: MSVC still emits one out-of-line COMDAT copy
@@ -63,31 +62,21 @@ not in any `.cpp`; the compiler reproduces the same COMDAT + dedup for free.
 
 Top classes by inline-scattered method count:
 
-- `CAttract` — 1
 - `CSBI_WellGoo` — 1
 - `CMenuState` — 1
 - `CHelpState` — 1
-- `CImageSet1` — 1
 - `CVoiceTrigger` — 1
-- `CTileTrigger` — 1
-- `CGruntHealthSprite` — 1
 - `CSecretLevelTrigger` — 1
-- `CPreviewState` — 1
 
 Examples (virtual first):
 
 | function | class | size | virtual |
 |---|---|---:|:--:|
-| `?Update@CAttract@@UAE?AW4GameStateId@@XZ` | CAttract | 6 B | ✓ |
 | `?Reset@CSBI_WellGoo@@UAEXXZ` | CSBI_WellGoo | 31 B | ✓ |
 | `?Update@CMenuState@@UAE?AW4GameStateId@@XZ` | CMenuState | 6 B | ✓ |
 | `?Update@CHelpState@@UAE?AW4GameStateId@@XZ` | CHelpState | 6 B | ✓ |
-| `?Parse@CImageSet1@@UAEHPAX@Z` | CImageSet1 | 36 B | ✓ |
 | `??0CVoiceTrigger@@QAE@XZ` | CVoiceTrigger | 75 B |  |
-| `??0CTileTrigger@@QAE@XZ` | CTileTrigger | 75 B |  |
-| `??0CGruntHealthSprite@@QAE@XZ` | CGruntHealthSprite | 75 B |  |
 | `??0CSecretLevelTrigger@@QAE@XZ` | CSecretLevelTrigger | 75 B |  |
-| `?LoadScreen@CPreviewState@@QAEHPADHHH@Z` | CPreviewState | 170 B |  |
 
 ## How to execute a split (NetMgr worked example)
 

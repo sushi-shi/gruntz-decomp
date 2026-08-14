@@ -161,7 +161,7 @@
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/ChatBoxOwner.cpp",
-     "home_n": 7
+     "home_n": 9
     },
     {
      "rva": 229920,
@@ -170,7 +170,7 @@
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/VideoConfig.cpp",
-     "home_n": 19
+     "home_n": 16
     },
     {
      "rva": 745616,
@@ -228,158 +228,13 @@
    ]
   },
   {
-   "file": "src/Gruntz/Play.cpp",
-   "n": 86,
-   "bytes": 29850,
-   "main_lo": 847344,
-   "main_hi": 908488,
-   "main_n": 83,
-   "main_share": 0.9651162790697675,
-   "clusters": 3,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 600256,
-     "hi": 600291,
-     "n": 1
-    },
-    {
-     "lo": 826944,
-     "hi": 827809,
-     "n": 2
-    },
-    {
-     "lo": 847344,
-     "hi": 908488,
-     "n": 83
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 600256,
-     "name": "?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ",
-     "dist": 247053,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 53
-    },
-    {
-     "rva": 826944,
-     "name": "?ProfileInputFrame@CPlay@@QAEHXZ",
-     "dist": 19535,
-     "cluster_n": 2,
-     "kind": "misplaced",
-     "home": "",
-     "home_n": 0
-    },
-    {
-     "rva": 827552,
-     "name": "?ProfileDeltaFrame@CPlay@@QAEHXZ",
-     "dist": 19535,
-     "cluster_n": 2,
-     "kind": "misplaced",
-     "home": "",
-     "home_n": 0
-    }
-   ],
-   "rvas": [
-    600256,
-    826944,
-    827552,
-    847344,
-    847376,
-    847472,
-    847696,
-    847808,
-    848032,
-    849776,
-    851088,
-    852256,
-    854304,
-    854624,
-    854832,
-    856544,
-    856752,
-    857680,
-    857872,
-    858256,
-    858816,
-    858928,
-    874848,
-    876288,
-    876432,
-    876720,
-    877632,
-    877920,
-    878032,
-    880544,
-    881184,
-    881344,
-    881728,
-    881952,
-    883152,
-    884832,
-    887024,
-    887136,
-    887296,
-    887456,
-    887584,
-    887744,
-    887904,
-    888208,
-    888256,
-    888528,
-    888912,
-    889184,
-    889408,
-    889488,
-    890352,
-    892976,
-    893440,
-    893648,
-    893872,
-    894016,
-    895088,
-    895328,
-    895456,
-    895584,
-    895648,
-    895936,
-    896944,
-    897104,
-    897296,
-    897488,
-    897536,
-    897664,
-    897712,
-    897744,
-    897776,
-    898560,
-    898752,
-    898896,
-    899040,
-    899232,
-    899376,
-    899504,
-    901216,
-    902864,
-    903792,
-    905296,
-    906048,
-    906560,
-    907312,
-    907936
-   ]
-  },
-  {
    "file": "src/Gruntz/GameLevel.cpp",
-   "n": 57,
-   "bytes": 13712,
-   "main_lo": 1431296,
+   "n": 58,
+   "bytes": 13713,
+   "main_lo": 1429872,
    "main_hi": 1446690,
-   "main_n": 55,
-   "main_share": 0.9649122807017544,
+   "main_n": 56,
+   "main_share": 0.9655172413793104,
    "clusters": 3,
    "conflated": false,
    "cluster_list": [
@@ -394,16 +249,16 @@
      "n": 1
     },
     {
-     "lo": 1431296,
+     "lo": 1429872,
      "hi": 1446690,
-     "n": 55
+     "n": 56
     }
    ],
    "outliers": [
     {
      "rva": 439088,
      "name": "?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z",
-     "dist": 992166,
+     "dist": 990742,
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/TriggerMgrGrid.cpp",
@@ -412,7 +267,7 @@
     {
      "rva": 534016,
      "name": "?LookupTile@CGameLevel@@QAE?AW4TileCollisionKind@@HH@Z",
-     "dist": 897165,
+     "dist": 895741,
      "cluster_n": 1,
      "kind": "interleaver",
      "home": "src/Gruntz/Brickz.cpp",
@@ -422,6 +277,7 @@
    "rvas": [
     439088,
     534016,
+    1429872,
     1431296,
     1431440,
     1431584,
@@ -481,12 +337,12 @@
   },
   {
    "file": "src/Gruntz/GruntzMgr.cpp",
-   "n": 123,
-   "bytes": 21181,
+   "n": 124,
+   "bytes": 21706,
    "main_lo": 571584,
    "main_hi": 605415,
-   "main_n": 121,
-   "main_share": 0.983739837398374,
+   "main_n": 122,
+   "main_share": 0.9838709677419355,
    "clusters": 2,
    "conflated": false,
    "cluster_list": [
@@ -498,7 +354,7 @@
     {
      "lo": 571584,
      "hi": 605415,
-     "n": 121
+     "n": 122
     }
    ],
    "outliers": [
@@ -507,18 +363,18 @@
      "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 2,
-     "kind": "interleaver",
+     "kind": "misplaced",
      "home": "src/Rez/RezSync.cpp",
-     "home_n": 2
+     "home_n": 1
     },
     {
      "rva": 549344,
      "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 2,
-     "kind": "interleaver",
+     "kind": "misplaced",
      "home": "src/Rez/RezSync.cpp",
-     "home_n": 2
+     "home_n": 1
     }
    ],
    "rvas": [
@@ -632,6 +488,7 @@
     600496,
     600544,
     600624,
+    600752,
     601424,
     601504,
     601584,
@@ -645,6 +502,106 @@
     603680,
     604448,
     605152
+   ]
+  },
+  {
+   "file": "src/Gruntz/Play.cpp",
+   "n": 55,
+   "bytes": 21998,
+   "main_lo": 847344,
+   "main_hi": 894112,
+   "main_n": 53,
+   "main_share": 0.9636363636363636,
+   "clusters": 2,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 826944,
+     "hi": 827809,
+     "n": 2
+    },
+    {
+     "lo": 847344,
+     "hi": 894112,
+     "n": 53
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 826944,
+     "name": "?ProfileInputFrame@CPlay@@QAEHXZ",
+     "dist": 19535,
+     "cluster_n": 2,
+     "kind": "misplaced",
+     "home": "",
+     "home_n": 0
+    },
+    {
+     "rva": 827552,
+     "name": "?ProfileDeltaFrame@CPlay@@QAEHXZ",
+     "dist": 19535,
+     "cluster_n": 2,
+     "kind": "misplaced",
+     "home": "",
+     "home_n": 0
+    }
+   ],
+   "rvas": [
+    826944,
+    827552,
+    847344,
+    847376,
+    847472,
+    847696,
+    847808,
+    848032,
+    849776,
+    851088,
+    852256,
+    854304,
+    854624,
+    854832,
+    856544,
+    856752,
+    857680,
+    857872,
+    858256,
+    858816,
+    858928,
+    874848,
+    876288,
+    876432,
+    876720,
+    877632,
+    877920,
+    878032,
+    880544,
+    881184,
+    881344,
+    881728,
+    881952,
+    883152,
+    884832,
+    887024,
+    887136,
+    887296,
+    887456,
+    887584,
+    887744,
+    887904,
+    888208,
+    888256,
+    888528,
+    888912,
+    889184,
+    889408,
+    889488,
+    890352,
+    892976,
+    893440,
+    893648,
+    893872,
+    894016
    ]
   },
   {
@@ -700,6 +657,58 @@
     1165232,
     1165296,
     1165360
+   ]
+  },
+  {
+   "file": "src/Gruntz/PlayAssetLoad.cpp",
+   "n": 16,
+   "bytes": 6423,
+   "main_lo": 898560,
+   "main_hi": 908488,
+   "main_n": 15,
+   "main_share": 0.9375,
+   "clusters": 2,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 600256,
+     "hi": 600291,
+     "n": 1
+    },
+    {
+     "lo": 898560,
+     "hi": 908488,
+     "n": 15
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 600256,
+     "name": "?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ",
+     "dist": 298269,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 54
+    }
+   ],
+   "rvas": [
+    600256,
+    898560,
+    898752,
+    898896,
+    899040,
+    899232,
+    899376,
+    899504,
+    901216,
+    902864,
+    903792,
+    905296,
+    906048,
+    906560,
+    907312,
+    907936
    ]
   },
   {
