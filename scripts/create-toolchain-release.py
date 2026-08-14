@@ -368,16 +368,21 @@ def step2_apply_sp3(work: Path, stage_msvc: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def bundle_msdis(work: Path, stage_msvc: Path) -> None:
+    # msvcp50.dll rides along: the REAL msdis100.dll imports the VC5 C++
+    # runtime at load (the old export-only stub did not), so link.exe cannot
+    # load without both beside it (VC/REDIST/MSVCP50.DLL on the same disc).
     bin_dir = stage_msvc / "bin"
-    if any(p.name.lower() == "msdis100.dll" for p in bin_dir.glob("*")):
-        log("  MSDIS100.DLL already in msvc/bin"); return
-    src = find_named(work, "msdis100.dll")
-    if src:
-        shutil.copy2(str(src), str(bin_dir / src.name))
-        log(f"  bundled {src.name} from {src} (link.exe imports it at load)")
-    else:
-        log("WARNING: MSDIS100.DLL not found in the VC5 media - link.exe will rely "
-            "on the msdis_stub.py fallback to load under wine.")
+    for name in ("msdis100.dll", "msvcp50.dll"):
+        if any(p.name.lower() == name for p in bin_dir.glob("*")):
+            log(f"  {name} already in msvc/bin")
+            continue
+        src = find_named(work, name)
+        if src:
+            shutil.copy2(str(src), str(bin_dir / src.name))
+            log(f"  bundled {src.name} from {src} (link.exe load-time need)")
+        else:
+            log(f"WARNING: {name} not found in the VC5 media - link.exe may "
+                "fail to load under wine (c0000135).")
 
 
 def bundle_rc(work: Path, stage_msvc: Path) -> None:
@@ -454,6 +459,10 @@ def verify_sp3(stage_msvc: Path, *, fatal: bool) -> None:
             log(f"{name} present OK  <- resource compiler")
         else:
             log(f"NOTE: {name} absent from msvc/bin - the resource step has no tool.")
+    if next((p for p in bin_dir.glob("*") if p.name.lower() == "msvcp50.dll"), None):
+        log("msvcp50.dll present OK  <- msdis100.dll load-time import")
+    else:
+        log("NOTE: msvcp50.dll absent - the real msdis100.dll cannot load.")
 
     for libname in REQUIRED_LIBS:
         found = next((p for p in lib_dir.glob("*")
