@@ -3,15 +3,27 @@
 
 #include <rva.h>
 
+#include <Gruntz/AniCycle.h>
+#include <Gruntz/BehindCandyAni.h>
 #include <Gruntz/CBrickz.h>
+#include <Gruntz/CheckpointTrigger.h>
+#include <Gruntz/DroppedObject.h>
+#include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/EyeCandyAni.h>
+#include <Gruntz/FortressFlag.h>
+#include <Gruntz/FrontCandyAni.h>
+#include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
 #include <Gruntz/GruntToySprite.h>
+#include <Gruntz/KitchenSlime.h>
+#include <Gruntz/LightFx.h>
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/ObjectDropper.h>
 #include <Gruntz/Particlez.h>
+#include <Gruntz/Projectile.h>
 #include <Gruntz/RollingBall.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
@@ -25,45 +37,11 @@
 #include <Gruntz/VoiceTrigger.h>
 #include <Gruntz/WarpStonePad.h>
 
-struct CProjectile : public CMovingLogic {
-    static void RegisterType();
-};
-
+// CProjActObj has no state and no vtable: it exists only to own the
+// `A`-action registrar that installs CActionArea::Tick. Its body lives in
+// ActionArea.cpp beside the method it registers.
 struct CProjActObj {
     static void RegisterType();
-};
-struct CAniCycle {
-    static void RegisterActs();
-};
-struct CFrontCandyAni {
-    static void RegisterActs();
-};
-struct CBehindCandyAni {
-    static void RegisterActs();
-};
-struct CEyeCandyAni {
-    static void RegisterActs();
-};
-struct CCheckpointTrigger {
-    static void RegisterActs();
-};
-struct CGruntCreationPoint {
-    static void RegisterActs();
-};
-struct CFortressFlag {
-    static void RegisterActs();
-};
-struct CDroppedObject {
-    static void RegisterActs();
-};
-struct CDroppedObjectShadow {
-    static void RegisterActs();
-};
-struct CKitchenSlime {
-    static void RegisterType();
-};
-struct CLightFx {
-    static void RegisterActs();
 };
 
 void RegisterSimpleAnimLogic();
