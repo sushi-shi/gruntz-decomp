@@ -14,16 +14,16 @@
  },
  {
   "file": "src/Gruntz/GruntzMgr.cpp",
-  "n": 160,
-  "bytes": 25656,
+  "n": 162,
+  "bytes": 25744,
   "lo": 536624,
   "hi": 605415,
   "span": 68791,
-  "frags": 20,
-  "avg_cluster": 8.0,
-  "frag_ratio": 0.125,
-  "occupancy": 0.37295576456222473,
-  "spread": 2.6812831306516993
+  "frags": 19,
+  "avg_cluster": 8.526315789473685,
+  "frag_ratio": 0.11728395061728394,
+  "occupancy": 0.3742350016717303,
+  "spread": 2.6721177750155376
  },
  {
   "file": "src/DDrawMgr/DDrawSurfaceMgr.cpp",
@@ -143,19 +143,6 @@
   "spread": 79.9912487061259
  },
  {
-  "file": "src/Gruntz/Play.cpp",
-  "n": 91,
-  "bytes": 45074,
-  "lo": 537184,
-  "hi": 894112,
-  "span": 356928,
-  "frags": 5,
-  "avg_cluster": 18.2,
-  "frag_ratio": 0.054945054945054944,
-  "occupancy": 0.12628317195624889,
-  "spread": 7.918711452278475
- },
- {
   "file": "src/Gruntz/FortressFlag.cpp",
   "n": 21,
   "bytes": 4311,
@@ -258,6 +245,19 @@
   "frag_ratio": 0.2857142857142857,
   "occupancy": 0.02612638970157987,
   "spread": 38.275475923852184
+ },
+ {
+  "file": "src/Gruntz/Play.cpp",
+  "n": 89,
+  "bytes": 44986,
+  "lo": 818880,
+  "hi": 894112,
+  "span": 75232,
+  "frags": 4,
+  "avg_cluster": 22.25,
+  "frag_ratio": 0.0449438202247191,
+  "occupancy": 0.5979636324968098,
+  "spread": 1.6723425065575956
  },
  {
   "file": "src/Gruntz/ImageSet3.cpp",
