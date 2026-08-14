@@ -53,8 +53,9 @@ Bases:
   rtti | ehtable | guard | common | copy | pad).
   `gruntz.audit.data_denominator --check` re-proves kinds and tiling against
   the image + the current enrolment every build.
-- **`bands.tsv`** — the image's coarse layout ([lo, hi) bands over `.text`
-  and the data sections) for reporting and the hard band↔kind invariants.
+- **`link_bands.tsv`** — the image's coarse link-layout bands ([lo, hi) over
+  `.text` and the data sections) for reporting and the hard band↔kind
+  invariants.
 
 Function providers:
 
@@ -85,8 +86,8 @@ Data providers:
 
 Retail-derived evidence:
 
-- **`link_bands.tsv`** — DERIVED per-unit link-contribution bands (ascending
-  band start = the retail link order).
+- **`link_order.tsv`** — DERIVED retail link order: one row per unit's
+  contiguous contribution band (ascending band start = arrival order).
 - **`reloc_referents.tsv`** — per-site retail relocation referents whose exact
   spelling (symbol + addend) containment inference cannot reach.
 - **`rsrc/`** — the retail resources (extracted payloads + manifest).
