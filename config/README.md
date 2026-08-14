@@ -29,6 +29,10 @@ merged per row; remeasure the merged tree rather than taking one side wholesale.
 - **`bare-constants-baseline.tsv`**, **`data-tu-order-baseline.tsv`**,
   **`single-view-baseline.tsv`**, and **`tu-order-baseline.tsv`** — focused
   audit ratchets and frozen backlogs.
+- **`kept-comdat-exiles.tsv`** — the tu-order gate's reviewed exemptions:
+  interleaves retail genuinely produced (a COMDAT kept inside a foreign
+  unit's contribution). Gate policy, not retail labeling.
+- **`data-integrity-ratchet.tsv`** — maxima for the data-integrity audit.
 
 ## `retail/` executable labels — the channel model
 
@@ -62,10 +66,6 @@ Function providers:
 - **`functions_zlib.tsv`** — the vendored zlib-1.0.4 function labels
   (rva, name, unit, size). The vendored sources are pristine, so this table is
   their claim channel; `size` is the exact matched extent.
-- **`gruntz_functions.tsv`** — census of every retail function RVA the source
-  tree labels (rva, name, unit); the floor for the `gruntz build --full`
-  vanish gate (`gruntz.audit.function_census`). Keyed on RVAs, so cross-unit
-  moves and renames pass; a deliberate removal is a committed row deletion.
 
 Data providers:
 
@@ -83,16 +83,16 @@ Data providers:
   (`gruntz.audit.compgen_data` re-proves them against the base objs), and
   `class=copy` per-TU copies of header statics (the GruntDirStatics device).
 
-Shared retail inputs:
+Retail-derived evidence:
 
-- **`link-order.tsv`** — DERIVED retail link order
-  (`gruntz.audit.link_line --emit` / `--check`).
-- **`kept-comdat-exiles.tsv`** — the legitimate-interleave exemptions of
-  `tu_order_check`.
-- **`reloc-aliases.tsv`** — reviewed exact retail relocation spellings the
-  delinker cannot infer.
-- **`data-integrity-ratchet.tsv`** — maxima for `gruntz.audit.data_integrity`.
-- **`rsrc/`** — the retail resources (`rescomp` → link).
+- **`link-order.tsv`** — DERIVED retail link order (emit/check).
+- **`reloc_referents.tsv`** — per-site retail relocation referents whose exact
+  spelling (symbol + addend) containment inference cannot reach.
+- **`rsrc/`** — the retail resources (extracted payloads + manifest).
+
+Everything under retail/ states a fact about the retail image. Gate policy
+lives in cleanliness/; loss detection (the old gruntz_functions.tsv census
+floor) is match_baseline.tsv's LOST reporting.
 
 Retired configs (caller-audit ledgers, match-queue.md, `library_labels.csv` +
 `zlib_labels.csv` + `vtables_*.csv` + `compiler-generated-data.tsv` +

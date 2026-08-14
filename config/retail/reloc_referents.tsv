@@ -1,0 +1,5 @@
+# Per-site retail relocation REFERENTS whose exact spelling (symbol + addend)
+# strict data containment cannot infer - e.g. a one-past-the-end loop bound
+# spelled as the array's end. Retail evidence; consumed by the delinker.
+function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
+0x00024190	0x001e9628	0x000241eb	?g_cmdBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end

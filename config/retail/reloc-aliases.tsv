@@ -1,3 +1,0 @@
-# Exact retail relocation spellings that cannot be inferred by strict data containment.
-function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
-0x00024190	0x001e9628	0x000241eb	?g_cmdBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end
