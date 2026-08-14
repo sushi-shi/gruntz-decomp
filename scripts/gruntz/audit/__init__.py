@@ -15,7 +15,7 @@ gruntz/cleanliness/ + gruntz/match/ (NINE with include_order):
              (re-derive @early-stop blockers) / tidy_audit (`gruntz audit tidy`) /
              extern_harvest (unresolved-referent inventory) / nested_static_casts
              (direct numeric/type conversion chains; full-tier metric)
-  labeling   fid/ + fid_generate (library_labels.csv regeneration) /
+  labeling   fid/ + fid_generate (functions_static_libs.tsv regeneration) /
              mfc_class (MFC container-band arbiter) / unmatched_attribute
   rename     rename_member (the m_<hex> endgame bulk renamer) / retype_ints /
              reorder_tu (tu_order_check's mechanical fixer)

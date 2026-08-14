@@ -809,17 +809,18 @@ class TestBranchDisassembly(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
-# library_labels: LOW is evidence to investigate, never carve-out authority    #
+# static-libs labels: LOW is evidence to investigate, never carve-out authority#
 # --------------------------------------------------------------------------- #
 class TestLibraryLabels(unittest.TestCase):
     def test_low_rows_are_not_active_library_claims(self):
         with tempfile.TemporaryDirectory() as tmp:
-            labels = Path(tmp) / "library_labels.csv"
+            labels = Path(tmp) / "functions_static_libs.tsv"
             labels.write_text(
-                "rva,name,lib,confidence,source\n"
-                "0x1000,high,LIBCMT,HIGH,test\n"
-                "0x2000,ambig,NAFXCW,AMBIG,test\n"
-                "0x3000,low,LIBCMT,LOW,test\n"
+                "# test fixture\n"
+                "rva\tname\tlib\tconfidence\tsource\n"
+                "0x1000\thigh\tLIBCMT\tHIGH\ttest\n"
+                "0x2000\tambig\tNAFXCW\tAMBIG\ttest\n"
+                "0x3000\tlow\tLIBCMT\tLOW\ttest\n"
             )
             self.assertEqual(library_labels.active_rvas(labels), {0x1000, 0x2000})
 
@@ -835,14 +836,14 @@ class TestLibraryLabels(unittest.TestCase):
                 "rva,name,unit,size,kind\n"
                 "0x001f03e0,?openprot@filebuf@@2HB,library_data,0x4,data\n"
             )
-            vendored = root / "zlib_labels.csv"
+            vendored = root / "functions_zlib.tsv"
             vendored.write_text("")
             holding = [{"rva": 0x1f03e0, "unit": "library_data"}]
             with mock.patch.object(verify_library_overlap, "REPO", root), \
                     mock.patch.object(verify_library_overlap, "SRC", src), \
                     mock.patch.object(verify_library_overlap, "INCLUDE", include), \
                     mock.patch.object(verify_library_overlap, "GEN_NAMES", names), \
-                    mock.patch.object(verify_library_overlap, "VENDORED_CONFIG", vendored), \
+                    mock.patch.object(verify_library_overlap, "VENDORED_CONFIG", (vendored,)), \
                     mock.patch("gruntz.core.vtable_catalog.library_rows",
                                return_value=holding):
                 self.assertEqual(verify_library_overlap.generated_claims(), {})
@@ -866,10 +867,10 @@ class TestFunctionUniverse(unittest.TestCase):
                 "rva,name,unit,size,kind\n"
                 "0x8100,data_label,u,,data\n"
                 "0x8200,source_function,u,0x8,func\n")
-            (root / "config/retail/library_labels.csv").write_text(
-                "rva,name,lib,confidence,source\n"
-                "0x8400,library_high,LIBCMT,HIGH,test\n"
-                "0x8500,library_low,LIBCMT,LOW,test\n")
+            (root / "config/retail/functions_static_libs.tsv").write_text(
+                "rva\tname\tlib\tconfidence\tsource\n"
+                "0x8400\tlibrary_high\tLIBCMT\tHIGH\ttest\n"
+                "0x8500\tlibrary_low\tLIBCMT\tLOW\ttest\n")
             (root / "src").mkdir()
             (root / "src/u.cpp").write_text(
                 "RVA_DYNINIT(0x00008300, 0xa, gTest)\n"

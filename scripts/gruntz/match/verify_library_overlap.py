@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Fatal guard: no src claim may also be a config/retail/library_labels.csv row.
+"""Fatal guard: no src claim may also be a config/retail/functions_static_libs.tsv row.
 
 GRUNTZ.EXE statically links MFC (NAFXCW) + CRT. Library code is NEVER
-hand-reconstructed in src/ - it gets a row in config/retail/library_labels.csv (which
+hand-reconstructed in src/ - it gets a row in config/retail/functions_static_libs.tsv (which
 excludes it from the match denominator) and game code calls it through the real
 headers (<Mfc.h>). A retail RVA must therefore be claimed by EXACTLY ONE of:
 
   * a src reconstruction  (a GAME body/global), or
-  * a library_labels.csv row  (a carved-out LIBRARY body).
+  * a functions_static_libs.tsv row  (a carved-out LIBRARY body).
 
 Claiming the same RVA in BOTH is a double-claim on the same retail bytes - the
 defect P0 reconciled. Two ways it recurs, both caught here:
@@ -43,17 +43,15 @@ not see (macro-only overlap was already 0 while the full set overlapped at 45).
 
 THE ONE DELIBERATE COEXISTENCE (vendored library). zlib 1.0.4 is compiled from
 real vendored source (vendor/zlib-1.0.4/*.c) AND FID-identifies as library. Its
-functions therefore sit in BOTH build/gen/symbol_names.csv (named for the
-delinker via config/retail/zlib_labels.csv, the vendored static-config table) AND
-config/retail/library_labels.csv (FID-tagged). status.py resolves this with "claimed
-wins": a carve-out that is also reconstructed counts as a real target. That is a
-THIRD category - vendored library, source held - not a double-claim, and the
-names AGREE (_deflate_stored == _deflate_stored). This guard excludes it by
-SOURCE (the config/retail/zlib_labels.csv vendored table), NOT by an RVA allowlist:
-every retail RVA is still a src reconstruction xor a library carve-out xor a
-vendored-library body.
+labels live in their own channel (config/retail/functions_zlib.tsv +
+data_zlib.tsv), and since the provider split the static-libs table carries NO
+zlib rows at all - fid_generate excludes them at the source. status.py still
+resolves any residual coexistence with "claimed wins": a carve-out that is also
+reconstructed counts as a real target. This guard keeps excluding the vendored
+channel by SOURCE, NOT by an RVA allowlist: every retail RVA is still a src
+reconstruction xor a library carve-out xor a vendored-library body.
 
-The intersection of (src claim set MINUS vendored) and (library_labels.csv rva
+The intersection of (src claim set MINUS vendored) and (functions_static_libs.tsv rva
 column) must be EMPTY. This is FATAL with no allowlist: fix the offending side,
 never suppress. `gruntz build` regenerates build/gen/symbol_names.csv (ninja
 labels edge) BEFORE running this gate, so the generated set is fresh here; run
@@ -74,11 +72,12 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 SRC = REPO / "src"
 INCLUDE = REPO / "include"
-LIBRARY_LABELS = REPO / "config" / "retail" / "library_labels.csv"
+LIBRARY_LABELS = REPO / "config" / "retail" / "functions_static_libs.tsv"
 GEN_NAMES = REPO / "build" / "gen" / "symbol_names.csv"
 # The vendored static-config table (zlib 1.0.4): library code we hold source for,
-# co-listed in symbol_names.csv AND library_labels.csv by design ("claimed wins").
-VENDORED_CONFIG = REPO / "config" / "retail" / "zlib_labels.csv"
+# co-listed in symbol_names.csv AND functions_static_libs.tsv by design ("claimed wins").
+VENDORED_CONFIG = (REPO / "config" / "retail" / "functions_zlib.tsv",
+                   REPO / "config" / "retail" / "data_zlib.tsv")
 
 # rva-macro: RVA(0x.., 0x..) - a reconstructed body's retail address.
 RVA_RE = re.compile(r"\bRVA\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(?:0x[0-9a-fA-F]+|\d+)\s*\)")
@@ -93,19 +92,20 @@ def norm_addr(value: str) -> str:
 
 
 def vendored_rvas() -> set:
-    """RVAs of the vendored static-config TUs (config/retail/zlib_labels.csv). These are
+    """RVAs of the vendored static-config TUs (functions_zlib.tsv + data_zlib.tsv). These are
     library bodies we hold source for; they are DELIBERATELY in both the generated
-    symbol set and library_labels.csv ("claimed wins", status.py) and are excluded
+    symbol set and functions_static_libs.tsv ("claimed wins", status.py) and are excluded
     from the overlap by source category, not by an RVA allowlist."""
     rvas = set()
-    if not VENDORED_CONFIG.exists():
-        return rvas
-    for r in csv.reader(VENDORED_CONFIG.open()):
-        if r and r[0].strip().lower().startswith("0x"):
-            try:
-                rvas.add(norm_addr(r[0].strip()))
-            except ValueError:
-                pass
+    for path in VENDORED_CONFIG:
+        if not path.exists():
+            continue
+        for r in csv.reader(path.open(), delimiter="\t"):
+            if r and r[0].strip().lower().startswith("0x"):
+                try:
+                    rvas.add(norm_addr(r[0].strip()))
+                except ValueError:
+                    pass
     return rvas
 
 
@@ -123,7 +123,7 @@ def src_claims() -> dict:
     """rva -> (claim-kind, "path:line") for every src-authored claim. Parses src/
     and include/ directly, so it is always available (the never-vacuous fallback)
     and carries the claim kind + source location for the diagnostic. Naturally
-    excludes the vendored table (those names live in config/retail/zlib_labels.csv, not
+    excludes the vendored tables (those names live in config/retail/functions_zlib.tsv, not
     in src comments)."""
     claims = {}
     files = list(SRC.rglob("*.cpp")) + list(SRC.rglob("*.h")) + list(INCLUDE.rglob("*.h"))
@@ -187,7 +187,7 @@ def generated_claims() -> dict:
 
 
 def library_rows() -> dict:
-    """rva -> "name (lib, confidence)" for every library_labels.csv row."""
+    """rva -> "name (lib, confidence)" for every functions_static_libs.tsv row."""
     rows = {}
     if not LIBRARY_LABELS.exists():
         return rows
@@ -216,7 +216,7 @@ def main() -> int:
 
     overlap = sorted(set(claims) & set(lib))
     if overlap:
-        print(f"{len(overlap)} RVA(s) double-claimed by src AND config/retail/library_labels.csv:",
+        print(f"{len(overlap)} RVA(s) double-claimed by src AND config/retail/functions_static_libs.tsv:",
               file=sys.stderr)
         print(f"  {'rva':>10}  {'claim-kind':<10}  src <-> csv", file=sys.stderr)
         for rva in overlap:

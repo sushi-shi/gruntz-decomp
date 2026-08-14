@@ -1059,7 +1059,7 @@ def main():
     # library code is still partitioned into the linker bucket, never into a TU.
     nlib, library_rvas = 0, set()
     deferred_thunks = {}
-    for row in library_active_rows(REPO / "config/retail/library_labels.csv"):
+    for row in library_active_rows(REPO / "config/retail/functions_static_libs.tsv"):
         raw = (row.get("rva") or "").strip()
         name = (row.get("name") or "").strip()
         if not raw or not name:

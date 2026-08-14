@@ -4,7 +4,7 @@
 #   STATELESS: every fact comes from a generated, source-derived file (or the
 #   tracked config CSVs), so nothing important lives only in the .gpr blob:
 #     1. FUNCTION NAMES   - build/gen/symbol_names.csv (rva -> mangled name; from
-#                           src/ RVA() macros via labels.py) + config/retail/library_labels.csv
+#                           src/ RVA() macros via labels.py) + config/retail/functions_static_libs.tsv
 #                           (FID HIGH/MED/AMBIG). Functions are created when Ghidra
 #                           has none at the RVA.
 #     2. PROTOTYPES + PARAM NAMES - build/gen/functions.json (labels.py): per-RVA
@@ -69,7 +69,7 @@ LOCALS_JSON  = ROOT + "/build/gen/locals.json"
 GLOBALS_JSON = ROOT + "/build/gen/globals.json"
 STRUCTS_JSON = ROOT + "/build/gen/structs.json"
 ENUMS_JSON   = ROOT + "/build/gen/enums.json"
-CSV_FID    = ROOT + "/config/retail/library_labels.csv"
+CSV_FID    = ROOT + "/config/retail/functions_static_libs.tsv"
 FUNCTION_INVENTORY = ROOT + "/config/retail/functions.tsv"
 REPORT     = ROOT + "/build/ghidra-named/exports/enrichment_apply_report.txt"
 
@@ -119,7 +119,7 @@ def demangle_apply(addr, mangled):
 # =====================================================================
 # 0. CSV loader (respects quoted prototype field)
 # =====================================================================
-def load_csv_rows(path):
+def load_csv_rows(path, delim=","):
     rows = []
     fh = open(path)
     try:
@@ -133,7 +133,7 @@ def load_csv_rows(path):
             for ch in line:
                 if ch == '"':
                     inq = not inq
-                elif ch == "," and not inq:
+                elif ch == delim and not inq:
                     parts.append(cur); cur = ""
                 else:
                     cur += ch
@@ -620,7 +620,7 @@ try:
         kind = r[4] if len(r) > 4 else "func"
         (data_syms if kind == "data" else syms).append((rva, r[1]))
 
-    fid_rows = load_csv_rows(CSV_FID) if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
+    fid_rows = load_csv_rows(CSV_FID, "\t") if os.path.exists(CSV_FID) else []  # rva,name,lib,confidence,source
     fids = []
     for r in fid_rows:
         if len(r) < 4: continue

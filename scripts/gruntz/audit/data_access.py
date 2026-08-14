@@ -495,7 +495,7 @@ def unclaimed_runs(pe, unclaimed, extents):
     except Exception:
         vendorish = set()
     lib_fns = sorted(int((r.get("rva") or "0"), 16)
-                     for r in active_rows(_REPO / "config/retail/library_labels.csv")
+                     for r in active_rows(_REPO / "config/retail/functions_static_libs.tsv")
                      if (r.get("rva") or "").startswith("0x"))
 
     claimed_starts = sorted(set(db.fstarts) & set(db.names))

@@ -145,23 +145,12 @@ def main():
         for r in rows:
             w.writerow([f'0x{r[0]:06x}',r[1],r[2],r[3],r[4],r[5],r[6],r[7],r[8],r[9],r[10],r[11],r[12]])
 
-    # deliverable CSV: rva,name,lib,confidence  (one row per matched RVA)
-    deliv = out_csv.rsplit('/',1)[0] + '/library_labels.csv'
+    # deliverable CSV: rva,name,lib,confidence  (one row per matched RVA).
+    # zlib rows are NOT included: the vendored labels are their own channel
+    # (config/retail/functions_zlib.tsv), never a static-libs claim.
+    deliv = out_csv.rsplit('/',1)[0] + '/anchored_labels.csv'
     with open(deliv,'w',newline='') as f:
         w=csv.writer(f); w.writerow(['rva','name','lib','confidence'])
-        # zlib (already hand-matched) for completeness, if present. Only label rows
-        # whose unit is an actual vendored-zlib TU -- symbol_names.csv now also
-        # carries engine/game units (CFileIO, dialog procs, ...) that are NOT zlib.
-        try:
-            zlib_units=_zlib_units('config/units.toml')
-            for line in open('build/gen/symbol_names.csv'):
-                line=line.strip()
-                if line.startswith('0x'):
-                    rva_s,name,unit=line.split(',')[:3]
-                    if unit not in zlib_units:
-                        continue
-                    w.writerow([f'0x{int(rva_s,16):06x}',name,'zlib','HIGH'])
-        except Exception: pass
         for r in rows:
             w.writerow([f'0x{r[0]:06x}',r[1],r[2],r[3]])
 

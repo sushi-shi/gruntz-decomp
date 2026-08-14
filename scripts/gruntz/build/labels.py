@@ -61,8 +61,9 @@ keeps it from being the retired declaration-only DATA_SYMBOL in a new coat.
 VENDORED PATH: vendored C TUs (vendor/zlib-1.0.4/*.c) keep their source PRISTINE -
 no labels in the source at all. They are mostly `static`/`local` K&R functions
 that clang DROPS from IR when unused, so neither attributes nor a source join can
-carry their labels. Instead their rva->symbol map lives in config/retail/zlib_labels.csv
-(a static table - the retail binary never changes - generated once) and is emitted
+carry their labels. Instead their rva->symbol map lives in
+config/retail/functions_zlib.tsv + data_zlib.tsv (static tables - the retail
+binary never changes - generated once) and is emitted
 directly, authority-checked against the base obj: no source parsing, no positional
 join. A TU is routed to the config path iff it carries NO include/rva.h macro.
 
@@ -126,7 +127,8 @@ ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?
 MACRO_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|DATA_COMPGEN)\s*\(")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
-LABEL_CONFIG = REPO / "config/retail/zlib_labels.csv"
+LABEL_CONFIG_FUNCS = REPO / "config/retail/functions_zlib.tsv"
+LABEL_CONFIG_DATA = REPO / "config/retail/data_zlib.tsv"
 
 # The compiler-generated DATA pins - the DATA analog of RVA_COMPGEN, but a manifest
 # rather than a source macro because these data have no owning TU: cl emits each one
@@ -732,26 +734,28 @@ def parse_demangled(dem):
 
 
 # --- static config path (vendored C TUs with pristine source; see docstring) --
-def load_label_config(path):
-    """unit -> [(rva, name, size, kind)] from the static rva->symbol table
-    (config/retail/zlib_labels.csv): the labels for vendored C TUs whose source carries
-    no annotations. Generated once (the retail binary never changes)."""
+def load_label_config(func_path=None, data_path=None):
+    """unit -> [(rva, name, size, kind)] from the static rva->symbol tables
+    (config/retail/functions_zlib.tsv + data_zlib.tsv): the labels for vendored C
+    TUs whose source carries no annotations. Generated once (the retail binary
+    never changes); each file's kind is implied by which channel it is."""
     import csv
     cfg = {}
-    if not Path(path).exists():
-        return cfg
-    with open(path) as f:
-        for r in csv.reader(f):
-            if not r or r[0].strip() in ("", "rva") or r[0].lstrip().startswith("#"):
-                continue
-            try:
-                rva = int(r[0], 16)
-            except ValueError:
-                continue
-            unit = r[2] if len(r) > 2 else ""
-            size = int(r[3], 16) if len(r) > 3 and r[3] else None
-            kind = r[4] if len(r) > 4 and r[4] else "func"
-            cfg.setdefault(unit, []).append((rva, r[1], size, kind))
+    for path, kind in ((func_path or LABEL_CONFIG_FUNCS, "func"),
+                       (data_path or LABEL_CONFIG_DATA, "data")):
+        if not Path(path).exists():
+            continue
+        with open(path) as f:
+            for r in csv.reader(f, delimiter="\t"):
+                if not r or r[0].strip() in ("", "rva") or r[0].lstrip().startswith("#"):
+                    continue
+                try:
+                    rva = int(r[0], 16)
+                except ValueError:
+                    continue
+                unit = r[2] if len(r) > 2 else ""
+                size = int(r[3], 16) if len(r) > 3 and r[3] else None
+                cfg.setdefault(unit, []).append((rva, r[1], size, kind))
     return cfg
 
 
@@ -1317,7 +1321,7 @@ def main():
         unit_map = units_from_toml(args.units_toml)
 
     compdb = load_compdb(args.compdb) if args.compdb else {}
-    label_config = load_label_config(LABEL_CONFIG)
+    label_config = load_label_config()
     compgen_data = load_compgen_data()
 
     rows = []          # (rva, name, unit, size, kind)
@@ -1347,7 +1351,7 @@ def main():
         cl_flags = compdb.get(os.path.realpath(tu))
 
         # A TU with no include/rva.h macro is a vendored C TU with pristine source;
-        # its rva->symbol map comes from config/retail/zlib_labels.csv (static, emitted
+        # its rva->symbol map comes from functions_zlib.tsv + data_zlib.tsv (static, emitted
         # directly - no parse, no join). zlib's static/K&R functions drop from IR
         # when unused, so labels can't live in the source; src/ uses the macros.
         if not MACRO_RE.search(text):

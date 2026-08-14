@@ -52,7 +52,7 @@ RETAIL = REPO / "build/exe/GRUNTZ.EXE"
 CAND = REPO / "build/exe/GRUNTZ.candidate.EXE"
 CMAP = REPO / "build/exe/GRUNTZ.candidate.map"
 FUNCS = REPO / "config/retail/functions.tsv"
-LIBLBL = REPO / "config/retail/library_labels.csv"
+LIBLBL = REPO / "config/retail/functions_static_libs.tsv"
 NAMES = REPO / "build/gen/symbol_names.csv"
 DATAMAN = REPO / "build/gen/delink_data_manifest.tsv"
 UNITS = REPO / "config/units.toml"
@@ -175,9 +175,9 @@ def retail_text_regions(R, C, groups, pubs):
     # addresses via FID.  The minimum is the block start (independently corroborated
     # below: it is also the far edge of a large uncarved hole).
     lib = defaultdict(list)
-    with LIBLBL.open() as f:
-        for r in csv.DictReader(f):
-            lib[r['name']].append(int(r['rva'], 16))
+    from gruntz.core.library_labels import rows as library_rows
+    for r in library_rows(LIBLBL):
+        lib[r['name']].append(int(r['rva'], 16))
     aux_lo, aux_hi = gspan['.text$AFX_AUX']
     hits = []
     for p in pubs:
@@ -436,9 +436,9 @@ def selftest(R, C, groups, pubs, rreg, creg):
     print("\n=== selftest ===")
     gspan = {n: (lo, hi) for n, lo, hi in groups}
     lib = defaultdict(list)
-    with LIBLBL.open() as f:
-        for r in csv.DictReader(f):
-            lib[r['name']].append(int(r['rva'], 16))
+    from gruntz.core.library_labels import rows as library_rows
+    for r in library_rows(LIBLBL):
+        lib[r['name']].append(int(r['rva'], 16))
     ext = load_retail_extents()
     iv = sorted((a, a + s) for a, s in ext.items())
     merged = []

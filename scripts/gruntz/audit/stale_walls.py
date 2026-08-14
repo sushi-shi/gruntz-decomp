@@ -108,15 +108,14 @@ class Image:
 
 
 def operator_new_rvas():
+    from gruntz.core.library_labels import rows as library_rows
     out = set()
-    p = REPO / "config/retail/library_labels.csv"
-    if p.is_file():
-        for r in csv.reader(open(p)):
-            if len(r) >= 2 and r[1].startswith("??2@YAPAXI@Z"):
-                try:
-                    out.add(int(r[0], 16))
-                except ValueError:
-                    pass
+    for r in library_rows():
+        if (r.get("name") or "").startswith("??2@YAPAXI@Z"):
+            try:
+                out.add(int(r["rva"], 16))
+            except ValueError:
+                pass
     return out
 
 
@@ -521,7 +520,7 @@ def main():
     img = Image(exe)
     opnew = operator_new_rvas()
     if not opnew:
-        print("stale_walls: could not find ??2@YAPAXI@Z in config/retail/library_labels.csv")
+        print("stale_walls: could not find ??2@YAPAXI@Z in config/retail/functions_static_libs.tsv")
         return 2
 
     findings, oracle, computed = audit(img, opnew)

@@ -121,7 +121,7 @@ def classify(repo: Path = REPO, *, strict: bool = True) -> tuple[list[dict], dic
         raise FileNotFoundError(funcs_path)
     rows = _functions(funcs_path)
     source = _source_functions(repo / "build/gen/symbol_names.csv")
-    library = _library(repo / "config/retail/library_labels.csv")
+    library = _library(repo / "config/retail/functions_static_libs.tsv")
     private = _compiler_private(repo)
     helpers = _compiler_helpers(repo / "config/retail/compiler-helper-functions.tsv")
     read = _pe_reader(Path(os.environ.get("GRUNTZ_EXE")

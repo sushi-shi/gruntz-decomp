@@ -202,12 +202,9 @@ def compgen_spans():
 
 def library_spans():
     """[(rva, name, lib)] for every FID/anchored library label (CRT/MFC carve-out)."""
-    out = []
-    p = REPO / "config/retail/library_labels.csv"
-    for ln in p.read_text().splitlines()[1:]:
-        f = ln.split(",")
-        if len(f) >= 3 and f[0].startswith("0x"):
-            out.append((int(f[0], 16), f[1], f[2]))
+    from gruntz.core.library_labels import rows as library_rows
+    out = [(int(r["rva"], 16), r["name"], r["lib"])
+           for r in library_rows() if (r.get("rva") or "").startswith("0x")]
     out.sort()
     return out
 

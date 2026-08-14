@@ -6,7 +6,7 @@ Why this exists
 MFC's containers are byte-identical to each other.  `CObArray`/`CPtrArray`/
 `CDWordArray`/`CUIntArray` all compile to the same code (a 4-byte element array);
 `CObList`/`CPtrList` likewise; the map families likewise.  So a byte-signature
-matcher (our FID, `config/retail/library_labels.csv`) CANNOT tell them apart: every row
+matcher (our FID, `config/retail/functions_static_libs.tsv`) CANNOT tell them apart: every row
 in those bands comes back `AMBIG`, and the tree has been *trusting* those rows -
 which means it has been binding calls to the wrong NAFXCW symbol.  objdiff masks
 relocations, so a wrong class costs ~0% and displays "100.00%" while being a link
@@ -762,9 +762,17 @@ def retail_container_classes(mm, rva, size):
 
 
 def label_rows():
-    p = REPO / "config/retail/library_labels.csv"
-    rows = list(csv.reader(open(p)))
-    return rows[0], rows[1:]
+    """(banner comment lines, header fields, data rows) of the static-libs TSV."""
+    p = REPO / "config/retail/functions_static_libs.tsv"
+    banner, hdr, rows = [], None, []
+    for line in p.read_text().splitlines():
+        if line.startswith("#"):
+            banner.append(line)
+        elif hdr is None:
+            hdr = line.split("\t")
+        else:
+            rows.append(line.split("\t"))
+    return banner, hdr, rows
 
 
 # Non-container symbols that legitimately live INSIDE a container's .obj: the CPlex
@@ -811,7 +819,7 @@ def relabel(mm, write):
     Rewritten rows are marked `CRUNTIME` so they are never again mistaken for a
     byte-signature claim.
     """
-    hdr, rows = label_rows()
+    banner, hdr, rows = label_rows()
     out, fixed, dropped = [], [], []
     for r in rows:
         if len(r) < 5 or not r[0].startswith("0x"):
@@ -867,22 +875,25 @@ def relabel(mm, write):
         print("  %-10s 0x%06x  %-44s -> (dropped: NAFXCW defines no such symbol)"
               % ("fabricated", rva, old))
     if write:
-        p = REPO / "config/retail/library_labels.csv"
+        p = REPO / "config/retail/functions_static_libs.tsv"
+        out.sort(key=lambda r: int(r[0], 16) if r and r[0].startswith("0x") else 0)
         with open(p, "w", newline="") as f:
-            w = csv.writer(f, lineterminator="\n")
-            w.writerow(hdr)
-            w.writerows(out)
+            for line in banner:
+                f.write(line + "\n")
+            f.write("\t".join(hdr) + "\n")
+            for r in out:
+                f.write("\t".join(r) + "\n")
         print("\nwrote %s" % p)
     else:
-        print("\n(dry run - pass --write to rewrite config/retail/library_labels.csv)")
+        print("\n(dry run - pass --write to rewrite config/retail/functions_static_libs.tsv)")
     return 0
 
 
 def show_labels(mm):
     """Every library_labels row inside a recovered MFC container band, with the
     class the binary says owns it."""
-    _hdr, rows = label_rows()
-    print("=== library_labels.csv rows inside a recovered MFC container band ===")
+    _banner, _hdr, rows = label_rows()
+    print("=== functions_static_libs.tsv rows inside a recovered MFC container band ===")
     print("%-10s %-8s %-48s %-16s %s" % ("rva", "conf", "label", "band", "verdict"))
     n = ok = 0
     for r in rows:
@@ -946,7 +957,7 @@ def main():
     ap.add_argument("--audit", action="store_true",
                     help="audit the tree's MFC container bindings against retail")
     ap.add_argument("--labels", action="store_true",
-                    help="library_labels.csv rows in MFC container bands, right vs wrong")
+                    help="functions_static_libs.tsv rows in MFC container bands, right vs wrong")
     ap.add_argument("--relabel", action="store_true",
                     help="rewrite the wrong ones (--write to commit them)")
     ap.add_argument("--write", action="store_true", help="with --relabel: write the CSV")

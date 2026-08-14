@@ -146,7 +146,7 @@ def _is_data(sec) -> bool:
     return not sec["name"].startswith((".debug", ".drectve"))
 
 
-LIBRARY_LABELS = REPO / "config" / "retail" / "library_labels.csv"
+LIBRARY_LABELS = REPO / "config" / "retail" / "functions_static_libs.tsv"
 # A library label whose own provenance is a vtable slot cannot adjudicate a vtable
 # slot: 682 of the 865 words this source reaches are MFC methods labelled by
 # `vtable-slot-oracle`, i.e. by reading the very tables under audit. Excluding
@@ -187,11 +187,12 @@ def library_rvas() -> dict[str, int]:
     two-FID-labels-on-one-address family in reverse -- and is dropped rather than
     guessed.
     """
+    from gruntz.core.library_labels import rows as library_rows
     seen: dict[str, set[int]] = {}
     if not LIBRARY_LABELS.is_file():
         return {}
-    with LIBRARY_LABELS.open(encoding="latin-1", newline="") as stream:
-        for row in csv.DictReader(stream):
+    if True:
+        for row in library_rows(LIBRARY_LABELS):
             if (row.get("confidence") or "").strip().upper() == "LOW":
                 continue
             if (row.get("source") or "").strip() == CIRCULAR_LABEL_SOURCE:

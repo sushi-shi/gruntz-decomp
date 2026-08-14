@@ -100,7 +100,7 @@ DEFAULT_REPORT = REPO / "build" / "objdiff" / "report.json"
 # The admitted function table and FID list are committed. Absent -> None and callers
 # fall back to objdiff's started-unit scope.
 FUNCS_CSV = REPO / "config" / "retail" / "functions.tsv"
-FID_CSV = REPO / "config" / "retail" / "library_labels.csv"
+FID_CSV = REPO / "config" / "retail" / "functions_static_libs.tsv"
 
 
 _LIBRARY_CARVED: set[int] | None = None

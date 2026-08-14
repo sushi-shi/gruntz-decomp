@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""gruntz.audit.fid_generate - regenerate config/retail/library_labels.csv (the FID library labels).
+"""gruntz.audit.fid_generate - regenerate config/retail/functions_static_libs.tsv (the FID library labels).
 
-`config/retail/library_labels.csv` (rva,name,lib,confidence,source) is the TRACKED output
+`config/retail/functions_static_libs.tsv` (rva,name,lib,confidence,source) is the TRACKED output
 of a custom **masked-byte COFF-signature matcher** (NOT Ghidra FID). `apply.py`
 names CRT/MFC/zlib library functions from it and `gen_match_queue.py` excludes
-them. The committed CSV is canonical and survives `git clean`; regenerate only
+them. The committed TSV is canonical and survives `git clean`; regenerate only
 when the VC5 libs, GRUNTZ.EXE, or the admitted function boundaries change.
 
-CAUTION - the committed CSV is INTENTIONALLY tracked, not generated in `init`.
+CAUTION - the committed TSV is INTENTIONALLY tracked, not generated in `init`.
 It was produced from a **Ghidra 11.4.2** export (14,411 function starts). The
 current pipeline runs **Ghidra 12.0.4** (via PyGhidra), whose auto-analysis carves
 only ~9,607 starts - so regenerating against today's `gruntz init` export drops
@@ -15,21 +15,22 @@ only ~9,607 starts - so regenerating against today's `gruntz init` export drops
 longer finds). This is an analysis-depth regression in the Ghidra version bump, not
 an export bug, and is NOT reproducible on 12.0.4 (Aggressive Instruction Finder is
 non-deterministic and finds the wrong code). To reproduce the committed CSV you need
-an 11.4.2 export; until then, treat the tracked CSV as canonical and do NOT
+an 11.4.2 export; until then, treat the tracked TSV as canonical and do NOT
 overwrite it with a 12.0.4 run.
 
 Pipeline (stages in the gruntz.audit.fid subpackage):
   1. unpack .obj members from $MSVC_DIR/lib/{LIBCMT,NAFXCW}.LIB   (llvm-ar)
   2. fid.coff_sig   -> build/fid/sigs.pkl       (masked per-symbol signatures)
-  3. fid.classify   -> build/fid/library_labels.csv  (anchored: matches at known
-                       function starts; prepends zlib from build/gen/symbol_names.csv)
+  3. fid.classify   -> build/fid/anchored_labels.csv  (anchored: matches at
+                       known function starts; zlib rows excluded - the vendored
+                       labels are their own channel, functions_zlib.tsv)
   4. fid.unanchored -> build/fid/offstart_matches.csv (bodies at starts Ghidra missed)
-  5. merge (3)+(4) with a `source` column -> config/retail/library_labels.csv
+  5. merge (3)+(4) with a `source` column -> config/retail/functions_static_libs.tsv
 
 Stages 2-4 (coff_sig/classify/unanchored) are the original matcher, verbatim. The
 .obj unpack (1) and the source-tagged merge (5) are RECONSTRUCTED here - the
 original glue was never committed - so on the first regeneration, diff the result
-against the tracked config/retail/library_labels.csv before trusting it.
+against the tracked config/retail/functions_static_libs.tsv before trusting it.
 
 Run inside `nix develop`: needs $MSVC_DIR, $GRUNTZ_EXE, llvm-ar, and
 config/retail/functions.tsv.
@@ -41,7 +42,7 @@ REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").ex
             Path(__file__).resolve().parents[3])
 WORK = REPO / "build" / "fid"                            # scratch (gitignored)
 FUNCS = REPO / "config" / "retail" / "functions.tsv"
-OUT = REPO / "config" / "retail" / "library_labels.csv"  # tracked, canonical
+OUT = REPO / "config" / "retail" / "functions_static_libs.tsv"  # tracked, canonical
 
 
 def sh(*cmd, cwd=None):
@@ -85,16 +86,16 @@ def main() -> None:
     sh(sys.executable, "-m", "gruntz.audit.fid.coff_sig",
        WORK / "libcmt_objs", WORK / "nafxcw_objs", WORK / "libcimt_objs", sigs, 1)
 
-    # 3. anchored matches (classify also writes WORK/library_labels.csv next to its out-csv)
+    # 3. anchored matches (classify also writes WORK/anchored_labels.csv next to its out-csv)
     sh(sys.executable, "-m", "gruntz.audit.fid.classify", sigs, exe, FUNCS, WORK / "matches.csv")
 
     # 4. off-start matches (bodies Ghidra did not carve)
     sh(sys.executable, "-m", "gruntz.audit.fid.unanchored",
        sigs, exe, FUNCS, WORK / "offstart_matches.csv")
 
-    # 5. merge with a `source` column -> config/retail/library_labels.csv
+    # 5. merge with a `source` column -> config/retail/functions_static_libs.tsv
     rows, seen = [], set()
-    with open(WORK / "library_labels.csv", newline="") as f:
+    with open(WORK / "anchored_labels.csv", newline="") as f:
         for r in csv.DictReader(f):
             rows.append((r["rva"], r["name"], r["lib"], r["confidence"], "anchored"))
             seen.add(r["rva"])
@@ -103,10 +104,15 @@ def main() -> None:
             if r["rva"] in seen:
                 continue
             rows.append((r["rva"], r["name"], r["lib"], r["confidence"], "offstart-ghidra-missed"))
+    rows.sort(key=lambda r: int(r[0], 16))
+    banner = [ln for ln in OUT.read_text().splitlines()
+              if ln.startswith("#")] if OUT.exists() else []
     with open(OUT, "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow(["rva", "name", "lib", "confidence", "source"])
-        w.writerows(rows)
+        for ln in banner:
+            f.write(ln + "\n")
+        f.write("rva\tname\tlib\tconfidence\tsource\n")
+        for r in rows:
+            f.write("\t".join(r) + "\n")
     print(f"[fid] wrote {OUT.relative_to(REPO)} ({len(rows)} rows). "
           "Diff against the committed copy to confirm the reconstruction.")
 

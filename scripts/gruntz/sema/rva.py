@@ -1,6 +1,6 @@
 """gruntz.sema.rva - `gruntz sema rva`: one-shot address dossier.
 
-Joins the source/retail symbol inventory, library_labels.csv and the
+Joins the source/retail symbol inventory, functions_static_libs.tsv and the
 objdiff report - pure lookups over gruntz.core, no analysis. A vtable-slot RVA
 (an ILT jmp-thunk) is chased to the body and THAT is reported, so
 `sema rva <slot>` and nvim's vg resolve the method.
@@ -42,7 +42,9 @@ def run(args) -> None:
     else:
         print("  src claim : (none - not reconstructed under src/)")
 
-    librow = csv_find(REPO / "config" / "retail" / "library_labels.csv", def_rva)
+    from gruntz.core.library_labels import rows as library_rows
+    librow = next((r for r in library_rows()
+                   if int(r["rva"], 16) == def_rva), None)
     if librow:
         print(f"  library   : {librow['name']}  {librow['lib']} / "
               f"{librow['confidence']} / {librow['source']}  "

@@ -346,8 +346,9 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                description="gen_labels $unit",
                restat=True)
         compdb_dep = [COMPDB] if (REPO / COMPDB).exists() else []
-        zlib_dep = (["config/retail/zlib_labels.csv"]
-                    if (REPO / "config/retail/zlib_labels.csv").exists() else [])
+        zlib_dep = [p for p in ("config/retail/functions_zlib.tsv",
+                                "config/retail/data_zlib.tsv")
+                    if (REPO / p).exists()]
         # DATA extents come directly from pylibclang's Type.get_size() in this
         # per-TU edge.  structs.json is a separate whole-tree audit cache and must
         # never make label correctness depend on when that cache was refreshed.
@@ -421,7 +422,7 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                           # the fake PDB, so the delinked target speaks the same
                           # CRT/MFC symbol names our base objs reference. Editing
                           # a row must re-delink or objdiff keeps the old name.
-                          "config/retail/library_labels.csv",
+                          "config/retail/functions_static_libs.tsv",
                           # vtable_rows() reads the RTTI slot map through
                           # vtable_hierarchy -> vtable_scan; both decide vtable extents.
                           "scripts/gruntz/core/vtable_hierarchy.py",

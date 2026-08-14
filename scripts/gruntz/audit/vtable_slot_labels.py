@@ -21,7 +21,7 @@ NOTHING IS ACCEPTED ON ONE VOTE OR ONE DIRECTION:
     seen at two addresses means our model puts different functions in one slot
     across classes, and neither reading is trusted;
   * the rva may not already be claimed, by a `symbol_names.csv` src claim (address
-    or extent) or by an active `library_labels.csv` row;
+    or extent) or by an active `functions_static_libs.tsv` row;
   * a name our source ALREADY claims at a different rva is not a label at all - it
     is a MODEL CONTRADICTION (our vtable says slot *i* holds `X`, retail's slot *i*
     points somewhere `X` is not) and is reported as a defect worklist instead;
@@ -32,7 +32,7 @@ NOTHING IS ACCEPTED ON ONE VOTE OR ONE DIRECTION:
 
 Usage:
     python -m gruntz.audit.vtable_slot_labels              # the census
-    python -m gruntz.audit.vtable_slot_labels --rows       # library_labels.csv rows
+    python -m gruntz.audit.vtable_slot_labels --rows       # functions_static_libs.tsv rows
     python -m gruntz.audit.vtable_slot_labels --contradictions
 """
 from __future__ import annotations
@@ -56,7 +56,7 @@ from gruntz.core.pe import PE  # noqa: E402
 EXE = REPO / "build/exe/GRUNTZ.EXE"
 BASE_DIR = REPO / "build/objdiff/base"
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
-LIBRARY = REPO / "config/retail/library_labels.csv"
+LIBRARY = REPO / "config/retail/functions_static_libs.tsv"
 WEAK_EXTERNAL = 105
 JMP_REL32, INT3, THUNK_LEN = 0xE9, 0xCC, 5
 
@@ -200,12 +200,12 @@ def classify(exe=EXE, base_dir=BASE_DIR):
                          else "candidate-body-differs")
         # A name whose CLASS our source reconstructs is not a library body - it is a
         # compiler-generated COMDAT copy of one of OUR header inlines, whose home is
-        # an `RVA_COMPGEN` pin in the owning TU, not `library_labels.csv`.
+        # an `RVA_COMPGEN` pin in the owning TU, not `functions_static_libs.tsv`.
         owner = owning_class(name)
         accepted.append({"rva": rva, "name": name, "votes": votes[(name, rva)],
                          "proof": proof, "class": owner,
                          "home": "src-RVA_COMPGEN" if owner in our_classes
-                                 else "library_labels.csv"})
+                                 else "functions_static_libs.tsv"})
     accepted.sort(key=lambda r: r["rva"])
     return accepted, contradictions, ambiguous
 
@@ -214,7 +214,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--rows", action="store_true",
-                    help="print library_labels.csv rows for the accepted set")
+                    help="print functions_static_libs.tsv rows for the accepted set")
     ap.add_argument("--contradictions", action="store_true",
                     help="print the names our source claims at a different rva")
     args = ap.parse_args(argv)
@@ -228,8 +228,8 @@ def main(argv=None):
         "%s=%d" % kv for kv in sorted(Counter(r["home"] for r in accepted).items())))
     if args.rows:
         for row in accepted:
-            if row["home"] == "library_labels.csv":
-                print("0x%06x,%s,NAFXCW,HIGH,vtable-slot-oracle"
+            if row["home"] == "functions_static_libs.tsv":
+                print("0x%06x\t%s\tNAFXCW\tHIGH\tvtable-slot-oracle"
                       % (row["rva"], row["name"]))
     else:
         for row in accepted:

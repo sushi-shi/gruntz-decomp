@@ -117,7 +117,7 @@ def main() -> int:
     # Cross-check: a stub address must NOT also be a MATCHED function - else it's
     # a stale stub duplicating reconstructed code (and labels.py skips the stub
     # unit, so its own dup-guard can't see it). "Matched" = an RVA() macro
-    # NOT in a `// @stub` block, or a row in config/retail/zlib_labels.csv.
+    # NOT in a `// @stub` block, or a row in config/retail/functions_zlib.tsv.
     matched = {}
     for path in sorted(SRC.rglob("*.cpp")):
         lines = path.read_text().splitlines()
@@ -129,12 +129,12 @@ def main() -> int:
                     matched.setdefault(norm_addr(mm.group(1)), f"{path.relative_to(REPO)}:{k + 1}")
                 except ValueError:
                     pass
-    zlib_cfg = REPO / "config" / "retail" / "zlib_labels.csv"
+    zlib_cfg = REPO / "config" / "retail" / "functions_zlib.tsv"
     if zlib_cfg.exists():
-        for r in csv.reader(zlib_cfg.open()):
+        for r in csv.reader(zlib_cfg.open(), delimiter="\t"):
             if r and r[0].startswith("0x"):
                 try:
-                    matched.setdefault(norm_addr(r[0]), f"config/retail/zlib_labels.csv ({r[1]})")
+                    matched.setdefault(norm_addr(r[0]), f"config/retail/functions_zlib.tsv ({r[1]})")
                 except ValueError:
                     pass
     for addr, sites in sorted(by_address.items()):

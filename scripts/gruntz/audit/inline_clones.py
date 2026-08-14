@@ -422,15 +422,13 @@ def claims() -> dict:
             for row in _csv.DictReader(fh):
                 out[int(row["rva"], 0)] = {"name": row["name"], "unit": row["unit"],
                                            "lib": ""}
-    lib = REPO / "config/retail/library_labels.csv"
-    if lib.exists():
-        with lib.open(encoding="utf-8", newline="") as fh:
-            for row in _csv.DictReader(fh):
-                rva = int(row["rva"], 0)
-                if rva in out:
-                    out[rva]["lib"] = row["lib"]
-                else:
-                    out[rva] = {"name": row["name"], "unit": "", "lib": row["lib"]}
+    from gruntz.core.library_labels import rows as library_rows
+    for row in library_rows():
+        rva = int(row["rva"], 0)
+        if rva in out:
+            out[rva]["lib"] = row["lib"]
+        else:
+            out[rva] = {"name": row["name"], "unit": "", "lib": row["lib"]}
     _CLAIMS = out
     return out
 

@@ -48,7 +48,7 @@ Usage:
 
 Inputs (all products of `gruntz build` + `ninja candidate`):
     build/exe/GRUNTZ.EXE, GRUNTZ.candidate.EXE, GRUNTZ.candidate.map
-    config/retail/functions.tsv, config/retail/library_labels.csv
+    config/retail/functions.tsv, config/retail/functions_static_libs.tsv
     build/gen/symbol_names.csv, build/gen/delink_data_manifest.tsv
 
 Companion write-ups: docs/link-section-audit.md (the size half),
@@ -1331,10 +1331,9 @@ def _band_targets(side, span):
 def _retail_text_split(R, C):
     """Retail's (.text$AFX_* lo, hi, .text$x lo) - link_sections' derivation."""
     lib = defaultdict(list)
-    p = REPO / "config/retail/library_labels.csv"
-    with p.open() as f:
-        for r in csv.DictReader(f):
-            lib[r["name"]].append(int(r["rva"], 16))
+    from gruntz.core.library_labels import rows as library_rows
+    for r in library_rows():
+        lib[r["name"]].append(int(r["rva"], 16))
     alo, ahi = C.groups[".text$AFX_AUX"]
     hits = []
     for nm, rva, _ in C.pubs:

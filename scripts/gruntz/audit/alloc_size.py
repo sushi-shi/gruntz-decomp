@@ -62,7 +62,7 @@ from gruntz.core.pe import ILT_HI, ILT_LO, IMAGEBASE
 REPO = Path(__file__).resolve().parents[3]
 _STRUCTS = REPO / "build/gen/structs.json"
 
-# `operator new(unsigned int)`. Pinned in config/retail/library_labels.csv; the
+# `operator new(unsigned int)`. Pinned in config/retail/functions_static_libs.tsv; the
 # EXE has exactly one (and one `??3` delete) - MSVC 5 / NAFXCW statically linked.
 OPERATOR_NEW = 0x1b9b46
 

@@ -37,7 +37,7 @@ REPO = pathlib.Path(
          os.environ.get("REPO") or str(_CWD)))
 REPORT = REPO / "build/objdiff/report.json"
 SYMBOLS = REPO / "build/gen/symbol_names.csv"
-LIBRARY_LABELS = REPO / "config/retail/library_labels.csv"
+LIBRARY_LABELS = REPO / "config/retail/functions_static_libs.tsv"
 OUTPUT = REPO / "build/gen/residual_function_queue.tsv"
 CAMPAIGN_OUTPUT = REPO / "build/gen/matching_campaign_queue.tsv"
 
