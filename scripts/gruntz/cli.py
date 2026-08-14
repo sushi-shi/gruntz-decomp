@@ -568,6 +568,12 @@ def cmd_build(args) -> None:
           "data census disagrees with the derived partition/enrolment - admit the "
           "new datum starts in config/retail/data.tsv or correct their kinds "
           "(python -m gruntz.audit.data_denominator --check)", "normal")
+    # The channel invariant: every provider rva is an admitted base row
+    # (functions.tsv / data.tsv), and the bands' hard kind invariants hold.
+    _gate("gruntz.audit.channels", ["--gate"],
+          "channel model violated - a provider claims an rva the base census "
+          "does not admit, or a band<->kind invariant broke "
+          "(python -m gruntz.audit.channels)", "normal")
     _gate("gruntz.audit.self_recursion", ["--gate"],
           "self-recursion ratchet violated - a seam accessor returns a call to "
           "ITSELF (a cast-seam sweep rewrote the seam's own body; it compiles and "

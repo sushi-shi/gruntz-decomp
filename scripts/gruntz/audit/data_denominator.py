@@ -843,11 +843,17 @@ def summary(p=None):
 
 
 #: verdict -> the census kinds its bytes may carry. Content-proven classes bind
-#: tightly; ownership/eligibility classes are live judgments over plain datum
-#: rows, so they bind to the empty kind only.
-VERDICT_KINDS = {EH: {"ehtable"}, EHPAD: {"pad"}, RTTI: {"rtti"},
-                 LITERAL: {"string", "fppool"}, PAD: {"pad"},
-                 VISIBLE: {""}, LIB: {""}, GUIDV: {""}, UNK: {""}, UNKB: {""}}
+#: tightly (an RTTI run may touch the vtable its COL chain roots at); ownership
+#: and eligibility verdicts are live judgments over any real datum row, so they
+#: exclude only `pad`; PAD additionally tolerates `copy` - the rawsize-edge
+#: GruntDirStatics copies are zero-payload data deliberately withheld from the
+#: manifest (docs/data-attribution.md §2), so the derivation reads their bytes
+#: as alignment zeros while the copies device claims them.
+_DATUM = {"", "string", "fppool", "vtable", "rtti", "copy", "common", "guard"}
+VERDICT_KINDS = {EH: {"ehtable"}, EHPAD: {"pad"}, RTTI: {"rtti", "vtable"},
+                 LITERAL: {"string", "fppool"}, PAD: {"pad", "copy"},
+                 VISIBLE: _DATUM, LIB: _DATUM, GUIDV: _DATUM,
+                 UNK: _DATUM, UNKB: _DATUM}
 
 
 def _claim_kind(rva, name, compgen):
