@@ -11,6 +11,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
+#include <Gruntz/MultiStartDlgCtrlId.h>
 #include <MsgParam.h>
 #include <Net/LatencyList.h>
 #include <Net/NetMgr.h>
@@ -86,35 +87,35 @@ const AFX_MSGMAP CMultiStartDlg::messageMap = {
 DATA(0x001ea580)
 // clang-format off
 const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
-    ON_CBN_SELCHANGE(0x500, CMultiStartDlg::ReconcileChannel0)
-    ON_CBN_SELCHANGE(0x50e, CMultiStartDlg::ConnectStep)
-    ON_CBN_SELCHANGE(0x50f, CMultiStartDlg::ReconcileChannel2)
-    ON_CBN_SELCHANGE(0x510, CMultiStartDlg::ReconcileChannel3)
+    ON_CBN_SELCHANGE(IDC_MULTI_CHANNEL0, CMultiStartDlg::ReconcileChannel0)
+    ON_CBN_SELCHANGE(IDC_MULTI_CONNECT, CMultiStartDlg::ConnectStep)
+    ON_CBN_SELCHANGE(IDC_MULTI_CHANNEL2, CMultiStartDlg::ReconcileChannel2)
+    ON_CBN_SELCHANGE(IDC_MULTI_CHANNEL3, CMultiStartDlg::ReconcileChannel3)
     {WM_TIMER, 0, 0, 0, AfxSig_vw, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnTimer)}, // API-forced MFC seam.
     {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnMeasureItem)}, // API-forced MFC seam.
     {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, reinterpret_cast<AFX_PMSG>(&CMultiStartDlg::OnDrawItem)}, // API-forced MFC seam.
-    ON_BN_CLICKED(0x501, CMultiStartDlg::OnColorSlot0)
-    ON_BN_CLICKED(0x503, CMultiStartDlg::OnColorSlot1)
-    ON_BN_CLICKED(0x505, CMultiStartDlg::OnColorSlot2)
-    ON_BN_CLICKED(0x507, CMultiStartDlg::OnColorSlot3)
-    ON_BN_CLICKED(0x42b, CMultiStartDlg::OnCustomWorld)
-    ON_CBN_SELCHANGE(0x4ff, CMultiStartDlg::CommitWorldHost)
+    ON_BN_CLICKED(IDC_MULTI_COLOR0, CMultiStartDlg::OnColorSlot0)
+    ON_BN_CLICKED(IDC_MULTI_COLOR1, CMultiStartDlg::OnColorSlot1)
+    ON_BN_CLICKED(IDC_MULTI_COLOR2, CMultiStartDlg::OnColorSlot2)
+    ON_BN_CLICKED(IDC_MULTI_COLOR3, CMultiStartDlg::OnColorSlot3)
+    ON_BN_CLICKED(IDC_MULTI_CUSTOM_WORLD, CMultiStartDlg::OnCustomWorld)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldHost)
     ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend)
     ON_EN_CHANGE(0x50b, CMultiStartDlg::OnEnChange50b)
     ON_EN_CHANGE(0x50a, CMultiStartDlg::OnEnChange50a)
     ON_EN_CHANGE(0x50c, CMultiStartDlg::OnEnChange50c)
     ON_EN_CHANGE(0x50d, CMultiStartDlg::OnEnChange50d)
-    ON_CBN_SELCHANGE(0x51e, CMultiStartDlg::OnSlotSelect0)
-    ON_CBN_SELCHANGE(0x520, CMultiStartDlg::OnSlotSelect1)
-    ON_CBN_SELCHANGE(0x521, CMultiStartDlg::OnSlotSelect2)
-    ON_CBN_SELCHANGE(0x522, CMultiStartDlg::OnSlotSelect3)
-    ON_CBN_SELCHANGE(0x527, CMultiStartDlg::CommitLatencyOption)
+    ON_CBN_SELCHANGE(IDC_MULTI_SLOT0, CMultiStartDlg::OnSlotSelect0)
+    ON_CBN_SELCHANGE(IDC_MULTI_SLOT1, CMultiStartDlg::OnSlotSelect1)
+    ON_CBN_SELCHANGE(IDC_MULTI_SLOT2, CMultiStartDlg::OnSlotSelect2)
+    ON_CBN_SELCHANGE(IDC_MULTI_SLOT3, CMultiStartDlg::OnSlotSelect3)
+    ON_CBN_SELCHANGE(IDC_MULTI_LATENCY, CMultiStartDlg::CommitLatencyOption)
     ON_BN_CLICKED(0x51f, CMultiStartDlg::OnCmd51f)
     ON_BN_CLICKED(0x523, CMultiStartDlg::OnCmd523)
     ON_BN_CLICKED(0x524, CMultiStartDlg::OnCmd524)
     ON_BN_CLICKED(0x525, CMultiStartDlg::OnCmd525)
-    ON_BN_CLICKED(0x4e9, CMultiStartDlg::EchoLatencySettings)
-    ON_CBN_SELCHANGE(0x4ff, CMultiStartDlg::CommitWorldHost)
+    ON_BN_CLICKED(IDC_MULTI_ECHO_LATENCY, CMultiStartDlg::EchoLatencySettings)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldHost)
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 // clang-format on
@@ -151,7 +152,7 @@ RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
 
 RVA(0x000c1840, 0x16e)
 i32 CMultiStartDlg::SetupWorldCombo() {
-    CWnd* combo = GetDlgItem(0x4ff);
+    CWnd* combo = GetDlgItem(IDX(IDC_MULTI_WORLD));
     if (combo == NULL) {
         return 0;
     }
@@ -172,7 +173,7 @@ i32 CMultiStartDlg::SetupWorldCombo() {
         );
         item = static_cast<MpSymItem*>(st->NextSym3(item));
     }
-    CWnd* combo2 = GetDlgItem(0x4ff);
+    CWnd* combo2 = GetDlgItem(IDX(IDC_MULTI_WORLD));
     CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));
     if (child == NULL) {
         return 0;
@@ -217,10 +218,10 @@ i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 RVA(0x000c1aa0, 0x2f8)
 i32 CMultiStartDlg::UpdateColorItems() {
     if (g_multiState->m_isHost != 0) {
-        CWnd* it4ff = GetDlgItem(0x4ff);
-        CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
-        CWnd* it42b = GetDlgItem(0x42b);
-        CWnd* it4e9 = GetDlgItem(0x4e9);
+        CWnd* it4ff = GetDlgItem(IDX(IDC_MULTI_WORLD));
+        CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(IDX(IDC_MULTI_WORLD))->m_hWnd, 5));
+        CWnd* it42b = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
+        CWnd* it4e9 = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
         if (!itChild) {
             return 0;
         }
@@ -240,10 +241,10 @@ i32 CMultiStartDlg::UpdateColorItems() {
         it4e9->EnableWindow(0);
         return 1;
     }
-    CWnd* it4ff = GetDlgItem(0x4ff);
-    CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
-    CWnd* it42b = GetDlgItem(0x42b);
-    CWnd* it4e9 = GetDlgItem(0x4e9);
+    CWnd* it4ff = GetDlgItem(IDX(IDC_MULTI_WORLD));
+    CWnd* itChild = CWnd::FromHandle(::GetWindow(GetDlgItem(IDX(IDC_MULTI_WORLD))->m_hWnd, 5));
+    CWnd* it42b = GetDlgItem(IDX(IDC_MULTI_CUSTOM_WORLD));
+    CWnd* it4e9 = GetDlgItem(IDX(IDC_MULTI_ECHO_LATENCY));
     if (!itChild) {
         return 0;
     }
@@ -297,8 +298,8 @@ i32 CMultiStartDlg::BuildSlotList() {
     }
     m_slotList->Dispatch(count);
     HWND v = GetSafe1c();
-    m_slotList->FillCombo(v, 0x527);
-    m_slotList->SelectItem(v, 0x527, 0, 0);
+    m_slotList->FillCombo(v, IDX(IDC_MULTI_LATENCY));
+    m_slotList->SelectItem(v, IDX(IDC_MULTI_LATENCY), 0, 0);
     g_multiState->m_autoCommandDelay = 1;
     return 1;
 }
@@ -306,7 +307,7 @@ i32 CMultiStartDlg::BuildSlotList() {
 // @early-stop
 RVA(0x000c1fd0, 0x99)
 i32 CMultiStartDlg::UpdateSlot() {
-    CWnd* w = GetDlgItem(0x527);
+    CWnd* w = GetDlgItem(IDX(IDC_MULTI_LATENCY));
     if (w == NULL) {
         return 0;
     }
@@ -322,9 +323,10 @@ i32 CMultiStartDlg::UpdateSlot() {
     HWND v = GetSafe1c();
     CMulti* reg2 = g_multiState;
     if (reg2->m_autoCommandDelay) {
-        m_slotList->SelectItem(v, 0x527, 0, 0);
+        m_slotList->SelectItem(v, IDX(IDC_MULTI_LATENCY), 0, 0);
     } else {
-        m_slotList->SelectItem(v, 0x527, reg2->m_commandDelay, reg2->m_drainReload);
+        m_slotList
+            ->SelectItem(v, IDX(IDC_MULTI_LATENCY), reg2->m_commandDelay, reg2->m_drainReload);
     }
     return 1;
 }
@@ -370,7 +372,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 pSend(e->m_hWnd, EM_LIMITTEXT, 9, 0);
             }
         }
-        HWND chatEdit = GetDlgItem(0x42d)->m_hWnd;
+        HWND chatEdit = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT))->m_hWnd;
         pSend(chatEdit, EM_LIMITTEXT, 100, 0);
         CustomMapSelection customFlag = static_cast<CustomMapSelection>(
             reg->GetValueDword("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
@@ -385,7 +387,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                 sprintf(path, "custom\\%s", mapName);
                 FILE* f = fopen(path, "rb");
                 if (f != NULL) {
-                    HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
+                    HWND worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD))->m_hWnd;
                     CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
                     if (child == NULL) {
                         return;
@@ -397,7 +399,9 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
                     fclose(f);
                 }
             } else {
-                CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+                CWnd* child = CWnd::FromHandle(
+                    ::GetWindow(GetDlgItem(IDX(IDC_MULTI_WORLD))->m_hWnd, GW_CHILD)
+                );
                 if (child == NULL) {
                     return;
                 }
@@ -408,7 +412,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
         {
-            CWnd* w = GetDlgItem(0x511);
+            CWnd* w = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
             g_sharedFlag = (w == NULL) ? 0 : w->m_hWnd;
         }
         g_multiState->m_netGate->m_sessionSel = NULL;
@@ -423,7 +427,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
     } else {
-        HWND worldCombo = GetDlgItem(0x4ff)->m_hWnd;
+        HWND worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD))->m_hWnd;
         CWnd* child = CWnd::FromHandle(::GetWindow(worldCombo, GW_CHILD));
         if (child == NULL) {
             return;
@@ -676,7 +680,7 @@ i32 CMultiStartDlg::OnInitDialog() {
 
 RVA(0x000c2ce0, 0xf3)
 void CMultiStartDlg::AppendChatLine(char* str) {
-    CWnd* item = GetDlgItem(0x511);
+    CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     HWND edit;
     if (!item) {
         edit = NULL;
@@ -1080,7 +1084,7 @@ void CMultiStartDlg::OnCustomWorld() {
     CBattlezDlgCustom dlg(0);
     if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
 
-        CWnd* item = GetDlgItem(0x4ff);
+        CWnd* item = GetDlgItem(IDX(IDC_MULTI_WORLD));
         CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
 
         if (child == NULL) {
@@ -1099,7 +1103,7 @@ void CMultiStartDlg::OnCustomWorld() {
 RVA(0x000c3e30, 0xfe)
 void CMultiStartDlg::CommitWorldHost() {
     if (g_multiState->m_isHost != 0) {
-        CWnd* item = GetDlgItem(0x4ff);
+        CWnd* item = GetDlgItem(IDX(IDC_MULTI_WORLD));
         if (item != NULL) {
             i32 r = ::SendMessageA(item->m_hWnd, CB_GETCURSEL, 0, 0);
             if (r != -1) {
@@ -1119,7 +1123,7 @@ void CMultiStartDlg::CommitWorldHost() {
 
 RVA(0x000c3f70, 0xfb)
 void CMultiStartDlg::OnChatSend() {
-    CWnd* input = GetDlgItem(0x42d);
+    CWnd* input = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
     if (input == NULL) {
         return;
     }
@@ -1152,9 +1156,9 @@ i32 CMultiStartDlg::EnableControls() {
     w->EnableWindow(1);
     w = GetDlgItem(IDX(IDC_NETCHAT_SEND));
     w->EnableWindow(1);
-    w = GetDlgItem(0x42d);
+    w = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
     w->EnableWindow(1);
-    w = GetDlgItem(0x511);
+    w = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     w->EnableWindow(1);
     CString s1;
     if (g_multiState->m_customLevel == 0) {
@@ -1526,7 +1530,7 @@ void CMultiStartDlg::CommitLatencyOption() {
     }
     i32 lo, hi;
     HWND h = GetSafe1c();
-    GetSelItemData(h, 0x527, &lo, &hi);
+    GetSelItemData(h, IDX(IDC_MULTI_LATENCY), &lo, &hi);
     if (lo != 0 || hi != 0) {
         g_multiState->m_commandDelay = lo;
         g_multiState->m_drainReload = hi;
