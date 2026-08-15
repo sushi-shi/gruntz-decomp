@@ -3,6 +3,14 @@
 # spelled as the array's end. Retail evidence; consumed by the delinker.
 function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
 0x00024190	0x001e9628	0x000241eb	?g_cmdBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end
-0x001884c0	0x002bf8e7	0x0018852b	_length_code$S	0xffffffff	1	cl spells the 1-based loop as array-1 (base obj trees.obj: sym=_length_code stored=-1); containment cannot name one-before-start
-0x001884c0	0x002c0158	0x00188696	_static_dtree$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_static_dtree stored=+0x78)
-0x00189b90	0x002252a8	0x00189c6b	_extra_dbits$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_extra_dbits stored=+0x78)
+0x001884c0	0x002bf8e7	0x0018852b	_length_code$S444	0xffffffff	1	cl spells the 1-based loop as array-1 (base obj trees.obj: sym=_length_code stored=-1); containment cannot name one-before-start
+0x001884c0	0x002c0158	0x00188696	_static_dtree$S442	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_static_dtree stored=+0x78)
+0x00189b90	0x002252a8	0x00189c6b	_extra_dbits$S438	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_extra_dbits stored=+0x78)
+0x0014b770	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	7	before-start scan pointer g_scratch-2 (base obj ddrawshadeblit.obj stored=-0x2)
+0x0014b770	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	6	before-start scan pointer g_scratch-1 (base obj stored=-0x1)
+0x0014cfc0	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	3	before-start scan pointer g_scratch-2
+0x0014cfc0	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
+0x0014d950	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	2	before-start scan pointer g_scratch-2
+0x0014d950	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
+0x0003bb50	0x0022c00c	0x0003bbf5	?g_mapNameBuf@@3PADA	0xfffffffc	1	before-start pointer g_mapNameBuf-4 (base obj customworlddialog.obj stored=-0x4)
+0x0013f740	0x00253c9e	*	?g_clut@@3PAEA	0xfffffffe	2	before-start pointer g_clut-2 (base obj ddsurface.obj stored=-0x2)
