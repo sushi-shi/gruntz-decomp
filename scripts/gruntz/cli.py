@@ -19,6 +19,9 @@
     gruntz ghidra <sub>              one-way viewer export: the retail image
                                      as a labelled Ghidra project (build,
                                      update, verify, status, export)
+    gruntz verify <sub>              status / check (the MAX gate) / bank
+                                     (baseline + README, manual) /
+                                     fingerprints
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -49,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
-    if cmd in ("sema", "walls", "ghidra"):
+    if cmd in ("sema", "walls", "ghidra", "verify"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd in ("build", "link", "match"):

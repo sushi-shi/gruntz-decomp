@@ -42,19 +42,27 @@ def report_scores() -> tuple[str, dict[tuple[str, str], float]]:
     raise SystemExit("[walls] no report.json - run `gruntz compare` first")
 
 
-def baseline_rows() -> dict[int, tuple[float, str]]:
-    """{rva: (best_pct, src_hash)} from the function rows of the baseline."""
-    out: dict[int, tuple[float, str]] = {}
+EPS = 0.01   # the report's raw float vs the 4-decimal stored best: strict `<`
+#              flags pure quantization jitter (352 rows measured) as regression
+
+
+def baseline_rows() -> dict[int, tuple[float, float, str]]:
+    """{rva: (best_pct, hist_pct, src_hash)} from the baseline's function
+    rows: unit function best_pct cur_pct tries src_hash rva hist_pct state.
+    hist is the cross-hash historical MAX (campaign order); best is the
+    current implementation's bank (the regression gate)."""
+    out: dict[int, tuple[float, float, str]] = {}
     if not BASELINE.is_file():
         return out
     for line in BASELINE.read_text().splitlines():
         if line.startswith("#") or not line.strip():
             continue
         cols = line.split("\t")
-        # function rows: unit  function  best_pct  cur_pct  tries  src_hash  rva
         if len(cols) >= 7 and cols[6].startswith("0x"):
             try:
-                out[int(cols[6], 16)] = (float(cols[2]), cols[5])
+                best = float(cols[2])
+                hist = float(cols[7]) if len(cols) >= 8 and cols[7] else best
+                out[int(cols[6], 16)] = (best, hist, cols[5])
             except ValueError:
                 continue
     return out
@@ -74,12 +82,12 @@ def build(unit: str | None = None, below: float = 100.0) -> list[dict]:
             continue
         b = by_name.get((u, sym))
         rva = b.rva if b else None
-        hist, src_hash = best.get(rva, (None, ""))
+        bank, hist, src_hash = best.get(rva, (None, None, ""))
         rows.append({
             "rva": f"0x{rva:06x}" if rva is not None else "",
             "unit": u, "symbol": sym, "cur": pct,
             "hist_max": hist, "size": f"0x{b.size:x}" if b else "",
-            "regressed": hist is not None and pct < hist,
+            "regressed": bank is not None and pct < bank - EPS,
             "proven": hist == 100.0,
         })
     # ascending historical MAX, unknowns last, then ascending current
