@@ -32,9 +32,6 @@ i32 g_resourceInstallActive = 0;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
-DATA(0x002bf314)
-u8 g_val_2bf314[1];
-
 // @identity-TODO DrawScreenTextImage@CState - thunk oracle: retail gave this an incremental
 // thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
 // (20 fns) came from the static library. It belongs to another compiland.

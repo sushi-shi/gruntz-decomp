@@ -255,6 +255,11 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
     problems: list[str] = []
     obj = BASE_OBJS / f"{unit}.obj"
     coff = Coff(obj) if obj.is_file() else None
+    if coff is None:
+        # without the obj the authority check cannot run, and admitting every
+        # clang proposal unproven would void the module contract silently
+        return [], [f"{unit}: no base obj ({obj.name}) - authority check "
+                    f"impossible, extraction refused (FATAL)"]
     code_names = coff.code_names() if coff else None
     all_names = coff.all_names() if coff else None
 
@@ -284,7 +289,7 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
     for rva, name, size in ir_funcs:
         got = authorize(name, code_names)
         if got is None:
-            problems.append(("drop", rva,
+            problems.append(("drop", "func", rva,
                              f"{unit}: RVA(0x{rva:06x}) {name} not a code "
                              f"symbol in {obj.name} (dropped)"))
             continue
@@ -316,7 +321,7 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
             if got is None and all_names is not None:
                 got = msvc5_data_symbol(name, all_names)
             if got is None:
-                problems.append(("drop", rva,
+                problems.append(("drop", "data", rva,
                                  f"{unit}: DATA(0x{rva:06x}) {name} not a "
                                  f"symbol in {obj.name} (dropped)"))
                 return
@@ -337,7 +342,7 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
                 if rva in covered:
                     continue
                 if name is None:
-                    problems.append(("drop", rva,
+                    problems.append(("drop", "data", rva,
                                      f"{unit}: DATA(0x{rva:06x}) has no "
                                      f"VarDecl below it (dropped)"))
                     continue
@@ -374,19 +379,21 @@ def sweep_sites() -> dict[str, dict[int, str]]:
     return out
 
 
-def check_completeness(explained: set[int] = frozenset()) -> list[str]:
+def check_completeness(explained: set[tuple[str, int]] = frozenset()) -> list[str]:
     """The oracle over extraction: every site accounted for, loudly.
-    `explained` rvas already have a louder same-run drop report; the sweep
-    stays silent on those instead of restating one root cause twice."""
+    `explained` (kind, rva) keys already have a louder same-run drop report;
+    the sweep stays silent on those instead of restating one root cause
+    twice. Keys carry the KIND so a func claim can never excuse a lost DATA
+    site at the same rva (RVA and DATA share the `src` channel)."""
     from gruntz.retail_labels.fragments import all_claims
     sites = sweep_sites()
-    have: dict[str, set[int]] = {}
+    have: dict[tuple[str, str], set[int]] = {}
     for c in all_claims():
-        have.setdefault(c.channel, set()).add(c.rva)
+        have.setdefault((c.channel, c.kind), set()).add(c.rva)
     problems = []
-    checks = [("RVA", "src"), ("RVA_COMPGEN", "src_compgen"),
-              ("RVA_DYNINIT", "src_dyninit"), ("DATA", "src")]
-    for macro, channel in checks:
+    checks = [("RVA", "src", "func"), ("RVA_COMPGEN", "src_compgen", "func"),
+              ("RVA_DYNINIT", "src_dyninit", "func"), ("DATA", "src", "data")]
+    for macro, channel, kind in checks:
         for rva, wheres in sorted(sites.get(macro, {}).items()):
             if macro == "DATA" and all(".h:" in w for w in wheres):
                 problems.append(f"DATA(0x{rva:06x}) at {wheres[0]} is in a "
@@ -394,7 +401,8 @@ def check_completeness(explained: set[int] = frozenset()) -> list[str]:
                                 f"header static belongs in data_compgen.tsv "
                                 f"(FATAL)")
                 continue
-            if rva not in have.get(channel, set()) and rva not in explained:
+            if rva not in have.get((channel, kind), set()) \
+                    and (kind, rva) not in explained:
                 problems.append(f"{macro}(0x{rva:06x}) at {wheres[0]} is in "
                                 f"NO fragment - silently lost label (FATAL)")
             if len(wheres) > 1 and macro != "RVA":
@@ -403,9 +411,10 @@ def check_completeness(explained: set[int] = frozenset()) -> list[str]:
                                 f"stacked/duplicated macro")
     n_dc = len(sites.get("DATA_COMPGEN", {}))
     if n_dc:
-        problems.append(f"note: {n_dc} DATA_COMPGEN site(s) exist; that "
-                        f"channel's extraction is deferred to the delink "
-                        f"slice (payload oracles)")
+        problems.append(f"{n_dc} DATA_COMPGEN site(s) have NO extraction "
+                        f"channel - their $T/pooled-string identities are "
+                        f"measurably lost in the delinked objects (FATAL "
+                        f"until the channel is extracted or bridged)")
     return problems
 
 
@@ -435,41 +444,51 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
         rows, probs = extract_unit(u["unit"], u["source"], db)
         if any(isinstance(pr, str) and "FATAL" in pr for pr in probs):
             # never replace a good cached fragment with a truncated one
-            return u["unit"], False, probs
+            return u["unit"], None, probs
         banner = [f"# GENERATED claim fragment for unit {u['unit']} - the "
                   f"macros in {u['source']} are the storage; do not edit."]
         did = write_tsv(FRAGMENTS / f"{u['unit']}.tsv", banner, HEADER, rows)
         return u["unit"], did, probs
 
+    refused: set[str] = set()
     raw: list = []
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for unit, did, probs in pool.map(one, todo):
             if did:
                 changed.append(unit)
+            if did is None:
+                refused.add(unit)
             raw.extend(probs)
-    # a per-TU drop is benign iff ANOTHER unit's fragment claims the rva
-    # (header inlines emit everywhere, cl materializes in one TU); an rva
-    # dropped by every unit is a lost label.
+    # a per-TU drop is benign iff ANOTHER unit's fragment claims the same
+    # (kind, rva) - header inlines emit everywhere, cl materializes in one
+    # TU. A fragment this run REFUSED to rewrite is stale evidence and does
+    # not vote. A (kind, rva) dropped by every unit is a lost label.
     from gruntz.retail_labels.fragments import all_claims
-    claimed = {c.rva for c in all_claims()}
-    drops: dict[int, list[str]] = {}
+    claimed = {(c.kind, c.rva) for c in all_claims() if c.unit not in refused}
+    drops: dict[tuple[str, int], list[str]] = {}
     for pr in raw:
         if isinstance(pr, tuple):
-            drops.setdefault(pr[1], []).append(pr[2])
+            drops.setdefault((pr[1], pr[2]), []).append(pr[3])
         else:
             problems.append(pr)
-    fatal_rvas = set()
-    for rva, msgs in sorted(drops.items()):
-        if rva in claimed:
+    explained: set[tuple[str, int]] = set()
+    forgiven = 0
+    for key, msgs in sorted(drops.items()):
+        if key in claimed:
+            forgiven += len(msgs)
             continue
-        fatal_rvas.add(rva)
+        explained.add(key)
         tail = " and NO other unit claims the rva"
         if len(msgs) > 1:
             units = ", ".join(sorted(m.split(":", 1)[0] for m in msgs))
             tail += f" - {len(msgs)} units dropped it ({units})"
         problems.append(msgs[0] + tail + " (FATAL)")
     if only_units is None:
-        problems.extend(check_completeness(fatal_rvas))
+        problems.extend(check_completeness(explained))
+    elif forgiven:
+        problems.append(f"note: {forgiven} drop(s) forgiven by CACHED "
+                        f"fragments of units this run did not extract; a "
+                        f"full --all run re-proves them")
     return changed, problems
 
 

@@ -264,6 +264,17 @@ def resolve() -> Model:
             violations.append(
                 f"data claim {win.name} ({win.channel}) binds bookkeeping "
                 f"kind={row['kind']!r} row 0x{rva:06x}")
+        if win.channel == "src" and row["kind"] in ("copy", "common"):
+            # a compiler-generated row outranked by a source spelling is the
+            # phantom-shadow signature (a DATA() pin re-inventing a guard byte
+            # or header-static copy the compgen manifest already owns)
+            shadowed = next((c for c in rest if c.channel == "data_compgen"
+                             and c.name != win.name), None)
+            if shadowed is not None:
+                violations.append(
+                    f"src data claim {win.name} shadows the data_compgen "
+                    f"identity {shadowed.name} on {row['kind']!r} row "
+                    f"0x{rva:06x} - a phantom view of compiler-owned storage")
         size = row["size"]
         if win.channel in _SIZE_AUTHORITY and win.size:
             if win.size > row["size"]:
@@ -303,7 +314,8 @@ def serialize(model: Model) -> tuple[bool, bool]:
               "also_units", "aliases"]
 
     def alias(a):
-        return f"{a.channel}:{a.name}:0x{a.size or 0:x}:{a.unit}"
+        # `|` separates the four fields; `:` appears inside C++ names (`::`)
+        return f"{a.channel}|{a.name}|0x{a.size or 0:x}|{a.unit}"
 
     rows = []
     for b in model.functions + model.data:
