@@ -16,6 +16,9 @@
                                      xref, rva, vtable, classof, strings, ...)
     gruntz walls <sub>               the wall campaign: inventory, diagnose,
                                      inline-model
+    gruntz ghidra <sub>              one-way viewer export: the retail image
+                                     as a labelled Ghidra project (build,
+                                     update, verify, status, export)
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -29,7 +32,7 @@ from __future__ import annotations
 import sys
 
 TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff",
-         "objdump")
+         "objdump", "ghidra")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -46,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
-    if cmd in ("sema", "walls"):
+    if cmd in ("sema", "walls", "ghidra"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd in ("build", "link", "match"):
