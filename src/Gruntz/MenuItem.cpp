@@ -18,55 +18,6 @@
 
 #include <stdio.h>
 
-RVA(0x00184610, 0x20)
-CString CMenuItem::GetUpName() {
-    return m_upName;
-}
-RVA(0x00184630, 0x20)
-CString CMenuItem::GetDownName() {
-    return m_downName;
-}
-RVA(0x00184650, 0xa)
-void CMenuItem::Disable(MenuItemState mode) {
-    m_state = mode;
-}
-
-RVA(0x00184660, 0x3)
-i32 CMenuItem::OnInit() {
-    return 0;
-}
-
-RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
-RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
-RVA_COMPGEN(0x00184730, 0x41, ?Reset@CMenuItem@@UAEXXZ)
-RVA(0x00184780, 0x17)
-void CMenuItem2::Disable(MenuItemState mode) {
-    i32 frameLimit = m_frameDelay;
-    m_state = mode;
-    m_frameIdx = 0;
-    m_frameCountdown = frameLimit;
-}
-
-RVA(0x001847b0, 0x6)
-i32 CMenuItem2::OnInit() {
-    return 1;
-}
-
-RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
-RVA(0x001847e0, 0xa6)
-CMenuItem2::~CMenuItem2() {
-    Cleanup();
-}
-
-RVA(0x00184890, 0x1a)
-void CMenuItem2::Reset() {
-    m_frameDelay = 0x64;
-    m_spriteNormal = NULL;
-    m_spriteSelected = NULL;
-    m_spriteDisabled = NULL;
-    m_frameIdx = 0;
-    m_frameCountdown = 0;
-}
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(
     CMenuPage* page,

@@ -1,9 +1,14 @@
 #include <Gruntz/GruntzMapMgr.h>
 
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/GameLevel.h>
+#include <Gruntz/ImageSets.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Io/FileMem.h>
+#include <Wap32/CoordUnset.h>
 
 #include <stddef.h>
 
@@ -58,6 +63,37 @@ i32 CGruntzMapMgr::Visit(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, 
     }
 
     return CMapMgr::Visit(ar, mode, typeId, pObj) != 0;
+}
+
+// A CGameLevel accessor the map-manager compiland defined: its retail copy sits
+// inside gruntzmapmgr's contribution (band 0x82430-0x85db7), called from
+// brickzload and tileswitchlogic through ILT thunk 0x4228.
+RVA(0x00082600, 0x73)
+TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
+    CDDrawWorkerHost* mp;
+    if (x < 0) {
+        x = 0;
+    } else {
+        mp = m_mainPlane;
+        if (x >= mp->m_gridW) {
+            x = mp->m_gridW - 1;
+        }
+    }
+    if (y < 0) {
+        y = 0;
+    } else {
+        mp = m_mainPlane;
+        if (y >= mp->m_gridH) {
+            y = mp->m_gridH - 1;
+        }
+    }
+    mp = m_mainPlane;
+    i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
+    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
+        return TILEKIND_PASSABLE;
+    }
+    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
+    return set->GetCollisionAt(0, 0);
 }
 
 RVA(0x00085480, 0x52)

@@ -20,31 +20,11 @@ RVA_COMPGEN(0x0000fd30, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
 
 // @early-stop
-// cl5 propagates the branch equality into the guarded re-read of the member it
-// just tested, so the load retail keeps is missing.
-// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
-RVA(0x000ac620, 0x1cf)
-CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdGameObjectA* o = m_object;
-    if (o->m_sortKey == 0 && o->m_layer != NULL) {
-        i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
-        if (o->m_sortKey != v) {
-            o->m_sortKey = v;
-            o->m_flags |= 0x20000;
-        }
-    }
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+
+// Realization device (see RealizeCDoNothingNormal): the CGameObject* ctor lives
+// in FrontCandyAni.cpp, but retail kept this class's ??_G/??1 COMDATs inside
+// this TU's contribution, so this TU still realizes the vtable (the header's
+// inline default ctor stamps ??_7 here).
+CEyeCandy* RealizeCEyeCandy() {
+    return new CEyeCandy();
 }

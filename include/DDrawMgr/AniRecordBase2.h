@@ -22,11 +22,22 @@ struct CAniRecordBase2 : public CWapObj {
         m_buf = NULL;
     }
 
-    virtual ~CAniRecordBase2() OVERRIDE;
-    virtual i32 IsLoaded() OVERRIDE;
+    // 0x165dd0 (RVA_COMPGEN pin at the keeper, DDrawSurfacePair.cpp - an RVA()
+    // here would annotate BOTH cl dtor variants and collide with
+    // ??_GCAniRecordBase2@0x165db0).
+    virtual ~CAniRecordBase2() OVERRIDE {
+        Unload();
+    }
+    RVA(0x00165d90, 0xb)
+    virtual i32 IsLoaded() OVERRIDE {
+        return m_buf != NULL;
+    }
 
     virtual void Unload() OVERRIDE;
-    virtual LoadableClassId GetClassId() OVERRIDE;
+    RVA(0x00165da0, 0x6)
+    virtual LoadableClassId GetClassId() OVERRIDE {
+        return CLASSID_ANIRECORDBASE2;
+    }
 
     virtual i32 CreatePaletteFromEntries(i32 handle, i32 flag);
     virtual i32 CreatePaletteFromRgb(void* data, i32 flag);

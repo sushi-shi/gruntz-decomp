@@ -26,45 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// The out-of-line half of the bounds test: 30 retail call sites reach it through ILT
-// thunk 0x1127, while the inline PointInRect sibling expands at the rest. Sits here,
-// beside LookupTile, because both are low-band outliers in this TU's RVA run.
-RVA(0x0006b330, 0x2a)
-i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
-    return PointInRect(r, x, y);
-}
-
-// @identity-TODO LookupTile@CGameLevel - thunk oracle: retail gave this an incremental
-// thunk, so it was compiled into a LINK-LINE OBJECT, while the rest of this TU
-// (73 fns) came from the static library. It belongs to another compiland.
-RVA(0x00082600, 0x73)
-TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
-    CDDrawWorkerHost* mp;
-    if (x < 0) {
-        x = 0;
-    } else {
-        mp = m_mainPlane;
-        if (x >= mp->m_gridW) {
-            x = mp->m_gridW - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        mp = m_mainPlane;
-        if (y >= mp->m_gridH) {
-            y = mp->m_gridH - 1;
-        }
-    }
-    mp = m_mainPlane;
-    i32 tile = mp->m_tileGrid[mp->m_colOffsets[y] + x];
-    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set = static_cast<CTileImageSet*>(m_imageSets[tile & 0xffff]);
-    return set->GetCollisionAt(0, 0);
-}
-
 // @early-stop
 RVA(0x0015ccd0, 0x118)
 CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)

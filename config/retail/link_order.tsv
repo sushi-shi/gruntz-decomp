@@ -20,7 +20,7 @@
 0	actionarea	0x00007c60	0x000086cd	cmdline	Gruntz	7	thunk(7),xcu:209
 1	zdarrayderived	0x00008710	0x00008765	cmdline	Gruntz	2	thunk(2)
 2	userlogic	0x00008a40	0x00008d52	cmdline	Gruntz	5	thunk(5)
-3	actionoptionsmenubar	0x00009090	0x00009f17	cmdline	Gruntz	12	thunk(12)
+3	actionoptionsmenubar	0x00009090	0x0000a0ac	cmdline	Gruntz	12	thunk(12)
 4	gameobjectfactory	0x0000a3b0	0x0000aa92	cmdline	Gruntz	1	thunk(1)
 5	advancedoptions	0x0000afb0	0x0000b2e5	cmdline	Gruntz	5	thunk(5),xcu:243
 6	worldsoundset	0x0000b5e0	0x0000ce55	cmdline	Gruntz	30	thunk(30)
@@ -44,7 +44,7 @@
 24	cheatmgr	0x00022ad0	0x0002318c	cmdline	Gruntz	6	thunk(6)
 25	checkpointdlg	0x000234a0	0x000235c1	cmdline	Gruntz	4	thunk(4),xcu:366
 26	gruntzcmdmgr	0x000239d0	0x00024ae0	cmdline	Gruntz	39	thunk(39)
-27	battlezmapconfig	0x00024dc0	0x0003108d	cmdline	Gruntz	40	thunk(40)
+27	battlezmapconfig	0x00024dc0	0x00031314	cmdline	Gruntz	40	thunk(40)
 28	battlezunitstep	0x00031610	0x0003281d	cmdline	Gruntz	4	thunk(4)
 29	grunttilescan	0x00032ce0	0x00033128	cmdline	Gruntz	1	thunk(1)
 30	gruntstatestep	0x00033520	0x000340e3	cmdline	Gruntz	1	thunk(1)
@@ -90,7 +90,7 @@
 70	gruntbehaviorleaf	0x000612a0	0x0006168d	cmdline	Gruntz	2	thunk(2)
 71	gruntentrancearrival	0x000616e0	0x00065df5	cmdline	Gruntz	22	thunk(22)
 72	gruntpickupload	0x00065e80	0x00067320	cmdline	Gruntz	1	thunk(1)
-73	gruntentrancemove	0x00067850	0x0006b265	cmdline	Gruntz	14	thunk(14)
+73	gruntentrancemove	0x00067850	0x0006b35a	cmdline	Gruntz	14	thunk(14)
 74	triggermgrgrid	0x0006b640	0x0006eb25	cmdline	Gruntz	18	thunk(18)
 75	goowellmgr	0x0006eb80	0x0006f16f	cmdline	Gruntz	1	thunk(1)
 76	triggermgrhittest	0x0006f2f0	0x00075e1a	cmdline	Gruntz	3	thunk(3)
@@ -156,11 +156,7 @@
 136	netcmdslot	0x000c0b10	0x000c13a5	cmdline	Net	18	thunk(18),xcu:885
 137	multistartdlg	0x000c1750	0x000c5333	cmdline	Gruntz	60	thunk(59),xcu:908
 138	droppedobject	0x000c5630	0x000c7be5	cmdline	Gruntz	20	thunk(20),xcu:920
-139	play	0x000c7ec0	0x000da4a0	cmdline	Gruntz	86	thunk(86)	interleaves:cimagecomdats+leveltilevalidation+playercommandstep+playplanescan
-140	playercommandstep	0x000d1b60	0x000d27f0	cmdline	Gruntz	1	thunk(1)	interleaves:play
-141	leveltilevalidation	0x000d2b20	0x000d5bdb	cmdline	Gruntz	3	thunk(3)	interleaves:play+playplanescan
-142	playplanescan	0x000d53d0	0x000d5836	cmdline	Gruntz	1	thunk(1)	interleaves:leveltilevalidation+play
-143	cimagecomdats	0x000d5c10	0x000d5d1d	cmdline	Image	1	thunk(1)	interleaves:play
+139	play	0x000c7ec0	0x000da4a0	cmdline	Gruntz	86	thunk(86)
 144	gruntzplayer	0x000da790	0x000db31b	cmdline	Gruntz	17	thunk(17)
 145	playassetload	0x000db600	0x000ddcc8	cmdline	Gruntz	17	thunk(17)
 146	levelpreview	0x000de030	0x000de5be	cmdline	Gruntz	9	thunk(9)
@@ -210,7 +206,7 @@
 190	gameassetnamespaces	0x000f9ea0	0x000fa0bd	cmdline	Gruntz	1	thunk(1)
 191	statereleaseresources	0x000fa150	0x000fa1c4	cmdline	Gruntz	1	thunk(1)
 192	attract	0x000fa1f0	0x000fb328	cmdline	Gruntz	17	thunk(17)
-193	statichazard	0x000fb7a0	0x000fc6a5	cmdline	Gruntz	6	thunk(6),xcu:1324
+193	statichazard	0x000fb660	0x000fc6a5	cmdline	Gruntz	6	thunk(6),xcu:1324
 194	battlezdata	0x000fc9c0	0x000fd815	cmdline	Gruntz	31	thunk(31)
 195	sbi_rectonly	0x000fdc00	0x0010bc14	cmdline	Gruntz	99	thunk(99)
 196	destructbutton	0x0010bc30	0x0010bca8	cmdline	Gruntz	1	thunk(1)
@@ -260,7 +256,7 @@
 240	wwdgameobject	0x001504d0	0x00152636	lib	Wwd	44	position
 241	ddrawsubmgrleaf	0x00152640	0x00152e83	lib	DDrawMgr	11	position
 242	cimage	0x00152e90	0x001549c5	lib	Image	20	position
-243	cremusnode	0x00154a00	0x00154a26	lib	Image	2	position
+243	cremusnode	0x001549d0	0x00154a93	lib	Image	2	position
 244	ddrawworkerregistry	0x00154aa0	0x00155833	lib	DDrawMgr	24	position
 245	ddrawsurfacemgr	0x00155840	0x00156ca2	lib	DDrawMgr	13	position
 246	ddrawsubmgr	0x00156cb0	0x001591d8	lib	DDrawMgr	99	position
@@ -297,7 +293,7 @@
 277	fadereffects	0x0017f530	0x00182935	lib	DDrawMgr	32	position
 278	scattersamples	0x00182940	0x00182aae	lib	Gruntz	2	position
 279	chatbox	0x00182ab0	0x00183246	lib	Gruntz	28	position
-280	menupage	0x001832d0	0x001845a2	lib	Gruntz	31	position
+280	menupage	0x001832d0	0x001848aa	lib	Gruntz	31	position
 281	rezcoll	0x001848b0	0x00184b5d	lib	Rez	12	position
 282	debugprintf	0x00184ba0	0x001851d3	lib	Rez	14	position,xcu:1493
 283	rezlist	0x001851e0	0x00185315	lib	Rez	5	position
@@ -318,13 +314,6 @@
 298	bitarraystream	0x00193080	0x0019333a	lib	Utils	2	position
 299	butetree	0x00193340	0x0019363f	lib	Bute	2	position
 300	bitarray	0x00193640	0x001937b3	lib	Utils	3	position
--	wwdfile	0x0000a000	0x000d53b9	comdat-owner	Wwd	3	exile-ledger	kept in actionoptionsmenubar+battlezmapconfig+play
--	zvec	0x000310f0	0x00031314	comdat-owner	Wap32	2	exile-ledger	kept in battlezmapconfig
--	freenodepool	0x000311b0	0x000311c4	comdat-owner	Gruntz	1	exile-ledger	kept in battlezmapconfig
--	queuedrainhost	0x00031250	0x00031283	comdat-owner	Gruntz	1	exile-ledger	kept in battlezmapconfig
 -	arrayserialize	0x00039f20	0x00094357	comdat-owner	Gruntz	4	compgen-only
--	wwdgeometryapply	0x00058b60	0x00058b8d	comdat-owner	Wwd	1	exile-ledger	kept in gruntcombat
--	motionstate	0x00058bc0	0x00058e65	comdat-owner	Gruntz	3	exile-ledger	kept in gruntcombat
--	trirecordserialize	0x00058ee0	0x00058f3c	comdat-owner	Gruntz	1	exile-ledger	kept in gruntcombat
 -	logicdispatchinit	-	-	comdat-owner	Gruntz	0	no-text
 -	stringstaticpool	-	-	comdat-owner	Net	0	no-text

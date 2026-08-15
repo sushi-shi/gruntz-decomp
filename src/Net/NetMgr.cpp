@@ -10,9 +10,9 @@
 #include <Net/InterfaceObject.h>
 #include <Net/NetGuids.h>
 #include <Net/NetProviderFindKind.h>
-#include <PlacementNew.h>
 
 #include <dplay.h>
+#include <new>
 #include <string.h>
 
 DATA(0x002bf840)

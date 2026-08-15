@@ -36,20 +36,6 @@
 
 #include <string.h>
 
-RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)
-
-RVA(0x00154a80, 0x13)
-void CResolveNode::Unload() {
-    m_screenX = COORD_UNSET;
-    m_dirty.Reset();
-}
-
-// Ascending RVA order in this TU's run: 0x15b2b0 -> 0x15b340 -> 0x15b370 -> 0x15b390.
-RVA(0x0015b2b0, 0xe)
-WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
-    SeedFields();
-}
-
 RVA(0x0015b340, 0x2b)
 i32 AnimWorkerObj::Consume(i32 amount) {
     i32 remaining = m_timeDelay;

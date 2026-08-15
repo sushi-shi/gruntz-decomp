@@ -183,11 +183,6 @@ source = "src/Gruntz/UserLogic.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "leveltilevalidation"
-source = "src/Gruntz/LevelTileValidation.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "mainmenubuilder"
 source = "src/Gruntz/MainMenuBuilder.cpp"
 flags = "cpp-rtti"
@@ -318,11 +313,6 @@ unit = "gruntdefenselean"
 source = "src/Gruntz/GruntDefenseLean.cpp"
 flags = "cpp"
 [[unit]]
-unit = "playplanescan"
-source = "src/Gruntz/PlayPlaneScan.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "ingameicon"
 source = "src/Gruntz/InGameIcon.cpp"
 flags = "cpp-rtti"
@@ -382,19 +372,9 @@ source = "src/Gruntz/Projectile.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "motionstate"
-source = "src/Gruntz/MotionState.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "movinglogic"
 source = "src/Gruntz/MovingLogic.cpp"
 flags = "cpp-rtti-noeh"
-
-[[unit]]
-unit = "zvec"
-source = "src/Wap32/ZVec.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "dialogs"
@@ -414,11 +394,6 @@ flags = "cpp-rtti"
 unit = "multistartdlg"
 source = "src/Gruntz/MultiStartDlg.cpp"
 flags = "cpp-rtti"
-
-[[unit]]
-unit = "wwdfile"
-source = "src/Wwd/WwdFile.cpp"
-flags = "cpp"
 
 [[unit]]
 unit = "gamelevel"
@@ -1026,11 +1001,6 @@ source = "src/Gruntz/LeafCuePlay.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "queuedrainhost"
-source = "src/Gruntz/QueueDrainHost.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
 flags = "cpp"
@@ -1201,11 +1171,6 @@ flags = "cpp"
 [[unit]]
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "trirecordserialize"
-source = "src/Gruntz/TriRecordSerialize.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1430,19 +1395,10 @@ source = "src/Gruntz/GruntStateStep.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "freenodepool"
-source = "src/Gruntz/FreeNodePool.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "heapdiag"
 source = "src/Gruntz/HeapDiag.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "playercommandstep"
-source = "src/Gruntz/PlayerCommandStep.cpp"
-flags = "cpp-rtti"
 [[unit]]
 unit = "namerecord"
 source = "src/Gruntz/NameRecord.cpp"
@@ -1561,11 +1517,6 @@ source = "src/DDrawMgr/DDrawSurfacePairBlt.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "wwdgeometryapply"
-source = "src/Wwd/WwdGeometryApply.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "gamewndcomdats"
 source = "src/Wap32/GameWndComdats.cpp"
 flags = "cpp"
@@ -1574,11 +1525,6 @@ flags = "cpp"
 unit = "gameappcomdats"
 source = "src/Wap32/GameAppComdats.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "cimagecomdats"
-source = "src/Image/CImageComdats.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "ddrawsubmgrrefresh"

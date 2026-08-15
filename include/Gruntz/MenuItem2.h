@@ -17,15 +17,36 @@ class CMenuPage;
 class CMenuItem2 : public CMenuItem {
 public:
     CMenuItem2();
-    virtual ~CMenuItem2() OVERRIDE;
+    // 0x1847e0 (RVA_COMPGEN pin at the keeper, MenuPage.cpp - an RVA() here
+    // would annotate BOTH cl dtor variants and collide with ??_GCMenuItem2@0x1847c0).
+    virtual ~CMenuItem2() OVERRIDE {
+        Cleanup();
+    }
     virtual i32 Init(CMenuPage*, const char*, const char*, i32, const char*, i32) OVERRIDE;
-    virtual void Reset() OVERRIDE;
+    RVA(0x00184890, 0x1a)
+    virtual void Reset() OVERRIDE {
+        m_frameDelay = 0x64;
+        m_spriteNormal = NULL;
+        m_spriteSelected = NULL;
+        m_spriteDisabled = NULL;
+        m_frameIdx = 0;
+        m_frameCountdown = 0;
+    }
     virtual i32 GetWidth() OVERRIDE;
     virtual i32 GetFrameWidth() OVERRIDE;
-    virtual void Disable(MenuItemState mode) OVERRIDE;
+    RVA(0x00184780, 0x17)
+    virtual void Disable(MenuItemState mode) OVERRIDE {
+        i32 frameLimit = m_frameDelay;
+        m_state = mode;
+        m_frameIdx = 0;
+        m_frameCountdown = frameLimit;
+    }
     virtual i32 Notify(u32 dt) OVERRIDE;
     virtual i32 Place(CDDrawSurfacePair* target, i32 x, i32 y) OVERRIDE;
-    virtual i32 OnInit() OVERRIDE;
+    RVA(0x001847b0, 0x6)
+    virtual i32 OnInit() OVERRIDE {
+        return 1;
+    }
     RVA(0x001847a0, 0xa)
     virtual void SetFrame(i32 v);
 

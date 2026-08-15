@@ -20,11 +20,11 @@
 #include <Gruntz/ObList.h>
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Io/FileMem.h>
-#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -34,8 +34,14 @@
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
+#include <new>
+
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
+DATA(0x0021ab20)
+i32 g_sndEnabled = 1;
+DATA(0x0021ab24)
+i32 g_sndCueTag = 100;
 
 inline void* WwdKey(CGameObject* o) {
     AddrWord<char> k;
@@ -1338,6 +1344,11 @@ RVA(0x0015b2a0, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = NULL;
     m_reserved08 = 0;
+}
+
+RVA(0x0015b2b0, 0xe)
+WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
+    SeedFields();
 }
 
 // The out-of-line half of the visibility split: the three creators above carry

@@ -23,11 +23,11 @@
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
-#include <PlacementNew.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
 
+#include <new>
 #include <stdio.h>
 #include <string.h>
 

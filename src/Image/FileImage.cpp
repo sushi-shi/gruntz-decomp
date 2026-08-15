@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
+#include <DDrawMgr/DirPal.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/RasterRowOrder.h>
 #include <Enums.h>
@@ -15,9 +16,6 @@
 
 #include <ddraw.h>
 #include <string.h>
-
-DATA(0x00283ee0)
-HINSTANCE g_resModule;
 
 DATA(0x00283ef0)
 PALETTEENTRY g_paletteRampBuf[0x100];

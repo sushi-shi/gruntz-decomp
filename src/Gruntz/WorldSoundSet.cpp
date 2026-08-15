@@ -12,12 +12,12 @@
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
-#include <PlacementNew.h>
 #include <Rez/RezMgr.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <math.h>
+#include <new>
 
 DATA(0x0022990c)
 i32 g_posSoundReq;

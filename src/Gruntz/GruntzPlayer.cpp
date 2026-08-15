@@ -63,7 +63,6 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
-#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SBI_Image.h>
@@ -94,7 +93,6 @@
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
 #include <Pix16.h>
-#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
@@ -107,6 +105,7 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
+#include <new>
 #include <stdio.h>
 #include <string.h>
 

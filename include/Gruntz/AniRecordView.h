@@ -15,7 +15,18 @@ struct LeafCue;
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
 
 struct CAniRecordView : public CObject {
-    virtual ~CAniRecordView() OVERRIDE;
+    // 0x1657a0 (RVA_COMPGEN pin at the keeper, DDrawSurfacePair.cpp - an RVA()
+    // here would annotate BOTH cl dtor variants and collide with
+    // ??_GCAniRecordView@0x165780).
+    virtual ~CAniRecordView() OVERRIDE {
+        CAniRecordView* r = this;
+        if (r->m_cues != NULL) {
+            delete[] r->m_cues;
+        }
+        r->m_loopMode = WWDLOOP_INVALID;
+        r->m_cueCount = 0;
+        r->m_cues = NULL;
+    }
 
     i32 Parse(void* ctx, const i16* src);
     i32 GetSize();

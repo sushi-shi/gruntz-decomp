@@ -1060,6 +1060,11 @@ void CAniElement::DeleteAll() {
     m_records.SetSize(0, -1);
 }
 
+// CAniRecordView header inlines this TU materializes: link.exe kept the
+// copies inside ddrawsurfacepair.obj's contribution.
+RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
+RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
+
 RVA(0x00165810, 0xa9)
 void CDDrawWorkerMapSmall::Unload() {
     CObject* val = 0;
@@ -1219,6 +1224,10 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     delete w;
     return 1;
 }
+
+// CAniRecordBase2 header inlines this TU materializes (same mechanism).
+RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)
+RVA_COMPGEN(0x00165dd0, 0x5b, ??1CAniRecordBase2@@UAE@XZ)
 
 RVA(0x00165e30, 0x27)
 i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {

@@ -8,6 +8,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezIntervalMs.h>
@@ -47,6 +48,7 @@
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
+#include <Wap32/ZVec.h>
 #include <Wwd/WwdFile.h>
 
 #include <limits.h>
@@ -5341,4 +5343,80 @@ void* CBattlezMapConfig::PickSpawnCoord(void* out, CGrunt* unit, i32 kind) {
     o->m_x = rx;
     o->m_y = ry;
     return o;
+}
+
+RVA(0x000310f0, 0x8d)
+char* _zdvec::IndexToPtr(i32 i) {
+    char* r;
+    m_grown = 0;
+    if (i >= m_lo && i <= m_hi) {
+        r = m_base + (i - m_lo) * m_stride;
+    } else if (GrowTo(i, 0)) {
+        r = m_base + (i - m_lo) * m_stride;
+    } else {
+        char* msg = g_errOutOfMem;
+        g_retAddrBreadcrumb = GetRetAddr();
+        m_errSink->Set(this, msg, 0xc);
+        r = m_spare;
+    }
+    char* slot = m_alloc;
+    i32 n = m_grown;
+    while (n-- != 0) {
+        if (slot) {
+            new (slot) CString();
+        }
+        slot += 4;
+    }
+    return r;
+}
+
+RVA(0x000311b0, 0x14)
+void FreeNodePool::Push(void* p) {
+    CoordPoolNode* node = NodeOf(p);
+    node->m_next = m_freeHead;
+    m_freeHead = node;
+}
+
+RVA(0x000311e0, 0x4c)
+void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
+    Coord result;
+    i32 sx = m_shiftX;
+    i32 sy = m_shiftY;
+    result.m_x = x >> sx;
+    result.m_y = y >> sy;
+    result.m_x <<= sx;
+    result.m_y <<= sy;
+    result.m_x += m_tilePxW / 2;
+    result.m_y += m_tilePxH / 2;
+    *out = result;
+}
+
+RVA(0x00031250, 0x33)
+CGameObject* CDDrawChildGroup::Drain() {
+    for (;;) {
+        if (m_scanCursor == NULL) {
+            return 0;
+        }
+        CGameObject* data = static_cast<CGameObject*>(m_list.GetNext(m_scanCursor));
+        if (data->GetClassId() == CLASSID_SERIALREF) {
+            return data;
+        }
+    }
+}
+
+RVA(0x000312a0, 0x74)
+char* _zvec::IndexToPtr(i32 idx) {
+    char* r;
+    m_grown = 0;
+    if (idx >= m_lo && idx <= m_hi) {
+        r = m_base + (idx - m_lo) * m_stride;
+    } else if (GrowTo(idx, 0)) {
+        r = m_base + (idx - m_lo) * m_stride;
+    } else {
+        char* msg = g_errOutOfMem;
+        g_retAddrBreadcrumb = GetRetAddr();
+        m_errSink->Set(this, msg, 0xc);
+        r = m_spare;
+    }
+    return r;
 }

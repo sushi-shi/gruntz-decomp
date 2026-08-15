@@ -6,6 +6,8 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/BehindCandy.h>
+#include <Gruntz/DoNothing.h>
 #include <Gruntz/EyeCandy.h>
 #include <Gruntz/EyeCandyAni.h>
 #include <Gruntz/FrontCandy.h>
@@ -83,6 +85,78 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 }
 
 // @early-stop
+// @early-stop
+RVA(0x000ac1d0, 0x1a5)
+CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
+    m_wwdObject->m_flags |= 1;
+    CImage* aux = m_object->m_layer;
+    if (aux != NULL) {
+        i32 bigW = aux->m_width;
+        i32 bigH;
+        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
+            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_animWorker != NULL) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
+RVA(0x000ac3f0, 0x1b1)
+CBehindCandy::CBehindCandy(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey != 0) {
+        o->m_sortKey = 0;
+        o->m_flags |= 0x20000;
+    }
+    if (m_object->m_layer != NULL) {
+        i32 bigW = m_object->m_layer->m_width;
+        i32 bigH;
+        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
+            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_animWorker != NULL) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
+// cl5 propagates the branch equality into the guarded re-read of the member it
+// just tested, so the load retail keeps is missing.
+// docs/patterns/branch-equality-propagated-into-the-guarded-store.md
+RVA(0x000ac620, 0x1cf)
+CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
+    CWwdGameObjectA* o = m_object;
+    if (o->m_sortKey == 0 && o->m_layer != NULL) {
+        i32 v = o->m_layer->m_anchorY + o->m_screenY + 0x186a0;
+        if (o->m_sortKey != v) {
+            o->m_sortKey = v;
+            o->m_flags |= 0x20000;
+        }
+    }
+    CImage* aux = m_object->m_layer;
+    if (aux != NULL) {
+        i32 bigW = aux->m_width;
+        i32 bigH;
+        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
+            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_animWorker != NULL) {
+                m_object->m_animWorker->m_flags &= ~6;
+                m_object->m_animWorker->m_flags |= 1;
+                m_wwdObject->m_flags &= ~0x1000002;
+                m_wwdObject->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
 RVA(0x000ac870, 0x20e)
 CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

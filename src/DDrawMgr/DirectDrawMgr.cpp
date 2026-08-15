@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DirPal.h>
 #include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Dsndmgr/SoundBankLoad.h>
@@ -34,6 +35,8 @@ i32 g_ddThirdEnabled = 0;
 
 DATA(0x00283edc)
 i32 (*g_restoreHandler)() = 0;
+DATA(0x00283ee0)
+HINSTANCE g_resModule;
 
 DATA(0x00283ee8)
 IDirectDraw2* g_DirectDraw = 0;
@@ -1012,7 +1015,9 @@ IDirectDrawSurface* CDDrawPtrCollections::GetGDISurface() {
     IDirectDrawSurface* surf = 0;
     i32 hr = m_device->GetGDISurface(&surf);
     if (hr != 0) {
-        DDrawLogLine(const_cast<char*>("CDDrawPtrCollections::GetGDISurface()"));
+        DDrawLogLine(
+            const_cast<char*>("CDirectDrawMgr::GetGDISurface() - Cannot get the GDI surface!\r\n")
+        );
         return 0;
     }
     return surf;

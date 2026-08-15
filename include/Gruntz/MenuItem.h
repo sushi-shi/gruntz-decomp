@@ -35,7 +35,10 @@ public:
     virtual void Reset();
     virtual i32 GetWidth();
     virtual i32 GetFrameWidth();
-    virtual void Disable(MenuItemState mode);
+    RVA(0x00184650, 0xa)
+    virtual void Disable(MenuItemState mode) {
+        m_state = mode;
+    }
 
     virtual i32 Detach();
 
@@ -45,7 +48,10 @@ public:
     virtual i32 Configure(i32 notify);
     virtual i32 Release();
     virtual i32 Trigger();
-    virtual i32 OnInit();
+    RVA(0x00184660, 0x3)
+    virtual i32 OnInit() {
+        return 0;
+    }
 
     RVA(0x001845b0, 0x20)
     CString GetName() {
@@ -59,8 +65,14 @@ public:
     CString GetRightName() {
         return m_rightName;
     }
-    CString GetUpName();
-    CString GetDownName();
+    RVA(0x00184610, 0x20)
+    CString GetUpName() {
+        return m_upName;
+    }
+    RVA(0x00184630, 0x20)
+    CString GetDownName() {
+        return m_downName;
+    }
     i32 NotifyCmd();
     i32 Hit(i32 x, i32 y);
     void SetCommandParam(i32 cmdParam) {

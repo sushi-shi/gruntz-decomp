@@ -150,11 +150,6 @@ i32 g_debugGruntAiType;
 DATA(0x002455e8)
 i32 g_monologoShown;
 
-DATA(0x0021ab20)
-i32 g_sndEnabled = 1;
-DATA(0x0021ab24)
-i32 g_sndCueTag = 100;
-
 DATA(0x0024556c)
 CGruntzMgr* g_gameReg = 0;
 

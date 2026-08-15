@@ -51,7 +51,11 @@ struct WwdDirtyRect {
 class CResolveNode : public CWapObj {
 public:
     virtual i32 IsLoaded() OVERRIDE;
-    virtual void Unload() OVERRIDE;
+    RVA(0x00154a80, 0x13)
+    virtual void Unload() OVERRIDE {
+        m_screenX = COORD_UNSET;
+        m_dirty.Reset();
+    }
 
     virtual i32 SetPosition(i32 x, i32 y);
 

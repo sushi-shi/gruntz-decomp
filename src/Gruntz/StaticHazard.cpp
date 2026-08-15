@@ -19,12 +19,14 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LogicRecordState.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/XferArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
@@ -50,6 +52,49 @@ static inline CActHandler* HaznLookup(i32 coord) {
 }
 
 // @early-stop
+inline void DispatchLogicAction(CUserLogic* sub) {
+    ProjTypeXfer(sub);
+}
+
+RVA(0x000fb660, 0xf1)
+i32 CreateStaticHazard(CGameObject* owner) {
+    AnimWorkerObj* rec = owner->m_animWorker;
+    switch (static_cast<u32>(rec->ActKey())) {
+        case LOGICREC_INIT:
+            rec->SetActKey(LOGICREC_BUILT);
+            {
+                CUserLogic* obj = new CStaticHazard(owner);
+                obj->Activate();
+                rec->m_logic = obj;
+            }
+            break;
+        case LOGICREC_OP_1D:
+            rec->m_logic->OnObjectRemoved();
+            break;
+        case LOGICREC_OP_1E:
+            rec->m_logic->OnLeaveActiveRegion();
+            break;
+        case LOGICREC_OP_50:
+            rec->m_logic->PrepareSave();
+            break;
+        case LOGICREC_OP_51:
+            rec->m_logic->AfterSave();
+            break;
+        case LOGICREC_OP_52:
+            rec->m_logic->AfterLoad();
+            break;
+        case LOGICREC_OP_53:
+            rec->m_logic->AfterLoadReferences();
+            break;
+        case LOGICREC_BUILT:
+            break;
+        default:
+            DispatchLogicAction(rec->m_logic);
+            break;
+    }
+    return 1;
+}
+
 RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

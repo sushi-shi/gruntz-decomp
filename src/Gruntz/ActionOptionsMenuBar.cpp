@@ -2,6 +2,7 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
@@ -488,4 +489,38 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     }
 
     return 1;
+}
+
+RVA(0x0000a000, 0xac)
+void CDDrawWorkerHost::WrapCoord(LONG* px, LONG* py) {
+    if (m_flags & 0x4) {
+        LONG x = *px;
+        if (x < 0) {
+            *px = m_wrapW + x;
+        } else if (x >= m_wrapW) {
+            *px = x - m_wrapW;
+        }
+        if (m_viewRect.right >= m_wrapW && *px < m_viewRect.left
+            && *px <= m_viewRect.right - m_wrapW) {
+            *px = m_wrapW + *px;
+        }
+    }
+
+    if (m_flags & 0x8) {
+        LONG y = *py;
+        if (y < 0) {
+            *py = m_wrapH + y;
+        } else if (y >= m_wrapH) {
+            *py = y - m_wrapH;
+        }
+        if (m_viewRect.bottom >= m_wrapH && *py < m_viewRect.top
+            && *py <= m_viewRect.bottom - m_wrapH) {
+            *py = m_wrapH + *py;
+        }
+    }
+
+    *px = *px - m_viewRect.left;
+    *py = *py - m_viewRect.top;
+    *px = *px + m_bounds50.left;
+    *py = *py + m_bounds50.top;
 }

@@ -531,10 +531,10 @@ rva	size	name	owner	class
 0x0024be80	0xc	?s_gruntDirSouthEast_24be80@@3UGruntDirectionCell@@A	droppedobject	copy
 0x0024beb8	0xc	?s_gruntDirCenter_24beb8@@3UGruntDirectionCell@@A	droppedobject	copy
 0x0024bec8	0xc	?s_gruntDirSouthWest_24bec8@@3UGruntDirectionCell@@A	droppedobject	copy
-0x0024bfe0	0xc	?s_gruntDirEast_24bfe0@@3UGruntDirectionCell@@A	playercommandstep	copy
-0x0024bff0	0xc	?s_gruntDirNorth_24bff0@@3UGruntDirectionCell@@A	playercommandstep	copy
-0x0024c000	0xc	?s_gruntDirSouth_24c000@@3UGruntDirectionCell@@A	playercommandstep	copy
-0x0024c010	0xc	?s_gruntDirWest_24c010@@3UGruntDirectionCell@@A	playercommandstep	copy
+0x0024bfe0	0xc	?s_gruntDirEast_24bfe0@@3UGruntDirectionCell@@A	play	copy
+0x0024bff0	0xc	?s_gruntDirNorth_24bff0@@3UGruntDirectionCell@@A	play	copy
+0x0024c000	0xc	?s_gruntDirSouth_24c000@@3UGruntDirectionCell@@A	play	copy
+0x0024c010	0xc	?s_gruntDirWest_24c010@@3UGruntDirectionCell@@A	play	copy
 0x0024c01c	0x1	_?$S@?1??LoadScrollSpeedOptions@CPlay@@QAEHXZ@4EA$S	play	copy
 0x0024c220	0xc	?s_gruntDirNorthEast_24c220@@3UGruntDirectionCell@@A	play	copy
 0x0024c22c	0x1	_?$S@?4??GetAmbientId@CPlay@@QAEHXZ@4EA$S	play	copy

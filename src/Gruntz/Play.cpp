@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
@@ -27,6 +28,7 @@
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CBrickz.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -47,6 +49,7 @@
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -66,7 +69,6 @@
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayHudLayoutPx.h>
 #include <Gruntz/PlayIntervalMs.h>
-#include <Gruntz/PlayPlaneScan.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SBI_Image.h>
@@ -81,6 +83,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/String.h>
+#include <Gruntz/TileCollisionKind.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -97,7 +100,6 @@
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
 #include <Pix16.h>
-#include <PlacementNew.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
@@ -110,6 +112,8 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
+#include <new>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -4503,6 +4507,1360 @@ i32 CPlay::SetCursorFrame(i32 item) {
 }
 
 // @early-stop
+RVA(0x000d1b60, 0xc90)
+i32 CPlay::ExecCommand(
+    u8 targetIndex,
+    char gruntIndex,
+    GZ_ENUM_STORAGE(PlayerCommandKind, char) cmdKind,
+    i16 posX,
+    i16 posY,
+    char extraByte,
+    u8 targetType
+) {
+    CGruntzMgr* mgr = m_mgr;
+    if (mgr->m_frameGate != 0) {
+        return 0;
+    }
+    i32 res;
+    i32 hitRow;
+    i32 hitCol;
+
+    switch (static_cast<u8>(cmdKind)) {
+        case PLAYERCMD_PLACE_GRUNT: {
+            u32 currentPlayer = static_cast<u32>(g_curPlayer);
+
+            i32 r = mgr->m_cmdGrid->PlaceObject(
+                static_cast<u8>(targetIndex),
+                static_cast<u16>(posX),
+                static_cast<u16>(posY),
+                100000,
+                GRUNT_ENTRANCE_DROP,
+                g_groupSentinel,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            );
+            if (r == -1) {
+                if (m_world->m_soundRegistry->m_emitGate == 0) {
+                    LeafCue* cue =
+                        static_cast<LeafCue*>(m_world->m_soundRegistry->Lookup("GAME_BADSELECT"));
+                    if (cue != NULL) {
+                        cue->PlayIfElapsed(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+                return 0;
+            }
+            if (static_cast<u8>(targetIndex) == currentPlayer) {
+                g_gameReg->m_cmdGrid->ResetAll();
+            }
+            return 1;
+        }
+
+        case PLAYERCMD_MOVE: {
+            u32 player = static_cast<u8>(targetIndex);
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
+            if (g != NULL && g->m_entranceCommitted != 0) {
+                g->m_arrivalActive = 0;
+            }
+            res = m_mgr->m_cmdGrid
+                      ->ClearCell(player, gi, static_cast<u16>(posX), static_cast<u16>(posY), 0);
+            u32 currentPlayer = static_cast<u32>(g_curPlayer);
+
+            if (!res) {
+                if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
+                    return 0;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                return 0;
+            }
+            if (player != currentPlayer || g == NULL || g->m_entranceCommitted == 0) {
+                return 1;
+            }
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+            return 1;
+        }
+
+        case PLAYERCMD_GUARD_BEGIN: {
+            CGrunt* g =
+                mgr->m_cmdGrid
+                    ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+            if (g != NULL) {
+                if (g->m_tileClaimed != 1) {
+                    g->m_arrivalRerollLo = 0;
+                    g->m_arrivalRerollWindowLo = 0;
+                    g->m_arrivalRerollHi = 0;
+                    g->m_arrivalRerollWindowHi = 0;
+                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
+                    g->m_tileClaimed = 1;
+                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
+
+                    switch (g->m_entranceReason) {
+                        case PICKUP_BOOMERANG:
+                            g->m_defenderRadius = 1;
+                            break;
+                        case PICKUP_GUNHAT:
+                        case PICKUP_NERFGUN:
+                        case PICKUP_ROCK:
+                            g->m_defenderRadius = 1;
+                            break;
+                        case PICKUP_WELDER:
+                        case PICKUP_WINGZ:
+                            g->m_defenderRadius = 1;
+                            break;
+                        default:
+                            g->m_defenderRadius =
+                                g_buteMgr.GetIntDef("Grunt", "PlayerDefenderRadius", 3) + 1;
+                    }
+                    g->m_arrivalFlags |= 0x18040402;
+                    g->m_arrivalCell.m_x = -1;
+                    g->m_arrivalState = AI_DEFENDER;
+                    g->m_defenderState = AISTATE_SEEK;
+                    g->m_arrivalCell.m_y = -1;
+                    g->m_arrivalActive = 0;
+                    g->m_object->m_extent.left = 0;
+                    g->m_object->m_extent.right = 0;
+                    g->m_object->m_extent.top = 0;
+                    g->m_object->m_extent.bottom = 0;
+                    g->SetEntrancePos(1, 1);
+                }
+                g->m_arrivalNotified = 0;
+            }
+            return 1;
+        }
+
+        case PLAYERCMD_GUARD_END: {
+
+            CGrunt* g =
+                mgr->m_cmdGrid
+                    ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+            // Gate on m_tileClaimed (+0x420), NOT m_entranceCommitted (+0x1fc): retail
+            // reads the SAME slot it is about to clear five instructions later, i.e.
+            // "if this grunt is not guarding, do nothing".  Gating on the always-set
+            // committed flag ran the whole guard teardown - m_arrivalState = AI_NONE,
+            // the 0xe7fbfbfd flag mask and SetEntrancePos(1,1) - on any grunt, so a
+            // stray GUARD_END cancelled whatever that grunt was actually doing.
+            if (g == NULL || g->m_tileClaimed == 0) {
+                return 1;
+            }
+            g->m_arrivalRerollLo = 0;
+            g->m_arrivalRerollWindowLo = 0;
+            g->m_arrivalRerollHi = 0;
+            g->m_arrivalRerollWindowHi = 0;
+            g->m_tileClaimed = 0;
+            g->m_arrivalState = AI_NONE;
+            g->m_arrivalFlags &= 0xe7fbfbfd;
+            g->SetEntrancePos(1, 1);
+            return 1;
+        }
+
+        case PLAYERCMD_USE_TOOL_AT_POINT: {
+            u32 player = static_cast<u8>(targetIndex);
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
+            if (g == NULL || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            i32 px = static_cast<u16>(posX);
+            i32 py = static_cast<u16>(posY);
+
+            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
+            if (node != NULL && g->m_entranceActive == 0) {
+                g->SetArrivalTarget(
+                    hitRow,
+                    hitCol,
+                    node->m_object->m_screenX,
+                    node->m_object->m_screenY
+                );
+            } else {
+                g->m_arrivalActive = 0;
+            }
+            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, px, py);
+            if (res == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 0;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                return 0;
+            }
+            if (res != -1) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                return 1;
+            }
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 2);
+            if (res) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                return 1;
+            }
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+            return 0;
+        }
+
+        case PLAYERCMD_USE_TOOL_ON_GRUNT: {
+            u32 player = static_cast<u8>(targetIndex);
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
+            if (g == NULL || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            i32 row = static_cast<u16>(posX);
+            i32 col = static_cast<u16>(posY);
+            CGrunt* g2 = m_mgr->m_cmdGrid->m_grid[col + row * 0xf];
+            if (g2 == NULL || g->m_entranceActive != 0) {
+                g->m_arrivalActive = 0;
+                return 0;
+            }
+            i32 sx = g2->m_object->m_screenX;
+            i32 sy = g2->m_object->m_screenY;
+            g->SetArrivalTarget(row, col, sx, sy);
+            res = m_mgr->m_cmdGrid->ApplyTriggerA(player, gi, sx, sy);
+            if (res == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 0;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                return 0;
+            }
+            if (res != -1) {
+                if (player != static_cast<u32>(g_curPlayer)
+                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                    || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                return 1;
+            }
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 2);
+            if (res) {
+                if (player != static_cast<u32>(g_curPlayer)
+                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                    || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                return 1;
+            }
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+            return 0;
+        }
+
+        case PLAYERCMD_USE_TOY_AT_POINT: {
+            u32 player = static_cast<u8>(targetIndex);
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
+            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+                return 0;
+            }
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            i32 px = static_cast<u16>(posX);
+            i32 py = static_cast<u16>(posY);
+            CGrunt* node = m_mgr->m_cmdGrid->CellHitTest(px, py, &hitRow, &hitCol, TM_GRID_ROW_ALL);
+            if (node != NULL && g->m_entranceActive == 0) {
+                g->SetArrivalTarget(
+                    hitRow,
+                    hitCol,
+                    node->m_object->m_screenX,
+                    node->m_object->m_screenY
+                );
+            } else {
+                g->m_arrivalActive = 0;
+            }
+            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, px, py);
+            if (res == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 0;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                return 0;
+            }
+            if (res != -1) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                return 1;
+            }
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, px, py, 3);
+            if (res) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x323, -1, 0, -1, -1);
+                return 1;
+            }
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+            return 0;
+        }
+
+        case PLAYERCMD_USE_TOY_ON_GRUNT: {
+            u32 player = static_cast<u8>(targetIndex);
+            u32 gi = static_cast<u8>(gruntIndex);
+            CGrunt* g = mgr->m_cmdGrid->m_grid[gi + player * 0xf];
+            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+                return 0;
+            }
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            i32 row = static_cast<u16>(posX);
+            i32 col = static_cast<u16>(posY);
+            CGrunt* g2 = m_mgr->m_cmdGrid->m_grid[col + row * 0xf];
+            if (g2 == NULL || g->m_entranceActive != 0) {
+                g->m_arrivalActive = 0;
+                return 0;
+            }
+            i32 sx = g2->m_object->m_screenX;
+            i32 sy = g2->m_object->m_screenY;
+            g->SetArrivalTarget(row, col, sx, sy);
+            res = m_mgr->m_cmdGrid->ApplyTriggerB(player, gi, sx, sy);
+            if (res == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    return 0;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+                return 0;
+            }
+            if (res != -1) {
+                if (player != static_cast<u32>(g_curPlayer)
+                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                    || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                return 1;
+            }
+            res = m_mgr->m_cmdGrid->ClearCell(player, gi, sx, sy, 3);
+            if (res) {
+                if (player != static_cast<u32>(g_curPlayer)
+                    || static_cast<u32>(g_curPlayer) == static_cast<u32>(row)
+                    || g->m_entranceCommitted == 0) {
+                    return 1;
+                }
+                g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x325, -1, 0, -1, -1);
+                return 1;
+            }
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                return 0;
+            }
+            g_gameReg->m_cueSink->SpawnVoiceDriver(g, 0x324, -1, 0, -1, -1);
+            return 0;
+        }
+
+        case PLAYERCMD_GIVE_TOOL: {
+            u32 player = static_cast<u8>(targetIndex);
+            if (player == static_cast<u32>(g_curPlayer)) {
+                m_playerCommandPending = 0;
+            }
+            u32 gi = static_cast<u8>(gruntIndex);
+            i32 idx = gi + player * 0xf;
+            CGrunt* g = mgr->m_cmdGrid->m_grid[idx];
+            if (g != NULL && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            i32 sel = 0;
+            i32 live = (g_gameReg->m_gameMode != GAMEMODE_SINGLE);
+            CGrunt* g2 = m_mgr->m_cmdGrid->m_grid[idx];
+            i32 r;
+            if (g2 == NULL || g2->m_entranceCommitted == 0) {
+                r = 0;
+            } else {
+                r = g2->LoadPickupSprites(static_cast<PickupType>(extraByte & 0xff), 0, 0, 0, live);
+            }
+            if (r != 0) {
+                if (player == static_cast<u32>(g_curPlayer)) {
+                    m_mgr->m_cmdGrid->ResetCell(player, gi, 0, 0);
+                }
+                sel = 1;
+            }
+            if (player == static_cast<u32>(g_curPlayer)) {
+                m_dragInhibit2 = 0;
+                m_guts->EnterHlRow(sel, m_cursorFrame);
+                SetCursorFrame(0);
+            }
+            return r;
+        }
+
+        case PLAYERCMD_STOP: {
+            CGrunt* g =
+                mgr->m_cmdGrid
+                    ->m_grid[static_cast<u8>(targetIndex) * 0xf + static_cast<u8>(gruntIndex)];
+            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+                return 0;
+            }
+            g->SetEntrancePos(1, 1);
+            if (g->m_tileClaimed != 0) {
+                g->m_arrivalRerollLo = 0;
+                g->m_arrivalRerollWindowLo = 0;
+                g->m_arrivalRerollHi = 0;
+                g->m_arrivalRerollWindowHi = 0;
+                g->m_tileClaimed = 0;
+                g->m_arrivalState = AI_NONE;
+                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->SetEntrancePos(1, 1);
+            }
+            return 1;
+        }
+    }
+
+    return 1;
+}
+
+static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
+    return holder->m_level;
+}
+
+static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
+    CDDrawWorkerHost* g = level->m_mainPlane;
+    if (x < 0) {
+        x = 0;
+    } else if (x >= g->m_wrapW) {
+        x = g->m_wrapW - 1;
+    }
+    if (y < 0) {
+        y = 0;
+    } else if (y >= g->m_wrapH) {
+        y = g->m_wrapH - 1;
+    }
+    i32 tx = x >> g->m_shiftX;
+    i32 ty = y >> g->m_shiftY;
+    i32 subX = x - (tx << g->m_shiftX);
+    i32 subY = y - (ty << g->m_shiftY);
+    i32 cell = g->GetTileHandle(tx, ty);
+    if (cell == UNINIT_FILL || cell == -1) {
+        return TILEKIND_PASSABLE;
+    }
+
+    CImageSet1* tc = static_cast<CImageSet1*>(level->m_imageSets.GetAt(cell & 0xffff));
+    return tc->GetCollisionAt(subX, subY);
+}
+
+// The three placement arms below are hand-copies that diverged in retail: arm 1
+// (CreateTileTriggerSwitch) reaches the grid through CDDrawWorkerHost::GetTileHandle
+// (0xd2ee7 call), arms 2 and 3 subscript it (0xd3a6d, 0xd3e5b), and arm 2's powerup
+// test lists three tile kinds where arm 1 lists four.
+static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
+    CDDrawWorkerHost* g = level->m_mainPlane;
+    if (x < 0) {
+        x = 0;
+    } else if (x >= g->m_wrapW) {
+        x = g->m_wrapW - 1;
+    }
+    if (y < 0) {
+        y = 0;
+    } else if (y >= g->m_wrapH) {
+        y = g->m_wrapH - 1;
+    }
+    i32 tx = x >> g->m_shiftX;
+    i32 ty = y >> g->m_shiftY;
+    i32 subX = x - (tx << g->m_shiftX);
+    i32 subY = y - (ty << g->m_shiftY);
+    i32 cell = g->m_tileGrid[g->m_colOffsets[ty] + tx];
+    if (cell == UNINIT_FILL || cell == -1) {
+        return TILEKIND_PASSABLE;
+    }
+
+    CImageSet1* tc = static_cast<CImageSet1*>(level->m_imageSets.GetAt(cell & 0xffff));
+    return tc->GetCollisionAt(subX, subY);
+}
+
+RVA(0x000d2b20, 0x21f)
+b32 CPlay::PlaceStartGruntz() {
+
+    CObList* list = &m_world->m_childGroup->m_list;
+    if (list == NULL) {
+        return false;
+    }
+    i32 counter = 0;
+    GruntEntranceMode entranceMode = GRUNT_ENTRANCE_NONE;
+    POSITION pos = list->GetHeadPosition();
+    if (m_mgr->m_gameMode == GAMEMODE_SINGLE) {
+        entranceMode = GRUNT_ENTRANCE_WORMHOLE;
+    }
+    while (pos != NULL) {
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        if (obj != NULL) {
+            AnimWorkerObj* aux = obj->m_animWorker;
+
+            GameObjNotifyFn who = aux->m_notify;
+            if (who == CreateGruntStartingPoint) {
+                i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                AddrWord<long> extentArg;
+                extentArg.m_addr = &obj->m_extent.left;
+                i32 idx = m_mgr->m_cmdGrid->PlaceObject(
+                    obj->m_smarts,
+                    x,
+                    y,
+                    100000,
+                    entranceMode,
+                    obj->m_score,
+                    obj->m_powerup,
+                    obj->m_damage,
+                    obj->m_points,
+                    obj->m_direction,
+                    aux->m_minX,
+                    aux->m_maxX,
+
+                    extentArg.m_word
+                );
+                if (idx == -1) {
+                    CString s;
+                    s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->m_smarts, x, y);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return false;
+                }
+                obj->m_flags |= 0x10000;
+            } else if (g_gameReg->m_gameMode != GAMEMODE_SINGLE && who == CreateGruntCreationPoint
+                       && obj->m_smarts == g_curPlayer) {
+
+                GruntzPlayer* e = &g_gameReg->m_options[g_curPlayer];
+                if (e != NULL && counter < e->m_comboSel) {
+                    i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    m_mgr->m_cmdSubMgr->EnqueueSingle(
+                        true,
+                        static_cast<char>(obj->m_smarts),
+                        0,
+                        static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
+                        x,
+                        y,
+                        0,
+                        0
+                    );
+                    counter++;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+// @early-stop
+RVA(0x000d2dd0, 0x1e40)
+i32 CPlay::ValidateLevelTiles() {
+    i32 validCount = 0;
+    i32 counts[4];
+    for (i32 c = 0; c < 4; c++) {
+        counts[c] = 0;
+    }
+
+    CObList* list = &m_world->m_childGroup->m_list;
+    if (list == NULL) {
+        return 0;
+    }
+    POSITION pos = list->GetHeadPosition();
+    if (pos == NULL) {
+        return 1;
+    }
+
+    i32 ok = 1;
+    do {
+        CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
+        if (obj == NULL) {
+            continue;
+        }
+
+        GameObjNotifyFn who = obj->m_animWorker->m_notify;
+
+        if (who == CreateTileTriggerSwitch) {
+            CGameLevel* grid = LevelOf(m_world);
+            TileCollisionKind type =
+                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            if (type == TILEKIND_GIANT_ROCK) {
+
+                void* hit = 0;
+                i32 col = obj->m_speedX - 1;
+                i32 colOff = col << 8;
+                i32 row = obj->m_speedY - 1;
+                while (col < obj->m_speedX + 2) {
+                    row = obj->m_speedY - 1;
+                    if (hit != NULL) {
+                        break;
+                    }
+                    while (row < obj->m_speedY + 2) {
+                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        if (r != NULL) {
+                            hit = r;
+                        }
+                        if (hit != NULL) {
+                            break;
+                        }
+                        row++;
+                    }
+                    if (hit != NULL) {
+                        break;
+                    }
+                    col++;
+                    colOff += 0x100;
+                }
+                if (hit == NULL) {
+                    CString s;
+                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
+
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            }
+            if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
+                || type == TILEKIND_COVERED_POWERUP || type == TILEKIND_REVEALED_POWERUP) {
+
+                CTileTriggerLogic* r =
+                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                if (r == NULL) {
+                    CString s;
+                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 tcidx = r->m_tileToken;
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            }
+            switch (type) {
+                case TILEKIND_MULTI_SWITCH:
+                case TILEKIND_MULTI_SWITCH_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_MULTI_SWITCH_3,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_MULTI_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format("Bad multi switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_EXCLUSIVE_SWITCH:
+                case TILEKIND_EXCLUSIVE_SWITCH_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_EXCLUSIVE_SWITCH_4,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_EXCLUSIVE_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format(
+                            "Bad up-down switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_SECRET_SWITCH:
+                    // Only the DOWN variant counts: an UP secret switch has already
+                    // been triggered. Retail gives case 0x3d its own 12-byte entry
+                    // point at 0xd32b7 that falls into the shared body at 0xd32c3,
+                    // which is what makes the dispatch a DIRECT 16-entry table rather
+                    // than the byte-index LUT cl builds when the pairs all coincide.
+                    g_gameReg->m_scoreHud->m_secretsAvailable++;
+                    // fall through
+                case TILEKIND_SECRET_SWITCH_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_SECRET_SWITCH_6,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_SECRET_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format(
+                            "Bad secret switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_TIME_SWITCH:
+                case TILEKIND_TIME_SWITCH_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_TIME_SWITCH_7,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_TIME_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format("Bad time switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_CHECKPOINT:
+                case TILEKIND_CHECKPOINT_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_CHECKPOINT_SWITCH_8,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_CHECKPOINT_UP,
+                            obj->m_damage,
+                            obj->m_smarts
+                        )) {
+                        CString s;
+                        s.Format(
+                            "Bad pressure plate at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_SWITCH_A:
+                case TILEKIND_SWITCH_A_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_SWITCH_1,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format(
+                            "Bad toggle switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_SWITCH_B:
+                case TILEKIND_SWITCH_B_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_SWITCH_2,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format("Bad hold switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case TILEKIND_SWITCH_C:
+                case TILEKIND_SWITCH_C_UP:
+                    if (!m_beginMarker->AddSwitchLogic(
+                            TRIGID_SWITCH_5,
+                            obj->m_speedX,
+                            obj->m_speedY,
+                            obj->m_id,
+                            obj->m_extent,
+                            obj->m_area,
+                            obj->m_switchRect,
+                            obj->m_clip,
+                            obj->m_animWorker->m_userRect1,
+                            obj->m_animWorker->m_userRect2,
+                            type == TILEKIND_SWITCH_A_UP || type == TILEKIND_SWITCH_B_UP
+                                || type == TILEKIND_SWITCH_C_UP
+                                || type == TILEKIND_SECRET_SWITCH_UP,
+                            obj->m_damage,
+                            0
+                        )) {
+                        CString s;
+                        s.Format(
+                            "Bad once-only switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
+                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                default: {
+                    CString s;
+                    s.Format(
+                        "Switch on an unknown tile at: x=%d, y=%d",
+                        obj->m_screenX,
+                        obj->m_screenY
+                    );
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+            }
+        } else if (who == CreateTileTrigger) {
+            CGameLevel* grid = LevelOf(m_world);
+            TileCollisionKind type =
+                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            if (type == TILEKIND_GIANT_ROCK) {
+
+                void* hit = 0;
+                i32 col = obj->m_speedX - 1;
+                i32 colOff = col << 8;
+                i32 row = obj->m_speedY - 1;
+                while (col < obj->m_speedX + 2) {
+                    row = obj->m_speedY - 1;
+                    if (hit != NULL) {
+                        break;
+                    }
+                    while (row < obj->m_speedY + 2) {
+                        void* r = m_beginMarker->FindInLists12(row + colOff, TRIGID_GIANT_ROCK_22);
+                        if (r != NULL) {
+                            hit = r;
+                        }
+                        if (hit != NULL) {
+                            break;
+                        }
+                        row++;
+                    }
+                    if (hit != NULL) {
+                        break;
+                    }
+                    col++;
+                    colOff += 0x100;
+                }
+                if (hit == NULL) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
+
+                i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            } else if (type == TILEKIND_GAUNTLET_ROCK_A || type == TILEKIND_GAUNTLET_ROCK_B
+                       || type == TILEKIND_COVERED_POWERUP) {
+
+                CTileTriggerLogic* r =
+                    m_beginMarker->FindInLists12(obj->m_id, TRIGID_COVERED_POWERUP_26);
+                if (r == NULL) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                i32 tcidx = r->m_tileToken;
+                if (tcidx == 0) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                type = (static_cast<CImageSet1*>(grid->m_imageSets.GetAt(tcidx)))
+                           ->GetCollisionAt(0, 0);
+            }
+            if (type >= TILEKIND_TOGGLE_BRIDGE_FIRST && type <= TILEKIND_TOGGLE_BRIDGE_LAST) {
+                if (!m_beginMarker->AddLogic(
+                        static_cast<TileCollisionKind>(type),
+                        TRIGID_TIME_TRIGGER_23,
+                        obj->m_speedX,
+                        obj->m_speedY,
+                        obj->m_id,
+                        obj->m_extent,
+                        obj->m_area,
+                        obj->m_switchRect,
+                        obj->m_clip,
+                        obj->m_animWorker->m_userRect1,
+                        obj->m_animWorker->m_userRect2,
+                        0,
+                        obj->m_damage,
+                        obj->m_points,
+                        obj->m_health
+                    )) {
+                    CString s;
+                    s.Format(
+                        "Bad toggle-bridge trigger at: x=%d, y=%d",
+                        obj->m_screenX,
+                        obj->m_screenY
+                    );
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            } else {
+                if (!m_beginMarker->AddLogic(
+                        static_cast<TileCollisionKind>(type),
+                        TRIGID_TILE_TRIGGER_21,
+                        obj->m_speedX,
+                        obj->m_speedY,
+                        obj->m_id,
+                        obj->m_extent,
+                        obj->m_area,
+                        obj->m_switchRect,
+                        obj->m_clip,
+                        obj->m_animWorker->m_userRect1,
+                        obj->m_animWorker->m_userRect2,
+                        obj->m_smarts,
+                        obj->m_damage,
+                        obj->m_points,
+                        0
+                    )) {
+                    CString s;
+                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            }
+        } else if (who == CreateTileSecretTrigger) {
+            TileCollisionKind type =
+                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            if (!m_beginMarker->AddLogic(
+                    type,
+                    TRIGID_SECRET_TRIGGER_25,
+                    obj->m_speedX,
+                    obj->m_speedY,
+                    obj->m_id,
+                    obj->m_extent,
+                    obj->m_area,
+                    obj->m_switchRect,
+                    obj->m_clip,
+                    obj->m_animWorker->m_userRect1,
+                    obj->m_animWorker->m_userRect2,
+                    obj->m_smarts,
+                    obj->m_damage,
+                    obj->m_points,
+                    0
+                )) {
+                CString s;
+                s.Format("Bad secret trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                return 0;
+            }
+            validCount++;
+            obj->m_flags |= 0x10000;
+        } else if (who == CreateLevelTime) {
+
+            if (m_frameMarker != NULL && m_mgr->m_gameMode != GAMEMODE_MULTIPLAYER
+                && g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
+                i32 a = obj->m_points;
+                i32 b = obj->m_score;
+                a += a;
+                b += b;
+                if (a > 0x3b) {
+                    b++;
+                    a -= 0x3c;
+                }
+                m_frameMarker->SetTime(b, a);
+            }
+            obj->m_flags |= 0x10000;
+        } else if (who == CreateInGameIcon) {
+            if (obj->m_smarts == IDX(PICKUP_MEGAPHONE)) {
+
+                m_guts->InsertPtr(obj->m_points, obj->m_score);
+            }
+        } else if (who == CreateGruntCreationPoint) {
+            if (obj->m_smarts == g_curPlayer) {
+                CoordPoolNode* cell = g_coordPool.m_freeHead;
+                Coord* slot = 0;
+                if (cell->m_next != NULL) {
+                    slot = &cell->m_coord;
+                    g_coordPool.m_freeHead = cell->m_next;
+                }
+                slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
+                slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
+            }
+        } else if (who == CreateBrickz) {
+
+            CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
+            i32 tile = pl->m_tileGrid[pl->m_colOffsets[obj->m_speedY] + obj->m_speedX];
+            if (tile >= 0x12f && tile <= 0x149) {
+                if (m_beginMarker->AddToList3(
+                        static_cast<BrickTileId>(tile),
+                        obj->m_speedX,
+                        obj->m_speedY,
+                        obj->m_id,
+                        obj->m_extent.left,
+                        obj->m_extent.top,
+                        obj->m_extent.right,
+                        obj->m_extent.bottom
+                    )
+                    == NULL) {
+                    CString s;
+                    s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    return 0;
+                }
+                validCount++;
+                obj->m_flags |= 0x10000;
+            } else {
+                CString s;
+                s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                return 0;
+            }
+        } else if (who == CreateGruntPuddle) {
+
+            m_mgr->m_cmdGrid->PlacePuddle(obj, 0);
+        } else if (who == CreateGuardPoint) {
+
+            i32 col = obj->m_screenX >> TILE_SHIFT_PX;
+            i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
+            i32 stride = (col << 3) - col;
+
+            i32 ebp = stride - 7;
+            for (i32 dy = -1; dy < 2; dy++, ebp += 7) {
+                i32 row = rowBase;
+                i32 ofs = rowBase - 1;
+                for (i32 k = 3; k != 0; k--, ofs++, row++) {
+                    i32 gx = dy + col;
+                    i32 gyy = row - 1;
+                    CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
+                        continue;
+                    }
+                    i32 kind = obj->m_smarts;
+                    // Four dense cases and NO default: that is what makes cl lower this
+                    // to retail's `cmp eax,3 / ja / jmp [eax*4+T]` (0xd41cf) instead of a
+                    // comparison ladder. Retail's out-of-range path leaves `bit` at
+                    // whatever it held and still does `counts[kind]++`; spelling that as
+                    // an uninitialised read costs 0.4% and is not worth writing.
+                    i32 bit = 0;
+                    switch (static_cast<PlayerSlot>(kind)) {
+                        case PLAYER_SLOT_0:
+                            bit = 0x100000;
+                            break;
+                        case PLAYER_SLOT_1:
+                            bit = 0x200000;
+                            break;
+                        case PLAYER_SLOT_2:
+                            bit = 0x400000;
+                            break;
+                        case PLAYER_SLOT_3:
+                            bit = 0x800000;
+                            break;
+                    }
+                    counts[kind]++;
+                    gg = g_gameReg->m_tileGrid;
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
+                        continue;
+                    }
+                    i32* cellRow = gg->m_rowInts[0] + ofs;
+                    cellRow[ebp] |= bit;
+                }
+            }
+        } else if (who == CreateToobSpikez) {
+            CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+            i32 cy = obj->m_screenX >> TILE_SHIFT_PX;
+            i32 cx = obj->m_screenY >> TILE_SHIFT_PX;
+            if (static_cast<u32>(cy) < gg->m_width && static_cast<u32>(cx) < gg->m_height) {
+                gg->m_rowInts[cx][cy * 7] |= 0x2000000;
+            }
+        } else if (who == CreateWarpStonePad) {
+            if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
+                CoordPoolNode* cell = g_coordPool.m_freeHead;
+                Coord* slot = 0;
+                if (cell->m_next != NULL) {
+                    slot = &cell->m_coord;
+                    g_coordPool.m_freeHead = cell->m_next;
+                }
+                slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
+                slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
+                CPtrArray* cells = &m_placedObjectCells[obj->m_score];
+                cells->SetAtGrow(cells->GetSize(), slot);
+            }
+        }
+    } while (pos != NULL);
+
+    TRACE("%s\n", static_cast<LPCTSTR>(CString("ValidateLevelTiles")));
+    return ok;
+}
+
+// @early-stop
+RVA(0x000d53a0, 0x19)
+i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
+    return m_tileGrid[m_colOffsets[col] + row];
+}
+
+RVA(0x000d53d0, 0x466)
+i32 CPlay::ScanBuildTiles() {
+    CObList* pl = &m_world->m_childGroup->m_list;
+    if (pl == NULL) {
+        return 0;
+    }
+    POSITION pos = pl->GetHeadPosition();
+    while (pos != NULL) {
+        CGameObject* p = static_cast<CGameObject*>(pl->GetNext(pos));
+        if (p == NULL) {
+            continue;
+        }
+        if (p->m_extent.left == COORD_UNSET) {
+            p->m_extent.left = 0;
+        }
+        if (p->m_area.left == COORD_UNSET) {
+            p->m_area.left = 0;
+        }
+        if (p->m_switchRect.left == COORD_UNSET) {
+            p->m_switchRect.left = 0;
+        }
+        if (p->m_clip.left == COORD_UNSET) {
+            p->m_clip.left = 0;
+        }
+        GameObjNotifyFn vf = p->m_animWorker->m_notify;
+        if (vf == CreateGiantRock) {
+            i32 buf[9];
+            buf[0] = p->m_extent.left;
+            buf[1] = p->m_extent.top;
+            buf[2] = p->m_extent.right;
+            buf[3] = p->m_area.left;
+            buf[4] = p->m_area.top;
+            buf[5] = p->m_area.right;
+            buf[6] = p->m_switchRect.left;
+            buf[7] = p->m_switchRect.top;
+            buf[8] = p->m_switchRect.right;
+            if (m_beginMarker->AddToList1(
+                    p->m_speedX,
+                    p->m_speedY,
+                    p->m_id,
+                    buf,
+                    p->m_powerup,
+                    p->m_points,
+                    p->m_faceDirection
+                )
+                == NULL) {
+                CString s;
+                s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                g_gameReg->EnterModalUI(s);
+                return 0;
+            }
+            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_guts->InsertPtr(p->m_points, p->m_score);
+            }
+            p->m_flags |= 0x10000;
+        } else if (vf == CreateCoveredPowerup) {
+            CGameLevel* ds = m_world->m_level;
+            i32 x = p->m_screenX;
+            i32 y = p->m_screenY;
+            if (x < 0) {
+                x = 0;
+            } else {
+                i32 lim = ds->m_mainPlane->m_wrapW;
+                if (x >= lim) {
+                    x = lim - 1;
+                }
+            }
+            if (y < 0) {
+                y = 0;
+            } else {
+                i32 lim = ds->m_mainPlane->m_wrapH;
+                if (y >= lim) {
+                    y = lim - 1;
+                }
+            }
+            CDDrawWorkerHost* g = ds->m_mainPlane;
+            i32 shX = g->m_shiftX;
+            i32 tileX = x >> shX;
+            i32 shY = g->m_shiftY;
+            i32 tileY = y >> shY;
+            i32 subX = x - (tileX << shX);
+            i32 subY = y - (tileY << shY);
+            i32 cell = g->m_tileGrid[g->m_colOffsets[tileY] + tileX];
+            TileCollisionKind tile;
+            if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
+                tile = TILEKIND_PASSABLE;
+            } else {
+
+                // Ingest: the raw WWD attribute byte for this cell.
+                tile = (static_cast<CImageSet1*>(ds->m_imageSets[cell & 0xffff]))
+                           ->GetCollisionAt(subX, subY);
+            }
+            if (m_beginMarker->AddLogic(
+                    tile,
+                    TRIGID_COVERED_POWERUP_26,
+                    p->m_speedX,
+                    p->m_speedY,
+                    p->m_id,
+                    p->m_extent,
+                    p->m_area,
+                    p->m_switchRect,
+                    p->m_clip,
+                    p->m_animWorker->m_userRect1,
+                    p->m_animWorker->m_userRect2,
+                    p->m_smarts,
+                    p->m_powerup,
+                    p->m_points,
+                    p->m_faceDirection
+                )
+                == NULL) {
+                CString s;
+                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                g_gameReg->EnterModalUI(s);
+                return 0;
+            }
+            if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
+                m_guts->InsertPtr(p->m_points, p->m_score);
+            }
+            p->m_flags |= 0x10000;
+        }
+    }
+    return 1;
+}
+
+// @early-stop
 // Register allocation: retail homes `this` in a pushed slot and gives ebp to the
 // CObList POSITION cursor; cl does the reverse and spills the cursor.
 RVA(0x000d5960, 0x160)
@@ -4555,6 +5913,80 @@ i32 CPlay::AddLevelGruntz() {
     }
     return 1;
 }
+
+RVA(0x000d5b20, 0xbb)
+i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
+    CGruntzMgr* w = m_mgr;
+    i32 ex = w->m_modeSize.cx;
+    i32 ey = w->m_modeSize.cy;
+    CTimer* pt;
+    if (mode == STATUSBAR_DOCK_LEFT) {
+        m_hitTest->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
+        pt = m_frameMarker;
+        if (pt == NULL) {
+            goto done;
+        }
+        ex -= 0x37;
+    } else if (mode == STATUSBAR_DOCK_RIGHT) {
+        m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
+        pt = m_frameMarker;
+        if (pt == NULL) {
+            goto done;
+        }
+        ex -= 0xd7;
+    } else {
+        m_hitTest->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
+        pt = m_frameMarker;
+        if (pt == NULL) {
+            goto done;
+        }
+        ex -= 0x37;
+    }
+    ey -= 0x16;
+    pt->m_baseX = ex;
+    pt->m_baseY = ey;
+done:
+
+    // The outer gate spells the whole member chain and the body caches it: cl5's
+    // redundant-test peephole is syntactic, so both `test eax,eax` survive as retail
+    // has them (docs/patterns/guard-reads-the-array-element-not-the-cached-local.md).
+    if (m_mgr->m_cmdGrid->m_goal != NULL) {
+        CTriggerMgr* g = m_mgr->m_cmdGrid;
+        if (g->m_goal != NULL) {
+            g->m_goal->m_flags |= 0x10000;
+            g->m_goal = NULL;
+        }
+        m_mgr->m_cmdGrid->LoadCameraSprite();
+    }
+    return 1;
+}
+
+RVA(0x000d5c10, 0x10d)
+i32 CState::DrawScreenTextImage(const char* name) {
+    char buf[0x40];
+    sprintf(buf, "\\SCREENZ\\%sTEXT", name);
+    CParseSource* src = SymTab2c()->ResolveQualified(buf, IMGTAG_DIP);
+    if (src == NULL) {
+        return 0;
+    }
+    CDDrawSurfaceMgr* world = m_world;
+    CDDrawSurfacePair* page = world->m_drawTarget->m_backPair;
+    if (page == NULL) {
+        return 0;
+    }
+    CImage img(0, world);
+    if (img.Resolve(src, 1) == 0) {
+        return 0;
+    }
+    img.RenderFrame(page, 0x140, 0x158, 0);
+    return 1;
+}
+
+RVA_COMPGEN(0x000d5d70, 0x16, ??1CWapObj@@UAE@XZ)
+
+RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
+
+RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
 
 RVA(0x000d5f00, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {

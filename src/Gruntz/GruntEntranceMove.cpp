@@ -125,11 +125,6 @@ static char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
 DATA(0x0020ee64)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 
-DATA(0x001e9a48)
-const double g_wingzScale = 100.0;
-DATA(0x001e9a50)
-const double g_wingzBias = -0.5;
-
 // @early-stop
 // Retail keeps a provably-dead arm that cl removes. After `cmp eax,0x22` it emits
 // BOTH `jl <toyCheck>` and a bare `jge <brick>` on the same live flags (0x67a16)
@@ -1469,4 +1464,37 @@ RVA(0x0006b260, 0x5)
 i32 CGrunt::StepAttackAction() {
 
     return StepAttackFire();
+}
+
+RVA(0x0006b270, 0x1b)
+CObject* CAniElement::AtChecked(i32 i) const {
+    if (i >= 0 && i < m_records.GetSize()) {
+        return m_records.GetAt(i);
+    }
+    return 0;
+}
+
+RVA(0x0006b2a0, 0x23)
+CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
+    void* val = 0;
+    m_animations.Lookup(key, val);
+    return static_cast<CObject*>(val);
+}
+
+RVA(0x0006b2e0, 0x39)
+void CWapX::Apply(CAniElement* a, i32 b) {
+    m_value = m_wwdObject->m_animCursor.m_animation;
+    CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
+    anim->Setup(a);
+    if (b != 0) {
+        anim->Advance(static_cast<i32>(g_engineFrameDelta));
+    }
+}
+
+// The out-of-line half of the bounds test: 30 retail call sites reach it through ILT
+// thunk 0x1127, while the inline PointInRect sibling expands at the rest. Defined
+// here with the AtChecked/LookupValue/Apply group this TU's tail contributes.
+RVA(0x0006b330, 0x2a)
+i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
+    return PointInRect(r, x, y);
 }

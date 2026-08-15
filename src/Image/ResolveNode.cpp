@@ -27,3 +27,4 @@ i32 CResolveNode::IsLoaded() {
 }
 
 RVA_COMPGEN(0x00154a30, 0x1e, ??_GCResolveNode@@UAEPAXI@Z)
+RVA_COMPGEN(0x00154a50, 0x23, ??1CResolveNode@@UAE@XZ)

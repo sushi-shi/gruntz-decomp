@@ -11,11 +11,11 @@
 #include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <PlacementNew.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <ddraw.h>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 

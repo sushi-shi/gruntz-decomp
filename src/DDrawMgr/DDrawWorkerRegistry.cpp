@@ -12,10 +12,10 @@
 #include <Gruntz/String.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
-#include <PlacementNew.h>
 #include <Wap32/WapObj.h>
 
 #include <ddraw.h>
+#include <new>
 #include <stdio.h>
 #include <string.h>
 

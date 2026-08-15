@@ -70,7 +70,9 @@ public:
     i32 m_flags;
     CDDrawSurfaceMgr* m_ownerCtx;
 
-    // 0xd5d70. Retail's ??1CImage EH funclet CALLS it and ??_GCLoadable (=
+    // 0xd5d70 (RVA_COMPGEN pin at the emitting keeper, Play.cpp - an RVA() here
+    // would annotate BOTH cl dtor variants and collide with ??_GCWapObj@0x155720).
+    // Retail's ??1CImage EH funclet CALLS it and ??_GCLoadable (=
     // ??_GCWapObj) tail-calls it, so the three-field reset is this class's own.
     virtual ~CWapObj() OVERRIDE {
         m_id = -1;
@@ -112,5 +114,10 @@ public:
         return m_ownerCtx;
     }
 };
+
+RVA(0x000d5da0, 0x6)
+inline i32 CWapObj::IsReady() {
+    return 1;
+}
 
 #endif // WAP32_CWAPOBJ_H

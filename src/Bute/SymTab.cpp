@@ -11,13 +11,13 @@
 #include <Gruntz/CustomWorldInfoDlg.h>
 #include <Gruntz/ParseSource.h>
 #include <Pix16.h>
-#include <PlacementNew.h>
 #include <Rez/DebugPrintf.h>
 #include <Rez/RezFile.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezTypeTag.h>
 
 #include <io.h>
+#include <new>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>

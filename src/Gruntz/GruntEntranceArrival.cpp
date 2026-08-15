@@ -1896,28 +1896,3 @@ i32 CGrunt::StepEntranceRelatchB() {
     icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
     return 0;
 }
-
-RVA(0x0006b270, 0x1b)
-CObject* CAniElement::AtChecked(i32 i) const {
-    if (i >= 0 && i < m_records.GetSize()) {
-        return m_records.GetAt(i);
-    }
-    return 0;
-}
-
-RVA(0x0006b2a0, 0x23)
-CObject* CDDrawSubMgrLeaf::LookupValue(const char* key) {
-    void* val = 0;
-    m_animations.Lookup(key, val);
-    return static_cast<CObject*>(val);
-}
-
-RVA(0x0006b2e0, 0x39)
-void CWapX::Apply(CAniElement* a, i32 b) {
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    CAniAdvanceCursor* anim = &m_wwdObject->m_animCursor;
-    anim->Setup(a);
-    if (b != 0) {
-        anim->Advance(static_cast<i32>(g_engineFrameDelta));
-    }
-}

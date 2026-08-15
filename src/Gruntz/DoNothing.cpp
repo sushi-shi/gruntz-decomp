@@ -42,22 +42,10 @@ CDoNothingNormal* RealizeCDoNothingNormal() {
     return new CDoNothingNormal();
 }
 
-// @early-stop
-RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_wwdObject->m_flags |= 1;
-    CImage* aux = m_object->m_layer;
-    if (aux != NULL) {
-        i32 bigW = aux->m_width;
-        i32 bigH;
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")
-            || (bigH = m_object->m_layer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_animWorker != NULL) {
-                m_object->m_animWorker->m_flags &= ~6;
-                m_object->m_animWorker->m_flags |= 1;
-                m_wwdObject->m_flags &= ~0x1000002;
-                m_wwdObject->m_flags |= 0x800000;
-            }
-        }
-    }
+// Realization device (see RealizeCDoNothingNormal): the CGameObject* ctor lives
+// in FrontCandyAni.cpp, but retail kept this class's ??_G/??1 COMDATs inside
+// this TU's contribution, so this TU still realizes the vtable (the header's
+// inline default ctor stamps ??_7 here).
+CDoNothing* RealizeCDoNothing() {
+    return new CDoNothing();
 }

@@ -12,8 +12,8 @@
 #include <Gruntz/MenuItemState.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
-#include <PlacementNew.h>
 
+#include <new>
 #include <stddef.h>
 
 RVA(0x001832d0, 0x20)
@@ -695,3 +695,11 @@ i32 CMenuPage::MoveFocusDown() {
     }
     return FocusPrev();
 }
+
+// CMenuItem/CMenuItem2 header inlines this TU materializes: link.exe kept the
+// tail group 0x1845b0-0x1848aa from menupage.obj (the first defining obj).
+RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
+RVA_COMPGEN(0x00184730, 0x41, ?Reset@CMenuItem@@UAEXXZ)
+RVA_COMPGEN(0x001847c0, 0x1e, ??_GCMenuItem2@@UAEPAXI@Z)
+RVA_COMPGEN(0x001847e0, 0xa6, ??1CMenuItem2@@UAE@XZ)

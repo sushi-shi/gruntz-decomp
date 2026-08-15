@@ -25,35 +25,6 @@
 DATA(0x002bf3c4)
 i32 g_aniParsedNameLen = 0;
 
-RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
-RVA(0x001657a0, 0x66)
-CAniRecordView::~CAniRecordView() {
-    CAniRecordView* r = this;
-    if (r->m_cues != NULL) {
-        delete[] r->m_cues;
-    }
-    r->m_loopMode = WWDLOOP_INVALID;
-    r->m_cueCount = 0;
-    r->m_cues = NULL;
-}
-
-RVA(0x00165d90, 0xb)
-i32 CAniRecordBase2::IsLoaded() {
-    return m_buf != NULL;
-}
-
-RVA(0x00165da0, 0x6)
-LoadableClassId CAniRecordBase2::GetClassId() {
-    return CLASSID_ANIRECORDBASE2;
-}
-
-RVA_COMPGEN(0x00165db0, 0x1e, ??_GCAniRecordBase2@@UAEPAXI@Z)
-RVA(0x00165dd0, 0x5b)
-CAniRecordBase2::~CAniRecordBase2() {
-
-    Unload();
-}
-
 RVA(0x00168c60, 0xa0)
 i32 CAniRecordView::Parse(void* ctx, const i16* src) {
     const i16* p = src;
