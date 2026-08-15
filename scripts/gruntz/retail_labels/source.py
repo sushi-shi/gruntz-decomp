@@ -14,12 +14,23 @@ Per TU (ported from the old labels pipeline, mechanisms unchanged):
   RVA_COMPGEN      verbatim regex - the name is given, no join, no IR.
   RVA_DYNINIT      the `$E` owner pins - regex; the pin's owner stands in for
                    the volatile ordinal, so NO authority check applies.
+  DATA_COMPGEN     the compiler-generated DATUM pins. The macro expands to its
+                   value expression, so no IR/AST carrier survives - it is
+                   text-scanned (balanced parens: the macro sits in expression
+                   position and clang-format wraps it) and the VALUE is the
+                   claim: a narrow string literal is a pooled `??_C@` payload,
+                   a float constant an FP-pool slot.
 
 AUTHORITY: a function name is kept iff the TU's base obj defines it in a code
 section; a DATA name is kept iff the obj carries it as ANY symbol (a matched
-global is only referenced there, so it may be a `U` external). Misses are
-reported, never silently dropped. A TU that compiles under cl but yields no
-IR is an ERROR: silently contributing zero labels shrinks every denominator.
+global is only referenced there, so it may be a `U` external). A DATA_COMPGEN
+pin is kept iff the TU's own base obj emitted that exact payload - the pooled
+literal's `??_C@` name IS cl's spelling for those bytes, an FP slot's `$T<n>`
+ordinal is volatile so the constant is proven by its bytes and named for its
+rva (the spelling every consumer already uses) - AND the retail image holds
+those bytes at the pinned address. Misses are reported, never silently
+dropped. A TU that compiles under cl but yields no IR is an ERROR: silently
+contributing zero labels shrinks every denominator.
 
 Vendored TUs (no rva.h macro in the source) are SKIPPED - their claims are
 the functions_zlib/data_zlib provider tables, not extraction.
@@ -30,9 +41,11 @@ from __future__ import annotations
 import bisect
 import os
 import re
+import struct
 
 from gruntz.core.coff import Coff
 from gruntz.core.paths import BUILD, REPO
+from gruntz.core.pe import image
 from gruntz.core.tsv import write as write_tsv
 from gruntz.retail_labels.fragments import FRAGMENTS, HEADER
 from gruntz.manifest import units as manifest_units
@@ -52,6 +65,17 @@ RVA_DYNINIT_RE = re.compile(
     r"\s*([A-Za-z_][A-Za-z0-9_:<>]*)\s*\)")
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_DATA_RE = re.compile(r"^data:(0x[0-9a-fA-F]+)$")
+
+DATA_COMPGEN_RE = re.compile(r"\bDATA_COMPGEN\s*\(")
+COMPGEN_ADDR_RE = re.compile(r"0x[0-9a-fA-F]{8}$")
+_STR_SEG_RE = re.compile(r'"((?:[^"\\]|\\.)*)"')
+_FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+[eE][-+]?\d+"
+                       r"|\d+\.?\d*[eE][-+]?\d+)([fF]?)$")
+#: cl's floating-point literal pool member spelling. The `<n>` is a per-object
+#: counter that renumbers on any TU churn, so it is never stored - the claim
+#: names the slot for its rva, which is what the data manifest, the compgen
+#: manifest and compare's content-addressing all spell.
+FP_POOL_NAME = re.compile(r"^\$T[0-9]+$")
 
 # clang-vs-VC5 static-data name reconciliation (all authority-checked - a
 # rewrite is accepted only when that exact symbol is in the compiled obj):
@@ -183,6 +207,174 @@ def blank_comments(text: str) -> str:
     return "".join(out)
 
 
+def _skip_quote(text: str, i: int) -> int:
+    """Index just past the literal opening at `text[i]` (escapes honoured)."""
+    quote, n = text[i], len(text)
+    i += 1
+    while i < n and text[i] != quote:
+        i += 2 if text[i] == "\\" else 1
+    return i + 1
+
+
+def _split_top_level(body: str) -> list[str]:
+    parts, depth, start, i = [], 0, 0, 0
+    while i < len(body):
+        c = body[i]
+        if c in "\"'":
+            i = _skip_quote(body, i)
+            continue
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+        elif c == "," and depth == 0:
+            parts.append(body[start:i])
+            start = i + 1
+        i += 1
+    parts.append(body[start:])
+    return [p.strip() for p in parts]
+
+
+def compgen_invocations(text: str) -> list[tuple[int, list[str]]]:
+    """[(line, [arg, ...])] for each DATA_COMPGEN(...) in blanked TU text.
+
+    The macro sits in EXPRESSION position, so unlike the statement labels it
+    may be wrapped by clang-format and two may share one line - the scan is
+    balanced-paren and quote-aware, never line-based."""
+    out = []
+    for m in DATA_COMPGEN_RE.finditer(text):
+        depth, j, n = 1, m.end(), len(text)
+        while j < n and depth:
+            c = text[j]
+            if c in "\"'":
+                j = _skip_quote(text, j)
+                continue
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            j += 1
+        out.append((text.count("\n", 0, m.start()) + 1,
+                    _split_top_level(text[m.end():j - 1])))
+    return out
+
+
+def compgen_value(value_src: str) -> tuple[str | None, bytes | str]:
+    """('str'|'f32'|'f64', payload bytes), or (None, reason).
+
+    The value SPELLING is the allocation's type: `0.0` is an f64 pool entry,
+    `0.0f` an f32, a (concatenation of) narrow string literal(s) the pooled
+    `??_C@` payload. Anything else - identifiers, wide strings, integers
+    (immediates live in code, not data) - is rejected."""
+    v = value_src.strip()
+    if v.startswith('"'):
+        segs = _STR_SEG_RE.findall(v)
+        if not segs or _STR_SEG_RE.sub("", v).strip():
+            return None, "value must be pure narrow string literal(s)"
+        try:
+            payload = ("".join(segs).encode("latin-1")
+                       .decode("unicode_escape").encode("latin-1"))
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return None, "unsupported escape in string literal"
+        return "str", payload
+    m = _FLOAT_RE.fullmatch(v)
+    if m:
+        try:
+            val = float(v[:-1] if m.group(1) else v)
+        except ValueError:
+            return None, "unparsable float constant"
+        if m.group(1):
+            return "f32", struct.pack("<f", val)
+        return "f64", struct.pack("<d", val)
+    return None, "value is neither a narrow string literal nor a float constant"
+
+
+def obj_literals(obj_path) -> tuple[dict[bytes, str], dict[str, bytes]]:
+    """({pooled payload: `??_C@` name}, {`$T<n>`: slot bytes}) of one base obj.
+
+    The delink COFF reader is the tree's only section-payload parser; the
+    name-authority reader (core.coff) answers names only, and duplicating the
+    section walk here would fork the format knowledge."""
+    from gruntz.delink.coffx import Obj
+    c = Obj(obj_path)
+    strings: dict[bytes, str] = {}
+    for idx, value, secnum in c.iter_symbols():
+        name = c.sym_name(idx)
+        if name.startswith("??_C@") and secnum >= 1:
+            payload = c.cstring(secnum, value)
+            if payload is not None:
+                strings.setdefault(payload, name)
+    pool: dict[str, bytes] = {}
+    for sec in c.section_table:
+        members = c.section_members(sec["index"])
+        slots = [(off, name) for off, name, _scl in members
+                 if FP_POOL_NAME.fullmatch(name)]
+        if not slots:
+            continue
+        starts = sorted(off for off, _n, _s in members)
+        payload = c.section_payload(sec["index"])[:sec["size"]]
+        for off, name in slots:      # the slot runs to the next member/section end
+            end = next((o for o in starts if o > off), sec["size"])
+            pool[name] = payload[off:end]
+    return strings, pool
+
+
+def compgen_claims(text: str, unit: str, obj_path) -> tuple[list[tuple[int, str, int]],
+                                                            list[str]]:
+    """[(rva, name, size)] DATA_COMPGEN claims + [problems].
+
+    Two independent facts per pin: the claiming TU's own base obj emitted that
+    payload (cl's spelling for it is the name), and the retail image holds
+    those bytes at the pinned address."""
+    strings, pool = obj_literals(obj_path)
+    img = image()
+    claims, problems, seen = [], [], {}
+    for line, args in compgen_invocations(text):
+        where = f"{unit}: DATA_COMPGEN at line {line}"
+        if len(args) != 2:
+            problems.append(f"{where} takes (addr, value); got {len(args)} "
+                            f"arg(s) (FATAL)")
+            continue
+        addr_src, value_src = args
+        if not COMPGEN_ADDR_RE.fullmatch(addr_src):
+            problems.append(f"{where}: address {addr_src!r} is not the "
+                            f"canonical 8-digit 0x form (FATAL)")
+            continue
+        rva = int(addr_src, 16)
+        vkind, payload = compgen_value(value_src)
+        if vkind is None:
+            problems.append(f"{where}: 0x{rva:06x} {payload} (FATAL)")
+            continue
+        if rva in seen:                       # repeated expansions coalesce
+            if seen[rva] != (vkind, payload):
+                problems.append(f"{where}: 0x{rva:06x} is claimed twice in "
+                                f"this TU with different values (FATAL)")
+            continue
+        seen[rva] = (vkind, payload)
+        if vkind == "str":
+            name = strings.get(payload)
+            if name is None:
+                problems.append(f"{where}: 0x{rva:06x} {payload[:24]!r} is not "
+                                f"a pooled ??_C@ literal in this TU's base obj "
+                                f"(FATAL)")
+                continue
+            payload += b"\0"                  # the datum IS the NUL-terminated one
+        else:
+            # a padded slot may run past the literal; the bytes still prove it
+            if not any(slot[:len(payload)] == payload for slot in pool.values()):
+                problems.append(f"{where}: 0x{rva:06x} {vkind} bits "
+                                f"{payload.hex()} are in no $T pool slot of "
+                                f"this TU's base obj (FATAL)")
+                continue
+            name = f"$T{rva}"                 # cl's ordinal is volatile, rva is not
+        if img.read(rva, len(payload)) != payload:
+            problems.append(f"{where}: 0x{rva:06x} retail bytes contradict the "
+                            f"pinned value (FATAL)")
+            continue
+        claims.append((rva, name, len(payload)))
+    return claims, problems
+
+
 def _loc_file(loc) -> str | None:
     """clang's JSON printer omits `file` when unchanged, and a macro-expanded
     location carries it under expansionLoc/spellingLoc (expansion printed
@@ -311,6 +503,14 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
         emit(int(m.group(1), 16), int(m.group(2), 0) or None,
              m.group(3), "func", "src_dyninit")
 
+    # compiler-generated DATA the automatic oracles cannot reach: the pinned
+    # value is the claim, cl's own obj the authority (see the module header)
+    if DATA_COMPGEN_RE.search(blanked):
+        cg_claims, cg_problems = compgen_claims(blanked, unit, obj)
+        problems.extend(cg_problems)
+        for rva, name, size in cg_claims:
+            emit(rva, size, name, "data", "src_data_compgen")
+
     # data: IR annotations primary (join-free), AST line-join only for the
     # extern-only declarations IR drops; pylibclang gives every extent.
     if DATA_MACRO_RE.search(blanked) or ir_datas:
@@ -392,7 +592,8 @@ def check_completeness(explained: set[tuple[str, int]] = frozenset()) -> list[st
         have.setdefault((c.channel, c.kind), set()).add(c.rva)
     problems = []
     checks = [("RVA", "src", "func"), ("RVA_COMPGEN", "src_compgen", "func"),
-              ("RVA_DYNINIT", "src_dyninit", "func"), ("DATA", "src", "data")]
+              ("RVA_DYNINIT", "src_dyninit", "func"), ("DATA", "src", "data"),
+              ("DATA_COMPGEN", "src_data_compgen", "data")]
     for macro, channel, kind in checks:
         for rva, wheres in sorted(sites.get(macro, {}).items()):
             if macro == "DATA" and all(".h:" in w for w in wheres):
@@ -409,12 +610,6 @@ def check_completeness(explained: set[tuple[str, int]] = frozenset()) -> list[st
                 problems.append(f"{macro}(0x{rva:06x}) appears at "
                                 f"{len(wheres)} sites ({wheres[0]} ...) - "
                                 f"stacked/duplicated macro")
-    n_dc = len(sites.get("DATA_COMPGEN", {}))
-    if n_dc:
-        problems.append(f"{n_dc} DATA_COMPGEN site(s) have NO extraction "
-                        f"channel - their $T/pooled-string identities are "
-                        f"measurably lost in the delinked objects (FATAL "
-                        f"until the channel is extracted or bridged)")
     return problems
 
 
@@ -482,10 +677,17 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
         if len(msgs) > 1:
             units = ", ".join(sorted(m.split(":", 1)[0] for m in msgs))
             tail += f" - {len(msgs)} units dropped it ({units})"
-        problems.append(msgs[0] + tail + " (FATAL)")
+        if only_units is None:
+            problems.append(msgs[0] + tail + " (FATAL)")
+        else:
+            # a per-unit run cannot adjudicate a tree-wide census question:
+            # one unhomed annotation must not fail every including unit's
+            # graph edge. The --all sweep owns the FATAL.
+            problems.append(msgs[0] + tail +
+                            " (unhomed - the tree-wide sweep adjudicates)")
     if only_units is None:
         problems.extend(check_completeness(explained))
-    elif forgiven:
+    elif forgiven and os.environ.get("GRUNTZ_VERBOSE"):
         problems.append(f"note: {forgiven} drop(s) forgiven by CACHED "
                         f"fragments of units this run did not extract; a "
                         f"full --all run re-proves them")

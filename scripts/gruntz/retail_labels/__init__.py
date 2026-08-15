@@ -31,7 +31,8 @@ class Claim(NamedTuple):
     rva: int
     name: str
     kind: str          # 'func' | 'data'
-    channel: str       # 'src' | 'src_compgen' | 'src_dyninit' | table stem
+    channel: str       # 'src' | 'src_compgen' | 'src_dyninit'
+                       # | 'src_data_compgen' | table stem
     size: int | None
     unit: str
     meta: dict

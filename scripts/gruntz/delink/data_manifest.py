@@ -60,7 +60,8 @@ STORAGE = {"rdata": "rdata", "data-initialized": "data",
 
 #: Data channels candidates() enrolls. data_vtables is label-only (its rows
 #: enroll through vtable_rows, against the candidate COMDATs).
-_ENROLL_CHANNELS = ("src", "data_compgen", "data_zlib", "data_static_libs")
+_ENROLL_CHANNELS = ("src", "data_compgen", "data_zlib", "data_static_libs",
+                    "src_data_compgen")
 
 #: `IMAGE_SCN_LNK_COMDAT`.
 LNK_COMDAT = 0x00001000
@@ -654,8 +655,9 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
     only then is a `$T` site read off and byte-re-proven. The manifest name is
     `$T<decimal rva>` (cl's counter is volatile and N of our units may share
     one retail slot); each row carries `member`, cl's real per-object symbol,
-    for ordinary_sections' name matching. A `data_compgen` `$T<rva>` pin
-    bridges to a still-unaddressed member when extent and bytes agree.
+    for ordinary_sections' name matching. A `$T<rva>` pin - a DATA_COMPGEN use
+    site (src_data_compgen) or a reviewed data_compgen row - bridges to a
+    still-unaddressed member when extent and bytes agree.
     """
     import struct
 
@@ -673,7 +675,8 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
         if not b.channel or not b.name:
             continue
         known.setdefault(b.name, b.rva)
-        if b.channel == "data_compgen" and FP_POOL_NAME.fullmatch(b.name):
+        if b.channel in ("data_compgen", "src_data_compgen") \
+                and FP_POOL_NAME.fullmatch(b.name):
             pins[b.unit].append((b.rva, b.size))
 
     rows, withheld = [], []

@@ -6,16 +6,17 @@
 
 THE RULE: functions.tsv / data.tsv contribute ONLY structure - starts, kinds,
 derived extents. Every identity (name, unit, exact matched size) comes from a
-channel: the extracted source claims (RVA/DATA/RVA_COMPGEN/RVA_DYNINIT) and
-the committed provider tables. A claim whose rva is not an admitted census
-row is a violation; a claim size may never cross the next admitted start.
+channel: the extracted source claims (RVA/DATA/RVA_COMPGEN/RVA_DYNINIT/
+DATA_COMPGEN) and the committed provider tables. A claim whose rva is not an
+admitted census row is a violation; a claim size may never cross the next
+admitted start.
 
 Resolution policy (this module is the ONLY place policy lives):
   * LOW-confidence static-lib rows are leads, not claims - filtered here;
   * channel precedence per rva: src > src_compgen > src_dyninit >
-    functions_zlib/data_zlib > data_vtables > data_compgen >
-    data_static_libs > functions_static_libs; later claims on the same rva
-    become recorded ALIASES, never silent losers;
+    src_data_compgen > functions_zlib/data_zlib > data_vtables >
+    data_compgen > data_static_libs > functions_static_libs; later claims on
+    the same rva become recorded ALIASES, never silent losers;
   * function extent = claimed size when the winning channel states one
     (src / zlib), else the census-derived extent;
   * kind compatibility: func claims bind kind ''|helper (static-lib labels
@@ -36,16 +37,16 @@ from gruntz.retail_labels import Claim, censuses, fragments as src_claims, provi
 BINDINGS = BUILD / "gen/bindings.tsv"
 VIOLATIONS = BUILD / "gen/violations.tsv"
 
-_PRECEDENCE = ["src", "src_compgen", "src_dyninit", "functions_zlib",
-               "data_zlib", "data_vtables", "data_compgen",
+_PRECEDENCE = ["src", "src_compgen", "src_dyninit", "src_data_compgen",
+               "functions_zlib", "data_zlib", "data_vtables", "data_compgen",
                "data_static_libs", "functions_static_libs"]
 
 #: channels whose claimed size is the exact matched extent (overrides derived,
 #: bounded by it - the overrun check guards the other direction). Every channel
 #: that states a size means it; label-only channels state None.
-_SIZE_AUTHORITY = {"src", "src_compgen", "src_dyninit", "functions_zlib",
-                   "data_zlib", "data_vtables", "data_static_libs",
-                   "data_compgen"}
+_SIZE_AUTHORITY = {"src", "src_compgen", "src_dyninit", "src_data_compgen",
+                   "functions_zlib", "data_zlib", "data_vtables",
+                   "data_static_libs", "data_compgen"}
 
 #: census kinds a func claim may bind, per channel
 _FUNC_KINDS = {"src": {"", "helper"}, "src_compgen": {"", "helper"},
@@ -139,6 +140,10 @@ def _repair_ordinals(claims: list[Claim], violations: list[str]) -> list[Claim]:
 def _data_expected_kind(claim: Claim) -> str | None:
     if claim.channel == "data_compgen":
         return claim.meta.get("class")            # 'common' | 'copy'
+    if claim.channel == "src_data_compgen":
+        # the pinned VALUE decides the storage cl generated: a float constant
+        # is an FP-pool slot, a narrow string literal a pooled `??_C@` datum
+        return "fppool" if claim.name.startswith("$T") else "string"
     if claim.channel == "data_static_libs":
         if claim.name.startswith("??_7"):
             return "vtable"
