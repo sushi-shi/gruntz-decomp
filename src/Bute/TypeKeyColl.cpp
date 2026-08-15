@@ -27,9 +27,6 @@
 DATA(0x002bf428)
 void* g_retAddrBreadcrumb;
 
-DATA(0x002bf400)
-i32 g_helperRefCount;
-
 // Interior fields of one CActReg; do not define overlapping globals.
 
 DATA(0x0021ad28)
@@ -46,6 +43,12 @@ i32 g_recCount23;
 RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
 DATA(0x002bf408)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
+
+DATA(0x002bf420)
+void(__cdecl* g_tmErrorCallback)(
+    char* buf,
+    i32 v
+); // lazily defaulted to TmErrorHandler by an uncarved accessor @0x16d970
 
 RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
 DATA(0x002bf430)

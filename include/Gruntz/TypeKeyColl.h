@@ -12,8 +12,6 @@ extern i32 g_typeCounter;
 
 extern "C" i32 g_recCount23;
 
-extern "C" i32 g_helperRefCount;
-
 void TmErrorHandler(char* prefix, i32 errNum);
 
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

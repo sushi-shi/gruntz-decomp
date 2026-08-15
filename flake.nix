@@ -100,6 +100,14 @@
         # and emit the live name. Negative addends need no change - the manifest
         # already takes two's-complement hex (`0xffffffff` = the array-1 loop
         # idiom containment can never name).
+        # Unprovisioned-identity refusal: every data identity the delinker emits
+        # is PROVIDED, never invented. pdb_synth seeds a fence at each reloc
+        # target no real name reaches - `DAT_<va>` when only library link-bands
+        # reference it (deliberately synthetic, emitted as-is), `UNPROVISIONED_
+        # <va>` when any game band does. The PDB-fallback paths refuse to emit
+        # an `UNPROVISIONED_` referent (bail names the rva + the remedy), and
+        # the writable-statics fallback's no-symbol case bails the same way
+        # instead of silently DROPPING the relocation from the emitted object.
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
@@ -108,6 +116,7 @@
           ./nix/patches/vostok-legacy-data-not-into-comdat.patch
           ./nix/patches/vostok-data-hypothesis-must-contain.patch
           ./nix/patches/vostok-canonical-alias-owner.patch
+          ./nix/patches/vostok-unprovisioned-identity-refusal.patch
         ];
       };
 

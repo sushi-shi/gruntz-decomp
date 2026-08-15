@@ -13,6 +13,7 @@
 # labels.py folds both classes into build/gen/symbol_names.csv.
 rva	size	name	owner	class
 0x001f0868	0x8	$T2033768	fadereffects	copy
+0x00229310	0x1	_$S58$S	actionarea	copy
 0x00229318	0xc	?s_gruntDirEast_229318@@3UGruntDirectionCell@@A	actionarea	copy
 0x00229328	0xc	?s_gruntDirNorth_229328@@3UGruntDirectionCell@@A	actionarea	copy
 0x00229338	0xc	?s_gruntDirSouth_229338@@3UGruntDirectionCell@@A	actionarea	copy
@@ -143,6 +144,7 @@ rva	size	name	owner	class
 0x0022b4c0	0xc	?s_gruntDirSouthEast_22b4c0@@3UGruntDirectionCell@@A	checkpointdlg	copy
 0x0022b4d0	0xc	?s_gruntDirCenter_22b4d0@@3UGruntDirectionCell@@A	checkpointdlg	copy
 0x0022b4e0	0xc	?s_gruntDirSouthWest_22b4e0@@3UGruntDirectionCell@@A	checkpointdlg	copy
+0x0022b588	0x1	_$S158$S	checkpointdlg	copy
 0x0022b590	0xc	?s_gruntDirEast_22b590@@3UGruntDirectionCell@@A	gruntzcmdmgr	copy
 0x0022b5a0	0xc	?s_gruntDirNorth_22b5a0@@3UGruntDirectionCell@@A	gruntzcmdmgr	copy
 0x0022b5b0	0xc	?s_gruntDirSouth_22b5b0@@3UGruntDirectionCell@@A	gruntzcmdmgr	copy
@@ -260,6 +262,7 @@ rva	size	name	owner	class
 0x0022bf48	0xc	?s_gruntDirSouthEast_22bf48@@3UGruntDirectionCell@@A	creditsstate	copy
 0x0022bf58	0xc	?s_gruntDirCenter_22bf58@@3UGruntDirectionCell@@A	creditsstate	copy
 0x0022bf68	0xc	?s_gruntDirSouthWest_22bf68@@3UGruntDirectionCell@@A	creditsstate	copy
+0x0022bf98	0x1	$S2277272	cursorsnapactreg	copy
 0x0022bfd0	0xc	?s_gruntDirEast_22bfd0@@3UGruntDirectionCell@@A	customworlddialog	copy
 0x0022bfe0	0xc	?s_gruntDirNorth_22bfe0@@3UGruntDirectionCell@@A	customworlddialog	copy
 0x0022bff0	0xc	?s_gruntDirSouth_22bff0@@3UGruntDirectionCell@@A	customworlddialog	copy
@@ -287,16 +290,28 @@ rva	size	name	owner	class
 0x0022c408	0xc	?s_gruntDirSouthEast_22c408@@3UGruntDirectionCell@@A	dircellmethods	copy
 0x0022c418	0xc	?s_gruntDirCenter_22c418@@3UGruntDirectionCell@@A	dircellmethods	copy
 0x0022c428	0xc	?s_gruntDirSouthWest_22c428@@3UGruntDirectionCell@@A	dircellmethods	copy
+0x002444e8	0x1	_$S31$S	gruntstartingpoint	copy
 0x002444f0	0xc	?s_gruntDirEast_2444f0@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
+0x002444fc	0x1	$S2376956	fortressflag	copy
+0x00244500	0x1	_$S31$S	wormholeacts	copy
+0x00244504	0x1	_$S31$S	gruntcreationpoint	copy
 0x00244508	0xc	?s_gruntDirNorth_244508@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
+0x00244514	0x1	$S2376980	wormhole	copy
+0x00244518	0x1	$S2376984	wormhole	copy
+0x0024451c	0x1	$S2376988	wormhole	copy
 0x00244520	0xc	?s_gruntDirSouth_244520@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
+0x0024452c	0x1	$S2377004	secretteleportertrigger	copy
+0x00244530	0x1	$S2377008	secretteleportertrigger	copy
 0x00244538	0xc	?s_gruntDirWest_244538@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
+0x00244544	0x1	_$S31$S	warlord	copy
 0x00244548	0xc	?s_gruntDirNorthEast_244548@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
 0x00244558	0xc	?s_gruntDirNorthWest_244558@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
 0x00244568	0xc	?s_gruntDirSouthEast_244568@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
 0x00244578	0xc	?s_gruntDirCenter_244578@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
 0x00244588	0xc	?s_gruntDirSouthWest_244588@@3UGruntDirectionCell@@A	secretteleportertrigger	copy
 0x002445bc	0x1	_?$S@?BA@??NotifyFortUnderAttack@CWarlord@@QAEHXZ@4EA$S	warlord	copy
+0x002447b0	0x1	$S2377648	fortressflag	copy
+0x002447b4	0x1	$S2377652	fortressflag	copy
 0x002447b8	0xc	?s_gruntDirEast_2447b8@@3UGruntDirectionCell@@A	fortressflag	copy
 0x002447c8	0xc	?s_gruntDirNorth_2447c8@@3UGruntDirectionCell@@A	fortressflag	copy
 0x002447d8	0xc	?s_gruntDirSouth_2447d8@@3UGruntDirectionCell@@A	fortressflag	copy
@@ -315,6 +330,7 @@ rva	size	name	owner	class
 0x002449d0	0xc	_s_gruntDirSouthEast$S	gruntcombat	copy
 0x002449e0	0xc	_s_gruntDirCenter$S	gruntcombat	copy
 0x002449f0	0xc	_s_gruntDirSouthWest$S	gruntcombat	copy
+0x00244a98	0x1	_$S173$S	gruntcombat	copy
 0x00244c18	0xc	?s_gruntDirEast_244c18@@3UGruntDirectionCell@@A	triggermgrhittest	copy
 0x00244c28	0xc	?s_gruntDirNorth_244c28@@3UGruntDirectionCell@@A	triggermgrhittest	copy
 0x00244c38	0xc	?s_gruntDirSouth_244c38@@3UGruntDirectionCell@@A	triggermgrhittest	copy
@@ -324,7 +340,11 @@ rva	size	name	owner	class
 0x00244c78	0xc	?s_gruntDirSouthEast_244c78@@3UGruntDirectionCell@@A	triggermgrhittest	copy
 0x00244c88	0xc	?s_gruntDirCenter_244c88@@3UGruntDirectionCell@@A	triggermgrhittest	copy
 0x00244c98	0xc	?s_gruntDirSouthWest_244c98@@3UGruntDirectionCell@@A	triggermgrhittest	copy
+0x00244ce0	0x1	_$S31$S	grunthealthsprite	copy
+0x00244ce4	0x1	_$S31$S	gruntselectedsprite	copy
 0x00244ce8	0xc	?s_gruntDirEast_244ce8@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	copy
+0x00244cf4	0x1	_$S31$S	gruntpowerupsprite	copy
+0x00244cf8	0x1	_$S31$S	grunttoysprite	copy
 0x00244d00	0xc	?s_gruntDirNorth_244d00@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	copy
 0x00244d10	0xc	?s_gruntDirSouth_244d10@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	copy
 0x00244d20	0xc	?s_gruntDirWest_244d20@@3UGruntDirectionCell@@A	gruntindicatorworkerhandlers	copy
@@ -378,6 +398,9 @@ rva	size	name	owner	class
 0x00245818	0xc	?s_gruntDirSouthEast_245818@@3UGruntDirectionCell@@A	helpstate	copy
 0x00245828	0xc	?s_gruntDirCenter_245828@@3UGruntDirectionCell@@A	helpstate	copy
 0x00245838	0xc	?s_gruntDirSouthWest_245838@@3UGruntDirectionCell@@A	helpstate	copy
+0x00245860	0x1	$S2381920	ingameicon	copy
+0x00245864	0x1	$S2381924	ingameicon	copy
+0x00245868	0x1	$S2381928	ingameicon	copy
 0x00245870	0xc	?s_gruntDirEast_245870@@3UGruntDirectionCell@@A	ingameworkerhandlers	copy
 0x00245880	0xc	?s_gruntDirNorth_245880@@3UGruntDirectionCell@@A	ingameworkerhandlers	copy
 0x00245890	0xc	?s_gruntDirSouth_245890@@3UGruntDirectionCell@@A	ingameworkerhandlers	copy
@@ -396,6 +419,7 @@ rva	size	name	owner	class
 0x00245a40	0xc	?s_gruntDirSouthEast_245a40@@3UGruntDirectionCell@@A	statedispatch	copy
 0x00245a50	0xc	?s_gruntDirCenter_245a50@@3UGruntDirectionCell@@A	statedispatch	copy
 0x00245a60	0xc	?s_gruntDirSouthWest_245a60@@3UGruntDirectionCell@@A	statedispatch	copy
+0x00245a88	0x1	_$S58$S	lightfx	copy
 0x00245a90	0xc	?s_gruntDirEast_245a90@@3UGruntDirectionCell@@A	lightfx	copy
 0x00245aa0	0xc	?s_gruntDirNorth_245aa0@@3UGruntDirectionCell@@A	lightfx	copy
 0x00245ab0	0xc	?s_gruntDirSouth_245ab0@@3UGruntDirectionCell@@A	lightfx	copy
@@ -450,8 +474,16 @@ rva	size	name	owner	class
 0x00245ea8	0xc	?s_gruntDirSouthEast_245ea8@@3UGruntDirectionCell@@A	lightfxrender	copy
 0x00245eb8	0xc	?s_gruntDirCenter_245eb8@@3UGruntDirectionCell@@A	lightfxrender	copy
 0x00245ec8	0xc	?s_gruntDirSouthWest_245ec8@@3UGruntDirectionCell@@A	lightfxrender	copy
+0x00245f14	0x1	_$S31$S	anicycle	copy
 0x00245f18	0xc	?s_gruntDirEast_245f18@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
+0x00245f24	0x1	_$S31$S	simpleanimation	copy
+0x00245f28	0x1	_$S31$S	singleframemessage	copy
+0x00245f2c	0x1	_$S31$S	behindcandyani	copy
+0x00245f30	0x1	_$S31$S	frontcandyani	copy
+0x00245f34	0x1	_$S31$S	logicdispatchinit	copy
 0x00245f38	0xc	?s_gruntDirNorth_245f38@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
+0x00245f44	0x1	$S2383684	singleanimation	copy
+0x00245f48	0x1	_$S31$S	menusparkle	copy
 0x00245f50	0xc	?s_gruntDirSouth_245f50@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
 0x00245f60	0xc	?s_gruntDirWest_245f60@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
 0x00245fc0	0xc	?s_gruntDirNorthEast_245fc0@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
@@ -459,7 +491,11 @@ rva	size	name	owner	class
 0x00245fe0	0xc	?s_gruntDirSouthEast_245fe0@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
 0x00245ff0	0xc	?s_gruntDirCenter_245ff0@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
 0x00246000	0xc	?s_gruntDirSouthWest_246000@@3UGruntDirectionCell@@A	logicworkerhandlersa	copy
+0x00246138	0x1	_$S31$S	spotlight	copy
+0x0024613c	0x1	_$S31$S	rollingball	copy
 0x00246140	0xc	?s_gruntDirEast_246140@@3UGruntDirectionCell@@A	logicworkerhandlersb	copy
+0x0024614c	0x1	_$S31$S	pathhazard	copy
+0x00246150	0x1	_$S31$S	kitchenslime	copy
 0x00246158	0xc	?s_gruntDirNorth_246158@@3UGruntDirectionCell@@A	logicworkerhandlersb	copy
 0x00246168	0xc	?s_gruntDirSouth_246168@@3UGruntDirectionCell@@A	logicworkerhandlersb	copy
 0x00246178	0xc	?s_gruntDirWest_246178@@3UGruntDirectionCell@@A	logicworkerhandlersb	copy
@@ -495,6 +531,7 @@ rva	size	name	owner	class
 0x00249748	0xc	?s_gruntDirSouthEast_249748@@3UGruntDirectionCell@@A	multihelpdlg	copy
 0x00249758	0xc	?s_gruntDirCenter_249758@@3UGruntDirectionCell@@A	multihelpdlg	copy
 0x00249768	0xc	?s_gruntDirSouthWest_249768@@3UGruntDirectionCell@@A	multihelpdlg	copy
+0x00249810	0x1	_$S58$S	netcmdslot	copy
 0x00249818	0xc	?s_gruntDirEast_249818@@3UGruntDirectionCell@@A	netsessionmgr	copy
 0x00249828	0xc	?s_gruntDirNorth_249828@@3UGruntDirectionCell@@A	netsessionmgr	copy
 0x00249838	0xc	?s_gruntDirSouth_249838@@3UGruntDirectionCell@@A	netsessionmgr	copy
@@ -522,6 +559,9 @@ rva	size	name	owner	class
 0x0024bd80	0xc	?s_gruntDirSouthEast_24bd80@@3UGruntDirectionCell@@A	multistartdlg	copy
 0x0024bd90	0xc	?s_gruntDirCenter_24bd90@@3UGruntDirectionCell@@A	multistartdlg	copy
 0x0024bda0	0xc	?s_gruntDirSouthWest_24bda0@@3UGruntDirectionCell@@A	multistartdlg	copy
+0x0024be10	0x1	$S2407952	droppedobject	copy
+0x0024be14	0x1	$S2407956	droppedobject	copy
+0x0024be18	0x1	$S2407960	droppedobject	copy
 0x0024be20	0xc	?s_gruntDirEast_24be20@@3UGruntDirectionCell@@A	droppedobject	copy
 0x0024be30	0xc	?s_gruntDirNorth_24be30@@3UGruntDirectionCell@@A	droppedobject	copy
 0x0024be40	0xc	?s_gruntDirSouth_24be40@@3UGruntDirectionCell@@A	droppedobject	copy
@@ -569,6 +609,8 @@ rva	size	name	owner	class
 0x0024c670	0xc	?s_gruntDirSouthEast_24c670@@3UGruntDirectionCell@@A	levelpreview	copy
 0x0024c680	0xc	?s_gruntDirCenter_24c680@@3UGruntDirectionCell@@A	levelpreview	copy
 0x0024c690	0xc	?s_gruntDirSouthWest_24c690@@3UGruntDirectionCell@@A	levelpreview	copy
+0x0024c6c0	0x1	$S2410176	projectile	copy
+0x0024c6c4	0x1	$S2410180	projectile	copy
 0x0024c6c8	0xc	?s_gruntDirEast_24c6c8@@3UGruntDirectionCell@@A	logicrecorddispatch	copy
 0x0024c6d8	0xc	?s_gruntDirNorth_24c6d8@@3UGruntDirectionCell@@A	logicrecorddispatch	copy
 0x0024c6e8	0xc	?s_gruntDirSouth_24c6e8@@3UGruntDirectionCell@@A	logicrecorddispatch	copy
@@ -830,6 +872,7 @@ rva	size	name	owner	class
 0x0024da38	0xc	?s_gruntDirSouthEast_24da38@@3UGruntDirectionCell@@A	gruntdefenselean	copy
 0x0024da48	0xc	?s_gruntDirCenter_24da48@@3UGruntDirectionCell@@A	gruntdefenselean	copy
 0x0024da58	0xc	?s_gruntDirSouthWest_24da58@@3UGruntDirectionCell@@A	gruntdefenselean	copy
+0x0024e218	0x1	_$S31$S	stringstaticpool	copy
 0x0024e220	0xc	?s_gruntDirEast_24e220@@3UGruntDirectionCell@@A	splashstate	copy
 0x0024e230	0xc	?s_gruntDirNorth_24e230@@3UGruntDirectionCell@@A	splashstate	copy
 0x0024e240	0xc	?s_gruntDirSouth_24e240@@3UGruntDirectionCell@@A	splashstate	copy
@@ -848,6 +891,7 @@ rva	size	name	owner	class
 0x0024e330	0xc	?s_gruntDirSouthEast_24e330@@3UGruntDirectionCell@@A	gameassetnamespaces	copy
 0x0024e340	0xc	?s_gruntDirCenter_24e340@@3UGruntDirectionCell@@A	gameassetnamespaces	copy
 0x0024e350	0xc	?s_gruntDirSouthWest_24e350@@3UGruntDirectionCell@@A	gameassetnamespaces	copy
+0x0024e388	0x1	_$S58$S	statichazard	copy
 0x0024e390	0xc	?s_gruntDirEast_24e390@@3UGruntDirectionCell@@A	statichazard	copy
 0x0024e3a0	0xc	?s_gruntDirNorth_24e3a0@@3UGruntDirectionCell@@A	statichazard	copy
 0x0024e3b0	0xc	?s_gruntDirSouth_24e3b0@@3UGruntDirectionCell@@A	statichazard	copy
@@ -884,7 +928,14 @@ rva	size	name	owner	class
 0x0024e620	0xc	?s_gruntDirSouthEast_24e620@@3UGruntDirectionCell@@A	statusbarspriteacts	copy
 0x0024e630	0xc	?s_gruntDirCenter_24e630@@3UGruntDirectionCell@@A	statusbarspriteacts	copy
 0x0024e640	0xc	?s_gruntDirSouthWest_24e640@@3UGruntDirectionCell@@A	statusbarspriteacts	copy
+0x0024e668	0x1	_$S58$S	statusbarspriteacts	copy
+0x0024e6c4	0x1	$S2418372	tilelogicpump	copy
+0x0024e6c8	0x1	$S2418376	tilelogicpump	copy
 0x0024e6d0	0xc	?s_gruntDirEast_24e6d0@@3UGruntDirectionCell@@A	tilelogicpump	copy
+0x0024e6dc	0x1	$S2418396	tilelogicpump	copy
+0x0024e6e0	0x1	$S2418400	tilelogicpump	copy
+0x0024e6e4	0x1	$S2418404	tilelogicpump	copy
+0x0024e6e8	0x1	$S2418408	tilelogicpump	copy
 0x0024e6f0	0xc	?s_gruntDirNorth_24e6f0@@3UGruntDirectionCell@@A	tilelogicpump	copy
 0x0024e700	0xc	?s_gruntDirSouth_24e700@@3UGruntDirectionCell@@A	tilelogicpump	copy
 0x0024e710	0xc	?s_gruntDirWest_24e710@@3UGruntDirectionCell@@A	tilelogicpump	copy
@@ -902,6 +953,7 @@ rva	size	name	owner	class
 0x0024e8e8	0xc	?s_gruntDirSouthEast_24e8e8@@3UGruntDirectionCell@@A	tileswitchlogic	copy
 0x0024e8f8	0xc	?s_gruntDirCenter_24e8f8@@3UGruntDirectionCell@@A	tileswitchlogic	copy
 0x0024e908	0xc	?s_gruntDirSouthWest_24e908@@3UGruntDirectionCell@@A	tileswitchlogic	copy
+0x0024e930	0x1	_$S58$S	toobspikez	copy
 0x0024e938	0xc	?s_gruntDirEast_24e938@@3UGruntDirectionCell@@A	toobspikez	copy
 0x0024e948	0xc	?s_gruntDirNorth_24e948@@3UGruntDirectionCell@@A	toobspikez	copy
 0x0024e958	0xc	?s_gruntDirSouth_24e958@@3UGruntDirectionCell@@A	toobspikez	copy
@@ -938,7 +990,9 @@ rva	size	name	owner	class
 0x002513f8	0xc	?s_gruntDirSouthEast_2513f8@@3UGruntDirectionCell@@A	heapdiag	copy
 0x00251408	0xc	?s_gruntDirCenter_251408@@3UGruntDirectionCell@@A	heapdiag	copy
 0x00251418	0xc	?s_gruntDirSouthWest_251418@@3UGruntDirectionCell@@A	heapdiag	copy
+0x00251440	0x1	$S2430016	gruntvoice	copy
 0x00251448	0xc	?s_gruntDirEast_251448@@3UGruntDirectionCell@@A	gruntvoice	copy
+0x00251454	0x1	$S2430036	gruntvoice	copy
 0x00251458	0xc	?s_gruntDirNorth_251458@@3UGruntDirectionCell@@A	gruntvoice	copy
 0x00251468	0xc	?s_gruntDirSouth_251468@@3UGruntDirectionCell@@A	gruntvoice	copy
 0x00251478	0xc	?s_gruntDirWest_251478@@3UGruntDirectionCell@@A	gruntvoice	copy

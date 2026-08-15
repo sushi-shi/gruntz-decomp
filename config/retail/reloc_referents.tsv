@@ -14,3 +14,5 @@ function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
 0x0014d950	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
 0x0003bb50	0x0022c00c	0x0003bbf5	?g_mapNameBuf@@3PADA	0xfffffffc	1	before-start pointer g_mapNameBuf-4 (base obj customworlddialog.obj stored=-0x4)
 0x0013f740	0x00253c9e	*	?g_clut@@3PAEA	0xfffffffe	2	before-start pointer g_clut-2 (base obj ddsurface.obj stored=-0x2)
+0x0001a700	0x0020b978	0x0001ad6e	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x80	1	one-past-the-end loop bound equals the RECT[8] array end (base obj bootystateactivate.obj stored=+0x80)
+0x0001a040	0x0020b984	0x0001a57d	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x8c	1	one-past-the-end &rects[8].bottom loop bound (base obj bootystateactivate.obj stored=+0x8c)

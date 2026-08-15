@@ -13,6 +13,11 @@ vostok-delinker to slice GRUNTZ.EXE into per-unit COFF objects:
   2. Data records for every relocation-target address (S_LDATA32), renamed to
      the claimed source names and cl's own `??_C@` string-pool spellings (the
      base objs are the oracle), plus the proven `__imp_` IAT decorations.
+     Every identity is PROVIDED, never invented: a target no name reaches
+     keeps a fence whose spelling states the verdict of the referencing-band
+     split - `DAT_<va>` when only library bands reference it (a deliberate
+     synthetic), `UNPROVISIONED_<va>` when any game band does (a defect the
+     delinker refuses to emit).
   3. `llvm-pdbutil yaml2pdb`, then the DBI-header byte-patch: yaml2pdb cannot
      emit a GSI symbol-records stream and pdb2's `global_symbols()` errors on a
      nil index, so the header is repointed at an existing empty stream.
@@ -49,6 +54,20 @@ ILT_BAND_END = 0x7C20
 #: Function channels that attribute a unit (a static-lib label names a library
 #: body; its code is never partitioned into a TU).
 UNIT_CHANNELS = ("src", "src_compgen", "src_dyninit", "functions_zlib")
+
+#: Link-layout bands (config/retail/link_bands.tsv) whose relocation SITES are
+#: game/engine contributions - game and engine TUs interleave through all
+#: three. A data target referenced from any of them must be PROVIDED by a real
+#: claim; a target only the remaining (library) bands reference is library-
+#: internal and deliberately synthetic. The band is the COARSE verdict: kept
+#: COMDATs and library-pull members genuinely interleave PROVEN library bodies
+#: (functions_static_libs labels) into these bands, and a site inside such a
+#: body is a library reference wherever it sits. Unlabeled game-band code
+#: stays a game reference - fail-closed.
+GAME_BANDS = frozenset(("cmdline", "pulled-libs", "crt-head"))
+
+#: The two fence spellings reloc_data_symbols seeds for an unnamed target.
+FENCE_PREFIXES = ("DAT_", "UNPROVISIONED_")
 
 
 def sanitize_name(name: str) -> str:
@@ -225,30 +244,77 @@ def function_records(model: Model, names_map, thunk_names, import_thunks,
 
 # --- data symbols ------------------------------------------------------------
 
-def reloc_data_symbols() -> tuple[list, list]:
-    """(rdata, data) [(rva, DAT_<va>)] for every PE relocation target.
-
-    Every absolute address operand is listed in the PE's HIGHLOW relocation
-    directory; its stored value identifies the exact target that needs a PDB
-    symbol. Source names are overlaid later.
-    """
+def reloc_target_refs() -> dict[int, list[int]]:
+    """{target rva in .rdata/.data: sorted [reloc site rva]} - every absolute
+    address operand in the PE's HIGHLOW relocation directory, keyed by the
+    exact target its stored value identifies."""
     img = retail()
     bounds = sections_of()
     rd_lo, rd_hi = bounds[".rdata"]
     da_lo, da_hi = bounds[".data"]
-    rdata: dict[int, str] = {}
-    data: dict[int, str] = {}
+    refs: dict[int, list[int]] = {}
     for site in img.reloc_sites:
         value = img.u32(site)
         if value is None:
             continue
         rva = value - img.image_base
-        name = f"DAT_{value:08x}"
-        if rd_lo <= rva < rd_hi:
-            rdata.setdefault(rva, name)
-        elif da_lo <= rva < da_hi:
-            data.setdefault(rva, name)
-    return sorted(rdata.items()), sorted(data.items())
+        if rd_lo <= rva < rd_hi or da_lo <= rva < da_hi:
+            refs.setdefault(rva, []).append(site)
+    return refs
+
+
+def band_lookup():
+    """rva -> link-layout band name (config/retail/link_bands.tsv), '' when
+    outside every band."""
+    from gruntz.retail_labels.censuses import link_bands
+    bands = link_bands()
+    lows = [lo for lo, _hi, _name in bands]
+
+    def of(rva: int) -> str:
+        i = bisect.bisect_right(lows, rva) - 1
+        if i >= 0 and rva < bands[i][1]:
+            return bands[i][2]
+        return ""
+    return of
+
+
+def game_site_test(model: Model):
+    """site rva -> True when the site is a GAME reference: inside a game
+    link-band AND not inside a proven library body (functions_static_libs)."""
+    band_of = band_lookup()
+    lib = sorted((b.rva, b.size) for b in model.functions
+                 if b.channel == "functions_static_libs" and b.size)
+    lib_starts = [x[0] for x in lib]
+
+    def is_game(site: int) -> bool:
+        if band_of(site) not in GAME_BANDS:
+            return False
+        i = bisect.bisect_right(lib_starts, site) - 1
+        return not (i >= 0 and site < lib[i][0] + lib[i][1])
+    return is_game
+
+
+def reloc_data_symbols(model: Model) -> tuple[list, list]:
+    """(rdata, data) [(rva, fence name)] for every PE relocation target.
+
+    Source names are overlaid later; a target no name reaches keeps the fence
+    seeded HERE, spelled by the referencing split (game_site_test): `DAT_<va>`
+    when only library code references it (library-internal data we
+    deliberately do not model - made explicit and total), `UNPROVISIONED_<va>`
+    when any game site references it. The fence must EXIST either way so
+    nearest-symbol recovery can never silently misattribute the address; the
+    delinker emits `DAT_` but hard-fails on `UNPROVISIONED_`.
+    """
+    img = retail()
+    rd_lo, rd_hi = sections_of()[".rdata"]
+    is_game = game_site_test(model)
+    rdata: list[tuple[int, str]] = []
+    data: list[tuple[int, str]] = []
+    for rva, sites in sorted(reloc_target_refs().items()):
+        prefix = "UNPROVISIONED" if any(map(is_game, sites)) else "DAT"
+        row = (rva, f"{prefix}_{img.image_base + rva:08x}")
+        (rdata if rd_lo <= rva < rd_hi else data).append(row)
+    return rdata, data
 
 
 def apply_named_data(rdata_syms, data_syms, data_names) -> int:
@@ -269,6 +335,30 @@ def apply_named_data(rdata_syms, data_syms, data_names) -> int:
                 n += 1
     rdata_syms.sort()
     data_syms.sort()
+    return n
+
+
+def drop_interior_placeholders(rdata_syms, data_syms, model) -> int:
+    """A fence at an address a claimed extent CONTAINS is not an unprovided
+    identity - the containing claim + addend is, and keeping the fence would
+    shadow that claim in nearest-symbol selection. Drop them (both fence
+    spellings). An `UNPROVISIONED_` that survives this marks a genuinely
+    unprovided game-referenced address, which the delinker refuses to emit.
+    Mutates; returns count."""
+    claims = sorted((b.rva, b.size) for b in model.data
+                    if b.channel and b.name and b.size)
+    starts = [c[0] for c in claims]
+
+    def interior(rva: int) -> bool:
+        i = bisect.bisect_right(starts, rva) - 1
+        return i >= 0 and claims[i][0] < rva < claims[i][0] + claims[i][1]
+
+    n = 0
+    for syms in (rdata_syms, data_syms):
+        keep = [(rva, name) for rva, name in syms
+                if not (name.startswith(FENCE_PREFIXES) and interior(rva))]
+        n += len(syms) - len(keep)
+        syms[:] = keep
     return n
 
 
@@ -294,6 +384,141 @@ def apply_string_names(rdata_syms, data_syms, base_dir) -> int:
                 syms[i] = (rva, str_map[cs])
                 n += 1
     return n
+
+
+def data_symbols(model, data_names, base_dir=BASE_DIR, log=lambda m: None):
+    """The fully-overlaid (rdata_syms, data_syms): fences for every reloc
+    target, claimed names applied, `??_C@` pool spellings applied, interior
+    fences dropped. The data-identity half of the synthesis, shared with the
+    --unprovisioned worklist."""
+    rdata_syms, data_syms = reloc_data_symbols(model)
+    ndat = apply_named_data(rdata_syms, data_syms, data_names)
+    log(f"named {ndat} global data symbol(s) from the Model")
+    nstr = apply_string_names(rdata_syms, data_syms, base_dir)
+    log(f"renamed {nstr} string constant(s) to MSVC ??_C@ names")
+    ndrop = drop_interior_placeholders(rdata_syms, data_syms, model)
+    log(f"dropped {ndrop} interior fence(s) (contained by a claim)")
+    return rdata_syms, data_syms
+
+
+# --- the unprovisioned worklist ----------------------------------------------
+
+def _oracle_extents(model) -> list[tuple[int, int]]:
+    """[(rva, size)] the data manifest provides WITHOUT a Model claim (the
+    `??_C@` string and `$T` FP-pool oracles): the delinker resolves those
+    extents before its PDB fallback, so a fence inside one never fires."""
+    from gruntz.delink import data_manifest
+    rows = data_manifest.string_rows()[0] + data_manifest.fp_pool_rows(model)[0]
+    return sorted({(r["rva"], r["size"]) for r in rows})
+
+
+def _alias_covered(model):
+    """site-coverage test from the reviewed reloc-alias manifest
+    (config/retail/reloc_referents.tsv): the delinker resolves a covered site
+    BEFORE its PDB fallback, so the fence never fires for it."""
+    from gruntz.core.paths import RETAIL
+    from gruntz.core.tsv import read as read_tsv
+    _b, _h, raw = read_tsv(RETAIL / "reloc_referents.tsv")
+    ext = {b.rva: b.size for b in model.functions if b.channel and b.size}
+    exact: set[tuple[int, int]] = set()
+    wild: dict[int, list[tuple[int, int]]] = {}
+    for r in raw:
+        target = int(r["target_rva"], 16)
+        fn = int(r["function_rva"], 16)
+        if r["site_rva"].strip() == "*":
+            wild.setdefault(target, []).append((fn, fn + ext.get(fn, 0)))
+        else:
+            exact.add((target, int(r["site_rva"], 16)))
+
+    def covered(target: int, site: int) -> bool:
+        if (target, site) in exact:
+            return True
+        return any(lo <= site < hi for lo, hi in wild.get(target, ()))
+    return covered
+
+
+def unprovisioned_rows(rdata_syms, data_syms, model) -> list[dict]:
+    """The remaining-UNPROVISIONED worklist, DERIVED every build (never a
+    hand-kept file): each surviving `UNPROVISIONED_` fence, minus the
+    oracle-provided extents and minus targets whose every game site the
+    reloc-alias manifest covers, with the uncovered game sites, their bands,
+    the referencing claimed units, and the admitted census row containing it."""
+    from gruntz.retail_labels import censuses
+    fences = sorted(rva for syms in (rdata_syms, data_syms)
+                    for rva, name in syms if name.startswith("UNPROVISIONED_"))
+    if not fences:
+        return []
+    oracle = _oracle_extents(model)
+    oracle_starts = [lo for lo, _sz in oracle]
+
+    def oracled(rva: int) -> bool:
+        i = bisect.bisect_right(oracle_starts, rva) - 1
+        return i >= 0 and rva < oracle[i][0] + oracle[i][1]
+
+    refs = reloc_target_refs()
+    band_of = band_lookup()
+    is_game = game_site_test(model)
+    covered = _alias_covered(model)
+    fns = sorted((b.rva, b.size, b.unit) for b in model.functions
+                 if b.channel in UNIT_CHANNELS and b.unit)
+    fn_starts = [f[0] for f in fns]
+
+    def unit_of(site: int) -> str | None:
+        i = bisect.bisect_right(fn_starts, site) - 1
+        if i >= 0 and site < fns[i][0] + fns[i][1]:
+            return fns[i][2]
+        return None
+
+    census = censuses.data()
+    census_starts = [r["rva"] for r in census]
+    out = []
+    for rva in fences:
+        if oracled(rva):
+            continue
+        sites = [s for s in refs.get(rva, ())
+                 if is_game(s) and not covered(rva, s)]
+        if not sites:
+            continue
+        i = bisect.bisect_right(census_starts, rva) - 1
+        row = census[i] if i >= 0 and rva < census[i]["rva"] + census[i]["size"] \
+            else None
+        units = {u for s in sites if (u := unit_of(s))}
+        out.append({"rva": rva, "sites": sites,
+                    "bands": sorted({band_of(s) for s in sites}),
+                    "units": sorted(units), "census": row})
+    return out
+
+
+def format_unprovisioned(rows) -> list[str]:
+    """One worklist line per unprovisioned target."""
+    lines = []
+    for r in rows:
+        c = r["census"]
+        if c is None:
+            census = "census=?"
+        else:
+            interior = "" if c["rva"] == r["rva"] \
+                else f" interior of 0x{c['rva']:06x}"
+            census = f"census kind={c['kind'] or 'datum'} {c['region']}{interior}"
+        sites = ",".join(f"0x{s:06x}" for s in r["sites"][:4])
+        more = f" +{len(r['sites']) - 4}" if len(r["sites"]) > 4 else ""
+        lines.append(f"0x{r['rva']:06x}  {census}  "
+                     f"bands={','.join(r['bands'])}  "
+                     f"units={','.join(r['units']) or '-'}  "
+                     f"sites={sites}{more}")
+    return lines
+
+
+def worklist(model: Model) -> list[dict]:
+    """Recompute the data-identity pipeline (no YAML, no build outputs) and
+    return the unprovisioned rows."""
+    names_map = unit_names(model)
+    band = eh_band.groups(retail().pe.path, names_map)
+    data_names = {b.rva: b.name for b in model.data if b.channel and b.name}
+    for rva, name, _unit, _size in eh_band.data_records(band):
+        data_names.setdefault(rva, name)
+    rdata_syms, data_syms = data_symbols(model, data_names)
+    return unprovisioned_rows(rdata_syms, data_syms, model)
 
 
 # --- YAML emission -----------------------------------------------------------
@@ -548,11 +773,13 @@ def synth(model: Model, out_yaml: Path | None = None, out_pdb: Path | None = Non
 
     funcs = function_records(model, names_map, thunk_names, import_thunks,
                              band_spans, log)
-    rdata_syms, data_syms = reloc_data_symbols()
-    ndat = apply_named_data(rdata_syms, data_syms, data_names)
-    log(f"named {ndat} global data symbol(s) from the Model")
-    nstr = apply_string_names(rdata_syms, data_syms, base_dir)
-    log(f"renamed {nstr} string constant(s) to MSVC ??_C@ names")
+    rdata_syms, data_syms = data_symbols(model, data_names, base_dir, log)
+    unprov = unprovisioned_rows(rdata_syms, data_syms, model)
+    if unprov:
+        log(f"UNPROVISIONED: {len(unprov)} game-referenced data target(s) "
+            "lack a provided identity (the delinker refuses to emit these):")
+        for line in format_unprovisioned(unprov):
+            log("  " + line)
     log(f"functions: {len(funcs)}  rdata: {len(rdata_syms)}  "
         f"data: {len(data_syms)}  idata: {len(iat_syms)}  "
         f"named: {len(names_map)}")
@@ -584,7 +811,17 @@ def main() -> int:
     ap.add_argument("--out-pdb", type=Path, default=PDB_DIR / "gruntz_named.pdb")
     ap.add_argument("--yaml-only", action="store_true",
                     help="emit YAML and stop (skip yaml2pdb + patch)")
+    ap.add_argument("--unprovisioned", action="store_true",
+                    help="print the derived remaining-UNPROVISIONED worklist "
+                         "and exit (status 1 while any remain)")
     a = ap.parse_args()
+    if a.unprovisioned:
+        rows = worklist(resolve())
+        for line in format_unprovisioned(rows):
+            print(line)
+        print(f"[pdb_synth] {len(rows)} unprovisioned game-referenced "
+              "target(s)")
+        return 1 if rows else 0
     synth(resolve(), a.out_yaml, a.out_pdb, yaml_only=a.yaml_only)
     return 0
 
