@@ -32,9 +32,10 @@ def link(args: list[str], *, cwd: Path | None = None,
     output, rc = run(["wine", str(link_exe), *args], cwd=cwd, timeout=timeout,
                      success=expect[0] if expect else None)
     missing = [p for p in expect if not p.exists()]
-    if missing:
+    if missing or (not expect and rc != 0):
         tail = "\n".join(output.strip().splitlines()[-12:])
-        raise ToolError(f"link did not produce {missing[0].name} (rc={rc}):\n{tail}")
+        what = missing[0].name if missing else f"rc={rc}"
+        raise ToolError(f"link failed ({what}):\n{tail}")
     return output
 
 

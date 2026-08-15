@@ -45,19 +45,31 @@ class Pe:
         return t["va"], t["va"] + t["vsize"]
 
     def data_regions(self) -> dict[str, tuple[int, int]]:
-        """The three data regions: .rdata's raw bytes, .data's raw
-        (initialized) bytes, and .data's loader-zero virtual tail - this image
-        has no separate .bss section header."""
+        """The four data regions: .rdata's raw bytes, .data's raw
+        (initialized) bytes, .data's loader-zero virtual tail (this image has
+        no separate .bss header), and .idata - whose virtual tail the retail
+        linker reused for late zero-fill globals."""
         rd, da = self.section(".rdata"), self.section(".data")
+        it = self.section(".idata")
         return {"rdata": (rd["va"], rd["va"] + rd["rsize"]),
                 "data": (da["va"], da["va"] + da["rsize"]),
-                "bss": (da["va"] + da["rsize"], da["va"] + da["vsize"])}
+                "bss": (da["va"] + da["rsize"], da["va"] + da["vsize"]),
+                "idata": (it["va"], it["va"] + max(it["vsize"], it["rsize"]))}
 
     def read(self, rva: int, size: int) -> bytes | None:
+        """Bytes at rva; loader zero-fill (past a section's raw size) reads as
+        ZEROS, never as the next section's file bytes; short reads are None."""
         for s in self.sections:
             if s["va"] <= rva and rva + size <= s["va"] + max(s["vsize"], s["rsize"]):
+                raw_end = s["va"] + s["rsize"]
+                if rva >= raw_end:
+                    return bytes(size)
+                stored = min(size, raw_end - rva)
                 off = s["rptr"] + rva - s["va"]
-                return self.data[off:off + size]
+                chunk = self.data[off:off + stored]
+                if len(chunk) != stored:
+                    return None
+                return chunk + bytes(size - stored)
         return None
 
 

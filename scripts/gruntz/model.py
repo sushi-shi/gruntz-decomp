@@ -38,8 +38,12 @@ _PRECEDENCE = ["src", "src_compgen", "src_dyninit", "functions_zlib",
                "data_zlib", "data_vtables", "data_compgen",
                "data_static_libs", "functions_static_libs"]
 
-#: channels whose claimed size is the exact matched extent (overrides derived)
-_SIZE_AUTHORITY = {"src", "src_compgen", "functions_zlib", "data_zlib"}
+#: channels whose claimed size is the exact matched extent (overrides derived,
+#: bounded by it - the overrun check guards the other direction). Every channel
+#: that states a size means it; label-only channels state None.
+_SIZE_AUTHORITY = {"src", "src_compgen", "src_dyninit", "functions_zlib",
+                   "data_zlib", "data_vtables", "data_static_libs",
+                   "data_compgen"}
 
 #: census kinds a func claim may bind, per channel
 _FUNC_KINDS = {"src": {"", "helper"}, "src_compgen": {"", "helper"},

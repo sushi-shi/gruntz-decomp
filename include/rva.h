@@ -5,7 +5,7 @@
 
 #if defined(__clang__) && defined(GRUNTZ_EMIT_META)
 
-#define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size)))
+#define RVA(addr, size) __attribute__((annotate("rva:" #addr " size:" #size), used))
 
 #define OVERRIDE override
 

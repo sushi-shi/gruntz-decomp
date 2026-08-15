@@ -91,9 +91,9 @@ def emit_ir(tu: str, cl_flags: list[str] | None) -> str | None:
                 cmd = [_clang(), "--driver-mode=cl", "/c", "/DGRUNTZ_EMIT_META",
                        *cl_flags, *MS_WARN, *inc_cl(),
                        "-Xclang", "-emit-llvm", "-o", ll, tu]
-                subprocess.run(cmd, capture_output=True, text=True)
-                ir = Path(ll).read_text() if os.path.getsize(ll) else "" \
-                    if os.path.exists(ll) else ""
+                res = subprocess.run(cmd, capture_output=True, text=True)
+                ir = Path(ll).read_text() \
+                    if os.path.exists(ll) and os.path.getsize(ll) else ""
             finally:
                 try:
                     os.unlink(ll)
@@ -101,7 +101,7 @@ def emit_ir(tu: str, cl_flags: list[str] | None) -> str | None:
                     pass
             if ir:
                 return ir
-        return None
+        return None  # caller surfaces this; res.stderr is intentionally short-lived
     cmd = [_clang(), "-DGRUNTZ_EMIT_META", *MS_FLAGS, *inc_gcc(),
            "-S", "-emit-llvm", "-o", "-", tu]
     res = subprocess.run(cmd, capture_output=True, text=True)
@@ -110,10 +110,10 @@ def emit_ir(tu: str, cl_flags: list[str] | None) -> str | None:
 
 def ast_dump(tu: str, cl_flags: list[str] | None) -> dict | None:
     if cl_flags is not None:
-        cmd = [_clang(), "--driver-mode=cl", *cl_flags, *inc_cl(), tu,
-               "-fsyntax-only", "-Xclang", "-ast-dump=json"]
+        cmd = [_clang(), "--driver-mode=cl", "/DGRUNTZ_EMIT_META", *cl_flags,
+               *inc_cl(), tu, "-fsyntax-only", "-Xclang", "-ast-dump=json"]
     else:
-        cmd = [_clang(), *MS_FLAGS, *inc_gcc(), tu,
+        cmd = [_clang(), "-DGRUNTZ_EMIT_META", *MS_FLAGS, *inc_gcc(), tu,
                "-fsyntax-only", "-Xclang", "-ast-dump=json"]
     res = subprocess.run(cmd, capture_output=True, text=True)
     try:
