@@ -93,6 +93,13 @@
         # 0x3db4` into 0x44 B (164), and negative addends where the nearest enrolled
         # datum sits AFTER the target. Not enrolling an rva is what the PDB fallback
         # is for. docs/build-system.md § "The EH funclet band".
+        # Canonical alias owners: a reviewed reloc-alias manifest is checked in,
+        # and no checked-in file may carry a volatile CodeView `$S<n>` ordinal
+        # (it renumbers on any TU churn). A trailing bare `$S` marks the owner
+        # as CANONICAL: match the live symbol by its ordinal-stripped spelling
+        # and emit the live name. Negative addends need no change - the manifest
+        # already takes two's-complement hex (`0xffffffff` = the array-1 loop
+        # idiom containment can never name).
         patches = [
           ./nix/patches/vostok-data-manifest-folded-comdat.patch
           ./nix/patches/vostok-ilt-thunk-resolution.patch
@@ -100,6 +107,7 @@
           ./nix/patches/vostok-grouped-section-names.patch
           ./nix/patches/vostok-legacy-data-not-into-comdat.patch
           ./nix/patches/vostok-data-hypothesis-must-contain.patch
+          ./nix/patches/vostok-canonical-alias-owner.patch
         ];
       };
 
