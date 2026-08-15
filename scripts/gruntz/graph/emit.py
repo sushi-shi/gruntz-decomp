@@ -88,6 +88,20 @@ PROJECT_MODS = _mods("compare/project.py", "compare/normalize.py", "manifest.py"
 REPORT_MODS = _mods("tool/objdiff.py")
 LINK_MODS = _mods("graph/link.py", "graph/implib.py", "tool/link.py",
                   "core/pe.py") + TOOL_MODS
+VERIFY_MODS = _mods("verify/", "model.py", "core/tsv.py", "core/paths.py")
+#: committed inputs of the default-tier verify gates (fast+normal): the MAX
+#: ledger and every gate's own baseline/allowlist. Named so a bless re-runs
+#: the check edge.
+VERIFY_BASELINES = [
+    "config/match_baseline.tsv",
+    "config/cleanliness/cleanliness-text-baseline.tsv",
+    "config/cleanliness/cleanliness-semantic-baseline.tsv",
+    "config/cleanliness/tu-order-baseline.tsv",
+    "config/cleanliness/data-tu-order-baseline.tsv",
+    "config/cleanliness/kept-comdat-exiles.tsv",
+]
+FINGERPRINTS = "build/gen/func_fingerprints.tsv"
+VERIFY_STAMP = "build/objdiff/.verify.stamp"
 CONFIGURE_MODS = _mods("graph/", "manifest.py", "core/paths.py")
 
 
@@ -401,14 +415,40 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                 implicit=REPORT_MODS)
         w.newline()
 
+        w.comment("=== verify: fingerprints (beside compare) + the tiered "
+                  "check (after) ===")
+        # The fingerprint cache is BINDINGS x sources x clangd; it needs no
+        # report, so ninja may schedule it alongside the compare leg - the
+        # ordering that matters is fingerprints-before-CHECK, and the check
+        # edge's inputs state it. The cache keeps the MAX gate's edit
+        # detection honest (a stale cache degrades TOUCHED/REGRESS).
+        w.rule("verify_fp", command="$py -m gruntz.verify fingerprints",
+               description="verify fingerprints", restat=True)
+        w.build(FINGERPRINTS, "verify_fp",
+                inputs=[u["source"] for u in units],
+                implicit=[graph.BINDINGS, MANIFEST, *VERIFY_MODS])
+        # The DEFAULT tiers only (fast+normal): the full/link tiers are
+        # opt-in (`gruntz verify check --tier full`). A failing gate fails
+        # the build - the gates are FATAL, and their committed baselines are
+        # how known debt is carried.
+        w.rule("verify_check",
+               command="$py -m gruntz.verify check && touch $out",
+               description="verify check (MAX gate + fast+normal tiers)")
+        w.build(VERIFY_STAMP, "verify_check",
+                inputs=[graph.REPORT_JSON, FINGERPRINTS],
+                implicit=[MANIFEST, *VERIFY_BASELINES, *VERIFY_MODS])
+        w.newline()
+
         w.comment("=== aliases ===")
         w.build("base", "phony", inputs=base_objs)
         w.build("claims", "phony", inputs=fragments)
         w.build("target", "phony", inputs=[graph.DELINK_STAMP])
         w.build("compare", "phony", inputs=[graph.REPORT_JSON])
+        w.build("verify", "phony", inputs=[VERIFY_STAMP])
         w.build("all", "phony",
                 inputs=base_objs + [graph.BINDINGS, graph.DELINK_STAMP,
-                                    graph.OBJDIFF_JSON, graph.REPORT_JSON])
+                                    graph.OBJDIFF_JSON, graph.REPORT_JSON,
+                                    VERIFY_STAMP])
         w.default(["all"])
         w.newline()
 

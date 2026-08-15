@@ -223,14 +223,26 @@ def cmd_status(argv) -> int:
 
 def cmd_check(argv) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify check",
-                                 description="the MAX gate")
+                                 description="the MAX gate + the tiered gates")
     ap.add_argument("--report", type=str, default=None)
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--strict", action="store_true",
                     help="also fail on carried (inherited) regressions")
+    ap.add_argument("--tier", type=str, default=None,
+                    help="comma list of gate tiers to run after the MAX gate: "
+                         "fast|normal|full|link, or 'none' (default: "
+                         "fast,normal - what the graph's check edge runs; "
+                         "full/link are opt-in)")
     a = ap.parse_args(argv)
     a.report = Path(a.report) if a.report else None
-    return _report(a, gate=True)
+    rc = _report(a, gate=True)
+    from gruntz.verify import tiers
+    failed = tiers.run(tiers.parse_tiers(a.tier))
+    if failed:
+        print(f"\nTIER GATES FAILED: {failed} gate(s) - fix the finding, "
+              f"never weaken the gate (baselined debt is carried by each "
+              f"gate's own committed floor).")
+    return 1 if (rc or failed) else 0
 
 
 # --------------------------------------------------------------------------- #
