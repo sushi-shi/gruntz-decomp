@@ -51,7 +51,6 @@ DATA(0x0020e140)
 static char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
 DATA(0x0020e158)
 static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
-DATA(0x0020bcf4)
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
 #define DEATH_FRAME()                                                                              \

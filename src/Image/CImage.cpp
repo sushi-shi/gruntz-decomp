@@ -25,8 +25,6 @@
 #include <ddraw.h>
 #include <stdio.h>
 
-DATA(0x002bf28c)
-RECT g_imageClip = {0};
 DATA(0x002bf318)
 DDBLTFX g_bltFx = {0};
 DATA(0x002bf37c)
@@ -483,7 +481,7 @@ void CImage::RenderFrameClipped(
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
-            g_imageClip = *clipRect;
+            clip.m_clip = *clipRect;
         }
         this->RenderImage(&clip, target);
     }
