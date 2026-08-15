@@ -43,6 +43,11 @@ public:
 
     virtual void* CreateWorker(GameObjNotifyFn factory, const char* key, i32 flags);
 
+    // Out of line at 0x9cab0 in StreamRecordLoaders.cpp;
+    // <DDrawMgr/DDrawWorkerCacheFindInline.h> is the opt-in inline view
+    // (survivor: an in-class body leaves 0x9cab0 with NO emitter - cl 5.0
+    // plants the declined nested calls without emitting the COMDAT; measured
+    // 2026-08-15, ledger in docs/patterns/comdat-home-adjudicates-inline-spelling.md).
     CObject* Find(const char* key);
 
     CString FindKeyOfValue(CObject* target);

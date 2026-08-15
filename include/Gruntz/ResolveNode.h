@@ -61,9 +61,14 @@ public:
 
     CResolveNode();
 
-    // Out of line at 0x15b2c0 in WwdObjMgr.cpp; <Gruntz/ResolveNodeCtorInline.h> is the
-    // opt-in inline view of the same body for the one TU that expands it.
+    // Out of line at 0x15b2c0 in WwdObjMgr.cpp; the creators there call it.
     CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+
+    enum EInlineSeed {
+        INLINE_SEED
+    };
+    // The inline sibling 0x15b390 expands; defined in <Wwd/WwdFactoryObject.h>.
+    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineSeed);
 
     enum ENoSeed {
         NO_SEED

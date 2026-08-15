@@ -28,7 +28,6 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/MotionStateSetZInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -53,8 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001eaa88)
-const double g_motionZScale = 0.001;
 DATA(0x001eaad8)
 const double g_boomHalf = 0.5;
 DATA(0x001eaae0)

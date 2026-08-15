@@ -59,9 +59,6 @@ CString __stdcall operator+(const char* lhs, const CString& rhs);
 CString __stdcall operator+(const CString& lhs, const char* rhs);
 
 extern i32 g_movingSeed;
-// retail 0x001e9738: this TU owns the 0.001 FP pool slot; its only reader
-// (0x00047b3d) is not reconstructed yet, so the pin lives on a named const.
-extern const double g_val_1e9738;
 
 class CGrunt;
 

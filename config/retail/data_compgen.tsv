@@ -1029,3 +1029,5 @@ rva	size	name	owner	class
 0x002c2798	0x4	?holdrand@?1??GetRandomNumber@CAniRecordView@@QAEHXZ@4JA	include/Gruntz/AniRecordView.h:CAniRecordView::GetRandomNumber	common
 0x002c279c	0x1	??_B?1??GetRandomNumber@CFaderSine@@QAEHXZ@51	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber	common
 0x002c27a8	0x4	?holdrand@?1??GetRandomNumber@CFaderSine@@QAEHXZ@4JA	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber	common
+0x001e9738	0x8	$T2004792	grunt	fppool
+0x001eaa88	0x8	$T2009736	projectile	fppool

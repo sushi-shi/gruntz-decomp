@@ -13,7 +13,6 @@
 #include <Rez/FrameClock.h>
 #include <Wwd/MoveMode.h>
 
-extern const double g_motionZScale;
 extern const u32 g_defaultZ;
 
 class CMovingLogic : public CUserLogic {
@@ -75,6 +74,7 @@ public:
 
 private:
     void InitOwner(const double& timeScale);
+    void BeginMotion();
 };
 
 // The untagged default ctor is out of line in SerialObjectFactory.cpp (0x13940); it
@@ -85,8 +85,24 @@ inline CMovingLogic::CMovingLogic(CUserLogic::EInlineBase) {}
 inline CMovingLogic::CMovingLogic(CMotionState::EInlineBase)
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
+// Two entities, one divergent statement (two-shapes-need-two-entities.md):
+// CMotionState::SetZ is out of line in GruntCombat.cpp (0x58ca0, cb 48-50 so
+// never exemption-inlined) and only CGrunt::CGrunt reaches it - the tagged
+// sibling below.  CProjectile::CProjectile seeds m_maxStep in place, so the
+// untagged ctor spells the three stores itself.
 inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
-    InitOwner(g_motionZScale);
+    InitOwner(0.001);
+    double z = static_cast<double>(g_defaultZ);
+    Motion()->m_maxStep.x = z;
+    Motion()->m_maxStep.y = z;
+    Motion()->m_maxStep.z = z;
+    BeginMotion();
+}
+
+inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(owner) {
+    InitOwner(0.001);
+    m_motion.SetZ(static_cast<double>(g_defaultZ));
+    BeginMotion();
 }
 
 inline void CMovingLogic::InitOwner(const double& timeScale) {
@@ -127,7 +143,9 @@ inline void CMovingLogic::InitOwner(const double& timeScale) {
         static_cast<double>(g_frameTime) * timeScale,
         0.0
     );
-    m_motion.SetZ(static_cast<double>(g_defaultZ));
+}
+
+inline void CMovingLogic::BeginMotion() {
     m_collisionFlags = 0;
     m_moveFlags = 0;
     m_object->m_moveMode = MOVE_DIRECT;

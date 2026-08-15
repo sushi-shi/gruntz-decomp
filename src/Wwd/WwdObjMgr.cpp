@@ -1351,9 +1351,11 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
     SeedFields();
 }
 
-// The out-of-line half of the visibility split: the three creators above carry
-// CGameObject's ctor body expanded but still `call` these two.  The TU that expands
-// them (WwdFactoryObject.cpp, inside 0x15b390) takes the *CtorInline.h views instead.
+// The three creators above call both three-argument ctors; these are the
+// out-of-line homes.  CGameObject's 0x15b390 (WwdFactoryObject.cpp) expands
+// CResolveNode's seed via the tagged inline sibling and AnimWorkerObj's via
+// the opt-in <DDrawMgr/AnimWorkerObjCtorInline.h> view (see the docs/patterns/comdat-home-adjudicates-inline-spelling.md
+// dossier: the creators' budget slices refute a single visible body for both).
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
     : CWapObj(owner, field04, field08, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {

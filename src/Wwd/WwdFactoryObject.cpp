@@ -18,7 +18,6 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/ResolveNode.h>
-#include <Gruntz/ResolveNodeCtorInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
@@ -71,7 +70,7 @@ i32 CGameObject::IsLoaded() {
 // the `call`s the three factories show.
 RVA(0x0015b390, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 stateFlags)
-    : CResolveNode(owner, id, stateFlags),
+    : CResolveNode(owner, id, stateFlags, CResolveNode::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
       m_shadow(WwdDirtyRect::INLINE_SEED) {
     AttachToOwner(owner, id);

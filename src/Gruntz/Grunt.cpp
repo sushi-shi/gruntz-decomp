@@ -48,7 +48,6 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InGameIcon.h>
-#include <Gruntz/MovingLogicGruntScaleInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -88,8 +87,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x001e9738)
-const double g_val_1e9738 = 0.001;
 DATA(0x001e9750)
 const double g_slopeNegHalf = -0.5;
 DATA(0x001e9758)
