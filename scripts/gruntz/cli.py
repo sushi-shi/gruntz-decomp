@@ -5,6 +5,7 @@
                                      tree-wide completeness sweep)
     gruntz model                     resolve claims x censuses -> bindings
     gruntz delink                    model -> synth pdb -> retail target objs
+    gruntz compare                   base vs target -> objdiff report + summary
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -17,7 +18,7 @@ from __future__ import annotations
 
 import sys
 
-TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil")
+TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -27,11 +28,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\ntools: {', '.join(TOOLS)}")
         return 0 if argv else 2
     cmd, rest = argv[0], argv[1:]
-    if cmd in ("labels", "model", "delink"):
+    if cmd in ("labels", "model", "delink", "compare"):
         import importlib
         mod = importlib.import_module(
             {"labels": "gruntz.retail_labels.source", "model": "gruntz.model",
-             "delink": "gruntz.delink.run"}[cmd])
+             "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
     if cmd == "init":
