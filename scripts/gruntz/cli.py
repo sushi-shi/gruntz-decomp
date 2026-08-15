@@ -1,6 +1,9 @@
 """gruntz - the umbrella CLI.
 
     gruntz tool <name> [args...]     drive one external tool (gruntz/tool/)
+    gruntz labels [--all|--unit U]   source labels -> claim fragments (+ the
+                                     tree-wide completeness sweep)
+    gruntz model                     resolve claims x censuses -> bindings
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -23,6 +26,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\ntools: {', '.join(TOOLS)}")
         return 0 if argv else 2
     cmd, rest = argv[0], argv[1:]
+    if cmd in ("labels", "model"):
+        import importlib
+        mod = importlib.import_module(
+            {"labels": "gruntz.retail_labels.source", "model": "gruntz.model"}[cmd])
+        sys.argv = [f"gruntz {cmd}", *rest]
+        return mod.main()
     if cmd == "init":
         from gruntz.tool import ToolError
         from gruntz.tool.wine import init_prefix, verify_prefix

@@ -1,8 +1,11 @@
-# The retail image's coarse LINK-LAYOUT bands - reviewed [lo, hi) bands over .text AND the
+# The retail image's coarse LINK-LAYOUT bands - DERIVED [lo, hi) bands over .text AND the
 # data sections. Bands classify REGIONS, not rows: unmatched reporting sorts by
 # band, and gruntz.audit.channels proves the few hard band<->kind invariants
 # (ilt-thunks rows are all kind=thunk, eh-band .text rows all kind=eh, bands
-# tile their sections). Membership of individual label rows is NOT gated - kept
+# tile their sections). Like link_order.tsv this is derivable (ILT/EH edges from
+# bytes, the cmdline/pulled-libs split from link_order class transitions, data
+# groups from the link-section analysis) - do not hand-edit beyond admitting a
+# newly proven edge. Membership of individual label rows is NOT gated - kept
 # COMDATs genuinely interleave library bodies into cmdline contributions.
 #
 # .text evidence: the ILT E9 run + 0xCC reserve is measured (core/pe.py); the

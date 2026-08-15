@@ -55,7 +55,8 @@ Bases:
   the image + the current enrolment every build.
 - **`link_bands.tsv`** — the image's coarse link-layout bands ([lo, hi) over
   `.text` and the data sections) for reporting and the hard band↔kind
-  invariants.
+  invariants. DERIVED like link_order (bytes + link_order transitions), so
+  tracked-but-never-hand-edited; the rebuild grows its regenerator/check.
 
 Function providers:
 
