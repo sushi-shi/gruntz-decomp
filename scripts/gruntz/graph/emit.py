@@ -3,11 +3,13 @@
     python3 -m gruntz.graph            # (re)write build/build.ninja
     ninja -f build/build.ninja         # run the loop, from the repo root
 
-Nine rules, in the order the loop runs them:
+Ten rules, in the order the loop runs them:
 
     configure  the generator edge - re-emits this manifest when the unit
                census, the emitter, or ANY file the include scan read changes
     cl         source -> build/objdiff/base/<unit>.obj   (gruntz.graph.cc)
+    compdb     units.toml -> build/clangd/compile_commands.json - the clang-cl
+               flags extraction and the LSP consumers ride (gruntz.graph.compdb)
     labels     source + base obj -> build/gen/claims/<unit>.tsv
     model      claims x censuses/providers -> build/gen/bindings.tsv
     delink     bindings -> build/objdiff/target-new/<unit>.c.obj
@@ -24,8 +26,8 @@ ninja re-running the whole delink on every build), and `normalize` writes a
 variable pair of copies per unit. Both drivers are keyed on content upstream,
 so the stamp only moves when something real did.
 
-Restat is on `cl`, `labels`, `model` and `project` - the four producers that
-write if-changed. That is the whole incrementality story: a pure code edit
+Restat is on `cl`, `compdb`, `labels`, `model` and `project` - the producers
+that write if-changed. That is the whole incrementality story: a pure code edit
 re-runs cl + labels, stops at an unchanged claim fragment, and reaches the
 report without re-delinking; a label edit carries on through model, delink
 and the pairing.
@@ -77,6 +79,8 @@ def _mods(*rel: str) -> list[str]:
 #: toolchain would re-run all of them whenever an unrelated module is touched.
 TOOL_MODS = _mods("tool/__init__.py", "tool/wine.py", "core/paths.py")
 CL_MODS = _mods("graph/cc.py", "tool/cl.py") + TOOL_MODS
+COMPDB_MODS = _mods("graph/compdb.py", "tool/clang.py", "manifest.py",
+                    "core/paths.py")
 LABELS_MODS = _mods("retail_labels/", "tool/clang.py", "core/coff.py",
                     "core/tsv.py", "manifest.py", "core/paths.py")
 MODEL_MODS = _mods("model.py", "retail_labels/", "core/tsv.py", "core/paths.py")
@@ -330,6 +334,18 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                     variables=variables)
         w.newline()
 
+        w.comment("=== compdb: units.toml -> the clang-cl compilation db ===")
+        # Written if-changed + restat, so a manifest edit that leaves every
+        # surviving entry intact re-runs nothing downstream. Extraction reads
+        # per-TU flags from this file and a unit with NO entry silently falls
+        # back to bare MS flags - the edge is what keeps that from rotting.
+        # (A toolchain re-pin moves only $MSVC_DIR/$DXSDK_DIR, which ninja
+        # cannot see: run `python3 -m gruntz.graph.compdb` once after one.)
+        w.rule("compdb", command="$py -m gruntz.graph.compdb --quiet",
+               description="compdb", restat=True)
+        w.build(COMPDB, "compdb", inputs=MANIFEST, implicit=COMPDB_MODS)
+        w.newline()
+
         w.comment("=== labels: source + base obj -> per-unit claim fragment ===")
         # One TU's clang IR pass per edge (the expensive step), so a single
         # edit re-extracts only THAT unit. Fragments are written if-changed and
@@ -337,14 +353,13 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         # reaches model/delink.
         w.rule("labels", command="$py -m gruntz.retail_labels.source --unit $unit",
                description="labels $unit", restat=True)
-        compdb = [COMPDB] if (REPO / COMPDB).exists() else []
         fragments = []
         for u in units:
             frag = f"{graph.CLAIMS_DIR}/{u['unit']}.tsv"
             fragments.append(frag)
             w.build(frag, "labels", inputs=u["source"],
                     implicit=[f"{graph.BASE_DIR}/{u['unit']}.obj", MANIFEST,
-                              *compdb, *LABELS_MODS],
+                              COMPDB, *LABELS_MODS],
                     variables={"unit": u["unit"]})
         w.newline()
 
@@ -426,7 +441,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                description="verify fingerprints", restat=True)
         w.build(FINGERPRINTS, "verify_fp",
                 inputs=[u["source"] for u in units],
-                implicit=[graph.BINDINGS, MANIFEST, *VERIFY_MODS])
+                implicit=[graph.BINDINGS, MANIFEST, COMPDB, *VERIFY_MODS])
         # The DEFAULT tiers only (fast+normal): the full/link tiers are
         # opt-in (`gruntz verify check --tier full`). A failing gate fails
         # the build - the gates are FATAL, and their committed baselines are
