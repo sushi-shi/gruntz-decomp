@@ -117,11 +117,19 @@ def _reg(*args: str, capture: bool = False) -> subprocess.CompletedProcess:
 def ensure_link_deps() -> None:
     """link.exe statically imports MSDIS100.DLL, which itself imports
     MSVCP50.DLL. Toolchain r3+ bundles both beside link.exe (the app dir wins
-    the DLL search), so this is a presence check, not provisioning."""
-    for name in ("msdis100.dll", "msvcp50.dll"):
-        if find_ci(msvc_dir() / "bin", name) is None:
-            raise ToolError(f"{name} missing from the toolchain - re-pin the "
-                            "r3+ toolchain release")
+    the DLL search); a pre-r3 prefix may instead carry the import-free stub
+    MSDIS100.DLL in syswow64, which loads without MSVCP50 - accept whichever
+    resolves."""
+    if find_ci(msvc_dir() / "bin", "msdis100.dll") is not None:
+        if find_ci(msvc_dir() / "bin", "msvcp50.dll") is None:
+            raise ToolError("msdis100.dll present but msvcp50.dll missing "
+                            "from the toolchain - re-pin the r3+ release")
+        return
+    prefix = Path(os.environ.get("WINEPREFIX") or Path.home() / ".wine")
+    if find_ci(prefix / "drive_c/windows/syswow64", "msdis100.dll") is not None:
+        return
+    raise ToolError("msdis100.dll missing (toolchain bin/ and the prefix) - "
+                    "re-pin the r3+ toolchain release")
 
 
 def init_prefix(force: bool = False) -> None:

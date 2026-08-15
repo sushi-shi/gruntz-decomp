@@ -6,6 +6,16 @@
     gruntz model                     resolve claims x censuses -> bindings
     gruntz delink                    model -> synth pdb -> retail target objs
     gruntz compare                   base vs target -> objdiff report + summary
+    gruntz build                     configure-if-needed + ninja (the loop:
+                                     cl -> labels -> model -> delink -> compare)
+    gruntz link                      the opt-in candidate link (EXE + .map)
+    gruntz match                     build, then the compare summary for the
+                                     units whose objs changed
+    gruntz configure                 re-emit build/build.ninja
+    gruntz sema <sub>                read-only investigation views (disasm,
+                                     xref, rva, vtable, classof, strings, ...)
+    gruntz walls <sub>               the wall campaign: inventory, diagnose,
+                                     inline-model
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -18,7 +28,8 @@ from __future__ import annotations
 
 import sys
 
-TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff")
+TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff",
+         "objdump")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -35,6 +46,16 @@ def main(argv: list[str] | None = None) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
+    if cmd in ("sema", "walls"):
+        import importlib
+        return importlib.import_module(f"gruntz.{cmd}").main(rest)
+    if cmd in ("build", "link", "match"):
+        from gruntz.graph.verbs import VERBS
+        return VERBS[cmd](rest)
+    if cmd == "configure":
+        from gruntz.graph.emit import main as configure
+        sys.argv = ["gruntz configure", *rest]
+        return configure()
     if cmd == "init":
         from gruntz.tool import ToolError
         from gruntz.tool.wine import init_prefix, verify_prefix
