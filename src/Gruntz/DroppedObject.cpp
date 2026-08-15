@@ -48,22 +48,22 @@ const double g_objDropDiv = 32.0;
 DATA(0x001eaa00)
 const double g_dropFallBias = -0.5;
 
-RVA_DYNINIT(0x000c5ee0, 0xa, int)
-RVA_DYNINIT(0x000c5f00, 0x15, int)
-RVA_DYNINIT(0x000c5f30, 0xe, int)
-RVA_DYNINIT(0x000c5f50, 0x1f, int)
+RVA_DYNINIT(0x000c5ee0, 0xa, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f00, 0x15, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f30, 0xe, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f50, 0x1f, CActRegPool<CObjectDropper>::s_table)
 template<> DATA(0x0024be90)
 CActReg CActRegPool<CObjectDropper>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000c6b30, 0xa, int)
-RVA_DYNINIT(0x000c6b50, 0x15, int)
-RVA_DYNINIT(0x000c6b80, 0xe, int)
-RVA_DYNINIT(0x000c6ba0, 0x1f, int)
+RVA_DYNINIT(0x000c6b30, 0xa, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6b50, 0x15, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6b80, 0xe, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6ba0, 0x1f, CActRegPool<CDroppedObject>::s_table)
 template<> DATA(0x0024bed8)
 CActReg CActRegPool<CDroppedObject>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000c76b0, 0xa, int)
-RVA_DYNINIT(0x000c76d0, 0x15, int)
-RVA_DYNINIT(0x000c7700, 0xe, int)
-RVA_DYNINIT(0x000c7720, 0x1f, int)
+RVA_DYNINIT(0x000c76b0, 0xa, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c76d0, 0x15, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c7700, 0xe, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c7720, 0x1f, CActRegPool<CDroppedObjectShadow>::s_table)
 template<> DATA(0x0024bf00)
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

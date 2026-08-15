@@ -33,10 +33,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x000fbb50, 0xa, int)
-RVA_DYNINIT(0x000fbb70, 0x15, int)
-RVA_DYNINIT(0x000fbba0, 0xe, int)
-RVA_DYNINIT(0x000fbbc0, 0x1f, int)
+RVA_DYNINIT(0x000fbb50, 0xa, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbb70, 0x15, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbba0, 0xe, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbbc0, 0x1f, CActRegPool<CStaticHazard>::s_table)
 template<> DATA(0x0024e3d0)
 CActReg CActRegPool<CStaticHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

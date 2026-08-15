@@ -18,10 +18,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0010c410, 0xa, int)
-RVA_DYNINIT(0x0010c430, 0x15, int)
-RVA_DYNINIT(0x0010c460, 0xe, int)
-RVA_DYNINIT(0x0010c480, 0x1f, int)
+RVA_DYNINIT(0x0010c410, 0xa, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c430, 0x15, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c460, 0xe, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c480, 0x1f, CActRegPool<CStatusBarSprite>::s_table)
 template<> DATA(0x0024e670)
 CActReg CActRegPool<CStatusBarSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -59,10 +59,10 @@ i32 CreateToobSpikez(CGameObject* obj) {
     return 1;
 }
 
-RVA_DYNINIT(0x001147c0, 0xa, int)
-RVA_DYNINIT(0x001147e0, 0x15, int)
-RVA_DYNINIT(0x00114810, 0xe, int)
-RVA_DYNINIT(0x00114830, 0x1f, int)
+RVA_DYNINIT(0x001147c0, 0xa, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x001147e0, 0x15, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x00114810, 0xe, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x00114830, 0x1f, CActRegPool<CToobSpikez>::s_table)
 template<> DATA(0x0024e978)
 CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -22,10 +22,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0007f520, 0xa, int)
-RVA_DYNINIT(0x0007f540, 0x15, int)
-RVA_DYNINIT(0x0007f570, 0xe, int)
-RVA_DYNINIT(0x0007f590, 0x1f, int)
+RVA_DYNINIT(0x0007f520, 0xa, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f540, 0x15, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f570, 0xe, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f590, 0x1f, CActRegPool<CGruntToySprite>::s_table)
 template<> DATA(0x00244d58)
 CActReg CActRegPool<CGruntToySprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)

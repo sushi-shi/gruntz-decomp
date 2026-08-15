@@ -27,10 +27,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0009d120, 0xa, int)
-RVA_DYNINIT(0x0009d140, 0x15, int)
-RVA_DYNINIT(0x0009d170, 0xe, int)
-RVA_DYNINIT(0x0009d190, 0x1f, int)
+RVA_DYNINIT(0x0009d120, 0xa, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d140, 0x15, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d170, 0xe, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d190, 0x1f, CActRegPool<CLightFx>::s_table)
 template<> DATA(0x00245ad0)
 CActReg CActRegPool<CLightFx>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

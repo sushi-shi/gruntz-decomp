@@ -67,10 +67,10 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     m_objAux->m_actKey = ActFindId("A");
 }
 
-RVA_DYNINIT(0x0003e8c0, 0xa, int)
-RVA_DYNINIT(0x0003e8e0, 0x15, int)
-RVA_DYNINIT(0x0003e910, 0xe, int)
-RVA_DYNINIT(0x0003e930, 0x1f, int)
+RVA_DYNINIT(0x0003e8c0, 0xa, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e8e0, 0x15, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e910, 0xe, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e930, 0x1f, CActRegPool<CGruntCreationPoint>::s_table)
 template<> DATA(0x00244700)
 CActReg CActRegPool<CGruntCreationPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

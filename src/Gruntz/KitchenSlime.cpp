@@ -39,10 +39,10 @@
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 
-RVA_DYNINIT(0x000b28a0, 0xa, int)
-RVA_DYNINIT(0x000b28c0, 0x15, int)
-RVA_DYNINIT(0x000b28f0, 0xe, int)
-RVA_DYNINIT(0x000b2910, 0x1f, int)
+RVA_DYNINIT(0x000b28a0, 0xa, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b28c0, 0x15, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b28f0, 0xe, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b2910, 0x1f, CActRegPool<CKitchenSlime>::s_table)
 template<> DATA(0x00246228)
 CActReg CActRegPool<CKitchenSlime>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

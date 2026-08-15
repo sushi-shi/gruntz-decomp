@@ -32,10 +32,10 @@
 #include <math.h>
 #include <string.h>
 
-RVA_DYNINIT(0x000afd40, 0xa, int)
-RVA_DYNINIT(0x000afd60, 0x15, int)
-RVA_DYNINIT(0x000afd90, 0xe, int)
-RVA_DYNINIT(0x000afdb0, 0x1f, int)
+RVA_DYNINIT(0x000afd40, 0xa, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afd60, 0x15, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afd90, 0xe, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afdb0, 0x1f, CActRegPool<CRollingBall>::s_table)
 template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

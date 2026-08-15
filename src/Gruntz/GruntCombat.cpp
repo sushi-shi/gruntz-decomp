@@ -171,10 +171,10 @@ RVA_DYNINIT(0x0005b9d0, 0x1f, g_gruntDirSouthWest)
 DATA(0x00244b48)
 GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 
-RVA_DYNINIT(0x0005bc30, 0xa, int)
-RVA_DYNINIT(0x0005bc50, 0x15, int)
-RVA_DYNINIT(0x0005bc80, 0xe, int)
-RVA_DYNINIT(0x0005bca0, 0x1f, int)
+RVA_DYNINIT(0x0005bc30, 0xa, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bc50, 0x15, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bc80, 0xe, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bca0, 0x1f, CActRegPool<CGrunt>::s_table)
 template<> DATA(0x00244af0)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

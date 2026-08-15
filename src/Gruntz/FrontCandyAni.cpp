@@ -19,10 +19,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x000ad110, 0xa, int)
-RVA_DYNINIT(0x000ad130, 0x15, int)
-RVA_DYNINIT(0x000ad160, 0xe, int)
-RVA_DYNINIT(0x000ad180, 0x1f, int)
+RVA_DYNINIT(0x000ad110, 0xa, CActRegPool<CFrontCandyAni>::s_table)
+RVA_DYNINIT(0x000ad130, 0x15, CActRegPool<CFrontCandyAni>::s_table)
+RVA_DYNINIT(0x000ad160, 0xe, CActRegPool<CFrontCandyAni>::s_table)
+RVA_DYNINIT(0x000ad180, 0x1f, CActRegPool<CFrontCandyAni>::s_table)
 template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

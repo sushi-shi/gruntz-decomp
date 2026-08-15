@@ -13,10 +13,10 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Wap32/ZVec.h>
 
-RVA_DYNINIT(0x000ab510, 0xa, int)
-RVA_DYNINIT(0x000ab530, 0x15, int)
-RVA_DYNINIT(0x000ab560, 0xe, int)
-RVA_DYNINIT(0x000ab580, 0x1f, int)
+RVA_DYNINIT(0x000ab510, 0xa, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab530, 0x15, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab560, 0xe, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab580, 0x1f, CActRegPool<CSingleFrameMessage>::s_table)
 template<> DATA(0x00245ef0)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

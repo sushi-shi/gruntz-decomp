@@ -31,22 +31,22 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x00045fe0, 0xa, int)
-RVA_DYNINIT(0x00046000, 0x15, int)
-RVA_DYNINIT(0x00046030, 0xe, int)
-RVA_DYNINIT(0x00046050, 0x1f, int)
+RVA_DYNINIT(0x00045fe0, 0xa, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00046000, 0x15, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00046030, 0xe, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00046050, 0x1f, CActRegPool<CFortressFlag>::s_table)
 template<> DATA(0x00244638)
 CActReg CActRegPool<CFortressFlag>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x00046c90, 0xa, int)
-RVA_DYNINIT(0x00046cb0, 0x15, int)
-RVA_DYNINIT(0x00046ce0, 0xe, int)
-RVA_DYNINIT(0x00046d00, 0x1f, int)
+RVA_DYNINIT(0x00046c90, 0xa, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046cb0, 0x15, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046ce0, 0xe, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046d00, 0x1f, CActRegPool<CParticlez>::s_table)
 template<> DATA(0x00244870)
 CActReg CActRegPool<CParticlez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000472b0, 0xa, int)
-RVA_DYNINIT(0x000472d0, 0x15, int)
-RVA_DYNINIT(0x00047300, 0xe, int)
-RVA_DYNINIT(0x00047320, 0x1f, int)
+RVA_DYNINIT(0x000472b0, 0xa, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x000472d0, 0x15, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x00047300, 0xe, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x00047320, 0x1f, CActRegPool<CExplosion>::s_table)
 template<> DATA(0x002447f8)
 CActReg CActRegPool<CExplosion>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

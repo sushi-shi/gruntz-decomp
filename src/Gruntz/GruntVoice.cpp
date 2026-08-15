@@ -37,16 +37,16 @@
 #include <Wap32/ZVec.h>
 #include <Wwd/AnimWorkerAct.h>
 
-RVA_DYNINIT(0x00119da0, 0xa, int)
-RVA_DYNINIT(0x00119dc0, 0x15, int)
-RVA_DYNINIT(0x00119df0, 0xe, int)
-RVA_DYNINIT(0x00119e10, 0x1f, int)
+RVA_DYNINIT(0x00119da0, 0xa, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x00119dc0, 0x15, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x00119df0, 0xe, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x00119e10, 0x1f, CActRegPool<CGruntVoice>::s_table)
 template<> DATA(0x002514d8)
 CActReg CActRegPool<CGruntVoice>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0011a300, 0xa, int)
-RVA_DYNINIT(0x0011a320, 0x15, int)
-RVA_DYNINIT(0x0011a350, 0xe, int)
-RVA_DYNINIT(0x0011a370, 0x1f, int)
+RVA_DYNINIT(0x0011a300, 0xa, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a320, 0x15, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a350, 0xe, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a370, 0x1f, CActRegPool<CVoiceTrigger>::s_table)
 template<> DATA(0x00251500)
 CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

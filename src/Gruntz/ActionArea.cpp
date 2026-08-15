@@ -26,10 +26,10 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-RVA_DYNINIT(0x00008040, 0xa, int)
-RVA_DYNINIT(0x00008060, 0x15, int)
-RVA_DYNINIT(0x00008090, 0xe, int)
-RVA_DYNINIT(0x000080b0, 0x1f, int)
+RVA_DYNINIT(0x00008040, 0xa, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x00008060, 0x15, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x00008090, 0xe, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x000080b0, 0x1f, CActRegPool<CActionArea>::s_table)
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

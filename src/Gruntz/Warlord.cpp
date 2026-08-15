@@ -55,10 +55,10 @@ static char s__IDLE[] = "_IDLE";
 DATA(0x0020d374)
 static char s__BATTLECRY[] = "_BATTLECRY";
 
-RVA_DYNINIT(0x000445a0, 0xa, int)
-RVA_DYNINIT(0x000445c0, 0x15, int)
-RVA_DYNINIT(0x000445f0, 0xe, int)
-RVA_DYNINIT(0x00044610, 0x1f, int)
+RVA_DYNINIT(0x000445a0, 0xa, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x000445c0, 0x15, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x000445f0, 0xe, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x00044610, 0x1f, CActRegPool<CWarlord>::s_table)
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

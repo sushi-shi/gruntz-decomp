@@ -11,10 +11,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x000aaee0, 0xa, int)
-RVA_DYNINIT(0x000aaf00, 0x15, int)
-RVA_DYNINIT(0x000aaf30, 0xe, int)
-RVA_DYNINIT(0x000aaf50, 0x1f, int)
+RVA_DYNINIT(0x000aaee0, 0xa, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaf00, 0x15, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaf30, 0xe, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaf50, 0x1f, CActRegPool<CAniCycle>::s_table)
 template<> DATA(0x00246088)
 CActReg CActRegPool<CAniCycle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

@@ -12,10 +12,10 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x000ae980, 0xa, int)
-RVA_DYNINIT(0x000ae9a0, 0x15, int)
-RVA_DYNINIT(0x000ae9d0, 0xe, int)
-RVA_DYNINIT(0x000ae9f0, 0x1f, int)
+RVA_DYNINIT(0x000ae980, 0xa, CActRegPool<CSingleAnimation>::s_table)
+RVA_DYNINIT(0x000ae9a0, 0x15, CActRegPool<CSingleAnimation>::s_table)
+RVA_DYNINIT(0x000ae9d0, 0xe, CActRegPool<CSingleAnimation>::s_table)
+RVA_DYNINIT(0x000ae9f0, 0x1f, CActRegPool<CSingleAnimation>::s_table)
 template<> DATA(0x00245f70)
 CActReg CActRegPool<CSingleAnimation>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

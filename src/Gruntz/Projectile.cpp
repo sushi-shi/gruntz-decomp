@@ -75,16 +75,16 @@ DATA(0x001f04e8)
 // retail 0x001f04e8 holds 0x18 in .rdata, so the default is 24 and const.
 const u32 g_defaultZ = 24;
 
-RVA_DYNINIT(0x000df900, 0xa, int)
-RVA_DYNINIT(0x000df920, 0x15, int)
-RVA_DYNINIT(0x000df950, 0xe, int)
-RVA_DYNINIT(0x000df970, 0x1f, int)
+RVA_DYNINIT(0x000df900, 0xa, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df920, 0x15, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df950, 0xe, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df970, 0x1f, CActRegPool<CProjectile>::s_table)
 template<> DATA(0x0024c758)
 CActReg CActRegPool<CProjectile>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000e1790, 0xa, int)
-RVA_DYNINIT(0x000e17b0, 0x15, int)
-RVA_DYNINIT(0x000e17e0, 0xe, int)
-RVA_DYNINIT(0x000e1800, 0x1f, int)
+RVA_DYNINIT(0x000e1790, 0xa, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e17b0, 0x15, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e17e0, 0xe, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e1800, 0x1f, CActRegPool<CTimeBomb>::s_table)
 template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

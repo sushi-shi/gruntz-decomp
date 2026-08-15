@@ -14,10 +14,10 @@
 
 #include <stdlib.h>
 
-RVA_DYNINIT(0x000addc0, 0xa, int)
-RVA_DYNINIT(0x000adde0, 0x15, int)
-RVA_DYNINIT(0x000ade10, 0xe, int)
-RVA_DYNINIT(0x000ade30, 0x1f, int)
+RVA_DYNINIT(0x000addc0, 0xa, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000adde0, 0x15, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000ade10, 0xe, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000ade30, 0x1f, CActRegPool<CMenuSparkle>::s_table)
 template<> DATA(0x00246010)
 CActReg CActRegPool<CMenuSparkle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 

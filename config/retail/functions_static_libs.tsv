@@ -780,8 +780,6 @@ rva	name	lib	confidence	source
 0x16cd50	?stossc@streambuf@@QAEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x16cda0	?sgetc@streambuf@@QAEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x16e190	__fpclear	LIBCMT	LOW	anchored
-0x16e6d0	___inittime	LIBCMT	MED	manual-unmatched-library-audit
-0x16e790	___inittime	LIBCMT	MED	manual-unmatched-library-audit
 0x174330	__fpclear	LIBCMT	LOW	anchored
 0x174890	__fpclear	LIBCMT	LOW	anchored
 0x177660	_DirectPlayLobbyCreateA@20	DPLAYX	HIGH	reloc-R24
