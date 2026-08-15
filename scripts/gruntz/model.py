@@ -101,7 +101,13 @@ def _repair_ordinals(claims: list[Claim], violations: list[str]) -> list[Claim]:
     objs: dict[str, set[str] | None] = {}
     unresolved: list[str] = []
     out: list[Claim] = []
-    strip = lambda n: re.sub(r"\$S[0-9]+", "$S", n)  # noqa: E731
+    # The trailing CodeView ordinal always renumbers; an interior `$S<n>`
+    # (an anonymous local static's front-end name) drifts too, only slower.
+    # Stage 1 keeps the interior number (it disambiguates when one scope
+    # holds several anonymous statics); stage 2 strips every number on BOTH
+    # sides and demands uniqueness, healing interior drift.
+    strip = lambda n: _CANON_S_RE.sub("$S", n)  # noqa: E731
+    full_strip = lambda n: re.sub(r"\$S[0-9]+", "$S", n)  # noqa: E731
     for c in claims:
         if not (c.name.startswith("_") and _CANON_S_RE.search(c.name)) \
                 or c.name.endswith(tuple("0123456789")):
@@ -115,6 +121,9 @@ def _repair_ordinals(claims: list[Claim], violations: list[str]) -> list[Claim]:
                 objs[c.unit] = None
         syms = objs[c.unit]
         hits = [n for n in syms if strip(n) == c.name] if syms else []
+        if len(hits) != 1 and syms:
+            want = full_strip(c.name)
+            hits = [n for n in syms if full_strip(n) == want]
         if len(hits) == 1:
             out.append(c._replace(name=hits[0]))
         else:

@@ -49,7 +49,7 @@ RVA_COMPGEN_RE = re.compile(
     r"\s*([^\s,)]+)\s*\)")
 RVA_DYNINIT_RE = re.compile(
     r"\bRVA_DYNINIT\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,"
-    r"\s*([A-Za-z_][A-Za-z0-9_:]*)\s*\)")
+    r"\s*([A-Za-z_][A-Za-z0-9_:<>]*)\s*\)")
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_DATA_RE = re.compile(r"^data:(0x[0-9a-fA-F]+)$")
 
@@ -63,7 +63,7 @@ ANN_DATA_RE = re.compile(r"^data:(0x[0-9a-fA-F]+)$")
 #      LEFT (clang always writes `?1`; MSVC spells 1..10 as digits `0`..`9`
 #      and larger as hex `A..P@`), and appends `$S<n>`.
 CLANG_Q_ARRAY_RE = re.compile(r"@@([0-9])Q")
-POOL_ID_RE_TMPL = r"^%s\$S[0-9]+$"
+POOL_ID_RE_TMPL = r"^_?%s\$S[0-9]+$"
 LOCAL_STATIC_SCOPE_RE = re.compile(r"^(\?[^@]+@)\?[0-9]+(\?\?.+)$")
 
 
@@ -374,8 +374,10 @@ def sweep_sites() -> dict[str, dict[int, str]]:
     return out
 
 
-def check_completeness() -> list[str]:
-    """The oracle over extraction: every site accounted for, loudly."""
+def check_completeness(explained: set[int] = frozenset()) -> list[str]:
+    """The oracle over extraction: every site accounted for, loudly.
+    `explained` rvas already have a louder same-run drop report; the sweep
+    stays silent on those instead of restating one root cause twice."""
     from gruntz.retail_labels.fragments import all_claims
     sites = sweep_sites()
     have: dict[str, set[int]] = {}
@@ -392,7 +394,7 @@ def check_completeness() -> list[str]:
                                 f"header static belongs in data_compgen.tsv "
                                 f"(FATAL)")
                 continue
-            if rva not in have.get(channel, set()):
+            if rva not in have.get(channel, set()) and rva not in explained:
                 problems.append(f"{macro}(0x{rva:06x}) at {wheres[0]} is in "
                                 f"NO fragment - silently lost label (FATAL)")
             if len(wheres) > 1 and macro != "RVA":
@@ -450,15 +452,24 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
     # dropped by every unit is a lost label.
     from gruntz.retail_labels.fragments import all_claims
     claimed = {c.rva for c in all_claims()}
+    drops: dict[int, list[str]] = {}
     for pr in raw:
         if isinstance(pr, tuple):
-            _tag, rva, msg = pr
-            if rva not in claimed:
-                problems.append(msg + " and NO other unit claims the rva (FATAL)")
+            drops.setdefault(pr[1], []).append(pr[2])
         else:
             problems.append(pr)
+    fatal_rvas = set()
+    for rva, msgs in sorted(drops.items()):
+        if rva in claimed:
+            continue
+        fatal_rvas.add(rva)
+        tail = " and NO other unit claims the rva"
+        if len(msgs) > 1:
+            units = ", ".join(sorted(m.split(":", 1)[0] for m in msgs))
+            tail += f" - {len(msgs)} units dropped it ({units})"
+        problems.append(msgs[0] + tail + " (FATAL)")
     if only_units is None:
-        problems.extend(check_completeness())
+        problems.extend(check_completeness(fatal_rvas))
     return changed, problems
 
 
