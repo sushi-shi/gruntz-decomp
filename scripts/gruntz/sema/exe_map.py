@@ -157,7 +157,7 @@ def render_html(rows: list[dict]) -> str:
         f"<td>{r['file']}</td></tr>" for r in multi)
     return f"""<!doctype html>
 <meta charset="utf-8">
-<title>scatter_core - one fragment per TU</title>
+<title>Gruntz exe-map</title>
 <style>
  body {{ font: 14px/1.5 system-ui, sans-serif; margin: 2rem auto;
         max-width: 60rem; color: #1a1a1a; background: #fff; }}
