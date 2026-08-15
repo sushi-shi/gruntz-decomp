@@ -1,0 +1,65 @@
+"""gruntz.tool.pdbutil - llvm-pdbutil (native).
+
+    gruntz tool pdbutil --pdb <out.pdb> --yaml <in.yaml>     (yaml2pdb)
+
+In-process:
+    from gruntz.tool import pdbutil
+    pdbutil.yaml2pdb(yaml_path, pdb_path)
+    text = pdbutil.dump(pdb_path, "--streams")
+
+Runs the program and returns artifacts/stdout; interpreting the dump (e.g.
+finding an empty stream to repoint the DBI at) is the caller's business.
+"""
+
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+from gruntz.tool import ToolError
+
+
+def yaml2pdb(yaml_path: Path | str, pdb_path: Path | str,
+             timeout: float | None = 300) -> None:
+    """Produce `pdb_path` from a yaml2pdb description. Raises ToolError."""
+    yaml_path, pdb_path = Path(yaml_path), Path(pdb_path)
+    if not yaml_path.exists():
+        raise ToolError(f"yaml missing: {yaml_path}")
+    pdb_path.parent.mkdir(parents=True, exist_ok=True)
+    pdb_path.unlink(missing_ok=True)
+    r = subprocess.run(["llvm-pdbutil", "yaml2pdb", f"--pdb={pdb_path}",
+                        str(yaml_path)],
+                       capture_output=True, text=True, timeout=timeout)
+    if r.returncode != 0 or not pdb_path.exists():
+        tail = "\n".join((r.stderr or r.stdout).strip().splitlines()[-12:])
+        raise ToolError(f"yaml2pdb failed (rc={r.returncode}):\n{tail}")
+
+
+def dump(pdb_path: Path | str, *flags: str,
+         timeout: float | None = 120) -> str:
+    """`llvm-pdbutil dump <flags> <pdb>` stdout. Raises ToolError on failure."""
+    r = subprocess.run(["llvm-pdbutil", "dump", *flags, str(pdb_path)],
+                       capture_output=True, text=True, timeout=timeout)
+    if r.returncode != 0:
+        tail = "\n".join((r.stderr or r.stdout).strip().splitlines()[-12:])
+        raise ToolError(f"llvm-pdbutil dump failed (rc={r.returncode}):\n{tail}")
+    return r.stdout
+
+
+def main() -> int:
+    import argparse
+    import sys
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--pdb", required=True)
+    ap.add_argument("--yaml", required=True)
+    a = ap.parse_args()
+    try:
+        yaml2pdb(a.yaml, a.pdb)
+    except ToolError as e:
+        print(f"[pdbutil] {e}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
