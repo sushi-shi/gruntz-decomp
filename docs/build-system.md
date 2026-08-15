@@ -345,19 +345,16 @@ source-definition order; cross-TU order = object link order). `gruntz link
 Whole-binary byte-verification against retail is a later step (needs fuller
 reconstruction + the matched link order).
 
-The link also carries a **`.rsrc`**: there is no `rc.exe` in the toolchain, so
-`scripts/gruntz/build/rescomp.py` IS the resource compiler — it parses
-`src/Gruntz/Gruntz.rc` (tracked, genuine rc grammar: all 57 authorable resources —
-STRINGTABLEs, DIALOG/DIALOGEX, ACCELERATORS, VERSIONINFO, MFC DLGINIT, 91.5% of the
-payload) plus the 18 carried ICON/CURSOR art blobs (`config/retail/rsrc/data/`, the
-8.5% that has no text form) and writes the Win32 `.RES` container itself; `link.exe`
-(via its built-in `cvtres`) turns it into the section. All 75 resources come out
-byte-identical; the only differing bytes in the whole 123,260-byte section are the 75
-`OffsetToData` fields, shifted by the section placement. `rescomp check` — a
-normal-tier build gate — recompiles the `.rc` and byte-compares every payload against
-the retail image, so the "this text produces those bytes" claim is re-proven on every
-gated build. Only the art is still carried retail bytes; the manifest's `provenance`
-column says so per row.
+The link also carries a **`.rsrc`**, compiled from source by the REAL era
+resource compiler: toolchain r3's RC.EXE 5.00.1472.1, driven by `gruntz tool rc`
+over `src/Gruntz/Gruntz.rc` + the `.ico`/`.cur` files in `src/Gruntz/res/` (all
+75 resources as source; `config/retail/rsrc/` is deleted). `link.exe` (built-in
+`cvtres`) turns the `.res` into the section. All 75 resources come out
+byte-identical; the only differing bytes in the whole 123,260-byte section are
+the 75 `OffsetToData` fields, shifted by the section placement. `gruntz rsrc
+check` — the gate — recompiles the `.rc` and byte-compares every payload against
+the retail image, so the "this source produces those bytes" claim is re-proven
+on every gated run.
 
 **`docs/link-section-census.md`** classifies every byte of every remaining
 section delta (`python -m gruntz.audit.section_census [--bss] [--reloc]`). The

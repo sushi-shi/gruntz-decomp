@@ -22,6 +22,8 @@
     gruntz verify <sub>              status / check (the MAX gate) / bank
                                      (baseline + README, manual) /
                                      fingerprints
+    gruntz rsrc check                compile Gruntz.rc with era rc.exe,
+                                     byte-compare 75/75 vs the retail .rsrc
     gruntz init                      local setup (the build wine prefix; the
                                      dev-shell hook runs this at entry)
 
@@ -52,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
-    if cmd in ("sema", "walls", "ghidra", "verify"):
+    if cmd in ("sema", "walls", "ghidra", "verify", "rsrc"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd in ("build", "link", "match"):

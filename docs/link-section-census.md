@@ -53,21 +53,18 @@ So a section delta is meaningless until both sides use the same library/loose sp
 
 ## 1. `.rsrc` — was −123,260, is now **0**
 
-We emitted no resource section at all. The toolchain ships `cvtres.exe` 5.00.1668.1 and
-`link.exe` takes a `.RES` directly, but **no `rc.exe`** — so `gruntz.build.rescomp`
-writes the Win32 `.RES` container itself, and `configure.py` wires it into
-`ninja candidate`.
+The section is compiled from source by the REAL era resource compiler: toolchain
+r3 bundles RC.EXE 5.00.1472.1 (+ RCDLL.DLL), `gruntz tool rc` drives it, and
+`gruntz rsrc check` is the gate (`scripts/gruntz/rsrc/`).
 
-`python -m gruntz.build.rescomp verify`:
+The standing proof:
 
 * `.rsrc` vsize **123,260 = 123,260**, all **75/75** resources present, all 75 payloads
   **byte-identical**;
-* every differing raw byte lies inside the **75**
+* in the candidate link every differing raw byte lies inside the **75**
   `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData` dwords, each at an identical
   section-relative site and shifted by exactly the section-placement delta. **Zero
-  unexplained bytes.** (The count of differing bytes moves with the delta as the
-  earlier sections grow — 139 at +0x9000, 140 at +0xC000 — the invariant is the
-  classification, re-provable any time with `rescomp verify`.)
+  unexplained bytes.**
 
 ### What is in it, and the authored-vs-copied line
 
@@ -92,24 +89,22 @@ dialog templates, string tables, the accelerator table, `VERSIONINFO`, the MFC
 `DLGINIT` blobs. *Copied* is the icon and cursor image bits and the group directories
 computed from them — art files we do not have.
 
-**The authorable 91.5% IS source now (2026-08-09): `src/Gruntz/Gruntz.rc`.** It is
-tracked, genuine rc.exe grammar — 22 STRINGTABLEs, 31 DIALOG/DIALOGEX templates, the
-ACCELERATORS table, `VERSIONINFO` (fully decoded to `FILEVERSION`/`VALUE` statements),
-and both `DLGINIT` raw-data streams — and `rescomp` (there is no `rc.exe`; rescomp is
-the compiler) parses it and encodes the payloads. The 57 authorable blobs are **deleted
-from the repo**; only the 18 art blobs remain in `config/retail/rsrc/data/`
-(`provenance` column: `copied`). Two standing proofs:
+**ALL 75 resources ARE source now (2026-08-15): `src/Gruntz/Gruntz.rc` +
+`src/Gruntz/res/`.** The `.rc` is genuine rc.exe grammar — 22 STRINGTABLEs, 31
+DIALOG/DIALOGEX templates, the ACCELERATORS table, `VERSIONINFO`, both `DLGINIT`
+streams (RC 5.00 compiles DLGINIT natively, RT type 240) — and the 18 ICON/CURSOR
+payloads are real `.ico`/`.cur` container files reconstructed from the retail
+RT_GROUP_* directories, referenced by ICON/CURSOR statements in retail payload
+order. `config/retail/rsrc/` is deleted; the retail PE is the only oracle.
+The standing proof is `gruntz rsrc check`: compile with the era RC.EXE, then
+byte-compare every (type, name, lang, payload) against the retail `.rsrc`,
+both-direction coverage, order included.
 
-* `rescomp rc --roundtrip` — retail payload → model → **`.rc` text → parse** → bytes:
-  **57/57 re-encode BYTE-IDENTICAL through the text** (**89,230 of 89,230 B**).
-* `rescomp check` — a normal-tier `gruntz build` gate: recompiles the tracked `.rc`
-  and byte-compares every payload (compiled + carried art) against the retail image,
-  statement order included. The source claim is re-proven on every gated build.
-
-The art 8.5% can only ever be carried — the game's shipped `Gruntz.REZ` was checked
-(2026-08-09) and contains no `.ico`/`.cur`/RT_ICON data at all; its `CURSOR`-named
-entries are in-game PID sprite frames, a different pixel format. The Windows shell art
-exists nowhere but the EXE itself.
+The art exists nowhere but the EXE itself (the shipped `Gruntz.REZ` carries no
+`.ico`/`.cur`/RT_ICON data; its `CURSOR`-named entries are in-game PID sprite
+frames) — so the `.ico`/`.cur` sources were reconstructed FROM the retail
+payloads, and rc.exe splitting them back byte-identically is the round-trip
+proof, re-run by every `gruntz rsrc check`.
 
 Two facts the codecs recovered on the way: the DIALOGEX item header is 24 bytes, not 28
 (`helpID`/`exStyle`/`style`/`x,y,cx,cy`/`id`), and MFC's `RT_DLGINIT` record header is

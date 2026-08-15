@@ -1,28 +1,37 @@
-// Gruntz.rc - retail GRUNTZ.EXE's authorable resources as SOURCE.
+// Gruntz.rc - retail GRUNTZ.EXE's resources as SOURCE, all 75 of them.
 //
-// Compiled by gruntz.build.rescomp (the VC5 toolchain ships cvtres.exe but no
-// rc.exe, so rescomp is the resource compiler). `rescomp check` - a normal-tier
-// build gate - recompiles this file and byte-compares every payload against the
-// retail image, so this text is re-proven to produce retail's exact bytes on
-// every gated build. Bootstrapped with `rescomp rc --emit`; edits that change
-// any compiled byte fail the gate.
+// Compiled by the era resource compiler (RC.EXE 5.00.1472.1 + RCDLL.DLL,
+// toolchain r3+, driven by `gruntz tool rc`). `python -m gruntz.rsrc.check`
+// - the gate - compiles this file and byte-compares every payload (type,
+// name, language, bytes, payload order) against the retail image itself
+// (gruntz.core.pe), total coverage both directions. Edits that change any
+// compiled byte fail the gate.
 //
 // Only documented rc.exe grammar is used. Spellings to know:
+//   * <winresrc.h> (the era SDK's resource-only header) supplies the VK_*
+//     accelerator key names; everything else is spelled numerically.
 //   * styles are numeric expressions (the grammar allows numbers anywhere an
 //     expression goes); `| NOT 0x...` clears the WS_CHILD|WS_VISIBLE default
-//     that generic CONTROL statements imply, exactly as real rc.exe would.
+//     that generic CONTROL statements imply.
 //   * control/string ids are the raw numbers the compiled templates carry
 //     (-1 = the IDC_STATIC value); the original resource.h with the symbolic
 //     names is in no leak, so inventing names would be fabrication.
 //   * `""` doubles a quote; \ooo octal escapes carry the few non-ASCII chars
 //     (cp1252), so this file is pure ASCII.
-//
-// ICON/CURSOR/GROUP art (18 resources, 8,288 B) has no text form; it stays
-// carried in config/retail/rsrc/data/ - manifest.tsv `provenance` says which.
+//   * ICON/CURSOR statements reference res/*.{ico,cur}; rc.exe splits each
+//     container back into the RT_ICON/RT_CURSOR images plus the RT_GROUP_*
+//     directory retail carries, numbering the images from one shared counter
+//     in statement order (icons 1-8, cursors 9-11). Statement order IS retail
+//     payload order: rc.exe emits, and cvtres/link keep, statement order.
+
+#include <winresrc.h>
 
 LANGUAGE 9, 1 // LANG_ENGLISH, SUBLANG_ENGLISH_US (0x409)
 
-// [12 GROUP_ICON/ICON resources here - binary art, carried in config/retail/rsrc/data/]
+KEYBOARD ICON DISCARDABLE "res\\keyboard.ico"
+JOYSTICK ICON DISCARDABLE "res\\joystick.ico"
+GRUNTZ ICON DISCARDABLE "res\\gruntz.ico"
+STOPCROSS ICON DISCARDABLE "res\\stopcross.ico"
 
 GRUNTZ ACCELERATORS DISCARDABLE
 BEGIN
@@ -681,7 +690,11 @@ BEGIN
     CONTROL "Do not ask me again", 1338, BUTTON, 0x50010003, 9, 69, 166, 8
 END
 
-// [6 CURSOR/GROUP_CURSOR resources here - binary art, carried in config/retail/rsrc/data/]
+// arrow.cur and gruntz.cur are byte-identical bits (retail CURSOR 9 == 11);
+// two files because two statements is what retail's payload order proves.
+ARROW CURSOR DISCARDABLE "res\\arrow.cur"
+GRUNTZ_NO CURSOR DISCARDABLE "res\\gruntz_no.cur"
+GRUNTZ CURSOR DISCARDABLE "res\\gruntz.cur"
 
 192 DLGINIT
 BEGIN

@@ -233,25 +233,21 @@ the latter mis-assigns units that straddle the line (3242 thunks, worse).
 
 ### Resources — `.rsrc` is compiled from `src/Gruntz/Gruntz.rc`
 
-The toolchain ships `cvtres.exe` but **no `rc.exe`**, so `gruntz.build.rescomp` is the
-resource compiler: it parses `src/Gruntz/Gruntz.rc` (real, tracked rc grammar — all 57
-authorable resources: STRINGTABLEs, DIALOG/DIALOGEX, ACCELERATORS, VERSIONINFO, MFC
-DLGINIT) plus the 18 carried ICON/CURSOR art blobs (`config/retail/rsrc/data/`, the only
-retail bytes left — art has no text form) and writes the Win32 `.RES` container itself.
-`configure.py` wires it as `build/gen/gruntz.res`, and `link.py --res` (which
-`ninja candidate` passes) hands it to `link.exe`, whose built-in cvtres emits the
-section.
+Toolchain r3 bundles the REAL era resource compiler (RC.EXE 5.00.1472.1 +
+RCDLL.DLL). `gruntz tool rc` drives it over `src/Gruntz/Gruntz.rc` — all 75
+resources as source: the 57 authorable ones as rc grammar and the 18 ICON/CURSOR
+payloads as real `.ico`/`.cur` files under `src/Gruntz/res/` — into
+`build/gen/gruntz.res`; `link.exe` (built-in cvtres) emits the section.
+`config/retail/rsrc/` is deleted; the retail PE is the only oracle.
 
-Two standing proofs, both against retail's own image:
+The standing proof, against retail's own image:
 
-- **`python -m gruntz.build.rescomp check`** — a normal-tier `gruntz build` gate:
-  recompiles the `.rc` and byte-compares every payload (compiled + carried) against
-  retail, statement order included.
-- **`python -m gruntz.build.rescomp verify`** — after `ninja candidate`: all 75/75
-  payloads byte-identical, section vsize 123,260 = retail's; the only differing raw
-  bytes in the whole section are the 75 `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData`
-  fields, each shifted by exactly the section-placement delta (candidate `.rsrc` sits
-  at a different RVA while `.text`+`.data` are still smaller than retail's).
+- **`gruntz rsrc check`** (`scripts/gruntz/rsrc/`): compile with the era RC.EXE,
+  byte-compare every (type, name, lang, payload) against the retail `.rsrc` —
+  75/75 byte-identical, both-direction coverage, statement order included. In the
+  candidate link the only differing raw bytes in the whole 123,260-byte section
+  are the 75 `IMAGE_RESOURCE_DATA_ENTRY.OffsetToData` fields, each shifted by
+  exactly the section-placement delta.
 
 An earlier state of this section (pre 2026-08-09) noted the candidate carried no
 `.rsrc` at all; that is fixed — the runnable candidate has all six sections.
