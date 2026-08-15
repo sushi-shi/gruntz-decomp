@@ -51,6 +51,7 @@ RVA_DYNINIT_RE = re.compile(
     r"\bRVA_DYNINIT\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,"
     r"\s*([A-Za-z_][A-Za-z0-9_:]*)\s*\)")
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
+ANN_DATA_RE = re.compile(r"^data:(0x[0-9a-fA-F]+)$")
 
 # clang-vs-VC5 static-data name reconciliation (all authority-checked - a
 # rewrite is accepted only when that exact symbol is in the compiled obj):
@@ -121,25 +122,34 @@ def _ir_symbol_name(ref: str) -> str:
     return ref
 
 
-def ir_func_claims(ir: str) -> list[tuple[int, str, int | None]]:
-    """[(rva, mangled, size|None)] from @llvm.global.annotations."""
+def ir_claims(ir: str) -> tuple[list[tuple[int, str, int | None]],
+                                list[tuple[int, str]]]:
+    """(func, data) claims from @llvm.global.annotations - each annotation
+    string arrives paired DIRECTLY with the symbol's mangled name. `data:`
+    tuples cover every annotated DEFINITION; only extern-only declarations
+    drop from IR and need the AST fallback."""
     strings = {m.group(1): _unescape_ir_cstr(m.group(2))
                for m in _STR_DEF_RE.finditer(ir)}
-    out = []
+    funcs, datas = [], []
     for line in ir.splitlines():
         if "@llvm.global.annotations" not in line:
             continue
         for sym_ref, str_ref in _ANN_TUPLE_RE.findall(line):
             ann = strings.get(str_ref)
-            m = ANN_RVA_RE.match(ann) if ann is not None else None
-            if not m:
+            if ann is None:
                 continue
-            size = None
-            if m.group(2):
-                s = m.group(2)
-                size = int(s, 16) if s.lower().startswith("0x") else int(s)
-            out.append((int(m.group(1), 16), _ir_symbol_name(sym_ref), size))
-    return out
+            m = ANN_RVA_RE.match(ann)
+            if m:
+                size = None
+                if m.group(2):
+                    v = m.group(2)
+                    size = int(v, 16) if v.lower().startswith("0x") else int(v)
+                funcs.append((int(m.group(1), 16), _ir_symbol_name(sym_ref), size))
+                continue
+            m = ANN_DATA_RE.match(ann)
+            if m:
+                datas.append((int(m.group(1), 16), _ir_symbol_name(sym_ref)))
+    return funcs, datas
 
 
 def blank_comments(text: str) -> str:
@@ -270,11 +280,13 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
     if ir is None:
         return rows, [f"{unit}: clang produced no IR - every RVA() label of "
                       f"this TU would silently vanish (FATAL)"]
-    for rva, name, size in ir_func_claims(ir):
+    ir_funcs, ir_datas = ir_claims(ir)
+    for rva, name, size in ir_funcs:
         got = authorize(name, code_names)
         if got is None:
-            problems.append(f"{unit}: RVA(0x{rva:06x}) {name} not a code "
-                            f"symbol in {obj.name} (dropped)")
+            problems.append(("drop", rva,
+                             f"{unit}: RVA(0x{rva:06x}) {name} not a code "
+                             f"symbol in {obj.name} (dropped)"))
             continue
         emit(rva, size, got, "func", "src")
 
@@ -294,27 +306,42 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
         emit(int(m.group(1), 16), int(m.group(2), 0) or None,
              m.group(3), "func", "src_dyninit")
 
-    # data via the AST join + pylibclang extents
-    if DATA_MACRO_RE.search(blanked):
-        ast = clang.ast_dump(str(src_path), cl_flags)
-        if ast is None:
-            problems.append(f"{unit}: clang produced no AST - DATA() labels "
-                            f"of this TU would vanish (FATAL)")
-            return rows, problems
+    # data: IR annotations primary (join-free), AST line-join only for the
+    # extern-only declarations IR drops; pylibclang gives every extent.
+    if DATA_MACRO_RE.search(blanked) or ir_datas:
         sizes = clang.var_sizes(str(src_path), cl_flags) or {}
-        for rva, name, qtype in data_claims(text, ast, str(src_path)):
-            if name is None:
-                problems.append(f"{unit}: DATA(0x{rva:06x}) has no VarDecl "
-                                f"below it (dropped)")
-                continue
+
+        def emit_data(rva, name, qtype=""):
             got = authorize(name, all_names)
             if got is None and all_names is not None:
                 got = msvc5_data_symbol(name, all_names)
             if got is None:
-                problems.append(f"{unit}: DATA(0x{rva:06x}) {name} not a "
-                                f"symbol in {obj.name} (dropped)")
-                continue
+                problems.append(("drop", rva,
+                                 f"{unit}: DATA(0x{rva:06x}) {name} not a "
+                                 f"symbol in {obj.name} (dropped)"))
+                return
             emit(rva, sizes.get(name), got, "data", "src", qtype)
+
+        covered = set()
+        for rva, name in ir_datas:
+            covered.add(rva)
+            emit_data(rva, name)
+        site_count = len(DATA_MACRO_RE.findall(blanked))
+        if site_count > len(covered):
+            ast = clang.ast_dump(str(src_path), cl_flags)
+            if ast is None:
+                problems.append(f"{unit}: clang produced no AST - extern "
+                                f"DATA() labels of this TU would vanish (FATAL)")
+                return rows, problems
+            for rva, name, qtype in data_claims(text, ast, str(src_path)):
+                if rva in covered:
+                    continue
+                if name is None:
+                    problems.append(("drop", rva,
+                                     f"{unit}: DATA(0x{rva:06x}) has no "
+                                     f"VarDecl below it (dropped)"))
+                    continue
+                emit_data(rva, name, qtype)
 
     return rows, problems
 
@@ -330,7 +357,7 @@ def sweep_sites() -> dict[str, dict[int, str]]:
     The completeness oracle: every site must be accounted for by a fragment
     or a stated doctrine rule - a macro that neither extraction nor doctrine
     reaches is a silently lost label, the old tree's worst failure class."""
-    out: dict[str, dict[int, str]] = {}
+    out: dict[str, dict[int, list[str]]] = {}
     for base in ("src", "include"):
         root = REPO / base
         if not root.is_dir():
@@ -339,16 +366,16 @@ def sweep_sites() -> dict[str, dict[int, str]]:
             if path.suffix not in (".cpp", ".h") or path.name == "rva.h":
                 continue
             text = blank_comments(path.read_text(errors="replace"))
-            for lineno, line in enumerate(text.splitlines(), 1):
-                for m in MACRO_SITE_RE.finditer(line):
-                    out.setdefault(m.group(1), {}).setdefault(
-                        int(m.group(2), 16),
-                        f"{path.relative_to(REPO)}:{lineno}")
+            for m in MACRO_SITE_RE.finditer(text):        # whole-file: a macro
+                lineno = text.count("\n", 0, m.start()) + 1   # may span lines
+                out.setdefault(m.group(1), {}).setdefault(
+                    int(m.group(2), 16), []).append(
+                    f"{path.relative_to(REPO)}:{lineno}")
     return out
 
 
 def check_completeness() -> list[str]:
-    """Compare the tree-wide site census against the written fragments."""
+    """The oracle over extraction: every site accounted for, loudly."""
     from gruntz.retail_labels.fragments import all_claims
     sites = sweep_sites()
     have: dict[str, set[int]] = {}
@@ -356,19 +383,27 @@ def check_completeness() -> list[str]:
         have.setdefault(c.channel, set()).add(c.rva)
     problems = []
     checks = [("RVA", "src"), ("RVA_COMPGEN", "src_compgen"),
-              ("RVA_DYNINIT", "src_dyninit")]
+              ("RVA_DYNINIT", "src_dyninit"), ("DATA", "src")]
     for macro, channel in checks:
-        for rva, where in sorted(sites.get(macro, {}).items()):
+        for rva, wheres in sorted(sites.get(macro, {}).items()):
+            if macro == "DATA" and all(".h:" in w for w in wheres):
+                problems.append(f"DATA(0x{rva:06x}) at {wheres[0]} is in a "
+                                f"HEADER - extraction ignores it by design; a "
+                                f"header static belongs in data_compgen.tsv "
+                                f"(FATAL)")
+                continue
             if rva not in have.get(channel, set()):
-                problems.append(f"{macro}(0x{rva:06x}) at {where} is in NO "
-                                f"fragment - silently lost label (FATAL)")
-    # header DATA() is a silent no-op by extraction doctrine - flag it loud.
-    for rva, where in sorted(sites.get("DATA", {}).items()):
-        if where.startswith("include/") or where.endswith(".h") \
-                or (".h:" in where):
-            problems.append(f"DATA(0x{rva:06x}) at {where} is in a HEADER - "
-                            f"extraction ignores it by design; a header "
-                            f"static belongs in data_compgen.tsv (FATAL)")
+                problems.append(f"{macro}(0x{rva:06x}) at {wheres[0]} is in "
+                                f"NO fragment - silently lost label (FATAL)")
+            if len(wheres) > 1 and macro != "RVA":
+                problems.append(f"{macro}(0x{rva:06x}) appears at "
+                                f"{len(wheres)} sites ({wheres[0]} ...) - "
+                                f"stacked/duplicated macro")
+    n_dc = len(sites.get("DATA_COMPGEN", {}))
+    if n_dc:
+        problems.append(f"note: {n_dc} DATA_COMPGEN site(s) exist; that "
+                        f"channel's extraction is deferred to the delink "
+                        f"slice (payload oracles)")
     return problems
 
 
@@ -378,24 +413,50 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
     from concurrent.futures import ThreadPoolExecutor
 
     db = clang.compdb()
-    todo = [u for u in manifest_units()
+    units = manifest_units()
+    if only_units is not None:
+        known = {u["unit"] for u in units}
+        for name in only_units:
+            if name not in known:
+                stem = os.path.splitext(os.path.basename(name))[0]
+                stems = {stem.lower(), name.lower()}
+                hint = sorted(k for k in known if k in stems)
+                raise SystemExit(
+                    f"[extract] unknown unit {name!r}"
+                    + (f" - did you mean {hint[0]!r}?" if hint else
+                       " - units are manifest stems, e.g. 'cimage'"))
+    todo = [u for u in units
             if only_units is None or u["unit"] in only_units]
     changed, problems = [], []
 
     def one(u):
         rows, probs = extract_unit(u["unit"], u["source"], db)
-        if rows or probs:
-            pass
+        if any(isinstance(pr, str) and "FATAL" in pr for pr in probs):
+            # never replace a good cached fragment with a truncated one
+            return u["unit"], False, probs
         banner = [f"# GENERATED claim fragment for unit {u['unit']} - the "
                   f"macros in {u['source']} are the storage; do not edit."]
         did = write_tsv(FRAGMENTS / f"{u['unit']}.tsv", banner, HEADER, rows)
         return u["unit"], did, probs
 
+    raw: list = []
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for unit, did, probs in pool.map(one, todo):
             if did:
                 changed.append(unit)
-            problems.extend(probs)
+            raw.extend(probs)
+    # a per-TU drop is benign iff ANOTHER unit's fragment claims the rva
+    # (header inlines emit everywhere, cl materializes in one TU); an rva
+    # dropped by every unit is a lost label.
+    from gruntz.retail_labels.fragments import all_claims
+    claimed = {c.rva for c in all_claims()}
+    for pr in raw:
+        if isinstance(pr, tuple):
+            _tag, rva, msg = pr
+            if rva not in claimed:
+                problems.append(msg + " and NO other unit claims the rva (FATAL)")
+        else:
+            problems.append(pr)
     if only_units is None:
         problems.extend(check_completeness())
     return changed, problems

@@ -27,6 +27,8 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
+import re
+
 from gruntz.core.paths import BUILD
 from gruntz.core.tsv import write as write_tsv
 from gruntz.retail_labels import Claim, censuses, fragments as src_claims, providers
@@ -63,6 +65,7 @@ class Binding(NamedTuple):
     unit: str
     channel: str       # winning channel, or ''
     aliases: tuple     # losing Claims on the same rva
+    also: tuple = ()   # other units carrying the same header-inline claim
 
 
 class Model(NamedTuple):
@@ -82,6 +85,48 @@ def _active(claim: Claim) -> bool:
     return True
 
 
+_CANON_S_RE = re.compile(r"\$S[0-9]*$")
+
+
+def _repair_ordinals(claims: list[Claim], violations: list[str]) -> list[Claim]:
+    """Resolve canonical `$S`-suffixed names to cl's CURRENT ordinal spelling.
+
+    No checked-in file may carry a `$S<n>` ordinal (a per-object CodeView
+    counter that renumbers on any TU churn), so tables store the ordinal-free
+    form and the model re-derives the live one from the unit's base obj -
+    accepted only on a UNIQUE ordinal-stripped match, exactly like the old
+    _repair_static_ordinal. Unresolvable rows become ONE aggregated violation."""
+    from gruntz.core.coff import Coff
+    from gruntz.core.paths import BUILD as _B
+    objs: dict[str, set[str] | None] = {}
+    unresolved: list[str] = []
+    out: list[Claim] = []
+    strip = lambda n: re.sub(r"\$S[0-9]+", "$S", n)  # noqa: E731
+    for c in claims:
+        if not (c.name.startswith("_") and _CANON_S_RE.search(c.name)) \
+                or c.name.endswith(tuple("0123456789")):
+            out.append(c)
+            continue
+        if c.unit not in objs:
+            obj = _B / "objdiff/base" / f"{c.unit}.obj"
+            try:
+                objs[c.unit] = Coff(obj).all_names() if obj.is_file() else None
+            except ValueError:
+                objs[c.unit] = None
+        syms = objs[c.unit]
+        hits = [n for n in syms if strip(n) == c.name] if syms else []
+        if len(hits) == 1:
+            out.append(c._replace(name=hits[0]))
+        else:
+            unresolved.append(f"{c.name} [{c.unit}] ({len(hits)} matches)")
+            out.append(c)
+    if unresolved:
+        violations.append(
+            f"{len(unresolved)} canonical $S name(s) resolve to no unique obj "
+            f"symbol (first: {unresolved[0]}) - a real modelling question each")
+    return out
+
+
 def _data_expected_kind(claim: Claim) -> str | None:
     if claim.channel == "data_compgen":
         return claim.meta.get("class")            # 'common' | 'copy'
@@ -94,6 +139,23 @@ def _data_expected_kind(claim: Claim) -> str | None:
     return _DATA_KIND.get(claim.channel)
 
 
+def _band_owner_fn():
+    """rva -> owning unit per link_order.tsv's contribution bands, or None."""
+    import bisect
+    try:
+        bands = censuses.link_order_bands()
+    except Exception:
+        return lambda rva: None
+    los = [lo for lo, _hi, _u in bands]
+
+    def owner(rva: int):
+        i = bisect.bisect_right(los, rva) - 1
+        if i >= 0 and bands[i][0] <= rva < bands[i][1]:
+            return bands[i][2]
+        return None
+    return owner
+
+
 def resolve() -> Model:
     violations: list[str] = []
 
@@ -102,10 +164,26 @@ def resolve() -> Model:
 
     all_claims = [c for c in providers.all_claims() + src_claims.all_claims()
                   if _active(c)]
+    unknown = [c for c in all_claims if c.channel not in _PRECEDENCE]
+    if unknown:
+        violations.append(f"{len(unknown)} claim(s) from unknown channel "
+                          f"{unknown[0].channel!r} - skipped")
+        all_claims = [c for c in all_claims if c.channel in _PRECEDENCE]
+    all_claims = _repair_ordinals(all_claims, violations)
+    # A dyninit pin's OWNER is not a symbol cl emits (the body is a volatile
+    # _$E<n>); the binding stays unnamed like the old spine, the owner rides
+    # as an alias so audits keep it. Keyword owners are a source-hygiene wart,
+    # reported ONCE.
+    kw_owners = sum(1 for c in all_claims
+                    if c.channel == "src_dyninit" and c.name in ("int", "char"))
+    if kw_owners:
+        violations.append(f"{kw_owners} RVA_DYNINIT pin(s) spell a KEYWORD as "
+                          f"the owner ('int') - name the real owning datum")
     # A header-inline definition carries its RVA()/DATA() macro into EVERY
     # including TU, so identical (kind, rva, channel, name) claims arrive from
-    # several units. Collapse them deterministically: alphabetically-first
-    # unit owns, the rest ride along in meta["also_units"].
+    # several units. The OWNER is the unit whose retail link band contains the
+    # rva (link_order.tsv is the authority); alphabetical only as fallback.
+    band_owner = _band_owner_fn()
     merged: dict[tuple, Claim] = {}
     for c in sorted(all_claims, key=lambda c: (c.kind, c.rva, c.channel,
                                                c.name, c.unit)):
@@ -115,6 +193,14 @@ def resolve() -> Model:
             merged[key] = c
         elif c.unit and c.unit != prev.unit:
             prev.meta.setdefault("also_units", []).append(c.unit)
+    for key, c in merged.items():
+        also = c.meta.get("also_units")
+        if also:
+            owner = band_owner(c.rva)
+            if owner and owner != c.unit and owner in also:
+                also.remove(owner)
+                also.append(c.unit)
+                merged[key] = c._replace(unit=owner)
     per_rva: dict[tuple[str, int], list[Claim]] = {}
     for c in merged.values():
         per_rva.setdefault((c.kind, c.rva), []).append(c)
@@ -131,6 +217,9 @@ def resolve() -> Model:
                                      "", "", "", ()))
             continue
         win, rest = pick(cands)
+        if win.channel == "src_dyninit":
+            rest = [win] + list(rest)          # keep the owner pin visible
+            win = win._replace(name="")
         allowed = _FUNC_KINDS.get(win.channel, {""})
         if row["kind"] not in allowed:
             violations.append(
@@ -140,12 +229,14 @@ def resolve() -> Model:
         if win.channel in _SIZE_AUTHORITY and win.size:
             if win.size > row["size"]:
                 violations.append(
-                    f"claim {win.name} size 0x{win.size:x} crosses the next "
-                    f"admitted start (derived 0x{row['size']:x}) at 0x{rva:06x}")
+                    f"claim {win.name} at 0x{rva:06x} size 0x{win.size:x} "
+                    f"crosses the next admitted start 0x{rva + row['size']:06x}"
+                    f" (derived extent 0x{row['size']:x})")
             else:
                 size = win.size
         functions.append(Binding(rva, size, row["kind"], "text",
-                                 win.name, win.unit, win.channel, tuple(rest)))
+                                 win.name, win.unit, win.channel, tuple(rest),
+                                 tuple(win.meta.get("also_units", ()))))
 
     data: list[Binding] = []
     for rva, row in sorted(dt_rows.items()):
@@ -168,12 +259,24 @@ def resolve() -> Model:
         if win.channel in _SIZE_AUTHORITY and win.size:
             if win.size > row["size"]:
                 violations.append(
-                    f"data claim {win.name} size 0x{win.size:x} crosses the "
-                    f"next admitted start at 0x{rva:06x}")
+                    f"data claim {win.name} at 0x{rva:06x} size 0x{win.size:x}"
+                    f" crosses the next admitted start 0x{rva + row['size']:06x}"
+                    f" (derived extent 0x{row['size']:x})")
             else:
                 size = win.size
         data.append(Binding(rva, size, row["kind"], row["region"],
-                            win.name, win.unit, win.channel, tuple(rest)))
+                            win.name, win.unit, win.channel, tuple(rest),
+                            tuple(win.meta.get("also_units", ()))))
+
+    # the delink data manifest needs ONE name -> ONE extent image-wide
+    from collections import Counter
+    dup = Counter(b.name for b in data if b.name)
+    dups = {n: k for n, k in dup.items() if k > 1}
+    if dups:
+        first = next(iter(sorted(dups)))
+        violations.append(
+            f"{len(dups)} data name(s) bind at multiple rvas (first: {first} "
+            f"x{dups[first]}) - per-rva alias spellings needed")
 
     # claims that hit no census row at all
     for (kind, rva), cands in sorted(per_rva.items()):
@@ -187,11 +290,17 @@ def resolve() -> Model:
 
 def serialize(model: Model) -> tuple[bool, bool]:
     """Write bindings.tsv (the delink key) + violations.tsv, write-if-changed."""
-    header = ["rva", "size", "kind", "space", "name", "unit", "channel", "aliases"]
-    rows = [[f"0x{b.rva:08x}", f"0x{b.size:x}", b.kind, b.space, b.name,
-             b.unit, b.channel,
-             ";".join(f"{a.channel}:{a.name}" for a in b.aliases)]
-            for b in model.functions + model.data]
+    header = ["rva", "size", "kind", "space", "name", "unit", "channel",
+              "also_units", "aliases"]
+
+    def alias(a):
+        return f"{a.channel}:{a.name}:0x{a.size or 0:x}:{a.unit}"
+
+    rows = []
+    for b in model.functions + model.data:
+        rows.append([f"0x{b.rva:08x}", f"0x{b.size:x}", b.kind, b.space,
+                     b.name, b.unit, b.channel, ";".join(b.also),
+                     ";".join(alias(a) for a in b.aliases)])
     changed_b = write_tsv(BINDINGS, ["# GENERATED by gruntz.model - the "
                                      "resolved claim set (the delink key)."],
                           header, rows)

@@ -1,9 +1,12 @@
 """gruntz.retail_labels - every label, as typed records.
 
 One concern from two directions: the committed provider tables and censuses
-are PARSED (censuses/providers/fragments), the source macros are EXTRACTED
-(source.py - clang IR/AST + the text-only channels). Both produce the same
-Claim record; the model is the only consumer.
+are PARSED (censuses/providers/fragments - parse-only, zero policy), the
+source macros are EXTRACTED (source.py - clang IR/AST + the text-only
+channels, the base-obj authority join, and the spelling repairs: extraction
+is the package's second, join-bearing concern and its CLI is public as
+`gruntz labels`). Both produce the same Claim record; the MODEL is the only
+consumer of the records.
 
 A module here enforces syntax (columns, hex spelling, ranges) and NOTHING
 else: no joins, no confidence filtering, no precedence - all policy lives in

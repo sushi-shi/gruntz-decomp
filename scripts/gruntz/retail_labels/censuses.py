@@ -62,12 +62,34 @@ def data(path: Path | None = None) -> list[dict]:
                  lambda v: region(v) is not None)
     for r in rows:
         r["region"] = region(r["rva"])
+    # data+bss are ONE PE section (.data raw bytes + loader-zero tail), so an
+    # extent may legitimately cross the rawsize edge - a datum at the edge is
+    # partly stored, partly zero-fill. Regions stay as reporting tags; the
+    # extent cap only honours REAL edges (section ends).
+    contiguous = {"data": "bss"}
     for row, nxt in zip(rows, rows[1:] + [None]):
         hi = regions[row["region"]][1]
-        if nxt is not None and nxt["region"] == row["region"]:
+        if nxt is not None and (nxt["region"] == row["region"]
+                                or contiguous.get(row["region"]) == nxt["region"]):
             hi = nxt["rva"]
+        elif contiguous.get(row["region"]):
+            hi = regions[contiguous[row["region"]]][1]
         row["size"] = hi - row["rva"]
     return rows
+
+
+def link_order_bands(path: Path | None = None) -> list[tuple[int, int, str]]:
+    """[(lo, hi, unit)] from link_order.tsv - per-unit retail contribution
+    bands (positional columns; class=comdat-owner rows carry no span)."""
+    out = []
+    for line in (path or RETAIL / "link_order.tsv").read_text().splitlines():
+        if line.startswith("#") or not line.strip():
+            continue
+        f = line.split("\t")
+        if len(f) >= 4 and f[2].startswith("0x"):
+            out.append((int(f[2], 16), int(f[3], 16), f[1]))
+    out.sort()
+    return out
 
 
 def link_bands(path: Path | None = None) -> list[tuple[int, int, str]]:

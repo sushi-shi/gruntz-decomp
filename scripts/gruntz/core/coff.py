@@ -11,7 +11,7 @@ import struct
 from pathlib import Path
 
 IMAGE_SCN_CNT_CODE = 0x20
-_EXTERNAL, _STATIC = 2, 3
+_EXTERNAL, _STATIC, _LABEL = 2, 3, 6
 
 
 class Coff:
@@ -20,6 +20,8 @@ class Coff:
         machine, nsec, _t, symptr, nsym, optsz, _ch = struct.unpack_from("<HHIIIHH", d, 0)
         if machine != 0x14C:
             raise ValueError(f"{path}: not an i386 COFF (machine=0x{machine:x})")
+        if not symptr or not nsym:
+            raise ValueError(f"{path}: no symbol table")
         self._strtab = symptr + nsym * 18
         self.section_chars: list[int] = []
         for i in range(nsec):
@@ -40,10 +42,12 @@ class Coff:
             i += 1 + naux
 
     def all_names(self) -> set[str]:
-        """Every symbol name - defined, static, COMMON, or undefined external.
-        (A matched global is only REFERENCED by its TU, so it appears as `U`.)"""
+        """Every symbol name - defined, static, label, COMMON, or undefined
+        external (a matched global is only REFERENCED by its TU, so it appears
+        as `U`). Section symbols (`.text`, `.bss$...`) are filtered."""
         return {name for name, _v, _s, st in self.symbols
-                if st in (_EXTERNAL, _STATIC)}
+                if st in (_EXTERNAL, _STATIC, _LABEL)
+                and not name.startswith(".")}
 
     def code_names(self) -> set[str]:
         """Names defined in an executable section - the function authority."""
