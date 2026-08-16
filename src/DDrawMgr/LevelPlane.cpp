@@ -965,10 +965,6 @@ void CDDrawWorkerHost::InitScrollRects() {
 }
 
 // @early-stop
-// the tile load `mov r,[eax+edx*4]` lands in eax (cl reuses the freed m_tileGrid
-// base) where retail picks ecx and keeps the handle live, deriving setIdx/tile
-// via `mov eax,ecx` copies (+3 B). handle/tile decl spellings, u32/u16 casts,
-// CSE re-reads, splits and the greedy permuter are all inert on the choice.
 RVA(0x00163510, 0x156)
 i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) {

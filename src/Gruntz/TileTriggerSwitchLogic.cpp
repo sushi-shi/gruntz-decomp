@@ -804,9 +804,6 @@ RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
 // @early-stop
-// residue: an ebp<->ebx colour swap, one spare frame dword, and a cached `gameMgr`
-// local retail does not keep (it re-reads g_gameReg->m_world at the sound-registry
-// site). The return type was the `xor eax,eax` half and is fixed.
 RVA(0x001122a0, 0x241)
 i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
@@ -863,7 +860,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
         return 0;
     }
-    CDDrawSubMgrLeafScan* sreg = gameMgr->m_soundRegistry;
+    CDDrawSubMgrLeafScan* sreg = g_gameReg->m_world->m_soundRegistry;
     if (sreg->m_emitGate != 0) {
         return 0;
     }

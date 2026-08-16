@@ -874,10 +874,6 @@ commit:
 }
 
 // @early-stop
-// The direction switch now reproduces retail's six-arm layout (see
-// docs/patterns/jump-table-entry-mid-arm-is-a-fallthrough.md); the residue is that
-// cl homes x/y into the frame before the switch where retail keeps them in ebx/edi
-// and only reloads them on the default arm.
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     // retail's arm layout (jump table at 0x452e24) proves the SW/S and NW/N pairs
@@ -944,9 +940,10 @@ i32 CGrunt::ClaimSwitchTile() {
     gb->m_rows[oldTy][oldTx].m_flagBytes[3] &= 0xdf;
     gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
+    CGruntzMapMgr* nb = g_gameReg->m_tileGrid;
     i32 owner = (m_tileOwnerHi << 8) | m_tileOwnerLo;
-    gb->m_rows[ty][tx].m_flagBytes[3] |= 0x20;
-    gb->m_rows[ty][tx].m_occupantId = owner;
+    nb->m_rows[ty][tx].m_flagBytes[3] |= 0x20;
+    nb->m_rows[ty][tx].m_occupantId = owner;
 
     m_lastTilePx.m_x = x;
     m_lastTilePx.m_y = y;

@@ -456,13 +456,12 @@ i32 CGrunt::LoadEntranceConfig() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00068370, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     m_wwdObject->m_animCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
-    if (m_wwdObject->m_animCursor.m_finished != 0
-        && m_wwdObject->m_animCursor.m_frameTicksLeft == 0) {
+    CAniAdvanceCursor* cur = &m_wwdObject->m_animCursor;
+    if (cur->m_finished != 0 && cur->m_frameTicksLeft == 0) {
         m_bombRunActive = 0;
         SwitchAnimation(AT(m_poseItem, GRUNT_ITEM2));
 

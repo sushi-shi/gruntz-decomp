@@ -150,7 +150,7 @@ gruntdefenselean	1	0
 gruntdefensestep	1	0
 gruntdiggerstep	1	0
 gruntentrancearrival	22	8
-gruntentrancemove	18	7
+gruntentrancemove	18	8
 gruntgoosuckerstep	2	0
 grunthealthsprite	10	9
 gruntindicatorworkerhandlers	7	7
@@ -2137,7 +2137,7 @@ gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	1
 gruntentrancemove	?LoadWingzGruntSprites@CGrunt@@QAEHH@Z	89.8000	89.8000	2	0318805a5366	0x68880	89.8000	
 gruntentrancemove	?LookupValue@CDDrawSubMgrLeaf@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	b19351e153c7	0x6b2a0	100.0000	
 gruntentrancemove	?PointInBounds@CGameLevel@@SAHPBUtagRECT@@HH@Z	100.0000	100.0000	1	984578c48f22	0x6b330	100.0000	
-gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	97.1562	97.1562	2	52875de2a2f5	0x68370	97.1562	
+gruntentrancemove	?RearmEntranceDrop@CGrunt@@QAEHXZ	100.0000	100.0000	3	938b67e9fc09	0x68370	100.0000	
 gruntentrancemove	?RunEntranceMove@CGrunt@@QAEHXZ	94.8595	94.8595	2	88ab75be1881	0x67850	94.8595	
 gruntentrancemove	?StartBombGruntRun@CGrunt@@QAEHXZ	99.7190	99.7190	2	b165e5bb1d52	0x68520	99.7190	
 gruntentrancemove	?StepArrivalCommit@CGrunt@@QAEHXZ	90.9914	90.9914	2	e386e6a31da3	0x692f0	90.9914	
@@ -2223,7 +2223,7 @@ gruntstartingpoint	?SerializeMove@CGruntStartingPoint@@UAEHPAVCFileMemBase@@W4Se
 gruntstaterec	?SerializeFields@CSBI_StatzTabGruntBar@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	94.0312	94.0312	3	a13620dda86b	0xea990	94.0312	
 gruntstatestep	?StepDefenderUnit@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	77.5979	77.5979	7	50e28a72ac9e	0x33520	77.5979	
 gruntsteps	?CanShowStamina@CGrunt@@QAEHXZ	100.0000	100.0000	1	ed3ec36a6f27	0x514a0	100.0000	
-gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	67.8071	67.8071	1	025cd6c91440	0x52c70	67.8071	
+gruntsteps	?ClaimSwitchTile@CGrunt@@QAEHXZ	70.1500	70.1500	2	1147a6115351	0x52c70	70.1500	
 gruntsteps	?ConsiderArrival@CGrunt@@QAEXH@Z	98.8667	98.8667	1	6ebf8706e784	0x52f40	98.8667	
 gruntsteps	?IsDropReady@CGrunt@@QAEHH@Z	97.9805	97.9805	1	de98603782e1	0x51510	97.9805	
 gruntsteps	?LoadTypeTableClearMove@CGrunt@@QAEHW4PickupType@@@Z	100.0000	100.0000	1	b9fef7ea3b39	0x50ca0	100.0000	
@@ -4170,7 +4170,7 @@ tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	1	e75f4e245e8b	0x
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	a3dd726fb408	0x110430	100.0000	
 tileswitchlogic	?ApplyByType@CGiantRockLogic@@QAEHPAXW4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	1ef9b535bc41	0x113d40	100.0000	
 tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	93.5669	93.5669	1	dee7665bd9d4	0x112590	93.5669	
-tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	96.5574	96.5574	1	94e5222d246a	0x1122a0	96.5574	
+tileswitchlogic	?BuildRockBreakInGameText@CGiantRockLogic@@QAEHXZ	99.4590	99.4590	2	cf988c2d1bcf	0x1122a0	99.4590	
 tileswitchlogic	?BuildSmall@CCheckpointTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	78.6170	78.6170	1	1fedeb7cc423	0x112a50	78.6170	
 tileswitchlogic	?BuildSmall@CTileTriggerSwitchLogic@@UAEHPAVCTileTriggerContainer@@W4TrigLogicId@@HHHPBUtagRECT@@HHH@Z	100.0000	100.0000	1	cca65e1aa6b7	0x110460	100.0000	
 tileswitchlogic	?Classify@CTileTriggerLogic@@QAEHH@Z	98.8451	98.8451	1	ff68d44fd880	0x112970	98.8451	

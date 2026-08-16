@@ -570,8 +570,6 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 }
 
 // @early-stop
-// Retail keeps `list` in esi, spills it, and uses edi for the loop counter; cl colors
-// them oppositely and omits the spill, leaving the frame one dword smaller.
 RVA(0x0011c210, 0x29d)
 CSpawnList* CGruntSpawnConfig::BuildVoiceSoundList(i32 n) {
     if (n <= 0) {
