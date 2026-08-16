@@ -71,6 +71,20 @@ i32 g_stepRow;
 DATA(0x0022b738)
 i32 g_diffTier;
 
+// The tenth `.CRT$XC` slot of this compiland (0x2085ec -> 0x0002d7e0, a bare
+// `ret`). GruntDirectionCell's DEFAULT ctor is empty, and cl 5.0 emits one XC
+// slot with a body of exactly `c3` for an array of such objects - the loop is
+// deleted, so array and single object are byte-indistinguishable in .text and
+// only the .bss extent separates them. 3 * 0xc = 0x24 = 0x0022b73c..0x0022b760
+// exactly, and the slot is last, so the definition follows the scalars above.
+// The next compiland's own cell block starts at 0x0022b760, which closes the
+// extent from the far side. Nothing references it - like the nine singles above
+// it is dead data that only its initializer touches - so the name claims only
+// the family and that it is spare, not a purpose the evidence does not prove.
+RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
+DATA(0x0022b73c)
+static GruntDirectionCell s_gruntDirSpare[3];
+
 // @identity-TODO one more file-scope constructed object. This compiland's
 // `.CRT$XC` contribution is ten slots (0x2085c8..0x2085ec): the nine
 // GruntDirStatics copies plus 0x0002d7e0, a bare `ret`, so the tenth object's
@@ -3700,15 +3714,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 }
 
 #undef ARR_RECYCLE
-
-// Until the owner is proven this is spelled as a stub named for its address, so
-// the row is CLAIMED rather than sitting in the `(unmatched)` bucket. The stub
-// invents a NAME only - no type, no storage, no constructor - because those are
-// the three things the paragraph above says are unproven. When the owner is
-// found this becomes `RVA_DYNINIT(0x0002d7e0, 0x20, <owner>)` on that datum's
-// definition line and the stub is deleted.
-RVA(0x0002d7e0, 0x1)
-void STUB_2d7e0() {}
 
 // @early-stop
 RVA(0x0002d800, 0x605)
