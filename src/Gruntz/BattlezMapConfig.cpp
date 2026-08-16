@@ -2752,10 +2752,9 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* unit, CGrunt* tgt) {
     bounds.right = board->m_width;
     bounds.bottom = board->m_height;
     if (src != NULL) {
-        a.left = src->left;
-        a.top = src->top;
-        a.right = src->right + 1;
-        a.bottom = src->bottom + 1;
+        a = *src;
+        a.right++;
+        a.bottom++;
     } else {
         a = bounds;
     }
@@ -2781,10 +2780,9 @@ void CMapMgr::Clip(const RECT* src) {
     b.right = m_width;
     b.bottom = m_height;
     if (src) {
-        a.left = src->left;
-        a.top = src->top;
-        a.right = src->right + 1;
-        a.bottom = src->bottom + 1;
+        a = *src;
+        a.right++;
+        a.bottom++;
     } else {
         a = b;
     }
@@ -3123,10 +3121,9 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         CRect b(0, 0, board->m_width, board->m_height);
         RECT a;
         if (src != NULL) {
-            a.left = src->left;
-            a.top = src->top;
-            a.right = src->right + 1;
-            a.bottom = src->bottom + 1;
+            a = *src;
+            a.right++;
+            a.bottom++;
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }
@@ -3956,10 +3953,9 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         CRect b(0, 0, board->m_width, board->m_height);
         RECT a;
         if (src != NULL) {
-            a.left = src->left;
-            a.top = src->top;
-            a.right = src->right + 1;
-            a.bottom = src->bottom + 1;
+            a = *src;
+            a.right++;
+            a.bottom++;
         } else {
             a = CRect(0, 0, board->m_width, board->m_height);
         }

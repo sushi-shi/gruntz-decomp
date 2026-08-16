@@ -62,11 +62,11 @@ public:
     void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);
     void DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
 
-    TextExtent MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom);
+    TextExtent MeasureWrapped(CString text, CRect rc);
 
     void DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing);
 
-    TextExtent LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom, i32* outLen);
+    TextExtent LayoutWrapped(CString text, CRect rc, i32* outLen);
 
     Font* m_font;
     i32 m_color;

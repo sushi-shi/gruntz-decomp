@@ -104,7 +104,7 @@ directinputmgr2	45	45
 directsoundmgr	79	75
 donothing	8	8
 droppedobject	29	26
-engstrrendertext	2	1
+engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	4	4
 fader	25	20
@@ -113,7 +113,7 @@ fadermgr	12	12
 feccrypt	11	8
 fileimage	19	10
 filestream	4	4
-font	21	17
+font	21	18
 fontconfig	15	10
 fonts	2	2
 fortconquered	1	0
@@ -204,7 +204,7 @@ ingameicon	28	20
 ingameworkerhandlers	3	3
 inputdevice	14	14
 inputdeviceconfig	2	2
-keyedlist	3	2
+keyedlist	3	3
 kitchenslime	9	6
 latencylist	5	5
 leafcueplay	1	1
@@ -555,14 +555,14 @@ battlezmapconfig	?ChooseIdleBehavior@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	95.085
 battlezmapconfig	?ClaimCellFromRow@CBattlezMapConfig@@QAEHHHHH@Z	94.4359	94.4359	1	310ed0f9ddb2	0x30730	94.4359	
 battlezmapconfig	?ClaimTilesAround@CBattlezMapConfig@@QAEXPAVCGrunt@@HHH@Z	74.0925	74.0925	1	3b918b4bb039	0x2d800	74.0925	
 battlezmapconfig	?Clear@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	1	7fb22e52e6f0	0x2ade0	100.0000	
-battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	87.6833	87.6833	1	683dbebe1864	0x2b340	87.6833	
+battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	90.8167	90.8167	2	d7ba03e00fa8	0x2b340	90.8167	
 battlezmapconfig	?Deserialize@CBattlezMapConfig@@QAEHPAX@Z	99.5079	99.5079	1	5852237b93d0	0x2b950	99.5079	
 battlezmapconfig	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	4	cacd15498538	0x31250	100.0000	
 battlezmapconfig	?EnterDefenderMode@CBattlezMapConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	1	6cd232e42259	0x2c0a0	100.0000	
 battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	83.1161	83.1071	1	4f050a4debf7	0x2ab80	83.1161	
 battlezmapconfig	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	1	2ccf4ef32a9b	0x25ca0	100.0000	
 battlezmapconfig	?GetScreenPos@CUserLogic@@QAEXPAUCoord@@@Z	100.0000	100.0000	1	d56f18e1eda3	0x29a50	100.0000	
-battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	85.9557	85.9557	1	de1587ed862c	0x2ae00	85.9557	
+battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	84.5222	84.5222	2	adc4b26e4979	0x2ae00	85.9557	
 battlezmapconfig	?IndexToPtr@_zdvec@@QAEPADH@Z	100.0000	100.0000	1	74efa4d8d470	0x310f0	100.0000	
 battlezmapconfig	?IndexToPtr@_zvec@@QAEPADH@Z	100.0000	100.0000	2	4c4c3fb5418a	0x312a0	100.0000	
 battlezmapconfig	?IsAtSavedScreenPos@CGrunt@@QAEHXZ	100.0000	100.0000	1	4e72b54ee505	0x29a80	100.0000	
@@ -578,9 +578,9 @@ battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAXPAXPAVCGrunt@@H@Z	97.9
 battlezmapconfig	?Push@FreeNodePool@@QAEXPAX@Z	100.0000	100.0000	3	63aa5f2b5158	0x311b0	100.0000	
 battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	72.7558	72.7558	2	f34b165f58e0	0x2a570	72.7558	
 battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.5306	87.5306	1	5d2364b09dcb	0x2c690	87.5306	
-battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	81.4232	81.4232	1	4214626d3cf9	0x2dfa0	81.4232	
+battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	82.4120	82.4120	2	b27c27bf8ce5	0x2dfa0	82.4120	
 battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	69.3533	69.3533	2	aa69d8f07a40	0x2e3a0	69.3533	
-battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	92.5930	92.5930	1	08680f01ccfd	0x2c140	92.5930	
+battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	91.9651	91.9651	2	70648e585903	0x2c140	92.5930	
 battlezmapconfig	?RouteUnitTo@CBattlezMapConfig@@QAEHPAVCGrunt@@HHHHH@Z	85.1475	85.1475	1	11b368899fa5	0x300c0	85.1475	
 battlezmapconfig	?RouteUnitToGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@UCoord@@HH@Z	91.7548	91.7548	1	e464b436781d	0x302c0	91.7548	
 battlezmapconfig	?Serialize@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	1	f8f6b553bbec	0x2b420	100.0000	
@@ -601,7 +601,7 @@ battlezspawncheck	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	76.
 battlezspecialanim	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.2548	94.2548	1	2119c2bdadce	0x34460	94.2548	
 battlezspecialanim	?RecycleCoords@CGrunt@@QAEXXZ	100.0000	100.0000	1	056ac8444c22	0x343f0	100.0000	
 battlezspecialanim	?Report@zErrHandling@@QAEXPAXH@Z	100.0000	100.0000	1	6690cf41e4fd	0x34960	100.0000	
-battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	80.3541	80.3541	1	8b0623270499	0x32060	80.3541	
+battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	80.7133	80.7133	2	adf945157993	0x32060	80.7133	
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	1	f89bca6b4e27	0x31c70	85.7000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	86.8163	86.8163	1	00fe90253672	0x31610	86.8163	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	86.3049	86.3049	4	ee3026d9656c	0x31ca0	86.3049	
@@ -1634,7 +1634,7 @@ droppedobject	?SerializeMove@CDroppedObjectShadow@@UAEHPAVCFileMemBase@@W4Serial
 droppedobject	?SerializeMove@CObjectDropper@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	6130f9764a2e	0xc6680	100.0000	
 droppedobject	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	1	c822a08728c2	0xc62e0	100.0000	
 engstrrendertext	??0CRect@@QAE@ABUtagRECT@@@Z	100.0000	100.0000	1	cpp:ed232bbc27f4	0x115b30	100.0000	
-engstrrendertext	?EngStr_RenderText@@YAHPAXPAVCString@@PAUtagRECT@@PAVCDDSurface@@HHHHHH@Z	99.7619	99.7619	12	7e06666a20cf	0x115930	99.8809	
+engstrrendertext	?EngStr_RenderText@@YAHPAXPAVCString@@PAUtagRECT@@PAVCDDSurface@@HHHHHH@Z	100.0000	100.0000	13	1e46608f52ff	0x115930	100.0000	
 exittrigger	??0CExitTrigger@@QAE@PAUCGameObject@@@Z	93.5934	93.5934	1	c166cd808b74	0x3ecf0	93.5934	
 exittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:7da0823f5878	0x108c0	100.0000	
 exittrigger	??_GCExitTrigger@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7da0823f5878	0x10890	100.0000	
@@ -1757,19 +1757,19 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	1	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000	
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000	
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	1	b49c6df2be4a	0x179720	100.0000	
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	72.8796	71.2732	1	4e78f5f9e0f3	0x179e70	72.8796	
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	72.9028	72.9028	1	4e78f5f9e0f3	0x179e70	72.9028	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	1	1c99e425f732	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	74.3265	74.3265	1	28d097c7f2fc	0x17a460	74.3265	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	75.7026	75.7026	2	8256ee153963	0x17a460	75.7026	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	1	e5971f41c2e7	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000	
 font	?GetMaxHeight@Font@@QAEHXZ	100.0000	100.0000	1	78f995c41f3d	0x179bd0	100.0000	
 font	?GetSurface@Font@@QAEPAPAXE@Z	100.0000	100.0000	1	1adf56d2c34d	0x179b60	100.0000	
-font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHHPAH@Z	99.6397	99.6397	1	8e8246349164	0x17b120	99.6397	
+font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@VCRect@@PAH@Z	100.0000	100.0000	2	9de517e6da86	0x17b120	100.0000	
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	2a5a5db232a6	0x179830	100.0000	
 font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	100.0000	100.0000	1	39fb1c861837	0x17ac50	100.0000	
-font	?MeasureWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@HHHH@Z	95.7843	95.7843	1	c345b5e7392e	0x17ad10	95.7843	
+font	?MeasureWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@VCRect@@@Z	99.7745	99.7745	2	8d417e4b5ec7	0x17ad10	99.7745	
 font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	55ea99946328	0x1799f0	100.0000	
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	1	b2f484280b13	0x179c20	100.0000	
 font	?SetFont@FontRenderer@@QAEXPAVFont@@@Z	100.0000	100.0000	1	2956efb36548	0x179c10	100.0000	
@@ -2774,7 +2774,7 @@ inputdevice	?Unacquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	1	76689dc0b4a6	0x
 inputdeviceconfig	?LoadInputDeviceConfig@CInputConfig@@QAE?AVCString@@H@Z	100.0000	100.0000	1	de601a08f970	0x387c0	100.0000	
 inputdeviceconfig	?PopulateInputDeviceCombo@@YAHPAUHWND__@@HH@Z	100.0000	100.0000	9	bd978f5d4ef2	0x388e0	100.0000	
 keyedlist	??1CKeyedNode@@QAE@XZ	100.0000	100.0000	1	de0666e8b76a	0x379f0	100.0000	
-keyedlist	?AddNode@CKeyedList@@QAEPAUCKeyedNode@@PBDHH@Z	85.5111	85.5111	2	20aea7522b8f	0x37a70	100.0000	
+keyedlist	?AddNode@CKeyedList@@QAEPAUCKeyedNode@@PBDHH@Z	100.0000	100.0000	3	73a24b5fe9b3	0x37a70	100.0000	
 keyedlist	?Clear@CKeyedList@@QAEXXZ	100.0000	100.0000	9	eca9b18c5a89	0x379a0	100.0000	
 kitchenslime	??0CKitchenSlime@@QAE@PAUCGameObject@@@Z	99.5762	99.5762	1	f3d2696f7074	0xb23a0	99.5762	
 kitchenslime	??1CKitchenSlime@@UAE@XZ	100.0000	100.0000	1	cpp:5eccb8ac84cd	0x13100	100.0000	
@@ -4674,7 +4674,7 @@ wwdobjmgr	?RemoveAndDelete@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	
 wwdobjmgr	?RemoveByPosition@CDDrawChildGroup@@QAEXPAU__POSITION@@PAUCGameObject@@@Z	100.0000	100.0000	1	8c03b3bb24e4	0x15ab70	100.0000	
 wwdobjmgr	?RenderChildren@CDDrawChildGroup@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	1	86ca50f068f1	0x159c90	100.0000	
 wwdobjmgr	?SumWeighted@CDDrawChildGroup@@QAEHXZ	99.8889	99.8889	1	79628b745846	0x15aaf0	99.8889	
-wwdobjmgr	?TickKillCues@CDDrawChildGroup@@UAEXH@Z	99.5266	99.5266	1	e0e182d2e7dd	0x159a70	99.5266	
+wwdobjmgr	?TickKillCues@CDDrawChildGroup@@UAEXH@Z	99.9408	99.9408	2	25c3a313ef0a	0x159a70	99.9408	
 wwdobjmgr	?Unload@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	2a1963225501	0x1591e0	100.0000	
 wwdspatialmgr	??_GCWwdGridIter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce7074e101f	0x163a20	100.0000	
 wwdspatialmgr	?CountInRect@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	1	84088cc7bb97	0x168460	100.0000	

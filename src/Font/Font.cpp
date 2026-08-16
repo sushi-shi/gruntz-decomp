@@ -1,14 +1,8 @@
-// Retail's font TU compiled against the OUT-OF-LINE MFC accessors: DrawWrapped
-// `call`s ?Width@CRect@@QBEHXZ, and <MfcNoInline.h> cannot reach here because
-// Font.h pulls <MfcWin.h> first. GRUNTZ_MFC_NO_INLINES (include/MfcWin.h) IS the
-// switch that gets there - and it is DISABLED here, deliberately: turning it on
-// makes cl emit `call ?Width@CRect@@QBEHXZ` and `call ??0CRect@@QAE@HHHH@Z`, and
-// NAFXCW.LIB EXPORTS NEITHER, so `ninja candidate` dies with LNK1120 (2
-// unresolved) and 9 other TUs report the CRect ctor as well. Measured twice, in
-// opposite directions, and the linker is the oracle. Retail's own 0x17b500 body
-// is therefore a COMDAT from retail's font compiland, not a library import - so
-// reproducing the call needs that body defined on OUR side too, not a header
-// switch. Until then the inline form stays and DrawWrapped keeps its residue.
+// MFC's inlines are ON in this TU and must stay on: retail's font compiland owns
+// the COMDAT band 0x17b4f0 (?GetAt@CString@@QBEDH@Z) + 0x17b500
+// (?Width@CRect@@QBEHXZ), and only a TU that parses afxwin1.inl can emit them.
+// NAFXCW.LIB (release) defines neither - suppressing the inlines here orphans
+// both and `ninja candidate` dies with LNK1120.
 
 #include <rva.h>
 
@@ -379,14 +373,12 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 }
 
 // @early-stop
-// Branch sequences AGREE (33/33, one ret) since the tail guard was written with the
-// sum on the left. Residue is the /Ob1 inline-budget divergence
-// (docs/patterns/ob1-inline-budget-divergence.md): retail's inliner DECLINES
-// CRect::Width and emits it as this TU's own COMDAT at 0x17b500 (8 bytes,
-// `mov eax,[ecx+8] / mov edx,[ecx] / sub eax,edx / ret`), calling it at every
-// rc.Width() site; cl inlines all of them here. Not a header device - <MfcNoInline.h>
-// is already in this TU and is a no-op for CRect because Font/Font.h pulls
-// <MfcWin.h> (hence afxwin.h, hence afxwin1.inl) before it. Policy: no scaffolding.
+// Two residues, both codegen decisions this source cannot express. Retail declines
+// CRect::Width at all five sites and calls the COMDAT it emits at 0x17b500; a
+// 5-shape probe matrix (global / by-value param / escaping / 25 heavy expansions
+// ahead / MFC CString traffic) never made cl 5.0 decline it. And retail leaves the
+// first hcenter if/else un-tail-merged (6 DrawLine + 14 CString copy ctors against
+// our 5 + 13) where cl merges all five.
 RVA(0x0017a460, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
@@ -398,7 +390,7 @@ void FontRenderer::DrawWrapped(
 ) {
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
-        TextExtent m = MeasureWrapped(text, rc.left, rc.top, rc.right, rc.bottom);
+        TextExtent m = MeasureWrapped(text, rc);
         rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.height / 2;
     }
 
@@ -551,18 +543,17 @@ TextExtent FontRenderer::MeasureText(CString text) {
 }
 
 // @early-stop
-// 95.8: same frame-slot family as LayoutWrapped below (base 22B short, reloc
-// set exact mod __except_list); 256-variant depth-2 + 48 state-trials
-// EXHAUSTED flat.
+// Instruction selection is byte-identical to retail; the residue is a 4-byte
+// frame delta (retail `sub esp,0x54`, ours 0x50) that shifts every esp
+// displacement.
 RVA(0x0017ad10, 0x402)
-TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right, i32 bottom) {
-    TextExtent ext;
+TextExtent FontRenderer::MeasureWrapped(CString text, CRect rc) {
+    i32 y = rc.top;
     i32 maxWidth = 0;
-    i32 y = top;
-    i32 x = x0;
+    i32 x = rc.left;
 
     CString line;
-    while (y < bottom) {
+    while (y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -578,11 +569,12 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
 
         TextExtent e;
         e = MeasureText(text);
-        if (e.width + x <= right && !nl) {
+        if (e.width + x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (m_font->GetMaxHeight() + y <= bottom) {
-                i32 w = MeasureText(line).width;
+            if (m_font->GetMaxHeight() + y <= rc.bottom) {
+                TextExtent lw = MeasureText(line);
+                i32 w = lw.width;
                 if (maxWidth <= w) {
                     maxWidth = w;
                 }
@@ -607,39 +599,41 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
             he = MeasureText(head);
             i32 headW = he.width;
             text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < right) {
+            if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < right - x0) {
-                i32 w = MeasureText(line).width;
+            } else if (headW < rc.right - rc.left) {
+                TextExtent lw = MeasureText(line);
+                i32 w = lw.width;
                 if (maxWidth <= w) {
                     maxWidth = w;
                 }
                 y = y + m_font->GetMaxHeight();
-                x = x0;
+                x = rc.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < bottom) {
+                if (m_font->GetMaxHeight() + y < rc.bottom) {
                     line += head;
-                    x = headW + x0;
+                    x = headW + rc.left;
                 }
             } else {
 
                 for (i32 j = 0; j < head.GetLength(); j++) {
-                    if (y >= bottom) {
+                    if (y >= rc.bottom) {
                         break;
                     }
                     TextExtent ce;
                     ce = MeasureText(CString(head.GetAt(j), 1));
                     i32 chW = ce.width;
-                    if (chW + x > right) {
+                    if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();
-                        x = x0;
-                        i32 w = MeasureText(line).width;
+                        x = rc.left;
+                        TextExtent lw = MeasureText(line);
+                        i32 w = lw.width;
                         if (maxWidth <= w) {
                             maxWidth = w;
                         }
                     }
-                    if (m_font->GetMaxHeight() + y >= bottom) {
+                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
                         break;
                     }
                     line += head[j];
@@ -648,30 +642,22 @@ TextExtent FontRenderer::MeasureWrapped(CString text, i32 x0, i32 top, i32 right
             }
             if (breakNL) {
                 y = y + m_font->GetMaxHeight();
-                x = x0;
+                x = rc.left;
                 line = "";
             }
         }
     }
-    ext.width = maxWidth - x0 + 1;
-    ext.height = m_font->GetMaxHeight() + (y - top) + 1;
-    return ext;
+    return TextExtent(maxWidth - rc.left + 1, m_font->GetMaxHeight() + (y - rc.top) + 1);
 }
 
-// @early-stop
-// 99.6: size/relocs/branches EXACT; sole delta: cl homes `line` in the dead
-// `begin` arg slot, retail gives it a frame slot (uniform +4 shift). depth-2
-// variants + state-trials-48 exhausted; decl-hoist regresses.
 RVA(0x0017b120, 0x3c6)
-TextExtent
-FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bottom, i32* outLen) {
-    TextExtent ext;
+TextExtent FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
+    i32 y = rc.top;
     i32 totalChars = 0;
-    i32 y = begin;
-    i32 x = x0;
+    i32 x = rc.left;
 
     CString line;
-    while (y < bottom) {
+    while (y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -687,10 +673,10 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
 
         TextExtent e;
         e = MeasureText(text);
-        if (e.width + x <= right && !nl) {
+        if (e.width + x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (m_font->GetMaxHeight() + y <= bottom) {
+            if (m_font->GetMaxHeight() + y <= rc.bottom) {
                 totalChars += line.GetLength();
             }
             line = "";
@@ -714,34 +700,34 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
             he = MeasureText(head);
             i32 headW = he.width;
             text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < right) {
+            if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < right - x0) {
+            } else if (headW < rc.right - rc.left) {
                 totalChars += line.GetLength();
                 y = y + m_font->GetMaxHeight();
-                x = x0;
+                x = rc.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < bottom) {
+                if (m_font->GetMaxHeight() + y < rc.bottom) {
                     line += head;
-                    x = headW + x0;
+                    x = headW + rc.left;
                 }
             } else {
 
                 while (head.GetLength() > 0) {
-                    if (y >= bottom) {
+                    if (y >= rc.bottom) {
                         break;
                     }
                     TextExtent ce;
                     ce = MeasureText(CString(head.GetAt(0), 1));
                     i32 chW = ce.width;
-                    if (chW + x > right) {
+                    if (chW + x > rc.right) {
                         y = y + m_font->GetMaxHeight();
-                        x = x0;
+                        x = rc.left;
                         totalChars += line.GetLength();
                         line = "";
                     }
-                    if (m_font->GetMaxHeight() + y >= bottom) {
+                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
                         break;
                     }
                     line += head[0];
@@ -751,20 +737,18 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
             if (breakNL) {
                 totalChars += line.GetLength();
                 y = y + m_font->GetMaxHeight();
-                x = x0;
+                x = rc.left;
                 line = "";
             }
         }
     }
-    if (m_font->GetMaxHeight() + y <= bottom && line.GetLength() > 0) {
+    if (m_font->GetMaxHeight() + y <= rc.bottom && line.GetLength() > 0) {
         totalChars += line.GetLength();
     }
     if (outLen) {
         *outLen = totalChars;
     }
-    ext.width = x;
-    ext.height = m_font->GetMaxHeight() + y + 1;
-    return ext;
+    return TextExtent(x, m_font->GetMaxHeight() + y + 1);
 }
 
 RVA_COMPGEN(0x0017b4f0, 0xc, ?GetAt@CString@@QBEDH@Z)

@@ -538,9 +538,12 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
-                CRect box2(0, 0, board->m_width, board->m_height);
-                RECT rc;
-                rc = CRect(0, 0, board->m_width, board->m_height);
+                RECT box2;
+                box2.left = 0;
+                box2.top = 0;
+                box2.right = board->m_width;
+                box2.bottom = board->m_height;
+                RECT rc = CRect(0, 0, board->m_width, board->m_height);
                 RECT* rcDst = &board->m_bounds;
                 if (!IntersectRect(rcDst, &rc, &box2)) {
                     *rcDst = rc;

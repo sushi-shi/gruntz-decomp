@@ -54,3 +54,33 @@ range the COMDAT falls in**, never what section the delinked object puts the
 symbol in. And check `ninja candidate` before believing any change to a shared
 MFC wrapper: an inline suppression can silently orphan a COMDAT the whole image
 depends on.
+
+## But the budget is NOT the explanation either (measured 2026-08-16)
+
+The closing line above - "cl simply declined to inline `Width()` into a 0x8xx-byte
+function, ordinary inline-budget divergence" - is refuted. **cl 5.0 with the inlines on
+never declines `CRect::Width`, at any budget.** Five caller shapes, one probe TU, unit
+flags `/nologo /c /O2 /MT /GX`, counting `call ?Width@CRect@@QBEHXZ` relocations:
+
+| caller shape (5 `rc.Width()` sites each) | Width calls emitted |
+|---|--:|
+| global `CRect` receiver, 25 sites, nothing else | 0 |
+| by-value `CRect` parameter receiver | 0 |
+| by-value parameter also passed BY VALUE onward | 0 |
+| **25 expansions of a 12-statement inline ahead of the sites** (20 of the 25 were REJECTED, so the budget was demonstrably spent) | 0 |
+| MFC `CString` traffic + a destructible local (`/GX` frame) | 0 |
+
+The fourth row is the decisive one: the budget was exhausted enough to turn 20 of 25
+`heavy()` sites into real calls, and every `Width()` beside them still expanded.
+`?Width@CRect@@QBEHXZ` titrates as a budget-EXEMPT callee (25/25 expanded at PAD=0,
+i.e. `cb <= 0x28`), and per the model an exempt callee is inlined regardless of budget
+or site count - see [inline-budget-emits-ool-comdat.md](inline-budget-emits-ool-comdat.md).
+
+So `FontRenderer::DrawWrapped`'s five `call`s remain **unexplained by any source or
+budget lever we have**. What the address argument above does still prove is where the
+body came from: `?GetAt@CString@@QBEDH@Z` at 0x17b4f0 and `?Width@CRect@@QBEHXZ` at
+0x17b500 are one COMDAT band between font's last function (`LayoutWrapped`, ends
+0x17b4e6) and feccrypt's first (0x17b510), our own font.obj emits the `GetAt` half of
+that band from the same source, and neither symbol appears anywhere in release
+`NAFXCW.LIB` (`grep -ao` finds 0 in NAFXCW, 22 in NAFXCWD). Do not spend another lane
+on a source spelling for the `Width` half.
