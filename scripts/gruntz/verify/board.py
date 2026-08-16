@@ -508,10 +508,14 @@ def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="gruntz verify board", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--semantic", action="store_true")
-    ap.add_argument("--update", action="store_true")
-    ap.add_argument("--dup-externs", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 when a RATCHETED metric rose above its committed floor")
+    ap.add_argument("--semantic", action="store_true",
+                    help="also measure the build-derived rows (needs the Model/objs)")
+    ap.add_argument("--update", action="store_true",
+                    help="MANUAL bless: rewrite the committed floor files")
+    ap.add_argument("--dup-externs", action="store_true",
+                    help="list symbols declared `extern` in more than one header")
     a = ap.parse_args(argv)
     if a.dup_externs:
         dups = duplicate_header_externs()

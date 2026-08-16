@@ -2,6 +2,8 @@
 
     python3 -m gruntz.sema.exe_map            # regenerate docs/exe-map/
                                               # scatter_core.{json,html}
+    python3 -m gruntz.sema.exe_map --out DIR  # write the pair somewhere else
+    python3 -m gruntz.sema.exe_map --check    # report only, write nothing
 
 The one generator in the sema package (every other sema module is a read-only
 view; this one exists to WRITE the docs/exe-map site, superseding the frozen
@@ -201,14 +203,26 @@ are not TU rows.</p>
 """
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+    from pathlib import Path
+    ap = argparse.ArgumentParser(
+        prog="python3 -m gruntz.sema.exe_map", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", type=Path, default=OUT_DIR,
+                    help=f"output directory (default {OUT_DIR})")
+    ap.add_argument("--check", action="store_true",
+                    help="report the fragment census, write nothing")
+    args = ap.parse_args(argv)
+    out_dir = args.out
     rows = core_rows()
     stats = per_unit_stats(rows, unit_sources())
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    json_rows = [{k: v for k, v in r.items() if k != "unit"} for r in stats]
-    (OUT_DIR / "scatter_core.json").write_text(
-        json.dumps(json_rows, indent=1) + "\n")
-    (OUT_DIR / "scatter_core.html").write_text(render_html(stats))
+    if not args.check:
+        out_dir.mkdir(parents=True, exist_ok=True)
+        json_rows = [{k: v for k, v in r.items() if k != "unit"} for r in stats]
+        (out_dir / "scatter_core.json").write_text(
+            json.dumps(json_rows, indent=1) + "\n")
+        (out_dir / "scatter_core.html").write_text(render_html(stats))
     multi = [r for r in stats if r["frags"] > 1]
     frs = [r["frag_ratio"] for r in stats]
     print(f"[exe-map] {len(stats)} TUs, {sum(r['n'] for r in stats)} core "
@@ -217,7 +231,8 @@ def main() -> int:
           f"multi-fragment TUs: {len(multi)}")
     for r in multi[:20]:
         print(f"    {r['frags']:>3} frags  {r['n']:>3} fns  {r['unit']}")
-    print(f"[exe-map] wrote {OUT_DIR / 'scatter_core.json'} + scatter_core.html")
+    print(f"[exe-map] wrote {out_dir / 'scatter_core.json'} + scatter_core.html"
+          if not args.check else "[exe-map] --check: nothing written")
     return 0
 
 

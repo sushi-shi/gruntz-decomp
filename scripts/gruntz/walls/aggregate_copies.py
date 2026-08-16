@@ -17,6 +17,7 @@ bytes decoding as bare `movs` are the two proven traps): `rep movs*` only.
 from __future__ import annotations
 
 import re
+import sys
 
 from gruntz.delink.coffx import Obj
 from gruntz.walls import pairscan
@@ -26,6 +27,7 @@ REP_MOVS = re.compile(r"^rep\s+movs")
 
 
 def scan(unit_filter=None):
+    pairscan.require_pairs({unit_filter} if unit_filter else None)
     sc, _live = pairscan.scores()
     below: dict[str, list[tuple[str, float]]] = {}
     for (u, sym), pct in sc.items():
@@ -61,10 +63,18 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz walls aggregate-copies",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--unit")
-    ap.add_argument("--max", type=int, default=None)
+    ap.add_argument("--unit", help="restrict to one unit of config/units.toml")
+    ap.add_argument("--max", type=int, default=None,
+                    help="ratchet: exit 1 when the mismatch count exceeds N")
     a = ap.parse_args(argv)
-    hits = scan(a.unit)
+    from gruntz.tool import ToolError
+    from gruntz.walls import check_unit
+    check_unit(a.unit)
+    try:
+        hits = scan(a.unit)
+    except ToolError as e:
+        print(f"[walls aggregate-copies] {e}", file=sys.stderr)
+        return 2
     for d, unit, pct, nb, nt, name in hits:
         role = "retail copies an object we spell as fields" if d > 0 else \
                "we copy an object retail does not"

@@ -371,6 +371,7 @@ def main(argv=None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--all", action="store_true",
                     help="re-parse every unit (ignore the cache)")
-    ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("-v", "--verbose", action="store_true",
+                    help="name each unit as it is re-parsed")
     a = ap.parse_args(argv)
     return regenerate(force_all=a.all, verbose=a.verbose)

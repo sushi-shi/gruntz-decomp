@@ -123,7 +123,8 @@ def violations() -> list[str]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify label-style",
                                  description=__doc__)
-    ap.add_argument("--gate", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on any off-canon label, marker or out-of-order RVA_COMPGEN")
     a = ap.parse_args(argv)
     viol = violations()
     for v in viol:

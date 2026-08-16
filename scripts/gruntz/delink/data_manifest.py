@@ -1318,7 +1318,7 @@ def main(argv=None) -> int:
     import argparse
     from gruntz.model import resolve
     ap = argparse.ArgumentParser(
-        description=__doc__,
+        prog="python3 -m gruntz.delink.data_manifest", description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-o", "--output", type=Path, default=OUTPUT)
     ap.add_argument("--section-output", type=Path, default=SECTION_OUTPUT)

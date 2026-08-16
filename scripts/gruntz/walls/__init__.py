@@ -38,13 +38,36 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "stale-markers": "gruntz.walls.stale_markers"}
 
 
+def check_unit(unit: str | None) -> str | None:
+    """`--unit` filters answer 0/none for a name nobody has - which reads as a
+    clean result rather than a typo. Reject an unknown unit here instead."""
+    if unit is None:
+        return None
+    from gruntz.manifest import units as manifest_units
+    known = {u["unit"] for u in manifest_units()}
+    if unit in known:
+        return unit
+    import difflib
+    import sys
+    near = difflib.get_close_matches(unit, sorted(known), n=3)
+    print(f"[walls] unknown unit {unit!r} - not in config/units.toml"
+          + (f" (did you mean: {', '.join(near)}?)" if near else "")
+          + "\n        `gruntz sema map units` lists the units that claim rows",
+          file=sys.stderr)
+    raise SystemExit(2)
+
+
 def main(argv=None) -> int:
     import importlib
     import sys
     argv = list(sys.argv[1:] if argv is None else argv)
-    if not argv or argv[0] in ("-h", "--help") or argv[0] not in _SUBS:
+    if not argv or argv[0] in ("-h", "--help"):
         print(__doc__.strip())
-        return 0 if argv and argv[0] in ("-h", "--help") else 2
+        return 0 if argv else 2
+    if argv[0] not in _SUBS:
+        print(f"gruntz walls: unknown verb {argv[0]!r} (have: "
+              f"{', '.join(_SUBS)})", file=sys.stderr)
+        return 2
     mod = importlib.import_module(_SUBS[argv[0]])
     sys.argv = [f"gruntz walls {argv[0]}", *argv[1:]]
     return mod.main(argv[1:])

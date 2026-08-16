@@ -18,8 +18,10 @@ parse instead of forty).
 
 sema is a READ-ONLY consumer with four inputs and no policy of its own:
 the Model (`gruntz.model.resolve`) for identity, the retail image
-(`gruntz.core.pe`) for bytes, `build/objdiff/report.json` for scores and
-`config/units.toml` for the unit list. It writes nothing.
+(`gruntz.core.pe`) for bytes, the compare slice's current report
+(`build/objdiff/compare-new/report.json`, falling back to the older
+`build/objdiff/report.json`) for scores and `config/units.toml` for the unit
+list. It writes nothing.
 
 Doctrine: assembly only. Nothing here decompiles - views annotate real
 instruction bytes with Model labels, and a question the labels cannot answer
@@ -65,15 +67,39 @@ def parse_rva(text: str) -> int:
         die(f"'{text}' is not a hex RVA (e.g. 0x00153810)")
 
 
+def resolve_target(token: str) -> list[int]:
+    """Candidate rvas for a hex address OR a name spelling. A token that is
+    neither is one error, not two: reporting only 'not a hex RVA' for an
+    obvious name hides the question the caller actually asked."""
+    from gruntz.sema.index import index
+    hits = index().resolve_name(token)
+    if not hits:
+        die(f"'{token}' is not a hex RVA and no binding carries that name")
+    return hits
+
+
+def _drop_stdout() -> None:
+    """Point stdout at /dev/null so the interpreter's exit-time flush cannot
+    raise a second BrokenPipeError (which python reports as rc 120 plus an
+    'Exception ignored' line - `gruntz sema ... | head` used to end that way)."""
+    import contextlib
+    import os
+    with contextlib.suppress(OSError, ValueError):
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+
+
 def run(module: str, argv: list[str]) -> int:
     """Run one subcommand module's main(), mapping SemaError to rc 2."""
     import importlib
     try:
-        return importlib.import_module(module).main(argv)
+        rc = importlib.import_module(module).main(argv)
+        sys.stdout.flush()          # surface a closed pipe HERE, not at exit
+        return rc
     except SemaError as e:
         print(f"[sema] ERROR: {e}", file=sys.stderr)
         return 2
     except BrokenPipeError:
+        _drop_stdout()              # the reader went away: a normal end
         return 0
 
 
@@ -81,13 +107,17 @@ def batch() -> int:
     """Answer newline-delimited view commands from stdin in one process."""
     import shlex
     rc = 0
-    for line in sys.stdin:
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        print(f"== gruntz sema {line}")
-        rc = main(shlex.split(line)) or rc
-        sys.stdout.flush()
+    try:
+        for line in sys.stdin:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            print(f"== gruntz sema {line}")
+            rc = main(shlex.split(line)) or rc
+            sys.stdout.flush()
+    except BrokenPipeError:
+        _drop_stdout()
+        return 0
     return rc
 
 

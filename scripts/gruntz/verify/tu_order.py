@@ -242,6 +242,12 @@ def gate_findings():
     tus, claimed, n_exiled = split_exiles(tus, exiles)
     bad = verify_exiles(exiles, claimed, tu_spans(tus), load_emitted_claims())
     findings = [f"tu-order EXILE LEDGER STALE: {b}" for b in bad]
+    if not sum(len(v) for v in tus.values()):
+        # No labelled bodies means no order to violate: OK here would mean
+        # "the layout theorem holds" on the strength of an empty scan.
+        findings.append("tu-order: 0 RVA-labelled function(s) found under "
+                        "src/ - nothing was ordered, so 0 violations is "
+                        "vacuous, not a pass. Check src/ and re-run.")
     intra = check_intra(tus)
     inter = check_inter(tus)
     cur = {tu: len(v) for tu, v in intra.items()}
@@ -265,8 +271,11 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify tu-order",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--tu")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 when a TU rises above its committed violation count")
+    ap.add_argument("--tu",
+                    help="explain one TU's ordering in detail (the .cpp stem, "
+                         "matched case-insensitively: `grunt` == `Grunt`)")
     ap.add_argument("--update", action="store_true",
                     help="bless the current backlog into the baseline "
                          "(manual; only ever roll floors DOWN)")
@@ -275,11 +284,21 @@ def main(argv=None) -> int:
     if a.tu:
         tus = load_in_file_order()
         exiles = load_exiles()
-        seq = tus.get(a.tu)
+        # this key is the .cpp STEM ("Grunt"), while every other --unit flag
+        # in the toolchain takes the lowercase unit ("grunt"): accept either
+        # rather than answering a correct unit name with "no such TU".
+        name = a.tu
+        if name not in tus:
+            fold = {t.casefold(): t for t in tus}
+            name = fold.get(a.tu.casefold(), a.tu)
+        seq = tus.get(name)
         if not seq:
-            print(f"no such TU: {a.tu}")
+            near = sorted(t for t in tus if a.tu.casefold() in t.casefold())
+            hint = f" (did you mean: {', '.join(near[:5])}?)" if near else ""
+            print(f"no such TU: {a.tu}{hint} - the key is a src/**/<name>.cpp "
+                  f"stem; `gruntz sema map units` lists them", file=sys.stderr)
             return 2
-        print(f"{a.tu}  ({len(seq)} functions, file order):")
+        print(f"{name}  ({len(seq)} functions, file order):")
         prev = None
         for e in seq:
             if e.rva in exiles:

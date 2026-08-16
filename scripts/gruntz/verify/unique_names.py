@@ -55,6 +55,10 @@ def findings() -> tuple[list[str], int]:
 
 
 def main(argv=None) -> int:
+    import argparse
+    argparse.ArgumentParser(
+        prog="gruntz verify unique-names", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter).parse_args(argv)
     bad, n = findings()
     for b in bad:
         print(b, file=sys.stderr)

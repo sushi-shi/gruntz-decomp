@@ -304,8 +304,14 @@ def scan(unit_filter=None):
 
 
 def gate_findings() -> list[str]:
-    rows, _unpaired, _unres, _stats, _dropped, _eh = scan()
+    rows, _unpaired, _unres, stats, _dropped, _eh = scan()
     out = [str(r).replace("\n", " | ") for r in rows]
+    if not sum(stats.values()):
+        # Nothing was compared: no normalized base/target pairs on disk. That
+        # is an unbuilt tree, not a clean referent set.
+        out.append("data-relocs: 0 base/target pairs scanned - the "
+                   "normalized objdiff copies are absent, so no referent was "
+                   "compared at all. Run `gruntz build` and re-run.")
     for u in units_without_a_target():
         if u not in KNOWN_UNPAIRED_UNITS:
             out.append(f"data-relocs: live unit {u!r} has no scored target "
@@ -324,11 +330,17 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify data-relocs",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--unit")
-    ap.add_argument("--calibrate", action="store_true")
-    ap.add_argument("--unpaired", action="store_true")
-    ap.add_argument("--unresolved", action="store_true")
-    ap.add_argument("--gate", action="store_true")
+    ap.add_argument("--unit",
+                    help="scan one unit only")
+    ap.add_argument("--calibrate", action="store_true",
+                    help="list the rows landing on 100%%-clean sections "
+                         "(false positives)")
+    ap.add_argument("--unpaired", action="store_true",
+                    help="list relocated data symbols only one side defines")
+    ap.add_argument("--unresolved", action="store_true",
+                    help="list words neither side resolves to an address")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on any defect row")
     a = ap.parse_args(argv)
 
     rows, unpaired, unresolved, stats, dropped, eh_rows = scan(a.unit)

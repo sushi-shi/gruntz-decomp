@@ -1,10 +1,12 @@
 """gruntz.ghidra - the one-way export: the reconstruction, as a Ghidra project.
 
-    gruntz ghidra build  [--force] [--aggressive] [--no-bookmarks]
-    gruntz ghidra update [--force]        re-apply after the Model moved
-    gruntz ghidra verify [rva ...]        read chosen addresses back OUT
+    gruntz ghidra build  [--force] [--aggressive] [--no-bookmarks] [--timeout S]
+    gruntz ghidra update [--force] [--no-bookmarks] [--timeout S]
+                                          re-apply after the Model moved
+    gruntz ghidra verify [rva ...] [--timeout S]
+                                          read chosen addresses back OUT
     gruntz ghidra status                  what exists, and is it stale
-    gruntz ghidra export [--out P]        the payload alone, no Ghidra
+    gruntz ghidra export [--out P] [--quiet]   the payload alone, no Ghidra
 
 Every module is also a direct entry: `python3 -m gruntz.ghidra.export`.
 

@@ -350,11 +350,24 @@ def _selftest() -> int:
     return 1 if failures else 0
 
 
+SPEC_SHAPE = ('{"caller_cb": N, "sites": [{"name": "callee", "cb": N, '
+              '"sites": [...], "candidate": true}, ...]}')
+
+
 def _load_spec(path: Path):
-    spec = json.loads(path.read_text())
+    try:
+        spec = json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        die(f"{path} is not valid JSON ({e}); expected {SPEC_SHAPE}")
+    for key in ("caller_cb", "sites"):
+        if key not in spec:
+            die(f"{path} has no {key!r} key; expected {SPEC_SHAPE}")
 
     def mk_site(s):
         c = s.get("callee", s)
+        if "cb" not in c:
+            die(f"{path}: a site has no 'cb' (the front-end size estimate); "
+                f"expected {SPEC_SHAPE}")
         callee = Callee(c.get("name", "?"), c["cb"],
                         sites=[mk_site(x) for x in c.get("sites", [])],
                         forceinline=c.get("forceinline", False),
@@ -405,10 +418,20 @@ def main(argv=None) -> int:
 
     if args.selftest:
         return _selftest()
+    if args.spec:
+        if not Path(args.spec).is_file():
+            die(f"spec JSON missing: {args.spec}")
+        caller_cb, sites = _load_spec(Path(args.spec))
+        rep = predict(caller_cb, sites)
+        if args.json:
+            print(json.dumps(rep, indent=2))
+        else:
+            _print_report(rep)
+        return 0
     if args.measure_cb:
         src = Path(args.measure_cb).resolve()
         if not src.is_file():
-            die(f"harness TU missing: {src}")
+            die(f"harness TU missing: {src} (`--gen-harness S N PAD` prints one)")
         if not (args.fn and args.caller and args.sites):
             die("--measure-cb needs --fn CALLEE --caller CALLER --sites N")
         ex, rej, lo, hi = measure_cb(src, args.fn, args.caller, args.sites)
@@ -422,6 +445,8 @@ def main(argv=None) -> int:
               f"(call+jmp) of {args.sites} -> {verdict}")
         return 0
     if args.gap:
+        if not Path(args.gap).is_file():
+            die(f"spec JSON missing: {args.gap}")
         caller_cb, sites = _load_spec(Path(args.gap))
         g = budget_gap(caller_cb, sites)
         if args.json:

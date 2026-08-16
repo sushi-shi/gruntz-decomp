@@ -83,16 +83,12 @@ def _sym_sets(paths) -> tuple[set[str], set[str]]:
     return defined, undef
 
 
-def lib_symbols() -> set[str]:
-    """Every symbol the toolchain .LIB archives can supply, read in-process
-    from each archive's first linker member (the linker's own answer to 'can
-    this resolve'). Cached; an EMPTY scan is never cached (outside the dev
-    shell $MSVC_DIR is unset and a cached empty poisons every consumer)."""
+#: first line of LIB_CACHE - the archive set the cached symbols came from
+_CACHE_STAMP = "# libs "
+
+
+def _toolchain_libs() -> list[Path]:
     import os
-    if LIB_CACHE.is_file():
-        cached = {s for s in LIB_CACHE.read_text(errors="ignore").split("\n") if s}
-        if cached:
-            return cached
     libs: list[Path] = []
     for env in ("MSVC_DIR", "DXSDK_DIR"):
         d = os.environ.get(env)
@@ -102,6 +98,49 @@ def lib_symbols() -> set[str]:
                 if p.is_dir():
                     libs += [q for q in p.iterdir()
                              if q.suffix.lower() == ".lib"]
+    return sorted(libs)
+
+
+def _lib_stamp(libs: list[Path]) -> str:
+    """Identity of the archive SET: path + size of every .LIB.
+
+    The cache is keyed on this because $MSVC_DIR is a nix store path: a
+    toolchain bump changes it, and a cache keyed on nothing survives the bump
+    and answers for the OLD toolchain forever. Measured 2026-08-16: the r2
+    cache was still answering under r3 (46,866 live symbols vs 56,474 cached;
+    7,106 live-only, 16,714 cache-only), so `verify link-tier` called 42
+    resolvable Win32 imports "a guaranteed unresolved external" while the
+    candidate link itself reported ZERO unresolved.
+    """
+    import hashlib
+    h = hashlib.sha1()
+    for p in libs:
+        try:
+            h.update(f"{p}:{p.stat().st_size}\n".encode())
+        except OSError:
+            h.update(f"{p}:?\n".encode())
+    return h.hexdigest()
+
+
+def lib_symbols() -> set[str]:
+    """Every symbol the toolchain .LIB archives can supply, read in-process
+    from each archive's first linker member (the linker's own answer to 'can
+    this resolve').
+
+    Cached, but keyed on the archive set (see _lib_stamp) so a toolchain bump
+    re-scans instead of answering for the previous one. An EMPTY scan is never
+    cached and never replaces a populated cache: outside the dev shell
+    $MSVC_DIR is unset, and an empty answer poisons every consumer.
+    """
+    libs = _toolchain_libs()
+    stamp = _lib_stamp(libs)
+    cached: set[str] = set()
+    if LIB_CACHE.is_file():
+        lines = LIB_CACHE.read_text(errors="ignore").split("\n")
+        head = lines[0] if lines else ""
+        cached = {s for s in lines if s and not s.startswith("#")}
+        if cached and head == _CACHE_STAMP + stamp:
+            return cached
     syms: set[str] = set()
     for lib in libs:
         try:
@@ -121,9 +160,10 @@ def lib_symbols() -> set[str]:
         n = struct.unpack_from(">I", body, 0)[0]
         names = body[4 + 4 * n:].split(b"\0")
         syms.update(nm.decode("latin-1") for nm in names[:n] if nm)
-    if syms:
-        LIB_CACHE.parent.mkdir(parents=True, exist_ok=True)
-        LIB_CACHE.write_text("\n".join(sorted(syms)))
+    if not syms:
+        return cached          # no toolchain reachable: keep the last answer
+    LIB_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    LIB_CACHE.write_text(_CACHE_STAMP + stamp + "\n" + "\n".join(sorted(syms)))
     return syms
 
 
@@ -256,8 +296,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify undefined-closure",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--list", action="store_true")
-    ap.add_argument("--update", action="store_true")
+    ap.add_argument("--list", action="store_true",
+                    help="list every phantom class and declared-only symbol")
+    ap.add_argument("--update", action="store_true",
+                    help="MANUAL bless: rewrite the declared-only baseline")
     a = ap.parse_args(argv)
     if not BASE.is_dir() or not any(BASE.glob("*.obj")):
         print("undefined-closure: no base objs - run `gruntz build` first",

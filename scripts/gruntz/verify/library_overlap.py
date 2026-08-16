@@ -47,10 +47,22 @@ def findings() -> tuple[list[str], int]:
 
 
 def main(argv=None) -> int:
+    import argparse
+    argparse.ArgumentParser(
+        prog="gruntz verify library-overlap", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter).parse_args(argv)
     bad, n = findings()
     for b in bad:
         print(b, file=sys.stderr)
     if bad:
+        # n == 0 is the vacuity guard firing, NOT a double-claim: calling it
+        # one sends the reader hunting a table row that does not exist.
+        if n == 0:
+            print("library-overlap: FATAL - the model produced 0 src claims, "
+                  "so nothing was compared. Build first (`gruntz build`); a "
+                  "built tree with 0 claims means extraction broke.",
+                  file=sys.stderr)
+            return 1
         print(f"library-overlap: FATAL - {len(bad)} double-claim(s). Each "
               f"retail RVA is a src reconstruction XOR a library carve-out: "
               f"prune the false table row, or carve the copied body and call "

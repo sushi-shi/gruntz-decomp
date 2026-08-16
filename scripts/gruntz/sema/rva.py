@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import sys
 
-from gruntz.sema import parse_rva, run
+from gruntz.sema import resolve_target, run
 from gruntz.sema.image import retail
 from gruntz.sema.index import index
 from gruntz.sema.report import report
@@ -100,8 +100,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     rc = 0
     for token in args.addr:
-        hits = index().resolve_name(token) or [parse_rva(token)]
-        for rva in hits:
+        for rva in resolve_target(token):
             lines, r = dossier(rva, refs=args.refs)
             print("\n".join(lines))
             rc = rc or r

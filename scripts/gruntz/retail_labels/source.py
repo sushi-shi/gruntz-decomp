@@ -697,9 +697,12 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
 def main() -> int:
     import argparse
     import sys
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        prog="gruntz labels", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--unit", action="append", help="extract one unit (repeatable)")
-    ap.add_argument("--all", action="store_true")
+    ap.add_argument("--all", action="store_true",
+                    help="extract every unit in the census")
     ap.add_argument("-j", "--jobs", type=int, default=os.cpu_count() or 4)
     a = ap.parse_args()
     if not a.unit and not a.all:

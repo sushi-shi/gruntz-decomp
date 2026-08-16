@@ -29,6 +29,10 @@ def scan():
 
 
 def main(argv=None) -> int:
+    import argparse
+    argparse.ArgumentParser(
+        prog="gruntz verify bans", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter).parse_args(argv)
     hits = list(scan())
     if not hits:
         print("vtable-bans: OK - none of the 4 banned manual-vtable idioms "

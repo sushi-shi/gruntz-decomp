@@ -155,8 +155,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify enum-domains",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("-v", "--verbose", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on any FATAL invariant")
+    ap.add_argument("-v", "--verbose", action="store_true",
+                    help="also print the warnings and the resolved domain table")
     a = ap.parse_args(argv)
     fatal, warn, declared = audit()
     for f in fatal:

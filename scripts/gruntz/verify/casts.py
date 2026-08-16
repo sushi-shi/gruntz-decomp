@@ -286,11 +286,14 @@ def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="gruntz verify casts", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--summary", action="store_true")
-    ap.add_argument("--gate", action="store_true")
+    ap.add_argument("--summary", action="store_true",
+                    help="counts only - skip the per-file OPEN worklist")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on self-recursion or OPEN above the committed floor")
     ap.add_argument("--nested", action="store_true",
                     help="run the libclang nested-static_cast scan")
-    ap.add_argument("--max", type=int, default=None)
+    ap.add_argument("--max", type=int, default=None,
+                    help="exit 1 when OPEN exceeds this number (an explicit ratchet)")
     a = ap.parse_args(argv)
 
     if a.nested:

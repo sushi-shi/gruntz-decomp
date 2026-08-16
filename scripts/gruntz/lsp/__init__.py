@@ -1,13 +1,12 @@
 """gruntz.lsp - clangd-backed source navigation and rename (USR-exact).
 
-    python3 -m gruntz.lsp refs   <Sym | file:line[:col]>   # every reference
-    python3 -m gruntz.lsp hover  <Sym | file:line[:col]>   # type/doc at point
-    python3 -m gruntz.lsp rename <Class::m_old> <m_new> [old=new ...]
-    python3 -m gruntz.lsp rename <Class> --map FILE        # bulk member map
-    python3 -m gruntz.lsp index                            # build + wait
+    gruntz lsp refs   <Sym | file:line[:col]>   # every reference
+    gruntz lsp hover  <Sym | file:line[:col]>   # type/doc at point
+    gruntz lsp rename <Class::m_old> <m_new> [old=new ...]
+    gruntz lsp rename <Class> --map FILE        # bulk member map
+    gruntz lsp index                            # build the index + wait
 
-(The `gruntz lsp <verb>` spelling arrives with the cli.py wiring - a numbered
-change request; this package is the complete implementation behind it.)
+Every verb is also a direct entry: `python3 -m gruntz.lsp refs CGrunt`.
 
 A <Sym> is resolved through clangd's workspace-symbol index (`CGrunt` or
 `CGrunt::GetAI`); a `file:line[:col]` point is probed directly - without a

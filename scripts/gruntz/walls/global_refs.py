@@ -94,7 +94,7 @@ def scan(unit_filter=None, want=DIR32, keep_self=False, both_sides=False):
     sizes = {}
     rows, seen = [], 0
     dropped: collections.Counter = collections.Counter()
-    all_pairs = pairscan.pairs()
+    all_pairs = pairscan.require_pairs({unit_filter} if unit_filter else None)
     for unit in sorted(all_pairs):
         if unit_filter and unit != unit_filter:
             continue
@@ -152,19 +152,30 @@ def _fmt(counter) -> str:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="gruntz walls global-refs",
-                                 description=__doc__.splitlines()[0])
-    ap.add_argument("--unit")
-    ap.add_argument("--fn")
-    ap.add_argument("--rel32", action="store_true")
-    ap.add_argument("--self", action="store_true")
-    ap.add_argument("--one-sided", action="store_true")
-    ap.add_argument("--calibrate", action="store_true")
-    ap.add_argument("--min-pct", type=float, default=0.0)
-    ap.add_argument("--max-pct", type=float, default=100.0)
-    ap.add_argument("--top", type=int, default=40)
+    ap = argparse.ArgumentParser(
+        prog="gruntz walls global-refs", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--unit", help="restrict to one unit of config/units.toml")
+    ap.add_argument("--fn", help="substring filter on the symbol; OVERRIDES "
+                                 "--calibrate and the --min/--max-pct window")
+    ap.add_argument("--rel32", action="store_true",
+                    help="count REL32 (call) referents instead of DIR32 (data)")
+    ap.add_argument("--self", action="store_true",
+                    help="keep self-references (jump tables) instead of dropping")
+    ap.add_argument("--one-sided", action="store_true",
+                    help="keep names only ONE side references in the function")
+    ap.add_argument("--calibrate", action="store_true",
+                    help="show the rows on 100.00%% functions - the detector-bug "
+                         "rate, which must be 0")
+    ap.add_argument("--min-pct", type=float, default=0.0,
+                    help="score window floor for the listing")
+    ap.add_argument("--max-pct", type=float, default=100.0,
+                    help="score window ceiling for the listing")
+    ap.add_argument("--top", type=int, default=40, help="rows to print")
     args = ap.parse_args(argv)
 
+    from gruntz.walls import check_unit
+    check_unit(args.unit)
     want = REL32 if args.rel32 else DIR32
     rows, seen, dropped = scan(args.unit, want, getattr(args, "self"),
                                args.one_sided)

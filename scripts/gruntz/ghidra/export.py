@@ -158,10 +158,13 @@ def write(out: Path | str = PAYLOAD) -> tuple[dict, bool]:
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(prog="gruntz ghidra export",
-                                 description=__doc__.splitlines()[0])
-    ap.add_argument("--out", default=str(PAYLOAD))
-    ap.add_argument("--quiet", action="store_true")
+    ap = argparse.ArgumentParser(
+        prog="gruntz ghidra export", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--out", default=str(PAYLOAD),
+                    help=f"payload path (default {PAYLOAD})")
+    ap.add_argument("--quiet", action="store_true",
+                    help="write the payload, print nothing")
     a = ap.parse_args(argv)
     doc, changed = write(a.out)
     if not a.quiet:

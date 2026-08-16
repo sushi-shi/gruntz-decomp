@@ -262,6 +262,13 @@ def gate_findings() -> list[str]:
     """The gate: FAKE-VIEW edges above the board's committed floor."""
     from gruntz.verify.board import load_baseline
     rc, miss, causes = _summary()
+    if not rc.tgt:
+        # No retail edges means the call graph never loaded; 0 FAKE-VIEW then
+        # says nothing about the tree and must not read as a clean bill.
+        return ["caller-callee: 0 retail reconstructed<->reconstructed call "
+                "edges - the graph did not load (unbuilt tree, or a broken "
+                "report/Model join), so 0 FAKE-VIEW is vacuous, not clean. "
+                "Run `gruntz build` and re-run."]
     n = causes.get("FAKE-VIEW", 0)
     floor = load_baseline().get("caller-callee FAKE-VIEW", 0)
     if n <= floor:
@@ -281,10 +288,13 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify caller-callee",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--metric", action="store_true")
-    ap.add_argument("--worklist", action="store_true")
+    ap.add_argument("--metric", action="store_true",
+                    help="print the unreconciled count and stop")
+    ap.add_argument("--worklist", action="store_true",
+                    help="list every unreconciled edge with its cause")
     ap.add_argument("--check", help="explain one caller (rva or name)")
-    ap.add_argument("--jobs", type=int, default=None)
+    ap.add_argument("--jobs", type=int, default=None,
+                    help="parallel TU IR jobs (default: one per core)")
     a = ap.parse_args(argv)
 
     rc = Recon(a.jobs)

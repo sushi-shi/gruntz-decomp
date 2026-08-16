@@ -1,6 +1,6 @@
 """gruntz.walls.diagnose - classify one wall from the normalized pair.
 
-    gruntz walls diagnose <rva|name> [--asm]
+    gruntz walls diagnose <rva|mangled|CClass::Member> [--asm]
 
 The ladder (CLAUDE.md): the FIRST divergence class decides the wall.
 
@@ -92,16 +92,39 @@ def _referents(rel: dict) -> list[str]:
     return [spell(rel[o]) for o in sorted(rel)]
 
 
-def diagnose(token: str, show_asm: bool = False) -> int:
+def _locate(token: str):
+    """The claimed function a token names: a hex rva, the mangled name, or the
+    readable `CClass::Member` spelling every other view accepts."""
     from gruntz.model import resolve
+    from gruntz.sema.index import short_name
     model = resolve()
+    named = [f for f in model.functions if f.name]
     if token.lower().startswith("0x"):
-        rva = int(token, 16)
-        b = next((f for f in model.functions if f.rva == rva), None)
-    else:
-        b = next((f for f in model.functions if f.name == token), None)
-    if b is None or not b.name:
-        print(f"[diagnose] no claimed function for {token}")
+        try:
+            rva = int(token, 16)
+        except ValueError:
+            return None, f"{token!r} is not a hex rva"
+        b = next((f for f in named if f.rva == rva), None)
+        if b is not None:
+            return b, ""
+        return None, (f"no CLAIMED function starts at {token} "
+                      f"(`gruntz sema rva {token}` says what is there)")
+    hits = [f for f in named if f.name == token] \
+        or [f for f in named if short_name(f.name) == token]
+    if len(hits) == 1:
+        return hits[0], ""
+    if not hits:
+        return None, (f"no claimed function is named {token!r} (give the hex "
+                      f"rva, the mangled name, or `CClass::Member`; "
+                      f"`gruntz sema map find {token}` searches the Model)")
+    where = ", ".join(f"0x{h.rva:06x} [{h.unit}]" for h in hits[:6])
+    return None, f"{token!r} names {len(hits)} claimed functions: {where}"
+
+
+def diagnose(token: str, show_asm: bool = False) -> int:
+    b, why = _locate(token)
+    if b is None:
+        print(f"[diagnose] {why}")
         return 2
     base_p = NORM / "base" / f"{b.unit}.obj"
     tgt_p = next((p for p in (NORM / "target" / f"{b.unit}.c.obj",
@@ -112,13 +135,18 @@ def diagnose(token: str, show_asm: bool = False) -> int:
               f"`gruntz compare` first")
         return 2
 
+    from gruntz.tool import ToolError
     sides = {}
     for tag, path in (("base", base_p), ("target", tgt_p)):
         payload, rel, size = _find_function(Obj(path), b.name)
         if payload is None:
             print(f"[diagnose] {tag} obj does not define {b.name}")
             return 2
-        sides[tag] = (payload, rel, size, *_skeleton(payload, rel))
+        try:
+            sides[tag] = (payload, rel, size, *_skeleton(payload, rel))
+        except ToolError as e:
+            print(f"[diagnose] {e}")
+            return 2
 
     (bp, brel, bsz, bmask, bcall, bbr, bret, bins, basm) = sides["base"]
     (tp, trel, tsz, tmask, tcall, tbr, tret, tins, tasm) = sides["target"]
@@ -199,9 +227,10 @@ def _call_targets(rel: dict, asm: str) -> list[tuple[str, int]]:
 
 def main(argv=None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(prog="gruntz walls diagnose",
-                                 description=__doc__)
-    ap.add_argument("token", help="rva (0x...) or mangled function name")
+    ap = argparse.ArgumentParser(
+        prog="gruntz walls diagnose", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("token", help="hex rva, mangled name, or CClass::Member")
     ap.add_argument("--asm", action="store_true",
                     help="print both sides' disassembly (first 60 lines)")
     a = ap.parse_args(argv)

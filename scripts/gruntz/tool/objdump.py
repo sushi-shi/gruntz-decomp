@@ -56,14 +56,30 @@ def disassemble(blob: bytes, vma: int = 0, *, arch: str = "i386",
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(prog="gruntz tool objdump",
-                                 description=__doc__.splitlines()[0])
+    import sys
+    ap = argparse.ArgumentParser(
+        prog="gruntz tool objdump", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("file", help="raw byte blob to decode")
     ap.add_argument("--vma", default="0", help="load address of byte 0 (hex)")
-    ap.add_argument("--arch", default="i386")
+    ap.add_argument("--arch", default="i386",
+                    help="binutils machine name (default i386)")
     args = ap.parse_args(argv)
-    print(disassemble(Path(args.file).read_bytes(), int(args.vma, 16),
-                      arch=args.arch), end="")
+    path = Path(args.file)
+    if not path.is_file():
+        print(f"[objdump] no such byte blob: {args.file}", file=sys.stderr)
+        return 2
+    try:
+        vma = int(args.vma, 16)
+    except ValueError:
+        print(f"[objdump] --vma {args.vma!r} is not a hex address",
+              file=sys.stderr)
+        return 2
+    try:
+        print(disassemble(path.read_bytes(), vma, arch=args.arch), end="")
+    except (ToolError, OSError) as e:
+        print(f"[objdump] {e}", file=sys.stderr)
+        return 1
     return 0
 
 

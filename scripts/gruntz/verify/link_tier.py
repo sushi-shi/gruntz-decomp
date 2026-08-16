@@ -19,7 +19,8 @@ checks folded into one tier module:
                  image's own .reloc table). The linked-image check is what
                  objdiff's per-obj scoring cannot see: final placement.
 
-    python3 -m gruntz.verify.link_tier [--census] [--max-diff N]
+    gruntz verify link-tier             # the three checks, exit 1 on any
+    gruntz verify link-tier --census    # the section table only
 """
 
 from __future__ import annotations
@@ -87,8 +88,10 @@ def link_defect_findings() -> list[str]:
             base = s[len("__imp_"):]
             if base in libs or base.lstrip("_") in libs:
                 continue
-        out.append(f"link-defects: {s} resolves from no base obj and no "
-                   f"toolchain .LIB - a guaranteed unresolved external")
+        out.append(f"link-defects: {s} resolves from no base obj and from no "
+                   f"archive under $MSVC_DIR/$DXSDK_DIR - either a declared-"
+                   f"only symbol (fix the declaration/definition) or a "
+                   f"library this closure does not scan")
     return out
 
 
@@ -158,8 +161,16 @@ def _rel32_offsets(blob: bytes, vma: int) -> list[int]:
 def image_diff_findings(limit: int = 25) -> list[str]:
     """Exact-scored functions whose LINKED candidate bytes diverge from
     retail under reloc masking."""
-    if not CAND.is_file() or not CMAP.is_file():
-        return []
+    if not CAND.is_file():
+        return []                       # link_defect_findings already said so
+    if not CMAP.is_file():
+        # Without the map there is no rva for any candidate body, so the
+        # image diff cannot run at all - and main()'s success line would
+        # otherwise claim "every exact body byte-identical in the linked
+        # image" on the strength of a check that never executed.
+        return [f"image-diff: no candidate map ({CMAP}) - the linked-image "
+                f"diff could not run; re-run `gruntz link` (it writes the "
+                f".map beside the EXE)"]
     # a candidate older than the newest base obj was linked from OTHER
     # bytes: a divergence would be stale-image noise, not a link fact
     newest = max((p.stat().st_mtime
@@ -237,7 +248,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify link-tier",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--census", action="store_true")
+    ap.add_argument("--census", action="store_true",
+                    help="print the retail-vs-candidate section table and stop")
     a = ap.parse_args(argv)
     if a.census:
         print(f"{'section':<10} {'retail':>10} {'candidate':>10} {'delta':>9}")

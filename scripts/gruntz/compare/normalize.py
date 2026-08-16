@@ -211,7 +211,9 @@ def normalize(base_dir: Path, target_dir: Path, out_dir: Path,
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        prog="python3 -m gruntz.compare.normalize", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base-dir", required=True, type=Path)
     ap.add_argument("--target-dir", required=True, type=Path)
     ap.add_argument("--out-dir", required=True, type=Path)

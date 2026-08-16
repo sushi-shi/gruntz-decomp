@@ -176,14 +176,21 @@ def status() -> int:
 def main(argv: list[str] | None = None) -> int:
     import argparse
     import sys
-    ap = argparse.ArgumentParser(prog="gruntz ghidra",
-                                 description=__doc__.splitlines()[0])
+    ap = argparse.ArgumentParser(
+        prog="gruntz ghidra", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("verb", choices=("build", "update", "verify", "status"))
-    ap.add_argument("rvas", nargs="*", help="verify: addresses to dump")
-    ap.add_argument("--force", action="store_true")
-    ap.add_argument("--aggressive", action="store_true")
-    ap.add_argument("--no-bookmarks", action="store_true")
-    ap.add_argument("--timeout", type=float, default=None)
+    ap.add_argument("rvas", nargs="*",
+                    help="verify: addresses to read back (hex, e.g. 0x153810)")
+    ap.add_argument("--force", action="store_true",
+                    help="build: discard the project first; update: re-apply "
+                         "even when the digest is unchanged")
+    ap.add_argument("--aggressive", action="store_true",
+                    help="build: enable Ghidra's Aggressive Instruction Finder")
+    ap.add_argument("--no-bookmarks", action="store_true",
+                    help="build/update: skip the per-row bookmarks")
+    ap.add_argument("--timeout", type=float, default=None,
+                    help="seconds to allow the headless run (default: none)")
     a = ap.parse_args(argv)
     try:
         if a.verb == "build":
@@ -193,7 +200,15 @@ def main(argv: list[str] | None = None) -> int:
             return update(force=a.force, bookmarks=not a.no_bookmarks,
                           timeout=a.timeout)
         if a.verb == "verify":
-            return verify([int(r, 0) for r in a.rvas], timeout=a.timeout)
+            rvas = []
+            for r in a.rvas:
+                try:
+                    rvas.append(int(r, 0))
+                except ValueError:
+                    print(f"[ghidra] verify: {r!r} is not an address "
+                          "(hex, e.g. 0x153810)", file=sys.stderr)
+                    return 2
+            return verify(rvas, timeout=a.timeout)
         return status()
     except ToolError as e:
         print(f"[ghidra] {e}", file=sys.stderr)

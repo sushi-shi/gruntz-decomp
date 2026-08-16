@@ -113,9 +113,15 @@ def write_baseline(real) -> None:
 
 
 def gate_findings() -> list[str]:
-    real, _n, _pools = crossings()
+    real, n_defs, _pools = crossings()
     base = load_baseline()
     out = []
+    if not n_defs:
+        # Zero defs means zero bands means zero crossings by construction:
+        # a green with nothing behind it.
+        out.append("data-tu-order: the Model resolved 0 ordinary src data "
+                   "definitions, so no band was built and 0 crossings is "
+                   "vacuous. Run `gruntz build` and re-run.")
     for c in sorted(real):
         if _key(c) not in base:
             rva, name, owner, cont, storage = c
@@ -130,8 +136,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify data-tu-order",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--update", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on a crossing that is not in the committed baseline")
+    ap.add_argument("--update", action="store_true",
+                    help="MANUAL bless: rewrite the crossing baseline")
     a = ap.parse_args(argv)
 
     real, n_defs, pools = crossings()

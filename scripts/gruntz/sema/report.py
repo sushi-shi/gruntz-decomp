@@ -1,6 +1,12 @@
-"""gruntz.sema.report - build/objdiff/report.json, read only.
+"""gruntz.sema.report - the compare slice's report.json, read only.
 
 The compare slice OWNS the scores; sema only reads the report it left behind.
+`gruntz compare` writes <out-dir>/report.json and the default out-dir is
+build/objdiff/compare-new; build/objdiff/report.json is the older REFERENCE
+copy it diffs against. Read them in that order - the same precedence
+gruntz.verify.scores and gruntz.walls.inventory use - or sema answers a
+current question with a banked number.
+
 Keyed the way objdiff keys it: unit name plus the symbol name cl emitted, which
 is exactly the Binding's `name`, so a score joins to the Model with no
 second-guessing.
@@ -13,12 +19,23 @@ from functools import lru_cache
 
 from gruntz.core.paths import BUILD
 
-REPORT = BUILD / "objdiff/report.json"
+#: current first, the banked reference second (gruntz.verify.scores.REPORTS)
+REPORTS = (BUILD / "objdiff/compare-new/report.json",
+           BUILD / "objdiff/report.json")
+REPORT = REPORTS[0]
+
+
+def report_path():
+    """The freshest report on disk, or REPORTS[0] when neither exists."""
+    for path in REPORTS:
+        if path.is_file():
+            return path
+    return REPORTS[0]
 
 
 class Report:
     def __init__(self, path=None):
-        self.path = path or REPORT
+        self.path = path or report_path()
         self.data = json.loads(self.path.read_text()) if self.path.is_file() else {}
 
     @property

@@ -335,8 +335,16 @@ def serialize(model: Model) -> tuple[bool, bool]:
     return changed_b, changed_v
 
 
-def main() -> int:
+def main(argv=None) -> int:
+    import argparse
     from collections import Counter
+
+    # Parse even though there are no options: `gruntz model --help` used to
+    # run the whole join and REWRITE bindings.tsv (help as a side effect), and
+    # a typo'd flag was accepted in silence.
+    argparse.ArgumentParser(
+        prog="gruntz model", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter).parse_args(argv)
     model = resolve()
     changed_b, _ = serialize(model)
     fn_ch = Counter(b.channel or "(unclaimed)" for b in model.functions)

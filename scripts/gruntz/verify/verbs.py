@@ -91,9 +91,37 @@ def _warn_stale(stale: set) -> None:
               f"`python3 -m gruntz.verify fingerprints`.", file=sys.stderr)
 
 
+def _warn_stale_report(report=None) -> None:
+    """A report older than the objects it scores measures the PAST.
+
+    Nothing downstream can tell a stale report from a current one, so every
+    verdict here (and every banked row) would describe a build that no longer
+    exists. Loud, never a verdict change: the operator rebuilds.
+    """
+    try:
+        path = report or scores.report_path()
+        newest = max((p.stat().st_mtime
+                      for p in (REPO / "build/objdiff/base").glob("*.obj")),
+                     default=0.0)
+        age = newest - path.stat().st_mtime
+    except (OSError, SystemExit):
+        return
+    if age > 1.0:
+        print(f"WARNING: {path.name} is STALE - a base obj is {age:.0f}s "
+              f"newer, so these scores describe the PREVIOUS build. Re-run "
+              f"`gruntz build` before reading (or banking) them.",
+              file=sys.stderr)
+
+
 def walls_style_counts(cur, base_funcs, rvas):
-    """gruntz.walls.inventory's below-bank count (strict <, rva-joined, no
-    EPS), split into sub-EPS float jitter vs real, for the cross-check."""
+    """The strict-`<` below-bank count (rva-joined, no EPS), split into
+    sub-EPS float jitter vs real, as a cross-check on the EPS-gated figure.
+
+    NOT walls.inventory's own predicate: that one is `pct < bank - EPS`
+    (gruntz.walls.inventory.build). This is deliberately the WIDER reading -
+    it counts the quantization jitter the gate ignores, so the two numbers
+    bracket the real movement.
+    """
     by_rva = cl.index_by_rva(base_funcs)
     strict = jitter = 0
     for key, pct in cur.items():
@@ -134,6 +162,7 @@ def _show(kind, rows, note=""):
 
 def _report(args, gate: bool) -> int:
     doc, cur, base_funcs, fp, stale, rvas = load_state(args.report)
+    _warn_stale_report(args.report)
     fails = scores.hard_failures(doc)
     if not base_funcs:
         fails.append("no baseline (config/match_baseline.tsv) - seed it: "
@@ -157,7 +186,7 @@ def _report(args, gate: bool) -> int:
           f"overall fuzzy {float(m.get('fuzzy_match_percent') or 0.0):.2f}%")
     print(f"below-bank: {len(regress)} beyond EPS={EPS} "
           f"({len(carried)} carried in the snapshot, {len(fresh)} fresh) - "
-          f"strict-< count {strict_below} (walls inventory's figure; "
+          f"strict-< count {strict_below} (the no-EPS reading; "
           f"{jitter} of those are sub-EPS float jitter)")
 
     for kind, note in (("REGRESS", " (cur < banked best)"),
@@ -209,14 +238,18 @@ def _report(args, gate: bool) -> int:
 
 
 def cmd_status(argv) -> int:
-    ap = argparse.ArgumentParser(prog="gruntz verify status",
-                                 description="report-only; exits 0")
-    ap.add_argument("--report", type=str, default=None)
+    ap = argparse.ArgumentParser(
+        prog="gruntz verify status",
+        description="report-only; exits 0. (`--strict` is a CHECK flag: it "
+                    "changes an exit code, and status has none.)")
+    ap.add_argument("--report", type=str, default=None,
+                    help="an objdiff report.json (default: "
+                         "build/objdiff/compare-new/report.json)")
     ap.add_argument("--all", action="store_true",
                     help="list MOVED/RENAMED/REMOVED/KNOWN-ABSENT rows too")
-    ap.add_argument("--strict", action="store_true", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
     a.report = Path(a.report) if a.report else None
+    a.strict = False          # status never gates; _report reads the field
     _report(a, gate=False)
     return 0
 
@@ -224,8 +257,11 @@ def cmd_status(argv) -> int:
 def cmd_check(argv) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify check",
                                  description="the MAX gate + the tiered gates")
-    ap.add_argument("--report", type=str, default=None)
-    ap.add_argument("--all", action="store_true")
+    ap.add_argument("--report", type=str, default=None,
+                    help="an objdiff report.json (default: "
+                         "build/objdiff/compare-new/report.json)")
+    ap.add_argument("--all", action="store_true",
+                    help="list MOVED/RENAMED/REMOVED/KNOWN-ABSENT rows too")
     ap.add_argument("--strict", action="store_true",
                     help="also fail on carried (inherited) regressions")
     ap.add_argument("--tier", type=str, default=None,
@@ -235,9 +271,12 @@ def cmd_check(argv) -> int:
                          "full/link are opt-in)")
     a = ap.parse_args(argv)
     a.report = Path(a.report) if a.report else None
-    rc = _report(a, gate=True)
+    # validate --tier BEFORE the MAX gate: an unknown tier used to be reported
+    # only after the whole run, behind a wall of regression output.
     from gruntz.verify import tiers
-    failed = tiers.run(tiers.parse_tiers(a.tier))
+    tier_names = tiers.parse_tiers(a.tier)
+    rc = _report(a, gate=True)
+    failed = tiers.run(tier_names)
     if failed:
         print(f"\nTIER GATES FAILED: {failed} gate(s) - fix the finding, "
               f"never weaken the gate (baselined debt is carried by each "
@@ -398,7 +437,9 @@ def cmd_bank(argv) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify bank",
                                  description="update the baseline + README "
                                  "score block (a manual act)")
-    ap.add_argument("--report", type=str, default=None)
+    ap.add_argument("--report", type=str, default=None,
+                    help="an objdiff report.json (default: "
+                         "build/objdiff/compare-new/report.json)")
     ap.add_argument("--dirty", action="store_true",
                     help="bank despite unstaged/untracked build inputs "
                          "(printed loudly)")
@@ -415,6 +456,7 @@ def cmd_bank(argv) -> int:
         regenerate()
 
     doc, cur, base_funcs, fp, stale, rvas = load_state(report)
+    _warn_stale_report(report)
     fails = scores.hard_failures(doc)
     if fails:
         for f in fails:

@@ -44,7 +44,7 @@ VERDICTS
                COMDAT seen from N objects agrees on both and is excluded).
 
     python3 -m gruntz.verify.data_coverage [--verdict V] [--near RVA]
-    python3 -m gruntz.verify.data_coverage --tsv | --overlaps | --calibrate
+    python3 -m gruntz.verify.data_coverage --tsv | --overlaps | --gate
 """
 
 from __future__ import annotations
@@ -293,13 +293,19 @@ def main(argv=None) -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--tsv", nargs="?", const=GAPS_TSV,
                     help="write the join-shaped gap census")
-    ap.add_argument("--overlaps", action="store_true")
-    ap.add_argument("--verdict")
-    ap.add_argument("--touched-only", action="store_true")
-    ap.add_argument("--min-len", type=int, default=0)
+    ap.add_argument("--overlaps", action="store_true",
+                    help="list claims whose extents share a byte, and exit")
+    ap.add_argument("--verdict",
+                    help="only rows with this verdict (PAD/ZERO-GAP/NONZERO/POINTER)")
+    ap.add_argument("--touched-only", action="store_true",
+                    help="only gaps retail's code actually reads or writes")
+    ap.add_argument("--min-len", type=int, default=0,
+                    help="ignore gaps shorter than this many bytes")
     ap.add_argument("--near", help="claims and payload around one rva")
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--limit", type=int, default=40)
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on a gated gap or an overlap")
+    ap.add_argument("--limit", type=int, default=40,
+                    help="cap the printed worklist")
     a = ap.parse_args(argv)
 
     if a.near:

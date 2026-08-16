@@ -414,10 +414,19 @@ def gate_findings() -> list[str]:
     comp, conflicts = computed_sizes()
     bad, _split, _multi, _unres, _unmod, _ok = classify_rows(
         rows, comp, conflicts, def_counts())
-    return [f"alloc-size: {cls} retail sizeof 0x{n:x} != computed 0x{c:x} "
-            f"({c - n:+#x}) [{tier}] - reconstructed `new {cls}` emits the "
-            f"wrong allocation immediate"
-            for cls, n, c, tier in sorted(bad, key=lambda r: -abs(r[1] - r[2]))]
+    out = [f"alloc-size: {cls} retail sizeof 0x{n:x} != computed 0x{c:x} "
+           f"({c - n:+#x}) [{tier}] - reconstructed `new {cls}` emits the "
+           f"wrong allocation immediate"
+           for cls, n, c, tier in sorted(bad, key=lambda r: -abs(r[1] - r[2]))]
+    if not comp:
+        # No computed side at all: every retail site is "unresolved", so the
+        # comparison cannot disagree. main() warns about this; the GATE must
+        # too, or an empty libclang harvest silently reads as zero defects.
+        out.append("alloc-size: the libclang record-layout harvest produced 0 "
+                   "class sizes, so no retail allocation immediate had "
+                   "anything to disagree with. Needs the compdb: run "
+                   "`python3 -m gruntz.graph.compdb` (or `gruntz build`).")
+    return out
 
 
 def main(argv=None) -> int:
@@ -425,11 +434,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify alloc-size",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--all", action="store_true")
-    ap.add_argument("--sites", action="store_true")
-    ap.add_argument("--class", dest="klass")
-    ap.add_argument("--ctor-tier", action="store_true")
-    ap.add_argument("--rebuild-cache", action="store_true")
+    ap.add_argument("--all", action="store_true",
+                    help="list every attributed site, not just the disagreements")
+    ap.add_argument("--sites", action="store_true",
+                    help="dump the raw `push <n>; call ??2` sites and their attribution")
+    ap.add_argument("--class", dest="klass",
+                    help="restrict every listing to one class")
+    ap.add_argument("--ctor-tier", action="store_true",
+                    help="show the ctor-call attribution tier alongside the vptr tier")
+    ap.add_argument("--rebuild-cache", action="store_true",
+                    help="re-harvest the libclang record layouts (ignore the cache)")
     a = ap.parse_args(argv)
 
     sw = Sweep()

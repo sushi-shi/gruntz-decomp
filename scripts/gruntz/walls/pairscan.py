@@ -53,6 +53,20 @@ def pairs(units=None) -> dict[str, tuple[Path, Path]]:
     return out
 
 
+def require_pairs(units=None) -> dict[str, tuple[Path, Path]]:
+    """`pairs()`, but an EMPTY result is an ERROR, not an answer. A sieve that
+    prints '0 mismatches' from an unbuilt tree reads as a clean run."""
+    import sys
+    found = pairs(units)
+    if not found:
+        print(f"[walls] no normalized base/target pair under {NORM}"
+              + (f" for {', '.join(sorted(units))}" if units else "")
+              + " - run `gruntz build` (or `gruntz compare`) first",
+              file=sys.stderr)
+        raise SystemExit(2)
+    return found
+
+
 def scores():
     """{(unit, symbol): fuzzy%} + the live unit set, from the report."""
     from gruntz.walls.inventory import report_scores

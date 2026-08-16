@@ -59,7 +59,8 @@ def overview() -> list[str]:
     holes = gap_runs()
     out.append(f"unclaimed .text: {len(holes)} run(s), "
                f"0x{sum(h[1] - h[0] for h in holes):x} B "
-               "(`sema map gaps` lists them)")
+               "(every run, down to 1 B; `sema map gaps --min 1` lists them - "
+               "the verb's own default is --min 32)")
     return out
 
 
@@ -103,17 +104,22 @@ def gap_runs(min_size: int = 1) -> list[tuple[int, int, str]]:
     return out
 
 
-def at(rva: int, window: int = 3) -> list[str]:
+def at(rva: int, window: int = 3) -> tuple[list[str], int]:
+    """(lines, rc) - rc 1 is the answered-NO case: no admitted row covers it."""
     idx = index()
     b = idx.covering(rva)
     out = []
     if b is None:
-        out.append(f"0x{rva:08x}: no admitted row covers this address")
+        from gruntz.sema.image import retail
+        sec = retail().section_of(rva)
+        out.append(f"0x{rva:08x}: no admitted row covers this address"
+                   + (f" (section {sec['name']})" if sec
+                      else " (outside every section of the image)"))
         prev = idx.preceding_func(rva)
         if prev is not None:
             out.append(f"  previous row: {row_line(prev, idx)} "
                        f"(ends 0x{prev.rva + prev.size:08x})")
-        return out
+        return out, 1
     rows = idx.functions if b.space == "text" else idx.data
     i = rows.index(b)
     for j in range(max(0, i - window), min(len(rows), i + window + 1)):
@@ -121,7 +127,7 @@ def at(rva: int, window: int = 3) -> list[str]:
         out.append(mark + " " + row_line(rows[j], idx))
     if b.rva != rva:
         out.append(f"[0x{rva:08x} is +0x{rva - b.rva:x} into the marked row]")
-    return out
+    return out, 0
 
 
 def rows_in(lo: int, hi: int) -> list[str]:
@@ -182,8 +188,9 @@ def main(argv: list[str] | None = None) -> int:
     if verb == "at":
         if not rest:
             die("map at <rva>")
-        print("\n".join(at(parse_rva(rest[0]))))
-        return 0
+        lines, rc = at(parse_rva(rest[0]))
+        print("\n".join(lines))
+        return rc
     if verb == "range":
         if not rest:
             die("map range <lo> [<hi>]  (or <lo>-<hi>)")

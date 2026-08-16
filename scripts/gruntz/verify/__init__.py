@@ -40,17 +40,23 @@ except when the rva moves under a name.
 Input surface: build/objdiff/compare-new/report.json (falling back to
 build/objdiff/report.json), config/match_baseline.tsv, the Model
 (gruntz.model.resolve) for rva/unit joins, config/units.toml for the module
-rollup, and git for the bankable-tree precondition only. Writes:
-config/match_baseline.tsv (bank only), README.md's marked block (bank only),
-and build/gen/ scratch (the fingerprint cache).
+rollup, and git for the bankable-tree precondition only.
+
+Writes: config/match_baseline.tsv and README.md's marked block from `bank`
+ONLY, and each gate's committed floor from its own `--update` bless ONLY -
+never from a gate run. Gates otherwise write nothing but build/gen/ scratch
+(the fingerprint cache, the .LIB symbol cache, the layout and data-access
+maps), which is derived and regenerated.
 """
 
 from __future__ import annotations
 
 _SUBS = ("status", "check", "bank", "fingerprints", "selftest")
 
-#: the ported gate/audit modules, runnable as `gruntz verify <name>` (each is
-#: also a tier member of `check --tier`; see gruntz.verify.tiers)
+#: the ported gate/audit modules, runnable as `gruntz verify <name>`. MOST are
+#: also a tier member of `check --tier` (gruntz.verify.tiers); the ones in
+#: _QUERY_ONLY below are read-only oracles no tier runs - they answer a
+#: question, they do not return findings.
 _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "casts": "gruntz.verify.casts",
           "enum-domains": "gruntz.verify.enum_domains",
@@ -72,16 +78,49 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "layout": "gruntz.verify.layout",
           "link-tier": "gruntz.verify.link_tier"}
 
+#: runnable as `gruntz verify <name>` but in NO tier: read-only oracles, not
+#: gates. `vtable-scan` enumerates the image's vtables (verify.vtables is the
+#: gate over it); `layout` is the field-offset oracle verify.data_access
+#: consumes. Neither returns findings, so neither can fail a build.
+_QUERY_ONLY = ("layout", "vtable-scan")
+
+#: tier label -> verb, where the two spellings differ. gruntz.verify.tiers
+#: labels the bans row `vtable-bans` (so do docs/tooling-map.md and every
+#: printed tier line), while the module and the verb are `bans`; without this
+#: the label names no runnable command.
+_ALIASES = {"vtable-bans": "bans"}
+
+
+def _usage(stream=None) -> None:
+    import sys
+    out = stream or sys.stdout
+    print(__doc__.strip(), file=out)
+    gates = sorted(g for g in _GATES if g not in _QUERY_ONLY)
+    print("\ngates (each also run by `check --tier`): " + ", ".join(gates),
+          file=out)
+    print("read-only oracles (no tier runs these): "
+          + ", ".join(sorted(_QUERY_ONLY)), file=out)
+
 
 def main(argv=None) -> int:
     import sys
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in _ALIASES:
+        argv[0] = _ALIASES[argv[0]]
     known = _SUBS + tuple(_GATES)
-    if not argv or argv[0] in ("-h", "--help") or argv[0] not in known:
-        print(__doc__.strip())
-        print("\ngate modules (also run by `check --tier`): "
-              + ", ".join(sorted(_GATES)))
-        return 0 if argv and argv[0] in ("-h", "--help") else 2
+    if not argv:
+        _usage(sys.stderr)
+        print("\ngruntz verify: pick a verb or a gate from the lists above",
+              file=sys.stderr)
+        return 2
+    if argv[0] in ("-h", "--help"):
+        _usage()
+        return 0
+    if argv[0] not in known:
+        _usage(sys.stderr)
+        print(f"\ngruntz verify: unknown verb/gate {argv[0]!r} - pick one of "
+              f"the names listed above", file=sys.stderr)
+        return 2
     sub, rest = argv[0], argv[1:]
     if sub == "fingerprints":
         from gruntz.verify.fingerprints import main as fp_main

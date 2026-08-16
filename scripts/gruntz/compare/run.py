@@ -154,10 +154,15 @@ def run(base_dir: Path = BASE_DIR, target_dir: Path = TARGET_DIR,
 
 def main() -> int:
     import sys
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--base-dir", type=Path, default=BASE_DIR)
-    ap.add_argument("--target-dir", type=Path, default=TARGET_DIR)
-    ap.add_argument("--out-dir", type=Path, default=OUT_DIR)
+    ap = argparse.ArgumentParser(
+        prog="gruntz compare", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--base-dir", type=Path, default=BASE_DIR,
+                    help=f"recompiled base objs (default: {BASE_DIR})")
+    ap.add_argument("--target-dir", type=Path, default=TARGET_DIR,
+                    help=f"delinked target objs (default: {TARGET_DIR})")
+    ap.add_argument("--out-dir", type=Path, default=OUT_DIR,
+                    help=f"normalized copies + report (default: {OUT_DIR})")
     ap.add_argument("--reference", type=Path,
                     help="an earlier report.json to diff per-function scores against")
     ap.add_argument("--force", action="store_true",

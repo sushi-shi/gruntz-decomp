@@ -8,11 +8,14 @@ hermetic (tmpdir trees / synthetic models) except the DATA_COMPGEN control
 set, which deliberately runs against real base objs (skipped loudly when the
 tree is unbuilt).
 
-    python3 -m gruntz.verify selftest [-v]
+    gruntz verify selftest             # every control, one dot each
+    gruntz verify selftest -v          # name each control as it runs
+    gruntz verify selftest -k Ledger   # only the controls matching a name
 """
 
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 import unittest
@@ -322,6 +325,28 @@ class TuOrderControls(unittest.TestCase):
         b = [Entry(0x2000, 0x10, 1, "B::f", "b"),
              Entry(0x4000, 0x10, 2, "B::g", "b")]
         self.assertTrue(check_inter({"a": a, "b": b}))
+
+    def test_the_tu_key_accepts_the_project_unit_spelling(self):
+        """`--tu` keys on the .cpp STEM (`Grunt`) while every other --unit
+        flag takes the unit (`grunt`); the correct unit name answered "no
+        such TU"."""
+        import contextlib
+        import io
+
+        from gruntz.verify import tu_order as to
+        seq = [to.Entry(0x1000, 0x10, 1, "CGrunt::f", "src/Grunt.cpp")]
+        with mock.patch.object(to, "load_in_file_order",
+                               return_value={"Grunt": seq}), \
+             mock.patch.object(to, "load_exiles", return_value={}):
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                self.assertEqual(to.main(["--tu", "grunt"]), 0)
+            self.assertIn("Grunt  (1 functions", out.getvalue())
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(to.main(["--tu", "zzz"]), 2)
+            self.assertIn("no such TU: zzz", err.getvalue())
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(to.main(["--tu", "grun"]), 2)
+            self.assertIn("did you mean: Grunt", err.getvalue())
 
     def test_a_stale_exile_row_fails(self):
         from gruntz.verify.tu_order import verify_exiles
@@ -1120,10 +1145,1001 @@ class LedgerPrecisionControls(unittest.TestCase):
         self.assertEqual((got["regress_fresh"], got["regress_carried"]), (0, 1))
 
 
+# --------------------------------------------------------------------------- #
+# investigation surfaces (sema / walls / lsp / ghidra): a navigator that
+# answers CONFIDENTLY and WRONGLY is worse than one that fails, so each of
+# these is the control for a defect that shipped.
+# --------------------------------------------------------------------------- #
+class SemaReportSourceControls(unittest.TestCase):
+    """sema read build/objdiff/report.json - the BANKED reference copy, not
+    the report `gruntz compare` writes. `sema match 0x153810` answered 99.57%
+    while walls/verify read 99.89% off the same build."""
+
+    def test_sema_reads_the_same_reports_in_the_same_order_as_verify(self):
+        from gruntz.sema.report import REPORTS as sema_reports
+        from gruntz.verify.scores import REPORTS as verify_reports
+        self.assertEqual(tuple(sema_reports), tuple(verify_reports))
+
+    def test_the_current_report_wins_over_the_banked_one(self):
+        from gruntz.sema import report as rep
+        with tempfile.TemporaryDirectory() as td:
+            new, old = Path(td) / "new.json", Path(td) / "old.json"
+            old.write_text('{"units": [], "measures": {}}')
+            with mock.patch.object(rep, "REPORTS", (new, old)):
+                self.assertEqual(rep.report_path(), old)   # only the bank
+                new.write_text('{"units": [], "measures": {}}')
+                self.assertEqual(rep.report_path(), new)   # current wins
+
+
+class SemaPipeControls(unittest.TestCase):
+    """`gruntz sema vtable --list | head` exited 120 with 'Exception ignored
+    on flushing sys.stdout' - the BrokenPipeError fires at interpreter exit,
+    after run()'s handler could ever see it."""
+
+    def test_a_closed_reader_is_a_clean_exit(self):
+        import os
+
+        from gruntz import sema
+        r, w = os.pipe()
+        os.close(r)                                  # the reader is gone
+        saved = os.dup(1)
+        try:
+            os.dup2(w, 1)
+            os.close(w)
+            mod = mock.Mock()
+            mod.main.side_effect = lambda argv: (print("x" * 200_000), 0)[1]
+            with mock.patch("importlib.import_module", return_value=mod):
+                rc = sema.run("gruntz.sema.rva", [])
+        finally:
+            os.dup2(saved, 1)
+            os.close(saved)
+        self.assertEqual(rc, 0)
+
+
+class SemaMapControls(unittest.TestCase):
+    """`sema map at <unmapped>` printed 'no admitted row covers this address'
+    and exited 0, against sema's own rc convention (1 = answered-NO)."""
+
+    def test_an_uncovered_address_is_answered_no(self):
+        from gruntz.sema import map as smap
+        idx = mock.Mock()
+        idx.covering.return_value = None
+        idx.preceding_func.return_value = None
+        with mock.patch.object(smap, "index", return_value=idx), \
+             mock.patch("gruntz.sema.image.retail") as retail:
+            retail.return_value.section_of.return_value = None
+            lines, rc = smap.at(0xDEADBEEF)
+        self.assertEqual(rc, 1)
+        self.assertIn("outside every section", "\n".join(lines))
+
+
+class WallsUnitFilterControls(unittest.TestCase):
+    """A misspelt --unit answered '0 mismatches' / '0 function(s) below 100%'
+    - a typo that reads as a clean sieve."""
+
+    def test_an_unknown_unit_is_refused(self):
+        from gruntz import walls
+        with mock.patch("gruntz.manifest.units",
+                        return_value=[{"unit": "cimage"}]):
+            with self.assertRaises(SystemExit) as cm:
+                walls.check_unit("cimag")
+            self.assertEqual(cm.exception.code, 2)
+            self.assertEqual(walls.check_unit("cimage"), "cimage")
+            self.assertIsNone(walls.check_unit(None))
+
+
+class WallsEmptyBuildControls(unittest.TestCase):
+    """With no normalized pair on disk the sieves printed 'aggregate-copy
+    mismatches: 0' / 'paired functions: 0' and exited 0 - an unbuilt tree
+    reading as a clean sieve."""
+
+    def test_no_pair_is_refused_not_answered(self):
+        from gruntz.walls import pairscan
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(pairscan, "NORM", Path(td)):
+                with self.assertRaises(SystemExit) as cm:
+                    pairscan.require_pairs()
+                self.assertEqual(cm.exception.code, 2)
+
+    def test_a_real_pair_passes_through(self):
+        from gruntz.walls import pairscan
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "base").mkdir()
+            (root / "target").mkdir()
+            (root / "base/cimage.obj").write_bytes(b"")
+            (root / "target/cimage.c.obj").write_bytes(b"")
+            with mock.patch.object(pairscan, "NORM", root):
+                self.assertEqual(list(pairscan.require_pairs()), ["cimage"])
+
+
+class EhFrameTsvControls(unittest.TestCase):
+    """`--calibrate` returned before the `--tsv` writer, so asking for both
+    silently produced no file."""
+
+    ROW = dict(unit="u", name="?f@@YAXXZ", rva="0x001000", fuzzy=100.0,
+               size=16, verdict="BOTH", cause="EXTRA_OBJECT", extra_ctors=[],
+               our_ctors=[], resited=[], base_insn=4, tgt_insn=4,
+               slot="[esp+0x4]", states=[0], base_states=1, tgt_states=1,
+               first=0, last=4, unwind=True)
+
+    def test_calibrate_still_writes_the_tsv(self):
+        import contextlib
+        import io
+
+        from gruntz.walls import eh_frame
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "eh.tsv"
+            with mock.patch.object(eh_frame, "scan", return_value=[self.ROW]), \
+                 mock.patch.object(eh_frame.pairscan, "require_pairs"), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                eh_frame.main(["--calibrate", "--tsv", str(out)])
+            self.assertTrue(out.is_file(), "--tsv was swallowed by --calibrate")
+            self.assertIn("verdict", out.read_text().splitlines()[0])
+
+
+class WallsDiagnoseTargetControls(unittest.TestCase):
+    """diagnose took only the rva or the exact mangled name, and answered
+    every miss with the same 'no claimed function for X'."""
+
+    def _model(self, *names):
+        fns = [_binding(0x153810 + i * 0x10, n) for i, n in enumerate(names)]
+        return mock.Mock(functions=fns)
+
+    def test_a_readable_spelling_resolves(self):
+        from gruntz.walls import diagnose as D
+        name = "?RenderFrameClipped@CImage@@QAEXH@Z"
+        with mock.patch("gruntz.model.resolve", return_value=self._model(name)):
+            b, why = D._locate("CImage::RenderFrameClipped")
+            self.assertIsNotNone(b, why)
+            self.assertEqual(b.name, name)
+
+    def test_a_miss_names_the_accepted_spellings(self):
+        from gruntz.walls import diagnose as D
+        with mock.patch("gruntz.model.resolve", return_value=self._model()):
+            b, why = D._locate("NoSuchThing")
+            self.assertIsNone(b)
+            self.assertIn("CClass::Member", why)
+            b, why = D._locate("0xdeadbeef")
+            self.assertIsNone(b)
+            self.assertIn("sema rva", why)
+
+
+class InlineModelFlagControls(unittest.TestCase):
+    """--spec was documented, parsed, and then fell through to
+    `error: need --selftest, --spec/--gap FILE, or --measure-cb TU`."""
+
+    def test_spec_predicts_instead_of_erroring(self):
+        import contextlib
+        import io
+
+        from gruntz.walls import inline_model
+        with tempfile.TemporaryDirectory() as td:
+            spec = Path(td) / "s.json"
+            spec.write_text('{"caller_cb": 120, "sites": ['
+                            + ",".join(['{"name": "fill", "cb": 150}'] * 9)
+                            + "]}")
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                rc = inline_model.main(["--spec", str(spec)])
+        text = out.getvalue()
+        self.assertEqual(rc, 0)
+        self.assertEqual(text.count("EXPAND fill"), 6)     # the oracle shape
+        self.assertEqual(text.count("call   fill"), 3)
+
+    def test_a_malformed_spec_is_explained(self):
+        from gruntz.walls import inline_model
+        with tempfile.TemporaryDirectory() as td:
+            bad = Path(td) / "b.json"
+            bad.write_text("{}")
+            with self.assertRaises(SystemExit):
+                inline_model.main(["--spec", str(bad)])
+            with self.assertRaises(SystemExit):
+                inline_model.main(["--gap", str(Path(td) / "absent.json")])
+
+
+class ExeMapWriteControls(unittest.TestCase):
+    """`python3 -m gruntz.sema.exe_map --help` ignored the flag and rewrote
+    docs/exe-map/ - a help request with a side effect on the tracked tree."""
+
+    def test_help_does_not_write(self):
+        import contextlib
+        import io
+
+        from gruntz.sema import exe_map
+        with contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as cm:
+                exe_map.main(["--help"])
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_check_writes_nothing(self):
+        import contextlib
+        import io
+
+        from gruntz.sema import exe_map
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(exe_map, "core_rows",
+                                   return_value=[{"unit": "u", "name": "n",
+                                                  "rva": 0x1000, "size": 4}]), \
+                 mock.patch.object(exe_map, "unit_sources", return_value={}), \
+                 mock.patch.object(exe_map, "OUT_DIR", Path(td) / "out"), \
+                 contextlib.redirect_stdout(io.StringIO()):
+                exe_map.main(["--check"])
+            self.assertFalse((Path(td) / "out").exists())
+
+
+class ToolDriverMessageControls(unittest.TestCase):
+    """A missing file / unparsable address reached the user as a traceback."""
+
+    def test_objdump_refuses_a_missing_blob_and_a_bad_vma(self):
+        from gruntz.tool import objdump
+        with tempfile.TemporaryDirectory() as td:
+            blob = Path(td) / "b.bin"
+            blob.write_bytes(b"\x90\xc3")
+            self.assertEqual(objdump.main([str(Path(td) / "absent.bin")]), 2)
+            self.assertEqual(objdump.main([str(blob), "--vma", "zz"]), 2)
+
+    def test_ghidra_verify_refuses_a_non_address(self):
+        from gruntz.ghidra import project
+        self.assertEqual(project.main(["verify", "zzz"]), 2)
+
+    def test_lsp_point_names_the_missing_file(self):
+        from gruntz.lsp.query import parse_point
+        with self.assertRaises(SystemExit) as cm:
+            parse_point("include/NoSuchHeader.h:12")
+        self.assertIn("no such file", str(cm.exception))
+        self.assertIsNone(parse_point("CGrunt::GetAI"))   # still a symbol
+
+
+# --------------------------------------------------------------------------- #
+# the runner and the CLI surface (2026-08-16 review)                          #
+# --------------------------------------------------------------------------- #
+class TierRunnerExitControls(unittest.TestCase):
+    """SystemExit is a BaseException: a gate reporting a missing input by
+    raising it used to abort the whole tier, silently skipping every gate
+    after it - the run looked short, not failed."""
+
+    def _run(self, gates):
+        import contextlib
+        import io
+
+        from gruntz.verify import tiers
+        with mock.patch.dict(tiers.TIERS, {"fast": gates}):
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                failed = tiers.run(["fast"])
+        return failed, out.getvalue()
+
+    def test_a_gate_that_raises_systemexit_is_a_failure_not_an_abort(self):
+        def bail():
+            raise SystemExit("no report.json - run `gruntz compare` first")
+        seen = []
+        failed, text = self._run([("probe", bail),
+                                  ("after", lambda: seen.append(1) or [])])
+        self.assertEqual(failed, 1)
+        self.assertIn("could not run", text)
+        self.assertIn("no report.json", text)
+        self.assertEqual(seen, [1])          # the NEXT gate still ran
+
+    def test_the_rerun_hint_names_a_command_that_exists(self):
+        from gruntz.verify import _ALIASES, _GATES, tiers
+        for tier, rows in tiers.TIERS.items():
+            for name, _fn in rows:
+                hint = tiers._rerun_command(name)
+                gate = hint.rsplit(" ", 1)[-1]
+                self.assertIn(gate, _GATES,
+                              f"[{tier}] {name}: hint {hint!r} names no gate")
+        # the row this got wrong: the `vtable-bans` label runs verify.BANS, so
+        # the mechanical name.replace('-','_') named a module that does not
+        # exist (`python3 -m gruntz.verify.vtable_bans`).
+        self.assertEqual(_ALIASES["vtable-bans"], "bans")
+        self.assertEqual(tiers._rerun_command("vtable-bans"),
+                         "gruntz verify bans")
+
+    def test_every_tier_label_is_runnable_as_a_verb(self):
+        """A tier label nobody can type is a dead end at the exact moment the
+        gate fails."""
+        from gruntz.verify import _ALIASES, _GATES, _QUERY_ONLY, tiers
+        for tier, rows in tiers.TIERS.items():
+            for name, _fn in rows:
+                verb = _ALIASES.get(name, name)
+                self.assertIn(verb, _GATES,
+                              f"[{tier}] {name} runs in a tier but "
+                              f"`gruntz verify {name}` reaches nothing")
+        # and the help listing's own claim: every non-oracle gate IS tier-run
+        labels = {n for rows in tiers.TIERS.values() for n, _f in rows}
+        in_a_tier = {_ALIASES.get(n, n) for n in labels}
+        for gate in _GATES:
+            if gate in _QUERY_ONLY:
+                continue
+            self.assertIn(gate, in_a_tier,
+                          f"{gate} is advertised as tier-run but no tier "
+                          f"lists it (add it to a tier, or declare it in "
+                          f"_QUERY_ONLY)")
+
+    def test_the_alias_verb_actually_dispatches(self):
+        import contextlib
+        import io
+
+        from gruntz import verify
+        with mock.patch("gruntz.verify.bans.main", return_value=0) as m:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(verify.main(["vtable-bans"]), 0)
+        m.assert_called_once()
+
+
+class ReportInputControls(unittest.TestCase):
+    """A bad --report is an operator error, not a traceback."""
+
+    def test_missing_malformed_and_foreign_json_all_say_what_to_do(self):
+        from gruntz.verify import scores
+        with tempfile.TemporaryDirectory() as td:
+            gone = Path(td) / "gone.json"
+            with self.assertRaises(SystemExit) as e:
+                scores.load(gone)
+            self.assertIn("gone.json", str(e.exception))
+
+            trunc = Path(td) / "trunc.json"
+            trunc.write_text('{"units": [')
+            with self.assertRaises(SystemExit) as e:
+                scores.load(trunc)
+            self.assertIn("not valid JSON", str(e.exception))
+            self.assertIn("gruntz compare", str(e.exception))
+
+            foreign = Path(td) / "other.json"
+            foreign.write_text('{"hello": 1}')
+            with self.assertRaises(SystemExit) as e:
+                scores.load(foreign)
+            self.assertIn("not an objdiff report", str(e.exception))
+
+    def test_an_unknown_tier_is_rejected_before_any_work(self):
+        """`check --tier bogus` used to run the whole MAX gate first, so the
+        typo surfaced behind a wall of regression output."""
+        from gruntz.verify import verbs
+        with mock.patch.object(verbs, "_report",
+                               side_effect=AssertionError("ran the gate")):
+            with self.assertRaises(SystemExit) as e:
+                verbs.cmd_check(["--tier", "bogus"])
+        self.assertIn("unknown tier", str(e.exception))
+
+    def test_a_real_report_still_loads(self):
+        from gruntz.verify import scores
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "r.json"
+            p.write_text('{"units": [], "measures": {}}')
+            self.assertEqual(scores.load(p)["units"], [])
+
+
+class GateCliSurfaceControls(unittest.TestCase):
+    """Every `gruntz verify <gate>` answers --help and REJECTS a typo; none
+    of them treats an unknown flag as 'run anyway'."""
+
+    def test_every_gate_module_parses_its_argv(self):
+        import contextlib
+        import importlib
+        import io
+
+        from gruntz.verify import _GATES
+        for gate, module in sorted(_GATES.items()):
+            mod = importlib.import_module(module)
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                with self.assertRaises(SystemExit) as e:
+                    mod.main(["--help"])
+            self.assertEqual(e.exception.code, 0, f"{gate} --help")
+            # RENDERING it is the check: argparse %-expands help strings, so
+            # an unescaped `%` in one (`100%-clean`) raises inside --help.
+            self.assertIn("usage:", out.getvalue(), f"{gate} --help")
+            self.assertIn("options:", out.getvalue(), f"{gate} --help")
+            with contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as e:
+                    mod.main(["--definitely-not-a-flag"])
+            self.assertEqual(e.exception.code, 2, f"{gate} unknown flag")
+
+    def test_no_gate_flag_is_a_silent_no_op(self):
+        """A flag argparse accepts and nothing ever READS is worse than no
+        flag: it looks like it worked. (`verify vtables --list` was one.)"""
+        import ast
+        import importlib
+        import re
+
+        from gruntz.verify import _GATES
+
+        def unread(src):
+            """dests argparse defines that no `<ns>.<dest>` ever reads."""
+            tree = ast.parse(src)
+            dests, namespaces = [], set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) \
+                        and isinstance(node.func, ast.Attribute) \
+                        and node.func.attr == "add_argument":
+                    opts = [a.value for a in node.args
+                            if isinstance(a, ast.Constant)]
+                    dest = next((kw.value.value for kw in node.keywords
+                                 if kw.arg == "dest"
+                                 and isinstance(kw.value, ast.Constant)), None)
+                    if dest is None and opts:
+                        longs = [o for o in opts if o.startswith("--")] or opts
+                        dest = longs[0].lstrip("-").replace("-", "_")
+                    if dest and dest != "help":
+                        dests.append(dest)
+                if isinstance(node, ast.Assign) \
+                        and isinstance(node.value, ast.Call) \
+                        and isinstance(node.value.func, ast.Attribute) \
+                        and node.value.func.attr == "parse_args":
+                    namespaces |= {t.id for t in node.targets
+                                   if isinstance(t, ast.Name)}
+            # `args` covers the do_*(args) handlers data_access hands off to
+            names = namespaces | {"args"}
+            return dests, [d for d in dests
+                           if not any(re.search(rf"\b{n}\.{d}\b", src)
+                                      for n in names)]
+
+        # the detector must actually SEE flags, or an empty `dead` proves
+        # nothing (this scan found `vtables --list` before it was removed)
+        probe = ('import argparse\nap = argparse.ArgumentParser()\n'
+                 'ap.add_argument("--used", action="store_true")\n'
+                 'ap.add_argument("--dead", action="store_true")\n'
+                 'a = ap.parse_args()\nprint(a.used)\n')
+        self.assertEqual(unread(probe), (["used", "dead"], ["dead"]))
+
+        seen, dead = 0, []
+        for gate, module in sorted(_GATES.items()):
+            src = Path(importlib.import_module(module).__file__).read_text()
+            dests, bad = unread(src)
+            seen += len(dests)
+            dead += [f"{gate} --{d.replace('_', '-')}" for d in bad]
+        self.assertGreater(seen, 30, "the flag scan found almost nothing")
+        self.assertEqual(dead, [])
+
+    def test_every_gate_flag_documents_itself(self):
+        """`--help` listing a bare flag name tells the reader nothing; the
+        one place a flag's meaning is guaranteed to be found is `help=`."""
+        import ast
+        import importlib
+
+        from gruntz.verify import _GATES
+        bare = []
+        for gate, module in sorted(_GATES.items()):
+            src = Path(importlib.import_module(module).__file__).read_text()
+            for node in ast.walk(ast.parse(src)):
+                if isinstance(node, ast.Call) \
+                        and isinstance(node.func, ast.Attribute) \
+                        and node.func.attr == "add_argument" \
+                        and not any(kw.arg == "help" for kw in node.keywords):
+                    opts = [a.value for a in node.args
+                            if isinstance(a, ast.Constant)]
+                    bare.append(f"{gate} {'/'.join(opts)}")
+        self.assertEqual(bare, [])
+
+    def test_model_help_does_not_run_the_join(self):
+        """`gruntz model --help` used to resolve the whole Model and REWRITE
+        build/gen/bindings.tsv as a side effect of asking for help."""
+        import contextlib
+        import io
+
+        import gruntz.model as model
+        with mock.patch.object(model, "resolve") as res, \
+             mock.patch.object(model, "serialize") as ser:
+            with contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaises(SystemExit) as e:
+                    model.main(["--help"])
+        self.assertEqual(e.exception.code, 0)
+        res.assert_not_called()
+        ser.assert_not_called()
+
+
+# --------------------------------------------------------------------------- #
+# never vacuous: a gate that measured NOTHING may not report OK               #
+# --------------------------------------------------------------------------- #
+class VacuityControls(unittest.TestCase):
+    def test_tu_order_refuses_an_empty_scan(self):
+        from gruntz.verify import tu_order as to
+        with mock.patch.object(to, "load_in_file_order", return_value={}), \
+             mock.patch.object(to, "load_exiles", return_value={}), \
+             mock.patch.object(to, "load_emitted_claims", return_value={}), \
+             mock.patch.object(to, "_load_baseline", return_value=({}, 0)):
+            findings, _s = to.gate_findings()
+        self.assertTrue(any("vacuous" in f for f in findings))
+
+    def test_data_tu_order_refuses_zero_defs(self):
+        from gruntz.verify import data_tu_order as dto
+        with mock.patch.object(dto, "crossings", return_value=(set(), 0, [])), \
+             mock.patch.object(dto, "load_baseline", return_value=set()):
+            self.assertTrue(any("vacuous" in f for f in dto.gate_findings()))
+        with mock.patch.object(dto, "crossings", return_value=(set(), 42, [])), \
+             mock.patch.object(dto, "load_baseline", return_value=set()):
+            self.assertEqual(dto.gate_findings(), [])
+
+    def test_caller_callee_refuses_an_empty_call_graph(self):
+        from gruntz.verify import caller_callee as cc
+        rc = mock.Mock()
+        rc.tgt = set()
+        with mock.patch.object(cc, "_summary", return_value=(rc, [], {})):
+            self.assertTrue(any("vacuous" in f for f in cc.gate_findings()))
+
+    def test_assert_relocs_refuses_zero_audited_functions(self):
+        from gruntz.verify import assert_relocs as ar
+        with mock.patch.object(ar, "audit", return_value=([], 0)):
+            self.assertTrue(any("NOTHING was audited" in f
+                                for f in ar.gate_findings()))
+        with mock.patch.object(ar, "audit", return_value=([], 1200)):
+            self.assertEqual(ar.gate_findings(), [])
+
+    def test_data_relocs_refuses_zero_scanned_pairs(self):
+        from collections import Counter
+
+        from gruntz.verify import data_relocs as dr
+        with mock.patch.object(dr, "scan",
+                               return_value=([], [], [], Counter(), {}, [])), \
+             mock.patch.object(dr, "units_without_a_target", return_value=[]), \
+             mock.patch.object(dr, "orphan_payloads", return_value=[]):
+            self.assertTrue(any("0 base/target pairs" in f
+                                for f in dr.gate_findings()))
+
+    def test_alloc_size_refuses_an_empty_layout_harvest(self):
+        from gruntz.verify import alloc_size as az
+        sw = mock.Mock()
+        sw.rows.return_value = []
+        with mock.patch.object(az, "Sweep", return_value=sw), \
+             mock.patch.object(az, "computed_sizes", return_value=({}, set())), \
+             mock.patch.object(az, "def_counts", return_value={}), \
+             mock.patch.object(az, "classify_rows",
+                               return_value=([], [], [], [], [], [])):
+            self.assertTrue(any("0 class sizes" in f
+                                for f in az.gate_findings()))
+        with mock.patch.object(az, "Sweep", return_value=sw), \
+             mock.patch.object(az, "computed_sizes",
+                               return_value=({"CFoo": 8}, set())), \
+             mock.patch.object(az, "def_counts", return_value={}), \
+             mock.patch.object(az, "classify_rows",
+                               return_value=([], [], [], [], [], [])):
+            self.assertEqual(az.gate_findings(), [])
+
+    def test_library_overlap_does_not_call_its_vacuity_guard_a_double_claim(self):
+        import contextlib
+        import io
+
+        from gruntz.verify import library_overlap as lo
+        with mock.patch.object(lo, "findings",
+                               return_value=(["parsed 0 src claims"], 0)):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(lo.main([]), 1)
+        self.assertIn("0 src claims", err.getvalue())
+        self.assertNotIn("double-claim(s). Each", err.getvalue())
+
+
+class LibSymbolCacheControls(unittest.TestCase):
+    """The toolchain .LIB symbol cache is keyed on the ARCHIVE SET.
+
+    Measured 2026-08-16: an unkeyed cache written under toolchain r2 was
+    still answering under r3 (46,866 live symbols vs 56,474 cached), so
+    `verify link-tier` called 42 resolvable Win32 imports "a guaranteed
+    unresolved external" while the candidate link reported ZERO unresolved.
+    """
+
+    def _archive(self, path: Path, names: list[str]) -> None:
+        import struct as st
+        body = st.pack(">I", len(names)) + b"\0" * (4 * len(names)) \
+            + b"".join(n.encode() + b"\0" for n in names)
+        head = b"/" + b" " * 15 + b"0" * 12 + b" " * 20 \
+            + f"{len(body):<10d}".encode() + b"`\n"
+        path.write_bytes(b"!<arch>\n" + head + body)
+
+    def test_a_toolchain_change_invalidates_the_cache(self):
+        from gruntz.verify import undefined_closure as uc
+        with tempfile.TemporaryDirectory() as td:
+            r2, r3 = Path(td) / "r2/lib", Path(td) / "r3/lib"
+            r2.mkdir(parents=True)
+            r3.mkdir(parents=True)
+            self._archive(r2 / "OLD.LIB", ["_OnlyInR2@4"])
+            self._archive(r3 / "NEW.LIB", ["_OnlyInR3@4"])
+            cache = Path(td) / "lib_symbols.txt"
+            with mock.patch.object(uc, "LIB_CACHE", cache):
+                with mock.patch.dict("os.environ",
+                                     {"MSVC_DIR": str(r2.parent)},
+                                     clear=False):
+                    os.environ.pop("DXSDK_DIR", None)
+                    first = uc.lib_symbols()
+                self.assertIn("_OnlyInR2@4", first)
+                with mock.patch.dict("os.environ",
+                                     {"MSVC_DIR": str(r3.parent)},
+                                     clear=False):
+                    os.environ.pop("DXSDK_DIR", None)
+                    second = uc.lib_symbols()
+        self.assertIn("_OnlyInR3@4", second)
+        self.assertNotIn("_OnlyInR2@4", second)   # the r2 answer is retired
+
+    def test_an_unreachable_toolchain_keeps_the_last_answer(self):
+        """Outside the dev shell $MSVC_DIR is unset; returning an empty set
+        would make every consumer call the whole CRT unresolvable."""
+        from gruntz.verify import undefined_closure as uc
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td) / "lib_symbols.txt"
+            cache.write_text("# libs deadbeef\n_CloseHandle@4\n")
+            with mock.patch.object(uc, "LIB_CACHE", cache), \
+                 mock.patch.object(uc, "_toolchain_libs", return_value=[]):
+                self.assertEqual(uc.lib_symbols(), {"_CloseHandle@4"})
+
+
+class LinkTierRunnabilityControls(unittest.TestCase):
+    def test_a_missing_map_is_a_finding_not_a_silent_skip(self):
+        """With no .map the image diff cannot run at all - and main()'s
+        success line claims every exact body is byte-identical in the linked
+        image, which would then be a claim about a check that never ran."""
+        from gruntz.verify import link_tier as lt
+        with tempfile.TemporaryDirectory() as td:
+            cand = Path(td) / "c.exe"
+            cand.write_bytes(b"MZ")
+            with mock.patch.object(lt, "CAND", cand), \
+                 mock.patch.object(lt, "CMAP", Path(td) / "absent.map"):
+                out = lt.image_diff_findings()
+        self.assertTrue(out and "could not run" in out[0])
+
+    def test_a_missing_retail_section_is_fatal_and_reloc_is_exempt(self):
+        """The third link-tier check had no control at all."""
+        from gruntz.verify import link_tier as lt
+        with tempfile.TemporaryDirectory() as td:
+            cand = Path(td) / "c.exe"
+            cand.write_bytes(b"MZ")
+            with mock.patch.object(lt, "CAND", cand), \
+                 mock.patch.object(lt, "census",
+                                   return_value=[(".text", 0x1000, 0x1000),
+                                                 (".rsrc", 0x2000, 0),
+                                                 (".reloc", 0x400, 0)]):
+                bad = lt.census_findings()
+        self.assertEqual(len(bad), 1)
+        self.assertIn(".rsrc", bad[0])       # .reloc is deliberately exempt
+
+    def test_no_candidate_at_all_stays_one_finding(self):
+        from gruntz.verify import link_tier as lt
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(lt, "CAND", Path(td) / "none.exe"), \
+                 mock.patch.object(lt, "CMAP", Path(td) / "none.map"):
+                self.assertEqual(lt.image_diff_findings(), [])
+                self.assertEqual(lt.census_findings(), [])
+
+
+# --------------------------------------------------------------------------- #
+# the MAX ledger: the bank rules themselves (the file is project state)       #
+# --------------------------------------------------------------------------- #
+class BankRatchetControls(unittest.TestCase):
+    """bank_rows is what edits config/match_baseline.tsv. Every rule that
+    protects a banked MAX gets a control here; nothing writes the ledger."""
+
+    def _bank(self, cur, base, fps=None, rvas=None, library=()):
+        from gruntz.verify import verbs
+        fps = fps or {}
+        with mock.patch.object(verbs, "library_rvas", return_value=set(library)):
+            return verbs.bank_rows(cur, base,
+                                   lambda u, f: fps.get((u, f), "h1"),
+                                   rvas or {})
+
+    def _row(self, best=90.0, cur=90.0, fp="h1", addr=0x1000, hist=None,
+             state="", tries=1):
+        return {"best": best, "cur": cur, "tries": tries, "fp": fp,
+                "addr": addr, "hist": best if hist is None else hist,
+                "state": state}
+
+    def test_a_dip_never_lowers_a_best_while_the_source_is_unchanged(self):
+        key = ("u", "f")
+        new, stats, reset, _drop = self._bank(
+            {key: 70.0}, {key: self._row(best=90.0, cur=90.0)},
+            rvas={key: 0x1000})
+        self.assertEqual(new[key]["best"], 90.0)     # MAX held
+        self.assertEqual(new[key]["cur"], 70.0)
+        self.assertEqual(new[key]["hist"], 90.0)
+        self.assertEqual(reset, [])
+
+    def test_a_real_source_edit_resets_best_but_never_hist(self):
+        key = ("u", "f")
+        new, _s, reset, _d = self._bank(
+            {key: 70.0}, {key: self._row(best=90.0, fp="old")},
+            fps={key: "new"}, rvas={key: 0x1000})
+        self.assertEqual(new[key]["best"], 70.0)
+        self.assertEqual(new[key]["hist"], 90.0)     # the all-time peak holds
+        self.assertEqual(len(reset), 1)
+
+    def test_a_fallback_fingerprint_is_not_an_edit(self):
+        from gruntz.verify.fingerprints import FALLBACK
+        key = ("u", "f")
+        new, _s, reset, _d = self._bank(
+            {key: 70.0}, {key: self._row(best=90.0, fp="real")},
+            fps={key: FALLBACK + "abc"}, rvas={key: 0x1000})
+        self.assertEqual(new[key]["best"], 90.0)
+        self.assertEqual(new[key]["fp"], "real")     # the real hash is kept
+        self.assertEqual(reset, [])
+
+    def test_the_rva_moving_is_the_only_rva_keyed_reset(self):
+        key = ("u", "f")
+        new, stats, _r, _d = self._bank(
+            {key: 55.0}, {key: self._row(best=90.0, addr=0x1000)},
+            rvas={key: 0x2000})
+        self.assertEqual(stats["rebounds"], 1)
+        self.assertEqual(new[key]["best"], 55.0)     # a different BODY
+        self.assertEqual(new[key]["hist"], 90.0)
+
+    def test_a_unit_move_migrates_the_high_water_by_rva(self):
+        old, new_key = ("olda", "f"), ("newb", "f")
+        new, stats, _r, _d = self._bank(
+            {new_key: 80.0}, {old: self._row(best=95.0, addr=0x1000)},
+            rvas={new_key: 0x1000})
+        self.assertEqual(stats["moved"], 1)
+        self.assertEqual(new[new_key]["best"], 95.0)
+        self.assertNotIn(old, new)
+
+    def test_an_unscored_body_is_preserved_absent_and_round_trips(self):
+        from gruntz.verify import baseline as bl
+        key = ("u", "f")
+        new, stats, _r, dropped = self._bank(
+            {}, {key: self._row(best=100.0, addr=0x1000)}, rvas={})
+        self.assertEqual(stats["preserved_absent"], 1)
+        self.assertEqual(new[key]["state"], "absent")
+        self.assertEqual(new[key]["best"], 100.0)
+        self.assertEqual(dropped, [])
+        self.assertEqual(bl.load(bl.render(new)), new)     # survives the file
+
+    def test_an_absent_row_is_dropped_once_its_rva_is_claimed_elsewhere(self):
+        key, other = ("u", "f"), ("u", "g")
+        new, stats, _r, dropped = self._bank(
+            {other: 100.0}, {key: self._row(best=100.0, addr=0x1000)},
+            rvas={other: 0x1000})
+        # 0x1000 is now claimed under another name: keeping the row would pin
+        # a phantom, and the high-water travelled with the body (moved).
+        self.assertEqual(stats["moved"] + len(dropped), 1)
+        self.assertNotIn("absent", {r.get("state") for r in new.values()})
+
+    def test_banking_twice_changes_nothing(self):
+        key = ("u", "f")
+        base = {key: self._row(best=90.0, cur=90.0)}
+        first, _s, _r, _d = self._bank({key: 95.0}, base, rvas={key: 0x1000})
+        second, stats, _r, _d = self._bank({key: 95.0}, first,
+                                           rvas={key: 0x1000})
+        self.assertEqual(first, second)
+        self.assertEqual(stats["raised"], 0)
+
+    def test_the_ledger_round_trips_through_render_and_load(self):
+        from gruntz.verify import baseline as bl
+        rows = {("u", "f"): self._row(best=99.1234, cur=98.7654, hist=100.0),
+                ("u", "g"): self._row(best=100.0, cur=100.0, addr=None,
+                                      state="absent")}
+        self.assertEqual(bl.load(bl.render(rows)), rows)
+
+
+class BankPreconditionControls(unittest.TestCase):
+    def test_an_unstaged_build_input_refuses_and_names_the_paths(self):
+        from gruntz.verify import verbs
+        with mock.patch.object(verbs, "unstaged_bank_inputs",
+                               return_value=["src/Gruntz/Grunt.cpp"]):
+            with self.assertRaises(SystemExit) as e:
+                verbs.require_bankable_tree("write the baseline")
+        msg = str(e.exception)
+        self.assertIn("src/Gruntz/Grunt.cpp", msg)
+        self.assertIn("--dirty", msg)
+
+    def test_dirty_warns_loudly_and_proceeds(self):
+        import contextlib
+        import io
+
+        from gruntz.verify import verbs
+        with mock.patch.object(verbs, "unstaged_bank_inputs",
+                               return_value=["include/Gruntz/Grunt.h"]):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                verbs.require_bankable_tree("write the baseline",
+                                            allow_dirty=True)
+        self.assertIn("WARNING", err.getvalue())
+        self.assertIn("include/Gruntz/Grunt.h", err.getvalue())
+
+    def test_a_clean_tree_is_silent(self):
+        from gruntz.verify import verbs
+        with mock.patch.object(verbs, "unstaged_bank_inputs", return_value=[]):
+            verbs.require_bankable_tree("write the baseline")
+
+    def test_a_stale_report_is_called_out(self):
+        import contextlib
+        import io
+
+        from gruntz.verify import verbs
+        with tempfile.TemporaryDirectory() as td:
+            report = Path(td) / "report.json"
+            report.write_text("{}")
+            objs = Path(td) / "build/objdiff/base"
+            objs.mkdir(parents=True)
+            obj = objs / "a.obj"
+            obj.write_bytes(b"x")
+            os.utime(obj, (report.stat().st_mtime + 600,) * 2)
+            with mock.patch.object(verbs, "REPO", Path(td)):
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    verbs._warn_stale_report(report)
+        self.assertIn("STALE", err.getvalue())
+        self.assertIn("gruntz build", err.getvalue())
+
+
+# --------------------------------------------------------------------------- #
+# the CONSUMER, not the recognizer: what the tier actually calls              #
+# --------------------------------------------------------------------------- #
+class GateConsumerControls(unittest.TestCase):
+    """A recognizer control proves a helper; the tier calls the GATE. These
+    drive the exact entry point tiers.TIERS holds."""
+
+    def test_include_order_the_tier_calls_audit_not_parse(self):
+        from gruntz.verify import include_order as io
+        from gruntz.verify import tiers
+
+        def with_file(text):
+            with tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                (root / "src").mkdir()
+                p = root / "src/Probe.cpp"
+                p.write_text(text)
+                with mock.patch.object(io, "repo_files", return_value=[p]), \
+                     mock.patch.object(io, "REPO", root):
+                    return tiers._include_order()
+        dirty = with_file("#include <rva.h>\n#include <Zed.h>\n"
+                          "#include <Abc.h>\n#include <Zed.h>\n\nint x;\n")
+        self.assertTrue(any("duplicate include" in f for f in dirty))
+        clean = with_file("#include <rva.h>\n\n#include <Abc.h>\n"
+                          "#include <Zed.h>\n\nint x;\n")
+        self.assertEqual(clean, [])
+
+    def test_caller_callee_fires_above_the_floor_and_is_silent_at_it(self):
+        from gruntz.verify import caller_callee as cc
+        rc = mock.Mock()
+        rc.tgt = {(1, 2)}
+        rc.name = lambda r: "?F@@YAXXZ"
+        rc.unit = lambda r: "u"
+        miss = [(0x1000 + i, 0x2000, "FAKE-VIEW", "CView") for i in range(5)]
+        summary = (rc, miss, {"FAKE-VIEW": 5})
+        with mock.patch.object(cc, "_summary", return_value=summary), \
+             mock.patch("gruntz.verify.board.load_baseline",
+                        return_value={"caller-callee FAKE-VIEW": 4}):
+            over = cc.gate_findings()
+        self.assertTrue(over and "exceeds the committed floor 4" in over[0])
+        with mock.patch.object(cc, "_summary", return_value=summary), \
+             mock.patch("gruntz.verify.board.load_baseline",
+                        return_value={"caller-callee FAKE-VIEW": 5}):
+            self.assertEqual(cc.gate_findings(), [])
+
+    def test_vtables_gate_renders_every_defect_class(self):
+        from gruntz.verify import vtables as vt
+        wiring = [("WIRING", 0x100, "CFader", 3, 0x2000,
+                   "?Gap_17f660@@YAXXZ", "u", "not a virtual")]
+        with mock.patch.object(vt, "analyse",
+                               return_value=([], [], [], wiring, [], 1, 1)):
+            self.assertTrue(any("vtable-slot-binding [WIRING]" in f
+                                for f in vt.gate_findings()))
+        gaps = [(0x1234, 16, "rtti", "CGhost", 0)]
+        with mock.patch.object(vt, "analyse",
+                               return_value=(gaps, [], [], [], [], 1, 1)):
+            self.assertTrue(any("vtable-coverage" in f
+                                for f in vt.gate_findings()))
+        virt = [("CShell", 0x300, 9, 2, "under-virtualized")]
+        with mock.patch.object(vt, "analyse",
+                               return_value=([], virt, [], [], [], 1, 1)):
+            self.assertTrue(any("vtable-virtuality" in f
+                                for f in vt.gate_findings()))
+        with mock.patch.object(vt, "analyse",
+                               return_value=([], [], [], [], [], 1, 1)):
+            self.assertEqual(vt.gate_findings(), [])
+
+    def test_alloc_size_catches_a_planted_sizeof_error_on_the_real_tree(self):
+        """The whole-tree control: take a class whose retail `push <n>`
+        immediate ALREADY agrees with clang's sizeof, shift the computed side
+        by 4, and require the live gate to name it. A gate that is blind
+        returns the same 0 rows as a clean tree."""
+        from gruntz.core.paths import BUILD
+        from gruntz.verify import alloc_size as az
+        if not (BUILD / "gen/class_sizes.json").is_file():
+            self.skipTest("class_sizes cache absent (unbuilt tree)")
+        comp, conflicts = az.computed_sizes()
+        if not comp:
+            self.skipTest("libclang harvest empty")
+        rows = az.Sweep().rows()
+        _b, _s, _m, _u, _un, ok = az.classify_rows(rows, comp, conflicts,
+                                                   az.def_counts())
+        if not ok:
+            self.skipTest("no agreeing class to poison on this tree state")
+        victim = sorted(o[0] for o in ok)[0]
+        poisoned = dict(comp)
+        poisoned[victim] += 4
+        with mock.patch.object(az, "computed_sizes",
+                               return_value=(poisoned, conflicts)):
+            out = az.gate_findings()
+        self.assertTrue(any(victim in f for f in out),
+                        f"a 4-byte sizeof error on {victim} was not caught")
+
+
+class PipelineErrorControls(unittest.TestCase):
+    """The pipeline verbs answer a broken environment with a MESSAGE.
+
+    `gruntz delink` used to let the delinker's ToolError escape as a
+    traceback, and the tool's own words name a symptom ("relocation alias
+    owner is absent: _length_code$S") whose real cause is a stale
+    vostok-delinker on $PATH.
+    """
+
+    def _delink(self, exc):
+        import contextlib
+        import io
+
+        from gruntz.delink import run as dr
+        with mock.patch.object(dr, "run", side_effect=exc):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                rc = dr.main([])
+        return rc, err.getvalue()
+
+    def test_a_stale_delinker_is_named_not_just_echoed(self):
+        from gruntz.tool import ToolError
+        rc, text = self._delink(ToolError(
+            "vostok-delinker failed (rc=1):\nrelocation alias owner is "
+            "absent: _length_code$S"))
+        self.assertEqual(rc, 1)
+        self.assertIn("_length_code$S", text)      # the tool's own words kept
+        self.assertIn("STALE vostok-delinker", text)
+        self.assertIn("which vostok-delinker", text)
+
+    def test_a_missing_delinker_binary_is_a_message_not_a_traceback(self):
+        rc, text = self._delink(
+            FileNotFoundError(2, "No such file or directory",
+                              "vostok-delinker"))
+        self.assertEqual(rc, 1)
+        self.assertIn("nix develop", text)
+
+    def test_an_unhinted_failure_still_prints_the_tools_words(self):
+        from gruntz.tool import ToolError
+        rc, text = self._delink(ToolError("vostok-delinker failed (rc=9)"))
+        self.assertEqual(rc, 1)
+        self.assertIn("rc=9", text)
+
+    def test_rsrc_separates_could_not_run_from_a_real_deviation(self):
+        """A missing era rc.exe is not a verdict on Gruntz.rc: reporting it as
+        `check FAILED` reads as 'the resources diverge from retail'."""
+        import contextlib
+        import io
+
+        from gruntz.rsrc import check as rc_check
+        from gruntz.tool import ToolError
+        with mock.patch.object(rc_check.rc_tool, "compile",
+                               side_effect=ToolError("rc.exe not found")):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                code = rc_check.check()
+        self.assertEqual(code, 2)                  # 2 = could not run
+        self.assertIn("COULD NOT RUN", err.getvalue())
+        self.assertIn("not a verdict", err.getvalue())
+        with mock.patch.object(rc_check.rc_tool, "compile",
+                               side_effect=PermissionError(13, "denied")):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                code = rc_check.check(out="/root/denied.res")
+        self.assertEqual(code, 2)
+        self.assertIn("--out", err.getvalue())
+
+    def test_rsrc_rejects_an_unknown_subcommand_by_name(self):
+        import contextlib
+        import io
+
+        from gruntz import rsrc
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(rsrc.main(["bogus"]), 2)
+        self.assertIn("unknown subcommand 'bogus'", err.getvalue())
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(rsrc.main(["--help"]), 0)
+        self.assertIn("rsrc check", out.getvalue())
+
+
 def main(argv=None) -> int:
-    argv = list(argv or [])
-    verbosity = 2 if "-v" in argv else 1
+    import argparse
+    ap = argparse.ArgumentParser(
+        prog="gruntz verify selftest", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("-v", "--verbose", action="store_true",
+                    help="name every control as it runs")
+    ap.add_argument("-k", dest="patterns", action="append", default=[],
+                    help="run only controls whose name contains this "
+                         "substring (repeatable; comma-separated also works)")
+    a = ap.parse_args(list(argv or []))
+    verbosity = 2 if a.verbose else 1
     loader = unittest.TestLoader()
+    wanted = [p.strip() for spec in a.patterns for p in spec.split(",")
+              if p.strip()]
+    if wanted:
+        loader.testNamePatterns = [f"*{p}*" for p in wanted]
     suite = loader.loadTestsFromModule(sys.modules[__name__])
     runner = unittest.TextTestRunner(verbosity=verbosity)
     result = runner.run(suite)

@@ -14,6 +14,12 @@ Campaign order (CLAUDE.md): ascending historical MAX - the lowest bank is
 the biggest structural question. cur < best is a REGRESSION flag, not a
 wall class; best == 100 with cur < 100 means the implementation already
 proved the body and the current dip is TU-state, not structure.
+
+The report also scores the carved EH band (`__ehreg$*` / `__ehunwind$*`),
+which gruntz.verify.scores excludes from the gate because those funclets are
+not reconstruction targets. They are KEPT here (they are real sub-100 rows)
+but counted separately in the header, so the worklist total is never read as
+a body count.
 """
 
 from __future__ import annotations
@@ -21,6 +27,7 @@ from __future__ import annotations
 import json
 
 from gruntz.core.paths import BUILD, REPO
+from gruntz.verify.scores import is_eh_band
 
 BASELINE = REPO / "config/match_baseline.tsv"
 REPORTS = (BUILD / "objdiff/compare-new/report.json",
@@ -99,21 +106,28 @@ def build(unit: str | None = None, below: float = 100.0) -> list[dict]:
 
 def main(argv=None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(prog="gruntz walls inventory",
-                                 description=__doc__)
-    ap.add_argument("--unit")
-    ap.add_argument("--below", type=float, default=100.0)
-    ap.add_argument("--limit", type=int, default=40)
-    ap.add_argument("--json", action="store_true")
+    ap = argparse.ArgumentParser(
+        prog="gruntz walls inventory", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--unit", help="restrict to one unit of config/units.toml")
+    ap.add_argument("--below", type=float, default=100.0,
+                    help="score ceiling for a row to count as a wall")
+    ap.add_argument("--limit", type=int, default=40, help="rows to print")
+    ap.add_argument("--json", action="store_true", help="the rows as JSON")
     a = ap.parse_args(argv)
+    from gruntz.walls import check_unit
+    check_unit(a.unit)
     rows = build(a.unit, a.below)
     if a.json:
         print(json.dumps(rows, indent=2))
         return 0
     n_reg = sum(r["regressed"] for r in rows)
     n_prov = sum(r["proven"] for r in rows)
+    n_eh = sum(1 for r in rows if is_eh_band(r["symbol"]))
     print(f"[walls] {len(rows)} function(s) below {a.below:g}%  "
-          f"({n_prov} proven-at-100 dips, {n_reg} below their bank)")
+          f"({n_prov} proven-at-100 dips, {n_reg} below their bank"
+          + (f", {n_eh} EH-band funclets - scored, NOT reconstruction targets"
+             if n_eh else "") + ")")
     print(f"{'rva':>10}  {'hist':>6}  {'cur':>6}  {'size':>7}  unit/symbol")
     for r in rows[:a.limit]:
         hist = f"{r['hist_max']:6.2f}" if r["hist_max"] is not None else "     ?"

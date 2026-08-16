@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 
-from gruntz.sema import die, parse_rva, run
+from gruntz.sema import die, resolve_target, run
 from gruntz.sema.image import retail
 from gruntz.sema.index import index
 
@@ -104,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if rows else 1
     if not args.target:
         die("give a vtable rva, a function rva/name, or --list")
-    hits = idx.resolve_name(args.target) or [parse_rva(args.target)]
+    hits = resolve_target(args.target)
     rc = 0
     for rva in hits:
         b = idx.datum(rva)

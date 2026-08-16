@@ -50,8 +50,31 @@ def report_path() -> Path:
 
 
 def load(path: Path | None = None) -> dict:
-    """The report document with the EH band carved out (in place)."""
-    doc = json.loads((path or report_path()).read_text())
+    """The report document with the EH band carved out (in place).
+
+    An explicit `--report` path that is missing, unreadable or not objdiff
+    JSON is an OPERATOR error, not a crash: say which file and what it must
+    be. (A missing DEFAULT report is answered by report_path().)
+    """
+    path = path or report_path()
+    try:
+        text = Path(path).read_text()
+    except FileNotFoundError:
+        raise SystemExit(f"no report at {path} - pass an objdiff report.json "
+                         f"(`gruntz build` writes {REPORTS[0]})") from None
+    except OSError as exc:
+        raise SystemExit(f"cannot read the report {path}: {exc}") from None
+    try:
+        doc = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(
+            f"{path} is not valid JSON ({exc}) - objdiff-cli writes it whole, "
+            f"so a truncated file means the compare step was interrupted: "
+            f"re-run `gruntz compare` (or `gruntz build`)") from None
+    if not isinstance(doc, dict) or "units" not in doc:
+        raise SystemExit(f"{path} is JSON but not an objdiff report (no "
+                         f"`units` key) - point --report at "
+                         f"build/objdiff/compare-new/report.json")
     split_eh_band(doc)
     return doc
 

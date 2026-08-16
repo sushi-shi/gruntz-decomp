@@ -287,7 +287,14 @@ def audit(unit_filter=None, review_rva=None):
 
 def gate_findings() -> list[str]:
     findings, seen = audit()
-    return [f"assert-relocs [{u}] {n[:60]}: {p}" for u, n, p in findings]
+    out = [f"assert-relocs [{u}] {n[:60]}: {p}" for u, n, p in findings]
+    if not seen:
+        # 0 audited functions and 0 defects read exactly like a clean tree.
+        out.append(f"assert-relocs: 0 function(s) reached the >={THRESHOLD}% "
+                   f"threshold, so NOTHING was audited - an unbuilt tree or a "
+                   f"broken report/Model join, never a pass. Run "
+                   f"`gruntz build` and re-run.")
+    return out
 
 
 def main(argv=None) -> int:
@@ -296,7 +303,8 @@ def main(argv=None) -> int:
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("rva", nargs="?", help="review ONE function at this rva")
-    ap.add_argument("--unit")
+    ap.add_argument("--unit",
+                    help="audit one unit only")
     a = ap.parse_args(argv)
     review = int(a.rva, 16) if a.rva else None
     findings, seen = audit(a.unit, review)

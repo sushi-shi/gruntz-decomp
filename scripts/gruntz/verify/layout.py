@@ -464,10 +464,13 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify layout",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--unit")
+    ap.add_argument("--unit",
+                    help="restrict to one unit (with --rebuild, re-parse only that unit)")
     ap.add_argument("--var", help="one variable's flattened field map")
-    ap.add_argument("--rebuild", action="store_true")
-    ap.add_argument("--limit", type=int, default=64)
+    ap.add_argument("--rebuild", action="store_true",
+                    help="re-parse every TU (ignore the incremental cache)")
+    ap.add_argument("--limit", type=int, default=64,
+                    help="cap the printed problem/field listing")
     a = ap.parse_args(argv)
 
     lay, problems = harvest(rebuild=a.rebuild,

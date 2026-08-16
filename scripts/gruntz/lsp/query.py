@@ -5,7 +5,11 @@ symbol name. Symbols go through clangd's workspace-symbol index: `CGrunt`
 matches the class, `CGrunt::GetAI` the qualified member; an ambiguous query
 lists every candidate and exits rather than guessing. Cross-TU reference
 answers come from the background index (build/clangd/.cache/) - early runs on
-a cold cache may be partial; `python3 -m gruntz.lsp index` warms it.
+a cold cache may be partial; `gruntz lsp index` warms it.
+
+A target that LOOKS like a point (`path:line`) but names no readable file is
+reported as the missing file it is - never re-tried as a symbol, which used to
+answer 'no workspace symbol matches include/Foo.h:12'.
 """
 
 from __future__ import annotations
@@ -36,13 +40,16 @@ def fmt_location(loc: dict) -> str:
 
 def parse_point(target: str) -> tuple[Path, int, int | None] | None:
     """(path, 1-based line, 1-based col|None) when `target` names a real file
-    position; None means it is a symbol query."""
+    position; None means it is a symbol query. A `path:line` whose file does
+    not exist is an ERROR here - falling through to the symbol index would
+    answer a file question with 'no workspace symbol matches'."""
     m = _POINT.match(target)
     if not m:
         return None
     path = (REPO / m.group(1)).resolve()
     if not path.is_file():
-        return None
+        raise SystemExit(f"[lsp] no such file: {m.group(1)} (a `file:line[:col]`"
+                         f" target is resolved against {REPO})")
     return path, int(m.group(2)), int(m.group(3)) if m.group(3) else None
 
 
@@ -77,7 +84,7 @@ def resolve_symbol(lsp: clangd.Clangd, name: str) -> tuple[Path, int, int]:
         time.sleep(2)
     if not syms:
         raise SystemExit(f"[lsp] no workspace symbol matches {name!r} "
-                         f"(cold index? run `python3 -m gruntz.lsp index`)")
+                         f"(cold index? run `gruntz lsp index`)")
     exact = [s for s in syms if _symbol_label(s) == name] \
         or [s for s in syms if s["name"] == name]
     if len(exact) != 1:

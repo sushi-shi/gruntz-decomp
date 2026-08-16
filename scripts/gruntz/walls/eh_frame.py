@@ -288,21 +288,43 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="gruntz walls eh-frame",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--unit", action="append")
+    ap.add_argument("--unit", action="append",
+                    help="restrict to a unit of config/units.toml (repeatable)")
     ap.add_argument("--direction", choices=("target", "base", "both"),
-                    default="both")
-    ap.add_argument("--states", action="store_true")
-    ap.add_argument("--min", type=float, default=0.0)
-    ap.add_argument("--max", type=float, default=100.0)
-    ap.add_argument("--calibrate", action="store_true")
-    ap.add_argument("--rva")
-    ap.add_argument("--detail", action="store_true")
-    ap.add_argument("--tsv")
+                    default="both", help="which presence disagreement to list")
+    ap.add_argument("--states", action="store_true",
+                    help="the secondary sieve: unwind-STATE store counts")
+    ap.add_argument("--min", type=float, default=0.0, help="score window floor")
+    ap.add_argument("--max", type=float, default=100.0,
+                    help="score window ceiling")
+    ap.add_argument("--calibrate", action="store_true",
+                    help="the rows on 100.00%% functions - the detector-bug rate")
+    ap.add_argument("--rva", help="show only this function, hex rva (the "
+                                  "presence listing only - not --states/"
+                                  "--calibrate)")
+    ap.add_argument("--detail", action="store_true",
+                    help="add the state bracket and the ctor/dtor call delta")
+    ap.add_argument("--tsv", help="also write every row to this TSV")
     a = ap.parse_args(argv)
 
-    rows = scan(set(a.unit) if a.unit else None)
+    from gruntz.tool import ToolError
+    from gruntz.walls import check_unit
+    for unit in a.unit or ():
+        check_unit(unit)
+    if a.rva is not None:
+        try:
+            a.rva = f"0x{int(a.rva, 16):06x}"     # accept 153810 and 0x153810
+        except ValueError:
+            sys.exit(f"[walls eh-frame] --rva {a.rva!r} is not a hex address")
+    units = set(a.unit) if a.unit else None
+    pairscan.require_pairs(units)
+    try:
+        rows = scan(units)
+    except ToolError as e:
+        sys.exit(f"[walls eh-frame] {e}")
     if not rows:
-        sys.exit("no scoring functions found - run `gruntz build` first")
+        sys.exit("no scoring functions in the normalized pairs - the report "
+                 "and the objs disagree; re-run `gruntz compare`")
     exact, bad, eh_exact, sbad = calibrate(rows)
     tally = Counter(r["verdict"] for r in rows)
     print(f"{len(rows)} scoring functions in "
@@ -319,16 +341,6 @@ def main(argv=None):
           f"({100.0 * len(bad) / max(1, len(exact)):.2f}% false-positive rate)")
     print(f"  state cnt  {len(sbad)} of {len(eh_exact)} EH-framed disagree  "
           f"({100.0 * len(sbad) / max(1, len(eh_exact)):.2f}%)")
-    if a.calibrate:
-        for r in sorted(bad, key=lambda r: -r["size"]):
-            print(f"  FP-presence {r['verdict']:<11} {r['rva']:<9} "
-                  f"{r['unit']:<22} {r['name']}")
-        for r in sorted(sbad, key=lambda r: -r["size"]):
-            print(f"  FP-states   base={r['base_states']:<3} "
-                  f"tgt={r['tgt_states']:<3} {r['rva']:<9} {r['unit']:<22} "
-                  f"{r['name']}")
-        return 0
-
     if a.tsv:
         import csv
         with open(a.tsv, "w", newline="") as fh:
@@ -346,6 +358,16 @@ def main(argv=None):
                             " ".join(r["extra_ctors"] + r["resited"]),
                             r["name"]])
         print(f"wrote {a.tsv}")
+
+    if a.calibrate:                      # after --tsv: the flag is not a mode
+        for r in sorted(bad, key=lambda r: -r["size"]):
+            print(f"  FP-presence {r['verdict']:<11} {r['rva']:<9} "
+                  f"{r['unit']:<22} {r['name']}")
+        for r in sorted(sbad, key=lambda r: -r["size"]):
+            print(f"  FP-states   base={r['base_states']:<3} "
+                  f"tgt={r['tgt_states']:<3} {r['rva']:<9} {r['unit']:<22} "
+                  f"{r['name']}")
+        return 0
 
     if a.states:
         d = [r for r in rows if r["verdict"] == "BOTH"

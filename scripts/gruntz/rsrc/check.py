@@ -1,6 +1,10 @@
 """gruntz.rsrc.check - THE GATE: src/Gruntz/Gruntz.rc == retail's .rsrc.
 
-    python -m gruntz.rsrc.check [--exe PE] [--out RES]
+    gruntz rsrc check [--exe PE] [--out RES]
+
+Exit codes: 0 identical, 1 a real deviation (a resource missing, extra, or
+byte-different), 2 the check COULD NOT RUN (no era rc.exe, unwritable --out,
+unreadable PE) - never confuse an unrunnable check with a failing one.
 
 Compiles the tracked .rc with the era RC.EXE (gruntz.tool.rc) and
 byte-compares EVERY compiled resource against what the retail PE's .rsrc
@@ -31,9 +35,22 @@ def check(exe: Path | str | None = None, out: Path | str = RES_OUT) -> int:
     try:
         rc_tool.compile(RC_FILE, out)
     except ToolError as e:
-        print(f"[rsrc] check FAILED: {e}", file=sys.stderr)
-        return 1
-    retail = read_pe_rsrc(Pe(exe))
+        # "could not run" is NOT "the .rc diverges from retail": reporting a
+        # missing rc.exe as `check FAILED` reads as a resource mismatch.
+        print(f"[rsrc] check COULD NOT RUN: {e}", file=sys.stderr)
+        print(f"[rsrc] nothing was compared - this is not a verdict on "
+              f"{RC_FILE.name}.", file=sys.stderr)
+        return 2
+    except OSError as e:
+        print(f"[rsrc] check COULD NOT RUN: cannot write the .res at {out}: "
+              f"{e} (pass a writable --out)", file=sys.stderr)
+        return 2
+    try:
+        retail = read_pe_rsrc(Pe(exe))
+    except (OSError, ValueError) as e:
+        print(f"[rsrc] check COULD NOT RUN: cannot read the comparison PE "
+              f"{exe or '(retail)'}: {e}", file=sys.stderr)
+        return 2
     ours = read_res(out)
 
     problems: list[str] = []
@@ -73,13 +90,15 @@ def check(exe: Path | str | None = None, out: Path | str = RES_OUT) -> int:
     return 0
 
 
-def main() -> int:
+def main(argv=None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        prog="gruntz rsrc check", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--exe", help="PE to compare against (default: retail)")
     ap.add_argument("--out", type=Path, default=RES_OUT,
                     help="where to leave the compiled .res")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     return check(a.exe, a.out)
 
 

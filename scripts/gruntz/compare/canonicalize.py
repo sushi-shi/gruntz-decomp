@@ -1629,7 +1629,9 @@ def corpus_summary(roots: list[Path]) -> dict:
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="python3 -m gruntz.compare.canonicalize", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--input", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--sidecar", type=Path)

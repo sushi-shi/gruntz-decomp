@@ -5,10 +5,11 @@
     python3 -m gruntz.sema.match CImage::RenderFrame
     python3 -m gruntz.sema.match --worst 20       # the lowest-scoring units
 
-A pure read of build/objdiff/report.json - compare OWNS the scores, sema only
-joins them to the Model, so a function found by rva is looked up under the
-name its winning claim gives it. A unit missing from the report is reported as
-missing, never as zero.
+A pure read of the compare slice's report (build/objdiff/compare-new/report.json,
+falling back to the banked build/objdiff/report.json) - compare OWNS the scores,
+sema only joins them to the Model, so a function found by rva is looked up under
+the name its winning claim gives it. A unit missing from the report is reported
+as missing, never as zero.
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ import sys
 from gruntz import manifest
 from gruntz.sema import run
 from gruntz.sema.index import index, short_name
-from gruntz.sema.report import report
+from gruntz.sema.report import REPORTS, report
 
 
 def _pct(m: dict, key: str = "fuzzy_match_percent") -> float:
@@ -106,11 +107,14 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     rep = report()
     if not rep.exists:
-        print("build/objdiff/report.json is missing - run `gruntz compare` first",
-              file=sys.stderr)
+        print(f"no compare report ({' or '.join(str(p) for p in REPORTS)}) "
+              "- run `gruntz compare` first", file=sys.stderr)
         return 2
-    if args.worst or not args.target:
-        print("\n".join(worst(args.worst or 20)))
+    if rep.path != REPORTS[0]:
+        print(f"[sema] reading the BANKED {rep.path} ({REPORTS[0]} is absent) "
+              "- these scores predate the current build", file=sys.stderr)
+    if args.worst is not None or not args.target:
+        print("\n".join(worst(20 if args.worst is None else args.worst)))
         return 0
     if rep.unit(args.target) is not None or \
             args.target in {u["unit"] for u in manifest.units()}:

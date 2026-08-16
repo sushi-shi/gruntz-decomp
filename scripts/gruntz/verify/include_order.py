@@ -359,11 +359,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify include-order",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--fix-dupes", action="store_true")
-    ap.add_argument("--fix-prelude", action="store_true")
-    ap.add_argument("--fix", action="store_true")
-    ap.add_argument("--verbose", "-v", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on duplicates, missing preludes or a disordered block")
+    ap.add_argument("--fix-dupes", action="store_true",
+                    help="rewrite files to drop duplicate includes")
+    ap.add_argument("--fix-prelude", action="store_true",
+                    help="rewrite files to add the missing platform prelude")
+    ap.add_argument("--fix", action="store_true",
+                    help="rewrite files into the full canonical order")
+    ap.add_argument("--verbose", "-v", action="store_true",
+                    help="list every file, not just the violations")
     a = ap.parse_args(argv)
 
     dupes, preludes, unordered, manual, changed = audit(

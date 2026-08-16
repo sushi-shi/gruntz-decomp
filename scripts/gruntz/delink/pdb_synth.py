@@ -806,7 +806,9 @@ def synth(model: Model, out_yaml: Path | None = None, out_pdb: Path | None = Non
 def main() -> int:
     import argparse
     from gruntz.model import resolve
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        prog="python3 -m gruntz.delink.pdb_synth", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out-yaml", type=Path, default=PDB_DIR / "gruntz_named.yaml")
     ap.add_argument("--out-pdb", type=Path, default=PDB_DIR / "gruntz_named.pdb")
     ap.add_argument("--yaml-only", action="store_true",

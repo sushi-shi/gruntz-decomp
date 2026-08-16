@@ -73,13 +73,47 @@ def run(model: Model | None = None, target_dir: Path = TARGET_DIR,
     return {"collected": collected, "missing": missing}
 
 
-def main() -> int:
+#: vostok-delinker messages whose text names a SYMPTOM, with the operational
+#: cause that actually produces them. Keyed on a fragment of the tool's own
+#: output; the hint is appended, the tool's words are never replaced.
+_DELINKER_HINTS = (
+    ("relocation alias owner is absent",
+     "this is what a STALE vostok-delinker on $PATH prints: the binary "
+     "predates the reloc-alias manifest schema this tree writes. Check "
+     "`which vostok-delinker` against the flake's own "
+     "`result/bin/vostok-delinker`, or re-enter `nix develop`."),
+    ("missing manifest",
+     "the manifests are delink's own inputs - run `gruntz build` (or "
+     "`python3 -m gruntz.delink.data_manifest`) first."),
+    ("No such file or directory",
+     "vostok-delinker is not on $PATH - run inside `nix develop`."),
+)
+
+
+def main(argv=None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--target-dir", type=Path, default=TARGET_DIR)
-    ap.add_argument("--delink-dir", type=Path, default=DELINK_DIR)
-    a = ap.parse_args()
-    run(target_dir=a.target_dir, delink_dir=a.delink_dir)
+    import sys
+
+    from gruntz.tool import ToolError
+    ap = argparse.ArgumentParser(
+        prog="gruntz delink", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--target-dir", type=Path, default=TARGET_DIR,
+                    help="where the collected <unit>.c.obj land "
+                         f"(default: {TARGET_DIR})")
+    ap.add_argument("--delink-dir", type=Path, default=DELINK_DIR,
+                    help="the delinker's raw output dir "
+                         f"(default: {DELINK_DIR})")
+    a = ap.parse_args(argv)
+    try:
+        run(target_dir=a.target_dir, delink_dir=a.delink_dir)
+    except (ToolError, OSError) as e:
+        print(f"[delink] {e}", file=sys.stderr)
+        for needle, hint in _DELINKER_HINTS:
+            if needle in str(e):
+                print(f"[delink] {hint}", file=sys.stderr)
+                break
+        return 1
     return 0
 
 

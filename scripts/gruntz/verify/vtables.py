@@ -21,7 +21,8 @@ slot binding.
                baseline reached 0 and was DELETED - the gate is pure
                fail-closed (an absent baseline is the empty set, permanently).
 
-    python3 -m gruntz.verify.vtables [--list] [--info]
+    gruntz verify vtables            # the three checks, exit 1 on any
+    gruntz verify vtables --info     # + every UNBOUND slot
 """
 
 from __future__ import annotations
@@ -236,7 +237,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify vtables",
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--list", action="store_true")
+    # (there was a `--list` here that nothing ever read: it parsed, printed
+    # nothing extra, and exited 0 - removed rather than left as a silent flag)
     ap.add_argument("--info", action="store_true",
                     help="also list the UNBOUND (unreconstructed) slots")
     a = ap.parse_args(argv)

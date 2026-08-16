@@ -1215,9 +1215,12 @@ def main(argv=None) -> int:
                                  description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--build", action="store_true", help="sweep and persist")
-    ap.add_argument("--gate", action="store_true")
-    ap.add_argument("--calibrate", action="store_true")
-    ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 on a finding in a GATED category")
+    ap.add_argument("--calibrate", action="store_true",
+                    help="re-prove each category's suppression set on this tree")
+    ap.add_argument("--selftest", action="store_true",
+                    help="inject the known defect classes and require each to fire")
     ap.add_argument("--suppressed", nargs="?", const="",
                     help="the SITES a suppression class removed (re-argue it)")
     ap.add_argument("--at", help="every reference touching one address")
@@ -1228,10 +1231,14 @@ def main(argv=None) -> int:
                     help="the derived worklist")
     ap.add_argument("--sql", help="raw SQL over the map")
     ap.add_argument("--touched", nargs="?", type=Path,
-                    const=BUILD / "gen/data_touched_ranges.tsv")
-    ap.add_argument("--limit", type=int, default=40)
-    ap.add_argument("--sqlite", type=Path, default=SQLITE)
-    ap.add_argument("--tsv", type=Path, default=TSV)
+                    const=BUILD / "gen/data_touched_ranges.tsv",
+                    help="write the byte ranges retail touches (the coverage join)")
+    ap.add_argument("--limit", type=int, default=40,
+                    help="cap the printed rows")
+    ap.add_argument("--sqlite", type=Path, default=SQLITE,
+                    help="the query index to read/write")
+    ap.add_argument("--tsv", type=Path, default=TSV,
+                    help="the grep-able access table to write")
     a = ap.parse_args(argv)
 
     if a.gate:

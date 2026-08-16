@@ -176,6 +176,23 @@ def parse_tiers(spec: str | None):
     return names
 
 
+def _rerun_command(name: str) -> str:
+    """`gruntz verify <gate>` - the spelling that actually reaches the module.
+
+    Never derive it from the tier label: the `vtable-bans` row runs
+    gruntz.verify.BANS, so `python3 -m gruntz.verify.vtable_bans` (the old
+    mechanical name.replace) names a module that does not exist.
+    """
+    from gruntz.verify import _ALIASES, _GATES
+    verb = _ALIASES.get(name, name)
+    if verb in _GATES:
+        return f"gruntz verify {verb}"
+    for gate, module in _GATES.items():
+        if module.rsplit(".", 1)[-1] == verb.replace("-", "_"):
+            return f"gruntz verify {gate}"
+    return f"gruntz verify check --tier {name}"
+
+
 def run(tier_names, *, max_findings: int = 12) -> int:
     """Run every gate in the named tiers; print a verdict per gate. Returns
     the number of FAILING gates."""
@@ -190,8 +207,20 @@ def run(tier_names, *, max_findings: int = 12) -> int:
             t0 = time.monotonic()
             try:
                 findings = fn()
+            # SystemExit is a BaseException: a gate that reports a missing
+            # input by raising it (`no report.json - run gruntz compare`)
+            # would otherwise abort the whole tier run, and every gate after
+            # it would be silently skipped with no verdict at all.
+            except SystemExit as exc:  # noqa: BLE001
+                findings = [f"gate could not run: {exc} "
+                            f"(re-run `{_rerun_command(name)}`)"]
             except Exception as exc:  # noqa: BLE001 - a broken gate is a failure
-                findings = [f"gate crashed: {type(exc).__name__}: {exc}"]
+                findings = [f"gate crashed: {type(exc).__name__}: {exc} - a "
+                            f"broken gate is a FAILURE, never a pass; re-run "
+                            f"`{_rerun_command(name)}` for the traceback. A "
+                            f"message naming a build/gen artifact means the "
+                            f"tree is mid-build or that file is truncated: "
+                            f"rebuild with `gruntz build`."]
             dt = time.monotonic() - t0
             if findings:
                 failed += 1
@@ -201,7 +230,7 @@ def run(tier_names, *, max_findings: int = 12) -> int:
                     print(f"    {f.splitlines()[0][:200]}")
                 if len(findings) > max_findings:
                     print(f"    ... {len(findings) - max_findings} more "
-                          f"(python3 -m gruntz.verify.{name.replace('-', '_')})")
+                          f"({_rerun_command(name)})")
             else:
                 print(f"[verify {tier}] {name}: OK ({dt:.1f}s)")
     return failed

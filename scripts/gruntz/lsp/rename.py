@@ -8,8 +8,8 @@ symbol's USR, so ONLY the named class's member moves and never a same-named
 field of a different struct - dozens of unrelated classes reuse names like
 `m_5c`, and a text sed would wreck them.
 
-    python3 -m gruntz.lsp rename CGameObject::m_5c m_screenX m_60=m_screenY
-    python3 -m gruntz.lsp rename CGameObject --map cgo.map [--dry-run]
+    gruntz lsp rename CGameObject::m_5c m_screenX m_60=m_screenY
+    gruntz lsp rename CGameObject --map cgo.map [--dry-run]
 
 The class's field decls are found in its header (auto-located under include/,
 or --header). Every returned edit is verified to currently read the OLD name
@@ -207,7 +207,11 @@ def parse_mapping(args) -> tuple[str, list[tuple[str, str]]]:
                              f"follow (rename {cls}::{first_old} <m_new>)")
         add(first_old, rest.pop(0))
     if args.map_file:
-        for raw in Path(args.map_file).read_text().splitlines():
+        map_path = Path(args.map_file)
+        if not map_path.is_file():
+            raise SystemExit(f"[lsp rename] no mapping file at {args.map_file} "
+                             "(one `old=new` or `old new` pair per line)")
+        for raw in map_path.read_text().splitlines():
             line = raw.split("#", 1)[0].strip()
             if not line:
                 continue

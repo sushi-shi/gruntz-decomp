@@ -3,7 +3,7 @@
     python3 -m gruntz.sema.strings 0x153790         # a function: its literals
     python3 -m gruntz.sema.strings 0x20bcf4         # a datum: the literal there
     python3 -m gruntz.sema.strings --find GRUNTZ_NORMALGRUNT
-    python3 -m gruntz.sema.strings --ranked         # unclaimed fns worth naming
+    python3 -m gruntz.sema.strings --ranked         # unnamed fns worth naming
 
 Built from the relocation map, so a hit is a REAL reference: the operand's
 address was fixed up by the linker. Each literal is reported with the census
@@ -18,7 +18,7 @@ import re
 import sys
 from functools import lru_cache
 
-from gruntz.sema import die, parse_rva, run
+from gruntz.sema import die, resolve_target, run
 from gruntz.sema.image import retail
 from gruntz.sema.index import index
 
@@ -82,7 +82,10 @@ def show_datum(rva: int) -> tuple[list[str], int]:
     idx, img = index(), retail()
     s = img.string_at(rva)
     if s is None:
-        return ([f"0x{rva:08x} holds no printable run"], 1)
+        sec = img.section_of(rva)
+        where = f" (section {sec['name']})" if sec \
+            else " (outside every section of the image)"
+        return ([f"0x{rva:08x} holds no printable run{where}"], 1)
     start, text = s
     out = [f"0x{start:08x}  {text!r}"
            + (f"   (queried 0x{rva:08x} = +0x{rva - start:x})" if start != rva else ""),
@@ -125,7 +128,11 @@ def find(needle: str) -> tuple[list[str], int]:
 
 
 def ranked(limit: int = 60) -> list[str]:
-    """Unclaimed functions whose literals would name them - the labeling aid."""
+    """UNNAMED functions whose literals would name them - the labeling aid.
+
+    A row a channel already claims (a `src_dyninit` funclet, say) is unnamed
+    but NOT unclaimed, and calling it unclaimed would send a labeller after a
+    row the Model already owns - so the claim is printed beside it."""
     idx = index()
     rows = []
     for rva, hits in by_function().items():
@@ -135,13 +142,17 @@ def ranked(limit: int = 60) -> list[str]:
         good = [t for _a, t in hits if len(t) >= 4]
         score = sum(3 if DISTINCTIVE.search(t) else 1 for t in good)
         if score:
-            rows.append((score, rva, b.size, good))
+            rows.append((score, rva, b.size, good, b.channel, b.unit))
     rows.sort(key=lambda r: (-r[0], r[1]))
+    unclaimed = sum(1 for r in rows if not r[4])
     out = []
-    for score, rva, size, good in rows[:limit]:
+    for score, rva, size, good, channel, unit in rows[:limit]:
         head = " | ".join(good[:6]) + (f" (+{len(good) - 6})" if len(good) > 6 else "")
-        out.append(f"[{score:4d}] 0x{rva:06x} sz={size:<5d} {head}")
-    out.append(f"[{len(rows)} unclaimed function(s) reference a literal]")
+        claim = f"  <- CLAIMED by {channel}" + (f" [{unit}]" if unit else "") \
+            if channel else ""
+        out.append(f"[{score:4d}] 0x{rva:06x} sz=0x{size:<5x} {head}{claim}")
+    out.append(f"[{len(rows)} unnamed function(s) reference a literal; "
+               f"{unclaimed} of them are unclaimed by any channel]")
     return out
 
 
@@ -149,10 +160,11 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="gruntz sema strings",
                                  description=__doc__.split("\n\n")[0])
-    ap.add_argument("rva", nargs="*", help="function or datum rvas")
+    ap.add_argument("rva", nargs="*", help="function or datum rvas (or names)")
     ap.add_argument("--find", help="substring search over the image's literals")
     ap.add_argument("--ranked", action="store_true",
-                    help="unclaimed functions ranked by literal distinctiveness")
+                    help="unnamed functions ranked by literal distinctiveness "
+                         "(rows a channel already claims are marked)")
     args = ap.parse_args(argv)
     if args.find:
         lines, rc = find(args.find)
@@ -165,11 +177,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     rc = 0
     for token in args.rva:
-        rva = parse_rva(token)
-        lines, r = (show_function(rva) if retail().is_text(rva)
-                    else show_datum(rva))
-        print("\n".join(lines))
-        rc = rc or r
+        for rva in resolve_target(token):
+            lines, r = (show_function(rva) if retail().is_text(rva)
+                        else show_datum(rva))
+            print("\n".join(lines))
+            rc = rc or r
     return rc
 
 
