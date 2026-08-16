@@ -139,3 +139,19 @@ knob cannot be turned. Naming the index instead (`i32 idx = m_frameIndex;`) is t
 direction - 99.4444 -> 99.1778. So on a site that is byte-neutral but sits at 99.x with an equal
 instruction count, try both directions of the local knob; the accessor form is what makes the
 receiver a single-use expression.
+
+**The knob is a CANDIDATE, not a lever - refuted on the very next site.**
+`AnimWorkerObj::ResolveTarget` 0x1651b0 presents identically (99.3333, 31 instructions, a single
+`ecx`/`edx` swap, every count equal), and BOTH directions are sharply negative:
+
+| spelling | score |
+|---|---:|
+| original (`CMapPtrToPtr* res = &...; void* out = 0;`) | **99.3333** |
+| delete the `res` local | 86.6667 |
+| declare `out` before `res` | 86.6667 |
+
+The original is optimal; both edits were reverted. The difference from `ImageSetAni::Render` is
+that there the member expression was genuinely single-use, whereas here the map pointer feeds a
+`this` that must land in `ecx`, so collapsing its live range costs 13 points instead of gaining.
+Test the knob because it is cheap to try and cheap to revert - do not expect it to close a site,
+and never apply it unmeasured.
