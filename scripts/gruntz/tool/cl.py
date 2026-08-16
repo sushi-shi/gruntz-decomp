@@ -19,6 +19,7 @@ the produced .obj, never the return code alone.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from gruntz.core.paths import INCLUDE, VENDOR
@@ -50,7 +51,13 @@ def compile(src: Path | str, out: Path | str, flags: list[str], *,
             *flags, f"/Fo{winepath(out)}", winepath(src)]
     output, rc = run(argv, cwd=out.parent, timeout=timeout, success=out)
     if not out.exists():
-        tail = "\n".join(output.strip().splitlines()[-12:])
+        tail = "\n".join(output.strip().splitlines()[-12:]) or "(cl said nothing)"
+        if not re.search(r"\b(error|fatal)\b", output, re.I):
+            # cl naming no diagnostic at all means the object did not survive
+            # rather than fail to compile - the output tree moved, filled up,
+            # or another writer removed it.
+            tail += (f"\n(cl reported no error; {out} simply is not there - "
+                     "check the output tree, not the source)")
         raise ToolError(f"cl produced no object for {src.name} (rc={rc}):\n{tail}")
     return output
 
@@ -66,7 +73,7 @@ def main() -> int:
     flags = a.flags[1:] if a.flags and a.flags[0] == "--" else a.flags
     try:
         compile(a.src, a.out, flags)
-    except ToolError as e:
+    except (ToolError, OSError) as e:
         print(f"[cl] {e}", file=sys.stderr)
         return 1
     return 0

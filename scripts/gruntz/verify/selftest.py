@@ -2422,6 +2422,379 @@ class ReadmeFreshnessControls(unittest.TestCase):
         self.assertNotIn("README.md", BANK_INPUT_PATHS)
 
 
+# --------------------------------------------------------------------------- #
+# the build loop (2026-08-16 review)                                          #
+# --------------------------------------------------------------------------- #
+def _coff(nsec: int = 0, symptr: int = 0, nsym: int = 0, machine: int = 0x14C,
+          sections: list[tuple[int, int]] = (), tail: bytes = b"") -> bytes:
+    """A hand-built COFF header (+ `sections` as (size, ptr) pairs)."""
+    import struct
+    out = bytearray(struct.pack("<HHIIIHH", machine, nsec, 0, symptr, nsym, 0, 0))
+    for size, ptr in sections:
+        raw = bytearray(40)
+        struct.pack_into("<II", raw, 16, size, ptr)
+        out += raw
+    return bytes(out) + tail
+
+
+class ClEdgeObjectIntegrityControls(unittest.TestCase):
+    """The `cl` edge published an incomplete object and called the edge built.
+
+    Two `gruntz build` runs in one tree are not serialised by anything, and
+    the driver staged every unit at the SAME `.tmp/<unit>.obj` and installed
+    through the same `<unit>.obj.install`. Measured 3/3: one run's cl deleted
+    the other's staged object between its `compile()` and its `install()` ("cl
+    produced no object (rc=0)", with an EMPTY diagnostic - the compiler blamed
+    for a collision) and the shared `.install` rename raised FileNotFoundError
+    as a traceback. The shared temp also makes `os.replace` non-atomic across
+    processes, and a real build did fail in gruntz.compare.normalize with
+    "COFF string table is not final" over an object that a census then found
+    invalid. Nothing checked the payload before installing it either.
+    """
+
+    def test_a_truncated_object_is_refused_not_installed(self):
+        from gruntz.graph import cc
+        from gruntz.tool import ToolError
+        # one section header promising 0x1000 bytes at 0x40 in a 60-byte file
+        torn = _coff(nsec=1, sections=[(0x1000, 0x40)])
+        self.assertIsNotNone(cc.coff_defect(torn))
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "unit.obj"
+            with self.assertRaises(ToolError):
+                cc.install(torn, out)
+            self.assertFalse(out.exists(), "a torn object was installed anyway")
+
+    def test_a_truncated_string_table_is_refused(self):
+        from gruntz.graph import cc
+        import struct
+        # symbol table present, string-table length dword promises past EOF
+        body = _coff(nsec=0, symptr=20, nsym=1,
+                     tail=b"\0" * 18 + struct.pack("<I", 0x1000))
+        self.assertIn("string table", cc.coff_defect(body) or "")
+
+    def test_a_complete_object_passes(self):
+        from gruntz.graph import cc
+        self.assertIsNone(cc.coff_defect(_coff()))
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "unit.obj"
+            self.assertTrue(cc.install(_coff(), out))
+            self.assertFalse(cc.install(_coff(), out), "rewrote unchanged bytes")
+            self.assertEqual(list(Path(td).iterdir()), [out])   # no temp left
+
+    def test_install_does_not_use_the_shared_temp_name(self):
+        """A sibling build holding `<unit>.obj.install` must not break us."""
+        from gruntz.graph import cc
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "unit.obj"
+            (Path(td) / "unit.obj.install").mkdir()       # the old, shared name
+            self.assertTrue(cc.install(_coff(), out))
+            self.assertTrue(out.is_file())
+
+    def test_the_staging_path_is_per_process(self):
+        from gruntz.graph import cc
+        seen = {}
+
+        def fake(src, staged, flags):
+            seen["staged"] = Path(staged)
+            Path(staged).write_bytes(_coff())
+            return ""
+
+        with tempfile.TemporaryDirectory() as td:
+            src = Path(td) / "u.c"
+            src.write_text("int main(void){return 0;}\n")
+            with mock.patch("gruntz.tool.cl.compile", fake):
+                cc.compile_unit(src, Path(td) / "base" / "u.obj", [])
+        parts = seen["staged"].parts
+        self.assertIn(str(os.getpid()), parts, f"shared staging dir: {parts}")
+        self.assertIn(".tmp", parts)
+
+    def test_an_unwritable_object_tree_is_a_message(self):
+        import contextlib
+        import io
+        from gruntz.graph import cc
+        with tempfile.TemporaryDirectory() as td:
+            ro = Path(td) / "ro"
+            ro.mkdir()
+            ro.chmod(0o500)
+            try:
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    rc = cc.main(["--out", str(ro / "u.obj"), "--src", str(ro),
+                                  "--unit", "u", "--", "/c"])
+            finally:
+                ro.chmod(0o700)
+        self.assertEqual(rc, 1)          # a message + rc 1, never a traceback
+        self.assertIn("cannot write", err.getvalue())
+
+
+class ToolDriverEnvironmentControls(unittest.TestCase):
+    """Outside `nix develop` the drivers raised bare Python exceptions.
+
+    `$MSVC_DIR` unset reached the user as a RuntimeError traceback from
+    gruntz.core.paths (no tool main() catches it), and an absent
+    wine/winepath/llvm-pdbutil/vostok-delinker as a FileNotFoundError out of
+    subprocess - including from `gruntz tool wine --verify`, whose whole job
+    is to answer "is wine set up?".
+    """
+
+    def _no_path(self):
+        return mock.patch("shutil.which", lambda _p: None)
+
+    def test_missing_msvc_dir_is_a_toolerror(self):
+        from gruntz.tool import ToolError, wine
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("MSVC_DIR", None)
+            with self.assertRaises(ToolError) as cm:
+                wine.era_tool("cl.exe")
+        self.assertIn("MSVC_DIR", str(cm.exception))
+
+    def test_the_rc_release_hint_is_only_on_rc(self):
+        from gruntz.tool import ToolError, wine
+        with tempfile.TemporaryDirectory() as td:
+            with mock.patch.object(wine, "toolchain_root", lambda: Path(td)):
+                with self.assertRaises(ToolError) as rc_exc:
+                    wine.era_tool("rc.exe")
+                with self.assertRaises(ToolError) as cl_exc:
+                    wine.era_tool("cl.exe")
+        self.assertIn("r3", str(rc_exc.exception))
+        self.assertNotIn("rc.exe", str(cl_exc.exception))
+
+    def test_absent_wine_is_named_not_a_traceback(self):
+        from gruntz.tool import ToolError, wine
+        with self._no_path():
+            for call in (lambda: wine.winepath("/tmp"),
+                         lambda: wine.require("wine")):
+                with self.assertRaises(ToolError) as cm:
+                    call()
+                self.assertIn("nix develop", str(cm.exception))
+
+    def test_wine_verify_without_wine_returns_a_message(self):
+        import contextlib
+        import io
+        from gruntz.tool import wine
+        with self._no_path(), mock.patch.object(sys, "argv",
+                                                ["gruntz tool wine", "--verify"]):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                rc = wine.main()
+        self.assertEqual(rc, 1)
+        self.assertIn("not found on PATH", err.getvalue())
+
+    def test_wine_with_no_action_is_not_a_silent_success(self):
+        import contextlib
+        import io
+        from gruntz.tool import wine
+        for argv in (["gruntz tool wine"], ["gruntz tool wine", "--force"]):
+            with mock.patch.object(sys, "argv", argv):
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    rc = wine.main()
+            self.assertEqual(rc, 2, argv)
+            self.assertIn("--init", err.getvalue())
+
+    def test_absent_native_tools_are_named(self):
+        from gruntz.tool import ToolError, delinker, pdbutil
+        with self._no_path():
+            with self.assertRaises(ToolError) as cm:
+                delinker.delink("a.pdb", "b.exe", "/tmp/out")
+            self.assertIn("vostok-delinker", str(cm.exception))
+            with self.assertRaises(ToolError) as cm:
+                pdbutil.dump("a.pdb")
+            self.assertIn("llvm-pdbutil", str(cm.exception))
+
+    def test_a_stalled_native_tool_is_a_message(self):
+        import subprocess
+        from gruntz.tool import ToolError, pdbutil
+        with mock.patch("shutil.which", lambda p: "/bin/" + p), \
+                mock.patch("subprocess.run",
+                           side_effect=subprocess.TimeoutExpired("x", 1)):
+            with self.assertRaises(ToolError) as cm:
+                pdbutil.dump("a.pdb")
+        self.assertIn("did not finish", str(cm.exception))
+
+    def test_implib_without_the_retail_image_is_a_message(self):
+        import contextlib
+        import io
+        from gruntz.graph import implib
+        with mock.patch.object(sys, "argv", ["implib", "--list"]), \
+                mock.patch.object(implib, "import_table",
+                                  side_effect=FileNotFoundError(
+                                      2, "No such file or directory",
+                                      "GRUNTZ.EXE")):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                rc = implib.main()
+        self.assertEqual(rc, 1)
+        self.assertIn("retail image", err.getvalue())
+
+
+class LinkVerbTargetControls(unittest.TestCase):
+    """`gruntz link <anything>` died on `unknown target build/gen/gruntz.res`.
+
+    The `.res` edge exists only when the toolchain carried rc.exe at CONFIGURE
+    time; the verb asked ninja for it unconditionally, so on a pre-r3 pin every
+    flagged form - `--help` included - failed before reaching the parser, and
+    `--help` also ran a full build first.
+    """
+
+    def test_manifest_targets_reads_the_emitted_edges(self):
+        from gruntz.graph import verbs
+        with tempfile.TemporaryDirectory() as td:
+            man = Path(td) / "build.ninja"
+            man.write_text("rule cl\n  command = x\n"
+                           "build a/b.obj: cl src.c | dep.h\n"
+                           "build one two: phony $\n    three\n")
+            with mock.patch.object(verbs.graph, "NINJA", str(man)), \
+                    mock.patch.object(verbs, "REPO", Path("/")):
+                got = verbs.manifest_targets()
+        self.assertEqual(got, {"a/b.obj", "one", "two"})
+        self.assertNotIn("build/gen/gruntz.res", got)
+
+    def test_a_missing_manifest_is_an_empty_set_not_a_traceback(self):
+        from gruntz.graph import verbs
+        with mock.patch.object(verbs.graph, "NINJA", "no/such/build.ninja"):
+            self.assertEqual(verbs.manifest_targets(), set())
+
+    def test_help_answers_the_parser_without_building(self):
+        import contextlib
+        import io
+        from gruntz.graph import verbs
+        with mock.patch.object(verbs, "ninja",
+                               side_effect=AssertionError("built for --help")), \
+                mock.patch.object(verbs, "configure_if_needed",
+                                  side_effect=AssertionError("configured")):
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                with self.assertRaises(SystemExit) as cm:
+                    verbs.link_main(["--help"])
+        self.assertEqual(cm.exception.code, 0)
+        self.assertIn("--engine-lib", out.getvalue())
+
+    def test_the_res_target_is_only_requested_when_it_exists(self):
+        import contextlib
+        import io
+        from gruntz import graph
+        from gruntz.graph import verbs
+        asked = []
+        with mock.patch.object(verbs, "configure_if_needed", lambda *a, **k: None), \
+                mock.patch.object(verbs, "ninja",
+                                  lambda t, **k: asked.append(list(t)) or 1):
+            with mock.patch.object(verbs, "manifest_targets", lambda: {"base"}):
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    verbs.link_main(["--dry-run"])
+            self.assertEqual(asked[-1], ["base"])
+            self.assertIn("no build/gen/gruntz.res edge", err.getvalue())
+            with mock.patch.object(verbs, "manifest_targets",
+                                   lambda: {"base", graph.RESOURCE_RES}):
+                verbs.link_main(["--dry-run"])
+            self.assertEqual(asked[-1], ["base", graph.RESOURCE_RES])
+
+    def test_a_resourceless_candidate_says_so(self):
+        """A candidate with no .rsrc has no MFC dialogs; the only note used to
+        live in a generated manifest comment nobody reads."""
+        import contextlib
+        import io
+        from gruntz.graph import implib, link as gl
+        with tempfile.TemporaryDirectory() as td:
+            out = Path(td) / "cand.EXE"
+            obj = Path(td) / "u.obj"
+            obj.write_bytes(_coff())
+
+            def fake_link(args, **kw):
+                out.write_bytes(b"MZ")
+                out.with_suffix(".map").write_text("")
+                return ""
+
+            with mock.patch.object(gl, "winepath", str), \
+                    mock.patch.object(implib, "ensure_all", lambda *a, **k: []), \
+                    mock.patch("gruntz.tool.link.link", fake_link):
+                with contextlib.redirect_stdout(io.StringIO()) as sout:
+                    gl.candidate(out, Path(td), explicit=[str(obj)])
+        self.assertIn("NO .rsrc", sout.getvalue())
+
+
+class ImplibScaffoldControls(unittest.TestCase):
+    """The synthesis cleaned up `<stem>.exp`, a name link.exe never writes.
+
+    The .exp is named after the /IMPLIB path, and synthesis links through
+    `<stem>.lib.tmp`, so the real leftovers were `mss32.lib.exp` and
+    `smackw32.lib.exp` - both still sitting in build/lib/ weeks later.
+    """
+
+    def test_the_cleanup_names_the_exp_link_actually_writes(self):
+        import inspect
+        from gruntz.graph import implib
+        src = inspect.getsource(implib.synthesize)
+        self.assertIn('tmp_lib.with_suffix(".exp")', src)
+
+    def test_the_temp_lib_derives_the_observed_exp_name(self):
+        from gruntz.graph import implib
+        lib = Path(implib.OUT_DIR) / "mss32.lib"
+        tmp_lib = lib.with_suffix(".lib.tmp")
+        self.assertEqual(tmp_lib.with_suffix(".exp").name, "mss32.lib.exp")
+
+
+class ConfigureWriteControls(unittest.TestCase):
+    """`gruntz configure --out <unwritable>` raised FileNotFoundError from the
+    manifest mkdir instead of naming the path it could not write."""
+
+    def test_an_unwritable_manifest_path_is_a_message(self):
+        import contextlib
+        import io
+        from gruntz.graph import emit
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            rc = emit.main(["--out", "/proc/no/such/dir/build.ninja"])
+        self.assertEqual(rc, 1)
+        self.assertIn("cannot write", err.getvalue())
+
+
+class CompdbStalenessControls(unittest.TestCase):
+    """`--check` answered "coverage: 300/300" for a database whose toolchain
+    include dirs no longer exist. A toolchain re-pin moves $MSVC_DIR and no
+    ninja edge can see it, so the stored /nix/store path outlives its store
+    entry; every clang consumer then silently loses its headers."""
+
+    def test_a_dead_include_dir_is_reported(self):
+        from gruntz.graph import compdb
+        db = {"/x/a.cpp": ["/imsvc", "/nix/store/gone-toolchain/msvc/include",
+                           "/I", "/nix/store/gone-toolchain/dx/Include"]}
+        self.assertEqual(
+            compdb.dead_include_dirs(db),
+            ["/nix/store/gone-toolchain/dx/Include",
+             "/nix/store/gone-toolchain/msvc/include"])
+
+    def test_live_dirs_are_not_reported(self):
+        from gruntz.graph import compdb
+        with tempfile.TemporaryDirectory() as td:
+            self.assertEqual(compdb.dead_include_dirs({"x": ["/imsvc", td]}), [])
+
+    def test_a_flag_without_its_operand_is_not_a_crash(self):
+        from gruntz.graph import compdb
+        self.assertEqual(compdb.dead_include_dirs({"x": ["/imsvc"]}), [])
+
+
+class MatchReferenceControls(unittest.TestCase):
+    """`gruntz match --reference <bad path>` raised FileNotFoundError AFTER a
+    full build - the work was done and the run ended in a traceback."""
+
+    def test_an_unreadable_reference_is_a_message(self):
+        import contextlib
+        import io
+        from gruntz.graph import verbs
+        with tempfile.TemporaryDirectory() as td:
+            missing = Path(td) / "nope.json"
+            with mock.patch.object(verbs, "configure_if_needed", lambda *a, **k: None), \
+                    mock.patch.object(verbs, "ninja", lambda *a, **k: 0), \
+                    mock.patch.object(verbs, "object_census", dict), \
+                    mock.patch("gruntz.tool.objdiff.load",
+                               lambda p: (_ for _ in ()).throw(FileNotFoundError(p))
+                               if str(p) == str(missing) else {"measures": {},
+                                                               "units": []}), \
+                    mock.patch("gruntz.compare.run.print_summary",
+                               lambda *a, **k: None), \
+                    mock.patch.object(Path, "exists", lambda self: True):
+                with contextlib.redirect_stderr(io.StringIO()) as err:
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        rc = verbs.match_main(["--reference", str(missing)])
+        self.assertEqual(rc, 2)
+        self.assertIn("--reference", err.getvalue())
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(

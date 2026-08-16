@@ -3,34 +3,48 @@
     python3 -m gruntz.graph            # (re)write build/build.ninja
     ninja -f build/build.ninja         # run the loop, from the repo root
 
-Ten rules, in the order the loop runs them:
+The rules, in the order the loop runs them. The first nine plus the two
+`verify` edges are the DEFAULT target; `rc`/`link` are phase 2, opt-in:
 
-    configure  the generator edge - re-emits this manifest when the unit
-               census, the emitter, or ANY file the include scan read changes
-    cl         source -> build/objdiff/base/<unit>.obj   (gruntz.graph.cc)
-    compdb     units.toml -> build/clangd/compile_commands.json - the clang-cl
-               flags extraction and the LSP consumers ride (gruntz.graph.compdb)
-    labels     source + base obj -> build/gen/claims/<unit>.tsv
-    model      claims x censuses/providers -> build/gen/bindings.tsv
-    delink     bindings -> build/objdiff/target-new/<unit>.c.obj
-    normalize  base + target objs -> the comparison copies
-    project    the delinked directory -> compare-new/objdiff.json
-    report     comparison copies + pairing -> compare-new/report.json
-    rc / link  PHASE 2, opt-in (`ninja candidate`): base objs + .res ->
-               the candidate image + .map for the link-order study
+    configure   the generator edge - re-emits this manifest when the unit
+                census, the emitter, or ANY file the include scan read changes
+    cl          source -> build/objdiff/base/<unit>.obj   (gruntz.graph.cc)
+    compdb      units.toml -> build/clangd/compile_commands.json - the clang-cl
+                flags extraction and the LSP consumers ride (gruntz.graph.compdb)
+    labels      source + base obj -> build/gen/claims/<unit>.tsv
+    model       claims x censuses/providers -> build/gen/bindings.tsv
+    delink      bindings -> build/objdiff/target-new/<unit>.c.obj
+    normalize   base + target objs -> the comparison copies
+    project     the delinked directory -> compare-new/objdiff.json
+    report      comparison copies + pairing -> compare-new/report.json
+    verify_fp   sources x bindings -> the per-function fingerprint cache
+    verify_check the MAX gate + the fast+normal tiers -> a stamp; FATAL
+    rc / link   PHASE 2, opt-in (`ninja candidate`): base objs + .res ->
+                the candidate image + .map for the link-order study
 
 Two edges declare a STAMP rather than their real outputs, because neither set
 can be enumerated at configure time: `delink` writes one object per unit that
-has a claim (a unit with none writes nothing, so declaring all 311 would leave
-ninja re-running the whole delink on every build), and `normalize` writes a
-variable pair of copies per unit. Both drivers are keyed on content upstream,
-so the stamp only moves when something real did.
+has a claim (a unit with none writes nothing, so declaring every unit would
+leave ninja re-running the whole delink on every build), and `normalize`
+writes a variable pair of copies per unit. Both drivers are keyed on content
+upstream, so the stamp only moves when something real did.
 
 Restat is on `cl`, `compdb`, `labels`, `model` and `project` - the producers
-that write if-changed. That is the whole incrementality story: a pure code edit
-re-runs cl + labels, stops at an unchanged claim fragment, and reaches the
-report without re-delinking; a label edit carries on through model, delink
-and the pairing.
+that write if-changed. That is the whole incrementality story: a pure code
+edit re-runs configure (every source is in the include scan's own dep set) +
+cl + labels, stops at an unchanged claim fragment, and reaches the report
+without re-delinking; a label edit carries on through model, delink and the
+pairing.
+
+`verify_fp` also carries restat, but MEASURED its producer rewrites the cache
+unconditionally (identical bytes, fresh mtime), so the restat is inert there
+and `verify_check` re-runs after any source edit.
+
+Two real inputs are NOT declared and cannot be, at this layer: the era
+toolchain ($MSVC_DIR/$DXSDK_DIR) and the vostok-delinker binary are environment,
+not files under the repo. Re-pinning either leaves this manifest and every
+target obj it produced untouched - `gruntz configure` after a toolchain re-pin,
+`gruntz build --force-delink` after a delinker one.
 """
 
 from __future__ import annotations
@@ -215,13 +229,18 @@ def prune_orphan_artifacts(units: list[dict]) -> int:
 # the graph
 # --------------------------------------------------------------------------- #
 def era_rc_available() -> bool:
-    """True when the pinned toolchain ships RC.EXE (release r2+).
+    """True when the pinned toolchain ships RC.EXE (release r3+).
 
     Probed at CONFIGURE time because the answer decides an edge, not a flag:
     without it the candidate links with no `.rsrc` and every MFC dialog - which
     is created from a DIALOG resource - is missing, so the image is a
     link-ORDER artifact only. The `.map` is what phase 2 is for, and it comes
     out either way, so a toolchain without rc.exe must not block it.
+
+    $MSVC_DIR is environment, not a declared input, so this answer is frozen
+    into the manifest until the next `gruntz configure`: re-pinning r3 does
+    not grow the edge by itself, and `gruntz link` therefore asks the emitted
+    manifest whether the `.res` target exists rather than re-probing.
     """
     try:
         from gruntz.core.paths import msvc_dir
@@ -246,15 +265,20 @@ def emit_link_phase(w: ninja_syntax.Writer, base_objs: list[str]) -> None:
     """
     w.comment("=== PHASE 2: link -> candidate .EXE + .map (opt-in: `ninja candidate`) ===")
     with_res = era_rc_available()
+    if not with_res:
+        print("[configure] the pinned toolchain ships no RC.EXE (pre-r3): the "
+              "candidate will link WITHOUT a .rsrc and `gruntz rsrc check` "
+              "cannot run. Re-pin an r3+ toolchain and reconfigure.",
+              file=sys.stderr)
     if with_res:
         w.rule("rc", command="$py -m gruntz.tool.rc --out $out --src $in",
                description="rc $out")
         w.build(graph.RESOURCE_RES, "rc", inputs=graph.RESOURCE_SCRIPT,
                 implicit=_mods("tool/rc.py") + TOOL_MODS)
     else:
-        w.comment("this toolchain ships no RC.EXE (pre-r2), so the candidate "
+        w.comment("this toolchain ships no RC.EXE (pre-r3), so the candidate "
                   "links WITHOUT a .rsrc: the .map is still exact, the image "
-                  "has no dialogs. Re-pin an r2+ toolchain and reconfigure.")
+                  "has no dialogs. Re-pin an r3+ toolchain and reconfigure.")
     res_flag = f" --res {graph.RESOURCE_RES}" if with_res else ""
     w.rule("link",
            command=(f"$py -m gruntz.graph.link --out {graph.CANDIDATE_EXE} "
@@ -377,6 +401,10 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         # reaches here. The declared output is a STAMP - units with no claim
         # produce no object, so declaring all of them would leave the edge
         # perpetually unbuilt and re-run the whole delink on every build.
+        # NOT declared, and known: gruntz.delink.{pdb_synth,data_manifest} also
+        # read build/objdiff/base/*.obj (cl's own string/vtable/RTTI COMDATs),
+        # so a code edit that moves those without moving a CLAIM does not
+        # re-delink; and vostok-delinker itself is environment, not a file.
         w.rule("delink",
                command=(f"$py -m gruntz.delink.run --target-dir {graph.TARGET_DIR} "
                         f"--delink-dir {graph.DELINK_RAW} && touch $out"),
@@ -472,12 +500,19 @@ def emit(out: Path | None = None) -> tuple[int, int]:
     return len(units), pruned
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     import argparse
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(
+        prog="gruntz configure", description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=Path, help=f"manifest path (default {graph.NINJA})")
-    a = ap.parse_args()
-    n, pruned = emit(a.out)
+    a = ap.parse_args(argv)
+    try:
+        n, pruned = emit(a.out)
+    except OSError as e:
+        print(f"[configure] cannot write {a.out or graph.NINJA}: {e}",
+              file=sys.stderr)
+        return 1
     if pruned:
         print(f"[configure] pruned {pruned} artifact(s) of unit(s) no longer "
               "in config/units.toml", file=sys.stderr)

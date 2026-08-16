@@ -52,7 +52,7 @@ def main() -> int:
     flags = a.flags[1:] if a.flags and a.flags[0] == "--" else a.flags
     try:
         compile(a.src, a.out, flags=flags)
-    except ToolError as e:
+    except (ToolError, OSError) as e:
         print(f"[rc] {e}", file=sys.stderr)
         return 1
     return 0

@@ -187,6 +187,25 @@ def generate(quiet: bool = False) -> bool:
     return changed
 
 
+def dead_include_dirs(db: dict) -> list[str]:
+    """The `/imsvc` and `/I` directories the stored entries name that are GONE.
+
+    A toolchain re-pin moves $MSVC_DIR/$DXSDK_DIR, and ninja cannot see that -
+    no edge depends on the environment - so the compdb keeps naming the OLD
+    /nix/store path. Once that path is garbage-collected every entry is
+    unusable, and unit COVERAGE (which only asks whether a source has a row)
+    still reports 300/300. Answering "full coverage" for a database that
+    cannot resolve <string.h> is the lie this closes.
+    """
+    wanted: set[str] = set()
+    for args in db.values():
+        args = list(args)
+        for i, arg in enumerate(args[:-1]):
+            if arg in ("/imsvc", "-imsvc", "/I", "-I"):
+                wanted.add(args[i + 1])
+    return sorted(d for d in wanted if not os.path.isdir(d))
+
+
 def check(quiet: bool = False) -> list[str]:
     """Coverage through the CONSUMER's parser: every manifest unit must have
     an entry in gruntz.tool.clang.compdb()'s dict - the exact join extraction
@@ -208,9 +227,13 @@ def check(quiet: bool = False) -> list[str]:
                  for u in sorted(missing)]
     stale = sorted(os.path.relpath(src, REPO) for src in db if src not in srcs)
     problems += [f"stale entry (not a manifest unit): {s}" for s in stale]
+    dead = dead_include_dirs(db)
+    problems += [f"include dir no longer exists: {d} - the toolchain moved; "
+                 "re-run `python3 -m gruntz.graph.compdb`" for d in dead]
     if not quiet or problems:
         print(f"[compdb] coverage: {len(us) - len(missing)}/{len(us)} units "
-              f"have an entry ({len(stale)} stale)")
+              f"have an entry ({len(stale)} stale, {len(dead)} dead include "
+              "dir(s))")
     return problems
 
 

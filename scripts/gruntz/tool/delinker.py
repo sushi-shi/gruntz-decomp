@@ -23,6 +23,7 @@ from pathlib import Path
 from gruntz.tool import ToolError
 
 ENGINE_PATH = "c:\\proj\\"
+DELINKER = "vostok-delinker"
 
 
 def delink(pdb: Path | str, exe: Path | str, out_dir: Path | str, *,
@@ -33,6 +34,10 @@ def delink(pdb: Path | str, exe: Path | str, out_dir: Path | str, *,
            timeout: float | None = 1800) -> str:
     """Run vostok-delinker; returns its output. Raises ToolError on failure."""
     pdb, exe, out_dir = Path(pdb), Path(exe), Path(out_dir)
+    if shutil.which(DELINKER) is None:
+        raise ToolError(f"{DELINKER} not found on PATH - run inside "
+                        "`nix develop` (or put the flake's own "
+                        "`result/bin` first)")
     for f in (pdb, exe):
         if not f.exists():
             raise ToolError(f"missing input: {f}")
@@ -40,7 +45,7 @@ def delink(pdb: Path | str, exe: Path | str, out_dir: Path | str, *,
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    argv = ["vostok-delinker",
+    argv = [DELINKER,
             "--pdb-path", str(pdb),
             "--exe-path", str(exe),
             "--output-path", str(out_dir),
@@ -58,10 +63,14 @@ def delink(pdb: Path | str, exe: Path | str, out_dir: Path | str, *,
         # delink failure (measured byte-identical when the manifest is whole).
         argv.append("--recover-data-relocs-from-pdb")
 
-    r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        raise ToolError(f"{DELINKER} did not finish within {timeout}s over "
+                        f"{exe} - the output dir {out_dir} is incomplete") from e
     if r.returncode != 0:
         tail = "\n".join((r.stderr or r.stdout).strip().splitlines()[-15:])
-        raise ToolError(f"vostok-delinker failed (rc={r.returncode}):\n{tail}")
+        raise ToolError(f"{DELINKER} failed (rc={r.returncode}):\n{tail}")
     return (r.stdout or "") + (r.stderr or "")
 
 
@@ -83,7 +92,7 @@ def main() -> int:
                      reloc_alias_manifest=a.reloc_alias_manifest)
         if out.strip():
             print(out)
-    except ToolError as e:
+    except (ToolError, OSError) as e:
         print(f"[delinker] {e}", file=sys.stderr)
         return 1
     return 0

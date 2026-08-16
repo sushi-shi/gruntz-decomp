@@ -89,6 +89,27 @@ def build_main(argv: list[str] | None = None) -> int:
 # --------------------------------------------------------------------------- #
 # gruntz link
 # --------------------------------------------------------------------------- #
+def manifest_targets() -> set[str]:
+    """Every output the emitted manifest declares an edge for.
+
+    Asked of the MANIFEST, not of `era_rc_available()`: the `.res` edge exists
+    only when the toolchain carried rc.exe at CONFIGURE time, and $MSVC_DIR is
+    not a declared input, so the emitter's answer and the file on disk can
+    disagree. Requesting a target the manifest does not have is a hard
+    `ninja: error: unknown target`, which is how `gruntz link --anything`
+    (`--help` included) used to die on a pre-r3 toolchain.
+    """
+    out: set[str] = set()
+    try:
+        text = (REPO / graph.NINJA).read_text(encoding="utf-8")
+    except OSError:
+        return out
+    for line in text.replace("$\n", " ").splitlines():
+        if line.startswith("build "):
+            out.update(line[len("build "):].split(":", 1)[0].split())
+    return out
+
+
 def link_main(argv: list[str] | None = None) -> int:
     """Build the opt-in candidate image + .map (`ninja candidate`).
 
@@ -96,13 +117,26 @@ def link_main(argv: list[str] | None = None) -> int:
     ones the current sources produce. Any gruntz.graph.link option (--order,
     --engine-lib, --no-incremental, ...) switches to a direct link of whatever
     is in build/objdiff/base, since those are experiments on a fixed object set.
+    `--help` is answered by that parser without building anything.
     """
     argv = list(sys.argv[1:] if argv is None else argv)
+    from gruntz.graph.link import main as link_direct
+    if any(a in ("-h", "--help") for a in argv):
+        sys.argv = ["gruntz link", *argv]
+        return link_direct()
     configure_if_needed()
     if not argv:
         return ninja(["candidate"])
-    from gruntz.graph.link import main as link_direct
-    rc = ninja(["base", graph.RESOURCE_RES])
+    targets = ["base"]
+    if graph.RESOURCE_RES in manifest_targets():
+        targets.append(graph.RESOURCE_RES)
+    elif not any(a == "--res" or a.startswith("--res=") for a in argv):
+        print(f"[link] this manifest has no {graph.RESOURCE_RES} edge (the "
+              "pinned toolchain shipped no rc.exe at configure time), so the "
+              "direct link gets NO .rsrc: the .map is still exact, the image "
+              "has no dialogs. Re-pin an r3+ toolchain and `gruntz configure`.",
+              file=sys.stderr)
+    rc = ninja(targets)
     if rc:
         return rc
     sys.argv = ["gruntz link", *argv]
@@ -200,7 +234,13 @@ def match_main(argv: list[str] | None = None) -> int:
     else:
         print_changed(report, changed, functions=a.functions)
     if a.reference is not None:
-        print_reference_diff(objdiff.load(a.reference), report)
+        try:
+            reference = objdiff.load(a.reference)
+        except (OSError, ValueError) as e:
+            print(f"[match] --reference {a.reference} is not a readable "
+                  f"objdiff report: {e}", file=sys.stderr)
+            return rc or 2
+        print_reference_diff(reference, report)
     return rc
 
 

@@ -29,14 +29,45 @@ def find_ci(d: Path, name: str) -> Path | None:
     return next((p for p in d.iterdir() if p.name.lower() == low), None)
 
 
+def require(prog: str) -> str:
+    """`prog`'s path on $PATH, or a ToolError naming the fix.
+
+    Everything under tool/ used to spawn wine/winepath straight from a bare
+    name, so a shell outside `nix develop` got a FileNotFoundError traceback
+    out of subprocess - including from `gruntz tool wine --verify`, which
+    exists precisely to answer "is wine set up?".
+    """
+    hit = shutil.which(prog)
+    if hit is None:
+        raise ToolError(f"{prog} not found on PATH - run inside `nix develop`")
+    return hit
+
+
+def toolchain_root() -> Path:
+    """$MSVC_DIR as a Path, as a ToolError rather than a RuntimeError.
+
+    gruntz.core.paths raises RuntimeError, which no tool main() catches; the
+    layer's own error type is what the drivers report on.
+    """
+    try:
+        return msvc_dir()
+    except RuntimeError as e:
+        raise ToolError(str(e)) from e
+
+
 def era_tool(name: str) -> Path:
     """$MSVC_DIR/bin/<name>, or a ToolError naming the fix."""
-    p = find_ci(msvc_dir() / "bin", name)
+    root = toolchain_root()
+    p = find_ci(root / "bin", name)
     if p is None:
-        raise ToolError(f"{name} not found under {msvc_dir()}/bin - run inside "
-                        "`nix develop` (toolchain release r2+ carries rc.exe)")
-    if shutil.which("wine") is None:
-        raise ToolError("wine not found - run inside `nix develop`")
+        # rc.exe and the link.exe DLLs are the two things an older pinned
+        # toolchain release actually lacks; naming the release is only honest
+        # for those.
+        hint = (" (rc.exe arrived in toolchain release r3)"
+                if name.lower() == "rc.exe" else "")
+        raise ToolError(f"{name} not found under {root}/bin - run inside "
+                        f"`nix develop`{hint}")
+    require("wine")
     return p
 
 
@@ -44,8 +75,15 @@ def winepath(p: Path | str) -> str:
     """Unix path -> windows path. stderr is discarded on purpose: winepath can
     be the call that boots the persistent wine session, and a daemonised
     session inheriting our stderr holds the caller's pipe open forever."""
-    return subprocess.check_output(["winepath", "-w", str(p)],
-                                   text=True, stderr=subprocess.DEVNULL).strip()
+    exe = require("winepath")
+    try:
+        return subprocess.check_output([exe, "-w", str(p)],
+                                       text=True,
+                                       stderr=subprocess.DEVNULL).strip()
+    except subprocess.CalledProcessError as e:
+        raise ToolError(f"winepath -w {p} failed (rc={e.returncode}) - the "
+                        "wine prefix may not be initialised; run "
+                        "`gruntz init`") from e
 
 
 def ensure_wineserver() -> None:
@@ -82,9 +120,14 @@ def run(argv: list[str], *, cwd: Path | None = None,
     if timeout is None:
         timeout = float(os.environ.get("GRUNTZ_WINE_TIMEOUT", "300"))
     with tempfile.TemporaryFile() as logf:
-        proc = subprocess.Popen(argv, cwd=str(cwd) if cwd else None,
-                                stdin=subprocess.DEVNULL, stdout=logf,
-                                stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            proc = subprocess.Popen(argv, cwd=str(cwd) if cwd else None,
+                                    stdin=subprocess.DEVNULL, stdout=logf,
+                                    stderr=subprocess.STDOUT,
+                                    start_new_session=True)
+        except FileNotFoundError as e:
+            raise ToolError(f"{argv[0]} not found on PATH - run inside "
+                            "`nix develop`") from e
         try:
             proc.wait(timeout=timeout)
             rc = proc.returncode
@@ -110,8 +153,8 @@ _ENV_KEY = (r"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control"
 def _reg(*args: str, capture: bool = False) -> subprocess.CompletedProcess:
     quiet = {} if capture else {"stdout": subprocess.DEVNULL,
                                 "stderr": subprocess.DEVNULL}
-    return subprocess.run(["wine", "reg", *args], check=False, text=True,
-                          capture_output=capture, **quiet)
+    return subprocess.run([require("wine"), "reg", *args], check=False,
+                          text=True, capture_output=capture, **quiet)
 
 
 def ensure_link_deps() -> None:
@@ -120,8 +163,9 @@ def ensure_link_deps() -> None:
     the DLL search); a pre-r3 prefix may instead carry the import-free stub
     MSDIS100.DLL in syswow64, which loads without MSVCP50 - accept whichever
     resolves."""
-    if find_ci(msvc_dir() / "bin", "msdis100.dll") is not None:
-        if find_ci(msvc_dir() / "bin", "msvcp50.dll") is None:
+    root = toolchain_root()
+    if find_ci(root / "bin", "msdis100.dll") is not None:
+        if find_ci(root / "bin", "msvcp50.dll") is None:
             raise ToolError("msdis100.dll present but msvcp50.dll missing "
                             "from the toolchain - re-pin the r3+ release")
         return
@@ -140,10 +184,18 @@ def init_prefix(force: bool = False) -> None:
     prefix = Path(os.environ.get("WINEPREFIX") or Path.home() / ".wine")
     if force or not (prefix / "drive_c").is_dir():
         prefix.mkdir(parents=True, exist_ok=True)
-        subprocess.run(["wineboot", "--init"], check=True)
-        subprocess.run(["wineserver", "--wait"], check=False)
+        try:
+            subprocess.run([require("wineboot"), "--init"], check=True)
+        except subprocess.CalledProcessError as e:
+            raise ToolError(f"wineboot --init failed (rc={e.returncode}) for "
+                            f"prefix {prefix}") from e
+        subprocess.run([require("wineserver"), "--wait"], check=False)
 
-    msvc, dx = msvc_dir(), dxsdk_dir()
+    msvc = toolchain_root()
+    try:
+        dx = dxsdk_dir()
+    except RuntimeError as e:
+        raise ToolError(str(e)) from e
     vc_bin = winepath(msvc / "bin")
     include = ";".join([winepath(dx / "Include"), winepath(msvc / "include")])
     lib = ";".join([winepath(dx / "Lib"), winepath(msvc / "lib")])
@@ -177,23 +229,35 @@ def verify_prefix() -> None:
 def main() -> int:
     import argparse
     import sys
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(prog="gruntz tool wine", description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--init", action="store_true", help="initialise the prefix")
-    ap.add_argument("--force", action="store_true")
-    ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                    help="with --init: re-run wineboot even on a live prefix")
+    ap.add_argument("--verify", action="store_true",
+                    help="check the registry INCLUDE (dx before msvc)")
     ap.add_argument("--shutdown", action="store_true", help="kill the wineserver")
     a = ap.parse_args()
+    if not (a.init or a.verify or a.shutdown):
+        # Silently exiting 0 having done nothing read as "the prefix is fine".
+        ap.print_help(sys.stderr)
+        print("\n[wine] pick an action: --init, --verify or --shutdown",
+              file=sys.stderr)
+        return 2
+    if a.force and not a.init:
+        print("[wine] --force only applies to --init", file=sys.stderr)
+        return 2
     try:
         if a.init:
             init_prefix(force=a.force)
         if a.verify:
             verify_prefix()
             print("prefix OK")
-    except ToolError as e:
+        if a.shutdown:
+            shutdown_wineserver()
+    except (ToolError, OSError) as e:
         print(f"[wine] {e}", file=sys.stderr)
         return 1
-    if a.shutdown:
-        shutdown_wineserver()
     return 0
 
 

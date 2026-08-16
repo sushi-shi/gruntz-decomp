@@ -52,7 +52,7 @@ def main() -> int:
         out = link(args, expect=[Path(p) for p in a.expect])
         if out.strip():
             print(out)
-    except ToolError as e:
+    except (ToolError, OSError) as e:
         print(f"[link] {e}", file=sys.stderr)
         return 1
     return 0

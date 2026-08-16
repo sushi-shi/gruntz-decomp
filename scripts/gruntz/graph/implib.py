@@ -114,11 +114,11 @@ def import_table(pe: Pe | None = None) -> dict[str, dict[str, int]]:
 def lib_dirs() -> list[Path]:
     """DX6 first, then VC5 - the precedence init_prefix writes into wine's LIB."""
     dirs = []
-    try:
-        dirs.append(dxsdk_dir() / "Lib")
-    except RuntimeError:
-        pass
-    dirs.append(msvc_dir() / "lib")
+    for root, sub in ((dxsdk_dir, "Lib"), (msvc_dir, "lib")):
+        try:
+            dirs.append(root() / sub)
+        except RuntimeError:
+            continue          # outside `nix develop`: that half is uncovered
     return [d for d in dirs if d.is_dir()]
 
 
@@ -295,7 +295,11 @@ def synthesize(dll: str, hints: dict[str, int], out_dir: Path = OUT_DIR,
               cwd=out_dir, expect=[tmp_lib])
     tmp_lib.replace(lib)
     # The stub DLL and its .exp are scaffolding; only the .lib is a build input.
-    for f in (stub_dll, out_dir / f"{stem}.exp", obj):
+    # link.exe names the .exp after the /IMPLIB path, so the temp lib's name is
+    # what it carries - `<stem>.exp` is a file that never existed, and the two
+    # real ones sat in build/lib/ forever.
+    for f in (stub_dll, tmp_lib.with_suffix(".exp"), out_dir / f"{stem}.exp",
+              obj):
         f.unlink(missing_ok=True)
     _verify_hints(lib, hints)
     if verbose:
@@ -349,8 +353,14 @@ def main() -> int:
                 print(f"{dll:16s} {len(names):4d} import(s)  {where}")
             return 0
         libs = ensure_all(a.out_dir)
-    except ToolError as e:
+    except (ToolError, RuntimeError) as e:
         print(f"[implib] {e}", file=sys.stderr)
+        return 1
+    except OSError as e:
+        # Every path here reads retail's own import table; without the image
+        # this was a FileNotFoundError traceback out of gruntz.core.pe.
+        print(f"[implib] cannot read the retail image - the import table is "
+              f"the ONLY source for these libs: {e}", file=sys.stderr)
         return 1
     print(f"[implib] {len(libs)} synthesised lib(s) in {a.out_dir}")
     return 0
