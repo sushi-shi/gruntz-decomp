@@ -10,10 +10,11 @@ Per TU (ported from the old labels pipeline, mechanisms unchanged):
                    steal a nearby address.
   DATA(rva)        clang drops extern annotations from IR, so the macro is
                    text-scanned (comments blanked) and bound to the AST
-                   VarDecl BELOW it; the exact extent comes from pylibclang.
+                   VarDecl BELOW it; the exact extent and the declaration's
+                   linkage come from pylibclang.
   RVA_COMPGEN      verbatim regex - the name is given, no join, no IR.
   RVA_DYNINIT      the `$E` owner pins - regex; the pin's owner stands in for
-                   the volatile ordinal, so NO authority check applies.
+                   the volatile ordinal.
   DATA_COMPGEN     the compiler-generated DATUM pins. The macro expands to its
                    value expression, so no IR/AST carrier survives - it is
                    text-scanned (balanced parens: the macro sits in expression
@@ -21,15 +22,22 @@ Per TU (ported from the old labels pipeline, mechanisms unchanged):
                    claim: a narrow string literal is a pooled `??_C@` payload,
                    a float constant an FP-pool slot.
 
-AUTHORITY: a function name is kept iff the TU's base obj defines it in a code
-section; a DATA name is kept iff the obj carries it as ANY symbol (a matched
-global is only referenced there, so it may be a `U` external). A DATA_COMPGEN
-pin is kept iff the TU's own base obj emitted that exact payload - the pooled
-literal's `??_C@` name IS cl's spelling for those bytes, an FP slot's `$T<n>`
-ordinal is volatile so the constant is proven by its bytes and named for its
-rva (the spelling every consumer already uses) - AND the retail image holds
-those bytes at the pinned address. Misses are reported, never silently
-dropped. A TU that compiles under cl but yields no IR is an ERROR: silently
+SPELLING. A claim's name is a function of SOURCE: clang proposes a mangled
+name and `core.msvc_names` derives cl 5.0's own spelling from it (the i386
+COFF prefix, the `@@<d>Q` -> `@@<d>P` array storage class, and the `$S`
+TU-local wrapper whose per-object CodeView counter is dropped, exactly as
+compare's canonicalization masks it on the object side). No compiled object is
+consulted, so a stale build artifact can never answer for source that has
+changed and a rule gap can never hide as a silent per-claim drop - the
+corpus-wide control in `gruntz verify selftest` re-proves every rewrite
+against the base objs once per build.
+
+The one channel that still reads cl's object is DATA_COMPGEN, by doctrine: a
+pin is admitted only when the TU's own base obj emitted that exact payload -
+the pooled literal's `??_C@` name IS cl's spelling for those bytes, an FP
+slot's `$T<n>` ordinal is volatile so the constant is proven by its bytes and
+named for its rva - AND the retail image holds those bytes at the pinned
+address. A TU that compiles under cl but yields no IR is an ERROR: silently
 contributing zero labels shrinks every denominator.
 
 Vendored TUs (no rva.h macro in the source) are SKIPPED - their claims are
@@ -43,7 +51,7 @@ import os
 import re
 import struct
 
-from gruntz.core.coff import Coff
+from gruntz.core import msvc_names
 from gruntz.core.paths import BUILD, REPO
 from gruntz.core.pe import image
 from gruntz.core.tsv import write as write_tsv
@@ -51,6 +59,9 @@ from gruntz.retail_labels.fragments import FRAGMENTS, HEADER
 from gruntz.manifest import units as manifest_units
 from gruntz.tool import clang
 
+#: cl's own objects. Only the DATA_COMPGEN channel reads them (its pin is
+#: proven against the payload cl emitted); every other channel spells its
+#: claims from source.
 BASE_OBJS = BUILD / "objdiff/base"
 
 # Presence test ONLY (never extraction): a TU with no rva.h macro at all is a
@@ -77,42 +88,6 @@ _FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d*|\.\d+|\d+[eE][-+]?\d+"
 #: manifest and compare's content-addressing all spell.
 FP_POOL_NAME = re.compile(r"^\$T[0-9]+$")
 
-# clang-vs-VC5 static-data name reconciliation (all authority-checked - a
-# rewrite is accepted only when that exact symbol is in the compiled obj):
-#   1. array storage class: clang `@@3QB..B` vs VC5 `@@3PB..B`;
-#   2. internal-linkage file statics: cl decorates `_x$S<n>` (volatile
-#      CodeView ordinal), clang reports plain `_x` - matched by prefix,
-#      accepted only when exactly ONE symbol matches;
-#   3. function-local statics: cl prefixes `_`, renumbers the scope by blocks
-#      LEFT (clang always writes `?1`; MSVC spells 1..10 as digits `0`..`9`
-#      and larger as hex `A..P@`), and appends `$S<n>`.
-CLANG_Q_ARRAY_RE = re.compile(r"@@([0-9])Q")
-POOL_ID_RE_TMPL = r"^_?%s\$S[0-9]+$"
-LOCAL_STATIC_SCOPE_RE = re.compile(r"^(\?[^@]+@)\?[0-9]+(\?\?.+)$")
-
-
-def msvc5_data_symbol(candidate: str, obj_syms: set[str]) -> str | None:
-    """cl's own spelling for a clang-proposed data name, or None."""
-    if not candidate or not obj_syms:
-        return None
-    for cand in dict.fromkeys([CLANG_Q_ARRAY_RE.sub(r"@@\1P", candidate),
-                               candidate]):
-        if cand != candidate and cand in obj_syms:
-            return cand
-        pool = re.compile(POOL_ID_RE_TMPL % re.escape(cand))
-        hits = [s for s in obj_syms if pool.match(s)]
-        if len(hits) == 1:
-            return hits[0]
-    m = LOCAL_STATIC_SCOPE_RE.match(candidate)
-    if m:
-        local = re.compile(
-            r"^_?%s\?(?:[0-9]|[A-P]+@)%s(\$S[0-9]+)?$"
-            % (re.escape(m.group(1)), re.escape(m.group(2))))
-        hits = [s for s in obj_syms if local.match(s)]
-        if len(hits) == 1:
-            return hits[0]
-    return None
-
 # @llvm.global.annotations tuple + the @.str constants it references.
 _STR_DEF_RE = re.compile(r'^(@[\w.$"]+)\s*=.*?\bc"((?:[^"\\]|\\.)*)"', re.M)
 _ANN_TUPLE_RE = re.compile(
@@ -135,25 +110,44 @@ def _unescape_ir_cstr(s: str) -> str:
     return out.decode("utf-8", "replace")
 
 
-def _ir_symbol_name(ref: str) -> str:
-    """`@"?Foo@@..."` / `@_foo` -> the bare symbol (the `\\01` verbatim-name
-    prefix stripped, since the base obj's symbol has no such prefix)."""
+def _ir_symbol_name(ref: str) -> tuple[str, bool]:
+    """`@"?Foo@@..."` / `@_foo` -> (bare symbol, already decorated).
+
+    A `\\01` prefix means clang wrote the final object name itself; without it
+    LLVM's i386 mangler still has to apply the COFF global prefix, which is
+    what `core.msvc_names.decorate` reproduces."""
     ref = ref[1:]
     if ref.startswith('"') and ref.endswith('"'):
         ref = ref[1:-1]
     if ref.startswith("\\01"):
-        ref = ref[3:]
-    return ref
+        return ref[3:], True
+    return ref, False
+
+
+#: `@name = [linkage ...] global|constant ...` - the storage a claim's spelling
+#: depends on: cl wraps a global with no external linkage as `_<name>$S<n>`.
+_IR_LINKAGE_RE = re.compile(
+    r'^(@(?:"[^"]*"|[\w.$]+))\s*=\s*((?:[\w-]+\s+)*?)(?:global|constant)\b', re.M)
+
+
+def ir_linkage(ir: str) -> dict[str, bool]:
+    """{IR global reference: has internal linkage}."""
+    return {m.group(1): "internal" in m.group(2).split()
+            for m in _IR_LINKAGE_RE.finditer(ir)}
 
 
 def ir_claims(ir: str) -> tuple[list[tuple[int, str, int | None]],
                                 list[tuple[int, str]]]:
-    """(func, data) claims from @llvm.global.annotations - each annotation
-    string arrives paired DIRECTLY with the symbol's mangled name. `data:`
-    tuples cover every annotated DEFINITION; only extern-only declarations
-    drop from IR and need the AST fallback."""
+    """(func, data) claims from @llvm.global.annotations, each name already in
+    cl 5.0's spelling.
+
+    Each annotation string arrives paired DIRECTLY with the symbol's mangled
+    name. `data:` tuples cover every annotated DEFINITION; only extern-only
+    declarations and constant-folded statics drop from IR and need the AST
+    fallback."""
     strings = {m.group(1): _unescape_ir_cstr(m.group(2))
                for m in _STR_DEF_RE.finditer(ir)}
+    linkage = ir_linkage(ir)
     funcs, datas = [], []
     for line in ir.splitlines():
         if "@llvm.global.annotations" not in line:
@@ -162,17 +156,21 @@ def ir_claims(ir: str) -> tuple[list[tuple[int, str, int | None]],
             ann = strings.get(str_ref)
             if ann is None:
                 continue
+            name, decorated = _ir_symbol_name(sym_ref)
             m = ANN_RVA_RE.match(ann)
             if m:
                 size = None
                 if m.group(2):
                     v = m.group(2)
                     size = int(v, 16) if v.lower().startswith("0x") else int(v)
-                funcs.append((int(m.group(1), 16), _ir_symbol_name(sym_ref), size))
+                funcs.append((int(m.group(1), 16),
+                              msvc_names.func(name, decorated=decorated), size))
                 continue
             m = ANN_DATA_RE.match(ann)
             if m:
-                datas.append((int(m.group(1), 16), _ir_symbol_name(sym_ref)))
+                datas.append((int(m.group(1), 16),
+                              msvc_names.data(name, decorated=decorated,
+                                              internal=linkage.get(sym_ref, False))))
     return funcs, datas
 
 
@@ -445,40 +443,12 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
         return [], []
 
     problems: list[str] = []
-    obj = BASE_OBJS / f"{unit}.obj"
-    coff = Coff(obj) if obj.is_file() else None
-    if coff is None:
-        # without the obj the authority check cannot run, and admitting every
-        # clang proposal unproven would void the module contract silently
-        return [], [f"{unit}: no base obj ({obj.name}) - authority check "
-                    f"impossible, extraction refused (FATAL)"]
-    if obj.stat().st_mtime < src_path.stat().st_mtime:
-        # The authority is cl's OBJECT, so a stale one answers for source that
-        # no longer exists: a name this edit introduced reads as "not a symbol
-        # in <unit>.obj (dropped)". The graph orders cl before labels; a manual
-        # `gruntz labels --unit` does not.
-        problems.append(f"{unit}: {obj.name} is OLDER than {src_path.name} - "
-                        f"the authority check is reading a stale object; drops "
-                        f"below may be artifacts. Run `gruntz build` first.")
-    code_names = coff.code_names() if coff else None
-    all_names = coff.all_names() if coff else None
-
     cl_flags = compdb.get(os.path.realpath(str(src_path)))
     rows: list[list[str]] = []
 
     def emit(rva, size, name, kind, channel, qtype=""):
         rows.append([f"0x{rva:08x}", f"0x{size:x}" if size is not None else "",
                      name, kind, channel, qtype])
-
-    def authorize(name, names_set):
-        """clang proposes, cl disposes. A C-linkage name reaches the i386 obj
-        with a leading underscore the IR-level name lacks - accept and emit
-        the obj's own spelling."""
-        if names_set is None or name in names_set:
-            return name
-        if "_" + name in names_set:
-            return "_" + name
-        return None
 
     # functions via IR
     ir = clang.emit_ir(str(src_path), cl_flags)
@@ -487,26 +457,15 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
                       f"this TU would silently vanish (FATAL)"]
     ir_funcs, ir_datas = ir_claims(ir)
     for rva, name, size in ir_funcs:
-        got = authorize(name, code_names)
-        if got is None:
-            problems.append(("drop", "func", rva,
-                             f"{unit}: RVA(0x{rva:06x}) {name} not a code "
-                             f"symbol in {obj.name} (dropped)"))
-            continue
-        emit(rva, size, got, "func", "src")
+        emit(rva, size, name, "func", "src")
 
     # compiler-generated bodies, name verbatim
     blanked = blank_comments(text)
     for m in RVA_COMPGEN_RE.finditer(blanked):
         rva, size = int(m.group(1), 16), int(m.group(2), 0)
-        name = m.group(3)
-        if code_names is not None and name not in code_names:
-            problems.append(f"{unit}: RVA_COMPGEN {name} not a code symbol "
-                            f"in {obj.name} (dropped)")
-            continue
-        emit(rva, size or None, name, "func", "src_compgen")
+        emit(rva, size or None, m.group(3), "func", "src_compgen")
 
-    # $E dynamic-init owner pins (no symbol to authority-check by design)
+    # $E dynamic-init owner pins (the body is a volatile ordinal by design)
     for m in RVA_DYNINIT_RE.finditer(blanked):
         emit(int(m.group(1), 16), int(m.group(2), 0) or None,
              m.group(3), "func", "src_dyninit")
@@ -514,31 +473,34 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
     # compiler-generated DATA the automatic oracles cannot reach: the pinned
     # value is the claim, cl's own obj the authority (see the module header)
     if DATA_COMPGEN_RE.search(blanked):
-        cg_claims, cg_problems = compgen_claims(blanked, unit, obj)
-        problems.extend(cg_problems)
-        for rva, name, size in cg_claims:
-            emit(rva, size, name, "data", "src_data_compgen")
+        obj = BASE_OBJS / f"{unit}.obj"
+        if not obj.is_file():
+            problems.append(f"{unit}: DATA_COMPGEN pins cannot bind without "
+                            f"{obj.name} - the pinned payload is proven "
+                            f"against cl's own object (FATAL)")
+        else:
+            cg_claims, cg_problems = compgen_claims(blanked, unit, obj)
+            problems.extend(cg_problems)
+            for rva, name, size in cg_claims:
+                emit(rva, size, name, "data", "src_data_compgen")
 
     # data: IR annotations primary (join-free), AST line-join only for the
-    # extern-only declarations IR drops; pylibclang gives every extent.
+    # declarations IR drops - an extern-only one, or a constant-folded static.
+    # pylibclang gives every extent and, for that fallback, the linkage the
+    # spelling depends on.
     if DATA_MACRO_RE.search(blanked) or ir_datas:
-        sizes = clang.var_sizes(str(src_path), cl_flags) or {}
-
-        def emit_data(rva, name, qtype=""):
-            got = authorize(name, all_names)
-            if got is None and all_names is not None:
-                got = msvc5_data_symbol(name, all_names)
-            if got is None:
-                problems.append(("drop", "data", rva,
-                                 f"{unit}: DATA(0x{rva:06x}) {name} not a "
-                                 f"symbol in {obj.name} (dropped)"))
-                return
-            emit(rva, sizes.get(name), got, "data", "src", qtype)
+        facts = clang.var_facts(str(src_path), cl_flags)
+        if facts is None:
+            problems.append(f"{unit}: pylibclang could not lay this TU out - "
+                            f"every DATA() extent would vanish")
+            facts = {}
+        sizes = {msvc_names.data(name, decorated=True, internal=f["internal"]):
+                 f["size"] for name, f in facts.items()}
 
         covered = set()
         for rva, name in ir_datas:
             covered.add(rva)
-            emit_data(rva, name)
+            emit(rva, sizes.get(name), name, "data", "src")
         site_count = len(DATA_MACRO_RE.findall(blanked))
         if site_count > len(covered):
             ast = clang.ast_dump(str(src_path), cl_flags)
@@ -546,15 +508,25 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
                 problems.append(f"{unit}: clang produced no AST - extern "
                                 f"DATA() labels of this TU would vanish (FATAL)")
                 return rows, problems
-            for rva, name, qtype in data_claims(text, ast, str(src_path)):
+            for rva, mangled, qtype in data_claims(text, ast, str(src_path)):
                 if rva in covered:
                     continue
-                if name is None:
-                    problems.append(("drop", "data", rva,
-                                     f"{unit}: DATA(0x{rva:06x}) has no "
-                                     f"VarDecl below it (dropped)"))
+                # both misses leave the site in NO fragment; the tree-wide
+                # completeness sweep owns that FATAL (a per-unit run cannot
+                # adjudicate whether another TU claims the same rva).
+                if mangled is None:
+                    problems.append(f"{unit}: DATA(0x{rva:06x}) has no VarDecl "
+                                    f"below it")
                     continue
-                emit_data(rva, name, qtype)
+                fact = facts.get(mangled)
+                if fact is None:
+                    problems.append(f"{unit}: DATA(0x{rva:06x}) {mangled} has "
+                                    f"no pylibclang declaration - its storage, "
+                                    f"and so cl's spelling, is unknown")
+                    continue
+                name = msvc_names.data(mangled, decorated=True,
+                                       internal=fact["internal"])
+                emit(rva, fact["size"], name, "data", "src", qtype)
 
     return rows, problems
 
@@ -587,12 +559,12 @@ def sweep_sites() -> dict[str, dict[int, str]]:
     return out
 
 
-def check_completeness(explained: set[tuple[str, int]] = frozenset()) -> list[str]:
+def check_completeness() -> list[str]:
     """The oracle over extraction: every site accounted for, loudly.
-    `explained` (kind, rva) keys already have a louder same-run drop report;
-    the sweep stays silent on those instead of restating one root cause
-    twice. Keys carry the KIND so a func claim can never excuse a lost DATA
-    site at the same rva (RVA and DATA share the `src` channel)."""
+
+    A site's claim may be carried by any unit's fragment - a header inline's
+    macro reaches every including TU - so the sweep asks only whether the
+    (channel, kind, rva) exists at all."""
     from gruntz.retail_labels.fragments import all_claims
     sites = sweep_sites()
     have: dict[tuple[str, str], set[int]] = {}
@@ -610,8 +582,7 @@ def check_completeness(explained: set[tuple[str, int]] = frozenset()) -> list[st
                                 f"header static belongs in data_compgen.tsv "
                                 f"(FATAL)")
                 continue
-            if rva not in have.get((channel, kind), set()) \
-                    and (kind, rva) not in explained:
+            if rva not in have.get((channel, kind), set()):
                 problems.append(f"{macro}(0x{rva:06x}) at {wheres[0]} is in "
                                 f"NO fragment - silently lost label (FATAL)")
             if len(wheres) > 1 and macro != "RVA":
@@ -653,52 +624,13 @@ def run(only_units: list[str] | None = None, jobs: int = os.cpu_count() or 4):
         did = write_tsv(FRAGMENTS / f"{u['unit']}.tsv", banner, HEADER, rows)
         return u["unit"], did, probs
 
-    refused: set[str] = set()
-    raw: list = []
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for unit, did, probs in pool.map(one, todo):
             if did:
                 changed.append(unit)
-            if did is None:
-                refused.add(unit)
-            raw.extend(probs)
-    # a per-TU drop is benign iff ANOTHER unit's fragment claims the same
-    # (kind, rva) - header inlines emit everywhere, cl materializes in one
-    # TU. A fragment this run REFUSED to rewrite is stale evidence and does
-    # not vote. A (kind, rva) dropped by every unit is a lost label.
-    from gruntz.retail_labels.fragments import all_claims
-    claimed = {(c.kind, c.rva) for c in all_claims() if c.unit not in refused}
-    drops: dict[tuple[str, int], list[str]] = {}
-    for pr in raw:
-        if isinstance(pr, tuple):
-            drops.setdefault((pr[1], pr[2]), []).append(pr[3])
-        else:
-            problems.append(pr)
-    explained: set[tuple[str, int]] = set()
-    forgiven = 0
-    for key, msgs in sorted(drops.items()):
-        if key in claimed:
-            forgiven += len(msgs)
-            continue
-        explained.add(key)
-        tail = " and NO other unit claims the rva"
-        if len(msgs) > 1:
-            units = ", ".join(sorted(m.split(":", 1)[0] for m in msgs))
-            tail += f" - {len(msgs)} units dropped it ({units})"
-        if only_units is None:
-            problems.append(msgs[0] + tail + " (FATAL)")
-        else:
-            # a per-unit run cannot adjudicate a tree-wide census question:
-            # one unhomed annotation must not fail every including unit's
-            # graph edge. The --all sweep owns the FATAL.
-            problems.append(msgs[0] + tail +
-                            " (unhomed - the tree-wide sweep adjudicates)")
+            problems.extend(probs)
     if only_units is None:
-        problems.extend(check_completeness(explained))
-    elif forgiven and os.environ.get("GRUNTZ_VERBOSE"):
-        problems.append(f"note: {forgiven} drop(s) forgiven by CACHED "
-                        f"fragments of units this run did not extract; a "
-                        f"full --all run re-proves them")
+        problems.extend(check_completeness())
     return changed, problems
 
 

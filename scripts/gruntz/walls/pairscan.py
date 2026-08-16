@@ -25,7 +25,10 @@ MEM_EXECUTE = 0x20000000
 DIR32, REL32 = 0x06, 0x14
 
 LOCAL_LABEL = re.compile(r"^\$(?:L\d+|\w+\$\d+)$")
-LOCAL_STATIC_SUFFIX = re.compile(r"\$S(?:data_data_[0-9a-f]+_[0-9]+|[0-9]+)$")
+# the three spellings one TU-local static reaches a join under: canonicalized
+# (`$Sdata_data_<digest>_<n>`), cl's own CodeView counter, and the Model's
+# ordinal-free name - bare `$S`, or `$S<rva>` where several units share a name.
+LOCAL_STATIC_SUFFIX = re.compile(r"\$S(?:data_data_[0-9a-f]+_[0-9]+|[0-9]*)$")
 _VDTOR = re.compile(r"^\?\?_E")
 COMPGEN = re.compile(r"^_?\$[ES][0-9]+$|^\$anon_(?:data|f32|f64)_[0-9a-f]+_[0-9]+$")
 

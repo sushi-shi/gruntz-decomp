@@ -28,8 +28,6 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-import re
-
 from gruntz.core.paths import BUILD
 from gruntz.core.tsv import write as write_tsv
 from gruntz.retail_labels import Claim, censuses, fragments as src_claims, providers
@@ -86,54 +84,135 @@ def _active(claim: Claim) -> bool:
     return True
 
 
-_CANON_S_RE = re.compile(r"\$S[0-9]*$")
-
-
-def _repair_ordinals(claims: list[Claim], violations: list[str]) -> list[Claim]:
-    """Resolve canonical `$S`-suffixed names to cl's CURRENT ordinal spelling.
-
-    No checked-in file may carry a `$S<n>` ordinal (a per-object CodeView
-    counter that renumbers on any TU churn), so tables store the ordinal-free
-    form and the model re-derives the live one from the unit's base obj -
-    accepted only on a UNIQUE ordinal-stripped match, exactly like the old
-    _repair_static_ordinal. Unresolvable rows become ONE aggregated violation."""
-    from gruntz.core.coff import Coff
-    from gruntz.core.paths import BUILD as _B
-    objs: dict[str, set[str] | None] = {}
-    unresolved: list[str] = []
-    out: list[Claim] = []
-    # The trailing CodeView ordinal always renumbers; an interior `$S<n>`
-    # (an anonymous local static's front-end name) drifts too, only slower.
-    # Stage 1 keeps the interior number (it disambiguates when one scope
-    # holds several anonymous statics); stage 2 strips every number on BOTH
-    # sides and demands uniqueness, healing interior drift.
-    strip = lambda n: _CANON_S_RE.sub("$S", n)  # noqa: E731
-    full_strip = lambda n: re.sub(r"\$S[0-9]+", "$S", n)  # noqa: E731
+def _func_groups(claims: list[Claim]) -> dict[tuple[int, str], list[Claim]]:
+    """Source function claims grouped by the body they name."""
+    groups: dict[tuple[int, str], list[Claim]] = {}
     for c in claims:
-        if not (c.name.startswith("_") and _CANON_S_RE.search(c.name)) \
-                or c.name.endswith(tuple("0123456789")):
-            out.append(c)
-            continue
-        if c.unit not in objs:
-            obj = _B / "objdiff/base" / f"{c.unit}.obj"
+        if c.kind == "func" and c.channel in ("src", "src_compgen"):
+            groups.setdefault((c.rva, c.name), []).append(c)
+    return groups
+
+
+def _emitted():
+    """`(unit, name) -> did cl emit this body`, or None when the unit has no
+    object to ask. Masked on both sides: cl stamps its per-object CodeView
+    counter onto a TU-local symbol and our names never carry one."""
+    from gruntz.core.coff import Coff
+    from gruntz.core.msvc_names import mask
+    from gruntz.core.paths import BUILD as _B
+
+    objs: dict[str, set[str] | None] = {}
+
+    def defines(unit: str, name: str) -> bool | None:
+        if unit not in objs:
+            obj = _B / "objdiff/base" / f"{unit}.obj"
             try:
-                objs[c.unit] = Coff(obj).all_names() if obj.is_file() else None
+                objs[unit] = {mask(n) for n in Coff(obj).code_names()} \
+                    if obj.is_file() else None
             except ValueError:
-                objs[c.unit] = None
-        syms = objs[c.unit]
-        hits = [n for n in syms if strip(n) == c.name] if syms else []
-        if len(hits) != 1 and syms:
-            want = full_strip(c.name)
-            hits = [n for n in syms if full_strip(n) == want]
-        if len(hits) == 1:
-            out.append(c._replace(name=hits[0]))
-        else:
-            unresolved.append(f"{c.name} [{c.unit}] ({len(hits)} matches)")
-            out.append(c)
-    if unresolved:
+                objs[unit] = None
+        return None if objs[unit] is None else mask(name) in objs[unit]
+    return defines
+
+
+def unmaterialized(claims: list[Claim]) -> list[Claim]:
+    """Function claims NO claiming unit's object defines, and nothing else
+    names the rva.
+
+    Every RVA() names a body retail emitted, so a claim with no body anywhere
+    is a reconstruction gap - typically a header inline no TU odr-uses, which
+    cl therefore never emits. A rva ANOTHER source claim spells differently is
+    not that gap: the two pins compete for one body, the materialized one wins
+    the binding and the loser is recorded as its alias (the pre-canonical
+    pipeline forgave exactly this case, by the same test). Derived, never a
+    hand-kept list; the selftest's corpus control reads it to tell a missing
+    body apart from a name-spelling defect. A unit with no object on disk
+    cannot adjudicate and its group is skipped.
+    """
+    from collections import Counter
+
+    defines = _emitted()
+    groups = _func_groups(claims)
+    spellings = Counter(rva for rva, _name in groups)
+    out = []
+    for (rva, _name), cs in groups.items():
+        if spellings[rva] > 1:                  # contested: the alias records it
+            continue
+        verdicts = [defines(c.unit, c.name) for c in cs]
+        if None not in verdicts and not any(verdicts):
+            out.append(cs[0])
+    return out
+
+
+def _materialized(claims: list[Claim], violations: list[str]) -> list[Claim]:
+    """Keep only the units that MATERIALIZED a function claim.
+
+    A header inline's `RVA()` reaches every including TU, so extraction - a
+    pure function of source - claims it from all of them. Which TUs actually
+    hold a body is not a source fact: cl emits the COMDAT only where the
+    inline is odr-used, and the retail linker picked one of exactly those
+    copies. So the emitting set is read here, from the units' own objects,
+    and it decides both the owner and the `also_units` roll-up; the delink
+    partition needs a unit whose object can be compared against the body it
+    is given. Data claims are main-file-only (a `DATA()` in a header is a
+    FATAL of its own) and never multi-unit, so only functions are filtered.
+
+    A claim no object defines survives unfiltered - the label is real evidence
+    about retail either way - and is reported once as the modelling gap it is.
+    """
+    defines = _emitted()
+    drop: set[int] = set()
+    for cs in _func_groups(claims).values():
+        if len(cs) == 1:
+            continue
+        keep = {id(c) for c in cs if defines(c.unit, c.name)}
+        if keep:
+            drop.update(id(c) for c in cs if id(c) not in keep)
+    gaps = unmaterialized(claims)
+    if gaps:
+        first = min(f"{c.name} at 0x{c.rva:06x}" for c in gaps)
         violations.append(
-            f"{len(unresolved)} canonical $S name(s) resolve to no unique obj "
-            f"symbol (first: {unresolved[0]}) - a real modelling question each")
+            f"{len(gaps)} function claim(s) have no body in ANY claiming "
+            f"unit's object (first: {first}) - the reconstruction is missing "
+            f"the definition retail emitted")
+    return [c for c in claims if id(c) not in drop]
+
+
+def _disambiguate(data: list[Binding], violations: list[str]) -> list[Binding]:
+    """One name per address image-wide, for the `$S` family.
+
+    Several translation units can hold a same-named TU-local static (cl tells
+    them apart with its per-object CodeView counter, which is exactly the
+    volatile number our names drop). The delink data manifest and the synth
+    PDB need one name per address, so a canonical name that binds more than
+    one rva takes the rva into the ordinal slot cl's counter occupied - the
+    `$T<rva>` convention, and `msvc_names.mask` folds it straight back onto
+    the shared family, so compare still pairs the copies by content. A
+    collision the family cannot respell stays a violation."""
+    from gruntz.core.msvc_names import discriminate
+    from collections import Counter
+
+    rvas: dict[str, set[int]] = {}
+    for b in data:
+        if b.name:
+            rvas.setdefault(b.name, set()).add(b.rva)
+    shared = {n for n, r in rvas.items() if len(r) > 1}
+    if not shared:
+        return data
+    out, stuck = [], Counter()
+    for b in data:
+        if b.name in shared:
+            spelling = discriminate(b.name, b.rva)
+            if spelling is None:
+                stuck[b.name] += 1
+            else:
+                b = b._replace(name=spelling)
+        out.append(b)
+    if stuck:
+        first = min(stuck)
+        violations.append(
+            f"{len(stuck)} data name(s) bind at multiple rvas and have no "
+            f"per-rva spelling (first: {first} x{stuck[first]})")
     return out
 
 
@@ -183,7 +262,7 @@ def resolve() -> Model:
         violations.append(f"{len(unknown)} claim(s) from unknown channel "
                           f"{unknown[0].channel!r} - skipped")
         all_claims = [c for c in all_claims if c.channel in _PRECEDENCE]
-    all_claims = _repair_ordinals(all_claims, violations)
+    all_claims = _materialized(all_claims, violations)
     # A dyninit pin's OWNER is not a symbol cl emits (the body is a volatile
     # _$E<n>); the binding stays unnamed like the old spine, the owner rides
     # as an alias so audits keep it. Keyword owners are a source-hygiene wart,
@@ -294,6 +373,7 @@ def resolve() -> Model:
                             tuple(win.meta.get("also_units", ()))))
 
     # the delink data manifest needs ONE name -> ONE extent image-wide
+    data = _disambiguate(data, violations)
     from collections import Counter
     dup = Counter(b.name for b in data if b.name)
     dups = {n: k for n, k in dup.items() if k > 1}

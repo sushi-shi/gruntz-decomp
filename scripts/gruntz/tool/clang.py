@@ -4,12 +4,13 @@ Three probes over one TU, all under the MSVC-compat flag set:
     emit_ir()   textual LLVM IR - @llvm.global.annotations pairs each RVA()
                 annotation DIRECTLY with the function's mangled symbol
     ast_dump()  JSON AST - VarDecls for the DATA() join
-    var_sizes() pylibclang - exact byte extents of main-file globals
+    var_facts() pylibclang - exact byte extents and storage of main-file globals
 
 Per-TU flags come from the clangd compdb (`/imsvc` lowercase-mirror include
 dirs that make header lookup work on case-sensitive Linux), falling back to
-the bare MS flag set. clang's output is always a PROPOSAL - extraction admits
-a name only after the base-obj authority check (core/coff).
+the bare MS flag set. clang's mangled name is a PROPOSAL in one narrow sense
+only: cl 5.0's own spelling is a deterministic rewrite of it, applied by
+core/msvc_names.
 """
 
 from __future__ import annotations
@@ -122,11 +123,17 @@ def ast_dump(tu: str, cl_flags: list[str] | None) -> dict | None:
         return None
 
 
-def var_sizes(tu: str, cl_flags: list[str] | None) -> dict[str, int] | None:
-    """{mangled VarDecl name: exact byte extent} for main-file globals - THE
-    DATA-extent authority (laid out under the TU's real i386/MSVC flags).
-    None when pylibclang could not parse cleanly; incomplete types (negative
-    get_size) and cross-decl size conflicts are omitted."""
+def var_facts(tu: str, cl_flags: list[str] | None) -> dict[str, dict] | None:
+    """{mangled VarDecl name: {'size': bytes, 'internal': bool}} for main-file
+    globals - THE DATA-extent authority (laid out under the TU's real
+    i386/MSVC flags) and the storage a claim's cl 5.0 spelling depends on.
+
+    The key is libclang's mangled name, which already carries the i386 COFF
+    global prefix. `internal` is true for anything cl gives TU-local storage:
+    a file static, a namespace-scope `const`, and a function-local static (no
+    linkage at all) alike. None when pylibclang could not parse cleanly;
+    incomplete types (negative get_size) and cross-decl size conflicts are
+    omitted."""
     try:
         import clang.cindex as cidx
     except ImportError:
@@ -141,7 +148,7 @@ def var_sizes(tu: str, cl_flags: list[str] | None) -> dict[str, int] | None:
     if any(d.severity >= cidx.Diagnostic.Error for d in parsed.diagnostics):
         return None
     main_real = os.path.realpath(tu)
-    sizes: dict[str, int] = {}
+    facts: dict[str, dict] = {}
     conflicts = set()
     for cursor in parsed.cursor.walk_preorder():
         if cursor.kind != cidx.CursorKind.VAR_DECL or cursor.location.file is None:
@@ -151,10 +158,11 @@ def var_sizes(tu: str, cl_flags: list[str] | None) -> dict[str, int] | None:
         name, size = cursor.mangled_name, cursor.type.get_size()
         if not name or size < 0:
             continue
-        if name in sizes and sizes[name] != size:
+        internal = cursor.linkage != cidx.LinkageKind.EXTERNAL
+        if name in facts and facts[name] != {"size": size, "internal": internal}:
             conflicts.add(name)
         else:
-            sizes[name] = size
+            facts[name] = {"size": size, "internal": internal}
     for name in conflicts:
-        sizes.pop(name, None)
-    return sizes
+        facts.pop(name, None)
+    return facts

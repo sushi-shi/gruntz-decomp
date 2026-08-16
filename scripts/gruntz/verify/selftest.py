@@ -2210,37 +2210,176 @@ class TsvAtomicWriteControls(unittest.TestCase):
             self.assertEqual([p.name for p in Path(d).iterdir()], ["t.tsv"])
 
 
-class LabelAuthorityStalenessControls(unittest.TestCase):
-    """A stale base obj must announce itself, not answer as if current.
+class SourceNameRewriteControls(unittest.TestCase):
+    """The rewrite rules are COMPLETE, proven once per build over the corpus.
 
-    Extraction's authority is cl's OBJECT, so an object older than its source
-    answers for source that no longer exists: a name the edit introduced reads
-    as "not a symbol in <unit>.obj (dropped)". The graph orders cl before
-    labels; a manual `gruntz labels --unit` does not. Seen live on
-    sbi_rectonly while moving a ctor out of a header.
+    Labelling spells every claim from source (core.msvc_names), so a rule gap
+    can no longer hide as a silent per-claim drop - it has to fail here. The
+    control is the same assertion the dropped per-claim authority check made,
+    lifted to the whole claim set: for EVERY extracted source claim, the name
+    equals the emitting base object's own symbol modulo the volatile ordinals
+    both sides mask. Reading the objects is fine HERE; it is a test, not the
+    extraction path.
     """
 
-    def test_an_older_object_is_reported_before_its_drops(self):
-        import os
-        from gruntz.retail_labels import source as S
-        with tempfile.TemporaryDirectory() as d:
-            src = Path(d) / "U.cpp"
-            src.write_text("#include <rva.h>\nRVA(0x1000, 0x5)\nint f(){return 0;}\n")
-            objs = Path(d) / "objdiff/base"
-            objs.mkdir(parents=True)
-            import shutil
-            real = Path("build/objdiff/base/adler32.obj")
-            if not real.is_file():
-                self.skipTest("no base obj to borrow")
-            obj = objs / "u.obj"
-            shutil.copy2(real, obj)                      # a REAL, parseable COFF
-            old = src.stat().st_mtime - 100
-            os.utime(obj, (old, old))                    # object OLDER than source
-            with mock.patch.object(S, "BASE_OBJS", objs), \
-                 mock.patch.object(S, "REPO", Path(d)):
-                _rows, probs = S.extract_unit("u", "U.cpp", {})
-        self.assertTrue(any("OLDER than" in str(p) for p in probs),
-                        f"a stale object was not reported: {probs}")
+    @staticmethod
+    def _corpus():
+        from gruntz.core.paths import BUILD
+        from gruntz.retail_labels import fragments
+        base = BUILD / "objdiff/base"
+        claims = [c for c in fragments.all_claims() if c.channel == "src"]
+        return base, claims
+
+    #: every decoration cl 5.0 could have chosen instead - if one of THESE is
+    #: in the object, the claim named the right body and spelled it wrong.
+    @staticmethod
+    def _alternate_spellings(name: str) -> set[str]:
+        import re
+        out = set()
+        for n in {name, re.sub(r"@@([0-9])P", r"@@\1Q", name)}:
+            for m in {n, n.removesuffix("$S"), n + "$S"}:
+                out |= {m, "_" + m, m.removeprefix("_")}
+        return out - {name}
+
+    def test_every_source_claim_is_cls_own_spelling(self):
+        from gruntz.core.coff import Coff
+        from gruntz.core.msvc_names import mask
+        from gruntz.model import unmaterialized
+        base, claims = self._corpus()
+        if not claims:
+            self.skipTest("no extracted claims - run `gruntz labels --all`")
+        objs: dict[str, tuple[set[str], set[str]] | None] = {}
+        for unit in {c.unit for c in claims}:
+            path = base / f"{unit}.obj"
+            if not path.is_file():
+                objs[unit] = None
+                continue
+            coff = Coff(path)
+            objs[unit] = ({mask(n) for n in coff.code_names()},
+                          {mask(n) for n in coff.all_names()})
+        absent = sorted(u for u, v in objs.items() if v is None)
+        if absent:
+            self.skipTest(f"{len(absent)} unit(s) have no base obj "
+                          f"(e.g. {absent[0]}) - run `gruntz build`")
+        # A header inline's macro reaches every including TU, but cl
+        # materializes the COMDAT only where it is odr-used - so a claim with
+        # no symbol in ITS OWN unit is expected. The rewrite is in question
+        # only when NO unit claiming that (kind, rva, name) carries it.
+        claimed, proven = {}, set()
+        for c in claims:
+            code, every = objs[c.unit]
+            key = (c.kind, c.rva, mask(c.name))
+            claimed.setdefault(key, []).append(c)
+            if key[2] in (code if c.kind == "func" else every):
+                proven.add(key)
+        # ... and a gap is a SPELLING defect only if some other decoration of
+        # the same claim IS in one of those objects. A gap with no spelling at
+        # all is a missing body - a modelling question the Model reports.
+        misspelled, bodiless = [], []
+        for key in sorted(set(claimed) - proven):
+            cs = claimed[key]
+            alts = self._alternate_spellings(cs[0].name)
+            hit = next((a for c in cs for a in sorted(alts)
+                        if a in objs[c.unit][1]), None)
+            row = f"{key[0]} 0x{key[1]:06x} {cs[0].name}"
+            (misspelled if hit else bodiless).append(
+                f"{row} -> cl spells it {hit}" if hit else row)
+        self.assertFalse(
+            misspelled,
+            f"{len(misspelled)} of {len(claimed)} source claim(s) are spelled "
+            f"differently by cl - the rewrite rules are incomplete "
+            f"(first: {misspelled[0] if misspelled else ''})")
+        # the bodiless class must stay LOUD somewhere: a claim with no other
+        # spelling at its rva is a Model violation, one WITH another spelling
+        # is recorded as that binding's alias. Nothing may be silent.
+        gaps = {(c.kind, c.rva, mask(c.name)) for c in unmaterialized(
+            [c for cs in claimed.values() for c in cs])}
+        aliased = {rva for kind, rva, _n in proven if kind == "func"}
+        unreported = sorted(
+            k for k in set(claimed) - proven - gaps
+            if k[0] == "func" and k[1] not in aliased)
+        self.assertFalse(
+            unreported,
+            f"{len(unreported)} claim(s) match no object symbol and are "
+            f"reported by nothing (first: {unreported[0] if unreported else ''})")
+
+    def test_a_missing_rewrite_rule_fails_that_control(self):
+        """The negative control: undo two rules, the corpus control must fail.
+
+        A gate that would pass an incomplete rewrite is not a gate."""
+        import io
+        import re
+        from gruntz.retail_labels import fragments
+
+        _base, claims = self._corpus()
+        if not claims:
+            self.skipTest("no extracted claims - run `gruntz labels --all`")
+
+        def poisoned():
+            out = []
+            for c in claims:
+                name = re.sub(r"@@([0-9])P", r"@@\1Q", c.name)   # undo Q -> P
+                if name.endswith("$S"):                          # undo _x$S
+                    name = (name[1:] if name.startswith("_") else name)[:-2]
+                out.append(c._replace(name=name))
+            return out
+
+        with mock.patch.object(fragments, "all_claims", poisoned):
+            case = SourceNameRewriteControls(
+                "test_every_source_claim_is_cls_own_spelling")
+            result = unittest.TextTestRunner(stream=io.StringIO()).run(
+                unittest.TestSuite([case]))
+        self.assertEqual(len(result.failures), 1,
+                         "a broken rewrite rule did not fail the corpus control")
+        self.assertIn("rewrite rules are incomplete", result.failures[0][1])
+
+    def test_masking_never_merges_two_object_symbols(self):
+        """The mask is only sound while it is injective per object."""
+        from gruntz.core.coff import Coff
+        from gruntz.core.msvc_names import mask
+        base, _claims = self._corpus()
+        objs = sorted(base.glob("*.obj"))
+        if not objs:
+            self.skipTest("no base objs")
+        collisions = []
+        for path in objs:
+            try:
+                names = Coff(path).all_names()
+            except ValueError:
+                continue
+            seen: dict[str, str] = {}
+            for name in sorted(names):
+                other = seen.setdefault(mask(name), name)
+                if other != name:
+                    collisions.append(f"{path.stem}: {other} / {name}")
+        self.assertFalse(collisions,
+                         f"{len(collisions)} object symbol pair(s) mask "
+                         f"together (first: {collisions[0] if collisions else ''})")
+
+    def test_the_rewrite_rules_are_the_measured_ones(self):
+        from gruntz.core import msvc_names as m
+        # the i386 COFF global prefix, applied to what LLVM did not mangle
+        self.assertEqual(m.func("?Foo@C@@QAEXXZ"), "?Foo@C@@QAEXXZ")
+        self.assertEqual(m.func("_stdcall_thing@8", decorated=True),
+                         "_stdcall_thing@8")
+        self.assertEqual(m.func("ordinary"), "_ordinary")
+        # clang's array storage class
+        self.assertEqual(m.data("?g_cmdBitTable@@3QBGB", internal=False),
+                         "?g_cmdBitTable@@3PBGB")
+        # TU-local storage: `_` and `$S` arrive together, whatever the mangling
+        self.assertEqual(m.data("s_MAIN", internal=True), "_s_MAIN$S")
+        self.assertEqual(m.data("_kDegToRad", internal=True, decorated=True),
+                         "_kDegToRad$S")
+        self.assertEqual(m.data("?s_x@?1??F@@QAEHXZ@4HA", internal=True),
+                         "_?s_x@?1??F@@QAEHXZ@4HA$S")
+        # the mask meets cl's own object on both ordinals
+        self.assertEqual(m.mask("_?s_x@?BA@??F@@QAEHXZ@4HA$S35536"),
+                         "_?s_x@?1??F@@QAEHXZ@4HA$S")
+        self.assertEqual(m.mask("_?$S47@?1??G@@QAEHXZ@4EA$S20267"),
+                         "_?$S@?1??G@@QAEHXZ@4EA$S")
+        # an rva-keyed name is NOT an ordinal: it must survive masking
+        self.assertEqual(m.mask("$S2277272"), "$S2277272")
+        self.assertEqual(m.mask(m.discriminate("_s_x$S", 0x244970)), "_s_x$S")
 
 
 def main(argv=None) -> int:

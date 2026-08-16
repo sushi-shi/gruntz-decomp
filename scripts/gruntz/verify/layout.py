@@ -20,11 +20,11 @@ a resolved leaf.
   * bitfields, virtual bases, incomplete types and anything past the
     recursion cap are opaque - sized where possible, never adjudicated.
 
-NAMES. clang proposes a mangled name; cl disposes. The join key is the
-emitting base obj's own spelling (the same `authorize` + `msvc5_data_symbol`
-path extraction uses), because that is what the Model binds an rva to - cl 5.0
-spells a function-local static `_kScrollRate$S44139` where clang says
-`?kScrollRate@?1??Draw@@...@4MB`.
+NAMES. The join key is cl 5.0's own spelling, derived from clang's mangled
+name by `core.msvc_names` (the same rewrite extraction applies), because that
+is what the Model binds an rva to - cl 5.0 spells a file-scope static
+`_kScrollRate$S<n>` where clang says `kScrollRate`, and the volatile CodeView
+ordinal is dropped on both sides.
 
 CACHING. Incremental, keyed on two fingerprints: a hash over every header
 (a header edit relays to every TU) and each unit's own source file. Editing
@@ -47,6 +47,11 @@ CACHE = BUILD / "gen/data_layout.json"
 
 #: how deep a member chain is laid out before a leaf becomes opaque
 MAX_DEPTH = 8
+
+#: Cache schema. Bumped whenever the harvest's KEY derivation changes - the
+#: fingerprints track source, not this module, so a stale cache would answer
+#: with the old spellings for every unchanged TU.
+SCHEMA = 2
 
 
 class Field(NamedTuple):
@@ -108,7 +113,12 @@ class Layout:
         return (self.units.get(unit) or {}).get("vars", {})
 
     def var(self, unit: str, name: str) -> dict | None:
-        return self.vars_of(unit).get(name)
+        """The declaration by cl 5.0's spelling. The Model may carry a per-rva
+        discriminated spelling for a name several units share; the harvest is
+        keyed by the family, so the lookup masks."""
+        from gruntz.core.msvc_names import mask
+        vars_ = self.vars_of(unit)
+        return vars_.get(name) or vars_.get(mask(name))
 
     def var_node(self, unit: str, name: str) -> dict | None:
         v = self.var(unit, name)
@@ -228,9 +238,7 @@ def _worker(job):
 def _harvest_unit(unit: str, source: str, flags: list[str] | None):
     import clang.cindex as cidx
 
-    from gruntz.core.coff import Coff
-    from gruntz.core.paths import BUILD as _B
-    from gruntz.retail_labels.source import msvc5_data_symbol
+    from gruntz.core import msvc_names
     from gruntz.tool.clang import inc_cl
 
     args = (["--driver-mode=cl", "/DGRUNTZ_EMIT_META", *flags, *inc_cl()]
@@ -246,12 +254,6 @@ def _harvest_unit(unit: str, source: str, flags: list[str] | None):
                      if d.severity >= cidx.Diagnostic.Error)
         return unit, {}, f"{unit}: parse error: {first}"
 
-    obj = _B / "objdiff/base" / f"{unit}.obj"
-    try:
-        names = Coff(obj).all_names() if obj.is_file() else None
-    except ValueError:
-        names = None
-
     builder = _Builder(cidx)
     main_real = os.path.realpath(source)
     out: dict[str, dict] = {}
@@ -263,11 +265,8 @@ def _harvest_unit(unit: str, source: str, flags: list[str] | None):
         clang_name = cur.mangled_name
         if not clang_name:
             continue
-        got = clang_name if names is None or clang_name in names else \
-            ("_" + clang_name if names and "_" + clang_name in names
-             else msvc5_data_symbol(clang_name, names or set()))
-        if got is None:
-            continue
+        got = msvc_names.data(clang_name, decorated=True,
+                              internal=cur.linkage != cidx.LinkageKind.EXTERNAL)
         node = builder.node_of(cur.type)
         if got in out and out[got]["t"] != node:
             continue                          # conflicting decls: state nothing
@@ -416,7 +415,8 @@ def harvest(rebuild: bool = False, jobs: int | None = None,
     if not rebuild and CACHE.is_file():
         try:
             doc = json.loads(CACHE.read_text())
-            if doc.get("header_hash") == header:
+            if doc.get("header_hash") == header \
+                    and doc.get("schema") == SCHEMA:
                 cached = doc.get("units", {})
                 types = doc.get("types", [])
                 index = {json.dumps(n, sort_keys=True): i
@@ -452,7 +452,8 @@ def harvest(rebuild: bool = False, jobs: int | None = None,
                     "vars": {name: {"t": _intern(v["t"], types, index),
                                     "sz": v["sz"], "clang": v["clang"]}
                              for name, v in vars_.items()}}
-    doc = {"header_hash": header, "types": types, "units": out_units}
+    doc = {"schema": SCHEMA, "header_hash": header, "types": types,
+           "units": out_units}
     if units is None:
         CACHE.parent.mkdir(parents=True, exist_ok=True)
         CACHE.write_text(json.dumps(doc))

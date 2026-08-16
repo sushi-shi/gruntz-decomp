@@ -39,6 +39,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from gruntz.core import msvc_names
 from gruntz.core.paths import BUILD
 from gruntz.delink import coffx, eh_band
 from gruntz.delink.image import retail
@@ -285,16 +286,21 @@ def _common_owner(base_dir=BASE_DIR):
         except (ValueError, OSError):
             continue
         for name in commons:
-            prev = owners.get(name)
+            key = msvc_names.mask(name)
+            prev = owners.get(key)
             if prev is None or pos.get(obj.stem, 1 << 30) < pos.get(prev, 1 << 30):
-                owners[name] = obj.stem
+                owners[key] = obj.stem
     return owners
 
 
 def _candidate_member_storage(base_dir=BASE_DIR):
     """{(object, symbol): "data"|"rdata"|"bss"} - the storage cl ACTUALLY gave
     it. The oracle that resolves the .data raw-edge ambiguity and refutes a
-    named-static-onto-pooled-literal alias whose storage never met."""
+    named-static-onto-pooled-literal alias whose storage never met.
+
+    Keyed by the MASKED symbol: cl stamps its per-object CodeView counter onto
+    a TU-local static and the Model binds the ordinal-free spelling, so both
+    sides of the join reduce to the same name."""
     out = {}
     for stem, c in coffx.objects(base_dir):
         for sec in c.section_table:
@@ -304,7 +310,7 @@ def _candidate_member_storage(base_dir=BASE_DIR):
             if storage is None:
                 continue
             for _off, name, _scl in c.section_members(sec["index"]):
-                out[f"{stem}.c", name] = storage
+                out[f"{stem}.c", msvc_names.mask(name)] = storage
     return out
 
 
@@ -332,7 +338,7 @@ def claim_rows(model: Model, tail_oracle) -> tuple[list, list, Counter]:
             # A COMMON has no owning TU (b.unit documents the header inline);
             # the retail linker allocated it from the earliest-arriving module
             # that emits it, which is the object it belongs in.
-            unit = common_owner.get(b.name)
+            unit = common_owner.get(msvc_names.mask(b.name))
             if unit is None:
                 withheld.append((b.rva, b.name,
                                  "COMMON with no emitting base obj"))
@@ -340,7 +346,7 @@ def claim_rows(model: Model, tail_oracle) -> tuple[list, list, Counter]:
         size = b.size
         start = _classify(b.rva)
         end = _classify(b.rva + size - 1)
-        oracle = (tail_oracle.get((f"{unit}.c", b.name))
+        oracle = (tail_oracle.get((f"{unit}.c", msvc_names.mask(b.name)))
                   if "data-unprovable-tail" in (start, end) else None)
         if oracle in ("data", "bss"):
             # The PE alone cannot split FileAlignment slack from content at
@@ -664,17 +670,19 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
     img = retail()
     sites = img.reloc_sites
 
+    # both maps are keyed by the MASKED name so a base obj's own relocation
+    # symbol (cl's CodeView counter intact) meets the Model's canonical one.
     from gruntz.delink.pdb_synth import UNIT_CHANNELS
     known, fn_extent = {}, {}
     for b in model.functions:
         if b.channel in UNIT_CHANNELS and b.name:
-            known[b.name] = b.rva
-            fn_extent[b.name] = (b.rva, b.size)
+            known[msvc_names.mask(b.name)] = b.rva
+            fn_extent[msvc_names.mask(b.name)] = (b.rva, b.size)
     pins: dict[str, list[tuple[int, int]]] = defaultdict(list)
     for b in model.data:
         if not b.channel or not b.name:
             continue
-        known.setdefault(b.name, b.rva)
+        known.setdefault(msvc_names.mask(b.name), b.rva)
         if b.channel in ("data_compgen", "src_data_compgen") \
                 and FP_POOL_NAME.fullmatch(b.name):
             pins[b.unit].append((b.rva, b.size))
@@ -708,7 +716,7 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
                 continue
             text = c.section_payload(sec["index"])
             for off, name in c.defined_symbols(sec["index"]):
-                hit = fn_extent.get(name)
+                hit = fn_extent.get(msvc_names.mask(name))
                 if hit is None:
                     continue
                 rva, size = hit
@@ -730,7 +738,7 @@ def fp_pool_rows(model: Model, base_dir=BASE_DIR):
                     if FP_POOL_NAME.fullmatch(sym):
                         found.append((sym, value))
                         continue
-                    anchor = known.get(sym)
+                    anchor = known.get(msvc_names.mask(sym))
                     if anchor is None:      # not ours to check
                         continue
                     addend = struct.unpack("<I", text[site:site + 4])[0]
@@ -885,7 +893,8 @@ def candidates(model: Model):
         for r in group:
             if r["name"] == literal:
                 continue
-            mine = candidate_storage.get((r["object"], r["name"]))
+            mine = candidate_storage.get(
+                (r["object"], msvc_names.mask(r["name"])))
             if mine != r["storage"]:
                 refuted.add(r["name"])
                 withheld.append((rva, r["name"],
@@ -963,9 +972,11 @@ def ordinary_sections(rows, base_dir=BASE_DIR):
     `.data`/`.rdata` - admitted only when PROVABLY COMPLETE: every member has
     an enrolled unplaced definition of the matching storage, no overlaps, no
     overruns, and every uncovered byte is ZERO in the candidate payload."""
+    # keyed by the MASKED name: cl's per-object CodeView counter on a TU-local
+    # static is exactly the number the enrolled spelling drops.
     by_obj: dict[str, dict[str, dict]] = defaultdict(dict)
     for r in rows:
-        by_obj[r["object"]][r.get("member") or r["name"]] = r
+        by_obj[r["object"]][msvc_names.mask(r.get("member") or r["name"])] = r
 
     secs, placed = [], []
     for obj, named in sorted(by_obj.items()):
@@ -983,7 +994,7 @@ def ordinary_sections(rows, base_dir=BASE_DIR):
             payload = c.section_payload(sec["index"])[:sec["size"]]
             covered, mine, complete = bytearray(sec["size"]), [], True
             for offset, name, _scl in members:
-                r = named.get(name)
+                r = named.get(msvc_names.mask(name))
                 if r is None or r["storage"] != storage or "section" in r:
                     complete = False
                     break
