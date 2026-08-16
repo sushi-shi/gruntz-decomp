@@ -567,3 +567,22 @@ i32 BlackoutSystemPalette() {
     }
     return 0;
 }
+
+RVA(0x001487c0, 0x77)
+void CDDPalette::DumpEntries() {
+    PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
+    i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, entries);
+    if (hr != 0) {
+        CDDrawPtrCollections::GetErrorString(DIRPAL_FILE, 0x4e4, hr);
+        return;
+    }
+    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
+        DDrawLogLine(
+            "I:%03i R:%03i G:%03i B:%03i\n",
+            i,
+            entries[i].peRed,
+            entries[i].peGreen,
+            entries[i].peBlue
+        );
+    }
+}

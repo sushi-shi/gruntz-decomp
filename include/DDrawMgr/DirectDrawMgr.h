@@ -62,6 +62,7 @@ public:
     void Apply(i32 unused);
     i32 SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags);
     i32 CaptureSystemPalette();
+    void DumpEntries();
 
     POSITION m_pos;
 

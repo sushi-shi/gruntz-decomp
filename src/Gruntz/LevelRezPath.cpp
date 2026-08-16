@@ -108,3 +108,19 @@ i32 CGruntzMgr::BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id, CString n
         return buf.checksum;
     }
 }
+
+DATA(0x00245510)
+FILE* g_logFile;
+
+RVA(0x000942e0, 0x18)
+void OpenDebugLog() {
+    g_logFile = fopen("c:\\foo.log", "wb");
+}
+
+RVA(0x00094310, 0x1d)
+void CloseDebugLog() {
+    if (g_logFile != NULL) {
+        fclose(g_logFile);
+        g_logFile = NULL;
+    }
+}

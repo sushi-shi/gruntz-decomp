@@ -274,8 +274,8 @@ void CFontConfig::EndInput() {
 }
 
 // @early-stop
-// residue: one eax/ecx swap in the width pair; the EH cleanup retains the
-// empty CPen destructor where retail cuts directly to CGdiObject.
+// residue: one eax/ecx swap in the width pair. The EH cleanup is exact - retail's
+// funclet destroys the CPen through this TU's own ??1CPen@@UAE@XZ.
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
@@ -305,6 +305,11 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     }
     return 1;
 }
+
+// MeasureLabel's CPen local forces this MFC header inline; this TU defines it
+// first, so the linker kept THIS copy and its /GX funclet group. Its bytes equal
+// ??1CGdiObject@@UAE@XZ - see identical-derived-dtor-comdat-is-named-by-link-order.
+RVA_COMPGEN(0x000220f0, 0x46, ??1CPen@@UAE@XZ)
 
 // @early-stop
 // residue: cl parks the result in esi where retail keeps it in eax, plus the

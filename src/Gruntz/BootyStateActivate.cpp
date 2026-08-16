@@ -2477,8 +2477,6 @@ DATA(0x00245508)
 i32 g_panMinX;
 DATA(0x0024550c)
 i32 g_panMaxX;
-DATA(0x00245510)
-FILE* g_logFile; // "c:\\foo.log" handle; its dead open/close helpers are uncarved retail COMDATs
 
 RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
 RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)
