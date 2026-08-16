@@ -20,7 +20,7 @@ Bucket doctrine (ported):
 
 from __future__ import annotations
 
-from gruntz.verify.baseline import EPS
+from gruntz.verify.baseline import EPS, below_best
 from gruntz.verify.fingerprints import real_edit
 
 
@@ -103,7 +103,7 @@ def classify(cur: dict, base_funcs: dict, fp, rvas: dict):
         if old_key is not None:          # informational; the gating is below
             yield ("MOVED" if old_key[0] != unit else "RENAMED",
                    unit, fn, pct, prev["best"])
-        if pct < prev["best"] - EPS:     # BELOW-BEST FIRST
+        if below_best(pct, prev["best"]):  # BELOW-BEST FIRST
             yield ("REGRESS", unit, fn, pct, prev["best"])
         elif real_edit(prev["fp"], fp(*key)):
             yield ("TOUCHED", unit, fn, pct, prev["best"])
@@ -145,7 +145,7 @@ def currency(cur, base_funcs, regress) -> dict:
         prev = base_funcs.get((unit, fn))
         if prev is None:                 # a MOVED row, gated at its new home
             fresh += 1
-        elif prev["cur"] < prev["best"] - EPS:
+        elif below_best(prev["cur"], prev["best"]):
             carried += 1
         else:
             fresh += 1
@@ -157,6 +157,6 @@ def fresh_regressions(cur, base_funcs, regress) -> list:
     out = []
     for unit, fn, pct, best in regress:
         prev = base_funcs.get((unit, fn))
-        if prev is None or not prev["cur"] < prev["best"] - EPS:
+        if prev is None or not below_best(prev["cur"], prev["best"]):
             out.append((unit, fn, pct, best))
     return out

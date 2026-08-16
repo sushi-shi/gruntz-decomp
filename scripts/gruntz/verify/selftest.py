@@ -1083,6 +1083,43 @@ class DataCompgenControls(unittest.TestCase):
         self.assertEqual(bad, [])
 
 
+class LedgerPrecisionControls(unittest.TestCase):
+    """Below-best must read the same on a live float and on its banked copy.
+
+    The bank stores cur_pct to 4 decimals. While the regress test compared
+    the raw float and the carried test the stored one, a row whose dip is
+    exactly EPS was regressed AND never-carried at once - banking could not
+    clear it and the build gate stayed red forever (seen live on
+    StepDiggerBehavior, best 68.1947 vs cur 68.18469).
+    """
+
+    def test_raw_and_banked_readings_agree(self):
+        from gruntz.verify.baseline import at_ledger_precision, below_best
+        best = 68.1947
+        for raw in (68.18469, 68.1847, 68.18471, 68.0, 68.1947, 70.0):
+            self.assertEqual(
+                below_best(raw, best),
+                below_best(at_ledger_precision(raw), best),
+                f"{raw} reads differently once banked - unclearable gate")
+
+    def test_a_dip_the_ledger_cannot_see_is_not_a_regression(self):
+        from gruntz.verify.baseline import below_best
+        self.assertFalse(below_best(68.18469, 68.1947))   # rounds to the edge
+        self.assertTrue(below_best(68.1840, 68.1947))     # genuinely below
+
+    def test_a_real_dip_is_still_fresh_after_banking(self):
+        from gruntz.verify.classify import currency
+        base = {("u", "f"): {"best": 90.0, "cur": 90.0, "fp": "h", "tries": 1}}
+        got = currency({("u", "f"): 80.0}, base, [("u", "f", 80.0, 90.0)])
+        self.assertEqual((got["regress_fresh"], got["regress_carried"]), (1, 0))
+
+    def test_a_banked_dip_is_carried(self):
+        from gruntz.verify.classify import currency
+        base = {("u", "f"): {"best": 90.0, "cur": 80.0, "fp": "h", "tries": 1}}
+        got = currency({("u", "f"): 80.0}, base, [("u", "f", 80.0, 90.0)])
+        self.assertEqual((got["regress_fresh"], got["regress_carried"]), (0, 1))
+
+
 def main(argv=None) -> int:
     argv = list(argv or [])
     verbosity = 2 if "-v" in argv else 1

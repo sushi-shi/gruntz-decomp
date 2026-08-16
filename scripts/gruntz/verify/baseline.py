@@ -17,6 +17,30 @@ from gruntz.core.paths import CONFIG
 BASELINE = CONFIG / "match_baseline.tsv"
 
 EPS = 0.01      # ignore sub-0.01% jitter
+LEDGER_DP = 4   # the file stores percentages to this many decimals
+
+
+def at_ledger_precision(pct: float) -> float:
+    """A live score rounded to how the ledger STORES it.
+
+    Every below-best test must use this: `cur_pct` comes back from the file
+    already rounded, so comparing a raw float on one side and a stored value
+    on the other makes a row whose dip is exactly EPS both regressed (raw)
+    and never-carried (stored) - permanently `fresh`, an unclearable gate.
+    """
+    return round(pct, LEDGER_DP)
+
+
+def below_best(pct: float, best: float) -> bool:
+    """THE below-best predicate - every caller must use this one.
+
+    Regress classification, the carried/fresh split and the gate all have to
+    agree; when they disagreed at the rounding boundary a row could be
+    regressed AND never-carried at once, i.e. an unclearable gate.
+    """
+    return at_ledger_precision(pct) < best - EPS
+
+
 EXACT = 99.995  # objdiff scores a byte-exact function at 100% (float slop)
 
 HEADER = (
