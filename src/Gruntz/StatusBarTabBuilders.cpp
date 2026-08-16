@@ -130,13 +130,9 @@ i32 CSBI_GruntMachine::Render() {
         m_redrawFrames--;
         CDDrawWorker* cfg = m_config;
 
-        m_frameA = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
-                       ? 0
-                       : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        m_frameA = cfg->GetAt(idx);
         idx = m_frameIdxB;
-        m_frameB = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
-                       ? 0
-                       : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        m_frameB = cfg->GetAt(idx);
 
         CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
 

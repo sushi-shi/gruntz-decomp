@@ -805,12 +805,7 @@ void CWwdGameObjectA::ClampFirst() {
     if (seq != NULL) {
         i32 n = seq->m_minIndex;
         m_frameIndex = n;
-        CImage* layer;
-        if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-            layer = static_cast<CImage*>(seq->m_items.GetAt(n));
-        } else {
-            layer = NULL;
-        }
+        CImage* layer = seq->GetAt(n);
         m_layer = layer;
     }
 }
@@ -821,12 +816,7 @@ void CWwdGameObjectA::ClampLast() {
     if (seq != NULL) {
         i32 n = seq->m_maxIndex;
         m_frameIndex = n;
-        CImage* layer;
-        if (n >= seq->m_minIndex && n <= seq->m_maxIndex) {
-            layer = static_cast<CImage*>(seq->m_items.GetAt(n));
-        } else {
-            layer = NULL;
-        }
+        CImage* layer = seq->GetAt(n);
         m_layer = layer;
     }
 }

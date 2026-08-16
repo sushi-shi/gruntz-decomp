@@ -115,12 +115,7 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
         i32 key = en->m_minIndex;
 
         o->m_frameSet = en;
-        CImage* val;
-        if (key < en->m_minIndex || key > en->m_maxIndex) {
-            val = NULL;
-        } else {
-            val = static_cast<CImage*>(en->m_items.GetAt(key));
-        }
+        CImage* val = en->GetAt(key);
         o->m_layer = val;
         o->m_frameIndex = key;
     }

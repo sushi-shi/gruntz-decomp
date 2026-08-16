@@ -146,13 +146,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
         }
     }
     CDDrawWorker* r = m_record;
-    CImage* frame;
-    i32 frameIndex = IDX(state);
-    if (frameIndex >= r->m_minIndex && frameIndex <= r->m_maxIndex) {
-        frame = static_cast<CImage*>(r->m_items.GetAt(frameIndex));
-    } else {
-        frame = NULL;
-    }
+    CImage* frame = r->GetAt(IDX(state));
     m_frame = frame;
     m_state = state;
     SetSubtype();

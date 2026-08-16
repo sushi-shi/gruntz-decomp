@@ -83,13 +83,8 @@ i32 CGruntToySprite::Update() {
         m_lastLayer = layer;
         CDDrawWorker* h = r->m_frameSet;
         if (h != NULL) {
-            CImage* mapped;
             i32 layerIndex = IDX(layer);
-            if (layerIndex >= h->m_minIndex && layerIndex <= h->m_maxIndex) {
-                mapped = static_cast<CImage*>(h->m_items.GetAt(layerIndex));
-            } else {
-                mapped = NULL;
-            }
+            CImage* mapped = h->GetAt(layerIndex);
             r->m_layer = mapped;
             r->m_frameIndex = layerIndex;
         }

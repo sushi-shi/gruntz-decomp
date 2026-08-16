@@ -105,21 +105,13 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         return 0;
     }
     CImage* v;
-    if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
-        v = NULL;
-    } else {
-        v = static_cast<CImage*>(head->m_items.GetAt(0x21));
-    }
+    v = head->GetAt(0x21);
     m_statusGlyph = v;
     if (v == NULL) {
         return 0;
     }
     CImage* w;
-    if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
-        w = NULL;
-    } else {
-        w = static_cast<CImage*>(head->m_items.GetAt(0x22));
-    }
+    w = head->GetAt(0x22);
     m_abilityGlyph = w;
     if (w == NULL) {
         return 0;
@@ -137,21 +129,12 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         if (sel == NULL) {
             return 0;
         }
-        CImage* x;
-        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
-            x = NULL;
-        } else {
-            x = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
-        }
+        CImage* x = m_glyphMap->GetAt(0x23);
         m_selectKey = x;
         if (x == NULL) {
             return 0;
         }
-        if (m_glyphMap->m_minIndex > 0x22 || m_glyphMap->m_maxIndex < 0x22) {
-            val = NULL;
-        } else {
-            val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x22));
-        }
+        val = m_glyphMap->GetAt(0x22);
     } else {
         found = NULL;
         m_host->m_imageRegistry->m_workersByName.Lookup(
@@ -163,11 +146,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         if (sel == NULL) {
             return 0;
         }
-        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
-            val = NULL;
-        } else {
-            val = static_cast<CImage*>(m_glyphMap->m_items.GetAt(0x23));
-        }
+        val = m_glyphMap->GetAt(0x23);
     }
     m_overrideGlyph = val;
     if (val == NULL) {

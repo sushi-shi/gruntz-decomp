@@ -91,13 +91,9 @@ i32 CSBI_WarlordHead::Render() {
         CDDrawWorker* cfg = m_frameSet;
         CImage* f;
         if (m_direction == 1) {
-            f = (cfg->m_minIndex > 3 || cfg->m_maxIndex < 3)
-                    ? 0
-                    : static_cast<CImage*>(cfg->m_items.GetAt(3));
+            f = cfg->GetAt(3);
         } else {
-            f = (cfg->m_minIndex > 4 || cfg->m_maxIndex < 4)
-                    ? 0
-                    : static_cast<CImage*>(cfg->m_items.GetAt(4));
+            f = cfg->GetAt(4);
         }
         if (f) {
             f->RenderFrame(target, m_rect14.left + f->m_anchorX, m_rect14.top + f->m_anchorY, 0);
@@ -105,9 +101,7 @@ i32 CSBI_WarlordHead::Render() {
 
         cfg = m_frameSet;
         i32 idx = m_frameIndex;
-        CImage* g = (idx < cfg->m_minIndex || idx > cfg->m_maxIndex)
-                        ? 0
-                        : static_cast<CImage*>(cfg->m_items.GetAt(idx));
+        CImage* g = cfg->GetAt(idx);
         m_frame = g;
         if (g) {
             g->RenderFrame(target, m_rect14.left + g->m_anchorX, m_rect14.top + g->m_anchorY, 0);

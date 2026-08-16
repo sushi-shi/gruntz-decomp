@@ -99,12 +99,7 @@ RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_redrawFrames > 0) {
         CDDrawWorker* tbl = m_frameSet;
-        CImage* cel;
-        if (m_frameIndex >= tbl->m_minIndex && m_frameIndex <= tbl->m_maxIndex) {
-            cel = static_cast<CImage*>(tbl->m_items.GetAt(m_frameIndex));
-        } else {
-            cel = NULL;
-        }
+        CImage* cel = tbl->GetAt(m_frameIndex);
         m_frame = cel;
         if (cel != NULL) {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;

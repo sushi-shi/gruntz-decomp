@@ -90,3 +90,32 @@ first parameter load above `push esi` and rotates eax/ecx through the whole prol
 is still what retail's bytes say. Two disposable spellings were inert (binding host to a local,
 deleting the unused-parameter `static_cast<void>` no-op) and one was worse (two separate `if`
 guards, 67.45 - retail shares ONE exit target for both).
+
+## When the recovery MOVES BYTES, and when it is cleanliness only (2026-08-16, 20-site sweep)
+
+Applying the four steps to 20 further sites across 11 files produced **zero** byte movement -
+gate green, 0 fresh, no function above or below its bank. So the rule is right but the payoff
+is conditional:
+
+* **It moves bytes when the out-of-range path JOINS the in-range path at a shared store/use**,
+  because that is where retail's `return 0` falls into the caller's tail:
+  `CSBI_MenuItem::ResolveFrame` 70.38 -> 92.45, `CSBI_GruntMachine::BuildResourceTabStatusBar`
+  93.17 -> 97.84, `CWwdGameObjectA::ApplyName` 89.41 -> 94.12.
+* **It is byte-neutral when the result goes to a plain local that is tested afterwards** - cl
+  emits the same code either way. All 20 sites below were of this kind. Still worth doing (20
+  casts and 40 raw `m_minIndex`/`m_maxIndex` comparisons removed, the real accessor used), but
+  do not queue them expecting score.
+
+Applied, byte-neutral: `SBI_StatzTabArrow` x5, `SBI_WarlordHead::Render` x3,
+`CSBI_GruntMachine::Render` x2, `WwdFactoryObject` ClampFirst/ClampLast, `SBI_ImageSetAni::Render`,
+`CAniPlayer::RenderCel`, `ChatBox` x2, `GruntToySprite`, `GruntHealthSprite`, `LightFx`,
+`CSBI_MenuItem::SetState`.
+
+## Step 0: a bare `m_items.GetAt(p->m_minIndex)` is NOT the accessor
+
+Five sites spell the first element directly with **no range guard at all** (`MenuPage.cpp:267,454`,
+`GruntzMgr.cpp:2393,2442`, `SBI_RectOnly.cpp:285`). Rewriting them as `p->GetAt(p->m_minIndex)`
+would ADD a range test that retail does not emit - `CSBI_MenuItem::ResolveFrame`'s `a == -1` arm
+is the proof, it is `mov ecx,[eax+0x64] / mov edx,[eax+0x14] / mov eax,[edx+ecx*4]` with no
+compare. Leave them. Likewise `SBI_ImageSetAni.cpp:69,74` are min/max SELECTS
+(`(b4 >= 0) ? tbl->m_minIndex : tbl->m_maxIndex`), not indexing at all.

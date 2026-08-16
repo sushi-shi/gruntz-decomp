@@ -223,12 +223,7 @@ i32 CChatBox::Step(i32 delta) {
             m_row0Timer = m_row0Period;
             i32 f = m_row0FrameIdx + 1;
             m_row0FrameIdx = f;
-            CImage* v;
-            if (f >= a->m_minIndex && f <= a->m_maxIndex) {
-                v = static_cast<CImage*>(a->m_items.GetAt(f));
-            } else {
-                v = NULL;
-            }
+            CImage* v = a->GetAt(f);
             m_row0Frame = v;
             if (v == NULL) {
                 m_row0Frame = static_cast<CImage*>(a->m_items.GetAt(a->m_minIndex));
@@ -245,12 +240,7 @@ i32 CChatBox::Step(i32 delta) {
         m_row1Timer = m_row1Period;
         i32 f = m_row1FrameIdx + 1;
         m_row1FrameIdx = f;
-        CImage* v;
-        if (f >= b->m_minIndex && f <= b->m_maxIndex) {
-            v = static_cast<CImage*>(b->m_items.GetAt(f));
-        } else {
-            v = NULL;
-        }
+        CImage* v = b->GetAt(f);
         m_row1Frame = v;
         if (v == NULL) {
             m_row1Frame = static_cast<CImage*>(b->m_items.GetAt(b->m_minIndex));

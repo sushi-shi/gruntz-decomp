@@ -69,12 +69,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     CWwdGameObjectA* obj = m_object;
     CDDrawWorker* map = obj->m_frameSet;
     if (map) {
-        CImage* glyph;
-        if (slot >= map->m_minIndex && slot <= map->m_maxIndex) {
-            glyph = static_cast<CImage*>(map->m_items.GetAt(slot));
-        } else {
-            glyph = NULL;
-        }
+        CImage* glyph = map->GetAt(slot);
         obj->m_layer = glyph;
         obj->m_frameIndex = slot;
     }
