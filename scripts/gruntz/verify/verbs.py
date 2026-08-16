@@ -254,6 +254,32 @@ def cmd_status(argv) -> int:
     return 0
 
 
+
+def refresh_readme_block(report=None) -> bool:
+    """Re-render README's score block from the CURRENT report + banked ledger.
+
+    The block is a pure function of those two, so it has no reason to be
+    stale - yet it used to move only at `bank`, a deliberate manual act,
+    so every build silently left it describing an older tree and readers
+    (humans and agents) quoted numbers that were no longer true. The
+    ledger stays manual; only this derived block refreshes. README.md is
+    deliberately outside BANK_INPUT_PATHS, so writing it can never block
+    banking.
+    """
+    from gruntz.model import resolve
+    from gruntz.verify.universe import engine_universe
+    doc, cur, _base, _fp, _stale, _rvas = load_state(report)
+    umeas = scores.unit_measures(doc)
+    mods, started_fzw, started_code = rm.collect_modules(umeas)
+    model = resolve()
+    sizes = {(b.unit, b.name): b.size for b in model.functions
+             if b.name and b.size}
+    rm.churn_weights(cur, bl.load(), sizes, mods, rm.unit_modules())
+    block = rm.render_block(doc.get("measures", {}), mods, started_fzw,
+                            started_code, engine_universe(model))
+    return rm.write_block(block)
+
+
 def cmd_check(argv) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify check",
                                  description="the MAX gate + the tiered gates")
@@ -269,6 +295,8 @@ def cmd_check(argv) -> int:
                          "fast|normal|full|link, or 'none' (default: "
                          "fast,normal - what the graph's check edge runs; "
                          "full/link are opt-in)")
+    ap.add_argument("--no-readme", action="store_true",
+                    help="do not refresh README's derived score block")
     a = ap.parse_args(argv)
     a.report = Path(a.report) if a.report else None
     # validate --tier BEFORE the MAX gate: an unknown tier used to be reported
@@ -276,6 +304,8 @@ def cmd_check(argv) -> int:
     from gruntz.verify import tiers
     tier_names = tiers.parse_tiers(a.tier)
     rc = _report(a, gate=True)
+    if not a.no_readme and refresh_readme_block(a.report):
+        print(f"README score block refreshed ({rm.README.relative_to(REPO)})")
     failed = tiers.run(tier_names)
     if failed:
         print(f"\nTIER GATES FAILED: {failed} gate(s) - fix the finding, "

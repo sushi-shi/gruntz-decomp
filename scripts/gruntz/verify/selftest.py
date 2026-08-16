@@ -2382,6 +2382,46 @@ class SourceNameRewriteControls(unittest.TestCase):
         self.assertEqual(m.mask(m.discriminate("_s_x$S", 0x244970)), "_s_x$S")
 
 
+class ReadmeFreshnessControls(unittest.TestCase):
+    """README's derived block must not be able to go stale.
+
+    It is a pure function of the current report + the banked ledger, but it
+    used to move only at `bank` (a deliberate manual act), so ordinary builds
+    left it describing an older tree and readers quoted numbers that were no
+    longer true - three times in one session. `check` runs on every build and
+    now re-renders it write-if-changed; the ledger stays manual.
+    """
+
+    def test_check_rewrites_a_stale_block(self):
+        from gruntz.verify import readme as rm, verbs
+        if not rm.README.is_file():
+            self.skipTest("no README")
+        before = rm.README.read_text()
+        try:
+            rm.README.write_text(before.replace("(unmatched)", "(unmatched-STALE)", 1))
+            verbs.refresh_readme_block()
+            self.assertIn("(unmatched)", rm.README.read_text())
+        finally:
+            rm.README.write_text(before)
+
+    def test_refresh_is_idempotent(self):
+        from gruntz.verify import readme as rm, verbs
+        if not rm.README.is_file():
+            self.skipTest("no README")
+        before = rm.README.read_text()
+        try:
+            verbs.refresh_readme_block()
+            self.assertFalse(verbs.refresh_readme_block(),
+                             "a second refresh reported a change")
+        finally:
+            rm.README.write_text(before)
+
+    def test_readme_is_not_a_bank_input(self):
+        # writing it must never be able to block `bank`
+        from gruntz.verify.verbs import BANK_INPUT_PATHS
+        self.assertNotIn("README.md", BANK_INPUT_PATHS)
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(
