@@ -272,6 +272,8 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CSymParser* src) {
     m_built = 1;
     return 1;
 }
+
+// @early-stop
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CObject* out = 0;
@@ -324,6 +326,7 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CSymParser* src) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000e2d10, 0xa1)
 i32 CSpriteRefTable::LoadGruntzPalette(CSymParser* src, const char* name) {
     if (!src) {

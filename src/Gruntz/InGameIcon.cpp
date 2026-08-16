@@ -106,8 +106,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
 
     SetObjectFlags(2);
     SetupSprite(0);
@@ -937,8 +936,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
     m_wwdObject->ApplyName("GAME_HELPBOX");
     SetObjectFlags(2);
 

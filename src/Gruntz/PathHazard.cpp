@@ -120,8 +120,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     } else {
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("A");
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        SwitchGeometry("GAME_CYCLE100", 0);
     }
 }
 
@@ -402,8 +401,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     o->m_drawActive = 1;
     o->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     o->m_drawFillArg = n;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_RAINCLOUD", 0);
+    SwitchGeometry("LEVEL_RAINCLOUD", 0);
     m_object->m_area.left = 1;
     m_object->m_area.right = 1;
     m_object->m_area.top = 1;
@@ -416,8 +414,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CWwdGameObjectA* o = m_object;
     i32 sx = o->m_screenX;
     i32 sy = o->m_screenY;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_UFO", 0);
+    SwitchGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
         CWwdGameObjectA* sl =
             g_gameReg->m_world->m_childGroup->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);

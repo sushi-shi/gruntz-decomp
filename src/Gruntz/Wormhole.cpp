@@ -72,8 +72,7 @@ RVA(0x0003fc70, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(0x2000002);
     m_wwdObject->ApplyName("GAME_WORMHOLE");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_WORMHOLE", 0);
+    SwitchGeometry("GAME_WORMHOLE", 0);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_TELEPORT) {
         o->m_sortKey = SORTKEY_TELEPORT;
@@ -194,8 +193,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
         o->m_flags |= 0x20000;
     }
     m_wwdObject->ApplyName("GRUNTZ_GRUNTPUDDLE");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
+    SwitchGeometry("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -250,8 +248,7 @@ i32 CGruntPuddle::Place(i32 gruntType, i32 placeIndex, i32 color, i32 a3) {
     if (color == 0) {
         m_placed = 1;
         m_pending = 0;
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry(g_puddleSpriteKey, 0);
+        SwitchGeometry(g_puddleSpriteKey, 0);
     }
     return 1;
 }
@@ -389,8 +386,7 @@ void CTeleporter::LoadColors() {
 RVA(0x000412c0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
     m_wwdObject->ApplyName("GAME_WORMHOLE");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
+    SwitchGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_armed = 1;
@@ -508,8 +504,7 @@ i32 CTeleporter::Update() {
     if (o->m_animWorker->m_speed != 0) {
         i64 delta = static_cast<i64>(g_frameTime) - m_armClock;
         if (delta >= m_interval) {
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+            SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
             m_object->m_animWorker->m_speed = 0;
             m_tickHandled = 1;
             return 0;
@@ -526,8 +521,7 @@ i32 CTeleporter::Update() {
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
         g_gameReg->m_scoreHud->m_secretsFound++;
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+        SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
         CWwdGameObjectA* s = m_object;
         CWwdGameObjectA* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
@@ -558,8 +552,7 @@ i32 CTeleporter::Update() {
         spawned->m_speedY = m_object->m_screenY;
         spawned->m_smarts = m_object->m_health;
         found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 0, 0);
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("GAME_TELEPORTERCLOSE", 0);
+        SwitchGeometry("GAME_TELEPORTERCLOSE", 0);
     }
 
     m_armed = 0;

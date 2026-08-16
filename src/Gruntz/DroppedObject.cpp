@@ -204,8 +204,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_OBJECTDROPPER", 0);
+    SwitchGeometry("LEVEL_OBJECTDROPPER", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
@@ -417,8 +416,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_OBJECT");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECT", 0);
+    SwitchGeometry("LEVEL_DROPPEDOBJECT", 0);
     m_wwdObject->m_flags |= 0x2000002;
     i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
@@ -519,8 +517,7 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         }
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
+        SwitchGeometry("LEVEL_DROPPEDOBJECTHIT", 0);
         m_prevAnimSetNode = m_objAux->m_actKey;
         m_objAux->m_actKey = ActFindId("B");
         g_gameReg->m_cmdGrid->CombatCue(m_object->m_screenX, m_landY, 1, CUE_SQUASH, -1);
@@ -569,8 +566,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->ApplyName("LEVEL_OBJECTDROPPER_SHADOW");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
+    SwitchGeometry("LEVEL_DROPPEDOBJECTSHADOW", 0);
     m_wwdObject->m_flags |= 0x2000002;
     CShadeTable* fill = g_gameReg->m_logicPump->m_tables[5];
     CWwdGameObjectA* draw = m_object;

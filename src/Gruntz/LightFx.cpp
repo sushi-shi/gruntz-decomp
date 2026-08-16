@@ -128,8 +128,7 @@ void CLightFx::Activate(const char* spec, const char* effect, i32 anchorA, i32 a
     if (node != NULL) {
         node = NULL;
         MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, effect, node);
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(node);
+        SwitchAnimation(node);
         RebindNode();
     }
 }

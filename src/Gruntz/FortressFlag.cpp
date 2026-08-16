@@ -96,8 +96,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     m_wwdObject->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
     m_wwdObject->m_flags |= 3;
     i32 idx = IDX(g_gameReg->m_options[m_object->m_smarts].m_colorIndex);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);

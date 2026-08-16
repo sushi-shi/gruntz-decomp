@@ -199,10 +199,11 @@ public:
     class CAniElement* m_value;
     char m_blob[0x10];
 
-    // These four MUST stay inline members OF THIS class, not calls through
+    // These MUST stay inline members OF THIS class, not calls through
     // m_wwdObject: the receiver load has to sit inside the expansion or cl 5.0
-    // hoists it over the leaf ctor's vptr stamp
-    // (docs/patterns/ctor-body-first-statement-is-an-inline-member.md).
+    // hoists it over the preceding store
+    // (docs/patterns/ctor-body-first-statement-is-an-inline-member.md,
+    // docs/patterns/animation-switch-pair-is-one-inline-member.md).
     void Hide() {
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
@@ -217,6 +218,21 @@ public:
 
     void ApplyName(const char* name) {
         m_wwdObject->ApplyName(name);
+    }
+
+    void SwitchAnimation(CAniElement* anim) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->m_animCursor.Setup(anim);
+    }
+
+    void SwitchGeometryDirect(CAniElement* anim, i32 applyDefault) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        m_wwdObject->ApplyGeometryDirect(anim, applyDefault);
+    }
+
+    i32 SwitchGeometry(const char* key, i32 flag) {
+        m_value = m_wwdObject->m_animCursor.m_animation;
+        return m_wwdObject->ApplyLookupGeometry(key, flag);
     }
 };
 

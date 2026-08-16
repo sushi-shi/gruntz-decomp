@@ -781,8 +781,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                 eq = (strcmp(*g_typeColl.GetNameRecord(m_objAux->m_actKey), "E") == 0);
                 if (eq) {
 
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_poseAttackIdle);
+                    SwitchAnimation(m_poseAttackIdle);
                     {
                         CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
                         CAniRecordView* elem =
@@ -804,15 +803,13 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
                 }
 
                 m_entranceCell = rec;
-                m_value = m_wwdObject->m_animCursor.m_animation;
-                m_wwdObject->m_animCursor.Setup(AT(m_poseIdle, GRUNT_IDLE2));
+                SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE2));
                 ResetEntranceAnimation(1, 0, 0);
                 return;
             }
         }
 
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
+        SwitchGeometryDirect(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* elem = desc->m_records.GetSize() > 0
@@ -831,8 +828,7 @@ void CGrunt::PlaySound(i32 range, GruntDirectionCell rec) {
 
 walk:
 
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_poseWalk);
+    SwitchAnimation(m_poseWalk);
     {
         i32 row = rec.row;
         i32 column = rec.column;
@@ -1780,8 +1776,7 @@ label_4cb4b:
         return 1;
     }
     if (reason0e) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->m_animCursor.Setup(m_poseWalk);
+        SwitchAnimation(m_poseWalk);
         return 1;
     }
     goto label_ret1;
@@ -3284,8 +3279,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_wwdObject->ApplyName(
                     m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0)
                 );
-                m_value = m_wwdObject->m_animCursor.m_animation;
-                m_wwdObject->m_animCursor.Setup(m_poseWalk);
+                SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);
                 if (m_arrivalPending == 0) {

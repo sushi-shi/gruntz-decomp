@@ -28,8 +28,7 @@ RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("MENU_SPARKLE");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("MENU_FORWARD100", 0);
+    SwitchGeometry("MENU_FORWARD100", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_objAux->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;

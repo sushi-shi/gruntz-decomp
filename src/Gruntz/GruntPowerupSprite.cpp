@@ -34,8 +34,7 @@ RVA(0x0007fdb0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     ApplyName("GAME_LIGHTING_POWERUP");
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey != SORTKEY_GRUNT_POWERUP) {
         o->m_sortKey = SORTKEY_GRUNT_POWERUP;

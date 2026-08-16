@@ -163,8 +163,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     if (m_wwdObject->m_animCursor.m_animation == NULL) {
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+        SwitchGeometry("GAME_CYCLE100", 0);
     }
     CWwdGameObjectA* o = m_object;
     if (o->m_sortKey == 0 && o->m_layer != NULL) {

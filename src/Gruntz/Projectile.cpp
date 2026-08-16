@@ -236,8 +236,7 @@ i32 CProjectile::LoadProjectileSprites(
         m_frames[PF_FALL] = static_cast<CAniElement*>(out);
     }
 
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_frames[0]);
+    SwitchAnimation(m_frames[0]);
     m_wwdObject->ApplyName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
@@ -373,8 +372,7 @@ void CProjectile::AdvanceMotion() {
                 offX = 0x4;
                 offY = -0x4;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[0]) {
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_frames[0]);
+                    SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[0]);
                     }
@@ -383,8 +381,7 @@ void CProjectile::AdvanceMotion() {
                 offX = 0x8;
                 offY = -0x8;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[1]) {
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_frames[1]);
+                    SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[1]);
                     }
@@ -393,8 +390,7 @@ void CProjectile::AdvanceMotion() {
                 offX = 0xc;
                 offY = -0xc;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[2]) {
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_frames[2]);
+                    SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[2]);
                     }
@@ -403,8 +399,7 @@ void CProjectile::AdvanceMotion() {
                 offX = 0x10;
                 offY = -0x10;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[3]) {
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_frames[3]);
+                    SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[3]);
                     }
@@ -413,8 +408,7 @@ void CProjectile::AdvanceMotion() {
                 offX = 0x14;
                 offY = -0x14;
                 if (m_wwdObject->m_animCursor.m_animation != m_frames[4]) {
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->m_animCursor.Setup(m_frames[4]);
+                    SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
                         m_shadow->m_animCursor.Setup(m_frames[4]);
                     }
@@ -519,8 +513,7 @@ void CProjectile::AdvanceMotion() {
         goto noSprite;
     }
 setupSprite:
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(sprite);
+    SwitchAnimation(sprite);
     return;
 noSprite:
     m_wwdObject->m_flags |= 0x10000;
@@ -1021,8 +1014,7 @@ i32 CTimeBomb::LoadAttributes() {
 
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
         if (m_fastPhase == 0) {
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyLookupGeometry("GAME_TIMEBOMBFAST", 0);
+            SwitchGeometry("GAME_TIMEBOMBFAST", 0);
             m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
             m_startTime = g_frameTime;
             m_fastPhase = 1;

@@ -673,8 +673,7 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__MOVING);
 
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_animMoving);
+    SwitchAnimation(m_animMoving);
 
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("B");
@@ -717,8 +716,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 m_cooldownStamp = static_cast<u32>(g_frameTime);
             }
 
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->m_animCursor.Setup(m_animPanic);
+            SwitchAnimation(m_animPanic);
 
             m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__PANIC);
 
@@ -750,8 +748,7 @@ i32 CWarlord::ResolveDeathAnimation() {
         g->m_cueSink->SpawnVoiceDriver(m_object->m_objectId, m_ownerTag, -1, -1, -1);
     }
 
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(m_animDeath);
+    SwitchAnimation(m_animDeath);
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + "_DEATH");
 
@@ -779,8 +776,7 @@ i32 CWarlord::RaiseBattleAlert() {
     }
 
     CAniElement* anim = m_animJoy;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(anim);
+    SwitchAnimation(anim);
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__JOY);
 
@@ -812,8 +808,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     }
 
     CAniElement* anim = m_idleAnims[idx];
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(anim);
+    SwitchAnimation(anim);
 
     CAniElement* desc = m_wwdObject->m_animCursor.m_animation;
     CAniRecordView* elem =
@@ -849,8 +844,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     }
 
     CAniElement* anim = m_battlecryAnims[idx];
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->m_animCursor.Setup(anim);
+    SwitchAnimation(anim);
 
     m_wwdObject->ApplyName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
 

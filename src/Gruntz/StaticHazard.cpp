@@ -99,8 +99,7 @@ RVA(0x000fb7a0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+    SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
     {
         CAniElement* d = m_wwdObject->m_animCursor.m_animation;
         CAniRecordView* e =
@@ -174,7 +173,6 @@ void CStaticHazard::RegisterActs() {
         static_cast<CActHandler>(&CStaticHazard::LoadAttributes);
 }
 
-// @early-stop
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
     CGruntzMgr* reg = g_gameReg;
@@ -192,8 +190,7 @@ i32 CStaticHazard::LoadAttributes2() {
         return 0;
     }
     m_fired = 1;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+    SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
     {
         CAniElement* d = m_wwdObject->m_animCursor.m_animation;
         CAniRecordView* e =
@@ -206,10 +203,8 @@ i32 CStaticHazard::LoadAttributes2() {
 }
 
 // @early-stop
-// two instruction-selection residues: retail compares the HitTestCell pointer with
-// its cached zero register (`cmp eax,ebx`) where cl emits `test eax,eax`, and it
-// forms the m_animCursor sub-object address once (`add eax,0x1a0`) where cl folds
-// 0x1a0 into both field displacements.
+// One instruction: retail compares the HitTestCell pointer against its cached zero
+// register (`cmp eax,ebx`) where cl emits `test eax,eax`.
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::LoadAttributes() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
@@ -220,8 +215,7 @@ i32 CStaticHazard::LoadAttributes() {
 
             if (m_object->m_damage == 0) {
 
-                m_value = m_wwdObject->m_animCursor.m_animation;
-                m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+                SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
                 {
                     CAniElement* d = m_wwdObject->m_animCursor.m_animation;
                     CAniRecordView* e = d->m_records.GetSize() > 0
@@ -240,8 +234,7 @@ i32 CStaticHazard::LoadAttributes() {
 
             m_prevAnimSetNode = m_objAux->m_actKey;
             m_objAux->m_actKey = ActFindId("A");
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+            SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_wwdObject->m_animCursor.m_animation;
                 CAniRecordView* e = d->m_records.GetSize() > 0
@@ -266,8 +259,7 @@ i32 CStaticHazard::LoadAttributes() {
         }
     } else if (m_fired == 0 && m_object->m_damage == 0) {
 
-        m_value = m_wwdObject->m_animCursor.m_animation;
-        m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDGO", 0);
+        SwitchGeometry("LEVEL_STATICHAZARDGO", 0);
         {
             CAniElement* d = m_wwdObject->m_animCursor.m_animation;
             CAniRecordView* e = d->m_records.GetSize() > 0
@@ -320,8 +312,7 @@ i32 CStaticHazard::LoadAttributes() {
     {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animCursor;
         if (sub->m_finished != 0 && sub->m_frameTicksLeft == 0) {
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyLookupGeometry("LEVEL_STATICHAZARDIDLE", 0);
+            SwitchGeometry("LEVEL_STATICHAZARDIDLE", 0);
             {
                 CAniElement* d = m_wwdObject->m_animCursor.m_animation;
                 CAniRecordView* e = d->m_records.GetSize() > 0

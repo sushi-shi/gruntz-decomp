@@ -56,8 +56,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_explodeStart = 0;
     m_explodeWindow = 0;
-    m_value = m_wwdObject->m_animCursor.m_animation;
-    m_wwdObject->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    SwitchGeometry("GAME_CYCLE100", 0);
     m_prevAnimSetNode = m_objAux->m_actKey;
     m_objAux->m_actKey = ActFindId("A");
     m_wwdObject->m_flags |= 0x2000002;
@@ -160,8 +159,7 @@ i32 CRollingBall::Update() {
     if (logic->m_points > 0) {
         if (static_cast<i64>(g_frameTime) - m_explodeStart >= m_explodeWindow) {
             m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
-            m_value = m_wwdObject->m_animCursor.m_animation;
-            m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
+            SwitchGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
             CWwdGameObjectA* lg = m_object;
             i32 cx = lg->m_screenX >> TILE_SHIFT_PX;
@@ -284,8 +282,7 @@ i32 CRollingBall::Update() {
                         }
                     }
                     m_wwdObject->ApplyName(fall);
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->ApplyLookupGeometry(explosion, 0);
+                    SwitchGeometry(explosion, 0);
                     if (act != IDX(TILEKIND_DEATH)) {
                         m_explodeLatch = 1;
                         return 0;
@@ -376,8 +373,7 @@ i32 CRollingBall::Update() {
                 case TILEKIND_WATERBRIDGE_UP:
                 case TILEKIND_TOGGLEWATERBRIDGE_UP: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
+                    SwitchGeometry("LEVEL_ROLLINGBALLSINKWATER", 0);
                     CWwdGameObjectA* o = m_object;
                     i32 px = o->m_screenX;
                     i32 py = o->m_screenY;
@@ -404,12 +400,10 @@ i32 CRollingBall::Update() {
                     if (kind == AREA_HIGH_ON_SWEETZ || kind == AREA_HIGH_ROLLERZ
                         || kind == AREA_GRUNTZ_IN_SPACE) {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_FALL");
-                        m_value = m_wwdObject->m_animCursor.m_animation;
-                        m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLFALL", 0);
+                        SwitchGeometry("LEVEL_ROLLINGBALLFALL", 0);
                     } else {
                         m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_SINK");
-                        m_value = m_wwdObject->m_animCursor.m_animation;
-                        m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
+                        SwitchGeometry("LEVEL_ROLLINGBALLSINKHOLE", 0);
                     }
                     m_explodeLatch = 1;
                     return 0;
@@ -417,8 +411,7 @@ i32 CRollingBall::Update() {
 
                 default: {
                     m_wwdObject->ApplyName("LEVEL_ROLLINGBALL_EXPLOSION");
-                    m_value = m_wwdObject->m_animCursor.m_animation;
-                    m_wwdObject->ApplyLookupGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
+                    SwitchGeometry("LEVEL_ROLLINGBALLEXPLOSION", 0);
                     m_explodeLatch = 1;
                     return 0;
                 }
