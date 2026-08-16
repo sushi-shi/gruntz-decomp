@@ -40,15 +40,19 @@ pairing.
 unconditionally (identical bytes, fresh mtime), so the restat is inert there
 and `verify_check` re-runs after any source edit.
 
-Two real inputs are NOT declared and cannot be, at this layer: the era
-toolchain ($MSVC_DIR/$DXSDK_DIR) and the vostok-delinker binary are environment,
-not files under the repo. Re-pinning either leaves this manifest and every
-target obj it produced untouched - `gruntz configure` after a toolchain re-pin,
-`gruntz build --force-delink` after a delinker one.
+The era toolchain ($MSVC_DIR/$DXSDK_DIR) and the vostok-delinker binary are
+environment rather than files under the repo, so they are declared INDIRECTLY:
+`toolchain_id()` renders all three into build/gen/toolchain.id (write-if-changed),
+and the cl, compdb and delink edges list that file. A re-pin therefore
+invalidates exactly the edges it should. This is not cosmetic - before it, a
+toolchain swap recompiled only the units that happened to be dirty and left the
+rest built by the previous cl, which for a byte-matching project is the worst
+possible failure, and a delinker swap gave `ninja: no work to do`.
 """
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -250,6 +254,45 @@ def era_rc_available() -> bool:
         return True     # cannot probe (no dev shell): assume the full toolchain
 
 
+def toolchain_id() -> str:
+    """The pinned toolchain's identity, as the text that goes in TOOLCHAIN_ID.
+
+    Three values, because three different edges depend on them: $MSVC_DIR and
+    $DXSDK_DIR decide what `cl` and the compilation database mean, and the
+    vostok-delinker binary decides what the target objects are. All three were
+    pure environment, so ninja could not see a re-pin: swapping the delinker
+    gave `ninja: no work to do`, and swapping the toolchain recompiled only
+    the units that happened to be dirty, mixing two compilers' output in one
+    object set.
+
+    Unset/absent values are recorded as `-` rather than skipped: going from
+    unset to set is itself a change the edges must see.
+    """
+    import shutil
+    parts = []
+    for name in ("MSVC_DIR", "DXSDK_DIR"):
+        parts.append(f"{name}={os.environ.get(name) or '-'}")
+    delinker = shutil.which("vostok-delinker")
+    parts.append("delinker=" + (os.path.realpath(delinker) if delinker else "-"))
+    return "\n".join(parts) + "\n"
+
+
+def write_toolchain_id(out: Path | None = None) -> bool:
+    """Write TOOLCHAIN_ID if-changed. True when the content moved.
+
+    If-changed matters: this file is an implicit input of all 300 cl edges, so
+    rewriting it unconditionally at every configure would recompile the tree
+    whenever anything else re-ran configure.
+    """
+    path = Path(out) if out is not None else REPO / graph.TOOLCHAIN_ID
+    want = toolchain_id()
+    if path.exists() and path.read_text() == want:
+        return False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(want)
+    return True
+
+
 def emit_link_phase(w: ninja_syntax.Writer, base_objs: list[str]) -> None:
     """PHASE 2: base objs -> candidate .EXE + .map. Opt-in, never in `all`.
 
@@ -298,6 +341,9 @@ def emit(out: Path | None = None) -> tuple[int, int]:
     pruned = prune_orphan_artifacts(units)
     out = Path(out) if out is not None else REPO / graph.NINJA
     out.parent.mkdir(parents=True, exist_ok=True)
+    # Before the edges that declare it, so the first build after a re-pin sees
+    # the new identity rather than racing it.
+    write_toolchain_id()
     scan = Scanner()
     global_cflags = next(iter(manifest["flags"].values()))
 
@@ -354,7 +400,8 @@ def emit(out: Path | None = None) -> tuple[int, int]:
             variables = {"unit": unit}
             if cflags != global_cflags:
                 variables["cflags"] = " ".join(cflags)
-            w.build(obj, "cl", inputs=src, implicit=headers + CL_MODS,
+            w.build(obj, "cl", inputs=src,
+                    implicit=headers + CL_MODS + [graph.TOOLCHAIN_ID],
                     variables=variables)
         w.newline()
 
@@ -363,11 +410,12 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         # surviving entry intact re-runs nothing downstream. Extraction reads
         # per-TU flags from this file and a unit with NO entry silently falls
         # back to bare MS flags - the edge is what keeps that from rotting.
-        # (A toolchain re-pin moves only $MSVC_DIR/$DXSDK_DIR, which ninja
-        # cannot see: run `python3 -m gruntz.graph.compdb` once after one.)
+        # A toolchain re-pin is visible here: $MSVC_DIR/$DXSDK_DIR are part
+        # of graph.TOOLCHAIN_ID, which this edge declares.
         w.rule("compdb", command="$py -m gruntz.graph.compdb --quiet",
                description="compdb", restat=True)
-        w.build(COMPDB, "compdb", inputs=MANIFEST, implicit=COMPDB_MODS)
+        w.build(COMPDB, "compdb", inputs=MANIFEST,
+                implicit=COMPDB_MODS + [graph.TOOLCHAIN_ID])
         w.newline()
 
         w.comment("=== labels: source + base obj -> per-unit claim fragment ===")
@@ -411,7 +459,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
                description="delink GRUNTZ.EXE -> target objs")
         w.build(graph.DELINK_STAMP, "delink",
                 inputs=[graph.BINDINGS, RETAIL_EXE],
-                implicit=[RELOC_REFERENTS, *DELINK_MODS])
+                implicit=[RELOC_REFERENTS, *DELINK_MODS, graph.TOOLCHAIN_ID])
         w.newline()
 
         w.comment("=== normalize: base + target -> content-addressed copies ===")

@@ -2795,6 +2795,85 @@ class MatchReferenceControls(unittest.TestCase):
         self.assertIn("--reference", err.getvalue())
 
 
+class ToolchainIsADeclaredInput(unittest.TestCase):
+    """The era toolchain and the delinker used to be pure environment.
+
+    Consequence chain, all silent: re-pinning $MSVC_DIR recompiled only the
+    units that happened to be dirty and left the rest built by the previous
+    cl (a mixed object set, the worst failure a byte-matching project has),
+    swapping the delinker gave `ninja: no work to do`, and because the `rc`
+    edge only exists when rc.exe was present at CONFIGURE time, a pre-r3 pin
+    silently produced a candidate image with no `.rsrc` at all.
+    """
+
+    def test_the_identity_names_all_three_inputs(self):
+        from gruntz.graph.emit import toolchain_id
+        with mock.patch.dict(os.environ, {"MSVC_DIR": "/m", "DXSDK_DIR": "/d"}):
+            got = toolchain_id()
+        self.assertIn("MSVC_DIR=/m", got)
+        self.assertIn("DXSDK_DIR=/d", got)
+        self.assertIn("delinker=", got)
+
+    def test_an_unset_variable_is_recorded_not_skipped(self):
+        """Unset -> set is itself a change the edges must see."""
+        from gruntz.graph.emit import toolchain_id
+        with mock.patch.dict(os.environ, {"DXSDK_DIR": "/d"}, clear=True):
+            got = toolchain_id()
+        self.assertIn("MSVC_DIR=-", got)
+
+    def test_the_id_is_written_if_changed(self):
+        """It is an input of all 300 cl edges: an unconditional rewrite would
+        recompile the tree every time anything else re-ran configure."""
+        from gruntz.graph.emit import write_toolchain_id
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "toolchain.id"
+            self.assertTrue(write_toolchain_id(p))     # created
+            before = p.stat().st_mtime_ns
+            self.assertFalse(write_toolchain_id(p))    # unchanged
+            self.assertEqual(p.stat().st_mtime_ns, before)
+            p.write_text("MSVC_DIR=/elsewhere\n")
+            self.assertTrue(write_toolchain_id(p))     # moved
+
+    def test_a_repin_is_detected(self):
+        from gruntz.graph import verbs
+        from gruntz.graph.emit import toolchain_id
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "toolchain.id"
+            with mock.patch.dict(os.environ, {"MSVC_DIR": "/one"}):
+                p.write_text(toolchain_id())
+                with mock.patch.object(verbs, "REPO", Path(td)), \
+                        mock.patch.object(verbs.graph, "TOOLCHAIN_ID", "toolchain.id"):
+                    self.assertFalse(verbs.toolchain_repinned())
+                    with mock.patch.dict(os.environ, {"MSVC_DIR": "/two"}):
+                        self.assertTrue(verbs.toolchain_repinned())
+
+    def test_the_emitted_manifest_declares_it_on_the_cl_edges(self):
+        """The integration control. Recognising the file is not the claim -
+        the claim is that the COMPILE edges depend on it, which is what makes
+        a re-pin invalidate the object set."""
+        from gruntz import graph
+        from gruntz.core.paths import REPO
+        ninja = (REPO / graph.NINJA)
+        if not ninja.exists():
+            self.skipTest("no emitted manifest (run `gruntz configure`)")
+        text = ninja.read_text()
+        self.assertIn(graph.TOOLCHAIN_ID, text)
+        cl_edges = [ln for ln in text.splitlines()
+                    if ln.startswith("build build/objdiff/base/") and ": cl " in ln]
+        self.assertTrue(cl_edges, "no cl edges in the manifest")
+        # Edge lines are wrapped by the writer, so join the continuations.
+        joined, buf = [], ""
+        for ln in text.splitlines():
+            buf += ln.rstrip("$")
+            if not ln.endswith("$"):
+                joined.append(buf); buf = ""
+        declaring = [ln for ln in joined
+                     if ln.startswith("build build/objdiff/base/")
+                     and ": cl " in ln and graph.TOOLCHAIN_ID in ln]
+        self.assertEqual(len(declaring), len(cl_edges),
+                         "every cl edge must declare the toolchain identity")
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(

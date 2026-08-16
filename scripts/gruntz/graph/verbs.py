@@ -27,9 +27,29 @@ from gruntz import graph
 from gruntz.core.paths import REPO
 
 
+def toolchain_repinned() -> bool:
+    """True when $MSVC_DIR/$DXSDK_DIR/the delinker no longer match the manifest.
+
+    The generator edge cannot answer this: ninja reruns it from FILES, and the
+    toolchain is environment. So the driver checks it before handing over. A
+    re-pin must reconfigure rather than merely rebuild, because whether the
+    `rc` edge exists at all is decided at configure time - that is how a
+    pre-r3 shell silently produced a candidate with no `.rsrc`.
+    """
+    from gruntz.graph.emit import toolchain_id
+    path = REPO / graph.TOOLCHAIN_ID
+    if not path.exists():
+        return (REPO / graph.NINJA).exists()
+    return path.read_text() != toolchain_id()
+
+
 def configure_if_needed(force: bool = False) -> None:
-    """Emit build/build.ninja when it is absent (or forced)."""
-    if force or not (REPO / graph.NINJA).exists():
+    """Emit build/build.ninja when it is absent, forced, or the toolchain moved."""
+    repinned = toolchain_repinned()
+    if force or repinned or not (REPO / graph.NINJA).exists():
+        if repinned and not force:
+            print("[configure] the pinned toolchain or delinker moved since this "
+                  "manifest was written - reconfiguring", file=sys.stderr)
         from gruntz.graph.emit import emit
         n, pruned = emit()
         print(f"[configure] wrote {graph.NINJA} ({n} units"

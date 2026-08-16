@@ -42,6 +42,15 @@ CLAIMS_DIR = "build/gen/claims"
 BINDINGS = "build/gen/bindings.tsv"
 VIOLATIONS = "build/gen/violations.tsv"
 
+#: The pinned toolchain's identity, as a DECLARED input. $MSVC_DIR, $DXSDK_DIR
+#: and the vostok-delinker binary used to be pure environment, which ninja
+#: cannot see: re-pinning left 300 objects compiled by the OLD cl and
+#: recompiled only newly-edited units with the NEW one - a silently mixed
+#: object set, the worst failure mode a byte-matching project has. Writing the
+#: identity to a file and hanging the cl/compdb/delink edges off it makes a
+#: re-pin invalidate exactly what it should.
+TOOLCHAIN_ID = "build/gen/toolchain.id"
+
 #: Stamps for the two edges whose real outputs are a directory the graph
 #: cannot enumerate at configure time.
 DELINK_STAMP = "build/objdiff/.delink.stamp"
