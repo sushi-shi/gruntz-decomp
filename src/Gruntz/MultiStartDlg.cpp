@@ -688,7 +688,6 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
 }
 
-// @early-stop
 RVA(0x000c2e20, 0x21d)
 i32 CMultiStartDlg::FlashCtrlD() {
     CPaintDC dc(this);
@@ -707,16 +706,16 @@ i32 CMultiStartDlg::FlashCtrlD() {
         stc(m_hWnd, &rc.TopLeft());
         stc(m_hWnd, &rc.BottomRight());
         CBrush scratch;
-        i32 color;
+        // Two Attach sites, not one hoisted `color`: retail pushes the argument
+        // INSIDE each arm and cross-jumps only the shared `call CreateSolidBrush`.
         if (it->IsWindowEnabled()) {
             GetRandomNumber();
             GetRandomNumber();
             i32 v = (GetRandomNumber() % 0xff) & 0xff;
-            color = (v << 8 | v) << 8 | v;
+            scratch.Attach(CreateSolidBrush((v << 8 | v) << 8 | v));
         } else {
-            color = 0x808080;
+            scratch.Attach(CreateSolidBrush(0x808080));
         }
-        scratch.Attach(CreateSolidBrush(color));
         FillRect(dc.m_hDC, &rc, scratch);
     }
     return 1;

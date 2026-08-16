@@ -955,7 +955,6 @@ void CBattlezDlg::ShowCustomDlg() {
 }
 RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 
-// @early-stop
 RVA(0x000171b0, 0xca)
 void CBattlezDlg::CopyComboSelToChild() {
     CWnd* combo = GetDlgItem(0x4ff);
@@ -969,7 +968,8 @@ void CBattlezDlg::CopyComboSelToChild() {
     CString s;
     (static_cast<CComboBox*>(combo))->GetLBText(sel, s);
     if (s.GetLength() != 0) {
-        CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+        HWND owner = GetDlgItem(0x4ff)->m_hWnd;
+        CWnd* child = CWnd::FromHandle(::GetWindow(owner, GW_CHILD));
         if (child != NULL) {
             child->SetWindowTextA(s);
             m_customNameFlag = 0;

@@ -52,7 +52,7 @@ battlezunitstep	4	0
 behindcandy	4	4
 behindcandyani	8	7
 bitarray	3	2
-bitarraystream	2	1
+bitarraystream	2	2
 blowfish	6	6
 bootystateactivate	51	31
 bracketvalue	1	1
@@ -97,7 +97,7 @@ debugtiming	2	2
 deflate	17	17
 demo	8	7
 destructbutton	1	1
-dialogs	62	60
+dialogs	62	61
 dircellmethods	19	18
 directdrawmgr	68	68
 directinputmgr2	45	45
@@ -227,9 +227,9 @@ menupage	47	44
 menusparkle	8	7
 menustate	18	16
 movinglogic	5	1
-multi	104	84
+multi	104	85
 multihelpdlg	5	5
-multistartdlg	63	54
+multistartdlg	63	55
 namerecord	4	4
 netcmdslot	18	13
 netlobbydialogs	20	20
@@ -622,7 +622,7 @@ bitarray	?EnsureSize@zBitVec@@QAEHH@Z	90.8000	90.8000	1	c5a8596ef6dd	0x1936e0	90
 bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	1	1ea7b32d0bbf	0x193680	100.0000	
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640	100.0000	
 bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4bae4b0	0x193140	100.0000	
-bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	91.4789	91.4789	4	f1a1c772f750	0x193080	91.4789	
+bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	100.0000	100.0000	5	2876109cbf16	0x193080	100.0000	
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	1	6e574434e8a9	0x16fc70	100.0000	
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	1	d92c7ec3c73c	0x16f7f0	100.0000	
 blowfish	?Decode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	0577f9920ce3	0x16f760	100.0000	
@@ -1346,7 +1346,7 @@ dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	5eb15e747ac3	0x15f
 dialogs	?AssertValid@CObject@@UBEXXZ	100.0000	100.0000	1	cpp:7bf06e010bf3	0x14be0	100.0000	
 dialogs	?BattlezMapComboEditProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	fdc0dea97859	0x15a10	100.0000	
 dialogs	?BeginModalState@CWnd@@UAEXXZ	100.0000	100.0000	1	cpp:7bf06e010bf3	0x14c20	100.0000	
-dialogs	?CopyComboSelToChild@CBattlezDlg@@QAEXXZ	96.7581	96.7581	1	7769c31f864d	0x171b0	96.7581	
+dialogs	?CopyComboSelToChild@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	6ecb3b67febc	0x171b0	100.0000	
 dialogs	?DoDataExchange@CBattlezDlg@@UAEXPAVCDataExchange@@@Z	96.6319	96.6319	1	54993a0fc9ad	0x14d00	96.6319	
 dialogs	?Dump@CObject@@UBEXAAVCDumpContext@@@Z	100.0000	100.0000	1	cpp:7bf06e010bf3	0x14c00	100.0000	
 dialogs	?EndModalState@CWnd@@UAEXXZ	100.0000	100.0000	1	cpp:7bf06e010bf3	0x14c40	100.0000	
@@ -3038,7 +3038,7 @@ multi	?ApplyCmdDelayDefaults@CMulti@@QAEXXZ	100.0000	100.0000	1	8c0c21e03549	0xb
 multi	?ApplyDynSetting@CMulti@@QAEXVCString@@@Z	100.0000	100.0000	1	04f92f4df96a	0xb76c0	100.0000	
 multi	?AutoTuneCmdDelay@CMulti@@QAEHXZ	100.0000	100.0000	1	0b39021a16d8	0xbcc10	100.0000	
 multi	?BroadcastChannelTable@CMulti@@QAEHPAVCNetSessionNode@@@Z	100.0000	100.0000	1	e61a5a3a0ffe	0xba810	100.0000	
-multi	?BroadcastChatLine@CMulti@@QAEHPADHHPAX@Z	95.6813	95.6813	1	36ed26785fec	0xbb190	95.6813	
+multi	?BroadcastChatLine@CMulti@@QAEHPADHHPAX@Z	100.0000	100.0000	2	ee8d118f98dd	0xbb190	100.0000	
 multi	?BroadcastOneChannel@CMulti@@QAEHPAVGruntzPlayer@@@Z	100.0000	100.0000	1	f9f397288fc2	0xbaf00	100.0000	
 multi	?BuildHostName@CNetCmdSlot@@QAE?AVCString@@XZ	100.0000	100.0000	1	7b4b6100d12f	0xbc3f0	100.0000	
 multi	?CompleteLevel@CMulti@@UAEHXZ	100.0000	100.0000	1	a79763baa6d8	0xb6560	100.0000	
@@ -3144,7 +3144,7 @@ multistartdlg	?DoDataExchange@CMultiStartDlg@@UAEXPAVCDataExchange@@@Z	96.2557	9
 multistartdlg	?Drive@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	9dc5cf2b470e	0xc40b0	100.0000	
 multistartdlg	?EchoLatencySettings@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	1	b546ad3853a9	0xc52f0	100.0000	
 multistartdlg	?EnableControls@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	2	36bf61e47c64	0xc4120	100.0000	
-multistartdlg	?FlashCtrlD@CMultiStartDlg@@QAEHXZ	97.2721	97.2721	1	018aedb9af98	0xc2e20	97.2721	
+multistartdlg	?FlashCtrlD@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	2	814c7648b59e	0xc2e20	100.0000	
 multistartdlg	?GetComboSelC@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	1	2c786f2231ee	0xc2940	100.0000	
 multistartdlg	?GetComboSelE@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	1	b192a1f1563a	0xc2900	100.0000	
 multistartdlg	?GetCommandDelay@CMulti@@QAEHXZ	100.0000	100.0000	1	8069b8908e2d	0xc4e00	100.0000	
@@ -3422,7 +3422,7 @@ play	?OnRButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	9036fe806539	0xcee30	100.
 play	?PauseGame@CPlay@@UAEHXZ	100.0000	100.0000	1	633260355a11	0xcee90	100.0000	
 play	?PlaceStartGruntz@CPlay@@QAEHXZ	100.0000	100.0000	2	9d2d90cf2c05	0xd2b20	100.0000	
 play	?PlayCueAt@CPlay@@QAEXHHHHHHHPAUtagRECT@@@Z	100.0000	100.0000	1	5e90e1748766	0xd1890	100.0000	
-play	?PositionBridgeToggle@CPlay@@QAEHW4StatusBarDock@@0@Z	97.5000	97.5000	1	21ce75c1a952	0xd5b20	97.5000	
+play	?PositionBridgeToggle@CPlay@@QAEHW4StatusBarDock@@0@Z	99.6429	99.6429	2	2a7920c32c2e	0xd5b20	99.6429	
 play	?PostActionCue@CPlay@@QAEHH@Z	100.0000	100.0000	1	53d5fd78fa7d	0xd7220	100.0000	
 play	?PostHudRect@CPlay@@QAEHXZ	100.0000	100.0000	1	791e12c2be2f	0xda440	100.0000	
 play	?PostSetup@CPlay@@UAEXPAX@Z	100.0000	100.0000	1	6cbcb5d1685a	0xd00a0	100.0000	

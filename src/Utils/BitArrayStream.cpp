@@ -22,8 +22,8 @@ ostream& operator<<(ostream& accum, const zBitVec& bits) {
         }
         accum << ']';
         accum.flags(saved);
-        accum.osfx();
     }
+    accum.osfx();
     return accum;
 }
 

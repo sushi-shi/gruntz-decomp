@@ -2429,7 +2429,6 @@ i32 CMulti::SendChannelStat423() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000bb190, 0x1c5)
 i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (text == NULL) {
@@ -2482,11 +2481,11 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     g_chatPacket.m_id = STAT_CHAT;
 
-    i32 n = strlen(line);
+    i32 packetLen = strlen(line) + 0xd;
     g_chatPacket.m_val = 0;
     strcpy(g_chatPacket.m_buf, line);
     g_chatPacket.m_flag |= 0x80;
-    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket, n + 0xd);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, &g_chatPacket, packetLen);
     return 1;
 }
 

@@ -5928,6 +5928,9 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
             goto done;
         }
         ex -= 0x37;
+        ey -= 0x16;
+        pt->m_baseX = ex;
+        pt->m_baseY = ey;
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
         m_hitTest->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_frameMarker;
@@ -5935,6 +5938,9 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
             goto done;
         }
         ex -= 0xd7;
+        ey -= 0x16;
+        pt->m_baseX = ex;
+        pt->m_baseY = ey;
     } else {
         m_hitTest->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_frameMarker;
@@ -5942,10 +5948,10 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
             goto done;
         }
         ex -= 0x37;
+        ey -= 0x16;
+        pt->m_baseX = ex;
+        pt->m_baseY = ey;
     }
-    ey -= 0x16;
-    pt->m_baseX = ex;
-    pt->m_baseY = ey;
 done:
 
     // The outer gate spells the whole member chain and the body caches it: cl5's
