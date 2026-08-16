@@ -5,8 +5,9 @@
   normal  model/layout joins (unique names, library overlap, tu order, data
           tu order, undefined closure) - needs bindings + base/target objs.
   full    binary-evidence audits (vtable tier, alloc size, assert relocs,
-          data relocs, caller-callee, data access map + coverage) - compiles
-          nothing but reads many objs / the retail image / clang IR.
+          data relocs, caller-callee, the retail data-access map + the
+          claim-side coverage census) - compiles nothing but reads many
+          objs / the retail image / clang IR + libclang record layouts.
   link    candidate-EXE audits (sections, image diff, link defects) - needs
           `gruntz link`'s candidate image.
 
@@ -114,6 +115,16 @@ def _caller_callee():
     return caller_callee.gate_findings()
 
 
+def _data_access():
+    from gruntz.verify import data_access
+    return data_access.gate_findings()
+
+
+def _data_coverage():
+    from gruntz.verify import data_coverage
+    return data_coverage.gate_findings()
+
+
 def _link_tier():
     from gruntz.verify import link_tier
     return link_tier.gate_findings()
@@ -141,12 +152,8 @@ TIERS: dict[str, list[tuple[str, object]]] = {
         ("assert-relocs", _assert_relocs),
         ("data-relocs", _data_relocs),
         ("caller-callee", _caller_callee),
-        # DEFERRED, honestly absent: the data access map + coverage
-        # (gruntz-old audit/data_access_map.py + data_coverage.py, ~2900
-        # lines over the old core/access_map engine). Their calibrated
-        # suppression classes and the field-layout oracle must be re-proven
-        # on the new plumbing, not transcribed - see docs/gruntz-old-triage.md.
-        ("data-access", None),
+        ("data-access", _data_access),
+        ("data-coverage", _data_coverage),
     ],
     "link": [
         ("link-tier", _link_tier),

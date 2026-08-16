@@ -758,6 +758,261 @@ class TierRunnerControls(unittest.TestCase):
 
 
 # --------------------------------------------------------------------------- #
+# the data-access map: layout oracle, every category, every suppression       #
+# --------------------------------------------------------------------------- #
+def _layout(types=()):
+    from gruntz.verify.layout import Layout
+    return Layout({"types": list(types), "units": {}, "tree_hash": "ctrl"})
+
+
+def _prim(t, sz):
+    return {"k": "prim", "t": t, "sz": sz}
+
+
+def _arr(el, n, t="T[]"):
+    return {"k": "arr", "t": t, "sz": el["sz"] * n, "n": n, "el": el}
+
+
+def _claim(rva, node, name="?g_probe@@3HA", extent=None, channel="src",
+           unit="probe"):
+    from gruntz.verify.access_map import Claim
+    return Claim(rva=rva, name=name, unit=unit, channel=channel, kind="",
+                 section=".data", space="data",
+                 extent=extent if extent is not None else (node or {}).get("sz")
+                 or 4, node=node, pct=100.0)
+
+
+def _access(target, width=4, form="direct", rw="r", mnemonic="mov", text="",
+            insn=0x1000, fpu="", ext="", scale=0, base_reg="", disp=0):
+    from gruntz.verify.access_map import Access
+    return Access(insn_rva=insn, insn_len=6, mnemonic=mnemonic, site_rva=insn,
+                  target_rva=target, width=width, rw=rw, form=form,
+                  base_reg=base_reg, index_reg="eax" if scale else "",
+                  scale=scale, disp=disp, fpu=fpu, ext=ext, origin="reloc",
+                  text=text or f"{mnemonic} probe", owner=None)
+
+
+def _findings(claims, accesses, rows=(), layout=None, cells=()):
+    """Categories fired by one synthetic claim set - hermetic, no image."""
+    from gruntz.verify import data_access as da
+    img = mock.Mock()
+    img.pe.data_regions.return_value = {"rdata": (0, 0), "data": (0, 1 << 30),
+                                        "bss": (0, 0),
+                                        "idata": (0x2C3000, 0x2C6C00)}
+    img.section_name.return_value = ".data"
+    img.u32.return_value = 0x2C4CCC
+    model = mock.Mock()
+    model.functions = []
+    spine = da.Spine(img, model, layout or _layout(), sorted(claims,
+                                                             key=lambda c: c.rva),
+                     list(rows))
+    owners = mock.Mock()
+    owners.at.return_value = None
+    found, _st = da.derive_findings(spine, list(accesses), list(cells), owners)
+    return found
+
+
+def _cats(rows):
+    return {r[0] for r in rows}
+
+
+class LayoutOracleControls(unittest.TestCase):
+    def test_an_array_element_offset_is_absolute(self):
+        """The measured own-goal: resolving +0x4 of `int[32]` returned the
+        ELEMENT-relative 0, so every array offset past the first read as
+        'lands INSIDE field [1]' - 42 fabricated width findings."""
+        lay = _layout()
+        node = _arr(_prim("int", 4), 32, "int[32]")
+        f = lay.field_at(node, 4)
+        self.assertEqual((f.off, f.size, f.path, f.tag), (4, 4, "[1]", ""))
+        self.assertEqual(lay.field_at(node, 0x7C).off, 0x7C)
+        self.assertEqual(lay.field_at(node, 0x80).tag, "out")
+
+    def test_a_union_is_laid_out_but_never_adjudicated(self):
+        lay = _layout()
+        u = {"k": "rec", "t": "U", "sz": 8, "u": 1,
+             "m": [[0, ".a", _prim("int", 4)], [0, ".b", _prim("float", 4)]]}
+        self.assertFalse(lay.field_at(u, 0).resolved)
+
+    def test_the_vptr_slot_is_tagged_not_reported_as_a_hole(self):
+        lay = _layout()
+        poly = {"k": "rec", "t": "CFoo", "sz": 8, "poly": 1,
+                "m": [[0, ".__vfptr", _prim("void *", 4)],
+                      [4, ".m_x", _prim("int", 4)]]}
+        self.assertEqual(lay.field_at(poly, 0).path, ".__vfptr")
+        plain = {"k": "rec", "t": "CBar", "sz": 8,
+                 "m": [[4, ".m_x", _prim("int", 4)]]}
+        self.assertEqual(lay.field_at(plain, 0).tag, "hole")
+
+    def test_the_harvest_joins_every_src_claim_on_this_tree(self):
+        """The oracle is only worth its verdicts if it actually reaches the
+        claims: a silent join failure would look exactly like a clean tree."""
+        from gruntz.core.paths import BUILD
+        from gruntz.model import resolve
+        from gruntz.verify.layout import CACHE, harvest
+        if not CACHE.is_file() or not (BUILD / "objdiff/base").is_dir():
+            self.skipTest("layout cache absent (unbuilt tree)")
+        lay, _p = harvest()
+        miss = [b.name for b in resolve().data
+                if b.channel == "src" and not lay.var(b.unit, b.name)]
+        self.assertEqual(miss[:5], [])
+
+
+class DataAccessCategoryControls(unittest.TestCase):
+    def test_a_narrow_declaration_is_caught(self):
+        c = _claim(0x1000, _prim("unsigned char", 1), extent=1)
+        self.assertIn("width", _cats(_findings([c], [_access(0x1000, 4)])))
+
+    def test_the_and_mask_narrow_load_is_suppressed(self):
+        """cl 5.0 reads a u16 global 4 bytes wide and masks the register; the
+        2-byte STORE is what proves the field is 2 bytes (g_sfDeviceIndex)."""
+        c = _claim(0x1000, _prim("unsigned short", 2), extent=2)
+        acc = [_access(0x1000, 4, insn=0x1000),
+               _access(0x1000, 2, rw="w", insn=0x1010)]
+        self.assertNotIn("width", _cats(_findings([c], acc)))
+        wide_store = [_access(0x1000, 4, insn=0x1000),
+                      _access(0x1000, 4, rw="w", insn=0x1010)]
+        self.assertIn("width", _cats(_findings([c], wide_store)))
+
+    def test_a_double_moved_as_two_dwords_is_suppressed(self):
+        c = _claim(0x1000, _prim("double", 8), extent=8)
+        acc = [_access(0x1000, 4), _access(0x1004, 4, insn=0x1010)]
+        self.assertNotIn("width", _cats(_findings([c], acc)))
+
+    def test_a_string_op_width_is_not_a_field_width(self):
+        c = _claim(0x1000, _prim("unsigned short", 2), extent=2)
+        acc = [_access(0x1000, 4, mnemonic="stosd", rw="w",
+                       text="rep stos DWORD PTR es:[edi],eax")]
+        self.assertNotIn("width", _cats(_findings([c], acc)))
+
+    def test_a_block_move_over_a_byte_ARRAY_is_suppressed_a_scalar_is_not(self):
+        arr = _claim(0x1000, _arr(_prim("char", 1), 8, "char[8]"), extent=8)
+        self.assertNotIn("width", _cats(_findings([arr], [_access(0x1000, 4)])))
+        scalar = _claim(0x1000, _prim("char", 1), extent=1)
+        self.assertIn("width", _cats(_findings([scalar], [_access(0x1000, 4)])))
+
+    def test_an_x87_access_on_an_integer_field_is_caught(self):
+        c = _claim(0x1000, _prim("int", 4), extent=4)
+        acc = [_access(0x1000, 4, mnemonic="fld", fpu="f32")]
+        self.assertIn("width", _cats(_findings([c], acc)))
+
+    def test_an_index_into_a_single_element_array_is_an_undercount(self):
+        one = _claim(0x1000, _arr(_prim("int", 4), 1, "int[1]"), extent=4)
+        acc = [_access(0x1000, 4, form="indexed", scale=4,
+                       text="mov eax,DWORD PTR [eax*4+0x401000]")]
+        self.assertIn("undercount", _cats(_findings([one], acc)))
+        many = _claim(0x1000, _arr(_prim("int", 4), 8, "int[8]"), extent=32)
+        self.assertNotIn("undercount", _cats(_findings([many], acc)))
+
+    def test_a_pair_array_declared_as_scalars_is_a_stride_finding(self):
+        c = _claim(0x1000, _arr(_prim("int", 4), 32, "int[32]"), extent=128)
+        acc = [_access(0x1000, 4, form="indexed", scale=8,
+                       text="mov edx,DWORD PTR [edx*8+0x401000]")]
+        self.assertIn("stride", _cats(_findings([c], acc)))
+
+    def test_an_indexed_base_just_before_a_claim_is_not_unmodelled_data(self):
+        """`[ecx + &g_buf - 4]` is g_buf's own 1-based spelling; the same
+        address touched DIRECTLY is a real unclaimed byte."""
+        c = _claim(0x1010, _arr(_prim("char", 1), 16, "char[16]"), extent=16)
+        idx = [_access(0x100C, 1, form="indexed", rw="w", base_reg="ecx",
+                       text="mov BYTE PTR [ecx+0x40100c],al")]
+        self.assertNotIn("unclaimed", _cats(_findings([c], idx)))
+        direct = [_access(0x100C, 1, rw="w", text="mov BYTE PTR ds:0x40100c,al")]
+        self.assertIn("unclaimed", _cats(_findings([c], direct)))
+
+    def test_a_source_claim_on_an_iat_slot_is_an_import(self):
+        c = _claim(0x2C43C0, _prim("int", 4), name="?g_val_2c43c0@@3HA")
+        acc = [_access(0x2C43C0, 4, form="iat", mnemonic="call",
+                       text="call DWORD PTR ds:0x6c43c0")]
+        self.assertIn("import-slot", _cats(_findings([c], acc)))
+        lib = _claim(0x2C43C0, None, name="??_7CFoo@@6B@",
+                     channel="data_vtables")
+        self.assertNotIn("import-slot", _cats(_findings([lib], acc)))
+
+    def test_a_claim_nothing_names_is_a_phantom_candidate(self):
+        c = _claim(0x1000, _prim("int", 4))
+        self.assertIn("unaccessed", _cats(_findings([c], [])))
+        self.assertNotIn("unaccessed", _cats(_findings([c], [_access(0x1000)])))
+
+    def test_one_access_crossing_two_claims_is_one_object(self):
+        a = _claim(0x1000, _prim("int", 4), name="?g_a@@3HA")
+        b = _claim(0x1004, _prim("int", 4), name="?g_b@@3HA")
+        acc = [_access(0x1000, 8, mnemonic="fld", fpu="f64")]
+        self.assertIn("adjacent", _cats(_findings([a, b], acc)))
+
+    def test_the_gate_reports_gated_rows_and_honours_the_accept_list(self):
+        """A report-only category must not break the build, a gated one must,
+        and a documented exception must stay silent while its evidence holds
+        (a STALE accept is itself reported)."""
+        from gruntz.verify import data_access as da
+        fired = [("shortfall", "high", 0x1000, "?g_x@@3HA", 0x1004, "d", "e"),
+                 ("undercount", "high", 0x253C48, "?g_panTable@@3PAHA",
+                  0x253C48, "d", "e"),
+                 ("stride", "high", 0x2000, "?g_y@@3HA", 0x2000, "d", "e")]
+        with mock.patch.object(da, "analysis",
+                               return_value=(None, None, None, None, fired,
+                                             None, None)):
+            out = da.gate_findings()
+            self.assertEqual(len(out), 1)
+            self.assertIn("shortfall", out[0])
+        with mock.patch.object(da, "analysis",
+                               return_value=(None, None, None, None, [],
+                                             None, None)):
+            stale = da.gate_findings()
+        self.assertTrue(any("STALE accept" in s for s in stale))
+
+    def test_the_injected_defects_are_all_caught_on_the_real_tree(self):
+        """The whole-tree harness: nine planted defects, each a class this
+        campaign has shipped. A sieve returning 0 rows because it is BLIND is
+        indistinguishable from a clean tree - this is what tells them apart."""
+        from gruntz.core.paths import BUILD
+        from gruntz.verify import data_access as da
+        if not (BUILD / "gen/bindings.tsv").is_file():
+            self.skipTest("no bindings (unbuilt tree)")
+        missed = [f"{tag}->{want}" for tag, want, _label, caught
+                  in da.run_selftest() if not caught]
+        self.assertEqual(missed, [])
+
+
+class DataCoverageControls(unittest.TestCase):
+    def _row(self, **kw):
+        row = {"rva": 0x1000, "length": 16, "section": ".data",
+               "verdict": "NONZERO", "addressed": 1, "touched": 8, "sites": 2,
+               "payload_nonzero": 8, "relocs": 0, "prev_object": "probe",
+               "prev_name": "?g_a@@3HA", "next_object": "probe",
+               "next_name": "?g_b@@3HA", "first_bytes": "01"}
+        row.update(kw)
+        return row
+
+    def test_a_touched_nonzero_gap_inside_one_unit_fails(self):
+        from gruntz.verify import data_coverage as dc
+        self.assertEqual(len(dc.gate_rows([self._row()])), 1)
+
+    def test_the_library_frontier_and_the_iat_do_not(self):
+        from gruntz.verify import data_coverage as dc
+        self.assertEqual(dc.gate_rows([self._row(prev_object="library_data",
+                                                 next_object="library_data")]),
+                         [])
+        self.assertEqual(dc.gate_rows([self._row(prev_object="probe",
+                                                 next_object="other")]), [])
+        self.assertEqual(dc.gate_rows([self._row(section=".idata")]), [])
+        self.assertEqual(dc.gate_rows([self._row(touched=0, sites=0)]), [])
+        self.assertEqual(dc.gate_rows([self._row(verdict="ZERO-GAP",
+                                                 payload_nonzero=0)]), [])
+
+    def test_a_folded_comdat_is_not_an_overlap_but_two_extents_are(self):
+        from gruntz.verify import data_coverage as dc
+        folded = [{"rva": 0x1000, "size": 8, "name": "??_7C@@6B@",
+                   "object": "a", "storage": "rdata"},
+                  {"rva": 0x1000, "size": 8, "name": "??_7C@@6B@",
+                   "object": "b", "storage": "rdata"}]
+        self.assertEqual(dc.overlaps(folded), [])
+        clash = folded + [{"rva": 0x1004, "size": 8, "name": "?g_x@@3HA",
+                           "object": "c", "storage": "data"}]
+        self.assertEqual(len(dc.overlaps(clash)), 1)
+
+
+# --------------------------------------------------------------------------- #
 # the DATA_COMPGEN negative-control set (real base objs)                      #
 # --------------------------------------------------------------------------- #
 class DataCompgenControls(unittest.TestCase):

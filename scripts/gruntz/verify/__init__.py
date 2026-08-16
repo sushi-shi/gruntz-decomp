@@ -67,6 +67,9 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "assert-relocs": "gruntz.verify.assert_relocs",
           "data-relocs": "gruntz.verify.data_relocs",
           "caller-callee": "gruntz.verify.caller_callee",
+          "data-access": "gruntz.verify.data_access",
+          "data-coverage": "gruntz.verify.data_coverage",
+          "layout": "gruntz.verify.layout",
           "link-tier": "gruntz.verify.link_tier"}
 
 

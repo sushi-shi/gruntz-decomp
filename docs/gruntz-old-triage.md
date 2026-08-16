@@ -41,8 +41,8 @@ This file dies with `gruntz-old` — it is a work order, not doctrine.
 | compgen_data.py | SUPERSEDED | src_data_compgen channel + extraction authority replaced it |
 | compgen_order.py | MERGE → label_style residue — **DONE** → verify/label_style.py | pin-placement style; one cheap text check |
 | compgen_pins.py | SUPERSEDED | extraction's obj-authority drop/FATAL is exactly this |
-| data_access_map.py | VERIFY (full) — **DEFERRED** (honestly absent; tier prints DEFERRED) | the retail-side access map — caught real undercount mismodels; the big port |
-| data_coverage.py | VERIFY (full) — **DEFERRED** (rides on the access map) | rides on the access map |
+| data_access_map.py | VERIFY (full) — **DONE** → verify/data_access.py (engine: verify/access_map.py; field-offset oracle: verify/layout.py) | the retail-side access map, rebuilt on sema.image + tool.objdump + the Model + a pylibclang record-layout oracle; every suppression re-proven site by site (`--suppressed`), gated on width/undercount/shortfall/adjacent, report-only on stride/unclaimed/unaccessed/import-slot |
+| data_coverage.py | VERIFY (full) — **DONE** → verify/data_coverage.py | the claim-side gap census, joined with the access map's touched ranges; claim authority is the Model (the manifest-only reading predates the census and reported every unenrolled .bss global as uncovered) |
 | data_denominator.py | SUPERSEDED | census complete + model claimed/unclaimed summary |
 | data_integrity.py | SUPERSEDED (mostly) | holes = census; referents = delink withholding + objdiff scoring |
 | data_layout.py | PARK | the MSVC5 data-layout oracle (docs/compiler-data-layout.md) — instrument |
@@ -130,10 +130,10 @@ The VERIFY/MERGE/WALLS rows above are marked per row. The tier runner is
 has a demonstrated failure case; 16 DATA_COMPGEN refusal controls folded
 in). The graph gained two edges: `verify_fp` (the fingerprint cache, beside
 the compare leg) and `verify_check` (MAX gate + fast+normal tiers, after
-compare, in `all`). REMAINDER: data_access_map + data_coverage are
-DEFERRED (the ~2,900-line access-map engine's calibrated suppression
-classes and field-layout oracle must be re-proven on the new plumbing, not
-transcribed - the full tier prints them as DEFERRED, never a fake green);
+compare, in `all`). data_access_map + data_coverage LANDED (2026-08-16) as
+verify/data_access.py + verify/data_coverage.py over verify/access_map.py
+and the new verify/layout.py field-offset oracle; the full tier runs both
+and the DEFERRED print is gone. REMAINDER:
 unmatched_attribute's --unclaimed mode is an open change request against
 walls/inventory.py; image_diff/link_sections are scoped ports (the
 gate-bearing checks; the exploratory byte-budget/worklist modes remain in
