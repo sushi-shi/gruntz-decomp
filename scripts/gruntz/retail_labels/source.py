@@ -452,6 +452,14 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
         # clang proposal unproven would void the module contract silently
         return [], [f"{unit}: no base obj ({obj.name}) - authority check "
                     f"impossible, extraction refused (FATAL)"]
+    if obj.stat().st_mtime < src_path.stat().st_mtime:
+        # The authority is cl's OBJECT, so a stale one answers for source that
+        # no longer exists: a name this edit introduced reads as "not a symbol
+        # in <unit>.obj (dropped)". The graph orders cl before labels; a manual
+        # `gruntz labels --unit` does not.
+        problems.append(f"{unit}: {obj.name} is OLDER than {src_path.name} - "
+                        f"the authority check is reading a stale object; drops "
+                        f"below may be artifacts. Run `gruntz build` first.")
     code_names = coff.code_names() if coff else None
     all_names = coff.all_names() if coff else None
 

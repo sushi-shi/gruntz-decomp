@@ -2210,6 +2210,39 @@ class TsvAtomicWriteControls(unittest.TestCase):
             self.assertEqual([p.name for p in Path(d).iterdir()], ["t.tsv"])
 
 
+class LabelAuthorityStalenessControls(unittest.TestCase):
+    """A stale base obj must announce itself, not answer as if current.
+
+    Extraction's authority is cl's OBJECT, so an object older than its source
+    answers for source that no longer exists: a name the edit introduced reads
+    as "not a symbol in <unit>.obj (dropped)". The graph orders cl before
+    labels; a manual `gruntz labels --unit` does not. Seen live on
+    sbi_rectonly while moving a ctor out of a header.
+    """
+
+    def test_an_older_object_is_reported_before_its_drops(self):
+        import os
+        from gruntz.retail_labels import source as S
+        with tempfile.TemporaryDirectory() as d:
+            src = Path(d) / "U.cpp"
+            src.write_text("#include <rva.h>\nRVA(0x1000, 0x5)\nint f(){return 0;}\n")
+            objs = Path(d) / "objdiff/base"
+            objs.mkdir(parents=True)
+            import shutil
+            real = Path("build/objdiff/base/adler32.obj")
+            if not real.is_file():
+                self.skipTest("no base obj to borrow")
+            obj = objs / "u.obj"
+            shutil.copy2(real, obj)                      # a REAL, parseable COFF
+            old = src.stat().st_mtime - 100
+            os.utime(obj, (old, old))                    # object OLDER than source
+            with mock.patch.object(S, "BASE_OBJS", objs), \
+                 mock.patch.object(S, "REPO", Path(d)):
+                _rows, probs = S.extract_unit("u", "U.cpp", {})
+        self.assertTrue(any("OLDER than" in str(p) for p in probs),
+                        f"a stale object was not reported: {probs}")
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(
