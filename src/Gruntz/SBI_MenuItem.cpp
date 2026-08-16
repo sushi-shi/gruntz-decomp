@@ -38,7 +38,6 @@ i32 CSBI_MenuItem::SetupImage(
     i32 frame,
     i32 unused
 ) {
-    static_cast<void>(unused);
     if (key == NULL) {
         return 0;
     }
@@ -77,21 +76,17 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
     }
 
     CObject* rec_v = 0;
-    CDDrawSurfaceMgr* host = static_cast<CDDrawSurfaceMgr*>(m_host);
-    host->m_imageRegistry->m_workersByName.Lookup(key, rec_v);
+    m_host->m_imageRegistry->m_workersByName.Lookup(key, rec_v);
     CDDrawWorker* rec = static_cast<CDDrawWorker*>(rec_v);
     m_record = rec;
     if (rec == NULL) {
         return 0;
     }
 
-    CDDrawWorker* r = rec;
     if (a == -1) {
-        m_frame = static_cast<CImage*>(r->m_items.GetAt(r->m_minIndex));
-    } else if (a >= r->m_minIndex && a <= r->m_maxIndex) {
-        m_frame = static_cast<CImage*>(r->m_items.GetAt(a));
+        m_frame = static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex));
     } else {
-        m_frame = NULL;
+        m_frame = rec->GetAt(a);
     }
     return m_frame != NULL;
 }

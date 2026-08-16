@@ -255,11 +255,11 @@ savefrontbuffershot	2	2
 savegame	23	23
 savegamedialogs	10	8
 savescreenshot	1	0
-sbi_image	5	3
+sbi_image	5	4
 sbi_imageset	6	4
 sbi_imagesetani	5	3
 sbi_menuitem	11	9
-sbi_rectonly	116	87
+sbi_rectonly	116	88
 sbi_rectonlybase	3	3
 sbi_sidetab	8	6
 sbi_statztabarrow	3	2
@@ -383,7 +383,7 @@ anicycle	?FireActivation@CAniCycle@@UAEXH@Z	100.0000	100.0000	1	93c520009ebd	0xa
 anicycle	?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf450	100.0000	
 anicycle	?RegisterActs@CAniCycle@@SAXXZ	100.0000	100.0000	12	12fff836e7fe	0xab0e0	100.0000	
 anicycle	?SerializeMove@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:281810d27b94	0xf470	100.0000	
-aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	75.6364	1	0d6032600afb	0xe5c10	98.4848	
+aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	98.1212	1	0d6032600afb	0xe5c10	98.4848	
 aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	0a3316025e62	0xe5c90	100.0000	
 aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	99.7500	99.7500	1	331e1e17d7c0	0xe5ad0	99.7500	
 aniplayer	?TickToggle@CAniPlayer@@QAEHH@Z	92.0000	92.0000	7	bfedccb66220	0xe5b90	92.0000	
@@ -2940,7 +2940,7 @@ menuitem	?Notify@CMenuItem2@@UAEHI@Z	100.0000	100.0000	1	0e25bc7b9bc2	0x1858a0	1
 menuitem	?Notify@CMenuItem@@UAEHI@Z	100.0000	100.0000	1	25af08a70c02	0x1855e0	100.0000	
 menuitem	?NotifyCmd@CMenuItem@@QAEHXZ	100.0000	100.0000	1	7dd3855d7d24	0x185580	100.0000	
 menuitem	?Place@CMenuItem2@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	1	b666e35c68cf	0x1858d0	100.0000	
-menuitem	?Place@CMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	1	9935901b2868	0x1855f0	100.0000	
+menuitem	?Place@CMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	2	1d88912fcb39	0x1855f0	100.0000	
 menuitem	?Release@CMenuItem@@UAEHXZ	100.0000	100.0000	1	226c44084e76	0x1856c0	100.0000	
 menuitem	?Trigger@CMenuItem@@UAEHXZ	100.0000	100.0000	7	c894aa1ce098	0x1856d0	100.0000	
 menupage	??1CMenuItem2@@UAE@XZ	100.0000	100.0000	1	ea5429242144	0x1847e0	100.0000	
@@ -3433,7 +3433,7 @@ play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	1	e59427dc97a3	0xd8960	100.000
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseLevelOverlay@CPlay@@QAEHH@Z	100.0000	100.0000	1	e61042ec7712	0xd6560	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	1	634f0a2f3808	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	1	b0b2f92045b3	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.4002	96.4002	1	b0b2f92045b3	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	1	c9815d61e053	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.6250	96.6250	1	ad8f00da114e	0xd60b0	96.6250	
 play	?ResetViewport@CPlay@@QAEHXZ	100.0000	100.0000	1	6bf1cca8b714	0xd8c60	100.0000	
@@ -3617,19 +3617,19 @@ savegamedialogs	?SaveGameDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	38a
 savegamedialogs	?SetSaveSlotDialogName@@YAXPAUHWND__@@PAXPAUSaveSlot@@@Z	100.0000	100.0000	2	7fdf7f60b484	0xe4850	100.0000	
 savescreenshot	?SaveScreenshot@@YAHPAVCDDSurface@@PAVRegistryHelper@Utils@@PAVCGruntzMgr@@HHPADH@Z	96.7564	96.7564	3	acf8e65b383e	0x114ff0	96.7564	
 sbi_image	?Refresh@CSBI_Image@@UAEHH@Z	100.0000	100.0000	1	5a3e4e512f95	0xe6db0	100.0000	
-sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	74.0714	1	2717dd6d36a6	0xe6dd0	100.0000	
+sbi_image	?Render@CSBI_Image@@UAEHXZ	100.0000	100.0000	1	2717dd6d36a6	0xe6dd0	100.0000	
 sbi_image	?Reset@CSBI_Image@@UAEXXZ	100.0000	100.0000	1	a5bb981d51af	0xe6d90	100.0000	
 sbi_image	?SerializeFields@CSBI_Image@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	84.9697	84.9697	1	96b42f9e991e	0xe6e40	84.9697	
 sbi_image	?SetupImage@CSBI_Image@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	100.0000	100.0000	3	96aadef4ee83	0xe6c80	100.0000	
 sbi_imageset	?Notify@CSBI_ImageSet@@UAEXH@Z	100.0000	100.0000	1	54281bc5aa46	0xe74c0	100.0000	
 sbi_imageset	?Refresh@CSBI_ImageSet@@UAEHH@Z	100.0000	100.0000	1	07d01bc2ec75	0xe7420	100.0000	
-sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	99.6842	1	21bbbd1672f1	0xe7440	100.0000	
+sbi_imageset	?Render@CSBI_ImageSet@@UAEHXZ	100.0000	87.8421	1	21bbbd1672f1	0xe7440	100.0000	
 sbi_imageset	?Reset@CSBI_ImageSet@@UAEXXZ	100.0000	100.0000	1	303e3bd3468f	0xe7400	100.0000	
 sbi_imageset	?SerializeFields@CSBI_ImageSet@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	fcd9ec0496c0	0xe74f0	100.0000	
-sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	74.6308	74.6308	3	fc4179f3f9c9	0xe72f0	74.6308	
+sbi_imageset	?SetupImage@CSBI_ImageSet@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	68.3077	68.3077	4	02c3778ebd04	0xe72f0	74.6308	
 sbi_imagesetani	?Init@CSBI_ImageSetAni@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	96.4348	96.4348	1	b407d3000965	0xe7980	96.4348	
 sbi_imagesetani	?Refresh@CSBI_ImageSetAni@@UAEHH@Z	100.0000	100.0000	1	e19451579b19	0xe7ae0	100.0000	
-sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	99.4444	99.3111	1	702268255552	0xe7b00	99.4444	
+sbi_imagesetani	?Render@CSBI_ImageSetAni@@UAEHXZ	99.4444	99.4444	1	702268255552	0xe7b00	99.4444	
 sbi_imagesetani	?SerializeFields@CSBI_ImageSetAni@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	864fa15c49ac	0xe7cd0	100.0000	
 sbi_imagesetani	?SetRange@CSBI_ImageSetAni@@UAEXHHHHH@Z	100.0000	100.0000	6	65edd3221a05	0xe7c30	100.0000	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	52d039266205	0xe84f0	100.0000	
@@ -3638,11 +3638,11 @@ sbi_menuitem	?Refresh@CSBI_MenuItem@@UAEHH@Z	100.0000	100.0000	1	f96c2003405f	0x
 sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	100.0000	1	a396a4646b47	0xe82a0	100.0000	
 sbi_menuitem	?Reset@CSBI_MenuItem@@UAEXXZ	100.0000	100.0000	1	fd5be40da773	0xe81a0	100.0000	
 sbi_menuitem	?Reset@CStatusBarItem@@UAEXXZ	100.0000	100.0000	1	3f65d1aef442	0x10bfa0	100.0000	
-sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHPBDH@Z	70.3774	70.3774	1	e0c629571ed8	0xe81e0	70.3774	
+sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHPBDH@Z	92.4528	92.4528	2	e0cfeed3543b	0xe81e0	92.4528	
 sbi_menuitem	?SerializeFields@CSBI_MenuItem@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	17197f8026e4	0xe8520	100.0000	
 sbi_menuitem	?SerializeFields@CStatusBarItem@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	3db21c38d5cb	0x10bfc0	100.0000	
 sbi_menuitem	?SetState@CSBI_MenuItem@@QAEHW4SbiMenuItemState@@H@Z	100.0000	100.0000	1	323832fd7c84	0xe8310	100.0000	
-sbi_menuitem	?SetupImage@CSBI_MenuItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	92.1739	92.1739	2	64ded56d8214	0xe80e0	92.1739	
+sbi_menuitem	?SetupImage@CSBI_MenuItem@@UAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	92.1739	92.1739	3	5683505fb58b	0xe80e0	92.1739	
 sbi_rectonly	??0CSBI_RectOnly@@QAE@XZ	100.0000	100.0000	1	4d3cea7cadbe	0x101fa0	100.0000	
 sbi_rectonly	??0CStatusBarItem@@QAE@XZ	100.0000	100.0000	1	0b52fe52f1b7	0x1005d0	100.0000	
 sbi_rectonly	??0CWarpStoneFly@@QAE@XZ	100.0000	100.0000	1	47f99065d259	0x109bb0	100.0000	
@@ -3668,11 +3668,11 @@ sbi_rectonly	?AdvanceGauge@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	66462a58aa
 sbi_rectonly	?AdvanceTab@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	11f890141506	0x10b4f0	100.0000	
 sbi_rectonly	?AnySlotActive@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	1	a2374f91cba2	0x105710	100.0000	
 sbi_rectonly	?ArmSlot@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	0a34a099b032	0x105560	100.0000	
-sbi_rectonly	?BuildGameMenu@CStatusBarMgr@@QAEHXZ	86.0528	86.0528	3	1874237ed33f	0x101580	87.5106	
+sbi_rectonly	?BuildGameMenu@CStatusBarMgr@@QAEHXZ	86.0616	86.0616	4	edda9126498b	0x101580	87.5106	
 sbi_rectonly	?BuildGameTabPauseButton@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	fe1a473f460c	0x102200	100.0000	
 sbi_rectonly	?BuildGameTabResumeButton@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	1	98b600e129f1	0x102180	100.0000	
 sbi_rectonly	?BuildSideTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	2	d482350de933	0x105070	100.0000	
-sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	94.4153	94.4153	3	3f4016eb7c56	0xffde0	99.7246	
+sbi_rectonly	?BuildStatusBarTabs@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	4	7c98d6363021	0xffde0	100.0000	
 sbi_rectonly	?BuildTabzDialog@CStatusBarMgr@@QAEHXZ	86.4696	86.4696	3	4bc945c6e1a3	0x10a340	88.0518	
 sbi_rectonly	?ClearHlCell@CStatusBarMgr@@QAEXHW4StatusBarHighlightRow@@@Z	100.0000	100.0000	1	3021ffd8aa4d	0x1069c0	100.0000	
 sbi_rectonly	?ClearStat@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	1	2613a353614c	0x104f90	100.0000	
@@ -3707,11 +3707,11 @@ sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	9
 sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	93.3218	93.3218	3	fdd59d43bcf8	0x106bb0	93.3218	
 sbi_rectonly	?LoadDestructButtonSprite@CStatusBarMgr@@QAEHH@Z	99.8165	99.8165	1	e34004733cb3	0xffb20	99.8165	
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	89.1309	89.1309	1	5601e2155998	0x1055b0	89.1309	
-sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.8246	1	76568ef3b9ea	0xfe6b0	99.8246	
+sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.6140	1	76568ef3b9ea	0xfe6b0	99.8246	
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	98.0579	98.0579	1	3e22c19cc22e	0x107ae0	98.0579	
 sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	98.9682	98.9682	3	c9d0afc7bd74	0x105e40	98.9682	
 sbi_rectonly	?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	1	a3b2c3ac727a	0x104e60	100.0000	
-sbi_rectonly	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	89.5797	89.5797	4	3b3c8dd71ffb	0x102250	91.6321	
+sbi_rectonly	?LoadTabSprites@CStatusBarMgr@@QAEHXZ	90.0821	90.0821	5	f7a806ac3c80	0x102250	91.6321	
 sbi_rectonly	?NotifyAllSlots@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	1	c471095bb5f2	0x106a00	100.0000	
 sbi_rectonly	?OnPointerMove@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	c309f776922b	0x100530	100.0000	
 sbi_rectonly	?OnPointerRelease@CStatusBarMgr@@QAEHHHH@Z	100.0000	100.0000	1	d09bc4721d0e	0xff9d0	100.0000	
@@ -3778,7 +3778,7 @@ sbi_statztabgruntbar	??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z	100.0000	100.0000	1	cp
 sbi_statztabgruntbar	?Refresh@CSBI_StatzTabGruntBar@@UAEHH@Z	100.0000	100.0000	1	efb04eaf49eb	0xea4b0	100.0000	
 sbi_statztabgruntbar	?Render@CSBI_StatzTabGruntBar@@UAEHXZ	100.0000	100.0000	1	64277a09a2ff	0xea4e0	100.0000	
 sbi_statztabgruntbar	?Reset@CSBI_StatzTabGruntBar@@UAEXXZ	100.0000	100.0000	1	284b303a57de	0xea470	100.0000	
-sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	91.0000	91.0000	17	096f4a4039de	0xea6c0	91.0000	
+sbi_statztabgruntbar	?Update@CSBI_StatzTabGruntBar@@QAEHXZ	90.9176	90.9176	18	8310fff298a3	0xea6c0	91.0000	
 sbi_warlordhead	??1CSBI_WarlordHead@@UAE@XZ	100.0000	100.0000	1	2aa1860e9670	0x104a00	100.0000	
 sbi_warlordhead	??_GCSBI_WarlordHead@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e2d9750e993e	0x1049d0	100.0000	
 sbi_warlordhead	?Render@CSBI_WarlordHead@@UAEHXZ	95.4459	95.4459	1	7a00605efda6	0xeb880	95.4459	
@@ -4016,7 +4016,7 @@ statusbarspriteacts	?AdvanceAnim@CStatusBarSprite@@QAEHXZ	100.0000	100.0000	1	e0
 statusbarspriteacts	?CreateStatusBarSprite@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	f9e34543e659	0x10c0f0	100.0000	
 statusbarspriteacts	?FireActivation@CStatusBarSprite@@UAEXH@Z	100.0000	100.0000	1	7ccd97cbc1e4	0x10c4b0	100.0000	
 statusbarspriteacts	?RegisterActs@CStatusBarSprite@@SAXXZ	100.0000	100.0000	1	d4d4bbb336c6	0x10c610	100.0000	
-statusbartabbuilders	?BuildResourceTabStatusBar@CSBI_GruntMachine@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	93.1704	93.1704	1	cb76c82410a2	0xe8a70	93.1704	
+statusbartabbuilders	?BuildResourceTabStatusBar@CSBI_GruntMachine@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHH@Z	97.8370	97.8370	2	81b4250541ea	0xe8a70	97.8370	
 statusbartabbuilders	?Refresh@CSBI_GruntMachine@@UAEHH@Z	100.0000	100.0000	1	d7ecb21a8c97	0xe8c90	100.0000	
 statusbartabbuilders	?Render@CSBI_GruntMachine@@UAEHXZ	100.0000	95.7692	1	c2e472826a06	0xe8cb0	100.0000	
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@UAEXXZ	100.0000	100.0000	1	ab73dab21f01	0xe8c70	100.0000	

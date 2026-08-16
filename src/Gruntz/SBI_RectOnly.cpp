@@ -870,7 +870,6 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     return 0;
 }
 
-// @early-stop
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -1006,9 +1005,9 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         multiTab->m_state = MENUITEM_DISABLED;
         CDDrawWorker* f = multiTab->m_record;
         if (f != NULL) {
-            multiTab->m_frame = f->GetAt(IDX(MENUITEM_DISABLED));
+            multiTab->SetFrame(f->GetAt(IDX(MENUITEM_DISABLED)));
         }
-        multiTab->m_enabled = 0;
+        multiTab->SetEnabled(0);
         multiTab->SetSubtype();
     }
 
@@ -1521,7 +1520,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         AddTabItem(5, load);
         m_tabSprite6 = load;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            load->m_enabled = 0;
+            load->SetEnabled(0);
         }
 
         CSBI_MenuItem* save = new CSBI_MenuItem;
@@ -1541,7 +1540,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         AddTabItem(5, save);
         m_tabSprite7 = save;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            save->m_enabled = 0;
+            save->SetEnabled(0);
         }
 
         CSBI_MenuItem* settings = new CSBI_MenuItem;
@@ -1578,7 +1577,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         AddTabItem(5, help);
         m_tabSprite9 = help;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
-            help->m_enabled = 0;
+            help->SetEnabled(0);
         }
 
         CSBI_MenuItem* quit = new CSBI_MenuItem;
@@ -1615,7 +1614,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
         AddTabItem(5, destruct);
         m_modeNotify = destruct;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
-            destruct->m_enabled = 0;
+            destruct->SetEnabled(0);
             m_modeState = DESTRUCT_FRAME_DISABLED;
             m_destructWarnActive = DESTRUCT_WARNING_INACTIVE;
             m_modeNotify->Notify(IDX(DESTRUCT_FRAME_DISABLED));
@@ -1986,7 +1985,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(3, imgSet);
             m_extraNotify0 = imgSet;
-            it->m_enabled = 0;
+            imgSet->SetEnabled(0);
 
             {
                 i32* cfgp = &m_hlGrid[4].m_value;
@@ -2124,7 +2123,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(3, imgSet);
             m_extraNotify1 = imgSet;
-            it->m_enabled = 0;
+            imgSet->SetEnabled(0);
 
             ani = new CSBI_ImageSetAni;
             if (!ani->Init(

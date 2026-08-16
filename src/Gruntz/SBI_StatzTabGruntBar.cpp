@@ -199,27 +199,21 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
     if (m_statusValue != statusVal) {
         CDDrawWorker* gm = m_glyphMap;
-        m_statusGlyphLatched = (statusVal < gm->m_minIndex || statusVal > gm->m_maxIndex)
-                                   ? 0
-                                   : static_cast<CImage*>(gm->m_items.GetAt(statusVal));
+        m_statusGlyphLatched = gm->GetAt(statusVal);
         m_statusValue = statusVal;
         dirty = 1;
     }
 
     if (m_abilityValue != abilityVal) {
         CDDrawWorker* gm = m_glyphMap;
-        m_abilityGlyphLatched = (abilityVal < gm->m_minIndex || abilityVal > gm->m_maxIndex)
-                                    ? 0
-                                    : static_cast<CImage*>(gm->m_items.GetAt(abilityVal));
+        m_abilityGlyphLatched = gm->GetAt(abilityVal);
         m_abilityValue = abilityVal;
         dirty = 1;
     }
 
     if (m_overrideValue != overrideVal) {
         CDDrawWorker* gm = m_glyphMap;
-        m_overrideGlyphLatched = (overrideVal < gm->m_minIndex || overrideVal > gm->m_maxIndex)
-                                     ? 0
-                                     : static_cast<CImage*>(gm->m_items.GetAt(overrideVal));
+        m_overrideGlyphLatched = gm->GetAt(overrideVal);
         m_overrideValue = overrideVal;
         dirty = 1;
     }
@@ -233,9 +227,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         } else {
             CDDrawWorker* gm = m_glyphMap;
             i32 key = selectVal + 0x28;
-            m_selectGlyph = (key < gm->m_minIndex || key > gm->m_maxIndex)
-                                ? 0
-                                : static_cast<CImage*>(gm->m_items.GetAt(key));
+            m_selectGlyph = gm->GetAt(key);
         }
         m_selectValue = selectVal;
         dirty = 1;
@@ -243,9 +235,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
 
     if (m_timerValue != timerVal) {
         CDDrawWorker* gm = m_timerGlyphMap;
-        m_timerGlyph = (timerVal < gm->m_minIndex || timerVal > gm->m_maxIndex)
-                           ? 0
-                           : static_cast<CImage*>(gm->m_items.GetAt(timerVal));
+        m_timerGlyph = gm->GetAt(timerVal);
         m_timerValue = timerVal;
         dirty = 1;
     }

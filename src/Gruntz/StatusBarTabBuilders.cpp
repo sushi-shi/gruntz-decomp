@@ -92,11 +92,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     m_frameIdxA = idxA;
     m_frameIdxB = idxB;
-    if (idxA < m_config->m_minIndex || idxA > m_config->m_maxIndex) {
-        s = NULL;
-    } else {
-        s = static_cast<CImage*>(m_config->m_items.GetAt(idxA));
-    }
+    s = m_config->GetAt(idxA);
     m_frameA = s;
     if (s == NULL) {
         goto fail;
@@ -108,11 +104,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     }
     m_config->SetAllTypes(SHADE_PAL_16);
     m_config->SetAllFormats(sel);
-    if (m_frameIdxB < m_config->m_minIndex || m_frameIdxB > m_config->m_maxIndex) {
-        val = NULL;
-    } else {
-        val = static_cast<CImage*>(m_config->m_items.GetAt(m_frameIdxB));
-    }
+    val = m_config->GetAt(m_frameIdxB);
     m_frameB = val;
     return val != NULL;
 fail:

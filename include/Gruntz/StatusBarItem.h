@@ -42,6 +42,10 @@ public:
     virtual i32 Click24(i32 a, i32 b, i32 c);
     virtual void SetSubtype();
 
+    void SetEnabled(i32 on) {
+        m_enabled = on;
+    }
+
     i32 m_enabled;
     StatusBarItemKind m_kind;
     SbiCommandId m_cmd;

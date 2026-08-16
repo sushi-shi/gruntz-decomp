@@ -134,12 +134,35 @@ The `__ehunwind$...$N` funclets sitting at **0.00** are a free readout of the sa
 `static inline i32 ProbeSite(i32 v) { return v; }` called as `(void)ProbeSite(0);` - it is
 an inline call for the front end and emits nothing.
 
-* **BuildStatusBarTabs needs EXACTLY 2 more sites, anywhere after the 7th `new`.** K=2 at
-  the end of the function, or immediately after the multi-tab construction, both give
-  retail's `{base 4}` and **99.72** with the call multiset identical; K=1 and K=3 do not.
-  The position tolerance is one-sided: probes placed at the FIFTH `new` instead put 5 extra
-  sites ahead of the three `CSBI_RectOnly` dock buttons and cut one of those, which retail
-  fully inlines.
+* **BuildStatusBarTabs: SOLVED, 100.00 EXACT.** The titration said the caller was short
+  exactly 2 zero-emission candidate sites anywhere after the 7th `new` (`static inline i32
+  ProbeSite(i32 v){return v;}` called as `(void)ProbeSite(0)`: K=2 gives retail's `{base 4}`
+  and 99.72, K=1 and K=3 do not). The two missing sites were not unnameable - they are two
+  ordinary one-store setters this class family is already known to have
+  (inline-budget-emits-ool-comdat.md closed `CMenuPage::AddSubItem2` 63.12 -> 100 on exactly
+  this shape, and `CMenuItem::SetCommandParam` / `SetSecondaryCommandId` / `CMenuItem2::SetFrame`
+  are the surviving in-tree examples):
+
+  ```cpp
+  // include/Gruntz/StatusBarItem.h          // include/Gruntz/SBI_Image.h
+  void SetEnabled(i32 on) { m_enabled = on; }  void SetFrame(CImage* frame) { m_frame = frame; }
+  ```
+  ```cpp
+  -        if (f != NULL) { multiTab->m_frame = f->GetAt(IDX(MENUITEM_DISABLED)); }
+  -        multiTab->m_enabled = 0;
+  +        if (f != NULL) { multiTab->SetFrame(f->GetAt(IDX(MENUITEM_DISABLED))); }
+  +        multiTab->SetEnabled(0);
+  ```
+  Identical bytes at both sites, 33 calls and `{base 4}` exactly as retail, **97.35 -> 100.00
+  EXACT**. The function is now its own negative control: `multiTab->m_state = MENUITEM_DISABLED`
+  in the SAME block must stay a raw store, because a third site there breaks it. That also
+  retires the "the `m_tabSpriteN` / `m_notifyN` stores are setters" hypothesis for good - Tabs
+  is exact with all five of them written as plain assignments.
+
+  **The general lesson, and it is the important one: a population that is short is a
+  MEASUREMENT that the source is not yet the devs' source.** It is not a residue to name and
+  park. Read it as "N entities missing" and go find them.
+
 * **cb reduction alone is inert here.** Factoring the whole `if (SINGLE) {...}` disable block
   (5 statements) into one file-static inline changed nothing, so for this caller the lever is
   the `budget / sites-remaining` divisor and not `2*cb`.

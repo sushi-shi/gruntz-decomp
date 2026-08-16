@@ -32,9 +32,7 @@ i32 CSBI_ImageSet::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    static_cast<void>(extra);
-
-    if (owner == NULL || host == NULL) {
+    if (host == NULL || owner == NULL) {
         return 0;
     }
     m_owner = owner;
@@ -61,13 +59,7 @@ i32 CSBI_ImageSet::SetupImage(
     }
     m_frameIndex = f;
 
-    CImage* cel;
-    if (f >= rec->m_minIndex && f <= rec->m_maxIndex) {
-        cel = static_cast<CImage*>(rec->m_items.GetAt(f));
-    } else {
-        cel = NULL;
-    }
-    m_frame = cel;
+    m_frame = rec->GetAt(f);
     return 1;
 }
 

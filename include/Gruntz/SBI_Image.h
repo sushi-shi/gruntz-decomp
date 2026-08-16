@@ -58,6 +58,10 @@ public:
         i32 extra
     );
 
+    void SetFrame(CImage* frame) {
+        m_frame = frame;
+    }
+
     CImage* m_frame;
 };
 
