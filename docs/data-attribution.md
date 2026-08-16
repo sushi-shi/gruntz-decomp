@@ -1383,10 +1383,13 @@ scan `.text` for `mov ecx,<static data addr>` followed within ~24 B by a
 * library-owned constructions (static `CWnd` family, `AFX_CLASSINIT`) stay
   unclaimed by design - the library-gap rule excludes them.
 
-**Tool defect it exposed:** `labels.msvc5_data_symbol` wildcarded only DECIMAL
-scope ordinals, but MSVC spells an ordinal >10 as hex digits A..P terminated
-by `@` (`?BD@??Fn@@...` = 0x13 = 19). Every function-local static nested deep
-in a function silently MISSed and stayed unnamed. Fixed to accept both forms.
+**Tool defect it exposed:** the obj-matching predecessor of today's rewrite
+wildcarded only DECIMAL scope ordinals, but MSVC spells an ordinal >10 as hex
+digits A..P terminated by `@` (`?BD@??Fn@@...` = 0x13 = 19). Every
+function-local static nested deep in a function silently MISSed and stayed
+unnamed. The scope ordinal is now MASKED on both sides
+(`core.msvc_names.LOCAL_STATIC_SCOPE`, canonical `?1`), so its spelling can
+no longer decide whether a claim binds.
 
 **Not a defect:** the 20 dead `g_val_<hex>` placeholders elsewhere in src are
 all real retail-referenced data (5-15 access sites each, mostly Win32 handles

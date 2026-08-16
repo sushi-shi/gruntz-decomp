@@ -27,7 +27,7 @@ class CSBI_WellGoo : public CSBI_Image {
 public:
     CSBI_WellGoo() {
         m_kind = SBI_KIND_WELL_GOO;
-        m_frame = NULL;
+        m_gooSrc = NULL;
     }
 
     virtual ~CSBI_WellGoo() OVERRIDE;

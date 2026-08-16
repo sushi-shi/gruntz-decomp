@@ -113,12 +113,13 @@ Ghidra's carve ends at the code, so the delinked target dropped each function's 
 `config/retail/functions_zlib.tsv (+ data_zlib.tsv)` rows now carries the FULL COMDAT span (`0x430`/`0xcb0`/`0x7b0`
 — for each, retail next-symbol gap == base COMDAT size), which synth_pdb honors, so the
 delinker carves the table into the function; normalize's jump-table reloc rewrite then
-pairs the table dwords. Two `data` rows complete the reloc naming: `_border$S454`
-(infblock static; the CSV must use the base obj's DECORATED `$S<n>` name or the
-authority check drops the row) and `_inflate_mask` (infutil) — without them the target
+pairs the table dwords. Two `data` rows complete the reloc naming: `_border$S`
+(infblock static; the table carries the CANONICAL decorated spelling — cl's `$S<n>`
+CodeView counter is masked off both sides by `core.msvc_names`, so no committed row
+ever states a number) and `_inflate_mask` (infutil) — without them the target
 relocs bind to a neighboring string COMDAT with an addend. The vendored zlib C source
 stays PRISTINE — no labels in it at all (NOT the `include/rva.h` `RVA()` macros that `src/`
 uses): their static/K&R functions are dropped from IR when unused, so labels can't ride
-attributes/IR. `labels.py` emits each zlib unit's rows straight from that static config
-(authority-checked against the base obj — no source parse, no positional join), which
-regenerates `build/gen/bindings.tsv`.
+attributes/IR. The `functions_zlib`/`data_zlib` provider tables ARE each zlib unit's rows
+(no source parse, no positional join, no object consulted), and the Model joins them into
+`build/gen/bindings.tsv`.

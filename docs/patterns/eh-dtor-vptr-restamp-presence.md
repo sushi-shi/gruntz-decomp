@@ -88,7 +88,9 @@ struct Derived : Base { Str m_54; };                       // NO declared dtor -
 **FIX: delete the destructor declaration.** It is still virtual (the base's is), still destroys
 the members, still emits. Since there is then no source body to hang `RVA()` on, pin it with a
 self-contained label — cl emits the COMDAT in **every using obj**, so put the pin in a TU whose
-base obj actually emits it (the `RVA_COMPGEN` authority check is nm membership):
+base obj actually emits it. Extraction admits the pin from source alone, but the Model's
+`_materialized` gives the body to a unit whose object holds it, and a pin no object emits is
+reported as a missing definition:
 
 ```cpp
 // in the class header: NO `virtual ~CFoo() OVERRIDE;` at all

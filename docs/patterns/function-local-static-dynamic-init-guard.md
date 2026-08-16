@@ -82,8 +82,10 @@ that check is what found the `/GX` inlining mismatch in
 
 *Static (internal-linkage) enclosing function.* `DATA(rva)` goes on the local static itself — cl5
 spells it `_?s_x@?<n>??<Fn>@@...@4HA$S<m>` where clang reports `?s_x@?1??<Fn>@@...@4HA` (extra
-leading `_`, a scope ordinal cl counts by blocks already left, and the `$S` CodeView suffix);
-`labels.msvc5_data_symbol` wildcards all three, authority-checked. The guard is a file-static too
+leading `_`, a scope ordinal cl counts by blocks already left, and the `$S` CodeView suffix).
+`core.msvc_names` derives the leading `_` and the `$S` from the declaration's storage and MASKS
+both volatile numbers to the canonical `?1` / bare `$S`, on the claim side and on cl's object side
+alike — no object is consulted to spell the name. The guard is a file-static too
 (`?$S55@?1??<Fn>@@...@4EA`, a compiler-assigned counter unspellable in source) and stays unnamed.
 That costs nothing measurable: `CPlay::GetAmbientId` 0xda200 is 100.00 EXACT with its guard unnamed.
 Never fabricate a file-scope stand-in to name it.

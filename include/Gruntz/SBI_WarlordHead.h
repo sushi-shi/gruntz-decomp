@@ -17,7 +17,6 @@ GZ_ENUM_FORWARD(ShadeMode);
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
     CSBI_WarlordHead() {
-        m_frame = NULL;
         m_kind = SBI_KIND_WARLORD_HEAD;
         m_frameSet = NULL;
     }

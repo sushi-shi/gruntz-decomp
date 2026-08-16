@@ -232,6 +232,9 @@ public:
     CStatusBarItem* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);
     void ClearTabGroup();
+    void AddTabItem(i32 tab, CStatusBarItem* item) {
+        m_tabLists[tab].AddTail(item);
+    }
     i32 ClearStat(i32 idx);
     void EnterHlRow(i32 row, i32 group);
     void InitTabRects();

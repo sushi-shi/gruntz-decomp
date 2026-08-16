@@ -84,3 +84,14 @@ teardown virtual-dispatching into the CRT's own scalar-deleting dtor (the retail
 strstream vtable slot-0 target, 0x169aa0 - the "missing" dtor was never missing,
 only unnamed). The slot-lifetime 0x58 delta reads naturally now: a heap pointer
 lives in one slot to scope end.
+
+## The CStatusBarMgr half is BROKEN (2026-08-16)
+
+"This residue class is currently a WALL" no longer holds for the four `CStatusBarMgr`
+builders, and `??0CSBI_RectOnly` 0x101fa0 is no longer unemitted. The cut population is
+driven by how many INLINE EXPANSIONS the caller contains, and the reconstruction was
+missing one member function: `AddTabItem(i32 tab, CStatusBarItem* item)` over 71
+`m_tabLists[N].AddTail(item)` sites. See
+repeated-container-call-is-an-inline-member.md and the BROKEN section of
+ctor-inline-cut-depth-varies-per-new-site.md. The `SerialObjectFactory` /
+`CGruntzMgr::ChangeState` rows are untouched by that measurement.

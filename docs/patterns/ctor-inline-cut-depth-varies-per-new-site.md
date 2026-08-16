@@ -113,3 +113,37 @@ move correctly, and then recover the real caller/helper/constructor statements t
 account for the measured cost. Here the remaining wall is a joint population problem:
 the base must be cheap enough to fold inside RectOnly while selected outer chains must
 reject RectOnly itself.
+
+## BROKEN 2026-08-16 - the missing population was an inline MEMBER in the caller
+
+The verdict above ("`@early-stop` walls", "a joint population problem") is superseded.
+The four builders were call-complete against retail EXCEPT for these ctor calls
+(`gruntz walls diagnose`: branch and `ret` counts already agreed), so the deficit was
+entirely the /Ob1 budget - and the budget was too LARGE because the source spelled 71
+`m_tabLists[N].AddTail(item)` statements where retail called one inline member. Under
+/Ob1 an expansion SPENDS its cb while the same statements written out FUND 2*cb, so
+recovering `CStatusBarMgr::AddTabItem(i32 tab, CStatusBarItem* item)` is a ~3x budget
+swing per site at zero byte cost:
+
+| caller | before | after | retail referents |
+|---|---:|---:|---|
+| BuildStatusBarTabs | 85.55 | **94.42** | {base 4}, we now cut {base 2} |
+| BuildGameMenu | 81.02 | **86.05** | {RectOnly 5, base 3}, we cut {RectOnly 1, base 5} |
+| LoadTabSprites | 83.77 | **89.58** | {RectOnly 10, base 15}, we cut {RectOnly 5, base 12} |
+| BuildTabzDialog | 79.66 | **86.47** | {RectOnly 4, base 8}, we cut {RectOnly 2, base 7} |
+
+`??0CSBI_RectOnly@@QAE@XZ` 0x101fa0 now materialises in sbi_rectonly.obj at **100.00
+EXACT** (the label FATAL is gone) and `??0CStatusBarItem@@QAE@XZ` stays 100.00 - both
+bodies, with the base inlined inside the derived, from the ORDINARY chain and no
+device. The standalone body was never the hard part: cl produces it byte-for-byte for
+free (see repeated-container-call-is-an-inline-member.md). Some sites still flatten
+(2 / 2 / 8 short); the remaining deficit is another missing inline site of the same
+kind, not a wall.
+
+The four SBI constructors were also corrected off the vptr-stamp divider
+(vptr-stamp-splits-meminit-from-body.md): `CSBI_ImageSet`, `CSBI_ImageSetAni` and
+`CSBI_WarlordHead` do NOT re-store the inherited `m_frame` (retail's `+0x30` store sits
+BEFORE the derived `??_7` stamp, so it is `CSBI_Image`'s), and `CSBI_WellGoo` stores
+`m_gooSrc`, not `m_frame`. The 2026-08-09 "the repeated stores carry real front-end-cost
+evidence, do not delete them" note is retracted: the call-count argument it rested on was
+a budget proxy, and the stamp position is direct byte evidence.

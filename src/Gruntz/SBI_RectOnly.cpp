@@ -895,7 +895,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete dockLeft;
         return 0;
     }
-    m_tabLists[0].AddTail(dockLeft);
+    AddTabItem(0, dockLeft);
 
     // Same vertical band as dockLeft: retail does not recompute the pair here, it
     // RELOADS the two frame slots dockLeft's `by + 0xad` / `by + 0xb9` were CSE'd into
@@ -914,7 +914,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete dockRight;
         return 0;
     }
-    m_tabLists[0].AddTail(dockRight);
+    AddTabItem(0, dockRight);
 
     CSBI_RectOnly* hide = new CSBI_RectOnly;
     if (!hide->Setup(
@@ -929,7 +929,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete hide;
         return 0;
     }
-    m_tabLists[0].AddTail(hide);
+    AddTabItem(0, hide);
 
     // The five tab buttons share ONE band, `by + 0x82 .. by + 0xad` - retail computes
     // `by + 0x82` once here and reloads dockLeft's `by + 0xad` slot for the bottom, and
@@ -948,7 +948,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete statzTab;
         return 0;
     }
-    m_tabLists[0].AddTail(statzTab);
+    AddTabItem(0, statzTab);
     m_tabSprite0 = statzTab;
 
     CSBI_MenuItem* gruntzTab = new CSBI_MenuItem;
@@ -965,7 +965,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete gruntzTab;
         return 0;
     }
-    m_tabLists[0].AddTail(gruntzTab);
+    AddTabItem(0, gruntzTab);
     m_tabSprite2 = gruntzTab;
 
     CSBI_MenuItem* resourceTab = new CSBI_MenuItem;
@@ -982,7 +982,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete resourceTab;
         return 0;
     }
-    m_tabLists[0].AddTail(resourceTab);
+    AddTabItem(0, resourceTab);
     m_tabSprite1 = resourceTab;
 
     CSBI_MenuItem* multiTab = new CSBI_MenuItem;
@@ -999,7 +999,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete multiTab;
         return 0;
     }
-    m_tabLists[0].AddTail(multiTab);
+    AddTabItem(0, multiTab);
     m_tabSprite3 = multiTab;
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         multiTab->m_state = MENUITEM_DISABLED;
@@ -1029,7 +1029,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         delete gameTab;
         return 0;
     }
-    m_tabLists[0].AddTail(gameTab);
+    AddTabItem(0, gameTab);
     m_tabSprite4 = gameTab;
 
     if (BuildSideTabs() == 0) {
@@ -1494,7 +1494,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 delete resume;
                 return 0;
             }
-            m_tabLists[5].AddTail(resume);
+            AddTabItem(5, resume);
             m_tabSprite5 = resume;
         } else {
             CSBI_MenuItem* pause = new CSBI_MenuItem;
@@ -1512,7 +1512,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
                 delete pause;
                 return 0;
             }
-            m_tabLists[5].AddTail(pause);
+            AddTabItem(5, pause);
             m_tabSprite5 = pause;
         }
 
@@ -1531,7 +1531,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete load;
             return 0;
         }
-        m_tabLists[5].AddTail(load);
+        AddTabItem(5, load);
         m_tabSprite6 = load;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             load->m_enabled = 0;
@@ -1552,7 +1552,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete save;
             return 0;
         }
-        m_tabLists[5].AddTail(save);
+        AddTabItem(5, save);
         m_tabSprite7 = save;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             save->m_enabled = 0;
@@ -1573,7 +1573,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete settings;
             return 0;
         }
-        m_tabLists[5].AddTail(settings);
+        AddTabItem(5, settings);
         m_tabSprite8 = settings;
 
         CSBI_MenuItem* help = new CSBI_MenuItem;
@@ -1591,7 +1591,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete help;
             return 0;
         }
-        m_tabLists[5].AddTail(help);
+        AddTabItem(5, help);
         m_tabSprite9 = help;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             help->m_enabled = 0;
@@ -1612,7 +1612,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete quit;
             return 0;
         }
-        m_tabLists[5].AddTail(quit);
+        AddTabItem(5, quit);
         m_tabSprite10 = quit;
 
         CSBI_ImageSet* destruct = new CSBI_ImageSet;
@@ -1630,7 +1630,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             delete destruct;
             return 0;
         }
-        m_tabLists[5].AddTail(destruct);
+        AddTabItem(5, destruct);
         m_modeNotify = destruct;
         if (g_gameReg->m_gameMode != GAMEMODE_SINGLE) {
             destruct->m_enabled = 0;
@@ -1675,7 +1675,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
             return 0;
         }
     }
-    m_tabLists[5].AddTail(status);
+    AddTabItem(5, status);
     return 1;
 }
 
@@ -1779,7 +1779,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[2].AddTail(it);
+            AddTabItem(2, it);
 
             {
                 CSBI_ImageSet** aptr = m_slotNotify;
@@ -1801,7 +1801,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete set;
                         return 0;
                     }
-                    m_tabLists[2].AddTail(set);
+                    AddTabItem(2, set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
                         IDX(g_gameReg->m_options[g_curPlayer].m_colorIndex),
@@ -1832,7 +1832,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[2].AddTail(it);
+            AddTabItem(2, it);
             m_gaugeNotify = it;
             it = new CSBI_Image;
             r = SbGeom(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd);
@@ -1849,7 +1849,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[2].AddTail(it);
+            AddTabItem(2, it);
             it = new CSBI_Image;
             r = SbGeom(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8);
             if (!it->SetupImage(
@@ -1865,7 +1865,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[2].AddTail(it);
+            AddTabItem(2, it);
             it = new CSBI_WellGoo;
             r = SbGeom(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3);
             if (!it->SetupImage(
@@ -1881,7 +1881,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[2].AddTail(it);
+            AddTabItem(2, it);
             m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
             return 1;
 
@@ -1901,7 +1901,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             it = new CSBI_Image;
             r = SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1be);
             if (!it->SetupImage(
@@ -1917,7 +1917,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_notify0 = it;
             it = new CSBI_Image;
             r = SbGeom(bx, by + 0xfb, bx + 0x9f, by + 0x134);
@@ -1934,7 +1934,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_notify2 = it;
             it = new CSBI_Image;
             r = SbGeom(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3);
@@ -1951,7 +1951,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_notify3 = it;
 
             it = new CSBI_ImageSet;
@@ -1969,7 +1969,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
             r = SbGeom(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130);
@@ -1986,7 +1986,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it);
             it = new CSBI_ImageSet;
             r = SbGeom(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130);
@@ -2003,7 +2003,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
 
             it = new CSBI_ImageSet;
@@ -2026,7 +2026,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_extraNotify0 = static_cast<CSBI_ImageSet*>(it);
             it->m_enabled = 0;
 
@@ -2050,7 +2050,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete set;
                         return 0;
                     }
-                    m_tabLists[3].AddTail(set);
+                    AddTabItem(3, set);
                     cachep[-4] = set;
                     set = new CSBI_ImageSet;
                     r = SbGeom(bx + 0x45, y - 0x17, bx + 0x5c, y);
@@ -2067,7 +2067,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete set;
                         return 0;
                     }
-                    m_tabLists[3].AddTail(set);
+                    AddTabItem(3, set);
                     cachep[0] = set;
                     set = new CSBI_ImageSet;
                     r = SbGeom(bx + 0x6d, y - 0x17, bx + 0x84, y);
@@ -2084,7 +2084,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete set;
                         return 0;
                     }
-                    m_tabLists[3].AddTail(set);
+                    AddTabItem(3, set);
                     cachep[4] = set;
                     cfgp += 6;
                     cachep += 1;
@@ -2108,7 +2108,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_machineDisplay = mach;
-            m_tabLists[3].AddTail(mach);
+            AddTabItem(3, mach);
 
             it = new CSBI_Image;
             // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
@@ -2128,7 +2128,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_notify1 = it;
 
             ani = new CSBI_ImageSetAni;
@@ -2149,7 +2149,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete ani;
                 return 0;
             }
-            m_tabLists[3].AddTail(ani);
+            AddTabItem(3, ani);
 
             it = new CSBI_ImageSet;
             r = SbGeom(
@@ -2171,7 +2171,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            AddTabItem(3, it);
             m_extraNotify1 = static_cast<CSBI_ImageSet*>(it);
             it->m_enabled = 0;
 
@@ -2193,7 +2193,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete ani;
                 return 0;
             }
-            m_tabLists[3].AddTail(ani);
+            AddTabItem(3, ani);
             return 1;
 
         case TAB_MULTIPLAYER:
@@ -2212,7 +2212,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[4].AddTail(it);
+            AddTabItem(4, it);
 
             it = new CSBI_WarlordHead;
             r = SbGeom(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a);
@@ -2229,7 +2229,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[4].AddTail(it);
+            AddTabItem(4, it);
             m_warlordHead[0] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r = SbGeom(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d);
@@ -2246,7 +2246,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[4].AddTail(it);
+            AddTabItem(4, it);
             m_warlordHead[1] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r = SbGeom(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190);
@@ -2263,7 +2263,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[4].AddTail(it);
+            AddTabItem(4, it);
             m_warlordHead[2] = static_cast<CSBI_WarlordHead*>(it);
             it = new CSBI_WarlordHead;
             r = SbGeom(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2);
@@ -2280,7 +2280,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[4].AddTail(it);
+            AddTabItem(4, it);
             m_warlordHead[3] = static_cast<CSBI_WarlordHead*>(it);
 
             {
@@ -2331,7 +2331,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete bar;
                         return 0;
                     }
-                    m_tabLists[4].AddTail(bar);
+                    AddTabItem(4, bar);
                     y += 0x12;
                 }
             }
@@ -2353,7 +2353,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[1].AddTail(it);
+            AddTabItem(1, it);
 
             {
                 i32 aOff, cOff;
@@ -2388,7 +2388,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete arrow;
                         return 0;
                     }
-                    m_tabLists[1].AddTail(arrow);
+                    AddTabItem(1, arrow);
                     m_statObj[i] = arrow;
                     // Both arms take the same `0` (retail pushes it BEFORE the
                     // branch); only the entry point differs - a sampled stat gets
@@ -2416,7 +2416,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete bar;
                         return 0;
                     }
-                    m_tabLists[1].AddTail(bar);
+                    AddTabItem(1, bar);
                     y += 0x12;
                 }
             }
@@ -2438,7 +2438,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[5].AddTail(it);
+            AddTabItem(5, it);
 
             it = new CSBI_ImageSet;
             r = SbGeom(bx, by, bx + 0x9f, by + 0x7f);
@@ -2455,7 +2455,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 delete it;
                 return 0;
             }
-            m_tabLists[5].AddTail(it);
+            AddTabItem(5, it);
             if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
                 it = new CSBI_ImageSet;
@@ -2473,7 +2473,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     delete it;
                     return 0;
                 }
-                m_tabLists[5].AddTail(it);
+                AddTabItem(5, it);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
                     it = new CSBI_ImageSet;
@@ -2491,7 +2491,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         delete it;
                         return 0;
                     }
-                    m_tabLists[5].AddTail(it);
+                    AddTabItem(5, it);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
                         it = new CSBI_ImageSet;
@@ -2509,7 +2509,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             delete it;
                             return 0;
                         }
-                        m_tabLists[5].AddTail(it);
+                        AddTabItem(5, it);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
                             it = new CSBI_ImageSet;
@@ -2527,7 +2527,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                                 delete it;
                                 return 0;
                             }
-                            m_tabLists[5].AddTail(it);
+                            AddTabItem(5, it);
                         }
                     }
                 }
@@ -2694,7 +2694,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             delete newobj;
             return 0;
         }
-        m_tabLists[0].AddTail(newobj);
+        AddTabItem(0, newobj);
         m_hitRects[i] = newobj;
         i++;
     }
@@ -4755,7 +4755,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete areYouSure;
             return 0;
         }
-        m_tabLists[6].AddTail(areYouSure);
+        AddTabItem(6, areYouSure);
 
         CSBI_MenuItem* yes = new CSBI_MenuItem;
         if (!yes->SetupImage(
@@ -4771,7 +4771,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete yes;
             return 0;
         }
-        m_tabLists[6].AddTail(yes);
+        AddTabItem(6, yes);
         m_tabSprite13 = yes;
 
         CSBI_MenuItem* no = new CSBI_MenuItem;
@@ -4788,7 +4788,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete no;
             return 0;
         }
-        m_tabLists[6].AddTail(no);
+        AddTabItem(6, no);
         m_tabSprite14 = no;
         return 1;
     }
@@ -4807,7 +4807,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         delete dialog;
         return 0;
     }
-    m_tabLists[6].AddTail(dialog);
+    AddTabItem(6, dialog);
 
     i32 reason = IDX(g_gameReg->m_cmdGrid->m_finishReasonFrame);
 
@@ -4827,7 +4827,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete status;
             return 0;
         }
-        m_tabLists[6].AddTail(status);
+        AddTabItem(6, status);
 
         CSBI_ImageSet* rsn = new CSBI_ImageSet;
         if (!rsn->SetupImage(
@@ -4843,7 +4843,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete rsn;
             return 0;
         }
-        m_tabLists[6].AddTail(rsn);
+        AddTabItem(6, rsn);
 
         if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
             CSBI_MenuItem* next = new CSBI_MenuItem;
@@ -4860,7 +4860,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 delete next;
                 return 0;
             }
-            m_tabLists[6].AddTail(next);
+            AddTabItem(6, next);
             m_tabSprite11 = next;
 
             CSBI_MenuItem* quit = new CSBI_MenuItem;
@@ -4877,7 +4877,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 delete quit;
                 return 0;
             }
-            m_tabLists[6].AddTail(quit);
+            AddTabItem(6, quit);
             m_tabSprite12 = quit;
         } else {
             CSBI_MenuItem* statz = new CSBI_MenuItem;
@@ -4894,7 +4894,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
                 delete statz;
                 return 0;
             }
-            m_tabLists[6].AddTail(statz);
+            AddTabItem(6, statz);
             m_tabSprite12 = statz;
         }
         return 1;
@@ -4914,7 +4914,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         delete status;
         return 0;
     }
-    m_tabLists[6].AddTail(status);
+    AddTabItem(6, status);
 
     CSBI_ImageSet* rsn = new CSBI_ImageSet;
     if (!rsn->SetupImage(
@@ -4930,7 +4930,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         delete rsn;
         return 0;
     }
-    m_tabLists[6].AddTail(rsn);
+    AddTabItem(6, rsn);
 
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         CSBI_MenuItem* replay = new CSBI_MenuItem;
@@ -4947,7 +4947,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete replay;
             return 0;
         }
-        m_tabLists[6].AddTail(replay);
+        AddTabItem(6, replay);
         m_tabSprite11 = replay;
 
         CSBI_MenuItem* quit = new CSBI_MenuItem;
@@ -4964,7 +4964,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete quit;
             return 0;
         }
-        m_tabLists[6].AddTail(quit);
+        AddTabItem(6, quit);
         m_tabSprite12 = quit;
         return 1;
     }
@@ -4992,7 +4992,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete observe;
             return 0;
         }
-        m_tabLists[6].AddTail(observe);
+        AddTabItem(6, observe);
         m_tabSprite11 = observe;
         m_observerTabAvailable = 1;
 
@@ -5010,7 +5010,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete statz;
             return 0;
         }
-        m_tabLists[6].AddTail(statz);
+        AddTabItem(6, statz);
         m_tabSprite12 = statz;
     } else {
         m_observerTabAvailable = 0;
@@ -5028,7 +5028,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
             delete statz;
             return 0;
         }
-        m_tabLists[6].AddTail(statz);
+        AddTabItem(6, statz);
         m_tabSprite12 = statz;
     }
     return 1;

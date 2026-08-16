@@ -14,7 +14,6 @@
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
     CSBI_ImageSetAni() {
-        m_frame = NULL;
         m_kind = SBI_KIND_IMAGE_SET_ANI;
         m_frameSet = NULL;
         m_loop = 0;

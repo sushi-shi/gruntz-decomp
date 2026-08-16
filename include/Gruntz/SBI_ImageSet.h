@@ -40,7 +40,6 @@ public:
 };
 
 inline CSBI_ImageSet::CSBI_ImageSet() {
-    m_frame = NULL;
     m_kind = SBI_KIND_IMAGE_SET;
     m_frameSet = NULL;
 }

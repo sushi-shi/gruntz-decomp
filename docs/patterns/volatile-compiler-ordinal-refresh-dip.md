@@ -40,7 +40,8 @@ relocation tables before touching the real static objects. The same signature ca
 other cached or mislabeled ordinal islands.
 
 `name$S<n>` data is a narrower case, and needs no hand-written pin at all: a
-file-scope `static` carrying a plain `DATA(rva)` is resolved by
-`labels.msvc5_data_symbol`, which prefix-matches `_name$S` in fresh COFF and
-accepts ONLY a unique hit — so the volatile numeric suffix never reaches source.
-That prefix rule does not authorize anonymous compiler-generated function labels.
+file-scope `static` carrying a plain `DATA(rva)` is spelled `_name$S` by
+`core.msvc_names` from the declaration's storage alone, and cl's own `$S<n>`
+is masked away on the object side — so the volatile numeric suffix never
+reaches source OR the Model, and a refresh cannot move it. That rule does not
+authorize anonymous compiler-generated function labels.
