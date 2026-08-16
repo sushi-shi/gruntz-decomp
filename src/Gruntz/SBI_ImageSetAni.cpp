@@ -98,8 +98,7 @@ i32 CSBI_ImageSetAni::Refresh(i32) {
 RVA(0x000e7b00, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_redrawFrames > 0) {
-        CDDrawWorker* tbl = m_frameSet;
-        CImage* cel = tbl->GetAt(m_frameIndex);
+        CImage* cel = m_frameSet->GetAt(m_frameIndex);
         m_frame = cel;
         if (cel != NULL) {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;

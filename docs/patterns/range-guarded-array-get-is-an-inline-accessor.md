@@ -119,3 +119,23 @@ would ADD a range test that retail does not emit - `CSBI_MenuItem::ResolveFrame`
 is the proof, it is `mov ecx,[eax+0x64] / mov edx,[eax+0x14] / mov eax,[edx+ecx*4]` with no
 compare. Leave them. Likewise `SBI_ImageSetAni.cpp:69,74` are min/max SELECTS
 (`(b4 >= 0) ? tbl->m_minIndex : tbl->m_maxIndex`), not indexing at all.
+
+## The recovery can UNLOCK a regalloc knob that the transcription blocked
+
+`CSBI_ImageSetAni::Render` 0xe7b00 was 99.4444 with 90/90 instructions, the same size, and the
+same call / branch / `ret` / relocation counts - the whole gap was `eax` and `ecx` swapped across
+the range test. It closed to **100.00 EXACT** by deleting the receiver local:
+
+```cpp
+-   CDDrawWorker* tbl = m_frameSet;
+-   CImage* cel = tbl->GetAt(m_frameIndex);
++   CImage* cel = m_frameSet->GetAt(m_frameIndex);
+```
+
+This is one-use-local-is-a-regalloc-knob.md in its DELETE direction, and it only became available
+after the accessor was recovered: the written-out form names the receiver three times
+(`tbl->m_minIndex`, `tbl->m_maxIndex`, `tbl->m_items`), so the local cannot be removed and the
+knob cannot be turned. Naming the index instead (`i32 idx = m_frameIndex;`) is the wrong
+direction - 99.4444 -> 99.1778. So on a site that is byte-neutral but sits at 99.x with an equal
+instruction count, try both directions of the local knob; the accessor form is what makes the
+receiver a single-use expression.
