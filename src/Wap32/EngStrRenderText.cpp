@@ -34,17 +34,17 @@ i32 EngStr_RenderText(
     }
     FontSel font = static_cast<FontSel>(fontSel);
     switch (font) {
-        case FONTSEL_TINY:
-            g_textObj.SetFont(&g_tinyFont);
-            break;
-        case FONTSEL_SMALL:
-            g_textObj.SetFont(&g_smallFont);
+        case FONTSEL_LARGE:
+            g_textObj.SetFont(&g_largeFont);
             break;
         case FONTSEL_MEDIUM:
             g_textObj.SetFont(&g_mediumFont);
             break;
-        case FONTSEL_LARGE:
-            g_textObj.SetFont(&g_largeFont);
+        case FONTSEL_SMALL:
+            g_textObj.SetFont(&g_smallFont);
+            break;
+        case FONTSEL_TINY:
+            g_textObj.SetFont(&g_tinyFont);
             break;
     }
     CString* str = text;

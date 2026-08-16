@@ -30,6 +30,5 @@ CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 drainRelo
     node->m_commandDelay = commandDelay;
     node->m_drainReload = drainReload;
     m_list.AddTail(node);
-    TRACE("%s\n", static_cast<LPCTSTR>(node->GetName()));
     return node;
 }
