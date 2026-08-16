@@ -961,7 +961,7 @@ CString CMulti::GetString59c() {
 }
 
 RVA(0x000b7b10, 0x27c)
-INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     char nameBuf[0xa];
     char gameBuf[0x44];
@@ -1092,7 +1092,7 @@ i32 CMulti::JoinSession() {
 }
 
 RVA(0x000b8020, 0x22f)
-INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
         goto ret_true;

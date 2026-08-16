@@ -478,10 +478,17 @@ i32 CDDrawSurfaceChildA::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     i32 hr;
     if (mgr->m_flags & 0x10) {
 
-        AddrWord<char> windowSlot;
-        windowSlot.m_word = 2;
-        hr =
-            pool->CreateDevice(static_cast<void*>(mgr->m_hWnd), windowSlot.m_addr, w, h, bpp, mode);
+        // DirectDrawCreate takes its two emulation selectors AS the lpGUID.
+        AddrWord<char> emulationOnly;
+        emulationOnly.m_word = DDCREATE_EMULATIONONLY;
+        hr = pool->CreateDevice(
+            static_cast<void*>(mgr->m_hWnd),
+            emulationOnly.m_addr,
+            w,
+            h,
+            bpp,
+            mode
+        );
     } else {
         hr = pool->CreateDevice(
             static_cast<void*>(mgr->m_hWnd),

@@ -5,7 +5,7 @@
 
 #include <Ints.h>
 
-i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 struct SaveSlot;
 class CSaveGame;

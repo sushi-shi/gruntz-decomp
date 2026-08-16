@@ -22,6 +22,6 @@ i32 LoadCustomWorldSelection(HWND hWnd);
 i32 FileExists(const char* path);
 i32 FillCustomLevelList(HWND hWnd);
 
-INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // GRUNTZ_GRUNTZ_CUSTOMWORLDDIALOG_H

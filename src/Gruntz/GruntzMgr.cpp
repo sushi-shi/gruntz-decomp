@@ -1116,7 +1116,7 @@ i32 CGruntzMgr::HandleDebugPosition() {
 }
 
 RVA(0x0008e4e0, 0x172)
-INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
 
     switch (msg) {
@@ -1179,7 +1179,7 @@ i32 CGruntzMgr::DebugJumpLevel() {
 }
 
 RVA(0x0008e7c0, 0x86)
-INT_PTR CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
@@ -1207,7 +1207,7 @@ i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
 }
 
 RVA(0x0008e8c0, 0x86)
-INT_PTR CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
@@ -3060,7 +3060,7 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
 }
 
 RVA(0x00092a30, 0x52)
-INT_PTR CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             return 1;
@@ -3079,7 +3079,7 @@ INT_PTR CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 }
 
 RVA(0x00092ab0, 0x20d)
-i32 CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             SetDlgItemInt(hDlg, 0x4db, g_debugGruntPlayer, 0);

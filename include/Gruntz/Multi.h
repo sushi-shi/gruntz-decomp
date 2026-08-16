@@ -44,9 +44,9 @@ struct CNetLobbyConnection {
 
 void SetActiveAndFocus(void* hwnd);
 void FillPlayerList(HWND hList, CNetMgr* session);
-INT_PTR CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-INT_PTR CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class CNetPlayerListNode;
 

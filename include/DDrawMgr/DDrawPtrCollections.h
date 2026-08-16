@@ -117,16 +117,16 @@ public:
     CDDSurface* CreateBlit47SurfaceFromDesc(const DDSURFACEDESC* desc);
     CDDSurface* MakeAndAddB(i32 width, i32 height, ColorDepth bitDepth, i32 caps, i32 key);
     CDDPalette* CreateRgbPalette(void* rgb, i32 flags);
-    CDDPalette* CreatePaletteFromEntries(i32 a, i32 b);
+    CDDPalette* CreatePaletteFromEntries(PALETTEENTRY* entries, i32 b);
 
     CDDPalette* LoadPaletteFromFile(char* path, i32 flags);
     CDDPalette* CreatePaletteFromTrailingData(void* a, u32 b, i32 c);
 
     CDDPalette* LoadTrailingRgbPalette(const char* path, i32 z);
-    CDDPalette* LoadDisplayPaletteFromFile(const char* path, i32 z);
-    CDDPalette* SetDisplayPaletteFromRgb(void* buf, i32 z);
+    i32 LoadDisplayPaletteFromFile(const char* path, i32 z);
+    i32 SetDisplayPaletteFromRgb(void* buf, i32 z);
 
-    CDDPalette* SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag);
+    i32 SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag);
 
     i32 SetDisplayPaletteFrom(CDDPalette* pal, i32 tag);
     i32 SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag);

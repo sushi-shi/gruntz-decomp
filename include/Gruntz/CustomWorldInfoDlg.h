@@ -7,7 +7,7 @@
 
 extern char g_dotDot[];
 
-extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+extern "C" BOOL CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // GRUNTZ_CUSTOMWORLDINFODLG_H

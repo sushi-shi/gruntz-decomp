@@ -6,7 +6,6 @@
 #include <MfcNoInline.h>
 #include <MfcWin.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/ButeTree.h>
 #include <Bute/SymTab.h>

@@ -26,7 +26,7 @@ DATA(0x002295d8)
 static Utils::RegistryHelper g_registryHelper;
 
 RVA(0x0000afb0, 0x108)
-INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_INITDIALOG:
             g_registryHelper.Close();

@@ -118,7 +118,7 @@ public:
         i32 aiRadius,
         i32 placeArg9,
         i32 placeArg10,
-        i32 spanWord
+        RECT* span
     );
 
     i32 ResetCell(i32 col, i32 row, i32 force, i32 keep);

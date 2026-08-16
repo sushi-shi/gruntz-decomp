@@ -12,10 +12,10 @@ class CMulti;
 i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 namespace NetLobby {
 
-    i32 CALLBACK HostWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
-    i32 CALLBACK JoinWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
-    i32 CALLBACK SessionWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
-    i32 CALLBACK NetGameDlgProc(HWND, UINT, WPARAM, LPARAM);
+    BOOL CALLBACK HostWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
+    BOOL CALLBACK JoinWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
+    BOOL CALLBACK SessionWaitDlgProc(HWND, UINT, WPARAM, LPARAM);
+    BOOL CALLBACK NetGameDlgProc(HWND, UINT, WPARAM, LPARAM);
     void UpdateHostWaitDialog(HWND hWnd, void* ctx);
     void UpdateJoinWaitDialog(HWND hWnd, void* ctx);
     void UpdateLobbyDialog(HWND hWnd, void* ctx);

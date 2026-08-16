@@ -1,4 +1,3 @@
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -84,7 +83,7 @@ i32 CTriggerMgr::PlaceObject(
     i32 aiRadius,
     i32 placeArg9,
     i32 placeArg10,
-    i32 spanWord
+    RECT* span
 ) {
 
     {
@@ -226,9 +225,6 @@ i32 CTriggerMgr::PlaceObject(
             if (row == g_curPlayer && aiType != 0) {
                 aiType = 0;
             }
-
-            AddrWord<RECT> span;
-            span.m_word = spanWord;
             if (logic->Place(
                     this,
                     row,
@@ -240,7 +236,7 @@ i32 CTriggerMgr::PlaceObject(
                     aiRadius,
                     placeArg9,
                     placeArg10,
-                    span.m_rect,
+                    span,
                     mode
                 )
                 == 0) {

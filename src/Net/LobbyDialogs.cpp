@@ -36,7 +36,7 @@ namespace NetLobby {
     CString g_str649618;
 
     RVA(0x000bd850, 0x141)
-    i32 CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -85,7 +85,7 @@ namespace NetLobby {
     void UpdateHostWaitDialog(HWND, void*) {}
 
     RVA(0x000bda70, 0xda)
-    i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -128,7 +128,7 @@ namespace NetLobby {
     void UpdateJoinWaitDialog(HWND, void*) {}
 
     RVA(0x000bdc00, 0x10c)
-    i32 CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -176,7 +176,7 @@ namespace NetLobby {
     void UpdateLobbyDialog(HWND, void*) {}
 
     RVA(0x000bddd0, 0x193)
-    i32 CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -249,7 +249,7 @@ namespace NetLobby {
     }
 
     RVA(0x000be0a0, 0x1c7)
-    i32 CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
@@ -353,7 +353,7 @@ namespace NetLobby {
     }
 
     RVA(0x000be550, 0x193)
-    i32 CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    BOOL CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;

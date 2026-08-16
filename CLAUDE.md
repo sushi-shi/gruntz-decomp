@@ -94,8 +94,18 @@
 - Avoid C-style casts. Prefer correct types; when a conversion is genuinely
   required, use the appropriate C++ named cast. Preserve authentic SDK/ABI
   types at external boundaries.
-- Use `<Mfc.h>` for MFC translation units and `<Win32.h>` for pure Win32/DirectX
-  units. Do not hand-roll Windows typedefs, imports, or calling conventions.
+- Platform preludes come from four headers and nothing else - never an
+  `<afx*.h>` or `<windows.h>` directly. `<Win32.h>` is the pure Win32/DirectX
+  root; `<Mfc.h>` is the MFC root, and `<MfcWin.h>` (the `<afxwin.h>` surface)
+  and `<MfcNoInline.h>` (MFC's accessors parsed OUT OF LINE, a per-TU codegen
+  device) are supersets that pull `<Mfc.h>` themselves. The two MFC roots are
+  mutually exclusive with `<Win32.h>` as a TU's first include. Their relative
+  order is a real contract, not a style: `<Mfc.h>` then `<MfcNoInline.h>` then
+  `<MfcWin.h>`, because `_AFX_ENABLE_INLINES` must be defined by `<afx.h>`
+  before it can be undefined and `<afxwin.h>` must be parsed after that.
+- Do not hand-roll Windows typedefs, imports, or calling conventions: take the
+  SDK's own declaration. Where cl 5.0 provably cannot take the SDK header,
+  state the measurement at the declaration instead of inventing a spelling.
 - Use named, typed enums for proven numeric domains instead of magic macros.
   Enumerate only values supported by evidence. Changing a function parameter
   or return type to an enum changes MSVC mangling, so verify such signature

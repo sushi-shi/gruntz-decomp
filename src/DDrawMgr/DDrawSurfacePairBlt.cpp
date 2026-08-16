@@ -2,7 +2,6 @@
 
 #include <Mfc.h>
 
-#include <AddrWord.h>
 #include <DDrawMgr/AnimWorkerObj.h>
 #include <DDrawMgr/AniRecord.h>
 #include <DDrawMgr/DDrawPtrCollections.h>

@@ -16,7 +16,7 @@ DATA(0x00245ca4)
 CSaveGame* g_dlgLoadSink = 0;
 
 RVA(0x0009dff0, 0x8c)
-i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
             if (wParam == IDCANCEL || wParam == IDOK) {

@@ -402,11 +402,9 @@ i32 FileExists(const char* szPath);
 void operator delete(void*);
 void ChannelSlots_InitAll();
 
-INT_PTR CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR
-CALLBACK WarpDialogProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR
-CALLBACK PsycheDialogProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK JumpLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK WarpDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK PsycheDialogProc(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK JumpLevelDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

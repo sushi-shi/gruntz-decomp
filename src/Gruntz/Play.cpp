@@ -4,7 +4,6 @@
 
 #include <Mfc.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h>
 #include <Bute/SymTab.h>
@@ -5047,8 +5046,6 @@ b32 CPlay::PlaceStartGruntz() {
             if (who == CreateGruntStartingPoint) {
                 i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                AddrWord<long> extentArg;
-                extentArg.m_addr = &obj->m_extent.left;
                 i32 idx = m_mgr->m_cmdGrid->PlaceObject(
                     obj->m_smarts,
                     x,
@@ -5062,8 +5059,7 @@ b32 CPlay::PlaceStartGruntz() {
                     obj->m_direction,
                     aux->m_minX,
                     aux->m_maxX,
-
-                    extentArg.m_word
+                    &obj->m_extent
                 );
                 if (idx == -1) {
                     CString s;
@@ -5898,9 +5894,7 @@ i32 CPlay::AddLevelGruntz() {
             g->m_direction,
             g->m_animWorker->m_minX,
             g->m_animWorker->m_maxX,
-            // Byte-evidenced kind-dependent ABI slot.
-
-            reinterpret_cast<i32>(&g->m_extent.left)
+            &g->m_extent
         );
         if (r == -1) {
             CString msg;

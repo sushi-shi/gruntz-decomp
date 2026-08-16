@@ -2,7 +2,6 @@
 
 #include <DDrawMgr/DirectDrawMgr.h>
 
-#include <AddrWord.h>
 #include <ComOutRef.h>
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -728,12 +727,10 @@ CDDPalette* CDDrawPtrCollections::CreateRgbPalette(void* rgb, i32 flags) {
 }
 
 RVA(0x00143040, 0x7c)
-CDDPalette* CDDrawPtrCollections::CreatePaletteFromEntries(i32 a, i32 b) {
+CDDPalette* CDDrawPtrCollections::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 b) {
     CDDPalette* item = new CDDPalette;
 
-    AddrWord<PALETTEENTRY> entries;
-    entries.m_word = a;
-    if (!item->Create(m_device, entries.m_addr, b)) {
+    if (!item->Create(m_device, entries, b)) {
         if (item) {
             item->Destroy();
             ::operator delete(item);
@@ -1043,7 +1040,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 }
 
 RVA(0x00143950, 0x56)
-CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
+i32 CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
     if (buf == NULL) {
         return 0;
     }
@@ -1056,10 +1053,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromRgb(void* buf, i32 z) {
     }
     m_hasPalette = 1;
     m_paletteTag = z;
-
-    AddrWord<CDDPalette> ok;
-    ok.m_word = 1;
-    return ok.m_addr;
+    return 1;
 }
 
 RVA(0x001439b0, 0x3f)
@@ -1077,7 +1071,7 @@ i32 CDDrawPtrCollections::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag
 }
 
 RVA(0x001439f0, 0x35)
-CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag) {
+i32 CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag) {
     if (buf == NULL) {
         return 0;
     }
@@ -1088,7 +1082,7 @@ CDDPalette* CDDrawPtrCollections::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 
 }
 
 RVA(0x00143a30, 0xe9)
-CDDPalette* CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i32 z) {
+i32 CDDrawPtrCollections::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;

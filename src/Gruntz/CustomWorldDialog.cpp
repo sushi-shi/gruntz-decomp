@@ -85,7 +85,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
 }
 
 RVA(0x0003ae60, 0xec)
-INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     switch (msg) {
         case WM_INITDIALOG:
@@ -249,7 +249,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
 }
 
 RVA(0x0003b600, 0x15f)
-INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG: {
             WwdHeader info;

@@ -34,7 +34,7 @@ public:
 
     void ShowMessage(const char* msg, HWND hParent);
     virtual CGameMgr* InitializeGameManager() OVERRIDE;
-    static INT_PTR CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static BOOL CALLBACK ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
     i32 LoadSwitchDownSprite();
 

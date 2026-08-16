@@ -136,8 +136,8 @@ i32 CAniRecordBase2::CreatePaletteFromRgb(void* data, i32 flag) {
 }
 
 RVA(0x00168f20, 0x40)
-i32 CAniRecordBase2::CreatePaletteFromEntries(i32 handle, i32 flag) {
-    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromEntries(handle, 0x44);
+i32 CAniRecordBase2::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
+    CDDPalette* buf = OwnerMgr()->m_ptrColl->CreatePaletteFromEntries(entries, 0x44);
     m_buf = buf;
     if (buf == NULL) {
         return 0;

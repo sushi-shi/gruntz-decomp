@@ -32,7 +32,7 @@ static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
 static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 
 RVA(0x000e35f0, 0x77)
-i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
@@ -59,7 +59,7 @@ i32 CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 // residue: retail saves esi/edi before the null guards; candidate shrink-wraps
 // them afterward, moving the CFile/CString homes without changing the frame size.
 RVA(0x000e3690, 0x2ec)
-i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_PAINT: {
             HWND item = GetDlgItem(hDlg, CTRL_SAVESLOT_PREVIEW_IMAGE);
@@ -156,12 +156,12 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 RVA(0x000e3a40, 0xb0)
-i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             if (g_slotState == NULL) {
-                // API-forced INT_PTR boundary.
-
+                // EndDialog's nResult is an int; retail passes the slot pointer
+                // through it.
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);
@@ -186,12 +186,12 @@ i32 CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 }
 
 RVA(0x000e3b20, 0x86)
-i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             if (g_slotState == NULL) {
-                // API-forced INT_PTR boundary.
-
+                // EndDialog's nResult is an int; retail passes the slot pointer
+                // through it.
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);
@@ -214,7 +214,7 @@ i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 RVA(0x000e3be0, 0x52)
-i32 CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
             return 1;

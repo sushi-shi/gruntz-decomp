@@ -102,8 +102,7 @@ void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
 }
 
 RVA(0x00080c70, 0x55)
-INT_PTR CALLBACK
-CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hWnd;
 
     switch (message) {

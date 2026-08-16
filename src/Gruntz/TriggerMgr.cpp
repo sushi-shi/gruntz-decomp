@@ -1,6 +1,5 @@
 #include <Gruntz/TriggerMgr.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/PixelShift.h>

@@ -6,7 +6,7 @@
 #include <Ints.h>
 #include <Utils/RegistryHelper.h>
 
-INT_PTR CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 void SaveOption(
     HWND hWnd,

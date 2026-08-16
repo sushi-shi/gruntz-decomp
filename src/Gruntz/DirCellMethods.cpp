@@ -123,7 +123,7 @@ i32 CTriRecord::Serialize(CFileMemBase* ar, SerialMode tag, LogicTypeId c, CGame
 }
 
 RVA(0x0003c990, 0x1bc)
-INT_PTR CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
 
     switch (msg) {
@@ -194,7 +194,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 }
 
 RVA(0x0003cdd0, 0x19f)
-INT_PTR CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
     switch (msg) {
         case WM_INITDIALOG: {
