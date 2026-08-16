@@ -46,6 +46,6 @@ public:
     i32 m_placeIndex;
 };
 
-extern "C" i32 CellTargetable(i32 col, i32 row);
+i32 CellTargetable(i32 col, i32 row);
 
 #endif // GRUNTZ_GRUNTZ_CGRUNTPUDDLE_H

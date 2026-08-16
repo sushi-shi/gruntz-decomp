@@ -17,7 +17,7 @@
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
 
-extern "C" tagRECT g_versionRect;
+extern tagRECT g_versionRect;
 
 #include <Rez/FrameClock.h>
 #include <Gruntz/WarpLetter.h>

@@ -44,6 +44,6 @@ public:
     }
 };
 
-extern "C" i32 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, i32);
+i32 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, i32);
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZAPP_H

@@ -16,7 +16,7 @@ extern CString g_levelMsgStrings[8];
 
 class CString;
 
-extern "C" const i32 g_bootyLetterCoords[32];
+extern const i32 g_bootyLetterCoords[32];
 
 extern const float g_secretRatioScale;
 extern char g_secretMsgA[0x20];

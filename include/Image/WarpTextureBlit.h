@@ -4,8 +4,8 @@
 #include <Image/RasterVtx.h>
 #include <Ints.h>
 
-extern "C" const float g_rasterScale;
-extern "C" const float g_rasterScaleNeg;
+extern const float g_rasterScale;
+extern const float g_rasterScaleNeg;
 
 i32 WarpIsPow2(i32 x);
 

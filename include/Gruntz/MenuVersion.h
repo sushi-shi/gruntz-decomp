@@ -3,8 +3,8 @@
 
 #include <Ints.h>
 
-extern "C" i32 g_versionMajor;
-extern "C" i32 g_versionMid;
-extern "C" i32 g_versionMinor;
+extern i32 g_versionMajor;
+extern i32 g_versionMid;
+extern i32 g_versionMinor;
 
 #endif // GRUNTZ_MENUVERSION_H

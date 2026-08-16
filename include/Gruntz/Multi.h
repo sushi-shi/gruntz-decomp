@@ -283,7 +283,7 @@ public:
 
 extern CMulti* g_multiState;
 extern CString g_sessionName;
-extern "C" i32 g_optionsCursor;
+extern i32 g_optionsCursor;
 
 extern CNetMgr* g_groupEnumMgr;
 
@@ -295,12 +295,12 @@ void MultiJoinHandler();
 
 class CFile;
 
-extern "C" i32 g_serviceId;
+extern i32 g_serviceId;
 
-extern "C" CMulti* g_connectRptMgr;
-extern "C" void RefreshPlayerRow(HWND hDlg, HWND hList);
+extern CMulti* g_connectRptMgr;
+void RefreshPlayerRow(HWND hDlg, HWND hList);
 
-extern "C" HWND g_sharedFlag;
+extern HWND g_sharedFlag;
 
 extern char s_GameKey[];
 extern u32 g_ackThrottleDeadline;

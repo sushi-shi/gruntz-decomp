@@ -5,7 +5,7 @@
 
 class CDDrawSurfaceMgr;
 
-extern "C" i32 EngStr_RenderText(
+i32 EngStr_RenderText(
     void* self,
     class CString* text,
     struct tagRECT* dst,

@@ -6,12 +6,12 @@
 
 #include <stdio.h>
 
-extern "C" void DiscardDebugOutput(char* line);
+void DiscardDebugOutput(char* line);
 
-extern "C" void RezAssertFail(char* fmt, ...);
-extern "C" void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...);
-extern "C" void RezDebugPrintfCh(i32 channel, char* fmt, ...);
-extern "C" void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
+void RezAssertFail(char* fmt, ...);
+void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...);
+void RezDebugPrintfCh(i32 channel, char* fmt, ...);
+void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
 
 GZ_ENUM_BEGIN(DebugPrintMode)
     DEBUG_PRINT_DISABLED = 0,

@@ -12,7 +12,7 @@ class CGruntzMgr;
 
 i32 SaveGame(CGruntzMgr* host, char* name);
 
-extern "C" i32 g_saveBuf[0x24];
+extern i32 g_saveBuf[0x24];
 
 extern i32 g_savedMenuCmd;
 

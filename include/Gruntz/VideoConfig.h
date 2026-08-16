@@ -6,16 +6,16 @@
 #include <Gruntz/Resolution.h>
 #include <Ints.h>
 
-extern "C" i32 g_opt_22bd64;
-extern "C" i32 g_opt_22bd68;
-extern "C" i32 g_opt_22bd6c;
-extern "C" i32 g_opt_22bd70;
-extern "C" i32 g_opt_22bd84;
-extern "C" i32 g_opt_22bdc4;
-extern "C" Resolution g_opt_22bdc8;
-extern "C" i32 g_opt_22bdcc;
-extern "C" i32 g_opt_22bdd0;
-extern "C" i32 g_opt_22bdd4;
+extern i32 g_opt_22bd64;
+extern i32 g_opt_22bd68;
+extern i32 g_opt_22bd6c;
+extern i32 g_opt_22bd70;
+extern i32 g_opt_22bd84;
+extern i32 g_opt_22bdc4;
+extern Resolution g_opt_22bdc8;
+extern i32 g_opt_22bdcc;
+extern i32 g_opt_22bdd0;
+extern i32 g_opt_22bdd4;
 
 void LoadGameOptionsToDialog(HWND hDlg);
 void ReadMenuOptionsDialog(HWND hDlg);

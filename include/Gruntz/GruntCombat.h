@@ -4,12 +4,12 @@
 #include <Gruntz/ActReg.h>
 #include <Ints.h>
 
-extern "C" const u8 g_hitTable[23][23];
-extern "C" const float g_quarterScale;
-extern "C" const float g_slopeTwo;
-extern "C" const float g_slopeNegTwo;
-extern "C" const double g_slopeHalf;
-extern "C" const double g_slopeNegHalf;
+extern const u8 g_hitTable[23][23];
+extern const float g_quarterScale;
+extern const float g_slopeTwo;
+extern const float g_slopeNegTwo;
+extern const double g_slopeHalf;
+extern const double g_slopeNegHalf;
 
 static inline void GruntScratchTeardown();
 

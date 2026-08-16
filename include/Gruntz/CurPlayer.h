@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern "C" i32 g_curPlayer;
+extern i32 g_curPlayer;
 
 #endif // INCLUDE_GRUNTZ_CURPLAYER_H

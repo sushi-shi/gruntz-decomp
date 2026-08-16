@@ -221,7 +221,7 @@ public:
     i32 m_flags;
 };
 
-extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref);
+i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref);
 
 union DinDeviceEnumFn {
     LPDIENUMDEVICESCALLBACKA m_sdk;

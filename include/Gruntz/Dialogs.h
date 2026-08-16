@@ -321,12 +321,12 @@ private:
 
 extern CString g_gruntNames[4];
 
-extern "C" i32 g_watchBusy;
-extern "C" i32 g_watchBlinkA;
-extern "C" i32 g_watchBlinkB;
+extern i32 g_watchBusy;
+extern i32 g_watchBlinkA;
+extern i32 g_watchBlinkB;
 
-extern "C" i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+i32 CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-extern "C" i32 CALLBACK BattlezMapComboEditProc(HWND, UINT, WPARAM, LPARAM);
+i32 CALLBACK BattlezMapComboEditProc(HWND, UINT, WPARAM, LPARAM);
 
 #endif // SRC_GRUNTZ_DIALOGS_H

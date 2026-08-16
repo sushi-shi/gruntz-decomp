@@ -36,7 +36,7 @@ class CDDrawSurfaceMgr;
 
 extern i32 g_dropPlayerId;
 
-extern "C" i32 g_localVersion;
+extern i32 g_localVersion;
 extern i32 g_remoteVersion;
 
 union NetGuid {
@@ -45,7 +45,7 @@ union NetGuid {
 };
 
 extern NetGuid g_dplayAppGuid;
-extern "C" i32 g_cfgWord;
+extern i32 g_cfgWord;
 
 struct CNetVersionMsg {
     char m_pad0[0x18];
@@ -452,10 +452,10 @@ public:
     CString GetName();
 };
 
-extern "C" BOOL __stdcall
+extern BOOL __stdcall
 NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
 
-extern "C" BOOL __stdcall
+extern BOOL __stdcall
 NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
 
 struct IDirectPlay;
@@ -484,7 +484,7 @@ struct MenuSelectEvent {
 
 class CFontConfig;
 
-extern "C" char g_recvBuffer[];
+extern char g_recvBuffer[];
 
 extern CNetChannelStatPacket g_chanStat422;
 extern CNetChannelStatPacket g_chanStat423;
@@ -499,8 +499,8 @@ struct CChatPacket {
 
 extern CChatPacket g_chatPacket;
 
-extern "C" i32 g_playerLeftFlag;
-extern "C" i32 g_activePlayerCount;
+extern i32 g_playerLeftFlag;
+extern i32 g_activePlayerCount;
 
 struct InterfaceObject;
 
@@ -680,7 +680,7 @@ public:
     void SetServiceName(CString s);
 };
 
-extern "C" i32 g_spEnumValidated;
+extern i32 g_spEnumValidated;
 class CNetMgr;
 struct NetDPName;
 static i32 __stdcall

@@ -152,10 +152,10 @@ public:
 
 extern CButeMgr g_buteMgr;
 
-extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
-extern "C" void ButeTag_Apply(char* key, void* value, void* ctx);
+void ButeGroup_Apply(char* key, void* value, void* ctx);
+void ButeTag_Apply(char* key, void* value, void* ctx);
 #include <stdio.h>
 
-extern "C" i16 g_charClass[];
-extern "C" i16 g_transTable[97][49][3];
+extern i16 g_charClass[];
+extern i16 g_transTable[97][49][3];
 #endif // SRC_BUTE_BUTEMGR_H

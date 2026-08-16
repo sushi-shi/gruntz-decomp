@@ -14,7 +14,7 @@ extern CVariantSlot g_symTabErrorSlot;
 
 // Index of the first differing bit between two NUL-terminated keys; the PATRICIA
 // critbit primitive shared by zPTree::Insert and zPTree::FindOrInsert.
-extern "C" i32 FirstDiffBit(const char* a, const char* b);
+i32 FirstDiffBit(const char* a, const char* b);
 
 class zPtrColl {
 public:

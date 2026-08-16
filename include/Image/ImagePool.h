@@ -55,7 +55,7 @@ public:
     i32 m_reserved48;
 };
 
-extern "C" HINSTANCE g_hResModule;
+extern HINSTANCE g_hResModule;
 
 extern char g_bmpHeaderTemplate[];
 

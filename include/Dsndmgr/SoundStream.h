@@ -47,9 +47,9 @@ public:
     DSoundList m_voices;
 };
 
-extern "C" i32 g_ssLogEnabled;
-extern "C" i32 g_ssMsgBoxEnabled;
-extern "C" i32 g_ssBeepEnabled;
-extern "C" i32 g_ssThirdEnabled;
+extern i32 g_ssLogEnabled;
+extern i32 g_ssMsgBoxEnabled;
+extern i32 g_ssBeepEnabled;
+extern i32 g_ssThirdEnabled;
 
 #endif // DSNDMGR_SOUNDSTREAM_H

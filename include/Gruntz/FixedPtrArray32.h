@@ -18,6 +18,6 @@ public:
     CInputDevBase* m_items[32];
 };
 
-extern "C" CFixedPtrArray32* g_actorList;
+extern CFixedPtrArray32* g_actorList;
 
 #endif // GRUNTZ_CFIXEDPTRARRAY32_H

@@ -38,6 +38,6 @@ public:
     CRezDir* m_dir;
 };
 
-extern "C" char g_wildcard[];
+extern char g_wildcard[];
 
 #endif // SRC_REZ_REZFILE_H

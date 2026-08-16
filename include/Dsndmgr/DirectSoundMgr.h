@@ -107,9 +107,9 @@ public:
     DSoundCloneList m_cloneList;
 };
 
-extern "C" i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
+i32 ParseWaveChunks(void* riff, WaveFormatX** fmtOut, void** dataOut, u32* sizeOut);
 
-extern "C" i32 ConvertVolumeToPercent(i32 v);
+i32 ConvertVolumeToPercent(i32 v);
 
 extern const double c_volScale;
 extern const double c_volNum;

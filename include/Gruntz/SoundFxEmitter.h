@@ -11,7 +11,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Ints.h>
 
-extern "C" i32 g_disableFades;
+extern i32 g_disableFades;
 
 void ActiveWait(u32 milliseconds);
 

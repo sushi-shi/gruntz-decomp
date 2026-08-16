@@ -479,16 +479,16 @@ void ChannelSlots_InitAll();
 // Per-world death cause for pit/liquid tiles, set from the AREA%i bank.
 extern GruntDeathType g_areaPitDeath;
 
-extern "C" i32 g_playActive;
-extern "C" i32 g_profAccA;
-extern "C" i32 g_profAccB;
-extern "C" i32 g_soundChannelInUse[TINT_COUNT];
+extern i32 g_playActive;
+extern i32 g_profAccA;
+extern i32 g_profAccB;
+extern i32 g_soundChannelInUse[TINT_COUNT];
 
 extern i32 g_lastLevelNum;
 // Per-world death cause a StaticHazard inflicts; copied into the hazard
 // object's WWD `Smarts` slot at construction.
-extern "C" GruntDeathType g_areaHazardDeath;
-extern "C" i32 g_levelBias100;
+extern GruntDeathType g_areaHazardDeath;
+extern i32 g_levelBias100;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 

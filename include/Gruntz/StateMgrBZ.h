@@ -65,6 +65,6 @@ inline StateMgrBZ::StateMgrBZ() {
     m_mode = static_cast<InputDeviceSel>(0);
 }
 
-extern "C" StateMgrBZ* g_spawnConfig;
+extern StateMgrBZ* g_spawnConfig;
 
 #endif // GRUNTZ_STATEMGRBZ_H

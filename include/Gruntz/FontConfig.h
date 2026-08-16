@@ -61,10 +61,10 @@ public:
     HFONT m_messageFont;
 };
 
-extern "C" i32 g_chatTextWidth;
-extern "C" i32 g_caretBlinkMs;
-extern "C" i32 g_caretBlinkOn;
-extern "C" i32 g_lastDrawTextFormat;
+extern i32 g_chatTextWidth;
+extern i32 g_caretBlinkMs;
+extern i32 g_caretBlinkOn;
+extern i32 g_lastDrawTextFormat;
 
 struct FontItem {
     i32 type;

@@ -93,7 +93,7 @@ class CMoviePlayer;
 
 extern i32 RestoreLostSurfaces();
 
-extern "C" i32 __stdcall DdEnumModesCallback(void* mode, i32 unused);
+i32 __stdcall DdEnumModesCallback(void* mode, i32 unused);
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -101,7 +101,7 @@ extern "C" i32 __stdcall DdEnumModesCallback(void* mode, i32 unused);
 extern i32 (*g_restoreHandler)();
 class CDDrawPtrCollections;
 
-extern "C" CDDrawPtrCollections* g_DirectDrawMgr;
+extern CDDrawPtrCollections* g_DirectDrawMgr;
 
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(

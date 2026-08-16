@@ -373,19 +373,19 @@ public:
     GruntzPlayer m_options[4];
 };
 
-extern "C" i32 g_scoreTimeBase;
+extern i32 g_scoreTimeBase;
 
 i32 PumpIdleFrame();
 
-extern "C" i32 g_monologoShown;
+extern i32 g_monologoShown;
 
-extern "C" char g_msgScratch[256];
+extern char g_msgScratch[256];
 
-extern "C" u32 g_gruntDestruction;
-extern "C" u32 g_gruntCreation;
-extern "C" u32 g_gooPuddlez;
-extern "C" u32 g_explosionz;
-extern "C" u32 g_resolutionChanged;
+extern u32 g_gruntDestruction;
+extern u32 g_gruntCreation;
+extern u32 g_gooPuddlez;
+extern u32 g_explosionz;
+extern u32 g_resolutionChanged;
 
 extern i32 g_debugDisplayFlags;
 extern CString g_brickText2;

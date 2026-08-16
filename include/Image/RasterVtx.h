@@ -13,13 +13,13 @@ struct ClipVtx {
     i32 fx, fu, fv;
 };
 
-extern "C" ClipVtx g_rasterVtxA[100];
-extern "C" ClipVtx g_rasterVtxB[100];
-extern "C" ClipVtx g_rasterEdgeR[4096];
-extern "C" ClipVtx g_rasterEdgeL[4096];
-extern "C" i32 g_rasterVtxCount;
-extern "C" u8* g_rasterDestRow;
-extern "C" i16* g_rasterDestPtr;
+extern ClipVtx g_rasterVtxA[100];
+extern ClipVtx g_rasterVtxB[100];
+extern ClipVtx g_rasterEdgeR[4096];
+extern ClipVtx g_rasterEdgeL[4096];
+extern i32 g_rasterVtxCount;
+extern u8* g_rasterDestRow;
+extern i16* g_rasterDestPtr;
 
 i32 RotateRasterize(
     ClipVtx* verts,

@@ -47,6 +47,6 @@ GZ_ENUM_BEGIN(SerialMode)
     SERIAL_CREATE_BY_SERIAL_ID = 10
 GZ_ENUM_END(SerialMode)
 
-extern "C" char g_syncErrMsgBuf[];
+extern char g_syncErrMsgBuf[];
 
 #endif // GRUNTZ_SERIALARCHIVE_H
