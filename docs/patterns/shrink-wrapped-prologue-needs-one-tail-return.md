@@ -51,4 +51,31 @@ guard does not need a zero register. Sieve: leading-push count base vs target
 `CPlay::StepGridWalk` 0xd0a60 66.67 -> 100.00 EXACT (that one was filed as a
 WALL - see the related link).
 
+## Read it in REVERSE too: base shrink-wraps, retail does not
+
+The same rule run backwards names a missing source `return`. When the BASE sinks its
+saves past the guard (early-out with no pops, sunk pushes in non-canonical order) and
+the TARGET pushes all of them at entry with the early-out popping every one, retail's
+source had a **second** early return that ours lacks - so cl shrink-wrapped ours and not
+retail's. Add the return retail's flow graph had; nothing else changes.
+
+```asm
+; base: shrink-wrapped => our source has ONE early return
+mov  eax,[ecx+0x78] / test eax,eax / jne L1 / xor eax,eax / ret   ; no pops
+L1: mov eax,[ecx+0xc] / push edi / push esi / push ebp / push ebx  ; sunk, reversed
+; target: NOT shrink-wrapped => retail's source had TWO
+mov  eax,[ecx+0x78] / push ebx / push ebp / push esi / push edi    ; canonical order
+test eax,eax / jne L1 / xor eax,eax / pop edi / pop esi / pop ebp / pop ebx / ret
+```
+
+The push ORDER is the cheap tell: sunk saves come out in first-definition order and read
+*reversed* against the canonical `ebx, ebp, esi, edi` an entry prologue emits.
+
+`SoundDevice::FreeSamples` 0x136ed0 **77.41 -> 100.00 EXACT** - body already byte-identical,
+the entire residue was the prologue placement. Its guard-walk-delete twin
+`SoundDevice::PurgeVoiceList` 0x136e20 sits three lines up already EXACT with the canonical
+entry prologue, and it has THREE early returns; copying that shape (`if (node == NULL)
+return 1;` ahead of a `do/while`, which cl rotates to the same blocks as the `while`) closed
+FreeSamples. Prefer an exact neighbour in the same file as the model for the missing return.
+
 related: [tail-block-placement-cross-jump-wall.md](tail-block-placement-cross-jump-wall.md) (the wall this breaks), [trailing-error-block-is-a-crossjump-magnet.md](trailing-error-block-is-a-crossjump-magnet.md) (the half that is still a wall: merging guards with `||` feeds cl's cross-jump).

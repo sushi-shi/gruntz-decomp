@@ -80,3 +80,20 @@ boundary is worth one A/B. If the pair is two *independent* loads/stores of the 
 two spill reloads at a join, the two halves of a u32->double conversion - it is the C1
 handle-state coin of `tu-state-probe-family-decides-reachability.md` instead, and no source
 spelling reaches it.
+
+## The expansion must CONTAIN a memory access - a store through the enclosing `this` is not one
+
+Every closing example above moves a *read through a passed-by-reference object* inside the
+expansion (`HeadRezNode(m_list)` puts the `[edi+0x14]` load there; `m_list`'s address is
+already live in the caller). A helper whose whole body is a store to the object the caller
+is ALREADY holding in a register adds no access to pin: cl folds it before scheduling and
+emits the same bytes.
+
+`DSoundVoice::DSoundVoice` 0x136fe0 is the control. Its residue is one free store - retail
+emits `m_live = 1` first, cl sinks it four slots to pair with the leaf vptr stamp - and the
+rest of the store sequence already matches retail exactly. BOTH boundary spellings came out
+**byte-identical at 88.00**: wrapping the statement that should come second
+(`SetVoiceBuffer(*this, owner)`) and wrapping the sinking statement itself
+(`MarkVoiceLive(*this)`). So the lever is unavailable when the free instruction and its
+neighbour are both `mov [<this-reg>+disp], <imm-or-reg>`; that shape is scheduler tie-break,
+not a hoist out of a candidate set.

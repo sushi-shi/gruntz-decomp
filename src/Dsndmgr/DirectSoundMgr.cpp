@@ -1243,14 +1243,16 @@ i32 SoundDevice::PurgeVoiceList(i32 time) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00136ed0, 0x72)
 i32 SoundDevice::FreeSamples() {
     if (m_initialized == 0) {
         return 0;
     }
     DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);
-    while (node) {
+    if (node == NULL) {
+        return 1;
+    }
+    do {
         DSoundLink* n = node->m_link.m_next;
         DSoundElem* next = elemOf<DSoundElem>(n);
         node->Stop();
@@ -1261,7 +1263,7 @@ i32 SoundDevice::FreeSamples() {
             delete pure;
         }
         node = next;
-    }
+    } while (node);
     return 1;
 }
 
@@ -1293,8 +1295,8 @@ DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 
     m_live = 1;
     m_buffer = owner;
     m_stopAndRewind = slot;
-    m_rampStartVolume = pct;
     m_rampEndVolume = key;
+    m_rampStartVolume = pct;
     m_rampDurationMs = mode;
     m_rampStartTime = (stamp == -1) ? timeGetTime() : stamp;
 }

@@ -461,8 +461,24 @@ gate was never the variable.
 **The screen.** Its sibling `DSoundCloneInst::GetItem` @0x135d70 needs the OPPOSITE shrink-wrap
 decision (retail saves only `edi` at entry and defers `push esi`/`push ebx` past the guard,
 where cl pushes all three up front) from the *same* guard shape, and all four of its guard
-spellings tie at 90.31. Two functions in one TU, one guard shape, opposite required outcomes
-⇒ the decision is the allocator's, not the source's.
+spellings tie at 90.31.
+
+### CORRECTION 2026-08-16: it was the source, just not the GATE
+
+This section previously concluded from the matrix above that "the decision is the allocator's,
+not the source's". That is **falsified**. All four spellings vary only the *gate*, and the gate
+is not what cl 5.0 counts: the shrink-wrap decision is made on the number of **early returns in
+the whole source flow graph**
+([`shrink-wrapped-prologue-needs-one-tail-return.md`](shrink-wrapped-prologue-needs-one-tail-return.md)).
+FreeSamples had exactly one, so cl shrink-wrapped; retail's had two, so it did not. Adding the
+second one - `if (node == NULL) return 1;` ahead of a `do/while`, the shape its already-EXACT
+TU twin `SoundDevice::PurgeVoiceList` @0x136e20 uses - took it **77.41 -> 100.00 EXACT** with
+the gate left exactly as it was.
+
+So the honest reading of the matrix is narrower: it refutes the *positive-gate* lever on this
+function, not source-reachability. When retail's early exit pops everything, stop editing the
+gate and go count returns instead. The `GetItem` observation stands as written (it later closed
+at 100.00 EXACT via the forward direction of that same return-count rule).
 
 So before reaching for the positive form, check that retail's exit actually lands **below** a
 `pop` (the proof quoted at the top of this doc). If retail's early exit pops *everything*, the

@@ -101,7 +101,7 @@ dialogs	62	61
 dircellmethods	19	18
 directdrawmgr	68	68
 directinputmgr2	45	45
-directsoundmgr	79	75
+directsoundmgr	79	76
 donothing	8	8
 droppedobject	29	26
 engstrrendertext	2	2
@@ -1521,7 +1521,7 @@ directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	1	ac18fe87f9
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	e32b834a14a9	0x136230	100.0000	
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	1	e32b834a14a9	0x136180	100.0000	
 directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	bd55fdbb7ea3	0x135b10	100.0000	
-directsoundmgr	??0DSoundVoice@@QAE@HHHPAVDirectSoundMgr@@HH@Z	87.9394	87.9394	1	499c2bb085fa	0x136fe0	87.9394	
+directsoundmgr	??0DSoundVoice@@QAE@HHHPAVDirectSoundMgr@@HH@Z	88.0000	88.0000	2	514eadfb2059	0x136fe0	88.0000	
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	1	f5611730093b	0x1351d0	100.0000	
 directsoundmgr	??0SoundDevice@@QAE@XZ	100.0000	100.0000	1	2b76d7d766f0	0x136440	100.0000	
 directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	1	c1840ba484d2	0x136260	100.0000	
@@ -1550,7 +1550,7 @@ directsoundmgr	?ConvertVolumeToPercent@@YAHH@Z	100.0000	100.0000	1	c0df103b9a7b	
 directsoundmgr	?Create@SoundDevice@@QAEHPAXII@Z	100.0000	100.0000	1	1fd53d8f30c4	0x136550	100.0000	
 directsoundmgr	?CreateBuffer@SoundDevice@@QAEPAVDSoundCloneInst@@PAUWaveFormatX@@II@Z	100.0000	100.0000	1	7c999258417f	0x1366f0	100.0000	
 directsoundmgr	?CreatePrimaryBuffer@SoundDevice@@QAEHXZ	100.0000	100.0000	1	5a1487729420	0x137260	100.0000	
-directsoundmgr	?FreeSamples@SoundDevice@@QAEHXZ	77.4074	77.4074	1	49614f2370ac	0x136ed0	77.4074	
+directsoundmgr	?FreeSamples@SoundDevice@@QAEHXZ	100.0000	100.0000	2	0f6dd8dc0dad	0x136ed0	100.0000	
 directsoundmgr	?GetCurrentPosition@DirectSoundMgr@@QAEHPAK0@Z	100.0000	100.0000	1	b6af491b6363	0x135a20	100.0000	
 directsoundmgr	?GetFormat@DirectSoundMgr@@QAEHPAXIPAK@Z	100.0000	100.0000	1	e0b949e0f80b	0x135ac0	100.0000	
 directsoundmgr	?GetItem@DSoundCloneInst@@QAEPAVDirectSoundMgr@@XZ	100.0000	100.0000	1	692545410b7c	0x135d70	100.0000	
