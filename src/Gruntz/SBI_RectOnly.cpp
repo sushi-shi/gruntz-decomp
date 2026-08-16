@@ -870,6 +870,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     return 0;
 }
 
+// @early-stop
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -1004,13 +1005,9 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (g_gameReg->m_gameMode == GAMEMODE_SINGLE) {
         multiTab->m_state = MENUITEM_DISABLED;
         CDDrawWorker* f = multiTab->m_record;
-        CImage* v;
-        if (f != NULL && f->m_minIndex <= 4 && f->m_maxIndex >= 4) {
-            v = static_cast<CImage*>(f->m_items.GetAt(4));
-        } else {
-            v = NULL;
+        if (f != NULL) {
+            multiTab->m_frame = f->GetAt(IDX(MENUITEM_DISABLED));
         }
-        multiTab->m_frame = v;
         multiTab->m_enabled = 0;
         multiTab->SetSubtype();
     }
@@ -1463,30 +1460,22 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
-// Retail's EH state indices start at 2: it numbers the two mission-status `new` sites
-// 0 and 1, i.e. LEXICALLY FIRST, while laying that branch out LAST.  Hoisting the
-// branch to the top of the source gets the numbering but flips the layout with it, so
-// the two cannot be satisfied together from a plain if/else.  The residue is those
-// eight state immediates plus the one frame dword cl still spends on a separate $T.
-// docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_rect10.left;
     i32 by = m_rect10.top;
-    RECT r;
 
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
         if (m_hitTestDisabled != 0 && g_gameReg->m_frameGate != 0) {
             CSBI_MenuItem* resume = new CSBI_MenuItem;
-            r = SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec);
             if (!resume->SetupImage(
                     this,
                     code,
                     SBICMD_PAUSE,
                     TAB_GAME,
-                    r,
+                    SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                     "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
                     -1,
                     0
@@ -1498,13 +1487,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
             m_tabSprite5 = resume;
         } else {
             CSBI_MenuItem* pause = new CSBI_MenuItem;
-            r = SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec);
             if (!pause->SetupImage(
                     this,
                     code,
                     SBICMD_PAUSE,
                     TAB_GAME,
-                    r,
+                    SbGeom(bx, by + 0xd5, bx + 0x9f, by + 0xec),
                     "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
                     -1,
                     0
@@ -1517,13 +1505,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* load = new CSBI_MenuItem;
-        r = SbGeom(bx, by + 0x125, bx + 0x9f, by + 0x13c);
         if (!load->SetupImage(
                 this,
                 code,
                 SBICMD_LOAD_GAME,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0x125, bx + 0x9f, by + 0x13c),
                 "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
                 -1,
                 0
@@ -1538,13 +1525,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* save = new CSBI_MenuItem;
-        r = SbGeom(bx, by + 0xfd, bx + 0x9f, by + 0x114);
         if (!save->SetupImage(
                 this,
                 code,
                 SBICMD_SAVE_GAME,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0xfd, bx + 0x9f, by + 0x114),
                 "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
                 -1,
                 0
@@ -1559,13 +1545,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* settings = new CSBI_MenuItem;
-        r = SbGeom(bx, by + 0x14d, bx + 0x9f, by + 0x164);
         if (!settings->SetupImage(
                 this,
                 code,
                 SBICMD_SETTINGS,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0x14d, bx + 0x9f, by + 0x164),
                 "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
                 -1,
                 0
@@ -1577,13 +1562,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         m_tabSprite8 = settings;
 
         CSBI_MenuItem* help = new CSBI_MenuItem;
-        r = SbGeom(bx, by + 0x175, bx + 0x9f, by + 0x18c);
         if (!help->SetupImage(
                 this,
                 code,
                 SBICMD_BOOTY_STATE,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0x175, bx + 0x9f, by + 0x18c),
                 "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
                 -1,
                 0
@@ -1598,13 +1582,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
 
         CSBI_MenuItem* quit = new CSBI_MenuItem;
-        r = SbGeom(bx, by + 0x19d, bx + 0x9f, by + 0x1b4);
         if (!quit->SetupImage(
                 this,
                 code,
                 SBICMD_QUIT,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
                 "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
                 -1,
                 0
@@ -1616,13 +1599,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         m_tabSprite10 = quit;
 
         CSBI_ImageSet* destruct = new CSBI_ImageSet;
-        r = SbGeom(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6);
         if (!destruct->SetupImage(
                 this,
                 code,
                 SBICMD_DESTRUCT,
                 TAB_GAME,
-                r,
+                SbGeom(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
                 "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
                 IDX(m_modeState),
                 0
@@ -1644,13 +1626,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
     CSBI_ImageSet* status;
     if (g_gameReg->m_cmdGrid->m_phase == FINISH_STATE_VICTORY) {
         status = new CSBI_ImageSet;
-        r = SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118);
         if (!status->SetupImage(
                 this,
                 code,
                 SBICMD_MISSION_STATUS,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118),
                 "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
                 1,
                 0
@@ -1660,13 +1641,12 @@ i32 CStatusBarMgr::BuildGameMenu() {
         }
     } else {
         status = new CSBI_ImageSet;
-        r = SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118);
         if (!status->SetupImage(
                 this,
                 code,
                 SBICMD_MISSION_STATUS,
                 TAB_GAME,
-                r,
+                SbGeom(bx, by + 0xd7, bx + 0x9f, by + 0x118),
                 "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
                 2,
                 0
@@ -1737,17 +1717,6 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 }
 
 // @early-stop
-// 86.68 -> 91.63 once the framework image's top was read off retail's RELOAD rather
-// than invented (see the SBICMD_RESOURCE_MACHINE_FOREGROUND site).  What is left is the
-// FRAME, not the exits: retail reserves `sub esp,0x34`, we reserve 0x30, and the slot
-// order moves with it - both sides agree up to +0x1c (code +0x10, the loop `y` +0x14,
-// the i32* cursor +0x18, `i` +0x1c), then the prologue spills `by` to +0x20 in retail
-// and +0x28 in ours.  The 25 unwind funclets say it is NOT one uniform shift: eh_band's
-// census row is `mixed -0x8x6 +0x4x3 -0x1cx1`, so three object slots move three ways.
-// `--branches --diff` reports 102/102 and 13/13, so control flow is already right.
-// Measured and REJECTED as the missing local, both leaving the frame at 0x30: hoisting
-// the loops' `CSBI_ImageSet* set` to function scope, and giving any one loop its own
-// counter.  Both were byte-identical, so the extra dword is a SPILL, not a declaration.
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
@@ -1755,23 +1724,24 @@ i32 CStatusBarMgr::LoadTabSprites() {
     i32 by = m_rect10.top;
 
     CSBI_Image* it;
+    CSBI_ImageSet* imgSet;
+    CSBI_WellGoo* goo;
+    CSBI_WarlordHead* head;
     CSBI_ImageSetAni* ani;
     CSBI_StatzTabArrow* arrow;
     CSBI_GruntMachine* mach;
     CSBI_StatzTabGruntBar* bar;
-    RECT r;
     i32 i;
 
     switch (m_activeTab) {
         case TAB_GRUNTZ:
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_TAB_TITLE_TEXT,
                     TAB_GRUNTZ,
-                    r,
+                    SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
                     -1,
                     0
@@ -1787,13 +1757,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
-                    r = SbGeom(bx + 0xe, y - 0x32, bx + 0x39, y);
                     if (!set->SetupImage(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
                             TAB_GRUNTZ,
-                            r,
+                            SbGeom(bx + 0xe, y - 0x32, bx + 0x39, y),
                             "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
                             *bptr,
                             0
@@ -1810,21 +1779,20 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == NULL) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllTypes(SHADE_PAL_16);
-                    (static_cast<CDDrawWorker*>(set->m_frameSet))->SetAllFormats(sel);
+                    set->m_frameSet->SetAllTypes(SHADE_PAL_16);
+                    set->m_frameSet->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
                 }
             }
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_GRUNT_WELL,
                     TAB_GRUNTZ,
-                    r,
+                    SbGeom(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
                     -1,
                     0
@@ -1835,13 +1803,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(2, it);
             m_gaugeNotify = it;
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_GRUNT_OVENS_TEXT,
                     TAB_GRUNTZ,
-                    r,
+                    SbGeom(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
                     -1,
                     0
@@ -1851,13 +1818,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(2, it);
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_GRUNT_WELL_TEXT,
                     TAB_GRUNTZ,
-                    r,
+                    SbGeom(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
                     -1,
                     0
@@ -1866,34 +1832,33 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             AddTabItem(2, it);
-            it = new CSBI_WellGoo;
-            r = SbGeom(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3);
-            if (!it->SetupImage(
+            // CSBI_WellGoo overrides the 7-arg base Setup (vtable slot 2), not
+            // CSBI_Image::SetupImage - retail dispatches through [edx+0x8] here.
+            goo = new CSBI_WellGoo;
+            if (!goo->Setup(
                     this,
                     code,
                     SBICMD_GRUNT_WELL_GOO,
                     TAB_GRUNTZ,
-                    r,
+                    SbGeom(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
-                    m_gauge,
-                    0
+                    m_gauge
                 )) {
-                delete it;
+                delete goo;
                 return 0;
             }
-            AddTabItem(2, it);
-            m_gaugeSink = static_cast<CSBI_WellGoo*>(it);
+            AddTabItem(2, goo);
+            m_gaugeSink = goo;
             return 1;
 
         case TAB_RESOURCE:
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_TAB_TITLE_TEXT,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
                     -1,
                     0
@@ -1903,13 +1868,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(3, it);
             it = new CSBI_Image;
-            r = SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1be);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_MAIN_BACKGROUND,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1be),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
                     -1,
                     0
@@ -1920,13 +1884,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(3, it);
             m_notify0 = it;
             it = new CSBI_Image;
-            r = SbGeom(bx, by + 0xfb, bx + 0x9f, by + 0x134);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_UPPER_BACKGROUND,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0xfb, bx + 0x9f, by + 0x134),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
                     -1,
                     0
@@ -1937,13 +1900,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(3, it);
             m_notify2 = it;
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_WINDOW_BACKGROUND,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
                     -1,
                     0
@@ -1954,80 +1916,76 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(3, it);
             m_notify3 = it;
 
-            it = new CSBI_ImageSet;
-            r = SbGeom(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130);
-            if (!it->SetupImage(
+            imgSet = new CSBI_ImageSet;
+            if (!imgSet->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_BELT_GROUP0,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[0].m_value,
                     0
                 )) {
-                delete it;
+                delete imgSet;
                 return 0;
             }
-            AddTabItem(3, it);
-            m_groupNotify[0] = static_cast<CSBI_ImageSet*>(it);
-            it = new CSBI_ImageSet;
-            r = SbGeom(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130);
-            if (!it->SetupImage(
+            AddTabItem(3, imgSet);
+            m_groupNotify[0] = imgSet;
+            imgSet = new CSBI_ImageSet;
+            if (!imgSet->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_BELT_GROUP1,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[1].m_value,
                     0
                 )) {
-                delete it;
+                delete imgSet;
                 return 0;
             }
-            AddTabItem(3, it);
-            m_groupNotify[1] = static_cast<CSBI_ImageSet*>(it);
-            it = new CSBI_ImageSet;
-            r = SbGeom(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130);
-            if (!it->SetupImage(
+            AddTabItem(3, imgSet);
+            m_groupNotify[1] = imgSet;
+            imgSet = new CSBI_ImageSet;
+            if (!imgSet->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_BELT_GROUP2,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
                     m_groupSlots[2].m_value,
                     0
                 )) {
-                delete it;
+                delete imgSet;
                 return 0;
             }
-            AddTabItem(3, it);
-            m_groupNotify[2] = static_cast<CSBI_ImageSet*>(it);
+            AddTabItem(3, imgSet);
+            m_groupNotify[2] = imgSet;
 
-            it = new CSBI_ImageSet;
-            r = SbGeom(
-                m_itemRect.left + bx,
-                m_itemRect.top + by,
-                m_itemRect.right + bx,
-                m_itemRect.bottom + by
-            );
-            if (!it->SetupImage(
+            imgSet = new CSBI_ImageSet;
+            if (!imgSet->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_CURRENT_ITEM,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(
+                        m_itemRect.left + bx,
+                        m_itemRect.top + by,
+                        m_itemRect.right + bx,
+                        m_itemRect.bottom + by
+                    ),
                     "GAME_INGAMEICONZ_GREYCHIPZ",
                     m_extraNotifyArg0,
                     0
                 )) {
-                delete it;
+                delete imgSet;
                 return 0;
             }
-            AddTabItem(3, it);
-            m_extraNotify0 = static_cast<CSBI_ImageSet*>(it);
+            AddTabItem(3, imgSet);
+            m_extraNotify0 = imgSet;
             it->m_enabled = 0;
 
             {
@@ -2036,13 +1994,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0x155;
                 for (i = 0; i < 4; i++) {
                     CSBI_ImageSet* set = new CSBI_ImageSet;
-                    r = SbGeom(bx + 0x1d, y - 0x17, bx + 0x34, y);
                     if (!set->SetupImage(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP0_FIRST) + i),
                             TAB_RESOURCE,
-                            r,
+                            SbGeom(bx + 0x1d, y - 0x17, bx + 0x34, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[-24],
                             0
@@ -2053,13 +2010,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     AddTabItem(3, set);
                     cachep[-4] = set;
                     set = new CSBI_ImageSet;
-                    r = SbGeom(bx + 0x45, y - 0x17, bx + 0x5c, y);
                     if (!set->SetupImage(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP1_FIRST) + i),
                             TAB_RESOURCE,
-                            r,
+                            SbGeom(bx + 0x45, y - 0x17, bx + 0x5c, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[0],
                             0
@@ -2070,13 +2026,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     AddTabItem(3, set);
                     cachep[0] = set;
                     set = new CSBI_ImageSet;
-                    r = SbGeom(bx + 0x6d, y - 0x17, bx + 0x84, y);
                     if (!set->SetupImage(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_HL_GROUP2_FIRST) + i),
                             TAB_RESOURCE,
-                            r,
+                            SbGeom(bx + 0x6d, y - 0x17, bx + 0x84, y),
                             "GAME_INGAMEICONZ_NORMCHIPZ",
                             cfgp[24],
                             0
@@ -2093,13 +2048,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
 
             mach = new CSBI_GruntMachine;
-            r = SbGeom(bx, by + 0xc8, bx + 0x9f, by + 0xfa);
             if (!mach->BuildResourceTabStatusBar(
                     this,
                     code,
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
                     m_machineA.m_counter,
                     m_machineB.m_counter
@@ -2114,13 +2068,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // Retail does not compute this one: at +0xea8 it RELOADS the slot the first
             // TAB_RESOURCE image's `by + 0x135` was CSE'd into, and `by + 0x1a6` (what
             // used to stand here) appears in no immediate anywhere in the function.
-            r = SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1df);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_MACHINE_FOREGROUND,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0x135, bx + 0x9f, by + 0x1df),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
                     -1,
                     0
@@ -2132,13 +2085,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_notify1 = it;
 
             ani = new CSBI_ImageSetAni;
-            r = SbGeom(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc);
             if (!ani->Init(
                     this,
                     code,
                     SBICMD_CONVEYOR_TOP,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
                     -1,
                     -1,
@@ -2151,38 +2103,36 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(3, ani);
 
-            it = new CSBI_ImageSet;
-            r = SbGeom(
-                m_fallRect.left + bx,
-                m_fallRect.top + by,
-                m_fallRect.right + bx,
-                m_fallRect.bottom + by
-            );
-            if (!it->SetupImage(
+            imgSet = new CSBI_ImageSet;
+            if (!imgSet->SetupImage(
                     this,
                     code,
                     SBICMD_RESOURCE_FALLING_ITEM,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(
+                        m_fallRect.left + bx,
+                        m_fallRect.top + by,
+                        m_fallRect.right + bx,
+                        m_fallRect.bottom + by
+                    ),
                     "GAME_INGAMEICONZ_NORMCHIPZ",
                     m_extraNotifyArg1,
                     0
                 )) {
-                delete it;
+                delete imgSet;
                 return 0;
             }
-            AddTabItem(3, it);
-            m_extraNotify1 = static_cast<CSBI_ImageSet*>(it);
+            AddTabItem(3, imgSet);
+            m_extraNotify1 = imgSet;
             it->m_enabled = 0;
 
             ani = new CSBI_ImageSetAni;
-            r = SbGeom(bx, by + 0x1c7, bx + 0x9f, by + 0x1df);
             if (!ani->Init(
                     this,
                     code,
                     SBICMD_CONVEYOR_BOTTOM,
                     TAB_RESOURCE,
-                    r,
+                    SbGeom(bx, by + 0x1c7, bx + 0x9f, by + 0x1df),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
                     -1,
                     -1,
@@ -2198,13 +2148,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
         case TAB_MULTIPLAYER:
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_TAB_TITLE_TEXT,
                     TAB_MULTIPLAYER,
-                    r,
+                    SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
                     -1,
                     0
@@ -2214,74 +2163,70 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(4, it);
 
-            it = new CSBI_WarlordHead;
-            r = SbGeom(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a);
-            if (!it->SetupImage(
+            head = new CSBI_WarlordHead;
+            if (!head->SetupImage(
                     this,
                     code,
                     SBICMD_MULTIPLAYER_HEAD1,
                     TAB_MULTIPLAYER,
-                    r,
+                    SbGeom(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a),
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
                     1,
                     0
                 )) {
-                delete it;
+                delete head;
                 return 0;
             }
-            AddTabItem(4, it);
-            m_warlordHead[0] = static_cast<CSBI_WarlordHead*>(it);
-            it = new CSBI_WarlordHead;
-            r = SbGeom(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d);
-            if (!it->SetupImage(
+            AddTabItem(4, head);
+            m_warlordHead[0] = head;
+            head = new CSBI_WarlordHead;
+            if (!head->SetupImage(
                     this,
                     code,
                     SBICMD_MULTIPLAYER_HEAD2,
                     TAB_MULTIPLAYER,
-                    r,
+                    SbGeom(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d),
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
                     1,
                     0
                 )) {
-                delete it;
+                delete head;
                 return 0;
             }
-            AddTabItem(4, it);
-            m_warlordHead[1] = static_cast<CSBI_WarlordHead*>(it);
-            it = new CSBI_WarlordHead;
-            r = SbGeom(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190);
-            if (!it->SetupImage(
+            AddTabItem(4, head);
+            m_warlordHead[1] = head;
+            head = new CSBI_WarlordHead;
+            if (!head->SetupImage(
                     this,
                     code,
                     SBICMD_MULTIPLAYER_HEAD3,
                     TAB_MULTIPLAYER,
-                    r,
+                    SbGeom(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190),
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
                     1,
                     0
                 )) {
-                delete it;
+                delete head;
                 return 0;
             }
-            AddTabItem(4, it);
-            m_warlordHead[2] = static_cast<CSBI_WarlordHead*>(it);
-            it = new CSBI_WarlordHead;
-            r = SbGeom(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2);
-            if (!it->SetupImage(
+            AddTabItem(4, head);
+            m_warlordHead[2] = head;
+            head = new CSBI_WarlordHead;
+            if (!head->SetupImage(
                     this,
                     code,
                     SBICMD_MULTIPLAYER_HEAD4,
                     TAB_MULTIPLAYER,
-                    r,
+                    SbGeom(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2),
                     "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
                     1,
                     0
                 )) {
-                delete it;
+                delete head;
                 return 0;
             }
-            AddTabItem(4, it);
-            m_warlordHead[3] = static_cast<CSBI_WarlordHead*>(it);
+            AddTabItem(4, head);
+            m_warlordHead[3] = head;
 
             {
                 CSBI_WarlordHead** slot = m_warlordHead;
@@ -2316,13 +2261,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0xd9;
                 for (i = 0; i < 15; i++) {
                     bar = new CSBI_StatzTabGruntBar;
-                    r = SbGeom(by17, y - 0x11, by52, y);
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
                             TAB_MULTIPLAYER,
-                            r,
+                            SbGeom(by17, y - 0x11, by52, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_tabCycle,
                             i,
@@ -2339,13 +2283,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
         case TAB_STATZ:
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_TAB_TITLE_TEXT,
                     TAB_STATZ,
-                    r,
+                    SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                     "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
                     -1,
                     0
@@ -2371,13 +2314,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     SbiCommandId id =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
                     arrow = new CSBI_StatzTabArrow;
-                    r = SbGeom(arrowL, y - 0x11, arrowR, y);
                     if (!arrow->Init(
                             this,
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_STAT_TOGGLE_FIRST) + i),
                             TAB_STATZ,
-                            r,
+                            SbGeom(arrowL, y - 0x11, arrowR, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_ARROW",
                             -1,
                             -1,
@@ -2401,13 +2343,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         arrow->SetDirection(m_position, 0);
                     }
                     bar = new CSBI_StatzTabGruntBar;
-                    r = SbGeom(bx + 0x28, y - 0x11, bx + 0x77, y);
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
                             id,
                             TAB_STATZ,
-                            r,
+                            SbGeom(bx + 0x28, y - 0x11, bx + 0x77, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             g_curPlayer,
                             i,
@@ -2424,13 +2365,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
         case TAB_GAME:
             it = new CSBI_Image;
-            r = SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_TAB_TITLE_TEXT,
                     TAB_GAME,
-                    r,
+                    SbGeom(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
                     "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
                     -1,
                     0
@@ -2441,13 +2381,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             AddTabItem(5, it);
 
             it = new CSBI_ImageSet;
-            r = SbGeom(bx, by, bx + 0x9f, by + 0x7f);
             if (!it->SetupImage(
                     this,
                     code,
                     SBICMD_WARPSTONE_BASE,
                     TAB_GAME,
-                    r,
+                    SbGeom(bx, by, bx + 0x9f, by + 0x7f),
                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                     1,
                     0
@@ -2459,13 +2398,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
                 it = new CSBI_ImageSet;
-                r = SbGeom(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44);
                 if (!it->SetupImage(
                         this,
                         code,
                         SBICMD_WARPSTONE_FRAGMENT1,
                         TAB_GAME,
-                        r,
+                        SbGeom(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44),
                         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                         2,
                         0
@@ -2477,13 +2415,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
                     it = new CSBI_ImageSet;
-                    r = SbGeom(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e);
                     if (!it->SetupImage(
                             this,
                             code,
                             SBICMD_WARPSTONE_FRAGMENT2,
                             TAB_GAME,
-                            r,
+                            SbGeom(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e),
                             "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                             3,
                             0
@@ -2495,13 +2432,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
                         it = new CSBI_ImageSet;
-                        r = SbGeom(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71);
                         if (!it->SetupImage(
                                 this,
                                 code,
                                 SBICMD_WARPSTONE_FRAGMENT3,
                                 TAB_GAME,
-                                r,
+                                SbGeom(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71),
                                 "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                 4,
                                 0
@@ -2513,13 +2449,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         if ((static_cast<CTriggerMgr*>(g_gameReg->m_cmdGrid))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
                             it = new CSBI_ImageSet;
-                            r = SbGeom(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74);
                             if (!it->SetupImage(
                                     this,
                                     code,
                                     SBICMD_WARPSTONE_FRAGMENT4,
                                     TAB_GAME,
-                                    r,
+                                    SbGeom(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74),
                                     "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
                                     5,
                                     0
@@ -4713,10 +4648,6 @@ i32 CWarpStoneFly::Draw() {
 }
 
 // @early-stop
-// Both `new CSBI_Image` sites now `call ??0CStatusBarItem` as retail does.  Residue:
-// the CSBI_MenuItem / CSBI_ImageSet sites here take all three cut depths
-// (??0CSBI_RectOnly, ??0CStatusBarItem, fully inline) for one class - the per-SITE
-// budget.  docs/patterns/ctor-inline-cut-depth-varies-per-new-site.md
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_toggleActive == 0) {

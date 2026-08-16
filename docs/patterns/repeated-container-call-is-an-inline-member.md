@@ -113,3 +113,56 @@ repeats once per object: a container `AddTail`/`AddHead`/`SetAt`, a two-field st
 one-line setter. `docs/patterns/inline-budget-emits-ool-comdat.md`'s `CMenuPage::AddSubItem2`
 closure is the same shape (header-visible `SetFrame` plus two one-store command setters,
 63.12 -> 100 EXACT).
+
+## Follow-up 2026-08-16: the deficit is CANDIDATE SITES, and it is now measured
+
+Re-running the four builders after `AddTabItem` landed, with the referent population read
+per constructed object (split the call stream at `??2@YAPAXI@Z`, compare group-by-group
+against the delinked target):
+
+| caller | ours | retail | short by |
+|---|---|---|---|
+| BuildStatusBarTabs 0xffde0 | {base 3} | {base 4} | 1 cut |
+| BuildGameMenu 0x101580 | {base 4, RectOnly 2} | {base 3, RectOnly 5} | 2 cuts |
+| LoadTabSprites 0x102250 | {base 11, RectOnly 6} | {base 15, RectOnly 10} | 8 cuts |
+| BuildTabzDialog 0x10a340 | {base 7, RectOnly 2} | {base 8, RectOnly 4} | 3 cuts |
+
+The `__ehunwind$...$N` funclets sitting at **0.00** are a free readout of the same number:
+2 / 2 / 8 / 3 dead funclets, exactly the missing throwing ctor calls, no disassembly needed.
+
+**Titration (disposable, all removed).** A zero-emission candidate site is
+`static inline i32 ProbeSite(i32 v) { return v; }` called as `(void)ProbeSite(0);` - it is
+an inline call for the front end and emits nothing.
+
+* **BuildStatusBarTabs needs EXACTLY 2 more sites, anywhere after the 7th `new`.** K=2 at
+  the end of the function, or immediately after the multi-tab construction, both give
+  retail's `{base 4}` and **99.72** with the call multiset identical; K=1 and K=3 do not.
+  The position tolerance is one-sided: probes placed at the FIFTH `new` instead put 5 extra
+  sites ahead of the three `CSBI_RectOnly` dock buttons and cut one of those, which retail
+  fully inlines.
+* **cb reduction alone is inert here.** Factoring the whole `if (SINGLE) {...}` disable block
+  (5 statements) into one file-static inline changed nothing, so for this caller the lever is
+  the `budget / sites-remaining` divisor and not `2*cb`.
+* **A uniform +1 site per constructed object OVERSHOOTS.** It gives {base 2, RectOnly 1} /
+  {RectOnly 4, base 3} / {RectOnly 13, base 12} / {base 6, RectOnly 6} - only BuildGameMenu
+  lands near retail. Probing at the "remember the pointer" assignments (44 sites) gets
+  LoadTabSprites' base count exactly right (15) and Dialog to 88.20, but again cuts a dock
+  button in BuildStatusBarTabs. **So the missing sites are NOT one per item**, and the
+  heterogeneous `m_tabSpriteN` / `m_notifyN` / `m_groupNotify[i]` stores are not setters.
+* **Hoisting BuildGameMenu's mission-status branch to the top is refuted a second time.** It
+  is tempting because retail's EH state indices number the two mission-status `new` sites 0
+  and 1 - i.e. the FRONT END saw them first - while laying that branch out last, and those two
+  sites are exactly the ones our build never cuts (they are last in our tuple order, so they
+  get the largest slice). Writing `if (m_itemKind == GAME_TAB_MISSION_STATUS) { ...; return 1; }
+  ...menu...` flips the emitted layout with the numbering: 86.06 -> **65.23**. Hoisting only the
+  `CSBI_ImageSet* status;` declaration is byte-identical. How C1 can order those sites first
+  while C2 emits them last is still unexplained, and it is the whole of BuildGameMenu's residue.
+
+Two real reconstruction bugs were found on the way and are worth checking first, because both
+LOOK like budget residue: an indirect call through the wrong vtable slot
+(indirect-call-slot-names-the-receiver-type.md), and `p->m_frame = f ? f->GetAt(i) : NULL;`
+where retail writes `if (f != NULL) { p->m_frame = f->GetAt(i); }` - the null path jumps PAST
+the store, which the masked diff hides (masked-diff-hides-branch-target.md). Recovering
+`CDDrawWorker::GetAt` at that one site (it was spelled out as
+`f != NULL && f->m_minIndex <= i && f->m_maxIndex >= i` + `f->m_items.GetAt(i)`) plus the `if`
+form took BuildStatusBarTabs 94.42 -> **97.35**.
