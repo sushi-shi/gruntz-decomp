@@ -79,6 +79,7 @@ i32 g_diffTier;
 // (0x0022b73c..0x0022b760), and gaps of that size sit between every
 // neighbouring compiland's `.bss` block, so neither its type nor its extent is
 // proven. Do not invent one.
+//
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
     list->m_walkCursor = list->m_list.GetHeadPosition();
@@ -3699,6 +3700,15 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 }
 
 #undef ARR_RECYCLE
+
+// Until the owner is proven this is spelled as a stub named for its address, so
+// the row is CLAIMED rather than sitting in the `(unmatched)` bucket. The stub
+// invents a NAME only - no type, no storage, no constructor - because those are
+// the three things the paragraph above says are unproven. When the owner is
+// found this becomes `RVA_DYNINIT(0x0002d7e0, 0x20, <owner>)` on that datum's
+// definition line and the stub is deleted.
+RVA(0x0002d7e0, 0x1)
+void STUB_2d7e0() {}
 
 // @early-stop
 RVA(0x0002d800, 0x605)
