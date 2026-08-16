@@ -80,7 +80,7 @@ customleveldlg	4	3
 customworlddialog	10	8
 databuffer	8	8
 ddpagemgr	23	22
-ddpalette	23	23
+ddpalette	24	24
 ddrawptrcollections	10	10
 ddrawshadeblit	22	10
 ddrawsubmgr	120	116
@@ -114,7 +114,7 @@ feccrypt	11	8
 fileimage	19	10
 filestream	4	4
 font	21	17
-fontconfig	14	9
+fontconfig	15	10
 fonts	2	2
 fortconquered	1	0
 fortressflag	26	23
@@ -210,7 +210,7 @@ latencylist	5	5
 leafcueplay	1	1
 levelplane	24	13
 levelpreview	9	9
-levelrezpath	1	0
+levelrezpath	3	2
 leveltime	1	1
 lightfx	11	9
 lightfxmgr	3	3
@@ -935,6 +935,7 @@ ddpalette	?Create@CDDPalette@@QAEHPAUIDirectDraw2@@PAUtagPALETTEENTRY@@I@Z	100.0
 ddpalette	?CreateFromTrailing@CDDPalette@@QAEHPAUIDirectDraw2@@PAXII@Z	100.0000	100.0000	1	428306268834	0x147840	100.0000	
 ddpalette	?CreateRGB@CDDPalette@@QAEHPAUIDirectDraw2@@PAXI@Z	100.0000	100.0000	1	a48b12a4cf79	0x1474d0	100.0000	
 ddpalette	?Destroy@CDDPalette@@QAEXXZ	100.0000	100.0000	1	b1c39ba2c58f	0x147530	100.0000	
+ddpalette	?DumpEntries@CDDPalette@@QAEXXZ	100.0000	100.0000	1	cd436b67e3fc	0x1487c0	100.0000	
 ddpalette	?FadeRange@CDDPalette@@QAEXHHHHHH@Z	100.0000	100.0000	1	8bbb9805f2d3	0x147d50	100.0000	
 ddpalette	?Flush@CDDPalette@@QAEXXZ	100.0000	100.0000	1	0901eec53e95	0x148250	100.0000	
 ddpalette	?GetEntries@CDDPalette@@QAEXXZ	100.0000	100.0000	1	6428b21b6e67	0x147c30	100.0000	
@@ -1275,7 +1276,7 @@ ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13eb80	100.0000	
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	1	482a2140b13f	0x13e690	100.0000	
 ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	66.6803	66.6803	1	ff851fa03a2c	0x13f020	66.6803	
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	74.8591	74.8591	1	389ee0da761e	0x13f460	74.8591	
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	74.8591	74.6000	1	389ee0da761e	0x13f460	74.8591	
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	1	e6919eb7da93	0x141080	100.0000	
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	1	2199bcaca9d3	0x13f990	100.0000	
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	1	1cba59666bcf	0x1413b0	100.0000	
@@ -1703,7 +1704,7 @@ fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	88.5833	88.5833	1	1bf4ecf4e429	0
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.6626	99.6626	1	a06314f5b222	0x181b00	99.6626	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	88.8875	88.8875	1	7ba962f6c4eb	0x17ff30	88.8875	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	1	0aa0f545213f	0x182610	99.9831	
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	78.7115	78.7115	1	eb830c100645	0x181e50	78.7115	
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	79.7423	79.7423	1	eb830c100645	0x181e50	79.7423	
 fadereffects	?SubFree@CFaderLight@@QAEXXZ	100.0000	100.0000	2	9a9115717ac4	0x180630	100.0000	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	1	98e20e0705d5	0x17d8f0	100.0000	
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
@@ -1773,6 +1774,7 @@ font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	1	55ea99946328	0x1799f0	
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	1	b2f484280b13	0x179c20	100.0000	
 font	?SetFont@FontRenderer@@QAEXPAVFont@@@Z	100.0000	100.0000	1	2956efb36548	0x179c10	100.0000	
 fontconfig	??1CFontConfig@@QAE@XZ	100.0000	100.0000	1	5d3b273e09e9	0x85f40	100.0000	
+fontconfig	??1CPen@@UAE@XZ	100.0000	100.0000	1	cpp:f25ad3dca3dc	0x220f0	100.0000	
 fontconfig	??1FontItem@@QAE@XZ	100.0000	100.0000	1	cpp:1c54d09168ac	0x21c40	100.0000	
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	1	c2c192de55cf	0x21c60	100.0000	
 fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	93.9167	93.9167	1	f1f00c8a9d8f	0x22810	93.9167	
@@ -2619,7 +2621,7 @@ helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	76.5212	76.5212	1	9a0bd3e057a4	0x146fe0	76.5212	
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.2814	99.2814	1	3e9cc4a7c9c5	0x1461b0	99.2814	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	1	378c6ebd3241	0x145f60	79.4671	
-imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	85.7027	1	b90f4052f6b4	0x145e30	85.7027	
+imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	85.7027	81.6036	1	b90f4052f6b4	0x145e30	85.7027	
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	76.6978	76.6978	1	832b81dd3e6d	0x1471d0	76.6978	
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	95.4978	95.4978	1	0c19f276ebb7	0x146550	95.4978	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
@@ -2823,8 +2825,10 @@ levelpreview	?RefadeVirtual@CPreviewState@@QAEHXZ	100.0000	100.0000	1	a8df01a3fa
 levelpreview	?ResetPreview@CPreviewState@@QAEXXZ	100.0000	100.0000	1	99d400ee36bb	0xde140	100.0000	
 levelpreview	?Tick@CPreviewState@@QAEHXZ	100.0000	100.0000	13	a8d17f790729	0xde200	100.0000	
 levelrezpath	?BuildLevelRezPath@CGruntzMgr@@QAEHHHHHVCString@@@Z	97.8582	97.8582	10	da6a57225442	0x93d40	97.8582	
+levelrezpath	?CloseDebugLog@@YAXXZ	100.0000	100.0000	1	1c4581693843	0x94310	100.0000	
+levelrezpath	?OpenDebugLog@@YAXXZ	100.0000	100.0000	1	b25f058245f0	0x942e0	100.0000	
 leveltime	?SerializeMove@CLevelTime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	2bfaca43de88	0x119b0	100.0000	
-lightfx	??0CLightFx@@QAE@PAUCGameObject@@@Z	96.4602	0.0000	1	ad626aed6599	0x9cf00	96.4602	
+lightfx	??0CLightFx@@QAE@PAUCGameObject@@@Z	96.4602	94.8673	1	ad626aed6599	0x9cf00	96.4602	
 lightfx	??1CLightFx@@UAE@XZ	100.0000	100.0000	1	cpp:e509022a29d6	0x12430	100.0000	
 lightfx	??_GCLightFx@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e509022a29d6	0x12400	100.0000	
 lightfx	?Activate@CLightFx@@QAEXPBD0HH@Z	88.1728	88.1728	1	c1664cdf552f	0x9d520	88.1728	
