@@ -36,10 +36,8 @@ i32 CAniPlayer::Start(
     if (CSBI_ImageSetAni::Init(owner, host, cmd, tab, rc, key, b0, b1, b2, b3, b4) == 0) {
         return 0;
     }
-    m_windowLo = m_interval;
-    m_windowHi = 0;
-    m_startLo = g_frameTime;
-    m_startHi = 0;
+    m_window64 = static_cast<u32>(m_interval);
+    m_start64 = g_frameTime;
     return 1;
 }
 

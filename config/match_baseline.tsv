@@ -34,7 +34,7 @@ actionoptionsmenubar	13	4
 adler32	1	1
 advancedoptions	5	5
 anicycle	8	7
-aniplayer	4	1
+aniplayer	4	2
 anirecord	10	9
 areamgr	58	56
 arrayserialize	4	4
@@ -217,11 +217,11 @@ lightfxmgr	3	3
 lightfxrender	23	12
 loadgamemenu	4	3
 logicrecorddispatch	3	3
-logicworkerhandlersa	15	14
+logicworkerhandlersa	15	15
 logicworkerhandlersb	6	6
 mainmenubuilder	2	2
 maplogic	1	1
-mapmgr	27	19
+mapmgr	27	20
 menuitem	20	19
 menupage	47	44
 menusparkle	8	7
@@ -292,7 +292,7 @@ statichazard	9	6
 statusbarspriteacts	7	7
 statusbartabbuilders	6	3
 streamrecordloaders	2	1
-symtab	72	60
+symtab	72	63
 terraintileloader	1	0
 tilelogicpump	57	53
 tilescan	1	0
@@ -383,9 +383,9 @@ anicycle	?FireActivation@CAniCycle@@UAEXH@Z	100.0000	100.0000	1	93c520009ebd	0xa
 anicycle	?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf450	100.0000	
 anicycle	?RegisterActs@CAniCycle@@SAXXZ	100.0000	100.0000	12	12fff836e7fe	0xab0e0	100.0000	
 anicycle	?SerializeMove@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:281810d27b94	0xf470	100.0000	
-aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.1212	98.1212	2	372c4100352f	0xe5c10	98.4848	
+aniplayer	?RenderCel@CAniPlayer@@QAEHXZ	98.4848	98.4848	2	372c4100352f	0xe5c10	98.4848	
 aniplayer	?Serialize@CAniPlayer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	1	0a3316025e62	0xe5c90	100.0000	
-aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	99.7500	99.7500	1	331e1e17d7c0	0xe5ad0	99.7500	
+aniplayer	?Start@CAniPlayer@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHHHH@Z	100.0000	100.0000	2	84061d4a0fb7	0xe5ad0	100.0000	
 aniplayer	?TickToggle@CAniPlayer@@QAEHH@Z	92.0000	92.0000	7	bfedccb66220	0xe5b90	92.0000	
 anirecord	?CreatePaletteFromEntries@CAniRecordBase2@@UAEHPAUtagPALETTEENTRY@@H@Z	100.0000	100.0000	2	8ff4b8be71ba	0x168f20	100.0000	
 anirecord	?CreatePaletteFromRgb@CAniRecordBase2@@UAEHPAXH@Z	100.0000	100.0000	1	bce321bcae2c	0x168ee0	100.0000	
@@ -2877,7 +2877,7 @@ logicworkerhandlersa	?CreateAniCycle@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	
 logicworkerhandlersa	?CreateBehindCandy@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	205e6a73383f	0xaa320	100.0000	
 logicworkerhandlersa	?CreateBehindCandyAni@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	6019421cbdfa	0xaa5a0	100.0000	
 logicworkerhandlersa	?CreateDoNothing@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	3bd16364f60d	0xa9cc0	100.0000	
-logicworkerhandlersa	?CreateDoNothingNormal@@YAHPAUCGameObject@@@Z	99.6129	99.6129	1	9dee8e5bce4f	0xa9e00	99.6129	
+logicworkerhandlersa	?CreateDoNothingNormal@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	9dee8e5bce4f	0xa9e00	100.0000	
 logicworkerhandlersa	?CreateEyeCandy@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	dc5bc57ff659	0xaa6e0	100.0000	
 logicworkerhandlersa	?CreateEyeCandyAni@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	af17bb2b0f80	0xaa820	100.0000	
 logicworkerhandlersa	?CreateFrontCandy@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	929d17f317a6	0xaa1e0	100.0000	
@@ -2906,7 +2906,7 @@ mapmgr	??1CMapMgr@@QAE@XZ	100.0000	100.0000	1	ccf3239f9de7	0x9e9e0	100.0000
 mapmgr	?AllocGrid@CMapMgr@@QAEHHHP6AXXZ@Z	87.9856	87.9856	1	1de7f05435de	0x9ea60	87.9856	
 mapmgr	?Allocate@CMapArrayA@@QAEHI@Z	87.5200	87.5200	1	e4cb12505968	0x9e740	87.5200	
 mapmgr	?Allocate@CMapArrayB@@QAEHI@Z	87.6471	87.6471	1	d54d03028639	0x9e860	87.6471	
-mapmgr	?CellPop@CMapMgr@@QAEXPAUBrickzNode@@H@Z	99.5224	99.5224	1	0f2654a7a3d7	0x9f710	99.5224	
+mapmgr	?CellPop@CMapMgr@@QAEXPAUBrickzNode@@H@Z	100.0000	100.0000	2	ef643bb66462	0x9f710	100.0000	
 mapmgr	?CellPush@CMapMgr@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	1	e4eaeb530698	0x9f470	85.9070	
 mapmgr	?Drain@CMapMgr@@QAEXXZ	100.0000	100.0000	1	12c4e1963388	0x9f590	100.0000	
 mapmgr	?Expand@CMapMgr@@QAEHPAUBrickzNode@@HHHH@Z	79.6403	79.6403	1	ab8a41cc051e	0x9f010	79.6403	
@@ -4030,7 +4030,7 @@ symtab	??0CSymParser@@QAE@PAXHH@Z	100.0000	100.0000	1	3ee64c399570	0x13ab00	100.
 symtab	??0CSymParser@@QAE@XZ	100.0000	100.0000	1	3ee64c399570	0x13aa10	100.0000	
 symtab	??0CSymRec@@QAE@HPAVCSymTab@@H@Z	100.0000	100.0000	1	8addc69dc6b9	0x139c80	100.0000	
 symtab	??0CSymRec@@QAE@HPAVCSymTab@@HH@Z	99.3548	99.3548	1	8addc69dc6b9	0x139bf0	99.3548	
-symtab	??0CSymTab@@QAE@PAVCSymParser@@PAV0@PBDHHHHH@Z	97.3333	97.3333	1	ad16cd80b154	0x139de0	97.3333	
+symtab	??0CSymTab@@QAE@PAVCSymParser@@PAV0@PBDHHHHH@Z	100.0000	100.0000	2	307f51585acb	0x139de0	100.0000	
 symtab	??1CHash@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139c70	100.0000	
 symtab	??1CHashB@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ec0	100.0000	
 symtab	??1CHashC@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139dd0	100.0000	
@@ -4038,7 +4038,7 @@ symtab	??1CHashD@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ed0	100.0000
 symtab	??1CParserObjList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13aaf0	100.0000	
 symtab	??1CSlotNodeList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13abb0	100.0000	
 symtab	??1CSymParser@@QAE@XZ	100.0000	100.0000	1	51192649f1b0	0x13abc0	100.0000	
-symtab	??1CSymRec@@QAE@XZ	98.3099	98.3099	1	1b58fdea1748	0x139cf0	98.3099	
+symtab	??1CSymRec@@QAE@XZ	100.0000	100.0000	2	0dc9cf69b65c	0x139cf0	100.0000	
 symtab	??1CSymTab@@QAE@XZ	100.0000	100.0000	1	870e963b4c0f	0x139ee0	100.0000	
 symtab	?AddNamedValue@CSymTab@@QAEPAUCParseSource@@PAX0H@Z	88.0520	88.0520	1	337c90115da6	0x13a400	88.0520	
 symtab	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	1	d962e7203338	0x13c210	100.0000	
@@ -4051,7 +4051,7 @@ symtab	?BeginParse@CParseSource@@QAEPADXZ	100.0000	100.0000	1	ad306faaf628	0x139
 symtab	?Build@CParseSource@@QAEXPAVCSymTab@@PBDPAXPAVCSymRec@@2HHHH2PAVCRezItmBase@@@Z	96.2963	96.2963	1	1e8b4e55c0f6	0x139710	96.2963	
 symtab	?CheckNodes@CSymParser@@QAEHXZ	100.0000	100.0000	1	3718195481e1	0x13ba20	100.0000	
 symtab	?Classify@CSymParser@@QAEHPAD@Z	100.0000	100.0000	1	793ad2799926	0x13c080	100.0000	
-symtab	?Clear@CSymParser@@QAEHH@Z	99.5493	99.5493	1	aa3a81cbe4b7	0x13b850	99.5493	
+symtab	?Clear@CSymParser@@QAEHH@Z	100.0000	100.0000	2	2620e5157183	0x13b850	100.0000	
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	100.0000	100.0000	1	d9e07608e20a	0x13a330	100.0000	
 symtab	?CurrentScopeName@CParseSource@@QAEPADXZ	100.0000	100.0000	1	7b9f30a75430	0x139950	100.0000	
 symtab	?CurrentScopePath@CParseSource@@QAEPADPADH@Z	100.0000	100.0000	1	5a531628a5e3	0x139810	100.0000	

@@ -12,7 +12,7 @@ public:
     CDoNothingNormal() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
     CDoNothingNormal(CGameObject* owner) : CUserLogic(owner), CWapX(owner) {
-        m_wwdObject->m_flags |= 1;
+        SetObjectFlags(1);
     }
     virtual i32 SerializeMove(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
     RVA(0x0000f7e0, 0x6)

@@ -47,6 +47,23 @@ static inline CSlotNode* HeadSlotNode(DSoundList& list) {
     return static_cast<CSlotNode*>(list.m_head);
 }
 
+// These three are inline-expansion boundaries for cl 5.0's list scheduler. An
+// access written out at statement level is a hoist candidate, so the neighbour
+// with no successors - a loop-head load, the next call's receiver, an epilogue
+// pop - floats past it; the same access inside an expansion pins the neighbour
+// (docs/patterns/inline-expansion-boundary-pins-a-neighbour.md).
+static inline CRezItmBase* HeadRezNode(CObjList& list) {
+    return list.m_head;
+}
+
+static inline void SetSymRec(CSymRecNode& node, CSymRec* rec) {
+    node.m_symRec = rec;
+}
+
+static inline void SetSymTab(CSymTabNode& node, CSymTab* tab) {
+    node.m_symTab = tab;
+}
+
 // Retail's CSymParser::ParseRecords frame (0x1674 via __chkstk) lays out six
 // path buffers of exactly 0x308 bytes; the three _splitpath component buffers
 // are _MAX_PATH.
@@ -296,7 +313,6 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
     m_scope = owner;
 }
 
-// @early-stop
 RVA(0x00139cf0, 0xd7)
 CSymRec::~CSymRec() {
     if (m_scope->m_owner->m_useKeyIndex != 0) {
@@ -316,13 +332,12 @@ CSymRec::~CSymRec() {
         m_scope->m_owner->AddNode(cur->m_parseSource);
     }
     m_key = 0;
-    m_symNode.m_symRec = NULL;
+    SetSymRec(m_symNode, NULL);
 }
 
 // ~CSymRec is the first function to unwind m_valTable (this+0x24), so cl emits
 // that member's inline destructor here - a second, distinct `jmp RemoveAll`.
 
-// @early-stop
 RVA(0x00139de0, 0xd4)
 CSymTab::CSymTab(
     CSymParser* owner,
@@ -347,7 +362,7 @@ CSymTab::CSymTab(
     m_baseOffset = 0;
     m_mappedBuf = NULL;
     m_parent = parent;
-    m_node20.m_symTab = this;
+    SetSymTab(m_node20, this);
 }
 
 // The CSymTab ctor unwinds m_subTabs (this+0x38) then m_symbols (this+0x40), and
@@ -1176,10 +1191,6 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
     return 1;
 }
 
-// @early-stop
-// One transposition: retail stores the cleared m_activeNode BEFORE reading the list
-// head, cl after. The loop spelling is not the lever - for, while-assign and a
-// loop-scoped cursor are byte-identical.
 RVA(0x0013b850, 0xa8)
 i32 CSymParser::Clear(i32 final) {
     static_cast<void>(final);
@@ -1189,7 +1200,7 @@ i32 CSymParser::Clear(i32 final) {
     delete m_activeNode;
     m_activeNode = NULL;
     CRezItmBase* p;
-    for (p = m_list.m_head; p != NULL; p = m_list.m_head) {
+    for (p = HeadRezNode(m_list); p != NULL; p = HeadRezNode(m_list)) {
         p->Close();
         m_list.Remove(p);
         m_list.m_count--;

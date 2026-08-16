@@ -28,7 +28,6 @@ i32 CreateSingleFrameMessage(CGameObject* owner){LOGIC_WORKER_PUMP(CSingleFrameM
 RVA(0x000a9cc0, 0xf1)
 i32 CreateDoNothing(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothing)}
 
-// @early-stop
 RVA(0x000a9e00, 0x10c)
 i32 CreateDoNothingNormal(CGameObject* owner){LOGIC_WORKER_PUMP(CDoNothingNormal)}
 

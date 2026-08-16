@@ -655,8 +655,8 @@ void CMapMgr::CellPop(BrickzNode* node, i32 flag) {
     m_colB.m_freeList->m_cellPrev = slot;
     m_colB.m_freeList = slot;
     if (flag != 0) {
-        node->m_openPrev = NULL;
         node->m_openNext = m_colA.m_freeList;
+        node->m_openPrev = NULL;
         m_colA.m_freeList->m_openPrev = node;
         m_colA.m_freeList = node;
     }
