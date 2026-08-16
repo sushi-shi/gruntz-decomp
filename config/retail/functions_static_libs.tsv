@@ -2111,3 +2111,11 @@ rva	name	lib	confidence	source
 0x1c97f6	?DoSave@CDocument@@UAEHPBDH@Z	NAFXCW	MED	archive-byte-match-0.82-plus-member-adjacency
 0x1c9f53	?OnOpenDocument@CDocument@@UAEHPBD@Z	NAFXCW	MED	archive-byte-match-0.86-plus-member-adjacency
 0x1cf423	?PostNcDestroy@CFrameWnd@@MAEXXZ	NAFXCW	HIGH	archive-byte-match-1.00-plus-member-adjacency
+0x169890	msc_iostream_dtor_169890	LIBCIMT	MED	synthetic-name-library-band: ostrstream ctor run; 0.85 archive similarity, name ties 8 ways
+0x169aa0	msc_iostream_dtor_169aa0	LIBCIMT	MED	synthetic-name-library-band: strstream ctor run; 0.88 archive similarity, name ties 8 ways
+0x16a2e0	msc_ifstream_member_16a2e0	LIBCIMT	MED	synthetic-name-library-band: between ifstream::setbuf and its siblings; 0.94, ties with the ofstream twin
+0x16a980	msc_ofstream_member_16a980	LIBCIMT	MED	synthetic-name-library-band: between ofstream::setbuf and its siblings; 0.94, ties with the ifstream twin
+0x1c57cd	mfc_cdc_member_1c57cd	NAFXCW	MED	synthetic-name-library-band: inside CDC's member run (after SetAttribDC); trivial setter shape
+0x1ca124	mfc_cdocument_member_1ca124	NAFXCW	MED	synthetic-name-library-band: inside CDocument's doccore run; 0.85 to OnSaveDocument, ANSI/Unicode twin unresolved
+0x1ccf60	mfc_cmemfile_thunk_1ccf60	NAFXCW	MED	synthetic-name-library-band: inside CMemFile's run; push/call forwarder, ties 136 ways
+0x1ccfa4	mfc_cmemfile_thunk_1ccfa4	NAFXCW	MED	synthetic-name-library-band: inside CMemFile's run; push/call forwarder
